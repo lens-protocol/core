@@ -27,10 +27,10 @@
   },
   "repository": {
     "type": "git",
-    "url": ""
+    "url": "git@github.com:aave/lens-protocol.git"
   },
   "bugs": {
-    "url": ""
+    "url": "https://github.com/aave/lens-protocol/issues"
   },
   "homepage": "",
   "devDependencies": {
