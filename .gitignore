@@ -1,0 +1,27 @@
+.env
+#Hardhat files
+cache
+artifacts
+node_modules
+dist/
+build/
+.vscode
+.idea
+/.VSCodeCounter/
+/types
+/typechain-types
+/tasks/unpause.ts
+/tasks/create-profile.ts
+/tasks/post.ts
+/tasks/follow.ts
+/tasks/collect.ts
+/tasks/create-module.ts
+/tasks/module-flow.ts
+
+/coverage
+coverage.json
+.coverage_artifacts
+.coverage_cache
+.coverage_contracts
+
+addresses.json

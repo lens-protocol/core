@@ -1,0 +1,87 @@
+{
+  "name": "lens-protocol",
+  "version": "1.0.0",
+  "description": "decentralized social media",
+  "main": "index.js",
+  "scripts": {
+    "test": "npm run compile && TRACK_GAS=true hardhat test",
+    "quick-test": "hardhat test",
+    "spdx": "hardhat prepend-spdx-license",
+    "size": "npm run compile && hardhat size-contracts",
+    "full-deploy-local": "hardhat full-deploy --network localhost",
+    "full-deploy-mumbai": "hardhat full-deploy --network mumbai",
+    "coverage": "npm run compile && hardhat coverage --temp temp-artifacts --testfiles test/emptyrun.coverage.ts && hardhat coverage --temp temp-artifacts --testfiles '!test/emptyrun.coverage.ts'",
+    "run-env": "npm i && tail -f /dev/null",
+    "hardhat": "hardhat",
+    "hardhat:kovan": "hardhat --network kovan",
+    "hardhat:tenderly-main": "hardhat --network tenderlyMain",
+    "hardhat:ropsten": "hardhat --network ropsten",
+    "hardhat:main": "hardhat --network main",
+    "hardhat:docker": "hardhat --network hardhatevm_docker",
+    "hardhat:mumbai": "hardhat --network mumbai",
+    "hardhat:matic": "hardhat --network matic",
+    "compile": "SKIP_LOAD=true hardhat clean && SKIP_LOAD=true hardhat compile",
+    "console:fork": "MAINNET_FORK=true hardhat console",
+    "format": "prettier --write .",
+    "lint": "eslint ."
+  },
+  "repository": {
+    "type": "git",
+    "url": ""
+  },
+  "bugs": {
+    "url": ""
+  },
+  "homepage": "",
+  "devDependencies": {
+    "@nomiclabs/hardhat-ethers": "2.0.2",
+    "@nomiclabs/hardhat-etherscan": "2.1.8",
+    "@typechain/ethers-v5": "8.0.5",
+    "@typechain/hardhat": "3.0.0",
+    "@types/chai": "4.2.22",
+    "@types/mocha": "9.0.0",
+    "@types/node": "16.11.11",
+    "@typescript-eslint/eslint-plugin": "5.5.0",
+    "@typescript-eslint/parser": "5.5.0",
+    "chai": "4.3.4",
+    "defender-relay-client": "1.12.1",
+    "dotenv": "10.0.0",
+    "eslint": "8.3.0",
+    "eslint-config-prettier": "8.3.0",
+    "eslint-plugin-prettier": "4.0.0",
+    "prettier-plugin-solidity": "1.0.0-beta.19",
+    "ethereum-waffle": "3.4.0",
+    "ethers": "5.5.1",
+    "hardhat": "2.7.0",
+    "hardhat-contract-sizer": "2.1.1",
+    "hardhat-gas-reporter": "1.0.6",
+    "hardhat-log-remover": "2.0.2",
+    "hardhat-spdx-license-identifier": "2.0.3",
+    "husky": "7.0.4",
+    "prettier": "2.5.0",
+    "solidity-coverage": "0.7.17",
+    "ts-generator": "0.1.1",
+    "ts-node": "10.4.0",
+    "typechain": "6.0.5",
+    "typescript": "4.5.2"
+  },
+  "husky": {
+    "hooks": {
+      "pre-commit": "pretty-quick --staged --pattern 'contracts/**/*.sol' --pattern 'helpers/**/*.ts'  --pattern 'test/**/*.ts' --pattern 'tasks/**/*.ts'"
+    }
+  },
+  "dependencies": {
+    "@openzeppelin/contracts": "4.4.0"
+  },
+  "author": "Lens",
+  "contributors": [
+    "Peter Michael (Zer0dot)",
+    "Miguel Martinez",
+    "Lasse Herskind",
+    "Steven Valeri",
+    "Alan Donoso Naumczuk",
+    "Emilio Frangella",
+    "David Racero"
+  ],
+  "license": "AGPL-3.0-only"
+}
