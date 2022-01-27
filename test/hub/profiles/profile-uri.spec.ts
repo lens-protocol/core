@@ -297,6 +297,8 @@ makeSuiteCleanRoom('Profile URI Functionality', function () {
           MAX_UINT256
         );
 
+        const profileImageURIBefore = await lensHub.tokenURI(FIRST_PROFILE_ID);
+
         await expect(
           lensHub.setProfileImageURIWithSig({
             profileId: FIRST_PROFILE_ID,
@@ -310,7 +312,10 @@ makeSuiteCleanRoom('Profile URI Functionality', function () {
           })
         ).to.not.be.reverted;
 
-        expect(await lensHub.tokenURI(FIRST_PROFILE_ID)).to.eq(MOCK_URI);
+        const profileImageURIAfter = await lensHub.tokenURI(FIRST_PROFILE_ID);
+
+        expect(profileImageURIBefore).to.eq(MOCK_PROFILE_URI);
+        expect(profileImageURIAfter).to.eq(MOCK_URI);
       });
 
       it('TestWallet should set the follow NFT URI with sig', async function () {
@@ -321,6 +326,8 @@ makeSuiteCleanRoom('Profile URI Functionality', function () {
           nonce,
           MAX_UINT256
         );
+
+        const followNFTURIBefore = await lensHub.getFollowNFTURI(FIRST_PROFILE_ID);
 
         await expect(
           lensHub.setFollowNFTURIWithSig({
@@ -334,6 +341,11 @@ makeSuiteCleanRoom('Profile URI Functionality', function () {
             },
           })
         ).to.not.be.reverted;
+
+        const followNFTURIAfter = await lensHub.getFollowNFTURI(FIRST_PROFILE_ID);
+
+        expect(followNFTURIBefore).to.eq(MOCK_FOLLOW_NFT_URI);
+        expect(followNFTURIAfter).to.eq(MOCK_URI);
       });
     });
   });

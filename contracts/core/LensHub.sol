@@ -322,6 +322,7 @@ contract LensHub is ILensHub, LensNFTBase, VersionedInitializable, LensMultiStat
         }
 
         _validateRecoveredAddress(digest, owner, vars.sig);
+        _setFollowNFTURI(vars.profileId, vars.followNFTURI);
     }
 
     /// @inheritdoc ILensHub
