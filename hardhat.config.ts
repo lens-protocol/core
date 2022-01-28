@@ -2,7 +2,7 @@ import { HardhatUserConfig } from 'hardhat/types';
 import { accounts } from './helpers/test-wallets';
 import { eEthereumNetwork, eNetwork, ePolygonNetwork, eXDaiNetwork } from './helpers/types';
 import { HARDHATEVM_CHAINID } from './helpers/hardhat-constants';
-import { NETWORKS_RPC_URL, NETWORKS_DEFAULT_GAS } from './helper-hardhat-config';
+import { NETWORKS_RPC_URL } from './helper-hardhat-config';
 import dotenv from 'dotenv';
 import glob from 'glob';
 import path from 'path';
@@ -24,8 +24,6 @@ if (!process.env.SKIP_LOAD) {
 }
 
 const DEFAULT_BLOCK_GAS_LIMIT = 12450000;
-const DEFAULT_GAS_MUL = 5;
-const HARDFORK = 'london';
 const MNEMONIC_PATH = "m/44'/60'/0'/0";
 const MNEMONIC = process.env.MNEMONIC || '';
 const MAINNET_FORK = process.env.MAINNET_FORK === 'true';
@@ -33,11 +31,6 @@ const TRACK_GAS = process.env.TRACK_GAS === 'true';
 
 const getCommonNetworkConfig = (networkName: eNetwork, networkId: number) => ({
   url: NETWORKS_RPC_URL[networkName],
-  hardfork: HARDFORK,
-  blockGasLimit: DEFAULT_BLOCK_GAS_LIMIT,
-  gasMultiplier: DEFAULT_GAS_MUL,
-  gasPrice: NETWORKS_DEFAULT_GAS[networkName],
-  chainId: networkId,
   accounts: {
     mnemonic: MNEMONIC,
     path: MNEMONIC_PATH,
