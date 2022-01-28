@@ -34,53 +34,68 @@ task('full-deploy', 'deploys the entire Lens protocol').setAction(async ({}, hre
   const accounts = await ethers.getSigners();
   const deployer = accounts[0];
   const governance = accounts[1];
-  const deployerAddress = deployer.address;
-  const governanceAddress = governance.address;
   const treasuryAddress = accounts[2].address;
 
-  const moduleGlobals = await new ModuleGlobals__factory(deployer).deploy(
-    governanceAddress,
-    treasuryAddress,
-    TREASURY_FEE_BPS
+  // Nonce management in case of deployment issues
+  let deployerNonce = await ethers.provider.getTransactionCount(deployer.address);
+
+  console.log('\n\t -- Deploying Module Globals --');
+  const moduleGlobals = await deployContract(
+    new ModuleGlobals__factory(deployer).deploy(
+      governance.address,
+      treasuryAddress,
+      TREASURY_FEE_BPS,
+      { nonce: deployerNonce++ }
+    )
   );
 
   console.log('\n\t-- Deploying Logic Libs --');
 
-  const publishingLogic = await deployContract(new PublishingLogic__factory(deployer).deploy());
-  const interactionLogic = await deployContract(new InteractionLogic__factory(deployer).deploy());
+  const publishingLogic = await deployContract(
+    new PublishingLogic__factory(deployer).deploy({ nonce: deployerNonce++ })
+  );
+  const interactionLogic = await deployContract(
+    new InteractionLogic__factory(deployer).deploy({ nonce: deployerNonce++ })
+  );
   const hubLibs = {
     'contracts/libraries/PublishingLogic.sol:PublishingLogic': publishingLogic.address,
     'contracts/libraries/InteractionLogic.sol:InteractionLogic': interactionLogic.address,
   };
 
   // Here, we pre-compute the nonces and addresses used to deploy the contracts.
-  const nonce = await deployer.getTransactionCount();
-  const followNFTNonce = hexlify(nonce + 1);
-  const collectNFTNonce = hexlify(nonce + 2);
-  const hubProxyNonce = hexlify(nonce + 3);
+  // const nonce = await deployer.getTransactionCount();
+  const followNFTNonce = hexlify(deployerNonce + 1);
+  const collectNFTNonce = hexlify(deployerNonce + 2);
+  const hubProxyNonce = hexlify(deployerNonce + 3);
 
   const followNFTImplAddress =
-    '0x' + keccak256(RLP.encode([deployerAddress, followNFTNonce])).substr(26);
+    '0x' + keccak256(RLP.encode([deployer.address, followNFTNonce])).substr(26);
   const collectNFTImplAddress =
-    '0x' + keccak256(RLP.encode([deployerAddress, collectNFTNonce])).substr(26);
-  const hubProxyAddress = '0x' + keccak256(RLP.encode([deployerAddress, hubProxyNonce])).substr(26);
+    '0x' + keccak256(RLP.encode([deployer.address, collectNFTNonce])).substr(26);
+  const hubProxyAddress = '0x' + keccak256(RLP.encode([deployer.address, hubProxyNonce])).substr(26);
 
   // Next, we deploy first the hub implementation, then the followNFT implementation, the collectNFT, and finally the
   // hub proxy with initialization.
   console.log('\n\t-- Deploying Hub Implementation --');
 
   const lensHubImpl = await deployContract(
-    new LensHub__factory(hubLibs, deployer).deploy(followNFTImplAddress, collectNFTImplAddress)
+    new LensHub__factory(hubLibs, deployer).deploy(followNFTImplAddress, collectNFTImplAddress, {
+      nonce: deployerNonce++,
+    })
   );
 
   console.log('\n\t-- Deploying Follow & Collect NFT Implementations --');
-  await deployContract(new FollowNFT__factory(deployer).deploy(hubProxyAddress));
-  await deployContract(new CollectNFT__factory(deployer).deploy(hubProxyAddress));
+  await deployContract(
+    new FollowNFT__factory(deployer).deploy(hubProxyAddress, { nonce: deployerNonce++ })
+  );
+  await deployContract(
+    new CollectNFT__factory(deployer).deploy(hubProxyAddress, { nonce: deployerNonce++ })
+  );
 
   let data = lensHubImpl.interface.encodeFunctionData('initialize', [
     LENS_HUB_NFT_NAME,
     LENS_HUB_NFT_SYMBOL,
-    governanceAddress,
+    governance.address,
   ]);
 
   console.log('\n\t-- Deploying Hub Proxy --');
@@ -88,8 +103,9 @@ task('full-deploy', 'deploys the entire Lens protocol').setAction(async ({}, hre
   let proxy = await deployContract(
     new TransparentUpgradeableProxy__factory(deployer).deploy(
       lensHubImpl.address,
-      deployerAddress,
-      data
+      deployer.address,
+      data,
+      { nonce: deployerNonce++ }
     )
   );
 
@@ -98,75 +114,117 @@ task('full-deploy', 'deploys the entire Lens protocol').setAction(async ({}, hre
 
   // Currency
   console.log('\n\t-- Deploying Currency --');
-  const currency = await deployContract(new Currency__factory(deployer).deploy());
+  const currency = await deployContract(
+    new Currency__factory(deployer).deploy({ nonce: deployerNonce++ })
+  );
 
   // Deploy collect modules
   console.log('\n\t-- Deploying feeCollectModule --');
   const feeCollectModule = await deployContract(
-    new FeeCollectModule__factory(deployer).deploy(lensHub.address, moduleGlobals.address)
+    new FeeCollectModule__factory(deployer).deploy(lensHub.address, moduleGlobals.address, {
+      nonce: deployerNonce++,
+    })
   );
   console.log('\n\t-- Deploying limitedFeeCollectModule --');
   const limitedFeeCollectModule = await deployContract(
-    new LimitedFeeCollectModule__factory(deployer).deploy(lensHub.address, moduleGlobals.address)
+    new LimitedFeeCollectModule__factory(deployer).deploy(lensHub.address, moduleGlobals.address, {
+      nonce: deployerNonce++,
+    })
   );
   console.log('\n\t-- Deploying timedFeeCollectModule --');
   const timedFeeCollectModule = await deployContract(
-    new TimedFeeCollectModule__factory(deployer).deploy(lensHub.address, moduleGlobals.address)
+    new TimedFeeCollectModule__factory(deployer).deploy(lensHub.address, moduleGlobals.address, {
+      nonce: deployerNonce++,
+    })
   );
   console.log('\n\t-- Deploying limitedTimedFeeCollectModule --');
   const limitedTimedFeeCollectModule = await deployContract(
     new LimitedTimedFeeCollectModule__factory(deployer).deploy(
       lensHub.address,
-      moduleGlobals.address
+      moduleGlobals.address,
+      { nonce: deployerNonce++ }
     )
   );
 
   console.log('\n\t-- Deploying revertCollectModule --');
   const revertCollectModule = await deployContract(
-    new RevertCollectModule__factory(deployer).deploy()
+    new RevertCollectModule__factory(deployer).deploy({ nonce: deployerNonce++ })
   );
   console.log('\n\t-- Deploying emptyCollectModule --');
   const emptyCollectModule = await deployContract(
-    new EmptyCollectModule__factory(deployer).deploy(lensHub.address)
+    new EmptyCollectModule__factory(deployer).deploy(lensHub.address, { nonce: deployerNonce++ })
   );
 
   // Deploy follow modules
   console.log('\n\t-- Deploying feeFollowModule --');
   const feeFollowModule = await deployContract(
-    new FeeFollowModule__factory(deployer).deploy(lensHub.address, moduleGlobals.address)
+    new FeeFollowModule__factory(deployer).deploy(lensHub.address, moduleGlobals.address, {
+      nonce: deployerNonce++,
+    })
   );
   console.log('\n\t-- Deploying approvalFollowModule --');
   const approvalFollowModule = await deployContract(
-    new ApprovalFollowModule__factory(deployer).deploy(lensHub.address)
+    new ApprovalFollowModule__factory(deployer).deploy(lensHub.address, { nonce: deployerNonce++ })
   );
 
   // Deploy reference module
   console.log('\n\t-- Deploying followerOnlyReferenceModule --');
   const followerOnlyReferenceModule = await deployContract(
-    new FollowerOnlyReferenceModule__factory(deployer).deploy(lensHub.address)
+    new FollowerOnlyReferenceModule__factory(deployer).deploy(lensHub.address, {
+      nonce: deployerNonce++,
+    })
   );
 
   // Whitelist the collect modules
   console.log('\n\t-- Whitelisting Collect Modules --');
-  await waitForTx(lensHub.whitelistCollectModule(feeCollectModule.address, true));
-  await waitForTx(lensHub.whitelistCollectModule(limitedFeeCollectModule.address, true));
-  await waitForTx(lensHub.whitelistCollectModule(timedFeeCollectModule.address, true));
-  await waitForTx(lensHub.whitelistCollectModule(limitedTimedFeeCollectModule.address, true));
-  await waitForTx(lensHub.whitelistCollectModule(revertCollectModule.address, true));
-  await waitForTx(lensHub.whitelistCollectModule(emptyCollectModule.address, true));
+  let governanceNonce = await ethers.provider.getTransactionCount(governance.address);
+  await waitForTx(
+    lensHub.whitelistCollectModule(feeCollectModule.address, true, { nonce: governanceNonce++ })
+  );
+  await waitForTx(
+    lensHub.whitelistCollectModule(limitedFeeCollectModule.address, true, {
+      nonce: governanceNonce++,
+    })
+  );
+  await waitForTx(
+    lensHub.whitelistCollectModule(timedFeeCollectModule.address, true, { nonce: governanceNonce++ })
+  );
+  await waitForTx(
+    lensHub.whitelistCollectModule(limitedTimedFeeCollectModule.address, true, {
+      nonce: governanceNonce++,
+    })
+  );
+  await waitForTx(
+    lensHub.whitelistCollectModule(revertCollectModule.address, true, { nonce: governanceNonce++ })
+  );
+  await waitForTx(
+    lensHub.whitelistCollectModule(emptyCollectModule.address, true, { nonce: governanceNonce++ })
+  );
 
   // Whitelist the follow modules
   console.log('\n\t-- Whitelisting Follow Modules --');
-  await waitForTx(lensHub.whitelistFollowModule(feeFollowModule.address, true));
-  await waitForTx(lensHub.whitelistFollowModule(approvalFollowModule.address, true));
+  await waitForTx(
+    lensHub.whitelistFollowModule(feeFollowModule.address, true, { nonce: governanceNonce++ })
+  );
+  await waitForTx(
+    lensHub.whitelistFollowModule(approvalFollowModule.address, true, { nonce: governanceNonce++ })
+  );
 
   // Whitelist the reference module
   console.log('\n\t-- Whitelisting Reference Module --');
-  await waitForTx(lensHub.whitelistReferenceModule(followerOnlyReferenceModule.address, true));
+  await waitForTx(
+    lensHub.whitelistReferenceModule(followerOnlyReferenceModule.address, true, {
+      nonce: governanceNonce++,
+    })
+  );
 
   // Whitelist the currency
   console.log('\n\t-- Whitelisting Currency in Module Globals --');
-  await waitForTx(moduleGlobals.connect(governance).whitelistCurrency(currency.address, true));
+  await waitForTx(
+    moduleGlobals
+      .connect(governance)
+      .whitelistCurrency(currency.address, true, { nonce: governanceNonce++ })
+  );
 
   // Save and log the addresses
   const addrs = {

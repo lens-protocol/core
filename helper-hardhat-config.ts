@@ -27,19 +27,11 @@ export const NETWORKS_RPC_URL: iParamsPerNetwork<string> = {
   [eEthereumNetwork.hardhat]: 'http://localhost:8545',
   [eEthereumNetwork.harhatevm]: 'http://localhost:8545',
   [eEthereumNetwork.tenderlyMain]: `https://rpc.tenderly.co/fork/${TENDERLY_FORK_ID}`,
-  [ePolygonNetwork.mumbai]: 'https://rpc-mumbai.maticvigil.com',
-  [ePolygonNetwork.matic]: `https://polygon-mumbai.infura.io/v3/${INFURA_KEY}`,
+  [ePolygonNetwork.mumbai]: ALCHEMY_KEY
+  ? `https://polygon-mumbai.g.alchemy.com/v2/${ALCHEMY_KEY}`
+  : `https://polygon-mumbai.infura.io/v3/${INFURA_KEY}`,
+  [ePolygonNetwork.matic]: ALCHEMY_KEY
+  ? `https://polygon-mainnet.g.alchemy.com/v2/${ALCHEMY_KEY}`
+  : `https://polygon-mainnet.infura.io/v3/${INFURA_KEY}`,
   [eXDaiNetwork.xdai]: 'https://rpc.xdaichain.com/',
-};
-
-export const NETWORKS_DEFAULT_GAS: iParamsPerNetwork<number> = {
-  [eEthereumNetwork.kovan]: 65 * GWEI,
-  [eEthereumNetwork.ropsten]: 65 * GWEI,
-  [eEthereumNetwork.main]: 65 * GWEI,
-  [eEthereumNetwork.hardhat]: 65 * GWEI,
-  [eEthereumNetwork.harhatevm]: 65 * GWEI,
-  [eEthereumNetwork.tenderlyMain]: 0.01 * GWEI,
-  [ePolygonNetwork.mumbai]: 1 * GWEI,
-  [ePolygonNetwork.matic]: 2 * GWEI,
-  [eXDaiNetwork.xdai]: 1 * GWEI,
 };
