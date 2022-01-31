@@ -20,7 +20,6 @@ abstract contract FollowValidatorFollowModuleBase is IFollowModule, ModuleBase {
      * @notice Standard function to validate follow NFT ownership. This module is agnostic to follow NFT token IDs
      * and other properties.
      */
-    ///@inheritdoc IFollowModule
     function validateFollow(
         uint256 profileId,
         address follower,
