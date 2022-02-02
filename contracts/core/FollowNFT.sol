@@ -231,8 +231,6 @@ contract FollowNFT is LensNFTBase, IFollowNFT {
             }
 
             if (to != address(0)) {
-                uint256 toSnapshotCount = _snapshotCount[to];
-
                 // if from == address(0) ==> initial delegation (add amount to supply)
                 if (from == address(0)) {
                     // It is expected behavior that the `previousDelSupply` underflows upon the first delegation, returning the expected value of zero
@@ -246,6 +244,7 @@ contract FollowNFT is LensNFTBase, IFollowNFT {
                 }
 
                 // It is expected behavior that `previous` underflows upon the first delegation to an address, returning the expected value of zero
+                uint256 toSnapshotCount = _snapshotCount[to];
                 uint128 previous = _snapshots[to][toSnapshotCount - 1].value;
                 uint128 newValue = uint128(previous + amount);
                 _writeSnapshot(to, newValue, toSnapshotCount);
