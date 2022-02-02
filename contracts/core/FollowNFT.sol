@@ -141,7 +141,6 @@ contract FollowNFT is LensNFTBase, IFollowNFT {
     }
 
     function tokenURI(uint256 tokenId) public view override returns (string memory) {
-        // NOTE: This is *temporary* and will change.
         if (!_exists(tokenId)) revert Errors.TokenDoesNotExist();
         return ILensHub(HUB).getFollowNFTURI(_profileId);
     }
