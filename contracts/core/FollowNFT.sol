@@ -17,6 +17,8 @@ import {IERC721Metadata} from '@openzeppelin/contracts/token/ERC721/extensions/I
  *
  * @notice This contract is the NFT that is minted upon following a given profile. It is cloned upon first follow for a
  * given profile, and includes built-in governance power and delegation mechanisms.
+ *
+ * NOTE: This contract assumes total NFT supply for this follow NFT will never exceed 2^128 - 1
  */
 contract FollowNFT is LensNFTBase, IFollowNFT {
     struct Snapshot {
@@ -35,6 +37,8 @@ contract FollowNFT is LensNFTBase, IFollowNFT {
     mapping(address => mapping(uint256 => Snapshot)) internal _snapshots;
     mapping(address => address) internal _delegates;
     mapping(address => uint256) internal _snapshotCount;
+    mapping(uint256 => Snapshot) internal _delSupplySnapshots;
+    uint256 internal _delSupplySnapshotCount;
     uint256 internal _profileId;
     uint256 internal _tokenIdCounter;
 
@@ -110,7 +114,7 @@ contract FollowNFT is LensNFTBase, IFollowNFT {
         uint256 snapshotCount = _snapshotCount[user];
 
         if (snapshotCount == 0) {
-            return 0; //balanceOf(user); // Returning zero since this means the user never delegated and has no power
+            return 0; // Returning zero since this means the user never delegated and has no power
         }
 
         uint256 lower = 0;
@@ -127,7 +131,7 @@ contract FollowNFT is LensNFTBase, IFollowNFT {
         }
 
         while (upper > lower) {
-            uint256 center = upper - (upper - lower) / 2; // ceil, avoiding overflow
+            uint256 center = upper - (upper - lower) / 2;
             Snapshot memory snapshot = _snapshots[user][center];
             if (snapshot.blockNumber == blockNumber) {
                 return snapshot.value;
@@ -138,6 +142,42 @@ contract FollowNFT is LensNFTBase, IFollowNFT {
             }
         }
         return _snapshots[user][lower].value;
+    }
+
+    function getDelegatedSupplyByBlockNumber(uint256 blockNumber) external view returns (uint256) {
+        if (blockNumber > block.number) revert Errors.BlockNumberInvalid();
+
+        uint256 snapshotCount = _delSupplySnapshotCount;
+
+        if (snapshotCount == 0) {
+            return 0; // Returning zero since this means a delegation has never occurred
+        }
+
+        uint256 lower = 0;
+        uint256 upper = snapshotCount - 1;
+
+        // First check most recent delegated supply
+        if (_delSupplySnapshots[upper].blockNumber <= blockNumber) {
+            return _delSupplySnapshots[upper].value;
+        }
+
+        // Next check implicit zero balance
+        if (_delSupplySnapshots[lower].blockNumber > blockNumber) {
+            return 0;
+        }
+
+        while (upper > lower) {
+            uint256 center = upper - (upper - lower) / 2;
+            Snapshot memory snapshot = _delSupplySnapshots[center];
+            if (snapshot.blockNumber == blockNumber) {
+                return snapshot.value;
+            } else if (snapshot.blockNumber < blockNumber) {
+                lower = center;
+            } else {
+                upper = center - 1;
+            }
+        }
+        return _delSupplySnapshots[lower].value;
     }
 
     function tokenURI(uint256 tokenId) public view override returns (string memory) {
@@ -155,9 +195,10 @@ contract FollowNFT is LensNFTBase, IFollowNFT {
     ) internal override {
         address fromDelegatee = from != address(0) ? _delegates[from] : address(0);
         address toDelegatee = to != address(0) ? _delegates[to] : address(0);
-
         address followModule = ILensHub(HUB).getFollowModule(_profileId);
+
         _moveDelegate(fromDelegatee, toDelegatee, 1);
+
         super._beforeTokenTransfer(from, to, tokenId);
         ILensHub(HUB).emitFollowNFTTransferEvent(_profileId, tokenId, from, to);
         if (followModule != address(0)) {
@@ -177,47 +218,92 @@ contract FollowNFT is LensNFTBase, IFollowNFT {
         address to,
         uint256 amount
     ) internal {
-        // NOTE: Since we start with no delegate, this condition is only fulfilled if a delegation occurred
-        if (from != address(0)) {
-            uint256 previous = 0;
-            uint256 fromSnapshotCount = _snapshotCount[from];
+        unchecked {
+            if (from != address(0)) {
+                uint256 fromSnapshotCount = _snapshotCount[from];
 
-            previous = _snapshots[from][fromSnapshotCount - 1].value;
+                // Underflow is impossible since, if from != address(0), then a delegation must have occurred (at least 1 snapshot)
+                uint256 previous = _snapshots[from][fromSnapshotCount - 1].value;
+                uint128 newValue = uint128(previous - amount);
 
-            _writeSnapshot(from, uint128(previous - amount), fromSnapshotCount);
-            emit Events.FollowNFTDelegatedPowerChanged(from, previous - amount, block.timestamp);
-        }
-
-        if (to != address(0)) {
-            uint256 previous = 0;
-            uint256 toSnapshotCount = _snapshotCount[to];
-
-            if (toSnapshotCount != 0) {
-                previous = _snapshots[to][toSnapshotCount - 1].value;
+                _writeSnapshot(from, newValue, fromSnapshotCount);
+                emit Events.FollowNFTDelegatedPowerChanged(from, newValue, block.timestamp);
             }
-            _writeSnapshot(to, uint128(previous + amount), toSnapshotCount);
-            emit Events.FollowNFTDelegatedPowerChanged(to, previous + amount, block.timestamp);
+
+            if (to != address(0)) {
+                uint256 toSnapshotCount = _snapshotCount[to];
+
+                // if from == address(0) ==> initial delegation (add amount to supply)
+                if (from == address(0)) {
+                    // It is expected behavior that the `previousDelSupply` underflows upon the first delegation, returning the expected value of zero
+
+                    uint256 delSupplySnapshotCount = _delSupplySnapshotCount;
+                    uint128 previousDelSupply = _delSupplySnapshots[delSupplySnapshotCount - 1]
+                        .value;
+                    uint128 newDelSupplyValue = uint128(previousDelSupply + amount);
+                    _writeSupplySnapshot(newDelSupplyValue, delSupplySnapshotCount);
+                    // emit Events.FollowNFTDelegatedSupplyChanged(previousDelSupply, newDelSupplyValue, block.timestamp);
+                }
+
+                // It is expected behavior that `previous` underflows upon the first delegation to an address, returning the expected value of zero
+                uint128 previous = _snapshots[to][toSnapshotCount - 1].value;
+                uint128 newValue = uint128(previous + amount);
+                _writeSnapshot(to, newValue, toSnapshotCount);
+                emit Events.FollowNFTDelegatedPowerChanged(to, newValue, block.timestamp);
+            } else {
+                // If from != 0 then remove from del supply, otherwise we're dealing with a non-delegated burn of tokens
+                if (from != address(0)) {
+                    // Upon removing delegation (from != address(0) && to == address(0)), supply calculations cannot underflow because
+                    // if from != address(0), then a delegation must have previously occurred, so the snapshot count must be >= 1 and the
+                    // previous delegated supply must be >= amount
+
+                    uint256 delSupplySnapshotCount = _delSupplySnapshotCount;
+                    uint128 previousDelSupply = _delSupplySnapshots[delSupplySnapshotCount - 1]
+                        .value;
+                    uint128 newDelSupplyValue = uint128(previousDelSupply - amount);
+                    _writeSupplySnapshot(newDelSupplyValue, delSupplySnapshotCount);
+                    // emit Events.FollowNFTDelegatedSupplyChanged(previousDelSupply, newDelSupplyValue, block.timestamp);
+                }
+            }
         }
     }
 
-    // Passing the snapshot count to prevent reading from storage to fetch it again in case of multiple operations
     function _writeSnapshot(
         address owner,
         uint128 newValue,
         uint256 ownerSnapshotCount
     ) internal {
-        uint128 currentBlock = uint128(block.number);
-        mapping(uint256 => Snapshot) storage ownerSnapshots = _snapshots[owner];
+        unchecked {
+            uint128 currentBlock = uint128(block.number);
+            mapping(uint256 => Snapshot) storage ownerSnapshots = _snapshots[owner];
 
-        // Doing multiple operations in the same block
-        if (
-            ownerSnapshotCount != 0 &&
-            ownerSnapshots[ownerSnapshotCount - 1].blockNumber == currentBlock
-        ) {
-            ownerSnapshots[ownerSnapshotCount - 1].value = newValue;
-        } else {
-            ownerSnapshots[ownerSnapshotCount] = Snapshot(currentBlock, newValue);
-            _snapshotCount[owner] = ownerSnapshotCount + 1;
+            // Doing multiple operations in the same block
+            if (
+                ownerSnapshotCount != 0 &&
+                ownerSnapshots[ownerSnapshotCount - 1].blockNumber == currentBlock
+            ) {
+                ownerSnapshots[ownerSnapshotCount - 1].value = newValue;
+            } else {
+                ownerSnapshots[ownerSnapshotCount] = Snapshot(currentBlock, newValue);
+                _snapshotCount[owner] = ownerSnapshotCount + 1;
+            }
+        }
+    }
+
+    function _writeSupplySnapshot(uint128 newValue, uint256 supplySnapshotCount) internal {
+        unchecked {
+            uint128 currentBlock = uint128(block.number);
+
+            // Doing multiple operations in the same block
+            if (
+                supplySnapshotCount != 0 &&
+                _delSupplySnapshots[supplySnapshotCount - 1].blockNumber == currentBlock
+            ) {
+                _delSupplySnapshots[supplySnapshotCount - 1].value = newValue;
+            } else {
+                _delSupplySnapshots[supplySnapshotCount] = Snapshot(currentBlock, newValue);
+                _delSupplySnapshotCount = supplySnapshotCount + 1;
+            }
         }
     }
 }
