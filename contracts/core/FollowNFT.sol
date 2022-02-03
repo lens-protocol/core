@@ -144,7 +144,8 @@ contract FollowNFT is LensNFTBase, IFollowNFT {
         return _snapshots[user][lower].value;
     }
 
-    function getDelegatedSupplyByBlockNumber(uint256 blockNumber) external view returns (uint256) {
+    /// @inheritdoc IFollowNFT
+    function getDelegatedSupplyByBlockNumber(uint256 blockNumber) external view override returns (uint256) {
         if (blockNumber > block.number) revert Errors.BlockNumberInvalid();
 
         uint256 snapshotCount = _delSupplySnapshotCount;
