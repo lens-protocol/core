@@ -202,8 +202,8 @@ contract FollowNFT is LensNFTBase, IFollowNFT {
         address to,
         uint256 tokenId
     ) internal override {
-        address fromDelegatee = from != address(0) ? _delegates[from] : address(0);
-        address toDelegatee = to != address(0) ? _delegates[to] : address(0);
+        address fromDelegatee = _delegates[from];
+        address toDelegatee =  _delegates[to];
         address followModule = ILensHub(HUB).getFollowModule(_profileId);
 
         _moveDelegate(fromDelegatee, toDelegatee, 1);
@@ -244,7 +244,6 @@ contract FollowNFT is LensNFTBase, IFollowNFT {
                 if (from == address(0)) {
                     // It is expected behavior that the `previousDelSupply` underflows upon the first delegation,
                     // returning the expected value of zero
-
                     uint256 delSupplySnapshotCount = _delSupplySnapshotCount;
                     uint128 previousDelSupply = _delSupplySnapshots[delSupplySnapshotCount - 1]
                         .value;
@@ -266,7 +265,6 @@ contract FollowNFT is LensNFTBase, IFollowNFT {
                     // Upon removing delegation (from != address(0) && to == address(0)), supply calculations cannot
                     // underflow because if from != address(0), then a delegation must have previously occurred, so
                     // the snapshot count must be >= 1 and the previous delegated supply must be >= amount
-
                     uint256 delSupplySnapshotCount = _delSupplySnapshotCount;
                     uint128 previousDelSupply = _delSupplySnapshots[delSupplySnapshotCount - 1]
                         .value;
