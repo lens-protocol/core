@@ -357,7 +357,7 @@ library Events {
      * @param profileId The token ID of the profile connected to this follow NFT.
      * @param timestamp The current block timestamp.
      */
-    event FollowNFTInitialized(uint256 profileId, uint256 timestamp);
+    event FollowNFTInitialized(uint256 indexed profileId, uint256 timestamp);
 
     /**
      * @dev Emitted when delegation power in a FollowNFT is changed.
@@ -366,7 +366,11 @@ library Events {
      * @param newPower The new governance power mapped to the delegate.
      * @param timestamp The current block timestamp.
      */
-    event FollowNFTDelegatedPowerChanged(address delegate, uint256 newPower, uint256 timestamp);
+    event FollowNFTDelegatedPowerChanged(
+        address indexed delegate,
+        uint256 indexed newPower,
+        uint256 timestamp
+    );
 
     /**
      * @dev Emitted when a newly deployed collect NFT is initialized.
@@ -375,7 +379,11 @@ library Events {
      * @param pubId The publication ID connected to the publication mapped to this collect NFT.
      * @param timestamp The current block timestamp.
      */
-    event CollectNFTInitialized(uint256 profileId, uint256 pubId, uint256 timestamp);
+    event CollectNFTInitialized(
+        uint256 indexed profileId,
+        uint256 indexed pubId,
+        uint256 timestamp
+    );
 
     // Module-Specific
 

@@ -60,4 +60,13 @@ interface IFollowNFT {
      * @param blockNumber The block number to query the user's governance power at.
      */
     function getPowerByBlockNumber(address user, uint256 blockNumber) external returns (uint256);
+
+    /**
+     * @notice Returns the total delegated supply at a specified block number. This is the sum of all
+     * current available voting power at a given block.
+     *
+     * @param blockNumber The block number to query the delegated supply at.
+     */
+    function getDelegatedSupplyByBlockNumber(uint256 blockNumber) external returns (uint256);
+
 }

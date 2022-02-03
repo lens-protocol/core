@@ -86,6 +86,9 @@ makeSuiteCleanRoom('Follow NFT', function () {
         await expect(
           followNFT.getPowerByBlockNumber(userAddress, blockNumber + 1)
         ).to.be.revertedWith(ERRORS.BLOCK_NUMBER_INVALID);
+        await expect(followNFT.getDelegatedSupplyByBlockNumber(blockNumber + 1)).to.be.revertedWith(
+          ERRORS.BLOCK_NUMBER_INVALID
+        );
       });
 
       it('user should follow, then fail to get the URI for a token that does not exist', async function () {
@@ -99,14 +102,22 @@ makeSuiteCleanRoom('Follow NFT', function () {
     });
 
     context('Scenarios', function () {
-      it('User should follow, then burn their follow NFT', async function () {
+      it('User should follow, then burn their follow NFT, governance power is zero before and after', async function () {
         await expect(lensHub.follow([FIRST_PROFILE_ID], [[]])).to.not.be.reverted;
         const followNFT = FollowNFT__factory.connect(
           await lensHub.getFollowNFT(FIRST_PROFILE_ID),
           user
         );
+        const firstCheckpointBlock = await getBlockNumber();
 
         await expect(followNFT.burn(1)).to.not.be.reverted;
+
+        const secondCheckpointBlock = await getBlockNumber();
+
+        expect(await followNFT.getPowerByBlockNumber(userAddress, firstCheckpointBlock)).to.eq(0);
+        expect(await followNFT.getDelegatedSupplyByBlockNumber(firstCheckpointBlock)).to.eq(0);
+        expect(await followNFT.getPowerByBlockNumber(userAddress, secondCheckpointBlock)).to.eq(0);
+        expect(await followNFT.getDelegatedSupplyByBlockNumber(secondCheckpointBlock)).to.eq(0);
       });
 
       it('User should follow, delegate to themself, governance power should be zero before the last block, and 1 at the current block', async function () {
@@ -121,7 +132,9 @@ makeSuiteCleanRoom('Follow NFT', function () {
         const blockNumber = await getBlockNumber();
 
         expect(await followNFT.getPowerByBlockNumber(userAddress, blockNumber - 1)).to.eq(0);
+        expect(await followNFT.getDelegatedSupplyByBlockNumber(blockNumber - 1)).to.eq(0);
         expect(await followNFT.getPowerByBlockNumber(userAddress, blockNumber)).to.eq(1);
+        expect(await followNFT.getDelegatedSupplyByBlockNumber(blockNumber)).to.eq(1);
       });
 
       it('User and userTwo should follow, governance power should be zero, then users delegate multiple times, governance power should be accurate throughout', async function () {
@@ -134,24 +147,30 @@ makeSuiteCleanRoom('Follow NFT', function () {
 
         const firstCheckpointBlock = await getBlockNumber();
 
+        // First, users delegate to themselves
         await expect(followNFT.delegate(userAddress)).to.not.be.reverted;
         await expect(followNFT.connect(userTwo).delegate(userTwoAddress)).to.not.be.reverted;
         const secondCheckpointBlock = await getBlockNumber();
 
+        // Second, userTWo delegates to user
         await expect(followNFT.connect(userTwo).delegate(userAddress)).to.not.be.reverted;
         const thirdCheckpointBlock = await getBlockNumber();
 
+        // Third, user delegates to userTwo
         await expect(followNFT.delegate(userTwoAddress)).to.not.be.reverted;
         const fourthCheckpointBlock = await getBlockNumber();
 
+        // Fourth, users delegate to governance
         await expect(followNFT.delegate(governanceAddress)).to.not.be.reverted;
         await expect(followNFT.connect(userTwo).delegate(governanceAddress)).to.not.be.reverted;
         const fifthCheckpointBlock = await getBlockNumber();
 
+        // Fifth, users delegate to zero (remove delegation)
         await expect(followNFT.delegate(ZERO_ADDRESS)).to.not.be.reverted;
         await expect(followNFT.connect(userTwo).delegate(ZERO_ADDRESS)).to.not.be.reverted;
         const sixthCheckpointBlock = await getBlockNumber();
 
+        // Sixth, users delegate to user
         await expect(followNFT.delegate(userAddress)).to.not.be.reverted;
         await expect(followNFT.connect(userTwo).delegate(userAddress)).to.not.be.reverted;
         const seventhCheckpointBlock = await getBlockNumber();
@@ -161,24 +180,28 @@ makeSuiteCleanRoom('Follow NFT', function () {
         expect(await followNFT.getPowerByBlockNumber(userTwoAddress, firstCheckpointBlock)).to.eq(
           0
         );
+        expect(await followNFT.getDelegatedSupplyByBlockNumber(firstCheckpointBlock)).to.eq(0);
 
         // Second validation
         expect(await followNFT.getPowerByBlockNumber(userAddress, secondCheckpointBlock)).to.eq(1);
         expect(await followNFT.getPowerByBlockNumber(userTwoAddress, secondCheckpointBlock)).to.eq(
           1
         );
+        expect(await followNFT.getDelegatedSupplyByBlockNumber(secondCheckpointBlock)).to.eq(2);
 
         // Third validation
         expect(await followNFT.getPowerByBlockNumber(userAddress, thirdCheckpointBlock)).to.eq(2);
         expect(await followNFT.getPowerByBlockNumber(userTwoAddress, thirdCheckpointBlock)).to.eq(
           0
         );
+        expect(await followNFT.getDelegatedSupplyByBlockNumber(thirdCheckpointBlock)).to.eq(2);
 
         // Fourth validation
         expect(await followNFT.getPowerByBlockNumber(userAddress, fourthCheckpointBlock)).to.eq(1);
         expect(await followNFT.getPowerByBlockNumber(userTwoAddress, fourthCheckpointBlock)).to.eq(
           1
         );
+        expect(await followNFT.getDelegatedSupplyByBlockNumber(fourthCheckpointBlock)).to.eq(2);
 
         // Fifth validation
         expect(await followNFT.getPowerByBlockNumber(userAddress, fifthCheckpointBlock)).to.eq(0);
@@ -188,6 +211,7 @@ makeSuiteCleanRoom('Follow NFT', function () {
         expect(
           await followNFT.getPowerByBlockNumber(governanceAddress, fifthCheckpointBlock)
         ).to.eq(2);
+        expect(await followNFT.getDelegatedSupplyByBlockNumber(fifthCheckpointBlock)).to.eq(2);
 
         // Sixth validation
         expect(await followNFT.getPowerByBlockNumber(userAddress, sixthCheckpointBlock)).to.eq(0);
@@ -198,12 +222,14 @@ makeSuiteCleanRoom('Follow NFT', function () {
           await followNFT.getPowerByBlockNumber(governanceAddress, sixthCheckpointBlock)
         ).to.eq(0);
         expect(await followNFT.getPowerByBlockNumber(ZERO_ADDRESS, sixthCheckpointBlock)).to.eq(0);
+        expect(await followNFT.getDelegatedSupplyByBlockNumber(sixthCheckpointBlock)).to.eq(0);
 
         // Seventh validation
         expect(await followNFT.getPowerByBlockNumber(userAddress, seventhCheckpointBlock)).to.eq(2);
         expect(await followNFT.getPowerByBlockNumber(userTwoAddress, seventhCheckpointBlock)).to.eq(
           0
         );
+        expect(await followNFT.getDelegatedSupplyByBlockNumber(seventhCheckpointBlock)).to.eq(2);
       });
 
       it('User and userTwo should follow, delegate to themselves, 10 blocks later user delegates to userTwo, 10 blocks later both delegate to user, governance power should be accurate throughout', async function () {
@@ -234,18 +260,21 @@ makeSuiteCleanRoom('Follow NFT', function () {
         expect(await followNFT.getPowerByBlockNumber(userTwoAddress, firstCheckpointBlock)).to.eq(
           1
         );
+        expect(await followNFT.getDelegatedSupplyByBlockNumber(firstCheckpointBlock)).to.eq(2);
 
         // Second validation
         expect(await followNFT.getPowerByBlockNumber(userAddress, secondCheckpointBlock)).to.eq(0);
         expect(await followNFT.getPowerByBlockNumber(userTwoAddress, secondCheckpointBlock)).to.eq(
           2
         );
+        expect(await followNFT.getDelegatedSupplyByBlockNumber(secondCheckpointBlock)).to.eq(2);
 
         // Last validation
         expect(await followNFT.getPowerByBlockNumber(userAddress, thirdCheckpointBlock)).to.eq(2);
         expect(await followNFT.getPowerByBlockNumber(userTwoAddress, thirdCheckpointBlock)).to.eq(
           0
         );
+        expect(await followNFT.getDelegatedSupplyByBlockNumber(secondCheckpointBlock)).to.eq(2);
       });
 
       it('user and userTwo should follow, user delegates to userTwo twice, governance power should be accurate', async function () {
@@ -262,6 +291,7 @@ makeSuiteCleanRoom('Follow NFT', function () {
         const blockNumber = await getBlockNumber();
         expect(await followNFT.getPowerByBlockNumber(userAddress, blockNumber)).to.eq(0);
         expect(await followNFT.getPowerByBlockNumber(userTwoAddress, blockNumber)).to.eq(1);
+        expect(await followNFT.getDelegatedSupplyByBlockNumber(blockNumber)).to.eq(1);
       });
 
       it('User and userTwo should follow, then transfer their NFTs to the helper contract, then the helper contract batch delegates to user one, then user two, governance power should be accurate', async function () {
@@ -277,9 +307,32 @@ makeSuiteCleanRoom('Follow NFT', function () {
           followNFT.connect(userTwo).transferFrom(userTwoAddress, helper.address, 2)
         ).to.not.be.reverted;
 
+        const firstCheckpointBlock = await getBlockNumber();
         await expect(
           helper.batchDelegate(followNFT.address, userAddress, userTwoAddress)
         ).to.not.be.reverted;
+
+        const secondCheckpointBlock = await getBlockNumber();
+
+        // First validation
+        expect(await followNFT.getPowerByBlockNumber(userAddress, firstCheckpointBlock)).to.eq(0);
+        expect(await followNFT.getPowerByBlockNumber(userTwoAddress, firstCheckpointBlock)).to.eq(
+          0
+        );
+        expect(await followNFT.getPowerByBlockNumber(helper.address, firstCheckpointBlock)).to.eq(
+          0
+        );
+        expect(await followNFT.getDelegatedSupplyByBlockNumber(firstCheckpointBlock)).to.eq(0);
+
+        // Second validation
+        expect(await followNFT.getPowerByBlockNumber(userAddress, secondCheckpointBlock)).to.eq(0);
+        expect(await followNFT.getPowerByBlockNumber(userTwoAddress, secondCheckpointBlock)).to.eq(
+          2
+        );
+        expect(await followNFT.getPowerByBlockNumber(helper.address, secondCheckpointBlock)).to.eq(
+          0
+        );
+        expect(await followNFT.getDelegatedSupplyByBlockNumber(secondCheckpointBlock)).to.eq(2);
       });
 
       it('user should follow, then get the URI for their token, URI should be accurate', async function () {
@@ -408,6 +461,7 @@ makeSuiteCleanRoom('Follow NFT', function () {
         let blockNumber = await getBlockNumber();
         expect(await followNFT.getPowerByBlockNumber(userAddress, blockNumber)).to.eq(0);
         expect(await followNFT.getPowerByBlockNumber(testWallet.address, blockNumber)).to.eq(0);
+        expect(await followNFT.getDelegatedSupplyByBlockNumber(blockNumber)).to.eq(0);
 
         await expect(
           followNFT.delegateBySig(testWallet.address, userAddress, {
@@ -420,7 +474,8 @@ makeSuiteCleanRoom('Follow NFT', function () {
 
         blockNumber = await getBlockNumber();
         expect(await followNFT.getPowerByBlockNumber(userAddress, blockNumber)).to.eq(1);
-        expect(await followNFT.getPowerByBlockNumber(userTwoAddress, blockNumber)).to.eq(0);
+        expect(await followNFT.getPowerByBlockNumber(testWallet.address, blockNumber)).to.eq(0);
+        expect(await followNFT.getDelegatedSupplyByBlockNumber(blockNumber)).to.eq(1);
       });
     });
   });
