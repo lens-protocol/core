@@ -240,7 +240,7 @@ contract FollowNFT is LensNFTBase, IFollowNFT {
             }
 
             if (to != address(0)) {
-                // if from == address(0) ==> initial delegation (add amount to supply)
+                // if from == address(0) then this is an initial delegation (add amount to supply)
                 if (from == address(0)) {
                     // It is expected behavior that the `previousDelSupply` underflows upon the first delegation,
                     // returning the expected value of zero
@@ -260,7 +260,8 @@ contract FollowNFT is LensNFTBase, IFollowNFT {
                 _writeSnapshot(to, newValue, toSnapshotCount);
                 emit Events.FollowNFTDelegatedPowerChanged(to, newValue, block.timestamp);
             } else {
-                // If from != 0 then remove from del supply, otherwise we're dealing with a non-delegated burn of tokens
+                // If from != address(0) then this is removing a delegation, otherwise we're dealing with a
+                // non-delegated burn of tokens and don't need to take any action
                 if (from != address(0)) {
                     // Upon removing delegation (from != address(0) && to == address(0)), supply calculations cannot
                     // underflow because if from != address(0), then a delegation must have previously occurred, so
