@@ -145,7 +145,12 @@ contract FollowNFT is LensNFTBase, IFollowNFT {
     }
 
     /// @inheritdoc IFollowNFT
-    function getDelegatedSupplyByBlockNumber(uint256 blockNumber) external view override returns (uint256) {
+    function getDelegatedSupplyByBlockNumber(uint256 blockNumber)
+        external
+        view
+        override
+        returns (uint256)
+    {
         if (blockNumber > block.number) revert Errors.BlockNumberInvalid();
 
         uint256 snapshotCount = _delSupplySnapshotCount;
@@ -181,6 +186,9 @@ contract FollowNFT is LensNFTBase, IFollowNFT {
         return _delSupplySnapshots[lower].value;
     }
 
+    /**
+     * @dev This returns the follow NFT URI fetched from the hub.
+     */
     function tokenURI(uint256 tokenId) public view override returns (string memory) {
         if (!_exists(tokenId)) revert Errors.TokenDoesNotExist();
         return ILensHub(HUB).getFollowNFTURI(_profileId);
