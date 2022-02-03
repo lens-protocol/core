@@ -373,19 +373,6 @@ library Events {
     );
 
     /**
-     * @dev Emitted when the total delegated supply in a FollowNFT is changed.
-     *
-     * @param previousDelSupply The previous total delegated supply.
-     * @param newDelSupply The new total delegated supply.
-     * @param timestamp The current block timestamp.
-     */
-    event FollowNFTDelegatedSupplyChanged(
-        uint256 indexed previousDelSupply,
-        uint256 indexed newDelSupply,
-        uint256 timestamp
-    );
-
-    /**
      * @dev Emitted when a newly deployed collect NFT is initialized.
      *
      * @param profileId The token ID of the profile connected to the publication mapped to this collect NFT.

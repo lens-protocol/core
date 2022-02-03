@@ -242,7 +242,7 @@ contract FollowNFT is LensNFTBase, IFollowNFT {
             if (to != address(0)) {
                 // if from == address(0) ==> initial delegation (add amount to supply)
                 if (from == address(0)) {
-                    // It is expected behavior that the `previousDelSupply` underflows upon the first delegation, 
+                    // It is expected behavior that the `previousDelSupply` underflows upon the first delegation,
                     // returning the expected value of zero
 
                     uint256 delSupplySnapshotCount = _delSupplySnapshotCount;
@@ -250,10 +250,9 @@ contract FollowNFT is LensNFTBase, IFollowNFT {
                         .value;
                     uint128 newDelSupply = uint128(previousDelSupply + amount);
                     _writeSupplySnapshot(newDelSupply, delSupplySnapshotCount);
-                    emit Events.FollowNFTDelegatedSupplyChanged(previousDelSupply, newDelSupply, block.timestamp);
                 }
 
-                // It is expected behavior that `previous` underflows upon the first delegation to an address, 
+                // It is expected behavior that `previous` underflows upon the first delegation to an address,
                 // returning the expected value of zero
                 uint256 toSnapshotCount = _snapshotCount[to];
                 uint128 previous = _snapshots[to][toSnapshotCount - 1].value;
@@ -263,8 +262,8 @@ contract FollowNFT is LensNFTBase, IFollowNFT {
             } else {
                 // If from != 0 then remove from del supply, otherwise we're dealing with a non-delegated burn of tokens
                 if (from != address(0)) {
-                    // Upon removing delegation (from != address(0) && to == address(0)), supply calculations cannot 
-                    // underflow because if from != address(0), then a delegation must have previously occurred, so 
+                    // Upon removing delegation (from != address(0) && to == address(0)), supply calculations cannot
+                    // underflow because if from != address(0), then a delegation must have previously occurred, so
                     // the snapshot count must be >= 1 and the previous delegated supply must be >= amount
 
                     uint256 delSupplySnapshotCount = _delSupplySnapshotCount;
@@ -272,7 +271,6 @@ contract FollowNFT is LensNFTBase, IFollowNFT {
                         .value;
                     uint128 newDelSupply = uint128(previousDelSupply - amount);
                     _writeSupplySnapshot(newDelSupply, delSupplySnapshotCount);
-                    emit Events.FollowNFTDelegatedSupplyChanged(previousDelSupply, newDelSupply, block.timestamp);
                 }
             }
         }
