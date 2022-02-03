@@ -461,6 +461,7 @@ makeSuiteCleanRoom('Follow NFT', function () {
         let blockNumber = await getBlockNumber();
         expect(await followNFT.getPowerByBlockNumber(userAddress, blockNumber)).to.eq(0);
         expect(await followNFT.getPowerByBlockNumber(testWallet.address, blockNumber)).to.eq(0);
+        expect(await followNFT.getDelegatedSupplyByBlockNumber(blockNumber)).to.eq(0);
 
         await expect(
           followNFT.delegateBySig(testWallet.address, userAddress, {
@@ -473,7 +474,8 @@ makeSuiteCleanRoom('Follow NFT', function () {
 
         blockNumber = await getBlockNumber();
         expect(await followNFT.getPowerByBlockNumber(userAddress, blockNumber)).to.eq(1);
-        expect(await followNFT.getPowerByBlockNumber(userTwoAddress, blockNumber)).to.eq(0);
+        expect(await followNFT.getPowerByBlockNumber(testWallet.address, blockNumber)).to.eq(0);
+        expect(await followNFT.getDelegatedSupplyByBlockNumber(blockNumber)).to.eq(1);
       });
     });
   });
