@@ -15,8 +15,7 @@ build/
 /tasks/post.ts
 /tasks/follow.ts
 /tasks/collect.ts
-/tasks/create-module.ts
-/tasks/module-flow.ts
+/tasks/test-module.ts
 
 /coverage
 coverage.json
@@ -25,3 +24,5 @@ coverage.json
 .coverage_contracts
 
 addresses.json
+
+contracts/core/modules/follow/SecretCodeFollowModule.sol
