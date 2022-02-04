@@ -1,9 +1,9 @@
 import '@nomiclabs/hardhat-ethers';
-import { BytesLike, Signer, Wallet, ContractTransaction, BaseContract, Contract } from 'ethers';
-import { HardhatRuntimeEnvironment } from 'hardhat/types';
-import { LensHub__factory } from '../../typechain-types';
-import fs from 'fs';
 import { SignerWithAddress } from '@nomiclabs/hardhat-ethers/signers';
+import { Contract, ContractTransaction } from 'ethers';
+import fs from 'fs';
+import hre from 'hardhat';
+import { HardhatRuntimeEnvironment } from 'hardhat/types';
 
 export const ZERO_ADDRESS = '0x0000000000000000000000000000000000000000';
 
@@ -29,12 +29,7 @@ export async function deployContract(tx: any): Promise<Contract> {
   return result;
 }
 
-export async function deployWithVerify(
-  tx: any,
-  args: any,
-  contractPath: string,
-  hre: HardhatRuntimeEnvironment
-): Promise<any> {
+export async function deployWithVerify(tx: any, args: any, contractPath: string): Promise<any> {
   const deployedContract = await deployContract(tx);
   let count = 0;
   let maxTries = 5;
@@ -54,7 +49,7 @@ export async function deployWithVerify(
         );
         break;
       }
-      console.log(`Retrying... Retry #${count}`)
+      console.log(`Retrying... Retry #${count}`);
     }
     await delay(5000);
   }
