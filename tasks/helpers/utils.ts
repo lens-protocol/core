@@ -38,6 +38,7 @@ export async function deployWithVerify(
   let count = 0;
   let maxTries = 5;
   while (true) {
+    await delay(5000);
     try {
       console.log('Verifying contract at', deployedContract.address);
       await runtimeHRE.run('verify:verify', {
@@ -55,7 +56,6 @@ export async function deployWithVerify(
       }
       console.log(`Retrying... Retry #${count}, last error: ${error}`);
     }
-    await delay(5000);
   }
 
   return deployedContract;
