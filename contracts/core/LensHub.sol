@@ -16,7 +16,7 @@ import {VersionedInitializable} from '../upgradeability/VersionedInitializable.s
 
 /**
  * @title LensHub
- * @author Lens
+ * @author Lens Protocol
  *
  * @notice This is the main entrypoint of the Lens protocol. It contains governance functionality as well as
  * publishing and profile interaction functionality.

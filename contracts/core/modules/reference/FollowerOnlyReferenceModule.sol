@@ -9,7 +9,7 @@ import {IERC721} from '@openzeppelin/contracts/token/ERC721/IERC721.sol';
 
 /**
  * @title FollowerOnlyReferenceModule
- * @author Lens
+ * @author Lens Protocol
  *
  * @notice A simple reference module that validates that comments or mirrors originate from a profile owned
  * by a follower.

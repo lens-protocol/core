@@ -6,7 +6,7 @@ import '@openzeppelin/contracts/token/ERC721/IERC721.sol';
 
 /**
  * @title IERC721Time
- * @author Lens
+ * @author Lens Protocol
  *
  * @notice This is an expansion of the IERC721 interface that includes a struct for token data,
  * which contains the token owner and the mint timestamp as well as associated getters.

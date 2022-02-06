@@ -34,7 +34,7 @@ struct ProfilePublicationData {
 
 /**
  * @title LimitedTimedFeeCollectModule
- * @author Lens
+ * @author Lens Protocol
  *
  * @notice This is a simple Lens CollectModule implementation, inheriting from the ICollectModule interface and
  * the FeeCollectModuleBase abstract contract. To optimize on gas, this module uses a constant 24 hour maximum

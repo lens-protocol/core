@@ -6,7 +6,7 @@ import {DataTypes} from '../libraries/DataTypes.sol';
 
 /**
  * @title IFollowNFT
- * @author Lens
+ * @author Lens Protocol
  *
  * @notice This is the interface for the FollowNFT contract, which is cloned upon the first follow for any profile.
  */

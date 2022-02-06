@@ -7,7 +7,7 @@ import {DataTypes} from '../libraries/DataTypes.sol';
 
 /**
  * @title MockProfileCreationProxy
- * @author Lens
+ * @author Lens Protocol
  *
  * @dev This is a proxy to allow profiles to be created from any address.
  */

@@ -8,7 +8,7 @@ import {IModuleGlobals} from '../../interfaces/IModuleGlobals.sol';
 
 /**
  * @title ModuleGlobals
- * @author Lens
+ * @author Lens Protocol
  *
  * @notice This contract contains data relevant to Lens modules, such as the module governance address, treasury
  * address and treasury fee BPS.

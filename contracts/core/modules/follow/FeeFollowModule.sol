@@ -27,7 +27,7 @@ struct ProfileData {
 
 /**
  * @title FeeFollowModule
- * @author Lens
+ * @author Lens Protocol
  *
  * @notice This is a simple Lens FollowModule implementation, inheriting from the IFollowModule interface, but with additional
  * variables that can be controlled by governance, such as the governance & treasury addresses as well as the treasury fee.

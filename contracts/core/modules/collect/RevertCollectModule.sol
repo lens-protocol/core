@@ -7,7 +7,7 @@ import {Errors} from '../../../libraries/Errors.sol';
 
 /**
  * @title RevertCollectModule
- * @author Lens
+ * @author Lens Protocol
  *
  * @notice This is a simple Lens CollectModule implementation, inheriting from the ICollectModule interface.
  *

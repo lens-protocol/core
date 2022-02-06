@@ -11,7 +11,7 @@ import {IERC721} from '@openzeppelin/contracts/token/ERC721/IERC721.sol';
 
 /**
  * @title ApprovalFollowModule
- * @author Lens
+ * @author Lens Protocol
  *
  * @notice This follow module only allows addresses that are approved for a profile by the profile owner to follow.
  */

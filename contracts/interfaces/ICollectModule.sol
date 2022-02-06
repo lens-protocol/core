@@ -4,7 +4,7 @@ pragma solidity 0.8.10;
 
 /**
  * @title ICollectModule
- * @author Lens
+ * @author Lens Protocol
  *
  * @notice This is the standard interface for all Lens-compatible CollectModules.
  */

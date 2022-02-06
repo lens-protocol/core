@@ -6,7 +6,7 @@ import {DataTypes} from '../libraries/DataTypes.sol';
 
 /**
  * @title ILensNFTBase
- * @author Lens
+ * @author Lens Protocol
  *
  * @notice This is the interface for the LensNFTBase contract, from which all Lens NFTs inherit.
  * It is an expansion of a very slightly modified ERC721Enumerable contract, which allows expanded

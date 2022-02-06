@@ -28,7 +28,7 @@ struct ProfilePublicationData {
 
 /**
  * @title FeeCollectModule
- * @author Lens
+ * @author Lens Protocol
  *
  * @notice This is a simple Lens CollectModule implementation, inheriting from the ICollectModule interface and
  * the FeeCollectModuleBase abstract contract.

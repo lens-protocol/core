@@ -8,7 +8,7 @@ import {FollowValidationModuleBase} from '../FollowValidationModuleBase.sol';
 
 /**
  * @title EmptyCollectModule
- * @author Lens
+ * @author Lens Protocol
  *
  * @notice This is a simple Lens CollectModule implementation, inheriting from the ICollectModule interface.
  *

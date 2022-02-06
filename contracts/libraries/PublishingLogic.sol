@@ -13,7 +13,7 @@ import {IReferenceModule} from '../interfaces/IReferenceModule.sol';
 
 /**
  * @title PublishingLogic
- * @author Lens
+ * @author Lens Protocol
  *
  * @notice This is the library that contains the logic for profile creation & publication.
  *

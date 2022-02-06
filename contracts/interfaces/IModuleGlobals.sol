@@ -4,7 +4,7 @@ pragma solidity 0.8.10;
 
 /**
  * @title IModuleGlobals
- * @author Lens
+ * @author Lens Protocol
  *
  * @notice This is the interface for the ModuleGlobals contract, a data providing contract to be queried by modules
  * for the most up-to-date parameters.

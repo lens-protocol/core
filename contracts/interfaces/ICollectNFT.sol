@@ -4,7 +4,7 @@ pragma solidity 0.8.10;
 
 /**
  * @title ICollectNFT
- * @author Lens
+ * @author Lens Protocol
  *
  * @notice This is the interface for the CollectNFT contract. Which is cloned upon the first collect for any given
  * publication.

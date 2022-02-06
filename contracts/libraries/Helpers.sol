@@ -7,7 +7,7 @@ import {Errors} from './Errors.sol';
 
 /**
  * @title Helpers
- * @author Lens
+ * @author Lens Protocol
  *
  * @notice This is a library that only contains a single function that is used in the hub contract as well as in
  * both the publishing logic and interaction logic libraries.

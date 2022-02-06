@@ -16,7 +16,7 @@ import {Strings} from '@openzeppelin/contracts/utils/Strings.sol';
 
 /**
  * @title InteractionLogic
- * @author Lens
+ * @author Lens Protocol
  *
  * @notice This is the library that contains the logic for follows & collects. 
  

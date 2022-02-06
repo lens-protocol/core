@@ -11,7 +11,7 @@ import {IERC721} from '@openzeppelin/contracts/token/ERC721/IERC721.sol';
 
 /**
  * @title FollowValidationModuleBase
- * @author Lens
+ * @author Lens Protocol
  *
  * @notice This abstract contract adds a simple non-specific follow validation function.
  *

@@ -13,7 +13,7 @@ import {IERC721Metadata} from '@openzeppelin/contracts/token/ERC721/extensions/I
 
 /**
  * @title FollowNFT
- * @author Lens
+ * @author Lens Protocol
  *
  * @notice This contract is the NFT that is minted upon following a given profile. It is cloned upon first follow for a
  * given profile, and includes built-in governance power and delegation mechanisms.

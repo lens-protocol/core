@@ -10,7 +10,7 @@ import {LensNFTBase} from './base/LensNFTBase.sol';
 
 /**
  * @title CollectNFT
- * @author Lens
+ * @author Lens Protocol
  *
  * @notice This is the NFT contract that is minted upon collecting a given publication. It is cloned upon
  * the first collect for a given publication, and the token URI points to the original publication's contentURI.

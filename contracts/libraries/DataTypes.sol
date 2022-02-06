@@ -4,7 +4,7 @@ pragma solidity 0.8.10;
 
 /**
  * @title DataTypes
- * @author Lens
+ * @author Lens Protocol
  *
  * @notice A standard library of data types used throughout the Lens protocol.
  */
