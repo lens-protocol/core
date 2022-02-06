@@ -27,7 +27,7 @@ const TREASURY_FEE_BPS = 50;
 const LENS_HUB_NFT_NAME = 'Various Vegetables';
 const LENS_HUB_NFT_SYMBOL = 'VVGT';
 
-task('full-deploy', 'deploys the entire Lens protocol').setAction(async ({}, hre) => {
+task('full-deploy', 'deploys the entire Lens Protocol').setAction(async ({}, hre) => {
   // Note that the use of these signers is a placeholder and is not meant to be used in
   // production.
   const ethers = hre.ethers;

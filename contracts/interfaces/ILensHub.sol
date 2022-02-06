@@ -8,7 +8,7 @@ import {DataTypes} from '../libraries/DataTypes.sol';
  * @title ILensHub
  * @author Lens Protocol
  *
- * @notice This is the interface for the LensHub contract, the main entry point for the Lens protocol.
+ * @notice This is the interface for the LensHub contract, the main entry point for the Lens Protocol.
  * You'll find all the events and external functions, as well as the reasoning behind them here.
  */
 interface ILensHub {

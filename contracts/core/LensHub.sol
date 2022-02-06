@@ -18,10 +18,10 @@ import {VersionedInitializable} from '../upgradeability/VersionedInitializable.s
  * @title LensHub
  * @author Lens Protocol
  *
- * @notice This is the main entrypoint of the Lens protocol. It contains governance functionality as well as
+ * @notice This is the main entrypoint of the Lens Protocol. It contains governance functionality as well as
  * publishing and profile interaction functionality.
  *
- * NOTE: The Lens protocol is unique in that frontend operators need to track a potentially overwhelming
+ * NOTE: The Lens Protocol is unique in that frontend operators need to track a potentially overwhelming
  * number of NFT contracts and interactions at once. For that reason, we've made two quirky design decisions:
  *      1. Both Follow & Collect NFTs invoke an LensHub callback on transfer with the sole purpose of emitting an event.
  *      2. Almost every event in the protocol emits the current block timestamp, reducing the need to fetch it manually.
