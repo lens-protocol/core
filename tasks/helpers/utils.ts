@@ -2,8 +2,8 @@ import '@nomiclabs/hardhat-ethers';
 import { SignerWithAddress } from '@nomiclabs/hardhat-ethers/signers';
 import { Contract, ContractTransaction } from 'ethers';
 import fs from 'fs';
-import hre from 'hardhat';
 import { HardhatRuntimeEnvironment } from 'hardhat/types';
+import { runtimeHRE } from '../full-deploy-verify';
 
 export const ZERO_ADDRESS = '0x0000000000000000000000000000000000000000';
 
@@ -29,14 +29,18 @@ export async function deployContract(tx: any): Promise<Contract> {
   return result;
 }
 
-export async function deployWithVerify(tx: any, args: any, contractPath: string): Promise<any> {
+export async function deployWithVerify(
+  tx: any,
+  args: any,
+  contractPath: string
+): Promise<Contract> {
   const deployedContract = await deployContract(tx);
   let count = 0;
   let maxTries = 5;
   while (true) {
     try {
       console.log('Verifying contract at', deployedContract.address);
-      await hre.run('verify:verify', {
+      await runtimeHRE.run('verify:verify', {
         address: deployedContract.address,
         constructorArguments: args,
         contract: contractPath,
@@ -54,7 +58,7 @@ export async function deployWithVerify(tx: any, args: any, contractPath: string)
     await delay(5000);
   }
 
-  return deployContract;
+  return deployedContract;
 }
 
 export async function initEnv(hre: HardhatRuntimeEnvironment): Promise<SignerWithAddress[]> {
