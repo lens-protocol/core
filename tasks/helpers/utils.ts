@@ -53,7 +53,7 @@ export async function deployWithVerify(
         );
         break;
       }
-      console.log(`Retrying... Retry #${count}`);
+      console.log(`Retrying... Retry #${count}, last error: ${error}`);
     }
     await delay(5000);
   }
