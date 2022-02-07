@@ -44,7 +44,7 @@ library InteractionLogic {
         mapping(bytes32 => uint256) storage _profileIdByHandleHash
     ) external {
         if (profileIds.length != followModuleDatas.length) revert Errors.ArrayMismatch();
-        for (uint256 i = 0; i < profileIds.length; i++) {
+        for (uint256 i = 0; i < profileIds.length; ++i) {
             string memory handle = _profileById[profileIds[i]].handle;
             if (_profileIdByHandleHash[keccak256(bytes(handle))] == 0) revert Errors.TokenDoesNotExist();
 
