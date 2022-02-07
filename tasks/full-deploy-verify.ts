@@ -2,6 +2,7 @@ import '@nomiclabs/hardhat-ethers';
 import { hexlify, keccak256, RLP } from 'ethers/lib/utils';
 import fs from 'fs';
 import { task } from 'hardhat/config';
+import { HardhatRuntimeEnvironment } from 'hardhat/types';
 import {
   LensHub__factory,
   ApprovalFollowModule__factory,
@@ -27,7 +28,7 @@ const TREASURY_FEE_BPS = 50;
 const LENS_HUB_NFT_NAME = 'Various Vegetables';
 const LENS_HUB_NFT_SYMBOL = 'VVGT';
 
-export let runtimeHRE;
+export let runtimeHRE: HardhatRuntimeEnvironment;
 
 task('full-deploy-verify', 'deploys the entire Lens Protocol with explorer verification').setAction(
   async ({}, hre) => {
