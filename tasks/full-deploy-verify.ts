@@ -27,10 +27,13 @@ const TREASURY_FEE_BPS = 50;
 const LENS_HUB_NFT_NAME = 'Various Vegetables';
 const LENS_HUB_NFT_SYMBOL = 'VVGT';
 
+export let runtimeHRE;
+
 task('full-deploy-verify', 'deploys the entire Lens Protocol with explorer verification').setAction(
   async ({}, hre) => {
     // Note that the use of these signers is a placeholder and is not meant to be used in
     // production.
+    runtimeHRE = hre;
     const ethers = hre.ethers;
     const accounts = await ethers.getSigners();
     const deployer = accounts[0];
