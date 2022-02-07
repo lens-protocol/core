@@ -38,7 +38,7 @@ contract ApprovalFollowModule is IFollowModule, FollowValidatorFollowModuleBase 
         address owner = IERC721(HUB).ownerOf(profileId);
         if (msg.sender != owner) revert Errors.NotProfileOwner();
 
-        for (uint256 i = 0; i < addresses.length; i++) {
+        for (uint256 i = 0; i < addresses.length; ++i) {
             _approvedByProfileByOwner[owner][profileId][addresses[i]] = toApprove[i];
         }
 
@@ -63,7 +63,7 @@ contract ApprovalFollowModule is IFollowModule, FollowValidatorFollowModuleBase 
 
         if (data.length > 0) {
             address[] memory addresses = abi.decode(data, (address[]));
-            for (uint256 i = 0; i < addresses.length; i++) {
+            for (uint256 i = 0; i < addresses.length; ++i) {
                 _approvedByProfileByOwner[owner][profileId][addresses[i]] = true;
             }
         }
@@ -125,7 +125,7 @@ contract ApprovalFollowModule is IFollowModule, FollowValidatorFollowModuleBase 
         address[] calldata toCheck
     ) external view returns (bool[] memory) {
         bool[] memory approved = new bool[](toCheck.length);
-        for (uint256 i = 0; i < toCheck.length; i++) {
+        for (uint256 i = 0; i < toCheck.length; ++i) {
             approved[i] = _approvedByProfileByOwner[profileOwner][profileId][toCheck[i]];
         }
         return approved;
