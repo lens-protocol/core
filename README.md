@@ -173,7 +173,7 @@ Alright, that was a mouthful! Let's move on to more specific details about Lens'
 
 Stepping back for a moment, the core concept behind modules is to allow as much freedom as possible to the community to come up with new, innovative interaction mechanisms between social graph participants. For security purposes, this is achieved by including a whitelisted list of modules controlled by governance.
 
-To recap, the Lens Protocol has three modules:
+To recap, the Lens Protocol has three types of modules:
 
 1. `Follow Modules` contain custom logic to be executed upon follow.
 2. `Collect Modules` contain custom logic to be executed upon collect. Typically, these modules include at least a check that the collector is a follower.
