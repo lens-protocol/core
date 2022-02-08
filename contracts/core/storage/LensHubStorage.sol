@@ -68,5 +68,6 @@ contract LensHubStorage {
 
     uint256 internal _profileCounter;
     address internal _governance;
+    address internal _nextGovernance;
     address internal _emergencyAdmin;
 }

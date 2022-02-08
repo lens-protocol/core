@@ -41,10 +41,26 @@ contract LensHub is ILensHub, LensNFTBase, VersionedInitializable, LensMultiStat
     }
 
     /**
+     * @dev This modifier reverts if the caller is not the configured next governance address.
+     */
+    modifier onlyNextGov() {
+        _validateCallerIsNextGovernance();
+        _;
+    }
+
+    /**
      * @dev This modifier reverts if the caller is not a whitelisted profile creator address.
      */
     modifier onlyWhitelistedProfileCreator() {
         _validateCallerIsWhitelistedProfileCreator();
+        _;
+    }
+
+    /**
+     * @dev This modifier reverts if the caller is not a whitelisted profile creator address.
+     */
+    modifier onlyGovernanceOrEmergencyAdmin() {
+        _validateCallerIsGovernanceOrEmergencyAdmin();
         _;
     }
 
@@ -67,7 +83,7 @@ contract LensHub is ILensHub, LensNFTBase, VersionedInitializable, LensMultiStat
     ) external override initializer {
         super._initialize(name, symbol);
         _setState(DataTypes.ProtocolState.Paused);
-        _setGovernance(newGovernance);
+        _setInitialGovernance(newGovernance);
     }
 
     /// ***********************
@@ -77,6 +93,14 @@ contract LensHub is ILensHub, LensNFTBase, VersionedInitializable, LensMultiStat
     /// @inheritdoc ILensHub
     function setGovernance(address newGovernance) external override onlyGov {
         _setGovernance(newGovernance);
+    }
+
+    function acceptGovernance() external override onlyNextGov {
+        _acceptGovernance(msg.sender);
+    }
+
+    function renounceGovernance() external override onlyGov {
+        _renounceGovernance();
     }
 
     /// @inheritdoc ILensHub
@@ -92,9 +116,11 @@ contract LensHub is ILensHub, LensNFTBase, VersionedInitializable, LensMultiStat
     }
 
     /// @inheritdoc ILensHub
-    function setState(DataTypes.ProtocolState newState) external override {
-        if (msg.sender != _governance && msg.sender != _emergencyAdmin)
-            revert Errors.NotGovernanceOrEmergencyAdmin();
+    function setState(DataTypes.ProtocolState newState)
+        external
+        override
+        onlyGovernanceOrEmergencyAdmin
+    {
         _setState(newState);
     }
 
@@ -847,10 +873,30 @@ contract LensHub is ILensHub, LensNFTBase, VersionedInitializable, LensMultiStat
     /// *****INTERNAL FUNCTIONS*****
     /// ****************************
 
+    function _setInitialGovernance(address newGovernance) internal {
+        _governance = newGovernance;
+
+        emit Events.GovernanceSet(msg.sender, address(0), newGovernance, block.timestamp);
+    }
+
     function _setGovernance(address newGovernance) internal {
+        require(newGovernance != address(0), 'must set governance');
+
+        _nextGovernance = newGovernance;
+    }
+
+    function _acceptGovernance(address newGovernance) internal {
+        delete _nextGovernance;
+
         address prevGovernance = _governance;
         _governance = newGovernance;
         emit Events.GovernanceSet(msg.sender, prevGovernance, newGovernance, block.timestamp);
+    }
+
+    function _renounceGovernance() internal {
+        address prevGovernance = _governance;
+        _governance = address(0);
+        emit Events.GovernanceSet(msg.sender, prevGovernance, _governance, block.timestamp);
     }
 
     function _createPost(
@@ -950,8 +996,17 @@ contract LensHub is ILensHub, LensNFTBase, VersionedInitializable, LensMultiStat
         if (msg.sender != _governance) revert Errors.NotGovernance();
     }
 
+    function _validateCallerIsNextGovernance() internal view {
+        if (msg.sender != _nextGovernance) revert Errors.NotNextGovernance();
+    }
+
     function _validateCallerIsWhitelistedProfileCreator() internal view {
         if (!_profileCreatorWhitelisted[msg.sender]) revert Errors.ProfileCreatorNotWhitelisted();
+    }
+
+    function _validateCallerIsGovernanceOrEmergencyAdmin() internal view {
+        if (msg.sender != _governance && msg.sender != _emergencyAdmin)
+            revert Errors.NotGovernanceOrEmergencyAdmin();
     }
 
     function getRevision() internal pure virtual override returns (uint256) {

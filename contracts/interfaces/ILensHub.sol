@@ -28,11 +28,24 @@ interface ILensHub {
 
     /**
      * @notice Sets the privileged governance role. This function can only be called by the current governance
-     * address.
+     * address. Calling this function initiates governance transfer. To finalize, the `newGovernor` must
+     * call `acceptGovernance`. Throws if `newGovernance` is the zero address.
+     * To give up governance, call `renounceGovernance`.
      *
      * @param newGovernance The new governance address to set.
      */
     function setGovernance(address newGovernance) external;
+
+    /**
+     * @notice Sets the privileged governance role. This function can only be called by `_nextGovernance`, which
+     * is set by calling `setGovernance`.
+     */
+    function acceptGovernance() external;
+
+    /**
+     * @notice Renounces ownership by setting `_governance` to the zero address.
+     */
+    function renounceGovernance() external;
 
     /**
      * @notice Sets the emergency admin, which is a permissioned role able to set the protocol state. This function

@@ -89,9 +89,11 @@ makeSuiteCleanRoom('Events', function () {
   context('Hub Governance', function () {
     it('Governance change should emit expected event', async function () {
       receipt = await waitForTx(lensHub.connect(governance).setGovernance(userAddress));
+
+      receipt = await waitForTx(lensHub.connect(user).acceptGovernance());
       expect(receipt.logs.length).to.eq(1);
       matchEvent(receipt, 'GovernanceSet', [
-        governanceAddress,
+        userAddress,
         governanceAddress,
         userAddress,
         await getTimestamp(),

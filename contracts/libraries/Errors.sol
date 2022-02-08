@@ -12,6 +12,7 @@ library Errors {
     error NotHub();
     error TokenDoesNotExist();
     error NotGovernance();
+    error NotNextGovernance();
     error NotGovernanceOrEmergencyAdmin();
     error CallerNotWhitelistedModule();
     error CollectModuleNotWhitelisted();
