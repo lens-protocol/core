@@ -46,7 +46,8 @@ library InteractionLogic {
         if (profileIds.length != followModuleDatas.length) revert Errors.ArrayMismatch();
         for (uint256 i = 0; i < profileIds.length; ++i) {
             string memory handle = _profileById[profileIds[i]].handle;
-            if (_profileIdByHandleHash[keccak256(bytes(handle))] == 0) revert Errors.TokenDoesNotExist();
+            if (_profileIdByHandleHash[keccak256(bytes(handle))] == 0)
+                revert Errors.TokenDoesNotExist();
 
             address followModule = _profileById[profileIds[i]].followModule;
 
@@ -79,7 +80,6 @@ library InteractionLogic {
                 );
             }
         }
-        emit Events.Followed(follower, profileIds, block.timestamp);
     }
 
     /**
