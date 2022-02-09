@@ -1,9 +1,11 @@
 import '@nomiclabs/hardhat-ethers';
 import { expect } from 'chai';
+import { UIDataProvider__factory } from '../../typechain-types';
 import { ZERO_ADDRESS } from '../helpers/constants';
 import { ERRORS } from '../helpers/errors';
 import {
   approvalFollowModule,
+  deployer,
   emptyCollectModule,
   FIRST_PROFILE_ID,
   followerOnlyReferenceModule,
@@ -637,6 +639,74 @@ makeSuiteCleanRoom('Misc', function () {
       it('Treasury fee getter should return the expected fee', async function () {
         expect(await moduleGlobals.getTreasuryFee()).to.eq(TREASURY_FEE_BPS);
       });
+    });
+  });
+
+  context('UI Data Provider', function () {
+    it('UI Data Provider should return expected values', async function () {
+      // First, create a profile,
+      await expect(
+        lensHub.createProfile({
+          to: userAddress,
+          handle: MOCK_PROFILE_HANDLE,
+          imageURI: MOCK_PROFILE_URI,
+          followModule: ZERO_ADDRESS,
+          followModuleData: [],
+          followNFTURI: MOCK_FOLLOW_NFT_URI,
+        })
+      ).to.not.be.reverted;
+
+      // Then, whitelist a collect module
+      await expect(
+        lensHub.connect(governance).whitelistCollectModule(emptyCollectModule.address, true)
+      ).to.not.be.reverted;
+
+      // Then, publish twice
+      const firstURI = 'first publication';
+      const secondURI = 'second publication';
+      await expect(
+        lensHub.post({
+          profileId: FIRST_PROFILE_ID,
+          contentURI: firstURI,
+          collectModule: emptyCollectModule.address,
+          collectModuleData: [],
+          referenceModule: ZERO_ADDRESS,
+          referenceModuleData: [],
+        })
+      ).to.not.be.reverted;
+
+      await expect(
+        lensHub.post({
+          profileId: FIRST_PROFILE_ID,
+          contentURI: secondURI,
+          collectModule: emptyCollectModule.address,
+          collectModuleData: [],
+          referenceModule: ZERO_ADDRESS,
+          referenceModuleData: [],
+        })
+      ).to.not.be.reverted;
+
+      // Then, deploy the data provider
+      const dataProvider = await new UIDataProvider__factory(deployer).deploy(lensHub.address);
+
+      // Lastly, validate the result from the data provider
+      const result = await dataProvider.getLatestData(FIRST_PROFILE_ID);
+      const pubStruct = result.publicationStruct;
+      const profileStruct = result.profileStruct;
+
+      expect(profileStruct.pubCount).to.eq(2);
+      expect(profileStruct.followModule).to.eq(ZERO_ADDRESS);
+      expect(profileStruct.followNFT).to.eq(ZERO_ADDRESS);
+      expect(profileStruct.handle).to.eq(MOCK_PROFILE_HANDLE);
+      expect(profileStruct.imageURI).to.eq(MOCK_PROFILE_URI);
+      expect(profileStruct.followNFTURI).to.eq(MOCK_FOLLOW_NFT_URI);
+
+      expect(pubStruct.profileIdPointed).to.eq(0);
+      expect(pubStruct.pubIdPointed).to.eq(0);
+      expect(pubStruct.contentURI).to.eq(secondURI);
+      expect(pubStruct.referenceModule).to.eq(ZERO_ADDRESS);
+      expect(pubStruct.collectModule).to.eq(emptyCollectModule.address);
+      expect(pubStruct.collectNFT).to.eq(ZERO_ADDRESS);
     });
   });
 });
