@@ -271,15 +271,6 @@ library Events {
     );
 
     /**
-     * @dev Emitted upon a successful follow action.
-     *
-     * @param follower The address following the profile.
-     * @param profileIds The profile token ID array of the profiles being followed.
-     * @param timestamp The current block timestamp.
-     */
-    event Followed(address indexed follower, uint256[] profileIds, uint256 timestamp);
-
-    /**
      * @dev Emitted when a collectNFT clone is deployed using a lazy deployment pattern.
      *
      * @param profileId The publisher's profile token ID.
