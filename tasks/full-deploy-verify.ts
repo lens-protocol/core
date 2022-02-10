@@ -126,7 +126,7 @@ task('full-deploy-verify', 'deploys the entire Lens Protocol with explorer verif
         { nonce: deployerNonce++ }
       ),
       [lensHubImpl.address, deployer.address, data],
-      '@openzeppelin/contracts/proxy/transparent/TransparentUpgradeableProxy.sol'
+      'contracts/upgradeability/TransparentUpgradeableProxy.sol:TransparentUpgradeableProxy'
     );
 
     // Connect the hub proxy to the LensHub factory and the governance for ease of use.
