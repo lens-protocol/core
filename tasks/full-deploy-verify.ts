@@ -7,7 +7,6 @@ import {
   LensHub__factory,
   ApprovalFollowModule__factory,
   CollectNFT__factory,
-  Currency__factory,
   EmptyCollectModule__factory,
   FeeCollectModule__factory,
   FeeFollowModule__factory,
@@ -30,6 +29,18 @@ const LENS_HUB_NFT_SYMBOL = 'VVGT';
 
 export let runtimeHRE: HardhatRuntimeEnvironment;
 
+/**
+ * @dev Note that this script uses the default ethers signers.
+1 * Care should be taken to also ensure that the following addresses end up properly set:
+ *    1. LensHub Proxy Admin
+ *    2. LensHub Governance
+ *    3. ModuleGlobals Governance
+ *    3. ModuleGlobals Treasury
+ *  
+ * Furthermore, This script does not whitelist profile creators or deploy a profile creation 
+ * proxy or a unique currency contract. This also does not whitelist any currencies in the
+ * ModuleGlobals contract.
+ */
 task('full-deploy-verify', 'deploys the entire Lens Protocol with explorer verification').setAction(
   async ({}, hre) => {
     // Note that the use of these signers is a placeholder and is not meant to be used in
@@ -126,19 +137,11 @@ task('full-deploy-verify', 'deploys the entire Lens Protocol with explorer verif
         { nonce: deployerNonce++ }
       ),
       [lensHubImpl.address, deployer.address, data],
-      '@openzeppelin/contracts/proxy/transparent/TransparentUpgradeableProxy.sol'
+      'contracts/upgradeability/TransparentUpgradeableProxy.sol:TransparentUpgradeableProxy'
     );
 
     // Connect the hub proxy to the LensHub factory and the governance for ease of use.
     const lensHub = LensHub__factory.connect(proxy.address, governance);
-
-    // Currency
-    console.log('\n\t-- Deploying Currency --');
-    const currency = await deployWithVerify(
-      new Currency__factory(deployer).deploy({ nonce: deployerNonce++ }),
-      [],
-      'contracts/mocks/Currency.sol:Currency'
-    );
 
     // Deploy collect modules
     console.log('\n\t-- Deploying feeCollectModule --');
@@ -270,14 +273,6 @@ task('full-deploy-verify', 'deploys the entire Lens Protocol with explorer verif
       })
     );
 
-    // Whitelist the currency
-    console.log('\n\t-- Whitelisting Currency in Module Globals --');
-    await waitForTx(
-      moduleGlobals
-        .connect(governance)
-        .whitelistCurrency(currency.address, true, { nonce: governanceNonce++ })
-    );
-
     // Save and log the addresses
     const addrs = {
       'lensHub proxy': lensHub.address,
@@ -286,7 +281,6 @@ task('full-deploy-verify', 'deploys the entire Lens Protocol with explorer verif
       'interaction logic lib': interactionLogic.address,
       'follow NFT impl': followNFTImplAddress,
       'collect NFT impl': collectNFTImplAddress,
-      currency: currency.address,
       'module globals': moduleGlobals.address,
       'fee collect module': feeCollectModule.address,
       'limited fee collect module': limitedFeeCollectModule.address,
