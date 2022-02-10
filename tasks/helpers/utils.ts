@@ -36,7 +36,7 @@ export async function deployWithVerify(
 ): Promise<Contract> {
   const deployedContract = await deployContract(tx);
   let count = 0;
-  let maxTries = 5;
+  let maxTries = 7;
   while (true) {
     await delay(5000);
     try {
