@@ -119,7 +119,7 @@ makeSuiteCleanRoom('Following', function () {
           lensHub.followWithSig({
             follower: testWallet.address,
             profileIds: [FIRST_PROFILE_ID],
-            datas: [],
+            datas: [[]],
             sig: {
               v,
               r,
