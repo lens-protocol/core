@@ -300,14 +300,14 @@ library DataTypes {
      *
      * @param follower The follower which is the message signer.
      * @param profileIds The array of token IDs of the profiles to follow.
-     * @param referralProfileIds The array of profile token IDs you want to link the follow to.
+     * @param followedFromProfileIds The array of profile token IDs you want to link the action of the follow from (can be 0 if you dont want to link).
      * @param datas The array of arbitrary data to pass to the followModules if needed.
      * @param sig The EIP712Signature struct containing the follower's signature.
      */
     struct FollowWithSigData {
         address follower;
         uint256[] profileIds;
-        uint256[] referralProfileIds;
+        uint256[] followedFromProfileIds;
         bytes[] datas;
         EIP712Signature sig;
     }
@@ -320,7 +320,7 @@ library DataTypes {
      * @param profileId The token ID of the profile that published the publication to collect.
      * @param pubId The publication to collect's publication ID.
      * @param data The arbitrary data to pass to the collectModule if needed.
-     * @param referralProfileId The profile token ID you want to link the collect from.
+     * @param followedFromProfileId The profile token ID you want to link the action of a collect from (can be 0 if you dont want to link).
      * @param sig The EIP712Signature struct containing the collector's signature.
      */
     struct CollectWithSigData {
@@ -328,7 +328,7 @@ library DataTypes {
         uint256 profileId;
         uint256 pubId;
         bytes data;
-        uint256 referralProfileId;
+        uint256 followedFromProfileId;
         EIP712Signature sig;
     }
 }

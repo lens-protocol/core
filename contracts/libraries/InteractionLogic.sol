@@ -31,7 +31,7 @@ library InteractionLogic {
      *
      * @param follower The address executing the follow.
      * @param profileIds The array of profile token IDs to follow.
-     * @param referralProfileIds The array of profile token IDs you want to link the follow to.
+     * @param followedFromProfileIds The array of profile token IDs you want to link the action of the follow from (can be 0 if you dont want to link).
      * @param followModuleDatas The array of follow module data parameters to pass to each profile's follow module.
      * @param followNFTImpl The address of the follow NFT implementation, which has to be passed because it's an immutable in the hub.
      * @param _profileById A pointer to the storage mapping of profile structs by profile ID.
@@ -39,7 +39,7 @@ library InteractionLogic {
     function follow(
         address follower,
         uint256[] calldata profileIds,
-        uint256[] memory referralProfileIds,
+        uint256[] memory followedFromProfileIds,
         bytes[] calldata followModuleDatas,
         address followNFTImpl,
         mapping(uint256 => DataTypes.ProfileStruct) storage _profileById,
@@ -81,7 +81,7 @@ library InteractionLogic {
             }
         }
 
-        emit Events.Followed(follower, profileIds, referralProfileIds, block.timestamp);
+        emit Events.Followed(follower, profileIds, followedFromProfileIds, block.timestamp);
     }
 
     /**
@@ -92,7 +92,7 @@ library InteractionLogic {
      * @param profileId The token ID of the publication being collected's parent profile.
      * @param pubId The publication ID of the publication being collected.
      * @param collectModuleData The data to pass to the publication's collect module.
-     * @param referralProfileId The profile token ID you want to link the collect from.
+     * @param followedFromProfileId The profile token ID you want to link the action of a collect from (can be 0 if you dont want to link).
      * @param collectNFTImpl The address of the collect NFT implementation, which has to be passed because it's an immutable in the hub.
      * @param _pubByIdByProfile A pointer to the storage mapping of publications by pubId by profile ID.
      * @param _profileById A pointer to the storage mapping of profile structs by profile ID.
@@ -102,7 +102,7 @@ library InteractionLogic {
         uint256 profileId,
         uint256 pubId,
         bytes calldata collectModuleData,
-        uint256 referralProfileId,
+        uint256 followedFromProfileId,
         address collectNFTImpl,
         mapping(uint256 => mapping(uint256 => DataTypes.PublicationStruct))
             storage _pubByIdByProfile,
@@ -153,7 +153,7 @@ library InteractionLogic {
             collector,
             profileId,
             pubId,
-            referralProfileId,
+            followedFromProfileId,
             rootProfileId,
             rootPubId,
             block.timestamp

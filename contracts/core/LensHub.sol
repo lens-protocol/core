@@ -518,19 +518,19 @@ contract LensHub is ILensHub, LensNFTBase, VersionedInitializable, LensMultiStat
     /// @inheritdoc ILensHub
     function follow(
         uint256[] calldata profileIds,
-        uint256[] memory referralProfileIds,
+        uint256[] memory followedFromProfileIds,
         bytes[] calldata datas
     ) external override whenNotPaused {
-        for (uint256 i = 0; i < referralProfileIds.length; i++) {
-            if (referralProfileIds[i] != 0) {
-                _validateCallerIsProfileOwner(referralProfileIds[i]);
+        for (uint256 i = 0; i < followedFromProfileIds.length; i++) {
+            if (followedFromProfileIds[i] != 0) {
+                _validateCallerIsProfileOwner(followedFromProfileIds[i]);
             }
         }
 
         InteractionLogic.follow(
             msg.sender,
             profileIds,
-            referralProfileIds,
+            followedFromProfileIds,
             datas,
             FOLLOW_NFT_IMPL,
             _profileById,
@@ -545,12 +545,12 @@ contract LensHub is ILensHub, LensNFTBase, VersionedInitializable, LensMultiStat
         whenNotPaused
     {
         bytes32[] memory dataHashes = new bytes32[](vars.datas.length);
-        // vars.data always must be same length to vars.referralProfileIds and vars.profileIds
+        // vars.data always must be same length to vars.followedFromProfileIds and vars.profileIds
         for (uint256 i = 0; i < vars.datas.length; ++i) {
             dataHashes[i] = keccak256(vars.datas[i]);
 
-            if (vars.referralProfileIds[i] != 0) {
-                _validateAddressIsProfileOwner(vars.follower, vars.referralProfileIds[i]);
+            if (vars.followedFromProfileIds[i] != 0) {
+                _validateAddressIsProfileOwner(vars.follower, vars.followedFromProfileIds[i]);
             }
         }
 
@@ -577,7 +577,7 @@ contract LensHub is ILensHub, LensNFTBase, VersionedInitializable, LensMultiStat
         InteractionLogic.follow(
             vars.follower,
             vars.profileIds,
-            vars.referralProfileIds,
+            vars.followedFromProfileIds,
             vars.datas,
             FOLLOW_NFT_IMPL,
             _profileById,
@@ -590,10 +590,10 @@ contract LensHub is ILensHub, LensNFTBase, VersionedInitializable, LensMultiStat
         uint256 profileId,
         uint256 pubId,
         bytes calldata data,
-        uint256 referralProfileId
+        uint256 followedFromProfileId
     ) external override whenNotPaused {
-        if (referralProfileId != 0) {
-            _validateCallerIsProfileOwner(referralProfileId);
+        if (followedFromProfileId != 0) {
+            _validateCallerIsProfileOwner(followedFromProfileId);
         }
 
         InteractionLogic.collect(
@@ -601,7 +601,7 @@ contract LensHub is ILensHub, LensNFTBase, VersionedInitializable, LensMultiStat
             profileId,
             pubId,
             data,
-            referralProfileId,
+            followedFromProfileId,
             COLLECT_NFT_IMPL,
             _pubByIdByProfile,
             _profileById
@@ -614,8 +614,8 @@ contract LensHub is ILensHub, LensNFTBase, VersionedInitializable, LensMultiStat
         override
         whenNotPaused
     {
-        if (vars.referralProfileId != 0) {
-            _validateAddressIsProfileOwner(vars.collector, vars.referralProfileId);
+        if (vars.followedFromProfileId != 0) {
+            _validateAddressIsProfileOwner(vars.collector, vars.followedFromProfileId);
         }
 
         bytes32 digest;
@@ -644,7 +644,7 @@ contract LensHub is ILensHub, LensNFTBase, VersionedInitializable, LensMultiStat
             vars.profileId,
             vars.pubId,
             vars.data,
-            vars.referralProfileId,
+            vars.followedFromProfileId,
             COLLECT_NFT_IMPL,
             _pubByIdByProfile,
             _profileById

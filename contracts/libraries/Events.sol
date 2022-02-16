@@ -275,13 +275,13 @@ library Events {
      *
      * @param follower The address following the profile.
      * @param profileIds The profile token ID array of the profiles being followed.
-     * @param referralProfileIds The array of profile token IDs you want to link the follow to.
+     * @param followedFromProfileIds The array of profile token IDs you want to link the action of the follow from (can be 0 if you dont want to link).
      * @param timestamp The current block timestamp.
      */
     event Followed(
         address indexed follower,
         uint256[] profileIds,
-        uint256[] referralProfileIds,
+        uint256[] followedFromProfileIds,
         uint256 timestamp
     );
 
@@ -306,7 +306,7 @@ library Events {
      * @param collector The address collecting the publication.
      * @param profileId The token ID of the profile that the collect was initiated towards, useful to differentiate mirrors.
      * @param pubId The publication ID that the collect was initiated towards, useful to differentiate mirrors.
-     * @param referralProfileId The profile token ID you want to link the collect from.
+     * @param followedFromProfileId The profile token ID you want to link the action of a collect from (can be 0 if you dont want to link).
      * @param rootProfileId The profile token ID of the profile whose publication is being collected.
      * @param rootPubId The publication ID of the publication being collected.
      * @param timestamp The current block timestamp.
@@ -315,7 +315,7 @@ library Events {
         address indexed collector,
         uint256 indexed profileId,
         uint256 indexed pubId,
-        uint256 referralProfileId,
+        uint256 followedFromProfileId,
         uint256 rootProfileId,
         uint256 rootPubId,
         uint256 timestamp
