@@ -271,6 +271,21 @@ library Events {
     );
 
     /**
+     * @dev Emitted upon a successful follow action.
+     *
+     * @param follower The address following the profile.
+     * @param profileIds The profile token ID array of the profiles being followed.
+     * @param referralProfileIds The array of profile token IDs you want to link the follow to.
+     * @param timestamp The current block timestamp.
+     */
+    event Followed(
+        address indexed follower,
+        uint256[] profileIds,
+        uint256[] referralProfileIds,
+        uint256 timestamp
+    );
+
+    /**
      * @dev Emitted when a collectNFT clone is deployed using a lazy deployment pattern.
      *
      * @param profileId The publisher's profile token ID.
@@ -291,6 +306,7 @@ library Events {
      * @param collector The address collecting the publication.
      * @param profileId The token ID of the profile that the collect was initiated towards, useful to differentiate mirrors.
      * @param pubId The publication ID that the collect was initiated towards, useful to differentiate mirrors.
+     * @param referralProfileId The profile token ID you want to link the collect from.
      * @param rootProfileId The profile token ID of the profile whose publication is being collected.
      * @param rootPubId The publication ID of the publication being collected.
      * @param timestamp The current block timestamp.
@@ -299,6 +315,7 @@ library Events {
         address indexed collector,
         uint256 indexed profileId,
         uint256 indexed pubId,
+        uint256 referralProfileId,
         uint256 rootProfileId,
         uint256 rootPubId,
         uint256 timestamp

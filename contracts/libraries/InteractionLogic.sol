@@ -31,6 +31,7 @@ library InteractionLogic {
      *
      * @param follower The address executing the follow.
      * @param profileIds The array of profile token IDs to follow.
+     * @param referralProfileIds The array of profile token IDs you want to link the follow to.
      * @param followModuleDatas The array of follow module data parameters to pass to each profile's follow module.
      * @param followNFTImpl The address of the follow NFT implementation, which has to be passed because it's an immutable in the hub.
      * @param _profileById A pointer to the storage mapping of profile structs by profile ID.
@@ -38,6 +39,7 @@ library InteractionLogic {
     function follow(
         address follower,
         uint256[] calldata profileIds,
+        uint256[] memory referralProfileIds,
         bytes[] calldata followModuleDatas,
         address followNFTImpl,
         mapping(uint256 => DataTypes.ProfileStruct) storage _profileById,
@@ -59,14 +61,12 @@ library InteractionLogic {
 
                 bytes4 firstBytes = bytes4(bytes(handle));
 
-                string memory followNFTName = string(
-                    abi.encodePacked(handle, Constants.FOLLOW_NFT_NAME_SUFFIX)
+                IFollowNFT(followNFT).initialize(
+                    profileIds[i],
+                    // stack to deep had to remove the local variables of `followNFTName` and `followNFTSymbol`
+                    string(abi.encodePacked(handle, Constants.FOLLOW_NFT_NAME_SUFFIX)),
+                    string(abi.encodePacked(firstBytes, Constants.FOLLOW_NFT_SYMBOL_SUFFIX))
                 );
-                string memory followNFTSymbol = string(
-                    abi.encodePacked(firstBytes, Constants.FOLLOW_NFT_SYMBOL_SUFFIX)
-                );
-
-                IFollowNFT(followNFT).initialize(profileIds[i], followNFTName, followNFTSymbol);
                 emit Events.FollowNFTDeployed(profileIds[i], followNFT, block.timestamp);
             }
 
@@ -80,6 +80,8 @@ library InteractionLogic {
                 );
             }
         }
+
+        emit Events.Followed(follower, profileIds, referralProfileIds, block.timestamp);
     }
 
     /**
@@ -90,6 +92,7 @@ library InteractionLogic {
      * @param profileId The token ID of the publication being collected's parent profile.
      * @param pubId The publication ID of the publication being collected.
      * @param collectModuleData The data to pass to the publication's collect module.
+     * @param referralProfileId The profile token ID you want to link the collect from.
      * @param collectNFTImpl The address of the collect NFT implementation, which has to be passed because it's an immutable in the hub.
      * @param _pubByIdByProfile A pointer to the storage mapping of publications by pubId by profile ID.
      * @param _profileById A pointer to the storage mapping of profile structs by profile ID.
@@ -99,6 +102,7 @@ library InteractionLogic {
         uint256 profileId,
         uint256 pubId,
         bytes calldata collectModuleData,
+        uint256 referralProfileId,
         address collectNFTImpl,
         mapping(uint256 => mapping(uint256 => DataTypes.PublicationStruct))
             storage _pubByIdByProfile,
@@ -149,6 +153,7 @@ library InteractionLogic {
             collector,
             profileId,
             pubId,
+            referralProfileId,
             rootProfileId,
             rootPubId,
             block.timestamp

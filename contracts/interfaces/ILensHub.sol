@@ -211,12 +211,18 @@ interface ILensHub {
     /**
      * @notice Follows the given profiles, executing each profile's follow module logic (if any) and minting followNFTs to the caller.
      *
-     * NOTE: Both the `profileIds` and `datas` arrays must be of the same length, regardless if the profiles do not have a follow module set.
+     * NOTE: Both the `profileIds`, `referralProfileIds` and `datas` arrays must be of the same length, regardless if the profiles do not have a follow module set
+             or do not want to link the follow action to one of their profiles.
      *
      * @param profileIds The token ID array of the profiles to follow.
+     * @param referralProfileIds The array of profile token IDs you want to link the follow to.
      * @param datas The arbitrary data array to pass to the follow module for each profile if needed.
      */
-    function follow(uint256[] calldata profileIds, bytes[] calldata datas) external;
+    function follow(
+        uint256[] calldata profileIds,
+        uint256[] memory referralProfileIds,
+        bytes[] calldata datas
+    ) external;
 
     /**
      * @notice Follows a given profile via signature with the specified parameters.
@@ -232,11 +238,13 @@ interface ILensHub {
      * @param profileId The token ID of the profile that published the publication to collect.
      * @param pubId The publication to collect's publication ID.
      * @param data The arbitrary data to pass to the collect module if needed.
+     * @param referralProfileId The profile token ID you want to link the collect from.
      */
     function collect(
         uint256 profileId,
         uint256 pubId,
-        bytes calldata data
+        bytes calldata data,
+        uint256 referralProfileId
     ) external;
 
     /**
