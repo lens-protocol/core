@@ -690,7 +690,7 @@ makeSuiteCleanRoom('Misc', function () {
       const dataProvider = await new UIDataProvider__factory(deployer).deploy(lensHub.address);
 
       // Lastly, validate the result from the data provider
-      const result = await dataProvider.getLatestData(FIRST_PROFILE_ID);
+      const result = await dataProvider.getLatestDataByProfile(FIRST_PROFILE_ID);
       const pubStruct = result.publicationStruct;
       const profileStruct = result.profileStruct;
 
