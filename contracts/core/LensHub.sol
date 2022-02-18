@@ -572,6 +572,51 @@ contract LensHub is ILensHub, LensNFTBase, VersionedInitializable, LensMultiStat
         );
     }
 
+     /// @inheritdoc ILensHub
+    function toggleFollow(uint256 profileId,uint256 followNFTId, bool enabled)
+        external
+        override
+        whenNotPaused
+    {
+        _validateCallerIsFollowerNFTOwner(profileId, followNFTId, msg.sender);
+
+        emitToggleFollowNFTEvent(profileId, msg.sender, enabled);
+    }
+
+    /// @inheritdoc ILensHub
+    function toggleFollowWithSig(DataTypes.ToggleFollowWithSigData calldata vars)
+        external
+        override
+        whenNotPaused
+    {
+        bytes32 digest;
+        unchecked {
+            digest = keccak256(
+                abi.encodePacked(
+                    '\x19\x01',
+                    _calculateDomainSeparator(),
+                    keccak256(
+                        abi.encode(
+                            TOGGLE_FOLLOW_WITH_SIG_TYPEHASH,
+                            vars.profileId,
+                            vars.followNFTId,
+                            vars.enabled,
+                            keccak256(vars.data),
+                            sigNonces[vars.follower]++,
+                            vars.sig.deadline
+                        )
+                    )
+                )
+            );
+        }
+
+        _validateRecoveredAddress(digest, vars.follower, vars.sig);
+
+        _validateCallerIsFollowerNFTOwner(profileId, followNFTId, vars.follower);
+
+        emitToggleFollowNFTEvent(vars.profileId, vars.follower, vars.enabled);
+    }
+
     /// @inheritdoc ILensHub
     function collect(
         uint256 profileId,
@@ -637,6 +682,17 @@ contract LensHub is ILensHub, LensNFTBase, VersionedInitializable, LensMultiStat
         address expectedFollowNFT = _profileById[profileId].followNFT;
         if (msg.sender != expectedFollowNFT) revert Errors.CallerNotFollowNFT();
         emit Events.FollowNFTTransferred(profileId, followNFTId, from, to, block.timestamp);
+    }
+
+     /// @inheritdoc ILensHub
+    function emitToggleFollowNFTEvent(
+        uint256 profileId,
+        address owner,
+        bool enable
+    ) external override {
+        address expectedFollowNFT = _profileById[profileId].followNFT;
+        if (owner != expectedFollowNFT) revert Errors.CallerNotFollowNFT();
+        emit Events.ToggleFollowNFT(profileId, owner, enable, block.timestamp);
     }
 
     /// @inheritdoc ILensHub
@@ -952,6 +1008,12 @@ contract LensHub is ILensHub, LensNFTBase, VersionedInitializable, LensMultiStat
 
     function _validateCallerIsWhitelistedProfileCreator() internal view {
         if (!_profileCreatorWhitelisted[msg.sender]) revert Errors.ProfileCreatorNotWhitelisted();
+    }
+
+
+    function _validateCallerIsFollowerNFTOwner(uint256 profileId, uint256 followNFTId, address follower) internal view {
+        address followNFT = _profileById[profileId].followNFT;
+        if (follower != IFollowNFT(followNFT).ownerOf(followNFTId)) revert Errors.NotFollowerNFTOwner();
     }
 
     function getRevision() internal pure virtual override returns (uint256) {

@@ -55,6 +55,10 @@ contract LensHubStorage {
     // keccak256(
     // 'CollectWithSig(uint256 profileId,uint256 pubId,bytes data,uint256 nonce,uint256 deadline)'
     // );
+    bytes32 internal constant TOGGLE_FOLLOW_WITH_SIG_TYPEHASH = 0x5980eaa5d33b1e9af95a444142d7fcc47b33e53d6894bcc2f8dc36a400cc6f9d;
+     // keccak256(
+    // 'ToggleFollowWithSig(uint256 profileId,uint256 followNFTId,bool enabled,bytes data,uint256 nonce,uint256 deadline)'
+    // );
 
     mapping(address => bool) internal _profileCreatorWhitelisted;
     mapping(address => bool) internal _followModuleWhitelisted;

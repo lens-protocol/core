@@ -465,4 +465,19 @@ library Events {
         bool[] approved,
         uint256 timestamp
     );
+
+    /**
+     * @dev Emitted when the user want's to enable again the follow.
+     *
+     * @param profileId The token ID of the profile to which this followNFT is associated.
+     * @param followNFT The address of the newly deployed followNFT clone.
+     * @param timestamp The current block timestamp.
+     */
+    event ToggleFollowNFT(
+        uint256 indexed profileId,
+        address indexed owner,
+        bool enabled,
+        uint256 timestamp
+    );
+
 }

@@ -327,4 +327,22 @@ library DataTypes {
         bytes data;
         EIP712Signature sig;
     }
+
+    /**
+     * @notice A struct containing the parameters required for the `toggleFollowWithSig()` function.
+     *
+     * @param follower The follower which is the message signer.
+     * @param profileId Token ID of the profiles to follow.
+     * @param followNFTId The array of token IDs of the profiles to follow.
+     * @param datas The array of arbitrary data to pass to the followModules if needed.
+     * @param sig The EIP712Signature struct containing the follower's signature.
+     */
+    struct ToggleFollowWithSigData {
+        uint256 profileId,
+        uint256 followNFTId, 
+        bool enabled,
+        bytes[] datas;
+        EIP712Signature sig;
+    }
+
 }

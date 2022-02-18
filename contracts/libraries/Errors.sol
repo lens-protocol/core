@@ -28,6 +28,7 @@ library Errors {
     error CallerNotCollectNFT();
     error BlockNumberInvalid();
     error ArrayMismatch();
+    error NotFollowerNFTOwner();
 
     // Module Errors
     error InitParamsInvalid();
