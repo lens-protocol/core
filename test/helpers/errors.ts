@@ -34,7 +34,7 @@ export const ERRORS = {
   ERC721_NOT_OWN: 'ERC721: transfer of token that is not own',
   ERC721_TRANSFER_NOT_OWNER_OR_APPROVED: 'ERC721: transfer caller is not owner nor approved',
   ERC721_QUERY_FOR_NONEXISTENT_TOKEN: 'ERC721: owner query for nonexistent token',
-  ERC20_TRANSFER_EXCEEDS_ALLOWANCE: 'ERC20: transfer amount exceeds allowance',
+  ERC20_TRANSFER_EXCEEDS_ALLOWANCE: 'ERC20: insufficient allowance',
   NO_SELECTOR:
     "Transaction reverted: function selector was not recognized and there's no fallback function",
   PAUSED: 'Paused()',
