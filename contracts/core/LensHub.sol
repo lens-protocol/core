@@ -8,6 +8,7 @@ import {Helpers} from '../libraries/Helpers.sol';
 import {DataTypes} from '../libraries/DataTypes.sol';
 import {Errors} from '../libraries/Errors.sol';
 import {PublishingLogic} from '../libraries/PublishingLogic.sol';
+import {ProfileTokenURILogic} from '../libraries/ProfileTokenURILogic.sol';
 import {InteractionLogic} from '../libraries/InteractionLogic.sol';
 import {LensNFTBase} from './base/LensNFTBase.sol';
 import {LensMultiState} from './base/LensMultiState.sol';
@@ -840,7 +841,13 @@ contract LensHub is ILensHub, LensNFTBase, VersionedInitializable, LensMultiStat
      * @dev Overrides the ERC721 tokenURI function to return the associated URI with a given profile.
      */
     function tokenURI(uint256 tokenId) public view override returns (string memory) {
-        return _profileById[tokenId].imageURI; // temp
+        return
+            ProfileTokenURILogic.getProfileTokenURI(
+                tokenId,
+                ownerOf(tokenId),
+                _profileById[tokenId].handle,
+                _profileById[tokenId].imageURI
+            );
     }
 
     /// ****************************
