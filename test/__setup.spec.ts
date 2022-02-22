@@ -37,6 +37,7 @@ import {
   MockReferenceModule__factory,
   ModuleGlobals,
   ModuleGlobals__factory,
+  ProfileTokenURILogic__factory,
   PublishingLogic__factory,
   RevertCollectModule,
   RevertCollectModule__factory,
@@ -149,9 +150,12 @@ before(async function () {
   );
   const publishingLogic = await new PublishingLogic__factory(deployer).deploy();
   const interactionLogic = await new InteractionLogic__factory(deployer).deploy();
+  const profileTokenURILogic = await new ProfileTokenURILogic__factory(deployer).deploy();
   hubLibs = {
     'contracts/libraries/PublishingLogic.sol:PublishingLogic': publishingLogic.address,
     'contracts/libraries/InteractionLogic.sol:InteractionLogic': interactionLogic.address,
+    'contracts/libraries/ProfileTokenURILogic.sol:ProfileTokenURILogic':
+      profileTokenURILogic.address,
   };
 
   // Here, we pre-compute the nonces and addresses used to deploy the contracts.

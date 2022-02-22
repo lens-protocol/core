@@ -1,18 +1,9 @@
 import '@nomiclabs/hardhat-ethers';
-import {
-  BigNumberish,
-  Bytes,
-  Event,
-  logger,
-  utils,
-  BigNumber,
-  Contract,
-  ContractReceipt,
-} from 'ethers';
+import { BigNumberish, Bytes, logger, utils, BigNumber, Contract } from 'ethers';
 import { TransactionReceipt } from '@ethersproject/providers';
 import { hexlify, keccak256, RLP, toUtf8Bytes } from 'ethers/lib/utils';
 import { TransactionResponse } from '@ethersproject/providers';
-import hre from 'hardhat';
+import hre, { ethers } from 'hardhat';
 import { LensHub__factory } from '../../typechain-types';
 import { lensHub, LENS_HUB_NFT_NAME, helper, testWallet, eventsLib } from '../__setup.spec';
 import { HARDHAT_CHAINID, MAX_UINT256 } from './constants';
@@ -427,6 +418,18 @@ export async function getCollectWithSigParts(
 ): Promise<{ v: number; r: string; s: string }> {
   const msgParams = buildCollectWithSigParams(profileId, pubId, data, nonce, deadline);
   return await getSig(msgParams);
+}
+
+export async function getJsonMetadataFromBase64TokenUri(tokenUri: string) {
+  const splittedTokenUri = tokenUri.split('data:application/json;base64,');
+  if (splittedTokenUri.length != 2) {
+    logger.throwError('Wrong or unrecognized token URI format');
+  } else {
+    const jsonMetadataBase64String = splittedTokenUri[1];
+    const jsonMetadataBytes = ethers.utils.base64.decode(jsonMetadataBase64String);
+    const jsonMetadataString = ethers.utils.toUtf8String(jsonMetadataBytes);
+    return JSON.parse(jsonMetadataString);
+  }
 }
 
 // Modified from AaveTokenV2 repo
