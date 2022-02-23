@@ -46,9 +46,9 @@ interface ILensHub {
      * @notice Sets the protocol state to either a global pause, a publishing pause or an unpaused state. This function
      * can only be called by the governance address or the emergency admin address.
      *
-     * @param state The state to set, as a member of the ProtocolState enum.
+     * @param newState The state to set, as a member of the ProtocolState enum.
      */
-    function setState(DataTypes.ProtocolState state) external;
+    function setState(DataTypes.ProtocolState newState) external;
 
     /**
      * @notice Adds or removes a profile creator from the whitelist. This function can only be called by the current
