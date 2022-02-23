@@ -97,7 +97,7 @@ interface ILensHub {
      *      followModule: The follow module to use, can be the zero address.
      *      followModuleData: The follow module initialization data, if any
      */
-    function createProfile(DataTypes.CreateProfileData calldata vars) external;
+    function createProfile(DataTypes.CreateProfileData calldata vars) external returns (uint256 profileId);
 
     /**
      * @notice Sets a profile's follow module, must be called by the profile owner.
