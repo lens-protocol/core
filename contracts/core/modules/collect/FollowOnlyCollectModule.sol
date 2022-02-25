@@ -42,7 +42,7 @@ struct ProfilePublicationData {
  *
  * This module works by allowing limited collects for a publication indefinitely.
  */
-contract LimitedFeeCollectModule is ICollectModule, FeeModuleBase, FollowValidationModuleBase {
+contract FollowOnlyCollectModule is FeeModuleBase, FollowValidationModuleBase {
     using SafeERC20 for IERC20;
 
     mapping(uint256 => mapping(uint256 => ProfilePublicationData))
@@ -66,7 +66,7 @@ contract LimitedFeeCollectModule is ICollectModule, FeeModuleBase, FollowValidat
         uint256 profileId,
         uint256 pubId,
         bytes calldata data
-    ) external override onlyHub returns (bytes memory) {
+    ) external onlyHub returns (bytes memory) {
         (
             uint256 collectLimit,
             uint256 amount,
@@ -74,7 +74,7 @@ contract LimitedFeeCollectModule is ICollectModule, FeeModuleBase, FollowValidat
             address currency,
             address recipient,
             uint16 referralFee
-        ) = abi.decode(data, (uint256, uint256 uint256, address, address, uint16));
+        ) = abi.decode(data, (uint256, uint256, uint256, address, address, uint16));
         if (
             collectLimit == 0 ||
             !_currencyWhitelisted(currency) ||
@@ -106,7 +106,7 @@ contract LimitedFeeCollectModule is ICollectModule, FeeModuleBase, FollowValidat
         uint256 pubId,
         uint256 tokenID,
         bytes calldata data
-    ) external override onlyHub {
+    ) external onlyHub {
         _checkFollowValidityWithMaxID(profileId, collector, _dataByPublicationByProfile[profileId][pubId].maxID, tokenID);
         if (
             _dataByPublicationByProfile[profileId][pubId].currentCollects >=

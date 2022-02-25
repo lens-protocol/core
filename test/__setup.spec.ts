@@ -27,6 +27,8 @@ import {
   InteractionLogic__factory,
   LensHub,
   LensHub__factory,
+  FollowOnlyCollectModule,
+  FollowOnlyCollectModule__factory,
   LimitedFeeCollectModule,
   LimitedFeeCollectModule__factory,
   LimitedTimedFeeCollectModule,
@@ -102,6 +104,7 @@ export let feeCollectModule: FeeCollectModule;
 export let timedFeeCollectModule: TimedFeeCollectModule;
 export let emptyCollectModule: EmptyCollectModule;
 export let revertCollectModule: RevertCollectModule;
+export let followOnlyCollectModule: FollowOnlyCollectModule;
 export let limitedFeeCollectModule: LimitedFeeCollectModule;
 export let limitedTimedFeeCollectModule: LimitedTimedFeeCollectModule;
 
@@ -196,6 +199,10 @@ before(async function () {
     moduleGlobals.address
   );
   timedFeeCollectModule = await new TimedFeeCollectModule__factory(deployer).deploy(
+    lensHub.address,
+    moduleGlobals.address
+  );
+  followOnlyCollectModule = await new FollowOnlyCollectModule__factory(deployer).deploy(
     lensHub.address,
     moduleGlobals.address
   );
