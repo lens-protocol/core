@@ -965,7 +965,7 @@ contract LensHub is ILensHub, LensNFTBase, VersionedInitializable, LensMultiStat
         _defaultProfileByAddress[profileId] = address(0);
         _addressByDefaultProfile[owner] = 0;
 
-        emit Events.DefaultProfileSet(0, address(0), block.timestamp);
+        emit Events.DefaultProfileUnset(profileId, owner, block.timestamp);
     }
 
     function _createComment(DataTypes.CommentData memory vars) internal {
