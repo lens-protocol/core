@@ -36,6 +36,7 @@ library Errors {
     error FollowInvalid();
     error AboveMaxID();
     error ModuleDataMismatch();
+    error NotEnoughTokens();
     error FollowNotApproved();
     error MintLimitExceeded();
     error CollectNotAllowed();
