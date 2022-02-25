@@ -14,7 +14,7 @@ import {IERC20} from '@openzeppelin/contracts/token/ERC20/IERC20.sol';
  *
  * @notice TODO
  */
-contract ApprovalFollowModule is IFollowModule, FollowValidatorFollowModuleBase {
+contract TokenGatedFollowModule is IFollowModule, FollowValidatorFollowModuleBase {
     // We use a triple nested mapping so that, on profile transfer, the previous approved address list is invalid;
     IERC20 public immutable gateToken;
     uint256 public immutable minBalance;
