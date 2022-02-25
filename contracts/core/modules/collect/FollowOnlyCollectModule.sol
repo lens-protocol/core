@@ -3,7 +3,6 @@
 pragma solidity 0.8.10;
 
 import {ICollectModule} from '../../../interfaces/ICollectModule.sol';
-import {IFollowNFT} from '../../../interfaces/IFollowNFT.sol';
 import {Errors} from '../../../libraries/Errors.sol';
 import {FeeModuleBase} from '../FeeModuleBase.sol';
 import {ModuleBase} from '../ModuleBase.sol';
