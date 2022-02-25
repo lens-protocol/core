@@ -157,6 +157,76 @@ contract LensHub is ILensHub, LensNFTBase, VersionedInitializable, LensMultiStat
     }
 
     /// @inheritdoc ILensHub
+    function setDefaultProfile(uint256 profileId) external override whenNotPaused {
+        _setDefaultProfile(profileId, msg.sender);
+    }
+
+    /// @inheritdoc ILensHub
+    function setDefaultProfileWithSig(DataTypes.SetDefaultProfileWithSigData calldata vars)
+        external
+        override
+        whenNotPaused
+    {
+        address owner = ownerOf(vars.profileId);
+        bytes32 digest;
+        unchecked {
+            digest = keccak256(
+                abi.encodePacked(
+                    '\x19\x01',
+                    _calculateDomainSeparator(),
+                    keccak256(
+                        abi.encode(
+                            SET_DEFAULT_PROFILE_WITH_SIG_TYPEHASH,
+                            vars.profileId,
+                            sigNonces[owner]++,
+                            vars.sig.deadline
+                        )
+                    )
+                )
+            );
+        }
+
+        _validateRecoveredAddress(digest, owner, vars.sig);
+
+        _setDefaultProfile(vars.profileId, owner);
+    }
+
+    /// @inheritdoc ILensHub
+    function unsetDefaultProfile(uint256 profileId) external override whenNotPaused {
+        _unsetDefaultProfile(profileId, msg.sender);
+    }
+
+    /// @inheritdoc ILensHub
+    function unsetDefaultProfileWithSig(DataTypes.UnsetDefaultProfileWithSigData calldata vars)
+        external
+        override
+        whenNotPaused
+    {
+        address owner = ownerOf(vars.profileId);
+        bytes32 digest;
+        unchecked {
+            digest = keccak256(
+                abi.encodePacked(
+                    '\x19\x01',
+                    _calculateDomainSeparator(),
+                    keccak256(
+                        abi.encode(
+                            UNSET_DEFAULT_PROFILE_WITH_SIG_TYPEHASH,
+                            vars.profileId,
+                            sigNonces[owner]++,
+                            vars.sig.deadline
+                        )
+                    )
+                )
+            );
+        }
+
+        _validateRecoveredAddress(digest, owner, vars.sig);
+
+        _setDefaultProfile(vars.profileId, owner);
+    }
+
+    /// @inheritdoc ILensHub
     function setFollowModule(
         uint256 profileId,
         address followModule,
@@ -674,6 +744,11 @@ contract LensHub is ILensHub, LensNFTBase, VersionedInitializable, LensMultiStat
     }
 
     /// @inheritdoc ILensHub
+    function defaultProfile(address wallet) external view override returns (uint256) {
+        return _addressByDefaultProfile[wallet];
+    }
+
+    /// @inheritdoc ILensHub
     function isFollowModuleWhitelisted(address followModule) external view override returns (bool) {
         return _followModuleWhitelisted[followModule];
     }
@@ -875,6 +950,24 @@ contract LensHub is ILensHub, LensNFTBase, VersionedInitializable, LensMultiStat
         );
     }
 
+    function _setDefaultProfile(uint256 profileId, address owner) internal {
+        _validateCallerIsProfileOwner(profileId, owner);
+
+        _defaultProfileByAddress[profileId] = owner;
+        _addressByDefaultProfile[owner] = profileId;
+
+        emit Events.DefaultProfileSet(profileId, owner, block.timestamp);
+    }
+
+    function _unsetDefaultProfile(uint256 profileId, address owner) internal {
+        _validateCallerIsProfileOwner(profileId, owner);
+
+        _defaultProfileByAddress[profileId] = address(0);
+        _addressByDefaultProfile[owner] = 0;
+
+        emit Events.DefaultProfileSet(0, address(0), block.timestamp);
+    }
+
     function _createComment(DataTypes.CommentData memory vars) internal {
         PublishingLogic.createComment(
             vars,
@@ -934,6 +1027,9 @@ contract LensHub is ILensHub, LensNFTBase, VersionedInitializable, LensMultiStat
         if (_dispatcherByProfile[tokenId] != address(0)) {
             _setDispatcher(tokenId, address(0));
         }
+
+        _defaultProfileByAddress[tokenId] = address(0);
+        _addressByDefaultProfile[msg.sender] = 0;
         super._beforeTokenTransfer(from, to, tokenId);
     }
 
@@ -944,6 +1040,10 @@ contract LensHub is ILensHub, LensNFTBase, VersionedInitializable, LensMultiStat
 
     function _validateCallerIsProfileOwner(uint256 profileId) internal view {
         if (msg.sender != ownerOf(profileId)) revert Errors.NotProfileOwner();
+    }
+
+    function _validateCallerIsProfileOwner(uint256 profileId, address wallet) internal view {
+        if (wallet != ownerOf(profileId)) revert Errors.NotProfileOwner();
     }
 
     function _validateCallerIsGovernance() internal view {

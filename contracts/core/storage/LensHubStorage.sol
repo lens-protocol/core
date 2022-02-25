@@ -10,8 +10,18 @@ contract LensHubStorage {
     // keccak256(
     // 'CreateProfileWithSig(string handle,string uri,address followModule,bytes followModuleData,uint256 nonce,uint256 deadline)'
     // );
+    bytes32 internal constant SET_DEFAULT_PROFILE_WITH_SIG_TYPEHASH =
+        0x76a7f2df5a2c73b8b0bbf095e1efae3cc5fb722c9a4000d53c90aa1848421fd5;
+    // keccak256(
+    // 'setDefaultProfileWithSig(uint256 profileId,uint256 nonce,uint256 deadline)'
+    // );
+    bytes32 internal constant UNSET_DEFAULT_PROFILE_WITH_SIG_TYPEHASH =
+        0x2c0999aca14a6108b99d0483911154022cf8071dfe55ac3325ccd3e28e12a3c2;
+    // keccak256(
+    // 'unsetDefaultProfileWithSig(uint256 profileId,uint256 nonce,uint256 deadline)'
+    // );
     bytes32 internal constant SET_FOLLOW_MODULE_WITH_SIG_TYPEHASH =
-        0x6f3f6455a608af1cc57ef3e5c0a49deeb88bba264ec8865b798ff07358859d4b;
+        0x5d91a73d4b313d08b27193d276cd37aadd617e55d521190e2f80dc2217a9066f;
     // keccak256(
     // 'SetFollowModuleWithSig(uint256 profileId,address followModule,bytes followModuleData,uint256 nonce,uint256 deadline)'
     // );
@@ -65,6 +75,9 @@ contract LensHubStorage {
     mapping(bytes32 => uint256) internal _profileIdByHandleHash;
     mapping(uint256 => DataTypes.ProfileStruct) internal _profileById;
     mapping(uint256 => mapping(uint256 => DataTypes.PublicationStruct)) internal _pubByIdByProfile;
+
+    mapping(uint256 => address) internal _defaultProfileByAddress;
+    mapping(address => uint256) internal _addressByDefaultProfile;
 
     uint256 internal _profileCounter;
     address internal _governance;

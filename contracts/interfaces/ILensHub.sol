@@ -100,6 +100,36 @@ interface ILensHub {
     function createProfile(DataTypes.CreateProfileData calldata vars) external;
 
     /**
+     * @notice Sets a the mapping between wallet and its main profile identity
+     *
+     * @param profileId The token ID of the profile to set as the main profile identity
+     */
+    function setDefaultProfile(uint256 profileId) external;
+
+    /**
+     * @notice Sets a the mapping between wallet and its main profile identity via signature with the specified parameters.
+     *
+     * @param vars A SetDefaultProfileWithSigData struct, including the regular parameters and an EIP712Signature struct.
+     */
+    function setDefaultProfileWithSig(DataTypes.SetDefaultProfileWithSigData calldata vars)
+        external;
+
+    /**
+     * @notice remove the mapping between wallet and its main profile identity
+     *
+     * @param profileId The token ID of the profile to set as the main profile identity
+     */
+    function unsetDefaultProfile(uint256 profileId) external;
+
+    /**
+     * @notice Unsets a the mapping between wallet and its main profile identity via signature with the specified parameters.
+     *
+     * @param vars A UnsetDefaultProfileWithSigData struct, including the regular parameters and an EIP712Signature struct.
+     */
+    function unsetDefaultProfileWithSig(DataTypes.UnsetDefaultProfileWithSigData calldata vars)
+        external;
+
+    /**
      * @notice Sets a profile's follow module, must be called by the profile owner.
      *
      * @param profileId The token ID of the profile to set the follow module for.
@@ -293,6 +323,15 @@ interface ILensHub {
      * @return A boolean, true if the profile creator is whitelisted.
      */
     function isProfileCreatorWhitelisted(address profileCreator) external view returns (bool);
+
+    /**
+     * @notice Returns default profile for a given wallet address
+     *
+     * @param wallet The address to find the default mapping
+     *
+     * @return A uint256 profile id will be 0 if not mapped
+     */
+    function defaultProfile(address wallet) external view returns (uint256);
 
     /**
      * @notice Returns whether or not a follow module is whitelisted.

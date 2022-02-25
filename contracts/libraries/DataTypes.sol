@@ -110,6 +110,30 @@ library DataTypes {
     }
 
     /**
+     * @notice A struct containing the parameters required for the `setDefaultProfileWithSig()` function. Parameters are
+     * the same as the regular `setDefaultProfile()` function, with an added EIP712Signature.
+     *
+     * @param profileId The token ID of the profile which will be set as default
+     * @param sig The EIP712Signature struct containing the profile owner's signature.
+     */
+    struct SetDefaultProfileWithSigData {
+        uint256 profileId;
+        EIP712Signature sig;
+    }
+
+    /**
+     * @notice A struct containing the parameters required for the `unsetDefaultProfileWithSig()` function. Parameters are
+     * the same as the regular `unsetDefaultProfile()` function, with an added EIP712Signature.
+     *
+     * @param profileId The token ID of the profile which will be unset as default
+     * @param sig The EIP712Signature struct containing the profile owner's signature.
+     */
+    struct UnsetDefaultProfileWithSigData {
+        uint256 profileId;
+        EIP712Signature sig;
+    }
+
+    /**
      * @notice A struct containing the parameters required for the `setFollowModuleWithSig()` function. Parameters are
      * the same as the regular `setFollowModule()` function, with an added EIP712Signature.
      *
