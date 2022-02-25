@@ -21,7 +21,7 @@ contract LensHubStorage {
     // 'unsetDefaultProfileWithSig(uint256 profileId,uint256 nonce,uint256 deadline)'
     // );
     bytes32 internal constant SET_FOLLOW_MODULE_WITH_SIG_TYPEHASH =
-        0x5d91a73d4b313d08b27193d276cd37aadd617e55d521190e2f80dc2217a9066f;
+        0x6f3f6455a608af1cc57ef3e5c0a49deeb88bba264ec8865b798ff07358859d4b;
     // keccak256(
     // 'SetFollowModuleWithSig(uint256 profileId,address followModule,bytes followModuleData,uint256 nonce,uint256 deadline)'
     // );
