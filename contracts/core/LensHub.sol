@@ -1028,8 +1028,11 @@ contract LensHub is ILensHub, LensNFTBase, VersionedInitializable, LensMultiStat
             _setDispatcher(tokenId, address(0));
         }
 
-        _defaultProfileByAddress[tokenId] = address(0);
-        _addressByDefaultProfile[from] = 0;
+        if (from != address(0)) {
+            _defaultProfileByAddress[tokenId] = address(0);
+            _addressByDefaultProfile[from] = 0;
+        }
+
         super._beforeTokenTransfer(from, to, tokenId);
     }
 
