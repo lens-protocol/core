@@ -34,6 +34,7 @@ library Errors {
     error ZeroCurrency();
     error CollectExpired();
     error FollowInvalid();
+    error AboveMaxID();
     error ModuleDataMismatch();
     error FollowNotApproved();
     error MintLimitExceeded();
