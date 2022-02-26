@@ -21,6 +21,7 @@ import {LimitedFeeCollectModule} from './LimitedFeeCollectModule.sol';
  * @param recipient The recipient address associated with this publication.
  * @param currency The currency associated with this publication.
  * @param referralFee The referral fee associated with this publication.
+ * @param step The amount collection cost will increase after each collection.
  */
 struct ProfilePublicationData {
     uint256 collectLimit;
