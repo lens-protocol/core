@@ -12,10 +12,10 @@ import {IERC20} from '@openzeppelin/contracts/token/ERC20/IERC20.sol';
  * @title ApprovalFollowModule
  * @author defijesus.eth
  *
- * @notice TODO
+ * @notice This follow module only allows addresses that have a minimum balance of a specified ERC20 to follow.
  */
 contract TokenGatedFollowModule is IFollowModule, FollowValidatorFollowModuleBase {
-    // We use a triple nested mapping so that, on profile transfer, the previous approved address list is invalid;
+
     IERC20 public immutable gateToken;
     uint256 public immutable minBalance;
 
@@ -26,7 +26,7 @@ contract TokenGatedFollowModule is IFollowModule, FollowValidatorFollowModuleBas
 
     /**
      * @dev Processes a follow by:
-     *  1. Validating that the follower has been approved for that profile by the profile owner
+     *  1. Validating that the follower has the minimum ERC20 tokens required to follow
      */
     function processFollow(
         address follower,

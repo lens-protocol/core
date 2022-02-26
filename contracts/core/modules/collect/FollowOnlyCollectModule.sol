@@ -34,12 +34,13 @@ struct ProfilePublicationData {
 
 /**
  * @title LimitedFeeCollectModule
- * @author Lens Protocol
+ * @author defijesus.eth
  *
- * @notice This is a simple Lens CollectModule implementation, inheriting from the ICollectModule interface and
- * the FeeCollectModuleBase abstract contract.
+ * @notice This is a CollectModule implementation that uses a FollowerNFT tokenID to whitelist collection,
+ * inheriting from FeeCollectModuleBase abstract contract.
  *
- * This module works by allowing limited collects for a publication indefinitely.
+ * This module works by allowing limited collects from addresses that own a FollowerNFT below a certain
+ * threshold for a publication indefinitely.
  */
 contract FollowOnlyCollectModule is FeeModuleBase, FollowValidationModuleBase {
     using SafeERC20 for IERC20;
@@ -55,6 +56,7 @@ contract FollowOnlyCollectModule is FeeModuleBase, FollowValidationModuleBase {
      * @param data The arbitrary data parameter, decoded into:
      *      uint256 collectLimit: The maximum amount of collects.
      *      uint256 amount: The currency total amount to levy.
+     *      uint256 maxID: The maximum tokenID allowed to collect
      *      address currency: The currency address, must be internally whitelisted.
      *      address recipient: The custom recipient address to direct earnings to.
      *      uint16 referralFee: The referral fee to set.
@@ -95,6 +97,7 @@ contract FollowOnlyCollectModule is FeeModuleBase, FollowValidationModuleBase {
     /**
      * @dev Processes a collect by:
      *  1. Ensuring the collector is a follower
+     *  2. The collector owns a followerNFT with a tokenID bellow the threshold (maxID)
      *  2. Ensuring the collect does not pass the collect limit
      *  3. Charging a fee
      */
