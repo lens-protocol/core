@@ -149,7 +149,7 @@ This is a publication type that points back to another publication, whether it b
 This is a publication type that points to another publication, note that mirrors cannot, themselves, be mirrored (doing so instead mirrors the pointed content). Mirrors have no original content of its own. Akin to a "share" on traditional social media. Mirrors contain:
 
 1. An empty URI, since they cannot have content associated with them.
-2. An initialized pointer, contianing the profile ID and the publication ID of the mirrored publication.
+2. An initialized pointer, containing the profile ID and the publication ID of the mirrored publication.
 
 ### Profile Interaction
 
