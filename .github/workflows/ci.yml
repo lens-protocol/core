@@ -1,4 +1,4 @@
-name: Continuous Integration
+name: ci
 
 on:
   push:
@@ -7,7 +7,7 @@ on:
     branches: [main]
 
 jobs:
-  ci:
+  compile_and_run_tests:
     runs-on: ubuntu-latest
     env:
       working-directory: '.'
