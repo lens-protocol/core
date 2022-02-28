@@ -467,10 +467,11 @@ library Events {
     );
 
     /**
-     * @dev Emitted when the user want's to enable again the follow.
+     * @dev Emitted when the user wants to enable or disable the follow.
      *
      * @param profileId The token ID of the profile to which this followNFT is associated.
-     * @param followNFT The address of the newly deployed followNFT clone.
+     * @param owner The profile owner who executed the troggle.
+     * @param enabled. Boolean value that enable / disable follow.
      * @param timestamp The current block timestamp.
      */
     event ToggleFollowNFT(
