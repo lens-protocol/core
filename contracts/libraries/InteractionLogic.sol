@@ -155,14 +155,23 @@ library InteractionLogic {
         );
     }
 
+    /**
+     * @notice Toggle follows of the given profiles. 
+     *
+     * @param follower The address executing the follow.
+     * @param profileIds The array of profile token IDs to follow.
+     * @param followNFTIds The token ID array of the followNFT.
+     * @param enables Array of booleans indicates when the `follow` logic on the indexer needs to be enabled/disabled
+     * @param _profileById A pointer to the storage mapping of profile structs by profile ID.
+     */
     function toggleFollow( 
         address follower, 
         uint256[] calldata profileIds,
         uint256[] calldata followNFTIds,
-        bool[] enables,
+        bool[] calldata enables,
         mapping(uint256 => DataTypes.ProfileStruct) storage _profileById
     ) external {
-        if (profileIds.length != followNFTIds.length && profileIds.length != enables.length) revert Errors.ArrayMismatch();
+        if (profileIds.length != followNFTIds.length || profileIds.length != enables.length) revert Errors.ArrayMismatch();
         for (uint256 i = 0; i < profileIds.length; ++i) {
             address followNFT = _profileById[profileIds[i]].followNFT;
             if (follower != IFollowNFT(followNFT).ownerOf(followNFTIds[i])) revert Errors.NotFollowNFTOwner();

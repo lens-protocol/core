@@ -470,8 +470,8 @@ library Events {
      * @dev Emitted when the user wants to enable or disable the follow.
      *
      * @param profileId The token ID of the profile to which this followNFT is associated.
-     * @param owner The profile owner who executed the troggle.
-     * @param enabled. Boolean value that enable / disable follow.
+     * @param owner The profile owner who executed the toggle.
+     * @param enabled Whether the FollowNFT is enabled/disabled.
      * @param timestamp The current block timestamp.
      */
     event ToggleFollowNFT(

@@ -235,7 +235,6 @@ interface ILensHub {
      * @param followNFTIds The token ID array of the followNFT.
      * @param enables The boolean indicates when the `follow` logic on the indexer needs to be enabled/disabled
      */
-    
     function toggleFollow(
         uint256[] calldata profileIds,
         uint256[] calldata followNFTIds, 
