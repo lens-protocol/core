@@ -100,14 +100,14 @@ interface ILensHub {
     function createProfile(DataTypes.CreateProfileData calldata vars) external;
 
     /**
-     * @notice Sets a the mapping between wallet and its main profile identity
+     * @notice Sets the mapping between wallet and its main profile identity
      *
      * @param profileId The token ID of the profile to set as the main profile identity
      */
     function setDefaultProfile(uint256 profileId) external;
 
     /**
-     * @notice Sets a the mapping between wallet and its main profile identity via signature with the specified parameters.
+     * @notice Sets the mapping between wallet and its main profile identity via signature with the specified parameters.
      *
      * @param vars A SetDefaultProfileWithSigData struct, including the regular parameters and an EIP712Signature struct.
      */
@@ -122,7 +122,7 @@ interface ILensHub {
     function unsetDefaultProfile(uint256 profileId) external;
 
     /**
-     * @notice Unsets a the mapping between wallet and its main profile identity via signature with the specified parameters.
+     * @notice Unsets the mapping between wallet and its main profile identity via signature with the specified parameters.
      *
      * @param vars A UnsetDefaultProfileWithSigData struct, including the regular parameters and an EIP712Signature struct.
      */

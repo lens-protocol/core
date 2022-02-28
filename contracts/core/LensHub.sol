@@ -745,7 +745,7 @@ contract LensHub is ILensHub, LensNFTBase, VersionedInitializable, LensMultiStat
 
     /// @inheritdoc ILensHub
     function defaultProfile(address wallet) external view override returns (uint256) {
-        return _addressByDefaultProfile[wallet];
+        return _addressToDefaultProfile[wallet];
     }
 
     /// @inheritdoc ILensHub
@@ -953,8 +953,8 @@ contract LensHub is ILensHub, LensNFTBase, VersionedInitializable, LensMultiStat
     function _setDefaultProfile(uint256 profileId, address owner) internal {
         _validateCallerIsProfileOwner(profileId, owner);
 
-        _defaultProfileByAddress[profileId] = owner;
-        _addressByDefaultProfile[owner] = profileId;
+        _defaultProfileToAddress[profileId] = owner;
+        _addressToDefaultProfile[owner] = profileId;
 
         emit Events.DefaultProfileSet(profileId, owner, block.timestamp);
     }
@@ -962,8 +962,8 @@ contract LensHub is ILensHub, LensNFTBase, VersionedInitializable, LensMultiStat
     function _unsetDefaultProfile(uint256 profileId, address owner) internal {
         _validateCallerIsProfileOwner(profileId, owner);
 
-        _defaultProfileByAddress[profileId] = address(0);
-        _addressByDefaultProfile[owner] = 0;
+        _defaultProfileToAddress[profileId] = address(0);
+        _addressToDefaultProfile[owner] = 0;
 
         emit Events.DefaultProfileUnset(profileId, owner, block.timestamp);
     }
@@ -1029,8 +1029,8 @@ contract LensHub is ILensHub, LensNFTBase, VersionedInitializable, LensMultiStat
         }
 
         if (from != address(0)) {
-            _defaultProfileByAddress[tokenId] = address(0);
-            _addressByDefaultProfile[from] = 0;
+            _defaultProfileToAddress[tokenId] = address(0);
+            _addressToDefaultProfile[from] = 0;
         }
 
         super._beforeTokenTransfer(from, to, tokenId);
