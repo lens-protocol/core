@@ -42,8 +42,8 @@ import {
   ModuleGlobals,
   ModuleGlobals__factory,
   PublishingLogic__factory,
-  ReFiCollectModule,
-  ReFiCollectModule__factory,
+  SwapCollectModule,
+  SwapCollectModule__factory,
   RevertCollectModule,
   RevertCollectModule__factory,
   TimedFeeCollectModule,
@@ -112,7 +112,7 @@ export let emptyCollectModule: EmptyCollectModule;
 export let revertCollectModule: RevertCollectModule;
 export let limitedFeeCollectModule: LimitedFeeCollectModule;
 export let limitedTimedFeeCollectModule: LimitedTimedFeeCollectModule;
-export let reFiCollectModule: ReFiCollectModule;
+export let swapCollectModule: SwapCollectModule;
 
 // Follow
 export let approvalFollowModule: ApprovalFollowModule;
@@ -197,7 +197,7 @@ before(async function () {
   // Currency
   currency = await new Currency__factory(deployer).deploy();
 
-  // ReFiCollectModule
+  // SwapCollectModule
   carbonCredits = await new CarbonCredits__factory(deployer).deploy();
   yakswapV2Router = await new YakswapV2Router__factory(deployer).deploy();
 
@@ -220,7 +220,7 @@ before(async function () {
     lensHub.address,
     moduleGlobals.address
   );
-  reFiCollectModule = await new ReFiCollectModule__factory(deployer).deploy(
+  swapCollectModule = await new SwapCollectModule__factory(deployer).deploy(
     lensHub.address,
     moduleGlobals.address
   );

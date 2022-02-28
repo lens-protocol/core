@@ -18,8 +18,9 @@ import {IERC721} from '@openzeppelin/contracts/token/ERC721/IERC721.sol';
  * @param recipient The recipient address associated with this publication.
  * @param currency The currency associated with this publication.
  * @param referralFee The referral fee associated with this publication.
- * @param tokenToBuy The token that is bought from the collected fees. (Toucan Protocol's BCT)
- * @param router The swap router that is used to exchange the collected fees. (UniswapV2Router02)
+ * @param tokenToBuy The token that is bought from the collected fees. (e.g. Toucan Protocol's BCT)
+ * @param router The swap router that is used to exchange the collected fees. (UniswapV2Router01)
+ * @param intermediaryToken An intermediary token to be used for swapping when there is no direct currency - tokenToBuy pair (e.g. USDC)
  */
 struct ProfilePublicationData {
     uint256 amount;
@@ -28,6 +29,7 @@ struct ProfilePublicationData {
     uint16 referralFee;
     address tokenToBuy;
     address router;
+    address intermediaryToken;
 }
 
 /**
@@ -44,15 +46,15 @@ interface IUniswapV2Router01 {
 }
 
 /**
- * @title ReFiCollectModule
+ * @title SwapCollectModule
  * @author yakuhito
  *
- * @notice This is a simple Lens CollectModule implementation, extending FeeCollectModule to use all received
- * fees to a designated address to be queued for retirement.
+ * @notice This is a simple Lens CollectModule implementation, extending FeeCollectModule to swap all received
+ * fees to a designated token and send them to the designated rewards recipient.
  *
  * This module works by allowing unlimited collects for a publication at a given price.
  */
-contract ReFiCollectModule is ICollectModule, FeeModuleBase, FollowValidationModuleBase {
+contract SwapCollectModule is ICollectModule, FeeModuleBase, FollowValidationModuleBase {
     using SafeERC20 for IERC20;
 
     mapping(uint256 => mapping(uint256 => ProfilePublicationData))
@@ -78,14 +80,17 @@ contract ReFiCollectModule is ICollectModule, FeeModuleBase, FollowValidationMod
         uint256 pubId,
         bytes calldata data
     ) external override onlyHub returns (bytes memory) {
-        (uint256 amount, address currency, address recipient, uint16 referralFee, address tokenToBuy, address router) = abi.decode(
+        (uint256 amount, address currency, address recipient, uint16 referralFee, address tokenToBuy, address router, address intermediaryToken) = abi.decode(
             data,
-            (uint256, address, address, uint16, address, address)
+            (uint256, address, address, uint16, address, address, address)
         );
         if (
             !_currencyWhitelisted(currency) ||
             !_currencyWhitelisted(tokenToBuy) ||
+            (!_currencyWhitelisted(intermediaryToken) && intermediaryToken != address(0)) ||
             currency == tokenToBuy ||
+            intermediaryToken == tokenToBuy ||
+            currency == intermediaryToken ||
             recipient == address(0) ||
             referralFee > BPS_MAX ||
             amount < BPS_MAX
@@ -97,6 +102,7 @@ contract ReFiCollectModule is ICollectModule, FeeModuleBase, FollowValidationMod
         _dataByPublicationByProfile[profileId][pubId].amount = amount;
         _dataByPublicationByProfile[profileId][pubId].tokenToBuy = tokenToBuy;
         _dataByPublicationByProfile[profileId][pubId].router = router;
+        _dataByPublicationByProfile[profileId][pubId].intermediaryToken = intermediaryToken;
 
         return data;
     }
@@ -212,6 +218,7 @@ contract ReFiCollectModule is ICollectModule, FeeModuleBase, FollowValidationMod
         address recipient = _dataByPublicationByProfile[profileId][pubId].recipient;
         address tokenToBuy = _dataByPublicationByProfile[profileId][pubId].tokenToBuy;
         address router = _dataByPublicationByProfile[profileId][pubId].router;
+        address intermediaryToken = _dataByPublicationByProfile[profileId][pubId].intermediaryToken;
     
         // Transfer tokens to this contract
         IERC20(currency).safeTransferFrom(collector, address(this), amount);
@@ -220,9 +227,19 @@ contract ReFiCollectModule is ICollectModule, FeeModuleBase, FollowValidationMod
         IERC20(currency).approve(router, amount);
 
         // Swap
-        address[] memory path = new address[](2);
-        path[0] = currency;
-        path[1] = tokenToBuy;
+        address[] memory path;
+        
+        if(intermediaryToken == address(0)) {
+            path = new address[](2);
+            path[0] = currency;
+            path[1] = tokenToBuy;
+        } else {
+            path = new address[](3);
+            path[0] = currency;
+            path[0] = intermediaryToken;
+            path[1] = tokenToBuy;
+        }
+        
         IUniswapV2Router01(router).swapExactTokensForTokens(
             amount,
             amountOutMin,
