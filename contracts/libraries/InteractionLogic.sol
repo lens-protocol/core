@@ -154,4 +154,19 @@ library InteractionLogic {
             block.timestamp
         );
     }
+
+    function toggleFollow( 
+        address follower, 
+        uint256[] calldata profileIds,
+        uint256[] calldata followNFTIds,
+        bool[] enables,
+        mapping(uint256 => DataTypes.ProfileStruct) storage _profileById
+    ) external {
+        if (profileIds.length != followNFTIds.length && profileIds.length != enables.length) revert Errors.ArrayMismatch();
+        for (uint256 i = 0; i < profileIds.length; ++i) {
+            address followNFT = _profileById[profileIds[i]].followNFT;
+            if (follower != IFollowNFT(followNFT).ownerOf(followNFTIds[i])) revert Errors.NotFollowNFTOwner();
+            emit Events.ToggleFollowNFT(profileIds[i], follower , enables[i], block.timestamp);
+        }
+    }
 }
