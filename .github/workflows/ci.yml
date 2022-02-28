@@ -22,8 +22,8 @@ jobs:
         run: npm install
         working-directory: ${{env.working-directory}}
       - name: Compile code
-        run: npx hardhat compile
+        run: npm run compile
         working-directory: ${{env.working-directory}}
       - name: Run tests
-        run: npx hardhat test
+        run: npm run test
         working-directory: ${{env.working-directory}}
