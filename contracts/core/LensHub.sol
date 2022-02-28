@@ -578,7 +578,7 @@ contract LensHub is ILensHub, LensNFTBase, VersionedInitializable, LensMultiStat
         override
         whenNotPaused
     {
-        _validateCallerIsFollowerNFTOwner(profileId, followNFTId, msg.sender);
+        _validateAddressIsFollowerNFTOwner(profileId, followNFTId, msg.sender);
 
         emitToggleFollowNFTEvent(profileId, msg.sender, enabled);
     }
@@ -612,7 +612,7 @@ contract LensHub is ILensHub, LensNFTBase, VersionedInitializable, LensMultiStat
 
         _validateRecoveredAddress(digest, vars.follower, vars.sig);
 
-        _validateCallerIsFollowerNFTOwner(profileId, followNFTId, vars.follower);
+        _validateAddressIsFollowerNFTOwner(profileId, followNFTId, vars.follower);
 
         emitToggleFollowNFTEvent(vars.profileId, vars.follower, vars.enabled);
     }
@@ -1011,7 +1011,7 @@ contract LensHub is ILensHub, LensNFTBase, VersionedInitializable, LensMultiStat
     }
 
 
-    function _validateCallerIsFollowerNFTOwner(uint256 profileId, uint256 followNFTId, address follower) internal view {
+    function _validateAddressIsFollowerNFTOwner(uint256 profileId, uint256 followNFTId, address follower) internal view {
         address followNFT = _profileById[profileId].followNFT;
         if (follower != IFollowNFT(followNFT).ownerOf(followNFTId)) revert Errors.NotFollowerNFTOwner();
     }
