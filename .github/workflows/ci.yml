@@ -20,7 +20,7 @@ jobs:
         run: npm install --save-dev hardhat
         working-directory: ${{env.working-directory}}
       - name: Install packages
-        run: npm install
+        run: npm ci
         working-directory: ${{env.working-directory}}
       - name: Compile code
         run: npm run compile
