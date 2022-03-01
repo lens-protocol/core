@@ -157,9 +157,9 @@ contract LensHub is ILensHub, LensNFTBase, VersionedInitializable, LensMultiStat
     }
 
     /// @inheritdoc ILensHub
-    function setDefaultProfile(uint256 profileId, address owner) external override whenNotPaused {
+    function setDefaultProfile(uint256 profileId, address wallet) external override whenNotPaused {
         _validateCallerIsProfileOwnerOrDispatcher(profileId);
-        _setDefaultProfile(profileId, owner);
+        _setDefaultProfile(profileId, wallet);
     }
 
     /// @inheritdoc ILensHub
@@ -916,16 +916,16 @@ contract LensHub is ILensHub, LensNFTBase, VersionedInitializable, LensMultiStat
         );
     }
 
-    function _setDefaultProfile(uint256 profileId, address owner) internal {
+    function _setDefaultProfile(uint256 profileId, address wallet) internal {
         // you should only be able to map this to the owner OR dead address
-        if (owner != address(0)) {
-            _validateCallerIsProfileOwner(profileId, owner);
+        if (wallet != address(0)) {
+            _validateCallerIsProfileOwner(profileId, wallet);
         }
 
-        _defaultProfileToAddress[profileId] = owner;
-        _addressToDefaultProfile[owner] = profileId;
+        _defaultProfileToAddress[profileId] = wallet;
+        _addressToDefaultProfile[wallet] = profileId;
 
-        emit Events.DefaultProfileSet(profileId, owner, block.timestamp);
+        emit Events.DefaultProfileSet(profileId, wallet, block.timestamp);
     }
 
     function _createComment(DataTypes.CommentData memory vars) internal {
