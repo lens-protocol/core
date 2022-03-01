@@ -158,7 +158,7 @@ contract LensHub is ILensHub, LensNFTBase, VersionedInitializable, LensMultiStat
 
     /// @inheritdoc ILensHub
     function setDefaultProfile(uint256 profileId, address owner) external override whenNotPaused {
-        _validateCallerIsProfileOwner(profileId, msg.sender);
+        _validateCallerIsProfileOwnerOrDispatcher(profileId);
         _setDefaultProfile(profileId, owner);
     }
 
@@ -917,7 +917,10 @@ contract LensHub is ILensHub, LensNFTBase, VersionedInitializable, LensMultiStat
     }
 
     function _setDefaultProfile(uint256 profileId, address owner) internal {
-        _validateCallerIsProfileOwner(profileId, owner);
+        // you should only be able to map this to the owner OR dead address
+        if (owner != address(0)) {
+            _validateCallerIsProfileOwner(profileId, owner);
+        }
 
         _defaultProfileToAddress[profileId] = owner;
         _addressToDefaultProfile[owner] = profileId;
