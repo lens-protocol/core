@@ -157,8 +157,9 @@ contract LensHub is ILensHub, LensNFTBase, VersionedInitializable, LensMultiStat
     }
 
     /// @inheritdoc ILensHub
-    function setDefaultProfile(uint256 profileId) external override whenNotPaused {
-        _setDefaultProfile(profileId, msg.sender);
+    function setDefaultProfile(uint256 profileId, address owner) external override whenNotPaused {
+        _validateCallerIsProfileOwner(profileId, msg.sender);
+        _setDefaultProfile(profileId, owner);
     }
 
     /// @inheritdoc ILensHub
@@ -189,41 +190,6 @@ contract LensHub is ILensHub, LensNFTBase, VersionedInitializable, LensMultiStat
         _validateRecoveredAddress(digest, owner, vars.sig);
 
         _setDefaultProfile(vars.profileId, owner);
-    }
-
-    /// @inheritdoc ILensHub
-    function unsetDefaultProfile(uint256 profileId) external override whenNotPaused {
-        _unsetDefaultProfile(profileId, msg.sender);
-    }
-
-    /// @inheritdoc ILensHub
-    function unsetDefaultProfileWithSig(DataTypes.UnsetDefaultProfileWithSigData calldata vars)
-        external
-        override
-        whenNotPaused
-    {
-        address owner = ownerOf(vars.profileId);
-        bytes32 digest;
-        unchecked {
-            digest = keccak256(
-                abi.encodePacked(
-                    '\x19\x01',
-                    _calculateDomainSeparator(),
-                    keccak256(
-                        abi.encode(
-                            UNSET_DEFAULT_PROFILE_WITH_SIG_TYPEHASH,
-                            vars.profileId,
-                            sigNonces[owner]++,
-                            vars.sig.deadline
-                        )
-                    )
-                )
-            );
-        }
-
-        _validateRecoveredAddress(digest, owner, vars.sig);
-
-        _unsetDefaultProfile(vars.profileId, owner);
     }
 
     /// @inheritdoc ILensHub
@@ -957,15 +923,6 @@ contract LensHub is ILensHub, LensNFTBase, VersionedInitializable, LensMultiStat
         _addressToDefaultProfile[owner] = profileId;
 
         emit Events.DefaultProfileSet(profileId, owner, block.timestamp);
-    }
-
-    function _unsetDefaultProfile(uint256 profileId, address owner) internal {
-        _validateCallerIsProfileOwner(profileId, owner);
-
-        _defaultProfileToAddress[profileId] = address(0);
-        _addressToDefaultProfile[owner] = 0;
-
-        emit Events.DefaultProfileUnset(profileId, owner, block.timestamp);
     }
 
     function _createComment(DataTypes.CommentData memory vars) internal {
