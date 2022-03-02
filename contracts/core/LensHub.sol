@@ -920,7 +920,7 @@ contract LensHub is ILensHub, LensNFTBase, VersionedInitializable, LensMultiStat
     function _setDefaultProfile(uint256 profileId, address wallet) internal {
         // you should only be able to map this to the owner OR dead address
         if (wallet != address(0)) {
-            _validateCallerIsProfileOwner(profileId, wallet);
+            _validateWalletIsProfileOwner(profileId, wallet);
             _defaultProfileByAddress[wallet] = profileId;
             _addressByDefaultProfile[profileId] = wallet;
 
@@ -1011,7 +1011,7 @@ contract LensHub is ILensHub, LensNFTBase, VersionedInitializable, LensMultiStat
         if (msg.sender != ownerOf(profileId)) revert Errors.NotProfileOwner();
     }
 
-    function _validateCallerIsProfileOwner(uint256 profileId, address wallet) internal view {
+    function _validateWalletIsProfileOwner(uint256 profileId, address wallet) internal view {
         if (wallet != ownerOf(profileId)) revert Errors.NotProfileOwner();
     }
 
