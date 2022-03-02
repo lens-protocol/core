@@ -179,6 +179,7 @@ contract LensHub is ILensHub, LensNFTBase, VersionedInitializable, LensMultiStat
                         abi.encode(
                             SET_DEFAULT_PROFILE_WITH_SIG_TYPEHASH,
                             vars.profileId,
+                            vars.wallet,
                             sigNonces[owner]++,
                             vars.sig.deadline
                         )
@@ -189,7 +190,7 @@ contract LensHub is ILensHub, LensNFTBase, VersionedInitializable, LensMultiStat
 
         _validateRecoveredAddress(digest, owner, vars.sig);
 
-        _setDefaultProfile(vars.profileId, owner);
+        _setDefaultProfile(vars.profileId, vars.wallet);
     }
 
     /// @inheritdoc ILensHub
@@ -920,12 +921,17 @@ contract LensHub is ILensHub, LensNFTBase, VersionedInitializable, LensMultiStat
         // you should only be able to map this to the owner OR dead address
         if (wallet != address(0)) {
             _validateCallerIsProfileOwner(profileId, wallet);
+            _addressToDefaultProfile[wallet] = profileId;
+            _defaultProfileToAddress[profileId] = wallet;
+
+            emit Events.DefaultProfileSet(profileId, wallet, block.timestamp);
+        } else {
+            // unset the default
+            _addressToDefaultProfile[ownerOf(profileId)] = 0;
+            _defaultProfileToAddress[profileId] = wallet;
+
+            emit Events.DefaultProfileSet(0, wallet, block.timestamp);
         }
-
-        _defaultProfileToAddress[profileId] = wallet;
-        _addressToDefaultProfile[wallet] = profileId;
-
-        emit Events.DefaultProfileSet(profileId, wallet, block.timestamp);
     }
 
     function _createComment(DataTypes.CommentData memory vars) internal {
