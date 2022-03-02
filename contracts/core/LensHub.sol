@@ -712,7 +712,7 @@ contract LensHub is ILensHub, LensNFTBase, VersionedInitializable, LensMultiStat
 
     /// @inheritdoc ILensHub
     function defaultProfile(address wallet) external view override returns (uint256) {
-        return _addressToDefaultProfile[wallet];
+        return _defaultProfileByAddress[wallet];
     }
 
     /// @inheritdoc ILensHub
@@ -921,14 +921,14 @@ contract LensHub is ILensHub, LensNFTBase, VersionedInitializable, LensMultiStat
         // you should only be able to map this to the owner OR dead address
         if (wallet != address(0)) {
             _validateCallerIsProfileOwner(profileId, wallet);
-            _addressToDefaultProfile[wallet] = profileId;
-            _defaultProfileToAddress[profileId] = wallet;
+            _defaultProfileByAddress[wallet] = profileId;
+            _addressByDefaultProfile[profileId] = wallet;
 
             emit Events.DefaultProfileSet(profileId, wallet, block.timestamp);
         } else {
             // unset the default
-            _addressToDefaultProfile[ownerOf(profileId)] = 0;
-            _defaultProfileToAddress[profileId] = wallet;
+            _defaultProfileByAddress[ownerOf(profileId)] = 0;
+            _addressByDefaultProfile[profileId] = wallet;
 
             emit Events.DefaultProfileSet(0, wallet, block.timestamp);
         }
@@ -995,8 +995,8 @@ contract LensHub is ILensHub, LensNFTBase, VersionedInitializable, LensMultiStat
         }
 
         if (from != address(0)) {
-            _defaultProfileToAddress[tokenId] = address(0);
-            _addressToDefaultProfile[from] = 0;
+            _addressByDefaultProfile[tokenId] = address(0);
+            _defaultProfileByAddress[from] = 0;
         }
 
         super._beforeTokenTransfer(from, to, tokenId);

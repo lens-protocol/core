@@ -71,8 +71,8 @@ contract LensHubStorage {
     mapping(uint256 => DataTypes.ProfileStruct) internal _profileById;
     mapping(uint256 => mapping(uint256 => DataTypes.PublicationStruct)) internal _pubByIdByProfile;
 
-    mapping(uint256 => address) internal _defaultProfileToAddress;
-    mapping(address => uint256) internal _addressToDefaultProfile;
+    mapping(uint256 => address) internal _addressByDefaultProfile;
+    mapping(address => uint256) internal _defaultProfileByAddress;
 
     uint256 internal _profileCounter;
     address internal _governance;
