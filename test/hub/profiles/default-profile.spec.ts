@@ -58,6 +58,25 @@ makeSuiteCleanRoom('Default profile Functionality', function () {
         await expect(lensHub.setDefaultProfile(FIRST_PROFILE_ID, ZERO_ADDRESS)).to.not.be.reverted;
         expect((await lensHub.defaultProfile(userAddress)).toNumber()).to.eq(0);
       });
+
+      it('User should set the default profile and then be able to change it to another', async function () {
+        await expect(lensHub.setDefaultProfile(FIRST_PROFILE_ID, userAddress)).to.not.be.reverted;
+        expect((await lensHub.defaultProfile(userAddress)).toNumber()).to.eq(FIRST_PROFILE_ID);
+
+        await expect(
+          lensHub.createProfile({
+            to: userAddress,
+            handle: new Date().getTime().toString(),
+            imageURI: MOCK_PROFILE_URI,
+            followModule: ZERO_ADDRESS,
+            followModuleData: [],
+            followNFTURI: MOCK_FOLLOW_NFT_URI,
+          })
+        ).to.not.be.reverted;
+
+        await expect(lensHub.setDefaultProfile(2, userAddress)).to.not.be.reverted;
+        expect((await lensHub.defaultProfile(userAddress)).toNumber()).to.eq(2);
+      });
     });
   });
 
@@ -200,6 +219,133 @@ makeSuiteCleanRoom('Default profile Functionality', function () {
 
         expect(defaultProfileBeforeUse.toNumber()).to.eq(0);
         expect(defaultProfileAfter.toNumber()).to.eq(FIRST_PROFILE_ID);
+      });
+
+      it('TestWallet should set the default profile with sig and then be able to unset it', async function () {
+        const nonce = (await lensHub.sigNonces(testWallet.address)).toNumber();
+        const { v, r, s } = await getSetDefaultProfileWithSigParts(
+          FIRST_PROFILE_ID,
+          testWallet.address,
+          nonce,
+          MAX_UINT256
+        );
+
+        const defaultProfileBeforeUse = await lensHub.defaultProfile(testWallet.address);
+
+        await expect(
+          lensHub.setDefaultProfileWithSig({
+            profileId: FIRST_PROFILE_ID,
+            wallet: testWallet.address,
+            sig: {
+              v,
+              r,
+              s,
+              deadline: MAX_UINT256,
+            },
+          })
+        ).to.not.be.reverted;
+
+        const defaultProfileAfter = await lensHub.defaultProfile(testWallet.address);
+
+        expect(defaultProfileBeforeUse.toNumber()).to.eq(0);
+        expect(defaultProfileAfter.toNumber()).to.eq(FIRST_PROFILE_ID);
+
+        const nonce2 = (await lensHub.sigNonces(testWallet.address)).toNumber();
+        const signature2 = await getSetDefaultProfileWithSigParts(
+          FIRST_PROFILE_ID,
+          ZERO_ADDRESS,
+          nonce2,
+          MAX_UINT256
+        );
+
+        const defaultProfileBeforeUse2 = await lensHub.defaultProfile(testWallet.address);
+
+        await expect(
+          lensHub.setDefaultProfileWithSig({
+            profileId: FIRST_PROFILE_ID,
+            wallet: ZERO_ADDRESS,
+            sig: {
+              v: signature2.v,
+              r: signature2.r,
+              s: signature2.s,
+              deadline: MAX_UINT256,
+            },
+          })
+        ).to.not.be.reverted;
+
+        const defaultProfileAfter2 = await lensHub.defaultProfile(testWallet.address);
+
+        expect(defaultProfileBeforeUse2.toNumber()).to.eq(1);
+        expect(defaultProfileAfter2.toNumber()).to.eq(0);
+      });
+
+      it('TestWallet should set the default profile and then be able to change it to another', async function () {
+        const nonce = (await lensHub.sigNonces(testWallet.address)).toNumber();
+        const { v, r, s } = await getSetDefaultProfileWithSigParts(
+          FIRST_PROFILE_ID,
+          testWallet.address,
+          nonce,
+          MAX_UINT256
+        );
+
+        const defaultProfileBeforeUse = await lensHub.defaultProfile(testWallet.address);
+
+        await expect(
+          lensHub.setDefaultProfileWithSig({
+            profileId: FIRST_PROFILE_ID,
+            wallet: testWallet.address,
+            sig: {
+              v,
+              r,
+              s,
+              deadline: MAX_UINT256,
+            },
+          })
+        ).to.not.be.reverted;
+
+        const defaultProfileAfter = await lensHub.defaultProfile(testWallet.address);
+
+        expect(defaultProfileBeforeUse.toNumber()).to.eq(0);
+        expect(defaultProfileAfter.toNumber()).to.eq(FIRST_PROFILE_ID);
+
+        await expect(
+          lensHub.createProfile({
+            to: testWallet.address,
+            handle: new Date().getTime().toString(),
+            imageURI: MOCK_PROFILE_URI,
+            followModule: ZERO_ADDRESS,
+            followModuleData: [],
+            followNFTURI: MOCK_FOLLOW_NFT_URI,
+          })
+        ).to.not.be.reverted;
+
+        const nonce2 = (await lensHub.sigNonces(testWallet.address)).toNumber();
+        const signature2 = await getSetDefaultProfileWithSigParts(
+          2,
+          testWallet.address,
+          nonce2,
+          MAX_UINT256
+        );
+
+        const defaultProfileBeforeUse2 = await lensHub.defaultProfile(testWallet.address);
+
+        await expect(
+          lensHub.setDefaultProfileWithSig({
+            profileId: 2,
+            wallet: testWallet.address,
+            sig: {
+              v: signature2.v,
+              r: signature2.r,
+              s: signature2.s,
+              deadline: MAX_UINT256,
+            },
+          })
+        ).to.not.be.reverted;
+
+        const defaultProfileAfter2 = await lensHub.defaultProfile(testWallet.address);
+
+        expect(defaultProfileBeforeUse2.toNumber()).to.eq(1);
+        expect(defaultProfileAfter2.toNumber()).to.eq(2);
       });
     });
   });
