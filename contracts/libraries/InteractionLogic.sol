@@ -11,6 +11,7 @@ import {IFollowNFT} from '../interfaces/IFollowNFT.sol';
 import {ICollectNFT} from '../interfaces/ICollectNFT.sol';
 import {IFollowModule} from '../interfaces/IFollowModule.sol';
 import {ICollectModule} from '../interfaces/ICollectModule.sol';
+import {ERC721Time} from '../core/base/ERC721Time.sol';
 import {Clones} from '@openzeppelin/contracts/proxy/Clones.sol';
 import {Strings} from '@openzeppelin/contracts/utils/Strings.sol';
 
@@ -156,7 +157,7 @@ library InteractionLogic {
     }
 
     /**
-     * @notice Toggle follows of the given profiles. 
+     * @notice Toggle follows of the given profiles.
      *
      * @param follower The address executing the follow.
      * @param profileIds The array of profile token IDs to follow.
@@ -164,18 +165,20 @@ library InteractionLogic {
      * @param enables Array of booleans indicates when the `follow` logic on the indexer needs to be enabled/disabled
      * @param _profileById A pointer to the storage mapping of profile structs by profile ID.
      */
-    function toggleFollow( 
-        address follower, 
+    function toggleFollow(
+        address follower,
         uint256[] calldata profileIds,
         uint256[] calldata followNFTIds,
         bool[] calldata enables,
         mapping(uint256 => DataTypes.ProfileStruct) storage _profileById
     ) external {
-        if (profileIds.length != followNFTIds.length || profileIds.length != enables.length) revert Errors.ArrayMismatch();
+        if (profileIds.length != followNFTIds.length || profileIds.length != enables.length)
+            revert Errors.ArrayMismatch();
         for (uint256 i = 0; i < profileIds.length; ++i) {
             address followNFT = _profileById[profileIds[i]].followNFT;
-            if (follower != IFollowNFT(followNFT).ownerOf(followNFTIds[i])) revert Errors.NotFollowNFTOwner();
-            emit Events.ToggleFollowNFT(profileIds[i], follower , enables[i], block.timestamp);
+            if (follower != ERC721Time(followNFT).ownerOf(followNFTIds[i]))
+                revert Errors.NotFollowNFTOwner();
+            emit Events.ToggleFollowNFT(profileIds[i], follower, enables[i], block.timestamp);
         }
     }
 }

@@ -1,1 +1,6 @@
-node_modules/
+artifacts
+cache
+node_modules
+coverage
+typechain-types
+npm-debug.log

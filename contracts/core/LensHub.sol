@@ -572,19 +572,13 @@ contract LensHub is ILensHub, LensNFTBase, VersionedInitializable, LensMultiStat
         );
     }
 
-     /// @inheritdoc ILensHub
-    function toggleFollow(uint256[] calldata profileIds,uint256[] calldata followNFTIds, bool[] calldata enabled)
-        external
-        override
-        whenNotPaused
-    {
-        InteractionLogic.toggleFollow(
-            msg.sender, 
-            profilesIds, 
-            followNFTIds, 
-            enables, 
-            _profileById
-        );
+    /// @inheritdoc ILensHub
+    function toggleFollow(
+        uint256[] calldata profileIds,
+        uint256[] calldata followNFTIds,
+        bool[] calldata enables
+    ) external override whenNotPaused {
+        InteractionLogic.toggleFollow(msg.sender, profileIds, followNFTIds, enables, _profileById);
     }
 
     /// @inheritdoc ILensHub
@@ -605,7 +599,6 @@ contract LensHub is ILensHub, LensNFTBase, VersionedInitializable, LensMultiStat
                             keccak256(abi.encodePacked(vars.profileIds)),
                             keccak256(abi.encodePacked(vars.followNFTIds)),
                             keccak256(abi.encodePacked(vars.enables)),
-                            keccak256(vars.data),
                             sigNonces[vars.follower]++,
                             vars.sig.deadline
                         )
@@ -617,10 +610,10 @@ contract LensHub is ILensHub, LensNFTBase, VersionedInitializable, LensMultiStat
         _validateRecoveredAddress(digest, vars.follower, vars.sig);
 
         InteractionLogic.toggleFollow(
-            vars.follower, 
-            vars.profilesIds, 
-            vars.followNFTIds, 
-            vars.enables, 
+            vars.follower,
+            vars.profileIds,
+            vars.followNFTIds,
+            vars.enables,
             _profileById
         );
     }

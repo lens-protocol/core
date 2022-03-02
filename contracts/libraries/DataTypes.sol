@@ -340,9 +340,8 @@ library DataTypes {
     struct ToggleFollowWithSigData {
         address follower;
         uint256[] profileIds;
-        uint256[] followNFTIds; 
+        uint256[] followNFTIds;
         bool[] enables;
         EIP712Signature sig;
     }
-
 }
