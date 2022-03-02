@@ -35,6 +35,7 @@ library Errors {
     error CollectExpired();
     error FollowInvalid();
     error ModuleDataMismatch();
+    error NotEnoughTokens();
     error FollowNotApproved();
     error MintLimitExceeded();
     error CollectNotAllowed();
