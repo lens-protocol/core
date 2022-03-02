@@ -157,6 +157,43 @@ contract LensHub is ILensHub, LensNFTBase, VersionedInitializable, LensMultiStat
     }
 
     /// @inheritdoc ILensHub
+    function setDefaultProfile(uint256 profileId, address wallet) external override whenNotPaused {
+        _validateCallerIsProfileOwnerOrDispatcher(profileId);
+        _setDefaultProfile(profileId, wallet);
+    }
+
+    /// @inheritdoc ILensHub
+    function setDefaultProfileWithSig(DataTypes.SetDefaultProfileWithSigData calldata vars)
+        external
+        override
+        whenNotPaused
+    {
+        address owner = ownerOf(vars.profileId);
+        bytes32 digest;
+        unchecked {
+            digest = keccak256(
+                abi.encodePacked(
+                    '\x19\x01',
+                    _calculateDomainSeparator(),
+                    keccak256(
+                        abi.encode(
+                            SET_DEFAULT_PROFILE_WITH_SIG_TYPEHASH,
+                            vars.profileId,
+                            vars.wallet,
+                            sigNonces[owner]++,
+                            vars.sig.deadline
+                        )
+                    )
+                )
+            );
+        }
+
+        _validateRecoveredAddress(digest, owner, vars.sig);
+
+        _setDefaultProfile(vars.profileId, vars.wallet);
+    }
+
+    /// @inheritdoc ILensHub
     function setFollowModule(
         uint256 profileId,
         address followModule,
@@ -720,6 +757,11 @@ contract LensHub is ILensHub, LensNFTBase, VersionedInitializable, LensMultiStat
     }
 
     /// @inheritdoc ILensHub
+    function defaultProfile(address wallet) external view override returns (uint256) {
+        return _defaultProfileByAddress[wallet];
+    }
+
+    /// @inheritdoc ILensHub
     function isFollowModuleWhitelisted(address followModule) external view override returns (bool) {
         return _followModuleWhitelisted[followModule];
     }
@@ -921,6 +963,23 @@ contract LensHub is ILensHub, LensNFTBase, VersionedInitializable, LensMultiStat
         );
     }
 
+    function _setDefaultProfile(uint256 profileId, address wallet) internal {
+        // you should only be able to map this to the owner OR dead address
+        if (wallet != address(0)) {
+            _validateWalletIsProfileOwner(profileId, wallet);
+            _defaultProfileByAddress[wallet] = profileId;
+            _addressByDefaultProfile[profileId] = wallet;
+
+            emit Events.DefaultProfileSet(profileId, wallet, block.timestamp);
+        } else {
+            // unset the default
+            _defaultProfileByAddress[ownerOf(profileId)] = 0;
+            _addressByDefaultProfile[profileId] = wallet;
+
+            emit Events.DefaultProfileSet(0, wallet, block.timestamp);
+        }
+    }
+
     function _createComment(DataTypes.CommentData memory vars) internal {
         PublishingLogic.createComment(
             vars,
@@ -980,6 +1039,12 @@ contract LensHub is ILensHub, LensNFTBase, VersionedInitializable, LensMultiStat
         if (_dispatcherByProfile[tokenId] != address(0)) {
             _setDispatcher(tokenId, address(0));
         }
+
+        if (from != address(0)) {
+            _addressByDefaultProfile[tokenId] = address(0);
+            _defaultProfileByAddress[from] = 0;
+        }
+
         super._beforeTokenTransfer(from, to, tokenId);
     }
 
@@ -990,6 +1055,10 @@ contract LensHub is ILensHub, LensNFTBase, VersionedInitializable, LensMultiStat
 
     function _validateCallerIsProfileOwner(uint256 profileId) internal view {
         if (msg.sender != ownerOf(profileId)) revert Errors.NotProfileOwner();
+    }
+
+    function _validateWalletIsProfileOwner(uint256 profileId, address wallet) internal view {
+        if (wallet != ownerOf(profileId)) revert Errors.NotProfileOwner();
     }
 
     function _validateCallerIsGovernance() internal view {
