@@ -160,9 +160,9 @@ library InteractionLogic {
      * @notice Toggle follows of the given profiles.
      *
      * @param follower The address executing the follow.
-     * @param profileIds The array of profile token IDs to follow.
-     * @param followNFTIds The token ID array of the followNFT.
-     * @param enables Array of booleans indicates when the `follow` logic on the indexer needs to be enabled/disabled
+     * @param profileIds The token ID array of the profiles.
+     * @param followNFTIds The token ID array of the followNFTs.
+     * @param enables The array of booleans to enable/disable follows.
      * @param _profileById A pointer to the storage mapping of profile structs by profile ID.
      */
     function toggleFollow(
