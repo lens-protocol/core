@@ -618,7 +618,7 @@ contract LensHub is ILensHub, LensNFTBase, VersionedInitializable, LensMultiStat
         InteractionLogic.toggleFollow(msg.sender, profileIds, followNFTIds, enables, _profileById);
     }
 
-    /// @inheritdoc ILensHub
+    // /// @inheritdoc ILensHub
     function toggleFollowWithSig(DataTypes.ToggleFollowWithSigData calldata vars)
         external
         override

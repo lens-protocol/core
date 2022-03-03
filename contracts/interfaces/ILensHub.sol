@@ -253,7 +253,7 @@ interface ILensHub {
      */
     function toggleFollow(
         uint256[] calldata profileIds,
-        uint256[] calldata followNFTIds, 
+        uint256[] calldata followNFTIds,
         bool[] calldata enables
     ) external;
 
@@ -263,7 +263,7 @@ interface ILensHub {
      * @param vars A ToggleFollowWithSigData struct containing the regular parameters as well as the signing follower's address
      * and an EIP712Signature struct.
      */
-     function toggleFollowWithSig(DataTypes.ToggleFollowWithSigData calldata vars) external;
+    function toggleFollowWithSig(DataTypes.ToggleFollowWithSigData calldata vars) external;
 
     /**
      * @notice Collects a given publication, executing collect module logic and minting a collectNFT to the caller.
