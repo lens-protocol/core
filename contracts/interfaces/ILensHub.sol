@@ -90,6 +90,8 @@ interface ILensHub {
      * @notice Creates a profile with the specified parameters, minting a profile NFT to the given recipient. This
      * function must be called by a whitelisted profile creator.
      *
+     * @return The token ID of the profile which was created.
+     *
      * @param vars A CreateProfileData struct containing the following params:
      *      to: The address receiving the profile.
      *      handle: The handle to set for the profile, must be unique and non-empty.
