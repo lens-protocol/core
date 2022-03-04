@@ -1,10 +1,13 @@
 name: ci
 
+concurrency:
+  group: '${{ github.workflow }}-${{ github.head_ref || github.ref }}'
+  cancel-in-progress: true
+
 on:
   push:
     branches: [main]
   pull_request:
-    branches: [main]
 
 jobs:
   compile_and_run_tests:
