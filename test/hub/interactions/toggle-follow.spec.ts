@@ -51,7 +51,7 @@ makeSuiteCleanRoom('ToggleFollowing', function () {
   });
   context('Generic', function () {
     context('Negatives', function () {
-      it('UserTwo should fail to toggle follow without following', async function () {
+      it('UserTwo should fail to toggle follow with an incorrect profileId', async function () {
         const id = await getTokenId(userTwoAddress);
         await expect(
           lensHub.connect(userTwo).toggleFollow([FIRST_PROFILE_ID + 1], [id], [true])
@@ -65,7 +65,7 @@ makeSuiteCleanRoom('ToggleFollowing', function () {
         ).to.be.revertedWith(ERRORS.ARRAY_MISMATCH);
       });
 
-      it('UserTwo should fail to toggle a follow  from a profile that has been burned', async function () {
+      it('UserTwo should fail to toggle follow from a profile that has been burned', async function () {
         await expect(lensHub.burn(FIRST_PROFILE_ID)).to.not.be.reverted;
         const id = await getTokenId(userTwoAddress);
         await expect(
@@ -73,7 +73,7 @@ makeSuiteCleanRoom('ToggleFollowing', function () {
         ).to.be.revertedWith(ERRORS.TOKEN_DOES_NOT_EXIST);
       });
 
-      it('UserTwo should fail to toggle a follow that does not own ', async function () {
+      it('UserTwo should fail to toggle follow for a followNFT that is not the owner.', async function () {
         const id = await getTokenId(userThreeAddress);
         await expect(
           lensHub.connect(userTwo).toggleFollow([FIRST_PROFILE_ID], [id], [true])
