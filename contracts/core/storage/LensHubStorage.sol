@@ -60,10 +60,10 @@ contract LensHubStorage {
     // keccak256(
     // 'CollectWithSig(uint256 profileId,uint256 pubId,bytes data,uint256 nonce,uint256 deadline)'
     // );
-    bytes32 internal constant TOGGLE_FOLLOW_WITH_SIG_TYPEHASH = 
-        0x944a90606503b4cbd8e2598e45bb2c3f6d3f59714ea873848cf2fb4de56a3fc0;
+    bytes32 internal constant TOGGLE_FOLLOW_WITH_SIG_TYPEHASH =
+        0x07650b1dd6a25022a2fe0d4a83e472d75ea1a0612836017f219b2cf6bbc32ce5;
     // keccak256(
-    // 'ToggleFollowWithSig(uint256[] profileIds,uint256[] followNFTIds,bool[] enables,bytes data,uint256 nonce,uint256 deadline)'
+    // 'ToggleFollowWithSig(uint256[] profileIds,uint256[] followNFTIds,bool[] enables,uint256 nonce,uint256 deadline)'
     // );
 
     mapping(address => bool) internal _profileCreatorWhitelisted;

@@ -418,6 +418,23 @@ export async function getFollowWithSigParts(
   return await getSig(msgParams);
 }
 
+export async function getToggleFollowWithSigParts(
+  profileIds: string[] | number[],
+  followNFTIds: string[] | number[],
+  enables: boolean[],
+  nonce: number,
+  deadline: string
+): Promise<{ v: number; r: string; s: string }> {
+  const msgParams = buildToggleFollowWithSigParams(
+    profileIds,
+    followNFTIds,
+    enables,
+    nonce,
+    deadline
+  );
+  return await getSig(msgParams);
+}
+
 export async function getCollectWithSigParts(
   profileId: BigNumberish,
   pubId: string,
@@ -764,6 +781,32 @@ const buildFollowWithSigParams = (
   value: {
     profileIds: profileIds,
     datas: datas,
+    nonce: nonce,
+    deadline: deadline,
+  },
+});
+
+const buildToggleFollowWithSigParams = (
+  profileIds: string[] | number[],
+  followNFTIds: string[] | number[],
+  enables: boolean[],
+  nonce: number,
+  deadline: string
+) => ({
+  types: {
+    ToggleFollowWithSig: [
+      { name: 'profileIds', type: 'uint256[]' },
+      { name: 'followNFTIds', type: 'uint256[]' },
+      { name: 'enables', type: 'bool[]' },
+      { name: 'nonce', type: 'uint256' },
+      { name: 'deadline', type: 'uint256' },
+    ],
+  },
+  domain: domain(),
+  value: {
+    profileIds: profileIds,
+    followNFTIds: followNFTIds,
+    enables: enables,
     nonce: nonce,
     deadline: deadline,
   },

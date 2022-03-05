@@ -170,14 +170,22 @@ library InteractionLogic {
         uint256[] calldata profileIds,
         uint256[] calldata followNFTIds,
         bool[] calldata enables,
-        mapping(uint256 => DataTypes.ProfileStruct) storage _profileById
+        mapping(uint256 => DataTypes.ProfileStruct) storage _profileById,
+        mapping(bytes32 => uint256) storage _profileIdByHandleHash
     ) external {
         if (profileIds.length != followNFTIds.length || profileIds.length != enables.length)
             revert Errors.ArrayMismatch();
         for (uint256 i = 0; i < profileIds.length; ++i) {
             address followNFT = _profileById[profileIds[i]].followNFT;
+            if (followNFT == address(0)) revert Errors.FollowInvalid();
+
+            string memory handle = _profileById[profileIds[i]].handle;
+            if (_profileIdByHandleHash[keccak256(bytes(handle))] == 0)
+                revert Errors.TokenDoesNotExist();
+
             if (follower != ERC721Time(followNFT).ownerOf(followNFTIds[i]))
                 revert Errors.NotFollowNFTOwner();
+
             emit Events.ToggleFollowNFT(profileIds[i], follower, enables[i], block.timestamp);
         }
     }

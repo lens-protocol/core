@@ -615,7 +615,14 @@ contract LensHub is ILensHub, LensNFTBase, VersionedInitializable, LensMultiStat
         uint256[] calldata followNFTIds,
         bool[] calldata enables
     ) external override whenNotPaused {
-        InteractionLogic.toggleFollow(msg.sender, profileIds, followNFTIds, enables, _profileById);
+        InteractionLogic.toggleFollow(
+            msg.sender,
+            profileIds,
+            followNFTIds,
+            enables,
+            _profileById,
+            _profileIdByHandleHash
+        );
     }
 
     // /// @inheritdoc ILensHub
@@ -651,7 +658,8 @@ contract LensHub is ILensHub, LensNFTBase, VersionedInitializable, LensMultiStat
             vars.profileIds,
             vars.followNFTIds,
             vars.enables,
-            _profileById
+            _profileById,
+            _profileIdByHandleHash
         );
     }
 

@@ -76,10 +76,12 @@ export let accounts: Signer[];
 export let deployer: Signer;
 export let user: Signer;
 export let userTwo: Signer;
+export let userThree: Signer;
 export let governance: Signer;
 export let deployerAddress: string;
 export let userAddress: string;
 export let userTwoAddress: string;
+export let userThreeAddress: string;
 export let governanceAddress: string;
 export let followNFTImplAddress: string;
 export let collectNFTImplAddress: string;
@@ -133,10 +135,13 @@ before(async function () {
   deployer = accounts[0];
   user = accounts[1];
   userTwo = accounts[2];
+  userThree = accounts[4];
   governance = accounts[3];
+
   deployerAddress = await deployer.getAddress();
   userAddress = await user.getAddress();
   userTwoAddress = await userTwo.getAddress();
+  userThreeAddress = await userThree.getAddress();
   governanceAddress = await governance.getAddress();
   treasuryAddress = await accounts[4].getAddress();
   mockModuleData = abiCoder.encode(['uint256'], [1]);
@@ -226,6 +231,9 @@ before(async function () {
   ).to.not.be.reverted;
   await expect(
     lensHub.connect(governance).whitelistProfileCreator(userTwoAddress, true)
+  ).to.not.be.reverted;
+  await expect(
+    lensHub.connect(governance).whitelistProfileCreator(userThreeAddress, true)
   ).to.not.be.reverted;
   await expect(
     lensHub.connect(governance).whitelistProfileCreator(testWallet.address, true)
