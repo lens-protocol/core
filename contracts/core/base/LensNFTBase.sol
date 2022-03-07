@@ -55,27 +55,13 @@ abstract contract LensNFTBase is ILensNFTBase, ERC721Enumerable {
     ) external override {
         if (spender == address(0)) revert Errors.ZeroSpender();
         address owner = ownerOf(tokenId);
-
-        bytes32 digest;
-        unchecked {
-            digest = keccak256(
-                abi.encodePacked(
-                    '\x19\x01',
-                    _calculateDomainSeparator(),
-                    keccak256(
-                        abi.encode(
-                            PERMIT_TYPEHASH,
-                            spender,
-                            tokenId,
-                            sigNonces[owner]++,
-                            sig.deadline
-                        )
-                    )
-                )
-            );
-        }
-
-        _validateRecoveredAddress(digest, owner, sig);
+        _validateRecoveredAddress(
+            _calculateDigest(
+                abi.encode(PERMIT_TYPEHASH, spender, tokenId, sigNonces[owner]++, sig.deadline)
+            ),
+            owner,
+            sig
+        );
         _approve(spender, tokenId);
     }
 
@@ -87,28 +73,20 @@ abstract contract LensNFTBase is ILensNFTBase, ERC721Enumerable {
         DataTypes.EIP712Signature calldata sig
     ) external override {
         if (operator == address(0)) revert Errors.ZeroSpender();
-
-        bytes32 digest;
-        unchecked {
-            digest = keccak256(
-                abi.encodePacked(
-                    '\x19\x01',
-                    _calculateDomainSeparator(),
-                    keccak256(
-                        abi.encode(
-                            PERMIT_FOR_ALL_TYPEHASH,
-                            owner,
-                            operator,
-                            approved,
-                            sigNonces[owner]++,
-                            sig.deadline
-                        )
-                    )
+        _validateRecoveredAddress(
+            _calculateDigest(
+                abi.encode(
+                    PERMIT_FOR_ALL_TYPEHASH,
+                    owner,
+                    operator,
+                    approved,
+                    sigNonces[owner]++,
+                    sig.deadline
                 )
-            );
-        }
-
-        _validateRecoveredAddress(digest, owner, sig);
+            ),
+            owner,
+            sig
+        );
         _setOperatorApproval(owner, operator, approved);
     }
 
@@ -131,25 +109,13 @@ abstract contract LensNFTBase is ILensNFTBase, ERC721Enumerable {
     {
         address owner = ownerOf(tokenId);
 
-        bytes32 digest;
-        unchecked {
-            digest = keccak256(
-                abi.encodePacked(
-                    '\x19\x01',
-                    _calculateDomainSeparator(),
-                    keccak256(
-                        abi.encode(
-                            BURN_WITH_SIG_TYPEHASH,
-                            tokenId,
-                            sigNonces[owner]++,
-                            sig.deadline
-                        )
-                    )
-                )
-            );
-        }
-
-        _validateRecoveredAddress(digest, owner, sig);
+        _validateRecoveredAddress(
+            _calculateDigest(
+                abi.encode(BURN_WITH_SIG_TYPEHASH, tokenId, sigNonces[owner]++, sig.deadline)
+            ),
+            owner,
+            sig
+        );
         _burn(tokenId);
     }
 
@@ -181,5 +147,22 @@ abstract contract LensNFTBase is ILensNFTBase, ERC721Enumerable {
                     address(this)
                 )
             );
+    }
+
+    /**
+     * @dev Calculates EIP712 digest based on the current DOMAIN_SEPARATOR.
+     *
+     * @param message The message from which the digest should be calculated.
+     *
+     * @return A 32-byte output representing the EIP712 digest.
+     */
+    function _calculateDigest(bytes memory message) internal view returns (bytes32) {
+        bytes32 digest;
+        unchecked {
+            digest = keccak256(
+                abi.encodePacked('\x19\x01', _calculateDomainSeparator(), keccak256(message))
+            );
+        }
+        return digest;
     }
 }
