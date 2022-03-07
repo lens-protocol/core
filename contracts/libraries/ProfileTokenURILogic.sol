@@ -7,7 +7,18 @@ import '@openzeppelin/contracts/utils/Strings.sol';
 
 library ProfileTokenURILogic {
     uint8 internal constant DEFAULT_FONT_SIZE = 24;
+
     uint8 internal constant MAX_HANDLE_LENGTH_WITH_DEFAULT_FONT_SIZE = 17;
+
+    // length of 'https://ipfs.io/ipfs/'
+    uint8 internal constant EXPECTED_IMAGE_URI_BEGGINING_LENGTH = 21;
+
+    // keccak256('https://ipfs.io/ipfs/')
+    bytes32 internal constant EXPECTED_IMAGE_URI_BEGGINING_HASH =
+        0x6f6c4dab5ef2d22ee688f4f246e6d9e579f088bed1b916b0ef559db8e1ac6e46;
+
+    // length of 'https://ipfs.io/ipfs/' + length of a CIDv0
+    uint8 internal constant EXPECTED_IMAGE_URI_MIN_LENGTH = 67;
 
     /**
      * @notice Generates the token URI for the profile NFT.
@@ -19,6 +30,7 @@ library ProfileTokenURILogic {
      * @param owner The address which owns the profile.
      * @param handle The profile's handle.
      * @param imageURI The profile's picture URI. An empty string if has not been set.
+     *
      * @return The profile's token URI as a base64-encoded JSON string.
      */
     function getProfileTokenURI(
@@ -28,7 +40,6 @@ library ProfileTokenURILogic {
         string memory imageURI
     ) external pure returns (string memory) {
         string memory handleWithAtSymbol = string(abi.encodePacked('@', handle));
-        string memory description = 'TODO!'; //TODO: Add token description
         return
             string(
                 abi.encodePacked(
@@ -38,8 +49,8 @@ library ProfileTokenURILogic {
                             '{"name":"',
                             handleWithAtSymbol,
                             '","description":"',
-                            description,
-                            '","image":"data:image/svg+xml;base64,',
+                            handleWithAtSymbol,
+                            ' - Lens profile","image":"data:image/svg+xml;base64,',
                             _getSVGImageBase64Encoded(handleWithAtSymbol, imageURI),
                             '","attributes":[{"trait_type":"id","value":"#',
                             Strings.toString(id),
@@ -62,6 +73,7 @@ library ProfileTokenURILogic {
      *
      * @param handleWithAtSymbol The profile's handle beginning with "@" symbol.
      * @param imageURI The profile's picture URI. An empty string if has not been set.
+     *
      * @return The profile token image as a base64-encoded SVG.
      */
     function _getSVGImageBase64Encoded(string memory handleWithAtSymbol, string memory imageURI)
@@ -90,13 +102,11 @@ library ProfileTokenURILogic {
      * the default picture will be returned.
      *
      * @param imageURI The profile's picture URI. An empty string if has not been set.
+     *
      * @return The fragment of the SVG token's image correspondending to the profile picture.
      */
     function _getSVGProfilePicture(string memory imageURI) internal pure returns (string memory) {
-        if (bytes(imageURI).length == 0) {
-            return
-                '<g id="default-picture"><rect id="default-picture-background" x="0" width="450" height="450" fill="#ABFE2C"/><g id="default-picture-logo" transform="translate(60,30)"><style><![CDATA[#ez1M8bKaIyB3_to {animation: ez1M8bKaIyB3_to__to 6000ms linear infinite normal forwards}@keyframes ez1M8bKaIyB3_to__to { 0% { transform: translate3d(0,0,0); transform: translate(161px,137px) rotate(0.05deg);animation-timing-function: cubic-bezier(0.5,0.1,0.7,0.5)} 41% {transform: translate(157px,133px) rotate(0.05deg);animation-timing-function: cubic-bezier(0.2,0.5,0.5,0.9)} 100% {transform: translate(161px,137px) rotate(0.05deg)}} #ez1M8bKaIyB6_to {animation: ez1M8bKaIyB6_to__to 6000ms linear infinite normal forwards}@keyframes ez1M8bKaIyB6_to__to { 0% {transform: translate(160px,136px) rotate(0.05deg);animation-timing-function: cubic-bezier(0.5,0.1,0.7,0.2)} 26% {transform: translate(176px,138px) rotate(0.05deg);animation-timing-function: cubic-bezier(0.2,0.6,0.3,1)} 43% {transform: translate(176px,138px) rotate(0.05deg);animation-timing-function: cubic-bezier(0.2,0.6,0.3,1)} 83% {transform: translate(154px,145px) rotate(0.05deg)} 100% {transform: translate(160px,136px) rotate(0.05deg)}}]]></style><path d="m171.3 315.6.1.2-.3-67a113.6 113.6 0 0 0 99.7 58.6 115 115 0 0 0 48.9-10.8l-5.8-10a103.9 103.9 0 0 1-120.5-25.5l4.3 2.9a77 77 0 0 0 77.9 1l-5.7-10-2 1.1a66.4 66.4 0 0 1-96.5-54c19-1.1-30.8-1.1-12 .1A66.4 66.4 0 0 1 60.9 255l-5.7 10 2.4 1.2a76.1 76.1 0 0 0 79.8-5 103.9 103.9 0 0 1-120.6 25.5l-5.7 9.9a115 115 0 0 0 138.5-32.2c3.8-4.8 7.2-10 10-15.3l.6 66.9v-.4h11Z" fill="#00501e"/><g id="ez1M8bKaIyB3_to" transform="translate(162 137.5)"><g><g transform="translate(-165.4 -143.9)"><path d="M185 159.2c-2.4 6.6-9.6 12.2-19.2 12.2-9.3 0-17.3-5.3-19.4-12.4" fill="none" stroke="#00501e" stroke-width="8.3" stroke-linejoin="round"/><g id="ez1M8bKaIyB6_to" transform="translate(160 136.6)"><g transform="translate(0 -1.3)" fill="#00501e"><path d="M124.8 144.7a11.9 11.9 0 1 1-23.8 0 11.9 11.9 0 0 1 23.8 0Z" transform="translate(-154.1 -145)"/><path d="M209.5 144.7a11.9 11.9 0 1 1-23.8 0 11.9 11.9 0 0 1 23.8 0Z" transform="translate(-155 -145)"/></g></g><path d="M92.2 142.8c0-14.6 13.8-26.4 30.8-26.4s30.8 11.8 30.8 26.4M177 142.8c0-14.6 13.8-26.4 30.8-26.4s30.8 11.8 30.8 26.4" fill="none" stroke="#00501e" stroke-width="8.3" stroke-linejoin="round"/></g></g></g><path d="m219.1 70.3-3.2 3.3.1-4.6v-4.7c-1.8-65.4-100.3-65.4-102.1 0l-.1 4.7v4.6l-3.1-3.3-3.4-3.3C59.8 22-10 91.7 35 139.2l3.3 3.4C92.6 196.8 164.9 197 164.9 197s72.3-.2 126.5-54.4l3.3-3.4C339.7 91.7 270 22 222.5 67l-3.4 3.3Z" fill="none" stroke="#00501e" stroke-width="11.2" stroke-miterlimit="10"/></g></g>';
-        } else {
+        if (_shouldUseCustomPicture(imageURI)) {
             return
                 string(
                     abi.encodePacked(
@@ -105,6 +115,9 @@ library ProfileTokenURILogic {
                         '"/>'
                     )
                 );
+        } else {
+            return
+                '<g id="default-picture"><rect id="default-picture-background" x="0" width="450" height="450" fill="#ABFE2C"/><g id="default-picture-logo" transform="translate(60,30)"><style><![CDATA[#ez1M8bKaIyB3_to {animation: ez1M8bKaIyB3_to__to 6000ms linear infinite normal forwards}@keyframes ez1M8bKaIyB3_to__to { 0% { transform: translate3d(0,0,0); transform: translate(161px,137px) rotate(0.05deg);animation-timing-function: cubic-bezier(0.5,0.1,0.7,0.5)} 41% {transform: translate(157px,133px) rotate(0.05deg);animation-timing-function: cubic-bezier(0.2,0.5,0.5,0.9)} 100% {transform: translate(161px,137px) rotate(0.05deg)}} #ez1M8bKaIyB6_to {animation: ez1M8bKaIyB6_to__to 6000ms linear infinite normal forwards}@keyframes ez1M8bKaIyB6_to__to { 0% {transform: translate(160px,136px) rotate(0.05deg);animation-timing-function: cubic-bezier(0.5,0.1,0.7,0.2)} 26% {transform: translate(176px,138px) rotate(0.05deg);animation-timing-function: cubic-bezier(0.2,0.6,0.3,1)} 43% {transform: translate(176px,138px) rotate(0.05deg);animation-timing-function: cubic-bezier(0.2,0.6,0.3,1)} 83% {transform: translate(154px,145px) rotate(0.05deg)} 100% {transform: translate(160px,136px) rotate(0.05deg)}}]]></style><path d="m171.3 315.6.1.2-.3-67a113.6 113.6 0 0 0 99.7 58.6 115 115 0 0 0 48.9-10.8l-5.8-10a103.9 103.9 0 0 1-120.5-25.5l4.3 2.9a77 77 0 0 0 77.9 1l-5.7-10-2 1.1a66.4 66.4 0 0 1-96.5-54c19-1.1-30.8-1.1-12 .1A66.4 66.4 0 0 1 60.9 255l-5.7 10 2.4 1.2a76.1 76.1 0 0 0 79.8-5 103.9 103.9 0 0 1-120.6 25.5l-5.7 9.9a115 115 0 0 0 138.5-32.2c3.8-4.8 7.2-10 10-15.3l.6 66.9v-.4h11Z" fill="#00501e"/><g id="ez1M8bKaIyB3_to" transform="translate(162 137.5)"><g><g transform="translate(-165.4 -143.9)"><path d="M185 159.2c-2.4 6.6-9.6 12.2-19.2 12.2-9.3 0-17.3-5.3-19.4-12.4" fill="none" stroke="#00501e" stroke-width="8.3" stroke-linejoin="round"/><g id="ez1M8bKaIyB6_to" transform="translate(160 136.6)"><g transform="translate(0 -1.3)" fill="#00501e"><path d="M124.8 144.7a11.9 11.9 0 1 1-23.8 0 11.9 11.9 0 0 1 23.8 0Z" transform="translate(-154.1 -145)"/><path d="M209.5 144.7a11.9 11.9 0 1 1-23.8 0 11.9 11.9 0 0 1 23.8 0Z" transform="translate(-155 -145)"/></g></g><path d="M92.2 142.8c0-14.6 13.8-26.4 30.8-26.4s30.8 11.8 30.8 26.4M177 142.8c0-14.6 13.8-26.4 30.8-26.4s30.8 11.8 30.8 26.4" fill="none" stroke="#00501e" stroke-width="8.3" stroke-linejoin="round"/></g></g></g><path d="m219.1 70.3-3.2 3.3.1-4.6v-4.7c-1.8-65.4-100.3-65.4-102.1 0l-.1 4.7v4.6l-3.1-3.3-3.4-3.3C59.8 22-10 91.7 35 139.2l3.3 3.4C92.6 196.8 164.9 197 164.9 197s72.3-.2 126.5-54.4l3.3-3.4C339.7 91.7 270 22 222.5 67l-3.4 3.3Z" fill="none" stroke="#00501e" stroke-width="11.2" stroke-miterlimit="10"/></g></g>';
         }
     }
 
@@ -124,5 +137,46 @@ library ProfileTokenURILogic {
             handleLength <= MAX_HANDLE_LENGTH_WITH_DEFAULT_FONT_SIZE
                 ? DEFAULT_FONT_SIZE
                 : DEFAULT_FONT_SIZE - (handleLength - 12) / 2;
+    }
+
+    /**
+     * @notice Decides if Profile NFT should use user provided custom profile picture or the default one.
+     *
+     * @dev The custom imageURI must be an IPFS HTTPS URL using the default `ipfs.io` gateway to be embedded in
+     * the Profile NFT, as other domains could lead to Content-Security-Policy's errors in most of the sites.
+     *      Then, browsers and sites that support IPFS can redirect these SVG image requests to its preferred IPFS node
+     * or gateway, or just use the default `ipfs.io` gateway.
+     *      In addition, 'https://ipfs.io/ipfs/<cid>' URIs were preferred over `ipfs://<cid>` because using the
+     * former format is more likely to have support, for example when opening the image locally or in a browser.
+     *      See `https://docs.ipfs.io/how-to/address-ipfs-on-web` for more details.
+     *
+     * @param imageURI The imageURI set by the profile owner.
+     *
+     * @return A boolean indicating whether custom profile picture should be used or not.
+     */
+    function _shouldUseCustomPicture(string memory imageURI) internal pure returns (bool) {
+        bytes memory imageURIBytes = bytes(imageURI);
+        if (imageURIBytes.length < EXPECTED_IMAGE_URI_MIN_LENGTH) {
+            return false;
+        }
+        bytes32 beginningHash;
+        assembly {
+            // Calculates the keccak256 hash of first EXPECTED_IMAGE_URI_BEGGINING_LENGTH = 21 characters on imageURI,
+            // which are expected to be 'https://ipfs.io/ipfs/'
+            beginningHash := keccak256(
+                add(imageURIBytes, 0x20),
+                EXPECTED_IMAGE_URI_BEGGINING_LENGTH
+            )
+        }
+        if (beginningHash != EXPECTED_IMAGE_URI_BEGGINING_HASH) {
+            return false;
+        }
+        for (uint256 i = EXPECTED_IMAGE_URI_BEGGINING_LENGTH; i < imageURIBytes.length; i++) {
+            if (imageURIBytes[i] == '"') {
+                // Avoids embedding a user provided imageURI containing double-quotes to prevent injection attacks
+                return false;
+            }
+        }
+        return true;
     }
 }
