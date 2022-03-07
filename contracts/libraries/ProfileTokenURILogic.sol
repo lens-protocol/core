@@ -68,8 +68,8 @@ library ProfileTokenURILogic {
     /**
      * @notice Generates the token image.
      *
-     * @dev If the image URI was set, it will be embedded in the token image. Otherwise, a default picture will be used.
-     * Handle font size is a function of handle length.
+     * @dev If the image URI was set and meets URI format conditions, it will be embedded in the token image.
+     * Otherwise, a default picture will be used. Handle font size is a function of handle length.
      *
      * @param handleWithAtSymbol The profile's handle beginning with "@" symbol.
      * @param imageURI The profile's picture URI. An empty string if has not been set.
@@ -98,8 +98,8 @@ library ProfileTokenURILogic {
     /**
      * @notice Gets the fragment of the SVG correponding to the profile picture.
      *
-     * @dev If the image URI was set, this will return an image tag referencing it. Otherwise, a group tag that renders
-     * the default picture will be returned.
+     * @dev If the image URI was set and meets URI format conditions, this will return an image tag referencing it.
+     * Otherwise, a group tag that renders the default picture will be returned.
      *
      * @param imageURI The profile's picture URI. An empty string if has not been set.
      *
