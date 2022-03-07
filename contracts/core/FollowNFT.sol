@@ -80,25 +80,19 @@ contract FollowNFT is LensNFTBase, IFollowNFT {
         address delegatee,
         DataTypes.EIP712Signature calldata sig
     ) external override {
-        bytes32 digest;
-        unchecked {
-            digest = keccak256(
-                abi.encodePacked(
-                    '\x19\x01',
-                    _calculateDomainSeparator(),
-                    keccak256(
-                        abi.encode(
-                            DELEGATE_BY_SIG_TYPEHASH,
-                            delegator,
-                            delegatee,
-                            sigNonces[delegator]++,
-                            sig.deadline
-                        )
-                    )
+        _validateRecoveredAddress(
+            _calculateDigest(
+                abi.encode(
+                    DELEGATE_BY_SIG_TYPEHASH,
+                    delegator,
+                    delegatee,
+                    sigNonces[delegator]++,
+                    sig.deadline
                 )
-            );
-        }
-        _validateRecoveredAddress(digest, delegator, sig);
+            ),
+            delegator,
+            sig
+        );
         _delegate(delegator, delegatee);
     }
 
@@ -203,7 +197,7 @@ contract FollowNFT is LensNFTBase, IFollowNFT {
         uint256 tokenId
     ) internal override {
         address fromDelegatee = _delegates[from];
-        address toDelegatee =  _delegates[to];
+        address toDelegatee = _delegates[to];
         address followModule = ILensHub(HUB).getFollowModule(_profileId);
 
         _moveDelegate(fromDelegatee, toDelegatee, 1);
