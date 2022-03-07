@@ -158,7 +158,7 @@ makeSuiteCleanRoom('Misc', function () {
       const tokenURI = await lensHub.tokenURI(FIRST_PROFILE_ID);
       const jsonMetadata = await getJsonMetadataFromBase64TokenUri(tokenURI);
       expect(jsonMetadata.name).to.eq(`@${MOCK_PROFILE_HANDLE}`);
-      expect(jsonMetadata.description).to.eq('TODO!');
+      expect(jsonMetadata.description).to.eq(`@${MOCK_PROFILE_HANDLE} - Lens profile`);
       const expectedAttributes = [
         { trait_type: 'id', value: `#${FIRST_PROFILE_ID.toString()}` },
         { trait_type: 'owner', value: userAddress.toLowerCase() },
@@ -166,7 +166,7 @@ makeSuiteCleanRoom('Misc', function () {
       ];
       expect(jsonMetadata.attributes).to.eql(expectedAttributes);
       expect(keccak256(toUtf8Bytes(tokenURI))).to.eq(
-        '0x6f7d381b72a10ef9df298565a13f25f02a791991b055182aaab3783404f9a187'
+        '0x71e9566fdab9d3fa40a12c3d59506259837853b75e239d296f2406eac94e9547'
       );
     });
 

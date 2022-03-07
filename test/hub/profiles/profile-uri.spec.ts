@@ -61,7 +61,7 @@ makeSuiteCleanRoom('Profile URI Functionality', function () {
         const tokenURI = await lensHub.tokenURI(FIRST_PROFILE_ID);
         const jsonMetadata = await getJsonMetadataFromBase64TokenUri(tokenURI);
         expect(jsonMetadata.name).to.eq(`@${MOCK_PROFILE_HANDLE}`);
-        expect(jsonMetadata.description).to.eq('TODO!');
+        expect(jsonMetadata.description).to.eq(`@${MOCK_PROFILE_HANDLE} - Lens profile`);
         const expectedAttributes = [
           { trait_type: 'id', value: `#${FIRST_PROFILE_ID.toString()}` },
           { trait_type: 'owner', value: userAddress.toLowerCase() },
@@ -69,7 +69,7 @@ makeSuiteCleanRoom('Profile URI Functionality', function () {
         ];
         expect(jsonMetadata.attributes).to.eql(expectedAttributes);
         expect(keccak256(toUtf8Bytes(tokenURI))).to.eq(
-          '0x39ab7aff2fb2de3fa3dccad5aeee7ad2ea195ed25701c696796e6307c31f5a66'
+          '0x469ce48ea715b49beb948de52681ae0bc8b5184b3793b3e2dbef0893699aca52'
         );
       });
 
@@ -80,7 +80,7 @@ makeSuiteCleanRoom('Profile URI Functionality', function () {
         ).to.not.be.reverted;
         const tokenURI = await lensHub.tokenURI(FIRST_PROFILE_ID);
         expect(keccak256(toUtf8Bytes(tokenURI))).to.eq(
-          '0x39ab7aff2fb2de3fa3dccad5aeee7ad2ea195ed25701c696796e6307c31f5a66'
+          '0x469ce48ea715b49beb948de52681ae0bc8b5184b3793b3e2dbef0893699aca52'
         );
       });
 
@@ -317,7 +317,7 @@ makeSuiteCleanRoom('Profile URI Functionality', function () {
         const tokenURIBefore = await lensHub.tokenURI(FIRST_PROFILE_ID);
 
         expect(keccak256(toUtf8Bytes(tokenURIBefore))).to.eq(
-          '0x24dda662d123bc6d39b9f905c9a28675c7b5183dc729e8cba3fe62b70d04956b'
+          '0xb95b30163b08bc4f0c096abf10b220cefc74697c7b2761f9794db082b4bdfd89'
         );
 
         await expect(
@@ -339,7 +339,7 @@ makeSuiteCleanRoom('Profile URI Functionality', function () {
         expect(tokenURIBefore).to.not.eq(tokenURIAfter);
 
         expect(keccak256(toUtf8Bytes(tokenURIAfter))).to.eq(
-          '0xc21c368c892e7f817fa8d747714e3561fb88fbb6a99095313c9c52f430c98ce6'
+          '0xb67bbdd6959319e9f8da1302a16a24cefbaa34b2a3b02dfc3fd83c2d292966da'
         );
       });
 
