@@ -96,9 +96,9 @@ contract AuctionCollectModule is ICollectModule, FeeModuleBase, FollowValidation
     bytes32 internal constant BID_WITH_INCREMENT_WITH_SIG_TYPEHASH =
         0xc0719c4adfe9f76d2b91bda41124cb613ea2376a5f853285fb7d54bb6e2505b7;
 
-    // keccak256('WithdrawWithSig(uint256 profileId,uint256 pubId,uint256 nonce,uint256 deadline)');
+    // keccak256('WithdrawWithSig(uint256 profileId,uint256 pubId,address bidder,uint256 nonce,uint256 deadline)');
     bytes32 internal constant WITHDRAW_WITH_SIG_TYPEHASH =
-        0x78a72e0cdba03af106b64e939c0bdf93fa337c6f2c2c7ca91247165735ed784a;
+        0xefd716178a36bd0583976101fa5e83a249e27de97767f7195cd8d269bdcae8e8;
 
     mapping(address => uint256) public nonces;
 
@@ -270,6 +270,7 @@ contract AuctionCollectModule is ICollectModule, FeeModuleBase, FollowValidation
                             WITHDRAW_WITH_SIG_TYPEHASH,
                             profileId,
                             pubId,
+                            bidder,
                             nonces[bidder]++,
                             sig.deadline
                         )
@@ -278,6 +279,7 @@ contract AuctionCollectModule is ICollectModule, FeeModuleBase, FollowValidation
             );
         }
         _validateRecoveredAddress(digest, bidder, sig);
+        _withdraw(profileId, pubId, bidder);
     }
 
     function getAuctionData(uint256 profileId, uint256 pubId)
