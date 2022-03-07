@@ -474,7 +474,7 @@ contract AuctionCollectModule is ICollectModule, FeeModuleBase, FollowValidation
         }
         uint256 amountToWithdraw = auction.bidBalanceOf[bidder];
         if (amountToWithdraw == 0) {
-            // Avoid sending a zero-amount Withdraw event
+            // Avoid sending a zero-amount `Withdrawn` event
             revert NothingToWithdraw();
         }
         auction.bidBalanceOf[bidder] = 0;
@@ -503,10 +503,13 @@ contract AuctionCollectModule is ICollectModule, FeeModuleBase, FollowValidation
         address expectedAddress,
         DataTypes.EIP712Signature calldata sig
     ) internal view {
-        if (sig.deadline < block.timestamp) revert Errors.SignatureExpired();
+        if (sig.deadline < block.timestamp) {
+            revert Errors.SignatureExpired();
+        }
         address recoveredAddress = ecrecover(digest, sig.v, sig.r, sig.s);
-        if (recoveredAddress == address(0) || recoveredAddress != expectedAddress)
+        if (recoveredAddress == address(0) || recoveredAddress != expectedAddress) {
             revert Errors.SignatureInvalid();
+        }
     }
 
     function _calculateDomainSeparator() internal view returns (bytes32) {
