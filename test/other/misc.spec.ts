@@ -703,24 +703,43 @@ makeSuiteCleanRoom('Misc', function () {
       // Then, deploy the data provider
       const dataProvider = await new UIDataProvider__factory(deployer).deploy(lensHub.address);
 
-      // Lastly, validate the result from the data provider
-      const result = await dataProvider.getLatestData(FIRST_PROFILE_ID);
-      const pubStruct = result.publicationStruct;
-      const profileStruct = result.profileStruct;
+      // `getLatestDataByProfile`, validate the result from the data provider
+      const resultByProfileId = await dataProvider.getLatestDataByProfile(FIRST_PROFILE_ID);
+      const pubByProfileIdStruct = resultByProfileId.publicationStruct;
+      const profileByProfileIdStruct = resultByProfileId.profileStruct;
 
-      expect(profileStruct.pubCount).to.eq(2);
-      expect(profileStruct.followModule).to.eq(ZERO_ADDRESS);
-      expect(profileStruct.followNFT).to.eq(ZERO_ADDRESS);
-      expect(profileStruct.handle).to.eq(MOCK_PROFILE_HANDLE);
-      expect(profileStruct.imageURI).to.eq(MOCK_PROFILE_URI);
-      expect(profileStruct.followNFTURI).to.eq(MOCK_FOLLOW_NFT_URI);
+      expect(profileByProfileIdStruct.pubCount).to.eq(2);
+      expect(profileByProfileIdStruct.followModule).to.eq(ZERO_ADDRESS);
+      expect(profileByProfileIdStruct.followNFT).to.eq(ZERO_ADDRESS);
+      expect(profileByProfileIdStruct.handle).to.eq(MOCK_PROFILE_HANDLE);
+      expect(profileByProfileIdStruct.imageURI).to.eq(MOCK_PROFILE_URI);
+      expect(profileByProfileIdStruct.followNFTURI).to.eq(MOCK_FOLLOW_NFT_URI);
 
-      expect(pubStruct.profileIdPointed).to.eq(0);
-      expect(pubStruct.pubIdPointed).to.eq(0);
-      expect(pubStruct.contentURI).to.eq(secondURI);
-      expect(pubStruct.referenceModule).to.eq(ZERO_ADDRESS);
-      expect(pubStruct.collectModule).to.eq(emptyCollectModule.address);
-      expect(pubStruct.collectNFT).to.eq(ZERO_ADDRESS);
+      expect(pubByProfileIdStruct.profileIdPointed).to.eq(0);
+      expect(pubByProfileIdStruct.pubIdPointed).to.eq(0);
+      expect(pubByProfileIdStruct.contentURI).to.eq(secondURI);
+      expect(pubByProfileIdStruct.referenceModule).to.eq(ZERO_ADDRESS);
+      expect(pubByProfileIdStruct.collectModule).to.eq(emptyCollectModule.address);
+      expect(pubByProfileIdStruct.collectNFT).to.eq(ZERO_ADDRESS);
+
+      // `getLatestDataByHandle`, validate the result from the data provider
+      const resultByHandle = await dataProvider.getLatestDataByHandle(MOCK_PROFILE_HANDLE);
+      const pubByHandleStruct = resultByHandle.publicationStruct;
+      const profileByHandleStruct = resultByHandle.profileStruct;
+
+      expect(profileByHandleStruct.pubCount).to.eq(2);
+      expect(profileByHandleStruct.followModule).to.eq(ZERO_ADDRESS);
+      expect(profileByHandleStruct.followNFT).to.eq(ZERO_ADDRESS);
+      expect(profileByHandleStruct.handle).to.eq(MOCK_PROFILE_HANDLE);
+      expect(profileByHandleStruct.imageURI).to.eq(MOCK_PROFILE_URI);
+      expect(profileByHandleStruct.followNFTURI).to.eq(MOCK_FOLLOW_NFT_URI);
+
+      expect(pubByHandleStruct.profileIdPointed).to.eq(0);
+      expect(pubByHandleStruct.pubIdPointed).to.eq(0);
+      expect(pubByHandleStruct.contentURI).to.eq(secondURI);
+      expect(pubByHandleStruct.referenceModule).to.eq(ZERO_ADDRESS);
+      expect(pubByHandleStruct.collectModule).to.eq(emptyCollectModule.address);
+      expect(pubByHandleStruct.collectNFT).to.eq(ZERO_ADDRESS);
     });
   });
 });

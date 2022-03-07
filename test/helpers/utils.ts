@@ -1,13 +1,12 @@
 import '@nomiclabs/hardhat-ethers';
 import { BigNumberish, Bytes, logger, utils, BigNumber, Contract } from 'ethers';
-import { TransactionReceipt } from '@ethersproject/providers';
-import { hexlify, keccak256, RLP, toUtf8Bytes } from 'ethers/lib/utils';
-import { TransactionResponse } from '@ethersproject/providers';
-import hre, { ethers } from 'hardhat';
-import { LensHub__factory } from '../../typechain-types';
-import { lensHub, LENS_HUB_NFT_NAME, helper, testWallet, eventsLib } from '../__setup.spec';
-import { HARDHAT_CHAINID, MAX_UINT256 } from './constants';
+import { eventsLib, helper, lensHub, LENS_HUB_NFT_NAME, testWallet } from '../__setup.spec';
 import { expect } from 'chai';
+import { HARDHAT_CHAINID, MAX_UINT256 } from './constants';
+import { hexlify, keccak256, RLP, toUtf8Bytes } from 'ethers/lib/utils';
+import { LensHub__factory } from '../../typechain-types';
+import { TransactionReceipt, TransactionResponse } from '@ethersproject/providers';
+import hre, { ethers } from 'hardhat';
 
 export enum ProtocolState {
   Unpaused,
@@ -318,6 +317,16 @@ export async function getSetProfileImageURIWithSigParts(
   return await getSig(msgParams);
 }
 
+export async function getSetDefaultProfileWithSigParts(
+  profileId: BigNumberish,
+  wallet: string,
+  nonce: number,
+  deadline: string
+): Promise<{ v: number; r: string; s: string }> {
+  const msgParams = buildSetDefaultProfileWithSigParams(profileId, wallet, nonce, deadline);
+  return await getSig(msgParams);
+}
+
 export async function getSetFollowNFTURIWithSigParts(
   profileId: BigNumberish,
   followNFTURI: string,
@@ -590,6 +599,29 @@ const buildSetProfileImageURIWithSigParams = (
   value: {
     profileId: profileId,
     imageURI: imageURI,
+    nonce: nonce,
+    deadline: deadline,
+  },
+});
+
+const buildSetDefaultProfileWithSigParams = (
+  profileId: BigNumberish,
+  wallet: string,
+  nonce: number,
+  deadline: string
+) => ({
+  types: {
+    SetDefaultProfileWithSig: [
+      { name: 'profileId', type: 'uint256' },
+      { name: 'wallet', type: 'address' },
+      { name: 'nonce', type: 'uint256' },
+      { name: 'deadline', type: 'uint256' },
+    ],
+  },
+  domain: domain(),
+  value: {
+    profileId: profileId,
+    wallet: wallet,
     nonce: nonce,
     deadline: deadline,
   },
