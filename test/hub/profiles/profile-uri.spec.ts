@@ -129,7 +129,7 @@ makeSuiteCleanRoom('Profile URI Functionality', function () {
 
       it('Default image should be used when imageURI contains double-quotes', async function () {
         const imageURI =
-          'https://gateway.pinata.cloud/ipfs/QmbWqxBEKC3P8tqsKc98xmWNzrzDtRLMiMPL8wBuTGsMnR';
+          'https://ipfs.io/ipfs/QmbWqxBEKC3P8tqsKc98xmWNzrztRLMiMPL8wBuTGsMnR" <rect x="10" y="10" fill="red';
         await expect(lensHub.setProfileImageURI(FIRST_PROFILE_ID, imageURI)).to.not.be.reverted;
         const tokenURI = await lensHub.tokenURI(FIRST_PROFILE_ID);
         const jsonMetadata = await getJsonMetadataFromBase64TokenUri(tokenURI);
