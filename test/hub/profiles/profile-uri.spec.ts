@@ -73,6 +73,79 @@ makeSuiteCleanRoom('Profile URI Functionality', function () {
         );
       });
 
+      it('Default image should be used when no imageURI set', async function () {
+        await expect(lensHub.setProfileImageURI(FIRST_PROFILE_ID, '')).to.not.be.reverted;
+        const tokenURI = await lensHub.tokenURI(FIRST_PROFILE_ID);
+        const jsonMetadata = await getJsonMetadataFromBase64TokenUri(tokenURI);
+        expect(jsonMetadata.name).to.eq(`@${MOCK_PROFILE_HANDLE}`);
+        expect(jsonMetadata.description).to.eq(`@${MOCK_PROFILE_HANDLE} - Lens profile`);
+        const expectedAttributes = [
+          { trait_type: 'id', value: `#${FIRST_PROFILE_ID.toString()}` },
+          { trait_type: 'owner', value: userAddress.toLowerCase() },
+          { trait_type: 'handle', value: `@${MOCK_PROFILE_HANDLE}` },
+        ];
+        expect(jsonMetadata.attributes).to.eql(expectedAttributes);
+        expect(keccak256(toUtf8Bytes(tokenURI))).to.eq(
+          '0xc9222b5027292694589ea3179b0f0bf7da9e271ecbe1bdaed39b6ab8e793a856'
+        );
+      });
+
+      it('Default image should be used when imageURI does not meet length requirement', async function () {
+        const imageURI = 'https://ipfs.io/ipfs/QmbWqxBEKC3P8tqsKc98xmWNzrzDtRLMiMPL8wBuTGs';
+        await expect(lensHub.setProfileImageURI(FIRST_PROFILE_ID, imageURI)).to.not.be.reverted;
+        const tokenURI = await lensHub.tokenURI(FIRST_PROFILE_ID);
+        const jsonMetadata = await getJsonMetadataFromBase64TokenUri(tokenURI);
+        expect(jsonMetadata.name).to.eq(`@${MOCK_PROFILE_HANDLE}`);
+        expect(jsonMetadata.description).to.eq(`@${MOCK_PROFILE_HANDLE} - Lens profile`);
+        const expectedAttributes = [
+          { trait_type: 'id', value: `#${FIRST_PROFILE_ID.toString()}` },
+          { trait_type: 'owner', value: userAddress.toLowerCase() },
+          { trait_type: 'handle', value: `@${MOCK_PROFILE_HANDLE}` },
+        ];
+        expect(jsonMetadata.attributes).to.eql(expectedAttributes);
+        expect(keccak256(toUtf8Bytes(tokenURI))).to.eq(
+          '0xc9222b5027292694589ea3179b0f0bf7da9e271ecbe1bdaed39b6ab8e793a856'
+        );
+      });
+
+      it('Default image should be used when imageURI does not match expected URI beginning', async function () {
+        const imageURI =
+          'https://gateway.pinata.cloud/ipfs/QmbWqxBEKC3P8tqsKc98xmWNzrzDtRLMiMPL8wBuTGsMnR';
+        await expect(lensHub.setProfileImageURI(FIRST_PROFILE_ID, imageURI)).to.not.be.reverted;
+        const tokenURI = await lensHub.tokenURI(FIRST_PROFILE_ID);
+        const jsonMetadata = await getJsonMetadataFromBase64TokenUri(tokenURI);
+        expect(jsonMetadata.name).to.eq(`@${MOCK_PROFILE_HANDLE}`);
+        expect(jsonMetadata.description).to.eq(`@${MOCK_PROFILE_HANDLE} - Lens profile`);
+        const expectedAttributes = [
+          { trait_type: 'id', value: `#${FIRST_PROFILE_ID.toString()}` },
+          { trait_type: 'owner', value: userAddress.toLowerCase() },
+          { trait_type: 'handle', value: `@${MOCK_PROFILE_HANDLE}` },
+        ];
+        expect(jsonMetadata.attributes).to.eql(expectedAttributes);
+        expect(keccak256(toUtf8Bytes(tokenURI))).to.eq(
+          '0xc9222b5027292694589ea3179b0f0bf7da9e271ecbe1bdaed39b6ab8e793a856'
+        );
+      });
+
+      it('Default image should be used when imageURI contains double-quotes', async function () {
+        const imageURI =
+          'https://gateway.pinata.cloud/ipfs/QmbWqxBEKC3P8tqsKc98xmWNzrzDtRLMiMPL8wBuTGsMnR';
+        await expect(lensHub.setProfileImageURI(FIRST_PROFILE_ID, imageURI)).to.not.be.reverted;
+        const tokenURI = await lensHub.tokenURI(FIRST_PROFILE_ID);
+        const jsonMetadata = await getJsonMetadataFromBase64TokenUri(tokenURI);
+        expect(jsonMetadata.name).to.eq(`@${MOCK_PROFILE_HANDLE}`);
+        expect(jsonMetadata.description).to.eq(`@${MOCK_PROFILE_HANDLE} - Lens profile`);
+        const expectedAttributes = [
+          { trait_type: 'id', value: `#${FIRST_PROFILE_ID.toString()}` },
+          { trait_type: 'owner', value: userAddress.toLowerCase() },
+          { trait_type: 'handle', value: `@${MOCK_PROFILE_HANDLE}` },
+        ];
+        expect(jsonMetadata.attributes).to.eql(expectedAttributes);
+        expect(keccak256(toUtf8Bytes(tokenURI))).to.eq(
+          '0xc9222b5027292694589ea3179b0f0bf7da9e271ecbe1bdaed39b6ab8e793a856'
+        );
+      });
+
       it('User should set user two as a dispatcher on their profile, user two should set the profile URI', async function () {
         await expect(lensHub.setDispatcher(FIRST_PROFILE_ID, userTwoAddress)).to.not.be.reverted;
         await expect(
