@@ -9,94 +9,98 @@ import {IERC20} from '@openzeppelin/contracts/token/ERC20/IERC20.sol';
 import {ILensHub} from '../../../interfaces/ILensHub.sol';
 
 /**
+ * @notice A struct containing the necessary data to execute reference actions on a publication.
+ *
+ * @param token The token address associated with a publication.
+ * @param minimumBalance The minimum amount of token an address should have to reference a publication..
+ */
+struct ProfilePublicationTokenGateData {
+    address token;
+    uint256 minimumBalance;
+}
+
+/**
  * @title TokenGatedReferenceModule
- * @author Lens Protocol
+ * @author starwalker00
  *
  * @notice A simple reference module that validates that comments or mirrors originate from a profile
- * owned by an address that has at least _minimumBalance of ERC-20 token at address _token.
+ * owned by an address that has at least `minimumBalance` amount of ERC-20 token at address `token`.
  */
 contract TokenGatedReferenceModule is IReferenceModule, ModuleBase {
-    address private _token;
-    uint256 private _minimumBalance;
+    mapping(uint256 => mapping(uint256 => ProfilePublicationTokenGateData))
+        internal _dataByPublicationByProfile;
+
+    constructor(address hub) ModuleBase(hub) {}
 
     /**
-     * @dev The constructor sets token address and the minimum balance.
+     * @notice This reference module checks particular token balances. Thus, we need to decode data.
      *
-     * @param token The ERC-20 token address to test the balance against.
-     * @param minimumBalance The minimum balance of the ERC-20 token needed to reference the publication.
-     */
-    constructor(
-        address hub,
-        address token,
-        uint256 minimumBalance
-    ) ModuleBase(hub) {
-        _token = token;
-        _minimumBalance = minimumBalance;
-    }
-
-    /**
-     * @dev There is nothing needed at initialization.
+     * @param profileId The token ID of the profile of the publisher, passed by the hub.
+     * @param pubId The publication ID of the newly created publication, passed by the hub.
+     * @param data The arbitrary data parameter, decoded into:
+     *      address token: The token address.
+     *      uint256 minimumBalance: The minimum amount of token an address should have to reference the publication.
+     *
+     * @return An abi encoded bytes parameter, which is the same as the passed data parameter.
      */
     function initializeReferenceModule(
         uint256 profileId,
         uint256 pubId,
         bytes calldata data
-    ) external pure override returns (bytes memory) {
-        return new bytes(0);
+    ) external override onlyHub returns (bytes memory) {
+        (address token, uint256 minimumBalance) = abi.decode(data, (address, uint256));
+
+        _dataByPublicationByProfile[profileId][pubId].token = token;
+        _dataByPublicationByProfile[profileId][pubId].minimumBalance = minimumBalance;
+
+        return data;
     }
 
     /**
      * @notice Validates that the commenting profile's owner passes the token gate.
-     *
-     * NOTE: We don't need to care what the pointed publication is in this context.
      */
     function processComment(
         uint256 profileId,
         uint256 profileIdPointed,
         uint256 pubIdPointed
     ) external view override {
-        address commentCreatorAddress = IERC721(HUB).ownerOf(profileId);
-        _checkBalanceOf(commentCreatorAddress);
+        _checkBalanceOf(profileId, profileIdPointed, pubIdPointed);
     }
 
     /**
      * @notice Validates that the mirroring profile's owner passes the token gate.
-     *
-     * NOTE: We don't need to care what the pointed publication is in this context.
      */
     function processMirror(
         uint256 profileId,
         uint256 profileIdPointed,
         uint256 pubIdPointed
     ) external view override {
-        address mirrorCreatorAddress = IERC721(HUB).ownerOf(profileId);
-        _checkBalanceOf(mirrorCreatorAddress);
+        _checkBalanceOf(profileId, profileIdPointed, pubIdPointed);
     }
 
     /**
-     * @notice Validates that an address passes the token gate.
+     * @notice Validates that an referencing profile's owner passes the token gate.
      *
-     * @param referenceCreator The owner address to test the token gate against.
+     * @param profileId The token ID of the profile trying to comment or mirror.
+     * @param profileIdPointed The token ID of the profile mapped to the publication to query.
+     * @param pubIdPointed The publication ID of the publication to query.
+     *
      */
-    function _checkBalanceOf(address referenceCreator) internal view {
-        uint256 balance = IERC20(_token).balanceOf(referenceCreator);
+    function _checkBalanceOf(
+        uint256 profileId,
+        uint256 profileIdPointed,
+        uint256 pubIdPointed
+    ) internal view {
+        address referenceCreatorAddress = IERC721(HUB).ownerOf(profileId);
+        address tokenAddress = _dataByPublicationByProfile[profileIdPointed][pubIdPointed].token;
+        uint256 balance = IERC20(tokenAddress).balanceOf(referenceCreatorAddress);
+
+        uint256 minimumBalance = _dataByPublicationByProfile[profileIdPointed][pubIdPointed]
+            .minimumBalance;
+
         require(
-            balance > _minimumBalance,
+            balance > minimumBalance,
             'Profile owner does not have the minimum amount of specific token to create a reference.'
         );
-    }
-
-    /**
-     * @dev Returns the token address.
-     */
-    function getTokenAddress() external view returns (address) {
-        return _token;
-    }
-
-    /**
-     * @dev Returns the minimum balance.
-     */
-    function getMinimumBalance() external view returns (uint256) {
-        return _minimumBalance;
     }
 }

@@ -1,9 +1,10 @@
 import '@nomiclabs/hardhat-ethers';
-import { BigNumber } from '@ethersproject/contracts/node_modules/@ethersproject/bignumber';
+import { parseEther } from '@ethersproject/units';
 import { expect, should } from 'chai';
-import { MAX_UINT256, ZERO_ADDRESS } from '../../helpers/constants';
+import { ZERO_ADDRESS } from '../../helpers/constants';
 import { getTimestamp, matchEvent, waitForTx } from '../../helpers/utils';
 import {
+  abiCoder,
   emptyCollectModule,
   FIRST_PROFILE_ID,
   tokenGatedReferenceModule,
@@ -22,6 +23,8 @@ import {
 } from '../../__setup.spec';
 
 makeSuiteCleanRoom('Token Gated Reference Module', function () {
+  const DEFAULT_MINIMUM_BALANCE = parseEther('1');
+
   beforeEach(async function () {
     await expect(
       lensHub.createProfile({
@@ -41,6 +44,10 @@ makeSuiteCleanRoom('Token Gated Reference Module', function () {
     await expect(
       lensHub.connect(governance).whitelistCollectModule(emptyCollectModule.address, true)
     ).to.not.be.reverted;
+    const referenceModuleData = abiCoder.encode(
+      ['address', 'uint256'],
+      [currency.address, DEFAULT_MINIMUM_BALANCE]
+    );
     await expect(
       lensHub.post({
         profileId: FIRST_PROFILE_ID,
@@ -48,7 +55,7 @@ makeSuiteCleanRoom('Token Gated Reference Module', function () {
         collectModule: emptyCollectModule.address,
         collectModuleData: [],
         referenceModule: tokenGatedReferenceModule.address,
-        referenceModuleData: [],
+        referenceModuleData: referenceModuleData,
       })
     ).to.not.be.reverted;
   });
@@ -59,6 +66,7 @@ makeSuiteCleanRoom('Token Gated Reference Module', function () {
       it('Commenting should fail if the commenter does not pass the token gate.', async function () {
         const balance = await currency.balanceOf(userAddress);
         expect(await currency.balanceOf(userAddress)).to.eq(0);
+
         await expect(
           lensHub.comment({
             profileId: FIRST_PROFILE_ID,
@@ -77,6 +85,7 @@ makeSuiteCleanRoom('Token Gated Reference Module', function () {
       it('Mirroring should fail if publisher does not pass the token gate.', async function () {
         const balance = await currency.balanceOf(userAddress);
         expect(await currency.balanceOf(userAddress)).to.eq(0);
+
         await expect(
           lensHub.mirror({
             profileId: FIRST_PROFILE_ID,
@@ -93,13 +102,18 @@ makeSuiteCleanRoom('Token Gated Reference Module', function () {
   context('Scenarios', function () {
     context('Publishing', function () {
       it('Posting with token gated reference module as reference module should emit expected events', async function () {
+        const referenceModuleData = abiCoder.encode(
+          ['address', 'uint256'],
+          [currency.address, DEFAULT_MINIMUM_BALANCE]
+        );
+
         const tx = lensHub.post({
           profileId: FIRST_PROFILE_ID,
           contentURI: MOCK_URI,
           collectModule: emptyCollectModule.address,
           collectModuleData: [],
           referenceModule: tokenGatedReferenceModule.address,
-          referenceModuleData: [],
+          referenceModuleData: referenceModuleData,
         });
         const receipt = await waitForTx(tx);
         expect(receipt.logs.length).to.eq(1);
@@ -111,7 +125,7 @@ makeSuiteCleanRoom('Token Gated Reference Module', function () {
           emptyCollectModule.address,
           [],
           tokenGatedReferenceModule.address,
-          [],
+          referenceModuleData,
           await getTimestamp(),
         ]);
       });
@@ -119,8 +133,9 @@ makeSuiteCleanRoom('Token Gated Reference Module', function () {
 
     context('Commenting', function () {
       it('Commenting should work if the commenter passes the token gate.', async function () {
-        await expect(currency.mint(userAddress, MAX_UINT256)).to.not.be.reverted;
-        expect(await currency.balanceOf(userAddress)).to.eq(BigNumber.from(MAX_UINT256));
+        const userBalance = DEFAULT_MINIMUM_BALANCE.add(1);
+        await expect(currency.mint(userAddress, userBalance)).to.not.be.reverted;
+        expect(await currency.balanceOf(userAddress)).to.eq(userBalance);
 
         await expect(
           lensHub.comment({
@@ -131,19 +146,20 @@ makeSuiteCleanRoom('Token Gated Reference Module', function () {
             collectModule: emptyCollectModule.address,
             collectModuleData: [],
             referenceModule: ZERO_ADDRESS,
-            referenceModuleData: [],
+            referenceModuleData: []
           })
         ).to.not.be.reverted;
 
         // balance should be the same, it is a gate, not a payment
-        expect(await currency.balanceOf(userAddress)).to.eq(BigNumber.from(MAX_UINT256));
+        expect(await currency.balanceOf(userAddress)).to.eq(userBalance);
       });
     });
 
     context('Mirroring', function () {
       it('Mirroring should work if publisher passes the token gate', async function () {
-        await expect(currency.mint(userAddress, MAX_UINT256)).to.not.be.reverted;
-        expect(await currency.balanceOf(userAddress)).to.eq(BigNumber.from(MAX_UINT256));
+        const userBalance = DEFAULT_MINIMUM_BALANCE.add(1);
+        await expect(currency.mint(userAddress, userBalance)).to.not.be.reverted;
+        expect(await currency.balanceOf(userAddress)).to.eq(userBalance);
 
         await expect(
           lensHub.mirror({
@@ -156,7 +172,7 @@ makeSuiteCleanRoom('Token Gated Reference Module', function () {
         ).to.not.be.reverted;
 
         // balance should be the same, it is a gate, not a payment
-        expect(await currency.balanceOf(userAddress)).to.eq(BigNumber.from(MAX_UINT256));
+        expect(await currency.balanceOf(userAddress)).to.eq(userBalance);
       });
     });
   });

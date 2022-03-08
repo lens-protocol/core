@@ -220,9 +220,7 @@ before(async function () {
     lensHub.address
   );
   tokenGatedReferenceModule = await new TokenGatedReferenceModule__factory(deployer).deploy(
-    lensHub.address,
-    currency.address,
-    1
+    lensHub.address
   );
 
   mockFollowModule = await new MockFollowModule__factory(deployer).deploy();
