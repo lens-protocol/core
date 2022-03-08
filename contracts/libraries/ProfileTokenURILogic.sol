@@ -11,10 +11,10 @@ library ProfileTokenURILogic {
     uint8 internal constant MAX_HANDLE_LENGTH_WITH_DEFAULT_FONT_SIZE = 17;
 
     // length of 'https://ipfs.io/ipfs/'
-    uint8 internal constant EXPECTED_IMAGE_URI_BEGGINING_LENGTH = 21;
+    uint8 internal constant EXPECTED_IMAGE_URI_BEGINNING_LENGTH = 21;
 
     // keccak256('https://ipfs.io/ipfs/')
-    bytes32 internal constant EXPECTED_IMAGE_URI_BEGGINING_HASH =
+    bytes32 internal constant EXPECTED_IMAGE_URI_BEGINNING_HASH =
         0x6f6c4dab5ef2d22ee688f4f246e6d9e579f088bed1b916b0ef559db8e1ac6e46;
 
     // length of 'https://ipfs.io/ipfs/' + length of a CIDv0
@@ -161,17 +161,17 @@ library ProfileTokenURILogic {
         }
         bytes32 beginningHash;
         assembly {
-            // Calculates the keccak256 hash of first EXPECTED_IMAGE_URI_BEGGINING_LENGTH = 21 characters on imageURI,
+            // Calculates the keccak256 hash of first EXPECTED_IMAGE_URI_BEGINNING_LENGTH = 21 characters on imageURI,
             // which are expected to be 'https://ipfs.io/ipfs/'
             beginningHash := keccak256(
                 add(imageURIBytes, 0x20),
-                EXPECTED_IMAGE_URI_BEGGINING_LENGTH
+                EXPECTED_IMAGE_URI_BEGINNING_LENGTH
             )
         }
-        if (beginningHash != EXPECTED_IMAGE_URI_BEGGINING_HASH) {
+        if (beginningHash != EXPECTED_IMAGE_URI_BEGINNING_HASH) {
             return false;
         }
-        for (uint256 i = EXPECTED_IMAGE_URI_BEGGINING_LENGTH; i < imageURIBytes.length; i++) {
+        for (uint256 i = EXPECTED_IMAGE_URI_BEGINNING_LENGTH; i < imageURIBytes.length; i++) {
             if (imageURIBytes[i] == '"') {
                 // Avoids embedding a user provided imageURI containing double-quotes to prevent injection attacks
                 return false;
