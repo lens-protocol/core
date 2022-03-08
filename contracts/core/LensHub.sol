@@ -10,6 +10,7 @@ import {Errors} from '../libraries/Errors.sol';
 import {PublishingLogic} from '../libraries/PublishingLogic.sol';
 import {ProfileTokenURILogic} from '../libraries/ProfileTokenURILogic.sol';
 import {InteractionLogic} from '../libraries/InteractionLogic.sol';
+import {IERC721Enumerable} from '@openzeppelin/contracts/token/ERC721/extensions/IERC721Enumerable.sol';
 import {LensNFTBase} from './base/LensNFTBase.sol';
 import {LensMultiState} from './base/LensMultiState.sol';
 import {LensHubStorage} from './storage/LensHubStorage.sol';
@@ -811,9 +812,11 @@ contract LensHub is ILensHub, LensNFTBase, VersionedInitializable, LensMultiStat
      * @dev Overrides the ERC721 tokenURI function to return the associated URI with a given profile.
      */
     function tokenURI(uint256 tokenId) public view override returns (string memory) {
+        address followNFT = _profileById[tokenId].followNFT;
         return
             ProfileTokenURILogic.getProfileTokenURI(
                 tokenId,
+                followNFT == address(0) ? 0 : IERC721Enumerable(followNFT).totalSupply(),
                 ownerOf(tokenId),
                 _profileById[tokenId].handle,
                 _profileById[tokenId].imageURI

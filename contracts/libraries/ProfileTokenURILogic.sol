@@ -27,6 +27,7 @@ library ProfileTokenURILogic {
      * The image field contains a base64-encoded SVG. Both the JSON metadata and the image are generated fully on-chain.
      *
      * @param id The token ID of the profile.
+     * @param followers The number of profile's followers.
      * @param owner The address which owns the profile.
      * @param handle The profile's handle.
      * @param imageURI The profile's picture URI. An empty string if has not been set.
@@ -35,6 +36,7 @@ library ProfileTokenURILogic {
      */
     function getProfileTokenURI(
         uint256 id,
+        uint256 followers,
         address owner,
         string memory handle,
         string memory imageURI
@@ -54,6 +56,8 @@ library ProfileTokenURILogic {
                             _getSVGImageBase64Encoded(handleWithAtSymbol, imageURI),
                             '","attributes":[{"trait_type":"id","value":"#',
                             Strings.toString(id),
+                            '"},{"trait_type":"followers","value":"',
+                            Strings.toString(followers),
                             '"},{"trait_type":"owner","value":"',
                             Strings.toHexString(uint160(owner)),
                             '"},{"trait_type":"handle","value":"',

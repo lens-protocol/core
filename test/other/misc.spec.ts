@@ -161,12 +161,13 @@ makeSuiteCleanRoom('Misc', function () {
       expect(jsonMetadata.description).to.eq(`@${MOCK_PROFILE_HANDLE} - Lens profile`);
       const expectedAttributes = [
         { trait_type: 'id', value: `#${FIRST_PROFILE_ID.toString()}` },
+        { trait_type: 'followers', value: '0' },
         { trait_type: 'owner', value: userAddress.toLowerCase() },
         { trait_type: 'handle', value: `@${MOCK_PROFILE_HANDLE}` },
       ];
       expect(jsonMetadata.attributes).to.eql(expectedAttributes);
       expect(keccak256(toUtf8Bytes(tokenURI))).to.eq(
-        '0x71e9566fdab9d3fa40a12c3d59506259837853b75e239d296f2406eac94e9547'
+        '0xa2e9967e825705ce8f38931f7d1f88fe63bef6f2f2c52715692f14d42d889b76'
       );
     });
 

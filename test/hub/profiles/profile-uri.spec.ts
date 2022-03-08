@@ -56,7 +56,7 @@ makeSuiteCleanRoom('Profile URI Functionality', function () {
     });
 
     context('Scenarios', function () {
-      it('User should set the profile URI', async function () {
+      it('User should have a custom picture tokenURI after setting the profile imageURI', async function () {
         await expect(lensHub.setProfileImageURI(FIRST_PROFILE_ID, MOCK_URI)).to.not.be.reverted;
         const tokenURI = await lensHub.tokenURI(FIRST_PROFILE_ID);
         const jsonMetadata = await getJsonMetadataFromBase64TokenUri(tokenURI);
@@ -64,12 +64,13 @@ makeSuiteCleanRoom('Profile URI Functionality', function () {
         expect(jsonMetadata.description).to.eq(`@${MOCK_PROFILE_HANDLE} - Lens profile`);
         const expectedAttributes = [
           { trait_type: 'id', value: `#${FIRST_PROFILE_ID.toString()}` },
+          { trait_type: 'followers', value: '0' },
           { trait_type: 'owner', value: userAddress.toLowerCase() },
           { trait_type: 'handle', value: `@${MOCK_PROFILE_HANDLE}` },
         ];
         expect(jsonMetadata.attributes).to.eql(expectedAttributes);
         expect(keccak256(toUtf8Bytes(tokenURI))).to.eq(
-          '0x469ce48ea715b49beb948de52681ae0bc8b5184b3793b3e2dbef0893699aca52'
+          '0xe1731460db6ce5fa9f3a9f2bd778a8af49e623dceb531df6b1a5c162b7c2d79a'
         );
       });
 
@@ -81,12 +82,13 @@ makeSuiteCleanRoom('Profile URI Functionality', function () {
         expect(jsonMetadata.description).to.eq(`@${MOCK_PROFILE_HANDLE} - Lens profile`);
         const expectedAttributes = [
           { trait_type: 'id', value: `#${FIRST_PROFILE_ID.toString()}` },
+          { trait_type: 'followers', value: '0' },
           { trait_type: 'owner', value: userAddress.toLowerCase() },
           { trait_type: 'handle', value: `@${MOCK_PROFILE_HANDLE}` },
         ];
         expect(jsonMetadata.attributes).to.eql(expectedAttributes);
         expect(keccak256(toUtf8Bytes(tokenURI))).to.eq(
-          '0xc9222b5027292694589ea3179b0f0bf7da9e271ecbe1bdaed39b6ab8e793a856'
+          '0xa21f2a3aa9300a248d3a7acd3f4ff309291653121df87ffe3be545fa1dbd65e5'
         );
       });
 
@@ -99,12 +101,13 @@ makeSuiteCleanRoom('Profile URI Functionality', function () {
         expect(jsonMetadata.description).to.eq(`@${MOCK_PROFILE_HANDLE} - Lens profile`);
         const expectedAttributes = [
           { trait_type: 'id', value: `#${FIRST_PROFILE_ID.toString()}` },
+          { trait_type: 'followers', value: '0' },
           { trait_type: 'owner', value: userAddress.toLowerCase() },
           { trait_type: 'handle', value: `@${MOCK_PROFILE_HANDLE}` },
         ];
         expect(jsonMetadata.attributes).to.eql(expectedAttributes);
         expect(keccak256(toUtf8Bytes(tokenURI))).to.eq(
-          '0xc9222b5027292694589ea3179b0f0bf7da9e271ecbe1bdaed39b6ab8e793a856'
+          '0xa21f2a3aa9300a248d3a7acd3f4ff309291653121df87ffe3be545fa1dbd65e5'
         );
       });
 
@@ -118,12 +121,13 @@ makeSuiteCleanRoom('Profile URI Functionality', function () {
         expect(jsonMetadata.description).to.eq(`@${MOCK_PROFILE_HANDLE} - Lens profile`);
         const expectedAttributes = [
           { trait_type: 'id', value: `#${FIRST_PROFILE_ID.toString()}` },
+          { trait_type: 'followers', value: '0' },
           { trait_type: 'owner', value: userAddress.toLowerCase() },
           { trait_type: 'handle', value: `@${MOCK_PROFILE_HANDLE}` },
         ];
         expect(jsonMetadata.attributes).to.eql(expectedAttributes);
         expect(keccak256(toUtf8Bytes(tokenURI))).to.eq(
-          '0xc9222b5027292694589ea3179b0f0bf7da9e271ecbe1bdaed39b6ab8e793a856'
+          '0xa21f2a3aa9300a248d3a7acd3f4ff309291653121df87ffe3be545fa1dbd65e5'
         );
       });
 
@@ -137,13 +141,88 @@ makeSuiteCleanRoom('Profile URI Functionality', function () {
         expect(jsonMetadata.description).to.eq(`@${MOCK_PROFILE_HANDLE} - Lens profile`);
         const expectedAttributes = [
           { trait_type: 'id', value: `#${FIRST_PROFILE_ID.toString()}` },
+          { trait_type: 'followers', value: '0' },
           { trait_type: 'owner', value: userAddress.toLowerCase() },
           { trait_type: 'handle', value: `@${MOCK_PROFILE_HANDLE}` },
         ];
         expect(jsonMetadata.attributes).to.eql(expectedAttributes);
         expect(keccak256(toUtf8Bytes(tokenURI))).to.eq(
-          '0xc9222b5027292694589ea3179b0f0bf7da9e271ecbe1bdaed39b6ab8e793a856'
+          '0xa21f2a3aa9300a248d3a7acd3f4ff309291653121df87ffe3be545fa1dbd65e5'
         );
+      });
+
+      it('Should return the correct tokenURI after transfer', async function () {
+        const tokenURIBeforeTransfer = await lensHub.tokenURI(FIRST_PROFILE_ID);
+        const jsonMetadataBeforeTransfer = await getJsonMetadataFromBase64TokenUri(
+          tokenURIBeforeTransfer
+        );
+        expect(jsonMetadataBeforeTransfer.name).to.eq(`@${MOCK_PROFILE_HANDLE}`);
+        expect(jsonMetadataBeforeTransfer.description).to.eq(
+          `@${MOCK_PROFILE_HANDLE} - Lens profile`
+        );
+        const expectedAttributesBeforeTransfer = [
+          { trait_type: 'id', value: `#${FIRST_PROFILE_ID.toString()}` },
+          { trait_type: 'followers', value: '0' },
+          { trait_type: 'owner', value: userAddress.toLowerCase() },
+          { trait_type: 'handle', value: `@${MOCK_PROFILE_HANDLE}` },
+        ];
+        expect(jsonMetadataBeforeTransfer.attributes).to.eql(expectedAttributesBeforeTransfer);
+
+        await expect(
+          lensHub.transferFrom(userAddress, userTwoAddress, FIRST_PROFILE_ID)
+        ).to.not.be.reverted;
+
+        const tokenURIAfterTransfer = await lensHub.tokenURI(FIRST_PROFILE_ID);
+        const jsonMetadataAfterTransfer = await getJsonMetadataFromBase64TokenUri(
+          tokenURIAfterTransfer
+        );
+        expect(jsonMetadataAfterTransfer.name).to.eq(`@${MOCK_PROFILE_HANDLE}`);
+        expect(jsonMetadataAfterTransfer.description).to.eq(
+          `@${MOCK_PROFILE_HANDLE} - Lens profile`
+        );
+        const expectedAttributesAfterTransfer = [
+          { trait_type: 'id', value: `#${FIRST_PROFILE_ID.toString()}` },
+          { trait_type: 'followers', value: '0' },
+          { trait_type: 'owner', value: userTwoAddress.toLowerCase() },
+          { trait_type: 'handle', value: `@${MOCK_PROFILE_HANDLE}` },
+        ];
+        expect(jsonMetadataAfterTransfer.attributes).to.eql(expectedAttributesAfterTransfer);
+      });
+
+      it('Should return the correct tokenURI after a follow', async function () {
+        const tokenURIBeforeTransfer = await lensHub.tokenURI(FIRST_PROFILE_ID);
+        const jsonMetadataBeforeTransfer = await getJsonMetadataFromBase64TokenUri(
+          tokenURIBeforeTransfer
+        );
+        expect(jsonMetadataBeforeTransfer.name).to.eq(`@${MOCK_PROFILE_HANDLE}`);
+        expect(jsonMetadataBeforeTransfer.description).to.eq(
+          `@${MOCK_PROFILE_HANDLE} - Lens profile`
+        );
+        const expectedAttributesBeforeTransfer = [
+          { trait_type: 'id', value: `#${FIRST_PROFILE_ID.toString()}` },
+          { trait_type: 'followers', value: '0' },
+          { trait_type: 'owner', value: userAddress.toLowerCase() },
+          { trait_type: 'handle', value: `@${MOCK_PROFILE_HANDLE}` },
+        ];
+        expect(jsonMetadataBeforeTransfer.attributes).to.eql(expectedAttributesBeforeTransfer);
+
+        await expect(lensHub.follow([FIRST_PROFILE_ID], [[]])).to.not.be.reverted;
+
+        const tokenURIAfterTransfer = await lensHub.tokenURI(FIRST_PROFILE_ID);
+        const jsonMetadataAfterTransfer = await getJsonMetadataFromBase64TokenUri(
+          tokenURIAfterTransfer
+        );
+        expect(jsonMetadataAfterTransfer.name).to.eq(`@${MOCK_PROFILE_HANDLE}`);
+        expect(jsonMetadataAfterTransfer.description).to.eq(
+          `@${MOCK_PROFILE_HANDLE} - Lens profile`
+        );
+        const expectedAttributesAfterTransfer = [
+          { trait_type: 'id', value: `#${FIRST_PROFILE_ID.toString()}` },
+          { trait_type: 'followers', value: '1' },
+          { trait_type: 'owner', value: userAddress.toLowerCase() },
+          { trait_type: 'handle', value: `@${MOCK_PROFILE_HANDLE}` },
+        ];
+        expect(jsonMetadataAfterTransfer.attributes).to.eql(expectedAttributesAfterTransfer);
       });
 
       it('User should set user two as a dispatcher on their profile, user two should set the profile URI', async function () {
@@ -153,7 +232,7 @@ makeSuiteCleanRoom('Profile URI Functionality', function () {
         ).to.not.be.reverted;
         const tokenURI = await lensHub.tokenURI(FIRST_PROFILE_ID);
         expect(keccak256(toUtf8Bytes(tokenURI))).to.eq(
-          '0x469ce48ea715b49beb948de52681ae0bc8b5184b3793b3e2dbef0893699aca52'
+          '0xe1731460db6ce5fa9f3a9f2bd778a8af49e623dceb531df6b1a5c162b7c2d79a'
         );
       });
 
@@ -390,7 +469,7 @@ makeSuiteCleanRoom('Profile URI Functionality', function () {
         const tokenURIBefore = await lensHub.tokenURI(FIRST_PROFILE_ID);
 
         expect(keccak256(toUtf8Bytes(tokenURIBefore))).to.eq(
-          '0xb95b30163b08bc4f0c096abf10b220cefc74697c7b2761f9794db082b4bdfd89'
+          '0x6ed04aa8ab68b7c5201afb2f9655d8fd483559794ce933b7f2282549ca9e3dba'
         );
 
         await expect(
@@ -412,7 +491,7 @@ makeSuiteCleanRoom('Profile URI Functionality', function () {
         expect(tokenURIBefore).to.not.eq(tokenURIAfter);
 
         expect(keccak256(toUtf8Bytes(tokenURIAfter))).to.eq(
-          '0xb67bbdd6959319e9f8da1302a16a24cefbaa34b2a3b02dfc3fd83c2d292966da'
+          '0x2f93fe42168b386790c5615061bcd3c1d8aac1976bddca8cf57eb2bc525541ab'
         );
       });
 
