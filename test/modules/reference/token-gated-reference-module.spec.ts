@@ -1,6 +1,6 @@
 import '@nomiclabs/hardhat-ethers';
 import { parseEther } from '@ethersproject/units';
-import { expect, should } from 'chai';
+import { expect } from 'chai';
 import { ZERO_ADDRESS } from '../../helpers/constants';
 import { ERRORS } from '../../helpers/errors';
 import { getTimestamp, matchEvent, waitForTx } from '../../helpers/utils';
@@ -81,10 +81,9 @@ makeSuiteCleanRoom('Token Gated Reference Module', function () {
         ).to.be.revertedWith(ERRORS.INIT_PARAMS_INVALID);
       });
     })
-    // We don't need a `publishing` or `initialization` context because initialization never reverts in the TokenGatedReferenceModule.
+
     context('Commenting', function () {
       it('Commenting should fail if the commenter does not pass the token gate.', async function () {
-        const balance = await currency.balanceOf(userAddress);
         expect(await currency.balanceOf(userAddress)).to.eq(0);
 
         await expect(
@@ -103,7 +102,6 @@ makeSuiteCleanRoom('Token Gated Reference Module', function () {
     });
     context('Mirroring', function () {
       it('Mirroring should fail if publisher does not pass the token gate.', async function () {
-        const balance = await currency.balanceOf(userAddress);
         expect(await currency.balanceOf(userAddress)).to.eq(0);
 
         await expect(

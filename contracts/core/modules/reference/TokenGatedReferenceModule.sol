@@ -34,7 +34,7 @@ contract TokenGatedReferenceModule is IReferenceModule, ModuleBase {
     constructor(address hub) ModuleBase(hub) {}
 
     /**
-     * @notice This reference module checks particular token balances. Thus, we need to decode data.
+     * @notice This reference module sets up a token gate. Thus, we need to decode data.
      *
      * @param profileId The token ID of the profile of the publisher, passed by the hub.
      * @param pubId The publication ID of the newly created publication, passed by the hub.
