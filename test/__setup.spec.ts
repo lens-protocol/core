@@ -42,6 +42,8 @@ import {
   RevertCollectModule__factory,
   TimedFeeCollectModule,
   TimedFeeCollectModule__factory,
+  NftGatedFollowModule,
+  NftGatedFollowModule__factory,
   TransparentUpgradeableProxy__factory,
 } from '../typechain-types';
 import { LensHubLibraryAddresses } from '../typechain-types/factories/LensHub__factory';
@@ -109,6 +111,7 @@ export let limitedTimedFeeCollectModule: LimitedTimedFeeCollectModule;
 export let approvalFollowModule: ApprovalFollowModule;
 export let feeFollowModule: FeeFollowModule;
 export let mockFollowModule: MockFollowModule;
+export let nftGatedFollowModule: NftGatedFollowModule;
 
 // Reference
 export let followerOnlyReferenceModule: FollowerOnlyReferenceModule;
@@ -213,6 +216,7 @@ before(async function () {
     moduleGlobals.address
   );
   approvalFollowModule = await new ApprovalFollowModule__factory(deployer).deploy(lensHub.address);
+  nftGatedFollowModule = await new NftGatedFollowModule__factory(deployer).deploy(lensHub.address);
   followerOnlyReferenceModule = await new FollowerOnlyReferenceModule__factory(deployer).deploy(
     lensHub.address
   );
