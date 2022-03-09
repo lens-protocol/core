@@ -15,25 +15,33 @@ import {
   MOCK_PROFILE_HANDLE,
   MOCK_PROFILE_URI,
   MOCK_URI,
+  user,
   userAddress,
   userTwo,
-  userTwoAddress
+  userTwoAddress,
 } from '../__setup.spec';
 import { BigNumber } from 'ethers';
 import { TokenDataStructOutput } from '../../typechain-types/LensHub';
 import { keccak256, toUtf8Bytes } from 'ethers/lib/utils';
+import { ERRORS } from '../helpers/errors';
 
 makeSuiteCleanRoom('Shared Account Smart Contract', function () {
   context('Generic', function () {
     let sharedAccount: SharedAccount;
     beforeEach(async function () {
-      sharedAccount = await new SharedAccount__factory(deployer).deploy(lensHub.address);
+      sharedAccount = await new SharedAccount__factory(deployer).deploy(
+        lensHub.address,
+        userAddress,
+        userAddress
+      );
     });
 
     context('Negatives', function () {
       it('UserTwo should fail to grant role', async function () {
         await expect(
-          sharedAccount.connect(userTwo).grantRole(keccak256(toUtf8Bytes("POSTER_ROLE")), userAddress)
+          sharedAccount
+            .connect(userTwo)
+            .grantRole(keccak256(toUtf8Bytes('POSTER_ROLE')), userAddress)
         ).to.be.reverted;
       });
 
@@ -63,7 +71,6 @@ makeSuiteCleanRoom('Shared Account Smart Contract', function () {
             referenceModuleData: [],
           })
         ).to.be.reverted;
-
       });
     });
 
@@ -74,7 +81,7 @@ makeSuiteCleanRoom('Shared Account Smart Contract', function () {
         let tokenData: TokenDataStructOutput;
 
         await expect(
-          lensHub.createProfile({
+          lensHub.connect(user).createProfile({
             to: sharedAccount.address,
             handle: MOCK_PROFILE_HANDLE,
             imageURI: MOCK_PROFILE_URI,
@@ -94,7 +101,7 @@ makeSuiteCleanRoom('Shared Account Smart Contract', function () {
 
       it('User should transfer ProfileNFT to userTwoAddress', async function () {
         await expect(
-          sharedAccount.transferProfileNFT(FIRST_PROFILE_ID, userTwoAddress)
+          sharedAccount.connect(user).transferProfileNFT(FIRST_PROFILE_ID, userTwoAddress)
         ).to.not.be.reverted;
         expect(await lensHub.ownerOf(FIRST_PROFILE_ID)).to.eq(userTwoAddress);
       });
@@ -105,12 +112,14 @@ makeSuiteCleanRoom('Shared Account Smart Contract', function () {
         ).to.not.be.reverted;
 
         await expect(
-          sharedAccount.setFollowModule(FIRST_PROFILE_ID, mockFollowModule.address, mockModuleData)
+          sharedAccount
+            .connect(user)
+            .setFollowModule(FIRST_PROFILE_ID, mockFollowModule.address, mockModuleData)
         ).to.not.be.reverted;
         expect(await lensHub.getFollowModule(FIRST_PROFILE_ID)).to.eq(mockFollowModule.address);
 
         await expect(
-          sharedAccount.setFollowModule(FIRST_PROFILE_ID, ZERO_ADDRESS, [])
+          sharedAccount.connect(user).setFollowModule(FIRST_PROFILE_ID, ZERO_ADDRESS, [])
         ).to.not.be.reverted;
         expect(await lensHub.getFollowModule(FIRST_PROFILE_ID)).to.eq(ZERO_ADDRESS);
       });
@@ -121,7 +130,9 @@ makeSuiteCleanRoom('Shared Account Smart Contract', function () {
         ).to.not.be.reverted;
 
         await expect(
-          sharedAccount.grantRole(keccak256(toUtf8Bytes("POSTER_ROLE")), userTwoAddress)
+          sharedAccount
+            .connect(user)
+            .grantRole(keccak256(toUtf8Bytes('POSTER_ROLE')), userTwoAddress)
         ).to.not.be.reverted;
 
         await expect(
@@ -150,7 +161,9 @@ makeSuiteCleanRoom('Shared Account Smart Contract', function () {
         ).to.not.be.reverted;
 
         await expect(
-          sharedAccount.grantRole(keccak256(toUtf8Bytes("POSTER_ROLE")), userTwoAddress)
+          sharedAccount
+            .connect(user)
+            .grantRole(keccak256(toUtf8Bytes('POSTER_ROLE')), userTwoAddress)
         ).to.not.be.reverted;
 
         await expect(
@@ -165,7 +178,9 @@ makeSuiteCleanRoom('Shared Account Smart Contract', function () {
         ).to.not.be.reverted;
 
         await expect(
-          sharedAccount.revokeRole(keccak256(toUtf8Bytes("POSTER_ROLE")), userTwoAddress)
+          sharedAccount
+            .connect(user)
+            .revokeRole(keccak256(toUtf8Bytes('POSTER_ROLE')), userTwoAddress)
         ).to.not.be.reverted;
 
         await expect(
