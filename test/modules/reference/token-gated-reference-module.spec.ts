@@ -2,6 +2,7 @@ import '@nomiclabs/hardhat-ethers';
 import { parseEther } from '@ethersproject/units';
 import { expect, should } from 'chai';
 import { ZERO_ADDRESS } from '../../helpers/constants';
+import { ERRORS } from '../../helpers/errors';
 import { getTimestamp, matchEvent, waitForTx } from '../../helpers/utils';
 import {
   abiCoder,
@@ -61,6 +62,25 @@ makeSuiteCleanRoom('Token Gated Reference Module', function () {
   });
 
   context('Negatives', function () {
+    context('Publishing', function () {
+      it('Posting with token gated reference module as reference module should fail if token address is the zero address', async function () {
+        const referenceModuleData = abiCoder.encode(
+          ['address', 'uint256'],
+          [ZERO_ADDRESS, DEFAULT_MINIMUM_BALANCE]
+        );
+
+        await expect(
+          lensHub.post({
+            profileId: FIRST_PROFILE_ID,
+            contentURI: MOCK_URI,
+            collectModule: emptyCollectModule.address,
+            collectModuleData: [],
+            referenceModule: tokenGatedReferenceModule.address,
+            referenceModuleData: referenceModuleData,
+          })
+        ).to.be.revertedWith(ERRORS.INIT_PARAMS_INVALID);
+      });
+    })
     // We don't need a `publishing` or `initialization` context because initialization never reverts in the TokenGatedReferenceModule.
     context('Commenting', function () {
       it('Commenting should fail if the commenter does not pass the token gate.', async function () {
@@ -78,7 +98,7 @@ makeSuiteCleanRoom('Token Gated Reference Module', function () {
             referenceModule: ZERO_ADDRESS,
             referenceModuleData: [],
           })
-        ).to.be.reverted;
+        ).to.be.revertedWith(ERRORS.NOT_ENOUGH_TOKENS);
       });
     });
     context('Mirroring', function () {
@@ -94,7 +114,7 @@ makeSuiteCleanRoom('Token Gated Reference Module', function () {
             referenceModule: ZERO_ADDRESS,
             referenceModuleData: [],
           })
-        ).to.be.reverted;
+        ).to.be.revertedWith(ERRORS.NOT_ENOUGH_TOKENS);
       });
     });
   });

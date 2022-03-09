@@ -7,27 +7,28 @@ import {ModuleBase} from '../ModuleBase.sol';
 import {IERC721} from '@openzeppelin/contracts/token/ERC721/IERC721.sol';
 import {IERC20} from '@openzeppelin/contracts/token/ERC20/IERC20.sol';
 import {ILensHub} from '../../../interfaces/ILensHub.sol';
+import {Errors} from '../../../libraries/Errors.sol';
 
 /**
  * @notice A struct containing the necessary data to execute reference actions on a publication.
  *
  * @param token The token address associated with a publication.
- * @param minimumBalance The minimum amount of token an address should have to reference a publication..
+ * @param minimumBalance The minimum amount of token an address should have to reference a publication.
  */
-struct ProfilePublicationTokenGateData {
+struct ProfilePublicationData {
     address token;
     uint256 minimumBalance;
 }
 
 /**
  * @title TokenGatedReferenceModule
- * @author starwalker00
+ * @author Lens Protocol, starwalker00
  *
  * @notice A simple reference module that validates that comments or mirrors originate from a profile
  * owned by an address that has at least `minimumBalance` amount of ERC-20 token at address `token`.
  */
 contract TokenGatedReferenceModule is IReferenceModule, ModuleBase {
-    mapping(uint256 => mapping(uint256 => ProfilePublicationTokenGateData))
+    mapping(uint256 => mapping(uint256 => ProfilePublicationData))
         internal _dataByPublicationByProfile;
 
     constructor(address hub) ModuleBase(hub) {}
@@ -49,11 +50,29 @@ contract TokenGatedReferenceModule is IReferenceModule, ModuleBase {
         bytes calldata data
     ) external override onlyHub returns (bytes memory) {
         (address token, uint256 minimumBalance) = abi.decode(data, (address, uint256));
+        if (token == address(0)) revert Errors.InitParamsInvalid();
 
         _dataByPublicationByProfile[profileId][pubId].token = token;
         _dataByPublicationByProfile[profileId][pubId].minimumBalance = minimumBalance;
 
         return data;
+    }
+
+    /**
+     * @notice Returns the publication data for a given publication, or an empty struct if that publication was not
+     * initialized with this module.
+     *
+     * @param profileId The token ID of the profile mapped to the publication to query.
+     * @param pubId The publication ID of the publication to query.
+     *
+     * @return The ProfilePublicationData struct mapped to that publication.
+     */
+    function getPublicationData(uint256 profileId, uint256 pubId)
+        external
+        view
+        returns (ProfilePublicationData memory)
+    {
+        return _dataByPublicationByProfile[profileId][pubId];
     }
 
     /**
@@ -94,13 +113,9 @@ contract TokenGatedReferenceModule is IReferenceModule, ModuleBase {
         address referenceCreatorAddress = IERC721(HUB).ownerOf(profileId);
         address tokenAddress = _dataByPublicationByProfile[profileIdPointed][pubIdPointed].token;
         uint256 balance = IERC20(tokenAddress).balanceOf(referenceCreatorAddress);
-
         uint256 minimumBalance = _dataByPublicationByProfile[profileIdPointed][pubIdPointed]
             .minimumBalance;
 
-        require(
-            balance > minimumBalance,
-            'Profile owner does not have the minimum amount of specific token to create a reference.'
-        );
+        if (balance < minimumBalance) revert Errors.NotEnoughTokens();
     }
 }
