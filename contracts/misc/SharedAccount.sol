@@ -53,4 +53,12 @@ contract SharedAccount is AccessControl {
   function post(DataTypes.PostData calldata vars) external onlyRole(POSTER_ROLE) {
     ILensHub(HUB).post(vars);
   }
+
+  function comment(DataTypes.CommentData calldata vars) external onlyRole(POSTER_ROLE) {
+    ILensHub(HUB).comment(vars);
+  }
+
+  function mirror(DataTypes.MirrorData calldata vars) external onlyRole(POSTER_ROLE) {
+    ILensHub(HUB).mirror(vars);
+  }
 }

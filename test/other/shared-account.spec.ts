@@ -194,6 +194,42 @@ makeSuiteCleanRoom('Shared Account Smart Contract', function () {
           })
         ).to.be.reverted;
       });
+
+      it('User should set UserTwo as a posters, UserTwo should create a post & comment', async function () {
+        await expect(
+          lensHub.connect(governance).whitelistCollectModule(emptyCollectModule.address, true)
+        ).to.not.be.reverted;
+
+        await expect(
+          sharedAccount
+            .connect(user)
+            .grantRole(keccak256(toUtf8Bytes('POSTER_ROLE')), userTwoAddress)
+        ).to.not.be.reverted;
+
+        await expect(
+          sharedAccount.connect(userTwo).post({
+            profileId: FIRST_PROFILE_ID,
+            contentURI: MOCK_URI,
+            collectModule: emptyCollectModule.address,
+            collectModuleData: [],
+            referenceModule: ZERO_ADDRESS,
+            referenceModuleData: [],
+          })
+        ).to.not.be.reverted;
+
+        await expect(
+          sharedAccount.connect(userTwo).comment({
+            profileId: FIRST_PROFILE_ID,
+            contentURI: MOCK_URI,
+            profileIdPointed: FIRST_PROFILE_ID,
+            pubIdPointed: 1,
+            collectModule: emptyCollectModule.address,
+            collectModuleData: [],
+            referenceModule: ZERO_ADDRESS,
+            referenceModuleData: [],
+          })
+        ).to.not.be.reverted;
+      });
     });
   });
 });
