@@ -30,8 +30,14 @@ import {SafeERC20} from '@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol
  * @param onlyFollowers Indicates whether followers are the only allowed to bid and collect or not.
  * @param collected Indicates whether the publication has been collected or not.
  * @param bidBalanceOf Maps a given bidder's address to its balance, as a consequence of bidding, held in the module.
- * @param referrerProfileIdOf Maps a given bidder's address to its referrer profile ID. Zero if none. The referrer is
- * set through, and only through, the first bid of each bidder.
+ *      Take into account that bid balances can be withdrawn by any bidder as long as he is not winning the auction.
+ * @param referrerProfileIdOf Maps a given bidder's address to its referrer profile ID. The referrer is set through,
+ * and only through, the first bid of each bidder.
+ *      Zero value represents no referral but, as bidders can withdraw funds when they are not winning the auction,
+ * bidBalanceOf can't be used to determine if an address has already bidded or not (remember, we are setting the
+ * referrer only through the first bid).
+ *      Thus, a special case of referrerProfileIdOf matching publication's profileId means that there is no referral but
+ * first bid was already done. Having this special case allows us to avoid an extra struct field saving storage costs.
  */
 struct AuctionData {
     uint256 reservePrice;
@@ -152,7 +158,7 @@ contract AuctionCollectModule is ICollectModule, FeeModuleBase, FollowValidation
         }
         if (
             collector != auction.winner ||
-            referrerProfileId != auction.referrerProfileIdOf[collector] ||
+            referrerProfileId != _getReferrerProfileIdOf(auction, profileId, collector) ||
             data.length != 0
         ) {
             // Prevent LensHub from emiting `Collected` event with wrong parameters
@@ -320,11 +326,16 @@ contract AuctionCollectModule is ICollectModule, FeeModuleBase, FollowValidation
         uint256 pubId,
         address bidder
     ) external view returns (uint256) {
-        return _dataByPublicationByProfile[profileId][pubId].referrerProfileIdOf[bidder];
+        return
+            _getReferrerProfileIdOf(
+                _dataByPublicationByProfile[profileId][pubId],
+                profileId,
+                bidder
+            );
     }
 
-    function _processCollect(
-        address collector,
+    function _getReferrerProfileIdOf(
+        AuctionData storage auction,
         uint256 profileId,
         uint256 pubId
     ) internal {
@@ -409,12 +420,26 @@ contract AuctionCollectModule is ICollectModule, FeeModuleBase, FollowValidation
         );
     }
 
-    function _checkBidAmountValidity(
+    function _setReferrerProfileId(
+        AuctionData storage auction,
+        uint256 referrerProfileId,
         uint256 profileId,
-        uint256 pubId,
-        uint256 amount
-    ) internal view {
-        AuctionData storage auction = _dataByPublicationByProfile[profileId][pubId];
+        address bidder
+    ) internal {
+        if (
+            referrerProfileId != 0 &&
+            referrerProfileId != profileId &&
+            bidder != IERC721(HUB).ownerOf(referrerProfileId)
+        ) {
+            auction.referrerProfileIdOf[bidder] = referrerProfileId;
+        } else {
+            // Special case to set no referral but signaling that first bid was already done.
+            // See `referrerProfileIdOf` param description at `AuctionData` struct's natspec.
+            auction.referrerProfileIdOf[bidder] = profileId;
+        }
+    }
+
+    function _validateBidAmount(AuctionData storage auction, uint256 amount) internal view {
         bool hasWinner = auction.winner != address(0);
         if (
             (!hasWinner && amount < auction.reservePrice) ||
