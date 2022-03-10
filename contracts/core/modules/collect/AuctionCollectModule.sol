@@ -55,6 +55,14 @@ struct AuctionData {
     mapping(address => uint256) referrerProfileIdOf;
 }
 
+/**
+ * @title AuctionCollectModule
+ * @author Lens Protocol
+ *
+ * @notice This module works by creating an auction for the underlying publication. After the auction ends, only the
+ * auction winner is allowed to collect the publication.
+ *
+ */
 contract AuctionCollectModule is ICollectModule, FeeModuleBase, FollowValidationModuleBase {
     using SafeERC20 for IERC20;
 
@@ -116,6 +124,11 @@ contract AuctionCollectModule is ICollectModule, FeeModuleBase, FollowValidation
 
     constructor(address hub, address moduleGlobals) ModuleBase(hub) FeeModuleBase(moduleGlobals) {}
 
+    /**
+     * @dev See `AuctionData` struct's natspec in order to understand `data` decoded values.
+     *
+     * @inheritdoc ICollectModule
+     */
     function initializePublicationCollectModule(
         uint256 profileId,
         uint256 pubId,
@@ -150,6 +163,17 @@ contract AuctionCollectModule is ICollectModule, FeeModuleBase, FollowValidation
         return data;
     }
 
+    /**
+     * @notice Processes a collect action for the given publication, this can only be called by the hub.
+     *
+     * @dev Process the collect by ensuring:
+     *  1. Underlying publication's auction has finished and has a winner.
+     *  2. Parameters passed matches expected values (collector is the winner, correct referral info & no custom data).
+     *  3. Publication has not been collected yet.
+     * Processing collect fees here depends on if they were executed through `processCollectFee` function or not.
+     *
+     * @inheritdoc ICollectModule
+     */
     function processCollect(
         uint256 referrerProfileId,
         address collector,
@@ -178,6 +202,19 @@ contract AuctionCollectModule is ICollectModule, FeeModuleBase, FollowValidation
         }
     }
 
+    /**
+     * @notice Processes the collect fees using the auction winning bid funds and taking into account referrer and
+     * treasury fees if necessary.
+     *
+     * @dev This function allows anyone to process the collect fees, not needing to wait for `processCollect` to be
+     * called, as long as the auction has finished, has a winner and the publication has not been collected yet.
+     * Why is this function necessary? Suppose someone wins the auction, but for some reason never calls the LensHub's
+     * `collect`. That would make `processCollect` of this module never been called and, consequently, collect wouldn't
+     * be processed, locking the fees in this contract forever.
+     *
+     * @param profileId The token ID of the profile associated with the underlying publication.
+     * @param pubId The publication ID associated with the underlying publication.
+     */
     function processCollectFee(uint256 profileId, uint256 pubId) external {
         AuctionData storage auction = _dataByPublicationByProfile[profileId][pubId];
         if (block.timestamp <= auction.endTimestamp) {
@@ -190,21 +227,20 @@ contract AuctionCollectModule is ICollectModule, FeeModuleBase, FollowValidation
         _processCollectFee(profileId, pubId);
     }
 
-    function _processCollectFee(uint256 profileId, uint256 pubId) internal {
-        AuctionData storage auction = _dataByPublicationByProfile[profileId][pubId];
-        address winner = auction.winner;
-        auction.feeProcessed = true;
-        uint256 referrerProfileId = _getReferrerProfileIdOf(auction, profileId, winner);
-        if (referrerProfileId == 0) {
-            _processCollectFeeWithoutReferral(auction);
-        } else {
-            _processCollectFeeWithReferral(auction);
-        }
-        emit FeeProcessed(profileId, pubId, block.timestamp);
-    }
-
     /**
-     * Bids the given amount.
+     * @notice Offers a bid by the given amount on the given publication's auction. If the publication is a mirror,
+     * the pointed publication auction will be used, setting the mirror's profileId as referrer if it's the first bid
+     * in the auction.
+     * Transaction will fail if the bid offered is below auction's current best price.
+     *
+     * @dev It will pull the tokens from the bidder to ensure the collect fees can be processed if the bidder ends up
+     * being the winner after auction ended. If a better bid appears in the future, funds can be withdrawn through the
+     * `withdraw` function.
+     * If the bidder has already bidded before and tokens are still in the contract, only the difference will be pulled.
+     *
+     * @param profileId The token ID of the profile associated with the publication, could be a mirror.
+     * @param pubId The publication ID associated with the publication, could be a mirror.
+     * @param amount The bid amount to offer.
      */
     function bid(
         uint256 profileId,
@@ -216,7 +252,19 @@ contract AuctionCollectModule is ICollectModule, FeeModuleBase, FollowValidation
     }
 
     /**
-     * Bids the given amount with signature.
+     * @notice Using EIP-712 signatures, offers a bid by the given amount on the given publication's auction.
+     * If the publication is a mirror, the pointed publication auction will be used, setting the mirror's profileId
+     * as referrer if it's the first bid in the auction.
+     * Transaction will fail if the bid offered is below auction's current best price.
+     *
+     * @dev It will pull the tokens from the bidder to ensure the collect fees can be processed if the bidder ends up
+     * being the winner after auction ended. If a better bid appears in the future, funds can be withdrawn through the
+     * `withdraw` function.
+     * If the bidder has already bidded before and tokens are still in the contract, only the difference will be pulled.
+     *
+     * @param profileId The token ID of the profile associated with the publication, could be a mirror.
+     * @param pubId The publication ID associated with the publication, could be a mirror.
+     * @param amount The bid amount to offer.
      */
     function bidWithSig(
         uint256 profileId,
@@ -231,7 +279,19 @@ contract AuctionCollectModule is ICollectModule, FeeModuleBase, FollowValidation
     }
 
     /**
-     * Bids current price plus an increment to ensure being the new winner after transaction execution.
+     * @notice Offers a bid by the auction's curreny best price plus the given increment, ensuring the bidder will
+     * become the auction's winner after this transaction execution.
+     * If the publication is a mirror, the pointed publication auction will be used, setting the mirror's profileId as
+     * referrer if it's the first bid in the auction.
+     *
+     * @dev It will pull the tokens from the bidder to ensure the collect fees can be processed if the bidder ends up
+     * being the winner after auction ended. If a better bid appears in the future, funds can be withdrawn through the
+     * `withdraw` function.
+     * If the bidder has already bidded before and tokens are still in the contract, only the difference will be pulled.
+     *
+     * @param profileId The token ID of the profile associated with the publication, could be a mirror.
+     * @param pubId The publication ID associated with the publication, could be a mirror.
+     * @param increment The amount to be incremented over the auction's current best price when offering the bid.
      */
     function bidWithIncrement(
         uint256 profileId,
@@ -247,7 +307,21 @@ contract AuctionCollectModule is ICollectModule, FeeModuleBase, FollowValidation
     }
 
     /**
-     * Bids current price plus an increment to ensure being the new winner after transaction execution with signature.
+     * @notice Using EIP-712 signatures, offers a bid by the auction's curreny best price plus the given increment,
+     * ensuring the bidder will become the auction's winner after this transaction execution.
+     * If the publication is a mirror, the pointed publication auction will be used, setting the mirror's profileId as
+     * referrer if it's the first bid in the auction.
+     *
+     * @dev It will pull the tokens from the bidder to ensure the collect fees can be processed if the bidder ends up
+     * being the winner after auction ended. If a better bid appears in the future, funds can be withdrawn through the
+     * `withdraw` function.
+     * If the bidder has already bidded before and tokens are still in the contract, only the difference will be pulled.
+     *
+     * @param profileId The token ID of the profile associated with the publication, could be a mirror.
+     * @param pubId The publication ID associated with the publication, could be a mirror.
+     * @param increment The amount to be incremented over the auction's current best price when offering the bid.
+     * @param bidder The bidder address, who must be the signer of the EIP-712 signature.
+     * @param sig The EIP-712 signature data.
      */
     function bidWithIncrementWithSig(
         uint256 profileId,
@@ -273,14 +347,23 @@ contract AuctionCollectModule is ICollectModule, FeeModuleBase, FollowValidation
     }
 
     /**
-     * Withdraw the amount deposited through bids if sender is not the auction winner.
+     * @notice Withdraws the amount deposited through bids if the sender is not the auction's current winner.
+     *
+     * @param profileId The token ID of the profile associated with the underlying publication.
+     * @param pubId The publication ID associated with the underlying publication.
      */
     function withdraw(uint256 profileId, uint256 pubId) external {
         _withdraw(profileId, pubId, msg.sender);
     }
 
     /**
-     * Withdraw the amount deposited through bids if sender is not the auction winner; with signature.
+     * @notice Using EIP-712 signatures, withdraws the amount deposited through bids if the sender is not the auction's
+     * current winner.
+     *
+     * @param profileId The token ID of the profile associated with the underlying publication.
+     * @param pubId The publication ID associated with the underlying publication.
+     * @param bidder The bidder address willing to withdraw funds, who must be the signer of the EIP-712 signature.
+     * @param sig The EIP-712 signature data.
      */
     function withdrawWithSig(
         uint256 profileId,
@@ -305,6 +388,12 @@ contract AuctionCollectModule is ICollectModule, FeeModuleBase, FollowValidation
         _withdraw(profileId, pubId, bidder);
     }
 
+    /**
+     * @notice Returns the auction data associated with the given publication.
+     *
+     * @param profileId The token ID of the profile associated with the underlying publication.
+     * @param pubId The publication ID associated with the underlying publication.
+     */
     function getAuctionData(uint256 profileId, uint256 pubId)
         external
         view
@@ -336,6 +425,14 @@ contract AuctionCollectModule is ICollectModule, FeeModuleBase, FollowValidation
         );
     }
 
+    /**
+     * @notice Returns the amount of tokens held in the contract, deposited by the given bidder through bids in the
+     * given publication's auction.
+     *
+     * @param profileId The token ID of the profile associated with the underlying publication.
+     * @param pubId The publication ID associated with the underlying publication.
+     * @param bidder The address which the bid balance should be returned.
+     */
     function getBidBalanceOf(
         uint256 profileId,
         uint256 pubId,
@@ -344,6 +441,13 @@ contract AuctionCollectModule is ICollectModule, FeeModuleBase, FollowValidation
         return _dataByPublicationByProfile[profileId][pubId].bidBalanceOf[bidder];
     }
 
+    /**
+     * @notice Returns the referrer profile in the given publication's auction.
+     *
+     * @param profileId The token ID of the profile associated with the underlying publication.
+     * @param pubId The publication ID associated with the underlying publication.
+     * @param bidder The address which the referrer profile should be returned.
+     */
     function getReferrerProfileIdOf(
         uint256 profileId,
         uint256 pubId,
@@ -357,6 +461,9 @@ contract AuctionCollectModule is ICollectModule, FeeModuleBase, FollowValidation
             );
     }
 
+    /**
+     * See `AuctionData` struct's referrerProfileIdOf param natspec to understand the motivation behind this function.
+     */
     function _getReferrerProfileIdOf(
         AuctionData storage auction,
         uint256 profileId,
@@ -364,6 +471,19 @@ contract AuctionCollectModule is ICollectModule, FeeModuleBase, FollowValidation
     ) internal view returns (uint256) {
         uint256 referrerProfileId = auction.referrerProfileIdOf[bidder];
         return referrerProfileId == profileId ? 0 : referrerProfileId;
+    }
+
+    function _processCollectFee(uint256 profileId, uint256 pubId) internal {
+        AuctionData storage auction = _dataByPublicationByProfile[profileId][pubId];
+        address winner = auction.winner;
+        auction.feeProcessed = true;
+        uint256 referrerProfileId = _getReferrerProfileIdOf(auction, profileId, winner);
+        if (referrerProfileId == 0) {
+            _processCollectFeeWithoutReferral(auction);
+        } else {
+            _processCollectFeeWithReferral(auction);
+        }
+        emit FeeProcessed(profileId, pubId, block.timestamp);
     }
 
     function _processCollectFeeWithoutReferral(AuctionData storage auction) internal {
