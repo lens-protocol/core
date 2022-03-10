@@ -196,7 +196,7 @@ contract AuctionCollectModule is ICollectModule, FeeModuleBase, FollowValidation
         address bidder,
         DataTypes.EIP712Signature calldata sig
     ) external {
-        _checkBidSignatureValidity(profileId, pubId, amount, bidder, sig, BID_WITH_SIG_TYPEHASH);
+        _validateBidSignature(profileId, pubId, amount, bidder, sig, BID_WITH_SIG_TYPEHASH);
         (uint256 profileIdPointed, uint256 pubIdPointed) = _getRootPublication(profileId, pubId);
         _bid(profileId, profileIdPointed, pubIdPointed, amount, msg.sender);
     }
@@ -227,7 +227,7 @@ contract AuctionCollectModule is ICollectModule, FeeModuleBase, FollowValidation
         address bidder,
         DataTypes.EIP712Signature calldata sig
     ) external {
-        _checkBidSignatureValidity(
+        _validateBidSignature(
             profileId,
             pubId,
             increment,
@@ -259,26 +259,20 @@ contract AuctionCollectModule is ICollectModule, FeeModuleBase, FollowValidation
         address bidder,
         DataTypes.EIP712Signature calldata sig
     ) external {
-        bytes32 digest;
-        unchecked {
-            digest = keccak256(
-                abi.encodePacked(
-                    '\x19\x01',
-                    _calculateDomainSeparator(),
-                    keccak256(
-                        abi.encode(
-                            WITHDRAW_WITH_SIG_TYPEHASH,
-                            profileId,
-                            pubId,
-                            bidder,
-                            nonces[bidder]++,
-                            sig.deadline
-                        )
-                    )
+        _validateRecoveredAddress(
+            _calculateDigest(
+                abi.encode(
+                    WITHDRAW_WITH_SIG_TYPEHASH,
+                    profileId,
+                    pubId,
+                    bidder,
+                    nonces[bidder]++,
+                    sig.deadline
                 )
-            );
-        }
-        _validateRecoveredAddress(digest, bidder, sig);
+            ),
+            bidder,
+            sig
+        );
         _withdraw(profileId, pubId, bidder);
     }
 
@@ -433,7 +427,7 @@ contract AuctionCollectModule is ICollectModule, FeeModuleBase, FollowValidation
         }
     }
 
-    function _checkBidSignatureValidity(
+    function _validateBidSignature(
         uint256 profileId,
         uint256 pubId,
         uint256 value,
@@ -441,26 +435,13 @@ contract AuctionCollectModule is ICollectModule, FeeModuleBase, FollowValidation
         DataTypes.EIP712Signature calldata sig,
         bytes32 typehash
     ) internal {
-        bytes32 digest;
-        unchecked {
-            digest = keccak256(
-                abi.encodePacked(
-                    '\x19\x01',
-                    _calculateDomainSeparator(),
-                    keccak256(
-                        abi.encode(
-                            typehash,
-                            profileId,
-                            pubId,
-                            value,
-                            nonces[bidder]++,
-                            sig.deadline
-                        )
-                    )
-                )
-            );
-        }
-        _validateRecoveredAddress(digest, bidder, sig);
+        _validateRecoveredAddress(
+            _calculateDigest(
+                abi.encode(typehash, profileId, pubId, value, nonces[bidder]++, sig.deadline)
+            ),
+            bidder,
+            sig
+        );
     }
 
     function _withdraw(
@@ -510,6 +491,16 @@ contract AuctionCollectModule is ICollectModule, FeeModuleBase, FollowValidation
         if (recoveredAddress == address(0) || recoveredAddress != expectedAddress) {
             revert Errors.SignatureInvalid();
         }
+    }
+
+    function _calculateDigest(bytes memory message) internal view returns (bytes32) {
+        bytes32 digest;
+        unchecked {
+            digest = keccak256(
+                abi.encodePacked('\x19\x01', _calculateDomainSeparator(), keccak256(message))
+            );
+        }
+        return digest;
     }
 
     function _calculateDomainSeparator() internal view returns (bytes32) {
