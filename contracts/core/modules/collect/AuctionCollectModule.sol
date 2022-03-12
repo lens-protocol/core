@@ -393,6 +393,8 @@ contract AuctionCollectModule is ICollectModule, FeeModuleBase, FollowValidation
      *
      * @param profileId The token ID of the profile associated with the underlying publication.
      * @param pubId The publication ID associated with the underlying publication.
+     *
+     * @return A tuple with `AuctionData` struct's fields excepting `bidBalanceOf` and `referrerProfileIdOf` mappings.
      */
     function getAuctionData(uint256 profileId, uint256 pubId)
         external
