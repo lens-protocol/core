@@ -494,8 +494,8 @@ contract AuctionCollectModule is ICollectModule, FeeModuleBase, FollowValidation
         (address treasury, uint16 treasuryFee) = _treasuryData();
         uint256 treasuryAmount = (amount * treasuryFee) / BPS_MAX;
         uint256 adjustedAmount = amount - treasuryAmount;
-        IERC20(currency).safeTransferFrom(address(this), auction.recipient, adjustedAmount);
-        IERC20(currency).safeTransferFrom(address(this), treasury, treasuryAmount);
+        IERC20(currency).safeTransfer(auction.recipient, adjustedAmount);
+        IERC20(currency).safeTransfer(treasury, treasuryAmount);
     }
 
     function _processCollectFeeWithReferral(AuctionData storage auction) internal {
@@ -520,11 +520,11 @@ contract AuctionCollectModule is ICollectModule, FeeModuleBase, FollowValidation
             address referralRecipient = IERC721(HUB).ownerOf(
                 auction.referrerProfileIdOf[collector]
             );
-            IERC20(currency).safeTransferFrom(address(this), referralRecipient, referralAmount);
+            IERC20(currency).safeTransfer(referralRecipient, referralAmount);
         }
         address recipient = auction.recipient;
-        IERC20(currency).safeTransferFrom(address(this), recipient, adjustedAmount);
-        IERC20(currency).safeTransferFrom(address(this), treasury, treasuryAmount);
+        IERC20(currency).safeTransfer(recipient, adjustedAmount);
+        IERC20(currency).safeTransfer(treasury, treasuryAmount);
     }
 
     function _bid(
@@ -634,7 +634,7 @@ contract AuctionCollectModule is ICollectModule, FeeModuleBase, FollowValidation
             revert NothingToWithdraw();
         }
         auction.bidBalanceOf[bidder] = 0;
-        IERC20(auction.currency).safeTransferFrom(address(this), bidder, amountToWithdraw);
+        IERC20(auction.currency).safeTransfer(bidder, amountToWithdraw);
         emit Withdrawn(profileId, pubId, amountToWithdraw, bidder, block.timestamp);
     }
 
