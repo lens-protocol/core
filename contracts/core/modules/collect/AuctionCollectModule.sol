@@ -193,6 +193,9 @@ contract AuctionCollectModule is ICollectModule, FeeModuleBase, FollowValidation
             // Checking that `collector` is not `address(0)` was already done by `LensHub`.
             revert Errors.CollectNotAllowed();
         }
+        if (auction.onlyFollowers) {
+            _checkFollowValidity(profileId, collector);
+        }
         auction.collected = true;
         if (!auction.feeProcessed) {
             _processCollectFee(profileId, pubId);
