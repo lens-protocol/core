@@ -30,14 +30,10 @@ import {SafeERC20} from '@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol
  * @param onlyFollowers Indicates whether followers are the only allowed to bid and collect or not.
  * @param collected Indicates whether the publication has been collected or not.
  * @param bidBalanceOf Maps a given bidder's address to its balance, as a consequence of bidding, held in the module.
- *      Take into account that bid balances can be withdrawn by any bidder as long as he is not winning the auction.
- * @param referrerProfileIdOf Maps a given bidder's address to its referrer profile ID. The referrer is set through,
- * and only through, the first bid of each bidder.
- *      Zero value represents no referral but, as bidders can withdraw funds when they are not winning the auction,
- * bidBalanceOf can't be used to determine if an address has already bidded or not (remember, we are setting the
- * referrer only through the first bid).
- *      Thus, a special case of referrerProfileIdOf matching publication's profileId means that there is no referral but
- * first bid was already done. Having this special case allows us to avoid an extra struct field saving storage costs.
+ * Take into account that bid balances can be withdrawn by any bidder as long as he is not winning the auction.
+ * @param referrerProfileIdOf Maps a given bidder's address to its referrer profile ID. Referrer matching publication's
+ * profile ID means no referral, referrer being zero means that bidder has not bidded yet on this auction.
+ * The referrer is set through, and only through, the first bidder's bid on each auction.
  */
 struct AuctionData {
     uint256 reservePrice;
@@ -187,13 +183,13 @@ contract AuctionCollectModule is ICollectModule, FeeModuleBase, FollowValidation
         }
         if (
             collector != auction.winner ||
-            referrerProfileId != _getReferrerProfileIdOf(auction, profileId, collector) ||
+            referrerProfileId != auction.referrerProfileIdOf[collector] ||
             data.length != 0
         ) {
             // Prevent LensHub from emiting `Collected` event with wrong parameters
             revert Errors.ModuleDataMismatch();
         }
-        if (auction.collected || auction.winner == address(0)) {
+        if (auction.collected || collector == address(0)) {
             revert Errors.CollectNotAllowed();
         }
         auction.collected = true;
@@ -449,38 +445,23 @@ contract AuctionCollectModule is ICollectModule, FeeModuleBase, FollowValidation
      * @param profileId The token ID of the profile associated with the underlying publication.
      * @param pubId The publication ID associated with the underlying publication.
      * @param bidder The address which the referrer profile should be returned.
+     *
+     * @return The ID of the referrer profile. If returned value matches publication's profile ID means no referral,
+     * referrer being zero means no referral but because that bidder has not bidded yet on the given auction or the
+     * auction does not exist.
      */
     function getReferrerProfileIdOf(
         uint256 profileId,
         uint256 pubId,
         address bidder
     ) external view returns (uint256) {
-        return
-            _getReferrerProfileIdOf(
-                _dataByPublicationByProfile[profileId][pubId],
-                profileId,
-                bidder
-            );
-    }
-
-    /**
-     * See `AuctionData` struct's referrerProfileIdOf param natspec to understand the motivation behind this function.
-     */
-    function _getReferrerProfileIdOf(
-        AuctionData storage auction,
-        uint256 profileId,
-        address bidder
-    ) internal view returns (uint256) {
-        uint256 referrerProfileId = auction.referrerProfileIdOf[bidder];
-        return referrerProfileId == profileId ? 0 : referrerProfileId;
+        return _dataByPublicationByProfile[profileId][pubId].referrerProfileIdOf[bidder];
     }
 
     function _processCollectFee(uint256 profileId, uint256 pubId) internal {
         AuctionData storage auction = _dataByPublicationByProfile[profileId][pubId];
-        address winner = auction.winner;
         auction.feeProcessed = true;
-        uint256 referrerProfileId = _getReferrerProfileIdOf(auction, profileId, winner);
-        if (referrerProfileId == 0) {
+        if (auction.referrerProfileIdOf[auction.winner] == profileId) {
             _processCollectFeeWithoutReferral(auction);
         } else {
             _processCollectFeeWithReferral(auction);
@@ -550,7 +531,7 @@ contract AuctionCollectModule is ICollectModule, FeeModuleBase, FollowValidation
             _checkFollowValidity(profileId, msg.sender);
         }
         if (auction.referrerProfileIdOf[bidder] == 0) {
-            _setReferrerProfileId(auction, referrerProfileId, profileId, bidder);
+            auction.referrerProfileIdOf[bidder] = referrerProfileId;
         }
         if (auction.endTimestamp - block.timestamp < auction.minTimeAfterBid) {
             auction.endTimestamp = block.timestamp + auction.minTimeAfterBid;
@@ -560,7 +541,7 @@ contract AuctionCollectModule is ICollectModule, FeeModuleBase, FollowValidation
         auction.winner = bidder;
         IERC20(auction.currency).safeTransferFrom(bidder, address(this), amountToPull);
         emit BidPlaced(
-            _getReferrerProfileIdOf(auction, profileId, bidder),
+            auction.referrerProfileIdOf[bidder],
             profileId,
             pubId,
             amount,
@@ -568,25 +549,6 @@ contract AuctionCollectModule is ICollectModule, FeeModuleBase, FollowValidation
             auction.endTimestamp,
             block.timestamp
         );
-    }
-
-    function _setReferrerProfileId(
-        AuctionData storage auction,
-        uint256 referrerProfileId,
-        uint256 profileId,
-        address bidder
-    ) internal {
-        if (
-            referrerProfileId != 0 &&
-            referrerProfileId != profileId &&
-            bidder != IERC721(HUB).ownerOf(referrerProfileId)
-        ) {
-            auction.referrerProfileIdOf[bidder] = referrerProfileId;
-        } else {
-            // Special case to set no referral but signaling that first bid was already done.
-            // See `referrerProfileIdOf` param description at `AuctionData` struct's natspec.
-            auction.referrerProfileIdOf[bidder] = profileId;
-        }
     }
 
     function _validateBidAmount(AuctionData storage auction, uint256 amount) internal view {
