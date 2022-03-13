@@ -186,10 +186,11 @@ contract AuctionCollectModule is ICollectModule, FeeModuleBase, FollowValidation
             referrerProfileId != auction.referrerProfileIdOf[collector] ||
             data.length != 0
         ) {
-            // Prevent LensHub from emiting `Collected` event with wrong parameters
+            // Prevents `LensHub` from emiting `Collected` event with wrong parameters.
             revert Errors.ModuleDataMismatch();
         }
-        if (auction.collected || collector == address(0)) {
+        if (auction.collected) {
+            // Checking that `collector` is not `address(0)` was already done by `LensHub`.
             revert Errors.CollectNotAllowed();
         }
         auction.collected = true;
@@ -486,7 +487,7 @@ contract AuctionCollectModule is ICollectModule, FeeModuleBase, FollowValidation
         uint256 referralFee = auction.referralFee;
         address treasury;
         uint256 treasuryAmount;
-        // Avoids stack too deep
+        // Avoids stack too deep.
         {
             uint16 treasuryFee;
             (treasury, treasuryFee) = _treasuryData();
@@ -592,7 +593,7 @@ contract AuctionCollectModule is ICollectModule, FeeModuleBase, FollowValidation
         }
         uint256 amountToWithdraw = auction.bidBalanceOf[bidder];
         if (amountToWithdraw == 0) {
-            // Avoid sending a zero-amount `Withdrawn` event
+            // Avoids sending a zero-amount `Withdrawn` event.
             revert NothingToWithdraw();
         }
         auction.bidBalanceOf[bidder] = 0;
