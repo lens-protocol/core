@@ -61,11 +61,6 @@ contract LensHubStorage {
     // 'CollectWithSig(uint256 profileId,uint256 pubId,bytes data,uint256 nonce,uint256 deadline)'
     // );
 
-    mapping(address => bool) internal _profileCreatorWhitelisted;
-    mapping(address => bool) internal _followModuleWhitelisted;
-    mapping(address => bool) internal _collectModuleWhitelisted;
-    mapping(address => bool) internal _referenceModuleWhitelisted;
-
     mapping(uint256 => address) internal _dispatcherByProfile;
     mapping(bytes32 => uint256) internal _profileIdByHandleHash;
     mapping(uint256 => DataTypes.ProfileStruct) internal _profileById;
@@ -77,4 +72,5 @@ contract LensHubStorage {
     uint256 internal _profileCounter;
     address internal _governance;
     address internal _emergencyAdmin;
+    address internal _whitelist;
 }

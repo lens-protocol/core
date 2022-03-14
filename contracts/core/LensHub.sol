@@ -3,6 +3,7 @@
 pragma solidity 0.8.10;
 
 import {ILensHub} from '../interfaces/ILensHub.sol';
+import {IWhitelist} from '../interfaces/IWhitelist.sol';
 import {Events} from '../libraries/Events.sol';
 import {Helpers} from '../libraries/Helpers.sol';
 import {DataTypes} from '../libraries/DataTypes.sol';
@@ -63,11 +64,13 @@ contract LensHub is ILensHub, LensNFTBase, VersionedInitializable, LensMultiStat
     function initialize(
         string calldata name,
         string calldata symbol,
-        address newGovernance
+        address newGovernance,
+        address newWhitelist
     ) external override initializer {
         super._initialize(name, symbol);
         _setState(DataTypes.ProtocolState.Paused);
         _setGovernance(newGovernance);
+        _setWhitelist(newWhitelist);
     }
 
     /// ***********************
@@ -98,40 +101,8 @@ contract LensHub is ILensHub, LensNFTBase, VersionedInitializable, LensMultiStat
         _setState(newState);
     }
 
-    ///@inheritdoc ILensHub
-    function whitelistProfileCreator(address profileCreator, bool whitelist)
-        external
-        override
-        onlyGov
-    {
-        _profileCreatorWhitelisted[profileCreator] = whitelist;
-        emit Events.ProfileCreatorWhitelisted(profileCreator, whitelist, block.timestamp);
-    }
-
-    /// @inheritdoc ILensHub
-    function whitelistFollowModule(address followModule, bool whitelist) external override onlyGov {
-        _followModuleWhitelisted[followModule] = whitelist;
-        emit Events.FollowModuleWhitelisted(followModule, whitelist, block.timestamp);
-    }
-
-    /// @inheritdoc ILensHub
-    function whitelistReferenceModule(address referenceModule, bool whitelist)
-        external
-        override
-        onlyGov
-    {
-        _referenceModuleWhitelisted[referenceModule] = whitelist;
-        emit Events.ReferenceModuleWhitelisted(referenceModule, whitelist, block.timestamp);
-    }
-
-    /// @inheritdoc ILensHub
-    function whitelistCollectModule(address collectModule, bool whitelist)
-        external
-        override
-        onlyGov
-    {
-        _collectModuleWhitelisted[collectModule] = whitelist;
-        emit Events.CollectModuleWhitelisted(collectModule, whitelist, block.timestamp);
+    function setWhitelist(address newWhitelist) external onlyGov {
+        _setWhitelist(newWhitelist);
     }
 
     /// *********************************
@@ -152,7 +123,7 @@ contract LensHub is ILensHub, LensNFTBase, VersionedInitializable, LensMultiStat
             profileId,
             _profileIdByHandleHash,
             _profileById,
-            _followModuleWhitelisted
+            _whitelist
         );
     }
 
@@ -205,7 +176,7 @@ contract LensHub is ILensHub, LensNFTBase, VersionedInitializable, LensMultiStat
             followModule,
             followModuleData,
             _profileById[profileId],
-            _followModuleWhitelisted
+            _whitelist
         );
     }
 
@@ -242,7 +213,7 @@ contract LensHub is ILensHub, LensNFTBase, VersionedInitializable, LensMultiStat
             vars.followModule,
             vars.followModuleData,
             _profileById[vars.profileId],
-            _followModuleWhitelisted
+            _whitelist
         );
     }
 
@@ -701,43 +672,8 @@ contract LensHub is ILensHub, LensNFTBase, VersionedInitializable, LensMultiStat
     /// *********************************
 
     /// @inheritdoc ILensHub
-    function isProfileCreatorWhitelisted(address profileCreator)
-        external
-        view
-        override
-        returns (bool)
-    {
-        return _profileCreatorWhitelisted[profileCreator];
-    }
-
-    /// @inheritdoc ILensHub
     function defaultProfile(address wallet) external view override returns (uint256) {
         return _defaultProfileByAddress[wallet];
-    }
-
-    /// @inheritdoc ILensHub
-    function isFollowModuleWhitelisted(address followModule) external view override returns (bool) {
-        return _followModuleWhitelisted[followModule];
-    }
-
-    /// @inheritdoc ILensHub
-    function isReferenceModuleWhitelisted(address referenceModule)
-        external
-        view
-        override
-        returns (bool)
-    {
-        return _referenceModuleWhitelisted[referenceModule];
-    }
-
-    /// @inheritdoc ILensHub
-    function isCollectModuleWhitelisted(address collectModule)
-        external
-        view
-        override
-        returns (bool)
-    {
-        return _collectModuleWhitelisted[collectModule];
     }
 
     /// @inheritdoc ILensHub
@@ -870,6 +806,12 @@ contract LensHub is ILensHub, LensNFTBase, VersionedInitializable, LensMultiStat
         emit Events.GovernanceSet(msg.sender, prevGovernance, newGovernance, block.timestamp);
     }
 
+    function _setWhitelist(address newWhitelist) internal {
+        address prevWhitelist = _whitelist;
+        _whitelist = newWhitelist;
+        // TODO emit an emit
+    }
+
     function _createPost(
         uint256 profileId,
         string memory contentURI,
@@ -887,8 +829,7 @@ contract LensHub is ILensHub, LensNFTBase, VersionedInitializable, LensMultiStat
             referenceModuleData,
             ++_profileById[profileId].pubCount,
             _pubByIdByProfile,
-            _collectModuleWhitelisted,
-            _referenceModuleWhitelisted
+            _whitelist
         );
     }
 
@@ -915,8 +856,7 @@ contract LensHub is ILensHub, LensNFTBase, VersionedInitializable, LensMultiStat
             _profileById[vars.profileId].pubCount + 1,
             _profileById,
             _pubByIdByProfile,
-            _collectModuleWhitelisted,
-            _referenceModuleWhitelisted
+            _whitelist
         );
         _profileById[vars.profileId].pubCount++;
     }
@@ -936,7 +876,7 @@ contract LensHub is ILensHub, LensNFTBase, VersionedInitializable, LensMultiStat
             referenceModuleData,
             ++_profileById[profileId].pubCount,
             _pubByIdByProfile,
-            _referenceModuleWhitelisted
+            _whitelist
         );
     }
 
@@ -995,7 +935,7 @@ contract LensHub is ILensHub, LensNFTBase, VersionedInitializable, LensMultiStat
     }
 
     function _validateCallerIsWhitelistedProfileCreator() internal view {
-        if (!_profileCreatorWhitelisted[msg.sender]) revert Errors.ProfileCreatorNotWhitelisted();
+        if (!IWhitelist(_whitelist).isProfileCreatorWhitelisted(msg.sender)) revert Errors.ProfileCreatorNotWhitelisted();
     }
 
     function getRevision() internal pure virtual override returns (uint256) {

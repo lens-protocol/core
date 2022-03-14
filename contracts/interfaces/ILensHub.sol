@@ -19,11 +19,13 @@ interface ILensHub {
      * @param name The name to set for the hub NFT.
      * @param symbol The symbol to set for the hub NFT.
      * @param newGovernance The governance address to set.
+     * @param newWhitelist The whitelist address to set.
      */
     function initialize(
         string calldata name,
         string calldata symbol,
-        address newGovernance
+        address newGovernance,
+        address newWhitelist
     ) external;
 
     /**
@@ -49,42 +51,6 @@ interface ILensHub {
      * @param newState The state to set, as a member of the ProtocolState enum.
      */
     function setState(DataTypes.ProtocolState newState) external;
-
-    /**
-     * @notice Adds or removes a profile creator from the whitelist. This function can only be called by the current
-     * governance address.
-     *
-     * @param profileCreator The profile creator address to add or remove from the whitelist.
-     * @param whitelist Whether or not the profile creator should be whitelisted.
-     */
-    function whitelistProfileCreator(address profileCreator, bool whitelist) external;
-
-    /**
-     * @notice Adds or removes a follow module from the whitelist. This function can only be called by the current
-     * governance address.
-     *
-     * @param followModule The follow module contract address to add or remove from the whitelist.
-     * @param whitelist Whether or not the follow module should be whitelisted.
-     */
-    function whitelistFollowModule(address followModule, bool whitelist) external;
-
-    /**
-     * @notice Adds or removes a reference module from the whitelist. This function can only be called by the current
-     * governance address.
-     *
-     * @param referenceModule The reference module contract to add or remove from the whitelist.
-     * @param whitelist Whether or not the reference module should be whitelisted.
-     */
-    function whitelistReferenceModule(address referenceModule, bool whitelist) external;
-
-    /**
-     * @notice Adds or removes a collect module from the whitelist. This function can only be called by the current
-     * governance address.
-     *
-     * @param collectModule The collect module contract address to add or remove from the whitelist.
-     * @param whitelist Whether or not the collect module should be whitelisted.
-     */
-    function whitelistCollectModule(address collectModule, bool whitelist) external;
 
     /**
      * @notice Creates a profile with the specified parameters, minting a profile NFT to the given recipient. This
@@ -302,15 +268,6 @@ interface ILensHub {
     /// ************************
 
     /**
-     * @notice Returns whether or not a profile creator is whitelisted.
-     *
-     * @param profileCreator The address of the profile creator to check.
-     *
-     * @return A boolean, true if the profile creator is whitelisted.
-     */
-    function isProfileCreatorWhitelisted(address profileCreator) external view returns (bool);
-
-    /**
      * @notice Returns default profile for a given wallet address
      *
      * @param wallet The address to find the default mapping
@@ -318,33 +275,6 @@ interface ILensHub {
      * @return A uint256 profile id will be 0 if not mapped
      */
     function defaultProfile(address wallet) external view returns (uint256);
-
-    /**
-     * @notice Returns whether or not a follow module is whitelisted.
-     *
-     * @param followModule The address of the follow module to check.
-     *
-     * @return A boolean, true if the the follow module is whitelisted.
-     */
-    function isFollowModuleWhitelisted(address followModule) external view returns (bool);
-
-    /**
-     * @notice Returns whether or not a reference module is whitelisted.
-     *
-     * @param referenceModule The address of the reference module to check.
-     *
-     * @return A boolean, true if the the reference module is whitelisted.
-     */
-    function isReferenceModuleWhitelisted(address referenceModule) external view returns (bool);
-
-    /**
-     * @notice Returns whether or not a collect module is whitelisted.
-     *
-     * @param collectModule The address of the collect module to check.
-     *
-     * @return A boolean, true if the the collect module is whitelisted.
-     */
-    function isCollectModuleWhitelisted(address collectModule) external view returns (bool);
 
     /**
      * @notice Returns the currently configured governance address.
