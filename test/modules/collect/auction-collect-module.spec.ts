@@ -101,7 +101,7 @@ makeSuiteCleanRoom('Auction Collect Module', function () {
     setNextBlockTimestamp(endTimestamp.add(secondsToBeElapsedAfterEnd).toNumber());
   }
 
-  before(async function () {
+  beforeEach(async function () {
     await expect(
       lensHub.createProfile({
         to: pubProfileOwnerAddress,
@@ -281,11 +281,12 @@ makeSuiteCleanRoom('Auction Collect Module', function () {
       });
 
       it('User should fail to bid if has not approved tokens to be pulled by the auction collect module', async function () {
+        await currency.mint(bidderAddress, DEFAULT_RESERVE_PRICE);
         await expect(
           auctionCollectModule
             .connect(bidder)
             .bid(FIRST_PROFILE_ID, FIRST_PUB_ID, DEFAULT_RESERVE_PRICE)
-        ).to.be.revertedWith(ERRORS.ERC20_INSUFFICIENT_ALLOWANCE);
+        ).to.be.revertedWith(ERRORS.ERC20_TRANSFER_EXCEEDS_ALLOWANCE);
       });
 
       it('User should fail to bid if has insufficient token balance', async function () {
@@ -492,11 +493,12 @@ makeSuiteCleanRoom('Auction Collect Module', function () {
       });
 
       it('User should fail to bid if has not approved tokens to be pulled by the auction collect module', async function () {
+        await currency.mint(bidderAddress, DEFAULT_BID_AMOUNT);
         await expect(
           auctionCollectModule
             .connect(bidder)
             .bidWithIncrement(FIRST_PROFILE_ID, FIRST_PUB_ID, DEFAULT_MIN_BID_INCREMENT)
-        ).to.be.revertedWith(ERRORS.ERC20_INSUFFICIENT_ALLOWANCE);
+        ).to.be.revertedWith(ERRORS.ERC20_TRANSFER_EXCEEDS_ALLOWANCE);
       });
 
       it('User should fail to bid if has insufficient token balance', async function () {

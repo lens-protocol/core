@@ -44,7 +44,6 @@ export const ERRORS = {
   ERC721_MINT_TO_ZERO_ADDRESS: 'ERC721: mint to the zero address',
   ERC20_TRANSFER_EXCEEDS_ALLOWANCE: 'ERC20: transfer amount exceeds allowance',
   ERC20_TRANSFER_EXCEEDS_BALANCE: 'ERC20: transfer amount exceeds balance',
-  ERC20_INSUFFICIENT_ALLOWANCE: 'ERC20: insufficient allowance',
   NO_SELECTOR:
     "Transaction reverted: function selector was not recognized and there's no fallback function",
   PAUSED: 'Paused()',
