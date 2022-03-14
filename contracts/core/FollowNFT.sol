@@ -191,7 +191,7 @@ contract FollowNFT is LensNFTBase, IFollowNFT {
      */
     function tokenURI(uint256 tokenId) public view override returns (string memory) {
         if (!_exists(tokenId)) revert Errors.TokenDoesNotExist();
-        return ILensHub(HUB).getFollowNFTURI(_profileId);
+        return ILensHub(HUB).getProfile(_profileId).followNFTURI;
     }
 
     /**
@@ -204,7 +204,7 @@ contract FollowNFT is LensNFTBase, IFollowNFT {
     ) internal override {
         address fromDelegatee = _delegates[from];
         address toDelegatee =  _delegates[to];
-        address followModule = ILensHub(HUB).getFollowModule(_profileId);
+        address followModule = ILensHub(HUB).getProfile(_profileId).followModule;
 
         _moveDelegate(fromDelegatee, toDelegatee, 1);
 

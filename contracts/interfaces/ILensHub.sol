@@ -363,33 +363,6 @@ interface ILensHub {
     function getDispatcher(uint256 profileId) external view returns (address);
 
     /**
-     * @notice Returns the publication count for a given profile.
-     *
-     * @param profileId The token ID of the profile to query.
-     *
-     * @return The number of publications associated with the queried profile.
-     */
-    function getPubCount(uint256 profileId) external view returns (uint256);
-
-    /**
-     * @notice Returns the followNFT associated with a given profile, if any.
-     *
-     * @param profileId The token ID of the profile to query the followNFT for.
-     *
-     * @return The followNFT associated with the given profile.
-     */
-    function getFollowNFT(uint256 profileId) external view returns (address);
-
-    /**
-     * @notice Returns the followNFT URI associated with a given profile.
-     *
-     * @param profileId The token ID of the profile to query the followNFT URI for.
-     *
-     * @return The followNFT URI associated with the given profile.
-     */
-    function getFollowNFTURI(uint256 profileId) external view returns (string memory);
-
-    /**
      * @notice Returns the collectNFT associated with a given publication, if any.
      *
      * @param profileId The token ID of the profile that published the publication to query.
@@ -398,15 +371,6 @@ interface ILensHub {
      * @return The address of the collectNFT associated with the queried publication.
      */
     function getCollectNFT(uint256 profileId, uint256 pubId) external view returns (address);
-
-    /**
-     * @notice Returns the follow module associated witha  given profile, if any.
-     *
-     * @param profileId The token ID of the profile to query the follow module for.
-     *
-     * @return The address of the follow module associated with the given profile.
-     */
-    function getFollowModule(uint256 profileId) external view returns (address);
 
     /**
      * @notice Returns the collect module associated with a given publication.
@@ -427,15 +391,6 @@ interface ILensHub {
      * @return The address of the reference module associated with the given profile.
      */
     function getReferenceModule(uint256 profileId, uint256 pubId) external view returns (address);
-
-    /**
-     * @notice Returns the handle associated with a profile.
-     *
-     * @param profileId The token ID of the profile to query the handle for.
-     *
-     * @return The handle associated with the profile.
-     */
-    function getHandle(uint256 profileId) external view returns (string memory);
 
     /**
      * @notice Returns the publication pointer (profileId & pubId) associated with a given publication.

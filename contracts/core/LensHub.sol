@@ -751,21 +751,6 @@ contract LensHub is ILensHub, LensNFTBase, VersionedInitializable, LensMultiStat
     }
 
     /// @inheritdoc ILensHub
-    function getPubCount(uint256 profileId) external view override returns (uint256) {
-        return _profileById[profileId].pubCount;
-    }
-
-    /// @inheritdoc ILensHub
-    function getFollowNFT(uint256 profileId) external view override returns (address) {
-        return _profileById[profileId].followNFT;
-    }
-
-    /// @inheritdoc ILensHub
-    function getFollowNFTURI(uint256 profileId) external view override returns (string memory) {
-        return _profileById[profileId].followNFTURI;
-    }
-
-    /// @inheritdoc ILensHub
     function getCollectNFT(uint256 profileId, uint256 pubId)
         external
         view
@@ -773,11 +758,6 @@ contract LensHub is ILensHub, LensNFTBase, VersionedInitializable, LensMultiStat
         returns (address)
     {
         return _pubByIdByProfile[profileId][pubId].collectNFT;
-    }
-
-    /// @inheritdoc ILensHub
-    function getFollowModule(uint256 profileId) external view override returns (address) {
-        return _profileById[profileId].followModule;
     }
 
     /// @inheritdoc ILensHub
@@ -798,11 +778,6 @@ contract LensHub is ILensHub, LensNFTBase, VersionedInitializable, LensMultiStat
         returns (address)
     {
         return _pubByIdByProfile[profileId][pubId].referenceModule;
-    }
-
-    /// @inheritdoc ILensHub
-    function getHandle(uint256 profileId) external view override returns (string memory) {
-        return _profileById[profileId].handle;
     }
 
     /// @inheritdoc ILensHub

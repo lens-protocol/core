@@ -25,7 +25,7 @@ abstract contract FollowValidatorFollowModuleBase is IFollowModule, ModuleBase {
         address follower,
         uint256 followNFTTokenId
     ) external view override {
-        address followNFT = ILensHub(HUB).getFollowNFT(profileId);
+        address followNFT = ILensHub(HUB).getProfile(profileId).followNFT;
         if (followNFT == address(0)) revert Errors.FollowInvalid();
         if (followNFTTokenId == 0) {
             // check that follower owns a followNFT

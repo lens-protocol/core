@@ -22,11 +22,11 @@ import {IERC721} from '@openzeppelin/contracts/token/ERC721/IERC721.sol';
  */
 abstract contract FollowValidationModuleBase is ModuleBase {
     function _checkFollowValidity(uint256 profileId, address user) internal view {
-        address followModule = ILensHub(HUB).getFollowModule(profileId);
+        address followModule = ILensHub(HUB).getProfile(profileId).followModule;
         if (followModule != address(0)) {
             IFollowModule(followModule).validateFollow(profileId, user, 0);
         } else {
-            address followNFT = ILensHub(HUB).getFollowNFT(profileId);
+            address followNFT = ILensHub(HUB).getProfile(profileId).followNFT;
             if (followNFT == address(0)) revert Errors.FollowInvalid();
             if (IERC721(followNFT).balanceOf(user) == 0) revert Errors.FollowInvalid();
         }
