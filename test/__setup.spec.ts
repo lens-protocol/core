@@ -8,6 +8,8 @@ import { ethers } from 'hardhat';
 import {
   ApprovalFollowModule,
   ApprovalFollowModule__factory,
+  AuctionCollectModule,
+  AuctionCollectModule__factory,
   CollectNFT__factory,
   Currency,
   Currency__factory,
@@ -45,7 +47,7 @@ import {
   TransparentUpgradeableProxy__factory,
 } from '../typechain-types';
 import { LensHubLibraryAddresses } from '../typechain-types/factories/LensHub__factory';
-import { FAKE_PRIVATEKEY, ZERO_ADDRESS } from './helpers/constants';
+import { FAKE_PRIVATEKEY } from './helpers/constants';
 import {
   computeContractAddress,
   ProtocolState,
@@ -94,6 +96,16 @@ export let hubLibs: LensHubLibraryAddresses;
 export let eventsLib: Events;
 export let moduleGlobals: ModuleGlobals;
 export let helper: Helper;
+export let pubProfileOwner: Signer;
+export let pubProfileOwnerAddress: string;
+export let otherUser: Signer;
+export let otherUserAddress: string;
+export let bidder: Signer;
+export let bidderAddress: string;
+export let otherBidder: Signer;
+export let otherBidderAddress: string;
+export let collectFeeRecipient: Signer;
+export let collectFeeRecipientAddress: string;
 
 /* Modules */
 
@@ -104,6 +116,7 @@ export let emptyCollectModule: EmptyCollectModule;
 export let revertCollectModule: RevertCollectModule;
 export let limitedFeeCollectModule: LimitedFeeCollectModule;
 export let limitedTimedFeeCollectModule: LimitedTimedFeeCollectModule;
+export let auctionCollectModule: AuctionCollectModule;
 
 // Follow
 export let approvalFollowModule: ApprovalFollowModule;
@@ -140,6 +153,17 @@ before(async function () {
   governanceAddress = await governance.getAddress();
   treasuryAddress = await accounts[4].getAddress();
   mockModuleData = abiCoder.encode(['uint256'], [1]);
+  pubProfileOwner = user;
+  pubProfileOwnerAddress = userAddress;
+  otherUser = userTwo;
+  otherUserAddress = userTwoAddress;
+  bidder = accounts[5];
+  bidderAddress = await bidder.getAddress();
+  otherBidder = accounts[6];
+  otherBidderAddress = await otherBidder.getAddress();
+  collectFeeRecipient = accounts[7];
+  collectFeeRecipientAddress = await collectFeeRecipient.getAddress();
+
   // Deployment
   helper = await new Helper__factory(deployer).deploy();
   moduleGlobals = await new ModuleGlobals__factory(deployer).deploy(
@@ -204,6 +228,10 @@ before(async function () {
     moduleGlobals.address
   );
   limitedTimedFeeCollectModule = await new LimitedTimedFeeCollectModule__factory(deployer).deploy(
+    lensHub.address,
+    moduleGlobals.address
+  );
+  auctionCollectModule = await new AuctionCollectModule__factory(deployer).deploy(
     lensHub.address,
     moduleGlobals.address
   );
