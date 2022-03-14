@@ -65,7 +65,7 @@ contract AuctionCollectModule is ICollectModule, FeeModuleBase, FollowValidation
     error ActiveAuction();
     error AuctionWinnerCanNotWithdraw();
     error EndedAuction();
-    error FeeAlreadyProcessed();
+    error NoFeeToProcess();
     error InsufficientBidAmount();
     error InvalidBidder();
     error NothingToWithdraw();
@@ -222,7 +222,7 @@ contract AuctionCollectModule is ICollectModule, FeeModuleBase, FollowValidation
         }
         address winner = auction.winner;
         if (auction.feeProcessed || winner == address(0)) {
-            revert FeeAlreadyProcessed();
+            revert NoFeeToProcess();
         }
         _processCollectFee(profileId, pubId);
     }
