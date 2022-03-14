@@ -63,7 +63,7 @@ makeSuiteCleanRoom('Following', function () {
         await expect(lensHub.connect(userTwo).follow([FIRST_PROFILE_ID], [[]])).to.not.be.reverted;
         const timestamp = await getTimestamp();
 
-        const followNFTAddress = await lensHub.getFollowNFT(FIRST_PROFILE_ID);
+        const followNFTAddress = (await lensHub.getProfile(FIRST_PROFILE_ID)).followNFT;
         const followNFT = FollowNFT__factory.connect(followNFTAddress, user);
         expect(followNFT.address).to.not.eq(ZERO_ADDRESS);
         const id = await followNFT.tokenOfOwnerByIndex(userTwoAddress, 0);
@@ -87,7 +87,7 @@ makeSuiteCleanRoom('Following', function () {
       it('UserTwo should follow profile 1 twice, receiving followNFTs with IDs 1 and 2', async function () {
         await expect(lensHub.connect(userTwo).follow([FIRST_PROFILE_ID], [[]])).to.not.be.reverted;
         await expect(lensHub.connect(userTwo).follow([FIRST_PROFILE_ID], [[]])).to.not.be.reverted;
-        const followNFTAddress = await lensHub.getFollowNFT(FIRST_PROFILE_ID);
+        const followNFTAddress = (await lensHub.getProfile(FIRST_PROFILE_ID)).followNFT;
         const followNFT = FollowNFT__factory.connect(followNFTAddress, user);
         const idOne = await followNFT.tokenOfOwnerByIndex(userTwoAddress, 0);
         const idTwo = await followNFT.tokenOfOwnerByIndex(userTwoAddress, 1);
@@ -97,7 +97,7 @@ makeSuiteCleanRoom('Following', function () {
 
       it('UserTwo should follow profile 1 3 times in the same call, receive IDs 1,2 and 3', async function () {
         await expect(lensHub.connect(userTwo).follow([FIRST_PROFILE_ID, FIRST_PROFILE_ID, FIRST_PROFILE_ID], [[], [], []])).to.not.be.reverted;
-        const followNFTAddress = await lensHub.getFollowNFT(FIRST_PROFILE_ID);
+        const followNFTAddress = (await lensHub.getProfile(FIRST_PROFILE_ID)).followNFT;
         const followNFT = FollowNFT__factory.connect(followNFTAddress, user);
         const idOne = await followNFT.tokenOfOwnerByIndex(userTwoAddress, 0);
         const idTwo = await followNFT.tokenOfOwnerByIndex(userTwoAddress, 1);
@@ -250,7 +250,7 @@ makeSuiteCleanRoom('Following', function () {
           })
         ).to.not.be.reverted;
 
-        const followNFTAddress = await lensHub.getFollowNFT(FIRST_PROFILE_ID);
+        const followNFTAddress = (await lensHub.getProfile(FIRST_PROFILE_ID)).followNFT;
         const followNFT = FollowNFT__factory.connect(followNFTAddress, user);
         const id = await followNFT.tokenOfOwnerByIndex(testWallet.address, 0);
         expect(id).to.eq(1);
@@ -284,7 +284,7 @@ makeSuiteCleanRoom('Following', function () {
           })
         ).to.not.be.reverted;
 
-        const followNFTAddress = await lensHub.getFollowNFT(FIRST_PROFILE_ID);
+        const followNFTAddress = (await lensHub.getProfile(FIRST_PROFILE_ID)).followNFT;
         const followNFT = FollowNFT__factory.connect(followNFTAddress, user);
         const idOne = await followNFT.tokenOfOwnerByIndex(testWallet.address, 0);
         const idTwo = await followNFT.tokenOfOwnerByIndex(testWallet.address, 1);

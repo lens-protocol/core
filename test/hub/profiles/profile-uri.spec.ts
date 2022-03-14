@@ -69,7 +69,7 @@ makeSuiteCleanRoom('Profile URI Functionality', function () {
 
       it('User should follow profile 1, user should change the follow NFT URI, URI is accurate before and after the change', async function () {
         await expect(lensHub.follow([FIRST_PROFILE_ID], [[]])).to.not.be.reverted;
-        const followNFTAddress = await lensHub.getFollowNFT(FIRST_PROFILE_ID);
+        const followNFTAddress = (await lensHub.getProfile(FIRST_PROFILE_ID)).followNFT;
         const followNFT = FollowNFT__factory.connect(followNFTAddress, user);
 
         const uriBefore = await followNFT.tokenURI(1);
@@ -327,7 +327,7 @@ makeSuiteCleanRoom('Profile URI Functionality', function () {
           MAX_UINT256
         );
 
-        const followNFTURIBefore = await lensHub.getFollowNFTURI(FIRST_PROFILE_ID);
+        const followNFTURIBefore = (await lensHub.getProfile(FIRST_PROFILE_ID)).followNFTURI;
 
         await expect(
           lensHub.setFollowNFTURIWithSig({
@@ -342,7 +342,7 @@ makeSuiteCleanRoom('Profile URI Functionality', function () {
           })
         ).to.not.be.reverted;
 
-        const followNFTURIAfter = await lensHub.getFollowNFTURI(FIRST_PROFILE_ID);
+        const followNFTURIAfter = (await lensHub.getProfile(FIRST_PROFILE_ID)).followNFTURI;
 
         expect(followNFTURIBefore).to.eq(MOCK_FOLLOW_NFT_URI);
         expect(followNFTURIAfter).to.eq(MOCK_URI);

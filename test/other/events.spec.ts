@@ -446,7 +446,7 @@ makeSuiteCleanRoom('Events', function () {
       );
 
       receipt = await waitForTx(lensHub.connect(userTwo).follow([FIRST_PROFILE_ID], [[]]));
-      const followNFT = await lensHub.getFollowNFT(FIRST_PROFILE_ID);
+      const followNFT = (await lensHub.getProfile(FIRST_PROFILE_ID)).followNFT;
 
       const expectedName = MOCK_PROFILE_HANDLE + '-Follower';
       const expectedSymbol = getAbbreviation(MOCK_PROFILE_HANDLE) + '-Fl';

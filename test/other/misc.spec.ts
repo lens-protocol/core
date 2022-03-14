@@ -83,7 +83,7 @@ makeSuiteCleanRoom('Misc', function () {
     });
 
     it('Profile handle getter should return the correct handle', async function () {
-      expect(await lensHub.getHandle(FIRST_PROFILE_ID)).to.eq(MOCK_PROFILE_HANDLE);
+      expect((await lensHub.getProfile(FIRST_PROFILE_ID)).handle).to.eq(MOCK_PROFILE_HANDLE);
     });
 
     it('Profile dispatcher getter should return the zero address when no dispatcher is set', async function () {
@@ -109,15 +109,15 @@ makeSuiteCleanRoom('Misc', function () {
     });
 
     it('Profile follow NFT getter should return the zero address before the first follow, then the correct address afterwards', async function () {
-      expect(await lensHub.getFollowNFT(FIRST_PROFILE_ID)).to.eq(ZERO_ADDRESS);
+      expect((await lensHub.getProfile(FIRST_PROFILE_ID)).followNFT).to.eq(ZERO_ADDRESS);
 
       await expect(lensHub.follow([FIRST_PROFILE_ID], [[]])).to.not.be.reverted;
 
-      expect(await lensHub.getFollowNFT(FIRST_PROFILE_ID)).to.not.eq(ZERO_ADDRESS);
+      expect((await lensHub.getProfile(FIRST_PROFILE_ID)).followNFT).to.not.eq(ZERO_ADDRESS);
     });
 
     it('Profile follow module getter should return the zero address, then the correct follow module after it is set', async function () {
-      expect(await lensHub.getFollowModule(FIRST_PROFILE_ID)).to.eq(ZERO_ADDRESS);
+      expect((await lensHub.getProfile(FIRST_PROFILE_ID)).followModule).to.eq(ZERO_ADDRESS);
 
       await expect(
         lensHub.connect(governance).whitelistFollowModule(mockFollowModule.address, true)
@@ -126,11 +126,13 @@ makeSuiteCleanRoom('Misc', function () {
       await expect(
         lensHub.setFollowModule(FIRST_PROFILE_ID, mockFollowModule.address, mockModuleData)
       ).to.not.be.reverted;
-      expect(await lensHub.getFollowModule(FIRST_PROFILE_ID)).to.eq(mockFollowModule.address);
+      expect((await lensHub.getProfile(FIRST_PROFILE_ID)).followModule).to.eq(
+        mockFollowModule.address
+      );
     });
 
     it('Profile publication count getter should return zero, then the correct amount after some publications', async function () {
-      expect(await lensHub.getPubCount(FIRST_PROFILE_ID)).to.eq(0);
+      expect((await lensHub.getProfile(FIRST_PROFILE_ID)).pubCount).to.eq(0);
 
       await expect(
         lensHub.connect(governance).whitelistCollectModule(emptyCollectModule.address, true)
@@ -149,7 +151,7 @@ makeSuiteCleanRoom('Misc', function () {
           })
         ).to.not.be.reverted;
       }
-      expect(await lensHub.getPubCount(FIRST_PROFILE_ID)).to.eq(expectedCount);
+      expect((await lensHub.getProfile(FIRST_PROFILE_ID)).pubCount).to.eq(expectedCount);
     });
 
     it('Profile tokenURI should return the accurate URI', async function () {

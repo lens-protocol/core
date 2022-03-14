@@ -74,7 +74,7 @@ makeSuiteCleanRoom('Follower Only Reference Module', function () {
       it('Commenting should fail if commenter follows, then transfers the follow NFT before attempting to comment', async function () {
         await expect(lensHub.follow([FIRST_PROFILE_ID], [[]])).to.not.be.reverted;
         const followNFT = FollowNFT__factory.connect(
-          await lensHub.getFollowNFT(FIRST_PROFILE_ID),
+          (await lensHub.getProfile(FIRST_PROFILE_ID)).followNFT,
           user
         );
 
@@ -111,7 +111,7 @@ makeSuiteCleanRoom('Follower Only Reference Module', function () {
       it('Mirroring should fail if publisher follows, then transfers the follow NFT before attempting to mirror', async function () {
         await expect(lensHub.follow([FIRST_PROFILE_ID], [[]])).to.not.be.reverted;
         const followNFT = FollowNFT__factory.connect(
-          await lensHub.getFollowNFT(FIRST_PROFILE_ID),
+          (await lensHub.getProfile(FIRST_PROFILE_ID)).followNFT,
           user
         );
 
@@ -161,7 +161,7 @@ makeSuiteCleanRoom('Follower Only Reference Module', function () {
       it('Commenting should work if the commenter is a follower', async function () {
         await expect(lensHub.follow([FIRST_PROFILE_ID], [[]])).to.not.be.reverted;
         const followNFT = FollowNFT__factory.connect(
-          await lensHub.getFollowNFT(FIRST_PROFILE_ID),
+          (await lensHub.getProfile(FIRST_PROFILE_ID)).followNFT,
           user
         );
 
@@ -182,7 +182,7 @@ makeSuiteCleanRoom('Follower Only Reference Module', function () {
       it('Commenting should work if the commenter follows, transfers the follow NFT then receives it back before attempting to comment', async function () {
         await expect(lensHub.follow([FIRST_PROFILE_ID], [[]])).to.not.be.reverted;
         const followNFT = FollowNFT__factory.connect(
-          await lensHub.getFollowNFT(FIRST_PROFILE_ID),
+          (await lensHub.getProfile(FIRST_PROFILE_ID)).followNFT,
           user
         );
 
@@ -211,7 +211,7 @@ makeSuiteCleanRoom('Follower Only Reference Module', function () {
       it('Mirroring should work if publisher is a follower', async function () {
         await expect(lensHub.follow([FIRST_PROFILE_ID], [[]])).to.not.be.reverted;
         const followNFT = FollowNFT__factory.connect(
-          await lensHub.getFollowNFT(FIRST_PROFILE_ID),
+          (await lensHub.getProfile(FIRST_PROFILE_ID)).followNFT,
           user
         );
 
@@ -229,7 +229,7 @@ makeSuiteCleanRoom('Follower Only Reference Module', function () {
       it('Mirroring should work if publisher follows, transfers the follow NFT then receives it back before attempting to mirror', async function () {
         await expect(lensHub.follow([FIRST_PROFILE_ID], [[]])).to.not.be.reverted;
         const followNFT = FollowNFT__factory.connect(
-          await lensHub.getFollowNFT(FIRST_PROFILE_ID),
+          (await lensHub.getProfile(FIRST_PROFILE_ID)).followNFT,
           user
         );
 

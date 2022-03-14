@@ -66,12 +66,14 @@ makeSuiteCleanRoom('Setting Follow Module', function () {
         await expect(
           lensHub.setFollowModule(FIRST_PROFILE_ID, mockFollowModule.address, mockModuleData)
         ).to.not.be.reverted;
-        expect(await lensHub.getFollowModule(FIRST_PROFILE_ID)).to.eq(mockFollowModule.address);
+        expect((await lensHub.getProfile(FIRST_PROFILE_ID)).followModule).to.eq(
+          mockFollowModule.address
+        );
 
         await expect(
           lensHub.setFollowModule(FIRST_PROFILE_ID, ZERO_ADDRESS, [])
         ).to.not.be.reverted;
-        expect(await lensHub.getFollowModule(FIRST_PROFILE_ID)).to.eq(ZERO_ADDRESS);
+        expect((await lensHub.getProfile(FIRST_PROFILE_ID)).followModule).to.eq(ZERO_ADDRESS);
       });
     });
   });
@@ -274,7 +276,9 @@ makeSuiteCleanRoom('Setting Follow Module', function () {
           })
         ).to.not.be.reverted;
 
-        expect(await lensHub.getFollowModule(FIRST_PROFILE_ID)).to.eq(mockFollowModule.address);
+        expect((await lensHub.getProfile(FIRST_PROFILE_ID)).followModule).to.eq(
+          mockFollowModule.address
+        );
       });
     });
   });

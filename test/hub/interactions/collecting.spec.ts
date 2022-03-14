@@ -62,7 +62,7 @@ makeSuiteCleanRoom('Collecting', function () {
 
       it('user two should follow, then transfer the followNFT and fail to collect', async function () {
         await expect(lensHub.connect(userTwo).follow([FIRST_PROFILE_ID], [[]])).to.not.be.reverted;
-        const followNftAddr = await lensHub.getFollowNFT(FIRST_PROFILE_ID);
+        const followNftAddr = (await lensHub.getProfile(FIRST_PROFILE_ID)).followNFT;
         await expect(
           FollowNFT__factory.connect(followNftAddr, userTwo).transferFrom(
             userTwoAddress,
