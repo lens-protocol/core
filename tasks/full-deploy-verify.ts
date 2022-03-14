@@ -20,6 +20,7 @@ import {
   RevertCollectModule__factory,
   TimedFeeCollectModule__factory,
   TransparentUpgradeableProxy__factory,
+  Whitelist__factory,
 } from '../typechain-types';
 import { deployWithVerify, waitForTx } from './helpers/utils';
 
@@ -108,7 +109,7 @@ task('full-deploy-verify', 'deploys the entire Lens Protocol with explorer verif
       [followNFTImplAddress, collectNFTImplAddress],
       'contracts/core/LensHub.sol:LensHub'
     );
-
+      
     console.log('\n\t-- Deploying Follow & Collect NFT Implementations --');
     await deployWithVerify(
       new FollowNFT__factory(deployer).deploy(hubProxyAddress, { nonce: deployerNonce++ }),
@@ -121,10 +122,17 @@ task('full-deploy-verify', 'deploys the entire Lens Protocol with explorer verif
       'contracts/core/CollectNFT.sol:CollectNFT'
     );
 
+    const whitelistContract = await deployWithVerify(
+      new Whitelist__factory(deployer).deploy(governance.address, { nonce: deployerNonce++ }),
+      [governance.address],
+      'contracts/core/Whitelist.sol:Whitelist'
+    );
+
     let data = lensHubImpl.interface.encodeFunctionData('initialize', [
       LENS_HUB_NFT_NAME,
       LENS_HUB_NFT_SYMBOL,
       governance.address,
+      whitelistContract.address,
     ]);
 
     console.log('\n\t-- Deploying Hub Proxy --');
@@ -142,6 +150,7 @@ task('full-deploy-verify', 'deploys the entire Lens Protocol with explorer verif
 
     // Connect the hub proxy to the LensHub factory and the governance for ease of use.
     const lensHub = LensHub__factory.connect(proxy.address, governance);
+    const whitelist = Whitelist__factory.connect(whitelistContract.address, governance);
 
     // Deploy collect modules
     console.log('\n\t-- Deploying feeCollectModule --');
@@ -228,39 +237,41 @@ task('full-deploy-verify', 'deploys the entire Lens Protocol with explorer verif
     console.log('\n\t-- Whitelisting Collect Modules --');
     let governanceNonce = await ethers.provider.getTransactionCount(governance.address);
     await waitForTx(
-      lensHub.whitelistCollectModule(feeCollectModule.address, true, { nonce: governanceNonce++ })
+      whitelist.whitelistCollectModule(feeCollectModule.address, true, { nonce: governanceNonce++ })
     );
     await waitForTx(
-      lensHub.whitelistCollectModule(limitedFeeCollectModule.address, true, {
+      whitelist.whitelistCollectModule(limitedFeeCollectModule.address, true, {
         nonce: governanceNonce++,
       })
     );
     await waitForTx(
-      lensHub.whitelistCollectModule(timedFeeCollectModule.address, true, {
+      whitelist.whitelistCollectModule(timedFeeCollectModule.address, true, {
         nonce: governanceNonce++,
       })
     );
     await waitForTx(
-      lensHub.whitelistCollectModule(limitedTimedFeeCollectModule.address, true, {
+      whitelist.whitelistCollectModule(limitedTimedFeeCollectModule.address, true, {
         nonce: governanceNonce++,
       })
     );
     await waitForTx(
-      lensHub.whitelistCollectModule(revertCollectModule.address, true, {
+      whitelist.whitelistCollectModule(revertCollectModule.address, true, {
         nonce: governanceNonce++,
       })
     );
     await waitForTx(
-      lensHub.whitelistCollectModule(emptyCollectModule.address, true, { nonce: governanceNonce++ })
+      whitelist.whitelistCollectModule(emptyCollectModule.address, true, {
+        nonce: governanceNonce++,
+      })
     );
 
     // Whitelist the follow modules
     console.log('\n\t-- Whitelisting Follow Modules --');
     await waitForTx(
-      lensHub.whitelistFollowModule(feeFollowModule.address, true, { nonce: governanceNonce++ })
+      whitelist.whitelistFollowModule(feeFollowModule.address, true, { nonce: governanceNonce++ })
     );
     await waitForTx(
-      lensHub.whitelistFollowModule(approvalFollowModule.address, true, {
+      whitelist.whitelistFollowModule(approvalFollowModule.address, true, {
         nonce: governanceNonce++,
       })
     );
@@ -268,7 +279,7 @@ task('full-deploy-verify', 'deploys the entire Lens Protocol with explorer verif
     // Whitelist the reference module
     console.log('\n\t-- Whitelisting Reference Module --');
     await waitForTx(
-      lensHub.whitelistReferenceModule(followerOnlyReferenceModule.address, true, {
+      whitelist.whitelistReferenceModule(followerOnlyReferenceModule.address, true, {
         nonce: governanceNonce++,
       })
     );
