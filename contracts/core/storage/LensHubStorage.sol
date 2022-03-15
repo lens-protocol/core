@@ -11,9 +11,9 @@ contract LensHubStorage {
     // 'CreateProfileWithSig(string handle,string uri,address followModule,bytes followModuleData,uint256 nonce,uint256 deadline)'
     // );
     bytes32 internal constant SET_DEFAULT_PROFILE_WITH_SIG_TYPEHASH =
-        0xae4d0f1a57c80ed196993d814b14f19b25a688b09b9cb0467c33d76e022c216f;
+        0x00198a25e19615d82f53977db0fc1ee7f3701b0fdf1299a971cf997545879c04;
     // keccak256(
-    // 'SetDefaultProfileWithSig(uint256 profileId,address wallet,uint256 nonce,uint256 deadline)'
+    // 'SetDefaultProfileWithSig(address wallet,uint256 profileId,uint256 nonce,uint256 deadline)'
     // );
     bytes32 internal constant SET_FOLLOW_MODULE_WITH_SIG_TYPEHASH =
         0x6f3f6455a608af1cc57ef3e5c0a49deeb88bba264ec8865b798ff07358859d4b;
@@ -71,7 +71,6 @@ contract LensHubStorage {
     mapping(uint256 => DataTypes.ProfileStruct) internal _profileById;
     mapping(uint256 => mapping(uint256 => DataTypes.PublicationStruct)) internal _pubByIdByProfile;
 
-    mapping(uint256 => address) internal _addressByDefaultProfile;
     mapping(address => uint256) internal _defaultProfileByAddress;
 
     uint256 internal _profileCounter;

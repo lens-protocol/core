@@ -141,11 +141,11 @@ library Events {
     /**
      * @dev Emitted when a a default profile is set for a wallet as its main identity
      *
-     * @param profileId The token ID of the profile for which the default profile is being set.
-     * @param wallet The wallet which owns this profile
+     * @param wallet The wallet which set or unset its default profile.
+     * @param profileId The token ID of the profile being set as default, or zero.
      * @param timestamp The current block timestamp.
      */
-    event DefaultProfileSet(uint256 indexed profileId, address indexed wallet, uint256 timestamp);
+    event DefaultProfileSet(address indexed wallet, uint256 indexed profileId, uint256 timestamp);
 
     /**
      * @dev Emitted when a dispatcher is set for a specific profile.
