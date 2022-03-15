@@ -77,6 +77,16 @@ makeSuiteCleanRoom('Default profile Functionality', function () {
         await expect(lensHub.setDefaultProfile(userAddress, 2)).to.not.be.reverted;
         expect((await lensHub.defaultProfile(userAddress)).toNumber()).to.eq(2);
       });
+
+      it('User should set the default profile and then transfer it, their default profile should be unset', async function () {
+        await expect(lensHub.setDefaultProfile(userAddress, FIRST_PROFILE_ID)).to.not.be.reverted;
+        expect(await lensHub.defaultProfile(userAddress)).to.eq(FIRST_PROFILE_ID);
+
+        await expect(
+          lensHub.transferFrom(userAddress, userTwoAddress, FIRST_PROFILE_ID)
+        ).to.not.be.reverted;
+        expect(await lensHub.defaultProfile(userAddress)).to.eq(0);
+      });
     });
   });
 
