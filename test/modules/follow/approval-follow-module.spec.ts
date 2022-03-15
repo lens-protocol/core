@@ -18,6 +18,7 @@ import {
   userAddress,
   userTwo,
   userTwoAddress,
+  whitelist,
 } from '../../__setup.spec';
 
 makeSuiteCleanRoom('Approval Follow Module', function () {
@@ -33,7 +34,7 @@ makeSuiteCleanRoom('Approval Follow Module', function () {
       })
     ).to.not.be.reverted;
     await expect(
-      lensHub.connect(governance).whitelistFollowModule(approvalFollowModule.address, true)
+      whitelist.connect(governance).whitelistFollowModule(approvalFollowModule.address, true)
     ).to.not.be.reverted;
   });
 

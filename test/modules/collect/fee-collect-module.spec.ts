@@ -25,6 +25,7 @@ import {
   userAddress,
   userTwo,
   userTwoAddress,
+  whitelist,
 } from '../../__setup.spec';
 
 makeSuiteCleanRoom('Fee Collect Module', function () {
@@ -42,7 +43,7 @@ makeSuiteCleanRoom('Fee Collect Module', function () {
       })
     ).to.not.be.reverted;
     await expect(
-      lensHub.connect(governance).whitelistCollectModule(feeCollectModule.address, true)
+      whitelist.connect(governance).whitelistCollectModule(feeCollectModule.address, true)
     ).to.not.be.reverted;
     await expect(
       moduleGlobals.connect(governance).whitelistCurrency(currency.address, true)

@@ -25,19 +25,20 @@ import {
   TREASURY_FEE_BPS,
   user,
   userAddress,
+  whitelist,
 } from '../__setup.spec';
 
 makeSuiteCleanRoom('deployment validation', () => {
   it('Deployer should not be able to initialize implementation due to address(this) check', async function () {
     await expect(
-      lensHubImpl.initialize(LENS_HUB_NFT_NAME, LENS_HUB_NFT_SYMBOL, governanceAddress)
+      lensHubImpl.initialize(LENS_HUB_NFT_NAME, LENS_HUB_NFT_SYMBOL, governanceAddress, whitelist.address)
     ).to.be.revertedWith(ERRORS.CANNOT_INIT_IMPL);
   });
 
   it("User should fail to initialize lensHub proxy after it's already been initialized via the proxy constructor", async function () {
     // Initialization happens in __setup.spec.ts
     await expect(
-      lensHub.connect(user).initialize('name', 'symbol', userAddress)
+      lensHub.connect(user).initialize('name', 'symbol', userAddress, whitelist.address)
     ).to.be.revertedWith(ERRORS.INITIALIZED);
   });
 
@@ -51,6 +52,7 @@ makeSuiteCleanRoom('deployment validation', () => {
       LENS_HUB_NFT_NAME,
       LENS_HUB_NFT_SYMBOL,
       governanceAddress,
+      whitelist.address,
     ]);
 
     const proxy = await new TransparentUpgradeableProxy__factory(deployer).deploy(
@@ -60,7 +62,7 @@ makeSuiteCleanRoom('deployment validation', () => {
     );
 
     await expect(
-      LensHub__factory.connect(proxy.address, user).initialize('name', 'symbol', userAddress)
+      LensHub__factory.connect(proxy.address, user).initialize('name', 'symbol', userAddress, whitelist.address)
     ).to.be.revertedWith(ERRORS.INITIALIZED);
   });
 

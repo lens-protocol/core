@@ -15,6 +15,7 @@ import {
   userAddress,
   userTwo,
   userTwoAddress,
+  whitelist,
 } from '../../__setup.spec';
 
 makeSuiteCleanRoom('Revert Collect Module', function () {
@@ -30,7 +31,7 @@ makeSuiteCleanRoom('Revert Collect Module', function () {
       })
     ).to.not.be.reverted;
     await expect(
-      lensHub.connect(governance).whitelistCollectModule(revertCollectModule.address, true)
+      whitelist.connect(governance).whitelistCollectModule(revertCollectModule.address, true)
     ).to.not.be.reverted;
     await expect(
       lensHub.post({

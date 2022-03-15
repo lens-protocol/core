@@ -28,6 +28,7 @@ import {
   userAddress,
   userTwo,
   userTwoAddress,
+  whitelist,
 } from '../__setup.spec';
 
 /**
@@ -91,11 +92,11 @@ makeSuiteCleanRoom('Misc', function () {
     });
 
     it('Profile creator whitelist getter should return expected values', async function () {
-      expect(await lensHub.isProfileCreatorWhitelisted(userAddress)).to.eq(true);
+      expect(await whitelist.isProfileCreatorWhitelisted(userAddress)).to.eq(true);
       await expect(
-        lensHub.connect(governance).whitelistProfileCreator(userAddress, false)
+        whitelist.connect(governance).whitelistProfileCreator(userAddress, false)
       ).to.not.be.reverted;
-      expect(await lensHub.isProfileCreatorWhitelisted(userAddress)).to.eq(false);
+      expect(await whitelist.isProfileCreatorWhitelisted(userAddress)).to.eq(false);
     });
 
     it('Profile dispatcher getter should return the correct dispatcher address when it is set, then zero after it is transferred', async function () {
@@ -120,7 +121,7 @@ makeSuiteCleanRoom('Misc', function () {
       expect((await lensHub.getProfile(FIRST_PROFILE_ID)).followModule).to.eq(ZERO_ADDRESS);
 
       await expect(
-        lensHub.connect(governance).whitelistFollowModule(mockFollowModule.address, true)
+        whitelist.connect(governance).whitelistFollowModule(mockFollowModule.address, true)
       ).to.not.be.reverted;
 
       await expect(
@@ -135,7 +136,7 @@ makeSuiteCleanRoom('Misc', function () {
       expect((await lensHub.getProfile(FIRST_PROFILE_ID)).pubCount).to.eq(0);
 
       await expect(
-        lensHub.connect(governance).whitelistCollectModule(emptyCollectModule.address, true)
+        whitelist.connect(governance).whitelistCollectModule(emptyCollectModule.address, true)
       ).to.not.be.reverted;
 
       const expectedCount = 5;
@@ -160,11 +161,11 @@ makeSuiteCleanRoom('Misc', function () {
 
     it('Publication reference module getter should return the correct reference module (or zero in case of no reference module)', async function () {
       await expect(
-        lensHub.connect(governance).whitelistCollectModule(emptyCollectModule.address, true)
+        whitelist.connect(governance).whitelistCollectModule(emptyCollectModule.address, true)
       ).to.not.be.reverted;
 
       await expect(
-        lensHub
+        whitelist
           .connect(governance)
           .whitelistReferenceModule(followerOnlyReferenceModule.address, true)
       ).to.not.be.reverted;
@@ -198,7 +199,7 @@ makeSuiteCleanRoom('Misc', function () {
 
     it('Publication pointer getter should return an empty pointer for posts', async function () {
       await expect(
-        lensHub.connect(governance).whitelistCollectModule(emptyCollectModule.address, true)
+        whitelist.connect(governance).whitelistCollectModule(emptyCollectModule.address, true)
       ).to.not.be.reverted;
 
       await expect(
@@ -219,7 +220,7 @@ makeSuiteCleanRoom('Misc', function () {
 
     it('Publication pointer getter should return the correct pointer for comments', async function () {
       await expect(
-        lensHub.connect(governance).whitelistCollectModule(emptyCollectModule.address, true)
+        whitelist.connect(governance).whitelistCollectModule(emptyCollectModule.address, true)
       ).to.not.be.reverted;
 
       await expect(
@@ -253,7 +254,7 @@ makeSuiteCleanRoom('Misc', function () {
 
     it('Publication pointer getter should return the correct pointer for mirrors', async function () {
       await expect(
-        lensHub.connect(governance).whitelistCollectModule(emptyCollectModule.address, true)
+        whitelist.connect(governance).whitelistCollectModule(emptyCollectModule.address, true)
       ).to.not.be.reverted;
 
       await expect(
@@ -284,7 +285,7 @@ makeSuiteCleanRoom('Misc', function () {
 
     it('Publication content URI getter should return the correct URI for posts', async function () {
       await expect(
-        lensHub.connect(governance).whitelistCollectModule(emptyCollectModule.address, true)
+        whitelist.connect(governance).whitelistCollectModule(emptyCollectModule.address, true)
       ).to.not.be.reverted;
 
       await expect(
@@ -303,7 +304,7 @@ makeSuiteCleanRoom('Misc', function () {
 
     it('Publication content URI getter should return the correct URI for comments', async function () {
       await expect(
-        lensHub.connect(governance).whitelistCollectModule(emptyCollectModule.address, true)
+        whitelist.connect(governance).whitelistCollectModule(emptyCollectModule.address, true)
       ).to.not.be.reverted;
 
       await expect(
@@ -335,7 +336,7 @@ makeSuiteCleanRoom('Misc', function () {
 
     it('Publication content URI getter should return the correct URI for mirrors', async function () {
       await expect(
-        lensHub.connect(governance).whitelistCollectModule(emptyCollectModule.address, true)
+        whitelist.connect(governance).whitelistCollectModule(emptyCollectModule.address, true)
       ).to.not.be.reverted;
 
       await expect(
@@ -363,7 +364,7 @@ makeSuiteCleanRoom('Misc', function () {
 
     it('Publication collect module getter should return the correct collectModule for posts', async function () {
       await expect(
-        lensHub.connect(governance).whitelistCollectModule(emptyCollectModule.address, true)
+        whitelist.connect(governance).whitelistCollectModule(emptyCollectModule.address, true)
       ).to.not.be.reverted;
 
       await expect(
@@ -382,7 +383,7 @@ makeSuiteCleanRoom('Misc', function () {
 
     it('Publication collect module getter should return the correct collectModule for comments', async function () {
       await expect(
-        lensHub.connect(governance).whitelistCollectModule(emptyCollectModule.address, true)
+        whitelist.connect(governance).whitelistCollectModule(emptyCollectModule.address, true)
       ).to.not.be.reverted;
 
       await expect(
@@ -424,7 +425,7 @@ makeSuiteCleanRoom('Misc', function () {
 
     it('Publication collect module getter should return the zero address for mirrors', async function () {
       await expect(
-        lensHub.connect(governance).whitelistCollectModule(emptyCollectModule.address, true)
+        whitelist.connect(governance).whitelistCollectModule(emptyCollectModule.address, true)
       ).to.not.be.reverted;
 
       await expect(
@@ -453,7 +454,7 @@ makeSuiteCleanRoom('Misc', function () {
 
     it('Publication type getter should return the correct publication type for all publication types, or nonexistent', async function () {
       await expect(
-        lensHub.connect(governance).whitelistCollectModule(emptyCollectModule.address, true)
+        whitelist.connect(governance).whitelistCollectModule(emptyCollectModule.address, true)
       ).to.not.be.reverted;
 
       await expect(
@@ -508,7 +509,7 @@ makeSuiteCleanRoom('Misc', function () {
   context('Follow Module Misc', function () {
     beforeEach(async function () {
       await expect(
-        lensHub.connect(governance).whitelistFollowModule(approvalFollowModule.address, true)
+        whitelist.connect(governance).whitelistFollowModule(approvalFollowModule.address, true)
       ).to.not.be.reverted;
 
       await expect(
@@ -660,7 +661,7 @@ makeSuiteCleanRoom('Misc', function () {
 
       // Then, whitelist a collect module
       await expect(
-        lensHub.connect(governance).whitelistCollectModule(emptyCollectModule.address, true)
+        whitelist.connect(governance).whitelistCollectModule(emptyCollectModule.address, true)
       ).to.not.be.reverted;
 
       // Then, publish twice

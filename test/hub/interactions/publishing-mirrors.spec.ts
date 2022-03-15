@@ -18,6 +18,7 @@ import {
   testWallet,
   userAddress,
   userTwo,
+  whitelist,
 } from '../../__setup.spec';
 
 makeSuiteCleanRoom('Publishing mirrors', function () {
@@ -35,11 +36,11 @@ makeSuiteCleanRoom('Publishing mirrors', function () {
       ).to.not.be.reverted;
 
       await expect(
-        lensHub.connect(governance).whitelistCollectModule(emptyCollectModule.address, true)
+        whitelist.connect(governance).whitelistCollectModule(emptyCollectModule.address, true)
       ).to.not.be.reverted;
 
       await expect(
-        lensHub.connect(governance).whitelistReferenceModule(mockReferenceModule.address, true)
+        whitelist.connect(governance).whitelistReferenceModule(mockReferenceModule.address, true)
       ).to.not.be.reverted;
 
       await expect(
@@ -195,7 +196,7 @@ makeSuiteCleanRoom('Publishing mirrors', function () {
       ).to.not.be.reverted;
 
       await expect(
-        lensHub.connect(governance).whitelistCollectModule(emptyCollectModule.address, true)
+        whitelist.connect(governance).whitelistCollectModule(emptyCollectModule.address, true)
       ).to.not.be.reverted;
 
       await expect(

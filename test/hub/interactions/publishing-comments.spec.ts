@@ -20,6 +20,7 @@ import {
   timedFeeCollectModule,
   userAddress,
   userTwo,
+  whitelist,
 } from '../../__setup.spec';
 
 makeSuiteCleanRoom('Publishing Comments', function () {
@@ -37,15 +38,15 @@ makeSuiteCleanRoom('Publishing Comments', function () {
       ).to.not.be.reverted;
 
       await expect(
-        lensHub.connect(governance).whitelistCollectModule(emptyCollectModule.address, true)
+        whitelist.connect(governance).whitelistCollectModule(emptyCollectModule.address, true)
       ).to.not.be.reverted;
 
       await expect(
-        lensHub.connect(governance).whitelistCollectModule(timedFeeCollectModule.address, true)
+        whitelist.connect(governance).whitelistCollectModule(timedFeeCollectModule.address, true)
       ).to.not.be.reverted;
 
       await expect(
-        lensHub.connect(governance).whitelistReferenceModule(mockReferenceModule.address, true)
+        whitelist.connect(governance).whitelistReferenceModule(mockReferenceModule.address, true)
       ).to.not.be.reverted;
 
       await expect(
@@ -219,7 +220,7 @@ makeSuiteCleanRoom('Publishing Comments', function () {
       ).to.not.be.reverted;
 
       await expect(
-        lensHub.connect(governance).whitelistCollectModule(emptyCollectModule.address, true)
+        whitelist.connect(governance).whitelistCollectModule(emptyCollectModule.address, true)
       ).to.not.be.reverted;
 
       await expect(
@@ -389,7 +390,7 @@ makeSuiteCleanRoom('Publishing Comments', function () {
 
       it('TestWallet should fail to comment with sig with unwhitelisted reference module', async function () {
         await expect(
-          lensHub.connect(governance).whitelistCollectModule(emptyCollectModule.address, true)
+          whitelist.connect(governance).whitelistCollectModule(emptyCollectModule.address, true)
         ).to.not.be.reverted;
 
         const nonce = (await lensHub.sigNonces(testWallet.address)).toNumber();
@@ -431,7 +432,7 @@ makeSuiteCleanRoom('Publishing Comments', function () {
 
       it('TestWallet should fail to comment with sig on a publication that does not exist', async function () {
         await expect(
-          lensHub.connect(governance).whitelistCollectModule(emptyCollectModule.address, true)
+          whitelist.connect(governance).whitelistCollectModule(emptyCollectModule.address, true)
         ).to.not.be.reverted;
 
         const nonce = (await lensHub.sigNonces(testWallet.address)).toNumber();
@@ -473,7 +474,7 @@ makeSuiteCleanRoom('Publishing Comments', function () {
 
       it('TestWallet should sign attempt to comment with sig, cancel via empty permitForAll, then fail to comment with sig', async function () {
         await expect(
-          lensHub.connect(governance).whitelistCollectModule(emptyCollectModule.address, true)
+          whitelist.connect(governance).whitelistCollectModule(emptyCollectModule.address, true)
         ).to.not.be.reverted;
 
         const nonce = (await lensHub.sigNonces(testWallet.address)).toNumber();
@@ -519,7 +520,7 @@ makeSuiteCleanRoom('Publishing Comments', function () {
     context('Scenarios', function () {
       it('TestWallet should comment with sig, fetched comment data should be accurate', async function () {
         await expect(
-          lensHub.connect(governance).whitelistCollectModule(emptyCollectModule.address, true)
+          whitelist.connect(governance).whitelistCollectModule(emptyCollectModule.address, true)
         ).to.not.be.reverted;
 
         const nonce = (await lensHub.sigNonces(testWallet.address)).toNumber();

@@ -43,6 +43,8 @@ import {
   TimedFeeCollectModule,
   TimedFeeCollectModule__factory,
   TransparentUpgradeableProxy__factory,
+  Whitelist,
+  Whitelist__factory,
 } from '../typechain-types';
 import { LensHubLibraryAddresses } from '../typechain-types/factories/LensHub__factory';
 import { FAKE_PRIVATEKEY, ZERO_ADDRESS } from './helpers/constants';
@@ -94,6 +96,7 @@ export let hubLibs: LensHubLibraryAddresses;
 export let eventsLib: Events;
 export let moduleGlobals: ModuleGlobals;
 export let helper: Helper;
+export let whitelist: Whitelist;
 
 /* Modules */
 
@@ -161,7 +164,7 @@ before(async function () {
   // nonce + 2 is impl
   // nonce + 3 is hub proxy
 
-  const hubProxyAddress = computeContractAddress(deployerAddress, nonce + 3); //'0x' + keccak256(RLP.encode([deployerAddress, hubProxyNonce])).substr(26);
+  const hubProxyAddress = computeContractAddress(deployerAddress, nonce + 4); //'0x' + keccak256(RLP.encode([deployerAddress, hubProxyNonce])).substr(26);
 
   const followNFTImpl = await new FollowNFT__factory(deployer).deploy(hubProxyAddress);
   const collectNFTImpl = await new CollectNFT__factory(deployer).deploy(hubProxyAddress);
@@ -171,10 +174,13 @@ before(async function () {
     collectNFTImpl.address
   );
 
+  const whitelistContract = await new Whitelist__factory(deployer).deploy(governanceAddress);
+
   let data = lensHubImpl.interface.encodeFunctionData('initialize', [
     LENS_HUB_NFT_NAME,
     LENS_HUB_NFT_SYMBOL,
     governanceAddress,
+    whitelistContract.address,
   ]);
   let proxy = await new TransparentUpgradeableProxy__factory(deployer).deploy(
     lensHubImpl.address,
@@ -184,6 +190,7 @@ before(async function () {
 
   // Connect the hub proxy to the LensHub factory and the user for ease of use.
   lensHub = LensHub__factory.connect(proxy.address, user);
+  whitelist = Whitelist__factory.connect(whitelistContract.address, user);
 
   // Currency
   currency = await new Currency__factory(deployer).deploy();
@@ -222,13 +229,13 @@ before(async function () {
 
   await expect(lensHub.connect(governance).setState(ProtocolState.Unpaused)).to.not.be.reverted;
   await expect(
-    lensHub.connect(governance).whitelistProfileCreator(userAddress, true)
+    whitelist.connect(governance).whitelistProfileCreator(userAddress, true)
   ).to.not.be.reverted;
   await expect(
-    lensHub.connect(governance).whitelistProfileCreator(userTwoAddress, true)
+    whitelist.connect(governance).whitelistProfileCreator(userTwoAddress, true)
   ).to.not.be.reverted;
   await expect(
-    lensHub.connect(governance).whitelistProfileCreator(testWallet.address, true)
+    whitelist.connect(governance).whitelistProfileCreator(testWallet.address, true)
   ).to.not.be.reverted;
 
   expect(lensHub).to.not.be.undefined;
@@ -236,6 +243,7 @@ before(async function () {
   expect(timedFeeCollectModule).to.not.be.undefined;
   expect(mockFollowModule).to.not.be.undefined;
   expect(mockReferenceModule).to.not.be.undefined;
+  expect(whitelist).to.not.be.undefined;
 
   // Event library deployment is only needed for testing and is not reproduced in the live environment
   eventsLib = await new Events__factory(deployer).deploy();

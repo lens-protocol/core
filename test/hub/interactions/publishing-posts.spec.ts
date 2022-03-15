@@ -19,6 +19,7 @@ import {
   timedFeeCollectModule,
   userAddress,
   userTwo,
+  whitelist,
 } from '../../__setup.spec';
 
 makeSuiteCleanRoom('Publishing Posts', function () {
@@ -65,7 +66,7 @@ makeSuiteCleanRoom('Publishing Posts', function () {
 
       it('User should fail to post with an unwhitelisted reference module', async function () {
         await expect(
-          lensHub.connect(governance).whitelistCollectModule(emptyCollectModule.address, true)
+          whitelist.connect(governance).whitelistCollectModule(emptyCollectModule.address, true)
         ).to.not.be.reverted;
 
         await expect(
@@ -82,7 +83,7 @@ makeSuiteCleanRoom('Publishing Posts', function () {
 
       it('User should fail to post with invalid collect module data format', async function () {
         await expect(
-          lensHub.connect(governance).whitelistCollectModule(timedFeeCollectModule.address, true)
+          whitelist.connect(governance).whitelistCollectModule(timedFeeCollectModule.address, true)
         ).to.not.be.reverted;
 
         await expect(
@@ -99,11 +100,11 @@ makeSuiteCleanRoom('Publishing Posts', function () {
 
       it('User should fail to post with invalid reference module data format', async function () {
         await expect(
-          lensHub.connect(governance).whitelistCollectModule(emptyCollectModule.address, true)
+          whitelist.connect(governance).whitelistCollectModule(emptyCollectModule.address, true)
         ).to.not.be.reverted;
 
         await expect(
-          lensHub.connect(governance).whitelistReferenceModule(mockReferenceModule.address, true)
+          whitelist.connect(governance).whitelistReferenceModule(mockReferenceModule.address, true)
         ).to.not.be.reverted;
 
         await expect(
@@ -122,7 +123,7 @@ makeSuiteCleanRoom('Publishing Posts', function () {
     context('Scenarios', function () {
       it('User should create a post with empty collect and reference module data, fetched post data should be accurate', async function () {
         await expect(
-          lensHub.connect(governance).whitelistCollectModule(emptyCollectModule.address, true)
+          whitelist.connect(governance).whitelistCollectModule(emptyCollectModule.address, true)
         ).to.not.be.reverted;
 
         await expect(
@@ -147,10 +148,10 @@ makeSuiteCleanRoom('Publishing Posts', function () {
 
       it('User should create a post with a whitelisted collect and reference module', async function () {
         await expect(
-          lensHub.connect(governance).whitelistReferenceModule(mockReferenceModule.address, true)
+          whitelist.connect(governance).whitelistReferenceModule(mockReferenceModule.address, true)
         ).to.not.be.reverted;
         await expect(
-          lensHub.connect(governance).whitelistCollectModule(emptyCollectModule.address, true)
+          whitelist.connect(governance).whitelistCollectModule(emptyCollectModule.address, true)
         ).to.not.be.reverted;
 
         await expect(
@@ -184,7 +185,7 @@ makeSuiteCleanRoom('Publishing Posts', function () {
     context('Negatives', function () {
       it('Testwallet should fail to post with sig with signature deadline mismatch', async function () {
         await expect(
-          lensHub.connect(governance).whitelistCollectModule(emptyCollectModule.address, true)
+          whitelist.connect(governance).whitelistCollectModule(emptyCollectModule.address, true)
         ).to.not.be.reverted;
 
         const nonce = (await lensHub.sigNonces(testWallet.address)).toNumber();
@@ -222,7 +223,7 @@ makeSuiteCleanRoom('Publishing Posts', function () {
 
       it('Testwallet should fail to post with sig with invalid deadline', async function () {
         await expect(
-          lensHub.connect(governance).whitelistCollectModule(emptyCollectModule.address, true)
+          whitelist.connect(governance).whitelistCollectModule(emptyCollectModule.address, true)
         ).to.not.be.reverted;
 
         const nonce = (await lensHub.sigNonces(testWallet.address)).toNumber();
@@ -260,7 +261,7 @@ makeSuiteCleanRoom('Publishing Posts', function () {
 
       it('Testwallet should fail to post with sig with invalid nonce', async function () {
         await expect(
-          lensHub.connect(governance).whitelistCollectModule(emptyCollectModule.address, true)
+          whitelist.connect(governance).whitelistCollectModule(emptyCollectModule.address, true)
         ).to.not.be.reverted;
 
         const nonce = (await lensHub.sigNonces(testWallet.address)).toNumber();
@@ -332,7 +333,7 @@ makeSuiteCleanRoom('Publishing Posts', function () {
 
       it('Testwallet should fail to post with sig with an unwhitelisted reference module', async function () {
         await expect(
-          lensHub.connect(governance).whitelistCollectModule(emptyCollectModule.address, true)
+          whitelist.connect(governance).whitelistCollectModule(emptyCollectModule.address, true)
         ).to.not.be.reverted;
 
         const nonce = (await lensHub.sigNonces(testWallet.address)).toNumber();
@@ -370,7 +371,7 @@ makeSuiteCleanRoom('Publishing Posts', function () {
 
       it('TestWallet should sign attempt to post with sig, cancel via empty permitForAll, then fail to post with sig', async function () {
         await expect(
-          lensHub.connect(governance).whitelistCollectModule(emptyCollectModule.address, true)
+          whitelist.connect(governance).whitelistCollectModule(emptyCollectModule.address, true)
         ).to.not.be.reverted;
 
         const nonce = (await lensHub.sigNonces(testWallet.address)).toNumber();
@@ -412,7 +413,7 @@ makeSuiteCleanRoom('Publishing Posts', function () {
     context('Scenarios', function () {
       it('TestWallet should post with sig, fetched post data should be accurate', async function () {
         await expect(
-          lensHub.connect(governance).whitelistCollectModule(emptyCollectModule.address, true)
+          whitelist.connect(governance).whitelistCollectModule(emptyCollectModule.address, true)
         ).to.not.be.reverted;
 
         const nonce = (await lensHub.sigNonces(testWallet.address)).toNumber();

@@ -17,6 +17,7 @@ import {
   userAddress,
   userTwo,
   userTwoAddress,
+  whitelist,
 } from '../../__setup.spec';
 
 makeSuiteCleanRoom('Dispatcher Functionality', function () {
@@ -33,7 +34,7 @@ makeSuiteCleanRoom('Dispatcher Functionality', function () {
         })
       ).to.not.be.reverted;
       await expect(
-        lensHub.connect(governance).whitelistCollectModule(emptyCollectModule.address, true)
+        whitelist.connect(governance).whitelistCollectModule(emptyCollectModule.address, true)
       ).to.not.be.reverted;
     });
 
@@ -119,7 +120,7 @@ makeSuiteCleanRoom('Dispatcher Functionality', function () {
         })
       ).to.not.be.reverted;
       await expect(
-        lensHub.connect(governance).whitelistCollectModule(emptyCollectModule.address, true)
+        whitelist.connect(governance).whitelistCollectModule(emptyCollectModule.address, true)
       ).to.not.be.reverted;
     });
 

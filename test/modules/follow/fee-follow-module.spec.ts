@@ -24,6 +24,7 @@ import {
   userAddress,
   userTwo,
   userTwoAddress,
+  whitelist,
 } from '../../__setup.spec';
 
 makeSuiteCleanRoom('Fee Follow Module', function () {
@@ -31,7 +32,7 @@ makeSuiteCleanRoom('Fee Follow Module', function () {
 
   beforeEach(async function () {
     await expect(
-      lensHub.connect(governance).whitelistFollowModule(feeFollowModule.address, true)
+      whitelist.connect(governance).whitelistFollowModule(feeFollowModule.address, true)
     ).to.not.be.reverted;
     await expect(
       moduleGlobals.connect(governance).whitelistCurrency(currency.address, true)

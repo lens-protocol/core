@@ -28,6 +28,7 @@ import {
   userAddress,
   userTwo,
   userTwoAddress,
+  whitelist,
 } from '../__setup.spec';
 import { BigNumber } from 'ethers';
 import { TokenDataStructOutput } from '../../typechain-types/LensHub';
@@ -40,7 +41,7 @@ makeSuiteCleanRoom('Mock Profile Creation Proxy', function () {
       lensHub.address
     );
     await expect(
-      lensHub.connect(governance).whitelistProfileCreator(mockProfileCreationProxy.address, true)
+      whitelist.connect(governance).whitelistProfileCreator(mockProfileCreationProxy.address, true)
     ).to.not.be.reverted;
   });
 

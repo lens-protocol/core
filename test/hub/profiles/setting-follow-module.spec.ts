@@ -16,6 +16,7 @@ import {
   testWallet,
   userAddress,
   userTwo,
+  whitelist,
 } from '../../__setup.spec';
 
 makeSuiteCleanRoom('Setting Follow Module', function () {
@@ -48,7 +49,7 @@ makeSuiteCleanRoom('Setting Follow Module', function () {
 
       it('User should fail to set a follow module with invalid follow module data format', async function () {
         await expect(
-          lensHub.connect(governance).whitelistFollowModule(mockFollowModule.address, true)
+          whitelist.connect(governance).whitelistFollowModule(mockFollowModule.address, true)
         ).to.not.be.reverted;
 
         await expect(
@@ -60,7 +61,7 @@ makeSuiteCleanRoom('Setting Follow Module', function () {
     context('Scenarios', function () {
       it('User should set a whitelisted follow module, fetching the profile follow module should return the correct address, user then sets it to the zero address and fetching returns the zero address', async function () {
         await expect(
-          lensHub.connect(governance).whitelistFollowModule(mockFollowModule.address, true)
+          whitelist.connect(governance).whitelistFollowModule(mockFollowModule.address, true)
         ).to.not.be.reverted;
 
         await expect(
@@ -95,7 +96,7 @@ makeSuiteCleanRoom('Setting Follow Module', function () {
     context('Negatives', function () {
       it('TestWallet should fail to set a follow module with sig with signature deadline mismatch', async function () {
         await expect(
-          lensHub.connect(governance).whitelistFollowModule(mockFollowModule.address, true)
+          whitelist.connect(governance).whitelistFollowModule(mockFollowModule.address, true)
         ).to.not.be.reverted;
 
         const nonce = (await lensHub.sigNonces(testWallet.address)).toNumber();
@@ -126,7 +127,7 @@ makeSuiteCleanRoom('Setting Follow Module', function () {
 
       it('TestWallet should fail to set a follow module with sig with invalid deadline', async function () {
         await expect(
-          lensHub.connect(governance).whitelistFollowModule(mockFollowModule.address, true)
+          whitelist.connect(governance).whitelistFollowModule(mockFollowModule.address, true)
         ).to.not.be.reverted;
 
         const nonce = (await lensHub.sigNonces(testWallet.address)).toNumber();
@@ -157,7 +158,7 @@ makeSuiteCleanRoom('Setting Follow Module', function () {
 
       it('TestWallet should fail to set a follow module with sig with invalid nonce', async function () {
         await expect(
-          lensHub.connect(governance).whitelistFollowModule(mockFollowModule.address, true)
+          whitelist.connect(governance).whitelistFollowModule(mockFollowModule.address, true)
         ).to.not.be.reverted;
 
         const nonce = (await lensHub.sigNonces(testWallet.address)).toNumber();
@@ -215,7 +216,7 @@ makeSuiteCleanRoom('Setting Follow Module', function () {
 
       it('TestWallet should sign attempt to set follow module with sig, then cancel with empty permitForAll, then fail to set follow module with sig', async function () {
         await expect(
-          lensHub.connect(governance).whitelistFollowModule(mockFollowModule.address, true)
+          whitelist.connect(governance).whitelistFollowModule(mockFollowModule.address, true)
         ).to.not.be.reverted;
 
         const nonce = (await lensHub.sigNonces(testWallet.address)).toNumber();
@@ -249,7 +250,7 @@ makeSuiteCleanRoom('Setting Follow Module', function () {
     context('Scenarios', function () {
       it('TestWallet should set a whitelisted follow module with sig, fetching the profile follow module should return the correct address', async function () {
         await expect(
-          lensHub.connect(governance).whitelistFollowModule(mockFollowModule.address, true)
+          whitelist.connect(governance).whitelistFollowModule(mockFollowModule.address, true)
         ).to.not.be.reverted;
 
         const nonce = (await lensHub.sigNonces(testWallet.address)).toNumber();

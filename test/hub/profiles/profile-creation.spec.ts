@@ -18,6 +18,7 @@ import {
   userAddress,
   userTwo,
   userTwoAddress,
+  whitelist,
 } from '../../__setup.spec';
 
 makeSuiteCleanRoom('Profile Creation', function () {
@@ -92,7 +93,7 @@ makeSuiteCleanRoom('Profile Creation', function () {
 
       it('User should fail to create a profile with with invalid follow module data format', async function () {
         await expect(
-          lensHub.connect(governance).whitelistFollowModule(mockFollowModule.address, true)
+          whitelist.connect(governance).whitelistFollowModule(mockFollowModule.address, true)
         ).to.not.be.reverted;
 
         await expect(
@@ -109,7 +110,7 @@ makeSuiteCleanRoom('Profile Creation', function () {
 
       it('User should fail to createa a profile when they are not a whitelisted profile creator', async function () {
         await expect(
-          lensHub.connect(governance).whitelistProfileCreator(userAddress, false)
+          whitelist.connect(governance).whitelistProfileCreator(userAddress, false)
         ).to.not.be.reverted;
 
         await expect(
@@ -219,7 +220,7 @@ makeSuiteCleanRoom('Profile Creation', function () {
 
       it('User should be able to create a profile with a whitelisted follow module', async function () {
         await expect(
-          lensHub.connect(governance).whitelistFollowModule(mockFollowModule.address, true)
+          whitelist.connect(governance).whitelistFollowModule(mockFollowModule.address, true)
         ).to.not.be.reverted;
 
         await expect(

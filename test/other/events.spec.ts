@@ -34,6 +34,7 @@ import {
   userAddress,
   userTwo,
   userTwoAddress,
+  whitelist,
 } from '../__setup.spec';
 
 /**
@@ -53,6 +54,7 @@ makeSuiteCleanRoom('Events', function () {
         LENS_HUB_NFT_NAME,
         LENS_HUB_NFT_SYMBOL,
         governanceAddress,
+        whitelist.address,
       ]);
 
       let proxy = await new TransparentUpgradeableProxy__factory(deployer).deploy(
@@ -178,13 +180,13 @@ makeSuiteCleanRoom('Events', function () {
 
     it('Follow module whitelisting functions should emit expected event', async function () {
       receipt = await waitForTx(
-        lensHub.connect(governance).whitelistFollowModule(userAddress, true)
+        whitelist.connect(governance).whitelistFollowModule(userAddress, true)
       );
       expect(receipt.logs.length).to.eq(1);
       matchEvent(receipt, 'FollowModuleWhitelisted', [userAddress, true, await getTimestamp()]);
 
       receipt = await waitForTx(
-        lensHub.connect(governance).whitelistFollowModule(userAddress, false)
+        whitelist.connect(governance).whitelistFollowModule(userAddress, false)
       );
       expect(receipt.logs.length).to.eq(1);
       matchEvent(receipt, 'FollowModuleWhitelisted', [userAddress, false, await getTimestamp()]);
@@ -192,13 +194,13 @@ makeSuiteCleanRoom('Events', function () {
 
     it('Reference module whitelisting functions should emit expected event', async function () {
       receipt = await waitForTx(
-        lensHub.connect(governance).whitelistReferenceModule(userAddress, true)
+        whitelist.connect(governance).whitelistReferenceModule(userAddress, true)
       );
       expect(receipt.logs.length).to.eq(1);
       matchEvent(receipt, 'ReferenceModuleWhitelisted', [userAddress, true, await getTimestamp()]);
 
       receipt = await waitForTx(
-        lensHub.connect(governance).whitelistReferenceModule(userAddress, false)
+        whitelist.connect(governance).whitelistReferenceModule(userAddress, false)
       );
       expect(receipt.logs.length).to.eq(1);
       matchEvent(receipt, 'ReferenceModuleWhitelisted', [userAddress, false, await getTimestamp()]);
@@ -206,13 +208,13 @@ makeSuiteCleanRoom('Events', function () {
 
     it('Collect module whitelisting functions should emit expected event', async function () {
       receipt = await waitForTx(
-        lensHub.connect(governance).whitelistCollectModule(userAddress, true)
+        whitelist.connect(governance).whitelistCollectModule(userAddress, true)
       );
       expect(receipt.logs.length).to.eq(1);
       matchEvent(receipt, 'CollectModuleWhitelisted', [userAddress, true, await getTimestamp()]);
 
       receipt = await waitForTx(
-        lensHub.connect(governance).whitelistCollectModule(userAddress, false)
+        whitelist.connect(governance).whitelistCollectModule(userAddress, false)
       );
       expect(receipt.logs.length).to.eq(1);
       matchEvent(receipt, 'CollectModuleWhitelisted', [userAddress, false, await getTimestamp()]);
@@ -296,7 +298,7 @@ makeSuiteCleanRoom('Events', function () {
       await createProfile();
 
       await waitForTx(
-        lensHub.connect(governance).whitelistFollowModule(approvalFollowModule.address, true)
+        whitelist.connect(governance).whitelistFollowModule(approvalFollowModule.address, true)
       );
 
       receipt = await waitForTx(
@@ -325,7 +327,7 @@ makeSuiteCleanRoom('Events', function () {
       await createProfile();
 
       await waitForTx(
-        lensHub.connect(governance).whitelistCollectModule(emptyCollectModule.address, true)
+        whitelist.connect(governance).whitelistCollectModule(emptyCollectModule.address, true)
       );
 
       receipt = await waitForTx(
@@ -356,7 +358,7 @@ makeSuiteCleanRoom('Events', function () {
       await createProfile();
 
       await waitForTx(
-        lensHub.connect(governance).whitelistCollectModule(emptyCollectModule.address, true)
+        whitelist.connect(governance).whitelistCollectModule(emptyCollectModule.address, true)
       );
       await waitForTx(
         lensHub.post({
@@ -402,7 +404,7 @@ makeSuiteCleanRoom('Events', function () {
       await createProfile();
 
       await waitForTx(
-        lensHub.connect(governance).whitelistCollectModule(emptyCollectModule.address, true)
+        whitelist.connect(governance).whitelistCollectModule(emptyCollectModule.address, true)
       );
       await waitForTx(
         lensHub.post({
@@ -442,7 +444,7 @@ makeSuiteCleanRoom('Events', function () {
       await createProfile();
 
       await waitForTx(
-        lensHub.connect(governance).whitelistCollectModule(emptyCollectModule.address, true)
+        whitelist.connect(governance).whitelistCollectModule(emptyCollectModule.address, true)
       );
 
       receipt = await waitForTx(lensHub.connect(userTwo).follow([FIRST_PROFILE_ID], [[]]));
@@ -468,7 +470,7 @@ makeSuiteCleanRoom('Events', function () {
       await createProfile();
 
       await waitForTx(
-        lensHub.connect(governance).whitelistCollectModule(emptyCollectModule.address, true)
+        whitelist.connect(governance).whitelistCollectModule(emptyCollectModule.address, true)
       );
 
       await waitForTx(
@@ -522,7 +524,7 @@ makeSuiteCleanRoom('Events', function () {
       await createProfile();
 
       await waitForTx(
-        lensHub.connect(governance).whitelistCollectModule(emptyCollectModule.address, true)
+        whitelist.connect(governance).whitelistCollectModule(emptyCollectModule.address, true)
       );
 
       await waitForTx(
