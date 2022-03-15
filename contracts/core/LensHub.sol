@@ -157,9 +157,8 @@ contract LensHub is ILensHub, LensNFTBase, VersionedInitializable, LensMultiStat
     }
 
     /// @inheritdoc ILensHub
-    function setDefaultProfile(uint256 profileId, address wallet) external override whenNotPaused {
-        _validateCallerIsProfileOwnerOrDispatcher(profileId);
-        _setDefaultProfile(profileId, wallet);
+    function setDefaultProfile(uint256 profileId) external override whenNotPaused {
+        _setDefaultProfile(msg.sender, profileId);
     }
 
     /// @inheritdoc ILensHub
@@ -168,7 +167,6 @@ contract LensHub is ILensHub, LensNFTBase, VersionedInitializable, LensMultiStat
         override
         whenNotPaused
     {
-        address owner = ownerOf(vars.profileId);
         bytes32 digest;
         unchecked {
             digest = keccak256(
@@ -178,9 +176,9 @@ contract LensHub is ILensHub, LensNFTBase, VersionedInitializable, LensMultiStat
                     keccak256(
                         abi.encode(
                             SET_DEFAULT_PROFILE_WITH_SIG_TYPEHASH,
-                            vars.profileId,
                             vars.wallet,
-                            sigNonces[owner]++,
+                            vars.profileId,
+                            sigNonces[vars.wallet]++,
                             vars.sig.deadline
                         )
                     )
@@ -188,9 +186,9 @@ contract LensHub is ILensHub, LensNFTBase, VersionedInitializable, LensMultiStat
             );
         }
 
-        _validateRecoveredAddress(digest, owner, vars.sig);
+        _validateRecoveredAddress(digest, vars.wallet, vars.sig);
 
-        _setDefaultProfile(vars.profileId, vars.wallet);
+        _setDefaultProfile(vars.wallet, vars.profileId);
     }
 
     /// @inheritdoc ILensHub
@@ -917,21 +915,13 @@ contract LensHub is ILensHub, LensNFTBase, VersionedInitializable, LensMultiStat
         );
     }
 
-    function _setDefaultProfile(uint256 profileId, address wallet) internal {
-        // you should only be able to map this to the owner OR dead address
-        if (wallet != address(0)) {
-            _validateWalletIsProfileOwner(profileId, wallet);
-            _defaultProfileByAddress[wallet] = profileId;
-            _addressByDefaultProfile[profileId] = wallet;
-
-            emit Events.DefaultProfileSet(profileId, wallet, block.timestamp);
-        } else {
-            // unset the default
-            _defaultProfileByAddress[ownerOf(profileId)] = 0;
-            _addressByDefaultProfile[profileId] = wallet;
-
-            emit Events.DefaultProfileSet(0, wallet, block.timestamp);
+    function _setDefaultProfile(address wallet, uint256 profileId) internal {
+        if (profileId > 0) {
+            if (wallet != ownerOf(profileId)) revert Errors.NotProfileOwner();
         }
+        _defaultProfileByAddress[wallet] = profileId;
+
+        emit Events.DefaultProfileSet(wallet, profileId, block.timestamp);
     }
 
     function _createComment(DataTypes.CommentData memory vars) internal {
@@ -994,8 +984,7 @@ contract LensHub is ILensHub, LensNFTBase, VersionedInitializable, LensMultiStat
             _setDispatcher(tokenId, address(0));
         }
 
-        if (from != address(0)) {
-            _addressByDefaultProfile[tokenId] = address(0);
+        if (_defaultProfileByAddress[from] == tokenId) {
             _defaultProfileByAddress[from] = 0;
         }
 
@@ -1009,10 +998,6 @@ contract LensHub is ILensHub, LensNFTBase, VersionedInitializable, LensMultiStat
 
     function _validateCallerIsProfileOwner(uint256 profileId) internal view {
         if (msg.sender != ownerOf(profileId)) revert Errors.NotProfileOwner();
-    }
-
-    function _validateWalletIsProfileOwner(uint256 profileId, address wallet) internal view {
-        if (wallet != ownerOf(profileId)) revert Errors.NotProfileOwner();
     }
 
     function _validateCallerIsGovernance() internal view {

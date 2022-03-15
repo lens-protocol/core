@@ -318,8 +318,8 @@ export async function getSetProfileImageURIWithSigParts(
 }
 
 export async function getSetDefaultProfileWithSigParts(
-  profileId: BigNumberish,
   wallet: string,
+  profileId: BigNumberish,
   nonce: number,
   deadline: string
 ): Promise<{ v: number; r: string; s: string }> {
@@ -600,16 +600,16 @@ const buildSetDefaultProfileWithSigParams = (
 ) => ({
   types: {
     SetDefaultProfileWithSig: [
-      { name: 'profileId', type: 'uint256' },
       { name: 'wallet', type: 'address' },
+      { name: 'profileId', type: 'uint256' },
       { name: 'nonce', type: 'uint256' },
       { name: 'deadline', type: 'uint256' },
     ],
   },
   domain: domain(),
   value: {
-    profileId: profileId,
     wallet: wallet,
+    profileId: profileId,
     nonce: nonce,
     deadline: deadline,
   },
