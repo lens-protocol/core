@@ -48,20 +48,20 @@ makeSuiteCleanRoom('Default profile Functionality', function () {
     context('Scenarios', function () {
       it('User should set the default profile', async function () {
         await expect(lensHub.setDefaultProfile(userAddress, FIRST_PROFILE_ID)).to.not.be.reverted;
-        expect((await lensHub.defaultProfile(userAddress)).toNumber()).to.eq(FIRST_PROFILE_ID);
+        expect((await lensHub.defaultProfile(userAddress))).to.eq(FIRST_PROFILE_ID);
       });
 
       it('User should set the default profile and then be able to unset it', async function () {
         await expect(lensHub.setDefaultProfile(userAddress, FIRST_PROFILE_ID)).to.not.be.reverted;
-        expect((await lensHub.defaultProfile(userAddress)).toNumber()).to.eq(FIRST_PROFILE_ID);
+        expect((await lensHub.defaultProfile(userAddress))).to.eq(FIRST_PROFILE_ID);
 
         await expect(lensHub.setDefaultProfile(userAddress, 0)).to.not.be.reverted;
-        expect((await lensHub.defaultProfile(userAddress)).toNumber()).to.eq(0);
+        expect((await lensHub.defaultProfile(userAddress))).to.eq(0);
       });
 
       it('User should set the default profile and then be able to change it to another', async function () {
         await expect(lensHub.setDefaultProfile(userAddress, FIRST_PROFILE_ID)).to.not.be.reverted;
-        expect((await lensHub.defaultProfile(userAddress)).toNumber()).to.eq(FIRST_PROFILE_ID);
+        expect((await lensHub.defaultProfile(userAddress))).to.eq(FIRST_PROFILE_ID);
 
         await expect(
           lensHub.createProfile({
@@ -75,7 +75,7 @@ makeSuiteCleanRoom('Default profile Functionality', function () {
         ).to.not.be.reverted;
 
         await expect(lensHub.setDefaultProfile(userAddress, 2)).to.not.be.reverted;
-        expect((await lensHub.defaultProfile(userAddress)).toNumber()).to.eq(2);
+        expect((await lensHub.defaultProfile(userAddress))).to.eq(2);
       });
 
       it('User should set the default profile and then transfer it, their default profile should be unset', async function () {
@@ -227,8 +227,8 @@ makeSuiteCleanRoom('Default profile Functionality', function () {
 
         const defaultProfileAfter = await lensHub.defaultProfile(testWallet.address);
 
-        expect(defaultProfileBeforeUse.toNumber()).to.eq(0);
-        expect(defaultProfileAfter.toNumber()).to.eq(FIRST_PROFILE_ID);
+        expect(defaultProfileBeforeUse).to.eq(0);
+        expect(defaultProfileAfter).to.eq(FIRST_PROFILE_ID);
       });
 
       it('TestWallet should set the default profile with sig and then be able to unset it', async function () {
@@ -257,8 +257,8 @@ makeSuiteCleanRoom('Default profile Functionality', function () {
 
         const defaultProfileAfter = await lensHub.defaultProfile(testWallet.address);
 
-        expect(defaultProfileBeforeUse.toNumber()).to.eq(0);
-        expect(defaultProfileAfter.toNumber()).to.eq(FIRST_PROFILE_ID);
+        expect(defaultProfileBeforeUse).to.eq(0);
+        expect(defaultProfileAfter).to.eq(FIRST_PROFILE_ID);
 
         const nonce2 = (await lensHub.sigNonces(testWallet.address)).toNumber();
         const signature2 = await getSetDefaultProfileWithSigParts(
@@ -285,8 +285,8 @@ makeSuiteCleanRoom('Default profile Functionality', function () {
 
         const defaultProfileAfter2 = await lensHub.defaultProfile(testWallet.address);
 
-        expect(defaultProfileBeforeUse2.toNumber()).to.eq(FIRST_PROFILE_ID);
-        expect(defaultProfileAfter2.toNumber()).to.eq(0);
+        expect(defaultProfileBeforeUse2).to.eq(FIRST_PROFILE_ID);
+        expect(defaultProfileAfter2).to.eq(0);
       });
 
       it('TestWallet should set the default profile and then be able to change it to another', async function () {
@@ -315,8 +315,8 @@ makeSuiteCleanRoom('Default profile Functionality', function () {
 
         const defaultProfileAfter = await lensHub.defaultProfile(testWallet.address);
 
-        expect(defaultProfileBeforeUse.toNumber()).to.eq(0);
-        expect(defaultProfileAfter.toNumber()).to.eq(FIRST_PROFILE_ID);
+        expect(defaultProfileBeforeUse).to.eq(0);
+        expect(defaultProfileAfter).to.eq(FIRST_PROFILE_ID);
 
         await expect(
           lensHub.createProfile({
@@ -354,8 +354,8 @@ makeSuiteCleanRoom('Default profile Functionality', function () {
 
         const defaultProfileAfter2 = await lensHub.defaultProfile(testWallet.address);
 
-        expect(defaultProfileBeforeUse2.toNumber()).to.eq(1);
-        expect(defaultProfileAfter2.toNumber()).to.eq(2);
+        expect(defaultProfileBeforeUse2).to.eq(1);
+        expect(defaultProfileAfter2).to.eq(2);
       });
     });
   });
