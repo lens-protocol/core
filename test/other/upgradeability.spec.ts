@@ -27,12 +27,12 @@ makeSuiteCleanRoom('Upgradeability', function () {
     const proxyHub = TransparentUpgradeableProxy__factory.connect(lensHub.address, deployer);
 
     let prevStorage: string[] = [];
-    for (let i = 0; i < 23; i++) {
+    for (let i = 0; i < 24; i++) {
       const valueAt = await ethers.provider.getStorageAt(proxyHub.address, i);
       prevStorage.push(valueAt);
     }
 
-    let prevNextSlot = await ethers.provider.getStorageAt(proxyHub.address, 23);
+    let prevNextSlot = await ethers.provider.getStorageAt(proxyHub.address, 24);
     const formattedZero = abiCoder.encode(['uint256'], [0]);
     expect(prevNextSlot).to.eq(formattedZero);
 
@@ -41,12 +41,12 @@ makeSuiteCleanRoom('Upgradeability', function () {
       MockLensHubV2__factory.connect(proxyHub.address, user).setAdditionalValue(valueToSet)
     ).to.not.be.reverted;
 
-    for (let i = 0; i < 23; i++) {
+    for (let i = 0; i < 24; i++) {
       const valueAt = await ethers.provider.getStorageAt(proxyHub.address, i);
       expect(valueAt).to.eq(prevStorage[i]);
     }
 
-    const newNextSlot = await ethers.provider.getStorageAt(proxyHub.address, 23);
+    const newNextSlot = await ethers.provider.getStorageAt(proxyHub.address, 24);
     const formattedValue = abiCoder.encode(['uint256'], [valueToSet]);
     expect(newNextSlot).to.eq(formattedValue);
   });

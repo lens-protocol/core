@@ -95,17 +95,17 @@ interface ILensHub {
      *      handle: The handle to set for the profile, must be unique and non-empty.
      *      imageURI: The URI to set for the profile image.
      *      followModule: The follow module to use, can be the zero address.
-     *      followModuleData: The follow module initialization data, if any
+     *      followModuleData: The follow module initialization data, if any.
      */
     function createProfile(DataTypes.CreateProfileData calldata vars) external;
 
     /**
      * @notice Sets the mapping between wallet and its main profile identity
      *
-     * @param profileId The token ID of the profile to set as the main profile identity
-     * @param wallet The address of the wallet which is either the owner of the profile or address(0)
+     * @param wallet The address of the wallet setting the default profile.
+     * @param profileId The token ID of the profile to set as the main profile identity.
      */
-    function setDefaultProfile(uint256 profileId, address wallet) external;
+    function setDefaultProfile( address wallet, uint256 profileId) external;
 
     /**
      * @notice Sets the mapping between wallet and its main profile identity via signature with the specified parameters.
