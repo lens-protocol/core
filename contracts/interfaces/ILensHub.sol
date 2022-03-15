@@ -100,12 +100,11 @@ interface ILensHub {
     function createProfile(DataTypes.CreateProfileData calldata vars) external;
 
     /**
-     * @notice Sets the mapping between wallet and its main profile identity
+     * @notice Sets the mapping between wallet and its main profile identity.
      *
-     * @param wallet The address of the wallet setting the default profile.
      * @param profileId The token ID of the profile to set as the main profile identity.
      */
-    function setDefaultProfile( address wallet, uint256 profileId) external;
+    function setDefaultProfile(uint256 profileId) external;
 
     /**
      * @notice Sets the mapping between wallet and its main profile identity via signature with the specified parameters.

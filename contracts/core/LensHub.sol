@@ -157,11 +157,8 @@ contract LensHub is ILensHub, LensNFTBase, VersionedInitializable, LensMultiStat
     }
 
     /// @inheritdoc ILensHub
-    function setDefaultProfile(address wallet, uint256 profileId) external override whenNotPaused {
-        if (profileId > 0) {
-            _validateCallerIsProfileOwnerOrDispatcher(profileId);
-        }
-        _setDefaultProfile(wallet, profileId);
+    function setDefaultProfile(uint256 profileId) external override whenNotPaused {
+        _setDefaultProfile(msg.sender, profileId);
     }
 
     /// @inheritdoc ILensHub
@@ -920,7 +917,7 @@ contract LensHub is ILensHub, LensNFTBase, VersionedInitializable, LensMultiStat
 
     function _setDefaultProfile(address wallet, uint256 profileId) internal {
         if (profileId > 0) {
-            _validateWalletIsProfileOwner(profileId, wallet);
+            if (wallet != ownerOf(profileId)) revert Errors.NotProfileOwner();
         }
         _defaultProfileByAddress[wallet] = profileId;
 
@@ -1001,10 +998,6 @@ contract LensHub is ILensHub, LensNFTBase, VersionedInitializable, LensMultiStat
 
     function _validateCallerIsProfileOwner(uint256 profileId) internal view {
         if (msg.sender != ownerOf(profileId)) revert Errors.NotProfileOwner();
-    }
-
-    function _validateWalletIsProfileOwner(uint256 profileId, address wallet) internal view {
-        if (wallet != ownerOf(profileId)) revert Errors.NotProfileOwner();
     }
 
     function _validateCallerIsGovernance() internal view {

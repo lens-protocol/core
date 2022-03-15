@@ -32,36 +32,30 @@ makeSuiteCleanRoom('Default profile Functionality', function () {
     });
 
     context('Negatives', function () {
-      it('UserTwo should fail to set the default profile on profile owned by user 1', async function () {
+      it('UserTwo should fail to set the default profile as a profile owned by user 1', async function () {
         await expect(
-          lensHub.connect(userTwo).setDefaultProfile(userTwoAddress, FIRST_PROFILE_ID)
-        ).to.be.revertedWith(ERRORS.NOT_PROFILE_OWNER_OR_DISPATCHER);
-      });
-
-      it('UserOne should fail to change the default profile for address that doesnt own the profile', async function () {
-        await expect(
-          lensHub.setDefaultProfile(userTwoAddress, FIRST_PROFILE_ID)
+          lensHub.connect(userTwo).setDefaultProfile(FIRST_PROFILE_ID)
         ).to.be.revertedWith(ERRORS.NOT_PROFILE_OWNER);
       });
     });
 
     context('Scenarios', function () {
       it('User should set the default profile', async function () {
-        await expect(lensHub.setDefaultProfile(userAddress, FIRST_PROFILE_ID)).to.not.be.reverted;
-        expect((await lensHub.defaultProfile(userAddress))).to.eq(FIRST_PROFILE_ID);
+        await expect(lensHub.setDefaultProfile(FIRST_PROFILE_ID)).to.not.be.reverted;
+        expect(await lensHub.defaultProfile(userAddress)).to.eq(FIRST_PROFILE_ID);
       });
 
       it('User should set the default profile and then be able to unset it', async function () {
-        await expect(lensHub.setDefaultProfile(userAddress, FIRST_PROFILE_ID)).to.not.be.reverted;
-        expect((await lensHub.defaultProfile(userAddress))).to.eq(FIRST_PROFILE_ID);
+        await expect(lensHub.setDefaultProfile(FIRST_PROFILE_ID)).to.not.be.reverted;
+        expect(await lensHub.defaultProfile(userAddress)).to.eq(FIRST_PROFILE_ID);
 
-        await expect(lensHub.setDefaultProfile(userAddress, 0)).to.not.be.reverted;
-        expect((await lensHub.defaultProfile(userAddress))).to.eq(0);
+        await expect(lensHub.setDefaultProfile(0)).to.not.be.reverted;
+        expect(await lensHub.defaultProfile(userAddress)).to.eq(0);
       });
 
       it('User should set the default profile and then be able to change it to another', async function () {
-        await expect(lensHub.setDefaultProfile(userAddress, FIRST_PROFILE_ID)).to.not.be.reverted;
-        expect((await lensHub.defaultProfile(userAddress))).to.eq(FIRST_PROFILE_ID);
+        await expect(lensHub.setDefaultProfile(FIRST_PROFILE_ID)).to.not.be.reverted;
+        expect(await lensHub.defaultProfile(userAddress)).to.eq(FIRST_PROFILE_ID);
 
         await expect(
           lensHub.createProfile({
@@ -74,12 +68,12 @@ makeSuiteCleanRoom('Default profile Functionality', function () {
           })
         ).to.not.be.reverted;
 
-        await expect(lensHub.setDefaultProfile(userAddress, 2)).to.not.be.reverted;
-        expect((await lensHub.defaultProfile(userAddress))).to.eq(2);
+        await expect(lensHub.setDefaultProfile(2)).to.not.be.reverted;
+        expect(await lensHub.defaultProfile(userAddress)).to.eq(2);
       });
 
       it('User should set the default profile and then transfer it, their default profile should be unset', async function () {
-        await expect(lensHub.setDefaultProfile(userAddress, FIRST_PROFILE_ID)).to.not.be.reverted;
+        await expect(lensHub.setDefaultProfile(FIRST_PROFILE_ID)).to.not.be.reverted;
         expect(await lensHub.defaultProfile(userAddress)).to.eq(FIRST_PROFILE_ID);
 
         await expect(
