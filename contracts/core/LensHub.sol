@@ -170,7 +170,6 @@ contract LensHub is ILensHub, LensNFTBase, VersionedInitializable, LensMultiStat
         override
         whenNotPaused
     {
-        // address owner = ownerOf(vars.profileId);
         bytes32 digest;
         unchecked {
             digest = keccak256(
