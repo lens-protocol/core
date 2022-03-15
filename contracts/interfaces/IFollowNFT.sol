@@ -68,5 +68,4 @@ interface IFollowNFT {
      * @param blockNumber The block number to query the delegated supply at.
      */
     function getDelegatedSupplyByBlockNumber(uint256 blockNumber) external returns (uint256);
-
 }

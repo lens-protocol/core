@@ -162,7 +162,8 @@ before(async function () {
   // nonce + 0 is follow NFT impl
   // nonce + 1 is collect NFT impl
   // nonce + 2 is impl
-  // nonce + 3 is hub proxy
+  // nonce + 3 is whitelist contract
+  // nonce + 4 is hub proxy
 
   const hubProxyAddress = computeContractAddress(deployerAddress, nonce + 4); //'0x' + keccak256(RLP.encode([deployerAddress, hubProxyNonce])).substr(26);
 

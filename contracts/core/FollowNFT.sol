@@ -203,7 +203,7 @@ contract FollowNFT is LensNFTBase, IFollowNFT {
         uint256 tokenId
     ) internal override {
         address fromDelegatee = _delegates[from];
-        address toDelegatee =  _delegates[to];
+        address toDelegatee = _delegates[to];
         address followModule = ILensHub(HUB).getProfile(_profileId).followModule;
 
         _moveDelegate(fromDelegatee, toDelegatee, 1);

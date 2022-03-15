@@ -35,7 +35,7 @@ library PublishingLogic {
      * @param profileId The profile ID to associate with this profile NFT (token ID).
      * @param _profileIdByHandleHash The storage reference to the mapping of profile IDs by handle hash.
      * @param _profileById The storage reference to the mapping of profile structs by IDs.
-     * @param whitelist The storage reference to the mapping of whitelist status by follow module address.
+     * @param whitelist address of the whitelisting contract
      */
     function createProfile(
         DataTypes.CreateProfileData calldata vars,
@@ -76,7 +76,7 @@ library PublishingLogic {
      * @param followModule The follow module to set for the given profile, if any.
      * @param followModuleData The data to pass to the follow module for profile initialization.
      * @param _profile The storage reference to the profile struct associated with the given profile ID.
-     * @param whitelist The storage reference to the mapping of whitelist status by follow module address.
+     * @param whitelist address of the whitelisting contract
      */
     function setFollowModule(
         uint256 profileId,
@@ -117,7 +117,7 @@ library PublishingLogic {
      * @param referenceModuleData The data to pass to the reference module for publication initialization.
      * @param pubId The publication ID to associate with this publication.
      * @param _pubByIdByProfile The storage reference to the mapping of publications by publication ID by profile ID.
-     * @param whitelist The storage reference to the mapping of whitelist status by collect module address.
+     * @param whitelist address of the whitelisting contract
      */
     function createPost(
         uint256 profileId,
@@ -175,7 +175,7 @@ library PublishingLogic {
      * @param pubId The publication ID to associate with this publication.
      * @param _profileById The storage reference to the mapping of profile structs by IDs.
      * @param _pubByIdByProfile The storage reference to the mapping of publications by publication ID by profile ID.
-     * @param whitelist The storage reference to the mapping of whitelist status by collect module address.
+     * @param whitelist address of the whitelisting contract
      */
     function createComment(
         DataTypes.CommentData memory vars,
@@ -239,7 +239,7 @@ library PublishingLogic {
      * @param referenceModuleData The data to pass to the reference module for publication initialization.
      * @param pubId The publication ID to associate with this publication.
      * @param _pubByIdByProfile The storage reference to the mapping of publications by publication ID by profile ID.
-     * @param whitelist The storage reference to the mapping of whitelist status by reference module address.
+     * @param whitelist address of the whitelisting contract
      */
     function createMirror(
         uint256 profileId,
@@ -302,7 +302,8 @@ library PublishingLogic {
             storage _pubByIdByProfile,
         address whitelist
     ) private returns (bytes memory) {
-        if (!IWhitelist(whitelist).isCollectModuleWhitelisted(collectModule)) revert Errors.CollectModuleNotWhitelisted();
+        if (!IWhitelist(whitelist).isCollectModuleWhitelisted(collectModule))
+            revert Errors.CollectModuleNotWhitelisted();
         _pubByIdByProfile[profileId][pubId].collectModule = collectModule;
         return
             ICollectModule(collectModule).initializePublicationCollectModule(
@@ -343,7 +344,8 @@ library PublishingLogic {
         address whitelist
     ) private returns (bytes memory) {
         if (followModule != address(0)) {
-            if (!IWhitelist(whitelist).isFollowModuleWhitelisted(followModule)) revert Errors.FollowModuleNotWhitelisted();
+            if (!IWhitelist(whitelist).isFollowModuleWhitelisted(followModule))
+                revert Errors.FollowModuleNotWhitelisted();
             bytes memory returnData = IFollowModule(followModule).initializeFollowModule(
                 profileId,
                 followModuleData
