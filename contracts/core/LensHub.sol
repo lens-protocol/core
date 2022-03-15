@@ -171,12 +171,14 @@ contract LensHub is ILensHub, LensNFTBase, VersionedInitializable, LensMultiStat
     {
         _validateRecoveredAddress(
             _calculateDigest(
-                abi.encode(
-                    SET_DEFAULT_PROFILE_WITH_SIG_TYPEHASH,
-                    vars.wallet,
-                    vars.profileId,
-                    sigNonces[vars.wallet]++,
-                    vars.sig.deadline
+                keccak256(
+                    abi.encode(
+                        SET_DEFAULT_PROFILE_WITH_SIG_TYPEHASH,
+                        vars.wallet,
+                        vars.profileId,
+                        sigNonces[vars.wallet]++,
+                        vars.sig.deadline
+                    )
                 )
             ),
             vars.wallet,
@@ -210,13 +212,15 @@ contract LensHub is ILensHub, LensNFTBase, VersionedInitializable, LensMultiStat
         address owner = ownerOf(vars.profileId);
         _validateRecoveredAddress(
             _calculateDigest(
-                abi.encode(
-                    SET_FOLLOW_MODULE_WITH_SIG_TYPEHASH,
-                    vars.profileId,
-                    vars.followModule,
-                    keccak256(vars.followModuleData),
-                    sigNonces[owner]++,
-                    vars.sig.deadline
+                keccak256(
+                    abi.encode(
+                        SET_FOLLOW_MODULE_WITH_SIG_TYPEHASH,
+                        vars.profileId,
+                        vars.followModule,
+                        keccak256(vars.followModuleData),
+                        sigNonces[owner]++,
+                        vars.sig.deadline
+                    )
                 )
             ),
             owner,
@@ -246,12 +250,14 @@ contract LensHub is ILensHub, LensNFTBase, VersionedInitializable, LensMultiStat
         address owner = ownerOf(vars.profileId);
         _validateRecoveredAddress(
             _calculateDigest(
-                abi.encode(
-                    SET_DISPATCHER_WITH_SIG_TYPEHASH,
-                    vars.profileId,
-                    vars.dispatcher,
-                    sigNonces[owner]++,
-                    vars.sig.deadline
+                keccak256(
+                    abi.encode(
+                        SET_DISPATCHER_WITH_SIG_TYPEHASH,
+                        vars.profileId,
+                        vars.dispatcher,
+                        sigNonces[owner]++,
+                        vars.sig.deadline
+                    )
                 )
             ),
             owner,
@@ -279,12 +285,14 @@ contract LensHub is ILensHub, LensNFTBase, VersionedInitializable, LensMultiStat
         address owner = ownerOf(vars.profileId);
         _validateRecoveredAddress(
             _calculateDigest(
-                abi.encode(
-                    SET_PROFILE_IMAGE_URI_WITH_SIG_TYPEHASH,
-                    vars.profileId,
-                    keccak256(bytes(vars.imageURI)),
-                    sigNonces[owner]++,
-                    vars.sig.deadline
+                keccak256(
+                    abi.encode(
+                        SET_PROFILE_IMAGE_URI_WITH_SIG_TYPEHASH,
+                        vars.profileId,
+                        keccak256(bytes(vars.imageURI)),
+                        sigNonces[owner]++,
+                        vars.sig.deadline
+                    )
                 )
             ),
             owner,
@@ -312,12 +320,14 @@ contract LensHub is ILensHub, LensNFTBase, VersionedInitializable, LensMultiStat
         address owner = ownerOf(vars.profileId);
         _validateRecoveredAddress(
             _calculateDigest(
-                abi.encode(
-                    SET_FOLLOW_NFT_URI_WITH_SIG_TYPEHASH,
-                    vars.profileId,
-                    keccak256(bytes(vars.followNFTURI)),
-                    sigNonces[owner]++,
-                    vars.sig.deadline
+                keccak256(
+                    abi.encode(
+                        SET_FOLLOW_NFT_URI_WITH_SIG_TYPEHASH,
+                        vars.profileId,
+                        keccak256(bytes(vars.followNFTURI)),
+                        sigNonces[owner]++,
+                        vars.sig.deadline
+                    )
                 )
             ),
             owner,
@@ -348,16 +358,18 @@ contract LensHub is ILensHub, LensNFTBase, VersionedInitializable, LensMultiStat
         address owner = ownerOf(vars.profileId);
         _validateRecoveredAddress(
             _calculateDigest(
-                abi.encode(
-                    POST_WITH_SIG_TYPEHASH,
-                    vars.profileId,
-                    keccak256(bytes(vars.contentURI)),
-                    vars.collectModule,
-                    keccak256(vars.collectModuleData),
-                    vars.referenceModule,
-                    keccak256(vars.referenceModuleData),
-                    sigNonces[owner]++,
-                    vars.sig.deadline
+                keccak256(
+                    abi.encode(
+                        POST_WITH_SIG_TYPEHASH,
+                        vars.profileId,
+                        keccak256(bytes(vars.contentURI)),
+                        vars.collectModule,
+                        keccak256(vars.collectModuleData),
+                        vars.referenceModule,
+                        keccak256(vars.referenceModuleData),
+                        sigNonces[owner]++,
+                        vars.sig.deadline
+                    )
                 )
             ),
             owner,
@@ -388,18 +400,20 @@ contract LensHub is ILensHub, LensNFTBase, VersionedInitializable, LensMultiStat
         address owner = ownerOf(vars.profileId);
         _validateRecoveredAddress(
             _calculateDigest(
-                abi.encode(
-                    COMMENT_WITH_SIG_TYPEHASH,
-                    vars.profileId,
-                    keccak256(bytes(vars.contentURI)),
-                    vars.profileIdPointed,
-                    vars.pubIdPointed,
-                    vars.collectModule,
-                    keccak256(vars.collectModuleData),
-                    vars.referenceModule,
-                    keccak256(vars.referenceModuleData),
-                    sigNonces[owner]++,
-                    vars.sig.deadline
+                keccak256(
+                    abi.encode(
+                        COMMENT_WITH_SIG_TYPEHASH,
+                        vars.profileId,
+                        keccak256(bytes(vars.contentURI)),
+                        vars.profileIdPointed,
+                        vars.pubIdPointed,
+                        vars.collectModule,
+                        keccak256(vars.collectModuleData),
+                        vars.referenceModule,
+                        keccak256(vars.referenceModuleData),
+                        sigNonces[owner]++,
+                        vars.sig.deadline
+                    )
                 )
             ),
             owner,
@@ -440,15 +454,17 @@ contract LensHub is ILensHub, LensNFTBase, VersionedInitializable, LensMultiStat
         address owner = ownerOf(vars.profileId);
         _validateRecoveredAddress(
             _calculateDigest(
-                abi.encode(
-                    MIRROR_WITH_SIG_TYPEHASH,
-                    vars.profileId,
-                    vars.profileIdPointed,
-                    vars.pubIdPointed,
-                    vars.referenceModule,
-                    keccak256(vars.referenceModuleData),
-                    sigNonces[owner]++,
-                    vars.sig.deadline
+                keccak256(
+                    abi.encode(
+                        MIRROR_WITH_SIG_TYPEHASH,
+                        vars.profileId,
+                        vars.profileIdPointed,
+                        vars.pubIdPointed,
+                        vars.referenceModule,
+                        keccak256(vars.referenceModuleData),
+                        sigNonces[owner]++,
+                        vars.sig.deadline
+                    )
                 )
             ),
             owner,
@@ -523,12 +539,14 @@ contract LensHub is ILensHub, LensNFTBase, VersionedInitializable, LensMultiStat
         }
         _validateRecoveredAddress(
             _calculateDigest(
-                abi.encode(
-                    FOLLOW_WITH_SIG_TYPEHASH,
-                    keccak256(abi.encodePacked(vars.profileIds)),
-                    keccak256(abi.encodePacked(dataHashes)),
-                    sigNonces[vars.follower]++,
-                    vars.sig.deadline
+                keccak256(
+                    abi.encode(
+                        FOLLOW_WITH_SIG_TYPEHASH,
+                        keccak256(abi.encodePacked(vars.profileIds)),
+                        keccak256(abi.encodePacked(dataHashes)),
+                        sigNonces[vars.follower]++,
+                        vars.sig.deadline
+                    )
                 )
             ),
             vars.follower,
@@ -569,13 +587,15 @@ contract LensHub is ILensHub, LensNFTBase, VersionedInitializable, LensMultiStat
     {
         _validateRecoveredAddress(
             _calculateDigest(
-                abi.encode(
-                    COLLECT_WITH_SIG_TYPEHASH,
-                    vars.profileId,
-                    vars.pubId,
-                    keccak256(vars.data),
-                    sigNonces[vars.collector]++,
-                    vars.sig.deadline
+                keccak256(
+                    abi.encode(
+                        COLLECT_WITH_SIG_TYPEHASH,
+                        vars.profileId,
+                        vars.pubId,
+                        keccak256(vars.data),
+                        sigNonces[vars.collector]++,
+                        vars.sig.deadline
+                    )
                 )
             ),
             vars.collector,

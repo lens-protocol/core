@@ -82,12 +82,14 @@ contract FollowNFT is LensNFTBase, IFollowNFT {
     ) external override {
         _validateRecoveredAddress(
             _calculateDigest(
-                abi.encode(
-                    DELEGATE_BY_SIG_TYPEHASH,
-                    delegator,
-                    delegatee,
-                    sigNonces[delegator]++,
-                    sig.deadline
+                keccak256(
+                    abi.encode(
+                        DELEGATE_BY_SIG_TYPEHASH,
+                        delegator,
+                        delegatee,
+                        sigNonces[delegator]++,
+                        sig.deadline
+                    )
                 )
             ),
             delegator,

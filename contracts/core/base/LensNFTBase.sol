@@ -57,7 +57,9 @@ abstract contract LensNFTBase is ILensNFTBase, ERC721Enumerable {
         address owner = ownerOf(tokenId);
         _validateRecoveredAddress(
             _calculateDigest(
-                abi.encode(PERMIT_TYPEHASH, spender, tokenId, sigNonces[owner]++, sig.deadline)
+                keccak256(
+                    abi.encode(PERMIT_TYPEHASH, spender, tokenId, sigNonces[owner]++, sig.deadline)
+                )
             ),
             owner,
             sig
@@ -75,13 +77,15 @@ abstract contract LensNFTBase is ILensNFTBase, ERC721Enumerable {
         if (operator == address(0)) revert Errors.ZeroSpender();
         _validateRecoveredAddress(
             _calculateDigest(
-                abi.encode(
-                    PERMIT_FOR_ALL_TYPEHASH,
-                    owner,
-                    operator,
-                    approved,
-                    sigNonces[owner]++,
-                    sig.deadline
+                keccak256(
+                    abi.encode(
+                        PERMIT_FOR_ALL_TYPEHASH,
+                        owner,
+                        operator,
+                        approved,
+                        sigNonces[owner]++,
+                        sig.deadline
+                    )
                 )
             ),
             owner,
@@ -111,7 +115,9 @@ abstract contract LensNFTBase is ILensNFTBase, ERC721Enumerable {
 
         _validateRecoveredAddress(
             _calculateDigest(
-                abi.encode(BURN_WITH_SIG_TYPEHASH, tokenId, sigNonces[owner]++, sig.deadline)
+                keccak256(
+                    abi.encode(BURN_WITH_SIG_TYPEHASH, tokenId, sigNonces[owner]++, sig.deadline)
+                )
             ),
             owner,
             sig
@@ -152,15 +158,15 @@ abstract contract LensNFTBase is ILensNFTBase, ERC721Enumerable {
     /**
      * @dev Calculates EIP712 digest based on the current DOMAIN_SEPARATOR.
      *
-     * @param message The message from which the digest should be calculated.
+     * @param hashedMessage The message hash from which the digest should be calculated.
      *
      * @return A 32-byte output representing the EIP712 digest.
      */
-    function _calculateDigest(bytes memory message) internal view returns (bytes32) {
+    function _calculateDigest(bytes32 hashedMessage) internal view returns (bytes32) {
         bytes32 digest;
         unchecked {
             digest = keccak256(
-                abi.encodePacked('\x19\x01', _calculateDomainSeparator(), keccak256(message))
+                abi.encodePacked('\x19\x01', _calculateDomainSeparator(), hashedMessage)
             );
         }
         return digest;
