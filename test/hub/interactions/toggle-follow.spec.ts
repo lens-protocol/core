@@ -77,7 +77,7 @@ makeSuiteCleanRoom('ToggleFollowing', function () {
         const id = await getTokenId(userThreeAddress);
         await expect(
           lensHub.connect(userTwo).toggleFollow([FIRST_PROFILE_ID], [id], [true])
-        ).to.be.revertedWith(ERRORS.NOT_FOLLOW_NFT_OWNER);
+        ).to.be.revertedWith(ERRORS.FOLLOW_INVALID);
       });
     });
 

@@ -183,8 +183,8 @@ library InteractionLogic {
             if (_profileIdByHandleHash[keccak256(bytes(handle))] == 0)
                 revert Errors.TokenDoesNotExist();
 
-            if (follower != ERC721Time(followNFT).ownerOf(followNFTIds[i]))
-                revert Errors.NotFollowNFTOwner();
+            if (ERC721Time(followNFT).ownerOf(followNFTIds[i]) != follower)
+                revert Errors.FollowInvalid();
 
             emit Events.ToggleFollowNFT(profileIds[i], follower, enables[i], block.timestamp);
         }
