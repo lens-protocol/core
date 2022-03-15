@@ -53,6 +53,14 @@ interface ILensHub {
     function setState(DataTypes.ProtocolState newState) external;
 
     /**
+     * @notice Sets the whitelist contract address. This function
+     * can only be called by the governance address.
+     *
+     * @param newWhitelist The new whitelist contract address to set.
+     */
+    function setWhitelist(address newWhitelist) external;
+
+    /**
      * @notice Creates a profile with the specified parameters, minting a profile NFT to the given recipient. This
      * function must be called by a whitelisted profile creator.
      *

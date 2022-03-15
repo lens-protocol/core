@@ -101,7 +101,8 @@ contract LensHub is ILensHub, LensNFTBase, VersionedInitializable, LensMultiStat
         _setState(newState);
     }
 
-    function setWhitelist(address newWhitelist) external onlyGov {
+    /// @inheritdoc ILensHub
+    function setWhitelist(address newWhitelist) external override onlyGov {
         _setWhitelist(newWhitelist);
     }
 
