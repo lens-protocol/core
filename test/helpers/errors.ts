@@ -18,6 +18,7 @@ export const ERRORS = {
   PUBLICATION_DOES_NOT_EXIST: 'PublicationDoesNotExist()',
   PROFILE_HANDLE_TAKEN: 'HandleTaken()',
   INVALID_HANDLE_LENGTH: 'HandleLengthInvalid()',
+  INVALID_IMAGE_URI_LENGTH: 'ProfileImageURILengthInvalid()',
   HANDLE_CONTAINS_INVALID_CHARACTERS: 'HandleContainsInvalidCharacters()',
   NOT_FOLLOW_NFT: 'CallerNotFollowNFT()',
   NOT_COLLECT_NFT: 'CallerNotCollectNFT()',
