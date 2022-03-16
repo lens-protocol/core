@@ -1,6 +1,14 @@
 import '@nomiclabs/hardhat-ethers';
 import { BigNumberish, Bytes, logger, utils, BigNumber, Contract } from 'ethers';
-import { eventsLib, helper, lensHub, LENS_HUB_NFT_NAME, testWallet } from '../__setup.spec';
+import {
+  eventsLib,
+  helper,
+  lensHub,
+  LENS_HUB_NFT_NAME,
+  peripheryDataProvider,
+  PERIPHERY_DATA_PROVIDER_NAME,
+  testWallet,
+} from '../__setup.spec';
 import { expect } from 'chai';
 import { HARDHAT_CHAINID, MAX_UINT256 } from './constants';
 import { hexlify, keccak256, RLP, toUtf8Bytes } from 'ethers/lib/utils';
@@ -424,12 +432,7 @@ export async function getToggleFollowWithSigParts(
   nonce: number,
   deadline: string
 ): Promise<{ v: number; r: string; s: string }> {
-  const msgParams = buildToggleFollowWithSigParams(
-    profileIds,
-    enables,
-    nonce,
-    deadline
-  );
+  const msgParams = buildToggleFollowWithSigParams(profileIds, enables, nonce, deadline);
   return await getSig(msgParams);
 }
 
@@ -810,7 +813,12 @@ const buildToggleFollowWithSigParams = (
       { name: 'deadline', type: 'uint256' },
     ],
   },
-  domain: domain(),
+  domain: {
+    name: PERIPHERY_DATA_PROVIDER_NAME,
+    version: '1',
+    chainId: getChainId(),
+    verifyingContract: peripheryDataProvider.address,
+  },
   value: {
     profileIds: profileIds,
     enables: enables,

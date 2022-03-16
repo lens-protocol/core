@@ -156,32 +156,32 @@ library InteractionLogic {
         );
     }
 
-    /**
-     * @notice Toggle follows of the given profiles.
-     *
-     * @param follower The address executing the follow.
-     * @param profileIds The token ID array of the profiles.
-     * @param enables The array of booleans to enable/disable follows.
-     * @param _profileById A pointer to the storage mapping of profile structs by profile ID.
-     */
-    function toggleFollow(
-        address follower,
-        uint256[] calldata profileIds,
-        bool[] calldata enables,
-        mapping(uint256 => DataTypes.ProfileStruct) storage _profileById,
-        mapping(bytes32 => uint256) storage _profileIdByHandleHash
-    ) external {
-        if (profileIds.length != enables.length) revert Errors.ArrayMismatch();
-        for (uint256 i = 0; i < profileIds.length; ++i) {
-            address followNFT = _profileById[profileIds[i]].followNFT;
-            if (followNFT == address(0)) revert Errors.FollowInvalid();
+    // /**
+    //  * @notice Toggle follows of the given profiles.
+    //  *
+    //  * @param follower The address executing the follow.
+    //  * @param profileIds The token ID array of the profiles.
+    //  * @param enables The array of booleans to enable/disable follows.
+    //  * @param _profileById A pointer to the storage mapping of profile structs by profile ID.
+    //  */
+    // function toggleFollow(
+    //     address follower,
+    //     uint256[] calldata profileIds,
+    //     bool[] calldata enables,
+    //     mapping(uint256 => DataTypes.ProfileStruct) storage _profileById,
+    //     mapping(bytes32 => uint256) storage _profileIdByHandleHash
+    // ) external {
+    //     if (profileIds.length != enables.length) revert Errors.ArrayMismatch();
+    //     for (uint256 i = 0; i < profileIds.length; ++i) {
+    //         address followNFT = _profileById[profileIds[i]].followNFT;
+    //         if (followNFT == address(0)) revert Errors.FollowInvalid();
 
-            string memory handle = _profileById[profileIds[i]].handle;
-            if (_profileIdByHandleHash[keccak256(bytes(handle))] == 0)
-                revert Errors.TokenDoesNotExist();
+    //         string memory handle = _profileById[profileIds[i]].handle;
+    //         if (_profileIdByHandleHash[keccak256(bytes(handle))] == 0)
+    //             revert Errors.TokenDoesNotExist();
 
-            if (ERC721Time(followNFT).balanceOf(follower) == 0) revert Errors.FollowInvalid();
-        }
-        emit Events.FollowsToggled(follower, profileIds, enables, block.timestamp);
-    }
+    //         if (ERC721Time(followNFT).balanceOf(follower) == 0) revert Errors.FollowInvalid();
+    //     }
+    //     emit Events.FollowsToggled(follower, profileIds, enables, block.timestamp);
+    // }
 }

@@ -564,50 +564,6 @@ contract LensHub is ILensHub, LensNFTBase, VersionedInitializable, LensMultiStat
     }
 
     /// @inheritdoc ILensHub
-    function toggleFollow(
-        uint256[] calldata profileIds,
-        bool[] calldata enables
-    ) external override whenNotPaused {
-        InteractionLogic.toggleFollow(
-            msg.sender,
-            profileIds,
-            enables,
-            _profileById,
-            _profileIdByHandleHash
-        );
-    }
-
-    // /// @inheritdoc ILensHub
-    function toggleFollowWithSig(DataTypes.ToggleFollowWithSigData calldata vars)
-        external
-        override
-        whenNotPaused
-    {
-        _validateRecoveredAddress(
-            _calculateDigest(
-                keccak256(
-                    abi.encode(
-                        TOGGLE_FOLLOW_WITH_SIG_TYPEHASH,
-                        keccak256(abi.encodePacked(vars.profileIds)),
-                        keccak256(abi.encodePacked(vars.enables)),
-                        sigNonces[vars.follower]++,
-                        vars.sig.deadline
-                    )
-                )
-            ),
-            vars.follower,
-            vars.sig
-        );
-        InteractionLogic.toggleFollow(
-            vars.follower,
-            vars.profileIds,
-            vars.enables,
-            _profileById,
-            _profileIdByHandleHash
-        );
-    }
-
-    /// @inheritdoc ILensHub
     function collect(
         uint256 profileId,
         uint256 pubId,

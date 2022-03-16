@@ -242,24 +242,6 @@ interface ILensHub {
     function followWithSig(DataTypes.FollowWithSigData calldata vars) external;
 
     /**
-     * @notice Toggle Follows on the given profiles, emiting toggle event for each FollowNFT.
-     *
-     * NOTE: `profileIds`, `followNFTIds` and `enables` arrays must be of the same length.
-     *
-     * @param profileIds The token ID array of the profiles.
-     * @param enables The array of booleans to enable/disable follows.
-     */
-    function toggleFollow(uint256[] calldata profileIds, bool[] calldata enables) external;
-
-    /**
-     * @notice Toggle Follows a given profiles via signature with the specified parameters.
-     *
-     * @param vars A ToggleFollowWithSigData struct containing the regular parameters as well as the signing follower's address
-     * and an EIP712Signature struct.
-     */
-    function toggleFollowWithSig(DataTypes.ToggleFollowWithSigData calldata vars) external;
-
-    /**
      * @notice Collects a given publication, executing collect module logic and minting a collectNFT to the caller.
      *
      * @param profileId The token ID of the profile that published the publication to collect.
