@@ -8,6 +8,14 @@ import {DataTypes} from '../libraries/DataTypes.sol';
 import {Events} from '../libraries/Events.sol';
 import {Errors} from '../libraries/Errors.sol';
 
+/**
+ * @notice This is a peripheral contract that allows for users to emit an event demonstrating whether or not
+ * they explicitly want a follow to be shown.
+ *
+ * @dev This is useful because it allows clients to filter out follow NFTs that were transferred to
+ * a recipient by another user (i.e. Not a mint) and not register them as "following" unless
+ * the recipient explicitly toggles the follow here. 
+ */
 contract LensPeripheryDataProvider {
     string public constant NAME = 'LensPeripheryDataProvider';
     bytes32 internal constant EIP712_REVISION_HASH = keccak256('1');
