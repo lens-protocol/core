@@ -25,13 +25,14 @@ import {
   MOCK_PROFILE_URI,
   userAddress,
   MOCK_FOLLOW_NFT_URI,
+  OTHER_MOCK_URI,
 } from '../../__setup.spec';
 
-const getTokenId = async (address) => {
-  const followNFTAddress = await lensHub.getFollowNFT(FIRST_PROFILE_ID);
-  const followNFT = FollowNFT__factory.connect(followNFTAddress, user);
-  return await followNFT.tokenOfOwnerByIndex(address, 0);
-};
+// const getTokenId = async (address: string) => {
+// const followNFTAddress = await lensHub.getFollowNFT(FIRST_PROFILE_ID);
+// const followNFT = FollowNFT__factory.connect(followNFTAddress, user);
+// return await followNFT.tokenOfOwnerByIndex(address, 0);
+// };
 
 makeSuiteCleanRoom('ToggleFollowing', function () {
   beforeEach(async function () {
@@ -52,63 +53,93 @@ makeSuiteCleanRoom('ToggleFollowing', function () {
   context('Generic', function () {
     context('Negatives', function () {
       it('UserTwo should fail to toggle follow with an incorrect profileId', async function () {
-        const id = await getTokenId(userTwoAddress);
         await expect(
-          lensHub.connect(userTwo).toggleFollow([FIRST_PROFILE_ID + 1], [id], [true])
+          lensHub.connect(userTwo).toggleFollow([FIRST_PROFILE_ID + 1], [true])
         ).to.be.revertedWith(ERRORS.FOLLOW_INVALID);
       });
 
       it('UserTwo should fail to toggle follow with array mismatch', async function () {
-        const id = await getTokenId(userTwoAddress);
         await expect(
-          lensHub.connect(userTwo).toggleFollow([FIRST_PROFILE_ID, FIRST_PROFILE_ID], [id], [])
+          lensHub.connect(userTwo).toggleFollow([FIRST_PROFILE_ID, FIRST_PROFILE_ID], [])
         ).to.be.revertedWith(ERRORS.ARRAY_MISMATCH);
       });
 
       it('UserTwo should fail to toggle follow from a profile that has been burned', async function () {
         await expect(lensHub.burn(FIRST_PROFILE_ID)).to.not.be.reverted;
-        const id = await getTokenId(userTwoAddress);
         await expect(
-          lensHub.connect(userTwo).toggleFollow([FIRST_PROFILE_ID], [id], [true])
+          lensHub.connect(userTwo).toggleFollow([FIRST_PROFILE_ID], [true])
         ).to.be.revertedWith(ERRORS.TOKEN_DOES_NOT_EXIST);
       });
 
-      it('UserTwo should fail to toggle follow for a followNFT that is not the owner.', async function () {
-        const id = await getTokenId(userThreeAddress);
+      it('UserTwo should fail to toggle follow for a followNFT that is not owned by them', async function () {
+        const followNFTAddress = await lensHub.getFollowNFT(FIRST_PROFILE_ID);
+        const followNFT = FollowNFT__factory.connect(followNFTAddress, user);
+
         await expect(
-          lensHub.connect(userTwo).toggleFollow([FIRST_PROFILE_ID], [id], [true])
+          followNFT.connect(userTwo).transferFrom(userTwoAddress, userAddress, 1)
+        ).to.not.be.reverted;
+
+        await expect(
+          lensHub.connect(userTwo).toggleFollow([FIRST_PROFILE_ID], [true])
         ).to.be.revertedWith(ERRORS.FOLLOW_INVALID);
       });
     });
 
     context('Scenarios', function () {
-      it('UserTwo should toggle follow with true value, correct events should be emitted', async function () {
-        const id = await getTokenId(userTwoAddress);
-
-        const tx = lensHub.connect(userTwo).toggleFollow([FIRST_PROFILE_ID], [id], [true]);
+      it('UserTwo should toggle follow with true value, correct event should be emitted', async function () {
+        const tx = lensHub.connect(userTwo).toggleFollow([FIRST_PROFILE_ID], [true]);
 
         const receipt = await waitForTx(tx);
 
         expect(receipt.logs.length).to.eq(1);
-        matchEvent(receipt, 'ToggleFollowNFT', [
-          FIRST_PROFILE_ID,
+        matchEvent(receipt, 'FollowsToggled', [
           userTwoAddress,
-          true,
+          [FIRST_PROFILE_ID],
+          [true],
           await getTimestamp(),
         ]);
       });
-      it('UserTwo should toggle follow with false value, correct events should be emitted', async function () {
-        const id = await getTokenId(userTwoAddress);
 
-        const tx = lensHub.connect(userTwo).toggleFollow([FIRST_PROFILE_ID], [id], [false]);
+      it('User should create another profile, userTwo follows, then toggles both, one true, one false, correct event should be emitted', async function () {
+        await expect(
+          lensHub.createProfile({
+            to: userAddress,
+            handle: 'otherhandle',
+            imageURI: OTHER_MOCK_URI,
+            followModule: ZERO_ADDRESS,
+            followModuleData: [],
+            followNFTURI: MOCK_FOLLOW_NFT_URI,
+          })
+        ).to.not.be.reverted;
+        await expect(lensHub.connect(userTwo).follow([FIRST_PROFILE_ID + 1], [[]])).to.not.be.reverted;
+
+        const tx = lensHub
+          .connect(userTwo)
+          .toggleFollow([FIRST_PROFILE_ID, FIRST_PROFILE_ID + 1], [true, false]);
 
         const receipt = await waitForTx(tx);
 
         expect(receipt.logs.length).to.eq(1);
-        matchEvent(receipt, 'ToggleFollowNFT', [
-          FIRST_PROFILE_ID,
+        matchEvent(receipt, 'FollowsToggled', [
           userTwoAddress,
-          false,
+          [FIRST_PROFILE_ID, FIRST_PROFILE_ID + 1],
+          [true, false],
+          await getTimestamp(),
+        ]);
+      });
+
+      it('UserTwo should toggle follow with false value, correct event should be emitted', async function () {
+        // const id = await getTokenId(userTwoAddress);
+
+        const tx = lensHub.connect(userTwo).toggleFollow([FIRST_PROFILE_ID], [false]);
+
+        const receipt = await waitForTx(tx);
+
+        expect(receipt.logs.length).to.eq(1);
+        matchEvent(receipt, 'FollowsToggled', [
+          userTwoAddress,
+          [FIRST_PROFILE_ID],
+          [false],
           await getTimestamp(),
         ]);
       });
@@ -120,11 +151,8 @@ makeSuiteCleanRoom('ToggleFollowing', function () {
       it('TestWallet should fail to toggle follow with sig with signature deadline mismatch', async function () {
         const nonce = (await lensHub.sigNonces(testWallet.address)).toNumber();
 
-        const id = await getTokenId(testWallet.address);
-
         const { v, r, s } = await getToggleFollowWithSigParts(
           [FIRST_PROFILE_ID],
-          [id.toNumber()],
           [true],
           nonce,
           '0'
@@ -133,7 +161,6 @@ makeSuiteCleanRoom('ToggleFollowing', function () {
           lensHub.toggleFollowWithSig({
             follower: testWallet.address,
             profileIds: [FIRST_PROFILE_ID],
-            followNFTIds: [id],
             enables: [true],
             sig: {
               v,
@@ -148,11 +175,8 @@ makeSuiteCleanRoom('ToggleFollowing', function () {
       it('TestWallet should fail to toggle follow with sig with invalid deadline', async function () {
         const nonce = (await lensHub.sigNonces(testWallet.address)).toNumber();
 
-        const id = await getTokenId(testWallet.address);
-
         const { v, r, s } = await getToggleFollowWithSigParts(
           [FIRST_PROFILE_ID],
-          [id.toNumber()],
           [true],
           nonce,
           '0'
@@ -161,7 +185,6 @@ makeSuiteCleanRoom('ToggleFollowing', function () {
           lensHub.toggleFollowWithSig({
             follower: testWallet.address,
             profileIds: [FIRST_PROFILE_ID],
-            followNFTIds: [id],
             enables: [true],
             sig: {
               v,
@@ -176,11 +199,8 @@ makeSuiteCleanRoom('ToggleFollowing', function () {
       it('TestWallet should fail to toggle follow with sig with invalid nonce', async function () {
         const nonce = (await lensHub.sigNonces(testWallet.address)).toNumber();
 
-        const id = await getTokenId(testWallet.address);
-
         const { v, r, s } = await getToggleFollowWithSigParts(
           [FIRST_PROFILE_ID],
-          [id.toNumber()],
           [true],
           nonce + 1,
           MAX_UINT256
@@ -190,7 +210,6 @@ makeSuiteCleanRoom('ToggleFollowing', function () {
           lensHub.toggleFollowWithSig({
             follower: testWallet.address,
             profileIds: [FIRST_PROFILE_ID],
-            followNFTIds: [id],
             enables: [true],
             sig: {
               v,
@@ -204,12 +223,9 @@ makeSuiteCleanRoom('ToggleFollowing', function () {
 
       it('TestWallet should fail to toggle follow a nonexistent profile with sig', async function () {
         const nonce = (await lensHub.sigNonces(testWallet.address)).toNumber();
-
-        const id = await getTokenId(testWallet.address);
         const INVALID_PROFILE = FIRST_PROFILE_ID + 1;
         const { v, r, s } = await getToggleFollowWithSigParts(
           [INVALID_PROFILE],
-          [id.toNumber()],
           [true],
           nonce,
           MAX_UINT256
@@ -218,7 +234,6 @@ makeSuiteCleanRoom('ToggleFollowing', function () {
           lensHub.toggleFollowWithSig({
             follower: testWallet.address,
             profileIds: [INVALID_PROFILE],
-            followNFTIds: [id.toNumber()],
             enables: [true],
             sig: {
               v,
@@ -232,14 +247,11 @@ makeSuiteCleanRoom('ToggleFollowing', function () {
     });
 
     context('Scenarios', function () {
-      it('TestWallet should toggle follow profile 1 to true with sig, correct events should be emitted ', async function () {
+      it('TestWallet should toggle follow profile 1 to true with sig, correct event should be emitted ', async function () {
         const nonce = (await lensHub.sigNonces(testWallet.address)).toNumber();
-
-        const id = await getTokenId(testWallet.address);
 
         const { v, r, s } = await getToggleFollowWithSigParts(
           [FIRST_PROFILE_ID],
-          [id.toNumber()],
           [true],
           nonce,
           MAX_UINT256
@@ -248,7 +260,6 @@ makeSuiteCleanRoom('ToggleFollowing', function () {
         const tx = lensHub.toggleFollowWithSig({
           follower: testWallet.address,
           profileIds: [FIRST_PROFILE_ID],
-          followNFTIds: [id.toNumber()],
           enables: [true],
           sig: {
             v,
@@ -261,22 +272,20 @@ makeSuiteCleanRoom('ToggleFollowing', function () {
         const receipt = await waitForTx(tx);
 
         expect(receipt.logs.length).to.eq(1);
-        matchEvent(receipt, 'ToggleFollowNFT', [
-          FIRST_PROFILE_ID,
+        matchEvent(receipt, 'FollowsToggled', [
           testWallet.address,
-          true,
+          [FIRST_PROFILE_ID],
+          [true],
           await getTimestamp(),
         ]);
       });
 
-      it('TestWallet should toggle follow profile 1 to false with sig, correct events should be emitted ', async function () {
+      it('TestWallet should toggle follow profile 1 to false with sig, correct event should be emitted ', async function () {
         const nonce = (await lensHub.sigNonces(testWallet.address)).toNumber();
 
-        const id = await getTokenId(testWallet.address);
         const enabled = false;
         const { v, r, s } = await getToggleFollowWithSigParts(
           [FIRST_PROFILE_ID],
-          [id.toNumber()],
           [enabled],
           nonce,
           MAX_UINT256
@@ -285,7 +294,6 @@ makeSuiteCleanRoom('ToggleFollowing', function () {
         const tx = lensHub.toggleFollowWithSig({
           follower: testWallet.address,
           profileIds: [FIRST_PROFILE_ID],
-          followNFTIds: [id.toNumber()],
           enables: [enabled],
           sig: {
             v,
@@ -298,10 +306,10 @@ makeSuiteCleanRoom('ToggleFollowing', function () {
         const receipt = await waitForTx(tx);
 
         expect(receipt.logs.length).to.eq(1);
-        matchEvent(receipt, 'ToggleFollowNFT', [
-          FIRST_PROFILE_ID,
+        matchEvent(receipt, 'FollowsToggled', [
           testWallet.address,
-          enabled,
+          [FIRST_PROFILE_ID],
+          [enabled],
           await getTimestamp(),
         ]);
       });

@@ -247,14 +247,9 @@ interface ILensHub {
      * NOTE: `profileIds`, `followNFTIds` and `enables` arrays must be of the same length.
      *
      * @param profileIds The token ID array of the profiles.
-     * @param followNFTIds The token ID array of the followNFTs.
      * @param enables The array of booleans to enable/disable follows.
      */
-    function toggleFollow(
-        uint256[] calldata profileIds,
-        uint256[] calldata followNFTIds,
-        bool[] calldata enables
-    ) external;
+    function toggleFollow(uint256[] calldata profileIds, bool[] calldata enables) external;
 
     /**
      * @notice Toggle Follows a given profiles via signature with the specified parameters.
