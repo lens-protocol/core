@@ -115,7 +115,7 @@ contract LensPeripheryDataProvider {
      *
      * @param hashedMessage The message hash from which the digest should be calculated.
      *
-     * @return A 32-byte output representing the EIP712 digest.
+     * @return bytes32 A 32-byte output representing the EIP712 digest.
      */
     function _calculateDigest(bytes32 hashedMessage) internal view returns (bytes32) {
         bytes32 digest;
