@@ -216,7 +216,7 @@ makeSuiteCleanRoom('Limited Fee Collect Module', function () {
         );
         await expect(
           lensHub.connect(userTwo).collect(FIRST_PROFILE_ID, 1, data)
-        ).to.be.revertedWith(ERRORS.ERC20_TRANSFER_EXCEEDS_ALLOWANCE);
+        ).to.be.revertedWith(ERRORS.ERC20_INSUFFICIENT_ALLOWANCE);
       });
 
       it('UserTwo should mirror the original post, fail to collect from their mirror without following the original profile', async function () {

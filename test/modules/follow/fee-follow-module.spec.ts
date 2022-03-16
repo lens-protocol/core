@@ -139,7 +139,7 @@ makeSuiteCleanRoom('Fee Follow Module', function () {
         );
         await expect(
           lensHub.connect(userTwo).follow([FIRST_PROFILE_ID], [data])
-        ).to.be.revertedWith(ERRORS.ERC20_TRANSFER_EXCEEDS_ALLOWANCE);
+        ).to.be.revertedWith(ERRORS.ERC20_INSUFFICIENT_ALLOWANCE);
       });
     });
   });
