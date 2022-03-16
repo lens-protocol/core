@@ -54,7 +54,7 @@ makeSuiteCleanRoom('Profile URI Functionality', function () {
         expect(profileURITooLong.length).to.be.greaterThan(MAX_PROFILE_IMAGE_URI_LENGTH);
         await expect(
           lensHub.setProfileImageURI(FIRST_PROFILE_ID, profileURITooLong)
-        ).to.be.revertedWith(ERRORS.INVALID_IMAGE_URI_LENGTH);
+        ).to.not.be.reverted;
       });
 
       it('UserTwo should fail to change the follow NFT URI for profile one', async function () {
