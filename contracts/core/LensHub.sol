@@ -585,28 +585,22 @@ contract LensHub is ILensHub, LensNFTBase, VersionedInitializable, LensMultiStat
         override
         whenNotPaused
     {
-        bytes32 digest;
-        unchecked {
-            digest = keccak256(
-                abi.encodePacked(
-                    '\x19\x01',
-                    _calculateDomainSeparator(),
-                    keccak256(
-                        abi.encode(
-                            TOGGLE_FOLLOW_WITH_SIG_TYPEHASH,
-                            keccak256(abi.encodePacked(vars.profileIds)),
-                            keccak256(abi.encodePacked(vars.followNFTIds)),
-                            keccak256(abi.encodePacked(vars.enables)),
-                            sigNonces[vars.follower]++,
-                            vars.sig.deadline
-                        )
+        _validateRecoveredAddress(
+            _calculateDigest(
+                keccak256(
+                    abi.encode(
+                        TOGGLE_FOLLOW_WITH_SIG_TYPEHASH,
+                        keccak256(abi.encodePacked(vars.profileIds)),
+                        keccak256(abi.encodePacked(vars.followNFTIds)),
+                        keccak256(abi.encodePacked(vars.enables)),
+                        sigNonces[vars.follower]++,
+                        vars.sig.deadline
                     )
                 )
-            );
-        }
-
-        _validateRecoveredAddress(digest, vars.follower, vars.sig);
-
+            ),
+            vars.follower,
+            vars.sig
+        );
         InteractionLogic.toggleFollow(
             vars.follower,
             vars.profileIds,
