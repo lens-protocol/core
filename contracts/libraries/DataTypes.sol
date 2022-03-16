@@ -113,13 +113,13 @@ library DataTypes {
      * @notice A struct containing the parameters required for the `setDefaultProfileWithSig()` function. Parameters are
      * the same as the regular `setDefaultProfile()` function, with an added EIP712Signature.
      *
-     * @param profileId The token ID of the profile which will be set as default
-     * @param wallet The address of the wallet which is either the owner of the profile or address(0)
+     * @param wallet The address of the wallet setting the default profile.
+     * @param profileId The token ID of the profile which will be set as default, or zero.
      * @param sig The EIP712Signature struct containing the profile owner's signature.
      */
     struct SetDefaultProfileWithSigData {
-        uint256 profileId;
         address wallet;
+        uint256 profileId;
         EIP712Signature sig;
     }
 

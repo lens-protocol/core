@@ -1,12 +1,12 @@
-import { TransactionReceipt, TransactionResponse } from '@ethersproject/providers';
 import '@nomiclabs/hardhat-ethers';
-import { expect } from 'chai';
-import { BigNumber, BigNumberish, Bytes, Contract, logger, utils } from 'ethers';
-import { hexlify, keccak256, RLP, toUtf8Bytes } from 'ethers/lib/utils';
-import hre from 'hardhat';
-import { LensHub__factory } from '../../typechain-types';
+import { BigNumberish, Bytes, logger, utils, BigNumber, Contract } from 'ethers';
 import { eventsLib, helper, lensHub, LENS_HUB_NFT_NAME, testWallet } from '../__setup.spec';
+import { expect } from 'chai';
 import { HARDHAT_CHAINID, MAX_UINT256 } from './constants';
+import { hexlify, keccak256, RLP, toUtf8Bytes } from 'ethers/lib/utils';
+import { LensHub__factory } from '../../typechain-types';
+import { TransactionReceipt, TransactionResponse } from '@ethersproject/providers';
+import hre, { ethers } from 'hardhat';
 
 export enum ProtocolState {
   Unpaused,
@@ -318,8 +318,8 @@ export async function getSetProfileImageURIWithSigParts(
 }
 
 export async function getSetDefaultProfileWithSigParts(
-  profileId: BigNumberish,
   wallet: string,
+  profileId: BigNumberish,
   nonce: number,
   deadline: string
 ): Promise<{ v: number; r: string; s: string }> {
@@ -444,6 +444,18 @@ export async function getCollectWithSigParts(
 ): Promise<{ v: number; r: string; s: string }> {
   const msgParams = buildCollectWithSigParams(profileId, pubId, data, nonce, deadline);
   return await getSig(msgParams);
+}
+
+export async function getJsonMetadataFromBase64TokenUri(tokenUri: string) {
+  const splittedTokenUri = tokenUri.split('data:application/json;base64,');
+  if (splittedTokenUri.length != 2) {
+    logger.throwError('Wrong or unrecognized token URI format');
+  } else {
+    const jsonMetadataBase64String = splittedTokenUri[1];
+    const jsonMetadataBytes = ethers.utils.base64.decode(jsonMetadataBase64String);
+    const jsonMetadataString = ethers.utils.toUtf8String(jsonMetadataBytes);
+    return JSON.parse(jsonMetadataString);
+  }
 }
 
 // Modified from AaveTokenV2 repo
@@ -617,16 +629,16 @@ const buildSetDefaultProfileWithSigParams = (
 ) => ({
   types: {
     SetDefaultProfileWithSig: [
-      { name: 'profileId', type: 'uint256' },
       { name: 'wallet', type: 'address' },
+      { name: 'profileId', type: 'uint256' },
       { name: 'nonce', type: 'uint256' },
       { name: 'deadline', type: 'uint256' },
     ],
   },
   domain: domain(),
   value: {
-    profileId: profileId,
     wallet: wallet,
+    profileId: profileId,
     nonce: nonce,
     deadline: deadline,
   },

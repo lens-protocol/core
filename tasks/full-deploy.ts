@@ -20,6 +20,7 @@ import {
   RevertCollectModule__factory,
   TimedFeeCollectModule__factory,
   TransparentUpgradeableProxy__factory,
+  ProfileTokenURILogic__factory,
 } from '../typechain-types';
 import { deployContract, waitForTx } from './helpers/utils';
 
@@ -57,9 +58,14 @@ task('full-deploy', 'deploys the entire Lens Protocol').setAction(async ({}, hre
   const interactionLogic = await deployContract(
     new InteractionLogic__factory(deployer).deploy({ nonce: deployerNonce++ })
   );
+  const profileTokenURILogic = await deployContract(
+    new ProfileTokenURILogic__factory(deployer).deploy({ nonce: deployerNonce++ })
+  );
   const hubLibs = {
     'contracts/libraries/PublishingLogic.sol:PublishingLogic': publishingLogic.address,
     'contracts/libraries/InteractionLogic.sol:InteractionLogic': interactionLogic.address,
+    'contracts/libraries/ProfileTokenURILogic.sol:ProfileTokenURILogic':
+      profileTokenURILogic.address,
   };
 
   // Here, we pre-compute the nonces and addresses used to deploy the contracts.
@@ -72,7 +78,8 @@ task('full-deploy', 'deploys the entire Lens Protocol').setAction(async ({}, hre
     '0x' + keccak256(RLP.encode([deployer.address, followNFTNonce])).substr(26);
   const collectNFTImplAddress =
     '0x' + keccak256(RLP.encode([deployer.address, collectNFTNonce])).substr(26);
-  const hubProxyAddress = '0x' + keccak256(RLP.encode([deployer.address, hubProxyNonce])).substr(26);
+  const hubProxyAddress =
+    '0x' + keccak256(RLP.encode([deployer.address, hubProxyNonce])).substr(26);
 
   // Next, we deploy first the hub implementation, then the followNFT implementation, the collectNFT, and finally the
   // hub proxy with initialization.
@@ -187,7 +194,9 @@ task('full-deploy', 'deploys the entire Lens Protocol').setAction(async ({}, hre
     })
   );
   await waitForTx(
-    lensHub.whitelistCollectModule(timedFeeCollectModule.address, true, { nonce: governanceNonce++ })
+    lensHub.whitelistCollectModule(timedFeeCollectModule.address, true, {
+      nonce: governanceNonce++,
+    })
   );
   await waitForTx(
     lensHub.whitelistCollectModule(limitedTimedFeeCollectModule.address, true, {

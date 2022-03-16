@@ -59,6 +59,8 @@ contract MockLensHubV2Storage {
     mapping(uint256 => DataTypes.ProfileStruct) internal _profileById;
     mapping(uint256 => mapping(uint256 => DataTypes.PublicationStruct)) internal _pubByIdByProfile;
 
+    mapping(address => uint256) internal _defaultProfileByAddress;
+
     uint256 internal _profileCounter;
     address internal _governance;
     address internal _emergencyAdmin;

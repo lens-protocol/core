@@ -18,6 +18,7 @@ export const ERRORS = {
   PUBLICATION_DOES_NOT_EXIST: 'PublicationDoesNotExist()',
   PROFILE_HANDLE_TAKEN: 'HandleTaken()',
   INVALID_HANDLE_LENGTH: 'HandleLengthInvalid()',
+  INVALID_IMAGE_URI_LENGTH: 'ProfileImageURILengthInvalid()',
   HANDLE_CONTAINS_INVALID_CHARACTERS: 'HandleContainsInvalidCharacters()',
   NOT_FOLLOW_NFT: 'CallerNotFollowNFT()',
   NOT_COLLECT_NFT: 'CallerNotCollectNFT()',
@@ -35,6 +36,7 @@ export const ERRORS = {
   ERC721_TRANSFER_NOT_OWNER_OR_APPROVED: 'ERC721: transfer caller is not owner nor approved',
   ERC721_QUERY_FOR_NONEXISTENT_TOKEN: 'ERC721: owner query for nonexistent token',
   ERC20_TRANSFER_EXCEEDS_ALLOWANCE: 'ERC20: transfer amount exceeds allowance',
+  ERC20_INSUFFICIENT_ALLOWANCE: 'ERC20: insufficient allowance',
   NO_SELECTOR:
     "Transaction reverted: function selector was not recognized and there's no fallback function",
   PAUSED: 'Paused()',

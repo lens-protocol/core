@@ -5,10 +5,13 @@ pragma solidity 0.8.10;
 import {ILensHub} from '../interfaces/ILensHub.sol';
 import {Events} from '../libraries/Events.sol';
 import {Helpers} from '../libraries/Helpers.sol';
+import {Constants} from '../libraries/Constants.sol';
 import {DataTypes} from '../libraries/DataTypes.sol';
 import {Errors} from '../libraries/Errors.sol';
 import {PublishingLogic} from '../libraries/PublishingLogic.sol';
+import {ProfileTokenURILogic} from '../libraries/ProfileTokenURILogic.sol';
 import {InteractionLogic} from '../libraries/InteractionLogic.sol';
+import {IERC721Enumerable} from '@openzeppelin/contracts/token/ERC721/extensions/IERC721Enumerable.sol';
 import {LensNFTBase} from './base/LensNFTBase.sol';
 import {LensMultiState} from './base/LensMultiState.sol';
 import {LensHubStorage} from './storage/LensHubStorage.sol';
@@ -157,9 +160,8 @@ contract LensHub is ILensHub, LensNFTBase, VersionedInitializable, LensMultiStat
     }
 
     /// @inheritdoc ILensHub
-    function setDefaultProfile(uint256 profileId, address wallet) external override whenNotPaused {
-        _validateCallerIsProfileOwnerOrDispatcher(profileId);
-        _setDefaultProfile(profileId, wallet);
+    function setDefaultProfile(uint256 profileId) external override whenNotPaused {
+        _setDefaultProfile(msg.sender, profileId);
     }
 
     /// @inheritdoc ILensHub
@@ -168,29 +170,22 @@ contract LensHub is ILensHub, LensNFTBase, VersionedInitializable, LensMultiStat
         override
         whenNotPaused
     {
-        address owner = ownerOf(vars.profileId);
-        bytes32 digest;
-        unchecked {
-            digest = keccak256(
-                abi.encodePacked(
-                    '\x19\x01',
-                    _calculateDomainSeparator(),
-                    keccak256(
-                        abi.encode(
-                            SET_DEFAULT_PROFILE_WITH_SIG_TYPEHASH,
-                            vars.profileId,
-                            vars.wallet,
-                            sigNonces[owner]++,
-                            vars.sig.deadline
-                        )
+        _validateRecoveredAddress(
+            _calculateDigest(
+                keccak256(
+                    abi.encode(
+                        SET_DEFAULT_PROFILE_WITH_SIG_TYPEHASH,
+                        vars.wallet,
+                        vars.profileId,
+                        sigNonces[vars.wallet]++,
+                        vars.sig.deadline
                     )
                 )
-            );
-        }
-
-        _validateRecoveredAddress(digest, owner, vars.sig);
-
-        _setDefaultProfile(vars.profileId, vars.wallet);
+            ),
+            vars.wallet,
+            vars.sig
+        );
+        _setDefaultProfile(vars.wallet, vars.profileId);
     }
 
     /// @inheritdoc ILensHub
@@ -216,27 +211,22 @@ contract LensHub is ILensHub, LensNFTBase, VersionedInitializable, LensMultiStat
         whenNotPaused
     {
         address owner = ownerOf(vars.profileId);
-        bytes32 digest;
-        unchecked {
-            digest = keccak256(
-                abi.encodePacked(
-                    '\x19\x01',
-                    _calculateDomainSeparator(),
-                    keccak256(
-                        abi.encode(
-                            SET_FOLLOW_MODULE_WITH_SIG_TYPEHASH,
-                            vars.profileId,
-                            vars.followModule,
-                            keccak256(vars.followModuleData),
-                            sigNonces[owner]++,
-                            vars.sig.deadline
-                        )
+        _validateRecoveredAddress(
+            _calculateDigest(
+                keccak256(
+                    abi.encode(
+                        SET_FOLLOW_MODULE_WITH_SIG_TYPEHASH,
+                        vars.profileId,
+                        vars.followModule,
+                        keccak256(vars.followModuleData),
+                        sigNonces[owner]++,
+                        vars.sig.deadline
                     )
                 )
-            );
-        }
-
-        _validateRecoveredAddress(digest, owner, vars.sig);
+            ),
+            owner,
+            vars.sig
+        );
         PublishingLogic.setFollowModule(
             vars.profileId,
             vars.followModule,
@@ -259,26 +249,21 @@ contract LensHub is ILensHub, LensNFTBase, VersionedInitializable, LensMultiStat
         whenNotPaused
     {
         address owner = ownerOf(vars.profileId);
-        bytes32 digest;
-        unchecked {
-            digest = keccak256(
-                abi.encodePacked(
-                    '\x19\x01',
-                    _calculateDomainSeparator(),
-                    keccak256(
-                        abi.encode(
-                            SET_DISPATCHER_WITH_SIG_TYPEHASH,
-                            vars.profileId,
-                            vars.dispatcher,
-                            sigNonces[owner]++,
-                            vars.sig.deadline
-                        )
+        _validateRecoveredAddress(
+            _calculateDigest(
+                keccak256(
+                    abi.encode(
+                        SET_DISPATCHER_WITH_SIG_TYPEHASH,
+                        vars.profileId,
+                        vars.dispatcher,
+                        sigNonces[owner]++,
+                        vars.sig.deadline
                     )
                 )
-            );
-        }
-
-        _validateRecoveredAddress(digest, owner, vars.sig);
+            ),
+            owner,
+            vars.sig
+        );
         _setDispatcher(vars.profileId, vars.dispatcher);
     }
 
@@ -299,26 +284,21 @@ contract LensHub is ILensHub, LensNFTBase, VersionedInitializable, LensMultiStat
         whenNotPaused
     {
         address owner = ownerOf(vars.profileId);
-        bytes32 digest;
-        unchecked {
-            digest = keccak256(
-                abi.encodePacked(
-                    '\x19\x01',
-                    _calculateDomainSeparator(),
-                    keccak256(
-                        abi.encode(
-                            SET_PROFILE_IMAGE_URI_WITH_SIG_TYPEHASH,
-                            vars.profileId,
-                            keccak256(bytes(vars.imageURI)),
-                            sigNonces[owner]++,
-                            vars.sig.deadline
-                        )
+        _validateRecoveredAddress(
+            _calculateDigest(
+                keccak256(
+                    abi.encode(
+                        SET_PROFILE_IMAGE_URI_WITH_SIG_TYPEHASH,
+                        vars.profileId,
+                        keccak256(bytes(vars.imageURI)),
+                        sigNonces[owner]++,
+                        vars.sig.deadline
                     )
                 )
-            );
-        }
-
-        _validateRecoveredAddress(digest, owner, vars.sig);
+            ),
+            owner,
+            vars.sig
+        );
         _setProfileImageURI(vars.profileId, vars.imageURI);
     }
 
@@ -339,26 +319,21 @@ contract LensHub is ILensHub, LensNFTBase, VersionedInitializable, LensMultiStat
         whenNotPaused
     {
         address owner = ownerOf(vars.profileId);
-        bytes32 digest;
-        unchecked {
-            digest = keccak256(
-                abi.encodePacked(
-                    '\x19\x01',
-                    _calculateDomainSeparator(),
-                    keccak256(
-                        abi.encode(
-                            SET_FOLLOW_NFT_URI_WITH_SIG_TYPEHASH,
-                            vars.profileId,
-                            keccak256(bytes(vars.followNFTURI)),
-                            sigNonces[owner]++,
-                            vars.sig.deadline
-                        )
+        _validateRecoveredAddress(
+            _calculateDigest(
+                keccak256(
+                    abi.encode(
+                        SET_FOLLOW_NFT_URI_WITH_SIG_TYPEHASH,
+                        vars.profileId,
+                        keccak256(bytes(vars.followNFTURI)),
+                        sigNonces[owner]++,
+                        vars.sig.deadline
                     )
                 )
-            );
-        }
-
-        _validateRecoveredAddress(digest, owner, vars.sig);
+            ),
+            owner,
+            vars.sig
+        );
         _setFollowNFTURI(vars.profileId, vars.followNFTURI);
     }
 
@@ -382,30 +357,25 @@ contract LensHub is ILensHub, LensNFTBase, VersionedInitializable, LensMultiStat
         whenPublishingEnabled
     {
         address owner = ownerOf(vars.profileId);
-        bytes32 digest;
-        unchecked {
-            digest = keccak256(
-                abi.encodePacked(
-                    '\x19\x01',
-                    _calculateDomainSeparator(),
-                    keccak256(
-                        abi.encode(
-                            POST_WITH_SIG_TYPEHASH,
-                            vars.profileId,
-                            keccak256(bytes(vars.contentURI)),
-                            vars.collectModule,
-                            keccak256(vars.collectModuleData),
-                            vars.referenceModule,
-                            keccak256(vars.referenceModuleData),
-                            sigNonces[owner]++,
-                            vars.sig.deadline
-                        )
+        _validateRecoveredAddress(
+            _calculateDigest(
+                keccak256(
+                    abi.encode(
+                        POST_WITH_SIG_TYPEHASH,
+                        vars.profileId,
+                        keccak256(bytes(vars.contentURI)),
+                        vars.collectModule,
+                        keccak256(vars.collectModuleData),
+                        vars.referenceModule,
+                        keccak256(vars.referenceModuleData),
+                        sigNonces[owner]++,
+                        vars.sig.deadline
                     )
                 )
-            );
-        }
-
-        _validateRecoveredAddress(digest, owner, vars.sig);
+            ),
+            owner,
+            vars.sig
+        );
         _createPost(
             vars.profileId,
             vars.contentURI,
@@ -429,32 +399,27 @@ contract LensHub is ILensHub, LensNFTBase, VersionedInitializable, LensMultiStat
         whenPublishingEnabled
     {
         address owner = ownerOf(vars.profileId);
-        bytes32 digest;
-        unchecked {
-            digest = keccak256(
-                abi.encodePacked(
-                    '\x19\x01',
-                    _calculateDomainSeparator(),
-                    keccak256(
-                        abi.encode(
-                            COMMENT_WITH_SIG_TYPEHASH,
-                            vars.profileId,
-                            keccak256(bytes(vars.contentURI)),
-                            vars.profileIdPointed,
-                            vars.pubIdPointed,
-                            vars.collectModule,
-                            keccak256(vars.collectModuleData),
-                            vars.referenceModule,
-                            keccak256(vars.referenceModuleData),
-                            sigNonces[owner]++,
-                            vars.sig.deadline
-                        )
+        _validateRecoveredAddress(
+            _calculateDigest(
+                keccak256(
+                    abi.encode(
+                        COMMENT_WITH_SIG_TYPEHASH,
+                        vars.profileId,
+                        keccak256(bytes(vars.contentURI)),
+                        vars.profileIdPointed,
+                        vars.pubIdPointed,
+                        vars.collectModule,
+                        keccak256(vars.collectModuleData),
+                        vars.referenceModule,
+                        keccak256(vars.referenceModuleData),
+                        sigNonces[owner]++,
+                        vars.sig.deadline
                     )
                 )
-            );
-        }
-
-        _validateRecoveredAddress(digest, owner, vars.sig);
+            ),
+            owner,
+            vars.sig
+        );
         _createComment(
             DataTypes.CommentData(
                 vars.profileId,
@@ -488,29 +453,24 @@ contract LensHub is ILensHub, LensNFTBase, VersionedInitializable, LensMultiStat
         whenPublishingEnabled
     {
         address owner = ownerOf(vars.profileId);
-        bytes32 digest;
-        unchecked {
-            digest = keccak256(
-                abi.encodePacked(
-                    '\x19\x01',
-                    _calculateDomainSeparator(),
-                    keccak256(
-                        abi.encode(
-                            MIRROR_WITH_SIG_TYPEHASH,
-                            vars.profileId,
-                            vars.profileIdPointed,
-                            vars.pubIdPointed,
-                            vars.referenceModule,
-                            keccak256(vars.referenceModuleData),
-                            sigNonces[owner]++,
-                            vars.sig.deadline
-                        )
+        _validateRecoveredAddress(
+            _calculateDigest(
+                keccak256(
+                    abi.encode(
+                        MIRROR_WITH_SIG_TYPEHASH,
+                        vars.profileId,
+                        vars.profileIdPointed,
+                        vars.pubIdPointed,
+                        vars.referenceModule,
+                        keccak256(vars.referenceModuleData),
+                        sigNonces[owner]++,
+                        vars.sig.deadline
                     )
                 )
-            );
-        }
-
-        _validateRecoveredAddress(digest, owner, vars.sig);
+            ),
+            owner,
+            vars.sig
+        );
         _createMirror(
             vars.profileId,
             vars.profileIdPointed,
@@ -578,27 +538,21 @@ contract LensHub is ILensHub, LensNFTBase, VersionedInitializable, LensMultiStat
         for (uint256 i = 0; i < vars.datas.length; ++i) {
             dataHashes[i] = keccak256(vars.datas[i]);
         }
-
-        bytes32 digest;
-        unchecked {
-            digest = keccak256(
-                abi.encodePacked(
-                    '\x19\x01',
-                    _calculateDomainSeparator(),
-                    keccak256(
-                        abi.encode(
-                            FOLLOW_WITH_SIG_TYPEHASH,
-                            keccak256(abi.encodePacked(vars.profileIds)),
-                            keccak256(abi.encodePacked(dataHashes)),
-                            sigNonces[vars.follower]++,
-                            vars.sig.deadline
-                        )
+        _validateRecoveredAddress(
+            _calculateDigest(
+                keccak256(
+                    abi.encode(
+                        FOLLOW_WITH_SIG_TYPEHASH,
+                        keccak256(abi.encodePacked(vars.profileIds)),
+                        keccak256(abi.encodePacked(dataHashes)),
+                        sigNonces[vars.follower]++,
+                        vars.sig.deadline
                     )
                 )
-            );
-        }
-
-        _validateRecoveredAddress(digest, vars.follower, vars.sig);
+            ),
+            vars.follower,
+            vars.sig
+        );
         InteractionLogic.follow(
             vars.follower,
             vars.profileIds,
@@ -686,27 +640,22 @@ contract LensHub is ILensHub, LensNFTBase, VersionedInitializable, LensMultiStat
         override
         whenNotPaused
     {
-        bytes32 digest;
-        unchecked {
-            digest = keccak256(
-                abi.encodePacked(
-                    '\x19\x01',
-                    _calculateDomainSeparator(),
-                    keccak256(
-                        abi.encode(
-                            COLLECT_WITH_SIG_TYPEHASH,
-                            vars.profileId,
-                            vars.pubId,
-                            keccak256(vars.data),
-                            sigNonces[vars.collector]++,
-                            vars.sig.deadline
-                        )
+        _validateRecoveredAddress(
+            _calculateDigest(
+                keccak256(
+                    abi.encode(
+                        COLLECT_WITH_SIG_TYPEHASH,
+                        vars.profileId,
+                        vars.pubId,
+                        keccak256(vars.data),
+                        sigNonces[vars.collector]++,
+                        vars.sig.deadline
                     )
                 )
-            );
-        }
-
-        _validateRecoveredAddress(digest, vars.collector, vars.sig);
+            ),
+            vars.collector,
+            vars.sig
+        );
         InteractionLogic.collect(
             vars.collector,
             vars.profileId,
@@ -936,7 +885,15 @@ contract LensHub is ILensHub, LensNFTBase, VersionedInitializable, LensMultiStat
      * @dev Overrides the ERC721 tokenURI function to return the associated URI with a given profile.
      */
     function tokenURI(uint256 tokenId) public view override returns (string memory) {
-        return _profileById[tokenId].imageURI; // temp
+        address followNFT = _profileById[tokenId].followNFT;
+        return
+            ProfileTokenURILogic.getProfileTokenURI(
+                tokenId,
+                followNFT == address(0) ? 0 : IERC721Enumerable(followNFT).totalSupply(),
+                ownerOf(tokenId),
+                _profileById[tokenId].handle,
+                _profileById[tokenId].imageURI
+            );
     }
 
     /// ****************************
@@ -971,21 +928,13 @@ contract LensHub is ILensHub, LensNFTBase, VersionedInitializable, LensMultiStat
         );
     }
 
-    function _setDefaultProfile(uint256 profileId, address wallet) internal {
-        // you should only be able to map this to the owner OR dead address
-        if (wallet != address(0)) {
-            _validateWalletIsProfileOwner(profileId, wallet);
-            _defaultProfileByAddress[wallet] = profileId;
-            _addressByDefaultProfile[profileId] = wallet;
-
-            emit Events.DefaultProfileSet(profileId, wallet, block.timestamp);
-        } else {
-            // unset the default
-            _defaultProfileByAddress[ownerOf(profileId)] = 0;
-            _addressByDefaultProfile[profileId] = wallet;
-
-            emit Events.DefaultProfileSet(0, wallet, block.timestamp);
+    function _setDefaultProfile(address wallet, uint256 profileId) internal {
+        if (profileId > 0) {
+            if (wallet != ownerOf(profileId)) revert Errors.NotProfileOwner();
         }
+        _defaultProfileByAddress[wallet] = profileId;
+
+        emit Events.DefaultProfileSet(wallet, profileId, block.timestamp);
     }
 
     function _createComment(DataTypes.CommentData memory vars) internal {
@@ -1025,6 +974,8 @@ contract LensHub is ILensHub, LensNFTBase, VersionedInitializable, LensMultiStat
     }
 
     function _setProfileImageURI(uint256 profileId, string memory imageURI) internal {
+        if (bytes(imageURI).length > Constants.MAX_PROFILE_IMAGE_URI_LENGTH)
+            revert Errors.ProfileImageURILengthInvalid();
         _profileById[profileId].imageURI = imageURI;
         emit Events.ProfileImageURISet(profileId, imageURI, block.timestamp);
     }
@@ -1048,8 +999,7 @@ contract LensHub is ILensHub, LensNFTBase, VersionedInitializable, LensMultiStat
             _setDispatcher(tokenId, address(0));
         }
 
-        if (from != address(0)) {
-            _addressByDefaultProfile[tokenId] = address(0);
+        if (_defaultProfileByAddress[from] == tokenId) {
             _defaultProfileByAddress[from] = 0;
         }
 
@@ -1063,10 +1013,6 @@ contract LensHub is ILensHub, LensNFTBase, VersionedInitializable, LensMultiStat
 
     function _validateCallerIsProfileOwner(uint256 profileId) internal view {
         if (msg.sender != ownerOf(profileId)) revert Errors.NotProfileOwner();
-    }
-
-    function _validateWalletIsProfileOwner(uint256 profileId, address wallet) internal view {
-        if (wallet != ownerOf(profileId)) revert Errors.NotProfileOwner();
     }
 
     function _validateCallerIsGovernance() internal view {

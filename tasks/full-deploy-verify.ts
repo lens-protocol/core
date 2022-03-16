@@ -20,6 +20,7 @@ import {
   RevertCollectModule__factory,
   TimedFeeCollectModule__factory,
   TransparentUpgradeableProxy__factory,
+  ProfileTokenURILogic__factory,
 } from '../typechain-types';
 import { deployWithVerify, waitForTx } from './helpers/utils';
 
@@ -79,9 +80,16 @@ task('full-deploy-verify', 'deploys the entire Lens Protocol with explorer verif
       [],
       'contracts/libraries/InteractionLogic.sol:InteractionLogic'
     );
+    const profileTokenURILogic = await deployWithVerify(
+      new ProfileTokenURILogic__factory(deployer).deploy({ nonce: deployerNonce++ }),
+      [],
+      'contracts/libraries/ProfileTokenURILogic.sol:ProfileTokenURILogic'
+    );
     const hubLibs = {
       'contracts/libraries/PublishingLogic.sol:PublishingLogic': publishingLogic.address,
       'contracts/libraries/InteractionLogic.sol:InteractionLogic': interactionLogic.address,
+      'contracts/libraries/ProfileTokenURILogic.sol:ProfileTokenURILogic':
+        profileTokenURILogic.address,
     };
 
     // Here, we pre-compute the nonces and addresses used to deploy the contracts.
@@ -279,6 +287,7 @@ task('full-deploy-verify', 'deploys the entire Lens Protocol with explorer verif
       'lensHub impl:': lensHubImpl.address,
       'publishing logic lib': publishingLogic.address,
       'interaction logic lib': interactionLogic.address,
+      'profile token URI logic lib': profileTokenURILogic.address,
       'follow NFT impl': followNFTImplAddress,
       'collect NFT impl': collectNFTImplAddress,
       'module globals': moduleGlobals.address,

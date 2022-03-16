@@ -1,8 +1,10 @@
 import '@nomiclabs/hardhat-ethers';
 import { expect } from 'chai';
+import { keccak256, toUtf8Bytes } from 'ethers/lib/utils';
 import { UIDataProvider__factory } from '../../typechain-types';
 import { ZERO_ADDRESS } from '../helpers/constants';
 import { ERRORS } from '../helpers/errors';
+import { getJsonMetadataFromBase64TokenUri } from '../helpers/utils';
 import {
   approvalFollowModule,
   deployer,
@@ -153,7 +155,20 @@ makeSuiteCleanRoom('Misc', function () {
     });
 
     it('Profile tokenURI should return the accurate URI', async function () {
-      expect(await lensHub.tokenURI(FIRST_PROFILE_ID)).to.eq(MOCK_PROFILE_URI);
+      const tokenURI = await lensHub.tokenURI(FIRST_PROFILE_ID);
+      const jsonMetadata = await getJsonMetadataFromBase64TokenUri(tokenURI);
+      expect(jsonMetadata.name).to.eq(`@${MOCK_PROFILE_HANDLE}`);
+      expect(jsonMetadata.description).to.eq(`@${MOCK_PROFILE_HANDLE} - Lens profile`);
+      const expectedAttributes = [
+        { trait_type: 'id', value: `#${FIRST_PROFILE_ID.toString()}` },
+        { trait_type: 'followers', value: '0' },
+        { trait_type: 'owner', value: userAddress.toLowerCase() },
+        { trait_type: 'handle', value: `@${MOCK_PROFILE_HANDLE}` },
+      ];
+      expect(jsonMetadata.attributes).to.eql(expectedAttributes);
+      expect(keccak256(toUtf8Bytes(tokenURI))).to.eq(
+        '0xa2e9967e825705ce8f38931f7d1f88fe63bef6f2f2c52715692f14d42d889b76'
+      );
     });
 
     it('Publication reference module getter should return the correct reference module (or zero in case of no reference module)', async function () {
