@@ -7,18 +7,7 @@ import '@openzeppelin/contracts/utils/Strings.sol';
 
 library ProfileTokenURILogic {
     uint8 internal constant DEFAULT_FONT_SIZE = 24;
-
     uint8 internal constant MAX_HANDLE_LENGTH_WITH_DEFAULT_FONT_SIZE = 17;
-
-    // length of 'https://ipfs.io/ipfs/'
-    uint8 internal constant EXPECTED_IMAGE_URI_BEGINNING_LENGTH = 21;
-
-    // keccak256('https://ipfs.io/ipfs/')
-    bytes32 internal constant EXPECTED_IMAGE_URI_BEGINNING_HASH =
-        0x6f6c4dab5ef2d22ee688f4f246e6d9e579f088bed1b916b0ef559db8e1ac6e46;
-
-    // length of 'https://ipfs.io/ipfs/' + length of a CIDv0
-    uint8 internal constant EXPECTED_IMAGE_URI_MIN_LENGTH = 67;
 
     /**
      * @notice Generates the token URI for the profile NFT.
@@ -146,13 +135,8 @@ library ProfileTokenURILogic {
     /**
      * @notice Decides if Profile NFT should use user provided custom profile picture or the default one.
      *
-     * @dev The custom imageURI must be an IPFS HTTPS URL using the default `ipfs.io` gateway to be embedded in
-     * the Profile NFT, as other domains could lead to Content-Security-Policy's errors in most of the sites.
-     *      Then, browsers and sites that support IPFS can redirect these SVG image requests to its preferred IPFS node
-     * or gateway, or just use the default `ipfs.io` gateway.
-     *      In addition, 'https://ipfs.io/ipfs/<cid>' URIs were preferred over `ipfs://<cid>` because using the
-     * former format is more likely to have support, for example when opening the image locally or in a browser.
-     *      See `https://docs.ipfs.io/how-to/address-ipfs-on-web` for more details.
+     * @dev It checks if there is a custom imageURI set and makes sure it does not contain double-quotes to prevent
+     * injection attacks through the generated SVG.
      *
      * @param imageURI The imageURI set by the profile owner.
      *
@@ -160,22 +144,10 @@ library ProfileTokenURILogic {
      */
     function _shouldUseCustomPicture(string memory imageURI) internal pure returns (bool) {
         bytes memory imageURIBytes = bytes(imageURI);
-        if (imageURIBytes.length < EXPECTED_IMAGE_URI_MIN_LENGTH) {
+        if (imageURIBytes.length == 0) {
             return false;
         }
-        bytes32 beginningHash;
-        assembly {
-            // Calculates the keccak256 hash of first EXPECTED_IMAGE_URI_BEGINNING_LENGTH = 21 characters on imageURI,
-            // which are expected to be 'https://ipfs.io/ipfs/'
-            beginningHash := keccak256(
-                add(imageURIBytes, 0x20),
-                EXPECTED_IMAGE_URI_BEGINNING_LENGTH
-            )
-        }
-        if (beginningHash != EXPECTED_IMAGE_URI_BEGINNING_HASH) {
-            return false;
-        }
-        for (uint256 i = EXPECTED_IMAGE_URI_BEGINNING_LENGTH; i < imageURIBytes.length; i++) {
+        for (uint256 i = 0; i < imageURIBytes.length; i++) {
             if (imageURIBytes[i] == '"') {
                 // Avoids embedding a user provided imageURI containing double-quotes to prevent injection attacks
                 return false;
