@@ -478,15 +478,15 @@ library Events {
     /**
      * @dev Emitted when the user wants to enable or disable the follow.
      *
-     * @param profileId The token ID of the profile to which this followNFT is associated.
      * @param owner The profile owner who executed the toggle.
-     * @param enabled Whether the FollowNFT is enabled/disabled.
+     * @param profileIds The array of token IDs of the profiles each followNFT is associated with.
+     * @param enabled The array of whether each FollowNFT's follow is enabled/disabled.
      * @param timestamp The current block timestamp.
      */
-    event ToggleFollowNFT(
-        uint256 indexed profileId,
+    event FollowsToggled(
         address indexed owner,
-        bool enabled,
+        uint256[] profileIds,
+        bool[] enabled,
         uint256 timestamp
     );
 

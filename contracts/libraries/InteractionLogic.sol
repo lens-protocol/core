@@ -185,8 +185,7 @@ library InteractionLogic {
 
             if (ERC721Time(followNFT).ownerOf(followNFTIds[i]) != follower)
                 revert Errors.FollowInvalid();
-
-            emit Events.ToggleFollowNFT(profileIds[i], follower, enables[i], block.timestamp);
         }
+        emit Events.FollowsToggled(follower, profileIds, enables, block.timestamp);
     }
 }
