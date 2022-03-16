@@ -37,6 +37,7 @@ import {
   MockReferenceModule__factory,
   ModuleGlobals,
   ModuleGlobals__factory,
+  ProfileTokenURILogic__factory,
   PublishingLogic__factory,
   RevertCollectModule,
   RevertCollectModule__factory,
@@ -59,18 +60,17 @@ export const CURRENCY_MINT_AMOUNT = parseEther('100');
 export const BPS_MAX = 10000;
 export const TREASURY_FEE_BPS = 50;
 export const REFERRAL_FEE_BPS = 250;
+export const MAX_PROFILE_IMAGE_URI_LENGTH = 6000;
 export const LENS_HUB_NFT_NAME = 'Lens Profiles';
 export const LENS_HUB_NFT_SYMBOL = 'LENS';
 export const MOCK_PROFILE_HANDLE = 'plant1ghost.eth';
 export const FIRST_PROFILE_ID = 1;
-export const MOCK_URI =
-  'https://ipfs.fleek.co/ipfs/plantghostplantghostplantghostplantghostplantghostplantghos';
-export const OTHER_MOCK_URI =
-  'https://ipfs.fleek.co/ipfs/ghostplantghostplantghostplantghostplantghostplantghostplan';
+export const MOCK_URI = 'https://ipfs.io/ipfs/QmbWqxBEKC3P8tqsKc98xmWNzrzDtRLMiMPL8wBuTGsMnR';
+export const OTHER_MOCK_URI = 'https://ipfs.io/ipfs/QmSfyMcnh1wnJHrAWCBjZHapTS859oNSsuDFiAPPdAHgHP';
 export const MOCK_PROFILE_URI =
-  'https://ipfs.fleek.co/ipfs/runningoutofthingstowriterunningoutofthingstowriterunningou';
+  'https://ipfs.io/ipfs/Qme7ss3ARVgxv6rXqVPiikMJ8u2NLgmgszg13pYrDKEoiu';
 export const MOCK_FOLLOW_NFT_URI =
-  'https://ipfs.fleek.co/ipfs/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa';
+  'https://ipfs.fleek.co/ipfs/ghostplantghostplantghostplantghostplantghostplantghostplan';
 
 export let accounts: Signer[];
 export let deployer: Signer;
@@ -149,9 +149,12 @@ before(async function () {
   );
   const publishingLogic = await new PublishingLogic__factory(deployer).deploy();
   const interactionLogic = await new InteractionLogic__factory(deployer).deploy();
+  const profileTokenURILogic = await new ProfileTokenURILogic__factory(deployer).deploy();
   hubLibs = {
     'contracts/libraries/PublishingLogic.sol:PublishingLogic': publishingLogic.address,
     'contracts/libraries/InteractionLogic.sol:InteractionLogic': interactionLogic.address,
+    'contracts/libraries/ProfileTokenURILogic.sol:ProfileTokenURILogic':
+      profileTokenURILogic.address,
   };
 
   // Here, we pre-compute the nonces and addresses used to deploy the contracts.
