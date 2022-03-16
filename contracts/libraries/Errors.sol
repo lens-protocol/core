@@ -24,6 +24,7 @@ library Errors {
     error HandleTaken();
     error HandleLengthInvalid();
     error HandleContainsInvalidCharacters();
+    error ProfileImageURILengthInvalid();
     error CallerNotFollowNFT();
     error CallerNotCollectNFT();
     error BlockNumberInvalid();
