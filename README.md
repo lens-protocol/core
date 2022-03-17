@@ -67,7 +67,7 @@ $ npm run compile
 Cleanup leftover Docker containers:
 
 ```
-USERID=$UID docker-compose down
+$ USERID=$UID docker-compose down
 ```
 
 ## Protocol Overview
