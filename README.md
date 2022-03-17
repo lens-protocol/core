@@ -50,24 +50,24 @@ ETHERSCAN_KEY="YOUR ETHERSCAN API KEY HERE"
 
 With the environment file set up, you can move on to using Docker:
 
-```
-$ export USERID=$UID && docker-compose build && docker-compose run contracts-env bash
+```bash
+export USERID=$UID && docker-compose build && docker-compose run contracts-env bash
 ```
 
 From there, have fun!
 
 Here are a few self-explanatory scripts:
 
-```
-$ npm run test
-$ npm run coverage
-$ npm run compile
+```bash
+npm run test
+npm run coverage
+npm run compile
 ```
 
 Cleanup leftover Docker containers:
 
-```
-$ USERID=$UID docker-compose down
+```bash
+USERID=$UID docker-compose down
 ```
 
 ## Protocol Overview
