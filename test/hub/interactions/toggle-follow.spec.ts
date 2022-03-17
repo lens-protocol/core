@@ -124,8 +124,6 @@ makeSuiteCleanRoom('ToggleFollowing', function () {
       });
 
       it('UserTwo should toggle follow with false value, correct event should be emitted', async function () {
-        // const id = await getTokenId(userTwoAddress);
-
         const tx = peripheryDataProvider.connect(userTwo).toggleFollow([FIRST_PROFILE_ID], [false]);
 
         const receipt = await waitForTx(tx);
