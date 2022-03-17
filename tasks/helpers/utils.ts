@@ -36,9 +36,9 @@ export async function deployWithVerify(
 ): Promise<Contract> {
   const deployedContract = await deployContract(tx);
   let count = 0;
-  let maxTries = 7;
+  let maxTries = 8;
   while (true) {
-    await delay(5000);
+    await delay(10000);
     try {
       console.log('Verifying contract at', deployedContract.address);
       await runtimeHRE.run('verify:verify', {
@@ -48,6 +48,12 @@ export async function deployWithVerify(
       });
       break;
     } catch (error) {
+      if (String(error).includes('Already Verified')) {
+        console.log(
+          `Already verified contract at at ${contractPath} at address ${deployedContract.address}`
+        );
+        break;
+      }
       if (++count == maxTries) {
         console.log(
           `Failed to verify contract at ${contractPath} at address ${deployedContract.address}, error: ${error}`
