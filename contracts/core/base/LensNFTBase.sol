@@ -10,25 +10,19 @@ import {ERC721Time} from './ERC721Time.sol';
 import {ERC721Enumerable} from './ERC721Enumerable.sol';
 
 abstract contract LensNFTBase is ILensNFTBase, ERC721Enumerable {
-    bytes32 internal constant EIP712_REVISION_HASH =
-        0xc89efdaa54c0f20c7adf612882df0950f5a951637e0307cdcb4c672f298b8bc6;
-    // keccak256('1');
+    bytes32 internal constant EIP712_REVISION_HASH = keccak256('1');
     bytes32 internal constant PERMIT_TYPEHASH =
-        0x49ecf333e5b8c95c40fdafc95c1ad136e8914a8fb55e9dc8bb01eaa83a2df9ad;
-    // keccak256('Permit(address spender,uint256 tokenId,uint256 nonce,uint256 deadline)');
+        keccak256('Permit(address spender,uint256 tokenId,uint256 nonce,uint256 deadline)');
     bytes32 internal constant PERMIT_FOR_ALL_TYPEHASH =
-        0x47ab88482c90e4bb94b82a947ae78fa91fb25de1469ab491f4c15b9a0a2677ee;
-    // keccak256(
-    // 'PermitForAll(address owner,address operator,bool approved,uint256 nonce,uint256 deadline)'
-    // );
+        keccak256(
+            'PermitForAll(address owner,address operator,bool approved,uint256 nonce,uint256 deadline)'
+        );
     bytes32 internal constant BURN_WITH_SIG_TYPEHASH =
-        0x108ccda6d7331b00561a3eea66a2ae331622356585681c62731e4a01aae2261a;
-    // keccak256('BurnWithSig(uint256 tokenId,uint256 nonce,uint256 deadline)');
+        keccak256('BurnWithSig(uint256 tokenId,uint256 nonce,uint256 deadline)');
     bytes32 internal constant EIP712_DOMAIN_TYPEHASH =
-        0x8b73c3c69bb8fe3d512ecc4cf759cc79239f7b179b0ffacaa9a75d522b39400f;
-    // keccak256(
-    // 'EIP712Domain(string name,string version,uint256 chainId,address verifyingContract)'
-    // )
+        keccak256(
+            'EIP712Domain(string name,string version,uint256 chainId,address verifyingContract)'
+        );
 
     mapping(address => uint256) public sigNonces;
 

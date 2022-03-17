@@ -111,6 +111,13 @@ abstract contract ERC721Time is Context, ERC165, IERC721Time, IERC721Metadata {
     }
 
     /**
+     * @dev See {IERC721Time-exists}
+     */
+    function exists(uint256 tokenId) public view virtual override returns (bool) {
+        return _exists(tokenId);
+    }
+
+    /**
      * @dev See {IERC721Metadata-name}.
      */
     function name() public view virtual override returns (string memory) {

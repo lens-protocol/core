@@ -44,6 +44,8 @@ import {
   TimedFeeCollectModule,
   TimedFeeCollectModule__factory,
   TransparentUpgradeableProxy__factory,
+  LensPeripheryDataProvider,
+  LensPeripheryDataProvider__factory,
 } from '../typechain-types';
 import { LensHubLibraryAddresses } from '../typechain-types/factories/LensHub__factory';
 import { FAKE_PRIVATEKEY, ZERO_ADDRESS } from './helpers/constants';
@@ -64,6 +66,7 @@ export const MAX_PROFILE_IMAGE_URI_LENGTH = 6000;
 export const LENS_HUB_NFT_NAME = 'Lens Profiles';
 export const LENS_HUB_NFT_SYMBOL = 'LENS';
 export const MOCK_PROFILE_HANDLE = 'plant1ghost.eth';
+export const PERIPHERY_DATA_PROVIDER_NAME = 'LensPeripheryDataProvider';
 export const FIRST_PROFILE_ID = 1;
 export const MOCK_URI = 'https://ipfs.io/ipfs/QmbWqxBEKC3P8tqsKc98xmWNzrzDtRLMiMPL8wBuTGsMnR';
 export const OTHER_MOCK_URI = 'https://ipfs.io/ipfs/QmSfyMcnh1wnJHrAWCBjZHapTS859oNSsuDFiAPPdAHgHP';
@@ -76,10 +79,12 @@ export let accounts: Signer[];
 export let deployer: Signer;
 export let user: Signer;
 export let userTwo: Signer;
+export let userThree: Signer;
 export let governance: Signer;
 export let deployerAddress: string;
 export let userAddress: string;
 export let userTwoAddress: string;
+export let userThreeAddress: string;
 export let governanceAddress: string;
 export let followNFTImplAddress: string;
 export let collectNFTImplAddress: string;
@@ -94,6 +99,7 @@ export let hubLibs: LensHubLibraryAddresses;
 export let eventsLib: Events;
 export let moduleGlobals: ModuleGlobals;
 export let helper: Helper;
+export let peripheryDataProvider: LensPeripheryDataProvider;
 
 /* Modules */
 
@@ -133,10 +139,13 @@ before(async function () {
   deployer = accounts[0];
   user = accounts[1];
   userTwo = accounts[2];
+  userThree = accounts[4];
   governance = accounts[3];
+
   deployerAddress = await deployer.getAddress();
   userAddress = await user.getAddress();
   userTwoAddress = await userTwo.getAddress();
+  userThreeAddress = await userThree.getAddress();
   governanceAddress = await governance.getAddress();
   treasuryAddress = await accounts[4].getAddress();
   mockModuleData = abiCoder.encode(['uint256'], [1]);
@@ -188,6 +197,11 @@ before(async function () {
   // Connect the hub proxy to the LensHub factory and the user for ease of use.
   lensHub = LensHub__factory.connect(proxy.address, user);
 
+  // LensPeripheryDataProvider
+  peripheryDataProvider = await new LensPeripheryDataProvider__factory(deployer).deploy(
+    lensHub.address
+  );
+
   // Currency
   currency = await new Currency__factory(deployer).deploy();
 
@@ -229,6 +243,9 @@ before(async function () {
   ).to.not.be.reverted;
   await expect(
     lensHub.connect(governance).whitelistProfileCreator(userTwoAddress, true)
+  ).to.not.be.reverted;
+  await expect(
+    lensHub.connect(governance).whitelistProfileCreator(userThreeAddress, true)
   ).to.not.be.reverted;
   await expect(
     lensHub.connect(governance).whitelistProfileCreator(testWallet.address, true)

@@ -31,7 +31,7 @@ interface IERC721Time is IERC721 {
      *
      * @param tokenId The token ID of the NFT to query the mint timestamp for.
      *
-     * @return The mint timestamp, this is stored as a uint96 but returned as a uint256 to reduce unnecessary
+     * @return uint256 mint timestamp, this is stored as a uint96 but returned as a uint256 to reduce unnecessary
      * padding.
      */
     function mintTimestampOf(uint256 tokenId) external view returns (uint256);
@@ -42,7 +42,16 @@ interface IERC721Time is IERC721 {
      *
      * @param tokenId The token ID of the NFT to query the token data for.
      *
-     * @return The token data struct containing both the owner address and the mint timestamp.
+     * @return TokenData token data struct containing both the owner address and the mint timestamp.
      */
     function tokenDataOf(uint256 tokenId) external view returns (TokenData memory);
+
+    /**
+     * @notice Returns whether a token with the given token ID exists.
+     *
+     * @param tokenId The token ID of the NFT to check existence for.
+     *
+     * @return bool True if the token exists.
+     */
+    function exists(uint256 tokenId) external view returns (bool);
 }

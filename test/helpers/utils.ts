@@ -1,6 +1,14 @@
 import '@nomiclabs/hardhat-ethers';
 import { BigNumberish, Bytes, logger, utils, BigNumber, Contract } from 'ethers';
-import { eventsLib, helper, lensHub, LENS_HUB_NFT_NAME, testWallet } from '../__setup.spec';
+import {
+  eventsLib,
+  helper,
+  lensHub,
+  LENS_HUB_NFT_NAME,
+  peripheryDataProvider,
+  PERIPHERY_DATA_PROVIDER_NAME,
+  testWallet,
+} from '../__setup.spec';
 import { expect } from 'chai';
 import { HARDHAT_CHAINID, MAX_UINT256 } from './constants';
 import { hexlify, keccak256, RLP, toUtf8Bytes } from 'ethers/lib/utils';
@@ -418,6 +426,16 @@ export async function getFollowWithSigParts(
   return await getSig(msgParams);
 }
 
+export async function getToggleFollowWithSigParts(
+  profileIds: string[] | number[],
+  enables: boolean[],
+  nonce: number,
+  deadline: string
+): Promise<{ v: number; r: string; s: string }> {
+  const msgParams = buildToggleFollowWithSigParams(profileIds, enables, nonce, deadline);
+  return await getSig(msgParams);
+}
+
 export async function getCollectWithSigParts(
   profileId: BigNumberish,
   pubId: string,
@@ -776,6 +794,34 @@ const buildFollowWithSigParams = (
   value: {
     profileIds: profileIds,
     datas: datas,
+    nonce: nonce,
+    deadline: deadline,
+  },
+});
+
+const buildToggleFollowWithSigParams = (
+  profileIds: string[] | number[],
+  enables: boolean[],
+  nonce: number,
+  deadline: string
+) => ({
+  types: {
+    ToggleFollowWithSig: [
+      { name: 'profileIds', type: 'uint256[]' },
+      { name: 'enables', type: 'bool[]' },
+      { name: 'nonce', type: 'uint256' },
+      { name: 'deadline', type: 'uint256' },
+    ],
+  },
+  domain: {
+    name: PERIPHERY_DATA_PROVIDER_NAME,
+    version: '1',
+    chainId: getChainId(),
+    verifyingContract: peripheryDataProvider.address,
+  },
+  value: {
+    profileIds: profileIds,
+    enables: enables,
     nonce: nonce,
     deadline: deadline,
   },

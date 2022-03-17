@@ -11,6 +11,7 @@ import {IFollowNFT} from '../interfaces/IFollowNFT.sol';
 import {ICollectNFT} from '../interfaces/ICollectNFT.sol';
 import {IFollowModule} from '../interfaces/IFollowModule.sol';
 import {ICollectModule} from '../interfaces/ICollectModule.sol';
+import {ERC721Time} from '../core/base/ERC721Time.sol';
 import {Clones} from '@openzeppelin/contracts/proxy/Clones.sol';
 import {Strings} from '@openzeppelin/contracts/utils/Strings.sol';
 
