@@ -51,13 +51,13 @@ ETHERSCAN_KEY="YOUR ETHERSCAN API KEY HERE"
 With the environment file set up, you can move on to using Docker:
 
 ```
-$ sudo docker-compose up -d --build
+$ USERID=$UID docker-compose up -d --build
 ```
 
 And in another terminal:
 
 ```
-$ sudo docker-compose exec contracts-env /bin/bash
+$ USERID=$UID docker-compose exec contracts-env /bin/bash
 ```
 
 From there, have fun!

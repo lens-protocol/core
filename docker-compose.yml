@@ -4,7 +4,7 @@ services:
   contracts-env:
     security_opt:
       - no-new-privileges
-    user: 1001:1001
+    user: "${USERID?}:${USERID?}"
     env_file:
       - .env
     build:
