@@ -39,6 +39,12 @@ The Lens Protocol is a decentralized, non-custodial social graph. Lens implement
 
 ## Setup
 
+> For now only Linux and macOS are known to work
+>
+> We are now figuring out what works for Windows, instructions will be updated soon
+>
+> (feel free to experiment and submit PR's)
+
 The environment is built using Docker Compose, note that your `.env` file must have an `ALCHEMY_KEY` or an `INFURA_KEY` variable, and an optional `MNEMONIC` and `ETHERSCAN_KEY`, defined like so:
 
 ```
