@@ -9,7 +9,6 @@ import {Errors} from '../libraries/Errors.sol';
 import {Events} from '../libraries/Events.sol';
 import {DataTypes} from '../libraries/DataTypes.sol';
 import {LensNFTBase} from './base/LensNFTBase.sol';
-import {IERC721Metadata} from '@openzeppelin/contracts/token/ERC721/extensions/IERC721Metadata.sol';
 
 /**
  * @title FollowNFT
