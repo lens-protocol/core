@@ -39,9 +39,9 @@ The Lens Protocol is a decentralized, non-custodial social graph. Lens implement
 
 ## Setup
 
-> For now only Linux and macOS are supported
+> For now only Linux and macOS are known to work
 >
-> We are now figuring out what works for Windows, will update the instructions soon
+> We are now figuring out what works for Windows, instructions will be updated soon
 >
 > (feel free to experiment and submit PR's)
 
