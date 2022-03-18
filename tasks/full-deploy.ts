@@ -121,7 +121,8 @@ task('full-deploy', 'deploys the entire Lens Protocol').setAction(async ({}, hre
   const lensHub = LensHub__factory.connect(proxy.address, governance);
 
   const peripheryDataProvider = await new LensPeripheryDataProvider__factory(deployer).deploy(
-    lensHub.address
+    lensHub.address,
+    { nonce: deployerNonce++ }
   );
 
   // Currency
