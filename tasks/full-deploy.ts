@@ -120,8 +120,10 @@ task('full-deploy', 'deploys the entire Lens Protocol').setAction(async ({}, hre
   // Connect the hub proxy to the LensHub factory and the governance for ease of use.
   const lensHub = LensHub__factory.connect(proxy.address, governance);
 
-  const peripheryDataProvider = await new LensPeripheryDataProvider__factory(deployer).deploy(
-    lensHub.address
+  const peripheryDataProvider = await await deployContract(
+    new LensPeripheryDataProvider__factory(deployer).deploy(lensHub.address, {
+      nonce: deployerNonce++,
+    })
   );
 
   // Currency
