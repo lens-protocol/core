@@ -20,6 +20,7 @@ import {IERC721} from '@openzeppelin/contracts/token/ERC721/IERC721.sol';
  * @param recipient The recipient address associated with this publication.
  * @param currency The currency associated with this publication.
  * @param referralFee The referral fee associated with this publication.
+ * @param followerOnly Whether only followers should be able to collect.
  */
 struct ProfilePublicationData {
     uint256 collectLimit;
@@ -28,6 +29,7 @@ struct ProfilePublicationData {
     address recipient;
     address currency;
     uint16 referralFee;
+    bool followerOnly;
 }
 
 /**
@@ -69,8 +71,9 @@ contract LimitedFeeCollectModule is ICollectModule, FeeModuleBase, FollowValidat
             uint256 amount,
             address currency,
             address recipient,
-            uint16 referralFee
-        ) = abi.decode(data, (uint256, uint256, address, address, uint16));
+            uint16 referralFee,
+            bool followerOnly
+        ) = abi.decode(data, (uint256, uint256, address, address, uint16, bool));
         if (
             collectLimit == 0 ||
             !_currencyWhitelisted(currency) ||
@@ -81,9 +84,10 @@ contract LimitedFeeCollectModule is ICollectModule, FeeModuleBase, FollowValidat
 
         _dataByPublicationByProfile[profileId][pubId].collectLimit = collectLimit;
         _dataByPublicationByProfile[profileId][pubId].amount = amount;
-        _dataByPublicationByProfile[profileId][pubId].currency = currency;
         _dataByPublicationByProfile[profileId][pubId].recipient = recipient;
+        _dataByPublicationByProfile[profileId][pubId].currency = currency;
         _dataByPublicationByProfile[profileId][pubId].referralFee = referralFee;
+        _dataByPublicationByProfile[profileId][pubId].followerOnly = followerOnly;
 
         return data;
     }
@@ -101,8 +105,8 @@ contract LimitedFeeCollectModule is ICollectModule, FeeModuleBase, FollowValidat
         uint256 pubId,
         bytes calldata data
     ) external override onlyHub {
-        _checkFollowValidity(profileId, collector);
-
+        if (_dataByPublicationByProfile[profileId][pubId].followerOnly)
+            _checkFollowValidity(profileId, collector);
         if (
             _dataByPublicationByProfile[profileId][pubId].currentCollects >=
             _dataByPublicationByProfile[profileId][pubId].collectLimit
