@@ -58,6 +58,7 @@ contract LimitedFeeCollectModule is ICollectModule, FeeModuleBase, FollowValidat
      *      address currency: The currency address, must be internally whitelisted.
      *      address recipient: The custom recipient address to direct earnings to.
      *      uint16 referralFee: The referral fee to set.
+     *      bool followerOnly: Whether only followers should be able to collect.
      *
      * @return An abi encoded bytes parameter, which is the same as the passed data parameter.
      */
