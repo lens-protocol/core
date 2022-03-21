@@ -471,7 +471,7 @@ makeSuiteCleanRoom('Multi-State Hub', function () {
             referenceModule: ZERO_ADDRESS,
             referenceModuleData: [],
           })
-        ).to.be.revertedWith(ERRORS.PAUSED);
+        ).to.be.revertedWith(ERRORS.PUBLISHING_PAUSED);
 
         await expect(
           lensHub.connect(governance).setState(ProtocolState.Unpaused)
@@ -537,7 +537,7 @@ makeSuiteCleanRoom('Multi-State Hub', function () {
               deadline: MAX_UINT256,
             },
           })
-        ).to.be.revertedWith(ERRORS.PAUSED);
+        ).to.be.revertedWith(ERRORS.PUBLISHING_PAUSED);
 
         await expect(
           lensHub.connect(governance).setState(ProtocolState.Unpaused)
@@ -601,7 +601,7 @@ makeSuiteCleanRoom('Multi-State Hub', function () {
             referenceModule: ZERO_ADDRESS,
             referenceModuleData: [],
           })
-        ).to.be.revertedWith(ERRORS.PAUSED);
+        ).to.be.revertedWith(ERRORS.PUBLISHING_PAUSED);
 
         await expect(
           lensHub.connect(governance).setState(ProtocolState.Unpaused)
@@ -684,7 +684,7 @@ makeSuiteCleanRoom('Multi-State Hub', function () {
               deadline: MAX_UINT256,
             },
           })
-        ).to.be.revertedWith(ERRORS.PAUSED);
+        ).to.be.revertedWith(ERRORS.PUBLISHING_PAUSED);
 
         await expect(
           lensHub.connect(governance).setState(ProtocolState.Unpaused)
@@ -747,7 +747,7 @@ makeSuiteCleanRoom('Multi-State Hub', function () {
             referenceModule: ZERO_ADDRESS,
             referenceModuleData: [],
           })
-        ).to.be.revertedWith(ERRORS.PAUSED);
+        ).to.be.revertedWith(ERRORS.PUBLISHING_PAUSED);
 
         await expect(
           lensHub.connect(governance).setState(ProtocolState.Unpaused)
@@ -820,7 +820,7 @@ makeSuiteCleanRoom('Multi-State Hub', function () {
               deadline: MAX_UINT256,
             },
           })
-        ).to.be.revertedWith(ERRORS.PAUSED);
+        ).to.be.revertedWith(ERRORS.PUBLISHING_PAUSED);
 
         await expect(
           lensHub.connect(governance).setState(ProtocolState.Unpaused)
