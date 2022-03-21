@@ -78,7 +78,7 @@ contract TimedFeeCollectModule is ICollectModule, FeeModuleBase, FollowValidatio
             !_currencyWhitelisted(currency) ||
             recipient == address(0) ||
             referralFee > BPS_MAX ||
-            amount < BPS_MAX
+            amount == 0
         ) revert Errors.InitParamsInvalid();
 
         _dataByPublicationByProfile[profileId][pubId].amount = amount;

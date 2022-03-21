@@ -59,7 +59,7 @@ contract FeeFollowModule is IFollowModule, FeeModuleBase, FollowValidatorFollowM
             data,
             (uint256, address, address)
         );
-        if (!_currencyWhitelisted(currency) || recipient == address(0) || amount < BPS_MAX)
+        if (!_currencyWhitelisted(currency) || recipient == address(0) || amount == 0)
             revert Errors.InitParamsInvalid();
 
         _dataByProfile[profileId].amount = amount;
