@@ -132,10 +132,10 @@ makeSuiteCleanRoom('Limited Fee Collect Module', function () {
         ).to.be.revertedWith(ERRORS.INIT_PARAMS_INVALID);
       });
 
-      it('user should fail to post with limited fee collect module using amount lower than max BPS', async function () {
+      it('user should fail to post with limited fee collect module using zero amount', async function () {
         const collectModuleData = abiCoder.encode(
           ['uint256', 'uint256', 'address', 'address', 'uint16'],
-          [DEFAULT_COLLECT_LIMIT, 9999, currency.address, userAddress, REFERRAL_FEE_BPS]
+          [DEFAULT_COLLECT_LIMIT, 0, currency.address, userAddress, REFERRAL_FEE_BPS]
         );
         await expect(
           lensHub.post({
