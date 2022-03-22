@@ -113,6 +113,36 @@ makeSuiteCleanRoom('Fee Follow Module', function () {
         ).to.not.be.reverted;
       });
 
+      it('Governance should set the treasury fee BPS to zero, userTwo following should not emit a transfer event to the treasury', async function () {
+        await expect(moduleGlobals.connect(governance).setTreasuryFee(0)).to.not.be.reverted;
+        const data = abiCoder.encode(
+          ['address', 'uint256'],
+          [currency.address, DEFAULT_FOLLOW_PRICE]
+        );
+        await expect(currency.mint(userTwoAddress, MAX_UINT256)).to.not.be.reverted;
+        await expect(
+          currency.connect(userTwo).approve(feeFollowModule.address, MAX_UINT256)
+        ).to.not.be.reverted;
+
+        const tx = lensHub.connect(userTwo).follow([FIRST_PROFILE_ID], [data]);
+        const receipt = await waitForTx(tx);
+
+        let currencyEventCount = 0;
+        for (let log of receipt.logs) {
+          if (log.address == currency.address) {
+            currencyEventCount++;
+          }
+        }
+        expect(currencyEventCount).to.eq(1);
+        matchEvent(
+          receipt,
+          'Transfer',
+          [userTwoAddress, userAddress, DEFAULT_FOLLOW_PRICE],
+          currency,
+          currency.address
+        );
+      });
+
       it('UserTwo should fail to follow passing a different expected price in data', async function () {
         const data = abiCoder.encode(
           ['address', 'uint256'],

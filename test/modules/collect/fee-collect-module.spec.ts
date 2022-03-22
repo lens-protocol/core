@@ -2,6 +2,7 @@ import { BigNumber } from '@ethersproject/contracts/node_modules/@ethersproject/
 import { parseEther } from '@ethersproject/units';
 import '@nomiclabs/hardhat-ethers';
 import { expect } from 'chai';
+import { ERC20__factory } from '../../../typechain-types';
 import { MAX_UINT256, ZERO_ADDRESS } from '../../helpers/constants';
 import { ERRORS } from '../../helpers/errors';
 import { getTimestamp, matchEvent, waitForTx } from '../../helpers/utils';
@@ -13,6 +14,7 @@ import {
   FIRST_PROFILE_ID,
   governance,
   lensHub,
+  lensHubImpl,
   makeSuiteCleanRoom,
   MOCK_FOLLOW_NFT_URI,
   MOCK_PROFILE_HANDLE,
@@ -22,6 +24,7 @@ import {
   REFERRAL_FEE_BPS,
   treasuryAddress,
   TREASURY_FEE_BPS,
+  user,
   userAddress,
   userTwo,
   userTwoAddress,
@@ -136,6 +139,39 @@ makeSuiteCleanRoom('Fee Collect Module', function () {
             referenceModuleData: [],
           })
         ).to.not.be.reverted;
+      });
+
+      it('Governance should set the treasury fee BPS to zero, userTwo collecting should not emit a transfer event to the treasury', async function () {
+        await expect(moduleGlobals.connect(governance).setTreasuryFee(0)).to.not.be.reverted;
+        const data = abiCoder.encode(
+          ['address', 'uint256'],
+          [currency.address, DEFAULT_COLLECT_PRICE]
+        );
+        await expect(lensHub.connect(userTwo).follow([FIRST_PROFILE_ID], [[]])).to.not.be.reverted;
+
+        await expect(currency.mint(userTwoAddress, MAX_UINT256)).to.not.be.reverted;
+        await expect(
+          currency.connect(userTwo).approve(feeCollectModule.address, MAX_UINT256)
+        ).to.not.be.reverted;
+
+        const tx = lensHub.connect(userTwo).collect(FIRST_PROFILE_ID, 1, data);
+        const receipt = await waitForTx(tx);
+
+        let currencyEventCount = 0;
+        for (let log of receipt.logs) {
+          if (log.address == currency.address) {
+            currencyEventCount++;
+          }
+        }
+        expect(currencyEventCount).to.eq(1);
+        const amount = abiCoder.encode(['uint256'], [DEFAULT_COLLECT_PRICE]);
+        matchEvent(
+          receipt,
+          'Transfer',
+          [userTwoAddress, userAddress, DEFAULT_COLLECT_PRICE],
+          currency,
+          currency.address
+        );
       });
 
       it('UserTwo should fail to collect without following', async function () {

@@ -26,16 +26,17 @@ export function matchEvent(
   receipt: TransactionReceipt,
   name: string,
   expectedArgs?: any[],
-  eventContract: Contract = eventsLib
+  eventContract: Contract = eventsLib,
+  emitterAddress?: string
 ) {
   const events = receipt.logs;
 
   if (events != undefined) {
     // match name from list of events in eventContract, when found, compute the sigHash
     let sigHash: string | undefined;
-    for (let contractEvents of Object.keys(eventContract.interface.events)) {
-      if (contractEvents.startsWith(name) && contractEvents.charAt(name.length) == '(') {
-        sigHash = keccak256(toUtf8Bytes(contractEvents));
+    for (let contractEvent of Object.keys(eventContract.interface.events)) {
+      if (contractEvent.startsWith(name) && contractEvent.charAt(name.length) == '(') {
+        sigHash = keccak256(toUtf8Bytes(contractEvent));
         break;
       }
     }
@@ -51,6 +52,10 @@ export function matchEvent(
     for (let emittedEvent of events) {
       // If we find one with the correct sighash, check if it is the one we're looking for
       if (emittedEvent.topics[0] == sigHash) {
+        // If an emitter address is passed, validate that this is indeed the correct emitter, if not, continue
+        if (emitterAddress) {
+          if (emittedEvent.address != emitterAddress) continue;
+        }
         const event = eventContract.interface.parseLog(emittedEvent);
         // If there are expected arguments, validate them, otherwise, return here
         if (expectedArgs) {
@@ -106,7 +111,9 @@ export function matchEvent(
     if (invalidParamsButExists) {
       logger.throwError(`Event "${name}" found in logs but with unexpected args`);
     } else {
-      logger.throwError(`Event "${name}" not found in given transaction log`);
+      logger.throwError(
+        `Event "${name}" not found emitted by "${emitterAddress}" in given transaction log`
+      );
     }
   } else {
     logger.throwError('No events were emitted');
