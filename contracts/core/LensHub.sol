@@ -940,7 +940,7 @@ contract LensHub is ILensHub, LensNFTBase, VersionedInitializable, LensMultiStat
         address from,
         address to,
         uint256 tokenId
-    ) internal override {
+    ) internal override whenNotPaused {
         if (_dispatcherByProfile[tokenId] != address(0)) {
             _setDispatcher(tokenId, address(0));
         }

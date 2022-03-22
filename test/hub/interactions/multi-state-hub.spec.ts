@@ -96,6 +96,24 @@ makeSuiteCleanRoom('Multi-State Hub', function () {
 
   context('Paused State', function () {
     context('Scenarios', async function () {
+      it('User should create a profile, governance should pause the hub, transferring the profile should fail', async function () {
+        await expect(
+          lensHub.createProfile({
+            to: userAddress,
+            handle: MOCK_PROFILE_HANDLE,
+            imageURI: MOCK_PROFILE_URI,
+            followModule: ZERO_ADDRESS,
+            followModuleData: [],
+            followNFTURI: MOCK_FOLLOW_NFT_URI,
+          })
+        ).to.not.be.reverted;
+
+        await expect(lensHub.connect(governance).setState(ProtocolState.Paused)).to.not.be.reverted;
+
+        await expect(
+          lensHub.transferFrom(userAddress, userTwoAddress, FIRST_PROFILE_ID)
+        ).to.be.revertedWith(ERRORS.PAUSED);
+      });
       it('Governance should pause the hub, profile creation should fail, then governance unpauses the hub and profile creation should work', async function () {
         await expect(lensHub.connect(governance).setState(ProtocolState.Paused)).to.not.be.reverted;
 
