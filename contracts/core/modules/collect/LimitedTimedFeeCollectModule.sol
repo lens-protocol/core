@@ -162,7 +162,8 @@ contract LimitedTimedFeeCollectModule is ICollectModule, FeeModuleBase, FollowVa
         uint256 adjustedAmount = amount - treasuryAmount;
 
         IERC20(currency).safeTransferFrom(collector, recipient, adjustedAmount);
-        IERC20(currency).safeTransferFrom(collector, treasury, treasuryAmount);
+        if (treasuryAmount > 0)
+            IERC20(currency).safeTransferFrom(collector, treasury, treasuryAmount);
     }
 
     function _processCollectWithReferral(
@@ -202,6 +203,7 @@ contract LimitedTimedFeeCollectModule is ICollectModule, FeeModuleBase, FollowVa
         address recipient = _dataByPublicationByProfile[profileId][pubId].recipient;
 
         IERC20(currency).safeTransferFrom(collector, recipient, adjustedAmount);
-        IERC20(currency).safeTransferFrom(collector, treasury, treasuryAmount);
+        if (treasuryAmount > 0)
+            IERC20(currency).safeTransferFrom(collector, treasury, treasuryAmount);
     }
 }
