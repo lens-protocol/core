@@ -28,6 +28,7 @@ contract CollectNFT is ICollectNFT, LensNFTBase {
     // to initialize the hub proxy at construction.
     constructor(address hub) {
         HUB = hub;
+        _initialized = true;
     }
 
     /// @inheritdoc ICollectNFT

@@ -46,6 +46,7 @@ contract FollowNFT is LensNFTBase, IFollowNFT {
     // We create the FollowNFT with the pre-computed HUB address before deploying the hub.
     constructor(address hub) {
         HUB = hub;
+        _initialized = true;
     }
 
     /// @inheritdoc IFollowNFT
