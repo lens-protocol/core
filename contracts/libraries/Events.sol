@@ -476,7 +476,7 @@ library Events {
     );
 
     /**
-     * @dev Emitted when the user wants to enable or disable the follow.
+     * @dev Emitted when the user wants to enable or disable follows in the `LensPeripheryDataProvider`.
      *
      * @param owner The profile owner who executed the toggle.
      * @param profileIds The array of token IDs of the profiles each followNFT is associated with.
@@ -490,4 +490,18 @@ library Events {
         uint256 timestamp
     );
 
+    /**
+     * @dev Emitted when the metadata associated with a profile and user is set in the `LensPeripheryDataProvider`.
+     *
+     * @param user The user the metadata is set for.
+     * @param profileId The profile ID the metadata is set for.
+     * @param metadata The metadata set for the profile and user.
+     * @param timestamp The current block timestamp.
+     */
+    event ProfileMetadataSet(
+        address indexed user,
+        uint256 indexed profileId,
+        string metadata,
+        uint256 timestamp
+    );
 }
