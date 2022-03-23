@@ -404,7 +404,10 @@ library PublishingLogic {
             if (
                 (byteHandle[i] < '0' ||
                     byteHandle[i] > 'z' ||
-                    (byteHandle[i] > '9' && byteHandle[i] < 'a')) && byteHandle[i] != '.'
+                    (byteHandle[i] > '9' && byteHandle[i] < 'a')) &&
+                byteHandle[i] != '.' &&
+                byteHandle[i] != '-' &&
+                byteHandle[i] != '_'
             ) revert Errors.HandleContainsInvalidCharacters();
         }
     }
