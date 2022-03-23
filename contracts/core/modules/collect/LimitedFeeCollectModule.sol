@@ -109,7 +109,7 @@ contract LimitedFeeCollectModule is ICollectModule, FeeModuleBase, FollowValidat
         ) {
             revert Errors.MintLimitExceeded();
         } else {
-            _dataByPublicationByProfile[profileId][pubId].currentCollects++;
+            ++_dataByPublicationByProfile[profileId][pubId].currentCollects;
             if (referrerProfileId == profileId) {
                 _processCollect(collector, profileId, pubId, data);
             } else {

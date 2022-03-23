@@ -120,7 +120,7 @@ contract LimitedTimedFeeCollectModule is ICollectModule, FeeModuleBase, FollowVa
         ) {
             revert Errors.MintLimitExceeded();
         } else {
-            _dataByPublicationByProfile[profileId][pubId].currentCollects++;
+            ++_dataByPublicationByProfile[profileId][pubId].currentCollects;
             if (referrerProfileId == profileId) {
                 _processCollect(collector, profileId, pubId, data);
             } else {

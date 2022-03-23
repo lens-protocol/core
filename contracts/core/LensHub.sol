@@ -886,7 +886,7 @@ contract LensHub is ILensHub, LensNFTBase, VersionedInitializable, LensMultiStat
             _collectModuleWhitelisted,
             _referenceModuleWhitelisted
         );
-        _profileById[vars.profileId].pubCount++;
+        ++_profileById[vars.profileId].pubCount;
     }
 
     function _createMirror(
