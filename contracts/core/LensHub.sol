@@ -44,14 +44,6 @@ contract LensHub is ILensHub, LensNFTBase, VersionedInitializable, LensMultiStat
     }
 
     /**
-     * @dev This modifier reverts if the caller is not a whitelisted profile creator address.
-     */
-    modifier onlyWhitelistedProfileCreator() {
-        _validateCallerIsWhitelistedProfileCreator();
-        _;
-    }
-
-    /**
      * @dev The constructor sets the immutable follow & collect NFT implementations.
      *
      * @param followNFTImpl The follow NFT implementation address.
@@ -146,8 +138,8 @@ contract LensHub is ILensHub, LensNFTBase, VersionedInitializable, LensMultiStat
         external
         override
         whenNotPaused
-        onlyWhitelistedProfileCreator
     {
+        if (!_profileCreatorWhitelisted[msg.sender]) revert Errors.ProfileCreatorNotWhitelisted();
         uint256 profileId = ++_profileCounter;
         _mint(vars.to, profileId);
         PublishingLogic.createProfile(
@@ -963,10 +955,6 @@ contract LensHub is ILensHub, LensNFTBase, VersionedInitializable, LensMultiStat
 
     function _validateCallerIsGovernance() internal view {
         if (msg.sender != _governance) revert Errors.NotGovernance();
-    }
-
-    function _validateCallerIsWhitelistedProfileCreator() internal view {
-        if (!_profileCreatorWhitelisted[msg.sender]) revert Errors.ProfileCreatorNotWhitelisted();
     }
 
     function getRevision() internal pure virtual override returns (uint256) {
