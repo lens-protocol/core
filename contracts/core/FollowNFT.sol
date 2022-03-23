@@ -105,39 +105,41 @@ contract FollowNFT is LensNFTBase, IFollowNFT {
         override
         returns (uint256)
     {
-        if (blockNumber > block.number) revert Errors.BlockNumberInvalid();
+        unchecked {
+            if (blockNumber > block.number) revert Errors.BlockNumberInvalid();
 
-        uint256 snapshotCount = _snapshotCount[user];
+            uint256 snapshotCount = _snapshotCount[user];
 
-        if (snapshotCount == 0) {
-            return 0; // Returning zero since this means the user never delegated and has no power
-        }
-
-        uint256 lower = 0;
-        uint256 upper = snapshotCount - 1;
-
-        // First check most recent balance
-        if (_snapshots[user][upper].blockNumber <= blockNumber) {
-            return _snapshots[user][upper].value;
-        }
-
-        // Next check implicit zero balance
-        if (_snapshots[user][lower].blockNumber > blockNumber) {
-            return 0;
-        }
-
-        while (upper > lower) {
-            uint256 center = upper - (upper - lower) / 2;
-            Snapshot memory snapshot = _snapshots[user][center];
-            if (snapshot.blockNumber == blockNumber) {
-                return snapshot.value;
-            } else if (snapshot.blockNumber < blockNumber) {
-                lower = center;
-            } else {
-                upper = center - 1;
+            if (snapshotCount == 0) {
+                return 0; // Returning zero since this means the user never delegated and has no power
             }
+
+            uint256 lower = 0;
+            uint256 upper = snapshotCount - 1;
+
+            // First check most recent balance
+            if (_snapshots[user][upper].blockNumber <= blockNumber) {
+                return _snapshots[user][upper].value;
+            }
+
+            // Next check implicit zero balance
+            if (_snapshots[user][lower].blockNumber > blockNumber) {
+                return 0;
+            }
+
+            while (upper > lower) {
+                uint256 center = upper - (upper - lower) / 2;
+                Snapshot memory snapshot = _snapshots[user][center];
+                if (snapshot.blockNumber == blockNumber) {
+                    return snapshot.value;
+                } else if (snapshot.blockNumber < blockNumber) {
+                    lower = center;
+                } else {
+                    upper = center - 1;
+                }
+            }
+            return _snapshots[user][lower].value;
         }
-        return _snapshots[user][lower].value;
     }
 
     /// @inheritdoc IFollowNFT
@@ -147,39 +149,41 @@ contract FollowNFT is LensNFTBase, IFollowNFT {
         override
         returns (uint256)
     {
-        if (blockNumber > block.number) revert Errors.BlockNumberInvalid();
+        unchecked {
+            if (blockNumber > block.number) revert Errors.BlockNumberInvalid();
 
-        uint256 snapshotCount = _delSupplySnapshotCount;
+            uint256 snapshotCount = _delSupplySnapshotCount;
 
-        if (snapshotCount == 0) {
-            return 0; // Returning zero since this means a delegation has never occurred
-        }
-
-        uint256 lower = 0;
-        uint256 upper = snapshotCount - 1;
-
-        // First check most recent delegated supply
-        if (_delSupplySnapshots[upper].blockNumber <= blockNumber) {
-            return _delSupplySnapshots[upper].value;
-        }
-
-        // Next check implicit zero balance
-        if (_delSupplySnapshots[lower].blockNumber > blockNumber) {
-            return 0;
-        }
-
-        while (upper > lower) {
-            uint256 center = upper - (upper - lower) / 2;
-            Snapshot memory snapshot = _delSupplySnapshots[center];
-            if (snapshot.blockNumber == blockNumber) {
-                return snapshot.value;
-            } else if (snapshot.blockNumber < blockNumber) {
-                lower = center;
-            } else {
-                upper = center - 1;
+            if (snapshotCount == 0) {
+                return 0; // Returning zero since this means a delegation has never occurred
             }
+
+            uint256 lower = 0;
+            uint256 upper = snapshotCount - 1;
+
+            // First check most recent delegated supply
+            if (_delSupplySnapshots[upper].blockNumber <= blockNumber) {
+                return _delSupplySnapshots[upper].value;
+            }
+
+            // Next check implicit zero balance
+            if (_delSupplySnapshots[lower].blockNumber > blockNumber) {
+                return 0;
+            }
+
+            while (upper > lower) {
+                uint256 center = upper - (upper - lower) / 2;
+                Snapshot memory snapshot = _delSupplySnapshots[center];
+                if (snapshot.blockNumber == blockNumber) {
+                    return snapshot.value;
+                } else if (snapshot.blockNumber < blockNumber) {
+                    lower = center;
+                } else {
+                    upper = center - 1;
+                }
+            }
+            return _delSupplySnapshots[lower].value;
         }
-        return _delSupplySnapshots[lower].value;
     }
 
     /**
