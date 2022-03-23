@@ -184,6 +184,19 @@ makeSuiteCleanRoom('Profile Creation', function () {
         expect(tokenData.mintTimestamp).to.eq(timestamp);
       });
 
+      it('User should be able to create a profile with a handle including "-" and "_" characters', async function () {
+        await expect(
+          lensHub.createProfile({
+            to: userAddress,
+            handle: 'morse--__-_--code',
+            imageURI: MOCK_PROFILE_URI,
+            followModule: ZERO_ADDRESS,
+            followModuleData: [],
+            followNFTURI: MOCK_FOLLOW_NFT_URI,
+          })
+        ).to.not.be.reverted;
+      });
+
       it('User should be able to create a profile with a handle 16 bytes long, then fail to create with the same handle, and create again with a different handle', async function () {
         await expect(
           lensHub.createProfile({
