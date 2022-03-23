@@ -125,7 +125,7 @@ abstract contract LensNFTBase is ILensNFTBase, ERC721Enumerable {
     function _validateRecoveredAddress(
         bytes32 digest,
         address expectedAddress,
-        DataTypes.EIP712Signature memory sig
+        DataTypes.EIP712Signature calldata sig
     ) internal view {
         if (sig.deadline < block.timestamp) revert Errors.SignatureExpired();
         address recoveredAddress = ecrecover(digest, sig.v, sig.r, sig.s);
