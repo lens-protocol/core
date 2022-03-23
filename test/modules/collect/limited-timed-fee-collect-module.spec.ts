@@ -206,6 +206,73 @@ makeSuiteCleanRoom('Limited Timed Fee Collect Module', function () {
         );
       });
 
+      it('UserTwo should mirror the original post, governance should set the treasury fee BPS to zero, userTwo collecting their mirror should not emit a transfer event to the treasury', async function () {
+        const secondProfileId = FIRST_PROFILE_ID + 1;
+        await expect(
+          lensHub.connect(userTwo).createProfile({
+            to: userTwoAddress,
+            handle: 'usertwo',
+            imageURI: MOCK_PROFILE_URI,
+            followModule: ZERO_ADDRESS,
+            followModuleData: [],
+            followNFTURI: MOCK_FOLLOW_NFT_URI,
+          })
+        ).to.not.be.reverted;
+        await expect(
+          lensHub.connect(userTwo).mirror({
+            profileId: secondProfileId,
+            profileIdPointed: FIRST_PROFILE_ID,
+            pubIdPointed: 1,
+            referenceModule: ZERO_ADDRESS,
+            referenceModuleData: [],
+          })
+        ).to.not.be.reverted;
+
+        await expect(moduleGlobals.connect(governance).setTreasuryFee(0)).to.not.be.reverted;
+        const data = abiCoder.encode(
+          ['address', 'uint256'],
+          [currency.address, DEFAULT_COLLECT_PRICE]
+        );
+        await expect(lensHub.connect(userTwo).follow([FIRST_PROFILE_ID], [[]])).to.not.be.reverted;
+
+        await expect(currency.mint(userTwoAddress, MAX_UINT256)).to.not.be.reverted;
+        await expect(
+          currency.connect(userTwo).approve(limitedTimedFeeCollectModule.address, MAX_UINT256)
+        ).to.not.be.reverted;
+
+        const tx = lensHub.connect(userTwo).collect(secondProfileId, 1, data);
+        const receipt = await waitForTx(tx);
+
+        let currencyEventCount = 0;
+        for (let log of receipt.logs) {
+          if (log.address == currency.address) {
+            currencyEventCount++;
+          }
+        }
+        expect(currencyEventCount).to.eq(2);
+
+        const expectedReferralAmount = BigNumber.from(DEFAULT_COLLECT_PRICE)
+          .mul(REFERRAL_FEE_BPS)
+          .div(BPS_MAX);
+        const amount = DEFAULT_COLLECT_PRICE.sub(expectedReferralAmount);
+
+        matchEvent(
+          receipt,
+          'Transfer',
+          [userTwoAddress, userAddress, amount],
+          currency,
+          currency.address
+        );
+
+        matchEvent(
+          receipt,
+          'Transfer',
+          [userTwoAddress, userTwoAddress, expectedReferralAmount],
+          currency,
+          currency.address
+        );
+      });
+
       it('UserTwo should fail to collect without following', async function () {
         const data = abiCoder.encode(
           ['address', 'uint256'],
