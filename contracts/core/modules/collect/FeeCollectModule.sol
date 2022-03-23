@@ -69,7 +69,7 @@ contract FeeCollectModule is ICollectModule, FeeModuleBase, FollowValidationModu
             !_currencyWhitelisted(currency) ||
             recipient == address(0) ||
             referralFee > BPS_MAX ||
-            amount < BPS_MAX
+            amount == 0
         ) revert Errors.InitParamsInvalid();
 
         _dataByPublicationByProfile[profileId][pubId].referralFee = referralFee;

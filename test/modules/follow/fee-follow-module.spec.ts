@@ -76,10 +76,10 @@ makeSuiteCleanRoom('Fee Follow Module', function () {
         ).to.be.revertedWith(ERRORS.INIT_PARAMS_INVALID);
       });
 
-      it('user should fail to create a profile with fee follow module using amount lower than max BPS', async function () {
+      it('user should fail to create a profile with fee follow module using zero amount', async function () {
         const followModuleData = abiCoder.encode(
           ['uint256', 'address', 'address'],
-          [9999, currency.address, userAddress]
+          [0, currency.address, userAddress]
         );
 
         await expect(
