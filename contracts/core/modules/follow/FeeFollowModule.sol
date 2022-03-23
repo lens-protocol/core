@@ -87,7 +87,8 @@ contract FeeFollowModule is IFollowModule, FeeModuleBase, FollowValidatorFollowM
         uint256 adjustedAmount = amount - treasuryAmount;
 
         IERC20(currency).safeTransferFrom(follower, recipient, adjustedAmount);
-        IERC20(currency).safeTransferFrom(follower, treasury, treasuryAmount);
+        if (treasuryAmount > 0)
+            IERC20(currency).safeTransferFrom(follower, treasury, treasuryAmount);
     }
 
     /**
