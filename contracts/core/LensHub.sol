@@ -913,14 +913,14 @@ contract LensHub is ILensHub, LensNFTBase, VersionedInitializable, LensMultiStat
         emit Events.DispatcherSet(profileId, dispatcher, block.timestamp);
     }
 
-    function _setProfileImageURI(uint256 profileId, string memory imageURI) internal {
+    function _setProfileImageURI(uint256 profileId, string calldata imageURI) internal {
         if (bytes(imageURI).length > Constants.MAX_PROFILE_IMAGE_URI_LENGTH)
             revert Errors.ProfileImageURILengthInvalid();
         _profileById[profileId].imageURI = imageURI;
         emit Events.ProfileImageURISet(profileId, imageURI, block.timestamp);
     }
 
-    function _setFollowNFTURI(uint256 profileId, string memory followNFTURI) internal {
+    function _setFollowNFTURI(uint256 profileId, string calldata followNFTURI) internal {
         _profileById[profileId].followNFTURI = followNFTURI;
         emit Events.FollowNFTURISet(profileId, followNFTURI, block.timestamp);
     }
