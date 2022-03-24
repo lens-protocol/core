@@ -49,8 +49,10 @@ contract CollectNFT is ICollectNFT, LensNFTBase {
     /// @inheritdoc ICollectNFT
     function mint(address to) external override {
         if (msg.sender != HUB) revert Errors.NotHub();
-        uint256 tokenId = ++_tokenIdCounter;
-        _mint(to, tokenId);
+        unchecked {
+            uint256 tokenId = ++_tokenIdCounter;
+            _mint(to, tokenId);
+        }
     }
 
     /// @inheritdoc ICollectNFT

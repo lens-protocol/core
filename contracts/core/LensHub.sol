@@ -142,15 +142,17 @@ contract LensHub is ILensHub, LensNFTBase, VersionedInitializable, LensMultiStat
         whenNotPaused
     {
         if (!_profileCreatorWhitelisted[msg.sender]) revert Errors.ProfileCreatorNotWhitelisted();
-        uint256 profileId = ++_profileCounter;
-        _mint(vars.to, profileId);
-        PublishingLogic.createProfile(
-            vars,
-            profileId,
-            _profileIdByHandleHash,
-            _profileById,
-            _followModuleWhitelisted
-        );
+        unchecked {
+            uint256 profileId = ++_profileCounter;
+            _mint(vars.to, profileId);
+            PublishingLogic.createProfile(
+                vars,
+                profileId,
+                _profileIdByHandleHash,
+                _profileById,
+                _followModuleWhitelisted
+            );
+        }
     }
 
     /// @inheritdoc ILensHub
