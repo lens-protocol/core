@@ -50,6 +50,8 @@ contract LensHub is ILensHub, LensNFTBase, VersionedInitializable, LensMultiStat
      * @param collectNFTImpl The collect NFT implementation address.
      */
     constructor(address followNFTImpl, address collectNFTImpl) {
+        if (followNFTImpl == address(0)) revert Errors.InitParamsInvalid();
+        if (collectNFTImpl == address(0)) revert Errors.InitParamsInvalid();
         FOLLOW_NFT_IMPL = followNFTImpl;
         COLLECT_NFT_IMPL = collectNFTImpl;
     }
