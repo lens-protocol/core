@@ -400,7 +400,8 @@ library PublishingLogic {
         if (byteHandle.length == 0 || byteHandle.length > Constants.MAX_HANDLE_LENGTH)
             revert Errors.HandleLengthInvalid();
 
-        for (uint256 i = 0; i < byteHandle.length; ) {
+        uint256 byteHandleLength = byteHandle.length;
+        for (uint256 i = 0; i < byteHandleLength; ) {
             if (
                 (byteHandle[i] < '0' ||
                     byteHandle[i] > 'z' ||

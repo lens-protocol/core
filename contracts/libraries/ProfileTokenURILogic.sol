@@ -147,7 +147,8 @@ library ProfileTokenURILogic {
         if (imageURIBytes.length == 0) {
             return false;
         }
-        for (uint256 i = 0; i < imageURIBytes.length; ) {
+        uint256 imageURIBytesLength = imageURIBytes.length;
+        for (uint256 i = 0; i < imageURIBytesLength; ) {
             if (imageURIBytes[i] == '"') {
                 // Avoids embedding a user provided imageURI containing double-quotes to prevent injection attacks
                 return false;

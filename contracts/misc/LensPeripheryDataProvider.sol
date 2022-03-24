@@ -79,7 +79,8 @@ contract LensPeripheryDataProvider {
         bool[] calldata enables
     ) internal {
         if (profileIds.length != enables.length) revert Errors.ArrayMismatch();
-        for (uint256 i = 0; i < profileIds.length; ) {
+        uint256 profileIdsLength = profileIds.length;
+        for (uint256 i = 0; i < profileIdsLength; ) {
             address followNFT = HUB.getFollowNFT(profileIds[i]);
             if (followNFT == address(0)) revert Errors.FollowInvalid();
             if (!IERC721Time(address(HUB)).exists(profileIds[i])) revert Errors.TokenDoesNotExist();
