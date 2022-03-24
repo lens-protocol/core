@@ -489,5 +489,4 @@ library Events {
         bool[] enabled,
         uint256 timestamp
     );
-
 }

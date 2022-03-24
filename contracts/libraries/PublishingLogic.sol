@@ -400,12 +400,15 @@ library PublishingLogic {
         if (byteHandle.length == 0 || byteHandle.length > Constants.MAX_HANDLE_LENGTH)
             revert Errors.HandleLengthInvalid();
 
-        for (uint256 i = 0; i < byteHandle.length; ++i) {
+        for (uint256 i = 0; i < byteHandle.length; ) {
             if (
                 (byteHandle[i] < '0' ||
                     byteHandle[i] > 'z' ||
                     (byteHandle[i] > '9' && byteHandle[i] < 'a')) && byteHandle[i] != '.'
             ) revert Errors.HandleContainsInvalidCharacters();
+            unchecked {
+                ++i;
+            }
         }
     }
 }
