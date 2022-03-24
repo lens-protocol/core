@@ -42,6 +42,7 @@ contract FeeFollowModule is IFollowModule, FeeModuleBase, FollowValidatorFollowM
     /**
      * @notice This follow module levies a fee on follows.
      *
+     * @param profileId The profile ID of the profile to initialize this module for.
      * @param data The arbitrary data parameter, decoded into:
      *      address currency: The currency address, must be internally whitelisted.
      *      uint256 amount: The currency total amount to levy.

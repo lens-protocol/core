@@ -52,6 +52,7 @@ contract ApprovalFollowModule is IFollowModule, FollowValidatorFollowModuleBase 
     /**
      * @notice This follow module works on custom profile owner approvals.
      *
+     * @param profileId The profile ID of the profile to initialize this module for.
      * @param data The arbitrary data parameter, decoded into:
      *      address[] addresses: The array of addresses to approve initially.
      *
@@ -110,7 +111,7 @@ contract ApprovalFollowModule is IFollowModule, FollowValidatorFollowModuleBase 
      * @param profileId The token ID of the profile to query approval with.
      * @param toCheck The address to query approval for.
      *
-     * @return
+     * @return bool Whether the address is approved or not.
      */
     function isApproved(
         address profileOwner,
@@ -126,6 +127,8 @@ contract ApprovalFollowModule is IFollowModule, FollowValidatorFollowModuleBase 
      * @param profileOwner The profile owner of the profile to query the approvals with.
      * @param profileId The token ID of the profile to query approvals with.
      * @param toCheck The address array to query approvals for.
+     *
+     * @return bool[] Whether the addresses are approved or not.
      */
     function isApprovedArray(
         address profileOwner,

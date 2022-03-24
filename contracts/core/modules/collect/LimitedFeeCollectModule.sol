@@ -50,6 +50,8 @@ contract LimitedFeeCollectModule is ICollectModule, FeeModuleBase, FollowValidat
     /**
      * @notice This collect module levies a fee on collects and supports referrals. Thus, we need to decode data.
      *
+     * @param profileId The profile ID of the publication to initialize this module for's publishing profile.
+     * @param pubId The publication ID of the publication to initialize this module for.
      * @param data The arbitrary data parameter, decoded into:
      *      uint256 collectLimit: The maximum amount of collects.
      *      uint256 amount: The currency total amount to levy.

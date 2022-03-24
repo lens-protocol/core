@@ -474,6 +474,8 @@ interface ILensHub {
      * @notice Returns the full profile struct associated with a given profile token ID.
      *
      * @param profileId The token ID of the profile to query.
+     *
+     * @return DataTypes.ProfileStruct The profile struct of the given profile.
      */
     function getProfile(uint256 profileId) external view returns (DataTypes.ProfileStruct memory);
 
