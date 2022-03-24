@@ -230,7 +230,8 @@ contract FollowNFT is LensNFTBase, IFollowNFT {
         uint256 amount
     ) internal {
         unchecked {
-            if (from != address(0)) {
+            bool fromZero = from == address(0);
+            if (!fromZero) {
                 uint256 fromSnapshotCount = _snapshotCount[from];
 
                 // Underflow is impossible since, if from != address(0), then a delegation must have occurred (at least 1 snapshot)
@@ -243,7 +244,7 @@ contract FollowNFT is LensNFTBase, IFollowNFT {
 
             if (to != address(0)) {
                 // if from == address(0) then this is an initial delegation (add amount to supply)
-                if (from == address(0)) {
+                if (fromZero) {
                     // It is expected behavior that the `previousDelSupply` underflows upon the first delegation,
                     // returning the expected value of zero
                     uint256 delSupplySnapshotCount = _delSupplySnapshotCount;
@@ -263,7 +264,7 @@ contract FollowNFT is LensNFTBase, IFollowNFT {
             } else {
                 // If from != address(0) then this is removing a delegation, otherwise we're dealing with a
                 // non-delegated burn of tokens and don't need to take any action
-                if (from != address(0)) {
+                if (!fromZero) {
                     // Upon removing delegation (from != address(0) && to == address(0)), supply calculations cannot
                     // underflow because if from != address(0), then a delegation must have previously occurred, so
                     // the snapshot count must be >= 1 and the previous delegated supply must be >= amount
