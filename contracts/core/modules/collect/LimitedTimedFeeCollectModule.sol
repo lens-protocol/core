@@ -71,31 +71,33 @@ contract LimitedTimedFeeCollectModule is ICollectModule, FeeModuleBase, FollowVa
         uint256 pubId,
         bytes calldata data
     ) external override onlyHub returns (bytes memory) {
-        uint40 endTimestamp = uint40(block.timestamp) + ONE_DAY;
+        unchecked {
+            uint40 endTimestamp = uint40(block.timestamp) + ONE_DAY;
 
-        (
-            uint256 collectLimit,
-            uint256 amount,
-            address currency,
-            address recipient,
-            uint16 referralFee
-        ) = abi.decode(data, (uint256, uint256, address, address, uint16));
-        if (
-            collectLimit == 0 ||
-            !_currencyWhitelisted(currency) ||
-            recipient == address(0) ||
-            referralFee > BPS_MAX ||
-            amount == 0
-        ) revert Errors.InitParamsInvalid();
+            (
+                uint256 collectLimit,
+                uint256 amount,
+                address currency,
+                address recipient,
+                uint16 referralFee
+            ) = abi.decode(data, (uint256, uint256, address, address, uint16));
+            if (
+                collectLimit == 0 ||
+                !_currencyWhitelisted(currency) ||
+                recipient == address(0) ||
+                referralFee > BPS_MAX ||
+                amount == 0
+            ) revert Errors.InitParamsInvalid();
 
-        _dataByPublicationByProfile[profileId][pubId].collectLimit = collectLimit;
-        _dataByPublicationByProfile[profileId][pubId].amount = amount;
-        _dataByPublicationByProfile[profileId][pubId].currency = currency;
-        _dataByPublicationByProfile[profileId][pubId].recipient = recipient;
-        _dataByPublicationByProfile[profileId][pubId].referralFee = referralFee;
-        _dataByPublicationByProfile[profileId][pubId].endTimestamp = endTimestamp;
+            _dataByPublicationByProfile[profileId][pubId].collectLimit = collectLimit;
+            _dataByPublicationByProfile[profileId][pubId].amount = amount;
+            _dataByPublicationByProfile[profileId][pubId].currency = currency;
+            _dataByPublicationByProfile[profileId][pubId].recipient = recipient;
+            _dataByPublicationByProfile[profileId][pubId].referralFee = referralFee;
+            _dataByPublicationByProfile[profileId][pubId].endTimestamp = endTimestamp;
 
-        return abi.encode(collectLimit, amount, currency, recipient, referralFee, endTimestamp);
+            return abi.encode(collectLimit, amount, currency, recipient, referralFee, endTimestamp);
+        }
     }
 
     /**

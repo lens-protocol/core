@@ -70,26 +70,28 @@ contract TimedFeeCollectModule is ICollectModule, FeeModuleBase, FollowValidatio
         uint256 pubId,
         bytes calldata data
     ) external override onlyHub returns (bytes memory) {
-        uint40 endTimestamp = uint40(block.timestamp) + ONE_DAY;
+        unchecked {
+            uint40 endTimestamp = uint40(block.timestamp) + ONE_DAY;
 
-        (uint256 amount, address currency, address recipient, uint16 referralFee) = abi.decode(
-            data,
-            (uint256, address, address, uint16)
-        );
-        if (
-            !_currencyWhitelisted(currency) ||
-            recipient == address(0) ||
-            referralFee > BPS_MAX ||
-            amount == 0
-        ) revert Errors.InitParamsInvalid();
+            (uint256 amount, address currency, address recipient, uint16 referralFee) = abi.decode(
+                data,
+                (uint256, address, address, uint16)
+            );
+            if (
+                !_currencyWhitelisted(currency) ||
+                recipient == address(0) ||
+                referralFee > BPS_MAX ||
+                amount == 0
+            ) revert Errors.InitParamsInvalid();
 
-        _dataByPublicationByProfile[profileId][pubId].amount = amount;
-        _dataByPublicationByProfile[profileId][pubId].currency = currency;
-        _dataByPublicationByProfile[profileId][pubId].recipient = recipient;
-        _dataByPublicationByProfile[profileId][pubId].referralFee = referralFee;
-        _dataByPublicationByProfile[profileId][pubId].endTimestamp = endTimestamp;
+            _dataByPublicationByProfile[profileId][pubId].amount = amount;
+            _dataByPublicationByProfile[profileId][pubId].currency = currency;
+            _dataByPublicationByProfile[profileId][pubId].recipient = recipient;
+            _dataByPublicationByProfile[profileId][pubId].referralFee = referralFee;
+            _dataByPublicationByProfile[profileId][pubId].endTimestamp = endTimestamp;
 
-        return abi.encode(amount, currency, recipient, referralFee, endTimestamp);
+            return abi.encode(amount, currency, recipient, referralFee, endTimestamp);
+        }
     }
 
     /**
