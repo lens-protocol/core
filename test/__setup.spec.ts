@@ -15,6 +15,10 @@ import {
   EmptyCollectModule__factory,
   Events,
   Events__factory,
+  MockOffsetHelper,
+  MockOffsetHelper__factory,
+  CarbonOffsetFollowModule,
+  CarbonOffsetFollowModule__factory,
   FeeCollectModule,
   FeeCollectModule__factory,
   FeeFollowModule,
@@ -93,6 +97,7 @@ export let testWallet: Wallet;
 export let lensHubImpl: LensHub;
 export let lensHub: LensHub;
 export let currency: Currency;
+export let bctToken: Currency;
 export let abiCoder: AbiCoder;
 export let mockModuleData: BytesLike;
 export let hubLibs: LensHubLibraryAddresses;
@@ -114,6 +119,8 @@ export let limitedTimedFeeCollectModule: LimitedTimedFeeCollectModule;
 // Follow
 export let approvalFollowModule: ApprovalFollowModule;
 export let feeFollowModule: FeeFollowModule;
+export let mockOffsetHelper: MockOffsetHelper;
+export let carbonOffsetFollowModule: CarbonOffsetFollowModule;
 export let mockFollowModule: MockFollowModule;
 
 // Reference
@@ -183,12 +190,12 @@ before(async function () {
     collectNFTImpl.address
   );
 
-  let data = lensHubImpl.interface.encodeFunctionData('initialize', [
+  const data = lensHubImpl.interface.encodeFunctionData('initialize', [
     LENS_HUB_NFT_NAME,
     LENS_HUB_NFT_SYMBOL,
     governanceAddress,
   ]);
-  let proxy = await new TransparentUpgradeableProxy__factory(deployer).deploy(
+  const proxy = await new TransparentUpgradeableProxy__factory(deployer).deploy(
     lensHubImpl.address,
     deployerAddress,
     data
@@ -204,6 +211,7 @@ before(async function () {
 
   // Currency
   currency = await new Currency__factory(deployer).deploy();
+  bctToken = await new Currency__factory(deployer).deploy();
 
   // Modules
   emptyCollectModule = await new EmptyCollectModule__factory(deployer).deploy(lensHub.address);
@@ -229,6 +237,18 @@ before(async function () {
     lensHub.address,
     moduleGlobals.address
   );
+
+  mockOffsetHelper = await new MockOffsetHelper__factory(deployer).deploy(
+    ['USDC', 'BCT'],
+    [currency.address, bctToken.address]
+  );
+
+  carbonOffsetFollowModule = await new CarbonOffsetFollowModule__factory(deployer).deploy(
+    lensHub.address,
+    moduleGlobals.address,
+    mockOffsetHelper.address
+  );
+
   approvalFollowModule = await new ApprovalFollowModule__factory(deployer).deploy(lensHub.address);
   followerOnlyReferenceModule = await new FollowerOnlyReferenceModule__factory(deployer).deploy(
     lensHub.address

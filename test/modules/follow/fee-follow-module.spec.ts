@@ -128,7 +128,7 @@ makeSuiteCleanRoom('Fee Follow Module', function () {
         const receipt = await waitForTx(tx);
 
         let currencyEventCount = 0;
-        for (let log of receipt.logs) {
+        for (const log of receipt.logs) {
           if (log.address == currency.address) {
             currencyEventCount++;
           }
