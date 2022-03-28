@@ -167,7 +167,7 @@ makeSuiteCleanRoom('Misc', function () {
       ];
       expect(jsonMetadata.attributes).to.eql(expectedAttributes);
       expect(keccak256(toUtf8Bytes(tokenURI))).to.eq(
-        '0xa2e9967e825705ce8f38931f7d1f88fe63bef6f2f2c52715692f14d42d889b76'
+        '0x043e3fd9d03631bea9bddb148f76bb9cff39a8d5d7ce20e5b3b88ea2ad2b9340'
       );
     });
 

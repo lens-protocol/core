@@ -79,7 +79,7 @@ makeSuiteCleanRoom('Profile URI Functionality', function () {
         ];
         expect(jsonMetadata.attributes).to.eql(expectedAttributes);
         expect(keccak256(toUtf8Bytes(tokenURI))).to.eq(
-          '0xe1731460db6ce5fa9f3a9f2bd778a8af49e623dceb531df6b1a5c162b7c2d79a'
+          '0xff9081b5ef994d2a060d3d34247641822fde6356f135f61a136298bb01a22958'
         );
       });
 
@@ -97,7 +97,7 @@ makeSuiteCleanRoom('Profile URI Functionality', function () {
         ];
         expect(jsonMetadata.attributes).to.eql(expectedAttributes);
         expect(keccak256(toUtf8Bytes(tokenURI))).to.eq(
-          '0xa21f2a3aa9300a248d3a7acd3f4ff309291653121df87ffe3be545fa1dbd65e5'
+          '0x925e156f8ef4706b40bf15bbb279a4f1a924ec8c166ebf2136c423b336ca5512'
         );
       });
 
@@ -117,7 +117,7 @@ makeSuiteCleanRoom('Profile URI Functionality', function () {
         ];
         expect(jsonMetadata.attributes).to.eql(expectedAttributes);
         expect(keccak256(toUtf8Bytes(tokenURI))).to.eq(
-          '0xa21f2a3aa9300a248d3a7acd3f4ff309291653121df87ffe3be545fa1dbd65e5'
+          '0x925e156f8ef4706b40bf15bbb279a4f1a924ec8c166ebf2136c423b336ca5512'
         );
       });
 
@@ -202,7 +202,7 @@ makeSuiteCleanRoom('Profile URI Functionality', function () {
         ).to.not.be.reverted;
         const tokenURI = await lensHub.tokenURI(FIRST_PROFILE_ID);
         expect(keccak256(toUtf8Bytes(tokenURI))).to.eq(
-          '0xe1731460db6ce5fa9f3a9f2bd778a8af49e623dceb531df6b1a5c162b7c2d79a'
+          '0xff9081b5ef994d2a060d3d34247641822fde6356f135f61a136298bb01a22958'
         );
       });
 
@@ -439,7 +439,7 @@ makeSuiteCleanRoom('Profile URI Functionality', function () {
         const tokenURIBefore = await lensHub.tokenURI(FIRST_PROFILE_ID);
 
         expect(keccak256(toUtf8Bytes(tokenURIBefore))).to.eq(
-          '0x6ed04aa8ab68b7c5201afb2f9655d8fd483559794ce933b7f2282549ca9e3dba'
+          '0x7b45978b5b829f26417f92602e10fca9ce4b9fba4cdec497b717748d3417d9fb'
         );
 
         await expect(
@@ -461,7 +461,7 @@ makeSuiteCleanRoom('Profile URI Functionality', function () {
         expect(tokenURIBefore).to.not.eq(tokenURIAfter);
 
         expect(keccak256(toUtf8Bytes(tokenURIAfter))).to.eq(
-          '0x2f93fe42168b386790c5615061bcd3c1d8aac1976bddca8cf57eb2bc525541ab'
+          '0xce651a006011fbb3c4998906a4c9677764432e77f8482a278c9f51ae370e72a4'
         );
       });
 
