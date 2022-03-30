@@ -111,7 +111,7 @@ contract ApprovalFollowModule is IFollowModule, FollowValidatorFollowModuleBase 
      * @param profileId The token ID of the profile to query approval with.
      * @param toCheck The address to query approval for.
      *
-     * @return bool Whether the address is approved or not.
+     * @return bool true if the address is approved and false otherwise.
      */
     function isApproved(
         address profileOwner,
@@ -128,7 +128,7 @@ contract ApprovalFollowModule is IFollowModule, FollowValidatorFollowModuleBase 
      * @param profileId The token ID of the profile to query approvals with.
      * @param toCheck The address array to query approvals for.
      *
-     * @return bool[] Whether the addresses are approved or not.
+     * @return bool[] true if the address at the specified index is approved and false otherwise.
      */
     function isApprovedArray(
         address profileOwner,
