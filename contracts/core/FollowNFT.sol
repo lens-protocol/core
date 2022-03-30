@@ -108,15 +108,13 @@ contract FollowNFT is LensNFTBase, IFollowNFT {
         override
         returns (uint256)
     {
-        unchecked {
-            if (blockNumber > block.number) revert Errors.BlockNumberInvalid();
-            uint256 snapshotCount = _snapshotCount[user];
-            if (snapshotCount == 0) {
-                return 0; // Returning zero since this means the user never delegated and has no power
-            }
-
-            return _getSnapshotValueByBlockNumber(_snapshots[user], blockNumber, snapshotCount);
+        if (blockNumber > block.number) revert Errors.BlockNumberInvalid();
+        uint256 snapshotCount = _snapshotCount[user];
+        if (snapshotCount == 0) {
+            return 0; // Returning zero since this means the user never delegated and has no power
         }
+
+        return _getSnapshotValueByBlockNumber(_snapshots[user], blockNumber, snapshotCount);
     }
 
     /// @inheritdoc IFollowNFT
@@ -126,15 +124,13 @@ contract FollowNFT is LensNFTBase, IFollowNFT {
         override
         returns (uint256)
     {
-        unchecked {
-            if (blockNumber > block.number) revert Errors.BlockNumberInvalid();
-            uint256 snapshotCount = _delSupplySnapshotCount;
-            if (snapshotCount == 0) {
-                return 0; // Returning zero since this means a delegation has never occurred
-            }
-
-            return _getSnapshotValueByBlockNumber(_delSupplySnapshots, blockNumber, snapshotCount);
+        if (blockNumber > block.number) revert Errors.BlockNumberInvalid();
+        uint256 snapshotCount = _delSupplySnapshotCount;
+        if (snapshotCount == 0) {
+            return 0; // Returning zero since this means a delegation has never occurred
         }
+
+        return _getSnapshotValueByBlockNumber(_delSupplySnapshots, blockNumber, snapshotCount);
     }
 
     function _getSnapshotValueByBlockNumber(
