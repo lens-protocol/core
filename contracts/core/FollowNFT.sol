@@ -110,10 +110,7 @@ contract FollowNFT is LensNFTBase, IFollowNFT {
     {
         if (blockNumber > block.number) revert Errors.BlockNumberInvalid();
         uint256 snapshotCount = _snapshotCount[user];
-        if (snapshotCount == 0) {
-            return 0; // Returning zero since this means the user never delegated and has no power
-        }
-
+        if (snapshotCount == 0) return 0; // Returning zero since this means the user never delegated and has no power
         return _getSnapshotValueByBlockNumber(_snapshots[user], blockNumber, snapshotCount);
     }
 
@@ -126,10 +123,7 @@ contract FollowNFT is LensNFTBase, IFollowNFT {
     {
         if (blockNumber > block.number) revert Errors.BlockNumberInvalid();
         uint256 snapshotCount = _delSupplySnapshotCount;
-        if (snapshotCount == 0) {
-            return 0; // Returning zero since this means a delegation has never occurred
-        }
-
+        if (snapshotCount == 0) return 0; // Returning zero since this means a delegation has never occurred
         return _getSnapshotValueByBlockNumber(_delSupplySnapshots, blockNumber, snapshotCount);
     }
 
@@ -143,14 +137,10 @@ contract FollowNFT is LensNFTBase, IFollowNFT {
             uint256 upper = snapshotCount - 1;
 
             // First check most recent snapshot
-            if (_shots[upper].blockNumber <= blockNumber) {
-                return _shots[upper].value;
-            }
+            if (_shots[upper].blockNumber <= blockNumber) return _shots[upper].value;
 
             // Next check implicit zero balance
-            if (_shots[lower].blockNumber > blockNumber) {
-                return 0;
-            }
+            if (_shots[lower].blockNumber > blockNumber) return 0;
 
             while (upper > lower) {
                 uint256 center = upper - (upper - lower) / 2;
