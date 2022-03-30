@@ -702,10 +702,10 @@ makeSuiteCleanRoom('Misc', function () {
       ).to.not.be.reverted;
 
       // Then, deploy the data provider
-      const dataProvider = await new UIDataProvider__factory(deployer).deploy(lensHub.address);
+      const lensPeriphery = await new UIDataProvider__factory(deployer).deploy(lensHub.address);
 
       // `getLatestDataByProfile`, validate the result from the data provider
-      const resultByProfileId = await dataProvider.getLatestDataByProfile(FIRST_PROFILE_ID);
+      const resultByProfileId = await lensPeriphery.getLatestDataByProfile(FIRST_PROFILE_ID);
       const pubByProfileIdStruct = resultByProfileId.publicationStruct;
       const profileByProfileIdStruct = resultByProfileId.profileStruct;
 
@@ -724,7 +724,7 @@ makeSuiteCleanRoom('Misc', function () {
       expect(pubByProfileIdStruct.collectNFT).to.eq(ZERO_ADDRESS);
 
       // `getLatestDataByHandle`, validate the result from the data provider
-      const resultByHandle = await dataProvider.getLatestDataByHandle(MOCK_PROFILE_HANDLE);
+      const resultByHandle = await lensPeriphery.getLatestDataByHandle(MOCK_PROFILE_HANDLE);
       const pubByHandleStruct = resultByHandle.publicationStruct;
       const profileByHandleStruct = resultByHandle.profileStruct;
 

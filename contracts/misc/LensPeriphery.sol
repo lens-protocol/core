@@ -16,8 +16,8 @@ import {Errors} from '../libraries/Errors.sol';
  * a recipient by another user (i.e. Not a mint) and not register them as "following" unless
  * the recipient explicitly toggles the follow here.
  */
-contract LensPeripheryDataProvider {
-    string public constant NAME = 'LensPeripheryDataProvider';
+contract LensPeriphery {
+    string public constant NAME = 'LensPeriphery';
     bytes32 internal constant EIP712_REVISION_HASH = keccak256('1');
     bytes32 internal constant EIP712_DOMAIN_TYPEHASH =
         keccak256(

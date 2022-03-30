@@ -21,7 +21,7 @@ import {
   TimedFeeCollectModule__factory,
   TransparentUpgradeableProxy__factory,
   ProfileTokenURILogic__factory,
-  LensPeripheryDataProvider__factory,
+  LensPeriphery__factory,
 } from '../typechain-types';
 import { deployWithVerify, waitForTx } from './helpers/utils';
 
@@ -152,12 +152,12 @@ task('full-deploy-verify', 'deploys the entire Lens Protocol with explorer verif
     // Connect the hub proxy to the LensHub factory and the governance for ease of use.
     const lensHub = LensHub__factory.connect(proxy.address, governance);
 
-    const peripheryDataProvider = await deployWithVerify(
-      new LensPeripheryDataProvider__factory(deployer).deploy(lensHub.address, {
+    const lensPeriphery = await deployWithVerify(
+      new LensPeriphery__factory(deployer).deploy(lensHub.address, {
         nonce: deployerNonce++,
       }),
       [lensHub.address],
-      'contracts/misc/LensPeripheryDataProvider.sol:LensPeripheryDataProvider'
+      'contracts/misc/LensPeriphery.sol:LensPeriphery'
     );
 
     // Deploy collect modules
@@ -299,7 +299,7 @@ task('full-deploy-verify', 'deploys the entire Lens Protocol with explorer verif
       'profile token URI logic lib': profileTokenURILogic.address,
       'follow NFT impl': followNFTImplAddress,
       'collect NFT impl': collectNFTImplAddress,
-      'periphery data provider': peripheryDataProvider.address,
+      'periphery data provider': lensPeriphery.address,
       'module globals': moduleGlobals.address,
       'fee collect module': feeCollectModule.address,
       'limited fee collect module': limitedFeeCollectModule.address,
