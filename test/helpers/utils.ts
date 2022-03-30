@@ -15,6 +15,8 @@ import { hexlify, keccak256, RLP, toUtf8Bytes } from 'ethers/lib/utils';
 import { LensHub__factory } from '../../typechain-types';
 import { TransactionReceipt, TransactionResponse } from '@ethersproject/providers';
 import hre, { ethers } from 'hardhat';
+import { readFileSync } from 'fs';
+import { join } from 'path';
 
 export enum ProtocolState {
   Unpaused,
@@ -454,7 +456,21 @@ export async function getCollectWithSigParts(
   return await getSig(msgParams);
 }
 
-export async function getJsonMetadataFromBase64TokenUri(tokenUri: string) {
+export interface TokenUriMetadataAttribute {
+  trait_type: string;
+  value: string;
+}
+
+export interface ProfileTokenUriMetadata {
+  name: string;
+  description: string;
+  image: string;
+  attributes: TokenUriMetadataAttribute[];
+}
+
+export async function getMetadataFromBase64TokenUri(
+  tokenUri: string
+): Promise<ProfileTokenUriMetadata> {
   const splittedTokenUri = tokenUri.split('data:application/json;base64,');
   if (splittedTokenUri.length != 2) {
     logger.throwError('Wrong or unrecognized token URI format');
@@ -464,6 +480,19 @@ export async function getJsonMetadataFromBase64TokenUri(tokenUri: string) {
     const jsonMetadataString = ethers.utils.toUtf8String(jsonMetadataBytes);
     return JSON.parse(jsonMetadataString);
   }
+}
+
+export async function getDecodedSvgImage(tokenUriMetadata: ProfileTokenUriMetadata) {
+  const splittedImage = tokenUriMetadata.image.split('data:image/svg+xml;base64,');
+  if (splittedImage.length != 2) {
+    logger.throwError('Wrong or unrecognized token URI format');
+  } else {
+    return ethers.utils.toUtf8String(ethers.utils.base64.decode(splittedImage[1]));
+  }
+}
+
+export function loadTestResourceAsUtf8String(relativePathToResouceDir: string) {
+  return readFileSync(join('test', 'resources', relativePathToResouceDir), 'utf8');
 }
 
 // Modified from AaveTokenV2 repo
