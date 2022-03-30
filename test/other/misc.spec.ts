@@ -4,7 +4,11 @@ import { keccak256, toUtf8Bytes } from 'ethers/lib/utils';
 import { UIDataProvider__factory } from '../../typechain-types';
 import { ZERO_ADDRESS } from '../helpers/constants';
 import { ERRORS } from '../helpers/errors';
-import { getJsonMetadataFromBase64TokenUri } from '../helpers/utils';
+import {
+  getDecodedSvgImage,
+  getMetadataFromBase64TokenUri,
+  loadTestResourceAsUtf8String,
+} from '../helpers/utils';
 import {
   approvalFollowModule,
   deployer,
@@ -155,20 +159,20 @@ makeSuiteCleanRoom('Misc', function () {
     });
 
     it('Profile tokenURI should return the accurate URI', async function () {
-      const tokenURI = await lensHub.tokenURI(FIRST_PROFILE_ID);
-      const jsonMetadata = await getJsonMetadataFromBase64TokenUri(tokenURI);
-      expect(jsonMetadata.name).to.eq(`@${MOCK_PROFILE_HANDLE}`);
-      expect(jsonMetadata.description).to.eq(`@${MOCK_PROFILE_HANDLE} - Lens profile`);
+      const tokenUri = await lensHub.tokenURI(FIRST_PROFILE_ID);
+      const metadata = await getMetadataFromBase64TokenUri(tokenUri);
+      expect(metadata.name).to.eq(`@${MOCK_PROFILE_HANDLE}`);
+      expect(metadata.description).to.eq(`@${MOCK_PROFILE_HANDLE} - Lens profile`);
       const expectedAttributes = [
         { trait_type: 'id', value: `#${FIRST_PROFILE_ID.toString()}` },
         { trait_type: 'followers', value: '0' },
         { trait_type: 'owner', value: userAddress.toLowerCase() },
         { trait_type: 'handle', value: `@${MOCK_PROFILE_HANDLE}` },
       ];
-      expect(jsonMetadata.attributes).to.eql(expectedAttributes);
-      expect(keccak256(toUtf8Bytes(tokenURI))).to.eq(
-        '0x043e3fd9d03631bea9bddb148f76bb9cff39a8d5d7ce20e5b3b88ea2ad2b9340'
-      );
+      expect(metadata.attributes).to.eql(expectedAttributes);
+      const actualSvg = await getDecodedSvgImage(metadata);
+      const expectedSvg = loadTestResourceAsUtf8String('profile-token-uri-images/mock-profile.svg');
+      expect(actualSvg).to.eq(expectedSvg);
     });
 
     it('Publication reference module getter should return the correct reference module (or zero in case of no reference module)', async function () {
