@@ -21,7 +21,7 @@ library ProfileTokenURILogic {
      * @param handle The profile's handle.
      * @param imageURI The profile's picture URI. An empty string if has not been set.
      *
-     * @return The profile's token URI as a base64-encoded JSON string.
+     * @return string The profile's token URI as a base64-encoded JSON string.
      */
     function getProfileTokenURI(
         uint256 id,
@@ -67,7 +67,7 @@ library ProfileTokenURILogic {
      * @param handleWithAtSymbol The profile's handle beginning with "@" symbol.
      * @param imageURI The profile's picture URI. An empty string if has not been set.
      *
-     * @return The profile token image as a base64-encoded SVG.
+     * @return string The profile token image as a base64-encoded SVG.
      */
     function _getSVGImageBase64Encoded(string memory handleWithAtSymbol, string memory imageURI)
         internal
@@ -96,7 +96,7 @@ library ProfileTokenURILogic {
      *
      * @param imageURI The profile's picture URI. An empty string if has not been set.
      *
-     * @return The fragment of the SVG token's image correspondending to the profile picture.
+     * @return string The fragment of the SVG token's image correspondending to the profile picture.
      */
     function _getSVGProfilePicture(string memory imageURI) internal pure returns (string memory) {
         if (_shouldUseCustomPicture(imageURI)) {
@@ -123,7 +123,7 @@ library ProfileTokenURILogic {
      *      fontSize(handleLength) = 24 - (handleLength - 12) / 2    when handleLength  > 17
      *
      * @param handleLength The profile's handle length.
-     * @return The font size.
+     * @return uint256 The font size.
      */
     function _handleLengthToFontSize(uint256 handleLength) internal pure returns (uint256) {
         return
@@ -140,7 +140,7 @@ library ProfileTokenURILogic {
      *
      * @param imageURI The imageURI set by the profile owner.
      *
-     * @return A boolean indicating whether custom profile picture should be used or not.
+     * @return bool A boolean indicating whether custom profile picture should be used or not.
      */
     function _shouldUseCustomPicture(string memory imageURI) internal pure returns (bool) {
         bytes memory imageURIBytes = bytes(imageURI);

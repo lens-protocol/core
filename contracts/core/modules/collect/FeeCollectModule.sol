@@ -54,7 +54,7 @@ contract FeeCollectModule is ICollectModule, FeeModuleBase, FollowValidationModu
      *      address recipient: The custom recipient address to direct earnings to.
      *      uint16 referralFee: The referral fee to set.
      *
-     * @return An abi encoded bytes parameter, which is the same as the passed data parameter.
+     * @return bytes An abi encoded bytes parameter, which is the same as the passed data parameter.
      */
     function initializePublicationCollectModule(
         uint256 profileId,
@@ -107,7 +107,7 @@ contract FeeCollectModule is ICollectModule, FeeModuleBase, FollowValidationModu
      * @param profileId The token ID of the profile mapped to the publication to query.
      * @param pubId The publication ID of the publication to query.
      *
-     * @return The ProfilePublicationData struct mapped to that publication.
+     * @return ProfilePublicationData The ProfilePublicationData struct mapped to that publication.
      */
     function getPublicationData(uint256 profileId, uint256 pubId)
         external

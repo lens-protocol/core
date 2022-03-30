@@ -56,7 +56,7 @@ contract ApprovalFollowModule is IFollowModule, FollowValidatorFollowModuleBase 
      * @param data The arbitrary data parameter, decoded into:
      *      address[] addresses: The array of addresses to approve initially.
      *
-     * @return An abi encoded bytes parameter, which is the same as the passed data parameter.
+     * @return bytes An abi encoded bytes parameter, which is the same as the passed data parameter.
      */
     function initializeFollowModule(uint256 profileId, bytes calldata data)
         external
