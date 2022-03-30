@@ -305,7 +305,7 @@ interface ILensHub {
      *
      * @param profileCreator The address of the profile creator to check.
      *
-     * @return bool true if the profile creator is whitelisted, false otherwise.
+     * @return bool True if the profile creator is whitelisted, false otherwise.
      */
     function isProfileCreatorWhitelisted(address profileCreator) external view returns (bool);
 
@@ -323,7 +323,7 @@ interface ILensHub {
      *
      * @param followModule The address of the follow module to check.
      *
-     * @return bool true if the the follow module is whitelisted, false otherwise.
+     * @return bool True if the the follow module is whitelisted, false otherwise.
      */
     function isFollowModuleWhitelisted(address followModule) external view returns (bool);
 
@@ -332,7 +332,7 @@ interface ILensHub {
      *
      * @param referenceModule The address of the reference module to check.
      *
-     * @return bool true if the the reference module is whitelisted, false otherwise.
+     * @return bool True if the the reference module is whitelisted, false otherwise.
      */
     function isReferenceModuleWhitelisted(address referenceModule) external view returns (bool);
 
@@ -341,7 +341,7 @@ interface ILensHub {
      *
      * @param collectModule The address of the collect module to check.
      *
-     * @return bool true if the the collect module is whitelisted, false otherwise.
+     * @return bool True if the the collect module is whitelisted, false otherwise.
      */
     function isCollectModuleWhitelisted(address collectModule) external view returns (bool);
 

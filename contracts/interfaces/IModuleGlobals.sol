@@ -48,7 +48,7 @@ interface IModuleGlobals {
      *
      * @param currency The currency to query the whitelist for.
      *
-     * @return bool true if the queried currency is whitelisted, false otherwise.
+     * @return bool True if the queried currency is whitelisted, false otherwise.
      */
     function isCurrencyWhitelisted(address currency) external view returns (bool);
 
