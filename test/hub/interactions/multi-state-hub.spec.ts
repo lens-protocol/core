@@ -15,7 +15,7 @@ import {
   ProtocolState,
 } from '../../helpers/utils';
 import {
-  emptyCollectModule,
+  followerOnlyCollectModule,
   FIRST_PROFILE_ID,
   governance,
   lensHub,
@@ -459,14 +459,14 @@ makeSuiteCleanRoom('Multi-State Hub', function () {
         await expect(lensHub.connect(governance).setState(ProtocolState.Paused)).to.not.be.reverted;
 
         await expect(
-          lensHub.connect(governance).whitelistCollectModule(emptyCollectModule.address, true)
+          lensHub.connect(governance).whitelistCollectModule(followerOnlyCollectModule.address, true)
         ).to.not.be.reverted;
 
         await expect(
           lensHub.post({
             profileId: FIRST_PROFILE_ID,
             contentURI: MOCK_URI,
-            collectModule: emptyCollectModule.address,
+            collectModule: followerOnlyCollectModule.address,
             collectModuleData: [],
             referenceModule: ZERO_ADDRESS,
             referenceModuleData: [],
@@ -481,7 +481,7 @@ makeSuiteCleanRoom('Multi-State Hub', function () {
           lensHub.post({
             profileId: FIRST_PROFILE_ID,
             contentURI: MOCK_URI,
-            collectModule: emptyCollectModule.address,
+            collectModule: followerOnlyCollectModule.address,
             collectModuleData: [],
             referenceModule: ZERO_ADDRESS,
             referenceModuleData: [],
@@ -504,7 +504,7 @@ makeSuiteCleanRoom('Multi-State Hub', function () {
         await expect(lensHub.connect(governance).setState(ProtocolState.Paused)).to.not.be.reverted;
 
         await expect(
-          lensHub.connect(governance).whitelistCollectModule(emptyCollectModule.address, true)
+          lensHub.connect(governance).whitelistCollectModule(followerOnlyCollectModule.address, true)
         ).to.not.be.reverted;
 
         const nonce = (await lensHub.sigNonces(testWallet.address)).toNumber();
@@ -514,7 +514,7 @@ makeSuiteCleanRoom('Multi-State Hub', function () {
         const { v, r, s } = await getPostWithSigParts(
           FIRST_PROFILE_ID,
           MOCK_URI,
-          emptyCollectModule.address,
+          followerOnlyCollectModule.address,
           collectModuleData,
           ZERO_ADDRESS,
           referenceModuleData,
@@ -526,7 +526,7 @@ makeSuiteCleanRoom('Multi-State Hub', function () {
           lensHub.postWithSig({
             profileId: FIRST_PROFILE_ID,
             contentURI: MOCK_URI,
-            collectModule: emptyCollectModule.address,
+            collectModule: followerOnlyCollectModule.address,
             collectModuleData: collectModuleData,
             referenceModule: ZERO_ADDRESS,
             referenceModuleData: referenceModuleData,
@@ -547,7 +547,7 @@ makeSuiteCleanRoom('Multi-State Hub', function () {
           lensHub.postWithSig({
             profileId: FIRST_PROFILE_ID,
             contentURI: MOCK_URI,
-            collectModule: emptyCollectModule.address,
+            collectModule: followerOnlyCollectModule.address,
             collectModuleData: collectModuleData,
             referenceModule: ZERO_ADDRESS,
             referenceModuleData: referenceModuleData,
@@ -574,14 +574,14 @@ makeSuiteCleanRoom('Multi-State Hub', function () {
         ).to.not.be.reverted;
 
         await expect(
-          lensHub.connect(governance).whitelistCollectModule(emptyCollectModule.address, true)
+          lensHub.connect(governance).whitelistCollectModule(followerOnlyCollectModule.address, true)
         ).to.not.be.reverted;
 
         await expect(
           lensHub.post({
             profileId: FIRST_PROFILE_ID,
             contentURI: MOCK_URI,
-            collectModule: emptyCollectModule.address,
+            collectModule: followerOnlyCollectModule.address,
             collectModuleData: [],
             referenceModule: ZERO_ADDRESS,
             referenceModuleData: [],
@@ -596,7 +596,7 @@ makeSuiteCleanRoom('Multi-State Hub', function () {
             contentURI: MOCK_URI,
             profileIdPointed: FIRST_PROFILE_ID,
             pubIdPointed: 1,
-            collectModule: emptyCollectModule.address,
+            collectModule: followerOnlyCollectModule.address,
             collectModuleData: [],
             referenceModule: ZERO_ADDRESS,
             referenceModuleData: [],
@@ -613,7 +613,7 @@ makeSuiteCleanRoom('Multi-State Hub', function () {
             contentURI: MOCK_URI,
             profileIdPointed: FIRST_PROFILE_ID,
             pubIdPointed: 1,
-            collectModule: emptyCollectModule.address,
+            collectModule: followerOnlyCollectModule.address,
             collectModuleData: [],
             referenceModule: ZERO_ADDRESS,
             referenceModuleData: [],
@@ -634,14 +634,14 @@ makeSuiteCleanRoom('Multi-State Hub', function () {
         ).to.not.be.reverted;
 
         await expect(
-          lensHub.connect(governance).whitelistCollectModule(emptyCollectModule.address, true)
+          lensHub.connect(governance).whitelistCollectModule(followerOnlyCollectModule.address, true)
         ).to.not.be.reverted;
 
         await expect(
           lensHub.connect(testWallet).post({
             profileId: FIRST_PROFILE_ID,
             contentURI: MOCK_URI,
-            collectModule: emptyCollectModule.address,
+            collectModule: followerOnlyCollectModule.address,
             collectModuleData: [],
             referenceModule: ZERO_ADDRESS,
             referenceModuleData: [],
@@ -659,7 +659,7 @@ makeSuiteCleanRoom('Multi-State Hub', function () {
           MOCK_URI,
           FIRST_PROFILE_ID,
           '1',
-          emptyCollectModule.address,
+          followerOnlyCollectModule.address,
           collectModuleData,
           ZERO_ADDRESS,
           referenceModuleData,
@@ -673,7 +673,7 @@ makeSuiteCleanRoom('Multi-State Hub', function () {
             contentURI: MOCK_URI,
             profileIdPointed: FIRST_PROFILE_ID,
             pubIdPointed: '1',
-            collectModule: emptyCollectModule.address,
+            collectModule: followerOnlyCollectModule.address,
             collectModuleData: collectModuleData,
             referenceModule: ZERO_ADDRESS,
             referenceModuleData: referenceModuleData,
@@ -696,7 +696,7 @@ makeSuiteCleanRoom('Multi-State Hub', function () {
             contentURI: MOCK_URI,
             profileIdPointed: FIRST_PROFILE_ID,
             pubIdPointed: '1',
-            collectModule: emptyCollectModule.address,
+            collectModule: followerOnlyCollectModule.address,
             collectModuleData: collectModuleData,
             referenceModule: ZERO_ADDRESS,
             referenceModuleData: referenceModuleData,
@@ -723,14 +723,14 @@ makeSuiteCleanRoom('Multi-State Hub', function () {
         ).to.not.be.reverted;
 
         await expect(
-          lensHub.connect(governance).whitelistCollectModule(emptyCollectModule.address, true)
+          lensHub.connect(governance).whitelistCollectModule(followerOnlyCollectModule.address, true)
         ).to.not.be.reverted;
 
         await expect(
           lensHub.post({
             profileId: FIRST_PROFILE_ID,
             contentURI: MOCK_URI,
-            collectModule: emptyCollectModule.address,
+            collectModule: followerOnlyCollectModule.address,
             collectModuleData: [],
             referenceModule: ZERO_ADDRESS,
             referenceModuleData: [],
@@ -777,14 +777,14 @@ makeSuiteCleanRoom('Multi-State Hub', function () {
         ).to.not.be.reverted;
 
         await expect(
-          lensHub.connect(governance).whitelistCollectModule(emptyCollectModule.address, true)
+          lensHub.connect(governance).whitelistCollectModule(followerOnlyCollectModule.address, true)
         ).to.not.be.reverted;
 
         await expect(
           lensHub.connect(testWallet).post({
             profileId: FIRST_PROFILE_ID,
             contentURI: MOCK_URI,
-            collectModule: emptyCollectModule.address,
+            collectModule: followerOnlyCollectModule.address,
             collectModuleData: [],
             referenceModule: ZERO_ADDRESS,
             referenceModuleData: [],
@@ -958,14 +958,14 @@ makeSuiteCleanRoom('Multi-State Hub', function () {
         ).to.not.be.reverted;
 
         await expect(
-          lensHub.connect(governance).whitelistCollectModule(emptyCollectModule.address, true)
+          lensHub.connect(governance).whitelistCollectModule(followerOnlyCollectModule.address, true)
         ).to.not.be.reverted;
 
         await expect(
           lensHub.post({
             profileId: FIRST_PROFILE_ID,
             contentURI: MOCK_URI,
-            collectModule: emptyCollectModule.address,
+            collectModule: followerOnlyCollectModule.address,
             collectModuleData: [],
             referenceModule: ZERO_ADDRESS,
             referenceModuleData: [],
@@ -998,14 +998,14 @@ makeSuiteCleanRoom('Multi-State Hub', function () {
         ).to.not.be.reverted;
 
         await expect(
-          lensHub.connect(governance).whitelistCollectModule(emptyCollectModule.address, true)
+          lensHub.connect(governance).whitelistCollectModule(followerOnlyCollectModule.address, true)
         ).to.not.be.reverted;
 
         await expect(
           lensHub.connect(testWallet).post({
             profileId: FIRST_PROFILE_ID,
             contentURI: MOCK_URI,
-            collectModule: emptyCollectModule.address,
+            collectModule: followerOnlyCollectModule.address,
             collectModuleData: [],
             referenceModule: ZERO_ADDRESS,
             referenceModuleData: [],
@@ -1277,14 +1277,14 @@ makeSuiteCleanRoom('Multi-State Hub', function () {
         ).to.not.be.reverted;
 
         await expect(
-          lensHub.connect(governance).whitelistCollectModule(emptyCollectModule.address, true)
+          lensHub.connect(governance).whitelistCollectModule(followerOnlyCollectModule.address, true)
         ).to.not.be.reverted;
 
         await expect(
           lensHub.post({
             profileId: FIRST_PROFILE_ID,
             contentURI: MOCK_URI,
-            collectModule: emptyCollectModule.address,
+            collectModule: followerOnlyCollectModule.address,
             collectModuleData: [],
             referenceModule: ZERO_ADDRESS,
             referenceModuleData: [],
@@ -1299,7 +1299,7 @@ makeSuiteCleanRoom('Multi-State Hub', function () {
           lensHub.post({
             profileId: FIRST_PROFILE_ID,
             contentURI: MOCK_URI,
-            collectModule: emptyCollectModule.address,
+            collectModule: followerOnlyCollectModule.address,
             collectModuleData: [],
             referenceModule: ZERO_ADDRESS,
             referenceModuleData: [],
@@ -1324,7 +1324,7 @@ makeSuiteCleanRoom('Multi-State Hub', function () {
         ).to.not.be.reverted;
 
         await expect(
-          lensHub.connect(governance).whitelistCollectModule(emptyCollectModule.address, true)
+          lensHub.connect(governance).whitelistCollectModule(followerOnlyCollectModule.address, true)
         ).to.not.be.reverted;
 
         const nonce = (await lensHub.sigNonces(testWallet.address)).toNumber();
@@ -1334,7 +1334,7 @@ makeSuiteCleanRoom('Multi-State Hub', function () {
         const { v, r, s } = await getPostWithSigParts(
           FIRST_PROFILE_ID,
           MOCK_URI,
-          emptyCollectModule.address,
+          followerOnlyCollectModule.address,
           collectModuleData,
           ZERO_ADDRESS,
           referenceModuleData,
@@ -1346,7 +1346,7 @@ makeSuiteCleanRoom('Multi-State Hub', function () {
           lensHub.postWithSig({
             profileId: FIRST_PROFILE_ID,
             contentURI: MOCK_URI,
-            collectModule: emptyCollectModule.address,
+            collectModule: followerOnlyCollectModule.address,
             collectModuleData: collectModuleData,
             referenceModule: ZERO_ADDRESS,
             referenceModuleData: referenceModuleData,
@@ -1367,7 +1367,7 @@ makeSuiteCleanRoom('Multi-State Hub', function () {
           lensHub.postWithSig({
             profileId: FIRST_PROFILE_ID,
             contentURI: MOCK_URI,
-            collectModule: emptyCollectModule.address,
+            collectModule: followerOnlyCollectModule.address,
             collectModuleData: collectModuleData,
             referenceModule: ZERO_ADDRESS,
             referenceModuleData: referenceModuleData,
@@ -1394,14 +1394,14 @@ makeSuiteCleanRoom('Multi-State Hub', function () {
         ).to.not.be.reverted;
 
         await expect(
-          lensHub.connect(governance).whitelistCollectModule(emptyCollectModule.address, true)
+          lensHub.connect(governance).whitelistCollectModule(followerOnlyCollectModule.address, true)
         ).to.not.be.reverted;
 
         await expect(
           lensHub.post({
             profileId: FIRST_PROFILE_ID,
             contentURI: MOCK_URI,
-            collectModule: emptyCollectModule.address,
+            collectModule: followerOnlyCollectModule.address,
             collectModuleData: [],
             referenceModule: ZERO_ADDRESS,
             referenceModuleData: [],
@@ -1418,7 +1418,7 @@ makeSuiteCleanRoom('Multi-State Hub', function () {
             contentURI: MOCK_URI,
             profileIdPointed: FIRST_PROFILE_ID,
             pubIdPointed: 1,
-            collectModule: emptyCollectModule.address,
+            collectModule: followerOnlyCollectModule.address,
             collectModuleData: [],
             referenceModule: ZERO_ADDRESS,
             referenceModuleData: [],
@@ -1435,7 +1435,7 @@ makeSuiteCleanRoom('Multi-State Hub', function () {
             contentURI: MOCK_URI,
             profileIdPointed: FIRST_PROFILE_ID,
             pubIdPointed: 1,
-            collectModule: emptyCollectModule.address,
+            collectModule: followerOnlyCollectModule.address,
             collectModuleData: [],
             referenceModule: ZERO_ADDRESS,
             referenceModuleData: [],
@@ -1456,14 +1456,14 @@ makeSuiteCleanRoom('Multi-State Hub', function () {
         ).to.not.be.reverted;
 
         await expect(
-          lensHub.connect(governance).whitelistCollectModule(emptyCollectModule.address, true)
+          lensHub.connect(governance).whitelistCollectModule(followerOnlyCollectModule.address, true)
         ).to.not.be.reverted;
 
         await expect(
           lensHub.connect(testWallet).post({
             profileId: FIRST_PROFILE_ID,
             contentURI: MOCK_URI,
-            collectModule: emptyCollectModule.address,
+            collectModule: followerOnlyCollectModule.address,
             collectModuleData: [],
             referenceModule: ZERO_ADDRESS,
             referenceModuleData: [],
@@ -1483,7 +1483,7 @@ makeSuiteCleanRoom('Multi-State Hub', function () {
           MOCK_URI,
           FIRST_PROFILE_ID,
           '1',
-          emptyCollectModule.address,
+          followerOnlyCollectModule.address,
           collectModuleData,
           ZERO_ADDRESS,
           referenceModuleData,
@@ -1497,7 +1497,7 @@ makeSuiteCleanRoom('Multi-State Hub', function () {
             contentURI: MOCK_URI,
             profileIdPointed: FIRST_PROFILE_ID,
             pubIdPointed: '1',
-            collectModule: emptyCollectModule.address,
+            collectModule: followerOnlyCollectModule.address,
             collectModuleData: collectModuleData,
             referenceModule: ZERO_ADDRESS,
             referenceModuleData: referenceModuleData,
@@ -1520,7 +1520,7 @@ makeSuiteCleanRoom('Multi-State Hub', function () {
             contentURI: MOCK_URI,
             profileIdPointed: FIRST_PROFILE_ID,
             pubIdPointed: '1',
-            collectModule: emptyCollectModule.address,
+            collectModule: followerOnlyCollectModule.address,
             collectModuleData: collectModuleData,
             referenceModule: ZERO_ADDRESS,
             referenceModuleData: referenceModuleData,
@@ -1547,14 +1547,14 @@ makeSuiteCleanRoom('Multi-State Hub', function () {
         ).to.not.be.reverted;
 
         await expect(
-          lensHub.connect(governance).whitelistCollectModule(emptyCollectModule.address, true)
+          lensHub.connect(governance).whitelistCollectModule(followerOnlyCollectModule.address, true)
         ).to.not.be.reverted;
 
         await expect(
           lensHub.post({
             profileId: FIRST_PROFILE_ID,
             contentURI: MOCK_URI,
-            collectModule: emptyCollectModule.address,
+            collectModule: followerOnlyCollectModule.address,
             collectModuleData: [],
             referenceModule: ZERO_ADDRESS,
             referenceModuleData: [],
@@ -1603,14 +1603,14 @@ makeSuiteCleanRoom('Multi-State Hub', function () {
         ).to.not.be.reverted;
 
         await expect(
-          lensHub.connect(governance).whitelistCollectModule(emptyCollectModule.address, true)
+          lensHub.connect(governance).whitelistCollectModule(followerOnlyCollectModule.address, true)
         ).to.not.be.reverted;
 
         await expect(
           lensHub.connect(testWallet).post({
             profileId: FIRST_PROFILE_ID,
             contentURI: MOCK_URI,
-            collectModule: emptyCollectModule.address,
+            collectModule: followerOnlyCollectModule.address,
             collectModuleData: [],
             referenceModule: ZERO_ADDRESS,
             referenceModuleData: [],
@@ -1762,14 +1762,14 @@ makeSuiteCleanRoom('Multi-State Hub', function () {
         ).to.not.be.reverted;
 
         await expect(
-          lensHub.connect(governance).whitelistCollectModule(emptyCollectModule.address, true)
+          lensHub.connect(governance).whitelistCollectModule(followerOnlyCollectModule.address, true)
         ).to.not.be.reverted;
 
         await expect(
           lensHub.post({
             profileId: FIRST_PROFILE_ID,
             contentURI: MOCK_URI,
-            collectModule: emptyCollectModule.address,
+            collectModule: followerOnlyCollectModule.address,
             collectModuleData: [],
             referenceModule: ZERO_ADDRESS,
             referenceModuleData: [],
@@ -1798,14 +1798,14 @@ makeSuiteCleanRoom('Multi-State Hub', function () {
         ).to.not.be.reverted;
 
         await expect(
-          lensHub.connect(governance).whitelistCollectModule(emptyCollectModule.address, true)
+          lensHub.connect(governance).whitelistCollectModule(followerOnlyCollectModule.address, true)
         ).to.not.be.reverted;
 
         await expect(
           lensHub.connect(testWallet).post({
             profileId: FIRST_PROFILE_ID,
             contentURI: MOCK_URI,
-            collectModule: emptyCollectModule.address,
+            collectModule: followerOnlyCollectModule.address,
             collectModuleData: [],
             referenceModule: ZERO_ADDRESS,
             referenceModuleData: [],

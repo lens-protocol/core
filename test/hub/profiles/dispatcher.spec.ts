@@ -4,7 +4,7 @@ import { MAX_UINT256, ZERO_ADDRESS } from '../../helpers/constants';
 import { ERRORS } from '../../helpers/errors';
 import { cancelWithPermitForAll, getSetDispatcherWithSigParts } from '../../helpers/utils';
 import {
-  emptyCollectModule,
+  followerOnlyCollectModule,
   FIRST_PROFILE_ID,
   governance,
   lensHub,
@@ -33,7 +33,7 @@ makeSuiteCleanRoom('Dispatcher Functionality', function () {
         })
       ).to.not.be.reverted;
       await expect(
-        lensHub.connect(governance).whitelistCollectModule(emptyCollectModule.address, true)
+        lensHub.connect(governance).whitelistCollectModule(followerOnlyCollectModule.address, true)
       ).to.not.be.reverted;
     });
 
@@ -49,7 +49,7 @@ makeSuiteCleanRoom('Dispatcher Functionality', function () {
           lensHub.connect(userTwo).post({
             profileId: FIRST_PROFILE_ID,
             contentURI: MOCK_URI,
-            collectModule: emptyCollectModule.address,
+            collectModule: followerOnlyCollectModule.address,
             collectModuleData: [],
             referenceModule: ZERO_ADDRESS,
             referenceModuleData: [],
@@ -73,7 +73,7 @@ makeSuiteCleanRoom('Dispatcher Functionality', function () {
           lensHub.connect(userTwo).post({
             profileId: FIRST_PROFILE_ID,
             contentURI: MOCK_URI,
-            collectModule: emptyCollectModule.address,
+            collectModule: followerOnlyCollectModule.address,
             collectModuleData: [],
             referenceModule: ZERO_ADDRESS,
             referenceModuleData: [],
@@ -86,7 +86,7 @@ makeSuiteCleanRoom('Dispatcher Functionality', function () {
             contentURI: MOCK_URI,
             profileIdPointed: FIRST_PROFILE_ID,
             pubIdPointed: 1,
-            collectModule: emptyCollectModule.address,
+            collectModule: followerOnlyCollectModule.address,
             collectModuleData: [],
             referenceModule: ZERO_ADDRESS,
             referenceModuleData: [],
@@ -119,7 +119,7 @@ makeSuiteCleanRoom('Dispatcher Functionality', function () {
         })
       ).to.not.be.reverted;
       await expect(
-        lensHub.connect(governance).whitelistCollectModule(emptyCollectModule.address, true)
+        lensHub.connect(governance).whitelistCollectModule(followerOnlyCollectModule.address, true)
       ).to.not.be.reverted;
     });
 
@@ -246,7 +246,7 @@ makeSuiteCleanRoom('Dispatcher Functionality', function () {
           lensHub.connect(userTwo).post({
             profileId: FIRST_PROFILE_ID,
             contentURI: MOCK_URI,
-            collectModule: emptyCollectModule.address,
+            collectModule: followerOnlyCollectModule.address,
             collectModuleData: [],
             referenceModule: ZERO_ADDRESS,
             referenceModuleData: [],
@@ -259,7 +259,7 @@ makeSuiteCleanRoom('Dispatcher Functionality', function () {
             contentURI: MOCK_URI,
             profileIdPointed: FIRST_PROFILE_ID,
             pubIdPointed: 1,
-            collectModule: emptyCollectModule.address,
+            collectModule: followerOnlyCollectModule.address,
             collectModuleData: [],
             referenceModule: ZERO_ADDRESS,
             referenceModuleData: [],

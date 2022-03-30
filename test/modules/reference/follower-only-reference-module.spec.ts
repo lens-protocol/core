@@ -5,7 +5,7 @@ import { ZERO_ADDRESS } from '../../helpers/constants';
 import { ERRORS } from '../../helpers/errors';
 import { getTimestamp, matchEvent, waitForTx } from '../../helpers/utils';
 import {
-  emptyCollectModule,
+  followerOnlyCollectModule,
   FIRST_PROFILE_ID,
   followerOnlyReferenceModule,
   governance,
@@ -39,13 +39,13 @@ makeSuiteCleanRoom('Follower Only Reference Module', function () {
         .whitelistReferenceModule(followerOnlyReferenceModule.address, true)
     ).to.not.be.reverted;
     await expect(
-      lensHub.connect(governance).whitelistCollectModule(emptyCollectModule.address, true)
+      lensHub.connect(governance).whitelistCollectModule(followerOnlyCollectModule.address, true)
     ).to.not.be.reverted;
     await expect(
       lensHub.post({
         profileId: FIRST_PROFILE_ID,
         contentURI: MOCK_URI,
-        collectModule: emptyCollectModule.address,
+        collectModule: followerOnlyCollectModule.address,
         collectModuleData: [],
         referenceModule: followerOnlyReferenceModule.address,
         referenceModuleData: [],
@@ -63,7 +63,7 @@ makeSuiteCleanRoom('Follower Only Reference Module', function () {
             contentURI: MOCK_URI,
             profileIdPointed: FIRST_PROFILE_ID,
             pubIdPointed: 1,
-            collectModule: emptyCollectModule.address,
+            collectModule: followerOnlyCollectModule.address,
             collectModuleData: [],
             referenceModule: ZERO_ADDRESS,
             referenceModuleData: [],
@@ -86,7 +86,7 @@ makeSuiteCleanRoom('Follower Only Reference Module', function () {
             contentURI: MOCK_URI,
             profileIdPointed: FIRST_PROFILE_ID,
             pubIdPointed: 1,
-            collectModule: emptyCollectModule.address,
+            collectModule: followerOnlyCollectModule.address,
             collectModuleData: [],
             referenceModule: ZERO_ADDRESS,
             referenceModuleData: [],
@@ -136,7 +136,7 @@ makeSuiteCleanRoom('Follower Only Reference Module', function () {
         const tx = lensHub.post({
           profileId: FIRST_PROFILE_ID,
           contentURI: MOCK_URI,
-          collectModule: emptyCollectModule.address,
+          collectModule: followerOnlyCollectModule.address,
           collectModuleData: [],
           referenceModule: followerOnlyReferenceModule.address,
           referenceModuleData: [],
@@ -148,7 +148,7 @@ makeSuiteCleanRoom('Follower Only Reference Module', function () {
           FIRST_PROFILE_ID,
           2,
           MOCK_URI,
-          emptyCollectModule.address,
+          followerOnlyCollectModule.address,
           [],
           followerOnlyReferenceModule.address,
           [],
@@ -171,7 +171,7 @@ makeSuiteCleanRoom('Follower Only Reference Module', function () {
             contentURI: MOCK_URI,
             profileIdPointed: FIRST_PROFILE_ID,
             pubIdPointed: 1,
-            collectModule: emptyCollectModule.address,
+            collectModule: followerOnlyCollectModule.address,
             collectModuleData: [],
             referenceModule: ZERO_ADDRESS,
             referenceModuleData: [],
@@ -198,7 +198,7 @@ makeSuiteCleanRoom('Follower Only Reference Module', function () {
             contentURI: MOCK_URI,
             profileIdPointed: FIRST_PROFILE_ID,
             pubIdPointed: 1,
-            collectModule: emptyCollectModule.address,
+            collectModule: followerOnlyCollectModule.address,
             collectModuleData: [],
             referenceModule: ZERO_ADDRESS,
             referenceModuleData: [],

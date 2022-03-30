@@ -7,7 +7,7 @@ import {
   ApprovalFollowModule__factory,
   CollectNFT__factory,
   Currency__factory,
-  EmptyCollectModule__factory,
+  FollowerOnlyCollectModule__factory,
   FeeCollectModule__factory,
   FeeFollowModule__factory,
   FollowerOnlyReferenceModule__factory,
@@ -163,9 +163,9 @@ task('full-deploy', 'deploys the entire Lens Protocol').setAction(async ({}, hre
   const revertCollectModule = await deployContract(
     new RevertCollectModule__factory(deployer).deploy({ nonce: deployerNonce++ })
   );
-  console.log('\n\t-- Deploying emptyCollectModule --');
-  const emptyCollectModule = await deployContract(
-    new EmptyCollectModule__factory(deployer).deploy(lensHub.address, { nonce: deployerNonce++ })
+  console.log('\n\t-- Deploying followerOnlyCollectModule --');
+  const followerOnlyCollectModule = await deployContract(
+    new FollowerOnlyCollectModule__factory(deployer).deploy(lensHub.address, { nonce: deployerNonce++ })
   );
 
   // Deploy follow modules
@@ -213,7 +213,7 @@ task('full-deploy', 'deploys the entire Lens Protocol').setAction(async ({}, hre
     lensHub.whitelistCollectModule(revertCollectModule.address, true, { nonce: governanceNonce++ })
   );
   await waitForTx(
-    lensHub.whitelistCollectModule(emptyCollectModule.address, true, { nonce: governanceNonce++ })
+    lensHub.whitelistCollectModule(followerOnlyCollectModule.address, true, { nonce: governanceNonce++ })
   );
 
   // Whitelist the follow modules
@@ -257,7 +257,7 @@ task('full-deploy', 'deploys the entire Lens Protocol').setAction(async ({}, hre
     'timed fee collect module': timedFeeCollectModule.address,
     'limited timed fee collect module': limitedTimedFeeCollectModule.address,
     'revert collect module': revertCollectModule.address,
-    'empty collect module': emptyCollectModule.address,
+    'empty collect module': followerOnlyCollectModule.address,
     'fee follow module': feeFollowModule.address,
     'approval follow module': approvalFollowModule.address,
     'follower only reference module': followerOnlyReferenceModule.address,

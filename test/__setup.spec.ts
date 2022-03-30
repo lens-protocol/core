@@ -11,8 +11,8 @@ import {
   CollectNFT__factory,
   Currency,
   Currency__factory,
-  EmptyCollectModule,
-  EmptyCollectModule__factory,
+  FollowerOnlyCollectModule,
+  FollowerOnlyCollectModule__factory,
   Events,
   Events__factory,
   FeeCollectModule,
@@ -106,7 +106,7 @@ export let peripheryDataProvider: LensPeripheryDataProvider;
 // Collect
 export let feeCollectModule: FeeCollectModule;
 export let timedFeeCollectModule: TimedFeeCollectModule;
-export let emptyCollectModule: EmptyCollectModule;
+export let followerOnlyCollectModule: FollowerOnlyCollectModule;
 export let revertCollectModule: RevertCollectModule;
 export let limitedFeeCollectModule: LimitedFeeCollectModule;
 export let limitedTimedFeeCollectModule: LimitedTimedFeeCollectModule;
@@ -206,7 +206,7 @@ before(async function () {
   currency = await new Currency__factory(deployer).deploy();
 
   // Modules
-  emptyCollectModule = await new EmptyCollectModule__factory(deployer).deploy(lensHub.address);
+  followerOnlyCollectModule = await new FollowerOnlyCollectModule__factory(deployer).deploy(lensHub.address);
   revertCollectModule = await new RevertCollectModule__factory(deployer).deploy();
   feeCollectModule = await new FeeCollectModule__factory(deployer).deploy(
     lensHub.address,

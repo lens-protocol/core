@@ -7,7 +7,7 @@ import {
   LensHub__factory,
   ApprovalFollowModule__factory,
   CollectNFT__factory,
-  EmptyCollectModule__factory,
+  FollowerOnlyCollectModule__factory,
   FeeCollectModule__factory,
   FeeFollowModule__factory,
   FollowerOnlyReferenceModule__factory,
@@ -206,11 +206,11 @@ task('full-deploy-verify', 'deploys the entire Lens Protocol with explorer verif
       [],
       'contracts/core/modules/collect/RevertCollectModule.sol:RevertCollectModule'
     );
-    console.log('\n\t-- Deploying emptyCollectModule --');
-    const emptyCollectModule = await deployWithVerify(
-      new EmptyCollectModule__factory(deployer).deploy(lensHub.address, { nonce: deployerNonce++ }),
+    console.log('\n\t-- Deploying followerOnlyCollectModule --');
+    const followerOnlyCollectModule = await deployWithVerify(
+      new FollowerOnlyCollectModule__factory(deployer).deploy(lensHub.address, { nonce: deployerNonce++ }),
       [lensHub.address],
-      'contracts/core/modules/collect/EmptyCollectModule.sol:EmptyCollectModule'
+      'contracts/core/modules/collect/FollowerOnlyCollectModule.sol:FollowerOnlyCollectModule'
     );
 
     // Deploy follow modules
@@ -268,7 +268,7 @@ task('full-deploy-verify', 'deploys the entire Lens Protocol with explorer verif
       })
     );
     await waitForTx(
-      lensHub.whitelistCollectModule(emptyCollectModule.address, true, { nonce: governanceNonce++ })
+      lensHub.whitelistCollectModule(followerOnlyCollectModule.address, true, { nonce: governanceNonce++ })
     );
 
     // Whitelist the follow modules
@@ -306,7 +306,7 @@ task('full-deploy-verify', 'deploys the entire Lens Protocol with explorer verif
       'timed fee collect module': timedFeeCollectModule.address,
       'limited timed fee collect module': limitedTimedFeeCollectModule.address,
       'revert collect module': revertCollectModule.address,
-      'empty collect module': emptyCollectModule.address,
+      'empty collect module': followerOnlyCollectModule.address,
       'fee follow module': feeFollowModule.address,
       'approval follow module': approvalFollowModule.address,
       'follower only reference module': followerOnlyReferenceModule.address,

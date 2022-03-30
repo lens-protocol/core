@@ -5,7 +5,7 @@ import { ERRORS } from '../../helpers/errors';
 import { cancelWithPermitForAll, getMirrorWithSigParts } from '../../helpers/utils';
 import {
   abiCoder,
-  emptyCollectModule,
+  followerOnlyCollectModule,
   FIRST_PROFILE_ID,
   governance,
   lensHub,
@@ -35,7 +35,7 @@ makeSuiteCleanRoom('Publishing mirrors', function () {
       ).to.not.be.reverted;
 
       await expect(
-        lensHub.connect(governance).whitelistCollectModule(emptyCollectModule.address, true)
+        lensHub.connect(governance).whitelistCollectModule(followerOnlyCollectModule.address, true)
       ).to.not.be.reverted;
 
       await expect(
@@ -46,7 +46,7 @@ makeSuiteCleanRoom('Publishing mirrors', function () {
         lensHub.post({
           profileId: FIRST_PROFILE_ID,
           contentURI: MOCK_URI,
-          collectModule: emptyCollectModule.address,
+          collectModule: followerOnlyCollectModule.address,
           collectModuleData: [],
           referenceModule: ZERO_ADDRESS,
           referenceModuleData: [],
@@ -161,7 +161,7 @@ makeSuiteCleanRoom('Publishing mirrors', function () {
           lensHub.post({
             profileId: FIRST_PROFILE_ID,
             contentURI: MOCK_URI,
-            collectModule: emptyCollectModule.address,
+            collectModule: followerOnlyCollectModule.address,
             collectModuleData: [],
             referenceModule: mockReferenceModule.address,
             referenceModuleData: data,
@@ -195,14 +195,14 @@ makeSuiteCleanRoom('Publishing mirrors', function () {
       ).to.not.be.reverted;
 
       await expect(
-        lensHub.connect(governance).whitelistCollectModule(emptyCollectModule.address, true)
+        lensHub.connect(governance).whitelistCollectModule(followerOnlyCollectModule.address, true)
       ).to.not.be.reverted;
 
       await expect(
         lensHub.connect(testWallet).post({
           profileId: FIRST_PROFILE_ID,
           contentURI: MOCK_URI,
-          collectModule: emptyCollectModule.address,
+          collectModule: followerOnlyCollectModule.address,
           collectModuleData: [],
           referenceModule: ZERO_ADDRESS,
           referenceModuleData: [],

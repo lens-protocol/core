@@ -4,7 +4,7 @@ import { ZERO_ADDRESS } from '../../helpers/constants';
 import { ERRORS } from '../../helpers/errors';
 import {
   approvalFollowModule,
-  emptyCollectModule,
+  followerOnlyCollectModule,
   FIRST_PROFILE_ID,
   governance,
   lensHub,
@@ -32,13 +32,13 @@ makeSuiteCleanRoom('Empty Collect Module', function () {
       })
     ).to.not.be.reverted;
     await expect(
-      lensHub.connect(governance).whitelistCollectModule(emptyCollectModule.address, true)
+      lensHub.connect(governance).whitelistCollectModule(followerOnlyCollectModule.address, true)
     ).to.not.be.reverted;
     await expect(
       lensHub.post({
         profileId: FIRST_PROFILE_ID,
         contentURI: MOCK_URI,
-        collectModule: emptyCollectModule.address,
+        collectModule: followerOnlyCollectModule.address,
         collectModuleData: [],
         referenceModule: ZERO_ADDRESS,
         referenceModuleData: [],

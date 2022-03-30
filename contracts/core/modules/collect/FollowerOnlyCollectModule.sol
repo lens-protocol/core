@@ -7,14 +7,14 @@ import {ModuleBase} from '../ModuleBase.sol';
 import {FollowValidationModuleBase} from '../FollowValidationModuleBase.sol';
 
 /**
- * @title EmptyCollectModule
+ * @title FollowerOnlyCollectModule
  * @author Lens Protocol
  *
  * @notice This is a simple Lens CollectModule implementation, inheriting from the ICollectModule interface.
  *
  * This module works by allowing all collects by followers.
  */
-contract EmptyCollectModule is ICollectModule, FollowValidationModuleBase {
+contract FollowerOnlyCollectModule is ICollectModule, FollowValidationModuleBase {
     constructor(address hub) ModuleBase(hub) {}
 
     /**

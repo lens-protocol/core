@@ -11,7 +11,7 @@ import {
 } from '../../helpers/utils';
 import {
   lensHub,
-  emptyCollectModule,
+  followerOnlyCollectModule,
   FIRST_PROFILE_ID,
   governance,
   makeSuiteCleanRoom,
@@ -28,7 +28,7 @@ import {
 makeSuiteCleanRoom('Collecting', function () {
   beforeEach(async function () {
     await expect(
-      lensHub.connect(governance).whitelistCollectModule(emptyCollectModule.address, true)
+      lensHub.connect(governance).whitelistCollectModule(followerOnlyCollectModule.address, true)
     ).to.not.be.reverted;
     await expect(
       lensHub.createProfile({
@@ -44,7 +44,7 @@ makeSuiteCleanRoom('Collecting', function () {
       lensHub.post({
         profileId: FIRST_PROFILE_ID,
         contentURI: MOCK_URI,
-        collectModule: emptyCollectModule.address,
+        collectModule: followerOnlyCollectModule.address,
         collectModuleData: [],
         referenceModule: ZERO_ADDRESS,
         referenceModuleData: [],
