@@ -6,9 +6,11 @@ import { MAX_UINT256, ZERO_ADDRESS } from '../../helpers/constants';
 import { ERRORS } from '../../helpers/errors';
 import {
   cancelWithPermitForAll,
-  getJsonMetadataFromBase64TokenUri,
+  getDecodedSvgImage,
+  getMetadataFromBase64TokenUri,
   getSetFollowNFTURIWithSigParts,
   getSetProfileImageURIWithSigParts,
+  loadTestResourceAsUtf8String,
 } from '../../helpers/utils';
 import {
   FIRST_PROFILE_ID,
@@ -67,132 +69,130 @@ makeSuiteCleanRoom('Profile URI Functionality', function () {
     context('Scenarios', function () {
       it('User should have a custom picture tokenURI after setting the profile imageURI', async function () {
         await expect(lensHub.setProfileImageURI(FIRST_PROFILE_ID, MOCK_URI)).to.not.be.reverted;
-        const tokenURI = await lensHub.tokenURI(FIRST_PROFILE_ID);
-        const jsonMetadata = await getJsonMetadataFromBase64TokenUri(tokenURI);
-        expect(jsonMetadata.name).to.eq(`@${MOCK_PROFILE_HANDLE}`);
-        expect(jsonMetadata.description).to.eq(`@${MOCK_PROFILE_HANDLE} - Lens profile`);
+        const tokenUri = await lensHub.tokenURI(FIRST_PROFILE_ID);
+        const metadata = await getMetadataFromBase64TokenUri(tokenUri);
+        expect(metadata.name).to.eq(`@${MOCK_PROFILE_HANDLE}`);
+        expect(metadata.description).to.eq(`@${MOCK_PROFILE_HANDLE} - Lens profile`);
         const expectedAttributes = [
           { trait_type: 'id', value: `#${FIRST_PROFILE_ID.toString()}` },
           { trait_type: 'followers', value: '0' },
           { trait_type: 'owner', value: userAddress.toLowerCase() },
           { trait_type: 'handle', value: `@${MOCK_PROFILE_HANDLE}` },
         ];
-        expect(jsonMetadata.attributes).to.eql(expectedAttributes);
-        expect(keccak256(toUtf8Bytes(tokenURI))).to.eq(
-          '0xe1731460db6ce5fa9f3a9f2bd778a8af49e623dceb531df6b1a5c162b7c2d79a'
-        );
+        expect(metadata.attributes).to.eql(expectedAttributes);
+        const actualSvg = await getDecodedSvgImage(metadata);
+        const expectedSvg = loadTestResourceAsUtf8String('profile-token-uri-images/mock.svg');
+        expect(actualSvg).to.eq(expectedSvg);
       });
 
       it('Default image should be used when no imageURI set', async function () {
         await expect(lensHub.setProfileImageURI(FIRST_PROFILE_ID, '')).to.not.be.reverted;
-        const tokenURI = await lensHub.tokenURI(FIRST_PROFILE_ID);
-        const jsonMetadata = await getJsonMetadataFromBase64TokenUri(tokenURI);
-        expect(jsonMetadata.name).to.eq(`@${MOCK_PROFILE_HANDLE}`);
-        expect(jsonMetadata.description).to.eq(`@${MOCK_PROFILE_HANDLE} - Lens profile`);
+        const tokenUri = await lensHub.tokenURI(FIRST_PROFILE_ID);
+        const metadata = await getMetadataFromBase64TokenUri(tokenUri);
+        expect(metadata.name).to.eq(`@${MOCK_PROFILE_HANDLE}`);
+        expect(metadata.description).to.eq(`@${MOCK_PROFILE_HANDLE} - Lens profile`);
         const expectedAttributes = [
           { trait_type: 'id', value: `#${FIRST_PROFILE_ID.toString()}` },
           { trait_type: 'followers', value: '0' },
           { trait_type: 'owner', value: userAddress.toLowerCase() },
           { trait_type: 'handle', value: `@${MOCK_PROFILE_HANDLE}` },
         ];
-        expect(jsonMetadata.attributes).to.eql(expectedAttributes);
-        expect(keccak256(toUtf8Bytes(tokenURI))).to.eq(
-          '0xa21f2a3aa9300a248d3a7acd3f4ff309291653121df87ffe3be545fa1dbd65e5'
-        );
+        expect(metadata.attributes).to.eql(expectedAttributes);
+        const actualSvg = await getDecodedSvgImage(metadata);
+        const expectedSvg = loadTestResourceAsUtf8String('profile-token-uri-images/default.svg');
+        expect(actualSvg).to.eq(expectedSvg);
       });
 
       it('Default image should be used when imageURI contains double-quotes', async function () {
-        const imageURI =
+        const imageUri =
           'https://ipfs.io/ipfs/QmbWqxBEKC3P8tqsKc98xmWNzrztRLMiMPL8wBuTGsMnR" <rect x="10" y="10" fill="red';
-        await expect(lensHub.setProfileImageURI(FIRST_PROFILE_ID, imageURI)).to.not.be.reverted;
-        const tokenURI = await lensHub.tokenURI(FIRST_PROFILE_ID);
-        const jsonMetadata = await getJsonMetadataFromBase64TokenUri(tokenURI);
-        expect(jsonMetadata.name).to.eq(`@${MOCK_PROFILE_HANDLE}`);
-        expect(jsonMetadata.description).to.eq(`@${MOCK_PROFILE_HANDLE} - Lens profile`);
+        await expect(lensHub.setProfileImageURI(FIRST_PROFILE_ID, imageUri)).to.not.be.reverted;
+        const tokenUri = await lensHub.tokenURI(FIRST_PROFILE_ID);
+        const metadata = await getMetadataFromBase64TokenUri(tokenUri);
+        expect(metadata.name).to.eq(`@${MOCK_PROFILE_HANDLE}`);
+        expect(metadata.description).to.eq(`@${MOCK_PROFILE_HANDLE} - Lens profile`);
         const expectedAttributes = [
           { trait_type: 'id', value: `#${FIRST_PROFILE_ID.toString()}` },
           { trait_type: 'followers', value: '0' },
           { trait_type: 'owner', value: userAddress.toLowerCase() },
           { trait_type: 'handle', value: `@${MOCK_PROFILE_HANDLE}` },
         ];
-        expect(jsonMetadata.attributes).to.eql(expectedAttributes);
-        expect(keccak256(toUtf8Bytes(tokenURI))).to.eq(
-          '0xa21f2a3aa9300a248d3a7acd3f4ff309291653121df87ffe3be545fa1dbd65e5'
-        );
+        expect(metadata.attributes).to.eql(expectedAttributes);
+        const actualSvg = await getDecodedSvgImage(metadata);
+        const expectedSvg = loadTestResourceAsUtf8String('profile-token-uri-images/default.svg');
+        expect(actualSvg).to.eq(expectedSvg);
       });
 
       it('Should return the correct tokenURI after transfer', async function () {
-        const tokenURIBeforeTransfer = await lensHub.tokenURI(FIRST_PROFILE_ID);
-        const jsonMetadataBeforeTransfer = await getJsonMetadataFromBase64TokenUri(
-          tokenURIBeforeTransfer
-        );
-        expect(jsonMetadataBeforeTransfer.name).to.eq(`@${MOCK_PROFILE_HANDLE}`);
-        expect(jsonMetadataBeforeTransfer.description).to.eq(
-          `@${MOCK_PROFILE_HANDLE} - Lens profile`
-        );
+        const tokenUriBeforeTransfer = await lensHub.tokenURI(FIRST_PROFILE_ID);
+        const metadataBeforeTransfer = await getMetadataFromBase64TokenUri(tokenUriBeforeTransfer);
+        expect(metadataBeforeTransfer.name).to.eq(`@${MOCK_PROFILE_HANDLE}`);
+        expect(metadataBeforeTransfer.description).to.eq(`@${MOCK_PROFILE_HANDLE} - Lens profile`);
         const expectedAttributesBeforeTransfer = [
           { trait_type: 'id', value: `#${FIRST_PROFILE_ID.toString()}` },
           { trait_type: 'followers', value: '0' },
           { trait_type: 'owner', value: userAddress.toLowerCase() },
           { trait_type: 'handle', value: `@${MOCK_PROFILE_HANDLE}` },
         ];
-        expect(jsonMetadataBeforeTransfer.attributes).to.eql(expectedAttributesBeforeTransfer);
+        expect(metadataBeforeTransfer.attributes).to.eql(expectedAttributesBeforeTransfer);
+        const svgBeforeTransfer = await getDecodedSvgImage(metadataBeforeTransfer);
+        const expectedSvg = loadTestResourceAsUtf8String(
+          'profile-token-uri-images/mock-profile.svg'
+        );
+        expect(svgBeforeTransfer).to.eq(expectedSvg);
 
         await expect(
           lensHub.transferFrom(userAddress, userTwoAddress, FIRST_PROFILE_ID)
         ).to.not.be.reverted;
 
-        const tokenURIAfterTransfer = await lensHub.tokenURI(FIRST_PROFILE_ID);
-        const jsonMetadataAfterTransfer = await getJsonMetadataFromBase64TokenUri(
-          tokenURIAfterTransfer
-        );
-        expect(jsonMetadataAfterTransfer.name).to.eq(`@${MOCK_PROFILE_HANDLE}`);
-        expect(jsonMetadataAfterTransfer.description).to.eq(
-          `@${MOCK_PROFILE_HANDLE} - Lens profile`
-        );
+        const tokenUriAfterTransfer = await lensHub.tokenURI(FIRST_PROFILE_ID);
+        const metadataAfterTransfer = await getMetadataFromBase64TokenUri(tokenUriAfterTransfer);
+        expect(metadataAfterTransfer.name).to.eq(`@${MOCK_PROFILE_HANDLE}`);
+        expect(metadataAfterTransfer.description).to.eq(`@${MOCK_PROFILE_HANDLE} - Lens profile`);
         const expectedAttributesAfterTransfer = [
           { trait_type: 'id', value: `#${FIRST_PROFILE_ID.toString()}` },
           { trait_type: 'followers', value: '0' },
           { trait_type: 'owner', value: userTwoAddress.toLowerCase() },
           { trait_type: 'handle', value: `@${MOCK_PROFILE_HANDLE}` },
         ];
-        expect(jsonMetadataAfterTransfer.attributes).to.eql(expectedAttributesAfterTransfer);
+        expect(metadataAfterTransfer.attributes).to.eql(expectedAttributesAfterTransfer);
+        const svgAfterTransfer = await getDecodedSvgImage(metadataAfterTransfer);
+        expect(svgAfterTransfer).to.eq(expectedSvg);
       });
 
       it('Should return the correct tokenURI after a follow', async function () {
-        const tokenURIBeforeTransfer = await lensHub.tokenURI(FIRST_PROFILE_ID);
-        const jsonMetadataBeforeTransfer = await getJsonMetadataFromBase64TokenUri(
-          tokenURIBeforeTransfer
-        );
-        expect(jsonMetadataBeforeTransfer.name).to.eq(`@${MOCK_PROFILE_HANDLE}`);
-        expect(jsonMetadataBeforeTransfer.description).to.eq(
-          `@${MOCK_PROFILE_HANDLE} - Lens profile`
-        );
-        const expectedAttributesBeforeTransfer = [
+        const tokenUriBeforeFollow = await lensHub.tokenURI(FIRST_PROFILE_ID);
+        const metadataBeforeFollow = await getMetadataFromBase64TokenUri(tokenUriBeforeFollow);
+        expect(metadataBeforeFollow.name).to.eq(`@${MOCK_PROFILE_HANDLE}`);
+        expect(metadataBeforeFollow.description).to.eq(`@${MOCK_PROFILE_HANDLE} - Lens profile`);
+        const expectedAttributesBeforeFollow = [
           { trait_type: 'id', value: `#${FIRST_PROFILE_ID.toString()}` },
           { trait_type: 'followers', value: '0' },
           { trait_type: 'owner', value: userAddress.toLowerCase() },
           { trait_type: 'handle', value: `@${MOCK_PROFILE_HANDLE}` },
         ];
-        expect(jsonMetadataBeforeTransfer.attributes).to.eql(expectedAttributesBeforeTransfer);
+        expect(metadataBeforeFollow.attributes).to.eql(expectedAttributesBeforeFollow);
+        const svgBeforeFollow = await getDecodedSvgImage(metadataBeforeFollow);
+        const expectedSvg = loadTestResourceAsUtf8String(
+          'profile-token-uri-images/mock-profile.svg'
+        );
+        expect(svgBeforeFollow).to.eq(expectedSvg);
 
         await expect(lensHub.follow([FIRST_PROFILE_ID], [[]])).to.not.be.reverted;
 
-        const tokenURIAfterTransfer = await lensHub.tokenURI(FIRST_PROFILE_ID);
-        const jsonMetadataAfterTransfer = await getJsonMetadataFromBase64TokenUri(
-          tokenURIAfterTransfer
-        );
-        expect(jsonMetadataAfterTransfer.name).to.eq(`@${MOCK_PROFILE_HANDLE}`);
-        expect(jsonMetadataAfterTransfer.description).to.eq(
-          `@${MOCK_PROFILE_HANDLE} - Lens profile`
-        );
-        const expectedAttributesAfterTransfer = [
+        const tokenUriAfterFollow = await lensHub.tokenURI(FIRST_PROFILE_ID);
+        const metadataAfterFollow = await getMetadataFromBase64TokenUri(tokenUriAfterFollow);
+        expect(metadataAfterFollow.name).to.eq(`@${MOCK_PROFILE_HANDLE}`);
+        expect(metadataAfterFollow.description).to.eq(`@${MOCK_PROFILE_HANDLE} - Lens profile`);
+        const expectedAttributesAfterFollow = [
           { trait_type: 'id', value: `#${FIRST_PROFILE_ID.toString()}` },
           { trait_type: 'followers', value: '1' },
           { trait_type: 'owner', value: userAddress.toLowerCase() },
           { trait_type: 'handle', value: `@${MOCK_PROFILE_HANDLE}` },
         ];
-        expect(jsonMetadataAfterTransfer.attributes).to.eql(expectedAttributesAfterTransfer);
+        expect(metadataAfterFollow.attributes).to.eql(expectedAttributesAfterFollow);
+        const svgAfterFollow = await getDecodedSvgImage(metadataAfterFollow);
+        expect(svgAfterFollow).to.eq(expectedSvg);
       });
 
       it('User should set user two as a dispatcher on their profile, user two should set the profile URI', async function () {
@@ -200,10 +200,20 @@ makeSuiteCleanRoom('Profile URI Functionality', function () {
         await expect(
           lensHub.connect(userTwo).setProfileImageURI(FIRST_PROFILE_ID, MOCK_URI)
         ).to.not.be.reverted;
-        const tokenURI = await lensHub.tokenURI(FIRST_PROFILE_ID);
-        expect(keccak256(toUtf8Bytes(tokenURI))).to.eq(
-          '0xe1731460db6ce5fa9f3a9f2bd778a8af49e623dceb531df6b1a5c162b7c2d79a'
-        );
+        const tokenUri = await lensHub.tokenURI(FIRST_PROFILE_ID);
+        const metadata = await getMetadataFromBase64TokenUri(tokenUri);
+        expect(metadata.name).to.eq(`@${MOCK_PROFILE_HANDLE}`);
+        expect(metadata.description).to.eq(`@${MOCK_PROFILE_HANDLE} - Lens profile`);
+        const expectedAttributes = [
+          { trait_type: 'id', value: `#${FIRST_PROFILE_ID.toString()}` },
+          { trait_type: 'followers', value: '0' },
+          { trait_type: 'owner', value: userAddress.toLowerCase() },
+          { trait_type: 'handle', value: `@${MOCK_PROFILE_HANDLE}` },
+        ];
+        expect(metadata.attributes).to.eql(expectedAttributes);
+        const actualSvg = await getDecodedSvgImage(metadata);
+        const expectedSvg = loadTestResourceAsUtf8String('profile-token-uri-images/mock.svg');
+        expect(actualSvg).to.eq(expectedSvg);
       });
 
       it('User should follow profile 1, user should change the follow NFT URI, URI is accurate before and after the change', async function () {
@@ -436,11 +446,22 @@ makeSuiteCleanRoom('Profile URI Functionality', function () {
           MAX_UINT256
         );
 
-        const tokenURIBefore = await lensHub.tokenURI(FIRST_PROFILE_ID);
-
-        expect(keccak256(toUtf8Bytes(tokenURIBefore))).to.eq(
-          '0x6ed04aa8ab68b7c5201afb2f9655d8fd483559794ce933b7f2282549ca9e3dba'
+        const tokenUriBefore = await lensHub.tokenURI(FIRST_PROFILE_ID);
+        const metadataBefore = await getMetadataFromBase64TokenUri(tokenUriBefore);
+        expect(metadataBefore.name).to.eq(`@${MOCK_PROFILE_HANDLE}`);
+        expect(metadataBefore.description).to.eq(`@${MOCK_PROFILE_HANDLE} - Lens profile`);
+        const expectedAttributesBefore = [
+          { trait_type: 'id', value: `#${FIRST_PROFILE_ID.toString()}` },
+          { trait_type: 'followers', value: '0' },
+          { trait_type: 'owner', value: testWallet.address.toLowerCase() },
+          { trait_type: 'handle', value: `@${MOCK_PROFILE_HANDLE}` },
+        ];
+        expect(metadataBefore.attributes).to.eql(expectedAttributesBefore);
+        const svgBefore = await getDecodedSvgImage(metadataBefore);
+        const expectedSvgBefore = loadTestResourceAsUtf8String(
+          'profile-token-uri-images/mock-profile.svg'
         );
+        expect(svgBefore).to.eq(expectedSvgBefore);
 
         await expect(
           lensHub.setProfileImageURIWithSig({
@@ -455,14 +476,24 @@ makeSuiteCleanRoom('Profile URI Functionality', function () {
           })
         ).to.not.be.reverted;
 
-        const tokenURIAfter = await lensHub.tokenURI(FIRST_PROFILE_ID);
+        const tokenUriAfter = await lensHub.tokenURI(FIRST_PROFILE_ID);
 
         expect(MOCK_PROFILE_URI).to.not.eq(MOCK_URI);
-        expect(tokenURIBefore).to.not.eq(tokenURIAfter);
+        expect(tokenUriBefore).to.not.eq(tokenUriAfter);
 
-        expect(keccak256(toUtf8Bytes(tokenURIAfter))).to.eq(
-          '0x2f93fe42168b386790c5615061bcd3c1d8aac1976bddca8cf57eb2bc525541ab'
-        );
+        const metadataAfter = await getMetadataFromBase64TokenUri(tokenUriAfter);
+        expect(metadataAfter.name).to.eq(`@${MOCK_PROFILE_HANDLE}`);
+        expect(metadataAfter.description).to.eq(`@${MOCK_PROFILE_HANDLE} - Lens profile`);
+        const expectedAttributesAfter = [
+          { trait_type: 'id', value: `#${FIRST_PROFILE_ID.toString()}` },
+          { trait_type: 'followers', value: '0' },
+          { trait_type: 'owner', value: testWallet.address.toLowerCase() },
+          { trait_type: 'handle', value: `@${MOCK_PROFILE_HANDLE}` },
+        ];
+        expect(metadataAfter.attributes).to.eql(expectedAttributesAfter);
+        const svgAfter = await getDecodedSvgImage(metadataAfter);
+        const expectedSvgAfter = loadTestResourceAsUtf8String('profile-token-uri-images/mock.svg');
+        expect(svgAfter).to.eq(expectedSvgAfter);
       });
 
       it('TestWallet should set the follow NFT URI with sig', async function () {
