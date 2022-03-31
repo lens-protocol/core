@@ -30,15 +30,16 @@ abstract contract FollowValidationModuleBase is ModuleBase {
      * @param user The address of the user that should be following the given profile.
      */
     function _checkFollowValidity(uint256 profileId, address user) internal view {
-        if (IERC721(HUB).ownerOf(profileId) != user) {
-            address followModule = ILensHub(HUB).getFollowModule(profileId);
-            if (followModule != address(0)) {
-                IFollowModule(followModule).validateFollow(profileId, user, 0);
-            } else {
-                address followNFT = ILensHub(HUB).getFollowNFT(profileId);
-                if (followNFT == address(0)) revert Errors.FollowInvalid();
-                if (IERC721(followNFT).balanceOf(user) == 0) revert Errors.FollowInvalid();
-            }
+        address followModule = ILensHub(HUB).getFollowModule(profileId);
+        bool isFollowing;
+        if (followModule != address(0)) {
+            isFollowing = IFollowModule(followModule).isFollowing(profileId, user, 0);
+        } else {
+            address followNFT = ILensHub(HUB).getFollowNFT(profileId);
+            isFollowing = followNFT != address(0) && IERC721(followNFT).balanceOf(user) != 0;
+        }
+        if (!isFollowing && IERC721(HUB).ownerOf(profileId) != user) {
+            revert Errors.FollowInvalid();
         }
     }
 }
