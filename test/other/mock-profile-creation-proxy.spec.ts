@@ -6,7 +6,7 @@ import { MockProfileCreationProxy, MockProfileCreationProxy__factory } from '../
 import {
   approvalFollowModule,
   deployer,
-  followerOnlyCollectModule,
+  freeCollectModule,
   FIRST_PROFILE_ID,
   followerOnlyReferenceModule,
   governance,

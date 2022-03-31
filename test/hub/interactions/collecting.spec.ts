@@ -11,7 +11,7 @@ import {
 } from '../../helpers/utils';
 import {
   lensHub,
-  followerOnlyCollectModule,
+  freeCollectModule,
   FIRST_PROFILE_ID,
   governance,
   makeSuiteCleanRoom,
@@ -23,12 +23,13 @@ import {
   userTwo,
   userTwoAddress,
   MOCK_FOLLOW_NFT_URI,
+  abiCoder,
 } from '../../__setup.spec';
 
 makeSuiteCleanRoom('Collecting', function () {
   beforeEach(async function () {
     await expect(
-      lensHub.connect(governance).whitelistCollectModule(followerOnlyCollectModule.address, true)
+      lensHub.connect(governance).whitelistCollectModule(freeCollectModule.address, true)
     ).to.not.be.reverted;
     await expect(
       lensHub.createProfile({
@@ -44,8 +45,8 @@ makeSuiteCleanRoom('Collecting', function () {
       lensHub.post({
         profileId: FIRST_PROFILE_ID,
         contentURI: MOCK_URI,
-        collectModule: followerOnlyCollectModule.address,
-        collectModuleData: [],
+        collectModule: freeCollectModule.address,
+        collectModuleData: abiCoder.encode(['bool'], [true]),
         referenceModule: ZERO_ADDRESS,
         referenceModuleData: [],
       })

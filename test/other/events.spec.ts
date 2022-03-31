@@ -14,7 +14,7 @@ import {
   approvalFollowModule,
   deployer,
   deployerAddress,
-  followerOnlyCollectModule,
+  freeCollectModule,
   FIRST_PROFILE_ID,
   governance,
   governanceAddress,
@@ -34,6 +34,7 @@ import {
   userAddress,
   userTwo,
   userTwoAddress,
+  abiCoder,
 } from '../__setup.spec';
 
 /**
@@ -325,15 +326,15 @@ makeSuiteCleanRoom('Events', function () {
       await createProfile();
 
       await waitForTx(
-        lensHub.connect(governance).whitelistCollectModule(followerOnlyCollectModule.address, true)
+        lensHub.connect(governance).whitelistCollectModule(freeCollectModule.address, true)
       );
 
       receipt = await waitForTx(
         lensHub.post({
           profileId: FIRST_PROFILE_ID,
           contentURI: MOCK_URI,
-          collectModule: followerOnlyCollectModule.address,
-          collectModuleData: [],
+          collectModule: freeCollectModule.address,
+          collectModuleData: abiCoder.encode(['bool'], [true]),
           referenceModule: ZERO_ADDRESS,
           referenceModuleData: [],
         })
@@ -344,8 +345,8 @@ makeSuiteCleanRoom('Events', function () {
         FIRST_PROFILE_ID,
         1,
         MOCK_URI,
-        followerOnlyCollectModule.address,
-        [],
+        freeCollectModule.address,
+        abiCoder.encode(['bool'], [true]),
         ZERO_ADDRESS,
         [],
         await getTimestamp(),
@@ -356,14 +357,14 @@ makeSuiteCleanRoom('Events', function () {
       await createProfile();
 
       await waitForTx(
-        lensHub.connect(governance).whitelistCollectModule(followerOnlyCollectModule.address, true)
+        lensHub.connect(governance).whitelistCollectModule(freeCollectModule.address, true)
       );
       await waitForTx(
         lensHub.post({
           profileId: FIRST_PROFILE_ID,
           contentURI: MOCK_URI,
-          collectModule: followerOnlyCollectModule.address,
-          collectModuleData: [],
+          collectModule: freeCollectModule.address,
+          collectModuleData: abiCoder.encode(['bool'], [true]),
           referenceModule: ZERO_ADDRESS,
           referenceModuleData: [],
         })
@@ -375,8 +376,8 @@ makeSuiteCleanRoom('Events', function () {
           contentURI: MOCK_URI,
           profileIdPointed: FIRST_PROFILE_ID,
           pubIdPointed: 1,
-          collectModule: followerOnlyCollectModule.address,
-          collectModuleData: [],
+          collectModule: freeCollectModule.address,
+          collectModuleData: abiCoder.encode(['bool'], [true]),
           referenceModule: ZERO_ADDRESS,
           referenceModuleData: [],
         })
@@ -390,8 +391,8 @@ makeSuiteCleanRoom('Events', function () {
         MOCK_URI,
         FIRST_PROFILE_ID,
         1,
-        followerOnlyCollectModule.address,
-        [],
+        freeCollectModule.address,
+        abiCoder.encode(['bool'], [true]),
         ZERO_ADDRESS,
         [],
         await getTimestamp(),
@@ -402,14 +403,14 @@ makeSuiteCleanRoom('Events', function () {
       await createProfile();
 
       await waitForTx(
-        lensHub.connect(governance).whitelistCollectModule(followerOnlyCollectModule.address, true)
+        lensHub.connect(governance).whitelistCollectModule(freeCollectModule.address, true)
       );
       await waitForTx(
         lensHub.post({
           profileId: FIRST_PROFILE_ID,
           contentURI: MOCK_URI,
-          collectModule: followerOnlyCollectModule.address,
-          collectModuleData: [],
+          collectModule: freeCollectModule.address,
+          collectModuleData: abiCoder.encode(['bool'], [true]),
           referenceModule: ZERO_ADDRESS,
           referenceModuleData: [],
         })
@@ -442,7 +443,7 @@ makeSuiteCleanRoom('Events', function () {
       await createProfile();
 
       await waitForTx(
-        lensHub.connect(governance).whitelistCollectModule(followerOnlyCollectModule.address, true)
+        lensHub.connect(governance).whitelistCollectModule(freeCollectModule.address, true)
       );
 
       receipt = await waitForTx(lensHub.connect(userTwo).follow([FIRST_PROFILE_ID], [[]]));
@@ -468,15 +469,15 @@ makeSuiteCleanRoom('Events', function () {
       await createProfile();
 
       await waitForTx(
-        lensHub.connect(governance).whitelistCollectModule(followerOnlyCollectModule.address, true)
+        lensHub.connect(governance).whitelistCollectModule(freeCollectModule.address, true)
       );
 
       await waitForTx(
         lensHub.post({
           profileId: FIRST_PROFILE_ID,
           contentURI: MOCK_URI,
-          collectModule: followerOnlyCollectModule.address,
-          collectModuleData: [],
+          collectModule: freeCollectModule.address,
+          collectModuleData: abiCoder.encode(['bool'], [true]),
           referenceModule: ZERO_ADDRESS,
           referenceModuleData: [],
         })
@@ -522,15 +523,15 @@ makeSuiteCleanRoom('Events', function () {
       await createProfile();
 
       await waitForTx(
-        lensHub.connect(governance).whitelistCollectModule(followerOnlyCollectModule.address, true)
+        lensHub.connect(governance).whitelistCollectModule(freeCollectModule.address, true)
       );
 
       await waitForTx(
         lensHub.post({
           profileId: FIRST_PROFILE_ID,
           contentURI: MOCK_URI,
-          collectModule: followerOnlyCollectModule.address,
-          collectModuleData: [],
+          collectModule: freeCollectModule.address,
+          collectModuleData: abiCoder.encode(['bool'], [true]),
           referenceModule: ZERO_ADDRESS,
           referenceModuleData: [],
         })

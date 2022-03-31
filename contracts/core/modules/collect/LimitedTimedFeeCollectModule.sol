@@ -30,8 +30,8 @@ struct ProfilePublicationData {
     address currency;
     address recipient;
     uint16 referralFee;
-    uint40 endTimestamp;
     bool followerOnly;
+    uint40 endTimestamp;
 }
 
 /**
@@ -95,10 +95,10 @@ contract LimitedTimedFeeCollectModule is ICollectModule, FeeModuleBase, FollowVa
         _dataByPublicationByProfile[profileId][pubId].currency = currency;
         _dataByPublicationByProfile[profileId][pubId].recipient = recipient;
         _dataByPublicationByProfile[profileId][pubId].referralFee = referralFee;
-        _dataByPublicationByProfile[profileId][pubId].endTimestamp = endTimestamp;
         _dataByPublicationByProfile[profileId][pubId].followerOnly = followerOnly;
+        _dataByPublicationByProfile[profileId][pubId].endTimestamp = endTimestamp;
 
-        return abi.encode(collectLimit, amount, currency, recipient, referralFee, endTimestamp);
+        return abi.encode(collectLimit, amount, currency, recipient, referralFee, followerOnly, endTimestamp);
     }
 
     /**

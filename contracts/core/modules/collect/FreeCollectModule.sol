@@ -7,15 +7,17 @@ import {ModuleBase} from '../ModuleBase.sol';
 import {FollowValidationModuleBase} from '../FollowValidationModuleBase.sol';
 
 /**
- * @title FollowerOnlyCollectModule
+ * @title FreeCollectModule
  * @author Lens Protocol
  *
  * @notice This is a simple Lens CollectModule implementation, inheriting from the ICollectModule interface.
  *
  * This module works by allowing all collects by followers.
  */
-contract FollowerOnlyCollectModule is ICollectModule, FollowValidationModuleBase {
+contract FreeCollectModule is ICollectModule, FollowValidationModuleBase {
     constructor(address hub) ModuleBase(hub) {}
+
+    mapping(uint256 => mapping(uint256 => bool)) internal _followerOnlyByPublicationByProfile;
 
     /**
      * @dev There is nothing needed at initialization.
@@ -24,13 +26,15 @@ contract FollowerOnlyCollectModule is ICollectModule, FollowValidationModuleBase
         uint256 profileId,
         uint256 pubId,
         bytes calldata data
-    ) external pure override returns (bytes memory) {
-        return new bytes(0);
+    ) external override onlyHub returns (bytes memory) {
+        bool followerOnly = abi.decode(data, (bool));
+        if (followerOnly) _followerOnlyByPublicationByProfile[profileId][pubId] = true;
+        return data;
     }
 
     /**
      * @dev Processes a collect by:
-     *  1. Ensuring the collector is a follower
+     *  1. Ensuring the collector is a follower, if needed
      */
     function processCollect(
         uint256 referrerProfileId,
@@ -39,6 +43,7 @@ contract FollowerOnlyCollectModule is ICollectModule, FollowValidationModuleBase
         uint256 pubId,
         bytes calldata data
     ) external view override {
-        _checkFollowValidity(profileId, collector);
+        if (_followerOnlyByPublicationByProfile[profileId][pubId])
+            _checkFollowValidity(profileId, collector);
     }
 }
