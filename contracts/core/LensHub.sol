@@ -888,13 +888,12 @@ contract LensHub is ILensHub, LensNFTBase, VersionedInitializable, LensMultiStat
     function _createComment(DataTypes.CommentData memory vars) internal {
         PublishingLogic.createComment(
             vars,
-            _profileById[vars.profileId].pubCount + 1,
+            ++_profileById[vars.profileId].pubCount,
             _profileById,
             _pubByIdByProfile,
             _collectModuleWhitelisted,
             _referenceModuleWhitelisted
         );
-        ++_profileById[vars.profileId].pubCount;
     }
 
     function _createMirror(
