@@ -137,7 +137,7 @@ makeSuiteCleanRoom('Limited Timed Fee Collect Module', function () {
       it('user should fail to post with limited timed fee collect module using zero amount', async function () {
         const collectModuleData = abiCoder.encode(
           ['uint256', 'uint256', 'address', 'address', 'uint16', 'bool'],
-          [DEFAULT_COLLECT_LIMIT, 9999, currency.address, userAddress, REFERRAL_FEE_BPS, true]
+          [DEFAULT_COLLECT_LIMIT, 0, currency.address, userAddress, REFERRAL_FEE_BPS, true]
         );
         await expect(
           lensHub.post({
