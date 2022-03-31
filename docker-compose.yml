@@ -2,8 +2,6 @@ version: '3.5'
 
 services:
   contracts-env:
-    security_opt:
-      - no-new-privileges
     user: "${USERID?}:${USERID?}"
     env_file:
       - .env

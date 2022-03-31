@@ -175,10 +175,11 @@ task('full-deploy', 'deploys the entire Lens Protocol').setAction(async ({}, hre
       nonce: deployerNonce++,
     })
   );
-  console.log('\n\t-- Deploying approvalFollowModule --');
-  const approvalFollowModule = await deployContract(
-    new ApprovalFollowModule__factory(deployer).deploy(lensHub.address, { nonce: deployerNonce++ })
-  );
+  // --- COMMENTED OUT AS THIS IS NOT A LAUNCH MODULE ---
+  // console.log('\n\t-- Deploying approvalFollowModule --');
+  // const approvalFollowModule = await deployContract(
+  //   new ApprovalFollowModule__factory(deployer).deploy(lensHub.address, { nonce: deployerNonce++ })
+  // );
 
   // Deploy reference module
   console.log('\n\t-- Deploying followerOnlyReferenceModule --');
@@ -221,9 +222,10 @@ task('full-deploy', 'deploys the entire Lens Protocol').setAction(async ({}, hre
   await waitForTx(
     lensHub.whitelistFollowModule(feeFollowModule.address, true, { nonce: governanceNonce++ })
   );
-  await waitForTx(
-    lensHub.whitelistFollowModule(approvalFollowModule.address, true, { nonce: governanceNonce++ })
-  );
+  // --- COMMENTED OUT AS THIS IS NOT A LAUNCH MODULE ---
+  // await waitForTx(
+  // lensHub.whitelistFollowModule(approvalFollowModule.address, true, { nonce: governanceNonce++ })
+  // );
 
   // Whitelist the reference module
   console.log('\n\t-- Whitelisting Reference Module --');
@@ -259,7 +261,8 @@ task('full-deploy', 'deploys the entire Lens Protocol').setAction(async ({}, hre
     'revert collect module': revertCollectModule.address,
     'empty collect module': freeCollectModule.address,
     'fee follow module': feeFollowModule.address,
-    'approval follow module': approvalFollowModule.address,
+    // --- COMMENTED OUT AS THIS IS NOT A LAUNCH MODULE ---
+    // 'approval follow module': approvalFollowModule.address,
     'follower only reference module': followerOnlyReferenceModule.address,
   };
   const json = JSON.stringify(addrs, null, 2);

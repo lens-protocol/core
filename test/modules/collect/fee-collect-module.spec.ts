@@ -2,6 +2,7 @@ import { BigNumber } from '@ethersproject/contracts/node_modules/@ethersproject/
 import { parseEther } from '@ethersproject/units';
 import '@nomiclabs/hardhat-ethers';
 import { expect } from 'chai';
+import { ERC20__factory } from '../../../typechain-types';
 import { MAX_UINT256, ZERO_ADDRESS } from '../../helpers/constants';
 import { ERRORS } from '../../helpers/errors';
 import { getTimestamp, matchEvent, waitForTx } from '../../helpers/utils';
@@ -13,6 +14,7 @@ import {
   FIRST_PROFILE_ID,
   governance,
   lensHub,
+  lensHubImpl,
   makeSuiteCleanRoom,
   MOCK_FOLLOW_NFT_URI,
   MOCK_PROFILE_HANDLE,
@@ -22,6 +24,7 @@ import {
   REFERRAL_FEE_BPS,
   treasuryAddress,
   TREASURY_FEE_BPS,
+  user,
   userAddress,
   userTwo,
   userTwoAddress,
@@ -102,7 +105,7 @@ makeSuiteCleanRoom('Fee Collect Module', function () {
         ).to.be.revertedWith(ERRORS.INIT_PARAMS_INVALID);
       });
 
-      it('user should fail to post with fee collect module using amount lower than max BPS', async function () {
+      it('user should fail to post with fee collect module using zero amount', async function () {
         const collectModuleData = abiCoder.encode(
           ['uint256', 'address', 'address', 'uint16', 'bool'],
           [9999, currency.address, userAddress, REFERRAL_FEE_BPS, true]
@@ -136,6 +139,105 @@ makeSuiteCleanRoom('Fee Collect Module', function () {
             referenceModuleData: [],
           })
         ).to.not.be.reverted;
+      });
+
+      it('Governance should set the treasury fee BPS to zero, userTwo collecting should not emit a transfer event to the treasury', async function () {
+        await expect(moduleGlobals.connect(governance).setTreasuryFee(0)).to.not.be.reverted;
+        const data = abiCoder.encode(
+          ['address', 'uint256'],
+          [currency.address, DEFAULT_COLLECT_PRICE]
+        );
+        await expect(lensHub.connect(userTwo).follow([FIRST_PROFILE_ID], [[]])).to.not.be.reverted;
+
+        await expect(currency.mint(userTwoAddress, MAX_UINT256)).to.not.be.reverted;
+        await expect(
+          currency.connect(userTwo).approve(feeCollectModule.address, MAX_UINT256)
+        ).to.not.be.reverted;
+
+        const tx = lensHub.connect(userTwo).collect(FIRST_PROFILE_ID, 1, data);
+        const receipt = await waitForTx(tx);
+
+        let currencyEventCount = 0;
+        for (let log of receipt.logs) {
+          if (log.address == currency.address) {
+            currencyEventCount++;
+          }
+        }
+        expect(currencyEventCount).to.eq(1);
+        matchEvent(
+          receipt,
+          'Transfer',
+          [userTwoAddress, userAddress, DEFAULT_COLLECT_PRICE],
+          currency,
+          currency.address
+        );
+      });
+
+      it('UserTwo should mirror the original post, governance should set the treasury fee BPS to zero, userTwo collecting their mirror should not emit a transfer event to the treasury', async function () {
+        const secondProfileId = FIRST_PROFILE_ID + 1;
+        await expect(
+          lensHub.connect(userTwo).createProfile({
+            to: userTwoAddress,
+            handle: 'usertwo',
+            imageURI: MOCK_PROFILE_URI,
+            followModule: ZERO_ADDRESS,
+            followModuleData: [],
+            followNFTURI: MOCK_FOLLOW_NFT_URI,
+          })
+        ).to.not.be.reverted;
+        await expect(
+          lensHub.connect(userTwo).mirror({
+            profileId: secondProfileId,
+            profileIdPointed: FIRST_PROFILE_ID,
+            pubIdPointed: 1,
+            referenceModule: ZERO_ADDRESS,
+            referenceModuleData: [],
+          })
+        ).to.not.be.reverted;
+
+        await expect(moduleGlobals.connect(governance).setTreasuryFee(0)).to.not.be.reverted;
+        const data = abiCoder.encode(
+          ['address', 'uint256'],
+          [currency.address, DEFAULT_COLLECT_PRICE]
+        );
+        await expect(lensHub.connect(userTwo).follow([FIRST_PROFILE_ID], [[]])).to.not.be.reverted;
+
+        await expect(currency.mint(userTwoAddress, MAX_UINT256)).to.not.be.reverted;
+        await expect(
+          currency.connect(userTwo).approve(feeCollectModule.address, MAX_UINT256)
+        ).to.not.be.reverted;
+
+        const tx = lensHub.connect(userTwo).collect(secondProfileId, 1, data);
+        const receipt = await waitForTx(tx);
+
+        let currencyEventCount = 0;
+        for (let log of receipt.logs) {
+          if (log.address == currency.address) {
+            currencyEventCount++;
+          }
+        }
+        expect(currencyEventCount).to.eq(2);
+
+        const expectedReferralAmount = BigNumber.from(DEFAULT_COLLECT_PRICE)
+          .mul(REFERRAL_FEE_BPS)
+          .div(BPS_MAX);
+        const amount = DEFAULT_COLLECT_PRICE.sub(expectedReferralAmount);
+
+        matchEvent(
+          receipt,
+          'Transfer',
+          [userTwoAddress, userAddress, amount],
+          currency,
+          currency.address
+        );
+
+        matchEvent(
+          receipt,
+          'Transfer',
+          [userTwoAddress, userTwoAddress, expectedReferralAmount],
+          currency,
+          currency.address
+        );
       });
 
       it('UserTwo should fail to collect without following', async function () {

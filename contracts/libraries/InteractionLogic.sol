@@ -11,7 +11,6 @@ import {IFollowNFT} from '../interfaces/IFollowNFT.sol';
 import {ICollectNFT} from '../interfaces/ICollectNFT.sol';
 import {IFollowModule} from '../interfaces/IFollowModule.sol';
 import {ICollectModule} from '../interfaces/ICollectModule.sol';
-import {ERC721Time} from '../core/base/ERC721Time.sol';
 import {Clones} from '@openzeppelin/contracts/proxy/Clones.sol';
 import {Strings} from '@openzeppelin/contracts/utils/Strings.sol';
 
@@ -35,6 +34,7 @@ library InteractionLogic {
      * @param followModuleDatas The array of follow module data parameters to pass to each profile's follow module.
      * @param followNFTImpl The address of the follow NFT implementation, which has to be passed because it's an immutable in the hub.
      * @param _profileById A pointer to the storage mapping of profile structs by profile ID.
+     * @param _profileIdByHandleHash A pointer to the storage mapping of profile IDs by handle hash.
      */
     function follow(
         address follower,
@@ -47,7 +47,7 @@ library InteractionLogic {
         if (profileIds.length != followModuleDatas.length) revert Errors.ArrayMismatch();
         for (uint256 i = 0; i < profileIds.length; ++i) {
             string memory handle = _profileById[profileIds[i]].handle;
-            if (_profileIdByHandleHash[keccak256(bytes(handle))] == 0)
+            if (_profileIdByHandleHash[keccak256(bytes(handle))] != profileIds[i])
                 revert Errors.TokenDoesNotExist();
 
             address followModule = _profileById[profileIds[i]].followModule;

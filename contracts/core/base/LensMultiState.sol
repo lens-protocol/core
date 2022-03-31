@@ -9,8 +9,10 @@ import {Errors} from '../../libraries/Errors.sol';
 /**
  * @title LensMultiState
  *
- * @notice This is an abstract contract that implements internal LensHub state setting and
- * validation.
+ * @notice This is an abstract contract that implements internal LensHub state setting and validation.
+ *
+ * whenNotPaused: Either publishingPaused or Unpaused.
+ * whenPublishingEnabled: When Unpaused only.
  */
 abstract contract LensMultiState {
     DataTypes.ProtocolState private _state;
@@ -39,9 +41,7 @@ abstract contract LensMultiState {
     }
 
     function _validatePublishingEnabled() internal view {
-        if (_state == DataTypes.ProtocolState.Paused) {
-            revert Errors.Paused();
-        } else if (_state == DataTypes.ProtocolState.PublishingPaused) {
+        if (_state != DataTypes.ProtocolState.Unpaused) {
             revert Errors.PublishingPaused();
         }
     }

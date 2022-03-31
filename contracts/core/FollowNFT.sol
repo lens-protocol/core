@@ -9,7 +9,6 @@ import {Errors} from '../libraries/Errors.sol';
 import {Events} from '../libraries/Events.sol';
 import {DataTypes} from '../libraries/DataTypes.sol';
 import {LensNFTBase} from './base/LensNFTBase.sol';
-import {IERC721Metadata} from '@openzeppelin/contracts/token/ERC721/extensions/IERC721Metadata.sol';
 
 /**
  * @title FollowNFT
@@ -47,6 +46,7 @@ contract FollowNFT is LensNFTBase, IFollowNFT {
     // We create the FollowNFT with the pre-computed HUB address before deploying the hub.
     constructor(address hub) {
         HUB = hub;
+        _initialized = true;
     }
 
     /// @inheritdoc IFollowNFT
