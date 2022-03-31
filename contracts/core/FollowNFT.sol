@@ -63,10 +63,11 @@ contract FollowNFT is LensNFTBase, IFollowNFT {
     }
 
     /// @inheritdoc IFollowNFT
-    function mint(address to) external override {
+    function mint(address to) external override returns (uint256) {
         if (msg.sender != HUB) revert Errors.NotHub();
         uint256 tokenId = ++_tokenIdCounter;
         _mint(to, tokenId);
+        return tokenId;
     }
 
     /// @inheritdoc IFollowNFT
