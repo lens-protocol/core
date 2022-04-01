@@ -80,7 +80,7 @@ contract LensPeriphery {
     ) internal {
         if (profileIds.length != enables.length) revert Errors.ArrayMismatch();
         uint256 profileIdsLength = profileIds.length;
-        for (uint256 i = 0; i < profileIdsLength; ) {
+        for (uint256 i; i < profileIdsLength; ) {
             address followNFT = HUB.getFollowNFT(profileIds[i]);
             if (followNFT == address(0)) revert Errors.FollowInvalid();
             if (!IERC721Time(address(HUB)).exists(profileIds[i])) revert Errors.TokenDoesNotExist();

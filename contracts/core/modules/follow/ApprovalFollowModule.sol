@@ -39,7 +39,7 @@ contract ApprovalFollowModule is IFollowModule, FollowValidatorFollowModuleBase 
         if (msg.sender != owner) revert Errors.NotProfileOwner();
 
         uint256 addressesLength = addresses.length;
-        for (uint256 i = 0; i < addressesLength; ) {
+        for (uint256 i; i < addressesLength; ) {
             _approvedByProfileByOwner[owner][profileId][addresses[i]] = toApprove[i];
             unchecked {
                 ++i;
@@ -69,7 +69,7 @@ contract ApprovalFollowModule is IFollowModule, FollowValidatorFollowModuleBase 
         if (data.length > 0) {
             address[] memory addresses = abi.decode(data, (address[]));
             uint256 addressesLength = addresses.length;
-            for (uint256 i = 0; i < addressesLength; ) {
+            for (uint256 i; i < addressesLength; ) {
                 _approvedByProfileByOwner[owner][profileId][addresses[i]] = true;
                 unchecked {
                     ++i;
@@ -137,7 +137,7 @@ contract ApprovalFollowModule is IFollowModule, FollowValidatorFollowModuleBase 
     ) external view returns (bool[] memory) {
         bool[] memory approved = new bool[](toCheck.length);
         uint256 toCheckLength = toCheck.length;
-        for (uint256 i = 0; i < toCheckLength; ) {
+        for (uint256 i; i < toCheckLength; ) {
             approved[i] = _approvedByProfileByOwner[profileOwner][profileId][toCheck[i]];
             unchecked {
                 ++i;

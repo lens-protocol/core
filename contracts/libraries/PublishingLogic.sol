@@ -405,7 +405,7 @@ library PublishingLogic {
             revert Errors.HandleLengthInvalid();
 
         uint256 byteHandleLength = byteHandle.length;
-        for (uint256 i = 0; i < byteHandleLength; ) {
+        for (uint256 i; i < byteHandleLength; ) {
             if (
                 (byteHandle[i] < '0' ||
                     byteHandle[i] > 'z' ||
