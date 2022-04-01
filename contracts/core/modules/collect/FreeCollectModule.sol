@@ -12,7 +12,7 @@ import {FollowValidationModuleBase} from '../FollowValidationModuleBase.sol';
  *
  * @notice This is a simple Lens CollectModule implementation, inheriting from the ICollectModule interface.
  *
- * This module works by allowing all collects by followers.
+ * This module works by allowing all collects.
  */
 contract FreeCollectModule is ICollectModule, FollowValidationModuleBase {
     constructor(address hub) ModuleBase(hub) {}
