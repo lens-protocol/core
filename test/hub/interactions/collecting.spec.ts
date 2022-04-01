@@ -23,6 +23,7 @@ import {
   userTwo,
   userTwoAddress,
   MOCK_FOLLOW_NFT_URI,
+  user,
 } from '../../__setup.spec';
 
 makeSuiteCleanRoom('Collecting', function () {
@@ -77,6 +78,22 @@ makeSuiteCleanRoom('Collecting', function () {
     });
 
     context('Scenarios', function () {
+      it('Collecting should work if the collector is the publication owner even when he is not following himself and follow NFT was not deployed', async function () {
+        await expect(lensHub.collect(FIRST_PROFILE_ID, 1, [])).to.not.be.reverted;
+      });
+
+      it('Collecting should work if the collector is the publication owner even when he is not following himself and follow NFT was deployed', async function () {
+        await expect(lensHub.follow([FIRST_PROFILE_ID], [[]])).to.not.be.reverted;
+        const followNFT = FollowNFT__factory.connect(
+          await lensHub.getFollowNFT(FIRST_PROFILE_ID),
+          user
+        );
+
+        await expect(followNFT.transferFrom(userAddress, userTwoAddress, 1)).to.not.be.reverted;
+
+        await expect(lensHub.collect(FIRST_PROFILE_ID, 1, [])).to.not.be.reverted;
+      });
+
       it('UserTwo should follow, then collect, receive a collect NFT with the expected properties', async function () {
         await expect(lensHub.connect(userTwo).follow([FIRST_PROFILE_ID], [[]])).to.not.be.reverted;
         await expect(lensHub.connect(userTwo).collect(FIRST_PROFILE_ID, 1, [])).to.not.be.reverted;
