@@ -45,6 +45,7 @@ contract FollowNFT is LensNFTBase, IFollowNFT {
 
     // We create the FollowNFT with the pre-computed HUB address before deploying the hub.
     constructor(address hub) {
+        if (hub == address(0)) revert Errors.InitParamsInvalid();
         HUB = hub;
         _initialized = true;
     }
@@ -65,8 +66,10 @@ contract FollowNFT is LensNFTBase, IFollowNFT {
     /// @inheritdoc IFollowNFT
     function mint(address to) external override {
         if (msg.sender != HUB) revert Errors.NotHub();
-        uint256 tokenId = ++_tokenIdCounter;
-        _mint(to, tokenId);
+        unchecked {
+            uint256 tokenId = ++_tokenIdCounter;
+            _mint(to, tokenId);
+        }
     }
 
     /// @inheritdoc IFollowNFT
@@ -106,38 +109,9 @@ contract FollowNFT is LensNFTBase, IFollowNFT {
         returns (uint256)
     {
         if (blockNumber > block.number) revert Errors.BlockNumberInvalid();
-
         uint256 snapshotCount = _snapshotCount[user];
-
-        if (snapshotCount == 0) {
-            return 0; // Returning zero since this means the user never delegated and has no power
-        }
-
-        uint256 lower = 0;
-        uint256 upper = snapshotCount - 1;
-
-        // First check most recent balance
-        if (_snapshots[user][upper].blockNumber <= blockNumber) {
-            return _snapshots[user][upper].value;
-        }
-
-        // Next check implicit zero balance
-        if (_snapshots[user][lower].blockNumber > blockNumber) {
-            return 0;
-        }
-
-        while (upper > lower) {
-            uint256 center = upper - (upper - lower) / 2;
-            Snapshot memory snapshot = _snapshots[user][center];
-            if (snapshot.blockNumber == blockNumber) {
-                return snapshot.value;
-            } else if (snapshot.blockNumber < blockNumber) {
-                lower = center;
-            } else {
-                upper = center - 1;
-            }
-        }
-        return _snapshots[user][lower].value;
+        if (snapshotCount == 0) return 0; // Returning zero since this means the user never delegated and has no power
+        return _getSnapshotValueByBlockNumber(_snapshots[user], blockNumber, snapshotCount);
     }
 
     /// @inheritdoc IFollowNFT
@@ -148,38 +122,39 @@ contract FollowNFT is LensNFTBase, IFollowNFT {
         returns (uint256)
     {
         if (blockNumber > block.number) revert Errors.BlockNumberInvalid();
-
         uint256 snapshotCount = _delSupplySnapshotCount;
+        if (snapshotCount == 0) return 0; // Returning zero since this means a delegation has never occurred
+        return _getSnapshotValueByBlockNumber(_delSupplySnapshots, blockNumber, snapshotCount);
+    }
 
-        if (snapshotCount == 0) {
-            return 0; // Returning zero since this means a delegation has never occurred
-        }
+    function _getSnapshotValueByBlockNumber(
+        mapping(uint256 => Snapshot) storage _shots,
+        uint256 blockNumber,
+        uint256 snapshotCount
+    ) internal view returns (uint256) {
+        unchecked {
+            uint256 lower = 0;
+            uint256 upper = snapshotCount - 1;
 
-        uint256 lower = 0;
-        uint256 upper = snapshotCount - 1;
+            // First check most recent snapshot
+            if (_shots[upper].blockNumber <= blockNumber) return _shots[upper].value;
 
-        // First check most recent delegated supply
-        if (_delSupplySnapshots[upper].blockNumber <= blockNumber) {
-            return _delSupplySnapshots[upper].value;
-        }
+            // Next check implicit zero balance
+            if (_shots[lower].blockNumber > blockNumber) return 0;
 
-        // Next check implicit zero balance
-        if (_delSupplySnapshots[lower].blockNumber > blockNumber) {
-            return 0;
-        }
-
-        while (upper > lower) {
-            uint256 center = upper - (upper - lower) / 2;
-            Snapshot memory snapshot = _delSupplySnapshots[center];
-            if (snapshot.blockNumber == blockNumber) {
-                return snapshot.value;
-            } else if (snapshot.blockNumber < blockNumber) {
-                lower = center;
-            } else {
-                upper = center - 1;
+            while (upper > lower) {
+                uint256 center = upper - (upper - lower) / 2;
+                Snapshot memory snapshot = _shots[center];
+                if (snapshot.blockNumber == blockNumber) {
+                    return snapshot.value;
+                } else if (snapshot.blockNumber < blockNumber) {
+                    lower = center;
+                } else {
+                    upper = center - 1;
+                }
             }
+            return _shots[lower].value;
         }
-        return _delSupplySnapshots[lower].value;
     }
 
     /**
@@ -224,7 +199,8 @@ contract FollowNFT is LensNFTBase, IFollowNFT {
         uint256 amount
     ) internal {
         unchecked {
-            if (from != address(0)) {
+            bool fromZero = from == address(0);
+            if (!fromZero) {
                 uint256 fromSnapshotCount = _snapshotCount[from];
 
                 // Underflow is impossible since, if from != address(0), then a delegation must have occurred (at least 1 snapshot)
@@ -237,7 +213,7 @@ contract FollowNFT is LensNFTBase, IFollowNFT {
 
             if (to != address(0)) {
                 // if from == address(0) then this is an initial delegation (add amount to supply)
-                if (from == address(0)) {
+                if (fromZero) {
                     // It is expected behavior that the `previousDelSupply` underflows upon the first delegation,
                     // returning the expected value of zero
                     uint256 delSupplySnapshotCount = _delSupplySnapshotCount;
@@ -257,7 +233,7 @@ contract FollowNFT is LensNFTBase, IFollowNFT {
             } else {
                 // If from != address(0) then this is removing a delegation, otherwise we're dealing with a
                 // non-delegated burn of tokens and don't need to take any action
-                if (from != address(0)) {
+                if (!fromZero) {
                     // Upon removing delegation (from != address(0) && to == address(0)), supply calculations cannot
                     // underflow because if from != address(0), then a delegation must have previously occurred, so
                     // the snapshot count must be >= 1 and the previous delegated supply must be >= amount

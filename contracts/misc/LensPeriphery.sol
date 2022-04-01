@@ -14,10 +14,10 @@ import {Errors} from '../libraries/Errors.sol';
  *
  * @dev This is useful because it allows clients to filter out follow NFTs that were transferred to
  * a recipient by another user (i.e. Not a mint) and not register them as "following" unless
- * the recipient explicitly toggles the follow here. 
+ * the recipient explicitly toggles the follow here.
  */
-contract LensPeripheryDataProvider {
-    string public constant NAME = 'LensPeripheryDataProvider';
+contract LensPeriphery {
+    string public constant NAME = 'LensPeriphery';
     bytes32 internal constant EIP712_REVISION_HASH = keccak256('1');
     bytes32 internal constant EIP712_DOMAIN_TYPEHASH =
         keccak256(
@@ -79,11 +79,15 @@ contract LensPeripheryDataProvider {
         bool[] calldata enables
     ) internal {
         if (profileIds.length != enables.length) revert Errors.ArrayMismatch();
-        for (uint256 i = 0; i < profileIds.length; ++i) {
+        uint256 profileIdsLength = profileIds.length;
+        for (uint256 i = 0; i < profileIdsLength; ) {
             address followNFT = HUB.getFollowNFT(profileIds[i]);
             if (followNFT == address(0)) revert Errors.FollowInvalid();
             if (!IERC721Time(address(HUB)).exists(profileIds[i])) revert Errors.TokenDoesNotExist();
             if (IERC721Time(followNFT).balanceOf(follower) == 0) revert Errors.FollowInvalid();
+            unchecked {
+                ++i;
+            }
         }
         emit Events.FollowsToggled(follower, profileIds, enables, block.timestamp);
     }

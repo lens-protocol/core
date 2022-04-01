@@ -14,6 +14,8 @@ interface IFollowModule {
      *
      * @param profileId The token ID of the profile to initialize this follow module for.
      * @param data Arbitrary data passed by the profile creator.
+     *
+     * @return bytes The encoded data to emit in the hub.
      */
     function initializeFollowModule(uint256 profileId, bytes calldata data)
         external

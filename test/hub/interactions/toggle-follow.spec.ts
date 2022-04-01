@@ -13,7 +13,7 @@ import {
 } from '../../helpers/utils';
 import {
   lensHub,
-  peripheryDataProvider,
+  lensPeriphery,
   FIRST_PROFILE_ID,
   makeSuiteCleanRoom,
   MOCK_PROFILE_HANDLE,
@@ -49,20 +49,20 @@ makeSuiteCleanRoom('ToggleFollowing', function () {
     context('Negatives', function () {
       it('UserTwo should fail to toggle follow with an incorrect profileId', async function () {
         await expect(
-          peripheryDataProvider.connect(userTwo).toggleFollow([FIRST_PROFILE_ID + 1], [true])
+          lensPeriphery.connect(userTwo).toggleFollow([FIRST_PROFILE_ID + 1], [true])
         ).to.be.revertedWith(ERRORS.FOLLOW_INVALID);
       });
 
       it('UserTwo should fail to toggle follow with array mismatch', async function () {
         await expect(
-          peripheryDataProvider.connect(userTwo).toggleFollow([FIRST_PROFILE_ID, FIRST_PROFILE_ID], [])
+          lensPeriphery.connect(userTwo).toggleFollow([FIRST_PROFILE_ID, FIRST_PROFILE_ID], [])
         ).to.be.revertedWith(ERRORS.ARRAY_MISMATCH);
       });
 
       it('UserTwo should fail to toggle follow from a profile that has been burned', async function () {
         await expect(lensHub.burn(FIRST_PROFILE_ID)).to.not.be.reverted;
         await expect(
-          peripheryDataProvider.connect(userTwo).toggleFollow([FIRST_PROFILE_ID], [true])
+          lensPeriphery.connect(userTwo).toggleFollow([FIRST_PROFILE_ID], [true])
         ).to.be.revertedWith(ERRORS.TOKEN_DOES_NOT_EXIST);
       });
 
@@ -75,14 +75,14 @@ makeSuiteCleanRoom('ToggleFollowing', function () {
         ).to.not.be.reverted;
 
         await expect(
-          peripheryDataProvider.connect(userTwo).toggleFollow([FIRST_PROFILE_ID], [true])
+          lensPeriphery.connect(userTwo).toggleFollow([FIRST_PROFILE_ID], [true])
         ).to.be.revertedWith(ERRORS.FOLLOW_INVALID);
       });
     });
 
     context('Scenarios', function () {
       it('UserTwo should toggle follow with true value, correct event should be emitted', async function () {
-        const tx = peripheryDataProvider.connect(userTwo).toggleFollow([FIRST_PROFILE_ID], [true]);
+        const tx = lensPeriphery.connect(userTwo).toggleFollow([FIRST_PROFILE_ID], [true]);
 
         const receipt = await waitForTx(tx);
 
@@ -108,7 +108,7 @@ makeSuiteCleanRoom('ToggleFollowing', function () {
         ).to.not.be.reverted;
         await expect(lensHub.connect(userTwo).follow([FIRST_PROFILE_ID + 1], [[]])).to.not.be.reverted;
 
-        const tx = peripheryDataProvider
+        const tx = lensPeriphery
           .connect(userTwo)
           .toggleFollow([FIRST_PROFILE_ID, FIRST_PROFILE_ID + 1], [true, false]);
 
@@ -124,7 +124,7 @@ makeSuiteCleanRoom('ToggleFollowing', function () {
       });
 
       it('UserTwo should toggle follow with false value, correct event should be emitted', async function () {
-        const tx = peripheryDataProvider.connect(userTwo).toggleFollow([FIRST_PROFILE_ID], [false]);
+        const tx = lensPeriphery.connect(userTwo).toggleFollow([FIRST_PROFILE_ID], [false]);
 
         const receipt = await waitForTx(tx);
 
@@ -142,7 +142,7 @@ makeSuiteCleanRoom('ToggleFollowing', function () {
   context('Meta-tx', function () {
     context('Negatives', function () {
       it('TestWallet should fail to toggle follow with sig with signature deadline mismatch', async function () {
-        const nonce = (await peripheryDataProvider.sigNonces(testWallet.address)).toNumber();
+        const nonce = (await lensPeriphery.sigNonces(testWallet.address)).toNumber();
 
         const { v, r, s } = await getToggleFollowWithSigParts(
           [FIRST_PROFILE_ID],
@@ -151,7 +151,7 @@ makeSuiteCleanRoom('ToggleFollowing', function () {
           '0'
         );
         await expect(
-          peripheryDataProvider.toggleFollowWithSig({
+          lensPeriphery.toggleFollowWithSig({
             follower: testWallet.address,
             profileIds: [FIRST_PROFILE_ID],
             enables: [true],
@@ -166,7 +166,7 @@ makeSuiteCleanRoom('ToggleFollowing', function () {
       });
 
       it('TestWallet should fail to toggle follow with sig with invalid deadline', async function () {
-        const nonce = (await peripheryDataProvider.sigNonces(testWallet.address)).toNumber();
+        const nonce = (await lensPeriphery.sigNonces(testWallet.address)).toNumber();
 
         const { v, r, s } = await getToggleFollowWithSigParts(
           [FIRST_PROFILE_ID],
@@ -175,7 +175,7 @@ makeSuiteCleanRoom('ToggleFollowing', function () {
           '0'
         );
         await expect(
-          peripheryDataProvider.toggleFollowWithSig({
+          lensPeriphery.toggleFollowWithSig({
             follower: testWallet.address,
             profileIds: [FIRST_PROFILE_ID],
             enables: [true],
@@ -190,7 +190,7 @@ makeSuiteCleanRoom('ToggleFollowing', function () {
       });
 
       it('TestWallet should fail to toggle follow with sig with invalid nonce', async function () {
-        const nonce = (await peripheryDataProvider.sigNonces(testWallet.address)).toNumber();
+        const nonce = (await lensPeriphery.sigNonces(testWallet.address)).toNumber();
 
         const { v, r, s } = await getToggleFollowWithSigParts(
           [FIRST_PROFILE_ID],
@@ -200,7 +200,7 @@ makeSuiteCleanRoom('ToggleFollowing', function () {
         );
 
         await expect(
-          peripheryDataProvider.toggleFollowWithSig({
+          lensPeriphery.toggleFollowWithSig({
             follower: testWallet.address,
             profileIds: [FIRST_PROFILE_ID],
             enables: [true],
@@ -215,7 +215,7 @@ makeSuiteCleanRoom('ToggleFollowing', function () {
       });
 
       it('TestWallet should fail to toggle follow a nonexistent profile with sig', async function () {
-        const nonce = (await peripheryDataProvider.sigNonces(testWallet.address)).toNumber();
+        const nonce = (await lensPeriphery.sigNonces(testWallet.address)).toNumber();
         const INVALID_PROFILE = FIRST_PROFILE_ID + 1;
         const { v, r, s } = await getToggleFollowWithSigParts(
           [INVALID_PROFILE],
@@ -224,7 +224,7 @@ makeSuiteCleanRoom('ToggleFollowing', function () {
           MAX_UINT256
         );
         await expect(
-          peripheryDataProvider.toggleFollowWithSig({
+          lensPeriphery.toggleFollowWithSig({
             follower: testWallet.address,
             profileIds: [INVALID_PROFILE],
             enables: [true],
@@ -241,7 +241,7 @@ makeSuiteCleanRoom('ToggleFollowing', function () {
 
     context('Scenarios', function () {
       it('TestWallet should toggle follow profile 1 to true with sig, correct event should be emitted ', async function () {
-        const nonce = (await peripheryDataProvider.sigNonces(testWallet.address)).toNumber();
+        const nonce = (await lensPeriphery.sigNonces(testWallet.address)).toNumber();
 
         const { v, r, s } = await getToggleFollowWithSigParts(
           [FIRST_PROFILE_ID],
@@ -250,7 +250,7 @@ makeSuiteCleanRoom('ToggleFollowing', function () {
           MAX_UINT256
         );
 
-        const tx = peripheryDataProvider.toggleFollowWithSig({
+        const tx = lensPeriphery.toggleFollowWithSig({
           follower: testWallet.address,
           profileIds: [FIRST_PROFILE_ID],
           enables: [true],
@@ -274,7 +274,7 @@ makeSuiteCleanRoom('ToggleFollowing', function () {
       });
 
       it('TestWallet should toggle follow profile 1 to false with sig, correct event should be emitted ', async function () {
-        const nonce = (await peripheryDataProvider.sigNonces(testWallet.address)).toNumber();
+        const nonce = (await lensPeriphery.sigNonces(testWallet.address)).toNumber();
 
         const enabled = false;
         const { v, r, s } = await getToggleFollowWithSigParts(
@@ -284,7 +284,7 @@ makeSuiteCleanRoom('ToggleFollowing', function () {
           MAX_UINT256
         );
 
-        const tx = peripheryDataProvider.toggleFollowWithSig({
+        const tx = lensPeriphery.toggleFollowWithSig({
           follower: testWallet.address,
           profileIds: [FIRST_PROFILE_ID],
           enables: [enabled],

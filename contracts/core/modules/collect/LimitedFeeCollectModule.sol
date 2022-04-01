@@ -50,6 +50,8 @@ contract LimitedFeeCollectModule is ICollectModule, FeeModuleBase, FollowValidat
     /**
      * @notice This collect module levies a fee on collects and supports referrals. Thus, we need to decode data.
      *
+     * @param profileId The profile ID of the publication to initialize this module for's publishing profile.
+     * @param pubId The publication ID of the publication to initialize this module for.
      * @param data The arbitrary data parameter, decoded into:
      *      uint256 collectLimit: The maximum amount of collects.
      *      uint256 amount: The currency total amount to levy.
@@ -57,7 +59,7 @@ contract LimitedFeeCollectModule is ICollectModule, FeeModuleBase, FollowValidat
      *      address recipient: The custom recipient address to direct earnings to.
      *      uint16 referralFee: The referral fee to set.
      *
-     * @return An abi encoded bytes parameter, which is the same as the passed data parameter.
+     * @return bytes An abi encoded bytes parameter, which is the same as the passed data parameter.
      */
     function initializePublicationCollectModule(
         uint256 profileId,
@@ -109,7 +111,7 @@ contract LimitedFeeCollectModule is ICollectModule, FeeModuleBase, FollowValidat
         ) {
             revert Errors.MintLimitExceeded();
         } else {
-            _dataByPublicationByProfile[profileId][pubId].currentCollects++;
+            ++_dataByPublicationByProfile[profileId][pubId].currentCollects;
             if (referrerProfileId == profileId) {
                 _processCollect(collector, profileId, pubId, data);
             } else {
@@ -125,7 +127,7 @@ contract LimitedFeeCollectModule is ICollectModule, FeeModuleBase, FollowValidat
      * @param profileId The token ID of the profile mapped to the publication to query.
      * @param pubId The publication ID of the publication to query.
      *
-     * @return The ProfilePublicationData struct mapped to that publication.
+     * @return ProfilePublicationData The ProfilePublicationData struct mapped to that publication.
      */
     function getPublicationData(uint256 profileId, uint256 pubId)
         external
