@@ -57,6 +57,8 @@ contract TimedFeeCollectModule is ICollectModule, FeeModuleBase, FollowValidatio
     /**
      * @notice This collect module levies a fee on collects and supports referrals. Thus, we need to decode data.
      *
+     * @param profileId The profile ID of the publication to initialize this module for's publishing profile.
+     * @param pubId The publication ID of the publication to initialize this module for.
      * @param data The arbitrary data parameter, decoded into:
      *      uint256 amount: The currency total amount to levy.
      *      address currency: The currency address, must be internally whitelisted.
@@ -64,37 +66,39 @@ contract TimedFeeCollectModule is ICollectModule, FeeModuleBase, FollowValidatio
      *      uint16 referralFee: The referral fee to set.
      *      bool followerOnly: Whether only followers should be able to collect.
      *
-     * @return An abi encoded bytes parameter, containing (in order): amount, currency, recipient, referral fee & end timestamp.
+     * @return bytes An abi encoded bytes parameter, containing (in order): amount, currency, recipient, referral fee & end timestamp.
      */
     function initializePublicationCollectModule(
         uint256 profileId,
         uint256 pubId,
         bytes calldata data
     ) external override onlyHub returns (bytes memory) {
-        uint40 endTimestamp = uint40(block.timestamp) + ONE_DAY;
+        unchecked {
+            uint40 endTimestamp = uint40(block.timestamp) + ONE_DAY;
 
-        (
-            uint256 amount,
-            address currency,
-            address recipient,
-            uint16 referralFee,
-            bool followerOnly
-        ) = abi.decode(data, (uint256, address, address, uint16, bool));
-        if (
-            !_currencyWhitelisted(currency) ||
-            recipient == address(0) ||
-            referralFee > BPS_MAX ||
-            amount == 0
-        ) revert Errors.InitParamsInvalid();
+            (
+                uint256 amount,
+                address currency,
+                address recipient,
+                uint16 referralFee,
+                bool followerOnly
+            ) = abi.decode(data, (uint256, address, address, uint16, bool));
+            if (
+                !_currencyWhitelisted(currency) ||
+                recipient == address(0) ||
+                referralFee > BPS_MAX ||
+                amount == 0
+            ) revert Errors.InitParamsInvalid();
 
-        _dataByPublicationByProfile[profileId][pubId].amount = amount;
-        _dataByPublicationByProfile[profileId][pubId].currency = currency;
-        _dataByPublicationByProfile[profileId][pubId].recipient = recipient;
-        _dataByPublicationByProfile[profileId][pubId].referralFee = referralFee;
-        _dataByPublicationByProfile[profileId][pubId].followerOnly = followerOnly;
-        _dataByPublicationByProfile[profileId][pubId].endTimestamp = endTimestamp;
+            _dataByPublicationByProfile[profileId][pubId].amount = amount;
+            _dataByPublicationByProfile[profileId][pubId].currency = currency;
+            _dataByPublicationByProfile[profileId][pubId].recipient = recipient;
+            _dataByPublicationByProfile[profileId][pubId].referralFee = referralFee;
+            _dataByPublicationByProfile[profileId][pubId].followerOnly = followerOnly;
+            _dataByPublicationByProfile[profileId][pubId].endTimestamp = endTimestamp;
 
-        return abi.encode(amount, currency, recipient, referralFee, followerOnly, endTimestamp);
+            return abi.encode(amount, currency, recipient, referralFee, followerOnly, endTimestamp);
+        }
     }
 
     /**
@@ -129,7 +133,7 @@ contract TimedFeeCollectModule is ICollectModule, FeeModuleBase, FollowValidatio
      * @param profileId The token ID of the profile mapped to the publication to query.
      * @param pubId The publication ID of the publication to query.
      *
-     * @return The ProfilePublicationData struct mapped to that publication.
+     * @return ProfilePublicationData The ProfilePublicationData struct mapped to that publication.
      */
     function getPublicationData(uint256 profileId, uint256 pubId)
         external

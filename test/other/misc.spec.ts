@@ -547,54 +547,52 @@ makeSuiteCleanRoom('Misc', function () {
       );
     });
 
-    it('Follow module follow validation when there are no follows, and thus no deployed Follow NFT should revert', async function () {
-      await expect(
-        approvalFollowModule.validateFollow(FIRST_PROFILE_ID, userTwoAddress, 0)
-      ).to.be.revertedWith(ERRORS.FOLLOW_INVALID);
+    it('Follow module following check when there are no follows, and thus no deployed Follow NFT should return false', async function () {
+      expect(
+        await approvalFollowModule.isFollowing(FIRST_PROFILE_ID, userTwoAddress, 0)
+      ).to.be.false;
     });
 
-    it('Follow module follow validation with zero ID input should revert after another address follows, but not the queried address', async function () {
+    it('Follow module following check with zero ID input should return false after another address follows, but not the queried address', async function () {
+      await expect(
+        approvalFollowModule.connect(user).approve(FIRST_PROFILE_ID, [userAddress], [true])
+      ).to.not.be.reverted;
+      await expect(lensHub.follow([FIRST_PROFILE_ID], [[]])).to.not.be.reverted;
+
+      expect(
+        await approvalFollowModule.isFollowing(FIRST_PROFILE_ID, userTwoAddress, 0)
+      ).to.be.false;
+    });
+
+    it('Follow module following check with specific ID input should revert after following, but the specific ID does not exist yet', async function () {
       await expect(
         approvalFollowModule.connect(user).approve(FIRST_PROFILE_ID, [userAddress], [true])
       ).to.not.be.reverted;
       await expect(lensHub.follow([FIRST_PROFILE_ID], [[]])).to.not.be.reverted;
 
       await expect(
-        approvalFollowModule.validateFollow(FIRST_PROFILE_ID, userTwoAddress, 0)
-      ).to.be.revertedWith(ERRORS.FOLLOW_INVALID);
-    });
-
-    it('Follow module follow validation with specific ID input should revert after following, but the specific ID does not exist yet', async function () {
-      await expect(
-        approvalFollowModule.connect(user).approve(FIRST_PROFILE_ID, [userAddress], [true])
-      ).to.not.be.reverted;
-      await expect(lensHub.follow([FIRST_PROFILE_ID], [[]])).to.not.be.reverted;
-
-      await expect(
-        approvalFollowModule.validateFollow(FIRST_PROFILE_ID, userAddress, 2)
+        approvalFollowModule.isFollowing(FIRST_PROFILE_ID, userAddress, 2)
       ).to.be.revertedWith(ERRORS.ERC721_QUERY_FOR_NONEXISTENT_TOKEN);
     });
 
-    it('Follow module follow validation with specific ID input should revert if another address owns the specified follow NFT', async function () {
+    it('Follow module following check with specific ID input should return false if another address owns the specified follow NFT', async function () {
       await expect(
         approvalFollowModule.connect(user).approve(FIRST_PROFILE_ID, [userAddress], [true])
       ).to.not.be.reverted;
       await expect(lensHub.follow([FIRST_PROFILE_ID], [[]])).to.not.be.reverted;
 
-      await expect(
-        approvalFollowModule.validateFollow(FIRST_PROFILE_ID, userTwoAddress, 1)
-      ).to.be.revertedWith(ERRORS.FOLLOW_INVALID);
+      expect(
+        await approvalFollowModule.isFollowing(FIRST_PROFILE_ID, userTwoAddress, 1)
+      ).to.be.false;
     });
 
-    it('Follow module follow validation with specific ID input should work if the queried address owns the specified follow NFT', async function () {
+    it('Follow module following check with specific ID input should return true if the queried address owns the specified follow NFT', async function () {
       await expect(
         approvalFollowModule.connect(user).approve(FIRST_PROFILE_ID, [userAddress], [true])
       ).to.not.be.reverted;
       await expect(lensHub.follow([FIRST_PROFILE_ID], [[]])).to.not.be.reverted;
 
-      await expect(
-        approvalFollowModule.validateFollow(FIRST_PROFILE_ID, userAddress, 1)
-      ).to.not.be.reverted;
+      expect(await approvalFollowModule.isFollowing(FIRST_PROFILE_ID, userAddress, 1)).to.be.true;
     });
   });
 
@@ -707,10 +705,10 @@ makeSuiteCleanRoom('Misc', function () {
       ).to.not.be.reverted;
 
       // Then, deploy the data provider
-      const dataProvider = await new UIDataProvider__factory(deployer).deploy(lensHub.address);
+      const lensPeriphery = await new UIDataProvider__factory(deployer).deploy(lensHub.address);
 
       // `getLatestDataByProfile`, validate the result from the data provider
-      const resultByProfileId = await dataProvider.getLatestDataByProfile(FIRST_PROFILE_ID);
+      const resultByProfileId = await lensPeriphery.getLatestDataByProfile(FIRST_PROFILE_ID);
       const pubByProfileIdStruct = resultByProfileId.publicationStruct;
       const profileByProfileIdStruct = resultByProfileId.profileStruct;
 
@@ -729,7 +727,7 @@ makeSuiteCleanRoom('Misc', function () {
       expect(pubByProfileIdStruct.collectNFT).to.eq(ZERO_ADDRESS);
 
       // `getLatestDataByHandle`, validate the result from the data provider
-      const resultByHandle = await dataProvider.getLatestDataByHandle(MOCK_PROFILE_HANDLE);
+      const resultByHandle = await lensPeriphery.getLatestDataByHandle(MOCK_PROFILE_HANDLE);
       const pubByHandleStruct = resultByHandle.publicationStruct;
       const profileByHandleStruct = resultByHandle.profileStruct;
 

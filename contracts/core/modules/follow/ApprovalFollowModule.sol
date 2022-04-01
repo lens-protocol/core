@@ -38,8 +38,12 @@ contract ApprovalFollowModule is IFollowModule, FollowValidatorFollowModuleBase 
         address owner = IERC721(HUB).ownerOf(profileId);
         if (msg.sender != owner) revert Errors.NotProfileOwner();
 
-        for (uint256 i = 0; i < addresses.length; ++i) {
+        uint256 addressesLength = addresses.length;
+        for (uint256 i = 0; i < addressesLength; ) {
             _approvedByProfileByOwner[owner][profileId][addresses[i]] = toApprove[i];
+            unchecked {
+                ++i;
+            }
         }
 
         emit Events.FollowsApproved(owner, profileId, addresses, toApprove, block.timestamp);
@@ -48,10 +52,11 @@ contract ApprovalFollowModule is IFollowModule, FollowValidatorFollowModuleBase 
     /**
      * @notice This follow module works on custom profile owner approvals.
      *
+     * @param profileId The profile ID of the profile to initialize this module for.
      * @param data The arbitrary data parameter, decoded into:
      *      address[] addresses: The array of addresses to approve initially.
      *
-     * @return An abi encoded bytes parameter, which is the same as the passed data parameter.
+     * @return bytes An abi encoded bytes parameter, which is the same as the passed data parameter.
      */
     function initializeFollowModule(uint256 profileId, bytes calldata data)
         external
@@ -63,8 +68,12 @@ contract ApprovalFollowModule is IFollowModule, FollowValidatorFollowModuleBase 
 
         if (data.length > 0) {
             address[] memory addresses = abi.decode(data, (address[]));
-            for (uint256 i = 0; i < addresses.length; ++i) {
+            uint256 addressesLength = addresses.length;
+            for (uint256 i = 0; i < addressesLength; ) {
                 _approvedByProfileByOwner[owner][profileId][addresses[i]] = true;
+                unchecked {
+                    ++i;
+                }
             }
         }
         return data;
@@ -102,7 +111,7 @@ contract ApprovalFollowModule is IFollowModule, FollowValidatorFollowModuleBase 
      * @param profileId The token ID of the profile to query approval with.
      * @param toCheck The address to query approval for.
      *
-     * @return
+     * @return bool True if the address is approved and false otherwise.
      */
     function isApproved(
         address profileOwner,
@@ -118,6 +127,8 @@ contract ApprovalFollowModule is IFollowModule, FollowValidatorFollowModuleBase 
      * @param profileOwner The profile owner of the profile to query the approvals with.
      * @param profileId The token ID of the profile to query approvals with.
      * @param toCheck The address array to query approvals for.
+     *
+     * @return bool[] true if the address at the specified index is approved and false otherwise.
      */
     function isApprovedArray(
         address profileOwner,
@@ -125,8 +136,12 @@ contract ApprovalFollowModule is IFollowModule, FollowValidatorFollowModuleBase 
         address[] calldata toCheck
     ) external view returns (bool[] memory) {
         bool[] memory approved = new bool[](toCheck.length);
-        for (uint256 i = 0; i < toCheck.length; ++i) {
+        uint256 toCheckLength = toCheck.length;
+        for (uint256 i = 0; i < toCheckLength; ) {
             approved[i] = _approvedByProfileByOwner[profileOwner][profileId][toCheck[i]];
+            unchecked {
+                ++i;
+            }
         }
         return approved;
     }

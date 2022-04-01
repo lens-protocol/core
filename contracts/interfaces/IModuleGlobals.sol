@@ -48,35 +48,35 @@ interface IModuleGlobals {
      *
      * @param currency The currency to query the whitelist for.
      *
-     * @return Whether the queried currency is whitelisted.
+     * @return bool True if the queried currency is whitelisted, false otherwise.
      */
     function isCurrencyWhitelisted(address currency) external view returns (bool);
 
     /**
      * @notice Returns the governance address.
      *
-     * @return The governance address.
+     * @return address The governance address.
      */
     function getGovernance() external view returns (address);
 
     /**
      * @notice Returns the treasury address.
      *
-     * @return The treasury address.
+     * @return address The treasury address.
      */
     function getTreasury() external view returns (address);
 
     /**
      * @notice Returns the treasury fee.
      *
-     * @return The treasury fee.
+     * @return uint16 The treasury fee.
      */
     function getTreasuryFee() external view returns (uint16);
 
     /**
      * @notice Returns the treasury address and treasury fee in a single call.
      *
-     * @return The treasury address and the treasury fee.
+     * @return tuplee First, the treasury address, second, the treasury fee.
      */
     function getTreasuryData() external view returns (address, uint16);
 }
