@@ -29,7 +29,7 @@ contract LensPeriphery {
         );
     bytes32 internal constant SET_PROFILE_METADATA_WITH_SIG_TYPEHASH =
         keccak256(
-            'SetProfileMetadataWithSig(uint256 profileId,string metadata,uint256 nonce,uint256 deadline)'
+            'SetProfileMetadataURIWithSig(uint256 profileId,string metadata,uint256 nonce,uint256 deadline)'
         );
 
     ILensHub public immutable HUB;
@@ -48,13 +48,10 @@ contract LensPeriphery {
      * @param profileId The profile ID to set the metadata for.
      * @param metadata The metadata string to set for the profile and owner.
      */
-    function dispatcherSetProfileMetadata(uint256 profileId, string calldata metadata) external {
+    function dispatcherSetProfileMetadataURI(uint256 profileId, string calldata metadata) external {
         address owner = IERC721Time(address(HUB)).ownerOf(profileId);
-        if (msg.sender == HUB.getDispatcher(profileId)) {
-            _setProfileMetadata(owner, profileId, metadata);
-        } else {
-            revert Errors.NotDispatcher();
-        }
+        if (msg.sender != HUB.getDispatcher(profileId)) revert Errors.NotDispatcher();
+        _setProfileMetadataURI(owner, profileId, metadata);
     }
 
     /**
@@ -63,8 +60,8 @@ contract LensPeriphery {
      * @param profileId The profile ID to set the metadata for.
      * @param metadata The metadata string to set for the profile and message sender.
      */
-    function setProfileMetadata(uint256 profileId, string calldata metadata) external {
-        _setProfileMetadata(msg.sender, profileId, metadata);
+    function setProfileMetadataURI(uint256 profileId, string calldata metadata) external {
+        _setProfileMetadataURI(msg.sender, profileId, metadata);
     }
 
     /**
@@ -73,7 +70,7 @@ contract LensPeriphery {
      * @param vars A SetProfileMetadataWithSigData struct containingthe regular parameters as well as the user address
      * and an EIP712Signature struct.
      */
-    function setProfileMetadataWithSig(DataTypes.SetProfileMetadataWithSigData calldata vars)
+    function setProfileMetadataURIWithSig(DataTypes.SetProfileMetadataWithSigData calldata vars)
         external
     {
         _validateRecoveredAddress(
@@ -91,7 +88,7 @@ contract LensPeriphery {
             vars.user,
             vars.sig
         );
-        _setProfileMetadata(vars.user, vars.profileId, vars.metadata);
+        _setProfileMetadataURI(vars.user, vars.profileId, vars.metadata);
     }
 
     /**
@@ -131,25 +128,40 @@ contract LensPeriphery {
         _toggleFollow(vars.follower, vars.profileIds, vars.enables);
     }
 
-    function getProfileMetadata(uint256 profileId) external view returns (string memory) {
+    /**
+     * @notice Returns the metadata URI of a profile for its current owner.
+     *
+     * @param profileId The profile ID to query the metadata URI for.
+     *
+     * @return string The metadata associated with that profile ID and the profile's current owner.
+     */
+    function getProfileMetadataURI(uint256 profileId) external view returns (string memory) {
         address owner = IERC721Time(address(HUB)).ownerOf(profileId);
         return _metadataByProfileByOwner[owner][profileId];
     }
 
-    function getProfileMetadataByOwner(address owner, uint256 profileId)
+    /**
+     * @notice Returns the metadata URI of a profile for a given user. Note that the user does not *need* to own the
+     * profile in order to have associated metadata.
+     *
+     * @param user The user to query the profile metadata URI for.
+     * @param profileId The profile ID to query the metadata URI for. 
+     */
+    function getProfileMetadataURIByOwner(address user, uint256 profileId)
         external
         view
         returns (string memory)
     {
-        return _metadataByProfileByOwner[owner][profileId];
+        return _metadataByProfileByOwner[user][profileId];
     }
 
-    function _setProfileMetadata(
-        address owner,
+    function _setProfileMetadataURI(
+        address user,
         uint256 profileId,
         string calldata metadata
     ) internal {
-        _metadataByProfileByOwner[owner][profileId] = metadata;
+        _metadataByProfileByOwner[user][profileId] = metadata;
+        emit Events.ProfileMetadataSet(user, profileId, metadata, block.timestamp);
     }
 
     function _toggleFollow(

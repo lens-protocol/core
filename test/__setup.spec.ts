@@ -198,9 +198,8 @@ before(async function () {
   lensHub = LensHub__factory.connect(proxy.address, user);
 
   // LensPeriphery
-  lensPeriphery = await new LensPeriphery__factory(deployer).deploy(
-    lensHub.address
-  );
+  lensPeriphery = await new LensPeriphery__factory(deployer).deploy(lensHub.address);
+  lensPeriphery = lensPeriphery.connect(user);
 
   // Currency
   currency = await new Currency__factory(deployer).deploy();

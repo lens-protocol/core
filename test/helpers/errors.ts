@@ -33,6 +33,7 @@ export const ERRORS = {
   FOLLOW_NOT_APPROVED: 'FollowNotApproved()',
   ARRAY_MISMATCH: 'ArrayMismatch()',
   CANNOT_COMMENT_ON_SELF: 'CannotCommentOnSelf',
+  NOT_DISPATCHER: 'NotDispatcher()',
   ERC721_NOT_OWN: 'ERC721: transfer of token that is not own',
   ERC721_TRANSFER_NOT_OWNER_OR_APPROVED: 'ERC721: transfer caller is not owner nor approved',
   ERC721_QUERY_FOR_NONEXISTENT_TOKEN: 'ERC721: owner query for nonexistent token',
