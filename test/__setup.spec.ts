@@ -11,8 +11,8 @@ import {
   CollectNFT__factory,
   Currency,
   Currency__factory,
-  EmptyCollectModule,
-  EmptyCollectModule__factory,
+  FreeCollectModule,
+  FreeCollectModule__factory,
   Events,
   Events__factory,
   FeeCollectModule,
@@ -44,8 +44,8 @@ import {
   TimedFeeCollectModule,
   TimedFeeCollectModule__factory,
   TransparentUpgradeableProxy__factory,
-  LensPeripheryDataProvider,
-  LensPeripheryDataProvider__factory,
+  LensPeriphery,
+  LensPeriphery__factory,
 } from '../typechain-types';
 import { LensHubLibraryAddresses } from '../typechain-types/factories/LensHub__factory';
 import { FAKE_PRIVATEKEY, ZERO_ADDRESS } from './helpers/constants';
@@ -66,7 +66,7 @@ export const MAX_PROFILE_IMAGE_URI_LENGTH = 6000;
 export const LENS_HUB_NFT_NAME = 'Lens Profiles';
 export const LENS_HUB_NFT_SYMBOL = 'LENS';
 export const MOCK_PROFILE_HANDLE = 'plant1ghost.eth';
-export const PERIPHERY_DATA_PROVIDER_NAME = 'LensPeripheryDataProvider';
+export const LENS_PERIPHERY_NAME = 'LensPeriphery';
 export const FIRST_PROFILE_ID = 1;
 export const MOCK_URI = 'https://ipfs.io/ipfs/QmbWqxBEKC3P8tqsKc98xmWNzrzDtRLMiMPL8wBuTGsMnR';
 export const OTHER_MOCK_URI = 'https://ipfs.io/ipfs/QmSfyMcnh1wnJHrAWCBjZHapTS859oNSsuDFiAPPdAHgHP';
@@ -99,14 +99,14 @@ export let hubLibs: LensHubLibraryAddresses;
 export let eventsLib: Events;
 export let moduleGlobals: ModuleGlobals;
 export let helper: Helper;
-export let peripheryDataProvider: LensPeripheryDataProvider;
+export let lensPeriphery: LensPeriphery;
 
 /* Modules */
 
 // Collect
 export let feeCollectModule: FeeCollectModule;
 export let timedFeeCollectModule: TimedFeeCollectModule;
-export let emptyCollectModule: EmptyCollectModule;
+export let freeCollectModule: FreeCollectModule;
 export let revertCollectModule: RevertCollectModule;
 export let limitedFeeCollectModule: LimitedFeeCollectModule;
 export let limitedTimedFeeCollectModule: LimitedTimedFeeCollectModule;
@@ -197,8 +197,8 @@ before(async function () {
   // Connect the hub proxy to the LensHub factory and the user for ease of use.
   lensHub = LensHub__factory.connect(proxy.address, user);
 
-  // LensPeripheryDataProvider
-  peripheryDataProvider = await new LensPeripheryDataProvider__factory(deployer).deploy(
+  // LensPeriphery
+  lensPeriphery = await new LensPeriphery__factory(deployer).deploy(
     lensHub.address
   );
 
@@ -206,7 +206,7 @@ before(async function () {
   currency = await new Currency__factory(deployer).deploy();
 
   // Modules
-  emptyCollectModule = await new EmptyCollectModule__factory(deployer).deploy(lensHub.address);
+  freeCollectModule = await new FreeCollectModule__factory(deployer).deploy(lensHub.address);
   revertCollectModule = await new RevertCollectModule__factory(deployer).deploy();
   feeCollectModule = await new FeeCollectModule__factory(deployer).deploy(
     lensHub.address,

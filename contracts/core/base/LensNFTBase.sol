@@ -125,7 +125,7 @@ abstract contract LensNFTBase is ILensNFTBase, ERC721Enumerable {
     function _validateRecoveredAddress(
         bytes32 digest,
         address expectedAddress,
-        DataTypes.EIP712Signature memory sig
+        DataTypes.EIP712Signature calldata sig
     ) internal view {
         if (sig.deadline < block.timestamp) revert Errors.SignatureExpired();
         address recoveredAddress = ecrecover(digest, sig.v, sig.r, sig.s);
@@ -154,7 +154,7 @@ abstract contract LensNFTBase is ILensNFTBase, ERC721Enumerable {
      *
      * @param hashedMessage The message hash from which the digest should be calculated.
      *
-     * @return A 32-byte output representing the EIP712 digest.
+     * @return bytes32 A 32-byte output representing the EIP712 digest.
      */
     function _calculateDigest(bytes32 hashedMessage) internal view returns (bytes32) {
         bytes32 digest;

@@ -1,7 +1,9 @@
 import '@nomiclabs/hardhat-ethers';
 import { expect } from 'chai';
 import {
+  CollectNFT__factory,
   FeeFollowModule__factory,
+  FollowNFT__factory,
   LensHub__factory,
   ModuleGlobals__factory,
   TimedFeeCollectModule__factory,
@@ -28,6 +30,30 @@ import {
 } from '../__setup.spec';
 
 makeSuiteCleanRoom('deployment validation', () => {
+  it('Should fail to deploy a LensHub implementation with zero address follow NFT impl', async function () {
+    await expect(
+      new LensHub__factory(hubLibs, deployer).deploy(ZERO_ADDRESS, userAddress)
+    ).to.be.revertedWith(ERRORS.INIT_PARAMS_INVALID);
+  });
+
+  it('Should fail to deploy a LensHub implementation with zero address collect NFT impl', async function () {
+    await expect(
+      new LensHub__factory(hubLibs, deployer).deploy(userAddress, ZERO_ADDRESS)
+    ).to.be.revertedWith(ERRORS.INIT_PARAMS_INVALID);
+  });
+
+  it('Should fail to deploy a FollowNFT implementation with zero address hub', async function () {
+    await expect(new FollowNFT__factory(deployer).deploy(ZERO_ADDRESS)).to.be.revertedWith(
+      ERRORS.INIT_PARAMS_INVALID
+    );
+  });
+
+  it('Should fail to deploy a CollectNFT implementation with zero address hub', async function () {
+    await expect(new CollectNFT__factory(deployer).deploy(ZERO_ADDRESS)).to.be.revertedWith(
+      ERRORS.INIT_PARAMS_INVALID
+    );
+  });
+
   it('Deployer should not be able to initialize implementation due to address(this) check', async function () {
     await expect(
       lensHubImpl.initialize(LENS_HUB_NFT_NAME, LENS_HUB_NFT_SYMBOL, governanceAddress)
@@ -41,11 +67,8 @@ makeSuiteCleanRoom('deployment validation', () => {
     ).to.be.revertedWith(ERRORS.INITIALIZED);
   });
 
-  it('Deployer should deploy an LensHub implementation, a proxy, initialize it, and fail to initialize it again', async function () {
-    const newImpl = await new LensHub__factory(hubLibs, deployer).deploy(
-      ZERO_ADDRESS,
-      ZERO_ADDRESS
-    );
+  it('Deployer should deploy a LensHub implementation, a proxy, initialize it, and fail to initialize it again', async function () {
+    const newImpl = await new LensHub__factory(hubLibs, deployer).deploy(userAddress, userAddress);
 
     let data = newImpl.interface.encodeFunctionData('initialize', [
       LENS_HUB_NFT_NAME,
@@ -72,10 +95,7 @@ makeSuiteCleanRoom('deployment validation', () => {
 
   it('Deployer should be able to call admin-only functions on proxy', async function () {
     const proxy = TransparentUpgradeableProxy__factory.connect(lensHub.address, deployer);
-    const newImpl = await new LensHub__factory(hubLibs, deployer).deploy(
-      ZERO_ADDRESS,
-      ZERO_ADDRESS
-    );
+    const newImpl = await new LensHub__factory(hubLibs, deployer).deploy(userAddress, userAddress);
     await expect(proxy.upgradeTo(newImpl.address)).to.not.be.reverted;
   });
 
@@ -87,10 +107,7 @@ makeSuiteCleanRoom('deployment validation', () => {
     await expect(proxy.upgradeTo(userAddress)).to.be.revertedWith(ERRORS.NO_SELECTOR);
     await expect(proxy.upgradeToAndCall(userAddress, [])).to.be.revertedWith(ERRORS.NO_SELECTOR);
 
-    const newImpl = await new LensHub__factory(hubLibs, deployer).deploy(
-      ZERO_ADDRESS,
-      ZERO_ADDRESS
-    );
+    const newImpl = await new LensHub__factory(hubLibs, deployer).deploy(userAddress, userAddress);
 
     await expect(proxy.connect(user).upgradeTo(newImpl.address)).to.not.be.reverted;
   });

@@ -20,20 +20,19 @@ abstract contract FollowValidatorFollowModuleBase is IFollowModule, ModuleBase {
      * @notice Standard function to validate follow NFT ownership. This module is agnostic to follow NFT token IDs
      * and other properties.
      */
-    function validateFollow(
+    function isFollowing(
         uint256 profileId,
         address follower,
         uint256 followNFTTokenId
-    ) external view override {
+    ) external view override returns (bool) {
         address followNFT = ILensHub(HUB).getFollowNFT(profileId);
-        if (followNFT == address(0)) revert Errors.FollowInvalid();
-        if (followNFTTokenId == 0) {
-            // check that follower owns a followNFT
-            if (IERC721(followNFT).balanceOf(follower) == 0) revert Errors.FollowInvalid();
+        if (followNFT == address(0)) {
+            return false;
         } else {
-            // check that follower owns the specific followNFT
-            if (IERC721(followNFT).ownerOf(followNFTTokenId) != follower)
-                revert Errors.FollowInvalid();
+            return
+                followNFTTokenId == 0
+                    ? IERC721(followNFT).balanceOf(follower) != 0
+                    : IERC721(followNFT).ownerOf(followNFTTokenId) == follower;
         }
     }
 }

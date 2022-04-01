@@ -193,6 +193,10 @@ library PublishingLogic {
         if (pubCount < vars.pubIdPointed || vars.pubIdPointed == 0)
             revert Errors.PublicationDoesNotExist();
 
+        // Ensure the pointed publication is not the comment being created
+        if (vars.profileId == vars.profileIdPointed && vars.pubIdPointed == pubId)
+            revert Errors.CannotCommentOnSelf();
+
         _pubByIdByProfile[vars.profileId][pubId].contentURI = vars.contentURI;
         _pubByIdByProfile[vars.profileId][pubId].profileIdPointed = vars.profileIdPointed;
         _pubByIdByProfile[vars.profileId][pubId].pubIdPointed = vars.pubIdPointed;
@@ -400,12 +404,19 @@ library PublishingLogic {
         if (byteHandle.length == 0 || byteHandle.length > Constants.MAX_HANDLE_LENGTH)
             revert Errors.HandleLengthInvalid();
 
-        for (uint256 i = 0; i < byteHandle.length; ++i) {
+        uint256 byteHandleLength = byteHandle.length;
+        for (uint256 i = 0; i < byteHandleLength; ) {
             if (
                 (byteHandle[i] < '0' ||
                     byteHandle[i] > 'z' ||
-                    (byteHandle[i] > '9' && byteHandle[i] < 'a')) && byteHandle[i] != '.'
+                    (byteHandle[i] > '9' && byteHandle[i] < 'a')) &&
+                byteHandle[i] != '.' &&
+                byteHandle[i] != '-' &&
+                byteHandle[i] != '_'
             ) revert Errors.HandleContainsInvalidCharacters();
+            unchecked {
+                ++i;
+            }
         }
     }
 }

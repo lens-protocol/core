@@ -21,8 +21,8 @@ library Helpers {
      * @param pubId The publication ID of the given publication.
      * @param _pubByIdByProfile A pointer to the storage mapping of publications by pubId by profile ID.
      *
-     * @return The pointed publication identifier if the the given publication is a mirror, otherwise, the given publication.
-     * This is a tuple of (profileId, pubId, collectModule)
+     * @return tuple First, the pointed publication's publishing profile ID, second, the pointed publication's ID, and third, the 
+     * pointed publication's collect module. If the passed publication is not a mirror, this returns the given publication.
      */
     function getPointedIfMirror(
         uint256 profileId,

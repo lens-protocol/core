@@ -4,7 +4,7 @@ import { CollectNFT, CollectNFT__factory } from '../../typechain-types';
 import { ZERO_ADDRESS } from '../helpers/constants';
 import { ERRORS } from '../helpers/errors';
 import {
-  emptyCollectModule,
+  freeCollectModule,
   FIRST_PROFILE_ID,
   governance,
   lensHub,
@@ -16,13 +16,14 @@ import {
   user,
   userAddress,
   userTwo,
+  abiCoder,
 } from '../__setup.spec';
 
 makeSuiteCleanRoom('Collect NFT', function () {
   let collectNFT: CollectNFT;
   beforeEach(async function () {
     await expect(
-      lensHub.connect(governance).whitelistCollectModule(emptyCollectModule.address, true)
+      lensHub.connect(governance).whitelistCollectModule(freeCollectModule.address, true)
     ).to.not.be.reverted;
     await expect(
       lensHub.createProfile({
@@ -38,8 +39,8 @@ makeSuiteCleanRoom('Collect NFT', function () {
       lensHub.post({
         profileId: FIRST_PROFILE_ID,
         contentURI: MOCK_URI,
-        collectModule: emptyCollectModule.address,
-        collectModuleData: [],
+        collectModule: freeCollectModule.address,
+        collectModuleData: abiCoder.encode(['bool'], [true]),
         referenceModule: ZERO_ADDRESS,
         referenceModuleData: [],
       })

@@ -124,6 +124,7 @@ library Events {
      * @param followModule The profile's newly set follow module. This CAN be the zero address.
      * @param followModuleReturnData The data returned from the follow module's initialization. This is abi encoded
      * and totally depends on the follow module chosen.
+     * @param followNFTURI The URI set for the profile's follow NFT.
      * @param timestamp The current block timestamp.
      */
     event ProfileCreated(

@@ -5,8 +5,8 @@ import {
   helper,
   lensHub,
   LENS_HUB_NFT_NAME,
-  peripheryDataProvider,
-  PERIPHERY_DATA_PROVIDER_NAME,
+  lensPeriphery,
+  LENS_PERIPHERY_NAME,
   testWallet,
 } from '../__setup.spec';
 import { expect } from 'chai';
@@ -15,6 +15,8 @@ import { hexlify, keccak256, RLP, toUtf8Bytes } from 'ethers/lib/utils';
 import { LensHub__factory } from '../../typechain-types';
 import { TransactionReceipt, TransactionResponse } from '@ethersproject/providers';
 import hre, { ethers } from 'hardhat';
+import { readFileSync } from 'fs';
+import { join } from 'path';
 
 export enum ProtocolState {
   Unpaused,
@@ -26,16 +28,17 @@ export function matchEvent(
   receipt: TransactionReceipt,
   name: string,
   expectedArgs?: any[],
-  eventContract: Contract = eventsLib
+  eventContract: Contract = eventsLib,
+  emitterAddress?: string
 ) {
   const events = receipt.logs;
 
   if (events != undefined) {
     // match name from list of events in eventContract, when found, compute the sigHash
     let sigHash: string | undefined;
-    for (let contractEvents of Object.keys(eventContract.interface.events)) {
-      if (contractEvents.startsWith(name) && contractEvents.charAt(name.length) == '(') {
-        sigHash = keccak256(toUtf8Bytes(contractEvents));
+    for (let contractEvent of Object.keys(eventContract.interface.events)) {
+      if (contractEvent.startsWith(name) && contractEvent.charAt(name.length) == '(') {
+        sigHash = keccak256(toUtf8Bytes(contractEvent));
         break;
       }
     }
@@ -51,6 +54,10 @@ export function matchEvent(
     for (let emittedEvent of events) {
       // If we find one with the correct sighash, check if it is the one we're looking for
       if (emittedEvent.topics[0] == sigHash) {
+        // If an emitter address is passed, validate that this is indeed the correct emitter, if not, continue
+        if (emitterAddress) {
+          if (emittedEvent.address != emitterAddress) continue;
+        }
         const event = eventContract.interface.parseLog(emittedEvent);
         // If there are expected arguments, validate them, otherwise, return here
         if (expectedArgs) {
@@ -106,7 +113,9 @@ export function matchEvent(
     if (invalidParamsButExists) {
       logger.throwError(`Event "${name}" found in logs but with unexpected args`);
     } else {
-      logger.throwError(`Event "${name}" not found in given transaction log`);
+      logger.throwError(
+        `Event "${name}" not found emitted by "${emitterAddress}" in given transaction log`
+      );
     }
   } else {
     logger.throwError('No events were emitted');
@@ -447,7 +456,21 @@ export async function getCollectWithSigParts(
   return await getSig(msgParams);
 }
 
-export async function getJsonMetadataFromBase64TokenUri(tokenUri: string) {
+export interface TokenUriMetadataAttribute {
+  trait_type: string;
+  value: string;
+}
+
+export interface ProfileTokenUriMetadata {
+  name: string;
+  description: string;
+  image: string;
+  attributes: TokenUriMetadataAttribute[];
+}
+
+export async function getMetadataFromBase64TokenUri(
+  tokenUri: string
+): Promise<ProfileTokenUriMetadata> {
   const splittedTokenUri = tokenUri.split('data:application/json;base64,');
   if (splittedTokenUri.length != 2) {
     logger.throwError('Wrong or unrecognized token URI format');
@@ -457,6 +480,19 @@ export async function getJsonMetadataFromBase64TokenUri(tokenUri: string) {
     const jsonMetadataString = ethers.utils.toUtf8String(jsonMetadataBytes);
     return JSON.parse(jsonMetadataString);
   }
+}
+
+export async function getDecodedSvgImage(tokenUriMetadata: ProfileTokenUriMetadata) {
+  const splittedImage = tokenUriMetadata.image.split('data:image/svg+xml;base64,');
+  if (splittedImage.length != 2) {
+    logger.throwError('Wrong or unrecognized token URI format');
+  } else {
+    return ethers.utils.toUtf8String(ethers.utils.base64.decode(splittedImage[1]));
+  }
+}
+
+export function loadTestResourceAsUtf8String(relativePathToResouceDir: string) {
+  return readFileSync(join('test', 'resources', relativePathToResouceDir), 'utf8');
 }
 
 // Modified from AaveTokenV2 repo
@@ -814,10 +850,10 @@ const buildToggleFollowWithSigParams = (
     ],
   },
   domain: {
-    name: PERIPHERY_DATA_PROVIDER_NAME,
+    name: LENS_PERIPHERY_NAME,
     version: '1',
     chainId: getChainId(),
-    verifyingContract: peripheryDataProvider.address,
+    verifyingContract: lensPeriphery.address,
   },
   value: {
     profileIds: profileIds,

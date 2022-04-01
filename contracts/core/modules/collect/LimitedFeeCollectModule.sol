@@ -17,17 +17,19 @@ import {IERC721} from '@openzeppelin/contracts/token/ERC721/IERC721.sol';
  * @param collectLimit The maximum number of collects for this publication.
  * @param currentCollects The current number of collects for this publication.
  * @param amount The collecting cost associated with this publication.
- * @param recipient The recipient address associated with this publication.
  * @param currency The currency associated with this publication.
+ * @param recipient The recipient address associated with this publication.
  * @param referralFee The referral fee associated with this publication.
+ * @param followerOnly Whether only followers should be able to collect.
  */
 struct ProfilePublicationData {
     uint256 collectLimit;
     uint256 currentCollects;
     uint256 amount;
-    address recipient;
     address currency;
+    address recipient;
     uint16 referralFee;
+    bool followerOnly;
 }
 
 /**
@@ -50,14 +52,17 @@ contract LimitedFeeCollectModule is ICollectModule, FeeModuleBase, FollowValidat
     /**
      * @notice This collect module levies a fee on collects and supports referrals. Thus, we need to decode data.
      *
+     * @param profileId The profile ID of the publication to initialize this module for's publishing profile.
+     * @param pubId The publication ID of the publication to initialize this module for.
      * @param data The arbitrary data parameter, decoded into:
      *      uint256 collectLimit: The maximum amount of collects.
      *      uint256 amount: The currency total amount to levy.
      *      address currency: The currency address, must be internally whitelisted.
      *      address recipient: The custom recipient address to direct earnings to.
      *      uint16 referralFee: The referral fee to set.
+     *      bool followerOnly: Whether only followers should be able to collect.
      *
-     * @return An abi encoded bytes parameter, which is the same as the passed data parameter.
+     * @return bytes An abi encoded bytes parameter, which is the same as the passed data parameter.
      */
     function initializePublicationCollectModule(
         uint256 profileId,
@@ -69,8 +74,9 @@ contract LimitedFeeCollectModule is ICollectModule, FeeModuleBase, FollowValidat
             uint256 amount,
             address currency,
             address recipient,
-            uint16 referralFee
-        ) = abi.decode(data, (uint256, uint256, address, address, uint16));
+            uint16 referralFee,
+            bool followerOnly
+        ) = abi.decode(data, (uint256, uint256, address, address, uint16, bool));
         if (
             collectLimit == 0 ||
             !_currencyWhitelisted(currency) ||
@@ -84,6 +90,7 @@ contract LimitedFeeCollectModule is ICollectModule, FeeModuleBase, FollowValidat
         _dataByPublicationByProfile[profileId][pubId].currency = currency;
         _dataByPublicationByProfile[profileId][pubId].recipient = recipient;
         _dataByPublicationByProfile[profileId][pubId].referralFee = referralFee;
+        _dataByPublicationByProfile[profileId][pubId].followerOnly = followerOnly;
 
         return data;
     }
@@ -101,15 +108,15 @@ contract LimitedFeeCollectModule is ICollectModule, FeeModuleBase, FollowValidat
         uint256 pubId,
         bytes calldata data
     ) external override onlyHub {
-        _checkFollowValidity(profileId, collector);
-
+        if (_dataByPublicationByProfile[profileId][pubId].followerOnly)
+            _checkFollowValidity(profileId, collector);
         if (
             _dataByPublicationByProfile[profileId][pubId].currentCollects >=
             _dataByPublicationByProfile[profileId][pubId].collectLimit
         ) {
             revert Errors.MintLimitExceeded();
         } else {
-            _dataByPublicationByProfile[profileId][pubId].currentCollects++;
+            ++_dataByPublicationByProfile[profileId][pubId].currentCollects;
             if (referrerProfileId == profileId) {
                 _processCollect(collector, profileId, pubId, data);
             } else {
@@ -125,7 +132,7 @@ contract LimitedFeeCollectModule is ICollectModule, FeeModuleBase, FollowValidat
      * @param profileId The token ID of the profile mapped to the publication to query.
      * @param pubId The publication ID of the publication to query.
      *
-     * @return The ProfilePublicationData struct mapped to that publication.
+     * @return ProfilePublicationData The ProfilePublicationData struct mapped to that publication.
      */
     function getPublicationData(uint256 profileId, uint256 pubId)
         external
@@ -151,7 +158,8 @@ contract LimitedFeeCollectModule is ICollectModule, FeeModuleBase, FollowValidat
         uint256 adjustedAmount = amount - treasuryAmount;
 
         IERC20(currency).safeTransferFrom(collector, recipient, adjustedAmount);
-        IERC20(currency).safeTransferFrom(collector, treasury, treasuryAmount);
+        if (treasuryAmount > 0)
+            IERC20(currency).safeTransferFrom(collector, treasury, treasuryAmount);
     }
 
     function _processCollectWithReferral(
@@ -191,6 +199,7 @@ contract LimitedFeeCollectModule is ICollectModule, FeeModuleBase, FollowValidat
         address recipient = _dataByPublicationByProfile[profileId][pubId].recipient;
 
         IERC20(currency).safeTransferFrom(collector, recipient, adjustedAmount);
-        IERC20(currency).safeTransferFrom(collector, treasury, treasuryAmount);
+        if (treasuryAmount > 0)
+            IERC20(currency).safeTransferFrom(collector, treasury, treasuryAmount);
     }
 }
