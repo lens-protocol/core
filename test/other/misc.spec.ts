@@ -12,7 +12,7 @@ import {
 import {
   approvalFollowModule,
   deployer,
-  emptyCollectModule,
+  freeCollectModule,
   FIRST_PROFILE_ID,
   followerOnlyReferenceModule,
   governance,
@@ -34,6 +34,7 @@ import {
   userAddress,
   userTwo,
   userTwoAddress,
+  abiCoder,
 } from '../__setup.spec';
 
 /**
@@ -139,7 +140,7 @@ makeSuiteCleanRoom('Misc', function () {
       expect(await lensHub.getPubCount(FIRST_PROFILE_ID)).to.eq(0);
 
       await expect(
-        lensHub.connect(governance).whitelistCollectModule(emptyCollectModule.address, true)
+        lensHub.connect(governance).whitelistCollectModule(freeCollectModule.address, true)
       ).to.not.be.reverted;
 
       const expectedCount = 5;
@@ -148,8 +149,8 @@ makeSuiteCleanRoom('Misc', function () {
           lensHub.post({
             profileId: FIRST_PROFILE_ID,
             contentURI: MOCK_URI,
-            collectModule: emptyCollectModule.address,
-            collectModuleData: [],
+            collectModule: freeCollectModule.address,
+            collectModuleData: abiCoder.encode(['bool'], [true]),
             referenceModule: ZERO_ADDRESS,
             referenceModuleData: [],
           })
@@ -177,7 +178,7 @@ makeSuiteCleanRoom('Misc', function () {
 
     it('Publication reference module getter should return the correct reference module (or zero in case of no reference module)', async function () {
       await expect(
-        lensHub.connect(governance).whitelistCollectModule(emptyCollectModule.address, true)
+        lensHub.connect(governance).whitelistCollectModule(freeCollectModule.address, true)
       ).to.not.be.reverted;
 
       await expect(
@@ -190,8 +191,8 @@ makeSuiteCleanRoom('Misc', function () {
         lensHub.post({
           profileId: FIRST_PROFILE_ID,
           contentURI: MOCK_URI,
-          collectModule: emptyCollectModule.address,
-          collectModuleData: [],
+          collectModule: freeCollectModule.address,
+          collectModuleData: abiCoder.encode(['bool'], [true]),
           referenceModule: ZERO_ADDRESS,
           referenceModuleData: [],
         })
@@ -202,8 +203,8 @@ makeSuiteCleanRoom('Misc', function () {
         lensHub.post({
           profileId: FIRST_PROFILE_ID,
           contentURI: MOCK_URI,
-          collectModule: emptyCollectModule.address,
-          collectModuleData: [],
+          collectModule: freeCollectModule.address,
+          collectModuleData: abiCoder.encode(['bool'], [true]),
           referenceModule: followerOnlyReferenceModule.address,
           referenceModuleData: [],
         })
@@ -215,15 +216,15 @@ makeSuiteCleanRoom('Misc', function () {
 
     it('Publication pointer getter should return an empty pointer for posts', async function () {
       await expect(
-        lensHub.connect(governance).whitelistCollectModule(emptyCollectModule.address, true)
+        lensHub.connect(governance).whitelistCollectModule(freeCollectModule.address, true)
       ).to.not.be.reverted;
 
       await expect(
         lensHub.post({
           profileId: FIRST_PROFILE_ID,
           contentURI: MOCK_URI,
-          collectModule: emptyCollectModule.address,
-          collectModuleData: [],
+          collectModule: freeCollectModule.address,
+          collectModuleData: abiCoder.encode(['bool'], [true]),
           referenceModule: ZERO_ADDRESS,
           referenceModuleData: [],
         })
@@ -236,15 +237,15 @@ makeSuiteCleanRoom('Misc', function () {
 
     it('Publication pointer getter should return the correct pointer for comments', async function () {
       await expect(
-        lensHub.connect(governance).whitelistCollectModule(emptyCollectModule.address, true)
+        lensHub.connect(governance).whitelistCollectModule(freeCollectModule.address, true)
       ).to.not.be.reverted;
 
       await expect(
         lensHub.post({
           profileId: FIRST_PROFILE_ID,
           contentURI: MOCK_URI,
-          collectModule: emptyCollectModule.address,
-          collectModuleData: [],
+          collectModule: freeCollectModule.address,
+          collectModuleData: abiCoder.encode(['bool'], [true]),
           referenceModule: ZERO_ADDRESS,
           referenceModuleData: [],
         })
@@ -256,8 +257,8 @@ makeSuiteCleanRoom('Misc', function () {
           contentURI: MOCK_URI,
           profileIdPointed: FIRST_PROFILE_ID,
           pubIdPointed: 1,
-          collectModule: emptyCollectModule.address,
-          collectModuleData: [],
+          collectModule: freeCollectModule.address,
+          collectModuleData: abiCoder.encode(['bool'], [true]),
           referenceModule: ZERO_ADDRESS,
           referenceModuleData: [],
         })
@@ -270,15 +271,15 @@ makeSuiteCleanRoom('Misc', function () {
 
     it('Publication pointer getter should return the correct pointer for mirrors', async function () {
       await expect(
-        lensHub.connect(governance).whitelistCollectModule(emptyCollectModule.address, true)
+        lensHub.connect(governance).whitelistCollectModule(freeCollectModule.address, true)
       ).to.not.be.reverted;
 
       await expect(
         lensHub.post({
           profileId: FIRST_PROFILE_ID,
           contentURI: MOCK_URI,
-          collectModule: emptyCollectModule.address,
-          collectModuleData: [],
+          collectModule: freeCollectModule.address,
+          collectModuleData: abiCoder.encode(['bool'], [true]),
           referenceModule: ZERO_ADDRESS,
           referenceModuleData: [],
         })
@@ -301,15 +302,15 @@ makeSuiteCleanRoom('Misc', function () {
 
     it('Publication content URI getter should return the correct URI for posts', async function () {
       await expect(
-        lensHub.connect(governance).whitelistCollectModule(emptyCollectModule.address, true)
+        lensHub.connect(governance).whitelistCollectModule(freeCollectModule.address, true)
       ).to.not.be.reverted;
 
       await expect(
         lensHub.post({
           profileId: FIRST_PROFILE_ID,
           contentURI: MOCK_URI,
-          collectModule: emptyCollectModule.address,
-          collectModuleData: [],
+          collectModule: freeCollectModule.address,
+          collectModuleData: abiCoder.encode(['bool'], [true]),
           referenceModule: ZERO_ADDRESS,
           referenceModuleData: [],
         })
@@ -320,15 +321,15 @@ makeSuiteCleanRoom('Misc', function () {
 
     it('Publication content URI getter should return the correct URI for comments', async function () {
       await expect(
-        lensHub.connect(governance).whitelistCollectModule(emptyCollectModule.address, true)
+        lensHub.connect(governance).whitelistCollectModule(freeCollectModule.address, true)
       ).to.not.be.reverted;
 
       await expect(
         lensHub.post({
           profileId: FIRST_PROFILE_ID,
           contentURI: MOCK_URI,
-          collectModule: emptyCollectModule.address,
-          collectModuleData: [],
+          collectModule: freeCollectModule.address,
+          collectModuleData: abiCoder.encode(['bool'], [true]),
           referenceModule: ZERO_ADDRESS,
           referenceModuleData: [],
         })
@@ -340,8 +341,8 @@ makeSuiteCleanRoom('Misc', function () {
           contentURI: OTHER_MOCK_URI,
           profileIdPointed: FIRST_PROFILE_ID,
           pubIdPointed: 1,
-          collectModule: emptyCollectModule.address,
-          collectModuleData: [],
+          collectModule: freeCollectModule.address,
+          collectModuleData: abiCoder.encode(['bool'], [true]),
           referenceModule: ZERO_ADDRESS,
           referenceModuleData: [],
         })
@@ -352,15 +353,15 @@ makeSuiteCleanRoom('Misc', function () {
 
     it('Publication content URI getter should return the correct URI for mirrors', async function () {
       await expect(
-        lensHub.connect(governance).whitelistCollectModule(emptyCollectModule.address, true)
+        lensHub.connect(governance).whitelistCollectModule(freeCollectModule.address, true)
       ).to.not.be.reverted;
 
       await expect(
         lensHub.post({
           profileId: FIRST_PROFILE_ID,
           contentURI: MOCK_URI,
-          collectModule: emptyCollectModule.address,
-          collectModuleData: [],
+          collectModule: freeCollectModule.address,
+          collectModuleData: abiCoder.encode(['bool'], [true]),
           referenceModule: ZERO_ADDRESS,
           referenceModuleData: [],
         })
@@ -380,34 +381,34 @@ makeSuiteCleanRoom('Misc', function () {
 
     it('Publication collect module getter should return the correct collectModule for posts', async function () {
       await expect(
-        lensHub.connect(governance).whitelistCollectModule(emptyCollectModule.address, true)
+        lensHub.connect(governance).whitelistCollectModule(freeCollectModule.address, true)
       ).to.not.be.reverted;
 
       await expect(
         lensHub.post({
           profileId: FIRST_PROFILE_ID,
           contentURI: MOCK_URI,
-          collectModule: emptyCollectModule.address,
-          collectModuleData: [],
+          collectModule: freeCollectModule.address,
+          collectModuleData: abiCoder.encode(['bool'], [true]),
           referenceModule: ZERO_ADDRESS,
           referenceModuleData: [],
         })
       ).to.not.be.reverted;
 
-      expect(await lensHub.getCollectModule(FIRST_PROFILE_ID, 1)).to.eq(emptyCollectModule.address);
+      expect(await lensHub.getCollectModule(FIRST_PROFILE_ID, 1)).to.eq(freeCollectModule.address);
     });
 
     it('Publication collect module getter should return the correct collectModule for comments', async function () {
       await expect(
-        lensHub.connect(governance).whitelistCollectModule(emptyCollectModule.address, true)
+        lensHub.connect(governance).whitelistCollectModule(freeCollectModule.address, true)
       ).to.not.be.reverted;
 
       await expect(
         lensHub.post({
           profileId: FIRST_PROFILE_ID,
           contentURI: MOCK_URI,
-          collectModule: emptyCollectModule.address,
-          collectModuleData: [],
+          collectModule: freeCollectModule.address,
+          collectModuleData: abiCoder.encode(['bool'], [true]),
           referenceModule: ZERO_ADDRESS,
           referenceModuleData: [],
         })
@@ -429,27 +430,27 @@ makeSuiteCleanRoom('Misc', function () {
           contentURI: OTHER_MOCK_URI,
           profileIdPointed: FIRST_PROFILE_ID,
           pubIdPointed: 2,
-          collectModule: emptyCollectModule.address,
-          collectModuleData: [],
+          collectModule: freeCollectModule.address,
+          collectModuleData: abiCoder.encode(['bool'], [true]),
           referenceModule: ZERO_ADDRESS,
           referenceModuleData: [],
         })
       ).to.not.be.reverted;
 
-      expect(await lensHub.getCollectModule(FIRST_PROFILE_ID, 3)).to.eq(emptyCollectModule.address);
+      expect(await lensHub.getCollectModule(FIRST_PROFILE_ID, 3)).to.eq(freeCollectModule.address);
     });
 
     it('Publication collect module getter should return the zero address for mirrors', async function () {
       await expect(
-        lensHub.connect(governance).whitelistCollectModule(emptyCollectModule.address, true)
+        lensHub.connect(governance).whitelistCollectModule(freeCollectModule.address, true)
       ).to.not.be.reverted;
 
       await expect(
         lensHub.post({
           profileId: FIRST_PROFILE_ID,
           contentURI: MOCK_URI,
-          collectModule: emptyCollectModule.address,
-          collectModuleData: [],
+          collectModule: freeCollectModule.address,
+          collectModuleData: abiCoder.encode(['bool'], [true]),
           referenceModule: ZERO_ADDRESS,
           referenceModuleData: [],
         })
@@ -470,15 +471,15 @@ makeSuiteCleanRoom('Misc', function () {
 
     it('Publication type getter should return the correct publication type for all publication types, or nonexistent', async function () {
       await expect(
-        lensHub.connect(governance).whitelistCollectModule(emptyCollectModule.address, true)
+        lensHub.connect(governance).whitelistCollectModule(freeCollectModule.address, true)
       ).to.not.be.reverted;
 
       await expect(
         lensHub.post({
           profileId: FIRST_PROFILE_ID,
           contentURI: MOCK_URI,
-          collectModule: emptyCollectModule.address,
-          collectModuleData: [],
+          collectModule: freeCollectModule.address,
+          collectModuleData: abiCoder.encode(['bool'], [true]),
           referenceModule: ZERO_ADDRESS,
           referenceModuleData: [],
         })
@@ -490,8 +491,8 @@ makeSuiteCleanRoom('Misc', function () {
           contentURI: OTHER_MOCK_URI,
           profileIdPointed: FIRST_PROFILE_ID,
           pubIdPointed: 1,
-          collectModule: emptyCollectModule.address,
-          collectModuleData: [],
+          collectModule: freeCollectModule.address,
+          collectModuleData: abiCoder.encode(['bool'], [true]),
           referenceModule: ZERO_ADDRESS,
           referenceModuleData: [],
         })
@@ -675,7 +676,7 @@ makeSuiteCleanRoom('Misc', function () {
 
       // Then, whitelist a collect module
       await expect(
-        lensHub.connect(governance).whitelistCollectModule(emptyCollectModule.address, true)
+        lensHub.connect(governance).whitelistCollectModule(freeCollectModule.address, true)
       ).to.not.be.reverted;
 
       // Then, publish twice
@@ -685,8 +686,8 @@ makeSuiteCleanRoom('Misc', function () {
         lensHub.post({
           profileId: FIRST_PROFILE_ID,
           contentURI: firstURI,
-          collectModule: emptyCollectModule.address,
-          collectModuleData: [],
+          collectModule: freeCollectModule.address,
+          collectModuleData: abiCoder.encode(['bool'], [true]),
           referenceModule: ZERO_ADDRESS,
           referenceModuleData: [],
         })
@@ -696,8 +697,8 @@ makeSuiteCleanRoom('Misc', function () {
         lensHub.post({
           profileId: FIRST_PROFILE_ID,
           contentURI: secondURI,
-          collectModule: emptyCollectModule.address,
-          collectModuleData: [],
+          collectModule: freeCollectModule.address,
+          collectModuleData: abiCoder.encode(['bool'], [true]),
           referenceModule: ZERO_ADDRESS,
           referenceModuleData: [],
         })
@@ -722,7 +723,7 @@ makeSuiteCleanRoom('Misc', function () {
       expect(pubByProfileIdStruct.pubIdPointed).to.eq(0);
       expect(pubByProfileIdStruct.contentURI).to.eq(secondURI);
       expect(pubByProfileIdStruct.referenceModule).to.eq(ZERO_ADDRESS);
-      expect(pubByProfileIdStruct.collectModule).to.eq(emptyCollectModule.address);
+      expect(pubByProfileIdStruct.collectModule).to.eq(freeCollectModule.address);
       expect(pubByProfileIdStruct.collectNFT).to.eq(ZERO_ADDRESS);
 
       // `getLatestDataByHandle`, validate the result from the data provider
@@ -741,7 +742,7 @@ makeSuiteCleanRoom('Misc', function () {
       expect(pubByHandleStruct.pubIdPointed).to.eq(0);
       expect(pubByHandleStruct.contentURI).to.eq(secondURI);
       expect(pubByHandleStruct.referenceModule).to.eq(ZERO_ADDRESS);
-      expect(pubByHandleStruct.collectModule).to.eq(emptyCollectModule.address);
+      expect(pubByHandleStruct.collectModule).to.eq(freeCollectModule.address);
       expect(pubByHandleStruct.collectNFT).to.eq(ZERO_ADDRESS);
     });
   });

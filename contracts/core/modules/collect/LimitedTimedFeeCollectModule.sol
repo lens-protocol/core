@@ -21,6 +21,7 @@ import {IERC721} from '@openzeppelin/contracts/token/ERC721/IERC721.sol';
  * @param recipient The recipient address associated with this publication.
  * @param referralFee The referral fee associated with this publication.
  * @param endTimestamp The end timestamp after which collecting is impossible.
+ * @param followerOnly Whether only followers should be able to collect.
  */
 struct ProfilePublicationData {
     uint256 collectLimit;
@@ -29,6 +30,7 @@ struct ProfilePublicationData {
     address currency;
     address recipient;
     uint16 referralFee;
+    bool followerOnly;
     uint40 endTimestamp;
 }
 
@@ -63,6 +65,7 @@ contract LimitedTimedFeeCollectModule is ICollectModule, FeeModuleBase, FollowVa
      *      address currency: The currency address, must be internally whitelisted.
      *      address recipient: The custom recipient address to direct earnings to.
      *      uint16 referralFee: The referral fee to set.
+     *      bool followerOnly: Whether only followers should be able to collect.
      *
      * @return bytes An abi encoded bytes parameter, containing (in order): collectLimit, amount, currency, recipient, referral fee & end timestamp.
      */
@@ -79,8 +82,9 @@ contract LimitedTimedFeeCollectModule is ICollectModule, FeeModuleBase, FollowVa
                 uint256 amount,
                 address currency,
                 address recipient,
-                uint16 referralFee
-            ) = abi.decode(data, (uint256, uint256, address, address, uint16));
+                uint16 referralFee,
+                bool followerOnly
+            ) = abi.decode(data, (uint256, uint256, address, address, uint16, bool));
             if (
                 collectLimit == 0 ||
                 !_currencyWhitelisted(currency) ||
@@ -94,9 +98,19 @@ contract LimitedTimedFeeCollectModule is ICollectModule, FeeModuleBase, FollowVa
             _dataByPublicationByProfile[profileId][pubId].currency = currency;
             _dataByPublicationByProfile[profileId][pubId].recipient = recipient;
             _dataByPublicationByProfile[profileId][pubId].referralFee = referralFee;
+            _dataByPublicationByProfile[profileId][pubId].followerOnly = followerOnly;
             _dataByPublicationByProfile[profileId][pubId].endTimestamp = endTimestamp;
 
-            return abi.encode(collectLimit, amount, currency, recipient, referralFee, endTimestamp);
+            return
+                abi.encode(
+                    collectLimit,
+                    amount,
+                    currency,
+                    recipient,
+                    referralFee,
+                    followerOnly,
+                    endTimestamp
+                );
         }
     }
 
@@ -114,7 +128,8 @@ contract LimitedTimedFeeCollectModule is ICollectModule, FeeModuleBase, FollowVa
         uint256 pubId,
         bytes calldata data
     ) external override onlyHub {
-        _checkFollowValidity(profileId, collector);
+        if (_dataByPublicationByProfile[profileId][pubId].followerOnly)
+            _checkFollowValidity(profileId, collector);
         uint256 endTimestamp = _dataByPublicationByProfile[profileId][pubId].endTimestamp;
         if (block.timestamp > endTimestamp) revert Errors.CollectExpired();
 

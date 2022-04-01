@@ -5,7 +5,7 @@ import { ZERO_ADDRESS } from '../../helpers/constants';
 import { ERRORS } from '../../helpers/errors';
 import { getTimestamp, matchEvent, waitForTx } from '../../helpers/utils';
 import {
-  emptyCollectModule,
+  freeCollectModule,
   FIRST_PROFILE_ID,
   followerOnlyReferenceModule,
   governance,
@@ -20,6 +20,7 @@ import {
   userThreeAddress,
   userTwo,
   userTwoAddress,
+  abiCoder,
 } from '../../__setup.spec';
 
 makeSuiteCleanRoom('Follower Only Reference Module', function () {
@@ -52,14 +53,14 @@ makeSuiteCleanRoom('Follower Only Reference Module', function () {
         .whitelistReferenceModule(followerOnlyReferenceModule.address, true)
     ).to.not.be.reverted;
     await expect(
-      lensHub.connect(governance).whitelistCollectModule(emptyCollectModule.address, true)
+      lensHub.connect(governance).whitelistCollectModule(freeCollectModule.address, true)
     ).to.not.be.reverted;
     await expect(
       lensHub.post({
         profileId: FIRST_PROFILE_ID,
         contentURI: MOCK_URI,
-        collectModule: emptyCollectModule.address,
-        collectModuleData: [],
+        collectModule: freeCollectModule.address,
+        collectModuleData: abiCoder.encode(['bool'], [true]),
         referenceModule: followerOnlyReferenceModule.address,
         referenceModuleData: [],
       })
@@ -76,8 +77,8 @@ makeSuiteCleanRoom('Follower Only Reference Module', function () {
             contentURI: MOCK_URI,
             profileIdPointed: FIRST_PROFILE_ID,
             pubIdPointed: 1,
-            collectModule: emptyCollectModule.address,
-            collectModuleData: [],
+            collectModule: freeCollectModule.address,
+            collectModuleData: abiCoder.encode(['bool'], [true]),
             referenceModule: ZERO_ADDRESS,
             referenceModuleData: [],
           })
@@ -101,8 +102,8 @@ makeSuiteCleanRoom('Follower Only Reference Module', function () {
             contentURI: MOCK_URI,
             profileIdPointed: FIRST_PROFILE_ID,
             pubIdPointed: 1,
-            collectModule: emptyCollectModule.address,
-            collectModuleData: [],
+            collectModule: freeCollectModule.address,
+            collectModuleData: abiCoder.encode(['bool'], [true]),
             referenceModule: ZERO_ADDRESS,
             referenceModuleData: [],
           })
@@ -153,8 +154,8 @@ makeSuiteCleanRoom('Follower Only Reference Module', function () {
         const tx = lensHub.post({
           profileId: FIRST_PROFILE_ID,
           contentURI: MOCK_URI,
-          collectModule: emptyCollectModule.address,
-          collectModuleData: [],
+          collectModule: freeCollectModule.address,
+          collectModuleData: abiCoder.encode(['bool'], [true]),
           referenceModule: followerOnlyReferenceModule.address,
           referenceModuleData: [],
         });
@@ -165,8 +166,8 @@ makeSuiteCleanRoom('Follower Only Reference Module', function () {
           FIRST_PROFILE_ID,
           2,
           MOCK_URI,
-          emptyCollectModule.address,
-          [],
+          freeCollectModule.address,
+          abiCoder.encode(['bool'], [true]),
           followerOnlyReferenceModule.address,
           [],
           await getTimestamp(),
@@ -188,8 +189,8 @@ makeSuiteCleanRoom('Follower Only Reference Module', function () {
             contentURI: MOCK_URI,
             profileIdPointed: FIRST_PROFILE_ID,
             pubIdPointed: 1,
-            collectModule: emptyCollectModule.address,
-            collectModuleData: [],
+            collectModule: freeCollectModule.address,
+            collectModuleData: abiCoder.encode(['bool'], [true]),
             referenceModule: ZERO_ADDRESS,
             referenceModuleData: [],
           })
@@ -209,8 +210,8 @@ makeSuiteCleanRoom('Follower Only Reference Module', function () {
             contentURI: MOCK_URI,
             profileIdPointed: FIRST_PROFILE_ID,
             pubIdPointed: 1,
-            collectModule: emptyCollectModule.address,
-            collectModuleData: [],
+            collectModule: freeCollectModule.address,
+            collectModuleData: abiCoder.encode(['bool'], [true]),
             referenceModule: ZERO_ADDRESS,
             referenceModuleData: [],
           })
@@ -224,8 +225,8 @@ makeSuiteCleanRoom('Follower Only Reference Module', function () {
             contentURI: MOCK_URI,
             profileIdPointed: FIRST_PROFILE_ID,
             pubIdPointed: 1,
-            collectModule: emptyCollectModule.address,
-            collectModuleData: [],
+            collectModule: freeCollectModule.address,
+            collectModuleData: abiCoder.encode(['bool'], [true]),
             referenceModule: ZERO_ADDRESS,
             referenceModuleData: [],
           })
@@ -247,8 +248,8 @@ makeSuiteCleanRoom('Follower Only Reference Module', function () {
             contentURI: MOCK_URI,
             profileIdPointed: FIRST_PROFILE_ID,
             pubIdPointed: 1,
-            collectModule: emptyCollectModule.address,
-            collectModuleData: [],
+            collectModule: freeCollectModule.address,
+            collectModuleData: abiCoder.encode(['bool'], [true]),
             referenceModule: ZERO_ADDRESS,
             referenceModuleData: [],
           })
@@ -274,8 +275,8 @@ makeSuiteCleanRoom('Follower Only Reference Module', function () {
             contentURI: MOCK_URI,
             profileIdPointed: FIRST_PROFILE_ID,
             pubIdPointed: 1,
-            collectModule: emptyCollectModule.address,
-            collectModuleData: [],
+            collectModule: freeCollectModule.address,
+            collectModuleData: abiCoder.encode(['bool'], [true]),
             referenceModule: ZERO_ADDRESS,
             referenceModuleData: [],
           })

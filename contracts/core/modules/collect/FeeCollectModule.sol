@@ -15,15 +15,17 @@ import {IERC721} from '@openzeppelin/contracts/token/ERC721/IERC721.sol';
  * @notice A struct containing the necessary data to execute collect actions on a publication.
  *
  * @param amount The collecting cost associated with this publication.
- * @param recipient The recipient address associated with this publication.
  * @param currency The currency associated with this publication.
+ * @param recipient The recipient address associated with this publication.
  * @param referralFee The referral fee associated with this publication.
+ * @param followerOnly Whether only followers should be able to collect.
  */
 struct ProfilePublicationData {
     uint256 amount;
-    address recipient;
     address currency;
+    address recipient;
     uint16 referralFee;
+    bool followerOnly;
 }
 
 /**
@@ -53,6 +55,7 @@ contract FeeCollectModule is ICollectModule, FeeModuleBase, FollowValidationModu
      *      address currency: The currency address, must be internally whitelisted.
      *      address recipient: The custom recipient address to direct earnings to.
      *      uint16 referralFee: The referral fee to set.
+     *      bool followerOnly: Whether only followers should be able to collect.
      *
      * @return bytes An abi encoded bytes parameter, which is the same as the passed data parameter.
      */
@@ -61,10 +64,13 @@ contract FeeCollectModule is ICollectModule, FeeModuleBase, FollowValidationModu
         uint256 pubId,
         bytes calldata data
     ) external override onlyHub returns (bytes memory) {
-        (uint256 amount, address currency, address recipient, uint16 referralFee) = abi.decode(
-            data,
-            (uint256, address, address, uint16)
-        );
+        (
+            uint256 amount,
+            address currency,
+            address recipient,
+            uint16 referralFee,
+            bool followerOnly
+        ) = abi.decode(data, (uint256, address, address, uint16, bool));
         if (
             !_currencyWhitelisted(currency) ||
             recipient == address(0) ||
@@ -72,10 +78,11 @@ contract FeeCollectModule is ICollectModule, FeeModuleBase, FollowValidationModu
             amount == 0
         ) revert Errors.InitParamsInvalid();
 
-        _dataByPublicationByProfile[profileId][pubId].referralFee = referralFee;
-        _dataByPublicationByProfile[profileId][pubId].recipient = recipient;
-        _dataByPublicationByProfile[profileId][pubId].currency = currency;
         _dataByPublicationByProfile[profileId][pubId].amount = amount;
+        _dataByPublicationByProfile[profileId][pubId].currency = currency;
+        _dataByPublicationByProfile[profileId][pubId].recipient = recipient;
+        _dataByPublicationByProfile[profileId][pubId].referralFee = referralFee;
+        _dataByPublicationByProfile[profileId][pubId].followerOnly = followerOnly;
 
         return data;
     }
@@ -92,7 +99,8 @@ contract FeeCollectModule is ICollectModule, FeeModuleBase, FollowValidationModu
         uint256 pubId,
         bytes calldata data
     ) external virtual override onlyHub {
-        _checkFollowValidity(profileId, collector);
+        if (_dataByPublicationByProfile[profileId][pubId].followerOnly)
+            _checkFollowValidity(profileId, collector);
         if (referrerProfileId == profileId) {
             _processCollect(collector, profileId, pubId, data);
         } else {
