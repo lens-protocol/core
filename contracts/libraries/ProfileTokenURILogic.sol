@@ -144,13 +144,17 @@ library ProfileTokenURILogic {
      */
     function _shouldUseCustomPicture(string memory imageURI) internal pure returns (bool) {
         bytes memory imageURIBytes = bytes(imageURI);
-        if (imageURIBytes.length == 0) {
+        uint256 imageURIBytesLength = imageURIBytes.length;
+        if (imageURIBytesLength == 0) {
             return false;
         }
-        for (uint256 i = 0; i < imageURIBytes.length; i++) {
+        for (uint256 i; i < imageURIBytesLength; ) {
             if (imageURIBytes[i] == '"') {
                 // Avoids embedding a user provided imageURI containing double-quotes to prevent injection attacks
                 return false;
+            }
+            unchecked {
+                i++;
             }
         }
         return true;

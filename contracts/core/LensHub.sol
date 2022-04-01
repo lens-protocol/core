@@ -535,8 +535,12 @@ contract LensHub is ILensHub, LensNFTBase, VersionedInitializable, LensMultiStat
         whenNotPaused
     {
         bytes32[] memory dataHashes = new bytes32[](vars.datas.length);
-        for (uint256 i = 0; i < vars.datas.length; ++i) {
+        uint256 dataLength = vars.datas.length;
+        for (uint256 i; i < dataLength; ) {
             dataHashes[i] = keccak256(vars.datas[i]);
+            unchecked {
+                i++;
+            }
         }
         _validateRecoveredAddress(
             _calculateDigest(

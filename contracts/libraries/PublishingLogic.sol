@@ -397,10 +397,11 @@ library PublishingLogic {
 
     function _validateHandle(string calldata handle) private pure {
         bytes memory byteHandle = bytes(handle);
-        if (byteHandle.length == 0 || byteHandle.length > Constants.MAX_HANDLE_LENGTH)
+        uint256 byteHandleLength = byteHandle.length;
+        if (byteHandleLength == 0 || byteHandleLength > Constants.MAX_HANDLE_LENGTH)
             revert Errors.HandleLengthInvalid();
 
-        for (uint256 i = 0; i < byteHandle.length; ++i) {
+        for (uint256 i; i < byteHandleLength; ) {
             if (
                 (byteHandle[i] < '0' ||
                     byteHandle[i] > 'z' ||
@@ -409,6 +410,9 @@ library PublishingLogic {
                 byteHandle[i] != '-' &&
                 byteHandle[i] != '_'
             ) revert Errors.HandleContainsInvalidCharacters();
+            unchecked {
+                i++;
+            }
         }
     }
 }
