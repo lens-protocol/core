@@ -15,15 +15,15 @@ import {IERC721} from '@openzeppelin/contracts/token/ERC721/IERC721.sol';
  * @notice A struct containing the necessary data to execute collect actions on a publication.
  *
  * @param amount The collecting cost associated with this publication.
- * @param recipient The recipient address associated with this publication.
  * @param currency The currency associated with this publication.
+ * @param recipient The recipient address associated with this publication.
  * @param referralFee The referral fee associated with this publication.
  * @param followerOnly Whether only followers should be able to collect.
  */
 struct ProfilePublicationData {
     uint256 amount;
-    address recipient;
     address currency;
+    address recipient;
     uint16 referralFee;
     bool followerOnly;
 }
@@ -79,8 +79,8 @@ contract FeeCollectModule is ICollectModule, FeeModuleBase, FollowValidationModu
         ) revert Errors.InitParamsInvalid();
 
         _dataByPublicationByProfile[profileId][pubId].amount = amount;
-        _dataByPublicationByProfile[profileId][pubId].recipient = recipient;
         _dataByPublicationByProfile[profileId][pubId].currency = currency;
+        _dataByPublicationByProfile[profileId][pubId].recipient = recipient;
         _dataByPublicationByProfile[profileId][pubId].referralFee = referralFee;
         _dataByPublicationByProfile[profileId][pubId].followerOnly = followerOnly;
 
