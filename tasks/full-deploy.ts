@@ -27,8 +27,8 @@ import {
 import { deployContract, waitForTx } from './helpers/utils';
 
 const TREASURY_FEE_BPS = 50;
-const LENS_HUB_NFT_NAME = 'Various Vegetables';
-const LENS_HUB_NFT_SYMBOL = 'VVGT';
+const LENS_HUB_NFT_NAME = 'Lens Protocol Profiles';
+const LENS_HUB_NFT_SYMBOL = 'LPP';
 
 task('full-deploy', 'deploys the entire Lens Protocol').setAction(async ({}, hre) => {
   // Note that the use of these signers is a placeholder and is not meant to be used in

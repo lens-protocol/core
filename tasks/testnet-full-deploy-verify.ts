@@ -28,8 +28,8 @@ import {
 import { deployWithVerify, waitForTx } from './helpers/utils';
 
 const TREASURY_FEE_BPS = 50;
-const LENS_HUB_NFT_NAME = 'Various Vegetables';
-const LENS_HUB_NFT_SYMBOL = 'VVGT';
+const LENS_HUB_NFT_NAME = 'Lens Protocol Profiles';
+const LENS_HUB_NFT_SYMBOL = 'LPP';
 
 export let runtimeHRE: HardhatRuntimeEnvironment;
 
