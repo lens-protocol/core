@@ -2,7 +2,11 @@ import '@nomiclabs/hardhat-ethers';
 import { expect } from 'chai';
 import { MAX_UINT256, ZERO_ADDRESS } from '../../helpers/constants';
 import { ERRORS } from '../../helpers/errors';
-import { cancelWithPermitForAll, getCommentWithSigParts } from '../../helpers/utils';
+import {
+  cancelWithPermitForAll,
+  commentReturningTokenId,
+  getCommentWithSigParts,
+} from '../../helpers/utils';
 import {
   abiCoder,
   freeCollectModule,
@@ -20,6 +24,7 @@ import {
   timedFeeCollectModule,
   userAddress,
   userTwo,
+  userTwoAddress,
 } from '../../__setup.spec';
 
 makeSuiteCleanRoom('Publishing Comments', function () {
@@ -189,6 +194,112 @@ makeSuiteCleanRoom('Publishing Comments', function () {
         expect(pub.collectModule).to.eq(freeCollectModule.address);
         expect(pub.collectNFT).to.eq(ZERO_ADDRESS);
         expect(pub.referenceModule).to.eq(ZERO_ADDRESS);
+      });
+
+      it('Should return the expected token IDs when commenting publications', async function () {
+        await expect(
+          lensHub.connect(testWallet).createProfile({
+            to: testWallet.address,
+            handle: 'testwallet',
+            imageURI: MOCK_PROFILE_URI,
+            followModule: ZERO_ADDRESS,
+            followModuleData: [],
+            followNFTURI: MOCK_FOLLOW_NFT_URI,
+          })
+        ).to.not.be.reverted;
+        await expect(
+          lensHub.connect(testWallet).createProfile({
+            to: userTwoAddress,
+            handle: 'usertwo',
+            imageURI: MOCK_PROFILE_URI,
+            followModule: ZERO_ADDRESS,
+            followModuleData: [],
+            followNFTURI: MOCK_FOLLOW_NFT_URI,
+          })
+        ).to.not.be.reverted;
+
+        const nonce = (await lensHub.sigNonces(testWallet.address)).toNumber();
+        const collectModuleData = abiCoder.encode(['bool'], [true]);
+        const referenceModuleData = [];
+        const { v, r, s } = await getCommentWithSigParts(
+          FIRST_PROFILE_ID + 1,
+          OTHER_MOCK_URI,
+          FIRST_PROFILE_ID,
+          '1',
+          freeCollectModule.address,
+          collectModuleData,
+          ZERO_ADDRESS,
+          referenceModuleData,
+          nonce,
+          MAX_UINT256
+        );
+        expect(
+          await commentReturningTokenId({
+            vars: {
+              profileId: FIRST_PROFILE_ID + 1,
+              contentURI: OTHER_MOCK_URI,
+              profileIdPointed: FIRST_PROFILE_ID,
+              pubIdPointed: '1',
+              collectModule: freeCollectModule.address,
+              collectModuleData: collectModuleData,
+              referenceModule: ZERO_ADDRESS,
+              referenceModuleData: referenceModuleData,
+              sig: {
+                v,
+                r,
+                s,
+                deadline: MAX_UINT256,
+              },
+            },
+          })
+        ).to.eq(1);
+
+        expect(
+          await commentReturningTokenId({
+            sender: userTwo,
+            vars: {
+              profileId: FIRST_PROFILE_ID + 2,
+              contentURI: MOCK_URI,
+              profileIdPointed: FIRST_PROFILE_ID,
+              pubIdPointed: 1,
+              collectModule: freeCollectModule.address,
+              collectModuleData: collectModuleData,
+              referenceModule: ZERO_ADDRESS,
+              referenceModuleData: referenceModuleData,
+            },
+          })
+        ).to.eq(1);
+
+        expect(
+          await commentReturningTokenId({
+            sender: testWallet,
+            vars: {
+              profileId: FIRST_PROFILE_ID + 1,
+              contentURI: MOCK_URI,
+              profileIdPointed: FIRST_PROFILE_ID,
+              pubIdPointed: 1,
+              collectModule: freeCollectModule.address,
+              collectModuleData: collectModuleData,
+              referenceModule: ZERO_ADDRESS,
+              referenceModuleData: referenceModuleData,
+            },
+          })
+        ).to.eq(2);
+
+        expect(
+          await commentReturningTokenId({
+            vars: {
+              profileId: FIRST_PROFILE_ID,
+              contentURI: MOCK_URI,
+              profileIdPointed: FIRST_PROFILE_ID,
+              pubIdPointed: 1,
+              collectModule: freeCollectModule.address,
+              collectModuleData: collectModuleData,
+              referenceModule: ZERO_ADDRESS,
+              referenceModuleData: referenceModuleData,
+            },
+          })
+        ).to.eq(2);
       });
 
       it('User should create a post using the mock reference module as reference module, then comment on that post', async function () {
