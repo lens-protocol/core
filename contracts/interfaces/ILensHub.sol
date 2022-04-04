@@ -185,7 +185,7 @@ interface ILensHub {
      *
      * @param vars A PostData struct containing the needed parameters.
      *
-     * @return An integer representing the post's publication ID.
+     * @return uint256 An integer representing the post's publication ID.
      */
     function post(DataTypes.PostData calldata vars) external returns (uint256);
 
@@ -194,7 +194,7 @@ interface ILensHub {
      *
      * @param vars A PostWithSigData struct containing the regular parameters and an EIP712Signature struct.
      *
-     * @return An integer representing the post's publication ID.
+     * @return uint256 An integer representing the post's publication ID.
      */
     function postWithSig(DataTypes.PostWithSigData calldata vars) external returns (uint256);
 
@@ -203,7 +203,7 @@ interface ILensHub {
      *
      * @param vars A CommentData struct containing the needed parameters.
      *
-     * @return An integer representing the comment's publication ID.
+     * @return uint256 An integer representing the comment's publication ID.
      */
     function comment(DataTypes.CommentData calldata vars) external returns (uint256);
 
@@ -212,7 +212,7 @@ interface ILensHub {
      *
      * @param vars A CommentWithSigData struct containing the regular parameters and an EIP712Signature struct.
      *
-     * @return An integer representing the comment's publication ID.
+     * @return uint256 An integer representing the comment's publication ID.
      */
     function commentWithSig(DataTypes.CommentWithSigData calldata vars) external returns (uint256);
 
@@ -221,7 +221,7 @@ interface ILensHub {
      *
      * @param vars A MirrorData struct containing the necessary parameters.
      *
-     * @return An integer representing the mirror's publication ID.
+     * @return uint256 An integer representing the mirror's publication ID.
      */
     function mirror(DataTypes.MirrorData calldata vars) external returns (uint256);
 
@@ -230,7 +230,7 @@ interface ILensHub {
      *
      * @param vars A MirrorWithSigData struct containing the regular parameters and an EIP712Signature struct.
      *
-     * @return An integer representing the mirror's publication ID.
+     * @return uint256 An integer representing the mirror's publication ID.
      */
     function mirrorWithSig(DataTypes.MirrorWithSigData calldata vars) external returns (uint256);
 
@@ -242,7 +242,7 @@ interface ILensHub {
      * @param profileIds The token ID array of the profiles to follow.
      * @param datas The arbitrary data array to pass to the follow module for each profile if needed.
      *
-     * @return An array of integers representing the minted follow NFTs token IDs.
+     * @return uint256[] An array of integers representing the minted follow NFTs token IDs.
      */
     function follow(uint256[] calldata profileIds, bytes[] calldata datas)
         external
@@ -254,7 +254,7 @@ interface ILensHub {
      * @param vars A FollowWithSigData struct containing the regular parameters as well as the signing follower's address
      * and an EIP712Signature struct.
      *
-     * @return An array of integers representing the minted follow NFTs token IDs.
+     * @return uint256[] An array of integers representing the minted follow NFTs token IDs.
      */
     function followWithSig(DataTypes.FollowWithSigData calldata vars)
         external
@@ -267,7 +267,7 @@ interface ILensHub {
      * @param pubId The publication to collect's publication ID.
      * @param data The arbitrary data to pass to the collect module if needed.
      *
-     * @return An integer representing the minted token ID.
+     * @return uint256 An integer representing the minted token ID.
      */
     function collect(
         uint256 profileId,
@@ -281,7 +281,7 @@ interface ILensHub {
      * @param vars A CollectWithSigData struct containing the regular parameters as well as the collector's address and
      * an EIP712Signature struct.
      *
-     * @return An integer representing the minted token ID.
+     * @return uint256 An integer representing the minted token ID.
      */
     function collectWithSig(DataTypes.CollectWithSigData calldata vars) external returns (uint256);
 

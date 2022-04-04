@@ -36,7 +36,7 @@ library InteractionLogic {
      * @param _profileById A pointer to the storage mapping of profile structs by profile ID.
      * @param _profileIdByHandleHash A pointer to the storage mapping of profile IDs by handle hash.
      *
-     * @return An array of integers representing the minted follow NFTs token IDs.
+     * @return uint256[] An array of integers representing the minted follow NFTs token IDs.
      */
     function follow(
         address follower,
@@ -58,7 +58,8 @@ library InteractionLogic {
             address followNFT = _profileById[profileIds[i]].followNFT;
 
             if (followNFT == address(0)) {
-                followNFT = _deployFollowNFT(profileIds[i], followNFTImpl, handle, _profileById);
+                followNFT = _deployFollowNFT(profileIds[i], handle, followNFTImpl);
+                _profileById[profileIds[i]].followNFT = followNFT;
             }
 
             tokenIds[i] = IFollowNFT(followNFT).mint(follower);
@@ -89,7 +90,7 @@ library InteractionLogic {
      * @param _pubByIdByProfile A pointer to the storage mapping of publications by pubId by profile ID.
      * @param _profileById A pointer to the storage mapping of profile structs by profile ID.
      *
-     * @return An integer representing the minted token ID.
+     * @return uint256 An integer representing the minted token ID.
      */
     function collect(
         address collector,
@@ -112,10 +113,10 @@ library InteractionLogic {
                 collectNFT = _deployCollectNFT(
                     rootProfileId,
                     rootPubId,
-                    collectNFTImpl,
-                    _pubByIdByProfile,
-                    _profileById
+                    _profileById[rootProfileId].handle,
+                    collectNFTImpl
                 );
+                _pubByIdByProfile[rootProfileId][rootPubId].collectNFT = collectNFT;
             }
             tokenId = ICollectNFT(collectNFT).mint(collector);
         }
@@ -132,33 +133,21 @@ library InteractionLogic {
         return tokenId;
     }
 
-    // TODO: Add natspec
-    function _emitCollectedEvent(
-        address collector,
-        uint256 profileId,
-        uint256 pubId,
-        uint256 rootProfileId,
-        uint256 rootPubId
-    ) private {
-        emit Events.Collected(
-            collector,
-            profileId,
-            pubId,
-            rootProfileId,
-            rootPubId,
-            block.timestamp
-        );
-    }
-
-    // TODO: Add natspec
+    /**
+     * @notice Deploys the given profile's Follow NFT contract.
+     *
+     * @param profileId The token ID of the profile which Follow NFT should be deployed.
+     * @param handle The profile's associated handle.
+     * @param followNFTImpl The address of the Follow NFT implementation that should be used for the deployment.
+     *
+     * @return address The address of the deployed Follow NFT contract.
+     */
     function _deployFollowNFT(
         uint256 profileId,
-        address followNFTImpl,
         string memory handle,
-        mapping(uint256 => DataTypes.ProfileStruct) storage _profileById
+        address followNFTImpl
     ) private returns (address) {
         address followNFT = Clones.clone(followNFTImpl);
-        _profileById[profileId].followNFT = followNFT;
 
         bytes4 firstBytes = bytes4(bytes(handle));
 
@@ -175,19 +164,24 @@ library InteractionLogic {
         return followNFT;
     }
 
-    // TODO: Add natspec
+    /**
+     * @notice Deploys the given profile's Collect NFT contract.
+     *
+     * @param profileId The token ID of the profile which Collect NFT should be deployed.
+     * @param pubId The publication ID of the publication being collected, which Collect NFT should be deployed.
+     * @param handle The profile's associated handle.
+     * @param collectNFTImpl The address of the Collect NFT implementation that should be used for the deployment.
+     *
+     * @return address The address of the deployed Collect NFT contract.
+     */
     function _deployCollectNFT(
         uint256 profileId,
         uint256 pubId,
-        address collectNFTImpl,
-        mapping(uint256 => mapping(uint256 => DataTypes.PublicationStruct))
-            storage _pubByIdByProfile,
-        mapping(uint256 => DataTypes.ProfileStruct) storage _profileById
+        string memory handle,
+        address collectNFTImpl
     ) private returns (address) {
         address collectNFT = Clones.clone(collectNFTImpl);
-        _pubByIdByProfile[profileId][pubId].collectNFT = collectNFT;
 
-        string memory handle = _profileById[profileId].handle;
         bytes4 firstBytes = bytes4(bytes(handle));
 
         string memory collectNFTName = string(
@@ -201,5 +195,33 @@ library InteractionLogic {
         emit Events.CollectNFTDeployed(profileId, pubId, collectNFT, block.timestamp);
 
         return collectNFT;
+    }
+
+    /**
+     * @notice Emits the `Collected` event that signals that a successful collect action has occurred.
+     *
+     * @dev This is done through this function to prevent stack too deep compilation error.
+     *
+     * @param collector The address collecting the publication.
+     * @param profileId The token ID of the profile that the collect was initiated towards, useful to differentiate mirrors.
+     * @param pubId The publication ID that the collect was initiated towards, useful to differentiate mirrors.
+     * @param rootProfileId The profile token ID of the profile whose publication is being collected.
+     * @param rootPubId The publication ID of the publication being collected.
+     */
+    function _emitCollectedEvent(
+        address collector,
+        uint256 profileId,
+        uint256 pubId,
+        uint256 rootProfileId,
+        uint256 rootPubId
+    ) private {
+        emit Events.Collected(
+            collector,
+            profileId,
+            pubId,
+            rootProfileId,
+            rootPubId,
+            block.timestamp
+        );
     }
 }
