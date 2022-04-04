@@ -346,15 +346,15 @@ contract LensHub is ILensHub, LensNFTBase, VersionedInitializable, LensMultiStat
         returns (uint256)
     {
         _validateCallerIsProfileOwnerOrDispatcher(vars.profileId);
-        _createPost(
-            vars.profileId,
-            vars.contentURI,
-            vars.collectModule,
-            vars.collectModuleData,
-            vars.referenceModule,
-            vars.referenceModuleData
-        );
-        return _profileById[vars.profileId].pubCount;
+        return
+            _createPost(
+                vars.profileId,
+                vars.contentURI,
+                vars.collectModule,
+                vars.collectModuleData,
+                vars.referenceModule,
+                vars.referenceModuleData
+            );
     }
 
     /// @inheritdoc ILensHub
@@ -384,15 +384,15 @@ contract LensHub is ILensHub, LensNFTBase, VersionedInitializable, LensMultiStat
             owner,
             vars.sig
         );
-        _createPost(
-            vars.profileId,
-            vars.contentURI,
-            vars.collectModule,
-            vars.collectModuleData,
-            vars.referenceModule,
-            vars.referenceModuleData
-        );
-        return _profileById[vars.profileId].pubCount;
+        return
+            _createPost(
+                vars.profileId,
+                vars.contentURI,
+                vars.collectModule,
+                vars.collectModuleData,
+                vars.referenceModule,
+                vars.referenceModuleData
+            );
     }
 
     /// @inheritdoc ILensHub
@@ -403,8 +403,7 @@ contract LensHub is ILensHub, LensNFTBase, VersionedInitializable, LensMultiStat
         returns (uint256)
     {
         _validateCallerIsProfileOwnerOrDispatcher(vars.profileId);
-        _createComment(vars);
-        return _profileById[vars.profileId].pubCount;
+        return _createComment(vars);
     }
 
     /// @inheritdoc ILensHub
@@ -436,19 +435,19 @@ contract LensHub is ILensHub, LensNFTBase, VersionedInitializable, LensMultiStat
             owner,
             vars.sig
         );
-        _createComment(
-            DataTypes.CommentData(
-                vars.profileId,
-                vars.contentURI,
-                vars.profileIdPointed,
-                vars.pubIdPointed,
-                vars.collectModule,
-                vars.collectModuleData,
-                vars.referenceModule,
-                vars.referenceModuleData
-            )
-        );
-        return _profileById[vars.profileId].pubCount;
+        return
+            _createComment(
+                DataTypes.CommentData(
+                    vars.profileId,
+                    vars.contentURI,
+                    vars.profileIdPointed,
+                    vars.pubIdPointed,
+                    vars.collectModule,
+                    vars.collectModuleData,
+                    vars.referenceModule,
+                    vars.referenceModuleData
+                )
+            );
     }
 
     /// @inheritdoc ILensHub
@@ -459,14 +458,14 @@ contract LensHub is ILensHub, LensNFTBase, VersionedInitializable, LensMultiStat
         returns (uint256)
     {
         _validateCallerIsProfileOwnerOrDispatcher(vars.profileId);
-        _createMirror(
-            vars.profileId,
-            vars.profileIdPointed,
-            vars.pubIdPointed,
-            vars.referenceModule,
-            vars.referenceModuleData
-        );
-        return _profileById[vars.profileId].pubCount;
+        return
+            _createMirror(
+                vars.profileId,
+                vars.profileIdPointed,
+                vars.pubIdPointed,
+                vars.referenceModule,
+                vars.referenceModuleData
+            );
     }
 
     /// @inheritdoc ILensHub
@@ -495,14 +494,14 @@ contract LensHub is ILensHub, LensNFTBase, VersionedInitializable, LensMultiStat
             owner,
             vars.sig
         );
-        _createMirror(
-            vars.profileId,
-            vars.profileIdPointed,
-            vars.pubIdPointed,
-            vars.referenceModule,
-            vars.referenceModuleData
-        );
-        return _profileById[vars.profileId].pubCount;
+        return
+            _createMirror(
+                vars.profileId,
+                vars.profileIdPointed,
+                vars.pubIdPointed,
+                vars.referenceModule,
+                vars.referenceModuleData
+            );
     }
 
     /**
@@ -895,7 +894,8 @@ contract LensHub is ILensHub, LensNFTBase, VersionedInitializable, LensMultiStat
         bytes memory collectModuleData,
         address referenceModule,
         bytes memory referenceModuleData
-    ) internal {
+    ) internal returns (uint256) {
+        uint256 pubId = ++_profileById[profileId].pubCount;
         PublishingLogic.createPost(
             profileId,
             contentURI,
@@ -903,11 +903,12 @@ contract LensHub is ILensHub, LensNFTBase, VersionedInitializable, LensMultiStat
             collectModuleData,
             referenceModule,
             referenceModuleData,
-            ++_profileById[profileId].pubCount,
+            pubId,
             _pubByIdByProfile,
             _collectModuleWhitelisted,
             _referenceModuleWhitelisted
         );
+        return pubId;
     }
 
     function _setDefaultProfile(address wallet, uint256 profileId) internal {
@@ -919,15 +920,17 @@ contract LensHub is ILensHub, LensNFTBase, VersionedInitializable, LensMultiStat
         emit Events.DefaultProfileSet(wallet, profileId, block.timestamp);
     }
 
-    function _createComment(DataTypes.CommentData memory vars) internal {
+    function _createComment(DataTypes.CommentData memory vars) internal returns (uint256) {
+        uint256 pubId = ++_profileById[vars.profileId].pubCount;
         PublishingLogic.createComment(
             vars,
-            ++_profileById[vars.profileId].pubCount,
+            pubId,
             _profileById,
             _pubByIdByProfile,
             _collectModuleWhitelisted,
             _referenceModuleWhitelisted
         );
+        return pubId;
     }
 
     function _createMirror(
@@ -936,17 +939,19 @@ contract LensHub is ILensHub, LensNFTBase, VersionedInitializable, LensMultiStat
         uint256 pubIdPointed,
         address referenceModule,
         bytes calldata referenceModuleData
-    ) internal {
+    ) internal returns (uint256) {
+        uint256 pubId = ++_profileById[profileId].pubCount;
         PublishingLogic.createMirror(
             profileId,
             profileIdPointed,
             pubIdPointed,
             referenceModule,
             referenceModuleData,
-            ++_profileById[profileId].pubCount,
+            pubId,
             _pubByIdByProfile,
             _referenceModuleWhitelisted
         );
+        return pubId;
     }
 
     function _setDispatcher(uint256 profileId, address dispatcher) internal {
