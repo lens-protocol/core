@@ -445,6 +445,16 @@ export async function getToggleFollowWithSigParts(
   return await getSig(msgParams);
 }
 
+export async function getSetProfileMetadataURIWithSigParts(
+  profileId: string | number,
+  metadata: string,
+  nonce: number,
+  deadline: string
+): Promise<{ v: number; r: string; s: string }> {
+  const msgParams = buildSetProfileMetadataURIWithSigParams(profileId, metadata, nonce, deadline);
+  return await getSig(msgParams);
+}
+
 export async function getCollectWithSigParts(
   profileId: BigNumberish,
   pubId: string,
@@ -858,6 +868,34 @@ const buildToggleFollowWithSigParams = (
   value: {
     profileIds: profileIds,
     enables: enables,
+    nonce: nonce,
+    deadline: deadline,
+  },
+});
+
+const buildSetProfileMetadataURIWithSigParams = (
+  profileId: string | number,
+  metadata: string,
+  nonce: number,
+  deadline: string
+) => ({
+  types: {
+    SetProfileMetadataURIWithSig: [
+      { name: 'profileId', type: 'uint256' },
+      { name: 'metadata', type: 'string' },
+      { name: 'nonce', type: 'uint256' },
+      { name: 'deadline', type: 'uint256' },
+    ],
+  },
+  domain: {
+    name: LENS_PERIPHERY_NAME,
+    version: '1',
+    chainId: getChainId(),
+    verifyingContract: lensPeriphery.address,
+  },
+  value: {
+    profileId: profileId,
+    metadata: metadata,
     nonce: nonce,
     deadline: deadline,
   },

@@ -9,8 +9,8 @@ import {Events} from '../libraries/Events.sol';
 import {Errors} from '../libraries/Errors.sol';
 
 /**
- * @notice This is a peripheral contract that allows for users to emit an event demonstrating whether or not
- * they explicitly want a follow to be shown.
+ * @notice This is a peripheral contract that acts as a source of truth for profile metadata and allows
+ * for users to emit an event demonstrating whether or not they explicitly want a follow to be shown.
  *
  * @dev This is useful because it allows clients to filter out follow NFTs that were transferred to
  * a recipient by another user (i.e. Not a mint) and not register them as "following" unless
@@ -27,13 +27,68 @@ contract LensPeriphery {
         keccak256(
             'ToggleFollowWithSig(uint256[] profileIds,bool[] enables,uint256 nonce,uint256 deadline)'
         );
+    bytes32 internal constant SET_PROFILE_METADATA_WITH_SIG_TYPEHASH =
+        keccak256(
+            'SetProfileMetadataURIWithSig(uint256 profileId,string metadata,uint256 nonce,uint256 deadline)'
+        );
 
-    ILensHub immutable HUB;
+    ILensHub public immutable HUB;
 
     mapping(address => uint256) public sigNonces;
 
+    mapping(address => mapping(uint256 => string)) internal _metadataByProfileByOwner;
+
     constructor(ILensHub hub) {
         HUB = hub;
+    }
+
+    /**
+     * @notice Sets profile metadata for a profile owner as a dispatcher.
+     *
+     * @param profileId The profile ID to set the metadata for.
+     * @param metadata The metadata string to set for the profile and owner.
+     */
+    function dispatcherSetProfileMetadataURI(uint256 profileId, string calldata metadata) external {
+        address owner = IERC721Time(address(HUB)).ownerOf(profileId);
+        if (msg.sender != HUB.getDispatcher(profileId)) revert Errors.NotDispatcher();
+        _setProfileMetadataURI(owner, profileId, metadata);
+    }
+
+    /**
+     * @notice Sets the profile metadata for a given profile when owned by the message sender.
+     *
+     * @param profileId The profile ID to set the metadata for.
+     * @param metadata The metadata string to set for the profile and message sender.
+     */
+    function setProfileMetadataURI(uint256 profileId, string calldata metadata) external {
+        _setProfileMetadataURI(msg.sender, profileId, metadata);
+    }
+
+    /**
+     * @notice Sets the profile metadata for a given profile and user via signature with the specified parameters.
+     *
+     * @param vars A SetProfileMetadataWithSigData struct containingthe regular parameters as well as the user address
+     * and an EIP712Signature struct.
+     */
+    function setProfileMetadataURIWithSig(DataTypes.SetProfileMetadataWithSigData calldata vars)
+        external
+    {
+        _validateRecoveredAddress(
+            _calculateDigest(
+                keccak256(
+                    abi.encode(
+                        SET_PROFILE_METADATA_WITH_SIG_TYPEHASH,
+                        vars.profileId,
+                        keccak256(bytes(vars.metadata)),
+                        sigNonces[vars.user]++,
+                        vars.sig.deadline
+                    )
+                )
+            ),
+            vars.user,
+            vars.sig
+        );
+        _setProfileMetadataURI(vars.user, vars.profileId, vars.metadata);
     }
 
     /**
@@ -71,6 +126,42 @@ contract LensPeriphery {
             vars.sig
         );
         _toggleFollow(vars.follower, vars.profileIds, vars.enables);
+    }
+
+    /**
+     * @notice Returns the metadata URI of a profile for its current owner.
+     *
+     * @param profileId The profile ID to query the metadata URI for.
+     *
+     * @return string The metadata associated with that profile ID and the profile's current owner.
+     */
+    function getProfileMetadataURI(uint256 profileId) external view returns (string memory) {
+        address owner = IERC721Time(address(HUB)).ownerOf(profileId);
+        return _metadataByProfileByOwner[owner][profileId];
+    }
+
+    /**
+     * @notice Returns the metadata URI of a profile for a given user. Note that the user does not *need* to own the
+     * profile in order to have associated metadata.
+     *
+     * @param user The user to query the profile metadata URI for.
+     * @param profileId The profile ID to query the metadata URI for. 
+     */
+    function getProfileMetadataURIByOwner(address user, uint256 profileId)
+        external
+        view
+        returns (string memory)
+    {
+        return _metadataByProfileByOwner[user][profileId];
+    }
+
+    function _setProfileMetadataURI(
+        address user,
+        uint256 profileId,
+        string calldata metadata
+    ) internal {
+        _metadataByProfileByOwner[user][profileId] = metadata;
+        emit Events.ProfileMetadataSet(user, profileId, metadata, block.timestamp);
     }
 
     function _toggleFollow(

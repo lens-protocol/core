@@ -20,6 +20,7 @@ library Errors {
     error ProfileCreatorNotWhitelisted();
     error NotProfileOwner();
     error NotProfileOwnerOrDispatcher();
+    error NotDispatcher();
     error PublicationDoesNotExist();
     error HandleTaken();
     error HandleLengthInvalid();
