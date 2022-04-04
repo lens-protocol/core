@@ -22,6 +22,7 @@ import {
   TransparentUpgradeableProxy__factory,
   ProfileTokenURILogic__factory,
   LensPeriphery__factory,
+  UIDataProvider__factory,
 } from '../typechain-types';
 import { deployContract, waitForTx } from './helpers/utils';
 
@@ -107,7 +108,6 @@ task('full-deploy', 'deploys the entire Lens Protocol').setAction(async ({}, hre
   ]);
 
   console.log('\n\t-- Deploying Hub Proxy --');
-
   let proxy = await deployContract(
     new TransparentUpgradeableProxy__factory(deployer).deploy(
       lensHubImpl.address,
@@ -120,10 +120,10 @@ task('full-deploy', 'deploys the entire Lens Protocol').setAction(async ({}, hre
   // Connect the hub proxy to the LensHub factory and the governance for ease of use.
   const lensHub = LensHub__factory.connect(proxy.address, governance);
 
-  const lensPeriphery = await new LensPeriphery__factory(deployer).deploy(
-    lensHub.address,
-    { nonce: deployerNonce++ }
-  );
+  console.log('\n\t-- Deploying Lens Periphery --');
+  const lensPeriphery = await new LensPeriphery__factory(deployer).deploy(lensHub.address, {
+    nonce: deployerNonce++,
+  });
 
   // Currency
   console.log('\n\t-- Deploying Currency --');
@@ -185,6 +185,14 @@ task('full-deploy', 'deploys the entire Lens Protocol').setAction(async ({}, hre
   console.log('\n\t-- Deploying followerOnlyReferenceModule --');
   const followerOnlyReferenceModule = await deployContract(
     new FollowerOnlyReferenceModule__factory(deployer).deploy(lensHub.address, {
+      nonce: deployerNonce++,
+    })
+  );
+
+  // Deploy UIDataProvider
+  console.log('\n\t-- Deploying UI Data Provider --');
+  const uiDataProvider = await deployContract(
+    new UIDataProvider__factory(deployer).deploy(lensHub.address, {
       nonce: deployerNonce++,
     })
   );
@@ -252,7 +260,7 @@ task('full-deploy', 'deploys the entire Lens Protocol').setAction(async ({}, hre
     'follow NFT impl': followNFTImplAddress,
     'collect NFT impl': collectNFTImplAddress,
     currency: currency.address,
-    'periphery data provider': lensPeriphery.address,
+    'lens periphery': lensPeriphery.address,
     'module globals': moduleGlobals.address,
     'fee collect module': feeCollectModule.address,
     'limited fee collect module': limitedFeeCollectModule.address,
@@ -264,6 +272,7 @@ task('full-deploy', 'deploys the entire Lens Protocol').setAction(async ({}, hre
     // --- COMMENTED OUT AS THIS IS NOT A LAUNCH MODULE ---
     // 'approval follow module': approvalFollowModule.address,
     'follower only reference module': followerOnlyReferenceModule.address,
+    'UI data provider': uiDataProvider.address,
   };
   const json = JSON.stringify(addrs, null, 2);
   console.log(json);
