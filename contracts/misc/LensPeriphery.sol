@@ -55,21 +55,24 @@ contract LensPeriphery {
      * and an EIP712Signature struct.
      */
     function toggleFollowWithSig(DataTypes.ToggleFollowWithSigData calldata vars) external {
-        _validateRecoveredAddress(
-            _calculateDigest(
-                keccak256(
-                    abi.encode(
-                        TOGGLE_FOLLOW_WITH_SIG_TYPEHASH,
-                        keccak256(abi.encodePacked(vars.profileIds)),
-                        keccak256(abi.encodePacked(vars.enables)),
-                        sigNonces[vars.follower]++,
-                        vars.sig.deadline
+        unchecked {
+            _validateRecoveredAddress(
+                _calculateDigest(
+                    keccak256(
+                        abi.encode(
+                            TOGGLE_FOLLOW_WITH_SIG_TYPEHASH,
+                            keccak256(abi.encodePacked(vars.profileIds)),
+                            keccak256(abi.encodePacked(vars.enables)),
+                            sigNonces[vars.follower]++,
+                            vars.sig.deadline
+                        )
                     )
-                )
-            ),
-            vars.follower,
-            vars.sig
-        );
+                ),
+                vars.follower,
+                vars.sig
+            );
+        }
+
         _toggleFollow(vars.follower, vars.profileIds, vars.enables);
     }
 

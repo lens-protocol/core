@@ -84,21 +84,23 @@ contract FollowNFT is LensNFTBase, IFollowNFT {
         address delegatee,
         DataTypes.EIP712Signature calldata sig
     ) external override {
-        _validateRecoveredAddress(
-            _calculateDigest(
-                keccak256(
-                    abi.encode(
-                        DELEGATE_BY_SIG_TYPEHASH,
-                        delegator,
-                        delegatee,
-                        sigNonces[delegator]++,
-                        sig.deadline
+        unchecked {
+            _validateRecoveredAddress(
+                _calculateDigest(
+                    keccak256(
+                        abi.encode(
+                            DELEGATE_BY_SIG_TYPEHASH,
+                            delegator,
+                            delegatee,
+                            sigNonces[delegator]++,
+                            sig.deadline
+                        )
                     )
-                )
-            ),
-            delegator,
-            sig
-        );
+                ),
+                delegator,
+                sig
+            );
+        }
         _delegate(delegator, delegatee);
     }
 
