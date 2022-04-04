@@ -2,7 +2,11 @@ import '@nomiclabs/hardhat-ethers';
 import { expect } from 'chai';
 import { MAX_UINT256, ZERO_ADDRESS } from '../../helpers/constants';
 import { ERRORS } from '../../helpers/errors';
-import { cancelWithPermitForAll, getPostWithSigParts } from '../../helpers/utils';
+import {
+  cancelWithPermitForAll,
+  getPostWithSigParts,
+  postReturningTokenId,
+} from '../../helpers/utils';
 import {
   freeCollectModule,
   FIRST_PROFILE_ID,
@@ -20,6 +24,7 @@ import {
   userAddress,
   userTwo,
   abiCoder,
+  userTwoAddress,
 } from '../../__setup.spec';
 
 makeSuiteCleanRoom('Publishing Posts', function () {
@@ -121,6 +126,105 @@ makeSuiteCleanRoom('Publishing Posts', function () {
     });
 
     context('Scenarios', function () {
+      it('Should return the expected token IDs when mirroring publications', async function () {
+        await expect(
+          lensHub.connect(governance).whitelistCollectModule(freeCollectModule.address, true)
+        ).to.not.be.reverted;
+
+        await expect(
+          lensHub.createProfile({
+            to: testWallet.address,
+            handle: 'testwallet',
+            imageURI: MOCK_PROFILE_URI,
+            followModule: ZERO_ADDRESS,
+            followModuleData: [],
+            followNFTURI: MOCK_FOLLOW_NFT_URI,
+          })
+        ).to.not.be.reverted;
+        await expect(
+          lensHub.createProfile({
+            to: userTwoAddress,
+            handle: 'usertwo',
+            imageURI: MOCK_PROFILE_URI,
+            followModule: ZERO_ADDRESS,
+            followModuleData: [],
+            followNFTURI: MOCK_FOLLOW_NFT_URI,
+          })
+        ).to.not.be.reverted;
+
+        expect(
+          await postReturningTokenId({
+            vars: {
+              profileId: FIRST_PROFILE_ID,
+              contentURI: MOCK_URI,
+              collectModule: freeCollectModule.address,
+              collectModuleData: abiCoder.encode(['bool'], [true]),
+              referenceModule: ZERO_ADDRESS,
+              referenceModuleData: [],
+            },
+          })
+        ).to.eq(1);
+
+        expect(
+          await postReturningTokenId({
+            sender: userTwo,
+            vars: {
+              profileId: FIRST_PROFILE_ID + 2,
+              contentURI: MOCK_URI,
+              collectModule: freeCollectModule.address,
+              collectModuleData: abiCoder.encode(['bool'], [true]),
+              referenceModule: ZERO_ADDRESS,
+              referenceModuleData: [],
+            },
+          })
+        ).to.eq(1);
+
+        const nonce = (await lensHub.sigNonces(testWallet.address)).toNumber();
+        const collectModuleData = abiCoder.encode(['bool'], [true]);
+        const referenceModuleData = [];
+        const { v, r, s } = await getPostWithSigParts(
+          FIRST_PROFILE_ID + 1,
+          MOCK_URI,
+          freeCollectModule.address,
+          collectModuleData,
+          ZERO_ADDRESS,
+          referenceModuleData,
+          nonce,
+          MAX_UINT256
+        );
+        expect(
+          await postReturningTokenId({
+            vars: {
+              profileId: FIRST_PROFILE_ID + 1,
+              contentURI: MOCK_URI,
+              collectModule: freeCollectModule.address,
+              collectModuleData: collectModuleData,
+              referenceModule: ZERO_ADDRESS,
+              referenceModuleData: referenceModuleData,
+              sig: {
+                v,
+                r,
+                s,
+                deadline: MAX_UINT256,
+              },
+            },
+          })
+        ).to.eq(1);
+
+        expect(
+          await postReturningTokenId({
+            vars: {
+              profileId: FIRST_PROFILE_ID,
+              contentURI: MOCK_URI,
+              collectModule: freeCollectModule.address,
+              collectModuleData: abiCoder.encode(['bool'], [true]),
+              referenceModule: ZERO_ADDRESS,
+              referenceModuleData: [],
+            },
+          })
+        ).to.eq(2);
+      });
+
       it('User should create a post with empty collect and reference module data, fetched post data should be accurate', async function () {
         await expect(
           lensHub.connect(governance).whitelistCollectModule(freeCollectModule.address, true)

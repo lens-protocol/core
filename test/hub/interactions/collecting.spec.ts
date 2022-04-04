@@ -5,6 +5,7 @@ import { MAX_UINT256, ZERO_ADDRESS } from '../../helpers/constants';
 import { ERRORS } from '../../helpers/errors';
 import {
   cancelWithPermitForAll,
+  collectReturningTokenIds,
   getAbbreviation,
   getCollectWithSigParts,
   getTimestamp,
@@ -93,6 +94,69 @@ makeSuiteCleanRoom('Collecting', function () {
         await expect(followNFT.transferFrom(userAddress, userTwoAddress, 1)).to.not.be.reverted;
 
         await expect(lensHub.collect(FIRST_PROFILE_ID, 1, [])).to.not.be.reverted;
+      });
+
+      it('Should return the expected token IDs when collecting publications', async function () {
+        await expect(lensHub.connect(userTwo).follow([FIRST_PROFILE_ID], [[]])).to.not.be.reverted;
+        await expect(
+          lensHub.connect(testWallet).follow([FIRST_PROFILE_ID], [[]])
+        ).to.not.be.reverted;
+
+        expect(
+          await collectReturningTokenIds({
+            vars: {
+              profileId: FIRST_PROFILE_ID,
+              pubId: 1,
+              data: [],
+            },
+          })
+        ).to.eq(1);
+
+        expect(
+          await collectReturningTokenIds({
+            sender: userTwo,
+            vars: {
+              profileId: FIRST_PROFILE_ID,
+              pubId: 1,
+              data: [],
+            },
+          })
+        ).to.eq(2);
+
+        const nonce = (await lensHub.sigNonces(testWallet.address)).toNumber();
+        const { v, r, s } = await getCollectWithSigParts(
+          FIRST_PROFILE_ID,
+          '1',
+          [],
+          nonce,
+          MAX_UINT256
+        );
+        expect(
+          await collectReturningTokenIds({
+            vars: {
+              collector: testWallet.address,
+              profileId: FIRST_PROFILE_ID,
+              pubId: '1',
+              data: [],
+              sig: {
+                v,
+                r,
+                s,
+                deadline: MAX_UINT256,
+              },
+            },
+          })
+        ).to.eq(3);
+
+        expect(
+          await collectReturningTokenIds({
+            vars: {
+              profileId: FIRST_PROFILE_ID,
+              pubId: 1,
+              data: [],
+            },
+          })
+        ).to.eq(4);
       });
 
       it('UserTwo should follow, then collect, receive a collect NFT with the expected properties', async function () {

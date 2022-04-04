@@ -49,15 +49,23 @@ abstract contract LensNFTBase is ILensNFTBase, ERC721Enumerable {
     ) external override {
         if (spender == address(0)) revert Errors.ZeroSpender();
         address owner = ownerOf(tokenId);
-        _validateRecoveredAddress(
-            _calculateDigest(
-                keccak256(
-                    abi.encode(PERMIT_TYPEHASH, spender, tokenId, sigNonces[owner]++, sig.deadline)
-                )
-            ),
-            owner,
-            sig
-        );
+        unchecked {
+            _validateRecoveredAddress(
+                _calculateDigest(
+                    keccak256(
+                        abi.encode(
+                            PERMIT_TYPEHASH,
+                            spender,
+                            tokenId,
+                            sigNonces[owner]++,
+                            sig.deadline
+                        )
+                    )
+                ),
+                owner,
+                sig
+            );
+        }
         _approve(spender, tokenId);
     }
 
@@ -69,22 +77,24 @@ abstract contract LensNFTBase is ILensNFTBase, ERC721Enumerable {
         DataTypes.EIP712Signature calldata sig
     ) external override {
         if (operator == address(0)) revert Errors.ZeroSpender();
-        _validateRecoveredAddress(
-            _calculateDigest(
-                keccak256(
-                    abi.encode(
-                        PERMIT_FOR_ALL_TYPEHASH,
-                        owner,
-                        operator,
-                        approved,
-                        sigNonces[owner]++,
-                        sig.deadline
+        unchecked {
+            _validateRecoveredAddress(
+                _calculateDigest(
+                    keccak256(
+                        abi.encode(
+                            PERMIT_FOR_ALL_TYPEHASH,
+                            owner,
+                            operator,
+                            approved,
+                            sigNonces[owner]++,
+                            sig.deadline
+                        )
                     )
-                )
-            ),
-            owner,
-            sig
-        );
+                ),
+                owner,
+                sig
+            );
+        }
         _setOperatorApproval(owner, operator, approved);
     }
 
@@ -106,16 +116,22 @@ abstract contract LensNFTBase is ILensNFTBase, ERC721Enumerable {
         override
     {
         address owner = ownerOf(tokenId);
-
-        _validateRecoveredAddress(
-            _calculateDigest(
-                keccak256(
-                    abi.encode(BURN_WITH_SIG_TYPEHASH, tokenId, sigNonces[owner]++, sig.deadline)
-                )
-            ),
-            owner,
-            sig
-        );
+        unchecked {
+            _validateRecoveredAddress(
+                _calculateDigest(
+                    keccak256(
+                        abi.encode(
+                            BURN_WITH_SIG_TYPEHASH,
+                            tokenId,
+                            sigNonces[owner]++,
+                            sig.deadline
+                        )
+                    )
+                ),
+                owner,
+                sig
+            );
+        }
         _burn(tokenId);
     }
 

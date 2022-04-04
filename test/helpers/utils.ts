@@ -1,5 +1,5 @@
 import '@nomiclabs/hardhat-ethers';
-import { BigNumberish, Bytes, logger, utils, BigNumber, Contract } from 'ethers';
+import { BigNumberish, Bytes, logger, utils, BigNumber, Contract, Signer } from 'ethers';
 import {
   eventsLib,
   helper,
@@ -8,15 +8,27 @@ import {
   lensPeriphery,
   LENS_PERIPHERY_NAME,
   testWallet,
+  user,
 } from '../__setup.spec';
 import { expect } from 'chai';
 import { HARDHAT_CHAINID, MAX_UINT256 } from './constants';
-import { hexlify, keccak256, RLP, toUtf8Bytes } from 'ethers/lib/utils';
+import { BytesLike, hexlify, keccak256, RLP, toUtf8Bytes } from 'ethers/lib/utils';
 import { LensHub__factory } from '../../typechain-types';
 import { TransactionReceipt, TransactionResponse } from '@ethersproject/providers';
 import hre, { ethers } from 'hardhat';
 import { readFileSync } from 'fs';
 import { join } from 'path';
+import {
+  CollectWithSigDataStruct,
+  CommentDataStruct,
+  CommentWithSigDataStruct,
+  CreateProfileDataStruct,
+  FollowWithSigDataStruct,
+  MirrorDataStruct,
+  MirrorWithSigDataStruct,
+  PostDataStruct,
+  PostWithSigDataStruct,
+} from '../../typechain-types/LensHub';
 
 export enum ProtocolState {
   Unpaused,
@@ -464,6 +476,151 @@ export async function getCollectWithSigParts(
 ): Promise<{ v: number; r: string; s: string }> {
   const msgParams = buildCollectWithSigParams(profileId, pubId, data, nonce, deadline);
   return await getSig(msgParams);
+}
+
+export function expectEqualArrays(actual: BigNumberish[], expected: BigNumberish[]) {
+  if (actual.length != expected.length) {
+    logger.throwError(
+      `${actual} length ${actual.length} does not match ${expected} length ${expect.length}`
+    );
+  }
+
+  let areEquals = true;
+  for (let i = 0; areEquals && i < actual.length; i++) {
+    areEquals = BigNumber.from(actual[i]).eq(BigNumber.from(expected[i]));
+  }
+
+  if (!areEquals) {
+    logger.throwError(`${actual} does not match ${expected}`);
+  }
+}
+
+export interface CreateProfileReturningTokenIdStruct {
+  sender?: Signer;
+  vars: CreateProfileDataStruct;
+}
+
+export async function createProfileReturningTokenId({
+  sender = user,
+  vars,
+}: CreateProfileReturningTokenIdStruct): Promise<BigNumber> {
+  const tokenId = await lensHub.connect(sender).callStatic.createProfile(vars);
+  await expect(lensHub.connect(sender).createProfile(vars)).to.not.be.reverted;
+  return tokenId;
+}
+
+export interface FollowDataStruct {
+  profileIds: BigNumberish[];
+  datas: BytesLike[];
+}
+
+export interface FollowReturningTokenIdsStruct {
+  sender?: Signer;
+  vars: FollowDataStruct | FollowWithSigDataStruct;
+}
+
+export async function followReturningTokenIds({
+  sender = user,
+  vars,
+}: FollowReturningTokenIdsStruct): Promise<BigNumber[]> {
+  let tokenIds;
+  if ('sig' in vars) {
+    tokenIds = await lensHub.connect(sender).callStatic.followWithSig(vars);
+    await expect(lensHub.connect(sender).followWithSig(vars)).to.not.be.reverted;
+  } else {
+    tokenIds = await lensHub.connect(sender).callStatic.follow(vars.profileIds, vars.datas);
+    await expect(lensHub.connect(sender).follow(vars.profileIds, vars.datas)).to.not.be.reverted;
+  }
+  return tokenIds;
+}
+
+export interface CollectDataStruct {
+  profileId: BigNumberish;
+  pubId: BigNumberish;
+  data: BytesLike;
+}
+
+export interface CollectReturningTokenIdsStruct {
+  sender?: Signer;
+  vars: CollectDataStruct | CollectWithSigDataStruct;
+}
+
+export async function collectReturningTokenIds({
+  sender = user,
+  vars,
+}: CollectReturningTokenIdsStruct): Promise<BigNumber> {
+  let tokenId;
+  if ('sig' in vars) {
+    tokenId = await lensHub.connect(sender).callStatic.collectWithSig(vars);
+    await expect(lensHub.connect(sender).collectWithSig(vars)).to.not.be.reverted;
+  } else {
+    tokenId = await lensHub
+      .connect(sender)
+      .callStatic.collect(vars.profileId, vars.pubId, vars.data);
+    await expect(lensHub.connect(sender).collect(vars.profileId, vars.pubId, vars.data)).to.not.be
+      .reverted;
+  }
+  return tokenId;
+}
+
+export interface CommentReturningTokenIdStruct {
+  sender?: Signer;
+  vars: CommentDataStruct | CommentWithSigDataStruct;
+}
+
+export async function commentReturningTokenId({
+  sender = user,
+  vars,
+}: CommentReturningTokenIdStruct): Promise<BigNumber> {
+  let tokenId;
+  if ('sig' in vars) {
+    tokenId = await lensHub.connect(sender).callStatic.commentWithSig(vars);
+    await expect(lensHub.connect(sender).commentWithSig(vars)).to.not.be.reverted;
+  } else {
+    tokenId = await lensHub.connect(sender).callStatic.comment(vars);
+    await expect(lensHub.connect(sender).comment(vars)).to.not.be.reverted;
+  }
+  return tokenId;
+}
+
+export interface MirrorReturningTokenIdStruct {
+  sender?: Signer;
+  vars: MirrorDataStruct | MirrorWithSigDataStruct;
+}
+
+export async function mirrorReturningTokenId({
+  sender = user,
+  vars,
+}: MirrorReturningTokenIdStruct): Promise<BigNumber> {
+  let tokenId;
+  if ('sig' in vars) {
+    tokenId = await lensHub.connect(sender).callStatic.mirrorWithSig(vars);
+    await expect(lensHub.connect(sender).mirrorWithSig(vars)).to.not.be.reverted;
+  } else {
+    tokenId = await lensHub.connect(sender).callStatic.mirror(vars);
+    await expect(lensHub.connect(sender).mirror(vars)).to.not.be.reverted;
+  }
+  return tokenId;
+}
+
+export interface PostReturningTokenIdStruct {
+  sender?: Signer;
+  vars: PostDataStruct | PostWithSigDataStruct;
+}
+
+export async function postReturningTokenId({
+  sender = user,
+  vars,
+}: PostReturningTokenIdStruct): Promise<BigNumber> {
+  let tokenId;
+  if ('sig' in vars) {
+    tokenId = await lensHub.connect(sender).callStatic.postWithSig(vars);
+    await expect(lensHub.connect(sender).postWithSig(vars)).to.not.be.reverted;
+  } else {
+    tokenId = await lensHub.connect(sender).callStatic.post(vars);
+    await expect(lensHub.connect(sender).post(vars)).to.not.be.reverted;
+  }
+  return tokenId;
 }
 
 export interface TokenUriMetadataAttribute {

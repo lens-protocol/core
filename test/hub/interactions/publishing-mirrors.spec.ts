@@ -2,7 +2,11 @@ import '@nomiclabs/hardhat-ethers';
 import { expect } from 'chai';
 import { MAX_UINT256, ZERO_ADDRESS } from '../../helpers/constants';
 import { ERRORS } from '../../helpers/errors';
-import { cancelWithPermitForAll, getMirrorWithSigParts } from '../../helpers/utils';
+import {
+  cancelWithPermitForAll,
+  getMirrorWithSigParts,
+  mirrorReturningTokenId,
+} from '../../helpers/utils';
 import {
   abiCoder,
   freeCollectModule,
@@ -18,6 +22,7 @@ import {
   testWallet,
   userAddress,
   userTwo,
+  userTwoAddress,
 } from '../../__setup.spec';
 
 makeSuiteCleanRoom('Publishing mirrors', function () {
@@ -105,6 +110,95 @@ makeSuiteCleanRoom('Publishing mirrors', function () {
     });
 
     context('Scenarios', function () {
+      it('Should return the expected token IDs when mirroring publications', async function () {
+        await expect(
+          lensHub.createProfile({
+            to: testWallet.address,
+            handle: 'testwallet',
+            imageURI: MOCK_PROFILE_URI,
+            followModule: ZERO_ADDRESS,
+            followModuleData: [],
+            followNFTURI: MOCK_FOLLOW_NFT_URI,
+          })
+        ).to.not.be.reverted;
+        await expect(
+          lensHub.createProfile({
+            to: userTwoAddress,
+            handle: 'usertwo',
+            imageURI: MOCK_PROFILE_URI,
+            followModule: ZERO_ADDRESS,
+            followModuleData: [],
+            followNFTURI: MOCK_FOLLOW_NFT_URI,
+          })
+        ).to.not.be.reverted;
+
+        expect(
+          await mirrorReturningTokenId({
+            vars: {
+              profileId: FIRST_PROFILE_ID,
+              profileIdPointed: FIRST_PROFILE_ID,
+              pubIdPointed: 1,
+              referenceModule: ZERO_ADDRESS,
+              referenceModuleData: [],
+            },
+          })
+        ).to.eq(2);
+
+        expect(
+          await mirrorReturningTokenId({
+            sender: userTwo,
+            vars: {
+              profileId: FIRST_PROFILE_ID + 2,
+              profileIdPointed: FIRST_PROFILE_ID,
+              pubIdPointed: 2,
+              referenceModule: ZERO_ADDRESS,
+              referenceModuleData: [],
+            },
+          })
+        ).to.eq(1);
+
+        const nonce = (await lensHub.sigNonces(testWallet.address)).toNumber();
+        const referenceModuleData = [];
+        const { v, r, s } = await getMirrorWithSigParts(
+          FIRST_PROFILE_ID + 1,
+          FIRST_PROFILE_ID,
+          '1',
+          ZERO_ADDRESS,
+          referenceModuleData,
+          nonce,
+          MAX_UINT256
+        );
+        expect(
+          await mirrorReturningTokenId({
+            vars: {
+              profileId: FIRST_PROFILE_ID + 1,
+              profileIdPointed: FIRST_PROFILE_ID,
+              pubIdPointed: '1',
+              referenceModule: ZERO_ADDRESS,
+              referenceModuleData: referenceModuleData,
+              sig: {
+                v,
+                r,
+                s,
+                deadline: MAX_UINT256,
+              },
+            },
+          })
+        ).to.eq(1);
+
+        expect(
+          await mirrorReturningTokenId({
+            vars: {
+              profileId: FIRST_PROFILE_ID,
+              profileIdPointed: FIRST_PROFILE_ID + 1,
+              pubIdPointed: 1,
+              referenceModule: ZERO_ADDRESS,
+              referenceModuleData: [],
+            },
+          })
+        ).to.eq(3);
+      });
+
       it('User should create a mirror with empty reference module and reference module data, fetched mirror data should be accurate', async function () {
         await expect(
           lensHub.mirror({

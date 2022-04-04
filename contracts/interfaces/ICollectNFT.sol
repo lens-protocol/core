@@ -31,8 +31,10 @@ interface ICollectNFT {
      * upon collection.
      *
      * @param to The address to mint the NFT to.
+     *
+     * @return uint256 An interger representing the minted token ID.
      */
-    function mint(address to) external;
+    function mint(address to) external returns (uint256);
 
     /**
      * @notice Returns the source publication pointer mapped to this collect NFT.
