@@ -29,6 +29,7 @@ library Errors {
     error CallerNotCollectNFT();
     error BlockNumberInvalid();
     error ArrayMismatch();
+    error CannotCommentOnSelf();
 
     // Module Errors
     error InitParamsInvalid();

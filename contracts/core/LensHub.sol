@@ -44,20 +44,14 @@ contract LensHub is ILensHub, LensNFTBase, VersionedInitializable, LensMultiStat
     }
 
     /**
-     * @dev This modifier reverts if the caller is not a whitelisted profile creator address.
-     */
-    modifier onlyWhitelistedProfileCreator() {
-        _validateCallerIsWhitelistedProfileCreator();
-        _;
-    }
-
-    /**
      * @dev The constructor sets the immutable follow & collect NFT implementations.
      *
      * @param followNFTImpl The follow NFT implementation address.
      * @param collectNFTImpl The collect NFT implementation address.
      */
     constructor(address followNFTImpl, address collectNFTImpl) {
+        if (followNFTImpl == address(0)) revert Errors.InitParamsInvalid();
+        if (collectNFTImpl == address(0)) revert Errors.InitParamsInvalid();
         FOLLOW_NFT_IMPL = followNFTImpl;
         COLLECT_NFT_IMPL = collectNFTImpl;
     }
@@ -96,9 +90,11 @@ contract LensHub is ILensHub, LensNFTBase, VersionedInitializable, LensMultiStat
 
     /// @inheritdoc ILensHub
     function setState(DataTypes.ProtocolState newState) external override {
-        if (msg.sender != _governance && msg.sender != _emergencyAdmin)
+        if (msg.sender == _governance || msg.sender == _emergencyAdmin) {
+            _setState(newState);
+        } else {
             revert Errors.NotGovernanceOrEmergencyAdmin();
-        _setState(newState);
+        }
     }
 
     ///@inheritdoc ILensHub
@@ -146,18 +142,21 @@ contract LensHub is ILensHub, LensNFTBase, VersionedInitializable, LensMultiStat
         external
         override
         whenNotPaused
-        onlyWhitelistedProfileCreator
         returns (uint256)
     {
-        uint256 profileId = ++_profileCounter;
-        _mint(vars.to, profileId);
-        PublishingLogic.createProfile(
-            vars,
-            profileId,
-            _profileIdByHandleHash,
-            _profileById,
-            _followModuleWhitelisted
-        );
+        if (!_profileCreatorWhitelisted[msg.sender]) revert Errors.ProfileCreatorNotWhitelisted();
+        uint256 profileId;
+        unchecked {
+            profileId = ++_profileCounter;
+            _mint(vars.to, profileId);
+            PublishingLogic.createProfile(
+                vars,
+                profileId,
+                _profileIdByHandleHash,
+                _profileById,
+                _followModuleWhitelisted
+            );
+        }
         return profileId;
     }
 
@@ -563,9 +562,13 @@ contract LensHub is ILensHub, LensNFTBase, VersionedInitializable, LensMultiStat
         whenNotPaused
         returns (uint256[] memory)
     {
-        bytes32[] memory dataHashes = new bytes32[](vars.datas.length);
-        for (uint256 i = 0; i < vars.datas.length; ++i) {
+        uint256 dataLength = vars.datas.length;
+        bytes32[] memory dataHashes = new bytes32[](dataLength);
+        for (uint256 i = 0; i < dataLength; ) {
             dataHashes[i] = keccak256(vars.datas[i]);
+            unchecked {
+                ++i;
+            }
         }
         _validateRecoveredAddress(
             _calculateDigest(
@@ -919,13 +922,12 @@ contract LensHub is ILensHub, LensNFTBase, VersionedInitializable, LensMultiStat
     function _createComment(DataTypes.CommentData memory vars) internal {
         PublishingLogic.createComment(
             vars,
-            _profileById[vars.profileId].pubCount + 1,
+            ++_profileById[vars.profileId].pubCount,
             _profileById,
             _pubByIdByProfile,
             _collectModuleWhitelisted,
             _referenceModuleWhitelisted
         );
-        _profileById[vars.profileId].pubCount++;
     }
 
     function _createMirror(
@@ -952,14 +954,14 @@ contract LensHub is ILensHub, LensNFTBase, VersionedInitializable, LensMultiStat
         emit Events.DispatcherSet(profileId, dispatcher, block.timestamp);
     }
 
-    function _setProfileImageURI(uint256 profileId, string memory imageURI) internal {
+    function _setProfileImageURI(uint256 profileId, string calldata imageURI) internal {
         if (bytes(imageURI).length > Constants.MAX_PROFILE_IMAGE_URI_LENGTH)
             revert Errors.ProfileImageURILengthInvalid();
         _profileById[profileId].imageURI = imageURI;
         emit Events.ProfileImageURISet(profileId, imageURI, block.timestamp);
     }
 
-    function _setFollowNFTURI(uint256 profileId, string memory followNFTURI) internal {
+    function _setFollowNFTURI(uint256 profileId, string calldata followNFTURI) internal {
         _profileById[profileId].followNFTURI = followNFTURI;
         emit Events.FollowNFTURISet(profileId, followNFTURI, block.timestamp);
     }
@@ -986,8 +988,10 @@ contract LensHub is ILensHub, LensNFTBase, VersionedInitializable, LensMultiStat
     }
 
     function _validateCallerIsProfileOwnerOrDispatcher(uint256 profileId) internal view {
-        if (msg.sender != ownerOf(profileId) && msg.sender != _dispatcherByProfile[profileId])
-            revert Errors.NotProfileOwnerOrDispatcher();
+        if (msg.sender == ownerOf(profileId) || msg.sender == _dispatcherByProfile[profileId]) {
+            return;
+        }
+        revert Errors.NotProfileOwnerOrDispatcher();
     }
 
     function _validateCallerIsProfileOwner(uint256 profileId) internal view {
@@ -996,10 +1000,6 @@ contract LensHub is ILensHub, LensNFTBase, VersionedInitializable, LensMultiStat
 
     function _validateCallerIsGovernance() internal view {
         if (msg.sender != _governance) revert Errors.NotGovernance();
-    }
-
-    function _validateCallerIsWhitelistedProfileCreator() internal view {
-        if (!_profileCreatorWhitelisted[msg.sender]) revert Errors.ProfileCreatorNotWhitelisted();
     }
 
     function getRevision() internal pure virtual override returns (uint256) {

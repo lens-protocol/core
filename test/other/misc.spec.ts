@@ -12,7 +12,7 @@ import {
 import {
   approvalFollowModule,
   deployer,
-  emptyCollectModule,
+  freeCollectModule,
   FIRST_PROFILE_ID,
   followerOnlyReferenceModule,
   governance,
@@ -34,6 +34,7 @@ import {
   userAddress,
   userTwo,
   userTwoAddress,
+  abiCoder,
 } from '../__setup.spec';
 
 /**
@@ -139,7 +140,7 @@ makeSuiteCleanRoom('Misc', function () {
       expect(await lensHub.getPubCount(FIRST_PROFILE_ID)).to.eq(0);
 
       await expect(
-        lensHub.connect(governance).whitelistCollectModule(emptyCollectModule.address, true)
+        lensHub.connect(governance).whitelistCollectModule(freeCollectModule.address, true)
       ).to.not.be.reverted;
 
       const expectedCount = 5;
@@ -148,8 +149,8 @@ makeSuiteCleanRoom('Misc', function () {
           lensHub.post({
             profileId: FIRST_PROFILE_ID,
             contentURI: MOCK_URI,
-            collectModule: emptyCollectModule.address,
-            collectModuleData: [],
+            collectModule: freeCollectModule.address,
+            collectModuleData: abiCoder.encode(['bool'], [true]),
             referenceModule: ZERO_ADDRESS,
             referenceModuleData: [],
           })
@@ -177,7 +178,7 @@ makeSuiteCleanRoom('Misc', function () {
 
     it('Publication reference module getter should return the correct reference module (or zero in case of no reference module)', async function () {
       await expect(
-        lensHub.connect(governance).whitelistCollectModule(emptyCollectModule.address, true)
+        lensHub.connect(governance).whitelistCollectModule(freeCollectModule.address, true)
       ).to.not.be.reverted;
 
       await expect(
@@ -190,8 +191,8 @@ makeSuiteCleanRoom('Misc', function () {
         lensHub.post({
           profileId: FIRST_PROFILE_ID,
           contentURI: MOCK_URI,
-          collectModule: emptyCollectModule.address,
-          collectModuleData: [],
+          collectModule: freeCollectModule.address,
+          collectModuleData: abiCoder.encode(['bool'], [true]),
           referenceModule: ZERO_ADDRESS,
           referenceModuleData: [],
         })
@@ -202,8 +203,8 @@ makeSuiteCleanRoom('Misc', function () {
         lensHub.post({
           profileId: FIRST_PROFILE_ID,
           contentURI: MOCK_URI,
-          collectModule: emptyCollectModule.address,
-          collectModuleData: [],
+          collectModule: freeCollectModule.address,
+          collectModuleData: abiCoder.encode(['bool'], [true]),
           referenceModule: followerOnlyReferenceModule.address,
           referenceModuleData: [],
         })
@@ -215,15 +216,15 @@ makeSuiteCleanRoom('Misc', function () {
 
     it('Publication pointer getter should return an empty pointer for posts', async function () {
       await expect(
-        lensHub.connect(governance).whitelistCollectModule(emptyCollectModule.address, true)
+        lensHub.connect(governance).whitelistCollectModule(freeCollectModule.address, true)
       ).to.not.be.reverted;
 
       await expect(
         lensHub.post({
           profileId: FIRST_PROFILE_ID,
           contentURI: MOCK_URI,
-          collectModule: emptyCollectModule.address,
-          collectModuleData: [],
+          collectModule: freeCollectModule.address,
+          collectModuleData: abiCoder.encode(['bool'], [true]),
           referenceModule: ZERO_ADDRESS,
           referenceModuleData: [],
         })
@@ -236,15 +237,15 @@ makeSuiteCleanRoom('Misc', function () {
 
     it('Publication pointer getter should return the correct pointer for comments', async function () {
       await expect(
-        lensHub.connect(governance).whitelistCollectModule(emptyCollectModule.address, true)
+        lensHub.connect(governance).whitelistCollectModule(freeCollectModule.address, true)
       ).to.not.be.reverted;
 
       await expect(
         lensHub.post({
           profileId: FIRST_PROFILE_ID,
           contentURI: MOCK_URI,
-          collectModule: emptyCollectModule.address,
-          collectModuleData: [],
+          collectModule: freeCollectModule.address,
+          collectModuleData: abiCoder.encode(['bool'], [true]),
           referenceModule: ZERO_ADDRESS,
           referenceModuleData: [],
         })
@@ -256,8 +257,8 @@ makeSuiteCleanRoom('Misc', function () {
           contentURI: MOCK_URI,
           profileIdPointed: FIRST_PROFILE_ID,
           pubIdPointed: 1,
-          collectModule: emptyCollectModule.address,
-          collectModuleData: [],
+          collectModule: freeCollectModule.address,
+          collectModuleData: abiCoder.encode(['bool'], [true]),
           referenceModule: ZERO_ADDRESS,
           referenceModuleData: [],
         })
@@ -270,15 +271,15 @@ makeSuiteCleanRoom('Misc', function () {
 
     it('Publication pointer getter should return the correct pointer for mirrors', async function () {
       await expect(
-        lensHub.connect(governance).whitelistCollectModule(emptyCollectModule.address, true)
+        lensHub.connect(governance).whitelistCollectModule(freeCollectModule.address, true)
       ).to.not.be.reverted;
 
       await expect(
         lensHub.post({
           profileId: FIRST_PROFILE_ID,
           contentURI: MOCK_URI,
-          collectModule: emptyCollectModule.address,
-          collectModuleData: [],
+          collectModule: freeCollectModule.address,
+          collectModuleData: abiCoder.encode(['bool'], [true]),
           referenceModule: ZERO_ADDRESS,
           referenceModuleData: [],
         })
@@ -301,15 +302,15 @@ makeSuiteCleanRoom('Misc', function () {
 
     it('Publication content URI getter should return the correct URI for posts', async function () {
       await expect(
-        lensHub.connect(governance).whitelistCollectModule(emptyCollectModule.address, true)
+        lensHub.connect(governance).whitelistCollectModule(freeCollectModule.address, true)
       ).to.not.be.reverted;
 
       await expect(
         lensHub.post({
           profileId: FIRST_PROFILE_ID,
           contentURI: MOCK_URI,
-          collectModule: emptyCollectModule.address,
-          collectModuleData: [],
+          collectModule: freeCollectModule.address,
+          collectModuleData: abiCoder.encode(['bool'], [true]),
           referenceModule: ZERO_ADDRESS,
           referenceModuleData: [],
         })
@@ -320,15 +321,15 @@ makeSuiteCleanRoom('Misc', function () {
 
     it('Publication content URI getter should return the correct URI for comments', async function () {
       await expect(
-        lensHub.connect(governance).whitelistCollectModule(emptyCollectModule.address, true)
+        lensHub.connect(governance).whitelistCollectModule(freeCollectModule.address, true)
       ).to.not.be.reverted;
 
       await expect(
         lensHub.post({
           profileId: FIRST_PROFILE_ID,
           contentURI: MOCK_URI,
-          collectModule: emptyCollectModule.address,
-          collectModuleData: [],
+          collectModule: freeCollectModule.address,
+          collectModuleData: abiCoder.encode(['bool'], [true]),
           referenceModule: ZERO_ADDRESS,
           referenceModuleData: [],
         })
@@ -340,8 +341,8 @@ makeSuiteCleanRoom('Misc', function () {
           contentURI: OTHER_MOCK_URI,
           profileIdPointed: FIRST_PROFILE_ID,
           pubIdPointed: 1,
-          collectModule: emptyCollectModule.address,
-          collectModuleData: [],
+          collectModule: freeCollectModule.address,
+          collectModuleData: abiCoder.encode(['bool'], [true]),
           referenceModule: ZERO_ADDRESS,
           referenceModuleData: [],
         })
@@ -352,15 +353,15 @@ makeSuiteCleanRoom('Misc', function () {
 
     it('Publication content URI getter should return the correct URI for mirrors', async function () {
       await expect(
-        lensHub.connect(governance).whitelistCollectModule(emptyCollectModule.address, true)
+        lensHub.connect(governance).whitelistCollectModule(freeCollectModule.address, true)
       ).to.not.be.reverted;
 
       await expect(
         lensHub.post({
           profileId: FIRST_PROFILE_ID,
           contentURI: MOCK_URI,
-          collectModule: emptyCollectModule.address,
-          collectModuleData: [],
+          collectModule: freeCollectModule.address,
+          collectModuleData: abiCoder.encode(['bool'], [true]),
           referenceModule: ZERO_ADDRESS,
           referenceModuleData: [],
         })
@@ -380,34 +381,34 @@ makeSuiteCleanRoom('Misc', function () {
 
     it('Publication collect module getter should return the correct collectModule for posts', async function () {
       await expect(
-        lensHub.connect(governance).whitelistCollectModule(emptyCollectModule.address, true)
+        lensHub.connect(governance).whitelistCollectModule(freeCollectModule.address, true)
       ).to.not.be.reverted;
 
       await expect(
         lensHub.post({
           profileId: FIRST_PROFILE_ID,
           contentURI: MOCK_URI,
-          collectModule: emptyCollectModule.address,
-          collectModuleData: [],
+          collectModule: freeCollectModule.address,
+          collectModuleData: abiCoder.encode(['bool'], [true]),
           referenceModule: ZERO_ADDRESS,
           referenceModuleData: [],
         })
       ).to.not.be.reverted;
 
-      expect(await lensHub.getCollectModule(FIRST_PROFILE_ID, 1)).to.eq(emptyCollectModule.address);
+      expect(await lensHub.getCollectModule(FIRST_PROFILE_ID, 1)).to.eq(freeCollectModule.address);
     });
 
     it('Publication collect module getter should return the correct collectModule for comments', async function () {
       await expect(
-        lensHub.connect(governance).whitelistCollectModule(emptyCollectModule.address, true)
+        lensHub.connect(governance).whitelistCollectModule(freeCollectModule.address, true)
       ).to.not.be.reverted;
 
       await expect(
         lensHub.post({
           profileId: FIRST_PROFILE_ID,
           contentURI: MOCK_URI,
-          collectModule: emptyCollectModule.address,
-          collectModuleData: [],
+          collectModule: freeCollectModule.address,
+          collectModuleData: abiCoder.encode(['bool'], [true]),
           referenceModule: ZERO_ADDRESS,
           referenceModuleData: [],
         })
@@ -429,27 +430,27 @@ makeSuiteCleanRoom('Misc', function () {
           contentURI: OTHER_MOCK_URI,
           profileIdPointed: FIRST_PROFILE_ID,
           pubIdPointed: 2,
-          collectModule: emptyCollectModule.address,
-          collectModuleData: [],
+          collectModule: freeCollectModule.address,
+          collectModuleData: abiCoder.encode(['bool'], [true]),
           referenceModule: ZERO_ADDRESS,
           referenceModuleData: [],
         })
       ).to.not.be.reverted;
 
-      expect(await lensHub.getCollectModule(FIRST_PROFILE_ID, 3)).to.eq(emptyCollectModule.address);
+      expect(await lensHub.getCollectModule(FIRST_PROFILE_ID, 3)).to.eq(freeCollectModule.address);
     });
 
     it('Publication collect module getter should return the zero address for mirrors', async function () {
       await expect(
-        lensHub.connect(governance).whitelistCollectModule(emptyCollectModule.address, true)
+        lensHub.connect(governance).whitelistCollectModule(freeCollectModule.address, true)
       ).to.not.be.reverted;
 
       await expect(
         lensHub.post({
           profileId: FIRST_PROFILE_ID,
           contentURI: MOCK_URI,
-          collectModule: emptyCollectModule.address,
-          collectModuleData: [],
+          collectModule: freeCollectModule.address,
+          collectModuleData: abiCoder.encode(['bool'], [true]),
           referenceModule: ZERO_ADDRESS,
           referenceModuleData: [],
         })
@@ -470,15 +471,15 @@ makeSuiteCleanRoom('Misc', function () {
 
     it('Publication type getter should return the correct publication type for all publication types, or nonexistent', async function () {
       await expect(
-        lensHub.connect(governance).whitelistCollectModule(emptyCollectModule.address, true)
+        lensHub.connect(governance).whitelistCollectModule(freeCollectModule.address, true)
       ).to.not.be.reverted;
 
       await expect(
         lensHub.post({
           profileId: FIRST_PROFILE_ID,
           contentURI: MOCK_URI,
-          collectModule: emptyCollectModule.address,
-          collectModuleData: [],
+          collectModule: freeCollectModule.address,
+          collectModuleData: abiCoder.encode(['bool'], [true]),
           referenceModule: ZERO_ADDRESS,
           referenceModuleData: [],
         })
@@ -490,8 +491,8 @@ makeSuiteCleanRoom('Misc', function () {
           contentURI: OTHER_MOCK_URI,
           profileIdPointed: FIRST_PROFILE_ID,
           pubIdPointed: 1,
-          collectModule: emptyCollectModule.address,
-          collectModuleData: [],
+          collectModule: freeCollectModule.address,
+          collectModuleData: abiCoder.encode(['bool'], [true]),
           referenceModule: ZERO_ADDRESS,
           referenceModuleData: [],
         })
@@ -546,54 +547,52 @@ makeSuiteCleanRoom('Misc', function () {
       );
     });
 
-    it('Follow module follow validation when there are no follows, and thus no deployed Follow NFT should revert', async function () {
-      await expect(
-        approvalFollowModule.validateFollow(FIRST_PROFILE_ID, userTwoAddress, 0)
-      ).to.be.revertedWith(ERRORS.FOLLOW_INVALID);
+    it('Follow module following check when there are no follows, and thus no deployed Follow NFT should return false', async function () {
+      expect(
+        await approvalFollowModule.isFollowing(FIRST_PROFILE_ID, userTwoAddress, 0)
+      ).to.be.false;
     });
 
-    it('Follow module follow validation with zero ID input should revert after another address follows, but not the queried address', async function () {
+    it('Follow module following check with zero ID input should return false after another address follows, but not the queried address', async function () {
+      await expect(
+        approvalFollowModule.connect(user).approve(FIRST_PROFILE_ID, [userAddress], [true])
+      ).to.not.be.reverted;
+      await expect(lensHub.follow([FIRST_PROFILE_ID], [[]])).to.not.be.reverted;
+
+      expect(
+        await approvalFollowModule.isFollowing(FIRST_PROFILE_ID, userTwoAddress, 0)
+      ).to.be.false;
+    });
+
+    it('Follow module following check with specific ID input should revert after following, but the specific ID does not exist yet', async function () {
       await expect(
         approvalFollowModule.connect(user).approve(FIRST_PROFILE_ID, [userAddress], [true])
       ).to.not.be.reverted;
       await expect(lensHub.follow([FIRST_PROFILE_ID], [[]])).to.not.be.reverted;
 
       await expect(
-        approvalFollowModule.validateFollow(FIRST_PROFILE_ID, userTwoAddress, 0)
-      ).to.be.revertedWith(ERRORS.FOLLOW_INVALID);
-    });
-
-    it('Follow module follow validation with specific ID input should revert after following, but the specific ID does not exist yet', async function () {
-      await expect(
-        approvalFollowModule.connect(user).approve(FIRST_PROFILE_ID, [userAddress], [true])
-      ).to.not.be.reverted;
-      await expect(lensHub.follow([FIRST_PROFILE_ID], [[]])).to.not.be.reverted;
-
-      await expect(
-        approvalFollowModule.validateFollow(FIRST_PROFILE_ID, userAddress, 2)
+        approvalFollowModule.isFollowing(FIRST_PROFILE_ID, userAddress, 2)
       ).to.be.revertedWith(ERRORS.ERC721_QUERY_FOR_NONEXISTENT_TOKEN);
     });
 
-    it('Follow module follow validation with specific ID input should revert if another address owns the specified follow NFT', async function () {
+    it('Follow module following check with specific ID input should return false if another address owns the specified follow NFT', async function () {
       await expect(
         approvalFollowModule.connect(user).approve(FIRST_PROFILE_ID, [userAddress], [true])
       ).to.not.be.reverted;
       await expect(lensHub.follow([FIRST_PROFILE_ID], [[]])).to.not.be.reverted;
 
-      await expect(
-        approvalFollowModule.validateFollow(FIRST_PROFILE_ID, userTwoAddress, 1)
-      ).to.be.revertedWith(ERRORS.FOLLOW_INVALID);
+      expect(
+        await approvalFollowModule.isFollowing(FIRST_PROFILE_ID, userTwoAddress, 1)
+      ).to.be.false;
     });
 
-    it('Follow module follow validation with specific ID input should work if the queried address owns the specified follow NFT', async function () {
+    it('Follow module following check with specific ID input should return true if the queried address owns the specified follow NFT', async function () {
       await expect(
         approvalFollowModule.connect(user).approve(FIRST_PROFILE_ID, [userAddress], [true])
       ).to.not.be.reverted;
       await expect(lensHub.follow([FIRST_PROFILE_ID], [[]])).to.not.be.reverted;
 
-      await expect(
-        approvalFollowModule.validateFollow(FIRST_PROFILE_ID, userAddress, 1)
-      ).to.not.be.reverted;
+      expect(await approvalFollowModule.isFollowing(FIRST_PROFILE_ID, userAddress, 1)).to.be.true;
     });
   });
 
@@ -677,7 +676,7 @@ makeSuiteCleanRoom('Misc', function () {
 
       // Then, whitelist a collect module
       await expect(
-        lensHub.connect(governance).whitelistCollectModule(emptyCollectModule.address, true)
+        lensHub.connect(governance).whitelistCollectModule(freeCollectModule.address, true)
       ).to.not.be.reverted;
 
       // Then, publish twice
@@ -687,8 +686,8 @@ makeSuiteCleanRoom('Misc', function () {
         lensHub.post({
           profileId: FIRST_PROFILE_ID,
           contentURI: firstURI,
-          collectModule: emptyCollectModule.address,
-          collectModuleData: [],
+          collectModule: freeCollectModule.address,
+          collectModuleData: abiCoder.encode(['bool'], [true]),
           referenceModule: ZERO_ADDRESS,
           referenceModuleData: [],
         })
@@ -698,18 +697,18 @@ makeSuiteCleanRoom('Misc', function () {
         lensHub.post({
           profileId: FIRST_PROFILE_ID,
           contentURI: secondURI,
-          collectModule: emptyCollectModule.address,
-          collectModuleData: [],
+          collectModule: freeCollectModule.address,
+          collectModuleData: abiCoder.encode(['bool'], [true]),
           referenceModule: ZERO_ADDRESS,
           referenceModuleData: [],
         })
       ).to.not.be.reverted;
 
       // Then, deploy the data provider
-      const dataProvider = await new UIDataProvider__factory(deployer).deploy(lensHub.address);
+      const lensPeriphery = await new UIDataProvider__factory(deployer).deploy(lensHub.address);
 
       // `getLatestDataByProfile`, validate the result from the data provider
-      const resultByProfileId = await dataProvider.getLatestDataByProfile(FIRST_PROFILE_ID);
+      const resultByProfileId = await lensPeriphery.getLatestDataByProfile(FIRST_PROFILE_ID);
       const pubByProfileIdStruct = resultByProfileId.publicationStruct;
       const profileByProfileIdStruct = resultByProfileId.profileStruct;
 
@@ -724,11 +723,11 @@ makeSuiteCleanRoom('Misc', function () {
       expect(pubByProfileIdStruct.pubIdPointed).to.eq(0);
       expect(pubByProfileIdStruct.contentURI).to.eq(secondURI);
       expect(pubByProfileIdStruct.referenceModule).to.eq(ZERO_ADDRESS);
-      expect(pubByProfileIdStruct.collectModule).to.eq(emptyCollectModule.address);
+      expect(pubByProfileIdStruct.collectModule).to.eq(freeCollectModule.address);
       expect(pubByProfileIdStruct.collectNFT).to.eq(ZERO_ADDRESS);
 
       // `getLatestDataByHandle`, validate the result from the data provider
-      const resultByHandle = await dataProvider.getLatestDataByHandle(MOCK_PROFILE_HANDLE);
+      const resultByHandle = await lensPeriphery.getLatestDataByHandle(MOCK_PROFILE_HANDLE);
       const pubByHandleStruct = resultByHandle.publicationStruct;
       const profileByHandleStruct = resultByHandle.profileStruct;
 
@@ -743,7 +742,7 @@ makeSuiteCleanRoom('Misc', function () {
       expect(pubByHandleStruct.pubIdPointed).to.eq(0);
       expect(pubByHandleStruct.contentURI).to.eq(secondURI);
       expect(pubByHandleStruct.referenceModule).to.eq(ZERO_ADDRESS);
-      expect(pubByHandleStruct.collectModule).to.eq(emptyCollectModule.address);
+      expect(pubByHandleStruct.collectModule).to.eq(freeCollectModule.address);
       expect(pubByHandleStruct.collectNFT).to.eq(ZERO_ADDRESS);
     });
   });

@@ -328,7 +328,7 @@ interface ILensHub {
      *
      * @param profileCreator The address of the profile creator to check.
      *
-     * @return A boolean, true if the profile creator is whitelisted.
+     * @return bool True if the profile creator is whitelisted, false otherwise.
      */
     function isProfileCreatorWhitelisted(address profileCreator) external view returns (bool);
 
@@ -337,7 +337,7 @@ interface ILensHub {
      *
      * @param wallet The address to find the default mapping
      *
-     * @return A uint256 profile id will be 0 if not mapped
+     * @return uint256 The default profile id, which will be 0 if not mapped.
      */
     function defaultProfile(address wallet) external view returns (uint256);
 
@@ -346,7 +346,7 @@ interface ILensHub {
      *
      * @param followModule The address of the follow module to check.
      *
-     * @return A boolean, true if the the follow module is whitelisted.
+     * @return bool True if the the follow module is whitelisted, false otherwise.
      */
     function isFollowModuleWhitelisted(address followModule) external view returns (bool);
 
@@ -355,7 +355,7 @@ interface ILensHub {
      *
      * @param referenceModule The address of the reference module to check.
      *
-     * @return A boolean, true if the the reference module is whitelisted.
+     * @return bool True if the the reference module is whitelisted, false otherwise.
      */
     function isReferenceModuleWhitelisted(address referenceModule) external view returns (bool);
 
@@ -364,14 +364,14 @@ interface ILensHub {
      *
      * @param collectModule The address of the collect module to check.
      *
-     * @return A boolean, true if the the collect module is whitelisted.
+     * @return bool True if the the collect module is whitelisted, false otherwise.
      */
     function isCollectModuleWhitelisted(address collectModule) external view returns (bool);
 
     /**
      * @notice Returns the currently configured governance address.
      *
-     * @return The address of the currently configured governance.
+     * @return address The address of the currently configured governance.
      */
     function getGovernance() external view returns (address);
 
@@ -380,7 +380,7 @@ interface ILensHub {
      *
      * @param profileId The token ID of the profile to query the dispatcher for.
      *
-     * @return The dispatcher address associated with the profile.
+     * @return address The dispatcher address associated with the profile.
      */
     function getDispatcher(uint256 profileId) external view returns (address);
 
@@ -389,7 +389,7 @@ interface ILensHub {
      *
      * @param profileId The token ID of the profile to query.
      *
-     * @return The number of publications associated with the queried profile.
+     * @return uint256 The number of publications associated with the queried profile.
      */
     function getPubCount(uint256 profileId) external view returns (uint256);
 
@@ -398,7 +398,7 @@ interface ILensHub {
      *
      * @param profileId The token ID of the profile to query the followNFT for.
      *
-     * @return The followNFT associated with the given profile.
+     * @return address The followNFT associated with the given profile.
      */
     function getFollowNFT(uint256 profileId) external view returns (address);
 
@@ -407,7 +407,7 @@ interface ILensHub {
      *
      * @param profileId The token ID of the profile to query the followNFT URI for.
      *
-     * @return The followNFT URI associated with the given profile.
+     * @return string The followNFT URI associated with the given profile.
      */
     function getFollowNFTURI(uint256 profileId) external view returns (string memory);
 
@@ -417,7 +417,7 @@ interface ILensHub {
      * @param profileId The token ID of the profile that published the publication to query.
      * @param pubId The publication ID of the publication to query.
      *
-     * @return The address of the collectNFT associated with the queried publication.
+     * @return address The address of the collectNFT associated with the queried publication.
      */
     function getCollectNFT(uint256 profileId, uint256 pubId) external view returns (address);
 
@@ -426,7 +426,7 @@ interface ILensHub {
      *
      * @param profileId The token ID of the profile to query the follow module for.
      *
-     * @return The address of the follow module associated with the given profile.
+     * @return address The address of the follow module associated with the given profile.
      */
     function getFollowModule(uint256 profileId) external view returns (address);
 
@@ -436,7 +436,7 @@ interface ILensHub {
      * @param profileId The token ID of the profile that published the publication to query.
      * @param pubId The publication ID of the publication to query.
      *
-     * @return The address of the collect module associated with the queried publication.
+     * @return address The address of the collect module associated with the queried publication.
      */
     function getCollectModule(uint256 profileId, uint256 pubId) external view returns (address);
 
@@ -446,7 +446,7 @@ interface ILensHub {
      * @param profileId The token ID of the profile that published the publication to querythe reference module for.
      * @param pubId The publication ID of the publication to query the reference module for.
      *
-     * @return The address of the reference module associated with the given profile.
+     * @return address The address of the reference module associated with the given profile.
      */
     function getReferenceModule(uint256 profileId, uint256 pubId) external view returns (address);
 
@@ -455,7 +455,7 @@ interface ILensHub {
      *
      * @param profileId The token ID of the profile to query the handle for.
      *
-     * @return The handle associated with the profile.
+     * @return string The handle associated with the profile.
      */
     function getHandle(uint256 profileId) external view returns (string memory);
 
@@ -465,9 +465,8 @@ interface ILensHub {
      * @param profileId The token ID of the profile that published the publication to query the pointer for.
      * @param pubId The publication ID of the publication to query the pointer for.
      *
-     * @return
-     *          First, the profile ID of the profile the current publication is pointing to.
-     *          Second, the publication ID of the publication the current publication is pointing to.
+     * @return tuple First, the profile ID of the profile the current publication is pointing to, second, the
+     * publication ID of the publication the current publication is pointing to.
      */
     function getPubPointer(uint256 profileId, uint256 pubId)
         external
@@ -480,7 +479,7 @@ interface ILensHub {
      * @param profileId The token ID of the profile that published the publication to query.
      * @param pubId The publication ID of the publication to query.
      *
-     * @return The URI associated with a given publication.
+     * @return string The URI associated with a given publication.
      */
     function getContentURI(uint256 profileId, uint256 pubId) external view returns (string memory);
 
@@ -489,7 +488,7 @@ interface ILensHub {
      *
      * @param handle The handle to resolve the profile token ID with.
      *
-     * @return The profile ID the passed handle points to.
+     * @return uint256 The profile ID the passed handle points to.
      */
     function getProfileIdByHandle(string calldata handle) external view returns (uint256);
 
@@ -497,6 +496,8 @@ interface ILensHub {
      * @notice Returns the full profile struct associated with a given profile token ID.
      *
      * @param profileId The token ID of the profile to query.
+     *
+     * @return ProfileStruct The profile struct of the given profile.
      */
     function getProfile(uint256 profileId) external view returns (DataTypes.ProfileStruct memory);
 
@@ -506,7 +507,7 @@ interface ILensHub {
      * @param profileId The token ID of the profile that published the publication to query.
      * @param pubId The publication ID of the publication to query.
      *
-     * @return The PublicationStruct associated with the queried publication.
+     * @return PublicationStruct The publication struct associated with the queried publication.
      */
     function getPub(uint256 profileId, uint256 pubId)
         external
@@ -519,7 +520,7 @@ interface ILensHub {
      * @param profileId The token ID of the profile that published the publication to query.
      * @param pubId The publication ID of the publication to query.
      *
-     * @return The publication type, as a member of an enum (either "post," "comment" or "mirror").
+     * @return PubType The publication type, as a member of an enum (either "post," "comment" or "mirror").
      */
     function getPubType(uint256 profileId, uint256 pubId) external view returns (DataTypes.PubType);
 }

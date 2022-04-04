@@ -42,12 +42,13 @@ contract FeeFollowModule is IFollowModule, FeeModuleBase, FollowValidatorFollowM
     /**
      * @notice This follow module levies a fee on follows.
      *
+     * @param profileId The profile ID of the profile to initialize this module for.
      * @param data The arbitrary data parameter, decoded into:
      *      address currency: The currency address, must be internally whitelisted.
      *      uint256 amount: The currency total amount to levy.
      *      address recipient: The custom recipient address to direct earnings to.
      *
-     * @return An abi encoded bytes parameter, which is the same as the passed data parameter.
+     * @return bytes An abi encoded bytes parameter, which is the same as the passed data parameter.
      */
     function initializeFollowModule(uint256 profileId, bytes calldata data)
         external
@@ -107,7 +108,7 @@ contract FeeFollowModule is IFollowModule, FeeModuleBase, FollowValidatorFollowM
      *
      * @param profileId The token ID of the profile to query.
      *
-     * @return The ProfileData struct mapped to that profile.
+     * @return ProfileData The ProfileData struct mapped to that profile.
      */
     function getProfileData(uint256 profileId) external view returns (ProfileData memory) {
         return _dataByProfile[profileId];

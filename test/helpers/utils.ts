@@ -5,8 +5,8 @@ import {
   helper,
   lensHub,
   LENS_HUB_NFT_NAME,
-  peripheryDataProvider,
-  PERIPHERY_DATA_PROVIDER_NAME,
+  lensPeriphery,
+  LENS_PERIPHERY_NAME,
   testWallet,
 } from '../__setup.spec';
 import { expect } from 'chai';
@@ -850,10 +850,10 @@ const buildToggleFollowWithSigParams = (
     ],
   },
   domain: {
-    name: PERIPHERY_DATA_PROVIDER_NAME,
+    name: LENS_PERIPHERY_NAME,
     version: '1',
     chainId: getChainId(),
-    verifyingContract: peripheryDataProvider.address,
+    verifyingContract: lensPeriphery.address,
   },
   value: {
     profileIds: profileIds,

@@ -27,6 +27,7 @@ contract CollectNFT is ICollectNFT, LensNFTBase {
     // We create the CollectNFT with the pre-computed HUB address before deploying the hub proxy in order
     // to initialize the hub proxy at construction.
     constructor(address hub) {
+        if (hub == address(0)) revert Errors.InitParamsInvalid();
         HUB = hub;
         _initialized = true;
     }
@@ -49,8 +50,11 @@ contract CollectNFT is ICollectNFT, LensNFTBase {
     /// @inheritdoc ICollectNFT
     function mint(address to) external override returns (uint256) {
         if (msg.sender != HUB) revert Errors.NotHub();
-        uint256 tokenId = ++_tokenIdCounter;
-        _mint(to, tokenId);
+        uint256 tokenId;
+        unchecked {
+            tokenId = ++_tokenIdCounter;
+            _mint(to, tokenId);
+        }
         return tokenId;
     }
 

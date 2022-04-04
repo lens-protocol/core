@@ -5,10 +5,6 @@ pragma solidity 0.8.10;
 import {DataTypes} from '../../libraries/DataTypes.sol';
 
 contract LensHubStorage {
-    bytes32 internal constant CREATE_PROFILE_WITH_SIG_TYPEHASH =
-        keccak256(
-            'CreateProfileWithSig(string handle,string uri,address followModule,bytes followModuleData,uint256 nonce,uint256 deadline)'
-        );
     bytes32 internal constant SET_DEFAULT_PROFILE_WITH_SIG_TYPEHASH =
         keccak256(
             'SetDefaultProfileWithSig(address wallet,uint256 profileId,uint256 nonce,uint256 deadline)'

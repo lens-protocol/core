@@ -7,7 +7,7 @@ import {
   LensHub__factory,
   ApprovalFollowModule__factory,
   CollectNFT__factory,
-  EmptyCollectModule__factory,
+  FreeCollectModule__factory,
   FeeCollectModule__factory,
   FeeFollowModule__factory,
   FollowerOnlyReferenceModule__factory,
@@ -21,7 +21,7 @@ import {
   TimedFeeCollectModule__factory,
   TransparentUpgradeableProxy__factory,
   ProfileTokenURILogic__factory,
-  LensPeripheryDataProvider__factory,
+  LensPeriphery__factory,
 } from '../typechain-types';
 import { deployWithVerify, waitForTx } from './helpers/utils';
 
@@ -152,12 +152,12 @@ task('full-deploy-verify', 'deploys the entire Lens Protocol with explorer verif
     // Connect the hub proxy to the LensHub factory and the governance for ease of use.
     const lensHub = LensHub__factory.connect(proxy.address, governance);
 
-    const peripheryDataProvider = await deployWithVerify(
-      new LensPeripheryDataProvider__factory(deployer).deploy(lensHub.address, {
+    const lensPeriphery = await deployWithVerify(
+      new LensPeriphery__factory(deployer).deploy(lensHub.address, {
         nonce: deployerNonce++,
       }),
       [lensHub.address],
-      'contracts/misc/LensPeripheryDataProvider.sol:LensPeripheryDataProvider'
+      'contracts/misc/LensPeriphery.sol:LensPeriphery'
     );
 
     // Deploy collect modules
@@ -206,11 +206,11 @@ task('full-deploy-verify', 'deploys the entire Lens Protocol with explorer verif
       [],
       'contracts/core/modules/collect/RevertCollectModule.sol:RevertCollectModule'
     );
-    console.log('\n\t-- Deploying emptyCollectModule --');
-    const emptyCollectModule = await deployWithVerify(
-      new EmptyCollectModule__factory(deployer).deploy(lensHub.address, { nonce: deployerNonce++ }),
+    console.log('\n\t-- Deploying freeCollectModule --');
+    const freeCollectModule = await deployWithVerify(
+      new FreeCollectModule__factory(deployer).deploy(lensHub.address, { nonce: deployerNonce++ }),
       [lensHub.address],
-      'contracts/core/modules/collect/EmptyCollectModule.sol:EmptyCollectModule'
+      'contracts/core/modules/collect/FreeCollectModule.sol:FreeCollectModule'
     );
 
     // Deploy follow modules
@@ -269,7 +269,7 @@ task('full-deploy-verify', 'deploys the entire Lens Protocol with explorer verif
       })
     );
     await waitForTx(
-      lensHub.whitelistCollectModule(emptyCollectModule.address, true, { nonce: governanceNonce++ })
+      lensHub.whitelistCollectModule(freeCollectModule.address, true, { nonce: governanceNonce++ })
     );
 
     // Whitelist the follow modules
@@ -301,14 +301,14 @@ task('full-deploy-verify', 'deploys the entire Lens Protocol with explorer verif
       'profile token URI logic lib': profileTokenURILogic.address,
       'follow NFT impl': followNFTImplAddress,
       'collect NFT impl': collectNFTImplAddress,
-      'periphery data provider': peripheryDataProvider.address,
+      'periphery data provider': lensPeriphery.address,
       'module globals': moduleGlobals.address,
       'fee collect module': feeCollectModule.address,
       'limited fee collect module': limitedFeeCollectModule.address,
       'timed fee collect module': timedFeeCollectModule.address,
       'limited timed fee collect module': limitedTimedFeeCollectModule.address,
       'revert collect module': revertCollectModule.address,
-      'empty collect module': emptyCollectModule.address,
+      'empty collect module': freeCollectModule.address,
       'fee follow module': feeFollowModule.address,
       // --- COMMENTED OUT AS THIS IS NOT A LAUNCH MODULE ---
       // 'approval follow module': approvalFollowModule.address,

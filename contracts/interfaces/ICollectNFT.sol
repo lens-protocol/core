@@ -39,7 +39,7 @@ interface ICollectNFT {
     /**
      * @notice Returns the source publication pointer mapped to this collect NFT.
      *
-     * @return First the profile ID uint256, and second the pubId uint256.
+     * @return tuple First the profile ID uint256, and second the pubId uint256.
      */
     function getSourcePublicationPointer() external view returns (uint256, uint256);
 }

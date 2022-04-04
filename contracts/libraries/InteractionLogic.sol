@@ -48,7 +48,7 @@ library InteractionLogic {
     ) external returns (uint256[] memory) {
         if (profileIds.length != followModuleDatas.length) revert Errors.ArrayMismatch();
         uint256[] memory tokenIds = new uint256[](profileIds.length);
-        for (uint256 i = 0; i < profileIds.length; ++i) {
+        for (uint256 i = 0; i < profileIds.length; ) {
             string memory handle = _profileById[profileIds[i]].handle;
             if (_profileIdByHandleHash[keccak256(bytes(handle))] != profileIds[i])
                 revert Errors.TokenDoesNotExist();
@@ -69,6 +69,9 @@ library InteractionLogic {
                     profileIds[i],
                     followModuleDatas[i]
                 );
+            }
+            unchecked {
+                ++i;
             }
         }
         return tokenIds;

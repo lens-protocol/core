@@ -35,7 +35,7 @@ contract UIDataProvider {
      *
      * @param profileId The profile ID to query.
      *
-     * @return A custom `LatestData` struct containing the `ProfileStruct` and the `PublicationStruct` queried.
+     * @return LensData A struct containing the `ProfileStruct` and the `PublicationStruct` queried.
      */
     function getLatestDataByProfile(uint256 profileId) external view returns (LatestData memory) {
         DataTypes.ProfileStruct memory profileStruct = HUB.getProfile(profileId);
@@ -49,7 +49,7 @@ contract UIDataProvider {
      *
      * @param handle The handle to query.
      *
-     * @return A custom `LatestData` struct containing the `ProfileStruct` and the `PublicationStruct` queried.
+     * @return LensData A struct containing the `ProfileStruct` and the `PublicationStruct` queried.
      */
     function getLatestDataByHandle(string memory handle) external view returns (LatestData memory) {
         uint256 profileId = HUB.getProfileIdByHandle(handle);
