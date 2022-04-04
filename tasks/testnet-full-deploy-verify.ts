@@ -41,8 +41,8 @@ export let runtimeHRE: HardhatRuntimeEnvironment;
  *    3. ModuleGlobals Governance
  *    3. ModuleGlobals Treasury
  *
- * Furthermore, This script is a variation of the standard full-deploy-verify script, it still does not whitelist profile creators or deploy/whitelist a
- * currency, but it *does* deploy a profile creation proxy.
+ * Furthermore, This script is a variation of the standard full-deploy-verify script, it still does not whitelist profile
+ * creators or deploy/whitelist a currency, but it *does* deploy a profile creation proxy.
  */
 task(
   'testnet-full-deploy-verify',
