@@ -66,12 +66,11 @@ contract FollowNFT is LensNFTBase, IFollowNFT {
     /// @inheritdoc IFollowNFT
     function mint(address to) external override returns (uint256) {
         if (msg.sender != HUB) revert Errors.NotHub();
-        uint256 tokenId;
         unchecked {
-            tokenId = ++_tokenIdCounter;
+            uint256 tokenId = ++_tokenIdCounter;
             _mint(to, tokenId);
+            return tokenId;
         }
-        return tokenId;
     }
 
     /// @inheritdoc IFollowNFT
@@ -85,21 +84,23 @@ contract FollowNFT is LensNFTBase, IFollowNFT {
         address delegatee,
         DataTypes.EIP712Signature calldata sig
     ) external override {
-        _validateRecoveredAddress(
-            _calculateDigest(
-                keccak256(
-                    abi.encode(
-                        DELEGATE_BY_SIG_TYPEHASH,
-                        delegator,
-                        delegatee,
-                        sigNonces[delegator]++,
-                        sig.deadline
+        unchecked {
+            _validateRecoveredAddress(
+                _calculateDigest(
+                    keccak256(
+                        abi.encode(
+                            DELEGATE_BY_SIG_TYPEHASH,
+                            delegator,
+                            delegatee,
+                            sigNonces[delegator]++,
+                            sig.deadline
+                        )
                     )
-                )
-            ),
-            delegator,
-            sig
-        );
+                ),
+                delegator,
+                sig
+            );
+        }
         _delegate(delegator, delegatee);
     }
 
