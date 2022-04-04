@@ -50,7 +50,7 @@ export async function deployWithVerify(
     } catch (error) {
       if (String(error).includes('Already Verified')) {
         console.log(
-          `Already verified contract at at ${contractPath} at address ${deployedContract.address}`
+          `Already verified contract at ${contractPath} at address ${deployedContract.address}`
         );
         break;
       }
