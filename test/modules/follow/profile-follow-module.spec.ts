@@ -52,7 +52,7 @@ makeSuiteCleanRoom('Profile Follow Module', function () {
       });
     });
 
-    context('Processing follow', function () {
+    context('Following', function () {
       it('Process follow call should fail when sender is not the hub', async function () {
         // TODO
       });
