@@ -57,7 +57,13 @@ ETHERSCAN_KEY="YOUR ETHERSCAN API KEY HERE"
 With the environment file set up, you can move on to using Docker:
 
 ```bash
-export USERID=$UID && docker-compose build && docker-compose run contracts-env bash
+export USERID=$UID && docker-compose build && docker-compose run --name lens contracts-env bash
+```
+
+If you need additional terminals:
+
+```bash
+docker exec -it lens bash
 ```
 
 From there, have fun!
