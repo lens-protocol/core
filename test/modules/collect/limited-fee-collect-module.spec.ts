@@ -177,6 +177,14 @@ makeSuiteCleanRoom('Limited Fee Collect Module', function () {
         ).to.not.be.reverted;
       });
 
+      it('UserTwo should fail to process collect without being the hub', async function () {
+        await expect(
+          limitedFeeCollectModule
+            .connect(userTwo)
+            .processCollect(0, userTwoAddress, FIRST_PROFILE_ID, 1, [])
+        ).to.be.revertedWith(ERRORS.NOT_HUB);
+      });
+
       it('Governance should set the treasury fee BPS to zero, userTwo collecting should not emit a transfer event to the treasury', async function () {
         await expect(moduleGlobals.connect(governance).setTreasuryFee(0)).to.not.be.reverted;
         const data = abiCoder.encode(
