@@ -872,12 +872,10 @@ contract LensHub is ILensHub, LensNFTBase, VersionedInitializable, LensMultiStat
             return DataTypes.PubType.Nonexistent;
         } else if (_pubByIdByProfile[profileId][pubId].collectModule == address(0)) {
             return DataTypes.PubType.Mirror;
+        } else if (_pubByIdByProfile[profileId][pubId].profileIdPointed == 0) {
+            return DataTypes.PubType.Post;
         } else {
-            if (_pubByIdByProfile[profileId][pubId].profileIdPointed == 0) {
-                return DataTypes.PubType.Post;
-            } else {
-                return DataTypes.PubType.Comment;
-            }
+            return DataTypes.PubType.Comment;
         }
     }
 
