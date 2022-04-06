@@ -41,6 +41,7 @@ library Errors {
     error FollowNotApproved();
     error MintLimitExceeded();
     error CollectNotAllowed();
+    error CFAInvalid();
 
     // MultiState Errors
     error Paused();
