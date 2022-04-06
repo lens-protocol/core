@@ -54,16 +54,16 @@ library PublishingLogic {
         _profileById[profileId].imageURI = vars.imageURI;
         _profileById[profileId].followNFTURI = vars.followNFTURI;
 
+        bytes memory followModuleReturnData = new bytes(0);
         if (vars.followModule != address(0)) {
             _profileById[profileId].followModule = vars.followModule;
+            followModuleReturnData = _initFollowModule(
+                profileId,
+                vars.followModule,
+                vars.followModuleData,
+                _followModuleWhitelisted
+            );
         }
-
-        bytes memory followModuleReturnData = _initFollowModule(
-            profileId,
-            vars.followModule,
-            vars.followModuleData,
-            _followModuleWhitelisted
-        );
 
         _emitProfileCreated(profileId, vars, followModuleReturnData);
     }
@@ -89,12 +89,14 @@ library PublishingLogic {
             _profile.followModule = followModule;
         }
 
-        bytes memory followModuleReturnData = _initFollowModule(
-            profileId,
-            followModule,
-            followModuleData,
-            _followModuleWhitelisted
-        );
+        bytes memory followModuleReturnData = new bytes(0);
+        if (followModule != address(0))
+            followModuleReturnData = _initFollowModule(
+                profileId,
+                followModule,
+                followModuleData,
+                _followModuleWhitelisted
+            );
         emit Events.FollowModuleSet(
             profileId,
             followModule,
@@ -349,16 +351,8 @@ library PublishingLogic {
         bytes memory followModuleData,
         mapping(address => bool) storage _followModuleWhitelisted
     ) private returns (bytes memory) {
-        if (followModule != address(0)) {
-            if (!_followModuleWhitelisted[followModule]) revert Errors.FollowModuleNotWhitelisted();
-            bytes memory returnData = IFollowModule(followModule).initializeFollowModule(
-                profileId,
-                followModuleData
-            );
-            return returnData;
-        } else {
-            return new bytes(0);
-        }
+        if (!_followModuleWhitelisted[followModule]) revert Errors.FollowModuleNotWhitelisted();
+        return IFollowModule(followModule).initializeFollowModule(profileId, followModuleData);
     }
 
     function _emitCommentCreated(
