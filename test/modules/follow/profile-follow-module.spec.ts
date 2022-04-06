@@ -152,13 +152,14 @@ makeSuiteCleanRoom('Profile Follow Module', function () {
           lensHub.connect(userTwo).follow([FIRST_PROFILE_ID], [DEFAULT_FOLLOW_DATA])
         ).to.not.be.reverted;
 
-        // Update the revision and follow again
+        // Update the revision
         const data = abiCoder.encode(['uint256'], [1]);
         await expect(
           lensHub.setFollowModule(FIRST_PROFILE_ID, profileFollowModule.address, data)
         ).to.not.be.reverted;
+        // We check that profile can be followed again but through callStatic to avoid state-changes
         await expect(
-          lensHub.connect(userTwo).follow([FIRST_PROFILE_ID], [DEFAULT_FOLLOW_DATA])
+          lensHub.connect(userTwo).callStatic.follow([FIRST_PROFILE_ID], [DEFAULT_FOLLOW_DATA])
         ).to.not.be.reverted;
 
         // Return the revision to the original, follow should be invalid
