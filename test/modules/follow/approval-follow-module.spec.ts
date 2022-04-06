@@ -67,9 +67,9 @@ makeSuiteCleanRoom('Approval Follow Module', function () {
     });
 
     context('Processing follow', function () {
-      it('Process follow call should fail when sender is not the hub', async function () {
+      it('UserTwo should fail to process follow without being the hub', async function () {
         await expect(
-          approvalFollowModule.processFollow(userTwoAddress, FIRST_PROFILE_ID, [])
+          approvalFollowModule.connect(userTwo).processFollow(userTwoAddress, FIRST_PROFILE_ID, [])
         ).to.be.revertedWith(ERRORS.NOT_HUB);
       });
 

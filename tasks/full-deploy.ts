@@ -22,6 +22,7 @@ import {
   TransparentUpgradeableProxy__factory,
   ProfileTokenURILogic__factory,
   LensPeriphery__factory,
+  ProfileFollowModule__factory,
 } from '../typechain-types';
 import { deployContract, waitForTx } from './helpers/utils';
 
@@ -120,10 +121,9 @@ task('full-deploy', 'deploys the entire Lens Protocol').setAction(async ({}, hre
   // Connect the hub proxy to the LensHub factory and the governance for ease of use.
   const lensHub = LensHub__factory.connect(proxy.address, governance);
 
-  const lensPeriphery = await new LensPeriphery__factory(deployer).deploy(
-    lensHub.address,
-    { nonce: deployerNonce++ }
-  );
+  const lensPeriphery = await new LensPeriphery__factory(deployer).deploy(lensHub.address, {
+    nonce: deployerNonce++,
+  });
 
   // Currency
   console.log('\n\t-- Deploying Currency --');
@@ -175,6 +175,12 @@ task('full-deploy', 'deploys the entire Lens Protocol').setAction(async ({}, hre
       nonce: deployerNonce++,
     })
   );
+  console.log('\n\t-- Deploying profileFollowModule --');
+  const profileFollowModule = await deployContract(
+    new ProfileFollowModule__factory(deployer).deploy(lensHub.address, {
+      nonce: deployerNonce++,
+    })
+  );
   // --- COMMENTED OUT AS THIS IS NOT A LAUNCH MODULE ---
   // console.log('\n\t-- Deploying approvalFollowModule --');
   // const approvalFollowModule = await deployContract(
@@ -222,6 +228,9 @@ task('full-deploy', 'deploys the entire Lens Protocol').setAction(async ({}, hre
   await waitForTx(
     lensHub.whitelistFollowModule(feeFollowModule.address, true, { nonce: governanceNonce++ })
   );
+  await waitForTx(
+    lensHub.whitelistFollowModule(profileFollowModule.address, true, { nonce: governanceNonce++ })
+  );
   // --- COMMENTED OUT AS THIS IS NOT A LAUNCH MODULE ---
   // await waitForTx(
   // lensHub.whitelistFollowModule(approvalFollowModule.address, true, { nonce: governanceNonce++ })
@@ -259,8 +268,9 @@ task('full-deploy', 'deploys the entire Lens Protocol').setAction(async ({}, hre
     'timed fee collect module': timedFeeCollectModule.address,
     'limited timed fee collect module': limitedTimedFeeCollectModule.address,
     'revert collect module': revertCollectModule.address,
-    'empty collect module': freeCollectModule.address,
+    'free collect module': freeCollectModule.address,
     'fee follow module': feeFollowModule.address,
+    'profile follow module': profileFollowModule.address,
     // --- COMMENTED OUT AS THIS IS NOT A LAUNCH MODULE ---
     // 'approval follow module': approvalFollowModule.address,
     'follower only reference module': followerOnlyReferenceModule.address,

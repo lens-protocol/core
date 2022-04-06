@@ -113,6 +113,12 @@ makeSuiteCleanRoom('Fee Follow Module', function () {
         ).to.not.be.reverted;
       });
 
+      it('UserTwo should fail to process follow without being the hub', async function () {
+        await expect(
+          feeFollowModule.connect(userTwo).processFollow(userTwoAddress, FIRST_PROFILE_ID, [])
+        ).to.be.revertedWith(ERRORS.NOT_HUB);
+      });
+
       it('Governance should set the treasury fee BPS to zero, userTwo following should not emit a transfer event to the treasury', async function () {
         await expect(moduleGlobals.connect(governance).setTreasuryFee(0)).to.not.be.reverted;
         const data = abiCoder.encode(

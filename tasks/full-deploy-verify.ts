@@ -22,6 +22,7 @@ import {
   TransparentUpgradeableProxy__factory,
   ProfileTokenURILogic__factory,
   LensPeriphery__factory,
+  ProfileFollowModule__factory,
 } from '../typechain-types';
 import { deployWithVerify, waitForTx } from './helpers/utils';
 
@@ -222,6 +223,14 @@ task('full-deploy-verify', 'deploys the entire Lens Protocol with explorer verif
       [lensHub.address, moduleGlobals.address],
       'contracts/core/modules/follow/FeeFollowModule.sol:FeeFollowModule'
     );
+    console.log('\n\t-- Deploying profileFollowModule --');
+    const profileFollowModule = await deployWithVerify(
+      new ProfileFollowModule__factory(deployer).deploy(lensHub.address, {
+        nonce: deployerNonce++,
+      }),
+      [lensHub.address],
+      'contracts/core/modules/follow/ProfileFollowModule.sol:ProfileFollowModule'
+    );
     // --- COMMENTED OUT AS THIS IS NOT A LAUNCH MODULE ---
     // console.log('\n\t-- Deploying approvalFollowModule --');
     // const approvalFollowModule = await deployWithVerify(
@@ -277,6 +286,9 @@ task('full-deploy-verify', 'deploys the entire Lens Protocol with explorer verif
     await waitForTx(
       lensHub.whitelistFollowModule(feeFollowModule.address, true, { nonce: governanceNonce++ })
     );
+    await waitForTx(
+      lensHub.whitelistFollowModule(profileFollowModule.address, true, { nonce: governanceNonce++ })
+    );
     // --- COMMENTED OUT AS THIS IS NOT A LAUNCH MODULE ---
     // await waitForTx(
     // lensHub.whitelistFollowModule(approvalFollowModule.address, true, {
@@ -308,8 +320,9 @@ task('full-deploy-verify', 'deploys the entire Lens Protocol with explorer verif
       'timed fee collect module': timedFeeCollectModule.address,
       'limited timed fee collect module': limitedTimedFeeCollectModule.address,
       'revert collect module': revertCollectModule.address,
-      'empty collect module': freeCollectModule.address,
+      'free collect module': freeCollectModule.address,
       'fee follow module': feeFollowModule.address,
+      'profile follow module': profileFollowModule.address,
       // --- COMMENTED OUT AS THIS IS NOT A LAUNCH MODULE ---
       // 'approval follow module': approvalFollowModule.address,
       'follower only reference module': followerOnlyReferenceModule.address,
