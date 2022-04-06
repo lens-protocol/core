@@ -33,7 +33,7 @@ makeSuiteCleanRoom('Profile Follow Module', function () {
     ).to.not.be.reverted;
   });
 
-  context.only('Negatives', function () {
+  context('Negatives', function () {
     context('Initialization', function () {
       it('Initialize call should fail when sender is not the hub', async function () {
         await expect(
@@ -195,7 +195,7 @@ makeSuiteCleanRoom('Profile Follow Module', function () {
     });
   });
 
-  context.only('Scenarios', function () {
+  context('Scenarios', function () {
     context('Initialization', function () {
       it('Initialize call should succeed returning passed data if it is holding the revision number encoded', async function () {
         // TODO
