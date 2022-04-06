@@ -330,19 +330,16 @@ library PublishingLogic {
             storage _pubByIdByProfile,
         mapping(address => bool) storage _referenceModuleWhitelisted
     ) private returns (bytes memory) {
-        if (referenceModule != address(0)) {
-            if (!_referenceModuleWhitelisted[referenceModule])
-                revert Errors.ReferenceModuleNotWhitelisted();
-            _pubByIdByProfile[profileId][pubId].referenceModule = referenceModule;
-            return
-                IReferenceModule(referenceModule).initializeReferenceModule(
-                    profileId,
-                    pubId,
-                    referenceModuleData
-                );
-        } else {
-            return new bytes(0);
-        }
+        if (referenceModule == address(0)) return new bytes(0);
+        if (!_referenceModuleWhitelisted[referenceModule])
+            revert Errors.ReferenceModuleNotWhitelisted();
+        _pubByIdByProfile[profileId][pubId].referenceModule = referenceModule;
+        return
+            IReferenceModule(referenceModule).initializeReferenceModule(
+                profileId,
+                pubId,
+                referenceModuleData
+            );
     }
 
     function _initFollowModule(
