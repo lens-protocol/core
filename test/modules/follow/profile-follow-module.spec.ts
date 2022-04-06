@@ -232,6 +232,35 @@ makeSuiteCleanRoom('Profile Follow Module', function () {
           await getTimestamp(),
         ]);
       });
+
+      it('Profile creation using profile follow module should succeed and emit expected event', async function () {
+        await expect(
+          lensHub.createProfile({
+            to: userAddress,
+            handle: MOCK_PROFILE_HANDLE,
+            imageURI: MOCK_PROFILE_URI,
+            followModule: ZERO_ADDRESS,
+            followModuleData: [],
+            followNFTURI: MOCK_FOLLOW_NFT_URI,
+          })
+        ).to.not.be.reverted;
+
+        const tx = lensHub.setFollowModule(
+          FIRST_PROFILE_ID,
+          profileFollowModule.address,
+          DEFAULT_INIT_DATA
+        );
+
+        const receipt = await waitForTx(tx);
+
+        expect(receipt.logs.length).to.eq(1);
+        matchEvent(receipt, 'FollowModuleSet', [
+          FIRST_PROFILE_ID,
+          profileFollowModule.address,
+          DEFAULT_INIT_DATA,
+          await getTimestamp(),
+        ]);
+      });
     });
 
     context('Processing follow', function () {
