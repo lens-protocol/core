@@ -233,7 +233,7 @@ makeSuiteCleanRoom('Profile Follow Module', function () {
         ]);
       });
 
-      it('Profile creation using profile follow module should succeed and emit expected event', async function () {
+      it('User should create a profile then set the profile follow module as the follow module, correct event should be emitted', async function () {
         await expect(
           lensHub.createProfile({
             to: userAddress,
