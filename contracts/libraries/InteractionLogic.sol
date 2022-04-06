@@ -54,7 +54,6 @@ library InteractionLogic {
                 revert Errors.TokenDoesNotExist();
 
             address followModule = _profileById[profileIds[i]].followModule;
-
             address followNFT = _profileById[profileIds[i]].followNFT;
 
             if (followNFT == address(0)) {
