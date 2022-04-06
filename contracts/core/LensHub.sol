@@ -932,10 +932,14 @@ contract LensHub is ILensHub, LensNFTBase, VersionedInitializable, LensMultiStat
         }
     }
 
+    /*
+     * If the profile ID is zero, this is the equivalent of "unsetting" a default profile.
+     * Note that the wallet address should either be the message sender or validated via a signature
+     * prior to this function call.
+     */
     function _setDefaultProfile(address wallet, uint256 profileId) internal {
-        if (profileId > 0) {
-            if (wallet != ownerOf(profileId)) revert Errors.NotProfileOwner();
-        }
+        if (profileId > 0 && wallet != ownerOf(profileId)) revert Errors.NotProfileOwner();
+
         _defaultProfileByAddress[wallet] = profileId;
 
         emit Events.DefaultProfileSet(wallet, profileId, block.timestamp);
