@@ -201,7 +201,7 @@ makeSuiteCleanRoom('Profile Follow Module', function () {
         // TODO
       });
 
-      it('Profile creation should succeed and emit expected event', async function () {
+      it('Profile creation using profile follow module should succeed and emit expected event', async function () {
         const tx = lensHub.createProfile({
           to: userAddress,
           handle: MOCK_PROFILE_HANDLE,
@@ -242,6 +242,7 @@ makeSuiteCleanRoom('Profile Follow Module', function () {
           })
         ).to.not.be.reverted;
       });
+
       it('Follow call should work when follower profile exists, is owned by the follower address and has not already followed the profile in the current revision', async function () {
         await expect(
           lensHub.createProfile({
