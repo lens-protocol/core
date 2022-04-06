@@ -44,7 +44,7 @@ struct ProfilePublicationData {
  *
  * NOTE: If data passed on initialization is empty, this module will only check for the time limit.
  */
-contract TimedFeeCollectModule is ICollectModule, FeeModuleBase, FollowValidationModuleBase {
+contract TimedFeeCollectModule is FeeModuleBase, FollowValidationModuleBase, ICollectModule {
     using SafeERC20 for IERC20;
 
     uint24 internal constant ONE_DAY = 24 hours;

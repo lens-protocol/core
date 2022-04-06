@@ -32,7 +32,7 @@ struct ProfileData {
  * @notice This is a simple Lens FollowModule implementation, inheriting from the IFollowModule interface, but with additional
  * variables that can be controlled by governance, such as the governance & treasury addresses as well as the treasury fee.
  */
-contract FeeFollowModule is IFollowModule, FeeModuleBase, FollowValidatorFollowModuleBase {
+contract FeeFollowModule is FeeModuleBase, FollowValidatorFollowModuleBase {
     using SafeERC20 for IERC20;
 
     mapping(uint256 => ProfileData) internal _dataByProfile;
