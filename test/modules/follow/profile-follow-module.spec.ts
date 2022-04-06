@@ -199,7 +199,11 @@ makeSuiteCleanRoom('Profile Follow Module', function () {
   context('Scenarios', function () {
     context('Initialization', function () {
       it('Initialize call should succeed returning passed data if it is holding the revision number encoded', async function () {
-        // TODO
+        expect(
+          await profileFollowModule
+            .connect(lensHub.address)
+            .callStatic.initializeFollowModule(FIRST_PROFILE_ID, DEFAULT_INIT_DATA)
+        ).to.eq(DEFAULT_INIT_DATA);
       });
 
       it('Profile creation using profile follow module should succeed and emit expected event', async function () {
