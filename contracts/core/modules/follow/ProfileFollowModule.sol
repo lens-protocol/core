@@ -44,7 +44,7 @@ contract ProfileFollowModule is IFollowModule, FollowValidatorFollowModuleBase {
     /**
      * @dev Processes a follow by:
      *  1. Validating that the follower owns the profile passed through the data param
-     *  2. TValidating that the profile that being used to execute the follow is not already following
+     *  2. Validating that the profile that is being used to execute the follow is not already following
      *     the given profile in the current revision
      */
     function processFollow(
