@@ -4,6 +4,7 @@ pragma solidity 0.8.10;
 
 import {ICollectModule} from '../../../interfaces/ICollectModule.sol';
 import {Errors} from '../../../libraries/Errors.sol';
+import {Events} from '../../../libraries/Events.sol';
 import {FeeModuleBase} from '../FeeModuleBase.sol';
 import {ModuleBase} from '../ModuleBase.sol';
 import {FollowValidationModuleBase} from '../FollowValidationModuleBase.sol';
@@ -139,12 +140,17 @@ contract LimitedTimedFeeCollectModule is FeeModuleBase, FollowValidationModuleBa
         ) {
             revert Errors.MintLimitExceeded();
         } else {
-            ++_dataByPublicationByProfile[profileId][pubId].currentCollects;
             if (referrerProfileId == profileId) {
                 _processCollect(collector, profileId, pubId, data);
             } else {
                 _processCollectWithReferral(referrerProfileId, collector, profileId, pubId, data);
             }
+            // We can increment the currentCollects here since there are no external calls in the above processing functions
+            emit Events.LimitedPubCollected(
+                profileId,
+                pubId,
+                ++_dataByPublicationByProfile[profileId][pubId].currentCollects
+            );
         }
     }
 
