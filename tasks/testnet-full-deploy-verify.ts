@@ -305,6 +305,9 @@ task(
   await waitForTx(
     lensHub.whitelistFollowModule(feeFollowModule.address, true, { nonce: governanceNonce++ })
   );
+  await waitForTx(
+    lensHub.whitelistFollowModule(profileFollowModule.address, true, { nonce: governanceNonce++ })
+  );
   // --- COMMENTED OUT AS THIS IS NOT A LAUNCH MODULE ---
   // await waitForTx(
   // lensHub.whitelistFollowModule(approvalFollowModule.address, true, {
