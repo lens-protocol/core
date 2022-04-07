@@ -18,7 +18,7 @@ import {ERC721Enumerable} from './ERC721Enumerable.sol';
  * internal operator approval setter, stores the mint timestamp for each token, and replaces the
  * constructor with an initializer.
  */
-abstract contract LensNFTBase is ILensNFTBase, ERC721Enumerable {
+abstract contract LensNFTBase is ERC721Enumerable, ILensNFTBase {
     bytes32 internal constant EIP712_REVISION_HASH = keccak256('1');
     bytes32 internal constant PERMIT_TYPEHASH =
         keccak256('Permit(address spender,uint256 tokenId,uint256 nonce,uint256 deadline)');
