@@ -37,7 +37,7 @@ struct ProfilePublicationData {
  *
  * This module works by allowing unlimited collects for a publication at a given price.
  */
-contract FeeCollectModule is ICollectModule, FeeModuleBase, FollowValidationModuleBase {
+contract FeeCollectModule is FeeModuleBase, FollowValidationModuleBase, ICollectModule {
     using SafeERC20 for IERC20;
 
     mapping(uint256 => mapping(uint256 => ProfilePublicationData))

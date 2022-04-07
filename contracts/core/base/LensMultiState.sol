@@ -28,7 +28,12 @@ abstract contract LensMultiState {
     }
 
     /**
-     * @dev Returns the current protocol state.
+     * @notice Returns the current protocol state.
+     *
+     * @return ProtocolState The Protocol state, an enum, where:
+     *      0: Unpaused
+     *      1: PublishingPaused
+     *      2: Paused
      */
     function getState() external view returns (DataTypes.ProtocolState) {
         return _state;

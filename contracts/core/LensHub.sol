@@ -11,11 +11,11 @@ import {Errors} from '../libraries/Errors.sol';
 import {PublishingLogic} from '../libraries/PublishingLogic.sol';
 import {ProfileTokenURILogic} from '../libraries/ProfileTokenURILogic.sol';
 import {InteractionLogic} from '../libraries/InteractionLogic.sol';
-import {IERC721Enumerable} from '@openzeppelin/contracts/token/ERC721/extensions/IERC721Enumerable.sol';
 import {LensNFTBase} from './base/LensNFTBase.sol';
 import {LensMultiState} from './base/LensMultiState.sol';
 import {LensHubStorage} from './storage/LensHubStorage.sol';
 import {VersionedInitializable} from '../upgradeability/VersionedInitializable.sol';
+import {IERC721Enumerable} from '@openzeppelin/contracts/token/ERC721/extensions/IERC721Enumerable.sol';
 
 /**
  * @title LensHub
@@ -29,7 +29,7 @@ import {VersionedInitializable} from '../upgradeability/VersionedInitializable.s
  *      1. Both Follow & Collect NFTs invoke an LensHub callback on transfer with the sole purpose of emitting an event.
  *      2. Almost every event in the protocol emits the current block timestamp, reducing the need to fetch it manually.
  */
-contract LensHub is ILensHub, LensNFTBase, VersionedInitializable, LensMultiState, LensHubStorage {
+contract LensHub is LensNFTBase, VersionedInitializable, LensMultiState, LensHubStorage, ILensHub {
     uint256 internal constant REVISION = 1;
 
     address internal immutable FOLLOW_NFT_IMPL;
@@ -872,12 +872,10 @@ contract LensHub is ILensHub, LensNFTBase, VersionedInitializable, LensMultiStat
             return DataTypes.PubType.Nonexistent;
         } else if (_pubByIdByProfile[profileId][pubId].collectModule == address(0)) {
             return DataTypes.PubType.Mirror;
+        } else if (_pubByIdByProfile[profileId][pubId].profileIdPointed == 0) {
+            return DataTypes.PubType.Post;
         } else {
-            if (_pubByIdByProfile[profileId][pubId].profileIdPointed == 0) {
-                return DataTypes.PubType.Post;
-            } else {
-                return DataTypes.PubType.Comment;
-            }
+            return DataTypes.PubType.Comment;
         }
     }
 
@@ -932,10 +930,14 @@ contract LensHub is ILensHub, LensNFTBase, VersionedInitializable, LensMultiStat
         }
     }
 
+    /*
+     * If the profile ID is zero, this is the equivalent of "unsetting" a default profile.
+     * Note that the wallet address should either be the message sender or validated via a signature
+     * prior to this function call.
+     */
     function _setDefaultProfile(address wallet, uint256 profileId) internal {
-        if (profileId > 0) {
-            if (wallet != ownerOf(profileId)) revert Errors.NotProfileOwner();
-        }
+        if (profileId > 0 && wallet != ownerOf(profileId)) revert Errors.NotProfileOwner();
+
         _defaultProfileByAddress[wallet] = profileId;
 
         emit Events.DefaultProfileSet(wallet, profileId, block.timestamp);

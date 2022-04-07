@@ -15,7 +15,7 @@ import {IERC721} from '@openzeppelin/contracts/token/ERC721/IERC721.sol';
  * @notice This abstract contract adds the default expected behavior for follow validation in a follow module
  * to inheriting contracts.
  */
-abstract contract FollowValidatorFollowModuleBase is IFollowModule, ModuleBase {
+abstract contract FollowValidatorFollowModuleBase is ModuleBase, IFollowModule {
     /**
      * @notice Standard function to validate follow NFT ownership. This module is agnostic to follow NFT token IDs
      * and other properties.

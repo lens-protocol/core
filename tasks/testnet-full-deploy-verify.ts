@@ -24,6 +24,7 @@ import {
   LensPeriphery__factory,
   MockProfileCreationProxy__factory,
   UIDataProvider__factory,
+  ProfileFollowModule__factory,
 } from '../typechain-types';
 import { deployWithVerify, waitForTx } from './helpers/utils';
 
@@ -221,6 +222,14 @@ task(
     [lensHub.address, moduleGlobals.address],
     'contracts/core/modules/follow/FeeFollowModule.sol:FeeFollowModule'
   );
+  console.log('\n\t-- Deploying profileFollowModule --');
+  const profileFollowModule = await deployWithVerify(
+    new ProfileFollowModule__factory(deployer).deploy(lensHub.address, {
+      nonce: deployerNonce++,
+    }),
+    [lensHub.address],
+    'contracts/core/modules/follow/ProfileFollowModule.sol:ProfileFollowModule'
+  );
   // --- COMMENTED OUT AS THIS IS NOT A LAUNCH MODULE ---
   // console.log('\n\t-- Deploying approvalFollowModule --');
   // const approvalFollowModule = await deployWithVerify(
@@ -329,6 +338,7 @@ task(
     'revert collect module': revertCollectModule.address,
     'empty collect module': freeCollectModule.address,
     'fee follow module': feeFollowModule.address,
+    'profile follow module': profileFollowModule.address,
     // --- COMMENTED OUT AS THIS IS NOT A LAUNCH MODULE ---
     // 'approval follow module': approvalFollowModule.address,
     'follower only reference module': followerOnlyReferenceModule.address,

@@ -9,7 +9,16 @@ import {Events} from '../../libraries/Events.sol';
 import {ERC721Time} from './ERC721Time.sol';
 import {ERC721Enumerable} from './ERC721Enumerable.sol';
 
-abstract contract LensNFTBase is ILensNFTBase, ERC721Enumerable {
+/**
+ * @title LensNFTBase
+ * @author Lens Protocol
+ *
+ * @notice This is an abstract base contract to be inherited by other Lens Protocol NFTs, it includes
+ * the slightly modified ERC721Enumerable, which itself inherits from the ERC721Time-- which adds an
+ * internal operator approval setter, stores the mint timestamp for each token, and replaces the
+ * constructor with an initializer.
+ */
+abstract contract LensNFTBase is ERC721Enumerable, ILensNFTBase {
     bytes32 internal constant EIP712_REVISION_HASH = keccak256('1');
     bytes32 internal constant PERMIT_TYPEHASH =
         keccak256('Permit(address spender,uint256 tokenId,uint256 nonce,uint256 deadline)');

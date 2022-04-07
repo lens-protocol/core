@@ -46,6 +46,8 @@ import {
   TransparentUpgradeableProxy__factory,
   LensPeriphery,
   LensPeriphery__factory,
+  ProfileFollowModule,
+  ProfileFollowModule__factory,
 } from '../typechain-types';
 import { LensHubLibraryAddresses } from '../typechain-types/factories/LensHub__factory';
 import { FAKE_PRIVATEKEY, ZERO_ADDRESS } from './helpers/constants';
@@ -113,6 +115,7 @@ export let limitedTimedFeeCollectModule: LimitedTimedFeeCollectModule;
 
 // Follow
 export let approvalFollowModule: ApprovalFollowModule;
+export let profileFollowModule: ProfileFollowModule;
 export let feeFollowModule: FeeFollowModule;
 export let mockFollowModule: MockFollowModule;
 
@@ -228,6 +231,7 @@ before(async function () {
     lensHub.address,
     moduleGlobals.address
   );
+  profileFollowModule = await new ProfileFollowModule__factory(deployer).deploy(lensHub.address);
   approvalFollowModule = await new ApprovalFollowModule__factory(deployer).deploy(lensHub.address);
   followerOnlyReferenceModule = await new FollowerOnlyReferenceModule__factory(deployer).deploy(
     lensHub.address

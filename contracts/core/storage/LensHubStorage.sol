@@ -4,7 +4,15 @@ pragma solidity 0.8.10;
 
 import {DataTypes} from '../../libraries/DataTypes.sol';
 
-contract LensHubStorage {
+/**
+ * @title LensHubStorage
+ * @author Lens Protocol
+ *
+ * @notice This is an abstract contract that *only* contains storage for the LensHub contract. This
+ * *must* be inherited last (bar interfaces) in order to preserve the LensHub storage layout. Adding
+ * storage variables should be done solely at the bottom of this contract.
+ */
+abstract contract LensHubStorage {
     bytes32 internal constant SET_DEFAULT_PROFILE_WITH_SIG_TYPEHASH =
         keccak256(
             'SetDefaultProfileWithSig(address wallet,uint256 profileId,uint256 nonce,uint256 deadline)'

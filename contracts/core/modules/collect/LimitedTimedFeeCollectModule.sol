@@ -44,7 +44,7 @@ struct ProfilePublicationData {
  *
  * This module works by allowing limited collects for a publication within the allotted time with a given fee.
  */
-contract LimitedTimedFeeCollectModule is ICollectModule, FeeModuleBase, FollowValidationModuleBase {
+contract LimitedTimedFeeCollectModule is FeeModuleBase, FollowValidationModuleBase, ICollectModule {
     using SafeERC20 for IERC20;
 
     uint24 internal constant ONE_DAY = 24 hours;

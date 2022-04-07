@@ -28,10 +28,9 @@ contract FollowNFT is LensNFTBase, IFollowNFT {
     address public immutable HUB;
 
     bytes32 internal constant DELEGATE_BY_SIG_TYPEHASH =
-        0xb8f190a57772800093f4e2b186099eb4f1df0ed7f5e2791e89a4a07678e0aeff;
-    // keccak256(
-    // 'DelegateBySig(address delegator,address delegatee,uint256 nonce,uint256 deadline)'
-    // );
+        keccak256(
+            'DelegateBySig(address delegator,address delegatee,uint256 nonce,uint256 deadline)'
+        );
 
     mapping(address => mapping(uint256 => Snapshot)) internal _snapshots;
     mapping(address => address) internal _delegates;
