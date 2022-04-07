@@ -22,25 +22,26 @@ import {
   TransparentUpgradeableProxy__factory,
   ProfileTokenURILogic__factory,
   LensPeriphery__factory,
+  UIDataProvider__factory,
   ProfileFollowModule__factory,
 } from '../typechain-types';
 import { deployWithVerify, waitForTx } from './helpers/utils';
 
 const TREASURY_FEE_BPS = 50;
-const LENS_HUB_NFT_NAME = 'Various Vegetables';
-const LENS_HUB_NFT_SYMBOL = 'VVGT';
+const LENS_HUB_NFT_NAME = 'Lens Protocol Profiles';
+const LENS_HUB_NFT_SYMBOL = 'LPP';
 
 export let runtimeHRE: HardhatRuntimeEnvironment;
 
 /**
  * @dev Note that this script uses the default ethers signers.
-1 * Care should be taken to also ensure that the following addresses end up properly set:
+ * Care should be taken to also ensure that the following addresses end up properly set:
  *    1. LensHub Proxy Admin
  *    2. LensHub Governance
  *    3. ModuleGlobals Governance
  *    3. ModuleGlobals Treasury
- *  
- * Furthermore, This script does not whitelist profile creators or deploy a profile creation 
+ *
+ * Furthermore, This script does not whitelist profile creators or deploy a profile creation
  * proxy or a unique currency contract. This also does not whitelist any currencies in the
  * ModuleGlobals contract.
  */
@@ -138,7 +139,6 @@ task('full-deploy-verify', 'deploys the entire Lens Protocol with explorer verif
     ]);
 
     console.log('\n\t-- Deploying Hub Proxy --');
-
     let proxy = await deployWithVerify(
       new TransparentUpgradeableProxy__factory(deployer).deploy(
         lensHubImpl.address,
@@ -153,6 +153,7 @@ task('full-deploy-verify', 'deploys the entire Lens Protocol with explorer verif
     // Connect the hub proxy to the LensHub factory and the governance for ease of use.
     const lensHub = LensHub__factory.connect(proxy.address, governance);
 
+    console.log('\n\t-- Deploying Lens Periphery --');
     const lensPeriphery = await deployWithVerify(
       new LensPeriphery__factory(deployer).deploy(lensHub.address, {
         nonce: deployerNonce++,
@@ -251,6 +252,16 @@ task('full-deploy-verify', 'deploys the entire Lens Protocol with explorer verif
       'contracts/core/modules/reference/FollowerOnlyReferenceModule.sol:FollowerOnlyReferenceModule'
     );
 
+    // Deploy UIDataProvider
+    console.log('\n\t-- Deploying UI Data Provider --');
+    const uiDataProvider = await deployWithVerify(
+      new UIDataProvider__factory(deployer).deploy(lensHub.address, {
+        nonce: deployerNonce++,
+      }),
+      [lensHub.address],
+      'contracts/misc/UIDataProvider.sol:UIDataProvider'
+    );
+
     // Whitelist the collect modules
     console.log('\n\t-- Whitelisting Collect Modules --');
     let governanceNonce = await ethers.provider.getTransactionCount(governance.address);
@@ -313,7 +324,7 @@ task('full-deploy-verify', 'deploys the entire Lens Protocol with explorer verif
       'profile token URI logic lib': profileTokenURILogic.address,
       'follow NFT impl': followNFTImplAddress,
       'collect NFT impl': collectNFTImplAddress,
-      'periphery data provider': lensPeriphery.address,
+      'lens periphery': lensPeriphery.address,
       'module globals': moduleGlobals.address,
       'fee collect module': feeCollectModule.address,
       'limited fee collect module': limitedFeeCollectModule.address,
@@ -326,6 +337,7 @@ task('full-deploy-verify', 'deploys the entire Lens Protocol with explorer verif
       // --- COMMENTED OUT AS THIS IS NOT A LAUNCH MODULE ---
       // 'approval follow module': approvalFollowModule.address,
       'follower only reference module': followerOnlyReferenceModule.address,
+      'UI data provider': uiDataProvider.address,
     };
     const json = JSON.stringify(addrs, null, 2);
     console.log(json);
