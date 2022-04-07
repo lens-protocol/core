@@ -477,19 +477,6 @@ library Events {
     );
 
     /**
-     * @notice Emitted when a collect is successfully processed in a limited collect module.
-     *
-     * @param profileId The profile ID of the collected publication.
-     * @param pubId The publication ID of the collected publication.
-     * @param remainingCollects The remaining collects for the collected publication. 
-     */
-    event LimitedPubCollected(
-        uint256 indexed profileId,
-        uint256 indexed pubId,
-        uint256 remainingCollects
-    );
-
-    /**
      * @dev Emitted when the user wants to enable or disable follows in the `LensPeripheryDataProvider`.
      *
      * @param owner The profile owner who executed the toggle.
