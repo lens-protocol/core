@@ -320,7 +320,7 @@ task(
     'profile token URI logic lib': profileTokenURILogic.address,
     'follow NFT impl': followNFTImplAddress,
     'collect NFT impl': collectNFTImplAddress,
-    'periphery data provider': lensPeriphery.address,
+    'lens periphery': lensPeriphery.address,
     'module globals': moduleGlobals.address,
     'fee collect module': feeCollectModule.address,
     'limited fee collect module': limitedFeeCollectModule.address,
