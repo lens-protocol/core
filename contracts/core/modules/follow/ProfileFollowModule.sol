@@ -14,7 +14,7 @@ import {IERC721} from '@openzeppelin/contracts/token/ERC721/IERC721.sol';
  *
  * @notice This follow module only allows profiles that are not already following in the current revision to follow.
  */
-contract ProfileFollowModule is IFollowModule, FollowValidatorFollowModuleBase {
+contract ProfileFollowModule is FollowValidatorFollowModuleBase {
     mapping(uint256 => mapping(uint256 => mapping(uint256 => bool)))
         internal _isProfileFollowingByRevisionByProfile;
 

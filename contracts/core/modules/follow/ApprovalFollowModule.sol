@@ -15,7 +15,7 @@ import {IERC721} from '@openzeppelin/contracts/token/ERC721/IERC721.sol';
  *
  * @notice This follow module only allows addresses that are approved for a profile by the profile owner to follow.
  */
-contract ApprovalFollowModule is IFollowModule, FollowValidatorFollowModuleBase {
+contract ApprovalFollowModule is FollowValidatorFollowModuleBase {
     // We use a triple nested mapping so that, on profile transfer, the previous approved address list is invalid;
     mapping(address => mapping(uint256 => mapping(address => bool)))
         internal _approvedByProfileByOwner;

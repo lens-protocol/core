@@ -14,7 +14,7 @@ import {IERC721} from '@openzeppelin/contracts/token/ERC721/IERC721.sol';
  * @notice A simple reference module that validates that comments or mirrors originate from a profile owned
  * by a follower.
  */
-contract FollowerOnlyReferenceModule is IReferenceModule, FollowValidationModuleBase {
+contract FollowerOnlyReferenceModule is FollowValidationModuleBase, IReferenceModule {
     constructor(address hub) ModuleBase(hub) {}
 
     /**

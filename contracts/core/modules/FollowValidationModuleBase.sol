@@ -22,7 +22,7 @@ import {IERC721} from '@openzeppelin/contracts/token/ERC721/IERC721.sol';
  */
 abstract contract FollowValidationModuleBase is ModuleBase {
     /**
-     * @notice Validates wheter a given user is following a given profile.
+     * @notice Validates whether a given user is following a given profile.
      *
      * @dev It will revert if the user is not following the profile except the case when the user is the profile owner.
      *
