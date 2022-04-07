@@ -84,8 +84,7 @@ library PublishingLogic {
         DataTypes.ProfileStruct storage _profile,
         mapping(address => bool) storage _followModuleWhitelisted
     ) external {
-        address prevFollowModule = _profile.followModule;
-        if (followModule != prevFollowModule) {
+        if (followModule != _profile.followModule) {
             _profile.followModule = followModule;
         }
 
