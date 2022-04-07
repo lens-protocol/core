@@ -336,7 +336,7 @@ task(
     'timed fee collect module': timedFeeCollectModule.address,
     'limited timed fee collect module': limitedTimedFeeCollectModule.address,
     'revert collect module': revertCollectModule.address,
-    'empty collect module': freeCollectModule.address,
+    'free collect module': freeCollectModule.address,
     'fee follow module': feeFollowModule.address,
     'profile follow module': profileFollowModule.address,
     // --- COMMENTED OUT AS THIS IS NOT A LAUNCH MODULE ---
