@@ -54,7 +54,7 @@ library PublishingLogic {
         _profileById[profileId].imageURI = vars.imageURI;
         _profileById[profileId].followNFTURI = vars.followNFTURI;
 
-        bytes memory followModuleReturnData = new bytes(0);
+        bytes memory followModuleReturnData;
         if (vars.followModule != address(0)) {
             _profileById[profileId].followModule = vars.followModule;
             followModuleReturnData = _initFollowModule(
@@ -89,7 +89,7 @@ library PublishingLogic {
             _profile.followModule = followModule;
         }
 
-        bytes memory followModuleReturnData = new bytes(0);
+        bytes memory followModuleReturnData;
         if (followModule != address(0))
             followModuleReturnData = _initFollowModule(
                 profileId,
