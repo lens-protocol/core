@@ -36,7 +36,7 @@ makeSuiteCleanRoom('Publishing Posts', function () {
           handle: MOCK_PROFILE_HANDLE,
           imageURI: MOCK_PROFILE_URI,
           followModule: ZERO_ADDRESS,
-          followModuleData: [],
+          followModuleInitData: [],
           followNFTURI: MOCK_FOLLOW_NFT_URI,
         })
       ).to.not.be.reverted;
@@ -49,9 +49,9 @@ makeSuiteCleanRoom('Publishing Posts', function () {
             profileId: FIRST_PROFILE_ID,
             contentURI: MOCK_URI,
             collectModule: freeCollectModule.address,
-            collectModuleData: abiCoder.encode(['bool'], [true]),
+            collectModuleInitData: abiCoder.encode(['bool'], [true]),
             referenceModule: ZERO_ADDRESS,
-            referenceModuleData: [],
+            referenceModuleInitData: [],
           })
         ).to.be.revertedWith(ERRORS.NOT_PROFILE_OWNER_OR_DISPATCHER);
       });
@@ -62,9 +62,9 @@ makeSuiteCleanRoom('Publishing Posts', function () {
             profileId: FIRST_PROFILE_ID,
             contentURI: MOCK_URI,
             collectModule: freeCollectModule.address,
-            collectModuleData: abiCoder.encode(['bool'], [true]),
+            collectModuleInitData: abiCoder.encode(['bool'], [true]),
             referenceModule: ZERO_ADDRESS,
-            referenceModuleData: [],
+            referenceModuleInitData: [],
           })
         ).to.be.revertedWith(ERRORS.COLLECT_MODULE_NOT_WHITELISTED);
       });
@@ -79,9 +79,9 @@ makeSuiteCleanRoom('Publishing Posts', function () {
             profileId: FIRST_PROFILE_ID,
             contentURI: MOCK_URI,
             collectModule: freeCollectModule.address,
-            collectModuleData: abiCoder.encode(['bool'], [true]),
+            collectModuleInitData: abiCoder.encode(['bool'], [true]),
             referenceModule: userAddress,
-            referenceModuleData: [],
+            referenceModuleInitData: [],
           })
         ).to.be.revertedWith(ERRORS.REFERENCE_MODULE_NOT_WHITELISTED);
       });
@@ -96,9 +96,9 @@ makeSuiteCleanRoom('Publishing Posts', function () {
             profileId: FIRST_PROFILE_ID,
             contentURI: MOCK_URI,
             collectModule: timedFeeCollectModule.address,
-            collectModuleData: [0x12, 0x34],
+            collectModuleInitData: [0x12, 0x34],
             referenceModule: ZERO_ADDRESS,
-            referenceModuleData: [],
+            referenceModuleInitData: [],
           })
         ).to.be.revertedWith(ERRORS.NO_REASON_ABI_DECODE);
       });
@@ -117,9 +117,9 @@ makeSuiteCleanRoom('Publishing Posts', function () {
             profileId: FIRST_PROFILE_ID,
             contentURI: MOCK_URI,
             collectModule: freeCollectModule.address,
-            collectModuleData: abiCoder.encode(['bool'], [true]),
+            collectModuleInitData: abiCoder.encode(['bool'], [true]),
             referenceModule: mockReferenceModule.address,
-            referenceModuleData: [0x12, 0x23],
+            referenceModuleInitData: [0x12, 0x23],
           })
         ).to.be.revertedWith(ERRORS.NO_REASON_ABI_DECODE);
       });
@@ -137,7 +137,7 @@ makeSuiteCleanRoom('Publishing Posts', function () {
             handle: 'testwallet',
             imageURI: MOCK_PROFILE_URI,
             followModule: ZERO_ADDRESS,
-            followModuleData: [],
+            followModuleInitData: [],
             followNFTURI: MOCK_FOLLOW_NFT_URI,
           })
         ).to.not.be.reverted;
@@ -147,7 +147,7 @@ makeSuiteCleanRoom('Publishing Posts', function () {
             handle: 'usertwo',
             imageURI: MOCK_PROFILE_URI,
             followModule: ZERO_ADDRESS,
-            followModuleData: [],
+            followModuleInitData: [],
             followNFTURI: MOCK_FOLLOW_NFT_URI,
           })
         ).to.not.be.reverted;
@@ -158,9 +158,9 @@ makeSuiteCleanRoom('Publishing Posts', function () {
               profileId: FIRST_PROFILE_ID,
               contentURI: MOCK_URI,
               collectModule: freeCollectModule.address,
-              collectModuleData: abiCoder.encode(['bool'], [true]),
+              collectModuleInitData: abiCoder.encode(['bool'], [true]),
               referenceModule: ZERO_ADDRESS,
-              referenceModuleData: [],
+              referenceModuleInitData: [],
             },
           })
         ).to.eq(1);
@@ -172,23 +172,24 @@ makeSuiteCleanRoom('Publishing Posts', function () {
               profileId: FIRST_PROFILE_ID + 2,
               contentURI: MOCK_URI,
               collectModule: freeCollectModule.address,
-              collectModuleData: abiCoder.encode(['bool'], [true]),
+              collectModuleInitData: abiCoder.encode(['bool'], [true]),
               referenceModule: ZERO_ADDRESS,
-              referenceModuleData: [],
+              referenceModuleInitData: [],
             },
           })
         ).to.eq(1);
 
         const nonce = (await lensHub.sigNonces(testWallet.address)).toNumber();
-        const collectModuleData = abiCoder.encode(['bool'], [true]);
+        const collectModuleInitData = abiCoder.encode(['bool'], [true]);
+        const referenceModuleInitData = [];
         const referenceModuleData = [];
         const { v, r, s } = await getPostWithSigParts(
           FIRST_PROFILE_ID + 1,
           MOCK_URI,
           freeCollectModule.address,
-          collectModuleData,
+          collectModuleInitData,
           ZERO_ADDRESS,
-          referenceModuleData,
+          referenceModuleInitData,
           nonce,
           MAX_UINT256
         );
@@ -198,9 +199,9 @@ makeSuiteCleanRoom('Publishing Posts', function () {
               profileId: FIRST_PROFILE_ID + 1,
               contentURI: MOCK_URI,
               collectModule: freeCollectModule.address,
-              collectModuleData: collectModuleData,
+              collectModuleInitData: collectModuleInitData,
               referenceModule: ZERO_ADDRESS,
-              referenceModuleData: referenceModuleData,
+              referenceModuleInitData: referenceModuleInitData,
               sig: {
                 v,
                 r,
@@ -217,9 +218,9 @@ makeSuiteCleanRoom('Publishing Posts', function () {
               profileId: FIRST_PROFILE_ID,
               contentURI: MOCK_URI,
               collectModule: freeCollectModule.address,
-              collectModuleData: abiCoder.encode(['bool'], [true]),
+              collectModuleInitData: abiCoder.encode(['bool'], [true]),
               referenceModule: ZERO_ADDRESS,
-              referenceModuleData: [],
+              referenceModuleInitData: [],
             },
           })
         ).to.eq(2);
@@ -235,9 +236,9 @@ makeSuiteCleanRoom('Publishing Posts', function () {
             profileId: FIRST_PROFILE_ID,
             contentURI: MOCK_URI,
             collectModule: freeCollectModule.address,
-            collectModuleData: abiCoder.encode(['bool'], [true]),
+            collectModuleInitData: abiCoder.encode(['bool'], [true]),
             referenceModule: ZERO_ADDRESS,
-            referenceModuleData: [],
+            referenceModuleInitData: [],
           })
         ).to.not.be.reverted;
 
@@ -263,9 +264,9 @@ makeSuiteCleanRoom('Publishing Posts', function () {
             profileId: FIRST_PROFILE_ID,
             contentURI: MOCK_URI,
             collectModule: freeCollectModule.address,
-            collectModuleData: abiCoder.encode(['bool'], [true]),
+            collectModuleInitData: abiCoder.encode(['bool'], [true]),
             referenceModule: mockReferenceModule.address,
-            referenceModuleData: mockModuleData,
+            referenceModuleInitData: mockModuleData,
           })
         ).to.not.be.reverted;
       });
@@ -280,7 +281,7 @@ makeSuiteCleanRoom('Publishing Posts', function () {
           handle: MOCK_PROFILE_HANDLE,
           imageURI: MOCK_PROFILE_URI,
           followModule: ZERO_ADDRESS,
-          followModuleData: [],
+          followModuleInitData: [],
           followNFTURI: MOCK_FOLLOW_NFT_URI,
         })
       ).to.not.be.reverted;
@@ -293,16 +294,16 @@ makeSuiteCleanRoom('Publishing Posts', function () {
         ).to.not.be.reverted;
 
         const nonce = (await lensHub.sigNonces(testWallet.address)).toNumber();
-        const collectModuleData = [];
+        const collectModuleInitData = [];
+        const referenceModuleInitData = [];
         const referenceModuleData = [];
-
         const { v, r, s } = await getPostWithSigParts(
           FIRST_PROFILE_ID,
           MOCK_URI,
           ZERO_ADDRESS,
-          collectModuleData,
+          collectModuleInitData,
           ZERO_ADDRESS,
-          referenceModuleData,
+          referenceModuleInitData,
           nonce,
           '0'
         );
@@ -312,9 +313,9 @@ makeSuiteCleanRoom('Publishing Posts', function () {
             profileId: FIRST_PROFILE_ID,
             contentURI: MOCK_URI,
             collectModule: ZERO_ADDRESS,
-            collectModuleData: collectModuleData,
+            collectModuleInitData: collectModuleInitData,
             referenceModule: ZERO_ADDRESS,
-            referenceModuleData: referenceModuleData,
+            referenceModuleInitData: referenceModuleInitData,
             sig: {
               v,
               r,
@@ -331,16 +332,16 @@ makeSuiteCleanRoom('Publishing Posts', function () {
         ).to.not.be.reverted;
 
         const nonce = (await lensHub.sigNonces(testWallet.address)).toNumber();
-        const collectModuleData = [];
+        const collectModuleInitData = [];
+        const referenceModuleInitData = [];
         const referenceModuleData = [];
-
         const { v, r, s } = await getPostWithSigParts(
           FIRST_PROFILE_ID,
           MOCK_URI,
           ZERO_ADDRESS,
-          collectModuleData,
+          collectModuleInitData,
           ZERO_ADDRESS,
-          referenceModuleData,
+          referenceModuleInitData,
           nonce,
           '0'
         );
@@ -350,9 +351,9 @@ makeSuiteCleanRoom('Publishing Posts', function () {
             profileId: FIRST_PROFILE_ID,
             contentURI: MOCK_URI,
             collectModule: ZERO_ADDRESS,
-            collectModuleData: collectModuleData,
+            collectModuleInitData: collectModuleInitData,
             referenceModule: ZERO_ADDRESS,
-            referenceModuleData: referenceModuleData,
+            referenceModuleInitData: referenceModuleInitData,
             sig: {
               v,
               r,
@@ -369,16 +370,16 @@ makeSuiteCleanRoom('Publishing Posts', function () {
         ).to.not.be.reverted;
 
         const nonce = (await lensHub.sigNonces(testWallet.address)).toNumber();
-        const collectModuleData = [];
+        const collectModuleInitData = [];
+        const referenceModuleInitData = [];
         const referenceModuleData = [];
-
         const { v, r, s } = await getPostWithSigParts(
           FIRST_PROFILE_ID,
           MOCK_URI,
           ZERO_ADDRESS,
-          collectModuleData,
+          collectModuleInitData,
           ZERO_ADDRESS,
-          referenceModuleData,
+          referenceModuleInitData,
           nonce + 1,
           MAX_UINT256
         );
@@ -388,9 +389,9 @@ makeSuiteCleanRoom('Publishing Posts', function () {
             profileId: FIRST_PROFILE_ID,
             contentURI: MOCK_URI,
             collectModule: ZERO_ADDRESS,
-            collectModuleData: collectModuleData,
+            collectModuleInitData: collectModuleInitData,
             referenceModule: ZERO_ADDRESS,
-            referenceModuleData: referenceModuleData,
+            referenceModuleInitData: referenceModuleInitData,
             sig: {
               v,
               r,
@@ -403,16 +404,16 @@ makeSuiteCleanRoom('Publishing Posts', function () {
 
       it('Testwallet should fail to post with sig with an unwhitelisted collect module', async function () {
         const nonce = (await lensHub.sigNonces(testWallet.address)).toNumber();
-        const collectModuleData = [];
+        const collectModuleInitData = [];
+        const referenceModuleInitData = [];
         const referenceModuleData = [];
-
         const { v, r, s } = await getPostWithSigParts(
           FIRST_PROFILE_ID,
           MOCK_URI,
           userAddress,
-          collectModuleData,
+          collectModuleInitData,
           ZERO_ADDRESS,
-          referenceModuleData,
+          referenceModuleInitData,
           nonce,
           MAX_UINT256
         );
@@ -422,9 +423,9 @@ makeSuiteCleanRoom('Publishing Posts', function () {
             profileId: FIRST_PROFILE_ID,
             contentURI: MOCK_URI,
             collectModule: userAddress,
-            collectModuleData: collectModuleData,
+            collectModuleInitData: collectModuleInitData,
             referenceModule: ZERO_ADDRESS,
-            referenceModuleData: referenceModuleData,
+            referenceModuleInitData: referenceModuleInitData,
             sig: {
               v,
               r,
@@ -441,16 +442,16 @@ makeSuiteCleanRoom('Publishing Posts', function () {
         ).to.not.be.reverted;
 
         const nonce = (await lensHub.sigNonces(testWallet.address)).toNumber();
-        const collectModuleData = abiCoder.encode(['bool'], [true]);
+        const collectModuleInitData = abiCoder.encode(['bool'], [true]);
+        const referenceModuleInitData = [];
         const referenceModuleData = [];
-
         const { v, r, s } = await getPostWithSigParts(
           FIRST_PROFILE_ID,
           MOCK_URI,
           freeCollectModule.address,
-          collectModuleData,
+          collectModuleInitData,
           userAddress,
-          referenceModuleData,
+          referenceModuleInitData,
           nonce,
           MAX_UINT256
         );
@@ -460,9 +461,9 @@ makeSuiteCleanRoom('Publishing Posts', function () {
             profileId: FIRST_PROFILE_ID,
             contentURI: MOCK_URI,
             collectModule: freeCollectModule.address,
-            collectModuleData: collectModuleData,
+            collectModuleInitData: collectModuleInitData,
             referenceModule: userAddress,
-            referenceModuleData: referenceModuleData,
+            referenceModuleInitData: referenceModuleInitData,
             sig: {
               v,
               r,
@@ -479,16 +480,16 @@ makeSuiteCleanRoom('Publishing Posts', function () {
         ).to.not.be.reverted;
 
         const nonce = (await lensHub.sigNonces(testWallet.address)).toNumber();
-        const collectModuleData = abiCoder.encode(['bool'], [true]);
+        const collectModuleInitData = abiCoder.encode(['bool'], [true]);
+        const referenceModuleInitData = [];
         const referenceModuleData = [];
-
         const { v, r, s } = await getPostWithSigParts(
           FIRST_PROFILE_ID,
           MOCK_URI,
           freeCollectModule.address,
-          collectModuleData,
+          collectModuleInitData,
           ZERO_ADDRESS,
-          referenceModuleData,
+          referenceModuleInitData,
           nonce,
           MAX_UINT256
         );
@@ -500,9 +501,9 @@ makeSuiteCleanRoom('Publishing Posts', function () {
             profileId: FIRST_PROFILE_ID,
             contentURI: MOCK_URI,
             collectModule: freeCollectModule.address,
-            collectModuleData: collectModuleData,
+            collectModuleInitData: collectModuleInitData,
             referenceModule: ZERO_ADDRESS,
-            referenceModuleData: referenceModuleData,
+            referenceModuleInitData: referenceModuleInitData,
             sig: {
               v,
               r,
@@ -521,16 +522,16 @@ makeSuiteCleanRoom('Publishing Posts', function () {
         ).to.not.be.reverted;
 
         const nonce = (await lensHub.sigNonces(testWallet.address)).toNumber();
-        const collectModuleData = abiCoder.encode(['bool'], [true]);
+        const collectModuleInitData = abiCoder.encode(['bool'], [true]);
+        const referenceModuleInitData = [];
         const referenceModuleData = [];
-
         const { v, r, s } = await getPostWithSigParts(
           FIRST_PROFILE_ID,
           MOCK_URI,
           freeCollectModule.address,
-          collectModuleData,
+          collectModuleInitData,
           ZERO_ADDRESS,
-          referenceModuleData,
+          referenceModuleInitData,
           nonce,
           MAX_UINT256
         );
@@ -540,9 +541,9 @@ makeSuiteCleanRoom('Publishing Posts', function () {
             profileId: FIRST_PROFILE_ID,
             contentURI: MOCK_URI,
             collectModule: freeCollectModule.address,
-            collectModuleData: collectModuleData,
+            collectModuleInitData: collectModuleInitData,
             referenceModule: ZERO_ADDRESS,
-            referenceModuleData: referenceModuleData,
+            referenceModuleInitData: referenceModuleInitData,
             sig: {
               v,
               r,

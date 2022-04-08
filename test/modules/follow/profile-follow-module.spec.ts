@@ -56,7 +56,7 @@ makeSuiteCleanRoom('Profile Follow Module', function () {
             handle: MOCK_PROFILE_HANDLE,
             imageURI: MOCK_PROFILE_URI,
             followModule: profileFollowModule.address,
-            followModuleData: DEFAULT_INIT_DATA,
+            followModuleInitData: DEFAULT_INIT_DATA,
             followNFTURI: MOCK_FOLLOW_NFT_URI,
           })
         ).to.not.be.reverted;
@@ -89,7 +89,7 @@ makeSuiteCleanRoom('Profile Follow Module', function () {
             handle: 'usertwo',
             imageURI: MOCK_PROFILE_URI,
             followModule: ZERO_ADDRESS,
-            followModuleData: [],
+            followModuleInitData: [],
             followNFTURI: MOCK_FOLLOW_NFT_URI,
           })
         ).to.not.be.reverted;
@@ -108,7 +108,7 @@ makeSuiteCleanRoom('Profile Follow Module', function () {
             handle: 'user',
             imageURI: MOCK_PROFILE_URI,
             followModule: ZERO_ADDRESS,
-            followModuleData: [],
+            followModuleInitData: [],
             followNFTURI: MOCK_FOLLOW_NFT_URI,
           })
         ).to.not.be.reverted;
@@ -125,7 +125,7 @@ makeSuiteCleanRoom('Profile Follow Module', function () {
             handle: 'usertwo',
             imageURI: MOCK_PROFILE_URI,
             followModule: ZERO_ADDRESS,
-            followModuleData: [],
+            followModuleInitData: [],
             followNFTURI: MOCK_FOLLOW_NFT_URI,
           })
         ).to.not.be.reverted;
@@ -144,7 +144,7 @@ makeSuiteCleanRoom('Profile Follow Module', function () {
             handle: 'usertwo',
             imageURI: MOCK_PROFILE_URI,
             followModule: ZERO_ADDRESS,
-            followModuleData: [],
+            followModuleInitData: [],
             followNFTURI: MOCK_FOLLOW_NFT_URI,
           })
         ).to.not.be.reverted;
@@ -178,7 +178,7 @@ makeSuiteCleanRoom('Profile Follow Module', function () {
             handle: 'usertwo',
             imageURI: MOCK_PROFILE_URI,
             followModule: ZERO_ADDRESS,
-            followModuleData: [],
+            followModuleInitData: [],
             followNFTURI: MOCK_FOLLOW_NFT_URI,
           })
         ).to.not.be.reverted;
@@ -212,7 +212,7 @@ makeSuiteCleanRoom('Profile Follow Module', function () {
           handle: MOCK_PROFILE_HANDLE,
           imageURI: MOCK_PROFILE_URI,
           followModule: profileFollowModule.address,
-          followModuleData: DEFAULT_INIT_DATA,
+          followModuleInitData: DEFAULT_INIT_DATA,
           followNFTURI: MOCK_FOLLOW_NFT_URI,
         });
 
@@ -240,7 +240,7 @@ makeSuiteCleanRoom('Profile Follow Module', function () {
             handle: MOCK_PROFILE_HANDLE,
             imageURI: MOCK_PROFILE_URI,
             followModule: ZERO_ADDRESS,
-            followModuleData: [],
+            followModuleInitData: [],
             followNFTURI: MOCK_FOLLOW_NFT_URI,
           })
         ).to.not.be.reverted;
@@ -271,7 +271,7 @@ makeSuiteCleanRoom('Profile Follow Module', function () {
             handle: MOCK_PROFILE_HANDLE,
             imageURI: MOCK_PROFILE_URI,
             followModule: profileFollowModule.address,
-            followModuleData: DEFAULT_INIT_DATA,
+            followModuleInitData: DEFAULT_INIT_DATA,
             followNFTURI: MOCK_FOLLOW_NFT_URI,
           })
         ).to.not.be.reverted;
@@ -284,7 +284,7 @@ makeSuiteCleanRoom('Profile Follow Module', function () {
             handle: 'usertwo',
             imageURI: MOCK_PROFILE_URI,
             followModule: ZERO_ADDRESS,
-            followModuleData: [],
+            followModuleInitData: [],
             followNFTURI: MOCK_FOLLOW_NFT_URI,
           })
         ).to.not.be.reverted;
@@ -300,7 +300,7 @@ makeSuiteCleanRoom('Profile Follow Module', function () {
             handle: 'usertwo',
             imageURI: MOCK_PROFILE_URI,
             followModule: ZERO_ADDRESS,
-            followModuleData: [],
+            followModuleInitData: [],
             followNFTURI: MOCK_FOLLOW_NFT_URI,
           })
         ).to.not.be.reverted;
@@ -324,7 +324,7 @@ makeSuiteCleanRoom('Profile Follow Module', function () {
             handle: 'usertwo',
             imageURI: MOCK_PROFILE_URI,
             followModule: ZERO_ADDRESS,
-            followModuleData: [],
+            followModuleInitData: [],
             followNFTURI: MOCK_FOLLOW_NFT_URI,
           })
         ).to.not.be.reverted;
@@ -334,7 +334,7 @@ makeSuiteCleanRoom('Profile Follow Module', function () {
             handle: 'usertwo2',
             imageURI: MOCK_PROFILE_URI,
             followModule: ZERO_ADDRESS,
-            followModuleData: [],
+            followModuleInitData: [],
             followNFTURI: MOCK_FOLLOW_NFT_URI,
           })
         ).to.not.be.reverted;

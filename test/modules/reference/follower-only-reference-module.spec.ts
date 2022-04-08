@@ -33,7 +33,7 @@ makeSuiteCleanRoom('Follower Only Reference Module', function () {
         handle: MOCK_PROFILE_HANDLE,
         imageURI: MOCK_PROFILE_URI,
         followModule: ZERO_ADDRESS,
-        followModuleData: [],
+        followModuleInitData: [],
         followNFTURI: MOCK_FOLLOW_NFT_URI,
       })
     ).to.not.be.reverted;
@@ -43,7 +43,7 @@ makeSuiteCleanRoom('Follower Only Reference Module', function () {
         handle: 'user2',
         imageURI: MOCK_PROFILE_URI,
         followModule: ZERO_ADDRESS,
-        followModuleData: [],
+        followModuleInitData: [],
         followNFTURI: MOCK_FOLLOW_NFT_URI,
       })
     ).to.not.be.reverted;
@@ -60,9 +60,9 @@ makeSuiteCleanRoom('Follower Only Reference Module', function () {
         profileId: FIRST_PROFILE_ID,
         contentURI: MOCK_URI,
         collectModule: freeCollectModule.address,
-        collectModuleData: abiCoder.encode(['bool'], [true]),
+        collectModuleInitData: abiCoder.encode(['bool'], [true]),
         referenceModule: followerOnlyReferenceModule.address,
-        referenceModuleData: [],
+        referenceModuleInitData: [],
       })
     ).to.not.be.reverted;
   });
@@ -78,9 +78,10 @@ makeSuiteCleanRoom('Follower Only Reference Module', function () {
             profileIdPointed: FIRST_PROFILE_ID,
             pubIdPointed: 1,
             collectModule: freeCollectModule.address,
-            collectModuleData: abiCoder.encode(['bool'], [true]),
-            referenceModule: ZERO_ADDRESS,
+            collectModuleInitData: abiCoder.encode(['bool'], [true]),
             referenceModuleData: [],
+            referenceModule: ZERO_ADDRESS,
+            referenceModuleInitData: [],
           })
         ).to.be.revertedWith(ERRORS.FOLLOW_INVALID);
       });
@@ -103,9 +104,10 @@ makeSuiteCleanRoom('Follower Only Reference Module', function () {
             profileIdPointed: FIRST_PROFILE_ID,
             pubIdPointed: 1,
             collectModule: freeCollectModule.address,
-            collectModuleData: abiCoder.encode(['bool'], [true]),
-            referenceModule: ZERO_ADDRESS,
+            collectModuleInitData: abiCoder.encode(['bool'], [true]),
             referenceModuleData: [],
+            referenceModule: ZERO_ADDRESS,
+            referenceModuleInitData: [],
           })
         ).to.be.revertedWith(ERRORS.FOLLOW_INVALID);
       });
@@ -118,8 +120,9 @@ makeSuiteCleanRoom('Follower Only Reference Module', function () {
             profileId: SECOND_PROFILE_ID,
             profileIdPointed: FIRST_PROFILE_ID,
             pubIdPointed: 1,
-            referenceModule: ZERO_ADDRESS,
             referenceModuleData: [],
+            referenceModule: ZERO_ADDRESS,
+            referenceModuleInitData: [],
           })
         ).to.be.revertedWith(ERRORS.FOLLOW_INVALID);
       });
@@ -140,8 +143,9 @@ makeSuiteCleanRoom('Follower Only Reference Module', function () {
             profileId: SECOND_PROFILE_ID,
             profileIdPointed: FIRST_PROFILE_ID,
             pubIdPointed: 1,
-            referenceModule: ZERO_ADDRESS,
             referenceModuleData: [],
+            referenceModule: ZERO_ADDRESS,
+            referenceModuleInitData: [],
           })
         ).to.be.revertedWith(ERRORS.FOLLOW_INVALID);
       });
@@ -155,9 +159,9 @@ makeSuiteCleanRoom('Follower Only Reference Module', function () {
           profileId: FIRST_PROFILE_ID,
           contentURI: MOCK_URI,
           collectModule: freeCollectModule.address,
-          collectModuleData: abiCoder.encode(['bool'], [true]),
+          collectModuleInitData: abiCoder.encode(['bool'], [true]),
           referenceModule: followerOnlyReferenceModule.address,
-          referenceModuleData: [],
+          referenceModuleInitData: [],
         });
         const receipt = await waitForTx(tx);
 
@@ -190,9 +194,10 @@ makeSuiteCleanRoom('Follower Only Reference Module', function () {
             profileIdPointed: FIRST_PROFILE_ID,
             pubIdPointed: 1,
             collectModule: freeCollectModule.address,
-            collectModuleData: abiCoder.encode(['bool'], [true]),
-            referenceModule: ZERO_ADDRESS,
+            collectModuleInitData: abiCoder.encode(['bool'], [true]),
             referenceModuleData: [],
+            referenceModule: ZERO_ADDRESS,
+            referenceModuleInitData: [],
           })
         ).to.not.be.reverted;
       });
@@ -210,10 +215,11 @@ makeSuiteCleanRoom('Follower Only Reference Module', function () {
             contentURI: MOCK_URI,
             profileIdPointed: FIRST_PROFILE_ID,
             pubIdPointed: 1,
-            collectModule: freeCollectModule.address,
-            collectModuleData: abiCoder.encode(['bool'], [true]),
-            referenceModule: ZERO_ADDRESS,
             referenceModuleData: [],
+            collectModule: freeCollectModule.address,
+            collectModuleInitData: abiCoder.encode(['bool'], [true]),
+            referenceModule: ZERO_ADDRESS,
+            referenceModuleInitData: [],
           })
         ).to.not.be.reverted;
       });
@@ -225,10 +231,11 @@ makeSuiteCleanRoom('Follower Only Reference Module', function () {
             contentURI: MOCK_URI,
             profileIdPointed: FIRST_PROFILE_ID,
             pubIdPointed: 1,
-            collectModule: freeCollectModule.address,
-            collectModuleData: abiCoder.encode(['bool'], [true]),
-            referenceModule: ZERO_ADDRESS,
             referenceModuleData: [],
+            collectModule: freeCollectModule.address,
+            collectModuleInitData: abiCoder.encode(['bool'], [true]),
+            referenceModule: ZERO_ADDRESS,
+            referenceModuleInitData: [],
           })
         ).to.not.be.reverted;
       });
@@ -248,10 +255,11 @@ makeSuiteCleanRoom('Follower Only Reference Module', function () {
             contentURI: MOCK_URI,
             profileIdPointed: FIRST_PROFILE_ID,
             pubIdPointed: 1,
-            collectModule: freeCollectModule.address,
-            collectModuleData: abiCoder.encode(['bool'], [true]),
-            referenceModule: ZERO_ADDRESS,
             referenceModuleData: [],
+            collectModule: freeCollectModule.address,
+            collectModuleInitData: abiCoder.encode(['bool'], [true]),
+            referenceModule: ZERO_ADDRESS,
+            referenceModuleInitData: [],
           })
         ).to.not.be.reverted;
       });
@@ -276,9 +284,10 @@ makeSuiteCleanRoom('Follower Only Reference Module', function () {
             profileIdPointed: FIRST_PROFILE_ID,
             pubIdPointed: 1,
             collectModule: freeCollectModule.address,
-            collectModuleData: abiCoder.encode(['bool'], [true]),
-            referenceModule: ZERO_ADDRESS,
+            collectModuleInitData: abiCoder.encode(['bool'], [true]),
             referenceModuleData: [],
+            referenceModule: ZERO_ADDRESS,
+            referenceModuleInitData: [],
           })
         ).to.not.be.reverted;
       });
@@ -297,8 +306,9 @@ makeSuiteCleanRoom('Follower Only Reference Module', function () {
             profileId: SECOND_PROFILE_ID,
             profileIdPointed: FIRST_PROFILE_ID,
             pubIdPointed: 1,
-            referenceModule: ZERO_ADDRESS,
             referenceModuleData: [],
+            referenceModule: ZERO_ADDRESS,
+            referenceModuleInitData: [],
           })
         ).to.not.be.reverted;
       });
@@ -321,8 +331,9 @@ makeSuiteCleanRoom('Follower Only Reference Module', function () {
             profileId: SECOND_PROFILE_ID,
             profileIdPointed: FIRST_PROFILE_ID,
             pubIdPointed: 1,
-            referenceModule: ZERO_ADDRESS,
             referenceModuleData: [],
+            referenceModule: ZERO_ADDRESS,
+            referenceModuleInitData: [],
           })
         ).to.not.be.reverted;
       });
@@ -339,8 +350,9 @@ makeSuiteCleanRoom('Follower Only Reference Module', function () {
             profileId: FIRST_PROFILE_ID,
             profileIdPointed: FIRST_PROFILE_ID,
             pubIdPointed: 1,
-            referenceModule: ZERO_ADDRESS,
             referenceModuleData: [],
+            referenceModule: ZERO_ADDRESS,
+            referenceModuleInitData: [],
           })
         ).to.not.be.reverted;
       });
@@ -351,8 +363,9 @@ makeSuiteCleanRoom('Follower Only Reference Module', function () {
             profileId: FIRST_PROFILE_ID,
             profileIdPointed: FIRST_PROFILE_ID,
             pubIdPointed: 1,
-            referenceModule: ZERO_ADDRESS,
             referenceModuleData: [],
+            referenceModule: ZERO_ADDRESS,
+            referenceModuleInitData: [],
           })
         ).to.not.be.reverted;
       });
@@ -371,8 +384,9 @@ makeSuiteCleanRoom('Follower Only Reference Module', function () {
             profileId: FIRST_PROFILE_ID,
             profileIdPointed: FIRST_PROFILE_ID,
             pubIdPointed: 1,
-            referenceModule: ZERO_ADDRESS,
             referenceModuleData: [],
+            referenceModule: ZERO_ADDRESS,
+            referenceModuleInitData: [],
           })
         ).to.not.be.reverted;
       });

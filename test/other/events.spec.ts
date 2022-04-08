@@ -230,7 +230,7 @@ makeSuiteCleanRoom('Events', function () {
           handle: MOCK_PROFILE_HANDLE,
           imageURI: MOCK_PROFILE_URI,
           followModule: ZERO_ADDRESS,
-          followModuleData: [],
+          followModuleInitData: [],
           followNFTURI: MOCK_FOLLOW_NFT_URI,
         })
       );
@@ -243,7 +243,7 @@ makeSuiteCleanRoom('Events', function () {
           handle: MOCK_PROFILE_HANDLE,
           imageURI: MOCK_PROFILE_URI,
           followModule: ZERO_ADDRESS,
-          followModuleData: [],
+          followModuleInitData: [],
           followNFTURI: MOCK_FOLLOW_NFT_URI,
         })
       );
@@ -275,7 +275,7 @@ makeSuiteCleanRoom('Events', function () {
           handle: MOCK_PROFILE_HANDLE,
           imageURI: MOCK_PROFILE_URI,
           followModule: ZERO_ADDRESS,
-          followModuleData: [],
+          followModuleInitData: [],
           followNFTURI: MOCK_FOLLOW_NFT_URI,
         })
       );
@@ -336,9 +336,9 @@ makeSuiteCleanRoom('Events', function () {
           profileId: FIRST_PROFILE_ID,
           contentURI: MOCK_URI,
           collectModule: freeCollectModule.address,
-          collectModuleData: abiCoder.encode(['bool'], [true]),
+          collectModuleInitData: abiCoder.encode(['bool'], [true]),
           referenceModule: ZERO_ADDRESS,
-          referenceModuleData: [],
+          referenceModuleInitData: [],
         })
       );
 
@@ -366,9 +366,9 @@ makeSuiteCleanRoom('Events', function () {
           profileId: FIRST_PROFILE_ID,
           contentURI: MOCK_URI,
           collectModule: freeCollectModule.address,
-          collectModuleData: abiCoder.encode(['bool'], [true]),
+          collectModuleInitData: abiCoder.encode(['bool'], [true]),
           referenceModule: ZERO_ADDRESS,
-          referenceModuleData: [],
+          referenceModuleInitData: [],
         })
       );
 
@@ -378,10 +378,11 @@ makeSuiteCleanRoom('Events', function () {
           contentURI: MOCK_URI,
           profileIdPointed: FIRST_PROFILE_ID,
           pubIdPointed: 1,
-          collectModule: freeCollectModule.address,
-          collectModuleData: abiCoder.encode(['bool'], [true]),
-          referenceModule: ZERO_ADDRESS,
           referenceModuleData: [],
+          collectModule: freeCollectModule.address,
+          collectModuleInitData: abiCoder.encode(['bool'], [true]),
+          referenceModule: ZERO_ADDRESS,
+          referenceModuleInitData: [],
         })
       );
 
@@ -393,6 +394,7 @@ makeSuiteCleanRoom('Events', function () {
         MOCK_URI,
         FIRST_PROFILE_ID,
         1,
+        [],
         freeCollectModule.address,
         abiCoder.encode(['bool'], [true]),
         ZERO_ADDRESS,
@@ -412,9 +414,9 @@ makeSuiteCleanRoom('Events', function () {
           profileId: FIRST_PROFILE_ID,
           contentURI: MOCK_URI,
           collectModule: freeCollectModule.address,
-          collectModuleData: abiCoder.encode(['bool'], [true]),
+          collectModuleInitData: abiCoder.encode(['bool'], [true]),
           referenceModule: ZERO_ADDRESS,
-          referenceModuleData: [],
+          referenceModuleInitData: [],
         })
       );
 
@@ -423,8 +425,9 @@ makeSuiteCleanRoom('Events', function () {
           profileId: FIRST_PROFILE_ID,
           profileIdPointed: FIRST_PROFILE_ID,
           pubIdPointed: 1,
-          referenceModule: ZERO_ADDRESS,
           referenceModuleData: [],
+          referenceModule: ZERO_ADDRESS,
+          referenceModuleInitData: [],
         })
       );
 
@@ -435,6 +438,7 @@ makeSuiteCleanRoom('Events', function () {
         2,
         FIRST_PROFILE_ID,
         1,
+        [],
         ZERO_ADDRESS,
         [],
         await getTimestamp(),
@@ -485,7 +489,7 @@ makeSuiteCleanRoom('Events', function () {
       ).to.not.be.reverted;
 
       const collectPrice = 1;
-      const collectModuleData = abiCoder.encode(
+      const collectModuleInitData = abiCoder.encode(
         ['uint256', 'address', 'address', 'uint16', 'bool'],
         [collectPrice, currency.address, userAddress, 0, true]
       );
@@ -494,9 +498,9 @@ makeSuiteCleanRoom('Events', function () {
           profileId: FIRST_PROFILE_ID,
           contentURI: MOCK_URI,
           collectModule: feeCollectModule.address,
-          collectModuleData: collectModuleData,
+          collectModuleInitData: collectModuleInitData,
           referenceModule: ZERO_ADDRESS,
-          referenceModuleData: [],
+          referenceModuleInitData: [],
         })
       );
 
@@ -553,7 +557,7 @@ makeSuiteCleanRoom('Events', function () {
       ).to.not.be.reverted;
 
       const collectPrice = 1;
-      const collectModuleData = abiCoder.encode(
+      const collectModuleInitData = abiCoder.encode(
         ['uint256', 'address', 'address', 'uint16', 'bool'],
         [collectPrice, currency.address, userAddress, 0, true]
       );
@@ -562,9 +566,9 @@ makeSuiteCleanRoom('Events', function () {
           profileId: FIRST_PROFILE_ID,
           contentURI: MOCK_URI,
           collectModule: feeCollectModule.address,
-          collectModuleData: collectModuleData,
+          collectModuleInitData: collectModuleInitData,
           referenceModule: ZERO_ADDRESS,
-          referenceModuleData: [],
+          referenceModuleInitData: [],
         })
       );
 
@@ -576,7 +580,7 @@ makeSuiteCleanRoom('Events', function () {
           handle: 'usertwo',
           imageURI: MOCK_PROFILE_URI,
           followModule: ZERO_ADDRESS,
-          followModuleData: [],
+          followModuleInitData: [],
           followNFTURI: MOCK_FOLLOW_NFT_URI,
         })
       );
@@ -586,8 +590,9 @@ makeSuiteCleanRoom('Events', function () {
           profileId: secondProfileId,
           profileIdPointed: FIRST_PROFILE_ID,
           pubIdPointed: 1,
-          referenceModule: ZERO_ADDRESS,
           referenceModuleData: [],
+          referenceModule: ZERO_ADDRESS,
+          referenceModuleInitData: [],
         })
       );
 

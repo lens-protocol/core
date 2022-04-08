@@ -32,7 +32,7 @@ makeSuiteCleanRoom('Profile Creation', function () {
             handle: val,
             imageURI: MOCK_PROFILE_URI,
             followModule: ZERO_ADDRESS,
-            followModuleData: [],
+            followModuleInitData: [],
             followNFTURI: MOCK_FOLLOW_NFT_URI,
           })
         ).to.be.revertedWith(ERRORS.INVALID_HANDLE_LENGTH);
@@ -45,7 +45,7 @@ makeSuiteCleanRoom('Profile Creation', function () {
             handle: '',
             imageURI: MOCK_PROFILE_URI,
             followModule: ZERO_ADDRESS,
-            followModuleData: [],
+            followModuleInitData: [],
             followNFTURI: MOCK_FOLLOW_NFT_URI,
           })
         ).to.be.revertedWith(ERRORS.INVALID_HANDLE_LENGTH);
@@ -58,7 +58,7 @@ makeSuiteCleanRoom('Profile Creation', function () {
             handle: 'Egg',
             imageURI: MOCK_PROFILE_URI,
             followModule: ZERO_ADDRESS,
-            followModuleData: [],
+            followModuleInitData: [],
             followNFTURI: MOCK_FOLLOW_NFT_URI,
           })
         ).to.be.revertedWith(ERRORS.HANDLE_CONTAINS_INVALID_CHARACTERS);
@@ -71,7 +71,7 @@ makeSuiteCleanRoom('Profile Creation', function () {
             handle: 'egg?',
             imageURI: MOCK_PROFILE_URI,
             followModule: ZERO_ADDRESS,
-            followModuleData: [],
+            followModuleInitData: [],
             followNFTURI: MOCK_FOLLOW_NFT_URI,
           })
         ).to.be.revertedWith(ERRORS.HANDLE_CONTAINS_INVALID_CHARACTERS);
@@ -84,7 +84,7 @@ makeSuiteCleanRoom('Profile Creation', function () {
             handle: MOCK_PROFILE_HANDLE,
             imageURI: MOCK_PROFILE_URI,
             followModule: userAddress,
-            followModuleData: [],
+            followModuleInitData: [],
             followNFTURI: MOCK_FOLLOW_NFT_URI,
           })
         ).to.be.revertedWith(ERRORS.FOLLOW_MODULE_NOT_WHITELISTED);
@@ -101,7 +101,7 @@ makeSuiteCleanRoom('Profile Creation', function () {
             handle: MOCK_PROFILE_HANDLE,
             imageURI: MOCK_PROFILE_URI,
             followModule: mockFollowModule.address,
-            followModuleData: [0x12, 0x34],
+            followModuleInitData: [0x12, 0x34],
             followNFTURI: MOCK_FOLLOW_NFT_URI,
           })
         ).to.be.revertedWith(ERRORS.NO_REASON_ABI_DECODE);
@@ -118,7 +118,7 @@ makeSuiteCleanRoom('Profile Creation', function () {
             handle: MOCK_PROFILE_HANDLE,
             imageURI: MOCK_PROFILE_URI,
             followModule: ZERO_ADDRESS,
-            followModuleData: [],
+            followModuleInitData: [],
             followNFTURI: MOCK_FOLLOW_NFT_URI,
           })
         ).to.be.revertedWith(ERRORS.PROFILE_CREATOR_NOT_WHITELISTED);
@@ -141,7 +141,7 @@ makeSuiteCleanRoom('Profile Creation', function () {
               handle: MOCK_PROFILE_HANDLE,
               imageURI: MOCK_PROFILE_URI,
               followModule: ZERO_ADDRESS,
-              followModuleData: [],
+              followModuleInitData: [],
               followNFTURI: MOCK_FOLLOW_NFT_URI,
             },
           })
@@ -170,7 +170,7 @@ makeSuiteCleanRoom('Profile Creation', function () {
               handle: secondProfileHandle,
               imageURI: MOCK_PROFILE_URI,
               followModule: ZERO_ADDRESS,
-              followModuleData: [],
+              followModuleInitData: [],
               followNFTURI: MOCK_FOLLOW_NFT_URI,
             },
           })
@@ -198,7 +198,7 @@ makeSuiteCleanRoom('Profile Creation', function () {
               handle: 'token.id_1',
               imageURI: MOCK_PROFILE_URI,
               followModule: ZERO_ADDRESS,
-              followModuleData: [],
+              followModuleInitData: [],
               followNFTURI: MOCK_FOLLOW_NFT_URI,
             },
           })
@@ -213,7 +213,7 @@ makeSuiteCleanRoom('Profile Creation', function () {
               handle: 'token.id_2',
               imageURI: MOCK_PROFILE_URI,
               followModule: ZERO_ADDRESS,
-              followModuleData: [],
+              followModuleInitData: [],
               followNFTURI: MOCK_FOLLOW_NFT_URI,
             },
           })
@@ -227,7 +227,7 @@ makeSuiteCleanRoom('Profile Creation', function () {
               handle: 'token.id_3',
               imageURI: MOCK_PROFILE_URI,
               followModule: ZERO_ADDRESS,
-              followModuleData: [],
+              followModuleInitData: [],
               followNFTURI: MOCK_FOLLOW_NFT_URI,
             },
           })
@@ -241,7 +241,7 @@ makeSuiteCleanRoom('Profile Creation', function () {
             handle: 'morse--__-_--code',
             imageURI: MOCK_PROFILE_URI,
             followModule: ZERO_ADDRESS,
-            followModuleData: [],
+            followModuleInitData: [],
             followNFTURI: MOCK_FOLLOW_NFT_URI,
           })
         ).to.not.be.reverted;
@@ -254,7 +254,7 @@ makeSuiteCleanRoom('Profile Creation', function () {
             handle: '123456789012345',
             imageURI: MOCK_PROFILE_URI,
             followModule: ZERO_ADDRESS,
-            followModuleData: [],
+            followModuleInitData: [],
             followNFTURI: MOCK_FOLLOW_NFT_URI,
           })
         ).to.not.be.reverted;
@@ -264,7 +264,7 @@ makeSuiteCleanRoom('Profile Creation', function () {
             handle: '123456789012345',
             imageURI: MOCK_PROFILE_URI,
             followModule: ZERO_ADDRESS,
-            followModuleData: [],
+            followModuleInitData: [],
             followNFTURI: MOCK_FOLLOW_NFT_URI,
           })
         ).to.be.revertedWith(ERRORS.PROFILE_HANDLE_TAKEN);
@@ -274,7 +274,7 @@ makeSuiteCleanRoom('Profile Creation', function () {
             handle: 'abcdefghijklmno',
             imageURI: MOCK_PROFILE_URI,
             followModule: ZERO_ADDRESS,
-            followModuleData: [],
+            followModuleInitData: [],
             followNFTURI: MOCK_FOLLOW_NFT_URI,
           })
         ).to.not.be.reverted;
@@ -291,7 +291,7 @@ makeSuiteCleanRoom('Profile Creation', function () {
             handle: MOCK_PROFILE_HANDLE,
             imageURI: MOCK_PROFILE_URI,
             followModule: mockFollowModule.address,
-            followModuleData: mockModuleData,
+            followModuleInitData: mockModuleData,
             followNFTURI: MOCK_FOLLOW_NFT_URI,
           })
         ).to.not.be.reverted;
@@ -304,7 +304,7 @@ makeSuiteCleanRoom('Profile Creation', function () {
             handle: MOCK_PROFILE_HANDLE,
             imageURI: MOCK_PROFILE_URI,
             followModule: ZERO_ADDRESS,
-            followModuleData: [],
+            followModuleInitData: [],
             followNFTURI: MOCK_FOLLOW_NFT_URI,
           })
         ).to.not.be.reverted;
