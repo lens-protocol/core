@@ -127,7 +127,14 @@ library InteractionLogic {
             rootPubId,
             collectModuleData
         );
-        _emitCollectedEvent(collector, profileId, pubId, rootProfileId, rootPubId);
+        _emitCollectedEvent(
+            collector,
+            profileId,
+            pubId,
+            rootProfileId,
+            rootPubId,
+            collectModuleData
+        );
 
         return tokenId;
     }
@@ -206,13 +213,15 @@ library InteractionLogic {
      * @param pubId The publication ID that the collect was initiated towards, useful to differentiate mirrors.
      * @param rootProfileId The profile token ID of the profile whose publication is being collected.
      * @param rootPubId The publication ID of the publication being collected.
+     * @param data The data passed to the collect module.
      */
     function _emitCollectedEvent(
         address collector,
         uint256 profileId,
         uint256 pubId,
         uint256 rootProfileId,
-        uint256 rootPubId
+        uint256 rootPubId,
+        bytes calldata data
     ) private {
         emit Events.Collected(
             collector,
@@ -220,6 +229,7 @@ library InteractionLogic {
             pubId,
             rootProfileId,
             rootPubId,
+            data,
             block.timestamp
         );
     }

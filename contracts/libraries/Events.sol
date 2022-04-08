@@ -303,6 +303,7 @@ library Events {
      * @param pubId The publication ID that the collect was initiated towards, useful to differentiate mirrors.
      * @param rootProfileId The profile token ID of the profile whose publication is being collected.
      * @param rootPubId The publication ID of the publication being collected.
+     * @param data The data passed to the collect module.
      * @param timestamp The current block timestamp.
      */
     event Collected(
@@ -311,6 +312,7 @@ library Events {
         uint256 indexed pubId,
         uint256 rootProfileId,
         uint256 rootPubId,
+        bytes data,
         uint256 timestamp
     );
 

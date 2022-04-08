@@ -503,6 +503,7 @@ makeSuiteCleanRoom('Events', function () {
         1,
         FIRST_PROFILE_ID,
         1,
+        [],
         await getTimestamp(),
       ]);
       matchEvent(receipt, 'BaseInitialized', [expectedName, expectedSymbol, await getTimestamp()]);
@@ -578,6 +579,7 @@ makeSuiteCleanRoom('Events', function () {
         1,
         FIRST_PROFILE_ID,
         1,
+        [],
         await getTimestamp(),
       ]);
       matchEvent(receipt, 'BaseInitialized', [expectedName, expectedSymbol, await getTimestamp()]);
