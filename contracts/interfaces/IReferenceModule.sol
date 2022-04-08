@@ -30,11 +30,13 @@ interface IReferenceModule {
      * @param profileId The token ID of the profile associated with the publication being published.
      * @param profileIdPointed The profile ID of the profile associated the publication being referenced.
      * @param pubIdPointed The publication ID of the publication being referenced.
+     * @param data Arbitrary data __passed from the commenter!__ to be decoded.
      */
     function processComment(
         uint256 profileId,
         uint256 profileIdPointed,
-        uint256 pubIdPointed
+        uint256 pubIdPointed,
+        bytes calldata data
     ) external;
 
     /**
@@ -43,10 +45,12 @@ interface IReferenceModule {
      * @param profileId The token ID of the profile associated with the publication being published.
      * @param profileIdPointed The profile ID of the profile associated the publication being referenced.
      * @param pubIdPointed The publication ID of the publication being referenced.
+     * @param data Arbitrary data __passed from the mirrorer!__ to be decoded.
      */
     function processMirror(
         uint256 profileId,
         uint256 profileIdPointed,
-        uint256 pubIdPointed
+        uint256 pubIdPointed,
+        bytes calldata data
     ) external;
 }

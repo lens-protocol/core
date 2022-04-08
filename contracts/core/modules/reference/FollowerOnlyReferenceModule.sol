@@ -36,7 +36,8 @@ contract FollowerOnlyReferenceModule is FollowValidationModuleBase, IReferenceMo
     function processComment(
         uint256 profileId,
         uint256 profileIdPointed,
-        uint256 pubIdPointed
+        uint256 pubIdPointed,
+        bytes calldata data
     ) external view override {
         address commentCreator = IERC721(HUB).ownerOf(profileId);
         _checkFollowValidity(profileIdPointed, commentCreator);
@@ -50,7 +51,8 @@ contract FollowerOnlyReferenceModule is FollowValidationModuleBase, IReferenceMo
     function processMirror(
         uint256 profileId,
         uint256 profileIdPointed,
-        uint256 pubIdPointed
+        uint256 pubIdPointed,
+        bytes calldata data
     ) external view override {
         address mirrorCreator = IERC721(HUB).ownerOf(profileId);
         _checkFollowValidity(profileIdPointed, mirrorCreator);

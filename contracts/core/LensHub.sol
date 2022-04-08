@@ -435,10 +435,11 @@ contract LensHub is LensNFTBase, VersionedInitializable, LensMultiState, LensHub
                             keccak256(bytes(vars.contentURI)),
                             vars.profileIdPointed,
                             vars.pubIdPointed,
-                            vars.collectModule,
-                            keccak256(vars.collectModuleData),
-                            vars.referenceModule,
                             keccak256(vars.referenceModuleData),
+                            vars.collectModule,
+                            keccak256(vars.collectModuleInitData),
+                            vars.referenceModule,
+                            keccak256(vars.referenceModuleInitData),
                             sigNonces[owner]++,
                             vars.sig.deadline
                         )
@@ -455,10 +456,11 @@ contract LensHub is LensNFTBase, VersionedInitializable, LensMultiState, LensHub
                     vars.contentURI,
                     vars.profileIdPointed,
                     vars.pubIdPointed,
+                    vars.referenceModuleData,
                     vars.collectModule,
-                    vars.collectModuleData,
+                    vars.collectModuleInitData,
                     vars.referenceModule,
-                    vars.referenceModuleData
+                    vars.referenceModuleInitData
                 )
             );
     }
@@ -471,14 +473,7 @@ contract LensHub is LensNFTBase, VersionedInitializable, LensMultiState, LensHub
         returns (uint256)
     {
         _validateCallerIsProfileOwnerOrDispatcher(vars.profileId);
-        return
-            _createMirror(
-                vars.profileId,
-                vars.profileIdPointed,
-                vars.pubIdPointed,
-                vars.referenceModule,
-                vars.referenceModuleData
-            );
+        return _createMirror(vars);
     }
 
     /// @inheritdoc ILensHub
@@ -498,8 +493,9 @@ contract LensHub is LensNFTBase, VersionedInitializable, LensMultiState, LensHub
                             vars.profileId,
                             vars.profileIdPointed,
                             vars.pubIdPointed,
-                            vars.referenceModule,
                             keccak256(vars.referenceModuleData),
+                            vars.referenceModule,
+                            keccak256(vars.referenceModuleInitData),
                             sigNonces[owner]++,
                             vars.sig.deadline
                         )
@@ -511,11 +507,14 @@ contract LensHub is LensNFTBase, VersionedInitializable, LensMultiState, LensHub
         }
         return
             _createMirror(
-                vars.profileId,
-                vars.profileIdPointed,
-                vars.pubIdPointed,
-                vars.referenceModule,
-                vars.referenceModuleData
+                DataTypes.MirrorData(
+                    vars.profileId,
+                    vars.profileIdPointed,
+                    vars.pubIdPointed,
+                    vars.referenceModuleData,
+                    vars.referenceModule,
+                    vars.referenceModuleInitData
+                )
             );
     }
 
@@ -958,21 +957,11 @@ contract LensHub is LensNFTBase, VersionedInitializable, LensMultiState, LensHub
         }
     }
 
-    function _createMirror(
-        uint256 profileId,
-        uint256 profileIdPointed,
-        uint256 pubIdPointed,
-        address referenceModule,
-        bytes calldata referenceModuleData
-    ) internal returns (uint256) {
+    function _createMirror(DataTypes.MirrorData memory vars) internal returns (uint256) {
         unchecked {
-            uint256 pubId = ++_profileById[profileId].pubCount;
+            uint256 pubId = ++_profileById[vars.profileId].pubCount;
             PublishingLogic.createMirror(
-                profileId,
-                profileIdPointed,
-                pubIdPointed,
-                referenceModule,
-                referenceModuleData,
+                vars,
                 pubId,
                 _pubByIdByProfile,
                 _referenceModuleWhitelisted
