@@ -95,6 +95,10 @@ export function matchEvent(
             } else if (event.args[i].constructor == Array) {
               let params = event.args[i];
               let expected = expectedArgs[i];
+              if (expected != '0x' && params.length != expected.length) {
+                invalidParamsButExists = true;
+                break;
+              }
               for (let j = 0; j < params.length; j++) {
                 if (BigNumber.isBigNumber(params[j])) {
                   if (!params[j].eq(BigNumber.from(expected[j]))) {
