@@ -95,7 +95,7 @@ interface ILensHub {
      *      handle: The handle to set for the profile, must be unique and non-empty.
      *      imageURI: The URI to set for the profile image.
      *      followModule: The follow module to use, can be the zero address.
-     *      followModuleData: The follow module initialization data, if any.
+     *      followModuleInitData: The follow module initialization data, if any.
      */
     function createProfile(DataTypes.CreateProfileData calldata vars) external returns (uint256);
 
@@ -119,12 +119,12 @@ interface ILensHub {
      *
      * @param profileId The token ID of the profile to set the follow module for.
      * @param followModule The follow module to set for the given profile, must be whitelisted.
-     * @param followModuleData The data to be passed to the follow module for initialization.
+     * @param followModuleInitData The data to be passed to the follow module for initialization.
      */
     function setFollowModule(
         uint256 profileId,
         address followModule,
-        bytes calldata followModuleData
+        bytes calldata followModuleInitData
     ) external;
 
     /**

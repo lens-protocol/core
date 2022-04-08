@@ -29,7 +29,7 @@ library PublishingLogic {
      *      handle: The handle to set for the profile, must be unique and non-empty.
      *      imageURI: The URI to set for the profile image.
      *      followModule: The follow module to use, can be the zero address.
-     *      followModuleData: The follow module initialization data, if any
+     *      followModuleInitData: The follow module initialization data, if any
      *      followNFTURI: The URI to set for the follow NFT.
      * @param profileId The profile ID to associate with this profile NFT (token ID).
      * @param _profileIdByHandleHash The storage reference to the mapping of profile IDs by handle hash.
@@ -60,7 +60,7 @@ library PublishingLogic {
             followModuleReturnData = _initFollowModule(
                 profileId,
                 vars.followModule,
-                vars.followModuleData,
+                vars.followModuleInitData,
                 _followModuleWhitelisted
             );
         }
@@ -73,14 +73,14 @@ library PublishingLogic {
      *
      * @param profileId The profile ID to set the follow module for.
      * @param followModule The follow module to set for the given profile, if any.
-     * @param followModuleData The data to pass to the follow module for profile initialization.
+     * @param followModuleInitData The data to pass to the follow module for profile initialization.
      * @param _profile The storage reference to the profile struct associated with the given profile ID.
      * @param _followModuleWhitelisted The storage reference to the mapping of whitelist status by follow module address.
      */
     function setFollowModule(
         uint256 profileId,
         address followModule,
-        bytes calldata followModuleData,
+        bytes calldata followModuleInitData,
         DataTypes.ProfileStruct storage _profile,
         mapping(address => bool) storage _followModuleWhitelisted
     ) external {
@@ -93,7 +93,7 @@ library PublishingLogic {
             followModuleReturnData = _initFollowModule(
                 profileId,
                 followModule,
-                followModuleData,
+                followModuleInitData,
                 _followModuleWhitelisted
             );
         emit Events.FollowModuleSet(
@@ -300,7 +300,7 @@ library PublishingLogic {
         uint256 profileId,
         uint256 pubId,
         address collectModule,
-        bytes memory collectModuleData,
+        bytes memory collectModuleInitData,
         mapping(uint256 => mapping(uint256 => DataTypes.PublicationStruct))
             storage _pubByIdByProfile,
         mapping(address => bool) storage _collectModuleWhitelisted
@@ -311,7 +311,7 @@ library PublishingLogic {
             ICollectModule(collectModule).initializePublicationCollectModule(
                 profileId,
                 pubId,
-                collectModuleData
+                collectModuleInitData
             );
     }
 
@@ -319,7 +319,7 @@ library PublishingLogic {
         uint256 profileId,
         uint256 pubId,
         address referenceModule,
-        bytes memory referenceModuleData,
+        bytes memory referenceModuleInitData,
         mapping(uint256 => mapping(uint256 => DataTypes.PublicationStruct))
             storage _pubByIdByProfile,
         mapping(address => bool) storage _referenceModuleWhitelisted
@@ -332,18 +332,18 @@ library PublishingLogic {
             IReferenceModule(referenceModule).initializeReferenceModule(
                 profileId,
                 pubId,
-                referenceModuleData
+                referenceModuleInitData
             );
     }
 
     function _initFollowModule(
         uint256 profileId,
         address followModule,
-        bytes memory followModuleData,
+        bytes memory followModuleInitData,
         mapping(address => bool) storage _followModuleWhitelisted
     ) private returns (bytes memory) {
         if (!_followModuleWhitelisted[followModule]) revert Errors.FollowModuleNotWhitelisted();
-        return IFollowModule(followModule).initializeFollowModule(profileId, followModuleData);
+        return IFollowModule(followModule).initializeFollowModule(profileId, followModuleInitData);
     }
 
     function _emitCommentCreated(

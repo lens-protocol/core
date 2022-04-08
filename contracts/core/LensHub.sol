@@ -194,13 +194,13 @@ contract LensHub is LensNFTBase, VersionedInitializable, LensMultiState, LensHub
     function setFollowModule(
         uint256 profileId,
         address followModule,
-        bytes calldata followModuleData
+        bytes calldata followModuleInitData
     ) external override whenNotPaused {
         _validateCallerIsProfileOwner(profileId);
         PublishingLogic.setFollowModule(
             profileId,
             followModule,
-            followModuleData,
+            followModuleInitData,
             _profileById[profileId],
             _followModuleWhitelisted
         );
@@ -221,7 +221,7 @@ contract LensHub is LensNFTBase, VersionedInitializable, LensMultiState, LensHub
                             SET_FOLLOW_MODULE_WITH_SIG_TYPEHASH,
                             vars.profileId,
                             vars.followModule,
-                            keccak256(vars.followModuleData),
+                            keccak256(vars.followModuleInitData),
                             sigNonces[owner]++,
                             vars.sig.deadline
                         )
@@ -234,7 +234,7 @@ contract LensHub is LensNFTBase, VersionedInitializable, LensMultiState, LensHub
         PublishingLogic.setFollowModule(
             vars.profileId,
             vars.followModule,
-            vars.followModuleData,
+            vars.followModuleInitData,
             _profileById[vars.profileId],
             _followModuleWhitelisted
         );
@@ -360,9 +360,9 @@ contract LensHub is LensNFTBase, VersionedInitializable, LensMultiState, LensHub
                 vars.profileId,
                 vars.contentURI,
                 vars.collectModule,
-                vars.collectModuleData,
+                vars.collectModuleInitData,
                 vars.referenceModule,
-                vars.referenceModuleData
+                vars.referenceModuleInitData
             );
     }
 
@@ -383,9 +383,9 @@ contract LensHub is LensNFTBase, VersionedInitializable, LensMultiState, LensHub
                             vars.profileId,
                             keccak256(bytes(vars.contentURI)),
                             vars.collectModule,
-                            keccak256(vars.collectModuleData),
+                            keccak256(vars.collectModuleInitData),
                             vars.referenceModule,
-                            keccak256(vars.referenceModuleData),
+                            keccak256(vars.referenceModuleInitData),
                             sigNonces[owner]++,
                             vars.sig.deadline
                         )
@@ -400,9 +400,9 @@ contract LensHub is LensNFTBase, VersionedInitializable, LensMultiState, LensHub
                 vars.profileId,
                 vars.contentURI,
                 vars.collectModule,
-                vars.collectModuleData,
+                vars.collectModuleInitData,
                 vars.referenceModule,
-                vars.referenceModuleData
+                vars.referenceModuleInitData
             );
     }
 
