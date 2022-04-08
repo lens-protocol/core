@@ -303,7 +303,7 @@ library Events {
      * @param pubId The publication ID that the collect was initiated towards, useful to differentiate mirrors.
      * @param rootProfileId The profile token ID of the profile whose publication is being collected.
      * @param rootPubId The publication ID of the publication being collected.
-     * @param data The data passed to the collect module.
+     * @param collectModuleData The data passed to the collect module.
      * @param timestamp The current block timestamp.
      */
     event Collected(
@@ -312,7 +312,22 @@ library Events {
         uint256 indexed pubId,
         uint256 rootProfileId,
         uint256 rootPubId,
-        bytes data,
+        bytes collectModuleData,
+        uint256 timestamp
+    );
+
+    /**
+     * @dev Emitted upon a successful follow action.
+     *
+     * @param follower The address following the given profiles.
+     * @param profileIds The token ID array of the profiles being followed.
+     * @param followModuleDatas The array of data parameters passed to each follow module.
+     * @param timestamp The current block timestamp.
+     */
+    event Followed(
+        address indexed follower,
+        uint256[] profileIds,
+        bytes[] followModuleDatas,
         uint256 timestamp
     );
 

@@ -74,6 +74,7 @@ library InteractionLogic {
                 ++i;
             }
         }
+        emit Events.Followed(follower, profileIds, followModuleDatas, block.timestamp);
         return tokenIds;
     }
 

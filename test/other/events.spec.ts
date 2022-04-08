@@ -446,15 +446,22 @@ makeSuiteCleanRoom('Events', function () {
         lensHub.connect(governance).whitelistCollectModule(freeCollectModule.address, true)
       );
 
-      receipt = await waitForTx(lensHub.connect(userTwo).follow([FIRST_PROFILE_ID], [[]]));
+      const mockData = abiCoder.encode(['uint256'], [123]);
+      receipt = await waitForTx(lensHub.connect(userTwo).follow([FIRST_PROFILE_ID], [mockData]));
       const followNFT = await lensHub.getFollowNFT(FIRST_PROFILE_ID);
 
       const expectedName = MOCK_PROFILE_HANDLE + '-Follower';
       const expectedSymbol = getAbbreviation(MOCK_PROFILE_HANDLE) + '-Fl';
 
-      expect(receipt.logs.length).to.eq(5);
+      expect(receipt.logs.length).to.eq(6);
       matchEvent(receipt, 'FollowNFTDeployed', [FIRST_PROFILE_ID, followNFT, await getTimestamp()]);
       matchEvent(receipt, 'BaseInitialized', [expectedName, expectedSymbol, await getTimestamp()]);
+      matchEvent(receipt, 'Followed', [
+        userTwoAddress,
+        [FIRST_PROFILE_ID],
+        [mockData],
+        await getTimestamp(),
+      ]);
       matchEvent(receipt, 'Transfer', [ZERO_ADDRESS, userTwoAddress, 1], lensHubImpl);
       matchEvent(receipt, 'FollowNFTTransferred', [
         FIRST_PROFILE_ID,
