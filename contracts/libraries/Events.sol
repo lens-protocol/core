@@ -224,6 +224,7 @@ library Events {
      * @param contentURI The URI mapped to this new publication.
      * @param profileIdPointed The profile token ID that this comment points to.
      * @param pubIdPointed The publication ID that this comment points to.
+     * @param referenceModuleData The data passed to the reference module.
      * @param collectModule The collect module mapped to this new publication. This CANNOT be the zero address.
      * @param collectModuleReturnData The data returned from the collect module's initialization for this given
      * publication. This is abi encoded and totally depends on the collect module chosen.
@@ -238,6 +239,7 @@ library Events {
         string contentURI,
         uint256 profileIdPointed,
         uint256 pubIdPointed,
+        bytes referenceModuleData,
         address collectModule,
         bytes collectModuleReturnData,
         address referenceModule,
@@ -252,6 +254,7 @@ library Events {
      * @param pubId The new publication's ID.
      * @param profileIdPointed The profile token ID that this mirror points to.
      * @param pubIdPointed The publication ID that this mirror points to.
+     * @param referenceModuleData The data passed to the reference module.
      * @param referenceModule The reference module set for this publication.
      * @param referenceModuleReturnData The data returned from the reference module at initialization. This is abi
      * encoded and totally depends on the reference module chosen.
@@ -262,6 +265,7 @@ library Events {
         uint256 indexed pubId,
         uint256 profileIdPointed,
         uint256 pubIdPointed,
+        bytes referenceModuleData,
         address referenceModule,
         bytes referenceModuleReturnData,
         uint256 timestamp
@@ -303,6 +307,7 @@ library Events {
      * @param pubId The publication ID that the collect was initiated towards, useful to differentiate mirrors.
      * @param rootProfileId The profile token ID of the profile whose publication is being collected.
      * @param rootPubId The publication ID of the publication being collected.
+     * @param collectModuleData The data passed to the collect module.
      * @param timestamp The current block timestamp.
      */
     event Collected(
@@ -311,6 +316,22 @@ library Events {
         uint256 indexed pubId,
         uint256 rootProfileId,
         uint256 rootPubId,
+        bytes collectModuleData,
+        uint256 timestamp
+    );
+
+    /**
+     * @dev Emitted upon a successful follow action.
+     *
+     * @param follower The address following the given profiles.
+     * @param profileIds The token ID array of the profiles being followed.
+     * @param followModuleDatas The array of data parameters passed to each follow module.
+     * @param timestamp The current block timestamp.
+     */
+    event Followed(
+        address indexed follower,
+        uint256[] profileIds,
+        bytes[] followModuleDatas,
         uint256 timestamp
     );
 

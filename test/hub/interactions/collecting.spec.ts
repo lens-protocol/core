@@ -39,7 +39,7 @@ makeSuiteCleanRoom('Collecting', function () {
         handle: MOCK_PROFILE_HANDLE,
         imageURI: MOCK_PROFILE_URI,
         followModule: ZERO_ADDRESS,
-        followModuleData: [],
+        followModuleInitData: [],
         followNFTURI: MOCK_FOLLOW_NFT_URI,
       })
     ).to.not.be.reverted;
@@ -48,9 +48,9 @@ makeSuiteCleanRoom('Collecting', function () {
         profileId: FIRST_PROFILE_ID,
         contentURI: MOCK_URI,
         collectModule: freeCollectModule.address,
-        collectModuleData: abiCoder.encode(['bool'], [true]),
+        collectModuleInitData: abiCoder.encode(['bool'], [true]),
         referenceModule: ZERO_ADDRESS,
-        referenceModuleData: [],
+        referenceModuleInitData: [],
       })
     ).to.not.be.reverted;
   });
@@ -198,7 +198,7 @@ makeSuiteCleanRoom('Collecting', function () {
             handle: 'mockhandle',
             imageURI: MOCK_PROFILE_URI,
             followModule: ZERO_ADDRESS,
-            followModuleData: [],
+            followModuleInitData: [],
             followNFTURI: MOCK_FOLLOW_NFT_URI,
           })
         ).to.not.be.reverted;
@@ -208,8 +208,9 @@ makeSuiteCleanRoom('Collecting', function () {
             profileId: secondProfileId,
             profileIdPointed: FIRST_PROFILE_ID,
             pubIdPointed: 1,
-            referenceModule: ZERO_ADDRESS,
             referenceModuleData: [],
+            referenceModule: ZERO_ADDRESS,
+            referenceModuleInitData: [],
           })
         ).to.not.be.reverted;
 
@@ -241,7 +242,7 @@ makeSuiteCleanRoom('Collecting', function () {
             handle: 'mockhandle',
             imageURI: MOCK_PROFILE_URI,
             followModule: ZERO_ADDRESS,
-            followModuleData: [],
+            followModuleInitData: [],
             followNFTURI: MOCK_FOLLOW_NFT_URI,
           })
         ).to.not.be.reverted;
@@ -251,8 +252,9 @@ makeSuiteCleanRoom('Collecting', function () {
             profileId: secondProfileId,
             profileIdPointed: FIRST_PROFILE_ID,
             pubIdPointed: 1,
-            referenceModule: ZERO_ADDRESS,
             referenceModuleData: [],
+            referenceModule: ZERO_ADDRESS,
+            referenceModuleInitData: [],
           })
         ).to.not.be.reverted;
 
@@ -261,8 +263,9 @@ makeSuiteCleanRoom('Collecting', function () {
             profileId: secondProfileId,
             profileIdPointed: secondProfileId,
             pubIdPointed: 1,
-            referenceModule: ZERO_ADDRESS,
             referenceModuleData: [],
+            referenceModule: ZERO_ADDRESS,
+            referenceModuleInitData: [],
           })
         ).to.not.be.reverted;
 
@@ -478,7 +481,7 @@ makeSuiteCleanRoom('Collecting', function () {
             handle: 'mockhandle',
             imageURI: MOCK_PROFILE_URI,
             followModule: ZERO_ADDRESS,
-            followModuleData: [],
+            followModuleInitData: [],
             followNFTURI: MOCK_FOLLOW_NFT_URI,
           })
         ).to.not.be.reverted;
@@ -488,8 +491,9 @@ makeSuiteCleanRoom('Collecting', function () {
             profileId: secondProfileId,
             profileIdPointed: FIRST_PROFILE_ID,
             pubIdPointed: 1,
-            referenceModule: ZERO_ADDRESS,
             referenceModuleData: [],
+            referenceModule: ZERO_ADDRESS,
+            referenceModuleInitData: [],
           })
         ).to.not.be.reverted;
 

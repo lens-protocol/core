@@ -2,7 +2,7 @@ import { TransactionReceipt } from '@ethersproject/providers';
 import '@nomiclabs/hardhat-ethers';
 import { expect } from 'chai';
 import { TransparentUpgradeableProxy__factory } from '../../typechain-types';
-import { ZERO_ADDRESS } from '../helpers/constants';
+import { MAX_UINT256, ZERO_ADDRESS } from '../helpers/constants';
 import {
   getAbbreviation,
   getTimestamp,
@@ -35,6 +35,8 @@ import {
   userTwo,
   userTwoAddress,
   abiCoder,
+  feeCollectModule,
+  currency,
 } from '../__setup.spec';
 
 /**
@@ -228,7 +230,7 @@ makeSuiteCleanRoom('Events', function () {
           handle: MOCK_PROFILE_HANDLE,
           imageURI: MOCK_PROFILE_URI,
           followModule: ZERO_ADDRESS,
-          followModuleData: [],
+          followModuleInitData: [],
           followNFTURI: MOCK_FOLLOW_NFT_URI,
         })
       );
@@ -241,7 +243,7 @@ makeSuiteCleanRoom('Events', function () {
           handle: MOCK_PROFILE_HANDLE,
           imageURI: MOCK_PROFILE_URI,
           followModule: ZERO_ADDRESS,
-          followModuleData: [],
+          followModuleInitData: [],
           followNFTURI: MOCK_FOLLOW_NFT_URI,
         })
       );
@@ -273,7 +275,7 @@ makeSuiteCleanRoom('Events', function () {
           handle: MOCK_PROFILE_HANDLE,
           imageURI: MOCK_PROFILE_URI,
           followModule: ZERO_ADDRESS,
-          followModuleData: [],
+          followModuleInitData: [],
           followNFTURI: MOCK_FOLLOW_NFT_URI,
         })
       );
@@ -334,9 +336,9 @@ makeSuiteCleanRoom('Events', function () {
           profileId: FIRST_PROFILE_ID,
           contentURI: MOCK_URI,
           collectModule: freeCollectModule.address,
-          collectModuleData: abiCoder.encode(['bool'], [true]),
+          collectModuleInitData: abiCoder.encode(['bool'], [true]),
           referenceModule: ZERO_ADDRESS,
-          referenceModuleData: [],
+          referenceModuleInitData: [],
         })
       );
 
@@ -364,9 +366,9 @@ makeSuiteCleanRoom('Events', function () {
           profileId: FIRST_PROFILE_ID,
           contentURI: MOCK_URI,
           collectModule: freeCollectModule.address,
-          collectModuleData: abiCoder.encode(['bool'], [true]),
+          collectModuleInitData: abiCoder.encode(['bool'], [true]),
           referenceModule: ZERO_ADDRESS,
-          referenceModuleData: [],
+          referenceModuleInitData: [],
         })
       );
 
@@ -376,10 +378,11 @@ makeSuiteCleanRoom('Events', function () {
           contentURI: MOCK_URI,
           profileIdPointed: FIRST_PROFILE_ID,
           pubIdPointed: 1,
-          collectModule: freeCollectModule.address,
-          collectModuleData: abiCoder.encode(['bool'], [true]),
-          referenceModule: ZERO_ADDRESS,
           referenceModuleData: [],
+          collectModule: freeCollectModule.address,
+          collectModuleInitData: abiCoder.encode(['bool'], [true]),
+          referenceModule: ZERO_ADDRESS,
+          referenceModuleInitData: [],
         })
       );
 
@@ -391,6 +394,7 @@ makeSuiteCleanRoom('Events', function () {
         MOCK_URI,
         FIRST_PROFILE_ID,
         1,
+        [],
         freeCollectModule.address,
         abiCoder.encode(['bool'], [true]),
         ZERO_ADDRESS,
@@ -410,9 +414,9 @@ makeSuiteCleanRoom('Events', function () {
           profileId: FIRST_PROFILE_ID,
           contentURI: MOCK_URI,
           collectModule: freeCollectModule.address,
-          collectModuleData: abiCoder.encode(['bool'], [true]),
+          collectModuleInitData: abiCoder.encode(['bool'], [true]),
           referenceModule: ZERO_ADDRESS,
-          referenceModuleData: [],
+          referenceModuleInitData: [],
         })
       );
 
@@ -421,8 +425,9 @@ makeSuiteCleanRoom('Events', function () {
           profileId: FIRST_PROFILE_ID,
           profileIdPointed: FIRST_PROFILE_ID,
           pubIdPointed: 1,
-          referenceModule: ZERO_ADDRESS,
           referenceModuleData: [],
+          referenceModule: ZERO_ADDRESS,
+          referenceModuleInitData: [],
         })
       );
 
@@ -433,6 +438,7 @@ makeSuiteCleanRoom('Events', function () {
         2,
         FIRST_PROFILE_ID,
         1,
+        [],
         ZERO_ADDRESS,
         [],
         await getTimestamp(),
@@ -446,15 +452,22 @@ makeSuiteCleanRoom('Events', function () {
         lensHub.connect(governance).whitelistCollectModule(freeCollectModule.address, true)
       );
 
-      receipt = await waitForTx(lensHub.connect(userTwo).follow([FIRST_PROFILE_ID], [[]]));
+      const mockData = abiCoder.encode(['uint256'], [123]);
+      receipt = await waitForTx(lensHub.connect(userTwo).follow([FIRST_PROFILE_ID], [mockData]));
       const followNFT = await lensHub.getFollowNFT(FIRST_PROFILE_ID);
 
       const expectedName = MOCK_PROFILE_HANDLE + '-Follower';
       const expectedSymbol = getAbbreviation(MOCK_PROFILE_HANDLE) + '-Fl';
 
-      expect(receipt.logs.length).to.eq(5);
+      expect(receipt.logs.length).to.eq(6);
       matchEvent(receipt, 'FollowNFTDeployed', [FIRST_PROFILE_ID, followNFT, await getTimestamp()]);
       matchEvent(receipt, 'BaseInitialized', [expectedName, expectedSymbol, await getTimestamp()]);
+      matchEvent(receipt, 'Followed', [
+        userTwoAddress,
+        [FIRST_PROFILE_ID],
+        [mockData],
+        await getTimestamp(),
+      ]);
       matchEvent(receipt, 'Transfer', [ZERO_ADDRESS, userTwoAddress, 1], lensHubImpl);
       matchEvent(receipt, 'FollowNFTTransferred', [
         FIRST_PROFILE_ID,
@@ -469,28 +482,41 @@ makeSuiteCleanRoom('Events', function () {
       await createProfile();
 
       await waitForTx(
-        lensHub.connect(governance).whitelistCollectModule(freeCollectModule.address, true)
+        lensHub.connect(governance).whitelistCollectModule(feeCollectModule.address, true)
       );
+      await expect(
+        moduleGlobals.connect(governance).whitelistCurrency(currency.address, true)
+      ).to.not.be.reverted;
 
+      const collectPrice = 1;
+      const collectModuleInitData = abiCoder.encode(
+        ['uint256', 'address', 'address', 'uint16', 'bool'],
+        [collectPrice, currency.address, userAddress, 0, true]
+      );
       await waitForTx(
         lensHub.post({
           profileId: FIRST_PROFILE_ID,
           contentURI: MOCK_URI,
-          collectModule: freeCollectModule.address,
-          collectModuleData: abiCoder.encode(['bool'], [true]),
+          collectModule: feeCollectModule.address,
+          collectModuleInitData: collectModuleInitData,
           referenceModule: ZERO_ADDRESS,
-          referenceModuleData: [],
+          referenceModuleInitData: [],
         })
       );
 
       await waitForTx(lensHub.connect(userTwo).follow([FIRST_PROFILE_ID], [[]]));
 
-      receipt = await waitForTx(lensHub.connect(userTwo).collect(FIRST_PROFILE_ID, 1, []));
+      await expect(currency.mint(userTwoAddress, MAX_UINT256)).to.not.be.reverted;
+      await expect(
+        currency.connect(userTwo).approve(feeCollectModule.address, MAX_UINT256)
+      ).to.not.be.reverted;
+      const collectData = abiCoder.encode(['address', 'uint256'], [currency.address, collectPrice]);
+      receipt = await waitForTx(lensHub.connect(userTwo).collect(FIRST_PROFILE_ID, 1, collectData));
       const collectNFT = await lensHub.getCollectNFT(FIRST_PROFILE_ID, 1);
       const expectedName = MOCK_PROFILE_HANDLE + '-Collect-' + '1';
       const expectedSymbol = getAbbreviation(MOCK_PROFILE_HANDLE) + '-Cl-' + '1';
 
-      expect(receipt.logs.length).to.eq(6);
+      expect(receipt.logs.length).to.eq(7);
       matchEvent(receipt, 'CollectNFTDeployed', [
         FIRST_PROFILE_ID,
         1,
@@ -503,6 +529,7 @@ makeSuiteCleanRoom('Events', function () {
         1,
         FIRST_PROFILE_ID,
         1,
+        collectData,
         await getTimestamp(),
       ]);
       matchEvent(receipt, 'BaseInitialized', [expectedName, expectedSymbol, await getTimestamp()]);
@@ -523,17 +550,25 @@ makeSuiteCleanRoom('Events', function () {
       await createProfile();
 
       await waitForTx(
-        lensHub.connect(governance).whitelistCollectModule(freeCollectModule.address, true)
+        lensHub.connect(governance).whitelistCollectModule(feeCollectModule.address, true)
       );
+      await expect(
+        moduleGlobals.connect(governance).whitelistCurrency(currency.address, true)
+      ).to.not.be.reverted;
 
+      const collectPrice = 1;
+      const collectModuleInitData = abiCoder.encode(
+        ['uint256', 'address', 'address', 'uint16', 'bool'],
+        [collectPrice, currency.address, userAddress, 0, true]
+      );
       await waitForTx(
         lensHub.post({
           profileId: FIRST_PROFILE_ID,
           contentURI: MOCK_URI,
-          collectModule: freeCollectModule.address,
-          collectModuleData: abiCoder.encode(['bool'], [true]),
+          collectModule: feeCollectModule.address,
+          collectModuleInitData: collectModuleInitData,
           referenceModule: ZERO_ADDRESS,
-          referenceModuleData: [],
+          referenceModuleInitData: [],
         })
       );
 
@@ -545,7 +580,7 @@ makeSuiteCleanRoom('Events', function () {
           handle: 'usertwo',
           imageURI: MOCK_PROFILE_URI,
           followModule: ZERO_ADDRESS,
-          followModuleData: [],
+          followModuleInitData: [],
           followNFTURI: MOCK_FOLLOW_NFT_URI,
         })
       );
@@ -555,17 +590,24 @@ makeSuiteCleanRoom('Events', function () {
           profileId: secondProfileId,
           profileIdPointed: FIRST_PROFILE_ID,
           pubIdPointed: 1,
-          referenceModule: ZERO_ADDRESS,
           referenceModuleData: [],
+          referenceModule: ZERO_ADDRESS,
+          referenceModuleInitData: [],
         })
       );
 
-      receipt = await waitForTx(lensHub.connect(userTwo).collect(secondProfileId, 1, []));
+      await expect(currency.mint(userTwoAddress, MAX_UINT256)).to.not.be.reverted;
+      await expect(
+        currency.connect(userTwo).approve(feeCollectModule.address, MAX_UINT256)
+      ).to.not.be.reverted;
+      const collectData = abiCoder.encode(['address', 'uint256'], [currency.address, collectPrice]);
+
+      receipt = await waitForTx(lensHub.connect(userTwo).collect(secondProfileId, 1, collectData));
       const collectNFT = await lensHub.getCollectNFT(FIRST_PROFILE_ID, 1);
       const expectedName = MOCK_PROFILE_HANDLE + '-Collect-' + '1';
       const expectedSymbol = getAbbreviation(MOCK_PROFILE_HANDLE) + '-Cl-' + '1';
 
-      expect(receipt.logs.length).to.eq(6);
+      expect(receipt.logs.length).to.eq(7);
       matchEvent(receipt, 'CollectNFTDeployed', [
         FIRST_PROFILE_ID,
         1,
@@ -578,6 +620,7 @@ makeSuiteCleanRoom('Events', function () {
         1,
         FIRST_PROFILE_ID,
         1,
+        collectData,
         await getTimestamp(),
       ]);
       matchEvent(receipt, 'BaseInitialized', [expectedName, expectedSymbol, await getTimestamp()]);

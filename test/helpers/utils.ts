@@ -95,6 +95,10 @@ export function matchEvent(
             } else if (event.args[i].constructor == Array) {
               let params = event.args[i];
               let expected = expectedArgs[i];
+              if (expected != '0x' && params.length != expected.length) {
+                invalidParamsButExists = true;
+                break;
+              }
               for (let j = 0; j < params.length; j++) {
                 if (BigNumber.isBigNumber(params[j])) {
                   if (!params[j].eq(BigNumber.from(expected[j]))) {
@@ -312,14 +316,14 @@ const buildDelegateBySigParams = (
 export async function getSetFollowModuleWithSigParts(
   profileId: BigNumberish,
   followModule: string,
-  followModuleData: Bytes | string,
+  followModuleInitData: Bytes | string,
   nonce: number,
   deadline: string
 ): Promise<{ v: number; r: string; s: string }> {
   const msgParams = buildSetFollowModuleWithSigParams(
     profileId,
     followModule,
-    followModuleData,
+    followModuleInitData,
     nonce,
     deadline
   );
@@ -370,9 +374,9 @@ export async function getPostWithSigParts(
   profileId: BigNumberish,
   contentURI: string,
   collectModule: string,
-  collectModuleData: Bytes | string,
+  collectModuleInitData: Bytes | string,
   referenceModule: string,
-  referenceModuleData: Bytes | string,
+  referenceModuleInitData: Bytes | string,
   nonce: number,
   deadline: string
 ): Promise<{ v: number; r: string; s: string }> {
@@ -380,9 +384,9 @@ export async function getPostWithSigParts(
     profileId,
     contentURI,
     collectModule,
-    collectModuleData,
+    collectModuleInitData,
     referenceModule,
-    referenceModuleData,
+    referenceModuleInitData,
     nonce,
     deadline
   );
@@ -394,10 +398,11 @@ export async function getCommentWithSigParts(
   contentURI: string,
   profileIdPointed: BigNumberish,
   pubIdPointed: string,
-  collectModule: string,
-  collectModuleData: Bytes | string,
-  referenceModule: string,
   referenceModuleData: Bytes | string,
+  collectModule: string,
+  collectModuleInitData: Bytes | string,
+  referenceModule: string,
+  referenceModuleInitData: Bytes | string,
   nonce: number,
   deadline: string
 ): Promise<{ v: number; r: string; s: string }> {
@@ -406,10 +411,11 @@ export async function getCommentWithSigParts(
     contentURI,
     profileIdPointed,
     pubIdPointed,
-    collectModule,
-    collectModuleData,
-    referenceModule,
     referenceModuleData,
+    collectModule,
+    collectModuleInitData,
+    referenceModule,
+    referenceModuleInitData,
     nonce,
     deadline
   );
@@ -420,8 +426,9 @@ export async function getMirrorWithSigParts(
   profileId: BigNumberish,
   profileIdPointed: BigNumberish,
   pubIdPointed: string,
-  referenceModule: string,
   referenceModuleData: Bytes | string,
+  referenceModule: string,
+  referenceModuleInitData: Bytes | string,
   nonce: number,
   deadline: string
 ): Promise<{ v: number; r: string; s: string }> {
@@ -429,8 +436,9 @@ export async function getMirrorWithSigParts(
     profileId,
     profileIdPointed,
     pubIdPointed,
-    referenceModule,
     referenceModuleData,
+    referenceModule,
+    referenceModuleInitData,
     nonce,
     deadline
   );
@@ -756,7 +764,7 @@ const buildBurnWithSigParams = (
 const buildSetFollowModuleWithSigParams = (
   profileId: BigNumberish,
   followModule: string,
-  followModuleData: Bytes | string,
+  followModuleInitData: Bytes | string,
   nonce: number,
   deadline: string
 ) => ({
@@ -764,7 +772,7 @@ const buildSetFollowModuleWithSigParams = (
     SetFollowModuleWithSig: [
       { name: 'profileId', type: 'uint256' },
       { name: 'followModule', type: 'address' },
-      { name: 'followModuleData', type: 'bytes' },
+      { name: 'followModuleInitData', type: 'bytes' },
       { name: 'nonce', type: 'uint256' },
       { name: 'deadline', type: 'uint256' },
     ],
@@ -773,7 +781,7 @@ const buildSetFollowModuleWithSigParams = (
   value: {
     profileId: profileId,
     followModule: followModule,
-    followModuleData: followModuleData,
+    followModuleInitData: followModuleInitData,
     nonce: nonce,
     deadline: deadline,
   },
@@ -875,9 +883,9 @@ const buildPostWithSigParams = (
   profileId: BigNumberish,
   contentURI: string,
   collectModule: string,
-  collectModuleData: Bytes | string,
+  collectModuleInitData: Bytes | string,
   referenceModule: string,
-  referenceModuleData: Bytes | string,
+  referenceModuleInitData: Bytes | string,
   nonce: number,
   deadline: string
 ) => ({
@@ -886,9 +894,9 @@ const buildPostWithSigParams = (
       { name: 'profileId', type: 'uint256' },
       { name: 'contentURI', type: 'string' },
       { name: 'collectModule', type: 'address' },
-      { name: 'collectModuleData', type: 'bytes' },
+      { name: 'collectModuleInitData', type: 'bytes' },
       { name: 'referenceModule', type: 'address' },
-      { name: 'referenceModuleData', type: 'bytes' },
+      { name: 'referenceModuleInitData', type: 'bytes' },
       { name: 'nonce', type: 'uint256' },
       { name: 'deadline', type: 'uint256' },
     ],
@@ -898,9 +906,9 @@ const buildPostWithSigParams = (
     profileId: profileId,
     contentURI: contentURI,
     collectModule: collectModule,
-    collectModuleData: collectModuleData,
+    collectModuleInitData: collectModuleInitData,
     referenceModule: referenceModule,
-    referenceModuleData: referenceModuleData,
+    referenceModuleInitData: referenceModuleInitData,
     nonce: nonce,
     deadline: deadline,
   },
@@ -911,10 +919,11 @@ const buildCommentWithSigParams = (
   contentURI: string,
   profileIdPointed: BigNumberish,
   pubIdPointed: string,
-  collectModule: string,
-  collectModuleData: Bytes | string,
-  referenceModule: string,
   referenceModuleData: Bytes | string,
+  collectModule: string,
+  collectModuleInitData: Bytes | string,
+  referenceModule: string,
+  referenceModuleInitData: Bytes | string,
   nonce: number,
   deadline: string
 ) => ({
@@ -924,10 +933,11 @@ const buildCommentWithSigParams = (
       { name: 'contentURI', type: 'string' },
       { name: 'profileIdPointed', type: 'uint256' },
       { name: 'pubIdPointed', type: 'uint256' },
-      { name: 'collectModule', type: 'address' },
-      { name: 'collectModuleData', type: 'bytes' },
-      { name: 'referenceModule', type: 'address' },
       { name: 'referenceModuleData', type: 'bytes' },
+      { name: 'collectModule', type: 'address' },
+      { name: 'collectModuleInitData', type: 'bytes' },
+      { name: 'referenceModule', type: 'address' },
+      { name: 'referenceModuleInitData', type: 'bytes' },
       { name: 'nonce', type: 'uint256' },
       { name: 'deadline', type: 'uint256' },
     ],
@@ -938,10 +948,11 @@ const buildCommentWithSigParams = (
     contentURI: contentURI,
     profileIdPointed: profileIdPointed,
     pubIdPointed: pubIdPointed,
-    collectModule: collectModule,
-    collectModuleData: collectModuleData,
-    referenceModule: referenceModule,
     referenceModuleData: referenceModuleData,
+    collectModule: collectModule,
+    collectModuleInitData: collectModuleInitData,
+    referenceModule: referenceModule,
+    referenceModuleInitData: referenceModuleInitData,
     nonce: nonce,
     deadline: deadline,
   },
@@ -951,8 +962,9 @@ const buildMirrorWithSigParams = (
   profileId: BigNumberish,
   profileIdPointed: BigNumberish,
   pubIdPointed: string,
-  referenceModule: string,
   referenceModuleData: Bytes | string,
+  referenceModule: string,
+  referenceModuleInitData: Bytes | string,
   nonce: number,
   deadline: string
 ) => ({
@@ -961,8 +973,9 @@ const buildMirrorWithSigParams = (
       { name: 'profileId', type: 'uint256' },
       { name: 'profileIdPointed', type: 'uint256' },
       { name: 'pubIdPointed', type: 'uint256' },
-      { name: 'referenceModule', type: 'address' },
       { name: 'referenceModuleData', type: 'bytes' },
+      { name: 'referenceModule', type: 'address' },
+      { name: 'referenceModuleInitData', type: 'bytes' },
       { name: 'nonce', type: 'uint256' },
       { name: 'deadline', type: 'uint256' },
     ],
@@ -972,8 +985,9 @@ const buildMirrorWithSigParams = (
     profileId: profileId,
     profileIdPointed: profileIdPointed,
     pubIdPointed: pubIdPointed,
-    referenceModule: referenceModule,
     referenceModuleData: referenceModuleData,
+    referenceModule: referenceModule,
+    referenceModuleInitData: referenceModuleInitData,
     nonce: nonce,
     deadline: deadline,
   },

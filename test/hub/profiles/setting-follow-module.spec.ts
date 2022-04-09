@@ -27,7 +27,7 @@ makeSuiteCleanRoom('Setting Follow Module', function () {
           handle: MOCK_PROFILE_HANDLE,
           imageURI: MOCK_PROFILE_URI,
           followModule: ZERO_ADDRESS,
-          followModuleData: [],
+          followModuleInitData: [],
           followNFTURI: MOCK_FOLLOW_NFT_URI,
         })
       ).to.not.be.reverted;
@@ -84,7 +84,7 @@ makeSuiteCleanRoom('Setting Follow Module', function () {
           handle: MOCK_PROFILE_HANDLE,
           imageURI: MOCK_PROFILE_URI,
           followModule: ZERO_ADDRESS,
-          followModuleData: [],
+          followModuleInitData: [],
           followNFTURI: MOCK_FOLLOW_NFT_URI,
         })
       ).to.not.be.reverted;
@@ -97,12 +97,12 @@ makeSuiteCleanRoom('Setting Follow Module', function () {
         ).to.not.be.reverted;
 
         const nonce = (await lensHub.sigNonces(testWallet.address)).toNumber();
-        const followModuleData = [];
+        const followModuleInitData = [];
 
         const { v, r, s } = await getSetFollowModuleWithSigParts(
           FIRST_PROFILE_ID,
           mockFollowModule.address,
-          followModuleData,
+          followModuleInitData,
           nonce,
           '0'
         );
@@ -111,7 +111,7 @@ makeSuiteCleanRoom('Setting Follow Module', function () {
           lensHub.setFollowModuleWithSig({
             profileId: FIRST_PROFILE_ID,
             followModule: mockFollowModule.address,
-            followModuleData: followModuleData,
+            followModuleInitData: followModuleInitData,
             sig: {
               v,
               r,
@@ -128,12 +128,12 @@ makeSuiteCleanRoom('Setting Follow Module', function () {
         ).to.not.be.reverted;
 
         const nonce = (await lensHub.sigNonces(testWallet.address)).toNumber();
-        const followModuleData = [];
+        const followModuleInitData = [];
 
         const { v, r, s } = await getSetFollowModuleWithSigParts(
           FIRST_PROFILE_ID,
           mockFollowModule.address,
-          followModuleData,
+          followModuleInitData,
           nonce,
           '0'
         );
@@ -142,7 +142,7 @@ makeSuiteCleanRoom('Setting Follow Module', function () {
           lensHub.setFollowModuleWithSig({
             profileId: FIRST_PROFILE_ID,
             followModule: mockFollowModule.address,
-            followModuleData: followModuleData,
+            followModuleInitData: followModuleInitData,
             sig: {
               v,
               r,
@@ -159,12 +159,12 @@ makeSuiteCleanRoom('Setting Follow Module', function () {
         ).to.not.be.reverted;
 
         const nonce = (await lensHub.sigNonces(testWallet.address)).toNumber();
-        const followModuleData = [];
+        const followModuleInitData = [];
 
         const { v, r, s } = await getSetFollowModuleWithSigParts(
           FIRST_PROFILE_ID,
           mockFollowModule.address,
-          followModuleData,
+          followModuleInitData,
           nonce + 1,
           MAX_UINT256
         );
@@ -173,7 +173,7 @@ makeSuiteCleanRoom('Setting Follow Module', function () {
           lensHub.setFollowModuleWithSig({
             profileId: FIRST_PROFILE_ID,
             followModule: mockFollowModule.address,
-            followModuleData: followModuleData,
+            followModuleInitData: followModuleInitData,
             sig: {
               v,
               r,
@@ -186,12 +186,12 @@ makeSuiteCleanRoom('Setting Follow Module', function () {
 
       it('TestWallet should fail to set a follow module with sig with an unwhitelisted follow module', async function () {
         const nonce = (await lensHub.sigNonces(testWallet.address)).toNumber();
-        const followModuleData = [];
+        const followModuleInitData = [];
 
         const { v, r, s } = await getSetFollowModuleWithSigParts(
           FIRST_PROFILE_ID,
           mockFollowModule.address,
-          followModuleData,
+          followModuleInitData,
           nonce,
           MAX_UINT256
         );
@@ -200,7 +200,7 @@ makeSuiteCleanRoom('Setting Follow Module', function () {
           lensHub.setFollowModuleWithSig({
             profileId: FIRST_PROFILE_ID,
             followModule: mockFollowModule.address,
-            followModuleData: followModuleData,
+            followModuleInitData: followModuleInitData,
             sig: {
               v,
               r,
@@ -232,7 +232,7 @@ makeSuiteCleanRoom('Setting Follow Module', function () {
           lensHub.setFollowModuleWithSig({
             profileId: FIRST_PROFILE_ID,
             followModule: mockFollowModule.address,
-            followModuleData: mockModuleData,
+            followModuleInitData: mockModuleData,
             sig: {
               v,
               r,
@@ -264,7 +264,7 @@ makeSuiteCleanRoom('Setting Follow Module', function () {
           lensHub.setFollowModuleWithSig({
             profileId: FIRST_PROFILE_ID,
             followModule: mockFollowModule.address,
-            followModuleData: mockModuleData,
+            followModuleInitData: mockModuleData,
             sig: {
               v,
               r,

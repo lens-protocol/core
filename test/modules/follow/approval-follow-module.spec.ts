@@ -28,7 +28,7 @@ makeSuiteCleanRoom('Approval Follow Module', function () {
         handle: MOCK_PROFILE_HANDLE,
         imageURI: MOCK_PROFILE_URI,
         followModule: ZERO_ADDRESS,
-        followModuleData: [],
+        followModuleInitData: [],
         followNFTURI: MOCK_FOLLOW_NFT_URI,
       })
     ).to.not.be.reverted;
@@ -117,7 +117,7 @@ makeSuiteCleanRoom('Approval Follow Module', function () {
           handle: 'secondhandle',
           imageURI: MOCK_PROFILE_URI,
           followModule: approvalFollowModule.address,
-          followModuleData: data,
+          followModuleInitData: data,
           followNFTURI: MOCK_FOLLOW_NFT_URI,
         });
 

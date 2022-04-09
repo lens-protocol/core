@@ -19,7 +19,7 @@ abstract contract LensHubStorage {
         );
     bytes32 internal constant SET_FOLLOW_MODULE_WITH_SIG_TYPEHASH =
         keccak256(
-            'SetFollowModuleWithSig(uint256 profileId,address followModule,bytes followModuleData,uint256 nonce,uint256 deadline)'
+            'SetFollowModuleWithSig(uint256 profileId,address followModule,bytes followModuleInitData,uint256 nonce,uint256 deadline)'
         );
     bytes32 internal constant SET_FOLLOW_NFT_URI_WITH_SIG_TYPEHASH =
         keccak256(
@@ -35,15 +35,15 @@ abstract contract LensHubStorage {
         );
     bytes32 internal constant POST_WITH_SIG_TYPEHASH =
         keccak256(
-            'PostWithSig(uint256 profileId,string contentURI,address collectModule,bytes collectModuleData,address referenceModule,bytes referenceModuleData,uint256 nonce,uint256 deadline)'
+            'PostWithSig(uint256 profileId,string contentURI,address collectModule,bytes collectModuleInitData,address referenceModule,bytes referenceModuleInitData,uint256 nonce,uint256 deadline)'
         );
     bytes32 internal constant COMMENT_WITH_SIG_TYPEHASH =
         keccak256(
-            'CommentWithSig(uint256 profileId,string contentURI,uint256 profileIdPointed,uint256 pubIdPointed,address collectModule,bytes collectModuleData,address referenceModule,bytes referenceModuleData,uint256 nonce,uint256 deadline)'
+            'CommentWithSig(uint256 profileId,string contentURI,uint256 profileIdPointed,uint256 pubIdPointed,bytes referenceModuleData,address collectModule,bytes collectModuleInitData,address referenceModule,bytes referenceModuleInitData,uint256 nonce,uint256 deadline)'
         );
     bytes32 internal constant MIRROR_WITH_SIG_TYPEHASH =
         keccak256(
-            'MirrorWithSig(uint256 profileId,uint256 profileIdPointed,uint256 pubIdPointed,address referenceModule,bytes referenceModuleData,uint256 nonce,uint256 deadline)'
+            'MirrorWithSig(uint256 profileId,uint256 profileIdPointed,uint256 pubIdPointed,bytes referenceModuleData,address referenceModule,bytes referenceModuleInitData,uint256 nonce,uint256 deadline)'
         );
     bytes32 internal constant FOLLOW_WITH_SIG_TYPEHASH =
         keccak256(
