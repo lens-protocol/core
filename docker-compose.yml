@@ -15,6 +15,7 @@ services:
     #environment:
       #- MNEMONIC=
       #- ETHERSCAN_KEY=
+      #- QUICKNODE_KEY=
       #- INFURA_KEY=
       #- ETHERSCAN_NETWORK=
       #- TENDERLY_PROJECT=
