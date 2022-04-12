@@ -35,7 +35,7 @@ export function getRPCProvider() {
   const ALCHEMY_KEY = process.env.ALCHEMY_KEY || '';
   const INFURA_KEY = process.env.INFURA_KEY || '';
   if (QUICKNODE_URL) return QUICKNODE_URL;
-  if (ALCHEMY_KEY) return `https://eth-mainnet.alchemyapi.io/v2/${process.env.ALCHEMY_KEY}`;
+  if (ALCHEMY_KEY) return `https://eth-mainnet.alchemyapi.io/v2/${ALCHEMY_KEY}`;
   if (INFURA_KEY) return `https://mainnet.infura.io/v3/${INFURA_KEY}`;
 }
 
