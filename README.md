@@ -45,13 +45,13 @@ The Lens Protocol is a decentralized, non-custodial social graph. Lens implement
 >
 > (feel free to experiment and submit PR's)
 
-The environment is built using Docker Compose, note that your `.env` file must have an `ALCHEMY_KEY` `INFURA_KEY`, or `QUICKNODE_KEY` variable, and an optional `MNEMONIC` and `ETHERSCAN_KEY`, defined like so:
+The environment is built using Docker Compose, note that your `.env` file must have an `ALCHEMY_KEY` `INFURA_KEY`, or `QUICKNODE_URL` variable, and an optional `MNEMONIC` and `ETHERSCAN_KEY`, defined like so:
 
 ```
 MNEMONIC="MNEMONIC YOU WANT TO DERIVE WALLETS FROM HERE"
 ALCHEMY_KEY="YOUR ALCHEMY KEY HERE"
 INFURA_KEY="YOUR INFURA KEY HERE"
-QUICKNODE_URL="YOUR QUICKNODE URL Here"
+QUICKNODE_="YOUR QUICKNODE URL Here"
 ETHERSCAN_KEY="YOUR ETHERSCAN API KEY HERE"
 ```
 
