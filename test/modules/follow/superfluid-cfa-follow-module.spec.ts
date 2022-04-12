@@ -14,7 +14,7 @@ import {
 } from '../../../typechain-types';
 import { MAX_UINT256, ZERO_ADDRESS } from '../../helpers/constants';
 import { ERRORS } from '../../helpers/errors';
-import { getTimestamp, matchEvent, takeSnapshot, waitForTx } from '../../helpers/utils';
+import { getTimestamp, matchEvent, mine, setNextBlockTimestamp, waitForTx } from '../../helpers/utils';
 import {
     abiCoder,
     BPS_MAX,
@@ -62,7 +62,9 @@ async function muteLogs(fn: () => Promise<void>): Promise<void> {
 
 makeSuiteCleanRoom('Superfluid CFA Follow Module', function() {
     const DEFAULT_FOLLOW_PRICE = parseEther('10');
-    const DEFAULT_FOLLOW_FLOW_RATE = DEFAULT_FOLLOW_PRICE.div(30 * 24 * 60 * 60); // Flow rate per seconds
+    // Flow rate per seconds
+    // ❓precision lost here. DEFAULT_FOLLOW_FLOW_RATE.mul(30 * 24 * 60 * 60) != DEFAULT_FOLLOW_PRICE
+    const DEFAULT_FOLLOW_FLOW_RATE = DEFAULT_FOLLOW_PRICE.div(30 * 24 * 60 * 60);
 
     before(async function() {
         await muteLogs(async () => {
@@ -558,6 +560,8 @@ makeSuiteCleanRoom('Superfluid CFA Follow Module', function() {
                 flowRate: DEFAULT_FOLLOW_FLOW_RATE.toString(),
             }).exec(userTwo)).to.not.be.reverted;
 
+            const cfaCreationTimestamp = await getTimestamp();
+
             const data = abiCoder.encode(
                 ['address', 'uint256'],
                 [fDAIx.address, DEFAULT_FOLLOW_PRICE]
@@ -569,16 +573,22 @@ makeSuiteCleanRoom('Superfluid CFA Follow Module', function() {
                 .div(BPS_MAX);
             const expectedRecipientAmount = BigNumber.from(DEFAULT_FOLLOW_PRICE).sub(expectedTreasuryAmount);
 
-            expect(await fDAIx.balanceOf({ account: userTwoAddress, providerOrSigner: userTwo })).to.closeTo(
-                BigNumber.from(CURRENCY_MINT_AMOUNT)
+            await setNextBlockTimestamp(Number(cfaCreationTimestamp) + 30 * 24 * 60 * 60);
+            await mine(1);
+
+            expect(await fDAIx.balanceOf({ account: treasuryAddress, providerOrSigner: userTwo })).to.eq(expectedTreasuryAmount);
+            expect(await fDAIx.balanceOf({ account: userAddress, providerOrSigner: userTwo })).to.eq(
+                expectedRecipientAmount.add(DEFAULT_FOLLOW_FLOW_RATE.mul(30 * 24 * 60 * 60))
+            );
+            expect(await fDAIx.balanceOf({ account: userTwoAddress, providerOrSigner: userTwo })).to.eq(
+                CURRENCY_MINT_AMOUNT
                     .sub(DEFAULT_FOLLOW_PRICE)
                     // Superfluid takes a 1h deposit up front on escrow on testnets
                     // https://docs.superfluid.finance/superfluid/protocol-developers/interactive-tutorials/money-streaming-1#money-streaming
-                    .sub(DEFAULT_FOLLOW_FLOW_RATE.mul(1 * 60 * 60)),
-                1e13
-            ); // FIXME
-            expect(await fDAIx.balanceOf({ account: userAddress, providerOrSigner: userTwo })).to.closeTo(expectedRecipientAmount, 1e13); // FIXME
-            expect(await fDAIx.balanceOf({ account: treasuryAddress, providerOrSigner: userTwo })).to.eq(expectedTreasuryAmount);
+                    .sub(DEFAULT_FOLLOW_FLOW_RATE.mul(1 * 60 * 60))
+                    .sub(DEFAULT_FOLLOW_FLOW_RATE.mul(30 * 24 * 60 * 60))
+                    .sub('259256864') // FIXME due to loss of precision ?
+            );
         });
     });
 });
