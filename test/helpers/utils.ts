@@ -30,6 +30,15 @@ import {
   PostWithSigDataStruct,
 } from '../../typechain-types/LensHub';
 
+export function getRPCProvider() {
+  const QUICKNODE_URL = process.env.QUICKNODE_URL || '';
+  const ALCHEMY_KEY = process.env.ALCHEMY_KEY || '';
+  const INFURA_KEY = process.env.INFURA_KEY || '';
+  if (QUICKNODE_URL) return QUICKNODE_URL;
+  if (ALCHEMY_KEY) return `https://eth-mainnet.alchemyapi.io/v2/${process.env.ALCHEMY_KEY}`;
+  if (INFURA_KEY) return `https://mainnet.infura.io/v3/${INFURA_KEY}`;
+}
+
 export enum ProtocolState {
   Unpaused,
   PublishingPaused,
@@ -173,7 +182,7 @@ export async function resetFork(): Promise<void> {
     params: [
       {
         forking: {
-          jsonRpcUrl: `https://eth-mainnet.alchemyapi.io/v2/${process.env.ALCHEMY_KEY}`,
+          jsonRpcUrl: getRPCProvider(),
           blockNumber: 12012081,
         },
       },
