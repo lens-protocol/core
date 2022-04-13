@@ -116,7 +116,7 @@ makeSuiteCleanRoom('Superfluid CFA Follow Module', function() {
     context('Negatives', function() {
         context('Initialization', function() {
             it('user should fail to create a profile with superfluid cfa follow module using unwhitelisted currency', async function() {
-                const followModuleData = abiCoder.encode(
+                const followModuleInitData = abiCoder.encode(
                     ['address', 'address', 'uint256', 'uint96'],
                     [userAddress, userTwoAddress, DEFAULT_FOLLOW_PRICE, DEFAULT_FOLLOW_FLOW_RATE]
                 );
@@ -127,14 +127,14 @@ makeSuiteCleanRoom('Superfluid CFA Follow Module', function() {
                         handle: MOCK_PROFILE_HANDLE,
                         imageURI: MOCK_PROFILE_URI,
                         followModule: superfluidCFAFollowModule.address,
-                        followModuleData: followModuleData,
+                        followModuleInitData,
                         followNFTURI: MOCK_FOLLOW_NFT_URI,
                     })
                 ).to.be.revertedWith(ERRORS.INIT_PARAMS_INVALID);
             });
 
             it('user should fail to create a profile with superfluid cfa follow module using zero recipient', async function() {
-                const followModuleData = abiCoder.encode(
+                const followModuleInitData = abiCoder.encode(
                     ['address', 'address', 'uint256', 'uint96'],
                     [ZERO_ADDRESS, fDAIx.address, DEFAULT_FOLLOW_PRICE, DEFAULT_FOLLOW_FLOW_RATE]
                 );
@@ -145,14 +145,14 @@ makeSuiteCleanRoom('Superfluid CFA Follow Module', function() {
                         handle: MOCK_PROFILE_HANDLE,
                         imageURI: MOCK_PROFILE_URI,
                         followModule: superfluidCFAFollowModule.address,
-                        followModuleData: followModuleData,
+                        followModuleInitData,
                         followNFTURI: MOCK_FOLLOW_NFT_URI,
                     })
                 ).to.be.revertedWith(ERRORS.INIT_PARAMS_INVALID);
             });
 
             it('user should fail to create a profile with superfluid cfa follow module using zero flow rate', async function() {
-                const followModuleData = abiCoder.encode(
+                const followModuleInitData = abiCoder.encode(
                     ['address', 'address', 'uint256', 'uint96'],
                     [userAddress, fDAIx.address, DEFAULT_FOLLOW_PRICE, 0]
                 );
@@ -163,7 +163,7 @@ makeSuiteCleanRoom('Superfluid CFA Follow Module', function() {
                         handle: MOCK_PROFILE_HANDLE,
                         imageURI: MOCK_PROFILE_URI,
                         followModule: superfluidCFAFollowModule.address,
-                        followModuleData: followModuleData,
+                        followModuleInitData,
                         followNFTURI: MOCK_FOLLOW_NFT_URI,
                     })
                 ).to.be.revertedWith(ERRORS.INIT_PARAMS_INVALID);
@@ -172,7 +172,7 @@ makeSuiteCleanRoom('Superfluid CFA Follow Module', function() {
 
         context('Following', function() {
             beforeEach(async function() {
-                const followModuleData = abiCoder.encode(
+                const followModuleInitData = abiCoder.encode(
                     ['address', 'address', 'uint256', 'uint96'],
                     [userAddress, fDAIx.address, DEFAULT_FOLLOW_PRICE, DEFAULT_FOLLOW_FLOW_RATE]
                 );
@@ -182,7 +182,7 @@ makeSuiteCleanRoom('Superfluid CFA Follow Module', function() {
                         handle: MOCK_PROFILE_HANDLE,
                         imageURI: MOCK_PROFILE_URI,
                         followModule: superfluidCFAFollowModule.address,
-                        followModuleData: followModuleData,
+                        followModuleInitData,
                         followNFTURI: MOCK_FOLLOW_NFT_URI,
                     })
                 ).to.not.be.reverted;
@@ -430,7 +430,7 @@ makeSuiteCleanRoom('Superfluid CFA Follow Module', function() {
 
     context('Scenarios', function() {
         it('User should create a profile with the superfluid cfa follow module as the follow module and data, correct events should be emitted', async function() {
-            const followModuleData = abiCoder.encode(
+            const followModuleInitData = abiCoder.encode(
                 ['address', 'address', 'uint256', 'uint96'],
                 [userAddress, fDAIx.address, DEFAULT_FOLLOW_PRICE, DEFAULT_FOLLOW_FLOW_RATE]
             );
@@ -439,7 +439,7 @@ makeSuiteCleanRoom('Superfluid CFA Follow Module', function() {
                 handle: MOCK_PROFILE_HANDLE,
                 imageURI: MOCK_PROFILE_URI,
                 followModule: superfluidCFAFollowModule.address,
-                followModuleData: followModuleData,
+                followModuleInitData,
                 followNFTURI: MOCK_FOLLOW_NFT_URI,
             });
 
@@ -454,14 +454,14 @@ makeSuiteCleanRoom('Superfluid CFA Follow Module', function() {
                 MOCK_PROFILE_HANDLE,
                 MOCK_PROFILE_URI,
                 superfluidCFAFollowModule.address,
-                followModuleData,
+                followModuleInitData,
                 MOCK_FOLLOW_NFT_URI,
                 await getTimestamp(),
             ]);
         });
 
         it('User should create a profile with superfluid cfa follow module using zero amount', async function() {
-            const followModuleData = abiCoder.encode(
+            const followModuleInitData = abiCoder.encode(
                 ['address', 'address', 'uint256', 'uint96'],
                 [userAddress, fDAIx.address, 0, DEFAULT_FOLLOW_FLOW_RATE]
             );
@@ -472,7 +472,7 @@ makeSuiteCleanRoom('Superfluid CFA Follow Module', function() {
                     handle: MOCK_PROFILE_HANDLE,
                     imageURI: MOCK_PROFILE_URI,
                     followModule: superfluidCFAFollowModule.address,
-                    followModuleData: followModuleData,
+                    followModuleInitData,
                     followNFTURI: MOCK_FOLLOW_NFT_URI,
                 })
             ).to.not.be.reverted;
@@ -485,19 +485,19 @@ makeSuiteCleanRoom('Superfluid CFA Follow Module', function() {
                     handle: MOCK_PROFILE_HANDLE,
                     imageURI: MOCK_PROFILE_URI,
                     followModule: ZERO_ADDRESS,
-                    followModuleData: [],
+                    followModuleInitData: [],
                     followNFTURI: MOCK_FOLLOW_NFT_URI,
                 })
             ).to.not.be.reverted;
 
-            const followModuleData = abiCoder.encode(
+            const followModuleInitData = abiCoder.encode(
                 ['address', 'address', 'uint256', 'uint96'],
                 [userAddress, fDAIx.address, DEFAULT_FOLLOW_PRICE, DEFAULT_FOLLOW_FLOW_RATE]
             );
             const tx = lensHub.setFollowModule(
                 FIRST_PROFILE_ID,
                 superfluidCFAFollowModule.address,
-                followModuleData
+                followModuleInitData
             );
 
             const receipt = await waitForTx(tx);
@@ -506,13 +506,13 @@ makeSuiteCleanRoom('Superfluid CFA Follow Module', function() {
             matchEvent(receipt, 'FollowModuleSet', [
                 FIRST_PROFILE_ID,
                 superfluidCFAFollowModule.address,
-                followModuleData,
+                followModuleInitData,
                 await getTimestamp(),
             ]);
         });
 
         it('User should create a profile with the superfluid cfa follow module as the follow module and data, fetched profile data should be accurate', async function() {
-            const followModuleData = abiCoder.encode(
+            const followModuleInitData = abiCoder.encode(
                 ['address', 'address', 'uint256', 'uint96'],
                 [userAddress, fDAIx.address, DEFAULT_FOLLOW_PRICE, DEFAULT_FOLLOW_FLOW_RATE]
             );
@@ -522,7 +522,7 @@ makeSuiteCleanRoom('Superfluid CFA Follow Module', function() {
                     handle: MOCK_PROFILE_HANDLE,
                     imageURI: MOCK_PROFILE_URI,
                     followModule: superfluidCFAFollowModule.address,
-                    followModuleData: followModuleData,
+                    followModuleInitData,
                     followNFTURI: MOCK_FOLLOW_NFT_URI,
                 })
             ).to.not.be.reverted;
@@ -535,7 +535,7 @@ makeSuiteCleanRoom('Superfluid CFA Follow Module', function() {
         });
 
         it('User should create a profile with the superfluid cfa follow module as the follow module and data, user two create a cfa and follows, fee distribution is valid', async function() {
-            const followModuleData = abiCoder.encode(
+            const followModuleInitData = abiCoder.encode(
                 ['address', 'address', 'uint256', 'uint96'],
                 [userAddress, fDAIx.address, DEFAULT_FOLLOW_PRICE, DEFAULT_FOLLOW_FLOW_RATE]
             );
@@ -545,7 +545,7 @@ makeSuiteCleanRoom('Superfluid CFA Follow Module', function() {
                     handle: MOCK_PROFILE_HANDLE,
                     imageURI: MOCK_PROFILE_URI,
                     followModule: superfluidCFAFollowModule.address,
-                    followModuleData: followModuleData,
+                    followModuleInitData,
                     followNFTURI: MOCK_FOLLOW_NFT_URI,
                 })
             ).to.not.be.reverted;
