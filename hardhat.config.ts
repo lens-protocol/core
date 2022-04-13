@@ -31,7 +31,7 @@ const TRACK_GAS = process.env.TRACK_GAS === 'true';
 const BLOCK_EXPLORER_KEY = process.env.BLOCK_EXPLORER_KEY || '';
 
 const getCommonNetworkConfig = (networkName: eNetwork, networkId: number) => ({
-  url: NETWORKS_RPC_URL[networkName],
+  url: NETWORKS_RPC_URL[networkName] ?? '',
   accounts: {
     mnemonic: MNEMONIC,
     path: MNEMONIC_PATH,
