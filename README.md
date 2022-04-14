@@ -45,13 +45,12 @@ The Lens Protocol is a decentralized, non-custodial social graph. Lens implement
 >
 > (feel free to experiment and submit PR's)
 
-The environment is built using Docker Compose, note that your `.env` file must have an `ALCHEMY_KEY` or an `INFURA_KEY` variable, and an optional `MNEMONIC` and `ETHERSCAN_KEY`, defined like so:
+The environment is built using Docker Compose, note that your `.env` file must have the RPC URL of the network you want to use, and an optional `MNEMONIC` and `BLOCK_EXPLORER_KEY`, defined like so, assuming you choose to use Mumbai network:
 
 ```
 MNEMONIC="MNEMONIC YOU WANT TO DERIVE WALLETS FROM HERE"
-ALCHEMY_KEY="YOUR ALCHEMY KEY HERE"
-INFURA_KEY="OR YOUR INFURA KEY HERE"
-ETHERSCAN_KEY="YOUR ETHERSCAN API KEY HERE"
+MUMBAI_RPC_URL="YOUR RPC URL HERE"
+BLOCK_EXPLORER_KEY="YOUR BLOCK EXPLORER API KEY HERE"
 ```
 
 With the environment file set up, you can move on to using Docker:

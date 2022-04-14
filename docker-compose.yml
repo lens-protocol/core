@@ -14,11 +14,9 @@ services:
       - $HOME/.tenderly/config.yaml:/root/.tenderly/config.yaml:ro
     #environment:
       #- MNEMONIC=
-      #- ETHERSCAN_KEY=
-      #- INFURA_KEY=
-      #- ETHERSCAN_NETWORK=
+      #- RPC_URL=
+      #- BLOCK_EXPLORER_KEY=
       #- TENDERLY_PROJECT=
       #- TENDERLY_USERNAME=
-      #- ALCHEMY_KEY=
       #- TENDERLY_FORK_ID=
       #- TENDERLY_HEAD_ID=

@@ -173,7 +173,7 @@ export async function resetFork(): Promise<void> {
     params: [
       {
         forking: {
-          jsonRpcUrl: `https://eth-mainnet.alchemyapi.io/v2/${process.env.ALCHEMY_KEY}`,
+          jsonRpcUrl: process.env.MAINNET_RPC_URL,
           blockNumber: 12012081,
         },
       },

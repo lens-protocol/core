@@ -28,10 +28,10 @@ const MNEMONIC_PATH = "m/44'/60'/0'/0";
 const MNEMONIC = process.env.MNEMONIC || '';
 const MAINNET_FORK = process.env.MAINNET_FORK === 'true';
 const TRACK_GAS = process.env.TRACK_GAS === 'true';
-const ETHERSCAN_KEY = process.env.ETHERSCAN_KEY || '';
+const BLOCK_EXPLORER_KEY = process.env.BLOCK_EXPLORER_KEY || '';
 
 const getCommonNetworkConfig = (networkName: eNetwork, networkId: number) => ({
-  url: NETWORKS_RPC_URL[networkName],
+  url: NETWORKS_RPC_URL[networkName] ?? '',
   accounts: {
     mnemonic: MNEMONIC,
     path: MNEMONIC_PATH,
@@ -95,7 +95,7 @@ const config: HardhatUserConfig = {
     runOnCompile: false,
   },
   etherscan: {
-    apiKey: ETHERSCAN_KEY,
+    apiKey: BLOCK_EXPLORER_KEY,
   },
 };
 
