@@ -562,7 +562,6 @@ contract LensHub is LensNFTBase, VersionedInitializable, LensMultiState, LensHub
                 msg.sender,
                 profileIds,
                 datas,
-                FOLLOW_NFT_IMPL,
                 _profileById,
                 _profileIdByHandleHash
             );
@@ -605,7 +604,6 @@ contract LensHub is LensNFTBase, VersionedInitializable, LensMultiState, LensHub
                 vars.follower,
                 vars.profileIds,
                 vars.datas,
-                FOLLOW_NFT_IMPL,
                 _profileById,
                 _profileIdByHandleHash
             );
@@ -617,16 +615,7 @@ contract LensHub is LensNFTBase, VersionedInitializable, LensMultiState, LensHub
         uint256 pubId,
         bytes calldata data
     ) external override whenNotPaused returns (uint256) {
-        return
-            InteractionLogic.collect(
-                msg.sender,
-                profileId,
-                pubId,
-                data,
-                COLLECT_NFT_IMPL,
-                _pubByIdByProfile,
-                _profileById
-            );
+        return InteractionLogic.collect(msg.sender, profileId, pubId, data, _pubByIdByProfile);
     }
 
     /// @inheritdoc ILensHub
@@ -660,9 +649,7 @@ contract LensHub is LensNFTBase, VersionedInitializable, LensMultiState, LensHub
                 vars.profileId,
                 vars.pubId,
                 vars.data,
-                COLLECT_NFT_IMPL,
-                _pubByIdByProfile,
-                _profileById
+                _pubByIdByProfile
             );
     }
 
@@ -891,6 +878,16 @@ contract LensHub is LensNFTBase, VersionedInitializable, LensMultiState, LensHub
                 _profileById[tokenId].handle,
                 _profileById[tokenId].imageURI
             );
+    }
+
+    /// @inheritdoc ILensHub
+    function getFollowNFTImpl() external view override returns (address) {
+        return FOLLOW_NFT_IMPL;
+    }
+
+    /// @inheritdoc ILensHub
+    function getCollectNFTImpl() external view override returns (address) {
+        return COLLECT_NFT_IMPL;
     }
 
     /// ****************************

@@ -459,7 +459,7 @@ makeSuiteCleanRoom('Events', function () {
       const expectedName = MOCK_PROFILE_HANDLE + '-Follower';
       const expectedSymbol = getAbbreviation(MOCK_PROFILE_HANDLE) + '-Fl';
 
-      expect(receipt.logs.length).to.eq(6);
+      expect(receipt.logs.length).to.eq(5);
       matchEvent(receipt, 'FollowNFTDeployed', [FIRST_PROFILE_ID, followNFT, await getTimestamp()]);
       matchEvent(receipt, 'BaseInitialized', [expectedName, expectedSymbol, await getTimestamp()]);
       matchEvent(receipt, 'Followed', [
@@ -516,7 +516,7 @@ makeSuiteCleanRoom('Events', function () {
       const expectedName = MOCK_PROFILE_HANDLE + '-Collect-' + '1';
       const expectedSymbol = getAbbreviation(MOCK_PROFILE_HANDLE) + '-Cl-' + '1';
 
-      expect(receipt.logs.length).to.eq(7);
+      expect(receipt.logs.length).to.eq(6);
       matchEvent(receipt, 'CollectNFTDeployed', [
         FIRST_PROFILE_ID,
         1,
@@ -607,7 +607,7 @@ makeSuiteCleanRoom('Events', function () {
       const expectedName = MOCK_PROFILE_HANDLE + '-Collect-' + '1';
       const expectedSymbol = getAbbreviation(MOCK_PROFILE_HANDLE) + '-Cl-' + '1';
 
-      expect(receipt.logs.length).to.eq(7);
+      expect(receipt.logs.length).to.eq(6);
       matchEvent(receipt, 'CollectNFTDeployed', [
         FIRST_PROFILE_ID,
         1,

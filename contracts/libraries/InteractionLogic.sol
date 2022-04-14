@@ -2,6 +2,8 @@
 
 pragma solidity 0.8.10;
 
+import {FollowNFTProxy} from '../upgradeability/FollowNFTProxy.sol';
+import {CollectNFTProxy} from '../upgradeability/CollectNFTProxy.sol';
 import {Helpers} from './Helpers.sol';
 import {DataTypes} from './DataTypes.sol';
 import {Errors} from './Errors.sol';
@@ -11,8 +13,6 @@ import {IFollowNFT} from '../interfaces/IFollowNFT.sol';
 import {ICollectNFT} from '../interfaces/ICollectNFT.sol';
 import {IFollowModule} from '../interfaces/IFollowModule.sol';
 import {ICollectModule} from '../interfaces/ICollectModule.sol';
-import {Clones} from '@openzeppelin/contracts/proxy/Clones.sol';
-import {Strings} from '@openzeppelin/contracts/utils/Strings.sol';
 
 /**
  * @title InteractionLogic
@@ -23,8 +23,6 @@ import {Strings} from '@openzeppelin/contracts/utils/Strings.sol';
  * @dev The functions are external, so they are called from the hub via `delegateCall` under the hood.
  */
 library InteractionLogic {
-    using Strings for uint256;
-
     /**
      * @notice Follows the given profiles, executing the necessary logic and module calls before minting the follow
      * NFT(s) to the follower.
@@ -32,7 +30,6 @@ library InteractionLogic {
      * @param follower The address executing the follow.
      * @param profileIds The array of profile token IDs to follow.
      * @param followModuleDatas The array of follow module data parameters to pass to each profile's follow module.
-     * @param followNFTImpl The address of the follow NFT implementation, which has to be passed because it's an immutable in the hub.
      * @param _profileById A pointer to the storage mapping of profile structs by profile ID.
      * @param _profileIdByHandleHash A pointer to the storage mapping of profile IDs by handle hash.
      *
@@ -42,7 +39,6 @@ library InteractionLogic {
         address follower,
         uint256[] calldata profileIds,
         bytes[] calldata followModuleDatas,
-        address followNFTImpl,
         mapping(uint256 => DataTypes.ProfileStruct) storage _profileById,
         mapping(bytes32 => uint256) storage _profileIdByHandleHash
     ) external returns (uint256[] memory) {
@@ -57,7 +53,7 @@ library InteractionLogic {
             address followNFT = _profileById[profileIds[i]].followNFT;
 
             if (followNFT == address(0)) {
-                followNFT = _deployFollowNFT(profileIds[i], handle, followNFTImpl);
+                followNFT = _deployFollowNFT(profileIds[i]);
                 _profileById[profileIds[i]].followNFT = followNFT;
             }
 
@@ -86,9 +82,7 @@ library InteractionLogic {
      * @param profileId The token ID of the publication being collected's parent profile.
      * @param pubId The publication ID of the publication being collected.
      * @param collectModuleData The data to pass to the publication's collect module.
-     * @param collectNFTImpl The address of the collect NFT implementation, which has to be passed because it's an immutable in the hub.
      * @param _pubByIdByProfile A pointer to the storage mapping of publications by pubId by profile ID.
-     * @param _profileById A pointer to the storage mapping of profile structs by profile ID.
      *
      * @return uint256 An integer representing the minted token ID.
      */
@@ -97,10 +91,8 @@ library InteractionLogic {
         uint256 profileId,
         uint256 pubId,
         bytes calldata collectModuleData,
-        address collectNFTImpl,
         mapping(uint256 => mapping(uint256 => DataTypes.PublicationStruct))
-            storage _pubByIdByProfile,
-        mapping(uint256 => DataTypes.ProfileStruct) storage _profileById
+            storage _pubByIdByProfile
     ) external returns (uint256) {
         (uint256 rootProfileId, uint256 rootPubId, address rootCollectModule) = Helpers
             .getPointedIfMirror(profileId, pubId, _pubByIdByProfile);
@@ -110,12 +102,7 @@ library InteractionLogic {
         {
             address collectNFT = _pubByIdByProfile[rootProfileId][rootPubId].collectNFT;
             if (collectNFT == address(0)) {
-                collectNFT = _deployCollectNFT(
-                    rootProfileId,
-                    rootPubId,
-                    _profileById[rootProfileId].handle,
-                    collectNFTImpl
-                );
+                collectNFT = _deployCollectNFT(rootProfileId, rootPubId);
                 _pubByIdByProfile[rootProfileId][rootPubId].collectNFT = collectNFT;
             }
             tokenId = ICollectNFT(collectNFT).mint(collector);
@@ -144,28 +131,22 @@ library InteractionLogic {
      * @notice Deploys the given profile's Follow NFT contract.
      *
      * @param profileId The token ID of the profile which Follow NFT should be deployed.
-     * @param handle The profile's associated handle.
-     * @param followNFTImpl The address of the Follow NFT implementation that should be used for the deployment.
      *
      * @return address The address of the deployed Follow NFT contract.
      */
-    function _deployFollowNFT(
-        uint256 profileId,
-        string memory handle,
-        address followNFTImpl
-    ) private returns (address) {
-        address followNFT = Clones.clone(followNFTImpl);
-
-        bytes4 firstBytes = bytes4(bytes(handle));
-
-        string memory followNFTName = string(
-            abi.encodePacked(handle, Constants.FOLLOW_NFT_NAME_SUFFIX)
+    function _deployFollowNFT(uint256 profileId)
+        private
+        returns (
+            // string memory handle,
+            // address followNFTImpl
+            address
+        )
+    {
+        bytes memory functionData = abi.encodeWithSelector(
+            IFollowNFT.initialize.selector,
+            profileId
         );
-        string memory followNFTSymbol = string(
-            abi.encodePacked(firstBytes, Constants.FOLLOW_NFT_SYMBOL_SUFFIX)
-        );
-
-        IFollowNFT(followNFT).initialize(profileId, followNFTName, followNFTSymbol);
+        address followNFT = address(new FollowNFTProxy(functionData));
         emit Events.FollowNFTDeployed(profileId, followNFT, block.timestamp);
 
         return followNFT;
@@ -176,29 +157,16 @@ library InteractionLogic {
      *
      * @param profileId The token ID of the profile which Collect NFT should be deployed.
      * @param pubId The publication ID of the publication being collected, which Collect NFT should be deployed.
-     * @param handle The profile's associated handle.
-     * @param collectNFTImpl The address of the Collect NFT implementation that should be used for the deployment.
      *
      * @return address The address of the deployed Collect NFT contract.
      */
-    function _deployCollectNFT(
-        uint256 profileId,
-        uint256 pubId,
-        string memory handle,
-        address collectNFTImpl
-    ) private returns (address) {
-        address collectNFT = Clones.clone(collectNFTImpl);
-
-        bytes4 firstBytes = bytes4(bytes(handle));
-
-        string memory collectNFTName = string(
-            abi.encodePacked(handle, Constants.COLLECT_NFT_NAME_INFIX, pubId.toString())
+    function _deployCollectNFT(uint256 profileId, uint256 pubId) private returns (address) {
+        bytes memory functionData = abi.encodeWithSelector(
+            ICollectNFT.initialize.selector,
+            profileId,
+            pubId
         );
-        string memory collectNFTSymbol = string(
-            abi.encodePacked(firstBytes, Constants.COLLECT_NFT_SYMBOL_INFIX, pubId.toString())
-        );
-
-        ICollectNFT(collectNFT).initialize(profileId, pubId, collectNFTName, collectNFTSymbol);
+        address collectNFT = address(new CollectNFTProxy(functionData));
         emit Events.CollectNFTDeployed(profileId, pubId, collectNFT, block.timestamp);
 
         return collectNFT;
