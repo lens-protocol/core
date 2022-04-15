@@ -48,6 +48,8 @@ import {
   LensPeriphery__factory,
   ProfileFollowModule,
   ProfileFollowModule__factory,
+  CollectNFT,
+  FollowNFT,
 } from '../typechain-types';
 import { LensHubLibraryAddresses } from '../typechain-types/factories/LensHub__factory';
 import { FAKE_PRIVATEKEY, ZERO_ADDRESS } from './helpers/constants';
@@ -88,8 +90,8 @@ export let userAddress: string;
 export let userTwoAddress: string;
 export let userThreeAddress: string;
 export let governanceAddress: string;
-export let followNFTImplAddress: string;
-export let collectNFTImplAddress: string;
+export let followNFTImpl: FollowNFT;
+export let collectNFTImpl: CollectNFT;
 export let treasuryAddress: string;
 export let testWallet: Wallet;
 export let lensHubImpl: LensHub;
@@ -178,8 +180,8 @@ before(async function () {
 
   const hubProxyAddress = computeContractAddress(deployerAddress, nonce + 3); //'0x' + keccak256(RLP.encode([deployerAddress, hubProxyNonce])).substr(26);
 
-  const followNFTImpl = await new FollowNFT__factory(deployer).deploy(hubProxyAddress);
-  const collectNFTImpl = await new CollectNFT__factory(deployer).deploy(hubProxyAddress);
+  followNFTImpl = await new FollowNFT__factory(deployer).deploy(hubProxyAddress);
+  collectNFTImpl = await new CollectNFT__factory(deployer).deploy(hubProxyAddress);
 
   lensHubImpl = await new LensHub__factory(hubLibs, deployer).deploy(
     followNFTImpl.address,
