@@ -55,7 +55,7 @@ makeSuiteCleanRoom('Collect NFT', function () {
 
   context('Negatives', function () {
     it('User should fail to reinitialize the collect NFT', async function () {
-      await expect(collectNFT.initialize(FIRST_PROFILE_ID, 1)).to.be.revertedWith(
+      await expect(collectNFT.initialize(FIRST_PROFILE_ID, 1, 'name', 'symbol')).to.be.revertedWith(
         ERRORS.INITIALIZED
       );
     });

@@ -6,9 +6,7 @@ import {ICollectNFT} from '../interfaces/ICollectNFT.sol';
 import {ILensHub} from '../interfaces/ILensHub.sol';
 import {Errors} from '../libraries/Errors.sol';
 import {Events} from '../libraries/Events.sol';
-import {Constants} from '../libraries/Constants.sol';
 import {LensNFTBase} from './base/LensNFTBase.sol';
-import {Strings} from '@openzeppelin/contracts/utils/Strings.sol';
 
 /**
  * @title CollectNFT
@@ -18,8 +16,6 @@ import {Strings} from '@openzeppelin/contracts/utils/Strings.sol';
  * the first collect for a given publication, and the token URI points to the original publication's contentURI.
  */
 contract CollectNFT is LensNFTBase, ICollectNFT {
-    using Strings for uint256;
-
     address public immutable HUB;
 
     uint256 internal _profileId;
@@ -37,12 +33,17 @@ contract CollectNFT is LensNFTBase, ICollectNFT {
     }
 
     /// @inheritdoc ICollectNFT
-    function initialize(uint256 profileId, uint256 pubId) external override {
+    function initialize(
+        uint256 profileId,
+        uint256 pubId,
+        string calldata name,
+        string calldata symbol
+    ) external override {
         if (_initialized) revert Errors.Initialized();
         _initialized = true;
         _profileId = profileId;
         _pubId = pubId;
-        // super._initialize(name, symbol);
+        super._initialize(name, symbol);
         emit Events.CollectNFTInitialized(profileId, pubId, block.timestamp);
     }
 
@@ -64,21 +65,6 @@ contract CollectNFT is LensNFTBase, ICollectNFT {
     function tokenURI(uint256 tokenId) public view override returns (string memory) {
         if (!_exists(tokenId)) revert Errors.TokenDoesNotExist();
         return ILensHub(HUB).getContentURI(_profileId, _pubId);
-    }
-
-    function name() public view override returns (string memory) {
-        string memory handle = ILensHub(HUB).getHandle(_profileId);
-        return
-            string(abi.encodePacked(handle, Constants.COLLECT_NFT_NAME_INFIX, _pubId.toString()));
-    }
-
-    function symbol() public view override returns (string memory) {
-        string memory handle = ILensHub(HUB).getHandle(_profileId);
-        bytes4 firstBytes = bytes4(bytes(handle));
-        return
-            string(
-                abi.encodePacked(firstBytes, Constants.COLLECT_NFT_SYMBOL_INFIX, _pubId.toString())
-            );
     }
 
     /**

@@ -13,6 +13,8 @@ import {IFollowNFT} from '../interfaces/IFollowNFT.sol';
 import {ICollectNFT} from '../interfaces/ICollectNFT.sol';
 import {IFollowModule} from '../interfaces/IFollowModule.sol';
 import {ICollectModule} from '../interfaces/ICollectModule.sol';
+import {Clones} from '@openzeppelin/contracts/proxy/Clones.sol';
+import {Strings} from '@openzeppelin/contracts/utils/Strings.sol';
 
 /**
  * @title InteractionLogic
@@ -23,6 +25,8 @@ import {ICollectModule} from '../interfaces/ICollectModule.sol';
  * @dev The functions are external, so they are called from the hub via `delegateCall` under the hood.
  */
 library InteractionLogic {
+    using Strings for uint256;
+
     /**
      * @notice Follows the given profiles, executing the necessary logic and module calls before minting the follow
      * NFT(s) to the follower.
@@ -82,7 +86,9 @@ library InteractionLogic {
      * @param profileId The token ID of the publication being collected's parent profile.
      * @param pubId The publication ID of the publication being collected.
      * @param collectModuleData The data to pass to the publication's collect module.
+     * @param collectNFTImpl The address of the collect NFT implementation, which has to be passed because it's an immutable in the hub.
      * @param _pubByIdByProfile A pointer to the storage mapping of publications by pubId by profile ID.
+     * @param _profileById A pointer to the storage mapping of profile structs by profile ID.
      *
      * @return uint256 An integer representing the minted token ID.
      */
@@ -91,8 +97,10 @@ library InteractionLogic {
         uint256 profileId,
         uint256 pubId,
         bytes calldata collectModuleData,
+        address collectNFTImpl,
         mapping(uint256 => mapping(uint256 => DataTypes.PublicationStruct))
-            storage _pubByIdByProfile
+            storage _pubByIdByProfile,
+        mapping(uint256 => DataTypes.ProfileStruct) storage _profileById
     ) external returns (uint256) {
         (uint256 rootProfileId, uint256 rootPubId, address rootCollectModule) = Helpers
             .getPointedIfMirror(profileId, pubId, _pubByIdByProfile);
@@ -102,7 +110,12 @@ library InteractionLogic {
         {
             address collectNFT = _pubByIdByProfile[rootProfileId][rootPubId].collectNFT;
             if (collectNFT == address(0)) {
-                collectNFT = _deployCollectNFT(rootProfileId, rootPubId);
+                collectNFT = _deployCollectNFT(
+                    rootProfileId,
+                    rootPubId,
+                    _profileById[rootProfileId].handle,
+                    collectNFTImpl
+                );
                 _pubByIdByProfile[rootProfileId][rootPubId].collectNFT = collectNFT;
             }
             tokenId = ICollectNFT(collectNFT).mint(collector);
@@ -157,16 +170,29 @@ library InteractionLogic {
      *
      * @param profileId The token ID of the profile which Collect NFT should be deployed.
      * @param pubId The publication ID of the publication being collected, which Collect NFT should be deployed.
+     * @param handle The profile's associated handle.
+     * @param collectNFTImpl The address of the Collect NFT implementation that should be used for the deployment.
      *
      * @return address The address of the deployed Collect NFT contract.
      */
-    function _deployCollectNFT(uint256 profileId, uint256 pubId) private returns (address) {
-        bytes memory functionData = abi.encodeWithSelector(
-            ICollectNFT.initialize.selector,
-            profileId,
-            pubId
+    function _deployCollectNFT(
+        uint256 profileId,
+        uint256 pubId,
+        string memory handle,
+        address collectNFTImpl
+    ) private returns (address) {
+        address collectNFT = Clones.clone(collectNFTImpl);
+
+        bytes4 firstBytes = bytes4(bytes(handle));
+
+        string memory collectNFTName = string(
+            abi.encodePacked(handle, Constants.COLLECT_NFT_NAME_INFIX, pubId.toString())
         );
-        address collectNFT = address(new CollectNFTProxy(functionData));
+        string memory collectNFTSymbol = string(
+            abi.encodePacked(firstBytes, Constants.COLLECT_NFT_SYMBOL_INFIX, pubId.toString())
+        );
+
+        ICollectNFT(collectNFT).initialize(profileId, pubId, collectNFTName, collectNFTSymbol);
         emit Events.CollectNFTDeployed(profileId, pubId, collectNFT, block.timestamp);
 
         return collectNFT;

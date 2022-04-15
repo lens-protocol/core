@@ -615,7 +615,16 @@ contract LensHub is LensNFTBase, VersionedInitializable, LensMultiState, LensHub
         uint256 pubId,
         bytes calldata data
     ) external override whenNotPaused returns (uint256) {
-        return InteractionLogic.collect(msg.sender, profileId, pubId, data, _pubByIdByProfile);
+        return
+            InteractionLogic.collect(
+                msg.sender,
+                profileId,
+                pubId,
+                data,
+                COLLECT_NFT_IMPL,
+                _pubByIdByProfile,
+                _profileById
+            );
     }
 
     /// @inheritdoc ILensHub
@@ -649,7 +658,9 @@ contract LensHub is LensNFTBase, VersionedInitializable, LensMultiState, LensHub
                 vars.profileId,
                 vars.pubId,
                 vars.data,
-                _pubByIdByProfile
+                COLLECT_NFT_IMPL,
+                _pubByIdByProfile,
+                _profileById
             );
     }
 
