@@ -353,13 +353,11 @@ library DataTypes {
     /**
      * @notice A struct containing the parameters required for the `setProfileMetadataWithSig()` function.
      *
-     * @param user The user which is the message signer.
      * @param profileId The profile ID for which to set the metadata.
      * @param metadata The metadata string to set for the profile and user.
      * @param sig The EIP712Signature struct containing the user's signature.
      */
     struct SetProfileMetadataWithSigData {
-        address user;
         uint256 profileId;
         string metadata;
         EIP712Signature sig;
