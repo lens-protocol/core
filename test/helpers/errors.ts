@@ -7,7 +7,6 @@ export const ERRORS = {
   NOT_OWNER_OR_APPROVED: 'NotOwnerOrApproved()',
   NOT_HUB: 'NotHub()',
   TOKEN_DOES_NOT_EXIST: 'TokenDoesNotExist()',
-  CALLER_NOT_WHITELSITED_MODULE: 'CallerNotWhitelistedModule()',
   NOT_GOVERNANCE: 'NotGovernance()',
   COLLECT_MODULE_NOT_WHITELISTED: 'CollectModuleNotWhitelisted()',
   FOLLOW_MODULE_NOT_WHITELISTED: 'FollowModuleNotWhitelisted()',
