@@ -1071,16 +1071,10 @@ makeSuiteCleanRoom('Misc', function () {
         });
 
         context('Negatives', function () {
-          it('User two should fail to set profile metadata URI for a profile that is not theirs', async function () {
+          it('User two should fail to set profile metadata URI for a profile that is not theirs while they are not the dispatcher', async function () {
             await expect(
               lensPeriphery.connect(userTwo).setProfileMetadataURI(FIRST_PROFILE_ID, MOCK_DATA)
-            ).to.be.revertedWith(ERRORS.NOT_PROFILE_OWNER);
-          });
-
-          it("User should fail to set profile metadata URI as dispatcher without being the profile's dispatcher", async function () {
-            await expect(
-              lensPeriphery.dispatcherSetProfileMetadataURI(FIRST_PROFILE_ID, MOCK_DATA)
-            ).to.be.revertedWith(ERRORS.NOT_DISPATCHER);
+            ).to.be.revertedWith(ERRORS.NOT_PROFILE_OWNER_OR_DISPATCHER);
           });
         });
 
@@ -1090,9 +1084,7 @@ makeSuiteCleanRoom('Misc', function () {
               lensHub.setDispatcher(FIRST_PROFILE_ID, userTwoAddress)
             ).to.not.be.reverted;
             await expect(
-              lensPeriphery
-                .connect(userTwo)
-                .dispatcherSetProfileMetadataURI(FIRST_PROFILE_ID, MOCK_DATA)
+              lensPeriphery.connect(userTwo).setProfileMetadataURI(FIRST_PROFILE_ID, MOCK_DATA)
             ).to.not.be.reverted;
 
             expect(await lensPeriphery.getProfileMetadataURI(FIRST_PROFILE_ID)).to.eq(MOCK_DATA);
@@ -1117,9 +1109,7 @@ makeSuiteCleanRoom('Misc', function () {
             ).to.not.be.reverted;
 
             const tx = await waitForTx(
-              lensPeriphery
-                .connect(userTwo)
-                .dispatcherSetProfileMetadataURI(FIRST_PROFILE_ID, MOCK_DATA)
+              lensPeriphery.connect(userTwo).setProfileMetadataURI(FIRST_PROFILE_ID, MOCK_DATA)
             );
 
             matchEvent(tx, 'ProfileMetadataSet', [

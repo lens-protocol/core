@@ -43,25 +43,13 @@ contract LensPeriphery {
     }
 
     /**
-     * @notice Sets profile metadata for a profile as its dispatcher.
-     *
-     * @param profileId The profile ID to set the metadata for.
-     * @param metadata The metadata string to set for the profile.
-     */
-    function dispatcherSetProfileMetadataURI(uint256 profileId, string calldata metadata) external {
-        if (msg.sender != HUB.getDispatcher(profileId)) revert Errors.NotDispatcher();
-        _setProfileMetadataURI(profileId, metadata);
-    }
-
-    /**
      * @notice Sets the profile metadata for a given profile.
      *
      * @param profileId The profile ID to set the metadata for.
      * @param metadata The metadata string to set for the profile.
      */
     function setProfileMetadataURI(uint256 profileId, string calldata metadata) external {
-        address owner = IERC721Time(address(HUB)).ownerOf(profileId);
-        if (msg.sender != owner) revert Errors.NotProfileOwner();
+        _validateCallerIsProfileOwnerOrDispatcher(profileId);
         _setProfileMetadataURI(profileId, metadata);
     }
 
@@ -165,6 +153,16 @@ contract LensPeriphery {
             }
         }
         emit Events.FollowsToggled(follower, profileIds, enables, block.timestamp);
+    }
+
+    function _validateCallerIsProfileOwnerOrDispatcher(uint256 profileId) internal view {
+        if (
+            msg.sender == IERC721Time(address(HUB)).ownerOf(profileId) ||
+            msg.sender == HUB.getDispatcher(profileId)
+        ) {
+            return;
+        }
+        revert Errors.NotProfileOwnerOrDispatcher();
     }
 
     /**
