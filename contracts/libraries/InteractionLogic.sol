@@ -150,8 +150,6 @@ library InteractionLogic {
     function _deployFollowNFT(uint256 profileId)
         private
         returns (
-            // string memory handle,
-            // address followNFTImpl
             address
         )
     {
