@@ -3,7 +3,6 @@
 pragma solidity 0.8.10;
 
 import {FollowNFTProxy} from '../upgradeability/FollowNFTProxy.sol';
-import {CollectNFTProxy} from '../upgradeability/CollectNFTProxy.sol';
 import {Helpers} from './Helpers.sol';
 import {DataTypes} from './DataTypes.sol';
 import {Errors} from './Errors.sol';
