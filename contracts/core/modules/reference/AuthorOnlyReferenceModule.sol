@@ -42,7 +42,7 @@ contract FollowerOnlyReferenceModule is FollowValidationModuleBase, IReferenceMo
         address commentCreator = IERC721(HUB).ownerOf(profileId);
         address OriginalAuthor = IERC721(HUB).ownerOf(profileIdPointed);
         if (OriginalAuthor != commentCreator) {
-            revert Errors.CommentInvalid();
+            revert Errors.CommentNotAllowed();
         }
         
     }
@@ -61,7 +61,7 @@ contract FollowerOnlyReferenceModule is FollowValidationModuleBase, IReferenceMo
         address mirrorCreator = IERC721(HUB).ownerOf(profileId);
         address OriginalAuthor = IERC721(HUB).ownerOf(profileIdPointed);
         if (OriginalAuthor != mirrorCreator) {
-            revert Errors.CommentInvalid();
+            revert Errors.MirrorNotAllowed();
         }
     }
 }
