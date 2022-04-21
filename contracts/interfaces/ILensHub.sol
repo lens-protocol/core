@@ -523,4 +523,19 @@ interface ILensHub {
      * @return PubType The publication type, as a member of an enum (either "post," "comment" or "mirror").
      */
     function getPubType(uint256 profileId, uint256 pubId) external view returns (DataTypes.PubType);
+
+    /**
+     * @notice Returns the follow NFT implementation address.
+     *
+     * @return address The follow NFT implementation address.
+     */
+    function getFollowNFTImpl() external view returns (address);
+
+    /**
+     * @notice Returns the collect NFT implementation address.
+     *
+     * @return address The collect NFT implementation address.
+     */
+    function getCollectNFTImpl() external view returns (address);
+
 }

@@ -459,9 +459,8 @@ makeSuiteCleanRoom('Events', function () {
       const expectedName = MOCK_PROFILE_HANDLE + '-Follower';
       const expectedSymbol = getAbbreviation(MOCK_PROFILE_HANDLE) + '-Fl';
 
-      expect(receipt.logs.length).to.eq(6);
+      expect(receipt.logs.length).to.eq(5);
       matchEvent(receipt, 'FollowNFTDeployed', [FIRST_PROFILE_ID, followNFT, await getTimestamp()]);
-      matchEvent(receipt, 'BaseInitialized', [expectedName, expectedSymbol, await getTimestamp()]);
       matchEvent(receipt, 'Followed', [
         userTwoAddress,
         [FIRST_PROFILE_ID],
