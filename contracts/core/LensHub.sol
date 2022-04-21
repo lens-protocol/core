@@ -90,11 +90,13 @@ contract LensHub is LensNFTBase, VersionedInitializable, LensMultiState, LensHub
 
     /// @inheritdoc ILensHub
     function setState(DataTypes.ProtocolState newState) external override {
-        if (msg.sender == _governance || msg.sender == _emergencyAdmin) {
-            _setState(newState);
-        } else {
+        if (msg.sender == _emergencyAdmin) {
+            if (newState == DataTypes.ProtocolState.Unpaused)
+                revert Errors.EmergencyAdminCannotUnpause();
+        } else if (msg.sender != _governance) {
             revert Errors.NotGovernanceOrEmergencyAdmin();
         }
+        _setState(newState);
     }
 
     ///@inheritdoc ILensHub
