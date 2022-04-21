@@ -41,6 +41,8 @@ library Errors {
     error FollowNotApproved();
     error MintLimitExceeded();
     error CollectNotAllowed();
+    error CommentNotAllowed();
+    error MirrorNotAllowed();
 
     // MultiState Errors
     error Paused();
