@@ -1071,47 +1071,23 @@ makeSuiteCleanRoom('Misc', function () {
         });
 
         context('Negatives', function () {
-          it("User should fail to set profile metadata URI as dispatcher without being the profile's dispatcher", async function () {
+          it('User two should fail to set profile metadata URI for a profile that is not theirs while they are not the dispatcher', async function () {
             await expect(
-              lensPeriphery.dispatcherSetProfileMetadataURI(FIRST_PROFILE_ID, MOCK_DATA)
-            ).to.be.revertedWith(ERRORS.NOT_DISPATCHER);
-          });
-
-          it('Fetching profile metadata for a profile that does not exist yet should fail', async function () {
-            await expect(
-              lensPeriphery.getProfileMetadataURI(FIRST_PROFILE_ID + 1)
-            ).to.be.revertedWith(ERRORS.ERC721_QUERY_FOR_NONEXISTENT_TOKEN);
+              lensPeriphery.connect(userTwo).setProfileMetadataURI(FIRST_PROFILE_ID, MOCK_DATA)
+            ).to.be.revertedWith(ERRORS.NOT_PROFILE_OWNER_OR_DISPATCHER);
           });
         });
 
         context('Scenarios', function () {
-          it('User should set profile metadata for a profile that does not exist, fetched data should be accurate and revert without passing the owner', async function () {
-            const secondProfileId = FIRST_PROFILE_ID + 1;
-            await expect(
-              lensPeriphery.setProfileMetadataURI(secondProfileId, MOCK_DATA)
-            ).to.not.be.reverted;
-
-            expect(
-              await lensPeriphery.getProfileMetadataURIByOwner(userAddress, secondProfileId)
-            ).to.eq(MOCK_DATA);
-            await expect(lensPeriphery.getProfileMetadataURI(secondProfileId)).to.be.revertedWith(
-              ERRORS.ERC721_QUERY_FOR_NONEXISTENT_TOKEN
-            );
-          });
-
           it("User should set user two as dispatcher, user two should set profile metadata URI for user one's profile, fetched data should be accurate", async function () {
             await expect(
               lensHub.setDispatcher(FIRST_PROFILE_ID, userTwoAddress)
             ).to.not.be.reverted;
             await expect(
-              lensPeriphery
-                .connect(userTwo)
-                .dispatcherSetProfileMetadataURI(FIRST_PROFILE_ID, MOCK_DATA)
+              lensPeriphery.connect(userTwo).setProfileMetadataURI(FIRST_PROFILE_ID, MOCK_DATA)
             ).to.not.be.reverted;
 
-            expect(
-              await lensPeriphery.getProfileMetadataURIByOwner(userAddress, FIRST_PROFILE_ID)
-            ).to.eq(MOCK_DATA);
+            expect(await lensPeriphery.getProfileMetadataURI(FIRST_PROFILE_ID)).to.eq(MOCK_DATA);
             expect(await lensPeriphery.getProfileMetadataURI(FIRST_PROFILE_ID)).to.eq(MOCK_DATA);
           });
 
@@ -1121,7 +1097,6 @@ makeSuiteCleanRoom('Misc', function () {
             );
 
             matchEvent(tx, 'ProfileMetadataSet', [
-              userAddress,
               FIRST_PROFILE_ID,
               MOCK_DATA,
               await getTimestamp(),
@@ -1134,13 +1109,10 @@ makeSuiteCleanRoom('Misc', function () {
             ).to.not.be.reverted;
 
             const tx = await waitForTx(
-              lensPeriphery
-                .connect(userTwo)
-                .dispatcherSetProfileMetadataURI(FIRST_PROFILE_ID, MOCK_DATA)
+              lensPeriphery.connect(userTwo).setProfileMetadataURI(FIRST_PROFILE_ID, MOCK_DATA)
             );
 
             matchEvent(tx, 'ProfileMetadataSet', [
-              userAddress,
               FIRST_PROFILE_ID,
               MOCK_DATA,
               await getTimestamp(),
@@ -1175,7 +1147,6 @@ makeSuiteCleanRoom('Misc', function () {
             );
             await expect(
               lensPeriphery.setProfileMetadataURIWithSig({
-                user: testWallet.address,
                 profileId: FIRST_PROFILE_ID,
                 metadata: MOCK_DATA,
                 sig: {
@@ -1199,7 +1170,6 @@ makeSuiteCleanRoom('Misc', function () {
             );
             await expect(
               lensPeriphery.setProfileMetadataURIWithSig({
-                user: testWallet.address,
                 profileId: FIRST_PROFILE_ID,
                 metadata: MOCK_DATA,
                 sig: {
@@ -1223,7 +1193,6 @@ makeSuiteCleanRoom('Misc', function () {
             );
             await expect(
               lensPeriphery.setProfileMetadataURIWithSig({
-                user: testWallet.address,
                 profileId: FIRST_PROFILE_ID,
                 metadata: MOCK_DATA,
                 sig: {
@@ -1249,7 +1218,6 @@ makeSuiteCleanRoom('Misc', function () {
             );
             const tx = await waitForTx(
               lensPeriphery.setProfileMetadataURIWithSig({
-                user: testWallet.address,
                 profileId: FIRST_PROFILE_ID,
                 metadata: MOCK_DATA,
                 sig: {
@@ -1262,12 +1230,9 @@ makeSuiteCleanRoom('Misc', function () {
             );
 
             expect(await lensPeriphery.getProfileMetadataURI(FIRST_PROFILE_ID)).to.eq(MOCK_DATA);
-            expect(
-              await lensPeriphery.getProfileMetadataURIByOwner(testWallet.address, FIRST_PROFILE_ID)
-            ).to.eq(MOCK_DATA);
+            expect(await lensPeriphery.getProfileMetadataURI(FIRST_PROFILE_ID)).to.eq(MOCK_DATA);
 
             matchEvent(tx, 'ProfileMetadataSet', [
-              testWallet.address,
               FIRST_PROFILE_ID,
               MOCK_DATA,
               await getTimestamp(),
