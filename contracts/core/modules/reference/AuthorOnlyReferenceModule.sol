@@ -8,13 +8,12 @@ import {Errors} from '../../../libraries/Errors.sol';
 import {IERC721} from '@openzeppelin/contracts/token/ERC721/IERC721.sol';
 
 /**
- * @title FollowerOnlyReferenceModule
- * @author Lens Protocol
+ * @title AuthorOnlyReferenceModule
+ * @author Lens Protocol/Sébastien Bellanger (Share CEO)
  *
- * @notice A simple reference module that validates that comments or mirrors originate from a profile owned
- * by a follower.
+ * @notice A simple reference module that validates that comments or mirrors originate is the original author of parent.
  */
-contract FollowerOnlyReferenceModule is FollowValidationModuleBase, IReferenceModule {
+contract AuthorOnlyReferenceModule is IReferenceModule {
     constructor(address hub) ModuleBase(hub) {}
 
     /**
@@ -29,7 +28,7 @@ contract FollowerOnlyReferenceModule is FollowValidationModuleBase, IReferenceMo
     }
 
     /**
-     * @notice Validates that the commenting profile's owner is a follower.
+     * @notice Validates that the commenting profile's owner is the original author.
      *
      * NOTE: We don't need to care what the pointed publication is in this context.
      */
@@ -48,7 +47,7 @@ contract FollowerOnlyReferenceModule is FollowValidationModuleBase, IReferenceMo
     }
 
     /**
-     * @notice Validates that the commenting profile's owner is a follower.
+     * @notice Validates that the commenting profile's owner is the original author.
      *
      * NOTE: We don't need to care what the pointed publication is in this context.
      */
