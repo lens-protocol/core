@@ -13,7 +13,7 @@ import {IERC721} from '@openzeppelin/contracts/token/ERC721/IERC721.sol';
  *
  * @notice A simple reference module that validates that comments or mirrors originate is the original author of parent.
  */
-contract AuthorOnlyReferenceModule is IReferenceModule {
+contract AuthorOnlyReferenceModule is IReferenceModule, ModuleBase {
     constructor(address hub) ModuleBase(hub) {}
 
     /**
