@@ -43,6 +43,8 @@ import {
   userThree,
   testWallet,
   lensPeriphery,
+  followNFTImpl,
+  collectNFTImpl,
 } from '../__setup.spec';
 
 /**
@@ -165,6 +167,14 @@ makeSuiteCleanRoom('Misc', function () {
         ).to.not.be.reverted;
       }
       expect(await lensHub.getPubCount(FIRST_PROFILE_ID)).to.eq(expectedCount);
+    });
+
+    it('Follow NFT impl getter should return the correct address', async function () {
+      expect(await lensHub.getFollowNFTImpl()).to.eq(followNFTImpl.address);
+    });
+
+    it('Collect NFT impl getter should return the correct address', async function () {
+      expect(await lensHub.getCollectNFTImpl()).to.eq(collectNFTImpl.address);
     });
 
     it('Profile tokenURI should return the accurate URI', async function () {
