@@ -8,6 +8,7 @@ import {ILensHub} from '../interfaces/ILensHub.sol';
 import {Errors} from '../libraries/Errors.sol';
 import {Events} from '../libraries/Events.sol';
 import {DataTypes} from '../libraries/DataTypes.sol';
+import {Constants} from '../libraries/Constants.sol';
 import {LensNFTBase} from './base/LensNFTBase.sol';
 
 /**
@@ -50,15 +51,10 @@ contract FollowNFT is LensNFTBase, IFollowNFT {
     }
 
     /// @inheritdoc IFollowNFT
-    function initialize(
-        uint256 profileId,
-        string calldata name,
-        string calldata symbol
-    ) external override {
+    function initialize(uint256 profileId) external override {
         if (_initialized) revert Errors.Initialized();
         _initialized = true;
         _profileId = profileId;
-        super._initialize(name, symbol);
         emit Events.FollowNFTInitialized(profileId, block.timestamp);
     }
 
@@ -127,6 +123,17 @@ contract FollowNFT is LensNFTBase, IFollowNFT {
         uint256 snapshotCount = _delSupplySnapshotCount;
         if (snapshotCount == 0) return 0; // Returning zero since this means a delegation has never occurred
         return _getSnapshotValueByBlockNumber(_delSupplySnapshots, blockNumber, snapshotCount);
+    }
+
+    function name() public view override returns (string memory) {
+        string memory handle = ILensHub(HUB).getHandle(_profileId);
+        return string(abi.encodePacked(handle, Constants.FOLLOW_NFT_NAME_SUFFIX));
+    }
+
+    function symbol() public view override returns (string memory) {
+        string memory handle = ILensHub(HUB).getHandle(_profileId);
+        bytes4 firstBytes = bytes4(bytes(handle));
+        return string(abi.encodePacked(firstBytes, Constants.FOLLOW_NFT_SYMBOL_SUFFIX));
     }
 
     function _getSnapshotValueByBlockNumber(

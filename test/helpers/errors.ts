@@ -9,6 +9,8 @@ export const ERRORS = {
   TOKEN_DOES_NOT_EXIST: 'TokenDoesNotExist()',
   CALLER_NOT_WHITELSITED_MODULE: 'CallerNotWhitelistedModule()',
   NOT_GOVERNANCE: 'NotGovernance()',
+  NOT_GOVERNANCE_OR_EMERGENCY_ADMIN: 'NotGovernanceOrEmergencyAdmin()',
+  EMERGENCY_ADMIN_CANNOT_UNPAUSE: 'EmergencyAdminCannotUnpause()',
   COLLECT_MODULE_NOT_WHITELISTED: 'CollectModuleNotWhitelisted()',
   FOLLOW_MODULE_NOT_WHITELISTED: 'FollowModuleNotWhitelisted()',
   REFERENCE_MODULE_NOT_WHITELISTED: 'ReferenceModuleNotWhitelisted()',
@@ -42,7 +44,6 @@ export const ERRORS = {
     "Transaction reverted: function selector was not recognized and there's no fallback function",
   PAUSED: 'Paused()',
   PUBLISHING_PAUSED: 'PublishingPaused()',
-  NOT_GOVERNANCE_OR_EMERGENCY_ADMIN: 'NotGovernanceOrEmergencyAdmin()',
   NO_REASON_ABI_DECODE:
     "Transaction reverted and Hardhat couldn't infer the reason. Please report this to help us improve Hardhat.",
 };

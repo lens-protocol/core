@@ -13,6 +13,7 @@ library Errors {
     error TokenDoesNotExist();
     error NotGovernance();
     error NotGovernanceOrEmergencyAdmin();
+    error EmergencyAdminCannotUnpause();
     error CallerNotWhitelistedModule();
     error CollectModuleNotWhitelisted();
     error FollowModuleNotWhitelisted();
