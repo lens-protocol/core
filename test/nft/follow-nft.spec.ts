@@ -49,7 +49,7 @@ makeSuiteCleanRoom('Follow NFT', function () {
           user
         );
 
-        await expect(followNFT.initialize(FIRST_PROFILE_ID, 'NAME', 'SYMBOL')).to.be.revertedWith(
+        await expect(followNFT.initialize(FIRST_PROFILE_ID)).to.be.revertedWith(
           ERRORS.INITIALIZED
         );
       });

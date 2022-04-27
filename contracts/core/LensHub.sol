@@ -90,11 +90,13 @@ contract LensHub is LensNFTBase, VersionedInitializable, LensMultiState, LensHub
 
     /// @inheritdoc ILensHub
     function setState(DataTypes.ProtocolState newState) external override {
-        if (msg.sender == _governance || msg.sender == _emergencyAdmin) {
-            _setState(newState);
-        } else {
+        if (msg.sender == _emergencyAdmin) {
+            if (newState == DataTypes.ProtocolState.Unpaused)
+                revert Errors.EmergencyAdminCannotUnpause();
+        } else if (msg.sender != _governance) {
             revert Errors.NotGovernanceOrEmergencyAdmin();
         }
+        _setState(newState);
     }
 
     ///@inheritdoc ILensHub
@@ -562,7 +564,6 @@ contract LensHub is LensNFTBase, VersionedInitializable, LensMultiState, LensHub
                 msg.sender,
                 profileIds,
                 datas,
-                FOLLOW_NFT_IMPL,
                 _profileById,
                 _profileIdByHandleHash
             );
@@ -605,7 +606,6 @@ contract LensHub is LensNFTBase, VersionedInitializable, LensMultiState, LensHub
                 vars.follower,
                 vars.profileIds,
                 vars.datas,
-                FOLLOW_NFT_IMPL,
                 _profileById,
                 _profileIdByHandleHash
             );
@@ -891,6 +891,16 @@ contract LensHub is LensNFTBase, VersionedInitializable, LensMultiState, LensHub
                 _profileById[tokenId].handle,
                 _profileById[tokenId].imageURI
             );
+    }
+
+    /// @inheritdoc ILensHub
+    function getFollowNFTImpl() external view override returns (address) {
+        return FOLLOW_NFT_IMPL;
+    }
+
+    /// @inheritdoc ILensHub
+    function getCollectNFTImpl() external view override returns (address) {
+        return COLLECT_NFT_IMPL;
     }
 
     /// ****************************

@@ -50,6 +50,13 @@ makeSuiteCleanRoom('Multi-State Hub', function () {
           ERRORS.NOT_GOVERNANCE
         );
       });
+
+      it('Governance should set user as emergency admin, user should fail to set protocol state to unpaused', async function () {
+        await expect(lensHub.connect(governance).setEmergencyAdmin(userAddress)).to.not.be.reverted;
+        await expect(lensHub.setState(ProtocolState.Unpaused)).to.be.revertedWith(
+          ERRORS.EMERGENCY_ADMIN_CANNOT_UNPAUSE
+        );
+      });
     });
 
     context('Scenarios', function () {
@@ -58,7 +65,6 @@ makeSuiteCleanRoom('Multi-State Hub', function () {
 
         await expect(lensHub.setState(ProtocolState.Paused)).to.not.be.reverted;
         await expect(lensHub.setState(ProtocolState.PublishingPaused)).to.not.be.reverted;
-        await expect(lensHub.setState(ProtocolState.Unpaused)).to.not.be.reverted;
         await expect(lensHub.setEmergencyAdmin(ZERO_ADDRESS)).to.be.revertedWith(
           ERRORS.NOT_GOVERNANCE
         );
