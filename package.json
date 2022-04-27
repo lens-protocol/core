@@ -1,5 +1,5 @@
 {
-  "name": "@lens-protocol/contracts",
+  "name": "@aave/lens-protocol",
   "version": "1.0.0",
   "description": "Composable and decentralized social graph",
   "main": "index.js",
