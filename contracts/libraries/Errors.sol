@@ -43,6 +43,8 @@ library Errors {
     error CollectNotAllowed();
     error CommentNotAllowed();
     error MirrorNotAllowed();
+    error NotCollection();
+    error NotCollectionOwner();
 
     // MultiState Errors
     error Paused();
