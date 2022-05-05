@@ -272,10 +272,17 @@ task(
   // Deploy MockProfileCreationProxy
   console.log('\n\t-- Deploying Profile Creation Proxy --');
   const profileCreationProxy = await deployWithVerify(
-    new MockProfileCreationProxy__factory(deployer).deploy(lensHub.address, {
-      nonce: deployerNonce++,
-    }),
-    [lensHub.address],
+    new MockProfileCreationProxy__factory(deployer).deploy(
+      4,
+      '.test',
+      '.',
+      lensHub.address,
+      governance.address,
+      {
+        nonce: deployerNonce++,
+      }
+    ),
+    [4, '.test', '.', lensHub.address],
     'contracts/mocks/MockProfileCreationProxy.sol:MockProfileCreationProxy'
   );
 
