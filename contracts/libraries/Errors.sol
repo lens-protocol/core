@@ -35,7 +35,6 @@ library Errors {
 
     // Module Errors
     error InitParamsInvalid();
-    error ZeroCurrency();
     error CollectExpired();
     error FollowInvalid();
     error ModuleDataMismatch();
