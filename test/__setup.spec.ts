@@ -52,6 +52,8 @@ import {
   CollectNFT,
   RevertFollowModule,
   RevertFollowModule__factory,
+  CollectionGatedReferenceModule,
+  CollectionGatedReferenceModule__factory,
 } from '../typechain-types';
 import { LensHubLibraryAddresses } from '../typechain-types/factories/LensHub__factory';
 import { FAKE_PRIVATEKEY, ZERO_ADDRESS } from './helpers/constants';
@@ -123,6 +125,8 @@ export let profileFollowModule: ProfileFollowModule;
 export let feeFollowModule: FeeFollowModule;
 export let revertFollowModule: RevertFollowModule;
 export let mockFollowModule: MockFollowModule;
+export let collectionGatedReferenceModule: CollectionGatedReferenceModule;
+
 
 // Reference
 export let followerOnlyReferenceModule: FollowerOnlyReferenceModule;
@@ -240,6 +244,10 @@ before(async function () {
   approvalFollowModule = await new ApprovalFollowModule__factory(deployer).deploy(lensHub.address);
   revertFollowModule = await new RevertFollowModule__factory(deployer).deploy(lensHub.address);
   followerOnlyReferenceModule = await new FollowerOnlyReferenceModule__factory(deployer).deploy(
+    lensHub.address
+  );
+
+  collectionGatedReferenceModule = await new CollectionGatedReferenceModule__factory(deployer).deploy(
     lensHub.address
   );
 
