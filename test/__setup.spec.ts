@@ -49,7 +49,7 @@ import {
   ProfileFollowModule,
   ProfileFollowModule__factory,
   CollectionGatedReferenceModule,
-  CollectionGatedReferenceModule_factory,
+  CollectionGatedReferenceModule__factory,
 } from '../typechain-types';
 import { LensHubLibraryAddresses } from '../typechain-types/factories/LensHub__factory';
 import { FAKE_PRIVATEKEY, ZERO_ADDRESS } from './helpers/constants';
