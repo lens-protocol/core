@@ -48,6 +48,8 @@ import {
   LensPeriphery__factory,
   ProfileFollowModule,
   ProfileFollowModule__factory,
+  CollectionGatedReferenceModule,
+  CollectionGatedReferenceModule_factory,
 } from '../typechain-types';
 import { LensHubLibraryAddresses } from '../typechain-types/factories/LensHub__factory';
 import { FAKE_PRIVATEKEY, ZERO_ADDRESS } from './helpers/constants';
@@ -122,7 +124,7 @@ export let mockFollowModule: MockFollowModule;
 // Reference
 export let followerOnlyReferenceModule: FollowerOnlyReferenceModule;
 export let mockReferenceModule: MockReferenceModule;
-
+export let collectionGatedReferenceModule: CollectionGatedReferenceModule;
 export function makeSuiteCleanRoom(name: string, tests: () => void) {
   describe(name, () => {
     beforeEach(async function () {
@@ -235,6 +237,12 @@ before(async function () {
   approvalFollowModule = await new ApprovalFollowModule__factory(deployer).deploy(lensHub.address);
   followerOnlyReferenceModule = await new FollowerOnlyReferenceModule__factory(deployer).deploy(
     lensHub.address
+  );
+
+  collectionGatedReferenceModule = await new CollectionGatedReferenceModule_factory(deployer).deploy(
+    lensHub.address,
+    currency.address,
+    1
   );
 
   mockFollowModule = await new MockFollowModule__factory(deployer).deploy();
