@@ -167,16 +167,6 @@ makeSuiteCleanRoom('Events', function () {
         ProtocolState.PublishingPaused,
         await getTimestamp(),
       ]);
-
-      receipt = await waitForTx(lensHub.connect(user).setState(ProtocolState.Unpaused));
-
-      expect(receipt.logs.length).to.eq(1);
-      matchEvent(receipt, 'StateSet', [
-        userAddress,
-        ProtocolState.PublishingPaused,
-        ProtocolState.Unpaused,
-        await getTimestamp(),
-      ]);
     });
 
     it('Follow module whitelisting functions should emit expected event', async function () {

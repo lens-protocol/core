@@ -13,6 +13,7 @@ library Errors {
     error TokenDoesNotExist();
     error NotGovernance();
     error NotGovernanceOrEmergencyAdmin();
+    error EmergencyAdminCannotUnpause();
     error CallerNotWhitelistedModule();
     error CollectModuleNotWhitelisted();
     error FollowModuleNotWhitelisted();
@@ -34,7 +35,6 @@ library Errors {
 
     // Module Errors
     error InitParamsInvalid();
-    error ZeroCurrency();
     error CollectExpired();
     error FollowInvalid();
     error ModuleDataMismatch();
