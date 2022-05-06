@@ -148,23 +148,24 @@ makeSuiteCleanRoom('Events', function () {
 
     it('Protocol state change by emergency admin should emit expected events', async function () {
       await waitForTx(lensHub.connect(governance).setEmergencyAdmin(userAddress));
-      receipt = await waitForTx(lensHub.connect(user).setState(ProtocolState.Paused));
-
-      expect(receipt.logs.length).to.eq(1);
-      matchEvent(receipt, 'StateSet', [
-        userAddress,
-        ProtocolState.Unpaused,
-        ProtocolState.Paused,
-        await getTimestamp(),
-      ]);
 
       receipt = await waitForTx(lensHub.connect(user).setState(ProtocolState.PublishingPaused));
 
       expect(receipt.logs.length).to.eq(1);
       matchEvent(receipt, 'StateSet', [
         userAddress,
-        ProtocolState.Paused,
+        ProtocolState.Unpaused,
         ProtocolState.PublishingPaused,
+        await getTimestamp(),
+      ]);
+
+      receipt = await waitForTx(lensHub.connect(user).setState(ProtocolState.Paused));
+
+      expect(receipt.logs.length).to.eq(1);
+      matchEvent(receipt, 'StateSet', [
+        userAddress,
+        ProtocolState.PublishingPaused,
+        ProtocolState.Paused,
         await getTimestamp(),
       ]);
     });
