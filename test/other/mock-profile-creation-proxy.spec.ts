@@ -38,24 +38,11 @@ makeSuiteCleanRoom('Mock Profile Creation Proxy', function () {
   });
 
   context('Negatives', function () {
-    it('User should fail to create profile if handle is not containing the required suffix', async function () {
-      await expect(
-        mockProfileCreationProxy.connect(user).proxyCreateProfile({
-          to: userAddress,
-          handle: 'missingsuffix',
-          imageURI: MOCK_PROFILE_URI,
-          followModule: ZERO_ADDRESS,
-          followModuleInitData: [],
-          followNFTURI: MOCK_FOLLOW_NFT_URI,
-        })
-      ).to.be.revertedWith('InvalidHandleSuffix()');
-    });
-
     it('User should fail to create profile if handle length before suffix does not reach minimum length', async function () {
       await expect(
         mockProfileCreationProxy.connect(user).proxyCreateProfile({
           to: userAddress,
-          handle: '69.lens',
+          handle: '69',
           imageURI: MOCK_PROFILE_URI,
           followModule: ZERO_ADDRESS,
           followModuleInitData: [],
@@ -68,7 +55,7 @@ makeSuiteCleanRoom('Mock Profile Creation Proxy', function () {
       await expect(
         mockProfileCreationProxy.connect(user).proxyCreateProfile({
           to: userAddress,
-          handle: 'invalid.char.lens',
+          handle: 'dots.are.invalid',
           imageURI: MOCK_PROFILE_URI,
           followModule: ZERO_ADDRESS,
           followModuleInitData: [],
@@ -77,35 +64,11 @@ makeSuiteCleanRoom('Mock Profile Creation Proxy', function () {
       ).to.be.revertedWith(ERRORS.HANDLE_CONTAINS_INVALID_CHARACTERS);
     });
 
-    it('User should fail to create profile if handle is not containing the new required suffix', async function () {
-      await expect(
-        mockProfileCreationProxy.connect(user).proxyCreateProfile({
-          to: userAddress,
-          handle: 'validhandle.lens',
-          imageURI: MOCK_PROFILE_URI,
-          followModule: ZERO_ADDRESS,
-          followModuleInitData: [],
-          followNFTURI: MOCK_FOLLOW_NFT_URI,
-        })
-      ).to.not.be.reverted;
-      await mockProfileCreationProxy.connect(governance).setRequiredHandleSuffix('.test');
-      await expect(
-        mockProfileCreationProxy.connect(user).proxyCreateProfile({
-          to: userAddress,
-          handle: 'validhandle.lens',
-          imageURI: MOCK_PROFILE_URI,
-          followModule: ZERO_ADDRESS,
-          followModuleInitData: [],
-          followNFTURI: MOCK_FOLLOW_NFT_URI,
-        })
-      ).to.be.revertedWith('InvalidHandleSuffix()');
-    });
-
     it('User should fail to create profile if handle length before suffix does not reach new minimum length', async function () {
       await expect(
         mockProfileCreationProxy.connect(user).proxyCreateProfile({
           to: userAddress,
-          handle: 'validhandle.lens',
+          handle: 'validhandle',
           imageURI: MOCK_PROFILE_URI,
           followModule: ZERO_ADDRESS,
           followModuleInitData: [],
@@ -116,7 +79,7 @@ makeSuiteCleanRoom('Mock Profile Creation Proxy', function () {
       await expect(
         mockProfileCreationProxy.connect(user).proxyCreateProfile({
           to: userAddress,
-          handle: 'validhandle.lens',
+          handle: 'validhandletoo',
           imageURI: MOCK_PROFILE_URI,
           followModule: ZERO_ADDRESS,
           followModuleInitData: [],
@@ -129,7 +92,7 @@ makeSuiteCleanRoom('Mock Profile Creation Proxy', function () {
       await expect(
         mockProfileCreationProxy.connect(user).proxyCreateProfile({
           to: userAddress,
-          handle: 'validhandle.lens',
+          handle: 'validhandle',
           imageURI: MOCK_PROFILE_URI,
           followModule: ZERO_ADDRESS,
           followModuleInitData: [],
@@ -141,7 +104,7 @@ makeSuiteCleanRoom('Mock Profile Creation Proxy', function () {
       await expect(
         mockProfileCreationProxy.connect(user).proxyCreateProfile({
           to: userAddress,
-          handle: 'validhandle.lens',
+          handle: 'validhandletoo',
           imageURI: MOCK_PROFILE_URI,
           followModule: ZERO_ADDRESS,
           followModuleInitData: [],
@@ -182,12 +145,13 @@ makeSuiteCleanRoom('Mock Profile Creation Proxy', function () {
     let profileId: BigNumber;
     let mintTimestamp: BigNumber;
     let tokenData: TokenDataStructOutput;
-    const validHandle = 'validhandle.lens';
+    const validHandleBeforeSuffix = 'validhandle';
+    const expectedHandle = 'validhandle'.concat(requiredSuffix);
 
     await expect(
       mockProfileCreationProxy.connect(user).proxyCreateProfile({
         to: userAddress,
-        handle: validHandle,
+        handle: validHandleBeforeSuffix,
         imageURI: MOCK_PROFILE_URI,
         followModule: ZERO_ADDRESS,
         followModuleInitData: [],
@@ -198,7 +162,7 @@ makeSuiteCleanRoom('Mock Profile Creation Proxy', function () {
     timestamp = await getTimestamp();
     owner = await lensHub.ownerOf(FIRST_PROFILE_ID);
     totalSupply = await lensHub.totalSupply();
-    profileId = await lensHub.getProfileIdByHandle(validHandle);
+    profileId = await lensHub.getProfileIdByHandle(expectedHandle);
     mintTimestamp = await lensHub.mintTimestampOf(FIRST_PROFILE_ID);
     tokenData = await lensHub.tokenDataOf(FIRST_PROFILE_ID);
     expect(owner).to.eq(userAddress);
@@ -207,6 +171,36 @@ makeSuiteCleanRoom('Mock Profile Creation Proxy', function () {
     expect(mintTimestamp).to.eq(timestamp);
     expect(tokenData.owner).to.eq(userAddress);
     expect(tokenData.mintTimestamp).to.eq(timestamp);
+  });
+
+  it('User should get the expected handle after governance update the required suffix', async function () {
+    const handleBeforeSuffix = 'validhandle';
+    await expect(
+      mockProfileCreationProxy.connect(user).proxyCreateProfile({
+        to: userAddress,
+        handle: handleBeforeSuffix,
+        imageURI: MOCK_PROFILE_URI,
+        followModule: ZERO_ADDRESS,
+        followModuleInitData: [],
+        followNFTURI: MOCK_FOLLOW_NFT_URI,
+      })
+    ).to.not.be.reverted;
+    expect(await lensHub.getHandle(1)).to.eq(handleBeforeSuffix.concat(requiredSuffix));
+
+    const newSuffix = '.test';
+    await mockProfileCreationProxy.connect(governance).setRequiredHandleSuffix(newSuffix);
+
+    await expect(
+      mockProfileCreationProxy.connect(user).proxyCreateProfile({
+        to: userAddress,
+        handle: handleBeforeSuffix,
+        imageURI: MOCK_PROFILE_URI,
+        followModule: ZERO_ADDRESS,
+        followModuleInitData: [],
+        followNFTURI: MOCK_FOLLOW_NFT_URI,
+      })
+    ).to.not.be.reverted;
+    expect(await lensHub.getHandle(2)).to.eq(handleBeforeSuffix.concat(newSuffix));
   });
 
   it('User should succeed making a onlyGov call after setting him as governance address', async function () {
