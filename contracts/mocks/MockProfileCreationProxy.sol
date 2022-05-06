@@ -5,8 +5,7 @@ pragma solidity 0.8.10;
 import {ILensHub} from '../interfaces/ILensHub.sol';
 import {DataTypes} from '../libraries/DataTypes.sol';
 import {Errors} from '../libraries/Errors.sol';
-
-error InvalidHandleSuffix();
+import {Strings} from '@openzeppelin/contracts/utils/Strings.sol';
 
 /**
  * @title MockProfileCreationProxy
@@ -43,26 +42,18 @@ contract MockProfileCreationProxy {
         LENS_HUB = ILensHub(hub);
     }
 
-    function proxyCreateProfile(DataTypes.CreateProfileData calldata vars) external {
-        uint256 suffixLength = bytes(requiredHandleSuffix).length;
+    function proxyCreateProfile(DataTypes.CreateProfileData memory vars) external {
         uint256 handleLength = bytes(vars.handle).length;
-        if (handleLength < requiredMinHandleLengthBeforeSuffix + suffixLength) {
+        if (handleLength < requiredMinHandleLengthBeforeSuffix) {
             revert Errors.HandleLengthInvalid();
         }
-        for (uint256 i = 0; i < handleLength - suffixLength; ++i) {
+        for (uint256 i = 0; i < handleLength; ++i) {
             if (isCharacterInvalid[bytes(vars.handle)[i]]) {
                 revert Errors.HandleContainsInvalidCharacters();
             }
         }
-        if (suffixLength > 0) {
-            for (uint256 i = 0; i < suffixLength; ++i) {
-                if (
-                    bytes(vars.handle)[i + handleLength - suffixLength] !=
-                    bytes(requiredHandleSuffix)[i]
-                ) {
-                    revert InvalidHandleSuffix();
-                }
-            }
+        if (bytes(requiredHandleSuffix).length > 0) {
+            vars.handle = string(abi.encodePacked(vars.handle, requiredHandleSuffix));
         }
         LENS_HUB.createProfile(vars);
     }
