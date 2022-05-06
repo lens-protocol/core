@@ -5,7 +5,6 @@ pragma solidity 0.8.10;
 import {ILensHub} from '../interfaces/ILensHub.sol';
 import {DataTypes} from '../libraries/DataTypes.sol';
 import {Errors} from '../libraries/Errors.sol';
-import {Strings} from '@openzeppelin/contracts/utils/Strings.sol';
 
 /**
  * @title MockProfileCreationProxy
