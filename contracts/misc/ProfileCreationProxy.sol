@@ -18,24 +18,12 @@ import {Ownable} from '@openzeppelin/contracts/access/Ownable.sol';
 contract ProfileCreationProxy is Ownable {
     ILensHub immutable LENS_HUB;
 
-    mapping(address => bool) internal _whitelisted;
-
-    modifier onlyWhitelisted() {
-        if (!_whitelisted[msg.sender]) revert Errors.NotWhitelisted();
-        _;
-    }
-
     constructor(address owner, ILensHub hub) {
         _transferOwnership(owner);
         LENS_HUB = hub;
     }
 
-    function whitelist(address creator, bool toWhitelist) external onlyOwner {
-        _whitelisted[creator] = toWhitelist;
-        emit Events.ProfileCreationProxyCreatorWhitelisted(creator, toWhitelist);
-    }
-
-    function proxyCreateProfile(DataTypes.CreateProfileData memory vars) external onlyWhitelisted {
+    function proxyCreateProfile(DataTypes.CreateProfileData memory vars) external onlyOwner {
         uint256 handleLength = bytes(vars.handle).length;
         if (handleLength < 5) revert Errors.HandleLengthInvalid();
 
