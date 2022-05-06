@@ -51,11 +51,20 @@ makeSuiteCleanRoom('Multi-State Hub', function () {
         );
       });
 
-      it('Governance should set user as emergency admin, user should fail to set protocol state to unpaused', async function () {
+      it('Governance should set user as emergency admin, user should fail to set protocol state to Unpaused', async function () {
         await expect(lensHub.connect(governance).setEmergencyAdmin(userAddress)).to.not.be.reverted;
         await expect(lensHub.setState(ProtocolState.Unpaused)).to.be.revertedWith(
           ERRORS.EMERGENCY_ADMIN_CANNOT_UNPAUSE
         );
+      });
+
+      it('Governance should set user as emergency admin, user should fail to set protocol state to PublishingPaused or Paused from Paused', async function () {
+        await expect(lensHub.connect(governance).setEmergencyAdmin(userAddress)).to.not.be.reverted;
+        await expect(lensHub.connect(governance).setState(ProtocolState.Paused)).to.not.be.reverted;
+        await expect(lensHub.setState(ProtocolState.PublishingPaused)).to.be.revertedWith(
+          ERRORS.PAUSED
+        );
+        await expect(lensHub.setState(ProtocolState.Paused)).to.be.revertedWith(ERRORS.PAUSED);
       });
     });
 
@@ -63,8 +72,8 @@ makeSuiteCleanRoom('Multi-State Hub', function () {
       it('Governance should set user as emergency admin, user sets protocol state but fails to set emergency admin, governance sets emergency admin to the zero address, user fails to set protocol state', async function () {
         await expect(lensHub.connect(governance).setEmergencyAdmin(userAddress)).to.not.be.reverted;
 
-        await expect(lensHub.setState(ProtocolState.Paused)).to.not.be.reverted;
         await expect(lensHub.setState(ProtocolState.PublishingPaused)).to.not.be.reverted;
+        await expect(lensHub.setState(ProtocolState.Paused)).to.not.be.reverted;
         await expect(lensHub.setEmergencyAdmin(ZERO_ADDRESS)).to.be.revertedWith(
           ERRORS.NOT_GOVERNANCE
         );
@@ -98,6 +107,23 @@ makeSuiteCleanRoom('Multi-State Hub', function () {
         ).to.not.be.reverted;
         expect(await lensHub.getState()).to.eq(ProtocolState.Unpaused);
       });
+
+      it('Governance should set user as emergency admin, user should set protocol state to PublishingPaused, then Paused, then fail to set it to PublishingPaused', async function () {
+        await expect(lensHub.connect(governance).setEmergencyAdmin(userAddress)).to.not.be.reverted;
+
+        await expect(lensHub.setState(ProtocolState.PublishingPaused)).to.not.be.reverted;
+        await expect(lensHub.setState(ProtocolState.Paused)).to.not.be.reverted;
+        await expect(lensHub.setState(ProtocolState.PublishingPaused)).to.be.revertedWith(
+          ERRORS.PAUSED
+        );
+      });
+
+      it('Governance should set user as emergency admin, user should set protocol state to PublishingPaused, then set it to PublishingPaused again without reverting', async function () {
+        await expect(lensHub.connect(governance).setEmergencyAdmin(userAddress)).to.not.be.reverted;
+
+        await expect(lensHub.setState(ProtocolState.PublishingPaused)).to.not.be.reverted;
+        await expect(lensHub.setState(ProtocolState.PublishingPaused)).to.not.be.reverted;
+      });
     });
   });
 
@@ -121,6 +147,7 @@ makeSuiteCleanRoom('Multi-State Hub', function () {
           lensHub.transferFrom(userAddress, userTwoAddress, FIRST_PROFILE_ID)
         ).to.be.revertedWith(ERRORS.PAUSED);
       });
+
       it('Governance should pause the hub, profile creation should fail, then governance unpauses the hub and profile creation should work', async function () {
         await expect(lensHub.connect(governance).setState(ProtocolState.Paused)).to.not.be.reverted;
 

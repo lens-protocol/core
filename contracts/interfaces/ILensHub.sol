@@ -46,6 +46,10 @@ interface ILensHub {
      * @notice Sets the protocol state to either a global pause, a publishing pause or an unpaused state. This function
      * can only be called by the governance address or the emergency admin address.
      *
+     * Note that this reverts if the emergency admin calls it if:
+     *      1. The emergency admin is attempting to unpause.
+     *      2. The emergency admin is calling while the protocol is already paused.
+     *
      * @param newState The state to set, as a member of the ProtocolState enum.
      */
     function setState(DataTypes.ProtocolState newState) external;
@@ -537,5 +541,4 @@ interface ILensHub {
      * @return address The collect NFT implementation address.
      */
     function getCollectNFTImpl() external view returns (address);
-
 }
