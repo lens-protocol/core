@@ -35,7 +35,7 @@ abstract contract LensMultiState {
      *      1: PublishingPaused
      *      2: Paused
      */
-    function getState() public view returns (DataTypes.ProtocolState) {
+    function getState() external view returns (DataTypes.ProtocolState) {
         return _state;
     }
 
