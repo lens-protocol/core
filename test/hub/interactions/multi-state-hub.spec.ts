@@ -72,8 +72,8 @@ makeSuiteCleanRoom('Multi-State Hub', function () {
       it('Governance should set user as emergency admin, user sets protocol state but fails to set emergency admin, governance sets emergency admin to the zero address, user fails to set protocol state', async function () {
         await expect(lensHub.connect(governance).setEmergencyAdmin(userAddress)).to.not.be.reverted;
 
-        await expect(lensHub.setState(ProtocolState.Paused)).to.not.be.reverted;
         await expect(lensHub.setState(ProtocolState.PublishingPaused)).to.not.be.reverted;
+        await expect(lensHub.setState(ProtocolState.Paused)).to.not.be.reverted;
         await expect(lensHub.setEmergencyAdmin(ZERO_ADDRESS)).to.be.revertedWith(
           ERRORS.NOT_GOVERNANCE
         );
