@@ -26,12 +26,14 @@ library Errors {
     error HandleTaken();
     error HandleLengthInvalid();
     error HandleContainsInvalidCharacters();
+    error HandleFirstCharInvalid();
     error ProfileImageURILengthInvalid();
     error CallerNotFollowNFT();
     error CallerNotCollectNFT();
     error BlockNumberInvalid();
     error ArrayMismatch();
     error CannotCommentOnSelf();
+    error NotWhitelisted();
 
     // Module Errors
     error InitParamsInvalid();
