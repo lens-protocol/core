@@ -5,6 +5,7 @@ pragma solidity 0.8.10;
 import {ILensHub} from '../interfaces/ILensHub.sol';
 import {DataTypes} from '../libraries/DataTypes.sol';
 import {Errors} from '../libraries/Errors.sol';
+import {Events} from '../libraries/Events.sol';
 import {Ownable} from '@openzeppelin/contracts/access/Ownable.sol';
 
 /**
@@ -31,6 +32,7 @@ contract ProfileCreationProxy is Ownable {
 
     function whitelist(address creator, bool toWhitelist) external onlyOwner {
         _whitelisted[creator] = toWhitelist;
+        emit Events.ProfileCreationProxyCreatorWhitelisted(creator, toWhitelist);
     }
 
     function proxyCreateProfile(DataTypes.CreateProfileData memory vars) external onlyWhitelisted {

@@ -519,9 +519,7 @@ library Events {
      * @param metadata The metadata set for the profile and user.
      * @param timestamp The current block timestamp.
      */
-    event ProfileMetadataSet(
-        uint256 indexed profileId,
-        string metadata,
-        uint256 timestamp
-    );
+    event ProfileMetadataSet(uint256 indexed profileId, string metadata, uint256 timestamp);
+
+    event ProfileCreationProxyCreatorWhitelisted(address indexed creator, bool indexed whitelisted);
 }
