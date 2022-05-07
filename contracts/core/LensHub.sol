@@ -93,6 +93,7 @@ contract LensHub is LensNFTBase, VersionedInitializable, LensMultiState, LensHub
         if (msg.sender == _emergencyAdmin) {
             if (newState == DataTypes.ProtocolState.Unpaused)
                 revert Errors.EmergencyAdminCannotUnpause();
+            _validateNotPaused();
         } else if (msg.sender != _governance) {
             revert Errors.NotGovernanceOrEmergencyAdmin();
         }
