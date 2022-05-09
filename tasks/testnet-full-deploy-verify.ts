@@ -62,7 +62,7 @@ task(
   // Nonce management in case of deployment issues
   let deployerNonce = await ethers.provider.getTransactionCount(deployer.address);
 
-  console.log('\n\t -- Deploying Module Globals --');
+  console.log('\n\t-- Deploying Module Globals --');
   const moduleGlobals = await deployWithVerify(
     new ModuleGlobals__factory(deployer).deploy(
       governance.address,
