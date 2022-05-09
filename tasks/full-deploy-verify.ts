@@ -57,6 +57,7 @@ task('full-deploy-verify', 'deploys the entire Lens Protocol with explorer verif
     const deployer = accounts[0];
     const governance = accounts[1];
     const treasuryAddress = accounts[2].address;
+    const proxyAdminAddress = deployer.address;
 
     // Nonce management in case of deployment issues
     let deployerNonce = await ethers.provider.getTransactionCount(deployer.address);
@@ -144,7 +145,7 @@ task('full-deploy-verify', 'deploys the entire Lens Protocol with explorer verif
     let proxy = await deployWithVerify(
       new TransparentUpgradeableProxy__factory(deployer).deploy(
         lensHubImpl.address,
-        deployer.address,
+        proxyAdminAddress,
         data,
         { nonce: deployerNonce++ }
       ),

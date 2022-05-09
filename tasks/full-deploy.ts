@@ -41,6 +41,7 @@ task('full-deploy', 'deploys the entire Lens Protocol').setAction(async ({}, hre
   const deployer = accounts[0];
   const governance = accounts[1];
   const treasuryAddress = accounts[2].address;
+  const proxyAdminAddress = deployer.address;
 
   // Nonce management in case of deployment issues
   let deployerNonce = await ethers.provider.getTransactionCount(deployer.address);
@@ -114,7 +115,7 @@ task('full-deploy', 'deploys the entire Lens Protocol').setAction(async ({}, hre
   let proxy = await deployContract(
     new TransparentUpgradeableProxy__factory(deployer).deploy(
       lensHubImpl.address,
-      deployer.address,
+      proxyAdminAddress,
       data,
       { nonce: deployerNonce++ }
     )
