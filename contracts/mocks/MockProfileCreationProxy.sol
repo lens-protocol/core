@@ -10,69 +10,31 @@ import {Errors} from '../libraries/Errors.sol';
  * @title MockProfileCreationProxy
  * @author Lens Protocol
  *
- * @dev This is a proxy to allow profiles to be created from any address while adding some handle restrictions.
+ * @notice This is an ownable proxy contract that enforces ".test" handle suffixes at profile creation.
  */
 contract MockProfileCreationProxy {
     ILensHub immutable LENS_HUB;
 
-    address governance;
-    uint256 requiredMinHandleLengthBeforeSuffix;
-    string requiredHandleSuffix;
-    mapping(bytes1 => bool) isCharacterInvalid;
-
-    modifier onlyGov() {
-        if (msg.sender != governance) revert Errors.NotGovernance();
-        _;
-    }
-
-    constructor(
-        uint256 minHandleLengthBeforeSuffix,
-        string memory handleSuffix,
-        string memory invalidCharacters,
-        address newGovernance,
-        address hub
-    ) {
-        requiredMinHandleLengthBeforeSuffix = minHandleLengthBeforeSuffix;
-        requiredHandleSuffix = handleSuffix;
-        for (uint256 i = 0; i < bytes(invalidCharacters).length; ++i) {
-            isCharacterInvalid[bytes(invalidCharacters)[i]] = true;
-        }
-        governance = newGovernance;
-        LENS_HUB = ILensHub(hub);
+    constructor(ILensHub hub) {
+        LENS_HUB = hub;
     }
 
     function proxyCreateProfile(DataTypes.CreateProfileData memory vars) external {
         uint256 handleLength = bytes(vars.handle).length;
-        if (handleLength < requiredMinHandleLengthBeforeSuffix) {
-            revert Errors.HandleLengthInvalid();
-        }
-        for (uint256 i = 0; i < handleLength; ++i) {
-            if (isCharacterInvalid[bytes(vars.handle)[i]]) {
-                revert Errors.HandleContainsInvalidCharacters();
+        if (handleLength < 5) revert Errors.HandleLengthInvalid();
+
+        bytes1 firstByte = bytes(vars.handle)[0];
+        if (firstByte == '-' || firstByte == '_' || firstByte == '.')
+            revert Errors.HandleFirstCharInvalid();
+
+        for (uint256 i = 1; i < handleLength; ) {
+            if (bytes(vars.handle)[i] == '.') revert Errors.HandleContainsInvalidCharacters();
+            unchecked {
+                ++i;
             }
         }
-        if (bytes(requiredHandleSuffix).length > 0) {
-            vars.handle = string(abi.encodePacked(vars.handle, requiredHandleSuffix));
-        }
+
+        vars.handle = string(abi.encodePacked(vars.handle, '.test'));
         LENS_HUB.createProfile(vars);
-    }
-
-    function setRequiredHandleSuffix(string memory handleSuffix) external onlyGov {
-        requiredHandleSuffix = handleSuffix;
-    }
-
-    function setCharacterValidity(bytes1 character, bool isValid) external onlyGov {
-        isCharacterInvalid[character] = !isValid;
-    }
-
-    function setRequiredMinHandleLengthBeforeSuffix(uint256 minHandleLengthBeforeSuffix)
-        external
-        onlyGov
-    {
-        requiredMinHandleLengthBeforeSuffix = minHandleLengthBeforeSuffix;
-    }
-
-    function setGovernance(address newGovernance) external onlyGov {
-        governance = newGovernance;
     }
 }
