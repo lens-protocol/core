@@ -42,11 +42,12 @@ task('full-deploy', 'deploys the entire Lens Protocol').setAction(async ({}, hre
   const governance = accounts[1];
   const treasuryAddress = accounts[2].address;
   const proxyAdminAddress = deployer.address;
+  const profileCreatorAddress = deployer.address;
 
   // Nonce management in case of deployment issues
   let deployerNonce = await ethers.provider.getTransactionCount(deployer.address);
 
-  console.log('\n\t -- Deploying Module Globals --');
+  console.log('\n\t-- Deploying Module Globals --');
   const moduleGlobals = await deployContract(
     new ModuleGlobals__factory(deployer).deploy(
       governance.address,
@@ -215,7 +216,7 @@ task('full-deploy', 'deploys the entire Lens Protocol').setAction(async ({}, hre
 
   console.log('\n\t-- Deploying Profile Creation Proxy --');
   const profileCreationProxy = await deployContract(
-    new ProfileCreationProxy__factory(deployer).deploy(deployer.address, lensHub.address, {
+    new ProfileCreationProxy__factory(deployer).deploy(profileCreatorAddress, lensHub.address, {
       nonce: deployerNonce++,
     })
   );
@@ -278,6 +279,14 @@ task('full-deploy', 'deploys the entire Lens Protocol').setAction(async ({}, hre
     moduleGlobals
       .connect(governance)
       .whitelistCurrency(currency.address, true, { nonce: governanceNonce++ })
+  );
+
+  // Whitelist the profile creation proxy
+  console.log('\n\t-- Whitelisting Profile Creation Proxy --');
+  await waitForTx(
+    lensHub.whitelistProfileCreator(profileCreationProxy.address, true, {
+      nonce: governanceNonce++,
+    })
   );
 
   // Save and log the addresses
