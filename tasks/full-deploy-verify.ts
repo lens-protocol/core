@@ -25,6 +25,7 @@ import {
   UIDataProvider__factory,
   ProfileFollowModule__factory,
   RevertFollowModule__factory,
+  ProfileCreationProxy__factory,
 } from '../typechain-types';
 import { deployWithVerify, waitForTx } from './helpers/utils';
 
@@ -271,6 +272,15 @@ task('full-deploy-verify', 'deploys the entire Lens Protocol with explorer verif
       'contracts/misc/UIDataProvider.sol:UIDataProvider'
     );
 
+    console.log('\n\t-- Deploying Profile Creation Proxy --');
+    const profileCreationProxy = await deployWithVerify(
+      new ProfileCreationProxy__factory(deployer).deploy(deployer.address, lensHub.address, {
+        nonce: deployerNonce++,
+      }),
+      [deployer.address, lensHub.address],
+      'contracts/misc/ProfileCreationProxy.sol:ProfileCreationProxy'
+    );
+
     // Whitelist the collect modules
     console.log('\n\t-- Whitelisting Collect Modules --');
     let governanceNonce = await ethers.provider.getTransactionCount(governance.address);
@@ -351,6 +361,7 @@ task('full-deploy-verify', 'deploys the entire Lens Protocol with explorer verif
       // 'approval follow module': approvalFollowModule.address,
       'follower only reference module': followerOnlyReferenceModule.address,
       'UI data provider': uiDataProvider.address,
+      'Profile creation proxy': profileCreationProxy.address,
     };
     const json = JSON.stringify(addrs, null, 2);
     console.log(json);
