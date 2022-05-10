@@ -22,6 +22,7 @@ export const ERRORS = {
   INVALID_HANDLE_LENGTH: 'HandleLengthInvalid()',
   INVALID_IMAGE_URI_LENGTH: 'ProfileImageURILengthInvalid()',
   HANDLE_CONTAINS_INVALID_CHARACTERS: 'HandleContainsInvalidCharacters()',
+  HANDLE_FIRST_CHARACTER_INVALID: 'HandleFirstCharInvalid()',
   NOT_FOLLOW_NFT: 'CallerNotFollowNFT()',
   NOT_COLLECT_NFT: 'CallerNotCollectNFT()',
   BLOCK_NUMBER_INVALID: 'BlockNumberInvalid()',
