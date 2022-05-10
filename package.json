@@ -1,6 +1,6 @@
 {
   "name": "@aave/lens-protocol",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Composable and decentralized social graph",
   "main": "index.js",
   "scripts": {
