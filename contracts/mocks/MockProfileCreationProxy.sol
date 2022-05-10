@@ -10,7 +10,7 @@ import {Errors} from '../libraries/Errors.sol';
  * @title MockProfileCreationProxy
  * @author Lens Protocol
  *
- * @notice This is an ownable proxy contract that enforces ".test" handle suffixes at profile creation.
+ * @notice This is a proxy contract that enforces ".test" handle suffixes and adds char validations at profile creation.
  */
 contract MockProfileCreationProxy {
     ILensHub immutable LENS_HUB;
