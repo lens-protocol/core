@@ -12,13 +12,13 @@ import {IERC721} from '@openzeppelin/contracts/token/ERC721/IERC721.sol';
  * @title ProfileFollowModule
  * @author Lens Protocol
  *
- * @notice This follow module only allows profiles that are not already following in the current revision to follow.
+ * @notice A Lens Profile NFT token-gated follow module with single follow per token validation.
  */
 contract ProfileFollowModule is FollowValidatorFollowModuleBase {
-    mapping(uint256 => mapping(uint256 => mapping(uint256 => bool)))
-        internal _isProfileFollowingByRevisionByProfile;
-
-    mapping(uint256 => uint256) internal _revisionByProfile;
+    /**
+     * Given two profile IDs tells if the former has already been used to follow the latter.
+     */
+    mapping(uint256 => mapping(uint256 => bool)) public isProfileFollowing;
 
     constructor(address hub) ModuleBase(hub) {}
 
@@ -26,10 +26,9 @@ contract ProfileFollowModule is FollowValidatorFollowModuleBase {
      * @notice This follow module works on custom profile owner approvals.
      *
      * @param profileId The profile ID of the profile to initialize this module for.
-     * @param data The arbitrary data parameter, decoded into:
-     *      uint256 revision: The revision number to be used in this module initialization.
+     * @param data The arbitrary data parameter, which in this particular module initialization will be just ignored.
      *
-     * @return bytes An abi encoded bytes parameter, which is the same as the passed data parameter.
+     * @return bytes Empty bytes.
      */
     function initializeFollowModule(uint256 profileId, bytes calldata data)
         external
@@ -37,15 +36,14 @@ contract ProfileFollowModule is FollowValidatorFollowModuleBase {
         onlyHub
         returns (bytes memory)
     {
-        _revisionByProfile[profileId] = abi.decode(data, (uint256));
-        return data;
+        return new bytes(0);
     }
 
     /**
      * @dev Processes a follow by:
-     *  1. Validating that the follower owns the profile passed through the data param
-     *  2. Validating that the profile that is being used to execute the follow is not already following
-     *     the given profile in the current revision
+     *  1. Validating that the follower owns the profile passed through the data param.
+     *  2. Validating that the profile that is being used to execute the follow was not already used for following the
+     *     given profile.
      */
     function processFollow(
         address follower,
@@ -56,11 +54,10 @@ contract ProfileFollowModule is FollowValidatorFollowModuleBase {
         if (IERC721(HUB).ownerOf(followerProfileId) != follower) {
             revert Errors.NotProfileOwner();
         }
-        uint256 revision = _revisionByProfile[profileId];
-        if (_isProfileFollowingByRevisionByProfile[profileId][revision][followerProfileId]) {
+        if (isProfileFollowing[followerProfileId][profileId]) {
             revert Errors.FollowInvalid();
         } else {
-            _isProfileFollowingByRevisionByProfile[profileId][revision][followerProfileId] = true;
+            isProfileFollowing[followerProfileId][profileId] = true;
         }
     }
 

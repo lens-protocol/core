@@ -22,11 +22,11 @@ import {
 } from '../../__setup.spec';
 
 makeSuiteCleanRoom('Profile Follow Module', function () {
-  let DEFAULT_INIT_DATA: BytesLike;
+  let EMPTY_BYTES: BytesLike;
   let DEFAULT_FOLLOW_DATA: BytesLike;
 
   before(async function () {
-    DEFAULT_INIT_DATA = abiCoder.encode(['uint256'], [0]);
+    EMPTY_BYTES = '0x';
     DEFAULT_FOLLOW_DATA = abiCoder.encode(['uint256'], [FIRST_PROFILE_ID + 1]);
     await expect(
       lensHub.connect(governance).whitelistFollowModule(profileFollowModule.address, true)
@@ -37,14 +37,8 @@ makeSuiteCleanRoom('Profile Follow Module', function () {
     context('Initialization', function () {
       it('Initialize call should fail when sender is not the hub', async function () {
         await expect(
-          profileFollowModule.initializeFollowModule(FIRST_PROFILE_ID, DEFAULT_INIT_DATA)
+          profileFollowModule.initializeFollowModule(FIRST_PROFILE_ID, EMPTY_BYTES)
         ).to.be.revertedWith(ERRORS.NOT_HUB);
-      });
-
-      it('Initialize call should fail when data is not holding the revision number encoded', async function () {
-        await expect(
-          profileFollowModule.connect(lensHub.address).initializeFollowModule(FIRST_PROFILE_ID, [])
-        ).to.be.reverted;
       });
     });
 
@@ -56,7 +50,7 @@ makeSuiteCleanRoom('Profile Follow Module', function () {
             handle: MOCK_PROFILE_HANDLE,
             imageURI: MOCK_PROFILE_URI,
             followModule: profileFollowModule.address,
-            followModuleInitData: DEFAULT_INIT_DATA,
+            followModuleInitData: EMPTY_BYTES,
             followNFTURI: MOCK_FOLLOW_NFT_URI,
           })
         ).to.not.be.reverted;
@@ -118,7 +112,7 @@ makeSuiteCleanRoom('Profile Follow Module', function () {
         ).to.be.revertedWith(ERRORS.NOT_PROFILE_OWNER);
       });
 
-      it('Follow should fail when the passed follower profile has already followed the profile in the current revision', async function () {
+      it('Follow should fail when the passed follower profile has already followed the profile', async function () {
         await expect(
           lensHub.createProfile({
             to: userTwoAddress,
@@ -132,12 +126,16 @@ makeSuiteCleanRoom('Profile Follow Module', function () {
         await expect(
           lensHub.connect(userTwo).follow([FIRST_PROFILE_ID], [DEFAULT_FOLLOW_DATA])
         ).to.not.be.reverted;
+        const followerProfileId = FIRST_PROFILE_ID + 1;
+        expect(
+          await profileFollowModule.isProfileFollowing(followerProfileId, FIRST_PROFILE_ID)
+        ).to.be.true;
         await expect(
           lensHub.connect(userTwo).follow([FIRST_PROFILE_ID], [DEFAULT_FOLLOW_DATA])
         ).to.be.revertedWith(ERRORS.FOLLOW_INVALID);
       });
 
-      it('Follow should fail when switching to an old revision where the passed follower profile has already followed the profile', async function () {
+      it('Follow should fail when the passed follower profile has already followed the profile even after the profile nft has been transfered', async function () {
         await expect(
           lensHub.createProfile({
             to: userTwoAddress,
@@ -151,44 +149,18 @@ makeSuiteCleanRoom('Profile Follow Module', function () {
         await expect(
           lensHub.connect(userTwo).follow([FIRST_PROFILE_ID], [DEFAULT_FOLLOW_DATA])
         ).to.not.be.reverted;
-
-        // Update the revision
-        const data = abiCoder.encode(['uint256'], [1]);
-        await expect(
-          lensHub.setFollowModule(FIRST_PROFILE_ID, profileFollowModule.address, data)
-        ).to.not.be.reverted;
-        // We check that profile can be followed again but through callStatic to avoid state-changes
-        await expect(
-          lensHub.connect(userTwo).callStatic.follow([FIRST_PROFILE_ID], [DEFAULT_FOLLOW_DATA])
-        ).to.not.be.reverted;
-
-        // Return the revision to the original, follow should be invalid
-        await expect(
-          lensHub.setFollowModule(FIRST_PROFILE_ID, profileFollowModule.address, DEFAULT_INIT_DATA)
-        ).to.not.be.reverted;
-        await expect(
-          lensHub.connect(userTwo).follow([FIRST_PROFILE_ID], [DEFAULT_FOLLOW_DATA])
-        ).to.be.revertedWith(ERRORS.FOLLOW_INVALID);
-      });
-
-      it('Follow should fail when the passed follower profile has already followed the profile in the current revision even after the profile nft has been transfered', async function () {
-        await expect(
-          lensHub.createProfile({
-            to: userTwoAddress,
-            handle: 'usertwo',
-            imageURI: MOCK_PROFILE_URI,
-            followModule: ZERO_ADDRESS,
-            followModuleInitData: [],
-            followNFTURI: MOCK_FOLLOW_NFT_URI,
-          })
-        ).to.not.be.reverted;
-        await expect(
-          lensHub.connect(userTwo).follow([FIRST_PROFILE_ID], [DEFAULT_FOLLOW_DATA])
-        ).to.not.be.reverted;
+        const followerProfileId = FIRST_PROFILE_ID + 1;
+        expect(
+          await profileFollowModule.isProfileFollowing(followerProfileId, FIRST_PROFILE_ID)
+        ).to.be.true;
 
         await expect(
           lensHub.transferFrom(userAddress, userThreeAddress, FIRST_PROFILE_ID)
         ).to.not.be.reverted;
+        expect(
+          await profileFollowModule.isProfileFollowing(followerProfileId, FIRST_PROFILE_ID)
+        ).to.be.true;
+
         await expect(
           lensHub.connect(userTwo).follow([FIRST_PROFILE_ID], [DEFAULT_FOLLOW_DATA])
         ).to.be.revertedWith(ERRORS.FOLLOW_INVALID);
@@ -198,12 +170,12 @@ makeSuiteCleanRoom('Profile Follow Module', function () {
 
   context('Scenarios', function () {
     context('Initialization', function () {
-      it('Initialize call should succeed returning passed data if it is holding the revision number encoded', async function () {
+      it('Initialize call should succeed returning empty bytes even when sending non-empty data as input', async function () {
         expect(
           await profileFollowModule
             .connect(lensHub.address)
-            .callStatic.initializeFollowModule(FIRST_PROFILE_ID, DEFAULT_INIT_DATA)
-        ).to.eq(DEFAULT_INIT_DATA);
+            .callStatic.initializeFollowModule(FIRST_PROFILE_ID, abiCoder.encode(['uint256'], [0]))
+        ).to.eq(EMPTY_BYTES);
       });
 
       it('Profile creation using profile follow module should succeed and emit expected event', async function () {
@@ -212,7 +184,7 @@ makeSuiteCleanRoom('Profile Follow Module', function () {
           handle: MOCK_PROFILE_HANDLE,
           imageURI: MOCK_PROFILE_URI,
           followModule: profileFollowModule.address,
-          followModuleInitData: DEFAULT_INIT_DATA,
+          followModuleInitData: EMPTY_BYTES,
           followNFTURI: MOCK_FOLLOW_NFT_URI,
         });
 
@@ -227,7 +199,7 @@ makeSuiteCleanRoom('Profile Follow Module', function () {
           MOCK_PROFILE_HANDLE,
           MOCK_PROFILE_URI,
           profileFollowModule.address,
-          DEFAULT_INIT_DATA,
+          EMPTY_BYTES,
           MOCK_FOLLOW_NFT_URI,
           await getTimestamp(),
         ]);
@@ -248,7 +220,7 @@ makeSuiteCleanRoom('Profile Follow Module', function () {
         const tx = lensHub.setFollowModule(
           FIRST_PROFILE_ID,
           profileFollowModule.address,
-          DEFAULT_INIT_DATA
+          EMPTY_BYTES
         );
 
         const receipt = await waitForTx(tx);
@@ -257,7 +229,7 @@ makeSuiteCleanRoom('Profile Follow Module', function () {
         matchEvent(receipt, 'FollowModuleSet', [
           FIRST_PROFILE_ID,
           profileFollowModule.address,
-          DEFAULT_INIT_DATA,
+          EMPTY_BYTES,
           await getTimestamp(),
         ]);
       });
@@ -271,13 +243,13 @@ makeSuiteCleanRoom('Profile Follow Module', function () {
             handle: MOCK_PROFILE_HANDLE,
             imageURI: MOCK_PROFILE_URI,
             followModule: profileFollowModule.address,
-            followModuleInitData: DEFAULT_INIT_DATA,
+            followModuleInitData: EMPTY_BYTES,
             followNFTURI: MOCK_FOLLOW_NFT_URI,
           })
         ).to.not.be.reverted;
       });
 
-      it('Follow call should work when follower profile exists, is owned by the follower address and has not already followed the profile in the current revision', async function () {
+      it('Follow call should work when follower profile exists, is owned by the follower address and has not already followed the profile', async function () {
         await expect(
           lensHub.createProfile({
             to: userTwoAddress,
@@ -288,30 +260,10 @@ makeSuiteCleanRoom('Profile Follow Module', function () {
             followNFTURI: MOCK_FOLLOW_NFT_URI,
           })
         ).to.not.be.reverted;
-        await expect(
-          lensHub.connect(userTwo).follow([FIRST_PROFILE_ID], [DEFAULT_FOLLOW_DATA])
-        ).to.not.be.reverted;
-      });
-
-      it('Follow call should work after changing current revision when if it was already followed before by same profile in other revision', async function () {
-        await expect(
-          lensHub.createProfile({
-            to: userTwoAddress,
-            handle: 'usertwo',
-            imageURI: MOCK_PROFILE_URI,
-            followModule: ZERO_ADDRESS,
-            followModuleInitData: [],
-            followNFTURI: MOCK_FOLLOW_NFT_URI,
-          })
-        ).to.not.be.reverted;
-        await expect(
-          lensHub.connect(userTwo).follow([FIRST_PROFILE_ID], [DEFAULT_FOLLOW_DATA])
-        ).to.not.be.reverted;
-
-        const data = abiCoder.encode(['uint256'], [1]);
-        await expect(
-          lensHub.setFollowModule(FIRST_PROFILE_ID, profileFollowModule.address, data)
-        ).to.not.be.reverted;
+        const followerProfileId = FIRST_PROFILE_ID + 1;
+        expect(
+          await profileFollowModule.isProfileFollowing(followerProfileId, FIRST_PROFILE_ID)
+        ).to.be.false;
         await expect(
           lensHub.connect(userTwo).follow([FIRST_PROFILE_ID], [DEFAULT_FOLLOW_DATA])
         ).to.not.be.reverted;

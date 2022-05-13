@@ -1,6 +1,6 @@
 {
   "name": "@aave/lens-protocol",
-  "version": "1.0.0",
+  "version": "1.0.2",
   "description": "Composable and decentralized social graph",
   "main": "index.js",
   "scripts": {
@@ -83,7 +83,7 @@
     "Emilio Frangella",
     "David Racero"
   ],
-  "license": "AGPL-3.0-only",
+  "license": "MIT",
   "keywords": [
     "lens",
     "protocol",
