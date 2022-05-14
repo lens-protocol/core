@@ -23,7 +23,7 @@ import {
   abiCoder,
 } from '../../__setup.spec';
 
-makeSuiteCleanRoom('Follower Only Reference Module', function () {
+makeSuiteCleanRoom('Collection Gated Reference Module', function () {
   const SECOND_PROFILE_ID = FIRST_PROFILE_ID + 1;
 
   beforeEach(async function () {
