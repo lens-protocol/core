@@ -125,10 +125,10 @@ export let profileFollowModule: ProfileFollowModule;
 export let feeFollowModule: FeeFollowModule;
 export let revertFollowModule: RevertFollowModule;
 export let mockFollowModule: MockFollowModule;
-export let collectionGatedReferenceModule: CollectionGatedReferenceModule;
 
 
 // Reference
+export let collectionGatedReferenceModule: CollectionGatedReferenceModule;
 export let followerOnlyReferenceModule: FollowerOnlyReferenceModule;
 export let mockReferenceModule: MockReferenceModule;
 
