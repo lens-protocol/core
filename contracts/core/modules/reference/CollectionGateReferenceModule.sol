@@ -16,14 +16,6 @@ import {EnumerableSet} from '@openzeppelin/contracts/utils/structs/EnumerableSet
  * @notice A simple reference module that validates that comments or mirrors originate is the owner of a given collection.
  */
 contract CollectionGatedReferenceModule is ModuleBase, IReferenceModule {
-    using EnumerableSet for EnumerableSet.UintSet;
-
-    struct ProfileData {
-        address collection;
-        EnumerableSet.UintSet tokenIdSet;
-    }
-
-    mapping(uint256 => ProfileData) internal _dataByProfile;
 
     constructor(address hub) ModuleBase(hub) {}
 
@@ -36,16 +28,7 @@ contract CollectionGatedReferenceModule is ModuleBase, IReferenceModule {
         bytes calldata data
     ) external override returns (bytes memory) {
         // decode
-        (address collection, uint256[] memory tokenIdSet) = abi.decode(data, (address, uint256[]));
-        if (collection == address(0)) revert Errors.InitParamsInvalid();
-        ProfileData storage profileData = _dataByProfile[profileId];
-        profileData.collection = collection;
 
-        if (tokenIdSet.length > 0) {
-            for (uint256 i = 0; i < tokenIdSet.length; ++i) {
-                profileData.tokenIdSet.add(tokenIdSet[i]);
-            }
-        }
         return new bytes(0);
     }
 
@@ -61,10 +44,13 @@ contract CollectionGatedReferenceModule is ModuleBase, IReferenceModule {
         bytes calldata data
     ) external view override {
         address commentCreator = IERC721(HUB).ownerOf(profileId);
+        (address collection, uint256[] memory tokenIdSet) = abi.decode(data, (address, uint256[]));
+        if (collection == address(0)) revert Errors.InitParamsInvalid();
+
         _checkCollectionValidity(
             commentCreator,
-            _dataByProfile[profileId].collection,
-            _dataByProfile[profileId].tokenIdSet
+            collection,
+            tokenIdSet
         );
     }
 
@@ -80,18 +66,19 @@ contract CollectionGatedReferenceModule is ModuleBase, IReferenceModule {
         bytes calldata data
     ) external view override {
         address mirrorCreator = IERC721(HUB).ownerOf(profileId);
-
+        (address collection, uint256[] memory tokenIdSet) = abi.decode(data, (address, uint256[]));
+        if (collection == address(0)) revert Errors.InitParamsInvalid();
         _checkCollectionValidity(
             mirrorCreator,
-            _dataByProfile[profileId].collection,
-            _dataByProfile[profileId].tokenIdSet
+            collection,
+            tokenIdSet
         );
     }
 
     function _checkCollectionValidity(
         address user,
         address collection,
-        EnumerableSet.UintSet storage tokenIdSet
+        uint[] memory tokenIdSet
     ) internal view{
         bool isErc721 = IERC721(collection).supportsInterface(type(IERC721).interfaceId);
         if (!isErc721) {
@@ -99,8 +86,8 @@ contract CollectionGatedReferenceModule is ModuleBase, IReferenceModule {
                 revert Errors.InvalidCollection();
             else {
                 uint256 totalBalance = 0;
-                for (uint256 i = 0; i < tokenIdSet.length(); i++) {
-                    totalBalance += IERC1155(collection).balanceOf(user, tokenIdSet.at(i));
+                for (uint256 i = 0; i < tokenIdSet.length; i++) {
+                    totalBalance += IERC1155(collection).balanceOf(user, tokenIdSet[i]);
                 }
                 if (totalBalance == 0) revert Errors.NotCollectionOwner();
             }
