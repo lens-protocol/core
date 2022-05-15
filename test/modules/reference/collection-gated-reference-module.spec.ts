@@ -1,13 +1,15 @@
 import '@nomiclabs/hardhat-ethers';
 import { expect } from 'chai';
-import { FollowNFT__factory } from '../../../typechain-types';
+import { BigNumber } from 'ethers';
+import { ethers } from 'hardhat';
+import { FollowNFT__factory, Mock1155Collection__factory, Mock721Collection__factory, Mock1155Collection, Mock721Collection } from '../../../typechain-types';
 import { ZERO_ADDRESS } from '../../helpers/constants';
 import { ERRORS } from '../../helpers/errors';
 import { getTimestamp, matchEvent, waitForTx } from '../../helpers/utils';
 import {
   freeCollectModule,
   FIRST_PROFILE_ID,
-  followerOnlyReferenceModule,
+  collectionGatedReferenceModule,
   governance,
   lensHub,
   makeSuiteCleanRoom,
@@ -21,11 +23,17 @@ import {
   userTwo,
   userTwoAddress,
   abiCoder,
+  deployer,
+  deployerAddress,
+  userThree
 } from '../../__setup.spec';
 
 makeSuiteCleanRoom('Collection Gated Reference Module', function () {
   const SECOND_PROFILE_ID = FIRST_PROFILE_ID + 1;
-
+  const THIRD_PROFILE_ID = SECOND_PROFILE_ID + 1;
+  let mock1155Collection: Mock1155Collection;
+  let mock721Collection: Mock721Collection;
+  let erc1155TokenId;
   beforeEach(async function () {
     await expect(
       lensHub.createProfile({
@@ -48,9 +56,19 @@ makeSuiteCleanRoom('Collection Gated Reference Module', function () {
       })
     ).to.not.be.reverted;
     await expect(
+      lensHub.createProfile({
+        to: userThreeAddress,
+        handle: 'user3',
+        imageURI: MOCK_PROFILE_URI,
+        followModule: ZERO_ADDRESS,
+        followModuleInitData: [],
+        followNFTURI: MOCK_FOLLOW_NFT_URI,
+      })
+    ).to.not.be.reverted;
+    await expect(
       lensHub
         .connect(governance)
-        .whitelistReferenceModule(followerOnlyReferenceModule.address, true)
+        .whitelistReferenceModule(collectionGatedReferenceModule.address, true)
     ).to.not.be.reverted;
     await expect(
       lensHub.connect(governance).whitelistCollectModule(freeCollectModule.address, true)
@@ -61,16 +79,23 @@ makeSuiteCleanRoom('Collection Gated Reference Module', function () {
         contentURI: MOCK_URI,
         collectModule: freeCollectModule.address,
         collectModuleInitData: abiCoder.encode(['bool'], [true]),
-        referenceModule: followerOnlyReferenceModule.address,
+        referenceModule: collectionGatedReferenceModule.address,
         referenceModuleInitData: [],
       })
     ).to.not.be.reverted;
+
+    mock1155Collection = await new Mock1155Collection__factory(deployer).deploy();
+    mock721Collection = await new Mock721Collection__factory(deployer).deploy();
+    erc1155TokenId = 1111;
+    await mock1155Collection.create(userAddress, erc1155TokenId, 1000, ethers.utils.toUtf8Bytes('0x00'));
+    await mock721Collection.mint(userThreeAddress);
+
   });
 
   context('Negatives', function () {
-    // We don't need a `publishing` or `initialization` context because initialization never reverts in the FollowerOnlyReferenceModule.
+    // We don't need a `publishing` or `initialization` context because initialization never reverts in the CollectionGatedReferenceModule.
     context('Commenting', function () {
-      it('Commenting should fail if commenter is not a follower and follow NFT not yet deployed', async function () {
+      it('Commenting should fail if commenter is not an owner of the given collection', async function () {
         await expect(
           lensHub.connect(userTwo).comment({
             profileId: SECOND_PROFILE_ID,
@@ -79,23 +104,11 @@ makeSuiteCleanRoom('Collection Gated Reference Module', function () {
             pubIdPointed: 1,
             collectModule: freeCollectModule.address,
             collectModuleInitData: abiCoder.encode(['bool'], [true]),
-            referenceModuleData: [],
+            referenceModuleData: abiCoder.encode(['address', 'uint256[]'], [mock1155Collection.address, [erc1155TokenId]]),
             referenceModule: ZERO_ADDRESS,
             referenceModuleInitData: [],
           })
-        ).to.be.revertedWith(ERRORS.FOLLOW_INVALID);
-      });
-
-      it('Commenting should fail if commenter follows, then transfers the follow NFT before attempting to comment', async function () {
-        await expect(lensHub.connect(userTwo).follow([FIRST_PROFILE_ID], [[]])).to.not.be.reverted;
-        const followNFT = FollowNFT__factory.connect(
-          await lensHub.getFollowNFT(FIRST_PROFILE_ID),
-          user
-        );
-
-        await expect(
-          followNFT.connect(userTwo).transferFrom(userTwoAddress, userThreeAddress, 1)
-        ).to.not.be.reverted;
+        ).to.be.revertedWith(ERRORS.NOT_COLLECTION_OWNER);
 
         await expect(
           lensHub.connect(userTwo).comment({
@@ -105,62 +118,66 @@ makeSuiteCleanRoom('Collection Gated Reference Module', function () {
             pubIdPointed: 1,
             collectModule: freeCollectModule.address,
             collectModuleInitData: abiCoder.encode(['bool'], [true]),
-            referenceModuleData: [],
+            referenceModuleData: abiCoder.encode(['address', 'uint256[]'], [mock721Collection.address, []]),
             referenceModule: ZERO_ADDRESS,
             referenceModuleInitData: [],
           })
-        ).to.be.revertedWith(ERRORS.FOLLOW_INVALID);
+        ).to.be.revertedWith(ERRORS.NOT_COLLECTION_OWNER);
       });
     });
 
     context('Mirroring', function () {
-      it('Mirroring should fail if mirrorer is not a follower and follow NFT not yet deployed', async function () {
+      it('Mirroring should fail if mirrorer is not an owner of the given collection', async function () {
         await expect(
           lensHub.connect(userTwo).mirror({
             profileId: SECOND_PROFILE_ID,
             profileIdPointed: FIRST_PROFILE_ID,
             pubIdPointed: 1,
-            referenceModuleData: [],
+            referenceModuleData: abiCoder.encode(['address', 'uint256[]'], [mock1155Collection.address, [erc1155TokenId]]),
             referenceModule: ZERO_ADDRESS,
             referenceModuleInitData: [],
           })
-        ).to.be.revertedWith(ERRORS.FOLLOW_INVALID);
+        ).to.be.revertedWith(ERRORS.NOT_COLLECTION_OWNER);
+        await expect(
+          lensHub.connect(userTwo).mirror({
+            profileId: SECOND_PROFILE_ID,
+            profileIdPointed: FIRST_PROFILE_ID,
+            pubIdPointed: 1,
+            referenceModuleData: abiCoder.encode(['address', 'uint256[]'], [mock721Collection.address, []]),
+            referenceModule: ZERO_ADDRESS,
+            referenceModuleInitData: [],
+          })
+        ).to.be.revertedWith(ERRORS.NOT_COLLECTION_OWNER);
+
       });
 
-      it('Mirroring should fail if mirrorer follows, then transfers the follow NFT before attempting to mirror', async function () {
-        await expect(lensHub.connect(userTwo).follow([FIRST_PROFILE_ID], [[]])).to.not.be.reverted;
-        const followNFT = FollowNFT__factory.connect(
-          await lensHub.getFollowNFT(FIRST_PROFILE_ID),
-          user
-        );
-
+      it('Mirroring should fail if mirrorer owns an NFT collection, then transfers the NFT before attempting to mirror', async function () {
         await expect(
-          followNFT.connect(userTwo).transferFrom(userTwoAddress, userAddress, 1)
+          mock721Collection.connect(userThree).transferFrom(userThreeAddress, userTwoAddress, 1)
         ).to.not.be.reverted;
-
         await expect(
-          lensHub.connect(userTwo).mirror({
-            profileId: SECOND_PROFILE_ID,
+          lensHub.connect(user).mirror({
+            profileId: FIRST_PROFILE_ID,
             profileIdPointed: FIRST_PROFILE_ID,
             pubIdPointed: 1,
-            referenceModuleData: [],
+            referenceModuleData: abiCoder.encode(['address', 'uint256[]'], [mock721Collection.address, []]),
             referenceModule: ZERO_ADDRESS,
             referenceModuleInitData: [],
           })
-        ).to.be.revertedWith(ERRORS.FOLLOW_INVALID);
+        ).to.be.revertedWith(ERRORS.NOT_COLLECTION_OWNER);
       });
     });
   });
 
   context('Scenarios', function () {
     context('Publishing', function () {
-      it('Posting with follower only reference module as reference module should emit expected events', async function () {
+      it('Posting with collection gated reference module as reference module should emit expected events', async function () {
         const tx = lensHub.post({
           profileId: FIRST_PROFILE_ID,
           contentURI: MOCK_URI,
           collectModule: freeCollectModule.address,
           collectModuleInitData: abiCoder.encode(['bool'], [true]),
-          referenceModule: followerOnlyReferenceModule.address,
+          referenceModule: collectionGatedReferenceModule.address,
           referenceModuleInitData: [],
         });
         const receipt = await waitForTx(tx);
@@ -172,7 +189,7 @@ makeSuiteCleanRoom('Collection Gated Reference Module', function () {
           MOCK_URI,
           freeCollectModule.address,
           abiCoder.encode(['bool'], [true]),
-          followerOnlyReferenceModule.address,
+          collectionGatedReferenceModule.address,
           [],
           await getTimestamp(),
         ]);
@@ -180,112 +197,17 @@ makeSuiteCleanRoom('Collection Gated Reference Module', function () {
     });
 
     context('Commenting', function () {
-      it('Commenting should work if the commenter is a follower', async function () {
-        await expect(lensHub.connect(userTwo).follow([FIRST_PROFILE_ID], [[]])).to.not.be.reverted;
-        const followNFT = FollowNFT__factory.connect(
-          await lensHub.getFollowNFT(FIRST_PROFILE_ID),
-          user
-        );
+      it('Commenting should work if the commenter is a collection NFT owner', async function () {
 
         await expect(
-          lensHub.connect(userTwo).comment({
-            profileId: SECOND_PROFILE_ID,
+          lensHub.connect(userThree).comment({
+            profileId: THIRD_PROFILE_ID,
             contentURI: MOCK_URI,
             profileIdPointed: FIRST_PROFILE_ID,
             pubIdPointed: 1,
             collectModule: freeCollectModule.address,
             collectModuleInitData: abiCoder.encode(['bool'], [true]),
-            referenceModuleData: [],
-            referenceModule: ZERO_ADDRESS,
-            referenceModuleInitData: [],
-          })
-        ).to.not.be.reverted;
-      });
-
-      it('Commenting should work if the commenter is the publication owner and he is following himself', async function () {
-        await expect(lensHub.follow([FIRST_PROFILE_ID], [[]])).to.not.be.reverted;
-        const followNFT = FollowNFT__factory.connect(
-          await lensHub.getFollowNFT(FIRST_PROFILE_ID),
-          user
-        );
-
-        await expect(
-          lensHub.comment({
-            profileId: FIRST_PROFILE_ID,
-            contentURI: MOCK_URI,
-            profileIdPointed: FIRST_PROFILE_ID,
-            pubIdPointed: 1,
-            referenceModuleData: [],
-            collectModule: freeCollectModule.address,
-            collectModuleInitData: abiCoder.encode(['bool'], [true]),
-            referenceModule: ZERO_ADDRESS,
-            referenceModuleInitData: [],
-          })
-        ).to.not.be.reverted;
-      });
-
-      it('Commenting should work if the commenter is the publication owner even when he is not following himself and follow NFT was not deployed', async function () {
-        await expect(
-          lensHub.comment({
-            profileId: FIRST_PROFILE_ID,
-            contentURI: MOCK_URI,
-            profileIdPointed: FIRST_PROFILE_ID,
-            pubIdPointed: 1,
-            referenceModuleData: [],
-            collectModule: freeCollectModule.address,
-            collectModuleInitData: abiCoder.encode(['bool'], [true]),
-            referenceModule: ZERO_ADDRESS,
-            referenceModuleInitData: [],
-          })
-        ).to.not.be.reverted;
-      });
-
-      it('Commenting should work if the commenter is the publication owner even when he is not following himself and follow NFT was deployed', async function () {
-        await expect(lensHub.follow([FIRST_PROFILE_ID], [[]])).to.not.be.reverted;
-        const followNFT = FollowNFT__factory.connect(
-          await lensHub.getFollowNFT(FIRST_PROFILE_ID),
-          user
-        );
-
-        await expect(followNFT.transferFrom(userAddress, userTwoAddress, 1)).to.not.be.reverted;
-
-        await expect(
-          lensHub.comment({
-            profileId: FIRST_PROFILE_ID,
-            contentURI: MOCK_URI,
-            profileIdPointed: FIRST_PROFILE_ID,
-            pubIdPointed: 1,
-            referenceModuleData: [],
-            collectModule: freeCollectModule.address,
-            collectModuleInitData: abiCoder.encode(['bool'], [true]),
-            referenceModule: ZERO_ADDRESS,
-            referenceModuleInitData: [],
-          })
-        ).to.not.be.reverted;
-      });
-
-      it('Commenting should work if the commenter follows, transfers the follow NFT then receives it back before attempting to comment', async function () {
-        await expect(lensHub.connect(userTwo).follow([FIRST_PROFILE_ID], [[]])).to.not.be.reverted;
-        const followNFT = FollowNFT__factory.connect(
-          await lensHub.getFollowNFT(FIRST_PROFILE_ID),
-          user
-        );
-
-        await expect(
-          followNFT.connect(userTwo).transferFrom(userTwoAddress, userAddress, 1)
-        ).to.not.be.reverted;
-
-        await expect(followNFT.transferFrom(userAddress, userTwoAddress, 1)).to.not.be.reverted;
-
-        await expect(
-          lensHub.connect(userTwo).comment({
-            profileId: SECOND_PROFILE_ID,
-            contentURI: MOCK_URI,
-            profileIdPointed: FIRST_PROFILE_ID,
-            pubIdPointed: 1,
-            collectModule: freeCollectModule.address,
-            collectModuleInitData: abiCoder.encode(['bool'], [true]),
-            referenceModuleData: [],
+            referenceModuleData: abiCoder.encode(['address', 'uint256[]'], [mock721Collection.address, []]),
             referenceModule: ZERO_ADDRESS,
             referenceModuleInitData: [],
           })
@@ -294,19 +216,13 @@ makeSuiteCleanRoom('Collection Gated Reference Module', function () {
     });
 
     context('Mirroring', function () {
-      it('Mirroring should work if mirrorer is a follower', async function () {
-        await expect(lensHub.connect(userTwo).follow([FIRST_PROFILE_ID], [[]])).to.not.be.reverted;
-        const followNFT = FollowNFT__factory.connect(
-          await lensHub.getFollowNFT(FIRST_PROFILE_ID),
-          user
-        );
-
+      it('Mirroring should work if mirrorer is a collection NFT owner', async function () {
         await expect(
-          lensHub.connect(userTwo).mirror({
-            profileId: SECOND_PROFILE_ID,
+          lensHub.connect(userThree).mirror({
+            profileId: THIRD_PROFILE_ID,
             profileIdPointed: FIRST_PROFILE_ID,
             pubIdPointed: 1,
-            referenceModuleData: [],
+            referenceModuleData: abiCoder.encode(['address', 'uint256[]'], [mock721Collection.address, []]),
             referenceModule: ZERO_ADDRESS,
             referenceModuleInitData: [],
           })
@@ -314,82 +230,25 @@ makeSuiteCleanRoom('Collection Gated Reference Module', function () {
       });
 
       it('Mirroring should work if mirrorer follows, transfers the follow NFT then receives it back before attempting to mirror', async function () {
-        await expect(lensHub.connect(userTwo).follow([FIRST_PROFILE_ID], [[]])).to.not.be.reverted;
-        const followNFT = FollowNFT__factory.connect(
-          await lensHub.getFollowNFT(FIRST_PROFILE_ID),
-          user
-        );
 
         await expect(
-          followNFT.connect(userTwo).transferFrom(userTwoAddress, userAddress, 1)
+          mock721Collection.connect(userThree).transferFrom(userThreeAddress, userTwoAddress, 1)
         ).to.not.be.reverted;
 
-        await expect(followNFT.transferFrom(userAddress, userTwoAddress, 1)).to.not.be.reverted;
+        await expect(mock721Collection.connect(userTwo).transferFrom(userTwoAddress, userThreeAddress, 1)).to.not.be.reverted;
 
         await expect(
-          lensHub.connect(userTwo).mirror({
-            profileId: SECOND_PROFILE_ID,
+          lensHub.connect(userThree).mirror({
+            profileId: THIRD_PROFILE_ID,
             profileIdPointed: FIRST_PROFILE_ID,
             pubIdPointed: 1,
-            referenceModuleData: [],
+            referenceModuleData: abiCoder.encode(['address', 'uint256[]'], [mock721Collection.address, []]),
             referenceModule: ZERO_ADDRESS,
             referenceModuleInitData: [],
           })
         ).to.not.be.reverted;
       });
 
-      it('Mirroring should work if the mirrorer is the publication owner and he is following himself', async function () {
-        await expect(lensHub.follow([FIRST_PROFILE_ID], [[]])).to.not.be.reverted;
-        const followNFT = FollowNFT__factory.connect(
-          await lensHub.getFollowNFT(FIRST_PROFILE_ID),
-          user
-        );
-
-        await expect(
-          lensHub.mirror({
-            profileId: FIRST_PROFILE_ID,
-            profileIdPointed: FIRST_PROFILE_ID,
-            pubIdPointed: 1,
-            referenceModuleData: [],
-            referenceModule: ZERO_ADDRESS,
-            referenceModuleInitData: [],
-          })
-        ).to.not.be.reverted;
-      });
-
-      it('Mirroring should work if the mirrorer is the publication owner even when he is not following himself and follow NFT was not deployed', async function () {
-        await expect(
-          lensHub.mirror({
-            profileId: FIRST_PROFILE_ID,
-            profileIdPointed: FIRST_PROFILE_ID,
-            pubIdPointed: 1,
-            referenceModuleData: [],
-            referenceModule: ZERO_ADDRESS,
-            referenceModuleInitData: [],
-          })
-        ).to.not.be.reverted;
-      });
-
-      it('Mirroring should work if the mirrorer is the publication owner even when he is not following himself and follow NFT was deployed', async function () {
-        await expect(lensHub.follow([FIRST_PROFILE_ID], [[]])).to.not.be.reverted;
-        const followNFT = FollowNFT__factory.connect(
-          await lensHub.getFollowNFT(FIRST_PROFILE_ID),
-          user
-        );
-
-        await expect(followNFT.transferFrom(userAddress, userTwoAddress, 1)).to.not.be.reverted;
-
-        await expect(
-          lensHub.mirror({
-            profileId: FIRST_PROFILE_ID,
-            profileIdPointed: FIRST_PROFILE_ID,
-            pubIdPointed: 1,
-            referenceModuleData: [],
-            referenceModule: ZERO_ADDRESS,
-            referenceModuleInitData: [],
-          })
-        ).to.not.be.reverted;
-      });
     });
   });
 });
