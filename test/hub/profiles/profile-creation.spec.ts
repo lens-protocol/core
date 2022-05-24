@@ -10,6 +10,7 @@ import {
   governance,
   lensHub,
   makeSuiteCleanRoom,
+  MAX_PROFILE_IMAGE_URI_LENGTH,
   mockFollowModule,
   mockModuleData,
   MOCK_FOLLOW_NFT_URI,
@@ -107,7 +108,7 @@ makeSuiteCleanRoom('Profile Creation', function () {
         ).to.be.revertedWith(ERRORS.NO_REASON_ABI_DECODE);
       });
 
-      it('User should fail to createa a profile when they are not a whitelisted profile creator', async function () {
+      it('User should fail to create a profile when they are not a whitelisted profile creator', async function () {
         await expect(
           lensHub.connect(governance).whitelistProfileCreator(userAddress, false)
         ).to.not.be.reverted;
@@ -122,6 +123,22 @@ makeSuiteCleanRoom('Profile Creation', function () {
             followNFTURI: MOCK_FOLLOW_NFT_URI,
           })
         ).to.be.revertedWith(ERRORS.PROFILE_CREATOR_NOT_WHITELISTED);
+      });
+
+      it('User should fail to create a profile with invalid image URI length', async function () {
+        const profileURITooLong = MOCK_PROFILE_URI.repeat(500);
+        expect(profileURITooLong.length).to.be.greaterThan(MAX_PROFILE_IMAGE_URI_LENGTH);
+
+        await expect(
+          lensHub.createProfile({
+            to: userAddress,
+            handle: MOCK_PROFILE_HANDLE,
+            imageURI: profileURITooLong,
+            followModule: ZERO_ADDRESS,
+            followModuleInitData: [],
+            followNFTURI: MOCK_FOLLOW_NFT_URI,
+          })
+        ).to.be.revertedWith(ERRORS.INVALID_IMAGE_URI_LENGTH);
       });
     });
 

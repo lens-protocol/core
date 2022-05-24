@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: AGPL-3.0-only
+// SPDX-License-Identifier: MIT
 
 pragma solidity 0.8.10;
 
@@ -498,7 +498,7 @@ library Events {
     );
 
     /**
-     * @dev Emitted when the user wants to enable or disable follows in the `LensPeripheryDataProvider`.
+     * @dev Emitted when the user wants to enable or disable follows in the `LensPeriphery`.
      *
      * @param owner The profile owner who executed the toggle.
      * @param profileIds The array of token IDs of the profiles each followNFT is associated with.
@@ -513,17 +513,11 @@ library Events {
     );
 
     /**
-     * @dev Emitted when the metadata associated with a profile and user is set in the `LensPeripheryDataProvider`.
+     * @dev Emitted when the metadata associated with a profile is set in the `LensPeriphery`.
      *
-     * @param user The user the metadata is set for.
      * @param profileId The profile ID the metadata is set for.
      * @param metadata The metadata set for the profile and user.
      * @param timestamp The current block timestamp.
      */
-    event ProfileMetadataSet(
-        address indexed user,
-        uint256 indexed profileId,
-        string metadata,
-        uint256 timestamp
-    );
+    event ProfileMetadataSet(uint256 indexed profileId, string metadata, uint256 timestamp);
 }

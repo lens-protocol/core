@@ -1,7 +1,7 @@
 {
-  "name": "lens-protocol",
-  "version": "1.0.0",
-  "description": "decentralized social media",
+  "name": "@aave/lens-protocol",
+  "version": "1.0.2",
+  "description": "Composable and decentralized social graph",
   "main": "index.js",
   "scripts": {
     "test": "npm run compile && TRACK_GAS=true hardhat test",
@@ -27,12 +27,12 @@
   },
   "repository": {
     "type": "git",
-    "url": "git@github.com:aave/lens-protocol.git"
+    "url": "https://github.com/aave/lens-protocol"
   },
   "bugs": {
     "url": "https://github.com/aave/lens-protocol/issues"
   },
-  "homepage": "",
+  "homepage": "https://github.com/aave/lens-protocol#readme",
   "devDependencies": {
     "@nomiclabs/hardhat-ethers": "2.0.2",
     "@nomiclabs/hardhat-etherscan": "2.1.8",
@@ -83,5 +83,16 @@
     "Emilio Frangella",
     "David Racero"
   ],
-  "license": "AGPL-3.0-only"
+  "license": "MIT",
+  "keywords": [
+    "lens",
+    "protocol",
+    "aave",
+    "social",
+    "graph",
+    "solidity",
+    "evm",
+    "contracts",
+    "core"
+  ]
 }

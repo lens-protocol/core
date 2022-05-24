@@ -5,21 +5,24 @@ pragma solidity 0.8.10;
 import {ILensHub} from '../interfaces/ILensHub.sol';
 import {DataTypes} from '../libraries/DataTypes.sol';
 import {Errors} from '../libraries/Errors.sol';
+import {Ownable} from '@openzeppelin/contracts/access/Ownable.sol';
 
 /**
- * @title MockProfileCreationProxy
+ * @title ProfileCreationProxy
  * @author Lens Protocol
  *
- * @notice This is a proxy contract that enforces ".test" handle suffixes and adds char validations at profile creation.
+ * @notice This is an ownable proxy contract that enforces ".lens" handle suffixes at profile creation.
+ * Only the owner can create profiles.
  */
-contract MockProfileCreationProxy {
+contract ProfileCreationProxy is Ownable {
     ILensHub immutable LENS_HUB;
 
-    constructor(ILensHub hub) {
+    constructor(address owner, ILensHub hub) {
+        _transferOwnership(owner);
         LENS_HUB = hub;
     }
 
-    function proxyCreateProfile(DataTypes.CreateProfileData memory vars) external {
+    function proxyCreateProfile(DataTypes.CreateProfileData memory vars) external onlyOwner {
         uint256 handleLength = bytes(vars.handle).length;
         if (handleLength < 5) revert Errors.HandleLengthInvalid();
 
@@ -34,7 +37,7 @@ contract MockProfileCreationProxy {
             }
         }
 
-        vars.handle = string(abi.encodePacked(vars.handle, '.test'));
+        vars.handle = string(abi.encodePacked(vars.handle, '.lens'));
         LENS_HUB.createProfile(vars);
     }
 }

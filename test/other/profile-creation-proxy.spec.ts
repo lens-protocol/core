@@ -2,7 +2,7 @@ import '@nomiclabs/hardhat-ethers';
 import { expect } from 'chai';
 import { ZERO_ADDRESS } from '../helpers/constants';
 import { ERRORS } from '../helpers/errors';
-import { MockProfileCreationProxy, MockProfileCreationProxy__factory } from '../../typechain-types';
+import { ProfileCreationProxy, ProfileCreationProxy__factory } from '../../typechain-types';
 import {
   deployer,
   FIRST_PROFILE_ID,
@@ -19,13 +19,14 @@ import { BigNumber } from 'ethers';
 import { TokenDataStructOutput } from '../../typechain-types/LensHub';
 import { getTimestamp } from '../helpers/utils';
 
-makeSuiteCleanRoom('Mock Profile Creation Proxy', function () {
-  const REQUIRED_SUFFIX = '.test';
+makeSuiteCleanRoom('Profile Creation Proxy', function () {
+  const REQUIRED_SUFFIX = '.lens';
   const MINIMUM_LENGTH = 5;
 
-  let profileCreationProxy: MockProfileCreationProxy;
+  let profileCreationProxy: ProfileCreationProxy;
   beforeEach(async function () {
-    profileCreationProxy = await new MockProfileCreationProxy__factory(deployer).deploy(
+    profileCreationProxy = await new ProfileCreationProxy__factory(deployer).deploy(
+      deployerAddress,
       lensHub.address
     );
     await expect(

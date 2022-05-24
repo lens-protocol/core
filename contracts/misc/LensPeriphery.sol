@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: AGPL-3.0-only
+// SPDX-License-Identifier: MIT
 
 pragma solidity 0.8.10;
 
@@ -36,59 +36,50 @@ contract LensPeriphery {
 
     mapping(address => uint256) public sigNonces;
 
-    mapping(address => mapping(uint256 => string)) internal _metadataByProfileByOwner;
+    mapping(uint256 => string) internal _metadataByProfile;
 
     constructor(ILensHub hub) {
         HUB = hub;
     }
 
     /**
-     * @notice Sets profile metadata for a profile owner as a dispatcher.
+     * @notice Sets the profile metadata for a given profile.
      *
      * @param profileId The profile ID to set the metadata for.
-     * @param metadata The metadata string to set for the profile and owner.
-     */
-    function dispatcherSetProfileMetadataURI(uint256 profileId, string calldata metadata) external {
-        address owner = IERC721Time(address(HUB)).ownerOf(profileId);
-        if (msg.sender != HUB.getDispatcher(profileId)) revert Errors.NotDispatcher();
-        _setProfileMetadataURI(owner, profileId, metadata);
-    }
-
-    /**
-     * @notice Sets the profile metadata for a given profile when owned by the message sender.
-     *
-     * @param profileId The profile ID to set the metadata for.
-     * @param metadata The metadata string to set for the profile and message sender.
+     * @param metadata The metadata string to set for the profile.
      */
     function setProfileMetadataURI(uint256 profileId, string calldata metadata) external {
-        _setProfileMetadataURI(msg.sender, profileId, metadata);
+        _validateCallerIsProfileOwnerOrDispatcher(profileId);
+        _setProfileMetadataURI(profileId, metadata);
     }
 
     /**
-     * @notice Sets the profile metadata for a given profile and user via signature with the specified parameters.
+     * @notice Sets the profile metadata for a given profile via signature with the specified parameters.
      *
-     * @param vars A SetProfileMetadataWithSigData struct containingthe regular parameters as well as the user address
-     * and an EIP712Signature struct.
+     * @param vars A SetProfileMetadataWithSigData struct containingthe regular parameters and an EIP712Signature struct.
      */
     function setProfileMetadataURIWithSig(DataTypes.SetProfileMetadataWithSigData calldata vars)
         external
     {
-        _validateRecoveredAddress(
-            _calculateDigest(
-                keccak256(
-                    abi.encode(
-                        SET_PROFILE_METADATA_WITH_SIG_TYPEHASH,
-                        vars.profileId,
-                        keccak256(bytes(vars.metadata)),
-                        sigNonces[vars.user]++,
-                        vars.sig.deadline
+        unchecked {
+            address owner = IERC721Time(address(HUB)).ownerOf(vars.profileId);
+            _validateRecoveredAddress(
+                _calculateDigest(
+                    keccak256(
+                        abi.encode(
+                            SET_PROFILE_METADATA_WITH_SIG_TYPEHASH,
+                            vars.profileId,
+                            keccak256(bytes(vars.metadata)),
+                            sigNonces[owner]++,
+                            vars.sig.deadline
+                        )
                     )
-                )
-            ),
-            vars.user,
-            vars.sig
-        );
-        _setProfileMetadataURI(vars.user, vars.profileId, vars.metadata);
+                ),
+                owner,
+                vars.sig
+            );
+        }
+        _setProfileMetadataURI(vars.profileId, vars.metadata);
     }
 
     /**
@@ -132,39 +123,19 @@ contract LensPeriphery {
     }
 
     /**
-     * @notice Returns the metadata URI of a profile for its current owner.
+     * @notice Returns the metadata URI of a profile.
      *
      * @param profileId The profile ID to query the metadata URI for.
      *
-     * @return string The metadata associated with that profile ID and the profile's current owner.
+     * @return string The metadata associated with that profile ID, or an empty string if it is not set or the profile does not exist.
      */
     function getProfileMetadataURI(uint256 profileId) external view returns (string memory) {
-        address owner = IERC721Time(address(HUB)).ownerOf(profileId);
-        return _metadataByProfileByOwner[owner][profileId];
+        return _metadataByProfile[profileId];
     }
 
-    /**
-     * @notice Returns the metadata URI of a profile for a given user. Note that the user does not *need* to own the
-     * profile in order to have associated metadata.
-     *
-     * @param user The user to query the profile metadata URI for.
-     * @param profileId The profile ID to query the metadata URI for. 
-     */
-    function getProfileMetadataURIByOwner(address user, uint256 profileId)
-        external
-        view
-        returns (string memory)
-    {
-        return _metadataByProfileByOwner[user][profileId];
-    }
-
-    function _setProfileMetadataURI(
-        address user,
-        uint256 profileId,
-        string calldata metadata
-    ) internal {
-        _metadataByProfileByOwner[user][profileId] = metadata;
-        emit Events.ProfileMetadataSet(user, profileId, metadata, block.timestamp);
+    function _setProfileMetadataURI(uint256 profileId, string calldata metadata) internal {
+        _metadataByProfile[profileId] = metadata;
+        emit Events.ProfileMetadataSet(profileId, metadata, block.timestamp);
     }
 
     function _toggleFollow(
@@ -184,6 +155,16 @@ contract LensPeriphery {
             }
         }
         emit Events.FollowsToggled(follower, profileIds, enables, block.timestamp);
+    }
+
+    function _validateCallerIsProfileOwnerOrDispatcher(uint256 profileId) internal view {
+        if (
+            msg.sender == IERC721Time(address(HUB)).ownerOf(profileId) ||
+            msg.sender == HUB.getDispatcher(profileId)
+        ) {
+            return;
+        }
+        revert Errors.NotProfileOwnerOrDispatcher();
     }
 
     /**

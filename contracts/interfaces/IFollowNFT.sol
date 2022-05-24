@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: AGPL-3.0-only
+// SPDX-License-Identifier: MIT
 
 pragma solidity 0.8.10;
 
@@ -12,18 +12,11 @@ import {DataTypes} from '../libraries/DataTypes.sol';
  */
 interface IFollowNFT {
     /**
-     * @notice Initializes the follow NFT, setting the feed as the privileged minter, initializing the name and
-     * symbol in the LensNFTBase contract.
+     * @notice Initializes the follow NFT, setting the hub as the privileged minter and storing the associated profile ID.
      *
      * @param profileId The token ID of the profile in the hub associated with this followNFT, used for transfer hooks.
-     * @param name The name to set for this NFT.
-     * @param symbol The symbol to set for this NFT.
      */
-    function initialize(
-        uint256 profileId,
-        string calldata name,
-        string calldata symbol
-    ) external;
+    function initialize(uint256 profileId) external;
 
     /**
      * @notice Mints a follow NFT to the specified address. This can only be called by the hub, and is called

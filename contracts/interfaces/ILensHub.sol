@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: AGPL-3.0-only
+// SPDX-License-Identifier: MIT
 
 pragma solidity 0.8.10;
 
@@ -45,6 +45,10 @@ interface ILensHub {
     /**
      * @notice Sets the protocol state to either a global pause, a publishing pause or an unpaused state. This function
      * can only be called by the governance address or the emergency admin address.
+     *
+     * Note that this reverts if the emergency admin calls it if:
+     *      1. The emergency admin is attempting to unpause.
+     *      2. The emergency admin is calling while the protocol is already paused.
      *
      * @param newState The state to set, as a member of the ProtocolState enum.
      */
@@ -523,4 +527,18 @@ interface ILensHub {
      * @return PubType The publication type, as a member of an enum (either "post," "comment" or "mirror").
      */
     function getPubType(uint256 profileId, uint256 pubId) external view returns (DataTypes.PubType);
+
+    /**
+     * @notice Returns the follow NFT implementation address.
+     *
+     * @return address The follow NFT implementation address.
+     */
+    function getFollowNFTImpl() external view returns (address);
+
+    /**
+     * @notice Returns the collect NFT implementation address.
+     *
+     * @return address The collect NFT implementation address.
+     */
+    function getCollectNFTImpl() external view returns (address);
 }

@@ -148,33 +148,24 @@ makeSuiteCleanRoom('Events', function () {
 
     it('Protocol state change by emergency admin should emit expected events', async function () {
       await waitForTx(lensHub.connect(governance).setEmergencyAdmin(userAddress));
-      receipt = await waitForTx(lensHub.connect(user).setState(ProtocolState.Paused));
-
-      expect(receipt.logs.length).to.eq(1);
-      matchEvent(receipt, 'StateSet', [
-        userAddress,
-        ProtocolState.Unpaused,
-        ProtocolState.Paused,
-        await getTimestamp(),
-      ]);
 
       receipt = await waitForTx(lensHub.connect(user).setState(ProtocolState.PublishingPaused));
 
       expect(receipt.logs.length).to.eq(1);
       matchEvent(receipt, 'StateSet', [
         userAddress,
-        ProtocolState.Paused,
+        ProtocolState.Unpaused,
         ProtocolState.PublishingPaused,
         await getTimestamp(),
       ]);
 
-      receipt = await waitForTx(lensHub.connect(user).setState(ProtocolState.Unpaused));
+      receipt = await waitForTx(lensHub.connect(user).setState(ProtocolState.Paused));
 
       expect(receipt.logs.length).to.eq(1);
       matchEvent(receipt, 'StateSet', [
         userAddress,
         ProtocolState.PublishingPaused,
-        ProtocolState.Unpaused,
+        ProtocolState.Paused,
         await getTimestamp(),
       ]);
     });
@@ -459,9 +450,8 @@ makeSuiteCleanRoom('Events', function () {
       const expectedName = MOCK_PROFILE_HANDLE + '-Follower';
       const expectedSymbol = getAbbreviation(MOCK_PROFILE_HANDLE) + '-Fl';
 
-      expect(receipt.logs.length).to.eq(6);
+      expect(receipt.logs.length).to.eq(5);
       matchEvent(receipt, 'FollowNFTDeployed', [FIRST_PROFILE_ID, followNFT, await getTimestamp()]);
-      matchEvent(receipt, 'BaseInitialized', [expectedName, expectedSymbol, await getTimestamp()]);
       matchEvent(receipt, 'Followed', [
         userTwoAddress,
         [FIRST_PROFILE_ID],

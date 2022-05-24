@@ -24,6 +24,8 @@ import {
   LensPeriphery__factory,
   UIDataProvider__factory,
   ProfileFollowModule__factory,
+  RevertFollowModule__factory,
+  ProfileCreationProxy__factory,
 } from '../typechain-types';
 import { deployContract, waitForTx } from './helpers/utils';
 
@@ -39,11 +41,13 @@ task('full-deploy', 'deploys the entire Lens Protocol').setAction(async ({}, hre
   const deployer = accounts[0];
   const governance = accounts[1];
   const treasuryAddress = accounts[2].address;
+  const proxyAdminAddress = deployer.address;
+  const profileCreatorAddress = deployer.address;
 
   // Nonce management in case of deployment issues
   let deployerNonce = await ethers.provider.getTransactionCount(deployer.address);
 
-  console.log('\n\t -- Deploying Module Globals --');
+  console.log('\n\t-- Deploying Module Globals --');
   const moduleGlobals = await deployContract(
     new ModuleGlobals__factory(deployer).deploy(
       governance.address,
@@ -112,7 +116,7 @@ task('full-deploy', 'deploys the entire Lens Protocol').setAction(async ({}, hre
   let proxy = await deployContract(
     new TransparentUpgradeableProxy__factory(deployer).deploy(
       lensHubImpl.address,
-      deployer.address,
+      proxyAdminAddress,
       data,
       { nonce: deployerNonce++ }
     )
@@ -182,6 +186,12 @@ task('full-deploy', 'deploys the entire Lens Protocol').setAction(async ({}, hre
       nonce: deployerNonce++,
     })
   );
+  console.log('\n\t-- Deploying revertFollowModule --');
+  const revertFollowModule = await deployContract(
+    new RevertFollowModule__factory(deployer).deploy(lensHub.address, {
+      nonce: deployerNonce++,
+    })
+  );
   // --- COMMENTED OUT AS THIS IS NOT A LAUNCH MODULE ---
   // console.log('\n\t-- Deploying approvalFollowModule --');
   // const approvalFollowModule = await deployContract(
@@ -200,6 +210,13 @@ task('full-deploy', 'deploys the entire Lens Protocol').setAction(async ({}, hre
   console.log('\n\t-- Deploying UI Data Provider --');
   const uiDataProvider = await deployContract(
     new UIDataProvider__factory(deployer).deploy(lensHub.address, {
+      nonce: deployerNonce++,
+    })
+  );
+
+  console.log('\n\t-- Deploying Profile Creation Proxy --');
+  const profileCreationProxy = await deployContract(
+    new ProfileCreationProxy__factory(deployer).deploy(profileCreatorAddress, lensHub.address, {
       nonce: deployerNonce++,
     })
   );
@@ -240,6 +257,9 @@ task('full-deploy', 'deploys the entire Lens Protocol').setAction(async ({}, hre
   await waitForTx(
     lensHub.whitelistFollowModule(profileFollowModule.address, true, { nonce: governanceNonce++ })
   );
+  await waitForTx(
+    lensHub.whitelistFollowModule(revertFollowModule.address, true, { nonce: governanceNonce++ })
+  );
   // --- COMMENTED OUT AS THIS IS NOT A LAUNCH MODULE ---
   // await waitForTx(
   // lensHub.whitelistFollowModule(approvalFollowModule.address, true, { nonce: governanceNonce++ })
@@ -261,6 +281,14 @@ task('full-deploy', 'deploys the entire Lens Protocol').setAction(async ({}, hre
       .whitelistCurrency(currency.address, true, { nonce: governanceNonce++ })
   );
 
+  // Whitelist the profile creation proxy
+  console.log('\n\t-- Whitelisting Profile Creation Proxy --');
+  await waitForTx(
+    lensHub.whitelistProfileCreator(profileCreationProxy.address, true, {
+      nonce: governanceNonce++,
+    })
+  );
+
   // Save and log the addresses
   const addrs = {
     'lensHub proxy': lensHub.address,
@@ -280,10 +308,12 @@ task('full-deploy', 'deploys the entire Lens Protocol').setAction(async ({}, hre
     'free collect module': freeCollectModule.address,
     'fee follow module': feeFollowModule.address,
     'profile follow module': profileFollowModule.address,
+    'revert follow module': revertFollowModule.address,
     // --- COMMENTED OUT AS THIS IS NOT A LAUNCH MODULE ---
     // 'approval follow module': approvalFollowModule.address,
     'follower only reference module': followerOnlyReferenceModule.address,
     'UI data provider': uiDataProvider.address,
+    'Profile creation proxy': profileCreationProxy.address,
   };
   const json = JSON.stringify(addrs, null, 2);
   console.log(json);

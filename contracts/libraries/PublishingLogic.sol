@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: AGPL-3.0-only
+// SPDX-License-Identifier: MIT
 
 pragma solidity 0.8.10;
 
@@ -45,11 +45,14 @@ library PublishingLogic {
     ) external {
         _validateHandle(vars.handle);
 
+        if (bytes(vars.imageURI).length > Constants.MAX_PROFILE_IMAGE_URI_LENGTH)
+            revert Errors.ProfileImageURILengthInvalid();
+
         bytes32 handleHash = keccak256(bytes(vars.handle));
 
         if (_profileIdByHandleHash[handleHash] != 0) revert Errors.HandleTaken();
-        _profileIdByHandleHash[handleHash] = profileId;
 
+        _profileIdByHandleHash[handleHash] = profileId;
         _profileById[profileId].handle = vars.handle;
         _profileById[profileId].imageURI = vars.imageURI;
         _profileById[profileId].followNFTURI = vars.followNFTURI;
