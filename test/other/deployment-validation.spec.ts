@@ -56,10 +56,10 @@ makeSuiteCleanRoom('deployment validation', () => {
     );
   });
 
-  it('Deployer should not be able to initialize hub implementation due to address(this) check', async function () {
+  it('Deployer should not be able to initialize hub implementation due to constructor initialization', async function () {
     await expect(
       lensHubImpl.initialize(LENS_HUB_NFT_NAME, LENS_HUB_NFT_SYMBOL, governanceAddress)
-    ).to.be.revertedWith(ERRORS.CANNOT_INIT_IMPL);
+    ).to.be.revertedWith(ERRORS.INITIALIZED);
   });
 
   it('Deployer should not be able to initialize follow NFT implementation due to constructor initialization', async function () {
