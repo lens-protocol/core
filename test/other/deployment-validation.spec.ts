@@ -63,13 +63,13 @@ makeSuiteCleanRoom('deployment validation', () => {
   });
 
   it('Deployer should not be able to initialize follow NFT implementation due to constructor initialization', async function () {
-    await expect(await followNFTImpl.initialize(0, 'follownft', 'fnft')).to.be.revertedWith(
+    await expect(followNFTImpl.initialize(0)).to.be.revertedWith(
       ERRORS.INITIALIZED
     );
   });
 
   it('Deployer should not be able to initialize collect NFT implementation due to constructor initialization', async function () {
-    await expect(await collectNFTImpl.initialize(0, 0, 'collectnft', 'cnft')).to.be.revertedWith(
+    await expect(collectNFTImpl.initialize(0, 0, 'collectnft', 'cnft')).to.be.revertedWith(
       ERRORS.INITIALIZED
     );
   });
