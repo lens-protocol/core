@@ -1,5 +1,4 @@
 export const ERRORS = {
-  CANNOT_INIT_IMPL: 'CannotInitImplementation()',
   INITIALIZED: 'Initialized()',
   SIGNATURE_EXPIRED: 'SignatureExpired()',
   ZERO_SPENDER: 'ZeroSpender()',
