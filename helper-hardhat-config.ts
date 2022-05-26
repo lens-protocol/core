@@ -1,5 +1,6 @@
 import {
   eEthereumNetwork,
+  eCeloNetwork,
   ePolygonNetwork,
   eXDaiNetwork,
   iParamsPerNetwork,
@@ -13,6 +14,8 @@ const TENDERLY_FORK_ID = process.env.TENDERLY_FORK_ID || '';
 const GWEI = 1000 * 1000 * 1000;
 
 export const NETWORKS_RPC_URL: iParamsPerNetwork<string> = {
+  [eCeloNetwork.celo]: process.env.CELO_RPC_URL,
+  [eCeloNetwork.alfajores]: process.env.ALFAJORES_RPC_URL,
   [eEthereumNetwork.kovan]: process.env.KOVAN_RPC_URL,
   [eEthereumNetwork.ropsten]: process.env.ROPSTEN_RPC_URL,
   [eEthereumNetwork.main]: process.env.MAINNET_RPC_URL,

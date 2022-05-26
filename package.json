@@ -10,9 +10,13 @@
     "size": "npm run compile && hardhat size-contracts",
     "full-deploy-local": "hardhat full-deploy --network localhost",
     "full-deploy-mumbai": "hardhat full-deploy --network mumbai",
+    "full-deploy-alfajores": "hardhat full-deploy --network alfajores",
+    "full-deploy-celo": "hardhat full-deploy --network celo",
     "coverage": "npm run compile && hardhat coverage --temp temp-artifacts --testfiles test/emptyrun.coverage.ts && hardhat coverage --temp temp-artifacts --testfiles '!test/emptyrun.coverage.ts'",
     "run-env": "npm i && tail -f /dev/null",
     "hardhat": "hardhat",
+    "hardhat:alfajores": "hardhat --network alfajores",
+    "hardhat:celo": "hardhat --network celo",
     "hardhat:kovan": "hardhat --network kovan",
     "hardhat:tenderly-main": "hardhat --network tenderlyMain",
     "hardhat:ropsten": "hardhat --network ropsten",
@@ -71,6 +75,7 @@
     }
   },
   "dependencies": {
+    "@ethersproject/contracts": "^5.6.2",
     "@openzeppelin/contracts": "4.5.0"
   },
   "author": "Lens",

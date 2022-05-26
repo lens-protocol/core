@@ -1,6 +1,6 @@
 import { HardhatUserConfig } from 'hardhat/types';
 import { accounts } from './helpers/test-wallets';
-import { eEthereumNetwork, eNetwork, ePolygonNetwork, eXDaiNetwork } from './helpers/types';
+import { eEthereumNetwork, eNetwork, ePolygonNetwork, eXDaiNetwork, eCeloNetwork } from './helpers/types';
 import { HARDHATEVM_CHAINID } from './helpers/hardhat-constants';
 import { NETWORKS_RPC_URL } from './helper-hardhat-config';
 import dotenv from 'dotenv';
@@ -65,6 +65,8 @@ const config: HardhatUserConfig = {
     ],
   },
   networks: {
+    celo: getCommonNetworkConfig(eCeloNetwork.celo, 42220),
+    alfajores: getCommonNetworkConfig(eCeloNetwork.alfajores, 44787),
     kovan: getCommonNetworkConfig(eEthereumNetwork.kovan, 42),
     ropsten: getCommonNetworkConfig(eEthereumNetwork.ropsten, 3),
     main: getCommonNetworkConfig(eEthereumNetwork.main, 1),

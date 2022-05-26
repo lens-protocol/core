@@ -2,7 +2,15 @@ export interface SymbolMap<T> {
   [symbol: string]: T;
 }
 
-export type eNetwork = eEthereumNetwork | ePolygonNetwork | eXDaiNetwork;
+export type eNetwork = eEthereumNetwork | ePolygonNetwork | eXDaiNetwork | eCeloNetwork;
+
+export enum eCeloNetwork {
+  alfajores = 'alfajores',
+  celo = 'celo',
+  hardhat = 'hardhat',
+  tenderlyMain = 'tenderlyMain',
+  harhatevm = 'harhatevm',
+}
 
 export enum eEthereumNetwork {
   kovan = 'kovan',
@@ -29,8 +37,10 @@ export enum EthereumNetworkNames {
   matic = 'matic',
   mumbai = 'mumbai',
   xdai = 'xdai',
+  celo = 'celo',
+  alfajores = 'alfajores',
 }
-
+export type tCeloAddress = string;
 export type tEthereumAddress = string;
 export type tStringTokenBigUnits = string; // 1 ETH, or 10e6 USDC or 10e18 DAI
 export type tStringTokenSmallUnits = string; // 1 wei, or 1 basic unit of USDC, or 1 basic unit of DAI
@@ -38,12 +48,22 @@ export type tStringTokenSmallUnits = string; // 1 wei, or 1 basic unit of USDC, 
 export type iParamsPerNetwork<T> =
   | iEthereumParamsPerNetwork<T>
   | iPolygonParamsPerNetwork<T>
+  | iCeloParamsPerNetwork<T>
   | iXDaiParamsPerNetwork<T>;
 
 export interface iParamsPerNetworkAll<T>
   extends iEthereumParamsPerNetwork<T>,
     iPolygonParamsPerNetwork<T>,
+    iCeloParamsPerNetwork<T>,
     iXDaiParamsPerNetwork<T> {}
+
+export interface iCeloParamsPerNetwork<eNetwork> {
+  [eCeloNetwork.harhatevm]: eNetwork;
+  [eCeloNetwork.celo]: eNetwork;
+  [eCeloNetwork.alfajores]: eNetwork;
+  [eCeloNetwork.hardhat]: eNetwork;
+  [eCeloNetwork.tenderlyMain]: eNetwork;
+}
 
 export interface iEthereumParamsPerNetwork<eNetwork> {
   [eEthereumNetwork.harhatevm]: eNetwork;

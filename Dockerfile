@@ -1,4 +1,5 @@
 # syntax=docker/dockerfile:1.3
+
 FROM ethereum/solc:0.8.7 as build-deps
 
 FROM node:16 as build-packages

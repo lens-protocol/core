@@ -2,6 +2,10 @@ const balance = '1000000000000000000000000';
 
 export const accounts = [
   {
+    secretKey: '0x4042a2fb2f9c8f4e4db9195a0e18d1f60c24a085770ec7df4d7c07b98b60c975',
+    balance,
+  },
+  {
     secretKey: '0xc5e8f61d1ab959b397eecc0a37a6517b8e67a0e7cf1f4bce5591f3ed80199122',
     balance,
   },
