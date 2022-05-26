@@ -56,6 +56,7 @@
     "hardhat-gas-reporter": "1.0.6",
     "hardhat-log-remover": "2.0.2",
     "hardhat-spdx-license-identifier": "2.0.3",
+    "hardhat-tracer": "^1.1.0-rc.6",
     "husky": "7.0.4",
     "prettier": "2.5.0",
     "prettier-plugin-solidity": "1.0.0-beta.19",

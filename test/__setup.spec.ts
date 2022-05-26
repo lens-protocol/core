@@ -1,4 +1,4 @@
-import { AbiCoder } from '@ethersproject/contracts/node_modules/@ethersproject/abi';
+import { AbiCoder } from 'ethers/lib/utils';
 import { parseEther } from '@ethersproject/units';
 import '@nomiclabs/hardhat-ethers';
 import { expect, use } from 'chai';
@@ -39,6 +39,7 @@ import {
   ModuleGlobals__factory,
   ProfileTokenURILogic__factory,
   PublishingLogic__factory,
+  MetaTxLib__factory,
   RevertCollectModule,
   RevertCollectModule__factory,
   TimedFeeCollectModule,
@@ -167,11 +168,13 @@ before(async function () {
   const publishingLogic = await new PublishingLogic__factory(deployer).deploy();
   const interactionLogic = await new InteractionLogic__factory(deployer).deploy();
   const profileTokenURILogic = await new ProfileTokenURILogic__factory(deployer).deploy();
+  const metaTxLib = await new MetaTxLib__factory(deployer).deploy();
   hubLibs = {
     'contracts/libraries/PublishingLogic.sol:PublishingLogic': publishingLogic.address,
     'contracts/libraries/InteractionLogic.sol:InteractionLogic': interactionLogic.address,
     'contracts/libraries/ProfileTokenURILogic.sol:ProfileTokenURILogic':
       profileTokenURILogic.address,
+    'contracts/libraries/MetaTxLib.sol:MetaTxLib': metaTxLib.address,
   };
 
   // Here, we pre-compute the nonces and addresses used to deploy the contracts.

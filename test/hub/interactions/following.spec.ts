@@ -1,6 +1,5 @@
 import '@nomiclabs/hardhat-ethers';
 import { expect } from 'chai';
-import { BigNumber } from 'ethers';
 import { FollowNFT__factory } from '../../../typechain-types';
 import { MAX_UINT256, ZERO_ADDRESS } from '../../helpers/constants';
 import { ERRORS } from '../../helpers/errors';

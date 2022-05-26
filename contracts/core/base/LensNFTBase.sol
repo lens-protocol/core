@@ -55,7 +55,7 @@ abstract contract LensNFTBase is ERC721Enumerable, ILensNFTBase {
         address spender,
         uint256 tokenId,
         DataTypes.EIP712Signature calldata sig
-    ) external override {
+    ) external virtual override {
         if (spender == address(0)) revert Errors.ZeroSpender();
         address owner = ownerOf(tokenId);
         unchecked {

@@ -3,6 +3,7 @@
 pragma solidity 0.8.10;
 
 import {ILensHub} from '../interfaces/ILensHub.sol';
+
 import {Events} from '../libraries/Events.sol';
 import {Helpers} from '../libraries/Helpers.sol';
 import {Constants} from '../libraries/Constants.sol';
@@ -11,7 +12,9 @@ import {Errors} from '../libraries/Errors.sol';
 import {PublishingLogic} from '../libraries/PublishingLogic.sol';
 import {ProfileTokenURILogic} from '../libraries/ProfileTokenURILogic.sol';
 import {InteractionLogic} from '../libraries/InteractionLogic.sol';
-import {LensNFTBase} from './base/LensNFTBase.sol';
+import {MetaTxLib} from '../libraries/MetaTxLib.sol';
+
+import {LensHubNFTBase} from './base/LensHubNFTBase.sol';
 import {LensMultiState} from './base/LensMultiState.sol';
 import {LensHubStorage} from './storage/LensHubStorage.sol';
 import {VersionedInitializable} from '../upgradeability/VersionedInitializable.sol';
@@ -29,7 +32,13 @@ import {IERC721Enumerable} from '@openzeppelin/contracts/token/ERC721/extensions
  *      1. Both Follow & Collect NFTs invoke an LensHub callback on transfer with the sole purpose of emitting an event.
  *      2. Almost every event in the protocol emits the current block timestamp, reducing the need to fetch it manually.
  */
-contract LensHub is LensNFTBase, VersionedInitializable, LensMultiState, LensHubStorage, ILensHub {
+contract LensHub is
+    LensHubNFTBase,
+    VersionedInitializable,
+    LensMultiState,
+    LensHubStorage,
+    ILensHub
+{
     uint256 internal constant REVISION = 1;
 
     address internal immutable FOLLOW_NFT_IMPL;
@@ -140,6 +149,27 @@ contract LensHub is LensNFTBase, VersionedInitializable, LensMultiState, LensHub
     /// *****PROFILE OWNER FUNCTIONS*****
     /// *********************************
 
+    function permit(
+        address spender,
+        uint256 tokenId,
+        DataTypes.EIP712Signature calldata sig
+    ) external {
+        MetaTxLib.permit(spender, tokenId, sig);
+    }
+
+    function permitForAll(
+        address owner,
+        address operator,
+        bool approved,
+        DataTypes.EIP712Signature calldata sig
+    ) external {
+        MetaTxLib.permitForAll(owner, operator, approved, sig);
+    }
+
+    function getDomainSeparator() external view returns (bytes32) {
+        return MetaTxLib.getDomainSeparator();
+    }
+
     /// @inheritdoc ILensHub
     function createProfile(DataTypes.CreateProfileData calldata vars)
         external
@@ -173,24 +203,8 @@ contract LensHub is LensNFTBase, VersionedInitializable, LensMultiState, LensHub
         override
         whenNotPaused
     {
-        unchecked {
-            _validateRecoveredAddress(
-                _calculateDigest(
-                    keccak256(
-                        abi.encode(
-                            SET_DEFAULT_PROFILE_WITH_SIG_TYPEHASH,
-                            vars.wallet,
-                            vars.profileId,
-                            sigNonces[vars.wallet]++,
-                            vars.sig.deadline
-                        )
-                    )
-                ),
-                vars.wallet,
-                vars.sig
-            );
-            _setDefaultProfile(vars.wallet, vars.profileId);
-        }
+        MetaTxLib.baseSetDefaultProfileWithSig(vars);
+        _setDefaultProfile(vars.wallet, vars.profileId);
     }
 
     /// @inheritdoc ILensHub
@@ -215,25 +229,7 @@ contract LensHub is LensNFTBase, VersionedInitializable, LensMultiState, LensHub
         override
         whenNotPaused
     {
-        address owner = ownerOf(vars.profileId);
-        unchecked {
-            _validateRecoveredAddress(
-                _calculateDigest(
-                    keccak256(
-                        abi.encode(
-                            SET_FOLLOW_MODULE_WITH_SIG_TYPEHASH,
-                            vars.profileId,
-                            vars.followModule,
-                            keccak256(vars.followModuleInitData),
-                            sigNonces[owner]++,
-                            vars.sig.deadline
-                        )
-                    )
-                ),
-                owner,
-                vars.sig
-            );
-        }
+        MetaTxLib.baseSetFollowModuleWithSig(vars);
         PublishingLogic.setFollowModule(
             vars.profileId,
             vars.followModule,
@@ -255,24 +251,7 @@ contract LensHub is LensNFTBase, VersionedInitializable, LensMultiState, LensHub
         override
         whenNotPaused
     {
-        address owner = ownerOf(vars.profileId);
-        unchecked {
-            _validateRecoveredAddress(
-                _calculateDigest(
-                    keccak256(
-                        abi.encode(
-                            SET_DISPATCHER_WITH_SIG_TYPEHASH,
-                            vars.profileId,
-                            vars.dispatcher,
-                            sigNonces[owner]++,
-                            vars.sig.deadline
-                        )
-                    )
-                ),
-                owner,
-                vars.sig
-            );
-        }
+        MetaTxLib.baseSetDispatcherWithSig(vars);
         _setDispatcher(vars.profileId, vars.dispatcher);
     }
 
@@ -292,24 +271,7 @@ contract LensHub is LensNFTBase, VersionedInitializable, LensMultiState, LensHub
         override
         whenNotPaused
     {
-        address owner = ownerOf(vars.profileId);
-        unchecked {
-            _validateRecoveredAddress(
-                _calculateDigest(
-                    keccak256(
-                        abi.encode(
-                            SET_PROFILE_IMAGE_URI_WITH_SIG_TYPEHASH,
-                            vars.profileId,
-                            keccak256(bytes(vars.imageURI)),
-                            sigNonces[owner]++,
-                            vars.sig.deadline
-                        )
-                    )
-                ),
-                owner,
-                vars.sig
-            );
-        }
+        MetaTxLib.baseSetProfileImageURIWithSig(vars);
         _setProfileImageURI(vars.profileId, vars.imageURI);
     }
 
@@ -329,24 +291,7 @@ contract LensHub is LensNFTBase, VersionedInitializable, LensMultiState, LensHub
         override
         whenNotPaused
     {
-        address owner = ownerOf(vars.profileId);
-        unchecked {
-            _validateRecoveredAddress(
-                _calculateDigest(
-                    keccak256(
-                        abi.encode(
-                            SET_FOLLOW_NFT_URI_WITH_SIG_TYPEHASH,
-                            vars.profileId,
-                            keccak256(bytes(vars.followNFTURI)),
-                            sigNonces[owner]++,
-                            vars.sig.deadline
-                        )
-                    )
-                ),
-                owner,
-                vars.sig
-            );
-        }
+        MetaTxLib.baseSetFollowNFTURIWithSig(vars);
         _setFollowNFTURI(vars.profileId, vars.followNFTURI);
     }
 
@@ -376,28 +321,7 @@ contract LensHub is LensNFTBase, VersionedInitializable, LensMultiState, LensHub
         whenPublishingEnabled
         returns (uint256)
     {
-        address owner = ownerOf(vars.profileId);
-        unchecked {
-            _validateRecoveredAddress(
-                _calculateDigest(
-                    keccak256(
-                        abi.encode(
-                            POST_WITH_SIG_TYPEHASH,
-                            vars.profileId,
-                            keccak256(bytes(vars.contentURI)),
-                            vars.collectModule,
-                            keccak256(vars.collectModuleInitData),
-                            vars.referenceModule,
-                            keccak256(vars.referenceModuleInitData),
-                            sigNonces[owner]++,
-                            vars.sig.deadline
-                        )
-                    )
-                ),
-                owner,
-                vars.sig
-            );
-        }
+        MetaTxLib.basePostWithSig(vars);
         return
             _createPost(
                 vars.profileId,
@@ -427,31 +351,7 @@ contract LensHub is LensNFTBase, VersionedInitializable, LensMultiState, LensHub
         whenPublishingEnabled
         returns (uint256)
     {
-        address owner = ownerOf(vars.profileId);
-        unchecked {
-            _validateRecoveredAddress(
-                _calculateDigest(
-                    keccak256(
-                        abi.encode(
-                            COMMENT_WITH_SIG_TYPEHASH,
-                            vars.profileId,
-                            keccak256(bytes(vars.contentURI)),
-                            vars.profileIdPointed,
-                            vars.pubIdPointed,
-                            keccak256(vars.referenceModuleData),
-                            vars.collectModule,
-                            keccak256(vars.collectModuleInitData),
-                            vars.referenceModule,
-                            keccak256(vars.referenceModuleInitData),
-                            sigNonces[owner]++,
-                            vars.sig.deadline
-                        )
-                    )
-                ),
-                owner,
-                vars.sig
-            );
-        }
+        MetaTxLib.baseCommentWithSig(vars);
         return
             _createComment(
                 DataTypes.CommentData(
@@ -486,28 +386,7 @@ contract LensHub is LensNFTBase, VersionedInitializable, LensMultiState, LensHub
         whenPublishingEnabled
         returns (uint256)
     {
-        address owner = ownerOf(vars.profileId);
-        unchecked {
-            _validateRecoveredAddress(
-                _calculateDigest(
-                    keccak256(
-                        abi.encode(
-                            MIRROR_WITH_SIG_TYPEHASH,
-                            vars.profileId,
-                            vars.profileIdPointed,
-                            vars.pubIdPointed,
-                            keccak256(vars.referenceModuleData),
-                            vars.referenceModule,
-                            keccak256(vars.referenceModuleInitData),
-                            sigNonces[owner]++,
-                            vars.sig.deadline
-                        )
-                    )
-                ),
-                owner,
-                vars.sig
-            );
-        }
+        MetaTxLib.baseMirrorWithSig(vars);
         return
             _createMirror(
                 DataTypes.MirrorData(
@@ -541,11 +420,11 @@ contract LensHub is LensNFTBase, VersionedInitializable, LensMultiState, LensHub
      * the NFT.
      */
     function burnWithSig(uint256 tokenId, DataTypes.EIP712Signature calldata sig)
-        public
-        override
+        external
         whenNotPaused
     {
-        super.burnWithSig(tokenId, sig);
+        MetaTxLib.baseBurnWithSig(tokenId, sig);
+        _burn(tokenId);
         _clearHandleHash(tokenId);
     }
 
@@ -577,31 +456,7 @@ contract LensHub is LensNFTBase, VersionedInitializable, LensMultiState, LensHub
         whenNotPaused
         returns (uint256[] memory)
     {
-        uint256 dataLength = vars.datas.length;
-        bytes32[] memory dataHashes = new bytes32[](dataLength);
-        for (uint256 i = 0; i < dataLength; ) {
-            dataHashes[i] = keccak256(vars.datas[i]);
-            unchecked {
-                ++i;
-            }
-        }
-        unchecked {
-            _validateRecoveredAddress(
-                _calculateDigest(
-                    keccak256(
-                        abi.encode(
-                            FOLLOW_WITH_SIG_TYPEHASH,
-                            keccak256(abi.encodePacked(vars.profileIds)),
-                            keccak256(abi.encodePacked(dataHashes)),
-                            sigNonces[vars.follower]++,
-                            vars.sig.deadline
-                        )
-                    )
-                ),
-                vars.follower,
-                vars.sig
-            );
-        }
+        MetaTxLib.baseFollowWithSig(vars);
         return
             InteractionLogic.follow(
                 vars.follower,
@@ -637,24 +492,7 @@ contract LensHub is LensNFTBase, VersionedInitializable, LensMultiState, LensHub
         whenNotPaused
         returns (uint256)
     {
-        unchecked {
-            _validateRecoveredAddress(
-                _calculateDigest(
-                    keccak256(
-                        abi.encode(
-                            COLLECT_WITH_SIG_TYPEHASH,
-                            vars.profileId,
-                            vars.pubId,
-                            keccak256(vars.data),
-                            sigNonces[vars.collector]++,
-                            vars.sig.deadline
-                        )
-                    )
-                ),
-                vars.collector,
-                vars.sig
-            );
-        }
+        MetaTxLib.baseCollectWithSig(vars);
         return
             InteractionLogic.collect(
                 vars.collector,

@@ -26,6 +26,7 @@ import {
   ProfileFollowModule__factory,
   RevertFollowModule__factory,
   ProfileCreationProxy__factory,
+  MetaTxLib__factory,
 } from '../typechain-types';
 import { deployWithVerify, waitForTx } from './helpers/utils';
 
@@ -92,11 +93,17 @@ task('full-deploy-verify', 'deploys the entire Lens Protocol with explorer verif
       [],
       'contracts/libraries/ProfileTokenURILogic.sol:ProfileTokenURILogic'
     );
+    const metaTxLib = await deployWithVerify(
+      new MetaTxLib__factory(deployer).deploy({ nonce: deployerNonce++ }),
+      [],
+      'contracts/libraries/MetaTxLib.sol:MetaTxLib'
+    );
     const hubLibs = {
       'contracts/libraries/PublishingLogic.sol:PublishingLogic': publishingLogic.address,
       'contracts/libraries/InteractionLogic.sol:InteractionLogic': interactionLogic.address,
       'contracts/libraries/ProfileTokenURILogic.sol:ProfileTokenURILogic':
         profileTokenURILogic.address,
+      'contracts/libraries/MetaTxLib.sol:MetaTxLib': metaTxLib.address,
     };
 
     // Here, we pre-compute the nonces and addresses used to deploy the contracts.
