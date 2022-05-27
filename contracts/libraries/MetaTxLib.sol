@@ -17,9 +17,6 @@ import '@openzeppelin/contracts/token/ERC721/extensions/IERC721Metadata.sol';
  *
  * @dev Meta-transaction functions have had their signature validation delegated to this library, but
  * their consequences (e.g: approval, operator approval, profile creation, etc) remain in the hub.
- * 
- * Note that the _ownerOf() function does not validate against the zero address since the 
- * _validateRecoveredAddress() function reverts on a recovered zero address.
  */
 library MetaTxLib {
     // We store constants equal to the storage slots here to later access via inline
@@ -417,10 +414,15 @@ library MetaTxLib {
         return digest;
     }
 
+    /**
+     * @dev Reads the name storage slot and returns the value as a bytes variable.
+     *
+     * @return bytes The contract's name.
+     */
     function _nameBytes() private view returns (bytes memory) {
         bytes memory ptr;
         assembly {
-            // Load the free memory pointer, where we'll return the string
+            // Load the free memory pointer, where we'll return the value
             ptr := mload(64)
 
             // Load the slot, which either contains the name + 2*length if length < 32 or
@@ -474,10 +476,17 @@ library MetaTxLib {
         return ptr;
     }
 
-    function _sigNonces(address owner) private returns (uint256) {
+    /**
+     * @dev This fetches a user's signing nonce and increments it, akin to `sigNonces++`.
+     *
+     * @param user The user address to fetch and post-increment the signing nonce for.
+     *
+     * @return uint256 The signing nonce for the given user prior to being incremented.
+     */
+    function _sigNonces(address user) private returns (uint256) {
         uint256 previousValue;
         assembly {
-            mstore(0, owner)
+            mstore(0, user)
             mstore(32, SIG_NONCES_MAPPING_SLOT)
             let slot := keccak256(0, 64)
             previousValue := sload(slot)
@@ -486,6 +495,15 @@ library MetaTxLib {
         return previousValue;
     }
 
+    /**
+     * @dev This fetches the owner address for a given token ID. Note that this does not check
+     * and revert upon receiving a zero address.
+     *
+     * However, this function is always followed by a call to `_validateRecoveredAddress()` with 
+     * the returned address from this function as the signer, and since `_validateRecoveredAddress()`
+     * reverts upon recovering the zero address, the execution will always revert if the owner returned
+     * is the zero address.
+     */
     function _ownerOf(uint256 tokenId) private view returns (address) {
         // Note that this does *not* include a zero address check, but this is acceptable because
         // _validateRecoveredAddress reverts on recovering a zero address.
