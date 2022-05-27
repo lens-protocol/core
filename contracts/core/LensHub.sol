@@ -178,7 +178,6 @@ contract LensHub is
         whenNotPaused
         returns (uint256)
     {
-        if (!_profileCreatorWhitelisted[msg.sender]) revert Errors.ProfileCreatorNotWhitelisted();
         unchecked {
             uint256 profileId = ++_profileCounter;
             _mint(vars.to, profileId);
@@ -186,8 +185,7 @@ contract LensHub is
                 vars,
                 profileId,
                 _profileIdByHandleHash,
-                _profileById,
-                _followModuleWhitelisted
+                _profileById
             );
             return profileId;
         }
@@ -219,8 +217,7 @@ contract LensHub is
             profileId,
             followModule,
             followModuleInitData,
-            _profileById[profileId],
-            _followModuleWhitelisted
+            _profileById[profileId]
         );
     }
 
@@ -235,8 +232,7 @@ contract LensHub is
             vars.profileId,
             vars.followModule,
             vars.followModuleInitData,
-            _profileById[vars.profileId],
-            _followModuleWhitelisted
+            _profileById[vars.profileId]
         );
     }
 
@@ -770,9 +766,7 @@ contract LensHub is
                 referenceModule,
                 referenceModuleData,
                 pubId,
-                _pubByIdByProfile,
-                _collectModuleWhitelisted,
-                _referenceModuleWhitelisted
+                _pubByIdByProfile
             );
             return pubId;
         }
@@ -798,9 +792,7 @@ contract LensHub is
                 vars,
                 pubId,
                 _profileById,
-                _pubByIdByProfile,
-                _collectModuleWhitelisted,
-                _referenceModuleWhitelisted
+                _pubByIdByProfile
             );
             return pubId;
         }
@@ -812,8 +804,7 @@ contract LensHub is
             PublishingLogic.createMirror(
                 vars,
                 pubId,
-                _pubByIdByProfile,
-                _referenceModuleWhitelisted
+                _pubByIdByProfile
             );
             return pubId;
         }
