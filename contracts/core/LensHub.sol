@@ -168,10 +168,6 @@ contract LensHub is
         _setOperatorApproval(owner, operator, approved);
     }
 
-    function getDomainSeparator() external view returns (bytes32) {
-        return MetaTxLib.getDomainSeparator();
-    }
-
     /// @inheritdoc ILensHub
     function createProfile(DataTypes.CreateProfileData calldata vars)
         external
@@ -719,6 +715,20 @@ contract LensHub is
         }
     }
 
+    /// @inheritdoc ILensHub
+    function getFollowNFTImpl() external view override returns (address) {
+        return FOLLOW_NFT_IMPL;
+    }
+
+    /// @inheritdoc ILensHub
+    function getCollectNFTImpl() external view override returns (address) {
+        return COLLECT_NFT_IMPL;
+    }
+
+    function getDomainSeparator() external view returns (bytes32) {
+        return MetaTxLib.getDomainSeparator();
+    }
+
     /**
      * @dev Overrides the ERC721 tokenURI function to return the associated URI with a given profile.
      */
@@ -732,16 +742,6 @@ contract LensHub is
                 _profileById[tokenId].handle,
                 _profileById[tokenId].imageURI
             );
-    }
-
-    /// @inheritdoc ILensHub
-    function getFollowNFTImpl() external view override returns (address) {
-        return FOLLOW_NFT_IMPL;
-    }
-
-    /// @inheritdoc ILensHub
-    function getCollectNFTImpl() external view override returns (address) {
-        return COLLECT_NFT_IMPL;
     }
 
     /// ****************************
