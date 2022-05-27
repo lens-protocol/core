@@ -84,6 +84,14 @@ library MetaTxLib {
             'CollectWithSig(uint256 profileId,uint256 pubId,bytes data,uint256 nonce,uint256 deadline)'
         );
 
+    /**
+     * @notice Validates parameters and increments the nonce for a given owner using the `permit()`
+     * function.
+     *
+     * @param spender The spender to approve.
+     * @param tokenId The token ID to approve the spender for.
+     * @param sig the EIP712Signature struct containing the token owner's signature.
+     */
     function basePermit(
         address spender,
         uint256 tokenId,
@@ -102,6 +110,15 @@ library MetaTxLib {
         );
     }
 
+    /**
+     * @notice Validates parameters and increments the nonce for a given owner using the `permitForAll()`
+     * function.
+     *
+     * @param owner The owner to approve the operator for, this is the signer.
+     * @param operator The operator to approve for the owner.
+     * @param approved Whether or not the operator should be approved.
+     * @param sig the EIP712Signature struct containing the token owner's signature.
+     */
     function basePermitForAll(
         address owner,
         address operator,
@@ -127,6 +144,12 @@ library MetaTxLib {
         );
     }
 
+    /**
+     * @notice Validates parameters and increments the nonce for a given owner using the
+     * `setDefaultProfileWithSig()` function.
+     *
+     * @param vars the SetDefaultProfileWithSigData struct containing the relevant parameters.
+     */
     function baseSetDefaultProfileWithSig(DataTypes.SetDefaultProfileWithSigData calldata vars)
         external
     {
@@ -147,6 +170,12 @@ library MetaTxLib {
         );
     }
 
+    /**
+     * @notice Validates parameters and increments the nonce for a given owner using the
+     * `setFollowModuleWithSig()` function.
+     *
+     * @param vars the SetFollowModuleWithSigData struct containing the relevant parameters.
+     */
     function baseSetFollowModuleWithSig(DataTypes.SetFollowModuleWithSigData calldata vars)
         external
     {
@@ -169,6 +198,12 @@ library MetaTxLib {
         );
     }
 
+    /**
+     * @notice Validates parameters and increments the nonce for a given owner using the
+     * `setDispatcherWithSig()` function.
+     *
+     * @param vars the setDispatcherWithSigData struct containing the relevant parameters.
+     */
     function baseSetDispatcherWithSig(DataTypes.SetDispatcherWithSigData calldata vars) external {
         address owner = _ownerOf(vars.profileId);
         _validateRecoveredAddress(
@@ -188,6 +223,12 @@ library MetaTxLib {
         );
     }
 
+    /**
+     * @notice Validates parameters and increments the nonce for a given owner using the
+     * `setProfileImageURIWithSig()` function.
+     *
+     * @param vars the SetProfileImageURIWithSigData struct containing the relevant parameters.
+     */
     function baseSetProfileImageURIWithSig(DataTypes.SetProfileImageURIWithSigData calldata vars)
         external
     {
@@ -209,6 +250,12 @@ library MetaTxLib {
         );
     }
 
+    /**
+     * @notice Validates parameters and increments the nonce for a given owner using the
+     * `setFollowNFTURIWithSig()` function.
+     *
+     * @param vars the SetFollowNFTURIWithSigData struct containing the relevant parameters.
+     */
     function baseSetFollowNFTURIWithSig(DataTypes.SetFollowNFTURIWithSigData calldata vars)
         external
     {
@@ -230,6 +277,12 @@ library MetaTxLib {
         );
     }
 
+    /**
+     * @notice Validates parameters and increments the nonce for a given owner using the
+     * `postWithSig()` function.
+     *
+     * @param vars the PostWithSigData struct containing the relevant parameters.
+     */
     function basePostWithSig(DataTypes.PostWithSigData calldata vars) external {
         address owner = _ownerOf(vars.profileId);
         unchecked {
@@ -255,6 +308,12 @@ library MetaTxLib {
         }
     }
 
+    /**
+     * @notice Validates parameters and increments the nonce for a given owner using the
+     * `commentWithSig()` function.
+     *
+     * @param vars the CommentWithSig struct containing the relevant parameters.
+     */
     function baseCommentWithSig(DataTypes.CommentWithSigData calldata vars) external {
         address owner = _ownerOf(vars.profileId);
 
@@ -282,6 +341,12 @@ library MetaTxLib {
         );
     }
 
+    /**
+     * @notice Validates parameters and increments the nonce for a given owner using the
+     * `mirrorWithSig()` function.
+     *
+     * @param vars the MirrorWithSigData struct containing the relevant parameters.
+     */
     function baseMirrorWithSig(DataTypes.MirrorWithSigData calldata vars) external {
         address owner = _ownerOf(vars.profileId);
         _validateRecoveredAddress(
@@ -305,6 +370,13 @@ library MetaTxLib {
         );
     }
 
+    /**
+     * @notice Validates parameters and increments the nonce for a given owner using the
+     * `burnWithSig()` function.
+     *
+     * @param tokenId The token ID to burn.
+     * @param sig the EIP712Signature struct containing the token owner's signature.
+     */
     function baseBurnWithSig(uint256 tokenId, DataTypes.EIP712Signature calldata sig) external {
         address owner = _ownerOf(tokenId);
         _validateRecoveredAddress(
@@ -318,6 +390,12 @@ library MetaTxLib {
         );
     }
 
+    /**
+     * @notice Validates parameters and increments the nonce for a given owner using the
+     * `followWithSig()` function.
+     *
+     * @param vars the FollowWithSigData struct containing the relevant parameters.
+     */
     function baseFollowWithSig(DataTypes.FollowWithSigData calldata vars) external {
         uint256 dataLength = vars.datas.length;
         bytes32[] memory dataHashes = new bytes32[](dataLength);
@@ -344,6 +422,12 @@ library MetaTxLib {
         );
     }
 
+    /**
+     * @notice Validates parameters and increments the nonce for a given owner using the
+     * `collectWithSig()` function.
+     *
+     * @param vars the CollectWithSigData struct containing the relevant parameters.
+     */
     function baseCollectWithSig(DataTypes.CollectWithSigData calldata vars) external {
         _validateRecoveredAddress(
             _calculateDigest(
@@ -363,6 +447,11 @@ library MetaTxLib {
         );
     }
 
+    /**
+     * @notice Returns the domain separator.
+     * 
+     * @return bytes32 The domain separator.
+     */
     function getDomainSeparator() external view returns (bytes32) {
         return _calculateDomainSeparator();
     }
@@ -499,7 +588,7 @@ library MetaTxLib {
      * @dev This fetches the owner address for a given token ID. Note that this does not check
      * and revert upon receiving a zero address.
      *
-     * However, this function is always followed by a call to `_validateRecoveredAddress()` with 
+     * However, this function is always followed by a call to `_validateRecoveredAddress()` with
      * the returned address from this function as the signer, and since `_validateRecoveredAddress()`
      * reverts upon recovering the zero address, the execution will always revert if the owner returned
      * is the zero address.
