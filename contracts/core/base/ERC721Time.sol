@@ -352,7 +352,9 @@ abstract contract ERC721Time is Context, ERC165, IERC721Time, IERC721Metadata {
 
         _beforeTokenTransfer(address(0), to, tokenId);
 
-        _balances[to] += 1;
+        unchecked {
+            ++_balances[to];
+        }
         _tokenData[tokenId].owner = to;
         _tokenData[tokenId].mintTimestamp = uint96(block.timestamp);
 
@@ -377,7 +379,9 @@ abstract contract ERC721Time is Context, ERC165, IERC721Time, IERC721Metadata {
         // Clear approvals
         _approve(address(0), tokenId);
 
-        _balances[owner] -= 1;
+        unchecked {
+            --_balances[owner];
+        }
         delete _tokenData[tokenId];
 
         emit Transfer(owner, address(0), tokenId);
@@ -407,8 +411,10 @@ abstract contract ERC721Time is Context, ERC165, IERC721Time, IERC721Metadata {
         // Clear approvals from the previous owner
         _approve(address(0), tokenId);
 
-        _balances[from] -= 1;
-        _balances[to] += 1;
+        unchecked {
+            --_balances[from];
+            ++_balances[to];
+        }
         _tokenData[tokenId].owner = to;
 
         emit Transfer(from, to, tokenId);
