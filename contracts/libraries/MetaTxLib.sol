@@ -15,12 +15,11 @@ import '@openzeppelin/contracts/token/ERC721/extensions/IERC721Metadata.sol';
  * @notice This library includes functions pertaining to meta-transactions to be called
  * specifically from the LensHub.
  *
- * @dev The functions `getDomainSeparator`, `permit` and `permitForAll` have been absolutely delegated
- * to this contract, but other `withSig` non-standard functions have only had their signature
- * validation and nonce increment delegated to this contract.
- *
- * @dev It's also important to note that the _ownerOf() function does not validate against the zero
- * address since the _validateRecoveredAddress() function reverts on a recovered zero address.
+ * @dev Meta-transaction functions have had their signature validation delegated to this library, but
+ * their consequences (e.g: approval, operator approval, profile creation, etc) remain in the hub.
+ * 
+ * Note that the _ownerOf() function does not validate against the zero address since the 
+ * _validateRecoveredAddress() function reverts on a recovered zero address.
  */
 library MetaTxLib {
     // We store constants equal to the storage slots here to later access via inline
@@ -29,8 +28,6 @@ library MetaTxLib {
     // if the length is greater than 31 bytes.
     uint256 internal constant NAME_SLOT = 0;
     uint256 internal constant TOKEN_DATA_MAPPING_SLOT = 2;
-    uint256 internal constant APPROVAL_MAPPING_SLOT = 4;
-    uint256 internal constant OPERATOR_APPROVAL_MAPPING_SLOT = 5;
     uint256 internal constant SIG_NONCES_MAPPING_SLOT = 10;
     uint256 internal constant NAME_SLOT_GT_31 =
         0x290decd9548b62a8d60345a988386fc84ba6bc95484008f6362f93160ef3e563;
@@ -90,7 +87,7 @@ library MetaTxLib {
             'CollectWithSig(uint256 profileId,uint256 pubId,bytes data,uint256 nonce,uint256 deadline)'
         );
 
-    function permit(
+    function basePermit(
         address spender,
         uint256 tokenId,
         DataTypes.EIP712Signature calldata sig
@@ -106,10 +103,9 @@ library MetaTxLib {
             owner,
             sig
         );
-        _approve(spender, tokenId);
     }
 
-    function permitForAll(
+    function basePermitForAll(
         address owner,
         address operator,
         bool approved,
@@ -132,7 +128,6 @@ library MetaTxLib {
             owner,
             sig
         );
-        _setOperatorApproval(owner, operator, approved);
     }
 
     function baseSetDefaultProfileWithSig(DataTypes.SetDefaultProfileWithSigData calldata vars)
@@ -318,12 +313,7 @@ library MetaTxLib {
         _validateRecoveredAddress(
             _calculateDigest(
                 keccak256(
-                    abi.encode(
-                        BURN_WITH_SIG_TYPEHASH,
-                        tokenId,
-                        _sigNonces(owner),
-                        sig.deadline
-                    )
+                    abi.encode(BURN_WITH_SIG_TYPEHASH, tokenId, _sigNonces(owner), sig.deadline)
                 )
             ),
             owner,
@@ -494,30 +484,6 @@ library MetaTxLib {
             sstore(slot, add(previousValue, 1))
         }
         return previousValue;
-    }
-
-    function _approve(address spender, uint256 tokenId) private {
-        assembly {
-            mstore(0, tokenId)
-            mstore(32, APPROVAL_MAPPING_SLOT)
-            let slot := keccak256(0, 64)
-            sstore(slot, spender)
-        }
-    }
-
-    function _setOperatorApproval(
-        address owner,
-        address operator,
-        bool approved
-    ) private {
-        assembly {
-            mstore(0, owner)
-            mstore(32, OPERATOR_APPROVAL_MAPPING_SLOT)
-            mstore(32, keccak256(0, 64))
-            mstore(0, operator)
-            let slot := keccak256(0, 64)
-            sstore(slot, approved)
-        }
     }
 
     function _ownerOf(uint256 tokenId) private view returns (address) {

@@ -154,7 +154,8 @@ contract LensHub is
         uint256 tokenId,
         DataTypes.EIP712Signature calldata sig
     ) external {
-        MetaTxLib.permit(spender, tokenId, sig);
+        MetaTxLib.basePermit(spender, tokenId, sig);
+        _approve(spender, tokenId);
     }
 
     function permitForAll(
@@ -163,7 +164,8 @@ contract LensHub is
         bool approved,
         DataTypes.EIP712Signature calldata sig
     ) external {
-        MetaTxLib.permitForAll(owner, operator, approved, sig);
+        MetaTxLib.basePermitForAll(owner, operator, approved, sig);
+        _setOperatorApproval(owner, operator, approved);
     }
 
     function getDomainSeparator() external view returns (bytes32) {
