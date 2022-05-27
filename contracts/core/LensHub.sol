@@ -2,6 +2,7 @@
 
 pragma solidity 0.8.10;
 
+import {ILensNFTBase} from '../interfaces/ILensNFTBase.sol';
 import {ILensHub} from '../interfaces/ILensHub.sol';
 
 import {Events} from '../libraries/Events.sol';
@@ -149,21 +150,23 @@ contract LensHub is
     /// *****PROFILE OWNER FUNCTIONS*****
     /// *********************************
 
+    /// @inheritdoc ILensNFTBase
     function permit(
         address spender,
         uint256 tokenId,
         DataTypes.EIP712Signature calldata sig
-    ) external {
+    ) external override {
         MetaTxLib.basePermit(spender, tokenId, sig);
         _approve(spender, tokenId);
     }
 
+    /// @inheritdoc ILensNFTBase
     function permitForAll(
         address owner,
         address operator,
         bool approved,
         DataTypes.EIP712Signature calldata sig
-    ) external {
+    ) external override {
         MetaTxLib.basePermitForAll(owner, operator, approved, sig);
         _setOperatorApproval(owner, operator, approved);
     }
@@ -401,21 +404,16 @@ contract LensHub is
     /**
      * @notice Burns a profile, this maintains the profile data struct, but deletes the
      * handle hash to profile ID mapping value.
-     *
-     * NOTE: This overrides the LensNFTBase contract's `burn()` function and calls it to fully burn
-     * the NFT.
      */
-    function burn(uint256 tokenId) public override whenNotPaused {
-        super.burn(tokenId);
+    function burn(uint256 tokenId) external override whenNotPaused {
+        if (!_isApprovedOrOwner(msg.sender, tokenId)) revert Errors.NotOwnerOrApproved();
+        _burn(tokenId);
         _clearHandleHash(tokenId);
     }
 
     /**
      * @notice Burns a profile with a signature, this maintains the profile data struct, but deletes the
      * handle hash to profile ID mapping value.
-     *
-     * NOTE: This overrides the LensNFTBase contract's `burnWithSig()` function and calls it to fully burn
-     * the NFT.
      */
     function burnWithSig(uint256 tokenId, DataTypes.EIP712Signature calldata sig)
         external
