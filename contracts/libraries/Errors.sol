@@ -3,6 +3,11 @@
 pragma solidity 0.8.10;
 
 library Errors {
+    // ERC721Enumerable Errors
+    error ERC721Enumerable_OwnerIndexOutOfBounds();
+    error ERC721Enumerable_GlobalIndexOutOfBounds();
+
+    // Lens Protocol Errors
     error CannotInitImplementation();
     error Initialized();
     error SignatureExpired();
