@@ -17,6 +17,9 @@ import '@openzeppelin/contracts/token/ERC721/extensions/IERC721Metadata.sol';
  *
  * @dev Meta-transaction functions have had their signature validation delegated to this library, but
  * their consequences (e.g: approval, operator approval, profile creation, etc) remain in the hub.
+ *
+ * NOTE: This relies on the storage layout of the hub remaining static. Forks/migrations should be aware
+ * of this.
  */
 library MetaTxLib {
     // We store constants equal to the storage slots here to later access via inline
