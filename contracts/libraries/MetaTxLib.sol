@@ -520,9 +520,7 @@ library MetaTxLib {
 
             // Determine if the length > 32 by checking the lowest order bit, meaning the string
             // itself is stored at keccak256(NAME_SLOT)
-            let isNotSameSlot := and(slotLoad, 1)
-
-            switch isNotSameSlot
+            switch and(slotLoad, 1)
             case 0 {
                 // The name is in the same slot
                 // Determine the size by dividing the last byte's value by 2
