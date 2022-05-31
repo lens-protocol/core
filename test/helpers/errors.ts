@@ -36,9 +36,11 @@ export const ERRORS = {
   ARRAY_MISMATCH: 'ArrayMismatch()',
   CANNOT_COMMENT_ON_SELF: 'CannotCommentOnSelf',
   NOT_DISPATCHER: 'NotDispatcher()',
-  ERC721_NOT_OWN: 'ERC721: transfer of token that is not own',
-  ERC721_TRANSFER_NOT_OWNER_OR_APPROVED: 'ERC721: transfer caller is not owner nor approved',
-  ERC721_QUERY_FOR_NONEXISTENT_TOKEN: 'ERC721: owner query for nonexistent token',
+
+  // ERC721Time + ERC721Enumerable errors
+  ERC721_NOT_OWN: 'ERC721Time_TransferOfTokenThatIsNotOwn()',
+  ERC721_TRANSFER_NOT_OWNER_OR_APPROVED: 'ERC721Time_TransferCallerNotOwnerOrApproved()',
+  ERC721_OWNER_QUERY_FOR_NONEXISTENT_TOKEN: 'ERC721Time_OwnerQueryForNonexistantToken()',
   ERC20_TRANSFER_EXCEEDS_ALLOWANCE: 'ERC20: transfer amount exceeds allowance',
   ERC20_INSUFFICIENT_ALLOWANCE: 'ERC20: insufficient allowance',
   NO_SELECTOR:
