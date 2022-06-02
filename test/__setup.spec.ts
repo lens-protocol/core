@@ -38,7 +38,7 @@ import {
   ModuleGlobals,
   ModuleGlobals__factory,
   ProfileTokenURILogic__factory,
-  PublishingLogic__factory,
+  GeneralLib__factory,
   MetaTxLib__factory,
   RevertCollectModule,
   RevertCollectModule__factory,
@@ -165,12 +165,12 @@ before(async function () {
     treasuryAddress,
     TREASURY_FEE_BPS
   );
-  const publishingLogic = await new PublishingLogic__factory(deployer).deploy();
+  const generalLib = await new GeneralLib__factory(deployer).deploy();
   const interactionLogic = await new InteractionLogic__factory(deployer).deploy();
   const profileTokenURILogic = await new ProfileTokenURILogic__factory(deployer).deploy();
   const metaTxLib = await new MetaTxLib__factory(deployer).deploy();
   hubLibs = {
-    'contracts/libraries/PublishingLogic.sol:PublishingLogic': publishingLogic.address,
+    'contracts/libraries/GeneralLib.sol:GeneralLib': generalLib.address,
     'contracts/libraries/InteractionLogic.sol:InteractionLogic': interactionLogic.address,
     'contracts/libraries/ProfileTokenURILogic.sol:ProfileTokenURILogic':
       profileTokenURILogic.address,

@@ -10,7 +10,7 @@ import {Helpers} from '../libraries/Helpers.sol';
 import {Constants} from '../libraries/Constants.sol';
 import {DataTypes} from '../libraries/DataTypes.sol';
 import {Errors} from '../libraries/Errors.sol';
-import {PublishingLogic} from '../libraries/PublishingLogic.sol';
+import {GeneralLib} from '../libraries/GeneralLib.sol';
 import {ProfileTokenURILogic} from '../libraries/ProfileTokenURILogic.sol';
 import {InteractionLogic} from '../libraries/InteractionLogic.sol';
 import {MetaTxLib} from '../libraries/MetaTxLib.sol';
@@ -73,7 +73,7 @@ contract LensHub is
         address newGovernance
     ) external override initializer {
         super._initialize(name, symbol);
-        _setState(DataTypes.ProtocolState.Paused);
+        GeneralLib.setStateSimple(DataTypes.ProtocolState.Paused);
         _setGovernance(newGovernance);
     }
 
@@ -88,26 +88,12 @@ contract LensHub is
 
     /// @inheritdoc ILensHub
     function setEmergencyAdmin(address newEmergencyAdmin) external override onlyGov {
-        address prevEmergencyAdmin = _emergencyAdmin;
-        _emergencyAdmin = newEmergencyAdmin;
-        emit Events.EmergencyAdminSet(
-            msg.sender,
-            prevEmergencyAdmin,
-            newEmergencyAdmin,
-            block.timestamp
-        );
+        GeneralLib.setEmergencyAdmin(newEmergencyAdmin);
     }
 
     /// @inheritdoc ILensHub
     function setState(DataTypes.ProtocolState newState) external override {
-        if (msg.sender == _emergencyAdmin) {
-            if (newState == DataTypes.ProtocolState.Unpaused)
-                revert Errors.EmergencyAdminCannotUnpause();
-            _validateNotPaused();
-        } else if (msg.sender != _governance) {
-            revert Errors.NotGovernanceOrEmergencyAdmin();
-        }
-        _setState(newState);
+        GeneralLib.setStateFull(newState);
     }
 
     ///@inheritdoc ILensHub
@@ -181,12 +167,7 @@ contract LensHub is
         unchecked {
             uint256 profileId = ++_profileCounter;
             _mint(vars.to, profileId);
-            PublishingLogic.createProfile(
-                vars,
-                profileId,
-                _profileIdByHandleHash,
-                _profileById
-            );
+            GeneralLib.createProfile(vars, profileId, _profileIdByHandleHash, _profileById);
             return profileId;
         }
     }
@@ -213,7 +194,7 @@ contract LensHub is
         bytes calldata followModuleInitData
     ) external override whenNotPaused {
         _validateCallerIsProfileOwner(profileId);
-        PublishingLogic.setFollowModule(
+        GeneralLib.setFollowModule(
             profileId,
             followModule,
             followModuleInitData,
@@ -228,7 +209,7 @@ contract LensHub is
         whenNotPaused
     {
         MetaTxLib.baseSetFollowModuleWithSig(vars);
-        PublishingLogic.setFollowModule(
+        GeneralLib.setFollowModule(
             vars.profileId,
             vars.followModule,
             vars.followModuleInitData,
@@ -743,9 +724,7 @@ contract LensHub is
     /// ****************************
 
     function _setGovernance(address newGovernance) internal {
-        address prevGovernance = _governance;
-        _governance = newGovernance;
-        emit Events.GovernanceSet(msg.sender, prevGovernance, newGovernance, block.timestamp);
+        GeneralLib.setGovernance(newGovernance);
     }
 
     function _createPost(
@@ -758,7 +737,7 @@ contract LensHub is
     ) internal returns (uint256) {
         unchecked {
             uint256 pubId = ++_profileById[profileId].pubCount;
-            PublishingLogic.createPost(
+            GeneralLib.createPost(
                 profileId,
                 contentURI,
                 collectModule,
@@ -788,12 +767,7 @@ contract LensHub is
     function _createComment(DataTypes.CommentData memory vars) internal returns (uint256) {
         unchecked {
             uint256 pubId = ++_profileById[vars.profileId].pubCount;
-            PublishingLogic.createComment(
-                vars,
-                pubId,
-                _profileById,
-                _pubByIdByProfile
-            );
+            GeneralLib.createComment(vars, pubId, _profileById, _pubByIdByProfile);
             return pubId;
         }
     }
@@ -801,11 +775,7 @@ contract LensHub is
     function _createMirror(DataTypes.MirrorData memory vars) internal returns (uint256) {
         unchecked {
             uint256 pubId = ++_profileById[vars.profileId].pubCount;
-            PublishingLogic.createMirror(
-                vars,
-                pubId,
-                _pubByIdByProfile
-            );
+            GeneralLib.createMirror(vars, pubId, _pubByIdByProfile);
             return pubId;
         }
     }

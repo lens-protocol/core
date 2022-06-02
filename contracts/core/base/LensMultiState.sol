@@ -15,7 +15,7 @@ import {Errors} from '../../libraries/Errors.sol';
  * whenPublishingEnabled: When Unpaused only.
  */
 abstract contract LensMultiState {
-    DataTypes.ProtocolState private _state;
+    DataTypes.ProtocolState private _state; // slot 14
 
     modifier whenNotPaused() {
         _validateNotPaused();
@@ -39,11 +39,11 @@ abstract contract LensMultiState {
         return _state;
     }
 
-    function _setState(DataTypes.ProtocolState newState) internal {
-        DataTypes.ProtocolState prevState = _state;
-        _state = newState;
-        emit Events.StateSet(msg.sender, prevState, newState, block.timestamp);
-    }
+    // function _setState(DataTypes.ProtocolState newState) internal {
+        // DataTypes.ProtocolState prevState = _state;
+        // _state = newState;
+        // emit Events.StateSet(msg.sender, prevState, newState, block.timestamp);
+    // }
 
     function _validatePublishingEnabled() internal view {
         if (_state != DataTypes.ProtocolState.Unpaused) {

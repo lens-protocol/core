@@ -11,20 +11,104 @@ import {IFollowModule} from '../interfaces/IFollowModule.sol';
 import {ICollectModule} from '../interfaces/ICollectModule.sol';
 import {IReferenceModule} from '../interfaces/IReferenceModule.sol';
 
+// TODO: Migrate governance/admin logic here. (incl events)
+
+// TODO: Migrate complex storage here. (incl events)
 /**
- * @title PublishingLogic
+ * @title GeneralLib
  * @author Lens Protocol
  *
- * @notice This is the library that contains the logic for profile creation & publication.
+ * @notice This is the library that contains the logic for profile creation, publication, 
+ * admin, and governance functionality.
  *
- * @dev The functions are external, so they are called from the hub via `delegateCall` under the hood. Furthermore,
- * expected events are emitted from this library instead of from the hub to alleviate code size concerns.
+ * @dev The functions are external, so they are called from the hub via `delegateCall` under 
+ * the hood. Furthermore, expected events are emitted from this library instead of from the
+ * hub to alleviate code size concerns.
  */
-library PublishingLogic {
+library GeneralLib {
+    uint256 constant PROTOCOL_STATE_SLOT = 12;
     uint256 constant PROFILE_CREATOR_WHITELIST_MAPPING_SLOT = 13;
     uint256 constant FOLLOW_MODULE_WHITELIST_MAPPING_SLOT = 14;
     uint256 constant COLLECT_MODULE_WHITELIST_MAPPING_SLOT = 15;
     uint256 constant REFERENCE_MODULE_WHITELIST_MAPPING_SLOT = 16;
+    uint256 constant GOVERNANCE_SLOT = 23;
+    uint256 constant EMERGENCY_ADMIN_SLOT = 24;
+
+    /**
+     * @notice Sets the governance address.
+     *
+     * @param newGovernance The new governance address to set.
+     */
+    function setGovernance(address newGovernance) external {
+        address prevGovernance;
+        assembly {
+            prevGovernance := sload(GOVERNANCE_SLOT)
+            sstore(GOVERNANCE_SLOT, newGovernance)
+        }
+        emit Events.GovernanceSet(msg.sender, prevGovernance, newGovernance, block.timestamp);
+    }
+
+    /**
+     * @notice Sets the emergency admin address.
+     * 
+     * @param newEmergencyAdmin The new governance address to set.
+     */
+    function setEmergencyAdmin(address newEmergencyAdmin) external {
+        address prevEmergencyAdmin;
+        assembly {
+            prevEmergencyAdmin := sload(EMERGENCY_ADMIN_SLOT)
+            sstore(EMERGENCY_ADMIN_SLOT, newEmergencyAdmin)
+        }
+        emit Events.EmergencyAdminSet(
+            msg.sender,
+            prevEmergencyAdmin,
+            newEmergencyAdmin,
+            block.timestamp
+        );
+    }
+
+    /**
+     * @notice Sets the protocol state.
+     *
+     * @param newState The new protocol state to set.
+     *
+     * Note: This does NOT validate the caller, and is only to be used for initialization.
+     */
+    function setStateSimple(DataTypes.ProtocolState newState) external {
+        DataTypes.ProtocolState prevState;
+        assembly {
+            prevState := sload(PROTOCOL_STATE_SLOT)
+            sstore(PROTOCOL_STATE_SLOT, newState)
+        }
+        emit Events.StateSet(msg.sender, prevState, newState, block.timestamp);
+    }
+
+    /**
+     * @notice Sets the protocol state and validates the caller. The emergency admin can only
+     * pause further (Unpaused => PublishingPaused => Paused). Whereas governance can set any
+     * state. 
+     *
+     * @param newState The new protocol state to set.
+     */
+    function setStateFull(DataTypes.ProtocolState newState) external {
+        address emergencyAdmin;
+        address governance;
+        DataTypes.ProtocolState prevState;
+        assembly {
+            emergencyAdmin := sload(EMERGENCY_ADMIN_SLOT)
+            governance := sload(GOVERNANCE_SLOT)
+            prevState := sload(PROTOCOL_STATE_SLOT)
+            sstore(PROTOCOL_STATE_SLOT, newState)
+        }
+        if (msg.sender == emergencyAdmin) {
+            if (newState == DataTypes.ProtocolState.Unpaused)
+                revert Errors.EmergencyAdminCannotUnpause();
+            if (prevState == DataTypes.ProtocolState.Paused) revert Errors.Paused();
+        } else if (msg.sender != governance) {
+            revert Errors.NotGovernanceOrEmergencyAdmin();
+        }
+        emit Events.StateSet(msg.sender, prevState, newState, block.timestamp);
+    }
 
     /**
      * @notice Executes the logic to create a profile with the given parameters to the given address.

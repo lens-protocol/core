@@ -16,7 +16,7 @@ import {
   LimitedFeeCollectModule__factory,
   LimitedTimedFeeCollectModule__factory,
   ModuleGlobals__factory,
-  PublishingLogic__factory,
+  GeneralLib__factory,
   RevertCollectModule__factory,
   TimedFeeCollectModule__factory,
   TransparentUpgradeableProxy__factory,
@@ -60,8 +60,8 @@ task('full-deploy', 'deploys the entire Lens Protocol').setAction(async ({}, hre
 
   console.log('\n\t-- Deploying Logic Libs --');
 
-  const publishingLogic = await deployContract(
-    new PublishingLogic__factory(deployer).deploy({ nonce: deployerNonce++ })
+  const generalLib = await deployContract(
+    new GeneralLib__factory(deployer).deploy({ nonce: deployerNonce++ })
   );
   const interactionLogic = await deployContract(
     new InteractionLogic__factory(deployer).deploy({ nonce: deployerNonce++ })
@@ -73,7 +73,7 @@ task('full-deploy', 'deploys the entire Lens Protocol').setAction(async ({}, hre
     new MetaTxLib__factory(deployer).deploy({ nonce: deployerNonce++ })
   );
   const hubLibs = {
-    'contracts/libraries/PublishingLogic.sol:PublishingLogic': publishingLogic.address,
+    'contracts/libraries/GeneralLib.sol:GeneralLib': generalLib.address,
     'contracts/libraries/InteractionLogic.sol:InteractionLogic': interactionLogic.address,
     'contracts/libraries/ProfileTokenURILogic.sol:ProfileTokenURILogic':
       profileTokenURILogic.address,
@@ -298,7 +298,7 @@ task('full-deploy', 'deploys the entire Lens Protocol').setAction(async ({}, hre
   const addrs = {
     'lensHub proxy': lensHub.address,
     'lensHub impl:': lensHubImpl.address,
-    'publishing logic lib': publishingLogic.address,
+    'publishing logic lib': generalLib.address,
     'interaction logic lib': interactionLogic.address,
     'follow NFT impl': followNFTImplAddress,
     'collect NFT impl': collectNFTImplAddress,

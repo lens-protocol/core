@@ -3,7 +3,7 @@ import { hexlify, keccak256, RLP } from 'ethers/lib/utils';
 import { task } from 'hardhat/config';
 import {
   LensHub__factory,
-  PublishingLogic__factory,
+  GeneralLib__factory,
   InteractionLogic__factory,
   ProfileTokenURILogic__factory,
   FollowNFT__factory,
@@ -24,8 +24,8 @@ task('list-storage', '').setAction(async ({}, hre) => {
 
   console.log('\n\t-- Deploying Logic Libs --');
 
-  const publishingLogic = await deployContract(
-    new PublishingLogic__factory(deployer).deploy({ nonce: deployerNonce++ })
+  const generalLib = await deployContract(
+    new GeneralLib__factory(deployer).deploy({ nonce: deployerNonce++ })
   );
   const interactionLogic = await deployContract(
     new InteractionLogic__factory(deployer).deploy({ nonce: deployerNonce++ })
@@ -37,7 +37,7 @@ task('list-storage', '').setAction(async ({}, hre) => {
     new MetaTxLib__factory(deployer).deploy({ nonce: deployerNonce++ })
   );
   const hubLibs = {
-    'contracts/libraries/PublishingLogic.sol:PublishingLogic': publishingLogic.address,
+    'contracts/libraries/GeneralLib.sol:GeneralLib': generalLib.address,
     'contracts/libraries/InteractionLogic.sol:InteractionLogic': interactionLogic.address,
     'contracts/libraries/ProfileTokenURILogic.sol:ProfileTokenURILogic':
       profileTokenURILogic.address,

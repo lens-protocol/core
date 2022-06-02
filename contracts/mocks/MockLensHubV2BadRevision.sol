@@ -7,7 +7,7 @@ import {Events} from '../libraries/Events.sol';
 import {Helpers} from '../libraries/Helpers.sol';
 import {DataTypes} from '../libraries/DataTypes.sol';
 import {Errors} from '../libraries/Errors.sol';
-import {PublishingLogic} from '../libraries/PublishingLogic.sol';
+import {GeneralLib} from '../libraries/GeneralLib.sol';
 import {InteractionLogic} from '../libraries/InteractionLogic.sol';
 import {LensNFTBase} from '../core/base/LensNFTBase.sol';
 import {LensMultiState} from '../core/base/LensMultiState.sol';
