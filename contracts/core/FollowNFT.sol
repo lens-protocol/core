@@ -8,8 +8,8 @@ import {ILensHub} from '../interfaces/ILensHub.sol';
 import {Errors} from '../libraries/Errors.sol';
 import {Events} from '../libraries/Events.sol';
 import {DataTypes} from '../libraries/DataTypes.sol';
-import {Constants} from '../libraries/Constants.sol';
 import {LensNFTBase} from './base/LensNFTBase.sol';
+import '../libraries/Constants.sol';
 
 /**
  * @title FollowNFT
@@ -127,13 +127,13 @@ contract FollowNFT is LensNFTBase, IFollowNFT {
 
     function name() public view override returns (string memory) {
         string memory handle = ILensHub(HUB).getHandle(_profileId);
-        return string(abi.encodePacked(handle, Constants.FOLLOW_NFT_NAME_SUFFIX));
+        return string(abi.encodePacked(handle, FOLLOW_NFT_NAME_SUFFIX));
     }
 
     function symbol() public view override returns (string memory) {
         string memory handle = ILensHub(HUB).getHandle(_profileId);
         bytes4 firstBytes = bytes4(bytes(handle));
-        return string(abi.encodePacked(firstBytes, Constants.FOLLOW_NFT_SYMBOL_SUFFIX));
+        return string(abi.encodePacked(firstBytes, FOLLOW_NFT_SYMBOL_SUFFIX));
     }
 
     function _getSnapshotValueByBlockNumber(

@@ -4,11 +4,9 @@ import { task } from 'hardhat/config';
 import {
   LensHub__factory,
   GeneralLib__factory,
-  InteractionLogic__factory,
   ProfileTokenURILogic__factory,
   FollowNFT__factory,
   TransparentUpgradeableProxy__factory,
-  MetaTxLib__factory,
 } from '../typechain-types';
 import { deployContract, waitForTx } from './helpers/utils';
 
@@ -27,21 +25,13 @@ task('list-storage', '').setAction(async ({}, hre) => {
   const generalLib = await deployContract(
     new GeneralLib__factory(deployer).deploy({ nonce: deployerNonce++ })
   );
-  const interactionLogic = await deployContract(
-    new InteractionLogic__factory(deployer).deploy({ nonce: deployerNonce++ })
-  );
   const profileTokenURILogic = await deployContract(
     new ProfileTokenURILogic__factory(deployer).deploy({ nonce: deployerNonce++ })
   );
-  const metaTxLib = await deployContract(
-    new MetaTxLib__factory(deployer).deploy({ nonce: deployerNonce++ })
-  );
   const hubLibs = {
     'contracts/libraries/GeneralLib.sol:GeneralLib': generalLib.address,
-    'contracts/libraries/InteractionLogic.sol:InteractionLogic': interactionLogic.address,
     'contracts/libraries/ProfileTokenURILogic.sol:ProfileTokenURILogic':
       profileTokenURILogic.address,
-    'contracts/libraries/MetaTxLib.sol:MetaTxLib': metaTxLib.address,
   };
 
   // Here, we pre-compute the nonces and addresses used to deploy the contracts.

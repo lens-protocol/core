@@ -13,6 +13,8 @@ import {Errors} from './Errors.sol';
  * both the publishing logic and interaction logic libraries.
  */
 library Helpers {
+    uint256 internal constant TOKEN_DATA_MAPPING_SLOT = 2;
+
     /**
      * @notice This helper function just returns the pointed publication if the passed publication is a mirror,
      * otherwise it returns the passed publication.
@@ -53,5 +55,28 @@ library Helpers {
 
             return (pointedTokenId, pointedPubId, pointedCollectModule);
         }
+    }
+
+    /**
+     * @dev This fetches the owner address for a given token ID. Note that this does not check
+     * and revert upon receiving a zero address.
+     *
+     * However, this function is always followed by a call to `_validateRecoveredAddress()` with
+     * the returned address from this function as the signer, and since `_validateRecoveredAddress()`
+     * reverts upon recovering the zero address, the execution will always revert if the owner returned
+     * is the zero address.
+     */
+    function unsafeOwnerOf(uint256 tokenId) internal view returns (address) {
+        // Note that this does *not* include a zero address check, but this is acceptable because
+        // _validateRecoveredAddress reverts on recovering a zero address.
+        address owner;
+        assembly {
+            mstore(0, tokenId)
+            mstore(32, TOKEN_DATA_MAPPING_SLOT)
+            let slot := keccak256(0, 64)
+            // this weird bit shift is necessary to remove the packing from the variable
+            owner := shr(96, shl(96, sload(slot)))
+        }
+        return owner;
     }
 }

@@ -1,92 +1,14 @@
 // SPDX-License-Identifier: MIT
-
 pragma solidity 0.8.10;
 
 import {DataTypes} from './DataTypes.sol';
 import {Errors} from './Errors.sol';
+import {DataTypes} from './DataTypes.sol';
+import {Helpers} from './Helpers.sol';
 
-import '@openzeppelin/contracts/token/ERC721/extensions/IERC721Metadata.sol';
+import './Constants.sol';
 
-/**
- * @title MetaTxLib
- *
- * @author Lens Protocol (Zer0dot)
- *
- * @notice This library includes functions pertaining to meta-transactions to be called
- * specifically from the LensHub.
- *
- * @dev Meta-transaction functions have had their signature validation delegated to this library, but
- * their consequences (e.g: approval, operator approval, profile creation, etc) remain in the hub.
- *
- * NOTE: This relies on the storage layout of the hub remaining static. Forks/migrations should be aware
- * of this.
- */
-library MetaTxLib {
-    // We store constants equal to the storage slots here to later access via inline
-    // assembly without needing to pass storage pointers. The NAME_SLOT_GT_31 slot
-    // is equivalent to keccak256(NAME_SLOT) and is where the name string is stored
-    // if the length is greater than 31 bytes.
-    uint256 internal constant NAME_SLOT = 0;
-    uint256 internal constant TOKEN_DATA_MAPPING_SLOT = 2;
-    uint256 internal constant SIG_NONCES_MAPPING_SLOT = 10;
-    uint256 internal constant NAME_SLOT_GT_31 =
-        0x290decd9548b62a8d60345a988386fc84ba6bc95484008f6362f93160ef3e563;
-
-    // We also store typehashes here
-    bytes32 internal constant EIP712_REVISION_HASH = keccak256('1');
-    bytes32 internal constant PERMIT_TYPEHASH =
-        keccak256('Permit(address spender,uint256 tokenId,uint256 nonce,uint256 deadline)');
-    bytes32 internal constant PERMIT_FOR_ALL_TYPEHASH =
-        keccak256(
-            'PermitForAll(address owner,address operator,bool approved,uint256 nonce,uint256 deadline)'
-        );
-    bytes32 internal constant BURN_WITH_SIG_TYPEHASH =
-        keccak256('BurnWithSig(uint256 tokenId,uint256 nonce,uint256 deadline)');
-    bytes32 internal constant EIP712_DOMAIN_TYPEHASH =
-        keccak256(
-            'EIP712Domain(string name,string version,uint256 chainId,address verifyingContract)'
-        );
-    bytes32 internal constant SET_DEFAULT_PROFILE_WITH_SIG_TYPEHASH =
-        keccak256(
-            'SetDefaultProfileWithSig(address wallet,uint256 profileId,uint256 nonce,uint256 deadline)'
-        );
-    bytes32 internal constant SET_FOLLOW_MODULE_WITH_SIG_TYPEHASH =
-        keccak256(
-            'SetFollowModuleWithSig(uint256 profileId,address followModule,bytes followModuleInitData,uint256 nonce,uint256 deadline)'
-        );
-    bytes32 internal constant SET_FOLLOW_NFT_URI_WITH_SIG_TYPEHASH =
-        keccak256(
-            'SetFollowNFTURIWithSig(uint256 profileId,string followNFTURI,uint256 nonce,uint256 deadline)'
-        );
-    bytes32 internal constant SET_DISPATCHER_WITH_SIG_TYPEHASH =
-        keccak256(
-            'SetDispatcherWithSig(uint256 profileId,address dispatcher,uint256 nonce,uint256 deadline)'
-        );
-    bytes32 internal constant SET_PROFILE_IMAGE_URI_WITH_SIG_TYPEHASH =
-        keccak256(
-            'SetProfileImageURIWithSig(uint256 profileId,string imageURI,uint256 nonce,uint256 deadline)'
-        );
-    bytes32 internal constant POST_WITH_SIG_TYPEHASH =
-        keccak256(
-            'PostWithSig(uint256 profileId,string contentURI,address collectModule,bytes collectModuleInitData,address referenceModule,bytes referenceModuleInitData,uint256 nonce,uint256 deadline)'
-        );
-    bytes32 internal constant COMMENT_WITH_SIG_TYPEHASH =
-        keccak256(
-            'CommentWithSig(uint256 profileId,string contentURI,uint256 profileIdPointed,uint256 pubIdPointed,bytes referenceModuleData,address collectModule,bytes collectModuleInitData,address referenceModule,bytes referenceModuleInitData,uint256 nonce,uint256 deadline)'
-        );
-    bytes32 internal constant MIRROR_WITH_SIG_TYPEHASH =
-        keccak256(
-            'MirrorWithSig(uint256 profileId,uint256 profileIdPointed,uint256 pubIdPointed,bytes referenceModuleData,address referenceModule,bytes referenceModuleInitData,uint256 nonce,uint256 deadline)'
-        );
-    bytes32 internal constant FOLLOW_WITH_SIG_TYPEHASH =
-        keccak256(
-            'FollowWithSig(uint256[] profileIds,bytes[] datas,uint256 nonce,uint256 deadline)'
-        );
-    bytes32 internal constant COLLECT_WITH_SIG_TYPEHASH =
-        keccak256(
-            'CollectWithSig(uint256 profileId,uint256 pubId,bytes data,uint256 nonce,uint256 deadline)'
-        );
-
+library MetaTxHelpers {
     /**
      * @notice Validates parameters and increments the nonce for a given owner using the `permit()`
      * function.
@@ -99,9 +21,9 @@ library MetaTxLib {
         address spender,
         uint256 tokenId,
         DataTypes.EIP712Signature calldata sig
-    ) external {
+    ) internal {
         if (spender == address(0)) revert Errors.ZeroSpender();
-        address owner = _ownerOf(tokenId);
+        address owner = Helpers.unsafeOwnerOf(tokenId);
         _validateRecoveredAddress(
             _calculateDigest(
                 keccak256(
@@ -113,21 +35,12 @@ library MetaTxLib {
         );
     }
 
-    /**
-     * @notice Validates parameters and increments the nonce for a given owner using the `permitForAll()`
-     * function.
-     *
-     * @param owner The owner to approve the operator for, this is the signer.
-     * @param operator The operator to approve for the owner.
-     * @param approved Whether or not the operator should be approved.
-     * @param sig the EIP712Signature struct containing the token owner's signature.
-     */
     function basePermitForAll(
         address owner,
         address operator,
         bool approved,
         DataTypes.EIP712Signature calldata sig
-    ) external {
+    ) internal {
         if (operator == address(0)) revert Errors.ZeroSpender();
         _validateRecoveredAddress(
             _calculateDigest(
@@ -147,14 +60,8 @@ library MetaTxLib {
         );
     }
 
-    /**
-     * @notice Validates parameters and increments the nonce for a given owner using the
-     * `setDefaultProfileWithSig()` function.
-     *
-     * @param vars the SetDefaultProfileWithSigData struct containing the relevant parameters.
-     */
     function baseSetDefaultProfileWithSig(DataTypes.SetDefaultProfileWithSigData calldata vars)
-        external
+        internal
     {
         _validateRecoveredAddress(
             _calculateDigest(
@@ -173,16 +80,10 @@ library MetaTxLib {
         );
     }
 
-    /**
-     * @notice Validates parameters and increments the nonce for a given owner using the
-     * `setFollowModuleWithSig()` function.
-     *
-     * @param vars the SetFollowModuleWithSigData struct containing the relevant parameters.
-     */
     function baseSetFollowModuleWithSig(DataTypes.SetFollowModuleWithSigData calldata vars)
-        external
+        internal
     {
-        address owner = _ownerOf(vars.profileId);
+        address owner = Helpers.unsafeOwnerOf(vars.profileId);
         _validateRecoveredAddress(
             _calculateDigest(
                 keccak256(
@@ -201,14 +102,8 @@ library MetaTxLib {
         );
     }
 
-    /**
-     * @notice Validates parameters and increments the nonce for a given owner using the
-     * `setDispatcherWithSig()` function.
-     *
-     * @param vars the setDispatcherWithSigData struct containing the relevant parameters.
-     */
-    function baseSetDispatcherWithSig(DataTypes.SetDispatcherWithSigData calldata vars) external {
-        address owner = _ownerOf(vars.profileId);
+    function baseSetDispatcherWithSig(DataTypes.SetDispatcherWithSigData calldata vars) internal {
+        address owner = Helpers.unsafeOwnerOf(vars.profileId);
         _validateRecoveredAddress(
             _calculateDigest(
                 keccak256(
@@ -226,16 +121,10 @@ library MetaTxLib {
         );
     }
 
-    /**
-     * @notice Validates parameters and increments the nonce for a given owner using the
-     * `setProfileImageURIWithSig()` function.
-     *
-     * @param vars the SetProfileImageURIWithSigData struct containing the relevant parameters.
-     */
     function baseSetProfileImageURIWithSig(DataTypes.SetProfileImageURIWithSigData calldata vars)
-        external
+        internal
     {
-        address owner = _ownerOf(vars.profileId);
+        address owner = Helpers.unsafeOwnerOf(vars.profileId);
         _validateRecoveredAddress(
             _calculateDigest(
                 keccak256(
@@ -253,16 +142,10 @@ library MetaTxLib {
         );
     }
 
-    /**
-     * @notice Validates parameters and increments the nonce for a given owner using the
-     * `setFollowNFTURIWithSig()` function.
-     *
-     * @param vars the SetFollowNFTURIWithSigData struct containing the relevant parameters.
-     */
     function baseSetFollowNFTURIWithSig(DataTypes.SetFollowNFTURIWithSigData calldata vars)
-        external
+        internal
     {
-        address owner = _ownerOf(vars.profileId);
+        address owner = Helpers.unsafeOwnerOf(vars.profileId);
         _validateRecoveredAddress(
             _calculateDigest(
                 keccak256(
@@ -280,14 +163,8 @@ library MetaTxLib {
         );
     }
 
-    /**
-     * @notice Validates parameters and increments the nonce for a given owner using the
-     * `postWithSig()` function.
-     *
-     * @param vars the PostWithSigData struct containing the relevant parameters.
-     */
-    function basePostWithSig(DataTypes.PostWithSigData calldata vars) external {
-        address owner = _ownerOf(vars.profileId);
+    function basePostWithSig(DataTypes.PostWithSigData calldata vars) internal {
+        address owner = Helpers.unsafeOwnerOf(vars.profileId);
         unchecked {
             _validateRecoveredAddress(
                 _calculateDigest(
@@ -311,14 +188,8 @@ library MetaTxLib {
         }
     }
 
-    /**
-     * @notice Validates parameters and increments the nonce for a given owner using the
-     * `commentWithSig()` function.
-     *
-     * @param vars the CommentWithSig struct containing the relevant parameters.
-     */
-    function baseCommentWithSig(DataTypes.CommentWithSigData calldata vars) external {
-        address owner = _ownerOf(vars.profileId);
+    function baseCommentWithSig(DataTypes.CommentWithSigData calldata vars) internal {
+        address owner = Helpers.unsafeOwnerOf(vars.profileId);
 
         _validateRecoveredAddress(
             _calculateDigest(
@@ -344,14 +215,8 @@ library MetaTxLib {
         );
     }
 
-    /**
-     * @notice Validates parameters and increments the nonce for a given owner using the
-     * `mirrorWithSig()` function.
-     *
-     * @param vars the MirrorWithSigData struct containing the relevant parameters.
-     */
-    function baseMirrorWithSig(DataTypes.MirrorWithSigData calldata vars) external {
-        address owner = _ownerOf(vars.profileId);
+    function baseMirrorWithSig(DataTypes.MirrorWithSigData calldata vars) internal {
+        address owner = Helpers.unsafeOwnerOf(vars.profileId);
         _validateRecoveredAddress(
             _calculateDigest(
                 keccak256(
@@ -373,15 +238,8 @@ library MetaTxLib {
         );
     }
 
-    /**
-     * @notice Validates parameters and increments the nonce for a given owner using the
-     * `burnWithSig()` function.
-     *
-     * @param tokenId The token ID to burn.
-     * @param sig the EIP712Signature struct containing the token owner's signature.
-     */
-    function baseBurnWithSig(uint256 tokenId, DataTypes.EIP712Signature calldata sig) external {
-        address owner = _ownerOf(tokenId);
+    function baseBurnWithSig(uint256 tokenId, DataTypes.EIP712Signature calldata sig) internal {
+        address owner = Helpers.unsafeOwnerOf(tokenId);
         _validateRecoveredAddress(
             _calculateDigest(
                 keccak256(
@@ -393,13 +251,7 @@ library MetaTxLib {
         );
     }
 
-    /**
-     * @notice Validates parameters and increments the nonce for a given owner using the
-     * `followWithSig()` function.
-     *
-     * @param vars the FollowWithSigData struct containing the relevant parameters.
-     */
-    function baseFollowWithSig(DataTypes.FollowWithSigData calldata vars) external {
+    function baseFollowWithSig(DataTypes.FollowWithSigData calldata vars) internal {
         uint256 dataLength = vars.datas.length;
         bytes32[] memory dataHashes = new bytes32[](dataLength);
         for (uint256 i = 0; i < dataLength; ) {
@@ -425,13 +277,7 @@ library MetaTxLib {
         );
     }
 
-    /**
-     * @notice Validates parameters and increments the nonce for a given owner using the
-     * `collectWithSig()` function.
-     *
-     * @param vars the CollectWithSigData struct containing the relevant parameters.
-     */
-    function baseCollectWithSig(DataTypes.CollectWithSigData calldata vars) external {
+    function baseCollectWithSig(DataTypes.CollectWithSigData calldata vars) internal {
         _validateRecoveredAddress(
             _calculateDigest(
                 keccak256(
@@ -450,12 +296,7 @@ library MetaTxLib {
         );
     }
 
-    /**
-     * @notice Returns the domain separator.
-     * 
-     * @return bytes32 The domain separator.
-     */
-    function getDomainSeparator() external view returns (bytes32) {
+    function getDomainSeparator() internal view returns (bytes32) {
         return _calculateDomainSeparator();
     }
 
@@ -466,7 +307,7 @@ library MetaTxLib {
         bytes32 digest,
         address expectedAddress,
         DataTypes.EIP712Signature calldata sig
-    ) private view {
+    ) internal view {
         if (sig.deadline < block.timestamp) revert Errors.SignatureExpired();
         address recoveredAddress = ecrecover(digest, sig.v, sig.r, sig.s);
         if (recoveredAddress == address(0) || recoveredAddress != expectedAddress)
@@ -504,6 +345,25 @@ library MetaTxLib {
             );
         }
         return digest;
+    }
+
+    /**
+     * @dev This fetches a user's signing nonce and increments it, akin to `sigNonces++`.
+     *
+     * @param user The user address to fetch and post-increment the signing nonce for.
+     *
+     * @return uint256 The signing nonce for the given user prior to being incremented.
+     */
+    function _sigNonces(address user) private returns (uint256) {
+        uint256 previousValue;
+        assembly {
+            mstore(0, user)
+            mstore(32, SIG_NONCES_MAPPING_SLOT)
+            let slot := keccak256(0, 64)
+            previousValue := sload(slot)
+            sstore(slot, add(previousValue, 1))
+        }
+        return previousValue;
     }
 
     /**
@@ -564,47 +424,5 @@ library MetaTxLib {
         }
         // Return a memory pointer to the name (which always starts with the size at the first slot)
         return ptr;
-    }
-
-    /**
-     * @dev This fetches a user's signing nonce and increments it, akin to `sigNonces++`.
-     *
-     * @param user The user address to fetch and post-increment the signing nonce for.
-     *
-     * @return uint256 The signing nonce for the given user prior to being incremented.
-     */
-    function _sigNonces(address user) private returns (uint256) {
-        uint256 previousValue;
-        assembly {
-            mstore(0, user)
-            mstore(32, SIG_NONCES_MAPPING_SLOT)
-            let slot := keccak256(0, 64)
-            previousValue := sload(slot)
-            sstore(slot, add(previousValue, 1))
-        }
-        return previousValue;
-    }
-
-    /**
-     * @dev This fetches the owner address for a given token ID. Note that this does not check
-     * and revert upon receiving a zero address.
-     *
-     * However, this function is always followed by a call to `_validateRecoveredAddress()` with
-     * the returned address from this function as the signer, and since `_validateRecoveredAddress()`
-     * reverts upon recovering the zero address, the execution will always revert if the owner returned
-     * is the zero address.
-     */
-    function _ownerOf(uint256 tokenId) private view returns (address) {
-        // Note that this does *not* include a zero address check, but this is acceptable because
-        // _validateRecoveredAddress reverts on recovering a zero address.
-        address owner;
-        assembly {
-            mstore(0, tokenId)
-            mstore(32, TOKEN_DATA_MAPPING_SLOT)
-            let slot := keccak256(0, 64)
-            // this weird bit shift is necessary to remove the packing from the variable
-            owner := shr(96, shl(96, sload(slot)))
-        }
-        return owner;
     }
 }

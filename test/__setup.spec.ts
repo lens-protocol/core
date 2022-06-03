@@ -24,7 +24,6 @@ import {
   FollowNFT__factory,
   Helper,
   Helper__factory,
-  InteractionLogic__factory,
   LensHub,
   LensHub__factory,
   LimitedFeeCollectModule,
@@ -39,7 +38,6 @@ import {
   ModuleGlobals__factory,
   ProfileTokenURILogic__factory,
   GeneralLib__factory,
-  MetaTxLib__factory,
   RevertCollectModule,
   RevertCollectModule__factory,
   TimedFeeCollectModule,
@@ -166,15 +164,11 @@ before(async function () {
     TREASURY_FEE_BPS
   );
   const generalLib = await new GeneralLib__factory(deployer).deploy();
-  const interactionLogic = await new InteractionLogic__factory(deployer).deploy();
   const profileTokenURILogic = await new ProfileTokenURILogic__factory(deployer).deploy();
-  const metaTxLib = await new MetaTxLib__factory(deployer).deploy();
   hubLibs = {
     'contracts/libraries/GeneralLib.sol:GeneralLib': generalLib.address,
-    'contracts/libraries/InteractionLogic.sol:InteractionLogic': interactionLogic.address,
     'contracts/libraries/ProfileTokenURILogic.sol:ProfileTokenURILogic':
       profileTokenURILogic.address,
-    'contracts/libraries/MetaTxLib.sol:MetaTxLib': metaTxLib.address,
   };
 
   // Here, we pre-compute the nonces and addresses used to deploy the contracts.

@@ -4,12 +4,16 @@ pragma solidity 0.8.10;
 
 import {Helpers} from './Helpers.sol';
 import {DataTypes} from './DataTypes.sol';
+import {Helpers} from './Helpers.sol';
 import {Errors} from './Errors.sol';
 import {Events} from './Events.sol';
-import {Constants} from './Constants.sol';
 import {IFollowModule} from '../interfaces/IFollowModule.sol';
 import {ICollectModule} from '../interfaces/ICollectModule.sol';
 import {IReferenceModule} from '../interfaces/IReferenceModule.sol';
+
+import './Constants.sol';
+import {MetaTxHelpers} from './MetaTxHelpers.sol';
+import {InteractionHelpers} from './InteractionHelpers.sol';
 
 // TODO: Migrate governance/admin logic here. (incl events)
 
@@ -18,22 +22,14 @@ import {IReferenceModule} from '../interfaces/IReferenceModule.sol';
  * @title GeneralLib
  * @author Lens Protocol
  *
- * @notice This is the library that contains the logic for profile creation, publication, 
+ * @notice This is the library that contains the logic for profile creation, publication,
  * admin, and governance functionality.
  *
- * @dev The functions are external, so they are called from the hub via `delegateCall` under 
+ * @dev The functions are external, so they are called from the hub via `delegateCall` under
  * the hood. Furthermore, expected events are emitted from this library instead of from the
  * hub to alleviate code size concerns.
  */
 library GeneralLib {
-    uint256 constant PROTOCOL_STATE_SLOT = 12;
-    uint256 constant PROFILE_CREATOR_WHITELIST_MAPPING_SLOT = 13;
-    uint256 constant FOLLOW_MODULE_WHITELIST_MAPPING_SLOT = 14;
-    uint256 constant COLLECT_MODULE_WHITELIST_MAPPING_SLOT = 15;
-    uint256 constant REFERENCE_MODULE_WHITELIST_MAPPING_SLOT = 16;
-    uint256 constant GOVERNANCE_SLOT = 23;
-    uint256 constant EMERGENCY_ADMIN_SLOT = 24;
-
     /**
      * @notice Sets the governance address.
      *
@@ -50,7 +46,7 @@ library GeneralLib {
 
     /**
      * @notice Sets the emergency admin address.
-     * 
+     *
      * @param newEmergencyAdmin The new governance address to set.
      */
     function setEmergencyAdmin(address newEmergencyAdmin) external {
@@ -86,7 +82,7 @@ library GeneralLib {
     /**
      * @notice Sets the protocol state and validates the caller. The emergency admin can only
      * pause further (Unpaused => PublishingPaused => Paused). Whereas governance can set any
-     * state. 
+     * state.
      *
      * @param newState The new protocol state to set.
      */
@@ -108,6 +104,10 @@ library GeneralLib {
             revert Errors.NotGovernanceOrEmergencyAdmin();
         }
         emit Events.StateSet(msg.sender, prevState, newState, block.timestamp);
+    }
+
+    function setDefaultProfile(address wallet, uint256 profileId) external {
+        _setDefaultProfile(wallet, profileId);
     }
 
     /**
@@ -133,7 +133,7 @@ library GeneralLib {
         _validateProfileCreatorWhitelisted();
         _validateHandle(vars.handle);
 
-        if (bytes(vars.imageURI).length > Constants.MAX_PROFILE_IMAGE_URI_LENGTH)
+        if (bytes(vars.imageURI).length > MAX_PROFILE_IMAGE_URI_LENGTH)
             revert Errors.ProfileImageURILengthInvalid();
 
         bytes32 handleHash = keccak256(bytes(vars.handle));
@@ -369,6 +369,280 @@ library GeneralLib {
         );
     }
 
+    /**
+     * @notice Follows the given profiles, executing the necessary logic and module calls before minting the follow
+     * NFT(s) to the follower.
+     *
+     * @param follower The address executing the follow.
+     * @param profileIds The array of profile token IDs to follow.
+     * @param followModuleDatas The array of follow module data parameters to pass to each profile's follow module.
+     * @param _profileById A pointer to the storage mapping of profile structs by profile ID.
+     * @param _profileIdByHandleHash A pointer to the storage mapping of profile IDs by handle hash.
+     *
+     * @return uint256[] An array of integers representing the minted follow NFTs token IDs.
+     */
+    function follow(
+        address follower,
+        uint256[] calldata profileIds,
+        bytes[] calldata followModuleDatas,
+        mapping(uint256 => DataTypes.ProfileStruct) storage _profileById,
+        mapping(bytes32 => uint256) storage _profileIdByHandleHash
+    ) external returns (uint256[] memory) {
+        return
+            InteractionHelpers.follow(
+                follower,
+                profileIds,
+                followModuleDatas,
+                _profileById,
+                _profileIdByHandleHash
+            );
+    }
+
+    /**
+     * @notice Collects the given publication, executing the necessary logic and module call before minting the
+     * collect NFT to the collector.
+     *
+     * @param collector The address executing the collect.
+     * @param profileId The token ID of the publication being collected's parent profile.
+     * @param pubId The publication ID of the publication being collected.
+     * @param collectModuleData The data to pass to the publication's collect module.
+     * @param collectNFTImpl The address of the collect NFT implementation, which has to be passed because it's an immutable in the hub.
+     * @param _pubByIdByProfile A pointer to the storage mapping of publications by pubId by profile ID.
+     * @param _profileById A pointer to the storage mapping of profile structs by profile ID.
+     *
+     * @return uint256 An integer representing the minted token ID.
+     */
+    function collect(
+        address collector,
+        uint256 profileId,
+        uint256 pubId,
+        bytes calldata collectModuleData,
+        address collectNFTImpl,
+        mapping(uint256 => mapping(uint256 => DataTypes.PublicationStruct))
+            storage _pubByIdByProfile,
+        mapping(uint256 => DataTypes.ProfileStruct) storage _profileById
+    ) external returns (uint256) {
+        return
+            InteractionHelpers.collect(
+                collector,
+                profileId,
+                pubId,
+                collectModuleData,
+                collectNFTImpl,
+                _pubByIdByProfile,
+                _profileById
+            );
+    }
+
+    /**
+     * @notice Validates parameters and increments the nonce for a given owner using the `permit()`
+     * function.
+     *
+     * @param spender The spender to approve.
+     * @param tokenId The token ID to approve the spender for.
+     * @param sig the EIP712Signature struct containing the token owner's signature.
+     */
+    function permit(
+        address spender,
+        uint256 tokenId,
+        DataTypes.EIP712Signature calldata sig
+    ) external {
+        MetaTxHelpers.basePermit(spender, tokenId, sig);
+        //approve
+    }
+
+    /**
+     * @notice Validates parameters and increments the nonce for a given owner using the `permitForAll()`
+     * function.
+     *
+     * @param owner The owner to approve the operator for, this is the signer.
+     * @param operator The operator to approve for the owner.
+     * @param approved Whether or not the operator should be approved.
+     * @param sig the EIP712Signature struct containing the token owner's signature.
+     */
+    function permitForAll(
+        address owner,
+        address operator,
+        bool approved,
+        DataTypes.EIP712Signature calldata sig
+    ) external {
+        MetaTxHelpers.basePermitForAll(owner, operator, approved, sig);
+        // set opp
+    }
+
+    /**
+     * @notice Sets the default profile for a given owner using the `setDefaultProfileWithSig()`
+     * function.
+     *
+     * @param vars the SetDefaultProfileWithSigData struct containing the relevant parameters.
+     */
+    function setDefaultProfileWithSig(DataTypes.SetDefaultProfileWithSigData calldata vars)
+        external
+    {
+        MetaTxHelpers.baseSetDefaultProfileWithSig(vars);
+        _setDefaultProfile(vars.wallet, vars.profileId);
+    }
+
+    /**
+     * @notice Validates parameters and increments the nonce for a given owner using the
+     * `setFollowModuleWithSig()` function.
+     *
+     * @param vars the SetFollowModuleWithSigData struct containing the relevant parameters.
+     */
+    function setFollowModuleWithSig(DataTypes.SetFollowModuleWithSigData calldata vars) external {
+        MetaTxHelpers.baseSetFollowModuleWithSig(vars);
+        // set follow module
+    }
+
+    /**
+     * @notice Validates parameters and increments the nonce for a given owner using the
+     * `setDispatcherWithSig()` function.
+     *
+     * @param vars the setDispatcherWithSigData struct containing the relevant parameters.
+     */
+    function setDispatcherWithSig(DataTypes.SetDispatcherWithSigData calldata vars) external {
+        MetaTxHelpers.baseSetDispatcherWithSig(vars);
+        // set dispatcher
+    }
+
+    /**
+     * @notice Validates parameters and increments the nonce for a given owner using the
+     * `setProfileImageURIWithSig()` function.
+     *
+     * @param vars the SetProfileImageURIWithSigData struct containing the relevant parameters.
+     */
+    function setProfileImageURIWithSig(DataTypes.SetProfileImageURIWithSigData calldata vars)
+        external
+    {
+        MetaTxHelpers.baseSetProfileImageURIWithSig(vars);
+        // Set profile image URI
+    }
+
+    /**
+     * @notice Validates parameters and increments the nonce for a given owner using the
+     * `setFollowNFTURIWithSig()` function.
+     *
+     * @param vars the SetFollowNFTURIWithSigData struct containing the relevant parameters.
+     */
+    function setFollowNFTURIWithSig(DataTypes.SetFollowNFTURIWithSigData calldata vars) external {
+        MetaTxHelpers.baseSetFollowNFTURIWithSig(vars);
+        // set follow NFT URI
+    }
+
+    /**
+     * @notice Validates parameters and increments the nonce for a given owner using the
+     * `postWithSig()` function.
+     *
+     * @param vars the PostWithSigData struct containing the relevant parameters.
+     */
+    function postWithSig(DataTypes.PostWithSigData calldata vars) external {
+        MetaTxHelpers.basePostWithSig(vars);
+        // create post
+    }
+
+    /**
+     * @notice Validates parameters and increments the nonce for a given owner using the
+     * `commentWithSig()` function.
+     *
+     * @param vars the CommentWithSig struct containing the relevant parameters.
+     */
+    function commentWithSig(DataTypes.CommentWithSigData calldata vars) external {
+        MetaTxHelpers.baseCommentWithSig(vars);
+        // create comment
+    }
+
+    /**
+     * @notice Validates parameters and increments the nonce for a given owner using the
+     * `mirrorWithSig()` function.
+     *
+     * @param vars the MirrorWithSigData struct containing the relevant parameters.
+     */
+    function mirrorWithSig(DataTypes.MirrorWithSigData calldata vars) external {
+        MetaTxHelpers.baseMirrorWithSig(vars);
+        // create mirror
+    }
+
+    /**
+     * @notice Validates parameters and increments the nonce for a given owner using the
+     * `burnWithSig()` function.
+     *
+     * @param tokenId The token ID to burn.
+     * @param sig the EIP712Signature struct containing the token owner's signature.
+     */
+    function burnWithSig(uint256 tokenId, DataTypes.EIP712Signature calldata sig) external {
+        MetaTxHelpers.baseBurnWithSig(tokenId, sig);
+        // burn profile
+    }
+
+    /**
+     * @notice Validates parameters and increments the nonce for a given owner using the
+     * `followWithSig()` function.
+     *
+     * @param vars the FollowWithSigData struct containing the relevant parameters.
+     */
+    function followWithSig(
+        DataTypes.FollowWithSigData calldata vars,
+        mapping(uint256 => DataTypes.ProfileStruct) storage _profileById,
+        mapping(bytes32 => uint256) storage _profileIdByHandleHash
+    ) external returns (uint256[] memory) {
+        MetaTxHelpers.baseFollowWithSig(vars);
+        return
+            InteractionHelpers.follow(
+                vars.follower,
+                vars.profileIds,
+                vars.datas,
+                _profileById,
+                _profileIdByHandleHash
+            );
+    }
+
+    /**
+     * @notice Validates parameters and increments the nonce for a given owner using the
+     * `collectWithSig()` function.
+     *
+     * @param vars the CollectWithSigData struct containing the relevant parameters.
+     */
+    function collectWithSig(
+        DataTypes.CollectWithSigData calldata vars,
+        address collectNFTImpl,
+        mapping(uint256 => mapping(uint256 => DataTypes.PublicationStruct))
+            storage _pubByIdByProfile,
+        mapping(uint256 => DataTypes.ProfileStruct) storage _profileById
+    ) external returns (uint256) {
+        MetaTxHelpers.baseCollectWithSig(vars);
+        return
+            InteractionHelpers.collect(
+                vars.collector,
+                vars.profileId,
+                vars.pubId,
+                vars.data,
+                collectNFTImpl,
+                _pubByIdByProfile,
+                _profileById
+            );
+    }
+
+    /**
+     * @notice Returns the domain separator.
+     *
+     * @return bytes32 The domain separator.
+     */
+    function getDomainSeparator() external view returns (bytes32) {
+        return MetaTxHelpers.getDomainSeparator();
+    }
+
+    function _setDefaultProfile(address wallet, uint256 profileId) private {
+        if (profileId > 0 && wallet != Helpers.unsafeOwnerOf(profileId))
+            revert Errors.NotProfileOwner();
+        assembly {
+            mstore(0, wallet)
+            mstore(32, DEFAULT_PROFILE_MAPPING_SLOT)
+            let slot := keccak256(0, 64)
+            sstore(slot, profileId)
+        }
+        emit Events.DefaultProfileSet(wallet, profileId, block.timestamp);
+    }
+
     function _initFollowModule(
         uint256 profileId,
         address followModule,
@@ -459,6 +733,27 @@ library GeneralLib {
         if (!whitelisted) revert Errors.ReferenceModuleNotWhitelisted();
     }
 
+    function _validateHandle(string calldata handle) private pure {
+        bytes memory byteHandle = bytes(handle);
+        if (byteHandle.length == 0 || byteHandle.length > MAX_HANDLE_LENGTH)
+            revert Errors.HandleLengthInvalid();
+
+        uint256 byteHandleLength = byteHandle.length;
+        for (uint256 i = 0; i < byteHandleLength; ) {
+            if (
+                (byteHandle[i] < '0' ||
+                    byteHandle[i] > 'z' ||
+                    (byteHandle[i] > '9' && byteHandle[i] < 'a')) &&
+                byteHandle[i] != '.' &&
+                byteHandle[i] != '-' &&
+                byteHandle[i] != '_'
+            ) revert Errors.HandleContainsInvalidCharacters();
+            unchecked {
+                ++i;
+            }
+        }
+    }
+
     function _emitCommentCreated(
         DataTypes.CommentData memory vars,
         uint256 pubId,
@@ -484,7 +779,7 @@ library GeneralLib {
         uint256 profileId,
         DataTypes.CreateProfileData calldata vars,
         bytes memory followModuleReturnData
-    ) internal {
+    ) private {
         emit Events.ProfileCreated(
             profileId,
             msg.sender, // Creator is always the msg sender
@@ -496,26 +791,5 @@ library GeneralLib {
             vars.followNFTURI,
             block.timestamp
         );
-    }
-
-    function _validateHandle(string calldata handle) private pure {
-        bytes memory byteHandle = bytes(handle);
-        if (byteHandle.length == 0 || byteHandle.length > Constants.MAX_HANDLE_LENGTH)
-            revert Errors.HandleLengthInvalid();
-
-        uint256 byteHandleLength = byteHandle.length;
-        for (uint256 i = 0; i < byteHandleLength; ) {
-            if (
-                (byteHandle[i] < '0' ||
-                    byteHandle[i] > 'z' ||
-                    (byteHandle[i] > '9' && byteHandle[i] < 'a')) &&
-                byteHandle[i] != '.' &&
-                byteHandle[i] != '-' &&
-                byteHandle[i] != '_'
-            ) revert Errors.HandleContainsInvalidCharacters();
-            unchecked {
-                ++i;
-            }
-        }
     }
 }

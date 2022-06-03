@@ -12,7 +12,6 @@ import {
   FeeFollowModule__factory,
   FollowerOnlyReferenceModule__factory,
   FollowNFT__factory,
-  InteractionLogic__factory,
   LimitedFeeCollectModule__factory,
   LimitedTimedFeeCollectModule__factory,
   ModuleGlobals__factory,
@@ -26,7 +25,6 @@ import {
   UIDataProvider__factory,
   ProfileFollowModule__factory,
   RevertFollowModule__factory,
-  MetaTxLib__factory,
 } from '../typechain-types';
 import { deployWithVerify, waitForTx } from './helpers/utils';
 
@@ -82,27 +80,15 @@ task(
     [],
     'contracts/libraries/GeneralLib.sol:GeneralLib'
   );
-  const interactionLogic = await deployWithVerify(
-    new InteractionLogic__factory(deployer).deploy({ nonce: deployerNonce++ }),
-    [],
-    'contracts/libraries/InteractionLogic.sol:InteractionLogic'
-  );
   const profileTokenURILogic = await deployWithVerify(
     new ProfileTokenURILogic__factory(deployer).deploy({ nonce: deployerNonce++ }),
     [],
     'contracts/libraries/ProfileTokenURILogic.sol:ProfileTokenURILogic'
   );
-  const metaTxLib = await deployWithVerify(
-    new MetaTxLib__factory(deployer).deploy({ nonce: deployerNonce++ }),
-    [],
-    'contracts/libraries/MetaTxLib.sol:MetaTxLib'
-  );
   const hubLibs = {
     'contracts/libraries/GeneralLib.sol:GeneralLib': generalLib.address,
-    'contracts/libraries/InteractionLogic.sol:InteractionLogic': interactionLogic.address,
     'contracts/libraries/ProfileTokenURILogic.sol:ProfileTokenURILogic':
       profileTokenURILogic.address,
-    'contracts/libraries/MetaTxLib.sol:MetaTxLib': metaTxLib.address,
   };
 
   // Here, we pre-compute the nonces and addresses used to deploy the contracts.
@@ -347,7 +333,6 @@ task(
     'lensHub proxy': lensHub.address,
     'lensHub impl:': lensHubImpl.address,
     'publishing logic lib': generalLib.address,
-    'interaction logic lib': interactionLogic.address,
     'profile token URI logic lib': profileTokenURILogic.address,
     'follow NFT impl': followNFTImplAddress,
     'collect NFT impl': collectNFTImplAddress,

@@ -7,19 +7,17 @@ import {ILensHub} from '../interfaces/ILensHub.sol';
 
 import {Events} from '../libraries/Events.sol';
 import {Helpers} from '../libraries/Helpers.sol';
-import {Constants} from '../libraries/Constants.sol';
 import {DataTypes} from '../libraries/DataTypes.sol';
 import {Errors} from '../libraries/Errors.sol';
 import {GeneralLib} from '../libraries/GeneralLib.sol';
 import {ProfileTokenURILogic} from '../libraries/ProfileTokenURILogic.sol';
-import {InteractionLogic} from '../libraries/InteractionLogic.sol';
-import {MetaTxLib} from '../libraries/MetaTxLib.sol';
-
 import {LensHubNFTBase} from './base/LensHubNFTBase.sol';
 import {LensMultiState} from './base/LensMultiState.sol';
 import {LensHubStorage} from './storage/LensHubStorage.sol';
 import {VersionedInitializable} from '../upgradeability/VersionedInitializable.sol';
 import {IERC721Enumerable} from '@openzeppelin/contracts/token/ERC721/extensions/IERC721Enumerable.sol';
+
+import '../libraries/Constants.sol';
 
 /**
  * @title LensHub
@@ -142,7 +140,7 @@ contract LensHub is
         uint256 tokenId,
         DataTypes.EIP712Signature calldata sig
     ) external override {
-        MetaTxLib.basePermit(spender, tokenId, sig);
+        GeneralLib.permit(spender, tokenId, sig);
         _approve(spender, tokenId);
     }
 
@@ -153,7 +151,7 @@ contract LensHub is
         bool approved,
         DataTypes.EIP712Signature calldata sig
     ) external override {
-        MetaTxLib.basePermitForAll(owner, operator, approved, sig);
+        GeneralLib.permitForAll(owner, operator, approved, sig);
         _setOperatorApproval(owner, operator, approved);
     }
 
@@ -174,7 +172,8 @@ contract LensHub is
 
     /// @inheritdoc ILensHub
     function setDefaultProfile(uint256 profileId) external override whenNotPaused {
-        _setDefaultProfile(msg.sender, profileId);
+        // _setDefaultProfile(msg.sender, profileId);
+        GeneralLib.setDefaultProfile(msg.sender, profileId);
     }
 
     /// @inheritdoc ILensHub
@@ -183,8 +182,9 @@ contract LensHub is
         override
         whenNotPaused
     {
-        MetaTxLib.baseSetDefaultProfileWithSig(vars);
-        _setDefaultProfile(vars.wallet, vars.profileId);
+        GeneralLib.setDefaultProfileWithSig(vars);
+        // GeneralLib.baseSetDefaultProfileWithSig(vars);
+        // _setDefaultProfile(vars.wallet, vars.profileId);
     }
 
     /// @inheritdoc ILensHub
@@ -208,7 +208,7 @@ contract LensHub is
         override
         whenNotPaused
     {
-        MetaTxLib.baseSetFollowModuleWithSig(vars);
+        GeneralLib.setFollowModuleWithSig(vars);
         GeneralLib.setFollowModule(
             vars.profileId,
             vars.followModule,
@@ -229,7 +229,7 @@ contract LensHub is
         override
         whenNotPaused
     {
-        MetaTxLib.baseSetDispatcherWithSig(vars);
+        GeneralLib.setDispatcherWithSig(vars);
         _setDispatcher(vars.profileId, vars.dispatcher);
     }
 
@@ -249,7 +249,7 @@ contract LensHub is
         override
         whenNotPaused
     {
-        MetaTxLib.baseSetProfileImageURIWithSig(vars);
+        GeneralLib.setProfileImageURIWithSig(vars);
         _setProfileImageURI(vars.profileId, vars.imageURI);
     }
 
@@ -269,7 +269,7 @@ contract LensHub is
         override
         whenNotPaused
     {
-        MetaTxLib.baseSetFollowNFTURIWithSig(vars);
+        GeneralLib.setFollowNFTURIWithSig(vars);
         _setFollowNFTURI(vars.profileId, vars.followNFTURI);
     }
 
@@ -299,7 +299,7 @@ contract LensHub is
         whenPublishingEnabled
         returns (uint256)
     {
-        MetaTxLib.basePostWithSig(vars);
+        GeneralLib.postWithSig(vars);
         return
             _createPost(
                 vars.profileId,
@@ -329,7 +329,7 @@ contract LensHub is
         whenPublishingEnabled
         returns (uint256)
     {
-        MetaTxLib.baseCommentWithSig(vars);
+        GeneralLib.commentWithSig(vars);
         return
             _createComment(
                 DataTypes.CommentData(
@@ -364,7 +364,7 @@ contract LensHub is
         whenPublishingEnabled
         returns (uint256)
     {
-        MetaTxLib.baseMirrorWithSig(vars);
+        GeneralLib.mirrorWithSig(vars);
         return
             _createMirror(
                 DataTypes.MirrorData(
@@ -396,7 +396,7 @@ contract LensHub is
         external
         whenNotPaused
     {
-        MetaTxLib.baseBurnWithSig(tokenId, sig);
+        GeneralLib.burnWithSig(tokenId, sig);
         _burn(tokenId);
         _clearHandleHash(tokenId);
     }
@@ -413,13 +413,7 @@ contract LensHub is
         returns (uint256[] memory)
     {
         return
-            InteractionLogic.follow(
-                msg.sender,
-                profileIds,
-                datas,
-                _profileById,
-                _profileIdByHandleHash
-            );
+            GeneralLib.follow(msg.sender, profileIds, datas, _profileById, _profileIdByHandleHash);
     }
 
     /// @inheritdoc ILensHub
@@ -429,15 +423,7 @@ contract LensHub is
         whenNotPaused
         returns (uint256[] memory)
     {
-        MetaTxLib.baseFollowWithSig(vars);
-        return
-            InteractionLogic.follow(
-                vars.follower,
-                vars.profileIds,
-                vars.datas,
-                _profileById,
-                _profileIdByHandleHash
-            );
+        return GeneralLib.followWithSig(vars, _profileById, _profileIdByHandleHash);
     }
 
     /// @inheritdoc ILensHub
@@ -447,7 +433,7 @@ contract LensHub is
         bytes calldata data
     ) external override whenNotPaused returns (uint256) {
         return
-            InteractionLogic.collect(
+            GeneralLib.collect(
                 msg.sender,
                 profileId,
                 pubId,
@@ -465,17 +451,7 @@ contract LensHub is
         whenNotPaused
         returns (uint256)
     {
-        MetaTxLib.baseCollectWithSig(vars);
-        return
-            InteractionLogic.collect(
-                vars.collector,
-                vars.profileId,
-                vars.pubId,
-                vars.data,
-                COLLECT_NFT_IMPL,
-                _pubByIdByProfile,
-                _profileById
-            );
+        return GeneralLib.collectWithSig(vars, COLLECT_NFT_IMPL, _pubByIdByProfile, _profileById);
     }
 
     /// @inheritdoc ILensHub
@@ -701,7 +677,7 @@ contract LensHub is
     }
 
     function getDomainSeparator() external view returns (bytes32) {
-        return MetaTxLib.getDomainSeparator();
+        return GeneralLib.getDomainSeparator();
     }
 
     /**
@@ -751,19 +727,6 @@ contract LensHub is
         }
     }
 
-    /*
-     * If the profile ID is zero, this is the equivalent of "unsetting" a default profile.
-     * Note that the wallet address should either be the message sender or validated via a signature
-     * prior to this function call.
-     */
-    function _setDefaultProfile(address wallet, uint256 profileId) internal {
-        if (profileId > 0 && wallet != ownerOf(profileId)) revert Errors.NotProfileOwner();
-
-        _defaultProfileByAddress[wallet] = profileId;
-
-        emit Events.DefaultProfileSet(wallet, profileId, block.timestamp);
-    }
-
     function _createComment(DataTypes.CommentData memory vars) internal returns (uint256) {
         unchecked {
             uint256 pubId = ++_profileById[vars.profileId].pubCount;
@@ -786,7 +749,7 @@ contract LensHub is
     }
 
     function _setProfileImageURI(uint256 profileId, string calldata imageURI) internal {
-        if (bytes(imageURI).length > Constants.MAX_PROFILE_IMAGE_URI_LENGTH)
+        if (bytes(imageURI).length > MAX_PROFILE_IMAGE_URI_LENGTH)
             revert Errors.ProfileImageURILengthInvalid();
         _profileById[profileId].imageURI = imageURI;
         emit Events.ProfileImageURISet(profileId, imageURI, block.timestamp);

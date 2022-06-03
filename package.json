@@ -7,7 +7,7 @@
     "test": "npm run compile && TRACK_GAS=true hardhat test",
     "quick-test": "hardhat test",
     "spdx": "hardhat prepend-spdx-license",
-    "size": "npm run compile && hardhat size-contracts",
+    "size": "npm run compile && SKIP_LOAD=true hardhat size-contracts",
     "full-deploy-local": "hardhat full-deploy --network localhost",
     "full-deploy-mumbai": "hardhat full-deploy --network mumbai",
     "coverage": "npm run compile && hardhat coverage --temp temp-artifacts --testfiles test/emptyrun.coverage.ts && hardhat coverage --temp temp-artifacts --testfiles '!test/emptyrun.coverage.ts'",
