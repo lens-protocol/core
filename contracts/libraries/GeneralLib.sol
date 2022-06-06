@@ -11,6 +11,8 @@ import {IFollowModule} from '../interfaces/IFollowModule.sol';
 import {ICollectModule} from '../interfaces/ICollectModule.sol';
 import {IReferenceModule} from '../interfaces/IReferenceModule.sol';
 
+import {console} from 'hardhat/console.sol';
+
 import './Constants.sol';
 import {MetaTxHelpers} from './MetaTxHelpers.sol';
 import {InteractionHelpers} from './InteractionHelpers.sol';
@@ -174,6 +176,10 @@ library GeneralLib {
         bytes calldata followModuleInitData
     ) external {
         _setFollowModule(profileId, followModule, followModuleInitData);
+    }
+
+    function setProfileImageURI(uint256 profileId, string calldata imageURI) external {
+        _setProfileImageURI(profileId, imageURI);
     }
 
     /**
@@ -509,6 +515,7 @@ library GeneralLib {
     {
         MetaTxHelpers.baseSetProfileImageURIWithSig(vars);
         // Set profile image URI
+        _setProfileImageURI(vars.profileId, vars.imageURI);
     }
 
     /**
@@ -669,6 +676,50 @@ library GeneralLib {
             followModuleReturnData,
             block.timestamp
         );
+    }
+
+    function _setProfileImageURI(uint256 profileId, string calldata imageURI) private {
+        uint256 length = bytes(imageURI).length;
+        if (length > MAX_PROFILE_IMAGE_URI_LENGTH) revert Errors.ProfileImageURILengthInvalid();
+        // Todo: Potentially make this internal to use for every string sstore?
+        assembly {
+            let cdOffset := imageURI.offset
+            mstore(0, profileId)
+            mstore(32, PROFILE_BY_ID_MAPPING_SLOT)
+            let slot := add(keccak256(0, 64), IMAGE_URI_PROFILE_OFFSET)
+
+            // If the length is greater than 31, storage rules are different.
+            switch gt(length, 31)
+            case 1 {
+                // The length is > 31, so we need to store the actual string in a new slot, 
+                // equivalent to keccak256(startSlot), and store length*2+1 in startSlot.
+                sstore(slot, add(shl(1, length), 1))
+
+                // Calculate the amount of storage slots we need to store the full string.
+                // This is equivalent to (string.length + 31)/32.
+                let totalStorageSlots := shr(5, add(length, 31))
+
+                // Compute the slot where the actual string will begin, which is the keccak256
+                // hash of the slot where we stored the modified length.
+                mstore(0, slot)
+                slot := keccak256(0, 32)
+
+                // Write the actual string to storage starting at the computed slot.
+                for {
+                    let i := 0
+                } lt(i, totalStorageSlots) {
+                    i := add(i, 1)
+                } {
+                    sstore(add(slot, i), calldataload(add(cdOffset, mul(32, i))))
+                }
+            }
+            default {
+                // The length is greater than 31 so store the string and the length*2
+                // in the same slot
+                sstore(slot, or(and(calldataload(cdOffset), not(255)), shl(1, length)))
+            }
+        }
+        emit Events.ProfileImageURISet(profileId, imageURI, block.timestamp);
     }
 
     function _initFollowModule(
