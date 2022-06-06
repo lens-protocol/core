@@ -15,17 +15,22 @@ uint16 constant MAX_PROFILE_IMAGE_URI_LENGTH = 6000;
 // is equivalent to keccak256(NAME_SLOT) and is where the name string is stored
 // if the length is greater than 31 bytes.
 uint256 constant NAME_SLOT = 0;
+uint256 constant TOKEN_DATA_MAPPING_SLOT = 2;
 uint256 constant SIG_NONCES_MAPPING_SLOT = 10;
 uint256 constant PROTOCOL_STATE_SLOT = 12;
 uint256 constant PROFILE_CREATOR_WHITELIST_MAPPING_SLOT = 13;
 uint256 constant FOLLOW_MODULE_WHITELIST_MAPPING_SLOT = 14;
 uint256 constant COLLECT_MODULE_WHITELIST_MAPPING_SLOT = 15;
 uint256 constant REFERENCE_MODULE_WHITELIST_MAPPING_SLOT = 16;
+uint256 constant DISPATCHER_BY_PROFILE_MAPPING_SLOT = 17;
+uint256 constant PROFILE_BY_ID_MAPPING_SLOT  = 19;
 uint256 constant DEFAULT_PROFILE_MAPPING_SLOT = 21;
 uint256 constant GOVERNANCE_SLOT = 23;
 uint256 constant EMERGENCY_ADMIN_SLOT = 24;
-uint256 constant TOKEN_DATA_MAPPING_SLOT = 2;
 uint256 constant NAME_SLOT_GT_31 = 0x290decd9548b62a8d60345a988386fc84ba6bc95484008f6362f93160ef3e563;
+
+// Profile struct offsets
+uint256 constant FOLLOW_MODULE_PROFILE_OFFSET = 1; 
 
 // We also store typehashes here
 bytes32 constant EIP712_REVISION_HASH = keccak256('1');
@@ -71,4 +76,3 @@ bytes32 constant FOLLOW_WITH_SIG_TYPEHASH = keccak256(
 bytes32 constant COLLECT_WITH_SIG_TYPEHASH = keccak256(
     'CollectWithSig(uint256 profileId,uint256 pubId,bytes data,uint256 nonce,uint256 deadline)'
 );
-// }

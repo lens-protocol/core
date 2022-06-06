@@ -11,13 +11,13 @@ import {DataTypes} from '../libraries/DataTypes.sol';
 import {Errors} from '../libraries/Errors.sol';
 import {GeneralLib} from '../libraries/GeneralLib.sol';
 import {ProfileTokenURILogic} from '../libraries/ProfileTokenURILogic.sol';
+import '../libraries/Constants.sol';
+
 import {LensHubNFTBase} from './base/LensHubNFTBase.sol';
 import {LensMultiState} from './base/LensMultiState.sol';
 import {LensHubStorage} from './storage/LensHubStorage.sol';
 import {VersionedInitializable} from '../upgradeability/VersionedInitializable.sol';
 import {IERC721Enumerable} from '@openzeppelin/contracts/token/ERC721/extensions/IERC721Enumerable.sol';
-
-import '../libraries/Constants.sol';
 
 /**
  * @title LensHub
@@ -194,12 +194,7 @@ contract LensHub is
         bytes calldata followModuleInitData
     ) external override whenNotPaused {
         _validateCallerIsProfileOwner(profileId);
-        GeneralLib.setFollowModule(
-            profileId,
-            followModule,
-            followModuleInitData,
-            _profileById[profileId]
-        );
+        GeneralLib.setFollowModule(profileId, followModule, followModuleInitData);
     }
 
     /// @inheritdoc ILensHub
@@ -209,12 +204,6 @@ contract LensHub is
         whenNotPaused
     {
         GeneralLib.setFollowModuleWithSig(vars);
-        GeneralLib.setFollowModule(
-            vars.profileId,
-            vars.followModule,
-            vars.followModuleInitData,
-            _profileById[vars.profileId]
-        );
     }
 
     /// @inheritdoc ILensHub
@@ -230,7 +219,6 @@ contract LensHub is
         whenNotPaused
     {
         GeneralLib.setDispatcherWithSig(vars);
-        _setDispatcher(vars.profileId, vars.dispatcher);
     }
 
     /// @inheritdoc ILensHub

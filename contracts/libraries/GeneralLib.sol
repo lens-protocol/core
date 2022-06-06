@@ -28,6 +28,9 @@ import {InteractionHelpers} from './InteractionHelpers.sol';
  * @dev The functions are external, so they are called from the hub via `delegateCall` under
  * the hood. Furthermore, expected events are emitted from this library instead of from the
  * hub to alleviate code size concerns.
+ *
+ * Note: The setDispatcher non-signature function was not migrated as it was more space-efficient
+ * to leave it in the hub.
  */
 library GeneralLib {
     /**
@@ -164,31 +167,13 @@ library GeneralLib {
      * @param profileId The profile ID to set the follow module for.
      * @param followModule The follow module to set for the given profile, if any.
      * @param followModuleInitData The data to pass to the follow module for profile initialization.
-     * @param _profile The storage reference to the profile struct associated with the given profile ID.
      */
     function setFollowModule(
         uint256 profileId,
         address followModule,
-        bytes calldata followModuleInitData,
-        DataTypes.ProfileStruct storage _profile
+        bytes calldata followModuleInitData
     ) external {
-        if (followModule != _profile.followModule) {
-            _profile.followModule = followModule;
-        }
-
-        bytes memory followModuleReturnData;
-        if (followModule != address(0))
-            followModuleReturnData = _initFollowModule(
-                profileId,
-                followModule,
-                followModuleInitData
-            );
-        emit Events.FollowModuleSet(
-            profileId,
-            followModule,
-            followModuleReturnData,
-            block.timestamp
-        );
+        _setFollowModule(profileId, followModule, followModuleInitData);
     }
 
     /**
@@ -491,7 +476,7 @@ library GeneralLib {
      */
     function setFollowModuleWithSig(DataTypes.SetFollowModuleWithSigData calldata vars) external {
         MetaTxHelpers.baseSetFollowModuleWithSig(vars);
-        // set follow module
+        _setFollowModule(vars.profileId, vars.followModule, vars.followModuleInitData);
     }
 
     /**
@@ -502,7 +487,15 @@ library GeneralLib {
      */
     function setDispatcherWithSig(DataTypes.SetDispatcherWithSigData calldata vars) external {
         MetaTxHelpers.baseSetDispatcherWithSig(vars);
-        // set dispatcher
+        uint256 profileId = vars.profileId;
+        address dispatcher = vars.dispatcher;
+        assembly {
+            mstore(0, profileId)
+            mstore(32, DISPATCHER_BY_PROFILE_MAPPING_SLOT)
+            let slot := keccak256(0, 64)
+            sstore(slot, dispatcher)
+        }
+        emit Events.DispatcherSet(profileId, dispatcher, block.timestamp);
     }
 
     /**
@@ -641,6 +634,41 @@ library GeneralLib {
             sstore(slot, profileId)
         }
         emit Events.DefaultProfileSet(wallet, profileId, block.timestamp);
+    }
+
+    function _setFollowModule(
+        uint256 profileId,
+        address followModule,
+        bytes calldata followModuleInitData
+    ) private {
+        address currentFollowModule;
+        uint256 slot;
+        assembly {
+            mstore(0, profileId)
+            mstore(32, PROFILE_BY_ID_MAPPING_SLOT)
+            slot := add(keccak256(0, 64), FOLLOW_MODULE_PROFILE_OFFSET)
+            currentFollowModule := sload(slot)
+        }
+
+        if (followModule != currentFollowModule) {
+            assembly {
+                sstore(slot, followModule)
+            }
+        }
+
+        bytes memory followModuleReturnData;
+        if (followModule != address(0))
+            followModuleReturnData = _initFollowModule(
+                profileId,
+                followModule,
+                followModuleInitData
+            );
+        emit Events.FollowModuleSet(
+            profileId,
+            followModule,
+            followModuleReturnData,
+            block.timestamp
+        );
     }
 
     function _initFollowModule(
