@@ -691,7 +691,7 @@ library GeneralLib {
             // If the length is greater than 31, storage rules are different.
             switch gt(length, 31)
             case 1 {
-                // The length is > 31, so we need to store the actual string in a new slot, 
+                // The length is > 31, so we need to store the actual string in a new slot,
                 // equivalent to keccak256(startSlot), and store length*2+1 in startSlot.
                 sstore(slot, add(shl(1, length), 1))
 
@@ -705,11 +705,8 @@ library GeneralLib {
                 slot := keccak256(0, 32)
 
                 // Write the actual string to storage starting at the computed slot.
-                for {
-                    let i := 0
-                } lt(i, totalStorageSlots) {
-                    i := add(i, 1)
-                } {
+                // prettier-ignore
+                for { let i := 0 } lt(i, totalStorageSlots) { i := add(i, 1) } {
                     sstore(add(slot, i), calldataload(add(cdOffset, mul(32, i))))
                 }
             }

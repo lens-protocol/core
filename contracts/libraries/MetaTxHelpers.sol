@@ -410,11 +410,8 @@ library MetaTxHelpers {
                 let totalMemorySlots := shr(5, add(size, 31))
 
                 // Iterate through the words in memory and store the string word by word
-                for {
-                    let i := 0
-                } lt(i, totalMemorySlots) {
-                    i := add(i, 1)
-                } {
+                // prettier-ignore
+                for { let i := 0 } lt(i, totalMemorySlots) { i := add(i, 1) } {
                     mstore(add(add(ptr, 32), mul(32, i)), sload(add(NAME_SLOT_GT_31, i)))
                 }
 
