@@ -141,7 +141,6 @@ contract LensHub is
         DataTypes.EIP712Signature calldata sig
     ) external override {
         GeneralLib.permit(spender, tokenId, sig);
-        _approve(spender, tokenId);
     }
 
     /// @inheritdoc ILensNFTBase
@@ -152,7 +151,6 @@ contract LensHub is
         DataTypes.EIP712Signature calldata sig
     ) external override {
         GeneralLib.permitForAll(owner, operator, approved, sig);
-        _setOperatorApproval(owner, operator, approved);
     }
 
     /// @inheritdoc ILensHub
@@ -172,7 +170,6 @@ contract LensHub is
 
     /// @inheritdoc ILensHub
     function setDefaultProfile(uint256 profileId) external override whenNotPaused {
-        // _setDefaultProfile(msg.sender, profileId);
         GeneralLib.setDefaultProfile(msg.sender, profileId);
     }
 
@@ -183,8 +180,6 @@ contract LensHub is
         whenNotPaused
     {
         GeneralLib.setDefaultProfileWithSig(vars);
-        // GeneralLib.baseSetDefaultProfileWithSig(vars);
-        // _setDefaultProfile(vars.wallet, vars.profileId);
     }
 
     /// @inheritdoc ILensHub
@@ -227,7 +222,6 @@ contract LensHub is
         override
         whenNotPaused
     {
-        _validateCallerIsProfileOwnerOrDispatcher(profileId);
         GeneralLib.setProfileImageURI(profileId, imageURI);
     }
 
@@ -246,8 +240,7 @@ contract LensHub is
         override
         whenNotPaused
     {
-        _validateCallerIsProfileOwnerOrDispatcher(profileId);
-        _setFollowNFTURI(profileId, followNFTURI);
+        GeneralLib.setFollowNFTURI(profileId, followNFTURI);
     }
 
     /// @inheritdoc ILensHub
@@ -257,7 +250,6 @@ contract LensHub is
         whenNotPaused
     {
         GeneralLib.setFollowNFTURIWithSig(vars);
-        _setFollowNFTURI(vars.profileId, vars.followNFTURI);
     }
 
     /// @inheritdoc ILensHub
@@ -733,18 +725,6 @@ contract LensHub is
     function _setDispatcher(uint256 profileId, address dispatcher) internal {
         _dispatcherByProfile[profileId] = dispatcher;
         emit Events.DispatcherSet(profileId, dispatcher, block.timestamp);
-    }
-
-    function _setProfileImageURI(uint256 profileId, string calldata imageURI) internal {
-        // if (bytes(imageURI).length > MAX_PROFILE_IMAGE_URI_LENGTH)
-            // revert Errors.ProfileImageURILengthInvalid();
-        // _profileById[profileId].imageURI = imageURI;
-        // emit Events.ProfileImageURISet(profileId, imageURI, block.timestamp);
-    }
-
-    function _setFollowNFTURI(uint256 profileId, string calldata followNFTURI) internal {
-        _profileById[profileId].followNFTURI = followNFTURI;
-        emit Events.FollowNFTURISet(profileId, followNFTURI, block.timestamp);
     }
 
     function _clearHandleHash(uint256 profileId) internal {

@@ -16,6 +16,8 @@ uint16 constant MAX_PROFILE_IMAGE_URI_LENGTH = 6000;
 // if the length is greater than 31 bytes.
 uint256 constant NAME_SLOT = 0;
 uint256 constant TOKEN_DATA_MAPPING_SLOT = 2;
+uint256 constant TOKEN_APPROVAL_MAPPING_SLOT = 4;
+uint256 constant OPERATOR_APPROVAL_MAPPING_SLOT = 5;
 uint256 constant SIG_NONCES_MAPPING_SLOT = 10;
 uint256 constant PROTOCOL_STATE_SLOT = 12;
 uint256 constant PROFILE_CREATOR_WHITELIST_MAPPING_SLOT = 13;
@@ -32,6 +34,7 @@ uint256 constant NAME_SLOT_GT_31 = 0x290decd9548b62a8d60345a988386fc84ba6bc95484
 // Profile struct offsets
 uint256 constant FOLLOW_MODULE_PROFILE_OFFSET = 1;
 uint256 constant IMAGE_URI_PROFILE_OFFSET = 4;
+uint256 constant FOLLOW_NFT_URI_PROFILE_OFFSET = 5;
         // uint256 pubCount;       // offset 0
         // address followModule;   // offset 1
         // address followNFT;      // offset 2

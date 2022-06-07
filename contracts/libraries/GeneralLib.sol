@@ -11,15 +11,11 @@ import {IFollowModule} from '../interfaces/IFollowModule.sol';
 import {ICollectModule} from '../interfaces/ICollectModule.sol';
 import {IReferenceModule} from '../interfaces/IReferenceModule.sol';
 
-import {console} from 'hardhat/console.sol';
-
 import './Constants.sol';
 import {MetaTxHelpers} from './MetaTxHelpers.sol';
 import {InteractionHelpers} from './InteractionHelpers.sol';
 
-// TODO: Migrate governance/admin logic here. (incl events)
-
-// TODO: Migrate complex storage here. (incl events)
+// TODO: For publishing, increment the pubId here.
 /**
  * @title GeneralLib
  * @author Lens Protocol
@@ -35,6 +31,10 @@ import {InteractionHelpers} from './InteractionHelpers.sol';
  * to leave it in the hub.
  */
 library GeneralLib {
+    event Approval(address indexed owner, address indexed approved, uint256 indexed tokenId);
+
+    event ApprovalForAll(address indexed owner, address indexed operator, bool approved);
+
     /**
      * @notice Sets the governance address.
      *
@@ -179,7 +179,13 @@ library GeneralLib {
     }
 
     function setProfileImageURI(uint256 profileId, string calldata imageURI) external {
+        _validateCallerIsProfileOwnerOrDispatcher(profileId);
         _setProfileImageURI(profileId, imageURI);
+    }
+
+    function setFollowNFTURI(uint256 profileId, string calldata followNFTURI) external {
+        _validateCallerIsProfileOwnerOrDispatcher(profileId);
+        _setFollowNFTURI(profileId, followNFTURI);
     }
 
     /**
@@ -427,7 +433,8 @@ library GeneralLib {
 
     /**
      * @notice Validates parameters and increments the nonce for a given owner using the `permit()`
-     * function.
+     * function. Note that we can use the unsafeOwnerOf function since `basePermit` reverts upon
+     * receiving a zero address from an `ecrecover`.
      *
      * @param spender The spender to approve.
      * @param tokenId The token ID to approve the spender for.
@@ -439,7 +446,13 @@ library GeneralLib {
         DataTypes.EIP712Signature calldata sig
     ) external {
         MetaTxHelpers.basePermit(spender, tokenId, sig);
-        //approve
+        assembly {
+            mstore(0, tokenId)
+            mstore(32, TOKEN_APPROVAL_MAPPING_SLOT)
+            let slot := keccak256(0, 64)
+            sstore(slot, spender)
+        }
+        emit Approval(Helpers.unsafeOwnerOf(tokenId), spender, tokenId);
     }
 
     /**
@@ -458,12 +471,19 @@ library GeneralLib {
         DataTypes.EIP712Signature calldata sig
     ) external {
         MetaTxHelpers.basePermitForAll(owner, operator, approved, sig);
-        // set opp
+        assembly {
+            mstore(0, owner)
+            mstore(32, OPERATOR_APPROVAL_MAPPING_SLOT)
+            mstore(32, keccak256(0, 64))
+            mstore(0, operator)
+            let slot := keccak256(0, 64)
+            sstore(slot, approved)
+        }
+        emit ApprovalForAll(owner, operator, approved);
     }
 
     /**
-     * @notice Sets the default profile for a given owner using the `setDefaultProfileWithSig()`
-     * function.
+     * @notice Sets the default profile via signature for a given owner.
      *
      * @param vars the SetDefaultProfileWithSigData struct containing the relevant parameters.
      */
@@ -475,8 +495,7 @@ library GeneralLib {
     }
 
     /**
-     * @notice Validates parameters and increments the nonce for a given owner using the
-     * `setFollowModuleWithSig()` function.
+     * @notice sets the follow module via signature for a given profile.
      *
      * @param vars the SetFollowModuleWithSigData struct containing the relevant parameters.
      */
@@ -486,8 +505,7 @@ library GeneralLib {
     }
 
     /**
-     * @notice Validates parameters and increments the nonce for a given owner using the
-     * `setDispatcherWithSig()` function.
+     * @notice Sets the dispatcher via signature for a given profile.
      *
      * @param vars the setDispatcherWithSigData struct containing the relevant parameters.
      */
@@ -505,8 +523,7 @@ library GeneralLib {
     }
 
     /**
-     * @notice Validates parameters and increments the nonce for a given owner using the
-     * `setProfileImageURIWithSig()` function.
+     * @notice Sets the profile image URI via signature for a given profile.
      *
      * @param vars the SetProfileImageURIWithSigData struct containing the relevant parameters.
      */
@@ -514,19 +531,17 @@ library GeneralLib {
         external
     {
         MetaTxHelpers.baseSetProfileImageURIWithSig(vars);
-        // Set profile image URI
         _setProfileImageURI(vars.profileId, vars.imageURI);
     }
 
     /**
-     * @notice Validates parameters and increments the nonce for a given owner using the
-     * `setFollowNFTURIWithSig()` function.
+     * @notice Sets the follow NFT URI via signature for a given profile.
      *
      * @param vars the SetFollowNFTURIWithSigData struct containing the relevant parameters.
      */
     function setFollowNFTURIWithSig(DataTypes.SetFollowNFTURIWithSigData calldata vars) external {
         MetaTxHelpers.baseSetFollowNFTURIWithSig(vars);
-        // set follow NFT URI
+        _setFollowNFTURI(vars.profileId, vars.followNFTURI);
     }
 
     /**
@@ -679,14 +694,28 @@ library GeneralLib {
     }
 
     function _setProfileImageURI(uint256 profileId, string calldata imageURI) private {
-        uint256 length = bytes(imageURI).length;
-        if (length > MAX_PROFILE_IMAGE_URI_LENGTH) revert Errors.ProfileImageURILengthInvalid();
-        // Todo: Potentially make this internal to use for every string sstore?
+        if (bytes(imageURI).length > MAX_PROFILE_IMAGE_URI_LENGTH)
+            revert Errors.ProfileImageURILengthInvalid();
+        _setProfileString(profileId, IMAGE_URI_PROFILE_OFFSET, imageURI);
+        emit Events.ProfileImageURISet(profileId, imageURI, block.timestamp);
+    }
+
+    function _setFollowNFTURI(uint256 profileId, string calldata followNFTURI) private {
+        _setProfileString(profileId, FOLLOW_NFT_URI_PROFILE_OFFSET, followNFTURI);
+        emit Events.FollowNFTURISet(profileId, followNFTURI, block.timestamp);
+    }
+
+    function _setProfileString(
+        uint256 profileId,
+        uint256 profileOffset,
+        string calldata value
+    ) private {
         assembly {
-            let cdOffset := imageURI.offset
+            let length := value.length
+            let cdOffset := value.offset
             mstore(0, profileId)
             mstore(32, PROFILE_BY_ID_MAPPING_SLOT)
-            let slot := add(keccak256(0, 64), IMAGE_URI_PROFILE_OFFSET)
+            let slot := add(keccak256(0, 64), profileOffset)
 
             // If the length is greater than 31, storage rules are different.
             switch gt(length, 31)
@@ -716,7 +745,6 @@ library GeneralLib {
                 sstore(slot, or(and(calldataload(cdOffset), not(255)), shl(1, length)))
             }
         }
-        emit Events.ProfileImageURISet(profileId, imageURI, block.timestamp);
     }
 
     function _initFollowModule(
@@ -763,6 +791,22 @@ library GeneralLib {
                 pubId,
                 referenceModuleInitData
             );
+    }
+
+    function _validateCallerIsProfileOwnerOrDispatcher(uint256 profileId) internal view {
+        if (msg.sender == Helpers.unsafeOwnerOf(profileId)) {
+            return;
+        } else {
+            address dispatcher;
+            assembly {
+                mstore(0, profileId)
+                mstore(32, DISPATCHER_BY_PROFILE_MAPPING_SLOT)
+                let slot := keccak256(0, 64)
+                dispatcher := sload(slot)
+            }
+            if (msg.sender != dispatcher) revert Errors.NotProfileOwnerOrDispatcher();
+        }
+        // revert Errors.NotProfileOwnerOrDispatcher();
     }
 
     function _validateProfileCreatorWhitelisted() private view {
