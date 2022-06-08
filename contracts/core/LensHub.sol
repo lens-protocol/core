@@ -163,7 +163,7 @@ contract LensHub is
         unchecked {
             uint256 profileId = ++_profileCounter;
             _mint(vars.to, profileId);
-            GeneralLib.createProfile(vars, profileId, _profileIdByHandleHash, _profileById);
+            GeneralLib.createProfile(vars, profileId);
             return profileId;
         }
     }

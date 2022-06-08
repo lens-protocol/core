@@ -126,14 +126,10 @@ library GeneralLib {
      *      followModuleInitData: The follow module initialization data, if any
      *      followNFTURI: The URI to set for the follow NFT.
      * @param profileId The profile ID to associate with this profile NFT (token ID).
-     * @param _profileIdByHandleHash The storage reference to the mapping of profile IDs by handle hash.
-     * @param _profileById The storage reference to the mapping of profile structs by IDs.
      */
     function createProfile(
         DataTypes.CreateProfileData calldata vars,
-        uint256 profileId,
-        mapping(bytes32 => uint256) storage _profileIdByHandleHash,
-        mapping(uint256 => DataTypes.ProfileStruct) storage _profileById
+        uint256 profileId
     ) external {
         _validateProfileCreatorWhitelisted();
         _validateHandle(vars.handle);
@@ -143,23 +139,38 @@ library GeneralLib {
 
         bytes32 handleHash = keccak256(bytes(vars.handle));
 
-        if (_profileIdByHandleHash[handleHash] != 0) revert Errors.HandleTaken();
-
-        _profileIdByHandleHash[handleHash] = profileId;
-        _profileById[profileId].handle = vars.handle;
-        _profileById[profileId].imageURI = vars.imageURI;
-        _profileById[profileId].followNFTURI = vars.followNFTURI;
+        uint256 resolvedProfileId;
+        uint256 handleHashSlot;
+        assembly {
+            mstore(0, handleHash)
+            mstore(32, PROFILE_ID_BY_HANDLE_HASH_MAPPING_SLOT)
+            handleHashSlot := keccak256(0, 64)
+            resolvedProfileId := sload(handleHashSlot)
+        }
+        if (resolvedProfileId != 0) revert Errors.HandleTaken();
+        assembly {
+            sstore(handleHashSlot, profileId)
+        }
+        _setProfileString(profileId, PROFILE_HANDLE_OFFSET, vars.handle);
+        _setProfileString(profileId, PROFILE_IMAGE_URI_OFFSET, vars.imageURI);
+        _setProfileString(profileId, PROFILE_FOLLOW_NFT_URI_OFFSET, vars.followNFTURI);
 
         bytes memory followModuleReturnData;
         if (vars.followModule != address(0)) {
-            _profileById[profileId].followModule = vars.followModule;
+            address followModule = vars.followModule;
+            assembly {
+                mstore(0, profileId)
+                mstore(32, PROFILE_BY_ID_MAPPING_SLOT)
+                let slot := add(keccak256(0, 64), PROFILE_FOLLOW_MODULE_OFFSET)
+                sstore(slot, followModule)
+            }
+
             followModuleReturnData = _initFollowModule(
                 profileId,
                 vars.followModule,
                 vars.followModuleInitData
             );
         }
-
         _emitProfileCreated(profileId, vars, followModuleReturnData);
     }
 
@@ -668,7 +679,7 @@ library GeneralLib {
         assembly {
             mstore(0, profileId)
             mstore(32, PROFILE_BY_ID_MAPPING_SLOT)
-            slot := add(keccak256(0, 64), FOLLOW_MODULE_PROFILE_OFFSET)
+            slot := add(keccak256(0, 64), PROFILE_FOLLOW_MODULE_OFFSET)
             currentFollowModule := sload(slot)
         }
 
@@ -696,12 +707,12 @@ library GeneralLib {
     function _setProfileImageURI(uint256 profileId, string calldata imageURI) private {
         if (bytes(imageURI).length > MAX_PROFILE_IMAGE_URI_LENGTH)
             revert Errors.ProfileImageURILengthInvalid();
-        _setProfileString(profileId, IMAGE_URI_PROFILE_OFFSET, imageURI);
+        _setProfileString(profileId, PROFILE_IMAGE_URI_OFFSET, imageURI);
         emit Events.ProfileImageURISet(profileId, imageURI, block.timestamp);
     }
 
     function _setFollowNFTURI(uint256 profileId, string calldata followNFTURI) private {
-        _setProfileString(profileId, FOLLOW_NFT_URI_PROFILE_OFFSET, followNFTURI);
+        _setProfileString(profileId, PROFILE_FOLLOW_NFT_URI_OFFSET, followNFTURI);
         emit Events.FollowNFTURISet(profileId, followNFTURI, block.timestamp);
     }
 
