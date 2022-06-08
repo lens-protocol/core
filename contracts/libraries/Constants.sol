@@ -27,6 +27,7 @@ uint256 constant REFERENCE_MODULE_WHITELIST_MAPPING_SLOT = 16;
 uint256 constant DISPATCHER_BY_PROFILE_MAPPING_SLOT = 17;
 uint256 constant PROFILE_ID_BY_HANDLE_HASH_MAPPING_SLOT = 18;
 uint256 constant PROFILE_BY_ID_MAPPING_SLOT = 19;
+uint256 constant PUB_BY_ID_BY_PROFILE_MAPPING_SLOT = 20;
 uint256 constant DEFAULT_PROFILE_MAPPING_SLOT = 21;
 uint256 constant PROFILE_COUNTER_SLOT = 22;
 uint256 constant GOVERNANCE_SLOT = 23;
@@ -44,6 +45,15 @@ uint256 constant PROFILE_FOLLOW_NFT_URI_OFFSET = 5;
 // string handle;          // offset 3
 // string imageURI;        // offset 4
 // string followNFTURI;    // offset 5
+
+// Publication struct offsets
+// uint256 profileIdPointed;    // offset 0
+// uint256 pubIdPointed;        // offset 1
+uint256 constant PUBLICATION_PUB_ID_POINTED_OFFSET = 1;
+uint256 constant PUBLICATION_CONTENT_URI_OFFSET = 2; // offset 2
+uint256 constant PUBLICATION_REFERENCE_MODULE_OFFSET = 3; // offset 3
+uint256 constant PUBLICATION_COLLECT_MODULE_OFFSET = 4; // offset 4
+// address collectNFT;          // offset 5
 
 // We also store typehashes here
 bytes32 constant EIP712_REVISION_HASH = keccak256('1');

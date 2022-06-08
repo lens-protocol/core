@@ -60,6 +60,7 @@ const config: HardhatUserConfig = {
               yul: true,
             },
           },
+          viaIR: true,
         },
       },
     ],

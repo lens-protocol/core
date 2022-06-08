@@ -259,16 +259,11 @@ contract LensHub is
         whenPublishingEnabled
         returns (uint256)
     {
-        _validateCallerIsProfileOwnerOrDispatcher(vars.profileId);
-        return
-            _createPost(
-                vars.profileId,
-                vars.contentURI,
-                vars.collectModule,
-                vars.collectModuleInitData,
-                vars.referenceModule,
-                vars.referenceModuleInitData
-            );
+        unchecked {
+            uint256 pubId = ++_profileById[vars.profileId].pubCount;
+            GeneralLib.post(vars, pubId);
+            return pubId;
+        }
     }
 
     /// @inheritdoc ILensHub
@@ -278,16 +273,11 @@ contract LensHub is
         whenPublishingEnabled
         returns (uint256)
     {
-        GeneralLib.postWithSig(vars);
-        return
-            _createPost(
-                vars.profileId,
-                vars.contentURI,
-                vars.collectModule,
-                vars.collectModuleInitData,
-                vars.referenceModule,
-                vars.referenceModuleInitData
-            );
+        unchecked {
+            uint256 pubId = ++_profileById[vars.profileId].pubCount;
+            GeneralLib.postWithSig(vars, pubId);
+            return pubId;
+        }
     }
 
     /// @inheritdoc ILensHub
@@ -297,8 +287,11 @@ contract LensHub is
         whenPublishingEnabled
         returns (uint256)
     {
-        _validateCallerIsProfileOwnerOrDispatcher(vars.profileId);
-        return _createComment(vars);
+        unchecked {
+            uint256 pubId = ++_profileById[vars.profileId].pubCount;
+            GeneralLib.comment(vars, pubId);
+            return pubId;
+        }
     }
 
     /// @inheritdoc ILensHub
@@ -308,21 +301,11 @@ contract LensHub is
         whenPublishingEnabled
         returns (uint256)
     {
-        GeneralLib.commentWithSig(vars);
-        return
-            _createComment(
-                DataTypes.CommentData(
-                    vars.profileId,
-                    vars.contentURI,
-                    vars.profileIdPointed,
-                    vars.pubIdPointed,
-                    vars.referenceModuleData,
-                    vars.collectModule,
-                    vars.collectModuleInitData,
-                    vars.referenceModule,
-                    vars.referenceModuleInitData
-                )
-            );
+        unchecked {
+            uint256 pubId = ++_profileById[vars.profileId].pubCount;
+            GeneralLib.commentWithSig(vars, pubId);
+            return pubId;
+        }
     }
 
     /// @inheritdoc ILensHub
@@ -682,34 +665,10 @@ contract LensHub is
         GeneralLib.setGovernance(newGovernance);
     }
 
-    function _createPost(
-        uint256 profileId,
-        string memory contentURI,
-        address collectModule,
-        bytes memory collectModuleData,
-        address referenceModule,
-        bytes memory referenceModuleData
-    ) internal returns (uint256) {
-        unchecked {
-            uint256 pubId = ++_profileById[profileId].pubCount;
-            GeneralLib.createPost(
-                profileId,
-                contentURI,
-                collectModule,
-                collectModuleData,
-                referenceModule,
-                referenceModuleData,
-                pubId,
-                _pubByIdByProfile
-            );
-            return pubId;
-        }
-    }
-
     function _createComment(DataTypes.CommentData memory vars) internal returns (uint256) {
         unchecked {
             uint256 pubId = ++_profileById[vars.profileId].pubCount;
-            GeneralLib.createComment(vars, pubId, _profileById, _pubByIdByProfile);
+            GeneralLib.comment(vars, pubId);
             return pubId;
         }
     }
