@@ -5,6 +5,8 @@ pragma solidity 0.8.10;
 import {DataTypes} from './DataTypes.sol';
 import {Errors} from './Errors.sol';
 
+import './Constants.sol';
+
 /**
  * @title Helpers
  * @author Lens Protocol
@@ -13,7 +15,55 @@ import {Errors} from './Errors.sol';
  * both the publishing logic and interaction logic libraries.
  */
 library Helpers {
-    uint256 internal constant TOKEN_DATA_MAPPING_SLOT = 2;
+    /**
+     * @notice This helper function just returns the pointed publication if the passed publication is a mirror,
+     * otherwise it returns the passed publication.
+     *
+     * @param profileId The token ID of the profile that published the given publication.
+     * @param pubId The publication ID of the given publication.
+     *
+     * @return tuple First, the pointed publication's publishing profile ID, and second, the pointed publication's ID. 
+     * If the passed publication is not a mirror, this returns the given publication.
+     */
+    function getPointedIfMirror(uint256 profileId, uint256 pubId)
+        internal
+        view
+        returns (
+            uint256,
+            uint256
+        )
+    {
+        uint256 slot;
+        address collectModule;
+        assembly {
+            mstore(0, profileId)
+            mstore(32, PUB_BY_ID_BY_PROFILE_MAPPING_SLOT)
+            mstore(32, keccak256(0, 64))
+            mstore(0, pubId)
+            slot := keccak256(0, 64)
+            let collectModuleSlot := add(slot, PUBLICATION_COLLECT_MODULE_OFFSET)
+            collectModule := sload(collectModuleSlot)
+        }
+        if (collectModule != address(0)) {
+            return (profileId, pubId);
+        } else {
+            uint256 profileIdPointed;
+            assembly {
+                // profile ID pointed is at offset 0, so we don't need to add anything.
+                profileIdPointed := sload(slot)
+            }
+            // We validate existence here as an optimization, so validating in calling
+            // contracts is unnecessary.
+            if (profileIdPointed == 0) revert Errors.PublicationDoesNotExist();
+
+            uint256 pubIdPointed;
+            assembly {
+                let pointedPubIdSlot := add(slot, PUBLICATION_PUB_ID_POINTED_OFFSET)
+                pubIdPointed := sload(pointedPubIdSlot)
+            }
+            return (profileIdPointed, pubIdPointed);
+        }
+    }
 
     /**
      * @notice This helper function just returns the pointed publication if the passed publication is a mirror,
@@ -21,17 +71,11 @@ library Helpers {
      *
      * @param profileId The token ID of the profile that published the given publication.
      * @param pubId The publication ID of the given publication.
-     * @param _pubByIdByProfile A pointer to the storage mapping of publications by pubId by profile ID.
      *
      * @return tuple First, the pointed publication's publishing profile ID, second, the pointed publication's ID, and third, the
      * pointed publication's collect module. If the passed publication is not a mirror, this returns the given publication.
      */
-    function getPointedIfMirror(
-        uint256 profileId,
-        uint256 pubId,
-        mapping(uint256 => mapping(uint256 => DataTypes.PublicationStruct))
-            storage _pubByIdByProfile
-    )
+    function getPointedIfMirrorWithCollectModule(uint256 profileId, uint256 pubId)
         internal
         view
         returns (
@@ -40,20 +84,43 @@ library Helpers {
             address
         )
     {
-        address collectModule = _pubByIdByProfile[profileId][pubId].collectModule;
+        uint256 slot;
+        address collectModule;
+        assembly {
+            mstore(0, profileId)
+            mstore(32, PUB_BY_ID_BY_PROFILE_MAPPING_SLOT)
+            mstore(32, keccak256(0, 64))
+            mstore(0, pubId)
+            slot := keccak256(0, 64)
+            let collectModuleSlot := add(slot, PUBLICATION_COLLECT_MODULE_OFFSET)
+            collectModule := sload(collectModuleSlot)
+        }
         if (collectModule != address(0)) {
             return (profileId, pubId, collectModule);
         } else {
-            uint256 pointedTokenId = _pubByIdByProfile[profileId][pubId].profileIdPointed;
-            // We validate existence here as an optimization, so validating in calling contracts is unnecessary
-            if (pointedTokenId == 0) revert Errors.PublicationDoesNotExist();
+            uint256 profileIdPointed;
+            assembly {
+                // profile ID pointed is at offset 0, so we don't need to add anything.
+                profileIdPointed := sload(slot)
+            }
+            // We validate existence here as an optimization, so validating in calling
+            // contracts is unnecessary.
+            if (profileIdPointed == 0) revert Errors.PublicationDoesNotExist();
 
-            uint256 pointedPubId = _pubByIdByProfile[profileId][pubId].pubIdPointed;
+            uint256 pubIdPointed;
+            address collectModulePointed;
+            assembly {
+                let pointedPubIdSlot := add(slot, PUBLICATION_PUB_ID_POINTED_OFFSET)
+                pubIdPointed := sload(pointedPubIdSlot)
 
-            address pointedCollectModule = _pubByIdByProfile[pointedTokenId][pointedPubId]
-                .collectModule;
-
-            return (pointedTokenId, pointedPubId, pointedCollectModule);
+                mstore(0, profileIdPointed)
+                mstore(32, PUB_BY_ID_BY_PROFILE_MAPPING_SLOT)
+                mstore(32, keccak256(0, 64))
+                mstore(0, pubIdPointed)
+                slot := add(keccak256(0, 64), PUBLICATION_COLLECT_MODULE_OFFSET)
+                collectModulePointed := sload(slot)
+            }
+            return (profileIdPointed, pubIdPointed, collectModulePointed);
         }
     }
 

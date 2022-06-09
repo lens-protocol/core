@@ -116,6 +116,18 @@ library GeneralLib {
     }
 
     /**
+     * @notice Sets the default profile via signature for a given owner.
+     *
+     * @param vars the SetDefaultProfileWithSigData struct containing the relevant parameters.
+     */
+    function setDefaultProfileWithSig(DataTypes.SetDefaultProfileWithSigData calldata vars)
+        external
+    {
+        MetaTxHelpers.baseSetDefaultProfileWithSig(vars);
+        _setDefaultProfile(vars.wallet, vars.profileId);
+    }
+
+    /**
      * @notice Executes the logic to create a profile with the given parameters to the given address.
      *
      * @param vars The CreateProfileData struct containing the following parameters:
@@ -196,9 +208,31 @@ library GeneralLib {
         _setFollowModule(profileId, followModule, followModuleInitData);
     }
 
+    /**
+     * @notice sets the follow module via signature for a given profile.
+     *
+     * @param vars the SetFollowModuleWithSigData struct containing the relevant parameters.
+     */
+    function setFollowModuleWithSig(DataTypes.SetFollowModuleWithSigData calldata vars) external {
+        MetaTxHelpers.baseSetFollowModuleWithSig(vars);
+        _setFollowModule(vars.profileId, vars.followModule, vars.followModuleInitData);
+    }
+
     function setProfileImageURI(uint256 profileId, string calldata imageURI) external {
         _validateCallerIsProfileOwnerOrDispatcher(profileId);
         _setProfileImageURI(profileId, imageURI);
+    }
+
+    /**
+     * @notice Sets the profile image URI via signature for a given profile.
+     *
+     * @param vars the SetProfileImageURIWithSigData struct containing the relevant parameters.
+     */
+    function setProfileImageURIWithSig(DataTypes.SetProfileImageURIWithSigData calldata vars)
+        external
+    {
+        MetaTxHelpers.baseSetProfileImageURIWithSig(vars);
+        _setProfileImageURI(vars.profileId, vars.imageURI);
     }
 
     function setFollowNFTURI(uint256 profileId, string calldata followNFTURI) external {
@@ -206,7 +240,18 @@ library GeneralLib {
         _setFollowNFTURI(profileId, followNFTURI);
     }
 
-    function post(DataTypes.PostData calldata vars, uint256 pubId) external {
+    /**
+     * @notice Sets the follow NFT URI via signature for a given profile.
+     *
+     * @param vars the SetFollowNFTURIWithSigData struct containing the relevant parameters.
+     */
+    function setFollowNFTURIWithSig(DataTypes.SetFollowNFTURIWithSigData calldata vars) external {
+        MetaTxHelpers.baseSetFollowNFTURIWithSig(vars);
+        _setFollowNFTURI(vars.profileId, vars.followNFTURI);
+    }
+
+    function post(DataTypes.PostData calldata vars) external returns (uint256) {
+        uint256 pubId = _preIncrementPubCount(vars.profileId);
         _validateCallerIsProfileOwnerOrDispatcher(vars.profileId);
         _createPost(
             vars.profileId,
@@ -217,247 +262,68 @@ library GeneralLib {
             vars.referenceModule,
             vars.referenceModuleInitData
         );
+        return pubId;
     }
 
-    function comment(DataTypes.CommentData calldata vars, uint256 pubId) external {
+    /**
+     * @notice Validates parameters and increments the nonce for a given owner using the
+     * `postWithSig()` function.
+     *
+     * @param vars the PostWithSigData struct containing the relevant parameters.
+     */
+    function postWithSig(DataTypes.PostWithSigData calldata vars) external returns (uint256) {
+        uint256 pubId = _preIncrementPubCount(vars.profileId);
+        MetaTxHelpers.basePostWithSig(vars);
+        _createPost(
+            vars.profileId,
+            pubId,
+            vars.contentURI,
+            vars.collectModule,
+            vars.collectModuleInitData,
+            vars.referenceModule,
+            vars.referenceModuleInitData
+        );
+        return pubId;
+    }
+
+    function comment(DataTypes.CommentData calldata vars) external returns (uint256) {
+        uint256 pubId = _preIncrementPubCount(vars.profileId);
         _validateCallerIsProfileOwnerOrDispatcher(vars.profileId);
         _createComment(vars, pubId);
+        return pubId;
     }
 
     /**
-     * @notice Creates a comment publication mapped to the given profile.
+     * @notice Validates parameters and increments the nonce for a given owner using the
+     * `commentWithSig()` function.
      *
-     * @dev This function is unique in that it requires many variables, so, unlike the other publishing functions,
-     * we need to pass the full CommentData struct in memory to avoid a stack too deep error.
-     *
-     * @param vars The CommentData struct to use to create the comment.
-     * @param pubId The publication ID to associate with this publication.
+     * @param vars the CommentWithSig struct containing the relevant parameters.
      */
-    function _createComment(DataTypes.CommentData calldata vars, uint256 pubId) private {
-        // Validate existence of the pointed publication
-        uint256 profileId = vars.profileId;
-        uint256 profileIdPointed = vars.profileIdPointed;
-        uint256 pubIdPointed = vars.pubIdPointed;
-        uint256 pubCountPointed;
-        assembly {
-            mstore(0, profileIdPointed)
-            mstore(32, PROFILE_BY_ID_MAPPING_SLOT)
-            // pubCount is at offset 0, so we don't need to add anything.
-            let slot := keccak256(0, 64)
-            pubCountPointed := sload(slot)
-        }
-
-        if (pubCountPointed < pubIdPointed || pubIdPointed == 0)
-            revert Errors.PublicationDoesNotExist();
-
-        // Ensure the pointed publication is not the comment being created
-        if (profileId == profileIdPointed && pubIdPointed == pubId)
-            revert Errors.CannotCommentOnSelf();
-
-        assembly {
-            mstore(0, profileId)
-            mstore(32, PUB_BY_ID_BY_PROFILE_MAPPING_SLOT)
-            mstore(32, keccak256(0, 64))
-            mstore(0, pubId)
-            // profile ID pointed is at offset 0, so we don't need to add anything.
-            let slot := keccak256(0, 64)
-            sstore(slot, profileIdPointed)
-            slot := add(slot, PUBLICATION_PUB_ID_POINTED_OFFSET)
-            sstore(slot, pubIdPointed)
-        }
-        _setPublicationContentURI(vars.profileId, pubId, vars.contentURI);
-
-        // Collect Module Initialization
-        bytes memory collectModuleReturnData = _initPubCollectModule(
-            vars.profileId,
-            pubId,
-            vars.collectModule,
-            vars.collectModuleInitData
-        );
-
-        // Reference module initialization
-        bytes memory referenceModuleReturnData = _initPubReferenceModule(
-            vars.profileId,
-            pubId,
-            vars.referenceModule,
-            vars.referenceModuleInitData
-        );
-
-        // Reference module validation
-        address referenceModulePointed;
-        assembly {
-            mstore(0, profileIdPointed)
-            mstore(32, PUB_BY_ID_BY_PROFILE_MAPPING_SLOT)
-            mstore(32, keccak256(0, 64))
-            mstore(0, pubIdPointed)
-            let slot := add(keccak256(0, 64), PUBLICATION_REFERENCE_MODULE_OFFSET)
-            referenceModulePointed := sload(slot)
-        }
-        if (referenceModulePointed != address(0)) {
-            IReferenceModule(referenceModulePointed).processComment(
-                vars.profileId,
-                vars.profileIdPointed,
-                vars.pubIdPointed,
-                vars.referenceModuleData
-            );
-        }
-
-        emit Events.CommentCreated(
-            vars.profileId,
-            pubId,
-            vars.contentURI,
-            vars.profileIdPointed,
-            vars.pubIdPointed,
-            vars.referenceModuleData,
-            vars.collectModule,
-            collectModuleReturnData,
-            vars.referenceModule,
-            referenceModuleReturnData,
-            block.timestamp
-        );
-        // Prevents a stack too deep error
-        // _emitCommentCreated(vars, pubId, collectModuleReturnData, referenceModuleReturnData);
+    function commentWithSig(DataTypes.CommentWithSigData calldata vars) external returns (uint256) {
+        uint256 pubId = _preIncrementPubCount(vars.profileId);
+        MetaTxHelpers.baseCommentWithSig(vars);
+        _createCommentWithSigStruct(vars, pubId);
+        return pubId;
     }
 
-    function _createCommentWithSigStruct(DataTypes.CommentWithSigData calldata vars, uint256 pubId)
-        private
-    {
-        // Validate existence of the pointed publication
-        uint256 profileId = vars.profileId;
-        uint256 profileIdPointed = vars.profileIdPointed;
-        uint256 pubIdPointed = vars.pubIdPointed;
-        uint256 pubCountPointed;
-        assembly {
-            mstore(0, profileIdPointed)
-            mstore(32, PROFILE_BY_ID_MAPPING_SLOT)
-            // pubCount is at offset 0, so we don't need to add anything.
-            let slot := keccak256(0, 64)
-            pubCountPointed := sload(slot)
-        }
-
-        if (pubCountPointed < pubIdPointed || pubIdPointed == 0)
-            revert Errors.PublicationDoesNotExist();
-
-        // Ensure the pointed publication is not the comment being created
-        if (profileId == profileIdPointed && pubIdPointed == pubId)
-            revert Errors.CannotCommentOnSelf();
-
-        assembly {
-            mstore(0, profileId)
-            mstore(32, PUB_BY_ID_BY_PROFILE_MAPPING_SLOT)
-            mstore(32, keccak256(0, 64))
-            mstore(0, pubId)
-            // profile ID pointed is at offset 0, so we don't need to add anything.
-            let slot := keccak256(0, 64)
-            sstore(slot, profileIdPointed)
-            slot := add(slot, PUBLICATION_PUB_ID_POINTED_OFFSET)
-            sstore(slot, pubIdPointed)
-        }
-        _setPublicationContentURI(vars.profileId, pubId, vars.contentURI);
-
-        // Collect Module Initialization
-        bytes memory collectModuleReturnData = _initPubCollectModule(
-            vars.profileId,
-            pubId,
-            vars.collectModule,
-            vars.collectModuleInitData
-        );
-
-        // Reference module initialization
-        bytes memory referenceModuleReturnData = _initPubReferenceModule(
-            vars.profileId,
-            pubId,
-            vars.referenceModule,
-            vars.referenceModuleInitData
-        );
-
-        // Reference module validation
-        address referenceModulePointed;
-        assembly {
-            mstore(0, profileIdPointed)
-            mstore(32, PUB_BY_ID_BY_PROFILE_MAPPING_SLOT)
-            mstore(32, keccak256(0, 64))
-            mstore(0, pubIdPointed)
-            let slot := add(keccak256(0, 64), PUBLICATION_REFERENCE_MODULE_OFFSET)
-            referenceModulePointed := sload(slot)
-        }
-        if (referenceModulePointed != address(0)) {
-            IReferenceModule(referenceModulePointed).processComment(
-                vars.profileId,
-                vars.profileIdPointed,
-                vars.pubIdPointed,
-                vars.referenceModuleData
-            );
-        }
-
-        emit Events.CommentCreated(
-            vars.profileId,
-            pubId,
-            vars.contentURI,
-            vars.profileIdPointed,
-            vars.pubIdPointed,
-            vars.referenceModuleData,
-            vars.collectModule,
-            collectModuleReturnData,
-            vars.referenceModule,
-            referenceModuleReturnData,
-            block.timestamp
-        );
+    function mirror(DataTypes.MirrorData calldata vars) external returns (uint256) {
+        uint256 pubId = _preIncrementPubCount(vars.profileId);
+        _validateCallerIsProfileOwnerOrDispatcher(vars.profileId);
+        _createMirror(vars, pubId);
+        return pubId;
     }
 
     /**
-     * @notice Creates a mirror publication mapped to the given profile.
+     * @notice Validates parameters and increments the nonce for a given owner using the
+     * `mirrorWithSig()` function.
      *
-     * @param vars The MirrorData struct to use to create the mirror.
-     * @param pubId The publication ID to associate with this publication.
-     * @param _pubByIdByProfile The storage reference to the mapping of publications by publication ID by profile ID.
-     * param _referenceModuleWhitelisted The storage reference to the mapping of whitelist status by reference module address.
+     * @param vars the MirrorWithSigData struct containing the relevant parameters.
      */
-    function createMirror(
-        DataTypes.MirrorData memory vars,
-        uint256 pubId,
-        mapping(uint256 => mapping(uint256 => DataTypes.PublicationStruct))
-            storage _pubByIdByProfile
-    ) external {
-        (uint256 rootProfileIdPointed, uint256 rootPubIdPointed, ) = Helpers.getPointedIfMirror(
-            vars.profileIdPointed,
-            vars.pubIdPointed,
-            _pubByIdByProfile
-        );
-
-        _pubByIdByProfile[vars.profileId][pubId].profileIdPointed = rootProfileIdPointed;
-        _pubByIdByProfile[vars.profileId][pubId].pubIdPointed = rootPubIdPointed;
-
-        // Reference module initialization
-        bytes memory referenceModuleReturnData = _initPubReferenceModule(
-            vars.profileId,
-            pubId,
-            vars.referenceModule,
-            vars.referenceModuleInitData
-        );
-
-        // Reference module validation
-        address refModule = _pubByIdByProfile[rootProfileIdPointed][rootPubIdPointed]
-            .referenceModule;
-        if (refModule != address(0)) {
-            IReferenceModule(refModule).processMirror(
-                vars.profileId,
-                rootProfileIdPointed,
-                rootPubIdPointed,
-                vars.referenceModuleData
-            );
-        }
-
-        emit Events.MirrorCreated(
-            vars.profileId,
-            pubId,
-            rootProfileIdPointed,
-            rootPubIdPointed,
-            vars.referenceModuleData,
-            vars.referenceModule,
-            referenceModuleReturnData,
-            block.timestamp
-        );
+    function mirrorWithSig(DataTypes.MirrorWithSigData calldata vars) external returns (uint256) {
+        uint256 pubId = _preIncrementPubCount(vars.profileId);
+        MetaTxHelpers.baseMirrorWithSig(vars);
+        _createMirrorWithSigStruct(vars, pubId);
+        return pubId;
     }
 
     /**
@@ -484,6 +350,28 @@ library GeneralLib {
                 follower,
                 profileIds,
                 followModuleDatas,
+                _profileById,
+                _profileIdByHandleHash
+            );
+    }
+
+    /**
+     * @notice Validates parameters and increments the nonce for a given owner using the
+     * `followWithSig()` function.
+     *
+     * @param vars the FollowWithSigData struct containing the relevant parameters.
+     */
+    function followWithSig(
+        DataTypes.FollowWithSigData calldata vars,
+        mapping(uint256 => DataTypes.ProfileStruct) storage _profileById,
+        mapping(bytes32 => uint256) storage _profileIdByHandleHash
+    ) external returns (uint256[] memory) {
+        MetaTxHelpers.baseFollowWithSig(vars);
+        return
+            InteractionHelpers.follow(
+                vars.follower,
+                vars.profileIds,
+                vars.datas,
                 _profileById,
                 _profileIdByHandleHash
             );
@@ -519,6 +407,32 @@ library GeneralLib {
                 profileId,
                 pubId,
                 collectModuleData,
+                collectNFTImpl,
+                _pubByIdByProfile,
+                _profileById
+            );
+    }
+
+    /**
+     * @notice Validates parameters and increments the nonce for a given owner using the
+     * `collectWithSig()` function.
+     *
+     * @param vars the CollectWithSigData struct containing the relevant parameters.
+     */
+    function collectWithSig(
+        DataTypes.CollectWithSigData calldata vars,
+        address collectNFTImpl,
+        mapping(uint256 => mapping(uint256 => DataTypes.PublicationStruct))
+            storage _pubByIdByProfile,
+        mapping(uint256 => DataTypes.ProfileStruct) storage _profileById
+    ) external returns (uint256) {
+        MetaTxHelpers.baseCollectWithSig(vars);
+        return
+            InteractionHelpers.collect(
+                vars.collector,
+                vars.profileId,
+                vars.pubId,
+                vars.data,
                 collectNFTImpl,
                 _pubByIdByProfile,
                 _profileById
@@ -577,28 +491,6 @@ library GeneralLib {
     }
 
     /**
-     * @notice Sets the default profile via signature for a given owner.
-     *
-     * @param vars the SetDefaultProfileWithSigData struct containing the relevant parameters.
-     */
-    function setDefaultProfileWithSig(DataTypes.SetDefaultProfileWithSigData calldata vars)
-        external
-    {
-        MetaTxHelpers.baseSetDefaultProfileWithSig(vars);
-        _setDefaultProfile(vars.wallet, vars.profileId);
-    }
-
-    /**
-     * @notice sets the follow module via signature for a given profile.
-     *
-     * @param vars the SetFollowModuleWithSigData struct containing the relevant parameters.
-     */
-    function setFollowModuleWithSig(DataTypes.SetFollowModuleWithSigData calldata vars) external {
-        MetaTxHelpers.baseSetFollowModuleWithSig(vars);
-        _setFollowModule(vars.profileId, vars.followModule, vars.followModuleInitData);
-    }
-
-    /**
      * @notice Sets the dispatcher via signature for a given profile.
      *
      * @param vars the setDispatcherWithSigData struct containing the relevant parameters.
@@ -617,93 +509,6 @@ library GeneralLib {
     }
 
     /**
-     * @notice Sets the profile image URI via signature for a given profile.
-     *
-     * @param vars the SetProfileImageURIWithSigData struct containing the relevant parameters.
-     */
-    function setProfileImageURIWithSig(DataTypes.SetProfileImageURIWithSigData calldata vars)
-        external
-    {
-        MetaTxHelpers.baseSetProfileImageURIWithSig(vars);
-        _setProfileImageURI(vars.profileId, vars.imageURI);
-    }
-
-    /**
-     * @notice Sets the follow NFT URI via signature for a given profile.
-     *
-     * @param vars the SetFollowNFTURIWithSigData struct containing the relevant parameters.
-     */
-    function setFollowNFTURIWithSig(DataTypes.SetFollowNFTURIWithSigData calldata vars) external {
-        MetaTxHelpers.baseSetFollowNFTURIWithSig(vars);
-        _setFollowNFTURI(vars.profileId, vars.followNFTURI);
-    }
-
-    /**
-     * @notice Validates parameters and increments the nonce for a given owner using the
-     * `postWithSig()` function.
-     *
-     * @param vars the PostWithSigData struct containing the relevant parameters.
-     */
-    function postWithSig(DataTypes.PostWithSigData calldata vars, uint256 pubId) external {
-        MetaTxHelpers.basePostWithSig(vars);
-        _createPost(
-            vars.profileId,
-            pubId,
-            vars.contentURI,
-            vars.collectModule,
-            vars.collectModuleInitData,
-            vars.referenceModule,
-            vars.referenceModuleInitData
-        );
-    }
-
-    /**
-     * @notice Validates parameters and increments the nonce for a given owner using the
-     * `commentWithSig()` function.
-     *
-     * @param vars the CommentWithSig struct containing the relevant parameters.
-     */
-    function commentWithSig(DataTypes.CommentWithSigData calldata vars, uint256 pubId) external {
-        MetaTxHelpers.baseCommentWithSig(vars);
-        _createCommentWithSigStruct(
-            vars,
-            // DataTypes.CommentData(
-            // vars.profileId,
-            // vars.contentURI,
-            // vars.profileIdPointed,
-            // vars.pubIdPointed,
-            // vars.referenceModuleData,
-            // vars.collectModule,
-            // vars.collectModuleInitData,
-            // vars.referenceModule,
-            // vars.referenceModuleInitData
-            // ),
-            pubId
-        );
-    }
-
-    // uint256 profileId;
-    // string contentURI;
-    // uint256 profileIdPointed;
-    // uint256 pubIdPointed;
-    // bytes referenceModuleData;
-    // address collectModule;
-    // bytes collectModuleInitData;
-    // address referenceModule;
-    // bytes referenceModuleInitData;
-
-    /**
-     * @notice Validates parameters and increments the nonce for a given owner using the
-     * `mirrorWithSig()` function.
-     *
-     * @param vars the MirrorWithSigData struct containing the relevant parameters.
-     */
-    function mirrorWithSig(DataTypes.MirrorWithSigData calldata vars) external {
-        MetaTxHelpers.baseMirrorWithSig(vars);
-        // create mirror
-    }
-
-    /**
      * @notice Validates parameters and increments the nonce for a given owner using the
      * `burnWithSig()` function.
      *
@@ -712,55 +517,6 @@ library GeneralLib {
      */
     function burnWithSig(uint256 tokenId, DataTypes.EIP712Signature calldata sig) external {
         MetaTxHelpers.baseBurnWithSig(tokenId, sig);
-        // burn profile
-    }
-
-    /**
-     * @notice Validates parameters and increments the nonce for a given owner using the
-     * `followWithSig()` function.
-     *
-     * @param vars the FollowWithSigData struct containing the relevant parameters.
-     */
-    function followWithSig(
-        DataTypes.FollowWithSigData calldata vars,
-        mapping(uint256 => DataTypes.ProfileStruct) storage _profileById,
-        mapping(bytes32 => uint256) storage _profileIdByHandleHash
-    ) external returns (uint256[] memory) {
-        MetaTxHelpers.baseFollowWithSig(vars);
-        return
-            InteractionHelpers.follow(
-                vars.follower,
-                vars.profileIds,
-                vars.datas,
-                _profileById,
-                _profileIdByHandleHash
-            );
-    }
-
-    /**
-     * @notice Validates parameters and increments the nonce for a given owner using the
-     * `collectWithSig()` function.
-     *
-     * @param vars the CollectWithSigData struct containing the relevant parameters.
-     */
-    function collectWithSig(
-        DataTypes.CollectWithSigData calldata vars,
-        address collectNFTImpl,
-        mapping(uint256 => mapping(uint256 => DataTypes.PublicationStruct))
-            storage _pubByIdByProfile,
-        mapping(uint256 => DataTypes.ProfileStruct) storage _profileById
-    ) external returns (uint256) {
-        MetaTxHelpers.baseCollectWithSig(vars);
-        return
-            InteractionHelpers.collect(
-                vars.collector,
-                vars.profileId,
-                vars.pubId,
-                vars.data,
-                collectNFTImpl,
-                _pubByIdByProfile,
-                _profileById
-            );
     }
 
     /**
@@ -873,6 +629,25 @@ library GeneralLib {
         }
     }
 
+    function _setPublicationPointer(
+        uint256 profileId,
+        uint256 pubId,
+        uint256 profileIdPointed,
+        uint256 pubIdPointed
+    ) private {
+        assembly {
+            mstore(0, profileId)
+            mstore(32, PUB_BY_ID_BY_PROFILE_MAPPING_SLOT)
+            mstore(32, keccak256(0, 64))
+            mstore(0, pubId)
+            // profile ID pointed is at offset 0, so we don't need to add anything.
+            let slot := keccak256(0, 64)
+            sstore(slot, profileIdPointed)
+            slot := add(slot, PUBLICATION_PUB_ID_POINTED_OFFSET)
+            sstore(slot, pubIdPointed)
+        }
+    }
+
     function _setPublicationContentURI(
         uint256 profileId,
         uint256 pubId,
@@ -967,6 +742,264 @@ library GeneralLib {
         );
     }
 
+    /**
+     * @notice Creates a comment publication mapped to the given profile.
+     *
+     * @dev This function is unique in that it requires many variables, so, unlike the other publishing functions,
+     * we need to pass the full CommentData struct in memory to avoid a stack too deep error.
+     *
+     * @param vars The CommentData struct to use to create the comment.
+     * @param pubId The publication ID to associate with this publication.
+     */
+    function _createComment(DataTypes.CommentData calldata vars, uint256 pubId) private {
+        // Validate existence of the pointed publication
+        uint256 profileId = vars.profileId;
+        uint256 profileIdPointed = vars.profileIdPointed;
+        uint256 pubIdPointed = vars.pubIdPointed;
+        uint256 pubCountPointed;
+        assembly {
+            mstore(0, profileIdPointed)
+            mstore(32, PROFILE_BY_ID_MAPPING_SLOT)
+            // pubCount is at offset 0, so we don't need to add anything.
+            let slot := keccak256(0, 64)
+            pubCountPointed := sload(slot)
+        }
+
+        if (pubCountPointed < pubIdPointed || pubIdPointed == 0)
+            revert Errors.PublicationDoesNotExist();
+
+        // Ensure the pointed publication is not the comment being created
+        if (profileId == profileIdPointed && pubIdPointed == pubId)
+            revert Errors.CannotCommentOnSelf();
+
+        _setPublicationPointer(profileId, pubId, profileIdPointed, pubIdPointed);
+        _setPublicationContentURI(vars.profileId, pubId, vars.contentURI);
+
+        // Collect Module Initialization
+        bytes memory collectModuleReturnData = _initPubCollectModule(
+            vars.profileId,
+            pubId,
+            vars.collectModule,
+            vars.collectModuleInitData
+        );
+
+        // Reference module initialization
+        bytes memory referenceModuleReturnData = _initPubReferenceModule(
+            vars.profileId,
+            pubId,
+            vars.referenceModule,
+            vars.referenceModuleInitData
+        );
+
+        // Reference module validation
+        address referenceModulePointed;
+        assembly {
+            mstore(0, profileIdPointed)
+            mstore(32, PUB_BY_ID_BY_PROFILE_MAPPING_SLOT)
+            mstore(32, keccak256(0, 64))
+            mstore(0, pubIdPointed)
+            let slot := add(keccak256(0, 64), PUBLICATION_REFERENCE_MODULE_OFFSET)
+            referenceModulePointed := sload(slot)
+        }
+        if (referenceModulePointed != address(0)) {
+            IReferenceModule(referenceModulePointed).processComment(
+                vars.profileId,
+                vars.profileIdPointed,
+                vars.pubIdPointed,
+                vars.referenceModuleData
+            );
+        }
+
+        emit Events.CommentCreated(
+            vars.profileId,
+            pubId,
+            vars.contentURI,
+            vars.profileIdPointed,
+            vars.pubIdPointed,
+            vars.referenceModuleData,
+            vars.collectModule,
+            collectModuleReturnData,
+            vars.referenceModule,
+            referenceModuleReturnData,
+            block.timestamp
+        );
+        // Prevents a stack too deep error
+        // _emitCommentCreated(vars, pubId, collectModuleReturnData, referenceModuleReturnData);
+    }
+
+    function _createCommentWithSigStruct(DataTypes.CommentWithSigData calldata vars, uint256 pubId)
+        private
+    {
+        // Validate existence of the pointed publication
+        uint256 profileId = vars.profileId;
+        uint256 profileIdPointed = vars.profileIdPointed;
+        uint256 pubIdPointed = vars.pubIdPointed;
+        uint256 pubCountPointed;
+        assembly {
+            mstore(0, profileIdPointed)
+            mstore(32, PROFILE_BY_ID_MAPPING_SLOT)
+            // pubCount is at offset 0, so we don't need to add anything.
+            let slot := keccak256(0, 64)
+            pubCountPointed := sload(slot)
+        }
+
+        if (pubCountPointed < pubIdPointed || pubIdPointed == 0)
+            revert Errors.PublicationDoesNotExist();
+
+        // Ensure the pointed publication is not the comment being created
+        if (profileId == profileIdPointed && pubIdPointed == pubId)
+            revert Errors.CannotCommentOnSelf();
+
+        _setPublicationPointer(profileId, pubId, profileIdPointed, pubIdPointed);
+        _setPublicationContentURI(vars.profileId, pubId, vars.contentURI);
+
+        // Collect Module Initialization
+        bytes memory collectModuleReturnData = _initPubCollectModule(
+            vars.profileId,
+            pubId,
+            vars.collectModule,
+            vars.collectModuleInitData
+        );
+
+        // Reference module initialization
+        bytes memory referenceModuleReturnData = _initPubReferenceModule(
+            vars.profileId,
+            pubId,
+            vars.referenceModule,
+            vars.referenceModuleInitData
+        );
+
+        // Reference module validation
+        address referenceModulePointed = _getReferenceModule(profileIdPointed, pubIdPointed);
+        if (referenceModulePointed != address(0)) {
+            IReferenceModule(referenceModulePointed).processComment(
+                vars.profileId,
+                vars.profileIdPointed,
+                vars.pubIdPointed,
+                vars.referenceModuleData
+            );
+        }
+
+        emit Events.CommentCreated(
+            vars.profileId,
+            pubId,
+            vars.contentURI,
+            vars.profileIdPointed,
+            vars.pubIdPointed,
+            vars.referenceModuleData,
+            vars.collectModule,
+            collectModuleReturnData,
+            vars.referenceModule,
+            referenceModuleReturnData,
+            block.timestamp
+        );
+    }
+
+    /**
+     * @notice Creates a mirror publication mapped to the given profile.
+     *
+     * @param vars The MirrorData struct to use to create the mirror.
+     * @param pubId The publication ID to associate with this publication.
+     */
+    function _createMirror(DataTypes.MirrorData calldata vars, uint256 pubId) private {
+        (uint256 rootProfileIdPointed, uint256 rootPubIdPointed) = Helpers.getPointedIfMirror(
+            vars.profileIdPointed,
+            vars.pubIdPointed
+        );
+
+        _setPublicationPointer(vars.profileId, pubId, rootProfileIdPointed, rootPubIdPointed);
+
+        // Reference module initialization
+        bytes memory referenceModuleReturnData = _initPubReferenceModule(
+            vars.profileId,
+            pubId,
+            vars.referenceModule,
+            vars.referenceModuleInitData
+        );
+
+        // Reference module validation
+        address refModule = _getReferenceModule(rootProfileIdPointed, rootPubIdPointed);
+        if (refModule != address(0)) {
+            IReferenceModule(refModule).processMirror(
+                vars.profileId,
+                rootProfileIdPointed,
+                rootPubIdPointed,
+                vars.referenceModuleData
+            );
+        }
+
+        emit Events.MirrorCreated(
+            vars.profileId,
+            pubId,
+            rootProfileIdPointed,
+            rootPubIdPointed,
+            vars.referenceModuleData,
+            vars.referenceModule,
+            referenceModuleReturnData,
+            block.timestamp
+        );
+    }
+
+    /**
+     * @notice Creates a mirror publication mapped to the given profile.
+     *
+     * @param vars The MirrorWithSigData struct to use to create the mirror.
+     * @param pubId The publication ID to associate with this publication.
+     */
+    function _createMirrorWithSigStruct(DataTypes.MirrorWithSigData calldata vars, uint256 pubId)
+        private
+    {
+        (uint256 rootProfileIdPointed, uint256 rootPubIdPointed) = Helpers.getPointedIfMirror(
+            vars.profileIdPointed,
+            vars.pubIdPointed
+        );
+
+        _setPublicationPointer(vars.profileId, pubId, rootProfileIdPointed, rootPubIdPointed);
+
+        // Reference module initialization
+        bytes memory referenceModuleReturnData = _initPubReferenceModule(
+            vars.profileId,
+            pubId,
+            vars.referenceModule,
+            vars.referenceModuleInitData
+        );
+
+        // Reference module validation
+        address refModule = _getReferenceModule(rootProfileIdPointed, rootPubIdPointed);
+        if (refModule != address(0)) {
+            IReferenceModule(refModule).processMirror(
+                vars.profileId,
+                rootProfileIdPointed,
+                rootPubIdPointed,
+                vars.referenceModuleData
+            );
+        }
+
+        emit Events.MirrorCreated(
+            vars.profileId,
+            pubId,
+            rootProfileIdPointed,
+            rootPubIdPointed,
+            vars.referenceModuleData,
+            vars.referenceModule,
+            referenceModuleReturnData,
+            block.timestamp
+        );
+    }
+
+    function _preIncrementPubCount(uint256 profileId) private returns (uint256) {
+        uint256 pubCount;
+        assembly {
+            mstore(0, profileId)
+            mstore(32, PROFILE_BY_ID_MAPPING_SLOT)
+            // pubCount is at offset 0, so we don't need to add anything.
+            let slot := keccak256(0, 64)
+            pubCount := add(sload(slot), 1)
+            sstore(slot, pubCount)
+        }
+        return pubCount;
+    }
+
     function _initFollowModule(
         uint256 profileId,
         address followModule,
@@ -1024,6 +1057,19 @@ library GeneralLib {
             );
     }
 
+    function _getReferenceModule(uint256 profileId, uint256 pubId) private view returns (address) {
+        address referenceModule;
+        assembly {
+            mstore(0, profileId)
+            mstore(32, PUB_BY_ID_BY_PROFILE_MAPPING_SLOT)
+            mstore(32, keccak256(0, 64))
+            mstore(0, pubId)
+            let slot := add(keccak256(0, 64), PUBLICATION_REFERENCE_MODULE_OFFSET)
+            referenceModule := sload(slot)
+        }
+        return referenceModule;
+    }
+
     function _validateCallerIsProfileOwnerOrDispatcher(uint256 profileId) internal view {
         if (msg.sender == Helpers.unsafeOwnerOf(profileId)) {
             return;
@@ -1037,7 +1083,6 @@ library GeneralLib {
             }
             if (msg.sender != dispatcher) revert Errors.NotProfileOwnerOrDispatcher();
         }
-        // revert Errors.NotProfileOwnerOrDispatcher();
     }
 
     function _validateProfileCreatorWhitelisted() private view {
