@@ -1,0 +1,3 @@
+[default]
+src = 'contracts'
+cache_path = 'foundry-cache'
