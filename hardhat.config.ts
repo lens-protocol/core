@@ -1,6 +1,12 @@
 import { HardhatUserConfig } from 'hardhat/types';
 import { accounts } from './helpers/test-wallets';
-import { eEthereumNetwork, eNetwork, ePolygonNetwork, eXDaiNetwork, eCeloNetwork } from './helpers/types';
+import {
+  eEthereumNetwork,
+  eNetwork,
+  ePolygonNetwork,
+  eXDaiNetwork,
+  eCeloNetwork,
+} from './helpers/types';
 import { HARDHATEVM_CHAINID } from './helpers/hardhat-constants';
 import { NETWORKS_RPC_URL } from './helper-hardhat-config';
 import dotenv from 'dotenv';
@@ -24,7 +30,8 @@ if (!process.env.SKIP_LOAD) {
 }
 
 const DEFAULT_BLOCK_GAS_LIMIT = 12450000;
-const MNEMONIC_PATH = "m/44'/60'/0'/0";
+// const MNEMONIC_PATH = "m/44'/60'/0'/0";
+const MNEMONIC_PATH = "m/44'/52752'/0'/0";
 const MNEMONIC = process.env.MNEMONIC || '';
 const MAINNET_FORK = process.env.MAINNET_FORK === 'true';
 const TRACK_GAS = process.env.TRACK_GAS === 'true';
