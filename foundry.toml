@@ -1,3 +1,4 @@
 [default]
+out = 'out'
 src = 'contracts'
 cache_path = 'foundry-cache'

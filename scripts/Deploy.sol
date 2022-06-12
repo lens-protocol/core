@@ -5,7 +5,27 @@ import {ModuleGlobals} from '../contracts/core/modules/ModuleGlobals.sol';
 import {LensHub} from '../contracts/core/LensHub.sol';
 import {FollowNFT} from '../contracts/core/FollowNFT.sol';
 import {CollectNFT} from '../contracts/core/CollectNFT.sol';
+
 import {TransparentUpgradeableProxy} from '../contracts/upgradeability/TransparentUpgradeableProxy.sol';
+
+import {FeeCollectModule} from '../contracts/core/modules/collect/FeeCollectModule.sol';
+import {LimitedFeeCollectModule} from '../contracts/core/modules/collect/LimitedFeeCollectModule.sol';
+import {TimedFeeCollectModule} from '../contracts/core/modules/collect/TimedFeeCollectModule.sol';
+import {LimitedTimedFeeCollectModule} from '../contracts/core/modules/collect/LimitedTimedFeeCollectModule.sol';
+import {RevertCollectModule} from '../contracts/core/modules/collect/RevertCollectModule.sol';
+import {FreeCollectModule} from '../contracts/core/modules/collect/FreeCollectModule.sol';
+
+import {FeeFollowModule} from '../contracts/core/modules/follow/FeeFollowModule.sol';
+import {ProfileFollowModule} from '../contracts/core/modules/follow/ProfileFollowModule.sol';
+import {RevertFollowModule} from '../contracts/core/modules/follow/RevertFollowModule.sol';
+
+import {FollowerOnlyReferenceModule} from '../contracts/core/modules/reference/FollowerOnlyReferenceModule.sol';
+
+import {LensPeriphery} from '../contracts/misc/LensPeriphery.sol';
+import {UIDataProvider} from '../contracts/misc/UIDataProvider.sol';
+import {ProfileCreationProxy} from '../contracts/misc/ProfileCreationProxy.sol';
+
+import {Currency} from '../contracts/mocks/Currency.sol';
 
 import 'forge-std/Script.sol';
 
@@ -14,17 +34,39 @@ contract Deploy is Script {
     string constant LENS_HUB_NFT_NAME = 'Lens Protocol Profiles';
     string constant LENS_HUB_NFT_SYMBOL = 'LPP';
 
-    // TODO: Replace with loading in addresses from mnemonic?
     address immutable user = vm.addr(1);
     address immutable userTwo = vm.addr(2);
     address immutable userThree = vm.addr(3);
     address immutable governance = vm.addr(4);
     address immutable treasury = vm.addr(5);
 
-    function run() external {
+    struct Contracts {
+        ModuleGlobals moduleGlobals;
+        LensHub lensHubImpl;
+        FollowNFT followNFT;
+        CollectNFT collectNFT;
+        TransparentUpgradeableProxy proxy;
+        LensHub lensHub;
+        LensPeriphery lensPeriphery;
+        Currency currency;
+        FeeCollectModule feeCollectModule;
+        LimitedFeeCollectModule limitedFeeCollectModule;
+        TimedFeeCollectModule timedFeeCollectModule;
+        LimitedTimedFeeCollectModule limitedTimedFeeCollectModule;
+        RevertCollectModule revertCollectModule;
+        FreeCollectModule freeCollectModule;
+        FeeFollowModule feeFollowModule;
+        ProfileFollowModule profileFollowModule;
+        RevertFollowModule revertFollowModule;
+        FollowerOnlyReferenceModule followerOnlyReferenceModule;
+        UIDataProvider uiDataProvider;
+        ProfileCreationProxy profileCreationProxy;
+    }
+
+    function run() external returns (Contracts memory contracts) {
         vm.startBroadcast();
 
-        ModuleGlobals moduleGlobals = new ModuleGlobals(governance, treasury, TREASURY_FEE_BPS);
+        contracts.moduleGlobals = new ModuleGlobals(governance, treasury, TREASURY_FEE_BPS);
 
         uint256 deployerNonce = vm.getNonce(msg.sender);
 
@@ -36,13 +78,13 @@ contract Deploy is Script {
         address collectNFTImplAddress = addressFrom(msg.sender, collectNFTNonce);
         address hubProxyAddress = addressFrom(msg.sender, hubProxyNonce);
 
-        LensHub lensHubImpl = new LensHub(followNFTImplAddress, collectNFTImplAddress);
+        contracts.lensHubImpl = new LensHub(followNFTImplAddress, collectNFTImplAddress);
 
-        FollowNFT followNFT = new FollowNFT(hubProxyAddress);
-        CollectNFT collectNFT = new CollectNFT(hubProxyAddress);
+        contracts.followNFT = new FollowNFT(hubProxyAddress);
+        contracts.collectNFT = new CollectNFT(hubProxyAddress);
 
-        TransparentUpgradeableProxy proxy = new TransparentUpgradeableProxy(
-            address(lensHubImpl),
+        contracts.proxy = new TransparentUpgradeableProxy(
+            address(contracts.lensHubImpl),
             msg.sender,
             abi.encodeWithSelector(
                 LensHub.initialize.selector,
@@ -52,7 +94,40 @@ contract Deploy is Script {
             )
         );
 
-        LensHub lensHub = LensHub(address(proxy));
+        contracts.lensHub = LensHub(address(contracts.proxy));
+
+        contracts.lensPeriphery = new LensPeriphery(contracts.lensHub);
+
+        contracts.currency = new Currency();
+
+        address lensHubAddress = address(contracts.lensHub);
+        address moduleGlobalsAddress = address(contracts.moduleGlobals);
+
+        contracts.feeCollectModule = new FeeCollectModule(lensHubAddress, moduleGlobalsAddress);
+        contracts.limitedFeeCollectModule = new LimitedFeeCollectModule(
+            lensHubAddress,
+            moduleGlobalsAddress
+        );
+        contracts.timedFeeCollectModule = new TimedFeeCollectModule(
+            lensHubAddress,
+            moduleGlobalsAddress
+        );
+        contracts.limitedTimedFeeCollectModule = new LimitedTimedFeeCollectModule(
+            lensHubAddress,
+            moduleGlobalsAddress
+        );
+        contracts.revertCollectModule = new RevertCollectModule();
+        contracts.freeCollectModule = new FreeCollectModule(lensHubAddress);
+
+        contracts.feeFollowModule = new FeeFollowModule(lensHubAddress, moduleGlobalsAddress);
+        contracts.profileFollowModule = new ProfileFollowModule(lensHubAddress);
+        contracts.revertFollowModule = new RevertFollowModule(lensHubAddress);
+
+        contracts.followerOnlyReferenceModule = new FollowerOnlyReferenceModule(lensHubAddress);
+
+        contracts.uiDataProvider = new UIDataProvider(contracts.lensHub);
+
+        contracts.profileCreationProxy = new ProfileCreationProxy(msg.sender, contracts.lensHub);
 
         vm.stopBroadcast();
     }
