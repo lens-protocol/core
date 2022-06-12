@@ -13,9 +13,18 @@ contract BaseTest is Test {
     address immutable governance = vm.addr(4);
     address immutable treasury = vm.addr(5);
 
-    Deploy.Contracts contracts;
+    uint256 immutable FIRST_PROFILE_ID = 1;
+    string constant MOCK_PROFILE_HANDLE = 'plant1ghost.eth';
+    string constant MOCK_PROFILE_URI =
+        'https://ipfs.io/ipfs/Qme7ss3ARVgxv6rXqVPiikMJ8u2NLgmgszg13pYrDKEoiu';
+    string constant MOCK_FOLLOW_NFT_URI =
+        'https://ipfs.fleek.co/ipfs/ghostplantghostplantghostplantghostplantghostplantghostplan';
 
-    function setUp() public {
+    string constant MOCK_URI = 'https://ipfs.io/ipfs/QmbWqxBEKC3P8tqsKc98xmWNzrzDtRLMiMPL8wBuTGsMnR';
+
+    Deploy.Contracts internal contracts;
+
+    function setUp() public virtual {
         Deploy deploy = new Deploy();
 
         // We delegate call here so that msg.sender is persisted and so that we do not need to have
@@ -49,16 +58,10 @@ contract BaseTest is Test {
         contracts.moduleGlobals.whitelistCurrency(address(contracts.currency), true);
 
         contracts.lensHub.whitelistProfileCreator(address(contracts.profileCreationProxy), true);
+        contracts.lensHub.whitelistProfileCreator(user, true);
 
         contracts.lensHub.setState(DataTypes.ProtocolState.Unpaused);
 
         vm.stopPrank();
-    }
-
-    function testWeDeployed() public {
-        assertEq(
-            contracts.lensHub.isFollowModuleWhitelisted(address(contracts.feeFollowModule)),
-            true
-        );
     }
 }
