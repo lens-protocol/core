@@ -27,6 +27,8 @@ import {ProfileCreationProxy} from '../contracts/misc/ProfileCreationProxy.sol';
 
 import {Currency} from '../contracts/mocks/Currency.sol';
 
+import {ScriptTypes} from './ScriptTypes.sol';
+
 import 'forge-std/Script.sol';
 
 contract Deploy is Script {
@@ -34,36 +36,10 @@ contract Deploy is Script {
     string constant LENS_HUB_NFT_NAME = 'Lens Protocol Profiles';
     string constant LENS_HUB_NFT_SYMBOL = 'LPP';
 
-    address immutable user = vm.addr(1);
-    address immutable userTwo = vm.addr(2);
-    address immutable userThree = vm.addr(3);
-    address immutable governance = vm.addr(4);
-    address immutable treasury = vm.addr(5);
+    function run(address governance, address treasury) external returns (ScriptTypes.Contracts memory contracts) {
+        require(governance != address(0), "Governance address not set!");
+        require(treasury != address(0), "Treasury address not set!");
 
-    struct Contracts {
-        ModuleGlobals moduleGlobals;
-        LensHub lensHubImpl;
-        FollowNFT followNFT;
-        CollectNFT collectNFT;
-        TransparentUpgradeableProxy proxy;
-        LensHub lensHub;
-        LensPeriphery lensPeriphery;
-        Currency currency;
-        FeeCollectModule feeCollectModule;
-        LimitedFeeCollectModule limitedFeeCollectModule;
-        TimedFeeCollectModule timedFeeCollectModule;
-        LimitedTimedFeeCollectModule limitedTimedFeeCollectModule;
-        RevertCollectModule revertCollectModule;
-        FreeCollectModule freeCollectModule;
-        FeeFollowModule feeFollowModule;
-        ProfileFollowModule profileFollowModule;
-        RevertFollowModule revertFollowModule;
-        FollowerOnlyReferenceModule followerOnlyReferenceModule;
-        UIDataProvider uiDataProvider;
-        ProfileCreationProxy profileCreationProxy;
-    }
-
-    function run() external returns (Contracts memory contracts) {
         vm.startBroadcast();
 
         contracts.moduleGlobals = new ModuleGlobals(governance, treasury, TREASURY_FEE_BPS);

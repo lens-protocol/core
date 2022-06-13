@@ -81,6 +81,29 @@ Cleanup leftover Docker containers:
 USERID=$UID docker-compose down
 ```
 
+### Foundry Setup
+
+We also support writing tests in Solidity via [Foundry](https://github.com/foundry-rs/foundry).
+
+1. Install Foundry as per the installation instructions here: https://getfoundry.sh/
+2. You can now run tests simply by running `forge test`
+3. You can get a full Lens environment setup by running:
+```bash
+# In one terminal run a local anvil node
+anvil
+
+# In another terminal, deploy the contracts
+# This uses anvil's default mnemonic. The 1st, 2nd and 3rd addresses are for the deployer, governance and treasury respectively.
+forge script scripts/Deploy.sol --rpc-url http://localhost:8545 --broadcast \
+--private-key 0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80 \
+-s "run(address,address)" 0x70997970c51812dc3a010c7d01b50e0d17dc79c8 0x3c44cdddb6a900fa2b585dd299e03d12fa4293bc
+
+# Now, whitelist the required modules and proxy creator. Also unpause the protocol
+forge script scripts/Whitelist.sol --rpc-url http://localhost:8545 --broadcast \
+--private-key 0x59c6995e998f97a5a0044966f0945389dc9e86dae88c7a8412f4603b6b78690d \
+-s "run(address, address, address, address, address, address, address, address, address, address, address, address, address, address, address, address, address, address, address, address)" "(0xcf7ed3acca5a467e9e704c703e8d87f634fb0fc9, 0xdc64a140aa3e981100a9beca4e685f962f0cf6c9, 0x5fc8d32690cc91d4c39d9d3abcbd16989f875707, 0x0165878a594ca255338adfa4d48449f69242eb8f, 0xa513e6e4b8f2a923d98304ec87f64353c4d5c853, 0xa513e6e4b8f2a923d98304ec87f64353c4d5c853, 0x2279b7a0a67db372996a5fab50d91eaa73d2ebe6, 0x8a791620dd6260079bf849dc5567adc3f2fdc318, 0x610178da211fef7d417bc0e6fed39f05609ad788, 0xb7f8bc63bbcad18155201308c8f3540b07f84f5e, 0xa51c1fc2f0d1a1b8494ed1fe312d7c3a78ed91c0, 0x0dcd1bf9a1b36ce34237eeafef220932846bcd82, 0x9a676e781a523b5d0c0e43731313a708cb607508, 0x0b306bf915c4d645ff596e518faf3f9669b97016, 0x959922be3caee4b8cd9a407cc3ac1c251c2007b1, 0x9a9f2ccfde556a7e9ff0848998aa4a0cfd8863ae, 0x68b1d87f95878fe05b998f19b66f4baba5de1aed, 0x3aa5ebb10dc797cac828524e59a333d0a371443c, 0xc6e7df5e7b4f2a278906862b61205850344d4e7d, 0x59b670e9fa9d0a427751af201d676719a970857b)"
+```
+
 ## Protocol Overview
 
 The Lens Protocol transfers ownership of social graphs to the participants of that graph themselves. This is achieved by creating direct links between `profiles` and their `followers`, while allowing fine-grained control of additional logic, including monetization, to be executed during those interactions on a profile-by-profile basis.
