@@ -10,7 +10,11 @@ on:
   pull_request:
 
 jobs:
-  compile_and_run_tests:
+  hardhat:
+    strategy:
+      fail-fast: true
+
+    name: Hardhat Tests
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
@@ -28,12 +32,17 @@ jobs:
     strategy:
       fail-fast: true
 
-    name: Foundry project
+    name: Foundry Tests
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
         with:
           submodules: recursive
+      - uses: actions/setup-node@v2
+        with:
+          node-version: '16'
+      - name: Install dependencies
+        run: npm ci
       - name: Install Foundry
         uses: foundry-rs/foundry-toolchain@v1
         with:
