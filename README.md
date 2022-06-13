@@ -85,8 +85,9 @@ USERID=$UID docker-compose down
 
 We also support writing tests in Solidity via [Foundry](https://github.com/foundry-rs/foundry).
 
-1. Install Foundry as per the installation instructions here: https://getfoundry.sh/
-2. You can now run tests simply by running `forge test`
+1. For now, this requires NPM packages to be installed locally. Therefore you must have NodeJS 16 installed and run: `npm install`.
+2. Install Foundry as per the installation instructions here: https://getfoundry.sh/
+3. You can now run tests with: `forge test`.
 
 **Local deployment steps are a work-in-progress with Foundry.**
 
