@@ -28,7 +28,6 @@ import {ProfileCreationProxy} from '../contracts/misc/ProfileCreationProxy.sol';
 
 import {Currency} from '../contracts/mocks/Currency.sol';
 
-
 library ScriptTypes {
     struct Contracts {
         ModuleGlobals moduleGlobals;
