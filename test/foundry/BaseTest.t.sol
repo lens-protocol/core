@@ -21,7 +21,8 @@ contract BaseTest is Test {
     string constant MOCK_FOLLOW_NFT_URI =
         'https://ipfs.fleek.co/ipfs/ghostplantghostplantghostplantghostplantghostplantghostplan';
 
-    string constant MOCK_URI = 'https://ipfs.io/ipfs/QmbWqxBEKC3P8tqsKc98xmWNzrzDtRLMiMPL8wBuTGsMnR';
+    string constant MOCK_URI =
+        'https://ipfs.io/ipfs/QmbWqxBEKC3P8tqsKc98xmWNzrzDtRLMiMPL8wBuTGsMnR';
 
     MockGovernance internal gov;
 
@@ -45,8 +46,25 @@ contract BaseTest is Test {
         gov.govern(address(whitelist), abi.encodeWithSelector(Whitelist.run.selector, contracts));
 
         // Whitelist some users, as Gov
-        gov.govern(address( contracts.lensHub), abi.encodeWithSelector(contracts.lensHub.whitelistProfileCreator.selector, user, true));
-        gov.govern(address( contracts.lensHub), abi.encodeWithSelector(contracts.lensHub.whitelistProfileCreator.selector, userTwo, true));
-        gov.govern(address( contracts.lensHub), abi.encodeWithSelector(contracts.lensHub.whitelistProfileCreator.selector, userThree, true));
+        gov.govern(
+            address(contracts.lensHub),
+            abi.encodeWithSelector(contracts.lensHub.whitelistProfileCreator.selector, user, true)
+        );
+        gov.govern(
+            address(contracts.lensHub),
+            abi.encodeWithSelector(
+                contracts.lensHub.whitelistProfileCreator.selector,
+                userTwo,
+                true
+            )
+        );
+        gov.govern(
+            address(contracts.lensHub),
+            abi.encodeWithSelector(
+                contracts.lensHub.whitelistProfileCreator.selector,
+                userThree,
+                true
+            )
+        );
     }
 }

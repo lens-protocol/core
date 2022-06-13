@@ -18,6 +18,7 @@ import {FreeCollectModule} from '../contracts/core/modules/collect/FreeCollectMo
 import {FeeFollowModule} from '../contracts/core/modules/follow/FeeFollowModule.sol';
 import {ProfileFollowModule} from '../contracts/core/modules/follow/ProfileFollowModule.sol';
 import {RevertFollowModule} from '../contracts/core/modules/follow/RevertFollowModule.sol';
+import {ApprovalFollowModule} from '../contracts/core/modules/follow/ApprovalFollowModule.sol';
 
 import {FollowerOnlyReferenceModule} from '../contracts/core/modules/reference/FollowerOnlyReferenceModule.sol';
 
@@ -47,6 +48,7 @@ library ScriptTypes {
         FeeFollowModule feeFollowModule;
         ProfileFollowModule profileFollowModule;
         RevertFollowModule revertFollowModule;
+        ApprovalFollowModule approvalFollowModule;
         FollowerOnlyReferenceModule followerOnlyReferenceModule;
         UIDataProvider uiDataProvider;
         ProfileCreationProxy profileCreationProxy;

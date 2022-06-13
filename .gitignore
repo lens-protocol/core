@@ -28,6 +28,6 @@ addresses.json
 contracts/core/modules/follow/SecretCodeFollowModule.sol
 
 #Foundry
-foundry-cache
-out
+artifacts-foundry
+cache-foundry
 broadcast

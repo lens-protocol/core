@@ -18,6 +18,7 @@ import {FreeCollectModule} from '../contracts/core/modules/collect/FreeCollectMo
 import {FeeFollowModule} from '../contracts/core/modules/follow/FeeFollowModule.sol';
 import {ProfileFollowModule} from '../contracts/core/modules/follow/ProfileFollowModule.sol';
 import {RevertFollowModule} from '../contracts/core/modules/follow/RevertFollowModule.sol';
+import {ApprovalFollowModule} from '../contracts/core/modules/follow/ApprovalFollowModule.sol';
 
 import {FollowerOnlyReferenceModule} from '../contracts/core/modules/reference/FollowerOnlyReferenceModule.sol';
 
@@ -98,6 +99,7 @@ contract Deploy is Script {
         contracts.feeFollowModule = new FeeFollowModule(lensHubAddress, moduleGlobalsAddress);
         contracts.profileFollowModule = new ProfileFollowModule(lensHubAddress);
         contracts.revertFollowModule = new RevertFollowModule(lensHubAddress);
+        contracts.approvalFollowModule = new ApprovalFollowModule(lensHubAddress);
 
         contracts.followerOnlyReferenceModule = new FollowerOnlyReferenceModule(lensHubAddress);
 
