@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: MIT
 
-pragma solidity 0.8.10;
+pragma solidity 0.8.14;
 
 import {LensNFTBase} from '../core/base/LensNFTBase.sol';
 import {LensMultiState} from '../core/base/LensMultiState.sol';

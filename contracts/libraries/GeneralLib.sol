@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: MIT
 
-pragma solidity 0.8.10;
+pragma solidity 0.8.14;
 
 import {Helpers} from './Helpers.sol';
 import {DataTypes} from './DataTypes.sol';
@@ -712,7 +712,6 @@ library GeneralLib {
         address referenceModule,
         bytes calldata referenceModuleInitData
     ) private {
-        _validateCallerIsProfileOwnerOrDispatcher(profileId);
         _setPublicationContentURI(profileId, pubId, contentURI);
 
         bytes memory collectModuleReturnData = _initPubCollectModule(
@@ -810,6 +809,16 @@ library GeneralLib {
             );
         }
 
+        // Prevents a stack too deep error
+        _emitCommentCreated(vars, pubId, collectModuleReturnData, referenceModuleReturnData);
+    }
+
+    function _emitCommentCreated(
+        DataTypes.CommentData calldata vars,
+        uint256 pubId,
+        bytes memory collectModuleReturnData,
+        bytes memory referenceModuleReturnData
+    ) private {
         emit Events.CommentCreated(
             vars.profileId,
             pubId,
@@ -823,8 +832,6 @@ library GeneralLib {
             referenceModuleReturnData,
             block.timestamp
         );
-        // Prevents a stack too deep error
-        // _emitCommentCreated(vars, pubId, collectModuleReturnData, referenceModuleReturnData);
     }
 
     function _createCommentWithSigStruct(DataTypes.CommentWithSigData calldata vars, uint256 pubId)
@@ -880,6 +887,20 @@ library GeneralLib {
             );
         }
 
+        _emitCommentCreatedWithSigStruct(
+            vars,
+            pubId,
+            collectModuleReturnData,
+            referenceModuleReturnData
+        );
+    }
+
+    function _emitCommentCreatedWithSigStruct(
+        DataTypes.CommentWithSigData calldata vars,
+        uint256 pubId,
+        bytes memory collectModuleReturnData,
+        bytes memory referenceModuleReturnData
+    ) private {
         emit Events.CommentCreated(
             vars.profileId,
             pubId,

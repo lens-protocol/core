@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: MIT
 
-pragma solidity 0.8.10;
+pragma solidity 0.8.14;
 
 // library Constants {
 string constant FOLLOW_NFT_NAME_SUFFIX = '-Follower';
