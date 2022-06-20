@@ -11,8 +11,7 @@ import './Constants.sol';
  * @title Helpers
  * @author Lens Protocol
  *
- * @notice This is a library that only contains a single function that is used in the hub contract as well as in
- * both the publishing logic and interaction logic libraries.
+ * @notice This is a library that contains helper internal functions used by both the Hub and the GeneralLib.
  */
 library Helpers {
     /**
@@ -22,16 +21,13 @@ library Helpers {
      * @param profileId The token ID of the profile that published the given publication.
      * @param pubId The publication ID of the given publication.
      *
-     * @return tuple First, the pointed publication's publishing profile ID, and second, the pointed publication's ID. 
+     * @return tuple First, the pointed publication's publishing profile ID, and second, the pointed publication's ID.
      * If the passed publication is not a mirror, this returns the given publication.
      */
     function getPointedIfMirror(uint256 profileId, uint256 pubId)
         internal
         view
-        returns (
-            uint256,
-            uint256
-        )
+        returns (uint256, uint256)
     {
         uint256 slot;
         address collectModule;

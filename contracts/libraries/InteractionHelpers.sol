@@ -30,24 +30,37 @@ library InteractionHelpers {
     function follow(
         address follower,
         uint256[] calldata profileIds,
-        bytes[] calldata followModuleDatas,
-        mapping(uint256 => DataTypes.ProfileStruct) storage _profileById,
-        mapping(bytes32 => uint256) storage _profileIdByHandleHash
-    ) internal returns (uint256[] memory) {
+        bytes[] calldata followModuleDatas //,
+    )
+        internal
+        returns (
+            uint256[] memory
+        )
+    {
         if (profileIds.length != followModuleDatas.length) revert Errors.ArrayMismatch();
         uint256[] memory tokenIds = new uint256[](profileIds.length);
 
         for (uint256 i = 0; i < profileIds.length; ) {
-            string memory handle = _profileById[profileIds[i]].handle;
-            if (_profileIdByHandleHash[keccak256(bytes(handle))] != profileIds[i])
-                revert Errors.TokenDoesNotExist();
-
-            address followModule = _profileById[profileIds[i]].followModule;
-            address followNFT = _profileById[profileIds[i]].followNFT;
-
+            uint256 profileId = profileIds[i];
+            _validateProfileExistsViaHandle(profileId);
+            uint256 followNFTSlot;
+            address followModule;
+            address followNFT;
+            assembly {
+                mstore(0, profileId)
+                mstore(32, PROFILE_BY_ID_MAPPING_SLOT)
+                // The follow NFT offset is 2, the follow module offset is 1,
+                // so we just need to subtract 1 instead of recalculating the slot.
+                followNFTSlot := add(keccak256(0, 64), PROFILE_FOLLOW_NFT_OFFSET)
+                followModule := sload(sub(followNFTSlot,1))
+                followNFT := sload(followNFTSlot)
+            }
+            
             if (followNFT == address(0)) {
-                followNFT = _deployFollowNFT(profileIds[i]);
-                _profileById[profileIds[i]].followNFT = followNFT;
+                followNFT = _deployFollowNFT(profileId);
+                assembly {
+                    sstore(followNFTSlot, followNFT)
+                }
             }
 
             tokenIds[i] = IFollowNFT(followNFT).mint(follower);
@@ -55,7 +68,7 @@ library InteractionHelpers {
             if (followModule != address(0)) {
                 IFollowModule(followModule).processFollow(
                     follower,
-                    profileIds[i],
+                    profileId,
                     followModuleDatas[i]
                 );
             }
@@ -79,7 +92,7 @@ library InteractionHelpers {
     ) internal returns (uint256) {
         (uint256 rootProfileId, uint256 rootPubId, address rootCollectModule) = Helpers
             .getPointedIfMirrorWithCollectModule(profileId, pubId);
-            
+
         uint256 tokenId;
         // Avoids stack too deep
         {
@@ -195,5 +208,68 @@ library InteractionHelpers {
             data,
             block.timestamp
         );
+    }
+
+    function _validateProfileExistsViaHandle(uint256 profileId) private view {
+        bool shouldRevert;
+        assembly {
+            // Load the free memory pointer, where we'll return the value
+            let ptr := mload(64)
+
+            // Load the slot, which either contains the name + 2*length if length < 32 or
+            // 2*length+1 if length >= 32, and the actual string starts at slot keccak256(slot)
+            mstore(0, profileId)
+            mstore(32, PROFILE_BY_ID_MAPPING_SLOT)
+            let slot := add(keccak256(0, 64), PROFILE_HANDLE_OFFSET)
+
+            let slotLoad := sload(slot)
+            let size
+            // Determine if the length > 32 by checking the lowest order bit, meaning the string
+            // itself is stored at keccak256(slot)
+            switch and(slotLoad, 1)
+            case 0 {
+                // The name is in the same slot
+                // Determine the size by dividing the last byte's value by 2
+                size := shr(1, and(slotLoad, 255))
+
+                // Store the size in the first slot
+                mstore(ptr, size)
+
+                // Store the actual string in the second slot (without the size)
+                mstore(add(ptr, 32), and(slotLoad, not(255)))
+            }
+            case 1 {
+                // The handle is not in the same slot
+                // Determine the size by dividing the value in the whole slot minus 1 by 2
+                size := shr(1, sub(slotLoad, 1))
+
+                // Store the size in the first slot
+                mstore(ptr, size)
+
+                // Compute the total memory slots we need, this is (size + 31) / 32
+                let totalMemorySlots := shr(5, add(size, 31))
+
+                mstore(0, slot)
+                let handleSlot := keccak256(0, 32)
+
+                // Iterate through the words in memory and store the string word by word
+                // prettier-ignore
+                for { let i := 0 } lt(i, totalMemorySlots) { i := add(i, 1) } {
+                    mstore(add(add(ptr, 32), mul(32, i)), sload(add(handleSlot, i)))
+                }
+            }
+
+            let handleHash := keccak256(add(ptr, 32), size)
+            mstore(0, handleHash)
+            mstore(32, PROFILE_ID_BY_HANDLE_HASH_MAPPING_SLOT)
+            let handleHashSlot := keccak256(0, 64)
+            let resolvedProfileId := sload(handleHashSlot)
+            if iszero(eq(resolvedProfileId, profileId)) {
+                shouldRevert := true
+            }
+            // Store the new memory pointer in the free memory pointer slot
+            mstore(64, add(add(ptr, 32), size))
+        }
+        if (shouldRevert) revert Errors.TokenDoesNotExist();
     }
 }

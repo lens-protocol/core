@@ -346,8 +346,7 @@ contract LensHub is
         whenNotPaused
         returns (uint256[] memory)
     {
-        return
-            GeneralLib.follow(msg.sender, profileIds, datas, _profileById, _profileIdByHandleHash);
+        return GeneralLib.follow(msg.sender, profileIds, datas);
     }
 
     /// @inheritdoc ILensHub
@@ -357,7 +356,7 @@ contract LensHub is
         whenNotPaused
         returns (uint256[] memory)
     {
-        return GeneralLib.followWithSig(vars, _profileById, _profileIdByHandleHash);
+        return GeneralLib.followWithSig(vars);
     }
 
     /// @inheritdoc ILensHub

@@ -173,7 +173,6 @@ library GeneralLib {
                 let slot := add(keccak256(0, 64), PROFILE_FOLLOW_MODULE_OFFSET)
                 sstore(slot, followModule)
             }
-
             followModuleReturnData = _initFollowModule(
                 profileId,
                 vars.followModule,
@@ -333,26 +332,15 @@ library GeneralLib {
      * @param follower The address executing the follow.
      * @param profileIds The array of profile token IDs to follow.
      * @param followModuleDatas The array of follow module data parameters to pass to each profile's follow module.
-     * @param _profileById A pointer to the storage mapping of profile structs by profile ID.
-     * @param _profileIdByHandleHash A pointer to the storage mapping of profile IDs by handle hash.
      *
      * @return uint256[] An array of integers representing the minted follow NFTs token IDs.
      */
     function follow(
         address follower,
         uint256[] calldata profileIds,
-        bytes[] calldata followModuleDatas,
-        mapping(uint256 => DataTypes.ProfileStruct) storage _profileById,
-        mapping(bytes32 => uint256) storage _profileIdByHandleHash
+        bytes[] calldata followModuleDatas
     ) external returns (uint256[] memory) {
-        return
-            InteractionHelpers.follow(
-                follower,
-                profileIds,
-                followModuleDatas,
-                _profileById,
-                _profileIdByHandleHash
-            );
+        return InteractionHelpers.follow(follower, profileIds, followModuleDatas);
     }
 
     /**
@@ -361,20 +349,12 @@ library GeneralLib {
      *
      * @param vars the FollowWithSigData struct containing the relevant parameters.
      */
-    function followWithSig(
-        DataTypes.FollowWithSigData calldata vars,
-        mapping(uint256 => DataTypes.ProfileStruct) storage _profileById,
-        mapping(bytes32 => uint256) storage _profileIdByHandleHash
-    ) external returns (uint256[] memory) {
+    function followWithSig(DataTypes.FollowWithSigData calldata vars)
+        external
+        returns (uint256[] memory)
+    {
         MetaTxHelpers.baseFollowWithSig(vars);
-        return
-            InteractionHelpers.follow(
-                vars.follower,
-                vars.profileIds,
-                vars.datas,
-                _profileById,
-                _profileIdByHandleHash
-            );
+        return InteractionHelpers.follow(vars.follower, vars.profileIds, vars.datas);
     }
 
     /**
@@ -545,17 +525,12 @@ library GeneralLib {
         address followModule,
         bytes calldata followModuleInitData
     ) private {
-        address currentFollowModule;
-        uint256 slot;
         assembly {
             mstore(0, profileId)
             mstore(32, PROFILE_BY_ID_MAPPING_SLOT)
-            slot := add(keccak256(0, 64), PROFILE_FOLLOW_MODULE_OFFSET)
-            currentFollowModule := sload(slot)
-        }
-
-        if (followModule != currentFollowModule) {
-            assembly {
+            let slot := add(keccak256(0, 64), PROFILE_FOLLOW_MODULE_OFFSET)
+            let currentFollowModule := sload(slot)
+            if iszero(eq(followModule, currentFollowModule)) {
                 sstore(slot, followModule)
             }
         }

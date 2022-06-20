@@ -36,6 +36,7 @@ uint256 constant NAME_SLOT_GT_31 = 0x290decd9548b62a8d60345a988386fc84ba6bc95484
 
 // Profile struct offsets
 uint256 constant PROFILE_FOLLOW_MODULE_OFFSET = 1;
+uint256 constant PROFILE_FOLLOW_NFT_OFFSET = 2;
 uint256 constant PROFILE_HANDLE_OFFSET = 3;
 uint256 constant PROFILE_IMAGE_URI_OFFSET = 4;
 uint256 constant PROFILE_FOLLOW_NFT_URI_OFFSET = 5;
