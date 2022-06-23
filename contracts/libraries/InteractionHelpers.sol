@@ -86,31 +86,28 @@ library InteractionHelpers {
             .getPointedIfMirrorWithCollectModule(profileId, pubId);
 
         uint256 tokenId;
-        // Avoids stack too deep
-        {
-            uint256 collectNFTSlot;
-            address collectNFT;
-            assembly {
-                mstore(0, rootProfileId)
-                mstore(32, PUB_BY_ID_BY_PROFILE_MAPPING_SLOT)
-                mstore(32, keccak256(0, 64))
-                mstore(0, rootPubId)
-                collectNFTSlot := add(keccak256(0, 64), PUBLICATION_COLLECT_NFT_OFFSET)
-                collectNFT := sload(collectNFTSlot)
-            }
-            if (collectNFT == address(0)) {
-                collectNFT = _deployCollectNFT(
-                    rootProfileId,
-                    rootPubId,
-                    _handle(rootProfileId),
-                    collectNFTImpl
-                );
-                assembly {
-                    sstore(collectNFTSlot, collectNFT)
-                }
-            }
-            tokenId = ICollectNFT(collectNFT).mint(collector);
+        uint256 collectNFTSlot;
+        address collectNFT;
+        assembly {
+            mstore(0, rootProfileId)
+            mstore(32, PUB_BY_ID_BY_PROFILE_MAPPING_SLOT)
+            mstore(32, keccak256(0, 64))
+            mstore(0, rootPubId)
+            collectNFTSlot := add(keccak256(0, 64), PUBLICATION_COLLECT_NFT_OFFSET)
+            collectNFT := sload(collectNFTSlot)
         }
+        if (collectNFT == address(0)) {
+            collectNFT = _deployCollectNFT(
+                rootProfileId,
+                rootPubId,
+                _handle(rootProfileId),
+                collectNFTImpl
+            );
+            assembly {
+                sstore(collectNFTSlot, collectNFT)
+            }
+        }
+        tokenId = ICollectNFT(collectNFT).mint(collector);
 
         ICollectModule(rootCollectModule).processCollect(
             profileId,

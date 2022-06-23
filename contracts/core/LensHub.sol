@@ -649,13 +649,6 @@ contract LensHub is
         super._beforeTokenTransfer(from, to, tokenId);
     }
 
-    function _validateCallerIsProfileOwnerOrDispatcher(uint256 profileId) internal view {
-        if (msg.sender == ownerOf(profileId) || msg.sender == _dispatcherByProfile[profileId]) {
-            return;
-        }
-        revert Errors.NotProfileOwnerOrDispatcher();
-    }
-
     function _validateCallerIsProfileOwner(uint256 profileId) internal view {
         if (msg.sender != ownerOf(profileId)) revert Errors.NotProfileOwner();
     }
