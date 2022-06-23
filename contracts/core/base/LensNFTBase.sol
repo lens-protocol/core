@@ -84,7 +84,7 @@ abstract contract LensNFTBase is ERC721Enumerable, ILensNFTBase {
         address operator,
         bool approved,
         DataTypes.EIP712Signature calldata sig
-    ) external override {
+    ) external virtual override {
         if (operator == address(0)) revert Errors.ZeroSpender();
         unchecked {
             _validateRecoveredAddress(
