@@ -13,7 +13,7 @@ import {GeneralLib} from '../libraries/GeneralLib.sol';
 import {ProfileTokenURILogic} from '../libraries/ProfileTokenURILogic.sol';
 import '../libraries/Constants.sol';
 
-import {LensHubNFTBase} from './base/LensHubNFTBase.sol';
+import {LensNFTBase} from './base/LensNFTBase.sol';
 import {LensMultiState} from './base/LensMultiState.sol';
 import {LensHubStorage} from './storage/LensHubStorage.sol';
 import {VersionedInitializable} from '../upgradeability/VersionedInitializable.sol';
@@ -31,13 +31,7 @@ import {IERC721Enumerable} from '@openzeppelin/contracts/token/ERC721/extensions
  *      1. Both Follow & Collect NFTs invoke an LensHub callback on transfer with the sole purpose of emitting an event.
  *      2. Almost every event in the protocol emits the current block timestamp, reducing the need to fetch it manually.
  */
-contract LensHub is
-    LensHubNFTBase,
-    VersionedInitializable,
-    LensMultiState,
-    LensHubStorage,
-    ILensHub
-{
+contract LensHub is LensNFTBase, VersionedInitializable, LensMultiState, LensHubStorage, ILensHub {
     uint256 internal constant REVISION = 1;
 
     address internal immutable FOLLOW_NFT_IMPL;
@@ -316,7 +310,7 @@ contract LensHub is
      * @notice Burns a profile, this maintains the profile data struct, but deletes the
      * handle hash to profile ID mapping value.
      */
-    function burn(uint256 tokenId) external override whenNotPaused {
+    function burn(uint256 tokenId) public override whenNotPaused {
         if (!_isApprovedOrOwner(msg.sender, tokenId)) revert Errors.NotOwnerOrApproved();
         _burn(tokenId);
         _clearHandleHash(tokenId);
@@ -327,7 +321,8 @@ contract LensHub is
      * handle hash to profile ID mapping value.
      */
     function burnWithSig(uint256 tokenId, DataTypes.EIP712Signature calldata sig)
-        external
+        public
+        override
         whenNotPaused
     {
         GeneralLib.burnWithSig(tokenId, sig);
@@ -596,7 +591,7 @@ contract LensHub is
         return COLLECT_NFT_IMPL;
     }
 
-    function getDomainSeparator() external view returns (bytes32) {
+    function getDomainSeparator() external view override returns (bytes32) {
         return GeneralLib.getDomainSeparator();
     }
 

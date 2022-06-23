@@ -108,7 +108,7 @@ abstract contract LensNFTBase is ERC721Enumerable, ILensNFTBase {
     }
 
     /// @inheritdoc ILensNFTBase
-    function getDomainSeparator() external view override returns (bytes32) {
+    function getDomainSeparator() external view virtual override returns (bytes32) {
         return _calculateDomainSeparator();
     }
 
