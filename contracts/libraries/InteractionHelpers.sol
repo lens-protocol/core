@@ -206,7 +206,7 @@ library InteractionHelpers {
     }
 
     function _validateProfileExistsViaHandle(uint256 profileId) private view {
-        uint8 shouldRevert;
+        bool shouldRevert;
         assembly {
             // Load the free memory pointer, where we'll return the value
             let ptr := mload(64)
@@ -262,6 +262,6 @@ library InteractionHelpers {
             // Store the new memory pointer in the free memory pointer slot
             mstore(64, add(add(ptr, 32), size))
         }
-        if (shouldRevert == 1) revert Errors.TokenDoesNotExist();
+        if (shouldRevert) revert Errors.TokenDoesNotExist();
     }
 }
