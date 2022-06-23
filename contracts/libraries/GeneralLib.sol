@@ -30,10 +30,6 @@ import {InteractionHelpers} from './InteractionHelpers.sol';
  * to leave it in the hub.
  */
 library GeneralLib {
-    event Approval(address indexed owner, address indexed approved, uint256 indexed tokenId);
-
-    event ApprovalForAll(address indexed owner, address indexed operator, bool approved);
-
     /**
      * @notice Sets the governance address.
      *
@@ -427,7 +423,6 @@ library GeneralLib {
             let slot := keccak256(0, 64)
             sstore(slot, spender)
         }
-        emit Approval(Helpers.unsafeOwnerOf(tokenId), spender, tokenId);
     }
 
     /**
@@ -454,7 +449,6 @@ library GeneralLib {
             let slot := keccak256(0, 64)
             sstore(slot, approved)
         }
-        emit ApprovalForAll(owner, operator, approved);
     }
 
     /**
@@ -714,26 +708,15 @@ library GeneralLib {
      */
     function _createComment(DataTypes.CommentData calldata vars, uint256 pubId) private {
         // Validate existence of the pointed publication
-        uint256 profileId = vars.profileId;
-        uint256 profileIdPointed = vars.profileIdPointed;
-        uint256 pubIdPointed = vars.pubIdPointed;
-        uint256 pubCountPointed;
-        assembly {
-            mstore(0, profileIdPointed)
-            mstore(32, PROFILE_BY_ID_MAPPING_SLOT)
-            // pubCount is at offset 0, so we don't need to add anything.
-            let slot := keccak256(0, 64)
-            pubCountPointed := sload(slot)
-        }
-
-        if (pubCountPointed < pubIdPointed || pubIdPointed == 0)
+        uint256 pubCountPointed = _getPubCount(vars.profileIdPointed);
+        if (pubCountPointed < vars.pubIdPointed || vars.pubIdPointed == 0)
             revert Errors.PublicationDoesNotExist();
 
         // Ensure the pointed publication is not the comment being created
-        if (profileId == profileIdPointed && pubIdPointed == pubId)
+        if (vars.profileId == vars.profileIdPointed && vars.pubIdPointed == pubId)
             revert Errors.CannotCommentOnSelf();
 
-        _setPublicationPointer(profileId, pubId, profileIdPointed, pubIdPointed);
+        _setPublicationPointer(vars.profileId, pubId, vars.profileIdPointed, vars.pubIdPointed);
         _setPublicationContentURI(vars.profileId, pubId, vars.contentURI);
 
         // Collect Module Initialization
@@ -753,34 +736,14 @@ library GeneralLib {
         );
 
         // Reference module validation
-        address referenceModulePointed;
-        assembly {
-            mstore(0, profileIdPointed)
-            mstore(32, PUB_BY_ID_BY_PROFILE_MAPPING_SLOT)
-            mstore(32, keccak256(0, 64))
-            mstore(0, pubIdPointed)
-            let slot := add(keccak256(0, 64), PUBLICATION_REFERENCE_MODULE_OFFSET)
-            referenceModulePointed := sload(slot)
-        }
-        if (referenceModulePointed != address(0)) {
-            IReferenceModule(referenceModulePointed).processComment(
-                vars.profileId,
-                vars.profileIdPointed,
-                vars.pubIdPointed,
-                vars.referenceModuleData
-            );
-        }
+        _processCommentIfNeeded(
+            vars.profileId,
+            vars.profileIdPointed,
+            vars.pubIdPointed,
+            vars.referenceModuleData
+        );
 
-        // Prevents a stack too deep error
-        _emitCommentCreated(vars, pubId, collectModuleReturnData, referenceModuleReturnData);
-    }
 
-    function _emitCommentCreated(
-        DataTypes.CommentData calldata vars,
-        uint256 pubId,
-        bytes memory collectModuleReturnData,
-        bytes memory referenceModuleReturnData
-    ) private {
         emit Events.CommentCreated(
             vars.profileId,
             pubId,
@@ -800,26 +763,16 @@ library GeneralLib {
         private
     {
         // Validate existence of the pointed publication
-        uint256 profileId = vars.profileId;
-        uint256 profileIdPointed = vars.profileIdPointed;
-        uint256 pubIdPointed = vars.pubIdPointed;
-        uint256 pubCountPointed;
-        assembly {
-            mstore(0, profileIdPointed)
-            mstore(32, PROFILE_BY_ID_MAPPING_SLOT)
-            // pubCount is at offset 0, so we don't need to add anything.
-            let slot := keccak256(0, 64)
-            pubCountPointed := sload(slot)
-        }
+        uint256 pubCountPointed = _getPubCount(vars.profileIdPointed);
 
-        if (pubCountPointed < pubIdPointed || pubIdPointed == 0)
+        if (pubCountPointed < vars.pubIdPointed || vars.pubIdPointed == 0)
             revert Errors.PublicationDoesNotExist();
 
         // Ensure the pointed publication is not the comment being created
-        if (profileId == profileIdPointed && pubIdPointed == pubId)
+        if (vars.profileId == vars.profileIdPointed && vars.pubIdPointed == pubId)
             revert Errors.CannotCommentOnSelf();
 
-        _setPublicationPointer(profileId, pubId, profileIdPointed, pubIdPointed);
+        _setPublicationPointer(vars.profileId, pubId, vars.profileIdPointed, vars.pubIdPointed);
         _setPublicationContentURI(vars.profileId, pubId, vars.contentURI);
 
         // Collect Module Initialization
@@ -839,30 +792,13 @@ library GeneralLib {
         );
 
         // Reference module validation
-        address referenceModulePointed = _getReferenceModule(profileIdPointed, pubIdPointed);
-        if (referenceModulePointed != address(0)) {
-            IReferenceModule(referenceModulePointed).processComment(
-                vars.profileId,
-                vars.profileIdPointed,
-                vars.pubIdPointed,
-                vars.referenceModuleData
-            );
-        }
-
-        _emitCommentCreatedWithSigStruct(
-            vars,
-            pubId,
-            collectModuleReturnData,
-            referenceModuleReturnData
+        _processCommentIfNeeded(
+            vars.profileId,
+            vars.profileIdPointed,
+            vars.pubIdPointed,
+            vars.referenceModuleData
         );
-    }
 
-    function _emitCommentCreatedWithSigStruct(
-        DataTypes.CommentWithSigData calldata vars,
-        uint256 pubId,
-        bytes memory collectModuleReturnData,
-        bytes memory referenceModuleReturnData
-    ) private {
         emit Events.CommentCreated(
             vars.profileId,
             pubId,
@@ -876,6 +812,23 @@ library GeneralLib {
             referenceModuleReturnData,
             block.timestamp
         );
+    }
+
+    function _processCommentIfNeeded(
+        uint256 profileId,
+        uint256 profileIdPointed,
+        uint256 pubIdPointed,
+        bytes calldata referenceModuleData
+    ) private {
+        address refModule = _getReferenceModule(profileIdPointed, pubIdPointed);
+        if (refModule != address(0)) {
+            IReferenceModule(refModule).processComment(
+                profileId,
+                profileIdPointed,
+                pubIdPointed,
+                referenceModuleData
+            );
+        }
     }
 
     /**
@@ -901,15 +854,12 @@ library GeneralLib {
         );
 
         // Reference module validation
-        address refModule = _getReferenceModule(rootProfileIdPointed, rootPubIdPointed);
-        if (refModule != address(0)) {
-            IReferenceModule(refModule).processMirror(
-                vars.profileId,
-                rootProfileIdPointed,
-                rootPubIdPointed,
-                vars.referenceModuleData
-            );
-        }
+        _processMirrorIfNeeded(
+            vars.profileId,
+            rootProfileIdPointed,
+            rootPubIdPointed,
+            vars.referenceModuleData
+        );
 
         emit Events.MirrorCreated(
             vars.profileId,
@@ -948,15 +898,12 @@ library GeneralLib {
         );
 
         // Reference module validation
-        address refModule = _getReferenceModule(rootProfileIdPointed, rootPubIdPointed);
-        if (refModule != address(0)) {
-            IReferenceModule(refModule).processMirror(
-                vars.profileId,
-                rootProfileIdPointed,
-                rootPubIdPointed,
-                vars.referenceModuleData
-            );
-        }
+        _processMirrorIfNeeded(
+            vars.profileId,
+            rootProfileIdPointed,
+            rootPubIdPointed,
+            vars.referenceModuleData
+        );
 
         emit Events.MirrorCreated(
             vars.profileId,
@@ -968,6 +915,23 @@ library GeneralLib {
             referenceModuleReturnData,
             block.timestamp
         );
+    }
+
+    function _processMirrorIfNeeded(
+        uint256 profileId,
+        uint256 profileIdPointed,
+        uint256 pubIdPointed,
+        bytes calldata referenceModuleData
+    ) private {
+        address refModule = _getReferenceModule(profileIdPointed, pubIdPointed);
+        if (refModule != address(0)) {
+            IReferenceModule(refModule).processMirror(
+                profileId,
+                profileIdPointed,
+                pubIdPointed,
+                referenceModuleData
+            );
+        }
     }
 
     function _preIncrementPubCount(uint256 profileId) private returns (uint256) {
@@ -1040,6 +1004,18 @@ library GeneralLib {
             );
     }
 
+    function _getPubCount(uint256 profileId) private view returns (uint256) {
+        uint256 pubCount;
+        assembly {
+            mstore(0, profileId)
+            mstore(32, PROFILE_BY_ID_MAPPING_SLOT)
+            // pubCount is at offset 0, so we don't need to add anything.
+            let slot := keccak256(0, 64)
+            pubCount := sload(slot)
+        }
+        return pubCount;
+    }
+
     function _getReferenceModule(uint256 profileId, uint256 pubId) private view returns (address) {
         address referenceModule;
         assembly {
@@ -1053,7 +1029,7 @@ library GeneralLib {
         return referenceModule;
     }
 
-    function _validateCallerIsProfileOwnerOrDispatcher(uint256 profileId) internal view {
+    function _validateCallerIsProfileOwnerOrDispatcher(uint256 profileId) private view {
         if (msg.sender == Helpers.unsafeOwnerOf(profileId)) {
             return;
         } else {

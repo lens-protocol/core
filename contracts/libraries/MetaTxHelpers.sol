@@ -9,6 +9,9 @@ import {Helpers} from './Helpers.sol';
 import './Constants.sol';
 
 library MetaTxHelpers {
+    event Approval(address indexed owner, address indexed approved, uint256 indexed tokenId);
+    event ApprovalForAll(address indexed owner, address indexed operator, bool approved);
+
     /**
      * @notice Validates parameters and increments the nonce for a given owner using the `permit()`
      * function.
@@ -33,6 +36,7 @@ library MetaTxHelpers {
             owner,
             sig
         );
+        emit Approval(Helpers.unsafeOwnerOf(tokenId), spender, tokenId);
     }
 
     function basePermitForAll(
@@ -58,6 +62,7 @@ library MetaTxHelpers {
             owner,
             sig
         );
+        emit ApprovalForAll(owner, operator, approved);
     }
 
     function baseSetDefaultProfileWithSig(DataTypes.SetDefaultProfileWithSigData calldata vars)
