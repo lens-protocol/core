@@ -15,7 +15,6 @@ import './Constants.sol';
 import {MetaTxHelpers} from './MetaTxHelpers.sol';
 import {InteractionHelpers} from './InteractionHelpers.sol';
 
-// TODO: For publishing, increment the pubId here.
 /**
  * @title GeneralLib
  * @author Lens Protocol

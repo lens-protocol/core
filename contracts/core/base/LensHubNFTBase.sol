@@ -15,11 +15,6 @@ import {ERC721Enumerable} from './ERC721Enumerable.sol';
  *
  * @dev This is a trimmed down version of the LensNFTBase, mostly for contract size concerns.
  * Functions other than the initializer have been moved to the core LensHub.
- *
- * @notice This is an abstract base contract to be inherited by other Lens Protocol NFTs, it includes
- * the slightly modified ERC721Enumerable, which itself inherits from the ERC721Time-- which adds an
- * internal operator approval setter, stores the mint timestamp for each token, and replaces the
- * constructor with an initializer.
  */
 abstract contract LensHubNFTBase is ERC721Enumerable, ILensNFTBase {
     mapping(address => uint256) public sigNonces; // Slot 10

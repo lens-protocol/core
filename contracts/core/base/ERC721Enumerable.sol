@@ -2,9 +2,9 @@
 
 pragma solidity ^0.8.0;
 
-import '../../libraries/Errors.sol';
-import './ERC721Time.sol';
-import '@openzeppelin/contracts/token/ERC721/extensions/IERC721Enumerable.sol';
+import {Errors} from '../../libraries/Errors.sol';
+import {ERC721Time} from './ERC721Time.sol';
+import {IERC721Enumerable, IERC165} from '@openzeppelin/contracts/token/ERC721/extensions/IERC721Enumerable.sol';
 
 /**
  * @dev This implements an optional extension of {ERC721} defined in the EIP that adds

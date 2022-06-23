@@ -2,14 +2,14 @@
 
 pragma solidity ^0.8.0;
 
-import '../../libraries/Errors.sol';
-import './IERC721Time.sol';
-import '@openzeppelin/contracts/token/ERC721/IERC721Receiver.sol';
-import '@openzeppelin/contracts/token/ERC721/extensions/IERC721Metadata.sol';
-import '@openzeppelin/contracts/utils/Address.sol';
-import '@openzeppelin/contracts/utils/Context.sol';
-import '@openzeppelin/contracts/utils/Strings.sol';
-import '@openzeppelin/contracts/utils/introspection/ERC165.sol';
+import {Errors} from '../../libraries/Errors.sol';
+import {IERC721Time, IERC721, IERC165} from './IERC721Time.sol';
+import {IERC721Receiver} from '@openzeppelin/contracts/token/ERC721/IERC721Receiver.sol';
+import {IERC721Metadata} from '@openzeppelin/contracts/token/ERC721/extensions/IERC721Metadata.sol';
+import {Address} from '@openzeppelin/contracts/utils/Address.sol';
+import {Context} from '@openzeppelin/contracts/utils/Context.sol';
+import {Strings} from '@openzeppelin/contracts/utils/Strings.sol';
+import {ERC165} from '@openzeppelin/contracts/utils/introspection/ERC165.sol';
 
 /**
  * @dev Implementation of https://eips.ethereum.org/EIPS/eip-721[ERC721] Non-Fungible Token Standard, including
@@ -394,7 +394,8 @@ abstract contract ERC721Time is Context, ERC165, IERC721Time, IERC721Metadata {
         address to,
         uint256 tokenId
     ) internal virtual {
-        if (ERC721Time.ownerOf(tokenId) != from) revert Errors.ERC721Time_TransferOfTokenThatIsNotOwn();
+        if (ERC721Time.ownerOf(tokenId) != from)
+            revert Errors.ERC721Time_TransferOfTokenThatIsNotOwn();
         if (to == address(0)) revert Errors.ERC721Time_TransferToZeroAddress();
 
         _beforeTokenTransfer(from, to, tokenId);
