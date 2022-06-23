@@ -31,12 +31,7 @@ library InteractionHelpers {
         address follower,
         uint256[] calldata profileIds,
         bytes[] calldata followModuleDatas //,
-    )
-        internal
-        returns (
-            uint256[] memory
-        )
-    {
+    ) internal returns (uint256[] memory) {
         if (profileIds.length != followModuleDatas.length) revert Errors.ArrayMismatch();
         uint256[] memory tokenIds = new uint256[](profileIds.length);
 
@@ -52,10 +47,10 @@ library InteractionHelpers {
                 // The follow NFT offset is 2, the follow module offset is 1,
                 // so we just need to subtract 1 instead of recalculating the slot.
                 followNFTSlot := add(keccak256(0, 64), PROFILE_FOLLOW_NFT_OFFSET)
-                followModule := sload(sub(followNFTSlot,1))
+                followModule := sload(sub(followNFTSlot, 1))
                 followNFT := sload(followNFTSlot)
             }
-            
+
             if (followNFT == address(0)) {
                 followNFT = _deployFollowNFT(profileId);
                 assembly {
@@ -211,7 +206,7 @@ library InteractionHelpers {
     }
 
     function _validateProfileExistsViaHandle(uint256 profileId) private view {
-        bool shouldRevert;
+        uint8 shouldRevert;
         assembly {
             // Load the free memory pointer, where we'll return the value
             let ptr := mload(64)
@@ -258,18 +253,15 @@ library InteractionHelpers {
                     mstore(add(add(ptr, 32), mul(32, i)), sload(add(handleSlot, i)))
                 }
             }
-
             let handleHash := keccak256(add(ptr, 32), size)
             mstore(0, handleHash)
             mstore(32, PROFILE_ID_BY_HANDLE_HASH_MAPPING_SLOT)
             let handleHashSlot := keccak256(0, 64)
             let resolvedProfileId := sload(handleHashSlot)
-            if iszero(eq(resolvedProfileId, profileId)) {
-                shouldRevert := true
-            }
+            shouldRevert := iszero(eq(resolvedProfileId, profileId))
             // Store the new memory pointer in the free memory pointer slot
             mstore(64, add(add(ptr, 32), size))
         }
-        if (shouldRevert) revert Errors.TokenDoesNotExist();
+        if (shouldRevert == 1) revert Errors.TokenDoesNotExist();
     }
 }
