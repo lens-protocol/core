@@ -578,9 +578,8 @@ library GeneralLib {
                 }
             }
             default {
-                // The length is greater than 31 so store the string and the length*2
-                // in the same slot
-                sstore(slot, or(and(calldataload(cdOffset), not(255)), shl(1, length)))
+                // The length is <= 31 so store the string and the length*2 in the same slot.
+                sstore(slot, or(calldataload(cdOffset), shl(1, length)))
             }
         }
     }
@@ -641,9 +640,8 @@ library GeneralLib {
                 }
             }
             default {
-                // The length is greater than 31 so store the string and the length*2
-                // in the same slot
-                sstore(slot, or(and(calldataload(cdOffset), not(255)), shl(1, length)))
+                // The length is <= 31 so store the string and the length*2 in the same slot.
+                sstore(slot, or(calldataload(cdOffset), shl(1, length)))
             }
         }
     }
