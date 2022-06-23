@@ -9,7 +9,8 @@ import {Errors} from '../../libraries/Errors.sol';
 /**
  * @title LensMultiState
  *
- * @notice This is an abstract contract that implements internal LensHub state setting and validation.
+ * @notice This is an abstract contract that implements internal LensHub state validation. Setting
+ * is delegated to the GeneralLib.
  *
  * whenNotPaused: Either publishingPaused or Unpaused.
  * whenPublishingEnabled: When Unpaused only.
