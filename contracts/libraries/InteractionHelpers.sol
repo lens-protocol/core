@@ -30,7 +30,7 @@ library InteractionHelpers {
     function follow(
         address follower,
         uint256[] calldata profileIds,
-        bytes[] calldata followModuleDatas //,
+        bytes[] calldata followModuleDatas
     ) internal returns (uint256[] memory) {
         if (profileIds.length != followModuleDatas.length) revert Errors.ArrayMismatch();
         uint256[] memory tokenIds = new uint256[](profileIds.length);
@@ -80,10 +80,7 @@ library InteractionHelpers {
         uint256 profileId,
         uint256 pubId,
         bytes calldata collectModuleData,
-        address collectNFTImpl,
-        mapping(uint256 => mapping(uint256 => DataTypes.PublicationStruct))
-            storage _pubByIdByProfile,
-        mapping(uint256 => DataTypes.ProfileStruct) storage _profileById
+        address collectNFTImpl
     ) internal returns (uint256) {
         (uint256 rootProfileId, uint256 rootPubId, address rootCollectModule) = Helpers
             .getPointedIfMirrorWithCollectModule(profileId, pubId);
@@ -91,15 +88,26 @@ library InteractionHelpers {
         uint256 tokenId;
         // Avoids stack too deep
         {
-            address collectNFT = _pubByIdByProfile[rootProfileId][rootPubId].collectNFT;
+            uint256 collectNFTSlot;
+            address collectNFT;
+            assembly {
+                mstore(0, rootProfileId)
+                mstore(32, PUB_BY_ID_BY_PROFILE_MAPPING_SLOT)
+                mstore(32, keccak256(0, 64))
+                mstore(0, rootPubId)
+                collectNFTSlot := add(keccak256(0, 64), PUBLICATION_COLLECT_NFT_OFFSET)
+                collectNFT := sload(collectNFTSlot)
+            }
             if (collectNFT == address(0)) {
                 collectNFT = _deployCollectNFT(
                     rootProfileId,
                     rootPubId,
-                    _profileById[rootProfileId].handle,
+                    _handle(rootProfileId),
                     collectNFTImpl
                 );
-                _pubByIdByProfile[rootProfileId][rootPubId].collectNFT = collectNFT;
+                assembly {
+                    sstore(collectNFTSlot, collectNFT)
+                }
             }
             tokenId = ICollectNFT(collectNFT).mint(collector);
         }
@@ -203,6 +211,60 @@ library InteractionHelpers {
             data,
             block.timestamp
         );
+    }
+
+    function _handle(uint256 profileId) private view returns (string memory) {
+        string memory ptr;
+        assembly {
+            // Load the free memory pointer, where we'll return the value
+            ptr := mload(64)
+
+            // Load the slot, which either contains the name + 2*length if length < 32 or
+            // 2*length+1 if length >= 32, and the actual string starts at slot keccak256(slot)
+            mstore(0, profileId)
+            mstore(32, PROFILE_BY_ID_MAPPING_SLOT)
+            let slot := add(keccak256(0, 64), PROFILE_HANDLE_OFFSET)
+
+            let slotLoad := sload(slot)
+            let size
+            // Determine if the length > 32 by checking the lowest order bit, meaning the string
+            // itself is stored at keccak256(slot)
+            switch and(slotLoad, 1)
+            case 0 {
+                // The name is in the same slot
+                // Determine the size by dividing the last byte's value by 2
+                size := shr(1, and(slotLoad, 255))
+
+                // Store the size in the first slot
+                mstore(ptr, size)
+
+                // Store the actual string in the second slot (without the size)
+                mstore(add(ptr, 32), and(slotLoad, not(255)))
+            }
+            case 1 {
+                // The handle is not in the same slot
+                // Determine the size by dividing the value in the whole slot minus 1 by 2
+                size := shr(1, sub(slotLoad, 1))
+
+                // Store the size in the first slot
+                mstore(ptr, size)
+
+                // Compute the total memory slots we need, this is (size + 31) / 32
+                let totalMemorySlots := shr(5, add(size, 31))
+
+                mstore(0, slot)
+                let handleSlot := keccak256(0, 32)
+
+                // Iterate through the words in memory and store the string word by word
+                // prettier-ignore
+                for { let i := 0 } lt(i, totalMemorySlots) { i := add(i, 1) } {
+                    mstore(add(add(ptr, 32), mul(32, i)), sload(add(handleSlot, i)))
+                }
+            }
+            // Store the new memory pointer in the free memory pointer slot
+            mstore(64, add(add(ptr, 32), size))
+        }
+        return ptr;
     }
 
     function _validateProfileExistsViaHandle(uint256 profileId) private view {

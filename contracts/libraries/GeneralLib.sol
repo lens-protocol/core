@@ -366,8 +366,6 @@ library GeneralLib {
      * @param pubId The publication ID of the publication being collected.
      * @param collectModuleData The data to pass to the publication's collect module.
      * @param collectNFTImpl The address of the collect NFT implementation, which has to be passed because it's an immutable in the hub.
-     * @param _pubByIdByProfile A pointer to the storage mapping of publications by pubId by profile ID.
-     * @param _profileById A pointer to the storage mapping of profile structs by profile ID.
      *
      * @return uint256 An integer representing the minted token ID.
      */
@@ -376,10 +374,7 @@ library GeneralLib {
         uint256 profileId,
         uint256 pubId,
         bytes calldata collectModuleData,
-        address collectNFTImpl,
-        mapping(uint256 => mapping(uint256 => DataTypes.PublicationStruct))
-            storage _pubByIdByProfile,
-        mapping(uint256 => DataTypes.ProfileStruct) storage _profileById
+        address collectNFTImpl
     ) external returns (uint256) {
         return
             InteractionHelpers.collect(
@@ -387,9 +382,7 @@ library GeneralLib {
                 profileId,
                 pubId,
                 collectModuleData,
-                collectNFTImpl,
-                _pubByIdByProfile,
-                _profileById
+                collectNFTImpl
             );
     }
 
@@ -399,13 +392,10 @@ library GeneralLib {
      *
      * @param vars the CollectWithSigData struct containing the relevant parameters.
      */
-    function collectWithSig(
-        DataTypes.CollectWithSigData calldata vars,
-        address collectNFTImpl,
-        mapping(uint256 => mapping(uint256 => DataTypes.PublicationStruct))
-            storage _pubByIdByProfile,
-        mapping(uint256 => DataTypes.ProfileStruct) storage _profileById
-    ) external returns (uint256) {
+    function collectWithSig(DataTypes.CollectWithSigData calldata vars, address collectNFTImpl)
+        external
+        returns (uint256)
+    {
         MetaTxHelpers.baseCollectWithSig(vars);
         return
             InteractionHelpers.collect(
@@ -413,9 +403,7 @@ library GeneralLib {
                 vars.profileId,
                 vars.pubId,
                 vars.data,
-                collectNFTImpl,
-                _pubByIdByProfile,
-                _profileById
+                collectNFTImpl
             );
     }
 

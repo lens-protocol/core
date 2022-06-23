@@ -365,16 +365,7 @@ contract LensHub is
         uint256 pubId,
         bytes calldata data
     ) external override whenNotPaused returns (uint256) {
-        return
-            GeneralLib.collect(
-                msg.sender,
-                profileId,
-                pubId,
-                data,
-                COLLECT_NFT_IMPL,
-                _pubByIdByProfile,
-                _profileById
-            );
+        return GeneralLib.collect(msg.sender, profileId, pubId, data, COLLECT_NFT_IMPL);
     }
 
     /// @inheritdoc ILensHub
@@ -384,7 +375,7 @@ contract LensHub is
         whenNotPaused
         returns (uint256)
     {
-        return GeneralLib.collectWithSig(vars, COLLECT_NFT_IMPL, _pubByIdByProfile, _profileById);
+        return GeneralLib.collectWithSig(vars, COLLECT_NFT_IMPL);
     }
 
     /// @inheritdoc ILensHub

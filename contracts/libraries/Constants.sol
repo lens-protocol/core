@@ -54,6 +54,7 @@ uint256 constant PUBLICATION_PUB_ID_POINTED_OFFSET = 1;
 uint256 constant PUBLICATION_CONTENT_URI_OFFSET = 2; // offset 2
 uint256 constant PUBLICATION_REFERENCE_MODULE_OFFSET = 3; // offset 3
 uint256 constant PUBLICATION_COLLECT_MODULE_OFFSET = 4; // offset 4
+uint256 constant PUBLICATION_COLLECT_NFT_OFFSET = 5; // offset 4
 // address collectNFT;          // offset 5
 
 // We also store typehashes here
