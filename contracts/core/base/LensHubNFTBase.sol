@@ -3,7 +3,6 @@
 pragma solidity 0.8.14;
 
 import {ILensNFTBase} from '../../interfaces/ILensNFTBase.sol';
-import {Errors} from '../../libraries/Errors.sol';
 import {DataTypes} from '../../libraries/DataTypes.sol';
 import {Events} from '../../libraries/Events.sol';
 import {ERC721Time} from './ERC721Time.sol';
@@ -20,7 +19,7 @@ abstract contract LensHubNFTBase is ERC721Enumerable, ILensNFTBase {
     mapping(address => uint256) public sigNonces; // Slot 10
 
     /**
-     * @notice Initializer sets the name, symbol and the cached domain separator.
+     * @notice Initializer sets the name and symbol.
      *
      * NOTE: Inheritor contracts *must* call this function to initialize the name & symbol in the
      * inherited ERC721 contract.
