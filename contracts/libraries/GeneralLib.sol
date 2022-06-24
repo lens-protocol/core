@@ -106,6 +106,13 @@ library GeneralLib {
         emit Events.StateSet(msg.sender, prevState, newState, block.timestamp);
     }
 
+    /**
+     * @notice Sets the default profile for a given wallet.
+     * 
+     * @param wallet The wallet.
+     * @param profileId The profile ID to set.
+
+    */
     function setDefaultProfile(address wallet, uint256 profileId) external {
         _setDefaultProfile(wallet, profileId);
     }
@@ -123,7 +130,8 @@ library GeneralLib {
     }
 
     /**
-     * @notice Executes the logic to create a profile with the given parameters to the given address.
+     * @notice Creates a profile with the given parameters to the given address. Minting happens
+     * in the hub.
      *
      * @param vars The CreateProfileData struct containing the following parameters:
      *      to: The address receiving the profile.
@@ -176,7 +184,7 @@ library GeneralLib {
         }
         emit Events.ProfileCreated(
             profileId,
-            msg.sender, // Creator is always the msg sender
+            msg.sender,
             vars.to,
             vars.handle,
             vars.imageURI,
@@ -212,6 +220,13 @@ library GeneralLib {
         _setFollowModule(vars.profileId, vars.followModule, vars.followModuleInitData);
     }
 
+    /**
+     * @notice Sets the profile image URI for a given profile.
+     * 
+     * @param profileId The profile ID.
+     * @param imageURI The image URI to set.
+
+     */
     function setProfileImageURI(uint256 profileId, string calldata imageURI) external {
         _validateCallerIsProfileOwnerOrDispatcher(profileId);
         _setProfileImageURI(profileId, imageURI);
@@ -229,6 +244,12 @@ library GeneralLib {
         _setProfileImageURI(vars.profileId, vars.imageURI);
     }
 
+    /**
+     * @notice Sets the follow NFT URI for a given profile.
+     *
+     * @param profileId The profile ID.
+     * @param followNFTURI The follow NFT URI to set.
+     */
     function setFollowNFTURI(uint256 profileId, string calldata followNFTURI) external {
         _validateCallerIsProfileOwnerOrDispatcher(profileId);
         _setFollowNFTURI(profileId, followNFTURI);
@@ -244,6 +265,13 @@ library GeneralLib {
         _setFollowNFTURI(vars.profileId, vars.followNFTURI);
     }
 
+    /**
+     * @notice Publishes a post to a given profile.
+     *
+     * @param vars The PostData struct.
+     *
+     * @return uint256 An created publication's pubId.
+     */
     function post(DataTypes.PostData calldata vars) external returns (uint256) {
         uint256 pubId = _preIncrementPubCount(vars.profileId);
         _validateCallerIsProfileOwnerOrDispatcher(vars.profileId);
@@ -260,10 +288,11 @@ library GeneralLib {
     }
 
     /**
-     * @notice Validates parameters and increments the nonce for a given owner using the
-     * `postWithSig()` function.
+     * @notice Publishes a post to a given profile via signature.
      *
-     * @param vars the PostWithSigData struct containing the relevant parameters.
+     * @param vars the PostWithSigData struct.
+     *
+     * @return uint256 The created publication's pubId.
      */
     function postWithSig(DataTypes.PostWithSigData calldata vars) external returns (uint256) {
         uint256 pubId = _preIncrementPubCount(vars.profileId);
@@ -280,6 +309,13 @@ library GeneralLib {
         return pubId;
     }
 
+    /**
+     * @notice Publishes a comment to a given profile via signature.
+     *
+     * @param vars the CommentData struct.
+     *
+     * @return uint256 The created publication's pubId.
+     */
     function comment(DataTypes.CommentData calldata vars) external returns (uint256) {
         uint256 pubId = _preIncrementPubCount(vars.profileId);
         _validateCallerIsProfileOwnerOrDispatcher(vars.profileId);
@@ -288,10 +324,11 @@ library GeneralLib {
     }
 
     /**
-     * @notice Validates parameters and increments the nonce for a given owner using the
-     * `commentWithSig()` function.
+     * @notice Publishes a comment to a given profile via signature.
      *
-     * @param vars the CommentWithSig struct containing the relevant parameters.
+     * @param vars the CommentWithSigData struct.
+     *
+     * @return uint256 The created publication's pubId.
      */
     function commentWithSig(DataTypes.CommentWithSigData calldata vars) external returns (uint256) {
         uint256 pubId = _preIncrementPubCount(vars.profileId);
@@ -300,6 +337,13 @@ library GeneralLib {
         return pubId;
     }
 
+    /**
+     * @notice Publishes a mirror to a given profile.
+     *
+     * @param vars the MirrorData struct.
+     *
+     * @return uint256 The created publication's pubId.
+     */
     function mirror(DataTypes.MirrorData calldata vars) external returns (uint256) {
         uint256 pubId = _preIncrementPubCount(vars.profileId);
         _validateCallerIsProfileOwnerOrDispatcher(vars.profileId);
@@ -308,10 +352,11 @@ library GeneralLib {
     }
 
     /**
-     * @notice Validates parameters and increments the nonce for a given owner using the
-     * `mirrorWithSig()` function.
+     * @notice Publishes a mirror to a given profile via signature.
      *
-     * @param vars the MirrorWithSigData struct containing the relevant parameters.
+     * @param vars the MirrorWithSigData struct.
+     *
+     * @return uint256 The created publication's pubId.
      */
     function mirrorWithSig(DataTypes.MirrorWithSigData calldata vars) external returns (uint256) {
         uint256 pubId = _preIncrementPubCount(vars.profileId);
@@ -740,7 +785,6 @@ library GeneralLib {
             vars.pubIdPointed,
             vars.referenceModuleData
         );
-
 
         emit Events.CommentCreated(
             vars.profileId,

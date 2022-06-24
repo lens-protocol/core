@@ -8,7 +8,18 @@ import {Helpers} from './Helpers.sol';
 
 import './Constants.sol';
 
+/**
+ * @title MetaTxHelpers
+ * @author Lens Protocol
+ *
+ * @notice This is the library used by the GeneralLib that contains the logic for signature
+ * validation.
+ *
+ * @dev The functions are internal, so they are inlined into the GeneralLib. User nonces
+ * are incremented from this library as well.
+ */
 library MetaTxHelpers {
+    /// Permit and PermitForAll emit these ERC721 events here an optimization.
     event Approval(address indexed owner, address indexed approved, uint256 indexed tokenId);
     event ApprovalForAll(address indexed owner, address indexed operator, bool approved);
 

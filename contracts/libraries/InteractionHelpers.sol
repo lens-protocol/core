@@ -17,12 +17,12 @@ import {Strings} from '@openzeppelin/contracts/utils/Strings.sol';
 import './Constants.sol';
 
 /**
- * @title InteractionLogic
+ * @title InteractionHelpers
  * @author Lens Protocol
  *
- * @notice This is the library that contains the logic for follows & collects. 
- 
- * @dev The functions are external, so they are called from the hub via `delegateCall` under the hood.
+ * @notice This is the library used by the GeneralLib that contains the logic for follows & collects. 
+ *
+ * @dev The functions are internal, so they are inlined into the GeneralLib.
  */
 library InteractionHelpers {
     using Strings for uint256;
