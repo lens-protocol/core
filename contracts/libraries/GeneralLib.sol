@@ -19,12 +19,7 @@ import {InteractionHelpers} from './InteractionHelpers.sol';
  * @title GeneralLib
  * @author Lens Protocol
  *
- * @notice This is the library that contains the logic for profile creation, publication,
- * admin, and governance functionality.
- *
- * @dev The functions are external, so they are called from the hub via `delegateCall` under
- * the hood. Furthermore, expected events are emitted from this library instead of from the
- * hub to alleviate code size concerns.
+ * @notice This is the library that contains logic to be called by the hub via `delegateCall`.
  *
  * Note: The setDispatcher non-signature function was not migrated as it was more space-efficient
  * to leave it in the hub.
