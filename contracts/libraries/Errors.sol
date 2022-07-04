@@ -36,7 +36,7 @@ library Errors {
     error TokenDoesNotExist();
     error NotGovernance();
     error NotGovernanceOrEmergencyAdmin();
-    error EmergencyAdminCannotUnpause();
+    error EmergencyAdminCanOnlyPauseFurther();
     error CallerNotWhitelistedModule();
     error CollectModuleNotWhitelisted();
     error FollowModuleNotWhitelisted();

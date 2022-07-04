@@ -59,13 +59,12 @@ library GeneralLib {
     }
 
     /**
-     * @notice Sets the protocol state.
+     * @notice Sets the protocol state, only meant to be called at initialization since
+     * this does nto validate the caller.
      *
      * @param newState The new protocol state to set.
-     *
-     * Note: This does NOT validate the caller, and is only to be used for initialization.
      */
-    function setStateSimple(DataTypes.ProtocolState newState) external {
+    function initState(DataTypes.ProtocolState newState) external {
         DataTypes.ProtocolState prevState;
         assembly {
             prevState := sload(PROTOCOL_STATE_SLOT)
@@ -85,16 +84,19 @@ library GeneralLib {
         address emergencyAdmin;
         address governance;
         DataTypes.ProtocolState prevState;
+
+        // Load the emergency admin, governance and protocol state, then store the new protocol
+        // state via assembly.
         assembly {
             emergencyAdmin := sload(EMERGENCY_ADMIN_SLOT)
             governance := sload(GOVERNANCE_SLOT)
             prevState := sload(PROTOCOL_STATE_SLOT)
             sstore(PROTOCOL_STATE_SLOT, newState)
         }
+
+        // If the sender is the emergency admin, prevent them from reducing restrictions.
         if (msg.sender == emergencyAdmin) {
-            if (newState == DataTypes.ProtocolState.Unpaused)
-                revert Errors.EmergencyAdminCannotUnpause();
-            if (prevState == DataTypes.ProtocolState.Paused) revert Errors.Paused();
+            if (newState <= prevState) revert Errors.EmergencyAdminCanOnlyPauseFurther();
         } else if (msg.sender != governance) {
             revert Errors.NotGovernanceOrEmergencyAdmin();
         }
@@ -145,9 +147,10 @@ library GeneralLib {
             revert Errors.ProfileImageURILengthInvalid();
 
         bytes32 handleHash = keccak256(bytes(vars.handle));
-
         uint256 resolvedProfileId;
         uint256 handleHashSlot;
+
+        // Load the profile ID the passed handle's hash resolves to, if it is non-zero, revert.
         assembly {
             mstore(0, handleHash)
             mstore(32, PROFILE_ID_BY_HANDLE_HASH_MAPPING_SLOT)
@@ -155,22 +158,31 @@ library GeneralLib {
             resolvedProfileId := sload(handleHashSlot)
         }
         if (resolvedProfileId != 0) revert Errors.HandleTaken();
+
+        // Store the profile ID so that the handle's hash now resolves to it.
         assembly {
             sstore(handleHashSlot, profileId)
         }
+
         _setProfileString(profileId, PROFILE_HANDLE_OFFSET, vars.handle);
         _setProfileString(profileId, PROFILE_IMAGE_URI_OFFSET, vars.imageURI);
         _setProfileString(profileId, PROFILE_FOLLOW_NFT_URI_OFFSET, vars.followNFTURI);
 
         bytes memory followModuleReturnData;
         if (vars.followModule != address(0)) {
+            // Load the follow module to be used in the next assembly block.
             address followModule = vars.followModule;
+
+            // Store the follow module for the new profile. We opt not to use the
+            // _setFollowModule() private function to avoid unnecessary checks.
             assembly {
                 mstore(0, profileId)
                 mstore(32, PROFILE_BY_ID_MAPPING_SLOT)
                 let slot := add(keccak256(0, 64), PROFILE_FOLLOW_MODULE_OFFSET)
                 sstore(slot, followModule)
             }
+
+            // Initialize the follow module.
             followModuleReturnData = _initFollowModule(
                 profileId,
                 vars.followModule,
@@ -443,9 +455,7 @@ library GeneralLib {
     }
 
     /**
-     * @notice Validates parameters and increments the nonce for a given owner using the `permit()`
-     * function. Note that we can use the unsafeOwnerOf function since `basePermit` reverts upon
-     * receiving a zero address from an `ecrecover`.
+     * @notice Approves an address to spend a token using via signature.
      *
      * @param spender The spender to approve.
      * @param tokenId The token ID to approve the spender for.
@@ -456,7 +466,10 @@ library GeneralLib {
         uint256 tokenId,
         DataTypes.EIP712Signature calldata sig
     ) external {
+        // The `Approved()` event is emitted from `basePermit()`.
         MetaTxHelpers.basePermit(spender, tokenId, sig);
+
+        // Store the approved address in the token's approval mapping slot.
         assembly {
             mstore(0, tokenId)
             mstore(32, TOKEN_APPROVAL_MAPPING_SLOT)
@@ -466,8 +479,7 @@ library GeneralLib {
     }
 
     /**
-     * @notice Validates parameters and increments the nonce for a given owner using the `permitForAll()`
-     * function.
+     * @notice Approves a user to operate on all of an owner's tokens via signature.
      *
      * @param owner The owner to approve the operator for, this is the signer.
      * @param operator The operator to approve for the owner.
@@ -480,7 +492,10 @@ library GeneralLib {
         bool approved,
         DataTypes.EIP712Signature calldata sig
     ) external {
+        // The `ApprovedForAll()` event is emitted from `basePermitForAll()`.
         MetaTxHelpers.basePermitForAll(owner, operator, approved, sig);
+
+        // Store whether the operator is approved in the appropriate mapping slot.
         assembly {
             mstore(0, owner)
             mstore(32, OPERATOR_APPROVAL_MAPPING_SLOT)
@@ -492,7 +507,7 @@ library GeneralLib {
     }
 
     /**
-     * @notice Sets the dispatcher via signature for a given profile.
+     * @notice Sets the dispatcher for a given profile via signature.
      *
      * @param vars the setDispatcherWithSigData struct containing the relevant parameters.
      */
@@ -500,6 +515,8 @@ library GeneralLib {
         MetaTxHelpers.baseSetDispatcherWithSig(vars);
         uint256 profileId = vars.profileId;
         address dispatcher = vars.dispatcher;
+
+        // Store the dispatcher in the appropriate slot for the given profile ID.
         assembly {
             mstore(0, profileId)
             mstore(32, DISPATCHER_BY_PROFILE_MAPPING_SLOT)
@@ -532,6 +549,8 @@ library GeneralLib {
     function _setDefaultProfile(address wallet, uint256 profileId) private {
         if (profileId > 0 && wallet != Helpers.unsafeOwnerOf(profileId))
             revert Errors.NotProfileOwner();
+
+        // Store the default profile in the appropriate slot for the given wallet.
         assembly {
             mstore(0, wallet)
             mstore(32, DEFAULT_PROFILE_MAPPING_SLOT)
@@ -546,6 +565,8 @@ library GeneralLib {
         address followModule,
         bytes calldata followModuleInitData
     ) private {
+        // Store the follow module in the appropriate slot for the given profile ID, but
+        // only if it is not the same as the previous follow module.
         assembly {
             mstore(0, profileId)
             mstore(32, PROFILE_BY_ID_MAPPING_SLOT)
@@ -556,6 +577,7 @@ library GeneralLib {
             }
         }
 
+        // Initialize the follow module if it is non-zero.
         bytes memory followModuleReturnData;
         if (followModule != address(0))
             followModuleReturnData = _initFollowModule(
@@ -630,12 +652,14 @@ library GeneralLib {
         uint256 profileIdPointed,
         uint256 pubIdPointed
     ) private {
+        // Store the pointed profile ID and pointed pub ID in the appropriate slots for
+        // a given publication.
         assembly {
             mstore(0, profileId)
             mstore(32, PUB_BY_ID_BY_PROFILE_MAPPING_SLOT)
             mstore(32, keccak256(0, 64))
             mstore(0, pubId)
-            // profile ID pointed is at offset 0, so we don't need to add anything.
+            // profile ID pointed is at offset 0, so we don't need to add any offset.
             let slot := keccak256(0, 64)
             sstore(slot, profileIdPointed)
             slot := add(slot, PUBLICATION_PUB_ID_POINTED_OFFSET)
@@ -745,19 +769,16 @@ library GeneralLib {
      * @param pubId The publication ID to associate with this publication.
      */
     function _createComment(DataTypes.CommentData calldata vars, uint256 pubId) private {
-        // Validate existence of the pointed publication
         uint256 pubCountPointed = _getPubCount(vars.profileIdPointed);
         if (pubCountPointed < vars.pubIdPointed || vars.pubIdPointed == 0)
             revert Errors.PublicationDoesNotExist();
 
-        // Ensure the pointed publication is not the comment being created
         if (vars.profileId == vars.profileIdPointed && vars.pubIdPointed == pubId)
             revert Errors.CannotCommentOnSelf();
 
         _setPublicationPointer(vars.profileId, pubId, vars.profileIdPointed, vars.pubIdPointed);
         _setPublicationContentURI(vars.profileId, pubId, vars.contentURI);
 
-        // Collect Module Initialization
         bytes memory collectModuleReturnData = _initPubCollectModule(
             vars.profileId,
             pubId,
@@ -765,7 +786,6 @@ library GeneralLib {
             vars.collectModuleInitData
         );
 
-        // Reference module initialization
         bytes memory referenceModuleReturnData = _initPubReferenceModule(
             vars.profileId,
             pubId,
@@ -773,7 +793,6 @@ library GeneralLib {
             vars.referenceModuleInitData
         );
 
-        // Reference module validation
         _processCommentIfNeeded(
             vars.profileId,
             vars.profileIdPointed,
@@ -799,20 +818,16 @@ library GeneralLib {
     function _createCommentWithSigStruct(DataTypes.CommentWithSigData calldata vars, uint256 pubId)
         private
     {
-        // Validate existence of the pointed publication
         uint256 pubCountPointed = _getPubCount(vars.profileIdPointed);
-
         if (pubCountPointed < vars.pubIdPointed || vars.pubIdPointed == 0)
             revert Errors.PublicationDoesNotExist();
 
-        // Ensure the pointed publication is not the comment being created
         if (vars.profileId == vars.profileIdPointed && vars.pubIdPointed == pubId)
             revert Errors.CannotCommentOnSelf();
 
         _setPublicationPointer(vars.profileId, pubId, vars.profileIdPointed, vars.pubIdPointed);
         _setPublicationContentURI(vars.profileId, pubId, vars.contentURI);
 
-        // Collect Module Initialization
         bytes memory collectModuleReturnData = _initPubCollectModule(
             vars.profileId,
             pubId,
@@ -820,7 +835,6 @@ library GeneralLib {
             vars.collectModuleInitData
         );
 
-        // Reference module initialization
         bytes memory referenceModuleReturnData = _initPubReferenceModule(
             vars.profileId,
             pubId,
@@ -828,7 +842,6 @@ library GeneralLib {
             vars.referenceModuleInitData
         );
 
-        // Reference module validation
         _processCommentIfNeeded(
             vars.profileId,
             vars.profileIdPointed,
@@ -882,7 +895,6 @@ library GeneralLib {
 
         _setPublicationPointer(vars.profileId, pubId, rootProfileIdPointed, rootPubIdPointed);
 
-        // Reference module initialization
         bytes memory referenceModuleReturnData = _initPubReferenceModule(
             vars.profileId,
             pubId,
@@ -890,7 +902,6 @@ library GeneralLib {
             vars.referenceModuleInitData
         );
 
-        // Reference module validation
         _processMirrorIfNeeded(
             vars.profileId,
             rootProfileIdPointed,
@@ -926,7 +937,6 @@ library GeneralLib {
 
         _setPublicationPointer(vars.profileId, pubId, rootProfileIdPointed, rootPubIdPointed);
 
-        // Reference module initialization
         bytes memory referenceModuleReturnData = _initPubReferenceModule(
             vars.profileId,
             pubId,
@@ -934,7 +944,6 @@ library GeneralLib {
             vars.referenceModuleInitData
         );
 
-        // Reference module validation
         _processMirrorIfNeeded(
             vars.profileId,
             rootProfileIdPointed,
@@ -973,10 +982,11 @@ library GeneralLib {
 
     function _preIncrementPubCount(uint256 profileId) private returns (uint256) {
         uint256 pubCount;
+        // Load the previous publication count for the given profile and increment it in storage.
         assembly {
             mstore(0, profileId)
             mstore(32, PROFILE_BY_ID_MAPPING_SLOT)
-            // pubCount is at offset 0, so we don't need to add anything.
+            // pubCount is at offset 0, so we don't need to add any offset.
             let slot := keccak256(0, 64)
             pubCount := add(sload(slot), 1)
             sstore(slot, pubCount)
@@ -997,9 +1007,11 @@ library GeneralLib {
         uint256 profileId,
         uint256 pubId,
         address collectModule,
-        bytes memory collectModuleInitData //,
+        bytes memory collectModuleInitData
     ) private returns (bytes memory) {
         _validateCollectModuleWhitelisted(collectModule);
+
+        // Store the collect module in the appropriate slot for the given publication.
         assembly {
             mstore(0, profileId)
             mstore(32, PUB_BY_ID_BY_PROFILE_MAPPING_SLOT)
@@ -1008,7 +1020,6 @@ library GeneralLib {
             let slot := add(keccak256(0, 64), PUBLICATION_COLLECT_MODULE_OFFSET)
             sstore(slot, collectModule)
         }
-        // _pubByIdByProfile[profileId][pubId].collectModule = collectModule;
         return
             ICollectModule(collectModule).initializePublicationCollectModule(
                 profileId,
@@ -1025,6 +1036,8 @@ library GeneralLib {
     ) private returns (bytes memory) {
         if (referenceModule == address(0)) return new bytes(0);
         _validateReferenceModuleWhitelisted(referenceModule);
+
+        // Store the reference module in the appropriate slot for the given publication.
         assembly {
             mstore(0, profileId)
             mstore(32, PUB_BY_ID_BY_PROFILE_MAPPING_SLOT)
@@ -1043,10 +1056,12 @@ library GeneralLib {
 
     function _getPubCount(uint256 profileId) private view returns (uint256) {
         uint256 pubCount;
+
+        // Load the publication count for the given profile.
         assembly {
             mstore(0, profileId)
             mstore(32, PROFILE_BY_ID_MAPPING_SLOT)
-            // pubCount is at offset 0, so we don't need to add anything.
+            // pubCount is at offset 0, so we don't need to add any offset.
             let slot := keccak256(0, 64)
             pubCount := sload(slot)
         }
@@ -1055,6 +1070,8 @@ library GeneralLib {
 
     function _getReferenceModule(uint256 profileId, uint256 pubId) private view returns (address) {
         address referenceModule;
+
+        // Load the reference module for the given publication.
         assembly {
             mstore(0, profileId)
             mstore(32, PUB_BY_ID_BY_PROFILE_MAPPING_SLOT)
@@ -1067,10 +1084,14 @@ library GeneralLib {
     }
 
     function _validateCallerIsProfileOwnerOrDispatcher(uint256 profileId) private view {
+        // It's safe to use the `unsafeOwnerOf()` function here because the sender cannot be
+        // the zero address.
         if (msg.sender == Helpers.unsafeOwnerOf(profileId)) {
             return;
         } else {
             address dispatcher;
+            
+            // Load the dispatcher for the given profile.
             assembly {
                 mstore(0, profileId)
                 mstore(32, DISPATCHER_BY_PROFILE_MAPPING_SLOT)
@@ -1083,6 +1104,8 @@ library GeneralLib {
 
     function _validateProfileCreatorWhitelisted() private view {
         bool whitelisted;
+
+        // Load whether the caller is whitelisted as a profile creator.
         assembly {
             mstore(0, caller())
             mstore(32, PROFILE_CREATOR_WHITELIST_MAPPING_SLOT)
@@ -1094,6 +1117,8 @@ library GeneralLib {
 
     function _validateFollowModuleWhitelisted(address followModule) private view {
         bool whitelist;
+
+        // Load whether the given follow module is whitelisted.
         assembly {
             mstore(0, followModule)
             mstore(32, FOLLOW_MODULE_WHITELIST_MAPPING_SLOT)
@@ -1105,6 +1130,8 @@ library GeneralLib {
 
     function _validateCollectModuleWhitelisted(address collectModule) private view {
         bool whitelisted;
+
+        // Load whether the given collect module is whitelisted.
         assembly {
             mstore(0, collectModule)
             mstore(32, COLLECT_MODULE_WHITELIST_MAPPING_SLOT)
@@ -1116,6 +1143,8 @@ library GeneralLib {
 
     function _validateReferenceModuleWhitelisted(address referenceModule) private view {
         bool whitelisted;
+
+        // Load whether the given reference module is whitelisted.
         assembly {
             mstore(0, referenceModule)
             mstore(32, REFERENCE_MODULE_WHITELIST_MAPPING_SLOT)

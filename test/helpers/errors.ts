@@ -10,7 +10,7 @@ export const ERRORS = {
   CALLER_NOT_WHITELSITED_MODULE: 'CallerNotWhitelistedModule()',
   NOT_GOVERNANCE: 'NotGovernance()',
   NOT_GOVERNANCE_OR_EMERGENCY_ADMIN: 'NotGovernanceOrEmergencyAdmin()',
-  EMERGENCY_ADMIN_CANNOT_UNPAUSE: 'EmergencyAdminCannotUnpause()',
+  EMERGENCY_ADMIN_CAN_ONLY_PAUSE_FURTHER: 'EmergencyAdminCanOnlyPauseFurther()',
   COLLECT_MODULE_NOT_WHITELISTED: 'CollectModuleNotWhitelisted()',
   FOLLOW_MODULE_NOT_WHITELISTED: 'FollowModuleNotWhitelisted()',
   REFERENCE_MODULE_NOT_WHITELISTED: 'ReferenceModuleNotWhitelisted()',

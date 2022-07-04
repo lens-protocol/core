@@ -47,7 +47,7 @@ library MetaTxHelpers {
             owner,
             sig
         );
-        emit Approval(Helpers.unsafeOwnerOf(tokenId), spender, tokenId);
+        emit Approval(owner, spender, tokenId);
     }
 
     function basePermitForAll(

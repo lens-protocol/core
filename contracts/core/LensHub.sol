@@ -65,7 +65,7 @@ contract LensHub is LensNFTBase, VersionedInitializable, LensMultiState, LensHub
         address newGovernance
     ) external override initializer {
         super._initialize(name, symbol);
-        GeneralLib.setStateSimple(DataTypes.ProtocolState.Paused);
+        GeneralLib.initState(DataTypes.ProtocolState.Paused);
         _setGovernance(newGovernance);
     }
 

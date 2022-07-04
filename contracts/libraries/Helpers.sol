@@ -31,6 +31,9 @@ library Helpers {
     {
         uint256 slot;
         address collectModule;
+
+        // Load the collect module for the given profile (zero if it is a mirror) and cache the
+        // publication storage slot.
         assembly {
             mstore(0, profileId)
             mstore(32, PUB_BY_ID_BY_PROFILE_MAPPING_SLOT)
@@ -40,19 +43,25 @@ library Helpers {
             let collectModuleSlot := add(slot, PUBLICATION_COLLECT_MODULE_OFFSET)
             collectModule := sload(collectModuleSlot)
         }
+
         if (collectModule != address(0)) {
             return (profileId, pubId);
         } else {
             uint256 profileIdPointed;
+
+            // Load the pointed profile ID, first in the cached slot.
             assembly {
-                // profile ID pointed is at offset 0, so we don't need to add anything.
+                // profile ID pointed is at offset 0, so we don't need to add any offset.
                 profileIdPointed := sload(slot)
             }
+            
             // We validate existence here as an optimization, so validating in calling
             // contracts is unnecessary.
             if (profileIdPointed == 0) revert Errors.PublicationDoesNotExist();
 
             uint256 pubIdPointed;
+
+            // Load the pointed publication ID for the given publication.
             assembly {
                 let pointedPubIdSlot := add(slot, PUBLICATION_PUB_ID_POINTED_OFFSET)
                 pubIdPointed := sload(pointedPubIdSlot)
@@ -82,6 +91,9 @@ library Helpers {
     {
         uint256 slot;
         address collectModule;
+
+        // Load the collect module for the given profile (zero if it is a mirror) and cache the
+        // publication storage slot.
         assembly {
             mstore(0, profileId)
             mstore(32, PUB_BY_ID_BY_PROFILE_MAPPING_SLOT)
@@ -91,20 +103,27 @@ library Helpers {
             let collectModuleSlot := add(slot, PUBLICATION_COLLECT_MODULE_OFFSET)
             collectModule := sload(collectModuleSlot)
         }
+
         if (collectModule != address(0)) {
             return (profileId, pubId, collectModule);
         } else {
             uint256 profileIdPointed;
+
+            // Load the pointed profile ID, first in the cached slot.
             assembly {
-                // profile ID pointed is at offset 0, so we don't need to add anything.
+                // profile ID pointed is at offset 0, so we don't need to add any offset.
                 profileIdPointed := sload(slot)
             }
+
             // We validate existence here as an optimization, so validating in calling
             // contracts is unnecessary.
             if (profileIdPointed == 0) revert Errors.PublicationDoesNotExist();
 
             uint256 pubIdPointed;
             address collectModulePointed;
+
+            // Load the pointed publication ID and the pointed collect module for the given
+            // publication.
             assembly {
                 let pointedPubIdSlot := add(slot, PUBLICATION_PUB_ID_POINTED_OFFSET)
                 pubIdPointed := sload(pointedPubIdSlot)

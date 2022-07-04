@@ -20,7 +20,7 @@ import './Constants.sol';
  * @title InteractionHelpers
  * @author Lens Protocol
  *
- * @notice This is the library used by the GeneralLib that contains the logic for follows & collects. 
+ * @notice This is the library used by the GeneralLib that contains the logic for follows & collects.
  *
  * @dev The functions are internal, so they are inlined into the GeneralLib.
  */
@@ -38,9 +38,13 @@ library InteractionHelpers {
         for (uint256 i = 0; i < profileIds.length; ) {
             uint256 profileId = profileIds[i];
             _validateProfileExistsViaHandle(profileId);
+
             uint256 followNFTSlot;
             address followModule;
             address followNFT;
+
+            // Load the follow NFT and follow module for the given profile being followed, and cache
+            // the follow NFT slot.
             assembly {
                 mstore(0, profileId)
                 mstore(32, PROFILE_BY_ID_MAPPING_SLOT)
@@ -53,6 +57,8 @@ library InteractionHelpers {
 
             if (followNFT == address(0)) {
                 followNFT = _deployFollowNFT(profileId);
+
+                // Store the follow NFT in the cached slot.
                 assembly {
                     sstore(followNFTSlot, followNFT)
                 }
@@ -85,9 +91,11 @@ library InteractionHelpers {
         (uint256 rootProfileId, uint256 rootPubId, address rootCollectModule) = Helpers
             .getPointedIfMirrorWithCollectModule(profileId, pubId);
 
-        uint256 tokenId;
         uint256 collectNFTSlot;
         address collectNFT;
+
+        // Load the collect NFT and for the given publication being collected, and cache the
+        // collect NFT slot.
         assembly {
             mstore(0, rootProfileId)
             mstore(32, PUB_BY_ID_BY_PROFILE_MAPPING_SLOT)
@@ -96,6 +104,7 @@ library InteractionHelpers {
             collectNFTSlot := add(keccak256(0, 64), PUBLICATION_COLLECT_NFT_OFFSET)
             collectNFT := sload(collectNFTSlot)
         }
+
         if (collectNFT == address(0)) {
             collectNFT = _deployCollectNFT(
                 rootProfileId,
@@ -103,11 +112,13 @@ library InteractionHelpers {
                 _handle(rootProfileId),
                 collectNFTImpl
             );
+
+            // Store the collect NFT in the cached slot.
             assembly {
                 sstore(collectNFTSlot, collectNFT)
             }
         }
-        tokenId = ICollectNFT(collectNFT).mint(collector);
+        uint256 tokenId = ICollectNFT(collectNFT).mint(collector);
 
         ICollectModule(rootCollectModule).processCollect(
             profileId,
@@ -317,7 +328,11 @@ library InteractionHelpers {
             mstore(32, PROFILE_ID_BY_HANDLE_HASH_MAPPING_SLOT)
             let handleHashSlot := keccak256(0, 64)
             let resolvedProfileId := sload(handleHashSlot)
+
+            // If the resolved profile ID is not the given profile ID, or if the given profile ID
+            // is zero, the given profile does not exist.
             shouldRevert := or(iszero(eq(resolvedProfileId, profileId)), iszero(profileId))
+
             // Store the new memory pointer in the free memory pointer slot
             mstore(64, add(add(ptr, 32), size))
         }
