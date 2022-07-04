@@ -325,7 +325,7 @@ contract LensHub is LensNFTBase, VersionedInitializable, LensMultiState, LensHub
         override
         whenNotPaused
     {
-        GeneralLib.burnWithSig(tokenId, sig);
+        GeneralLib.baseBurnWithSig(tokenId, sig);
         _burn(tokenId);
         _clearHandleHash(tokenId);
     }

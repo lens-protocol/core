@@ -516,7 +516,7 @@ library GeneralLib {
      * @param tokenId The token ID to burn.
      * @param sig the EIP712Signature struct containing the token owner's signature.
      */
-    function burnWithSig(uint256 tokenId, DataTypes.EIP712Signature calldata sig) external {
+    function baseBurnWithSig(uint256 tokenId, DataTypes.EIP712Signature calldata sig) external {
         MetaTxHelpers.baseBurnWithSig(tokenId, sig);
     }
 
