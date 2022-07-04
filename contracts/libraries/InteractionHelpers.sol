@@ -317,7 +317,7 @@ library InteractionHelpers {
             mstore(32, PROFILE_ID_BY_HANDLE_HASH_MAPPING_SLOT)
             let handleHashSlot := keccak256(0, 64)
             let resolvedProfileId := sload(handleHashSlot)
-            shouldRevert := iszero(eq(resolvedProfileId, profileId))
+            shouldRevert := or(iszero(eq(resolvedProfileId, profileId)), iszero(profileId))
             // Store the new memory pointer in the free memory pointer slot
             mstore(64, add(add(ptr, 32), size))
         }
