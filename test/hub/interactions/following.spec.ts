@@ -58,6 +58,12 @@ makeSuiteCleanRoom('Following', function () {
           ERRORS.TOKEN_DOES_NOT_EXIST
         );
       });
+
+      it('UserTwo should fail to follow profile with id 0', async function () {
+        await expect(lensHub.connect(userTwo).follow([0], [[]])).to.be.revertedWith(
+          ERRORS.TOKEN_DOES_NOT_EXIST
+        );
+      });
     });
 
     context('Scenarios', function () {
