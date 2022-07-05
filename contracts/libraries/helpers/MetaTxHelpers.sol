@@ -1,12 +1,12 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.15;
 
-import {DataTypes} from './DataTypes.sol';
-import {Errors} from './Errors.sol';
-import {DataTypes} from './DataTypes.sol';
-import {Helpers} from './Helpers.sol';
+import {DataTypes} from '../DataTypes.sol';
+import {Errors} from '../Errors.sol';
+import {DataTypes} from '../DataTypes.sol';
+import {GeneralHelpers} from './GeneralHelpers.sol';
 
-import './Constants.sol';
+import '../Constants.sol';
 
 /**
  * @title MetaTxHelpers
@@ -37,7 +37,7 @@ library MetaTxHelpers {
         DataTypes.EIP712Signature calldata sig
     ) internal {
         if (spender == address(0)) revert Errors.ZeroSpender();
-        address owner = Helpers.unsafeOwnerOf(tokenId);
+        address owner = GeneralHelpers.unsafeOwnerOf(tokenId);
         _validateRecoveredAddress(
             _calculateDigest(
                 keccak256(
@@ -99,7 +99,7 @@ library MetaTxHelpers {
     function baseSetFollowModuleWithSig(DataTypes.SetFollowModuleWithSigData calldata vars)
         internal
     {
-        address owner = Helpers.unsafeOwnerOf(vars.profileId);
+        address owner = GeneralHelpers.unsafeOwnerOf(vars.profileId);
         _validateRecoveredAddress(
             _calculateDigest(
                 keccak256(
@@ -119,7 +119,7 @@ library MetaTxHelpers {
     }
 
     function baseSetDispatcherWithSig(DataTypes.SetDispatcherWithSigData calldata vars) internal {
-        address owner = Helpers.unsafeOwnerOf(vars.profileId);
+        address owner = GeneralHelpers.unsafeOwnerOf(vars.profileId);
         _validateRecoveredAddress(
             _calculateDigest(
                 keccak256(
@@ -140,7 +140,7 @@ library MetaTxHelpers {
     function baseSetProfileImageURIWithSig(DataTypes.SetProfileImageURIWithSigData calldata vars)
         internal
     {
-        address owner = Helpers.unsafeOwnerOf(vars.profileId);
+        address owner = GeneralHelpers.unsafeOwnerOf(vars.profileId);
         _validateRecoveredAddress(
             _calculateDigest(
                 keccak256(
@@ -161,7 +161,7 @@ library MetaTxHelpers {
     function baseSetFollowNFTURIWithSig(DataTypes.SetFollowNFTURIWithSigData calldata vars)
         internal
     {
-        address owner = Helpers.unsafeOwnerOf(vars.profileId);
+        address owner = GeneralHelpers.unsafeOwnerOf(vars.profileId);
         _validateRecoveredAddress(
             _calculateDigest(
                 keccak256(
@@ -180,7 +180,7 @@ library MetaTxHelpers {
     }
 
     function basePostWithSig(DataTypes.PostWithSigData calldata vars) internal {
-        address owner = Helpers.unsafeOwnerOf(vars.profileId);
+        address owner = GeneralHelpers.unsafeOwnerOf(vars.profileId);
         unchecked {
             _validateRecoveredAddress(
                 _calculateDigest(
@@ -205,8 +205,7 @@ library MetaTxHelpers {
     }
 
     function baseCommentWithSig(DataTypes.CommentWithSigData calldata vars) internal {
-        address owner = Helpers.unsafeOwnerOf(vars.profileId);
-
+        address owner = GeneralHelpers.unsafeOwnerOf(vars.profileId);
         _validateRecoveredAddress(
             _calculateDigest(
                 keccak256(
@@ -232,7 +231,7 @@ library MetaTxHelpers {
     }
 
     function baseMirrorWithSig(DataTypes.MirrorWithSigData calldata vars) internal {
-        address owner = Helpers.unsafeOwnerOf(vars.profileId);
+        address owner = GeneralHelpers.unsafeOwnerOf(vars.profileId);
         _validateRecoveredAddress(
             _calculateDigest(
                 keccak256(
@@ -255,7 +254,7 @@ library MetaTxHelpers {
     }
 
     function baseBurnWithSig(uint256 tokenId, DataTypes.EIP712Signature calldata sig) internal {
-        address owner = Helpers.unsafeOwnerOf(tokenId);
+        address owner = GeneralHelpers.unsafeOwnerOf(tokenId);
         _validateRecoveredAddress(
             _calculateDigest(
                 keccak256(
@@ -432,7 +431,6 @@ library MetaTxHelpers {
             // Store the new memory pointer in the free memory pointer slot
             mstore(64, add(add(ptr, 32), size))
         }
-        // Return a memory pointer to the name (which always starts with the size at the first slot)
         return ptr;
     }
 }

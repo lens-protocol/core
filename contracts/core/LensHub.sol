@@ -6,7 +6,6 @@ import {ILensNFTBase} from '../interfaces/ILensNFTBase.sol';
 import {ILensHub} from '../interfaces/ILensHub.sol';
 
 import {Events} from '../libraries/Events.sol';
-import {Helpers} from '../libraries/Helpers.sol';
 import {DataTypes} from '../libraries/DataTypes.sol';
 import {Errors} from '../libraries/Errors.sol';
 import {GeneralLib} from '../libraries/GeneralLib.sol';
@@ -533,8 +532,7 @@ contract LensHub is LensNFTBase, VersionedInitializable, LensMultiState, LensHub
         override
         returns (string memory)
     {
-        (uint256 rootProfileId, uint256 rootPubId) = Helpers.getPointedIfMirror(profileId, pubId);
-        return _pubByIdByProfile[rootProfileId][rootPubId].contentURI;
+        return GeneralLib.getContentURI(profileId, pubId);
     }
 
     /// @inheritdoc ILensHub

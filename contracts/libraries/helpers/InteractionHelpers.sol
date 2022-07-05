@@ -2,19 +2,19 @@
 
 pragma solidity 0.8.15;
 
-import {FollowNFTProxy} from '../upgradeability/FollowNFTProxy.sol';
-import {Helpers} from './Helpers.sol';
-import {DataTypes} from './DataTypes.sol';
-import {Errors} from './Errors.sol';
-import {Events} from './Events.sol';
-import {IFollowNFT} from '../interfaces/IFollowNFT.sol';
-import {ICollectNFT} from '../interfaces/ICollectNFT.sol';
-import {IFollowModule} from '../interfaces/IFollowModule.sol';
-import {ICollectModule} from '../interfaces/ICollectModule.sol';
+import {FollowNFTProxy} from '../../upgradeability/FollowNFTProxy.sol';
+import {GeneralHelpers} from './GeneralHelpers.sol';
+import {DataTypes} from '../DataTypes.sol';
+import {Errors} from '../Errors.sol';
+import {Events} from '../Events.sol';
+import {IFollowNFT} from '../../interfaces/IFollowNFT.sol';
+import {ICollectNFT} from '../../interfaces/ICollectNFT.sol';
+import {IFollowModule} from '../../interfaces/IFollowModule.sol';
+import {ICollectModule} from '../../interfaces/ICollectModule.sol';
 import {Clones} from '@openzeppelin/contracts/proxy/Clones.sol';
 import {Strings} from '@openzeppelin/contracts/utils/Strings.sol';
 
-import './Constants.sol';
+import '../Constants.sol';
 
 /**
  * @title InteractionHelpers
@@ -88,7 +88,7 @@ library InteractionHelpers {
         bytes calldata collectModuleData,
         address collectNFTImpl
     ) internal returns (uint256) {
-        (uint256 rootProfileId, uint256 rootPubId, address rootCollectModule) = Helpers
+        (uint256 rootProfileId, uint256 rootPubId, address rootCollectModule) = GeneralHelpers
             .getPointedIfMirrorWithCollectModule(profileId, pubId);
 
         uint256 collectNFTSlot;
@@ -227,7 +227,7 @@ library InteractionHelpers {
             // Load the free memory pointer, where we'll return the value
             ptr := mload(64)
 
-            // Load the slot, which either contains the name + 2*length if length < 32 or
+            // Load the slot, which either contains the handle + 2*length if length < 32 or
             // 2*length+1 if length >= 32, and the actual string starts at slot keccak256(slot)
             mstore(0, profileId)
             mstore(32, PROFILE_BY_ID_MAPPING_SLOT)
@@ -239,7 +239,7 @@ library InteractionHelpers {
             // itself is stored at keccak256(slot)
             switch and(slotLoad, 1)
             case 0 {
-                // The name is in the same slot
+                // The handle is in the same slot
                 // Determine the size by dividing the last byte's value by 2
                 size := shr(1, and(slotLoad, 255))
 
@@ -281,7 +281,7 @@ library InteractionHelpers {
             // Load the free memory pointer, where we'll return the value
             let ptr := mload(64)
 
-            // Compute the profile slot, which either contains the name + 2*length if length < 32
+            // Compute the profile slot, which either contains the handle + 2*length if length < 32
             // or 2*length+1 if length >= 32, and the actual string starts at slot keccak256(slot)
             mstore(0, profileId)
             mstore(32, PROFILE_BY_ID_MAPPING_SLOT)
@@ -295,7 +295,7 @@ library InteractionHelpers {
             // itself is stored at keccak256(slot)
             switch and(slotLoad, 1)
             case 0 {
-                // The name is in the same slot
+                // The handle is in the same slot
                 // Determine the size by dividing the last byte's value by 2
                 size := shr(1, and(slotLoad, 255))
 

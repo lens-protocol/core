@@ -2,10 +2,10 @@
 
 pragma solidity 0.8.15;
 
-import {DataTypes} from './DataTypes.sol';
-import {Errors} from './Errors.sol';
+import {DataTypes} from '../DataTypes.sol';
+import {Errors} from '../Errors.sol';
 
-import './Constants.sol';
+import '../Constants.sol';
 
 /**
  * @title Helpers
@@ -13,7 +13,7 @@ import './Constants.sol';
  *
  * @notice This is a library that contains helper internal functions used by both the Hub and the GeneralLib.
  */
-library Helpers {
+library GeneralHelpers {
     /**
      * @notice This helper function just returns the pointed publication if the passed publication is a mirror,
      * otherwise it returns the passed publication.
