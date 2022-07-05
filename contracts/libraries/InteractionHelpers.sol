@@ -281,14 +281,16 @@ library InteractionHelpers {
             // Load the free memory pointer, where we'll return the value
             let ptr := mload(64)
 
-            // Load the slot, which either contains the name + 2*length if length < 32 or
-            // 2*length+1 if length >= 32, and the actual string starts at slot keccak256(slot)
+            // Compute the profile slot, which either contains the name + 2*length if length < 32
+            // or 2*length+1 if length >= 32, and the actual string starts at slot keccak256(slot)
             mstore(0, profileId)
             mstore(32, PROFILE_BY_ID_MAPPING_SLOT)
             let slot := add(keccak256(0, 64), PROFILE_HANDLE_OFFSET)
 
+            // Load the handle slot and initialize the size.
             let slotLoad := sload(slot)
             let size
+
             // Determine if the length > 32 by checking the lowest order bit, meaning the string
             // itself is stored at keccak256(slot)
             switch and(slotLoad, 1)
@@ -323,7 +325,11 @@ library InteractionHelpers {
                     mstore(add(add(ptr, 32), mul(32, i)), sload(add(handleSlot, i)))
                 }
             }
+
+            // Compute the handle hash.
             let handleHash := keccak256(add(ptr, 32), size)
+
+            // Compute the profile ID by handle hash mapping slot and load the resolved profile.
             mstore(0, handleHash)
             mstore(32, PROFILE_ID_BY_HANDLE_HASH_MAPPING_SLOT)
             let handleHashSlot := keccak256(0, 64)
