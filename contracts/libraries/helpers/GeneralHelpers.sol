@@ -140,8 +140,8 @@ library GeneralHelpers {
     }
 
     /**
-     * @dev This fetches the owner address for a given token ID. Note that this does not check
-     * and revert upon receiving a zero address.
+     * @dev This fetches the owner address for a given token ID. Note that this does not check and
+     * revert upon loading a zero address.
      *
      * However, this function is only used if this caveat is checked or if it is followed by a call
      * to `_validateRecoveredAddress()` with the returned address from this function as the signer,
@@ -149,8 +149,6 @@ library GeneralHelpers {
      * will always revert if the owner returned is the zero address.
      */
     function unsafeOwnerOf(uint256 tokenId) internal view returns (address) {
-        // Note that this does *not* include a zero address check, but this is acceptable because
-        // _validateRecoveredAddress reverts on recovering a zero address.
         address owner;
         assembly {
             mstore(0, tokenId)
