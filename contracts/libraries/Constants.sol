@@ -34,28 +34,33 @@ uint256 constant GOVERNANCE_SLOT = 23;
 uint256 constant EMERGENCY_ADMIN_SLOT = 24;
 uint256 constant NAME_SLOT_GT_31 = 0x290decd9548b62a8d60345a988386fc84ba6bc95484008f6362f93160ef3e563;
 
+uint256 constant POLYGON_CHAIN_ID = 137;
+bytes32 constant POLYGON_DOMAIN_SEPARATOR = 0x78e10b2874b1a1d4436464e65903d3bdc28b68f8d023df2e47b65f8caa45c4bb;
+// keccak256(
+//     abi.encode(
+//         EIP712_DOMAIN_TYPEHASH,
+//         keccak256('Lens Protocol Profiles'),
+//         EIP712_REVISION_HASH,
+//         POLYGON_CHAIN_ID,
+//         address(0xDb46d1Dc155634FbC732f92E853b10B288AD5a1d)
+//     )
+// );
+
 // Profile struct offsets
+// uint256 pubCount;       // offset 0
 uint256 constant PROFILE_FOLLOW_MODULE_OFFSET = 1;
 uint256 constant PROFILE_FOLLOW_NFT_OFFSET = 2;
 uint256 constant PROFILE_HANDLE_OFFSET = 3;
 uint256 constant PROFILE_IMAGE_URI_OFFSET = 4;
 uint256 constant PROFILE_FOLLOW_NFT_URI_OFFSET = 5;
-// uint256 pubCount;       // offset 0
-// address followModule;   // offset 1
-// address followNFT;      // offset 2
-// string handle;          // offset 3
-// string imageURI;        // offset 4
-// string followNFTURI;    // offset 5
 
 // Publication struct offsets
 // uint256 profileIdPointed;    // offset 0
-// uint256 pubIdPointed;        // offset 1
 uint256 constant PUBLICATION_PUB_ID_POINTED_OFFSET = 1;
 uint256 constant PUBLICATION_CONTENT_URI_OFFSET = 2; // offset 2
 uint256 constant PUBLICATION_REFERENCE_MODULE_OFFSET = 3; // offset 3
 uint256 constant PUBLICATION_COLLECT_MODULE_OFFSET = 4; // offset 4
 uint256 constant PUBLICATION_COLLECT_NFT_OFFSET = 5; // offset 4
-// address collectNFT;          // offset 5
 
 // We also store typehashes here
 bytes32 constant EIP712_REVISION_HASH = keccak256('1');

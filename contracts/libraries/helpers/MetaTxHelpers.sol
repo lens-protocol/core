@@ -5,7 +5,6 @@ import {DataTypes} from '../DataTypes.sol';
 import {Errors} from '../Errors.sol';
 import {DataTypes} from '../DataTypes.sol';
 import {GeneralHelpers} from './GeneralHelpers.sol';
-
 import '../Constants.sol';
 
 /**
@@ -333,6 +332,10 @@ library MetaTxHelpers {
      * @dev Calculates EIP712 DOMAIN_SEPARATOR based on the current contract and chain ID.
      */
     function _calculateDomainSeparator() private view returns (bytes32) {
+        if (block.chainid == POLYGON_CHAIN_ID) {
+            // Note that this only works on the canonical Polygon mainnet deployment.
+            return POLYGON_DOMAIN_SEPARATOR;
+        }
         return
             keccak256(
                 abi.encode(
