@@ -589,6 +589,9 @@ contract LensHub is LensNFTBase, VersionedInitializable, LensMultiState, LensHub
         return COLLECT_NFT_IMPL;
     }
 
+    /**
+     * @dev Overrides the LensNFTBase function to compute the domain separator in the GeneralLib.
+     */
     function getDomainSeparator() external view override returns (bytes32) {
         return GeneralLib.getDomainSeparator();
     }
