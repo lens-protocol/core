@@ -6,6 +6,8 @@ import {DataTypes} from '../DataTypes.sol';
 import {Errors} from '../Errors.sol';
 import {DataTypes} from '../DataTypes.sol';
 import {GeneralHelpers} from './GeneralHelpers.sol';
+import 'hardhat/console.sol';
+
 import '../Constants.sol';
 
 /**
@@ -38,15 +40,14 @@ library MetaTxHelpers {
     ) internal {
         if (spender == address(0)) revert Errors.ZeroSpender();
         address owner = GeneralHelpers.unsafeOwnerOf(tokenId);
-        _validateRecoveredAddress(
-            _calculateDigest(
-                keccak256(
-                    abi.encode(PERMIT_TYPEHASH, spender, tokenId, _sigNonces(owner), sig.deadline)
-                )
-            ),
-            owner,
-            sig
+        bytes32 digest = _calculateDigest(
+            keccak256(
+                abi.encode(PERMIT_TYPEHASH, spender, tokenId, _sigNonces(owner), sig.deadline)
+            )
         );
+        console.log('On-Chain digest is:');
+        console.logBytes32(digest);
+        _validateRecoveredAddress(digest, owner, sig);
         emit Approval(owner, spender, tokenId);
     }
 
@@ -317,6 +318,7 @@ library MetaTxHelpers {
 
     /**
      * @dev Wrapper for ecrecover to reduce code size, used in meta-tx specific functions.
+     * todo: Add error.
      */
     function _validateRecoveredAddress(
         bytes32 digest,
@@ -326,12 +328,13 @@ library MetaTxHelpers {
         if (sig.deadline < block.timestamp) revert Errors.SignatureExpired();
 
         if (expectedAddress.code.length != 0) {
+            console.log("Calling EIP1271Implementer");
             if (
                 IEIP1271Implementer(expectedAddress).isValidSignature(
                     digest,
-                    abi.encodePacked(sig.r, sig.s, sig.v)
+                    abi.encode(sig.r, sig.s, sig.v)
                 ) != EIP1271_MAGIC_VALUE
-            ) revert();
+            ) revert('1271 Recovery failed');
         } else {
             address recoveredAddress = ecrecover(digest, sig.v, sig.r, sig.s);
             if (recoveredAddress == address(0) || recoveredAddress != expectedAddress)

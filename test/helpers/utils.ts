@@ -12,7 +12,16 @@ import {
 } from '../__setup.spec';
 import { expect } from 'chai';
 import { HARDHAT_CHAINID, MAX_UINT256 } from './constants';
-import { BytesLike, hexlify, keccak256, RLP, toUtf8Bytes } from 'ethers/lib/utils';
+import {
+  BytesLike,
+  concat,
+  hashMessage,
+  hexlify,
+  keccak256,
+  RLP,
+  toUtf8Bytes,
+  _TypedDataEncoder,
+} from 'ethers/lib/utils';
 import { LensHub__factory } from '../../typechain-types';
 import { TransactionReceipt, TransactionResponse } from '@ethersproject/providers';
 import hre, { ethers } from 'hardhat';
@@ -29,6 +38,7 @@ import {
   PostDataStruct,
   PostWithSigDataStruct,
 } from '../../typechain-types/LensHub';
+import { messagePrefix } from 'ethers/node_modules/@ethersproject/hash';
 
 export enum ProtocolState {
   Unpaused,
@@ -245,6 +255,18 @@ export async function getPermitParts(
 ): Promise<{ v: number; r: string; s: string }> {
   const msgParams = buildPermitParams(nft, name, spender, tokenId, nonce, deadline);
   return await getSig(msgParams);
+}
+
+export async function getPermitMessageParts(
+  nft: string,
+  name: string,
+  spender: string,
+  tokenId: BigNumberish,
+  nonce: number,
+  deadline: string
+): Promise<{ v: number; r: string; s: string }> {
+  const msgParams = buildPermitParams(nft, name, spender, tokenId, nonce, deadline);
+  return await getMessageSig(msgParams);
 }
 
 export async function getPermitForAllParts(
@@ -1104,6 +1126,19 @@ async function getSig(msgParams: {
   value: any;
 }): Promise<{ v: number; r: string; s: string }> {
   const sig = await testWallet._signTypedData(msgParams.domain, msgParams.types, msgParams.value);
+  return utils.splitSignature(sig);
+}
+
+async function getMessageSig(msgParams: {
+  domain: any;
+  types: any;
+  value: any;
+}): Promise<{ v: number; r: string; s: string }> {
+  const digest = _TypedDataEncoder.hash(msgParams.domain, msgParams.types, msgParams.value);
+  console.log('Script-generated digest:');
+  console.log(digest);
+  console.log('SCRIPT COMPUTED MESSAGE:', hashMessage(digest));
+  const sig = await testWallet.signMessage(digest);
   return utils.splitSignature(sig);
 }
 
