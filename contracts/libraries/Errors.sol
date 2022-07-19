@@ -8,7 +8,7 @@ library Errors {
     error ERC721Time_OwnerQueryForNonexistantToken();
     error ERC721Time_MintTimestampQueryForNonexistantToken();
     error ERC721Time_TokenDataQueryForNonexistantToken();
-    error ERC721Time_URIQueryForNonexistantToken(); 
+    error ERC721Time_URIQueryForNonexistantToken();
     error ERC721Time_ApprovalToCurrentOwner();
     error ERC721Time_ApproveCallerNotOwnerOrApprovedForAll();
     error ERC721Time_ApprovedQueryForNonexistantToken();

@@ -49,9 +49,7 @@ makeSuiteCleanRoom('Follow NFT', function () {
           user
         );
 
-        await expect(followNFT.initialize(FIRST_PROFILE_ID)).to.be.revertedWith(
-          ERRORS.INITIALIZED
-        );
+        await expect(followNFT.initialize(FIRST_PROFILE_ID)).to.be.revertedWith(ERRORS.INITIALIZED);
       });
 
       it("User should follow, userTwo should fail to burn user's follow NFT", async function () {

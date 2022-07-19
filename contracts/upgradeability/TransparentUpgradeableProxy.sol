@@ -3,7 +3,7 @@
 
 pragma solidity ^0.8.0;
 
-import "@openzeppelin/contracts/proxy/ERC1967/ERC1967Proxy.sol";
+import '@openzeppelin/contracts/proxy/ERC1967/ERC1967Proxy.sol';
 
 /**
  * NOTE: This is a direct copy of OpenZeppelin's TransparentUpgradeableProxy and is only present for
@@ -39,7 +39,7 @@ contract TransparentUpgradeableProxy is ERC1967Proxy {
         address admin_,
         bytes memory _data
     ) payable ERC1967Proxy(_logic, _data) {
-        assert(_ADMIN_SLOT == bytes32(uint256(keccak256("eip1967.proxy.admin")) - 1));
+        assert(_ADMIN_SLOT == bytes32(uint256(keccak256('eip1967.proxy.admin')) - 1));
         _changeAdmin(admin_);
     }
 
@@ -97,7 +97,7 @@ contract TransparentUpgradeableProxy is ERC1967Proxy {
      * NOTE: Only the admin can call this function. See {ProxyAdmin-upgrade}.
      */
     function upgradeTo(address newImplementation) external ifAdmin {
-        _upgradeToAndCall(newImplementation, bytes(""), false);
+        _upgradeToAndCall(newImplementation, bytes(''), false);
     }
 
     /**
@@ -107,7 +107,11 @@ contract TransparentUpgradeableProxy is ERC1967Proxy {
      *
      * NOTE: Only the admin can call this function. See {ProxyAdmin-upgradeAndCall}.
      */
-    function upgradeToAndCall(address newImplementation, bytes calldata data) external payable ifAdmin {
+    function upgradeToAndCall(address newImplementation, bytes calldata data)
+        external
+        payable
+        ifAdmin
+    {
         _upgradeToAndCall(newImplementation, data, true);
     }
 
@@ -122,7 +126,10 @@ contract TransparentUpgradeableProxy is ERC1967Proxy {
      * @dev Makes sure the admin cannot access the fallback function. See {Proxy-_beforeFallback}.
      */
     function _beforeFallback() internal virtual override {
-        require(msg.sender != _getAdmin(), "TransparentUpgradeableProxy: admin cannot fallback to proxy target");
+        require(
+            msg.sender != _getAdmin(),
+            'TransparentUpgradeableProxy: admin cannot fallback to proxy target'
+        );
         super._beforeFallback();
     }
 }

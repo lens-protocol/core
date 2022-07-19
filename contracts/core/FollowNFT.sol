@@ -5,6 +5,7 @@ pragma solidity 0.8.15;
 import {IFollowNFT} from '../interfaces/IFollowNFT.sol';
 import {IFollowModule} from '../interfaces/IFollowModule.sol';
 import {ILensHub} from '../interfaces/ILensHub.sol';
+import {MetaTxHelpers} from '../libraries/helpers/MetaTxHelpers.sol';
 import {Errors} from '../libraries/Errors.sol';
 import {Events} from '../libraries/Events.sol';
 import {DataTypes} from '../libraries/DataTypes.sol';
@@ -80,7 +81,7 @@ contract FollowNFT is LensNFTBase, IFollowNFT {
         DataTypes.EIP712Signature calldata sig
     ) external override {
         unchecked {
-            _validateRecoveredAddress(
+            MetaTxHelpers._validateRecoveredAddress(
                 _calculateDigest(
                     keccak256(
                         abi.encode(
@@ -136,6 +137,35 @@ contract FollowNFT is LensNFTBase, IFollowNFT {
         return string(abi.encodePacked(firstBytes, FOLLOW_NFT_SYMBOL_SUFFIX));
     }
 
+    /**
+     * @dev This returns the follow NFT URI fetched from the hub.
+     */
+    function tokenURI(uint256 tokenId) public view override returns (string memory) {
+        if (!_exists(tokenId)) revert Errors.TokenDoesNotExist();
+        return ILensHub(HUB).getFollowNFTURI(_profileId);
+    }
+
+    /**
+     * @dev Upon transfers, we move the appropriate delegations, and emit the transfer event in the hub.
+     */
+    function _beforeTokenTransfer(
+        address from,
+        address to,
+        uint256 tokenId
+    ) internal override {
+        address fromDelegatee = _delegates[from];
+        address toDelegatee = _delegates[to];
+        address followModule = ILensHub(HUB).getFollowModule(_profileId);
+
+        _moveDelegate(fromDelegatee, toDelegatee, 1);
+
+        super._beforeTokenTransfer(from, to, tokenId);
+        ILensHub(HUB).emitFollowNFTTransferEvent(_profileId, tokenId, from, to);
+        if (followModule != address(0)) {
+            IFollowModule(followModule).followModuleTransferHook(_profileId, from, to, tokenId);
+        }
+    }
+
     function _getSnapshotValueByBlockNumber(
         mapping(uint256 => Snapshot) storage _shots,
         uint256 blockNumber,
@@ -163,35 +193,6 @@ contract FollowNFT is LensNFTBase, IFollowNFT {
                 }
             }
             return _shots[lower].value;
-        }
-    }
-
-    /**
-     * @dev This returns the follow NFT URI fetched from the hub.
-     */
-    function tokenURI(uint256 tokenId) public view override returns (string memory) {
-        if (!_exists(tokenId)) revert Errors.TokenDoesNotExist();
-        return ILensHub(HUB).getFollowNFTURI(_profileId);
-    }
-
-    /**
-     * @dev Upon transfers, we move the appropriate delegations, and emit the transfer event in the hub.
-     */
-    function _beforeTokenTransfer(
-        address from,
-        address to,
-        uint256 tokenId
-    ) internal override {
-        address fromDelegatee = _delegates[from];
-        address toDelegatee = _delegates[to];
-        address followModule = ILensHub(HUB).getFollowModule(_profileId);
-
-        _moveDelegate(fromDelegatee, toDelegatee, 1);
-
-        super._beforeTokenTransfer(from, to, tokenId);
-        ILensHub(HUB).emitFollowNFTTransferEvent(_profileId, tokenId, from, to);
-        if (followModule != address(0)) {
-            IFollowModule(followModule).followModuleTransferHook(_profileId, from, to, tokenId);
         }
     }
 

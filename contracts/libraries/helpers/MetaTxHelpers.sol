@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.15;
 
+import {IEIP1271Implementer} from '../../interfaces/IEIP1271Implementer.sol';
 import {DataTypes} from '../DataTypes.sol';
 import {Errors} from '../Errors.sol';
 import {DataTypes} from '../DataTypes.sol';
@@ -323,9 +324,19 @@ library MetaTxHelpers {
         DataTypes.EIP712Signature calldata sig
     ) internal view {
         if (sig.deadline < block.timestamp) revert Errors.SignatureExpired();
-        address recoveredAddress = ecrecover(digest, sig.v, sig.r, sig.s);
-        if (recoveredAddress == address(0) || recoveredAddress != expectedAddress)
-            revert Errors.SignatureInvalid();
+
+        if (expectedAddress.code.length != 0) {
+            if (
+                IEIP1271Implementer(expectedAddress).isValidSignature(
+                    digest,
+                    abi.encodePacked(sig.r, sig.s, sig.v)
+                ) != EIP1271_MAGIC_VALUE
+            ) revert();
+        } else {
+            address recoveredAddress = ecrecover(digest, sig.v, sig.r, sig.s);
+            if (recoveredAddress == address(0) || recoveredAddress != expectedAddress)
+                revert Errors.SignatureInvalid();
+        }
     }
 
     /**
@@ -333,7 +344,8 @@ library MetaTxHelpers {
      */
     function _calculateDomainSeparator() private view returns (bytes32) {
         if (block.chainid == POLYGON_CHAIN_ID) {
-            // Note that this only works on the canonical Polygon mainnet deployment.
+            // Note that this only works on the canonical Polygon mainnet deployment, and should the
+            // name change, a contract upgrade would be necessary.
             return POLYGON_DOMAIN_SEPARATOR;
         }
         return
