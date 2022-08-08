@@ -6,7 +6,6 @@ import {DataTypes} from '../DataTypes.sol';
 import {Errors} from '../Errors.sol';
 import {DataTypes} from '../DataTypes.sol';
 import {GeneralHelpers} from './GeneralHelpers.sol';
-import 'hardhat/console.sol';
 
 import '../Constants.sol';
 
@@ -45,8 +44,6 @@ library MetaTxHelpers {
                 abi.encode(PERMIT_TYPEHASH, spender, tokenId, _sigNonces(owner), sig.deadline)
             )
         );
-        console.log('On-Chain digest is:');
-        console.logBytes32(digest);
         _validateRecoveredAddress(digest, owner, sig);
         emit Approval(owner, spender, tokenId);
     }
@@ -318,7 +315,7 @@ library MetaTxHelpers {
 
     /**
      * @dev Wrapper for ecrecover to reduce code size, used in meta-tx specific functions.
-     * todo: Add error.
+     * todo: Consider using OZ's implementation for ECDSA recovery.
      */
     function _validateRecoveredAddress(
         bytes32 digest,
@@ -328,13 +325,11 @@ library MetaTxHelpers {
         if (sig.deadline < block.timestamp) revert Errors.SignatureExpired();
 
         if (expectedAddress.code.length != 0) {
-            console.log("Calling EIP1271Implementer");
+            bytes memory concatenatedSig = abi.encodePacked(sig.r, sig.s, sig.v);
             if (
-                IEIP1271Implementer(expectedAddress).isValidSignature(
-                    digest,
-                    abi.encode(sig.r, sig.s, sig.v)
-                ) != EIP1271_MAGIC_VALUE
-            ) revert('1271 Recovery failed');
+                IEIP1271Implementer(expectedAddress).isValidSignature(digest, concatenatedSig) !=
+                EIP1271_MAGIC_VALUE
+            ) revert Errors.SignatureInvalid();
         } else {
             address recoveredAddress = ecrecover(digest, sig.v, sig.r, sig.s);
             if (recoveredAddress == address(0) || recoveredAddress != expectedAddress)

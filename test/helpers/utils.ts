@@ -15,7 +15,6 @@ import { HARDHAT_CHAINID, MAX_UINT256 } from './constants';
 import {
   BytesLike,
   concat,
-  hashMessage,
   hexlify,
   keccak256,
   RLP,
@@ -38,7 +37,6 @@ import {
   PostDataStruct,
   PostWithSigDataStruct,
 } from '../../typechain-types/LensHub';
-import { messagePrefix } from 'ethers/node_modules/@ethersproject/hash';
 
 export enum ProtocolState {
   Unpaused,
@@ -1135,11 +1133,12 @@ async function getMessageSig(msgParams: {
   value: any;
 }): Promise<{ v: number; r: string; s: string }> {
   const digest = _TypedDataEncoder.hash(msgParams.domain, msgParams.types, msgParams.value);
-  console.log('Script-generated digest:');
-  console.log(digest);
-  console.log('SCRIPT COMPUTED MESSAGE:', hashMessage(digest));
-  const sig = await testWallet.signMessage(digest);
-  return utils.splitSignature(sig);
+  return utils.splitSignature(testWallet._signingKey().signDigest(hashMessage(digest)));
+}
+
+const messagePrefix = '\x19Ethereum Signed Message:\n32';
+function hashMessage(message: string | Bytes): string {
+  return keccak256(concat([toUtf8Bytes(messagePrefix), message]));
 }
 
 function domain(): { name: string; version: string; chainId: number; verifyingContract: string } {
