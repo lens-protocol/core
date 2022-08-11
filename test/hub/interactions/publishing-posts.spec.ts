@@ -1,9 +1,14 @@
 import '@nomiclabs/hardhat-ethers';
 import { expect } from 'chai';
+import {
+  BadMockEIP1271Implementer__factory,
+  MockEIP1271Implementer__factory,
+} from '../../../typechain-types';
 import { MAX_UINT256, ZERO_ADDRESS } from '../../helpers/constants';
 import { ERRORS } from '../../helpers/errors';
 import {
   cancelWithPermitForAll,
+  getPostWithSigMessageParts,
   getPostWithSigParts,
   postReturningTokenId,
 } from '../../helpers/utils';
@@ -482,7 +487,6 @@ makeSuiteCleanRoom('Publishing Posts', function () {
         const nonce = (await lensHub.sigNonces(testWallet.address)).toNumber();
         const collectModuleInitData = abiCoder.encode(['bool'], [true]);
         const referenceModuleInitData = [];
-        const referenceModuleData = [];
         const { v, r, s } = await getPostWithSigParts(
           FIRST_PROFILE_ID,
           MOCK_URI,
@@ -495,6 +499,46 @@ makeSuiteCleanRoom('Publishing Posts', function () {
         );
 
         await cancelWithPermitForAll();
+
+        await expect(
+          lensHub.postWithSig({
+            profileId: FIRST_PROFILE_ID,
+            contentURI: MOCK_URI,
+            collectModule: freeCollectModule.address,
+            collectModuleInitData: collectModuleInitData,
+            referenceModule: ZERO_ADDRESS,
+            referenceModuleInitData: referenceModuleInitData,
+            sig: {
+              v,
+              r,
+              s,
+              deadline: MAX_UINT256,
+            },
+          })
+        ).to.be.revertedWith(ERRORS.SIGNATURE_INVALID);
+      });
+
+      it('TestWallet should deploy bad EIP1271 implementer, transfer profile to it, then fail to post with sig', async function () {
+        const sigContract = await new BadMockEIP1271Implementer__factory(testWallet).deploy();
+        const nonce = (await lensHub.sigNonces(sigContract.address)).toNumber();
+        await expect(
+          lensHub
+            .connect(testWallet)
+            .transferFrom(testWallet.address, sigContract.address, FIRST_PROFILE_ID)
+        ).to.not.be.reverted;
+
+        const collectModuleInitData = abiCoder.encode(['bool'], [true]);
+        const referenceModuleInitData = [];
+        const { v, r, s } = await getPostWithSigMessageParts(
+          FIRST_PROFILE_ID,
+          MOCK_URI,
+          freeCollectModule.address,
+          collectModuleInitData,
+          ZERO_ADDRESS,
+          referenceModuleInitData,
+          nonce,
+          MAX_UINT256
+        );
 
         await expect(
           lensHub.postWithSig({
@@ -560,6 +604,50 @@ makeSuiteCleanRoom('Publishing Posts', function () {
         expect(pub.collectModule).to.eq(freeCollectModule.address);
         expect(pub.collectNFT).to.eq(ZERO_ADDRESS);
         expect(pub.referenceModule).to.eq(ZERO_ADDRESS);
+      });
+
+      it('TestWallet should deploy EIP1271 implementer, transfer profile to it, then post with sig', async function () {
+        await expect(
+          lensHub.connect(governance).whitelistCollectModule(freeCollectModule.address, true)
+        ).to.not.be.reverted;
+        
+        const sigContract = await new MockEIP1271Implementer__factory(testWallet).deploy();
+        const nonce = (await lensHub.sigNonces(sigContract.address)).toNumber();
+        await expect(
+          lensHub
+            .connect(testWallet)
+            .transferFrom(testWallet.address, sigContract.address, FIRST_PROFILE_ID)
+        ).to.not.be.reverted;
+
+        const collectModuleInitData = abiCoder.encode(['bool'], [true]);
+        const referenceModuleInitData = [];
+        const { v, r, s } = await getPostWithSigMessageParts(
+          FIRST_PROFILE_ID,
+          MOCK_URI,
+          freeCollectModule.address,
+          collectModuleInitData,
+          ZERO_ADDRESS,
+          referenceModuleInitData,
+          nonce,
+          MAX_UINT256
+        );
+
+        await expect(
+          lensHub.postWithSig({
+            profileId: FIRST_PROFILE_ID,
+            contentURI: MOCK_URI,
+            collectModule: freeCollectModule.address,
+            collectModuleInitData: collectModuleInitData,
+            referenceModule: ZERO_ADDRESS,
+            referenceModuleInitData: referenceModuleInitData,
+            sig: {
+              v,
+              r,
+              s,
+              deadline: MAX_UINT256,
+            },
+          })
+        ).to.not.be.reverted;
       });
     });
   });

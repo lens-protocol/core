@@ -26,7 +26,10 @@ import {
   userAddress,
 } from '../__setup.spec';
 import { hardhatArguments } from 'hardhat';
-import { MockEIP1271Implementer__factory } from '../../typechain-types';
+import {
+  BadMockEIP1271Implementer__factory,
+  MockEIP1271Implementer__factory,
+} from '../../typechain-types';
 
 makeSuiteCleanRoom('Lens NFT Base Functionality', function () {
   context('generic', function () {
@@ -520,6 +523,39 @@ makeSuiteCleanRoom('Lens NFT Base Functionality', function () {
             { gasLimit: 12450000 }
           )
         ).to.not.be.reverted;
+      });
+
+      it('TestWallet should deploy bad EIP1271 implementer, transfer NFT to it, sign message and permit user, permit should fail with invalid sig', async function () {
+        const sigContract = await new BadMockEIP1271Implementer__factory(testWallet).deploy();
+        const nonce = (await lensHub.sigNonces(sigContract.address)).toNumber();
+        await expect(
+          lensHub
+            .connect(testWallet)
+            .transferFrom(testWallet.address, sigContract.address, FIRST_PROFILE_ID)
+        ).to.not.be.reverted;
+
+        const { v, r, s } = await getPermitMessageParts(
+          lensHub.address,
+          LENS_HUB_NFT_NAME,
+          userAddress,
+          FIRST_PROFILE_ID,
+          nonce,
+          MAX_UINT256
+        );
+
+        await expect(
+          lensHub.permit(
+            userAddress,
+            FIRST_PROFILE_ID,
+            {
+              v,
+              r,
+              s,
+              deadline: MAX_UINT256,
+            },
+            { gasLimit: 12450000 }
+          )
+        ).to.be.revertedWith(ERRORS.SIGNATURE_INVALID);
       });
     });
   });

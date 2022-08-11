@@ -264,7 +264,7 @@ export async function getPermitMessageParts(
   deadline: string
 ): Promise<{ v: number; r: string; s: string }> {
   const msgParams = buildPermitParams(nft, name, spender, tokenId, nonce, deadline);
-  return await getMessageSig(msgParams);
+  return getMessageSig(msgParams);
 }
 
 export async function getPermitForAllParts(
@@ -411,6 +411,29 @@ export async function getPostWithSigParts(
     deadline
   );
   return await getSig(msgParams);
+}
+
+export async function getPostWithSigMessageParts(
+  profileId: BigNumberish,
+  contentURI: string,
+  collectModule: string,
+  collectModuleInitData: Bytes | string,
+  referenceModule: string,
+  referenceModuleInitData: Bytes | string,
+  nonce: number,
+  deadline: string
+): Promise<{ v: number; r: string; s: string }> {
+  const msgParams = buildPostWithSigParams(
+    profileId,
+    contentURI,
+    collectModule,
+    collectModuleInitData,
+    referenceModule,
+    referenceModuleInitData,
+    nonce,
+    deadline
+  );
+  return getMessageSig(msgParams);
 }
 
 export async function getCommentWithSigParts(
