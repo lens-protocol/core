@@ -1084,7 +1084,7 @@ makeSuiteCleanRoom('Misc', function () {
           it('User two should fail to set profile metadata URI for a profile that is not theirs while they are not the dispatcher', async function () {
             await expect(
               lensPeriphery.connect(userTwo).setProfileMetadataURI(FIRST_PROFILE_ID, MOCK_DATA)
-            ).to.be.revertedWith(ERRORS.NOT_PROFILE_OWNER_OR_DISPATCHER);
+            ).to.be.revertedWith(ERRORS.NOT_PROFILE_OWNER_OR_VALID);
           });
         });
 

@@ -154,6 +154,24 @@ interface ILensHub {
     function setDispatcherWithSig(DataTypes.SetDispatcherWithSigData calldata vars) external;
 
     /**
+     * @notice Sets the approval for a delegated executor to act on behalf of the caller.
+     *
+     * @param executor The executor to set the approval for.
+     * @param approved Whether or not the executor is to be approved.
+     */
+    function setDelegatedExecutorApproval(address executor, bool approved) external;
+
+    /**
+     * @notice Sets the approval for a delegated executor to act on behalf of a given signer.
+     *
+     * @param vars A SetDelegatedExecutorApprovalWithSigData struct, including the regular parameters and an EIP712Signature
+     * struct.
+     */
+    function setDelegatedExecutorApprovalWithSig(
+        DataTypes.SetDelegatedExecutorApprovalWithSigData calldata vars
+    ) external;
+
+    /**
      * @notice Sets a profile's URI, which is reflected in the `tokenURI()` function.
      *
      * @param profileId The token ID of the profile of the profile to set the URI for.

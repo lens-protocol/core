@@ -32,6 +32,7 @@ uint256 constant DEFAULT_PROFILE_MAPPING_SLOT = 21;
 uint256 constant PROFILE_COUNTER_SLOT = 22;
 uint256 constant GOVERNANCE_SLOT = 23;
 uint256 constant EMERGENCY_ADMIN_SLOT = 24;
+uint256 constant DELEGATED_EXECUTOR_APPROVAL_MAPPING_SLOT = 25;
 uint256 constant NAME_SLOT_GT_31 = 0x290decd9548b62a8d60345a988386fc84ba6bc95484008f6362f93160ef3e563;
 
 uint256 constant POLYGON_CHAIN_ID = 137;
@@ -87,6 +88,9 @@ bytes32 constant SET_FOLLOW_NFT_URI_WITH_SIG_TYPEHASH = keccak256(
 );
 bytes32 constant SET_DISPATCHER_WITH_SIG_TYPEHASH = keccak256(
     'SetDispatcherWithSig(uint256 profileId,address dispatcher,uint256 nonce,uint256 deadline)'
+);
+bytes32 constant SET_DELEGATED_EXECUTOR_APPROVAL_WITH_SIG_TYPEHASH = keccak256(
+    'SetDelegatedExecutorApprovalWithSig(address executor,bool approved,uint256 nonce,uint256 deadline)'
 );
 bytes32 constant SET_PROFILE_IMAGE_URI_WITH_SIG_TYPEHASH = keccak256(
     'SetProfileImageURIWithSig(uint256 profileId,string imageURI,uint256 nonce,uint256 deadline)'

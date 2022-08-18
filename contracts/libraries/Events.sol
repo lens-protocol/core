@@ -158,6 +158,19 @@ library Events {
     event DispatcherSet(uint256 indexed profileId, address indexed dispatcher, uint256 timestamp);
 
     /**
+     * @dev Emitted when a delegated executor is granted or revoked approval to act on behalf of a given address.
+     *
+     * @param onBehalfOf The address the delegated executor is granted or revoked approval to act on behalf of.
+     * @param executor The address of the delegated executor granted or revoked approval.
+     * @param approved Whether the delegated executor is granted or revoked approval.
+     */
+    event DelegatedExecutorApprovalSet(
+        address indexed onBehalfOf,
+        address indexed executor,
+        bool indexed approved
+    );
+
+    /**
      * @dev Emitted when a profile's URI is set.
      *
      * @param profileId The token ID of the profile for which the URI is set.

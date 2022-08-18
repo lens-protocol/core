@@ -28,4 +28,7 @@ abstract contract LensHubStorage {
     uint256 internal _profileCounter; // slot 22
     address internal _governance; // slot 23
     address internal _emergencyAdmin; // slot 24
+
+    // new storage
+    mapping(address => mapping(address => bool)) internal _delegatedExecutorApproved;
 }

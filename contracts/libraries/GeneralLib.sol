@@ -14,6 +14,7 @@ import {IReferenceModule} from '../interfaces/IReferenceModule.sol';
 
 import './Constants.sol';
 
+// TODO: Update comments, especially for withSig functions.
 /**
  * @title GeneralLib
  * @author Lens Protocol
@@ -103,29 +104,6 @@ library GeneralLib {
     }
 
     /**
-     * @notice Sets the default profile for a given wallet.
-     * 
-     * @param wallet The wallet.
-     * @param profileId The profile ID to set.
-
-    */
-    function setDefaultProfile(address wallet, uint256 profileId) external {
-        _setDefaultProfile(wallet, profileId);
-    }
-
-    /**
-     * @notice Sets the default profile via signature for a given owner.
-     *
-     * @param vars the SetDefaultProfileWithSigData struct containing the relevant parameters.
-     */
-    function setDefaultProfileWithSig(DataTypes.SetDefaultProfileWithSigData calldata vars)
-        external
-    {
-        MetaTxHelpers.baseSetDefaultProfileWithSig(vars);
-        _setDefaultProfile(vars.wallet, vars.profileId);
-    }
-
-    /**
      * @notice Creates a profile with the given parameters to the given address. Minting happens
      * in the hub.
      *
@@ -202,6 +180,29 @@ library GeneralLib {
     }
 
     /**
+     * @notice Sets the default profile for a given wallet.
+     * 
+     * @param wallet The wallet.
+     * @param profileId The profile ID to set.
+
+    */
+    function setDefaultProfile(address wallet, uint256 profileId) external {
+        _setDefaultProfile(wallet, profileId);
+    }
+
+    /**
+     * @notice Sets the default profile via signature for a given owner.
+     *
+     * @param vars the SetDefaultProfileWithSigData struct containing the relevant parameters.
+     */
+    function setDefaultProfileWithSig(DataTypes.SetDefaultProfileWithSigData calldata vars)
+        external
+    {
+        MetaTxHelpers.baseSetDefaultProfileWithSig(vars);
+        _setDefaultProfile(vars.wallet, vars.profileId);
+    }
+
+    /**
      * @notice Sets the follow module for a given profile.
      *
      * @param profileId The profile ID to set the follow module for.
@@ -227,6 +228,37 @@ library GeneralLib {
     }
 
     /**
+     * @notice Sets the dispatcher for a given profile via signature.
+     *
+     * @param vars the setDispatcherWithSigData struct containing the relevant parameters.
+     */
+    function setDispatcherWithSig(DataTypes.SetDispatcherWithSigData calldata vars) external {
+        MetaTxHelpers.baseSetDispatcherWithSig(vars);
+        uint256 profileId = vars.profileId;
+        address dispatcher = vars.dispatcher;
+
+        // Store the dispatcher in the appropriate slot for the given profile ID.
+        assembly {
+            mstore(0, profileId)
+            mstore(32, DISPATCHER_BY_PROFILE_MAPPING_SLOT)
+            let slot := keccak256(0, 64)
+            sstore(slot, dispatcher)
+        }
+        emit Events.DispatcherSet(profileId, dispatcher, block.timestamp);
+    }
+
+    function setDelegatedExecutorApproval(address executor, bool approved) external {
+        _setDelegatedExecutorApproval(msg.sender, executor, approved);
+    }
+
+    function setDelegatedExecutorApprovalWithSig(
+        DataTypes.SetDelegatedExecutorApprovalWithSigData calldata vars
+    ) external {
+        MetaTxHelpers.baseSetDelegatedExecutorApprovalWithSig(vars);
+        _setDelegatedExecutorApproval(vars.onBehalfOf, vars.executor, vars.approved);
+    }
+
+    /**
      * @notice Sets the profile image URI for a given profile.
      * 
      * @param profileId The profile ID.
@@ -234,7 +266,7 @@ library GeneralLib {
 
      */
     function setProfileImageURI(uint256 profileId, string calldata imageURI) external {
-        _validateCallerIsProfileOwnerOrDispatcher(profileId);
+        _validateCallerIsProfileOwnerOrValid(profileId);
         _setProfileImageURI(profileId, imageURI);
     }
 
@@ -257,7 +289,7 @@ library GeneralLib {
      * @param followNFTURI The follow NFT URI to set.
      */
     function setFollowNFTURI(uint256 profileId, string calldata followNFTURI) external {
-        _validateCallerIsProfileOwnerOrDispatcher(profileId);
+        _validateCallerIsProfileOwnerOrValid(profileId);
         _setFollowNFTURI(profileId, followNFTURI);
     }
 
@@ -280,7 +312,7 @@ library GeneralLib {
      */
     function post(DataTypes.PostData calldata vars) external returns (uint256) {
         uint256 pubId = _preIncrementPubCount(vars.profileId);
-        _validateCallerIsProfileOwnerOrDispatcher(vars.profileId);
+        _validateCallerIsProfileOwnerOrValid(vars.profileId);
         _createPost(
             vars.profileId,
             pubId,
@@ -324,7 +356,7 @@ library GeneralLib {
      */
     function comment(DataTypes.CommentData calldata vars) external returns (uint256) {
         uint256 pubId = _preIncrementPubCount(vars.profileId);
-        _validateCallerIsProfileOwnerOrDispatcher(vars.profileId);
+        _validateCallerIsProfileOwnerOrValid(vars.profileId);
         _createComment(vars, pubId);
         return pubId;
     }
@@ -352,7 +384,7 @@ library GeneralLib {
      */
     function mirror(DataTypes.MirrorData calldata vars) external returns (uint256) {
         uint256 pubId = _preIncrementPubCount(vars.profileId);
-        _validateCallerIsProfileOwnerOrDispatcher(vars.profileId);
+        _validateCallerIsProfileOwnerOrValid(vars.profileId);
         _createMirror(vars, pubId);
         return pubId;
     }
@@ -375,18 +407,16 @@ library GeneralLib {
      * @notice Follows the given profiles, executing the necessary logic and module calls before minting the follow
      * NFT(s) to the follower.
      *
-     * @param follower The address executing the follow.
      * @param profileIds The array of profile token IDs to follow.
      * @param followModuleDatas The array of follow module data parameters to pass to each profile's follow module.
      *
      * @return uint256[] An array of integers representing the minted follow NFTs token IDs.
      */
-    function follow(
-        address follower,
-        uint256[] calldata profileIds,
-        bytes[] calldata followModuleDatas
-    ) external returns (uint256[] memory) {
-        return InteractionHelpers.follow(follower, profileIds, followModuleDatas);
+    function follow(uint256[] calldata profileIds, bytes[] calldata followModuleDatas)
+        external
+        returns (uint256[] memory)
+    {
+        return InteractionHelpers.follow(msg.sender, profileIds, followModuleDatas);
     }
 
     /**
@@ -503,26 +533,6 @@ library GeneralLib {
             let slot := keccak256(0, 64)
             sstore(slot, approved)
         }
-    }
-
-    /**
-     * @notice Sets the dispatcher for a given profile via signature.
-     *
-     * @param vars the setDispatcherWithSigData struct containing the relevant parameters.
-     */
-    function setDispatcherWithSig(DataTypes.SetDispatcherWithSigData calldata vars) external {
-        MetaTxHelpers.baseSetDispatcherWithSig(vars);
-        uint256 profileId = vars.profileId;
-        address dispatcher = vars.dispatcher;
-
-        // Store the dispatcher in the appropriate slot for the given profile ID.
-        assembly {
-            mstore(0, profileId)
-            mstore(32, DISPATCHER_BY_PROFILE_MAPPING_SLOT)
-            let slot := keccak256(0, 64)
-            sstore(slot, dispatcher)
-        }
-        emit Events.DispatcherSet(profileId, dispatcher, block.timestamp);
     }
 
     /**
@@ -651,6 +661,23 @@ library GeneralLib {
             followModuleReturnData,
             block.timestamp
         );
+    }
+
+    function _setDelegatedExecutorApproval(
+        address onBehalfOf,
+        address executor,
+        bool approved
+    ) private {
+        // Store the approval in the appropriate slot for the given caller and executor.
+        assembly {
+            mstore(0, onBehalfOf)
+            mstore(32, DELEGATED_EXECUTOR_APPROVAL_MAPPING_SLOT)
+            mstore(32, keccak256(0, 64))
+            mstore(0, executor)
+            let slot := keccak256(0, 64)
+            sstore(slot, approved)
+        }
+        emit Events.DelegatedExecutorApprovalSet(onBehalfOf, executor, approved);
     }
 
     function _setProfileImageURI(uint256 profileId, string calldata imageURI) private {
@@ -1139,10 +1166,11 @@ library GeneralLib {
         return referenceModule;
     }
 
-    function _validateCallerIsProfileOwnerOrDispatcher(uint256 profileId) private view {
+    function _validateCallerIsProfileOwnerOrValid(uint256 profileId) private view {
         // It's safe to use the `unsafeOwnerOf()` function here because the sender cannot be
-        // the zero address.
-        if (msg.sender == GeneralHelpers.unsafeOwnerOf(profileId)) {
+        // the zero address and the dispatcher is cleared on burn.
+        address owner = GeneralHelpers.unsafeOwnerOf(profileId);
+        if (msg.sender == owner) {
             return;
         } else {
             address dispatcher;
@@ -1154,8 +1182,23 @@ library GeneralLib {
                 let slot := keccak256(0, 64)
                 dispatcher := sload(slot)
             }
-            if (msg.sender != dispatcher) revert Errors.NotProfileOwnerOrDispatcher();
+            if (msg.sender == dispatcher) return;
+
+            bool isApprovedDelegatedExecutor;
+            assembly {
+                // If the caller is not the owner, check if they are an approved delegated executor.
+                if iszero(eq(owner, caller())) {
+                    mstore(0, owner)
+                    mstore(32, DELEGATED_EXECUTOR_APPROVAL_MAPPING_SLOT)
+                    mstore(32, keccak256(0, 64))
+                    mstore(0, caller())
+                    let slot := keccak256(0, 64)
+                    isApprovedDelegatedExecutor := sload(slot)
+                }
+            }
+            if (isApprovedDelegatedExecutor) return;
         }
+        revert Errors.NotProfileOwnerOrValid(); //TODO: Add error.
     }
 
     function _validateProfileCreatorWhitelisted() private view {
@@ -1209,6 +1252,22 @@ library GeneralLib {
         }
         if (!whitelisted) revert Errors.ReferenceModuleNotWhitelisted();
     }
+
+    // function _validateCallerIsDelegatedExecutor(address onBehalfOf) private view {
+    // bool isApprovedDelegatedExecutor;
+    // assembly {
+    // If the caller is not the owner, check if they are an approved delegated executor.
+    // if iszero(eq(onBehalfOf, caller())) {
+    // mstore(0, onBehalfOf)
+    // mstore(32, DELEGATED_EXECUTOR_APPROVAL_MAPPING_SLOT)
+    // mstore(32, keccak256(0, 64))
+    // mstore(0, caller())
+    // let slot := keccak256(0, 64)
+    // isApprovedDelegatedExecutor := sload(slot)
+    // }
+    // }
+    // if (!isApprovedDelegatedExecutor) revert Errors.CallerNotOwnerOrExecutor();
+    // }
 
     function _validateHandle(string calldata handle) private pure {
         bytes memory byteHandle = bytes(handle);

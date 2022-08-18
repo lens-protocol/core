@@ -63,12 +63,12 @@ library DataTypes {
      * @param followNFTURI The URI to be used for the follow NFT.
      */
     struct ProfileStruct {
-        uint256 pubCount;       // offset 0
-        address followModule;   // offset 1
-        address followNFT;      // offset 2
-        string handle;          // offset 3
-        string imageURI;        // offset 4
-        string followNFTURI;    // offset 5
+        uint256 pubCount; // offset 0
+        address followModule; // offset 1
+        address followNFT; // offset 2
+        string handle; // offset 3
+        string imageURI; // offset 4
+        string followNFTURI; // offset 5
     }
 
     /**
@@ -150,6 +150,22 @@ library DataTypes {
     struct SetDispatcherWithSigData {
         uint256 profileId;
         address dispatcher;
+        EIP712Signature sig;
+    }
+
+    /**
+     * @notice A struct containing the parameters required for the `setDelegatedExecutorApprovalWithSig()` function. Parameters
+     * are the same as the regular `setDelegatedExecutorApproval()` function.
+     *
+     * @param onBehalfOf The address the delegated executor is to be granted or revoked approval to act on behalf of.
+     * @param executor The executor to set the approval for.
+     * @param approved Whether to grant or revoke approval from the executor from the signer.
+     * @param sig The EIP712Signature struct containing to the signer setting the approval's signature.
+     */
+    struct SetDelegatedExecutorApprovalWithSigData {
+        address onBehalfOf;
+        address executor;
+        bool approved;
         EIP712Signature sig;
     }
 

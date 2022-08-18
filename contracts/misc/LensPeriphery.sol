@@ -164,7 +164,7 @@ contract LensPeriphery {
         ) {
             return;
         }
-        revert Errors.NotProfileOwnerOrDispatcher();
+        revert Errors.NotProfileOwnerOrValid();
     }
 
     /**

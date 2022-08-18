@@ -135,6 +135,27 @@ library MetaTxHelpers {
         );
     }
 
+    function baseSetDelegatedExecutorApprovalWithSig(
+        DataTypes.SetDelegatedExecutorApprovalWithSigData calldata vars
+    ) internal {
+        _validateRecoveredAddress(
+            _calculateDigest(
+                keccak256(
+                    abi.encode(
+                        SET_DELEGATED_EXECUTOR_APPROVAL_WITH_SIG_TYPEHASH,
+                        vars.onBehalfOf,
+                        vars.executor,
+                        vars.approved,
+                        _sigNonces(vars.onBehalfOf),
+                        vars.sig.deadline
+                    )
+                )
+            ),
+            vars.onBehalfOf,
+            vars.sig
+        );
+    }
+
     function baseSetProfileImageURIWithSig(DataTypes.SetProfileImageURIWithSigData calldata vars)
         internal
     {

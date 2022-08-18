@@ -43,7 +43,7 @@ library Errors {
     error ReferenceModuleNotWhitelisted();
     error ProfileCreatorNotWhitelisted();
     error NotProfileOwner();
-    error NotProfileOwnerOrDispatcher();
+    error NotProfileOwnerOrValid();
     error NotDispatcher();
     error PublicationDoesNotExist();
     error HandleTaken();
@@ -57,6 +57,7 @@ library Errors {
     error ArrayMismatch();
     error CannotCommentOnSelf();
     error NotWhitelisted();
+    error CallerNotOwnerOrExecutor();
 
     // Module Errors
     error InitParamsInvalid();

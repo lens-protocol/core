@@ -58,7 +58,7 @@ makeSuiteCleanRoom('Publishing Posts', function () {
             referenceModule: ZERO_ADDRESS,
             referenceModuleInitData: [],
           })
-        ).to.be.revertedWith(ERRORS.NOT_PROFILE_OWNER_OR_DISPATCHER);
+        ).to.be.revertedWith(ERRORS.NOT_PROFILE_OWNER_OR_VALID);
       });
 
       it('User should fail to post with an unwhitelisted collect module', async function () {

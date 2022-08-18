@@ -55,7 +55,7 @@ makeSuiteCleanRoom('Dispatcher Functionality', function () {
             referenceModule: ZERO_ADDRESS,
             referenceModuleInitData: [],
           })
-        ).to.be.revertedWith(ERRORS.NOT_PROFILE_OWNER_OR_DISPATCHER);
+        ).to.be.revertedWith(ERRORS.NOT_PROFILE_OWNER_OR_VALID);
       });
 
       it("User should set userTwo as dispatcher, userTwo should fail to set follow module on user's profile", async function () {

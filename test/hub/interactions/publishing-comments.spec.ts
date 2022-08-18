@@ -80,7 +80,7 @@ makeSuiteCleanRoom('Publishing Comments', function () {
             referenceModule: ZERO_ADDRESS,
             referenceModuleInitData: [],
           })
-        ).to.be.revertedWith(ERRORS.NOT_PROFILE_OWNER_OR_DISPATCHER);
+        ).to.be.revertedWith(ERRORS.NOT_PROFILE_OWNER_OR_VALID);
       });
 
       it('User should fail to comment with an unwhitelisted collect module', async function () {
