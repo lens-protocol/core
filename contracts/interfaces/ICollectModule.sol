@@ -29,14 +29,16 @@ interface ICollectModule {
      * @notice Processes a collect action for a given publication, this can only be called by the hub.
      *
      * @param referrerProfileId The LensHub profile token ID of the referrer's profile (only different in case of mirrors).
-     * @param collector The collector address.
+     * @param onBehalfOf The collector address.
+     * @param delegatedExecutor The executor address, only different from onBehalfOf if a delegated executor is used.
      * @param profileId The token ID of the profile associated with the publication being collected.
      * @param pubId The LensHub publication ID associated with the publication being collected.
      * @param data Arbitrary data __passed from the collector!__ to be decoded.
      */
     function processCollect(
         uint256 referrerProfileId,
-        address collector,
+        address onBehalfOf,
+        address delegatedExecutor,
         uint256 profileId,
         uint256 pubId,
         bytes calldata data

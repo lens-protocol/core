@@ -247,15 +247,15 @@ library GeneralLib {
         emit Events.DispatcherSet(profileId, dispatcher, block.timestamp);
     }
 
-    function setDelegatedExecutorApproval(address executor, bool approved) external {
-        _setDelegatedExecutorApproval(msg.sender, executor, approved);
+    function setDelegatedExecutorApproval(address executor, uint256 approvalBitmap) external {
+        _setDelegatedExecutorApproval(msg.sender, executor, approvalBitmap);
     }
 
     function setDelegatedExecutorApprovalWithSig(
         DataTypes.SetDelegatedExecutorApprovalWithSigData calldata vars
     ) external {
         MetaTxHelpers.baseSetDelegatedExecutorApprovalWithSig(vars);
-        _setDelegatedExecutorApproval(vars.onBehalfOf, vars.executor, vars.approved);
+        _setDelegatedExecutorApproval(vars.onBehalfOf, vars.executor, vars.approvalBitmap);
     }
 
     /**
@@ -266,7 +266,7 @@ library GeneralLib {
 
      */
     function setProfileImageURI(uint256 profileId, string calldata imageURI) external {
-        _validateCallerIsProfileOwnerOrValid(profileId);
+        _validateCallerIsProfileOwnerOrValid(profileId, PROFILE_IMAGE_URI_BIT_MASK);
         _setProfileImageURI(profileId, imageURI);
     }
 
@@ -289,7 +289,7 @@ library GeneralLib {
      * @param followNFTURI The follow NFT URI to set.
      */
     function setFollowNFTURI(uint256 profileId, string calldata followNFTURI) external {
-        _validateCallerIsProfileOwnerOrValid(profileId);
+        _validateCallerIsProfileOwnerOrValid(profileId, FOLLOW_NFT_URI_BIT_MASK);
         _setFollowNFTURI(profileId, followNFTURI);
     }
 
@@ -312,7 +312,7 @@ library GeneralLib {
      */
     function post(DataTypes.PostData calldata vars) external returns (uint256) {
         uint256 pubId = _preIncrementPubCount(vars.profileId);
-        _validateCallerIsProfileOwnerOrValid(vars.profileId);
+        _validateCallerIsProfileOwnerOrValid(vars.profileId, POST_BIT_MASK);
         _createPost(
             vars.profileId,
             pubId,
@@ -356,7 +356,7 @@ library GeneralLib {
      */
     function comment(DataTypes.CommentData calldata vars) external returns (uint256) {
         uint256 pubId = _preIncrementPubCount(vars.profileId);
-        _validateCallerIsProfileOwnerOrValid(vars.profileId);
+        _validateCallerIsProfileOwnerOrValid(vars.profileId, COMMENT_BIT_MASK);
         _createComment(vars, pubId);
         return pubId;
     }
@@ -384,7 +384,7 @@ library GeneralLib {
      */
     function mirror(DataTypes.MirrorData calldata vars) external returns (uint256) {
         uint256 pubId = _preIncrementPubCount(vars.profileId);
-        _validateCallerIsProfileOwnerOrValid(vars.profileId);
+        _validateCallerIsProfileOwnerOrValid(vars.profileId, MIRROR_BIT_MASK);
         _createMirror(vars, pubId);
         return pubId;
     }
@@ -437,7 +437,7 @@ library GeneralLib {
      * @notice Collects the given publication, executing the necessary logic and module call before minting the
      * collect NFT to the collector.
      *
-     * @param collector The address executing the collect.
+     * @param onBehalfOf The address the collect is being executed for, different from the sender for delegated executors.
      * @param profileId The token ID of the publication being collected's parent profile.
      * @param pubId The publication ID of the publication being collected.
      * @param collectModuleData The data to pass to the publication's collect module.
@@ -446,15 +446,19 @@ library GeneralLib {
      * @return uint256 An integer representing the minted token ID.
      */
     function collect(
-        address collector,
+        address onBehalfOf,
         uint256 profileId,
         uint256 pubId,
         bytes calldata collectModuleData,
         address collectNFTImpl
     ) external returns (uint256) {
+        // Maybe validate that the msg.sender is a delegated executor or owner
+        if (!GeneralHelpers.isDelegatedExecutor(onBehalfOf, msg.sender, COLLECT_BIT_MASK))
+            revert Errors.CallerInvalid();
         return
             InteractionHelpers.collect(
-                collector,
+                onBehalfOf,
+                msg.sender,
                 profileId,
                 pubId,
                 collectModuleData,
@@ -472,10 +476,12 @@ library GeneralLib {
         external
         returns (uint256)
     {
-        MetaTxHelpers.baseCollectWithSig(vars);
+        // This is problematic because we may end up doing executor validation twice. Some significant refactoring is due.
+        address executor = MetaTxHelpers.baseCollectWithSig(vars);
         return
             InteractionHelpers.collect(
                 vars.collector,
+                executor,
                 vars.profileId,
                 vars.pubId,
                 vars.data,
@@ -666,7 +672,7 @@ library GeneralLib {
     function _setDelegatedExecutorApproval(
         address onBehalfOf,
         address executor,
-        bool approved
+        uint256 approvalBitmap
     ) private {
         // Store the approval in the appropriate slot for the given caller and executor.
         assembly {
@@ -675,9 +681,9 @@ library GeneralLib {
             mstore(32, keccak256(0, 64))
             mstore(0, executor)
             let slot := keccak256(0, 64)
-            sstore(slot, approved)
+            sstore(slot, approvalBitmap)
         }
-        emit Events.DelegatedExecutorApprovalSet(onBehalfOf, executor, approved);
+        emit Events.DelegatedExecutorApprovalSet(onBehalfOf, executor, approvalBitmap);
     }
 
     function _setProfileImageURI(uint256 profileId, string calldata imageURI) private {
@@ -1166,7 +1172,10 @@ library GeneralLib {
         return referenceModule;
     }
 
-    function _validateCallerIsProfileOwnerOrValid(uint256 profileId) private view {
+    function _validateCallerIsProfileOwnerOrValid(uint256 profileId, uint256 actionBitMask)
+        private
+        view
+    {
         // It's safe to use the `unsafeOwnerOf()` function here because the sender cannot be
         // the zero address and the dispatcher is cleared on burn.
         address owner = GeneralHelpers.unsafeOwnerOf(profileId);
@@ -1184,7 +1193,7 @@ library GeneralLib {
             }
             if (msg.sender == dispatcher) return;
 
-            bool isApprovedDelegatedExecutor;
+            bool invalidExecutor;
             assembly {
                 // If the caller is not the owner, check if they are an approved delegated executor.
                 if iszero(eq(owner, caller())) {
@@ -1193,12 +1202,11 @@ library GeneralLib {
                     mstore(32, keccak256(0, 64))
                     mstore(0, caller())
                     let slot := keccak256(0, 64)
-                    isApprovedDelegatedExecutor := sload(slot)
+                    invalidExecutor := iszero(and(sload(slot), actionBitMask))
                 }
             }
-            if (isApprovedDelegatedExecutor) return;
+            if (invalidExecutor) revert Errors.NotProfileOwnerOrValid();
         }
-        revert Errors.NotProfileOwnerOrValid(); //TODO: Add error.
     }
 
     function _validateProfileCreatorWhitelisted() private view {
@@ -1266,7 +1274,7 @@ library GeneralLib {
     // isApprovedDelegatedExecutor := sload(slot)
     // }
     // }
-    // if (!isApprovedDelegatedExecutor) revert Errors.CallerNotOwnerOrExecutor();
+    // if (!isApprovedDelegatedExecutor) revert Errors.CallerInvalid();
     // }
 
     function _validateHandle(string calldata handle) private pure {

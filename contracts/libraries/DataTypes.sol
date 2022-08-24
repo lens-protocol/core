@@ -159,13 +159,13 @@ library DataTypes {
      *
      * @param onBehalfOf The address the delegated executor is to be granted or revoked approval to act on behalf of.
      * @param executor The executor to set the approval for.
-     * @param approved Whether to grant or revoke approval from the executor from the signer.
+     * @param approvalBitmap The approval bitmap to grant the executor.
      * @param sig The EIP712Signature struct containing to the signer setting the approval's signature.
      */
     struct SetDelegatedExecutorApprovalWithSigData {
         address onBehalfOf;
         address executor;
-        bool approved;
+        uint256 approvalBitmap;
         EIP712Signature sig;
     }
 

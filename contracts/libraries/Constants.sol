@@ -2,13 +2,22 @@
 
 pragma solidity 0.8.15;
 
-// library Constants {
 string constant FOLLOW_NFT_NAME_SUFFIX = '-Follower';
 string constant FOLLOW_NFT_SYMBOL_SUFFIX = '-Fl';
 string constant COLLECT_NFT_NAME_INFIX = '-Collect-';
 string constant COLLECT_NFT_SYMBOL_INFIX = '-Cl-';
 uint8 constant MAX_HANDLE_LENGTH = 31;
 uint16 constant MAX_PROFILE_IMAGE_URI_LENGTH = 6000;
+
+// Delegated Executor permission bitmasks
+uint8 constant PROFILE_IMAGE_URI_BIT_MASK = 1 << 0;
+uint8 constant FOLLOW_NFT_URI_BIT_MASK = 1 << 1;
+uint8 constant POST_BIT_MASK = 1 << 2;
+uint8 constant COMMENT_BIT_MASK = 1 << 3;
+uint8 constant MIRROR_BIT_MASK = 1 << 4;
+uint8 constant FOLLOW_BIT_MASK = 1 << 5;
+uint8 constant COLLECT_BIT_MASK = 1 << 6;
+uint8 constant BURN_BIT_MASK = 1 << 7;
 
 // We store constants equal to the storage slots here to later access via inline
 // assembly without needing to pass storage pointers. The NAME_SLOT_GT_31 slot
@@ -34,7 +43,6 @@ uint256 constant GOVERNANCE_SLOT = 23;
 uint256 constant EMERGENCY_ADMIN_SLOT = 24;
 uint256 constant DELEGATED_EXECUTOR_APPROVAL_MAPPING_SLOT = 25;
 uint256 constant NAME_SLOT_GT_31 = 0x290decd9548b62a8d60345a988386fc84ba6bc95484008f6362f93160ef3e563;
-
 uint256 constant POLYGON_CHAIN_ID = 137;
 bytes32 constant POLYGON_DOMAIN_SEPARATOR = 0x78e10b2874b1a1d4436464e65903d3bdc28b68f8d023df2e47b65f8caa45c4bb;
 // keccak256(

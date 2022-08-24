@@ -210,12 +210,12 @@ contract LensHub is LensNFTBase, VersionedInitializable, LensMultiState, LensHub
     }
 
     /// @inheritdoc ILensHub
-    function setDelegatedExecutorApproval(address executor, bool approved)
+    function setDelegatedExecutorApproval(address executor, uint256 approvalBitmap)
         external
         override
         whenNotPaused
     {
-        _delegatedExecutorApproved[msg.sender][executor] = approved;
+        GeneralLib.setDelegatedExecutorApproval(executor, approvalBitmap);
     }
 
     /// @inheritdoc ILensHub
@@ -369,11 +369,12 @@ contract LensHub is LensNFTBase, VersionedInitializable, LensMultiState, LensHub
 
     /// @inheritdoc ILensHub
     function collect(
+        address onBehalfOf,
         uint256 profileId,
         uint256 pubId,
         bytes calldata data
     ) external override whenNotPaused returns (uint256) {
-        return GeneralLib.collect(msg.sender, profileId, pubId, data, COLLECT_NFT_IMPL);
+        return GeneralLib.collect(onBehalfOf, profileId, pubId, data, COLLECT_NFT_IMPL);
     }
 
     /// @inheritdoc ILensHub

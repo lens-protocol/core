@@ -82,7 +82,8 @@ library InteractionHelpers {
     }
 
     function collect(
-        address collector,
+        address onBehalfOf,
+        address delegatedExecutor,
         uint256 profileId,
         uint256 pubId,
         bytes calldata collectModuleData,
@@ -118,17 +119,18 @@ library InteractionHelpers {
                 sstore(collectNFTSlot, collectNFT)
             }
         }
-        uint256 tokenId = ICollectNFT(collectNFT).mint(collector);
+        uint256 tokenId = ICollectNFT(collectNFT).mint(onBehalfOf);
 
         ICollectModule(rootCollectModule).processCollect(
             profileId,
-            collector,
+            onBehalfOf,
+            delegatedExecutor,
             rootProfileId,
             rootPubId,
             collectModuleData
         );
         _emitCollectedEvent(
-            collector,
+            onBehalfOf,
             profileId,
             pubId,
             rootProfileId,
@@ -273,6 +275,22 @@ library InteractionHelpers {
             mstore(64, add(add(ptr, 32), size))
         }
         return ptr;
+    }
+
+    function _validateCallerIsDelegatedExecutor(address onBehalfOf) private view {
+        bool isApprovedDelegatedExecutor;
+        assembly {
+            //If the caller is not the owner, check if they are an approved delegated executor.
+            if iszero(eq(onBehalfOf, caller())) {
+                mstore(0, onBehalfOf)
+                mstore(32, DELEGATED_EXECUTOR_APPROVAL_MAPPING_SLOT)
+                mstore(32, keccak256(0, 64))
+                mstore(0, caller())
+                let slot := keccak256(0, 64)
+                isApprovedDelegatedExecutor := sload(slot)
+            }
+        }
+        if (!isApprovedDelegatedExecutor) revert Errors.CallerInvalid();
     }
 
     function _validateProfileExists(uint256 profileId) private view {

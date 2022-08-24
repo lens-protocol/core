@@ -157,9 +157,9 @@ interface ILensHub {
      * @notice Sets the approval for a delegated executor to act on behalf of the caller.
      *
      * @param executor The executor to set the approval for.
-     * @param approved Whether or not the executor is to be approved.
+     * @param approvalBitmap The approval bitmap to grant the executor.
      */
-    function setDelegatedExecutorApproval(address executor, bool approved) external;
+    function setDelegatedExecutorApproval(address executor, uint256 approvalBitmap) external;
 
     /**
      * @notice Sets the approval for a delegated executor to act on behalf of a given signer.
@@ -285,6 +285,7 @@ interface ILensHub {
     /**
      * @notice Collects a given publication, executing collect module logic and minting a collectNFT to the caller.
      *
+     * @param onBehalfOf The address to collect on behalf of, different to the sender for delegated executors.
      * @param profileId The token ID of the profile that published the publication to collect.
      * @param pubId The publication to collect's publication ID.
      * @param data The arbitrary data to pass to the collect module if needed.
@@ -292,6 +293,7 @@ interface ILensHub {
      * @return uint256 An integer representing the minted token ID.
      */
     function collect(
+        address onBehalfOf,
         uint256 profileId,
         uint256 pubId,
         bytes calldata data

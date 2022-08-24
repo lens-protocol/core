@@ -162,12 +162,12 @@ library Events {
      *
      * @param onBehalfOf The address the delegated executor is granted or revoked approval to act on behalf of.
      * @param executor The address of the delegated executor granted or revoked approval.
-     * @param approved Whether the delegated executor is granted or revoked approval.
+     * @param approvalBitmap The approval bitmap granted to the executor.
      */
     event DelegatedExecutorApprovalSet(
         address indexed onBehalfOf,
         address indexed executor,
-        bool indexed approved
+        uint256 indexed approvalBitmap
     );
 
     /**

@@ -159,4 +159,25 @@ library GeneralHelpers {
         }
         return owner;
     }
+
+    function isDelegatedExecutor(
+        address onBehalfOf,
+        address executor,
+        uint8 actionBitMask
+    ) internal view returns (bool) {
+        bool isApprovedDelegatedExecutor;
+        assembly {
+            //If the caller is not the owner, check if they are an approved delegated executor.
+            mstore(0, onBehalfOf)
+            mstore(32, DELEGATED_EXECUTOR_APPROVAL_MAPPING_SLOT)
+            mstore(32, keccak256(0, 64))
+            mstore(0, executor)
+            let slot := keccak256(0, 64)
+
+            // if the permission is granted, the result of the and() will be non-zero, so we double up on
+            // iszero() operations to convert it to a positive boolean.
+            isApprovedDelegatedExecutor := iszero(iszero(and(sload(slot), actionBitMask)))
+        }
+        return isApprovedDelegatedExecutor;
+    }
 }
