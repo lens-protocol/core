@@ -78,10 +78,10 @@ contract CollectNFT is LensNFTBase, ICollectNFT {
 
     /**
      * @notice Changes the royalty percentage for secondary sales. Can only be called publication's
-     * profile owner.
-     * 
+     *         profile owner.
+     *
      * @param royaltyBasisPoints The royalty percentage meassured in basis points. Each basis point
-     * represents 0.01%.
+     *                           represents 0.01%.
      */
     function setRoyalty(uint256 royaltyBasisPoints) external {
         if (IERC721(HUB).ownerOf(_profileId) == msg.sender) {
@@ -96,24 +96,21 @@ contract CollectNFT is LensNFTBase, ICollectNFT {
     }
 
     /**
-     * @notice Called with the sale price to determine how much royalty 
-     * is owed and to whom.
-     * 
+     * @notice Called with the sale price to determine how much royalty
+     *         is owed and to whom.
+     *
      * @param tokenId The token ID of the NFT queried for royalty information.
      * @param salePrice The sale price of the NFT specified.
      * @return A tuple with the address who should receive the royalties and the royalty
      * payment amount for the given sale price.
-     */ 
+     */
     function royaltyInfo(uint256 tokenId, uint256 salePrice)
         external
         view
         returns (address, uint256)
     {
-        return (
-            IERC721(HUB).ownerOf(_profileId),
-            (salePrice * _royaltyBasisPoints) / BASIS_POINTS
-        );
-    }    
+        return (IERC721(HUB).ownerOf(_profileId), (salePrice * _royaltyBasisPoints) / BASIS_POINTS);
+    }
 
     /**
      * @dev See {IERC165-supportsInterface}.
