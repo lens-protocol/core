@@ -37,7 +37,6 @@ contract CollectNFT is LensNFTBase, ICollectNFT {
     constructor(address hub) {
         if (hub == address(0)) revert Errors.InitParamsInvalid();
         HUB = hub;
-        _royaltyBasisPoints = 1000; // 10% of royalties
         _initialized = true;
     }
 
@@ -50,6 +49,7 @@ contract CollectNFT is LensNFTBase, ICollectNFT {
     ) external override {
         if (_initialized) revert Errors.Initialized();
         _initialized = true;
+        _royaltyBasisPoints = 1000; // 10% of royalties
         _profileId = profileId;
         _pubId = pubId;
         super._initialize(name, symbol);
