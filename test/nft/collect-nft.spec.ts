@@ -119,8 +119,11 @@ makeSuiteCleanRoom('Collect NFT', function () {
     });
 
     it('User should be able to get the royalty info even over a token that does not exist yet', async function () {
-      await expect(collectNFT.tokenURI(69)).to.be.revertedWith(ERRORS.TOKEN_DOES_NOT_EXIST);
-      const royaltyInfo = await collectNFT.royaltyInfo(1, 3000);
+      const unexistentTokenId = 69;
+      await expect(collectNFT.tokenURI(unexistentTokenId)).to.be.revertedWith(
+        ERRORS.TOKEN_DOES_NOT_EXIST
+      );
+      const royaltyInfo = await collectNFT.royaltyInfo(unexistentTokenId, 3000);
       expect(royaltyInfo[0]).to.eq(userAddress);
       expect(royaltyInfo[1]).to.eq(BigNumber.from(300));
     });
