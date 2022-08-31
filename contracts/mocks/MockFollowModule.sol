@@ -4,6 +4,9 @@ pragma solidity 0.8.15;
 
 import {IFollowModule} from '../interfaces/IFollowModule.sol';
 
+/**
+ * @dev This is a simple mock follow module to be used for testing.
+ */
 contract MockFollowModule is IFollowModule {
     function initializeFollowModule(uint256 profileId, bytes calldata data)
         external

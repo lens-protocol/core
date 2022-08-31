@@ -169,6 +169,8 @@ contract LensPeriphery {
 
     /**
      * @dev Wrapper for ecrecover to reduce code size, used in meta-tx specific functions.
+     *
+     * @notice In order to use the MetaTXHelpers here, we will need to re-deploy.
      */
     function _validateRecoveredAddress(
         bytes32 digest,

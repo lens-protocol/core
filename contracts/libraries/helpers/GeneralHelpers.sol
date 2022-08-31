@@ -54,7 +54,7 @@ library GeneralHelpers {
                 // profile ID pointed is at offset 0, so we don't need to add any offset.
                 profileIdPointed := sload(slot)
             }
-            
+
             // We validate existence here as an optimization, so validating in calling
             // contracts is unnecessary.
             if (profileIdPointed == 0) revert Errors.PublicationDoesNotExist();
@@ -145,7 +145,7 @@ library GeneralHelpers {
      *
      * However, this function is only used if this caveat is checked or if it is followed by a call
      * to `_validateRecoveredAddress()` with the returned address from this function as the signer,
-     * and since `_validateRecoveredAddress()` reverts upon recovering the zero address, the execution 
+     * and since `_validateRecoveredAddress()` reverts upon recovering the zero address, the execution
      * will always revert if the owner returned is the zero address.
      */
     function unsafeOwnerOf(uint256 tokenId) internal view returns (address) {

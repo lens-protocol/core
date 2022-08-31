@@ -82,7 +82,6 @@ makeSuiteCleanRoom('Collecting', function () {
         await expect(lensHub.connect(userTwo).collect(0, 0, [])).to.be.revertedWith(
           ERRORS.PUBLICATION_DOES_NOT_EXIST
         );
-
       });
     });
 

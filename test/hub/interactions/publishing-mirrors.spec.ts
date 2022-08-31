@@ -584,7 +584,7 @@ makeSuiteCleanRoom('Publishing mirrors', function () {
         const nonce = (await lensHub.sigNonces(testWallet.address)).toNumber();
         const referenceModuleInitData = [];
         const referenceModuleData = [];
-        
+
         const { v, r, s } = await getMirrorWithSigParts(
           FIRST_PROFILE_ID,
           FIRST_PROFILE_ID,

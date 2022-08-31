@@ -41,11 +41,6 @@ import {
 
 /**
  * Note: We use the `lensHubImpl` contract to test ERC721 specific events.
- *
- * TODO: Add specific test cases to ensure all module encoded return data parameters are
- * as expected.
- *
- * TODO: Add module deployment tests.
  */
 makeSuiteCleanRoom('Events', function () {
   let receipt: TransactionReceipt;

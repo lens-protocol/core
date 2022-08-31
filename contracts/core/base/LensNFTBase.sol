@@ -6,6 +6,7 @@ import {ILensNFTBase} from '../../interfaces/ILensNFTBase.sol';
 import {Errors} from '../../libraries/Errors.sol';
 import {DataTypes} from '../../libraries/DataTypes.sol';
 import {Events} from '../../libraries/Events.sol';
+import {MetaTxHelpers} from '../../libraries/helpers/MetaTxHelpers.sol';
 import {ERC721Time} from './ERC721Time.sol';
 import {ERC721Enumerable} from './ERC721Enumerable.sol';
 
@@ -59,7 +60,7 @@ abstract contract LensNFTBase is ERC721Enumerable, ILensNFTBase {
         if (spender == address(0)) revert Errors.ZeroSpender();
         address owner = ownerOf(tokenId);
         unchecked {
-            _validateRecoveredAddress(
+            MetaTxHelpers._validateRecoveredAddress(
                 _calculateDigest(
                     keccak256(
                         abi.encode(
@@ -87,7 +88,7 @@ abstract contract LensNFTBase is ERC721Enumerable, ILensNFTBase {
     ) external virtual override {
         if (operator == address(0)) revert Errors.ZeroSpender();
         unchecked {
-            _validateRecoveredAddress(
+            MetaTxHelpers._validateRecoveredAddress(
                 _calculateDigest(
                     keccak256(
                         abi.encode(
@@ -126,7 +127,7 @@ abstract contract LensNFTBase is ERC721Enumerable, ILensNFTBase {
     {
         address owner = ownerOf(tokenId);
         unchecked {
-            _validateRecoveredAddress(
+            MetaTxHelpers._validateRecoveredAddress(
                 _calculateDigest(
                     keccak256(
                         abi.encode(
@@ -142,20 +143,6 @@ abstract contract LensNFTBase is ERC721Enumerable, ILensNFTBase {
             );
         }
         _burn(tokenId);
-    }
-
-    /**
-     * @dev Wrapper for ecrecover to reduce code size, used in meta-tx specific functions.
-     */
-    function _validateRecoveredAddress(
-        bytes32 digest,
-        address expectedAddress,
-        DataTypes.EIP712Signature calldata sig
-    ) internal view {
-        if (sig.deadline < block.timestamp) revert Errors.SignatureExpired();
-        address recoveredAddress = ecrecover(digest, sig.v, sig.r, sig.s);
-        if (recoveredAddress == address(0) || recoveredAddress != expectedAddress)
-            revert Errors.SignatureInvalid();
     }
 
     /**

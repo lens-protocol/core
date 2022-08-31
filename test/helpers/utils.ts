@@ -12,7 +12,15 @@ import {
 } from '../__setup.spec';
 import { expect } from 'chai';
 import { HARDHAT_CHAINID, MAX_UINT256 } from './constants';
-import { BytesLike, hexlify, keccak256, RLP, toUtf8Bytes } from 'ethers/lib/utils';
+import {
+  BytesLike,
+  concat,
+  hexlify,
+  keccak256,
+  RLP,
+  toUtf8Bytes,
+  _TypedDataEncoder,
+} from 'ethers/lib/utils';
 import { LensHub__factory } from '../../typechain-types';
 import { TransactionReceipt, TransactionResponse } from '@ethersproject/providers';
 import hre, { ethers } from 'hardhat';
@@ -247,6 +255,18 @@ export async function getPermitParts(
   return await getSig(msgParams);
 }
 
+export async function getPermitMessageParts(
+  nft: string,
+  name: string,
+  spender: string,
+  tokenId: BigNumberish,
+  nonce: number,
+  deadline: string
+): Promise<{ v: number; r: string; s: string }> {
+  const msgParams = buildPermitParams(nft, name, spender, tokenId, nonce, deadline);
+  return getMessageSig(msgParams);
+}
+
 export async function getPermitForAllParts(
   nft: string,
   name: string,
@@ -391,6 +411,29 @@ export async function getPostWithSigParts(
     deadline
   );
   return await getSig(msgParams);
+}
+
+export async function getPostWithSigMessageParts(
+  profileId: BigNumberish,
+  contentURI: string,
+  collectModule: string,
+  collectModuleInitData: Bytes | string,
+  referenceModule: string,
+  referenceModuleInitData: Bytes | string,
+  nonce: number,
+  deadline: string
+): Promise<{ v: number; r: string; s: string }> {
+  const msgParams = buildPostWithSigParams(
+    profileId,
+    contentURI,
+    collectModule,
+    collectModuleInitData,
+    referenceModule,
+    referenceModuleInitData,
+    nonce,
+    deadline
+  );
+  return getMessageSig(msgParams);
 }
 
 export async function getCommentWithSigParts(
@@ -1105,6 +1148,20 @@ async function getSig(msgParams: {
 }): Promise<{ v: number; r: string; s: string }> {
   const sig = await testWallet._signTypedData(msgParams.domain, msgParams.types, msgParams.value);
   return utils.splitSignature(sig);
+}
+
+async function getMessageSig(msgParams: {
+  domain: any;
+  types: any;
+  value: any;
+}): Promise<{ v: number; r: string; s: string }> {
+  const digest = _TypedDataEncoder.hash(msgParams.domain, msgParams.types, msgParams.value);
+  return utils.splitSignature(testWallet._signingKey().signDigest(hashMessage(digest)));
+}
+
+const messagePrefix = '\x19Ethereum Signed Message:\n32';
+function hashMessage(message: string | Bytes): string {
+  return keccak256(concat([toUtf8Bytes(messagePrefix), message]));
 }
 
 function domain(): { name: string; version: string; chainId: number; verifyingContract: string } {
