@@ -3,6 +3,9 @@ pragma solidity 0.8.15;
 
 import {DataTypes} from '../libraries/DataTypes.sol';
 
+/**
+ * @dev This is a simple mock LensHub storage contract to be used for testing.
+ */
 contract MockLensHubV2Storage {
     bytes32 internal constant CREATE_PROFILE_WITH_SIG_TYPEHASH =
         0x9ac3269d9abd6f8c5e850e07f21b199079e8a5cc4a55466d8c96ab0c4a5be403;
