@@ -414,7 +414,8 @@ library GeneralLib {
     /**
      * @notice Follows the given profiles, executing the necessary logic and module calls before minting the follow
      * NFT(s) to the follower.
-     * todo: add natspec
+     *
+     * @param onBehalfOf The address the follow is being executed for, different from the sender for delegated executors.
      * @param profileIds The array of profile token IDs to follow.
      * @param followModuleDatas The array of follow module data parameters to pass to each profile's follow module.
      *
@@ -869,9 +870,6 @@ library GeneralLib {
     /**
      * @notice Creates a comment publication mapped to the given profile.
      *
-     * @dev This function is unique in that it requires many variables, so, unlike the other publishing functions,
-     * we need to pass the full CommentData struct in memory to avoid a stack too deep error.
-     *
      * @param vars The CommentData struct to use to create the comment.
      * @param pubId The publication ID to associate with this publication.
      */
@@ -925,7 +923,13 @@ library GeneralLib {
         );
     }
 
-    // TODO: natspec
+    /**
+     * @notice Creates a comment publication mapped to the given profile with a sig struct.
+     *
+     * @param vars The CommentWithSigData struct to use to create the comment.
+     * @param executor The publisher or an approved delegated executor.
+     * @param pubId The publication ID to associate with this publication.
+     */
     function _createCommentWithSigStruct(
         DataTypes.CommentWithSigData calldata vars,
         address executor,
@@ -998,7 +1002,8 @@ library GeneralLib {
                     referenceModuleData
                 )
             {} catch {
-                // TODO: require owner is exec
+                if (executor != GeneralHelpers.unsafeOwnerOf(profileId))
+                    revert Errors.CallerInvalid();
                 IDeprecatedReferenceModule(refModule).processComment(
                     profileId,
                     profileIdPointed,
@@ -1050,10 +1055,10 @@ library GeneralLib {
     }
 
     /**
-     * @notice Creates a mirror publication mapped to the given profile.
+     * @notice Creates a mirror publication mapped to the given profile using a sig struct.
      *
      * @param vars The MirrorWithSigData struct to use to create the mirror.
-     * @param executor The owner or an approved delegated executor.
+     * @param executor The publisher or an approved delegated executor.
      * @param pubId The publication ID to associate with this publication.
      */
     function _createMirrorWithSigStruct(
@@ -1112,7 +1117,8 @@ library GeneralLib {
                     referenceModuleData
                 )
             {} catch {
-                // TODO: require owner is exec
+                if (executor != GeneralHelpers.unsafeOwnerOf(profileId))
+                    revert Errors.CallerInvalid();
                 IDeprecatedReferenceModule(refModule).processMirror(
                     profileId,
                     profileIdPointed,

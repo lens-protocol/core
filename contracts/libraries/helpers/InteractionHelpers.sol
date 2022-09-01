@@ -70,12 +70,21 @@ library InteractionHelpers {
             tokenIds[i] = IFollowNFT(followNFT).mint(follower);
 
             if (followModule != address(0)) {
-                IFollowModule(followModule).processFollow(
-                    follower,
-                    executor,
-                    profileId,
-                    followModuleDatas[i]
-                );
+                try
+                    IFollowModule(followModule).processFollow(
+                        follower,
+                        executor,
+                        profileId,
+                        followModuleDatas[i]
+                    )
+                {} catch {
+                    if (executor != follower) revert Errors.CallerInvalid();
+                    IDeprecatedFollowModule(followModule).processFollow(
+                        follower,
+                        profileId,
+                        followModuleDatas[i]
+                    );
+                }
             }
             unchecked {
                 ++i;

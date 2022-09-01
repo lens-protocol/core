@@ -161,7 +161,7 @@ library GeneralHelpers {
     }
 
     function validateOnBehalfOfOrExecutor(address onBehalfOf, address executor) internal view {
-        // TODO: Test this check in the below assembly block instead.
+        // TODO: Test putting this check in the below assembly block instead for gas.
         if (onBehalfOf == executor) return;
         bool invalidExecutor;
         assembly {
