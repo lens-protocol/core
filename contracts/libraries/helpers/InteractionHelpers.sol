@@ -11,6 +11,8 @@ import {IFollowNFT} from '../../interfaces/IFollowNFT.sol';
 import {ICollectNFT} from '../../interfaces/ICollectNFT.sol';
 import {IFollowModule} from '../../interfaces/IFollowModule.sol';
 import {ICollectModule} from '../../interfaces/ICollectModule.sol';
+import {IDeprecatedFollowModule} from '../../interfaces/IDeprecatedFollowModule.sol';
+import {IDeprecatedCollectModule} from '../../interfaces/IDeprecatedCollectModule.sol';
 import {Clones} from '@openzeppelin/contracts/proxy/Clones.sol';
 import {Strings} from '@openzeppelin/contracts/utils/Strings.sol';
 
@@ -29,6 +31,7 @@ library InteractionHelpers {
 
     function follow(
         address follower,
+        address executor,
         uint256[] calldata profileIds,
         bytes[] calldata followModuleDatas
     ) internal returns (uint256[] memory) {
@@ -69,6 +72,7 @@ library InteractionHelpers {
             if (followModule != address(0)) {
                 IFollowModule(followModule).processFollow(
                     follower,
+                    executor,
                     profileId,
                     followModuleDatas[i]
                 );
@@ -121,14 +125,25 @@ library InteractionHelpers {
         }
         uint256 tokenId = ICollectNFT(collectNFT).mint(onBehalfOf);
 
-        ICollectModule(rootCollectModule).processCollect(
-            profileId,
-            onBehalfOf,
-            delegatedExecutor,
-            rootProfileId,
-            rootPubId,
-            collectModuleData
-        );
+        try
+            ICollectModule(rootCollectModule).processCollect(
+                profileId,
+                onBehalfOf,
+                delegatedExecutor,
+                rootProfileId,
+                rootPubId,
+                collectModuleData
+            )
+        {} catch {
+            if (onBehalfOf != delegatedExecutor) revert Errors.CallerInvalid();
+            IDeprecatedCollectModule(rootCollectModule).processCollect(
+                profileId,
+                onBehalfOf,
+                rootProfileId,
+                rootPubId,
+                collectModuleData
+            );
+        }
         _emitCollectedEvent(
             onBehalfOf,
             profileId,

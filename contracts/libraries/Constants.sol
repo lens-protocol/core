@@ -9,16 +9,6 @@ string constant COLLECT_NFT_SYMBOL_INFIX = '-Cl-';
 uint8 constant MAX_HANDLE_LENGTH = 31;
 uint16 constant MAX_PROFILE_IMAGE_URI_LENGTH = 6000;
 
-// Delegated Executor permission bitmasks
-uint8 constant PROFILE_IMAGE_URI_BIT_MASK = 1 << 0;
-uint8 constant FOLLOW_NFT_URI_BIT_MASK = 1 << 1;
-uint8 constant POST_BIT_MASK = 1 << 2;
-uint8 constant COMMENT_BIT_MASK = 1 << 3;
-uint8 constant MIRROR_BIT_MASK = 1 << 4;
-uint8 constant FOLLOW_BIT_MASK = 1 << 5;
-uint8 constant COLLECT_BIT_MASK = 1 << 6;
-uint8 constant BURN_BIT_MASK = 1 << 7;
-
 // We store constants equal to the storage slots here to later access via inline
 // assembly without needing to pass storage pointers. The NAME_SLOT_GT_31 slot
 // is equivalent to keccak256(NAME_SLOT) and is where the name string is stored

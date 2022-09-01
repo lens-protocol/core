@@ -30,5 +30,5 @@ abstract contract LensHubStorage {
     address internal _emergencyAdmin; // slot 24
 
     // new storage
-    mapping(address => mapping(address => bool)) internal _delegatedExecutorApproved;
+    mapping(address => mapping(address => bool)) internal _delegatedExecutorApproval;
 }

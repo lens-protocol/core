@@ -44,7 +44,7 @@ library MetaTxHelpers {
                 abi.encode(PERMIT_TYPEHASH, spender, tokenId, _sigNonces(owner), sig.deadline)
             )
         );
-        _validateRecoveredAddress(digest, owner, sig, 0);
+        _validateRecoveredAddress(digest, owner, sig, false);
         emit Approval(owner, spender, tokenId);
     }
 
@@ -70,7 +70,7 @@ library MetaTxHelpers {
             ),
             owner,
             sig,
-            0
+            false
         );
         emit ApprovalForAll(owner, operator, approved);
     }
@@ -92,31 +92,33 @@ library MetaTxHelpers {
             ),
             vars.wallet,
             vars.sig,
-            0
+            true
         );
     }
 
     function baseSetFollowModuleWithSig(DataTypes.SetFollowModuleWithSigData calldata vars)
         internal
+        returns (address)
     {
         address owner = GeneralHelpers.unsafeOwnerOf(vars.profileId);
-        _validateRecoveredAddress(
-            _calculateDigest(
-                keccak256(
-                    abi.encode(
-                        SET_FOLLOW_MODULE_WITH_SIG_TYPEHASH,
-                        vars.profileId,
-                        vars.followModule,
-                        keccak256(vars.followModuleInitData),
-                        _sigNonces(owner),
-                        vars.sig.deadline
+        return
+            _validateRecoveredAddressWithReturn(
+                _calculateDigest(
+                    keccak256(
+                        abi.encode(
+                            SET_FOLLOW_MODULE_WITH_SIG_TYPEHASH,
+                            vars.profileId,
+                            vars.followModule,
+                            keccak256(vars.followModuleInitData),
+                            _sigNonces(owner),
+                            vars.sig.deadline
+                        )
                     )
-                )
-            ),
-            owner,
-            vars.sig,
-            0
-        );
+                ),
+                owner,
+                vars.sig,
+                true
+            );
     }
 
     function baseSetDispatcherWithSig(DataTypes.SetDispatcherWithSigData calldata vars) internal {
@@ -135,7 +137,7 @@ library MetaTxHelpers {
             ),
             owner,
             vars.sig,
-            0
+            false
         );
     }
 
@@ -157,7 +159,7 @@ library MetaTxHelpers {
             ),
             vars.onBehalfOf,
             vars.sig,
-            0
+            false
         );
     }
 
@@ -179,15 +181,15 @@ library MetaTxHelpers {
             ),
             owner,
             vars.sig,
-            PROFILE_IMAGE_URI_BIT_MASK
+            true
         );
     }
 
     function baseSetFollowNFTURIWithSig(DataTypes.SetFollowNFTURIWithSigData calldata vars)
-        internal returns (address)
+        internal
     {
         address owner = GeneralHelpers.unsafeOwnerOf(vars.profileId);
-        return _validateRecoveredAddress(
+        _validateRecoveredAddress(
             _calculateDigest(
                 keccak256(
                     abi.encode(
@@ -201,14 +203,14 @@ library MetaTxHelpers {
             ),
             owner,
             vars.sig,
-            FOLLOW_NFT_URI_BIT_MASK
+            true
         );
     }
 
     function basePostWithSig(DataTypes.PostWithSigData calldata vars) internal returns (address) {
         address owner = GeneralHelpers.unsafeOwnerOf(vars.profileId);
         return
-            _validateRecoveredAddress(
+            _validateRecoveredAddressWithReturn(
                 _calculateDigest(
                     keccak256(
                         abi.encode(
@@ -226,7 +228,7 @@ library MetaTxHelpers {
                 ),
                 owner,
                 vars.sig,
-                POST_BIT_MASK
+                true
             );
     }
 
@@ -236,7 +238,7 @@ library MetaTxHelpers {
     {
         address owner = GeneralHelpers.unsafeOwnerOf(vars.profileId);
         return
-            _validateRecoveredAddress(
+            _validateRecoveredAddressWithReturn(
                 _calculateDigest(
                     keccak256(
                         abi.encode(
@@ -257,7 +259,7 @@ library MetaTxHelpers {
                 ),
                 owner,
                 vars.sig,
-                COMMENT_BIT_MASK
+                true
             );
     }
 
@@ -267,7 +269,7 @@ library MetaTxHelpers {
     {
         address owner = GeneralHelpers.unsafeOwnerOf(vars.profileId);
         return
-            _validateRecoveredAddress(
+            _validateRecoveredAddressWithReturn(
                 _calculateDigest(
                     keccak256(
                         abi.encode(
@@ -285,26 +287,22 @@ library MetaTxHelpers {
                 ),
                 owner,
                 vars.sig,
-                MIRROR_BIT_MASK
+                true
             );
     }
 
-    function baseBurnWithSig(uint256 tokenId, DataTypes.EIP712Signature calldata sig)
-        internal
-        returns (address)
-    {
+    function baseBurnWithSig(uint256 tokenId, DataTypes.EIP712Signature calldata sig) internal {
         address owner = GeneralHelpers.unsafeOwnerOf(tokenId);
-        return
-            _validateRecoveredAddress(
-                _calculateDigest(
-                    keccak256(
-                        abi.encode(BURN_WITH_SIG_TYPEHASH, tokenId, _sigNonces(owner), sig.deadline)
-                    )
-                ),
-                owner,
-                sig,
-                BURN_BIT_MASK
-            );
+        _validateRecoveredAddress(
+            _calculateDigest(
+                keccak256(
+                    abi.encode(BURN_WITH_SIG_TYPEHASH, tokenId, _sigNonces(owner), sig.deadline)
+                )
+            ),
+            owner,
+            sig,
+            false
+        );
     }
 
     function baseFollowWithSig(DataTypes.FollowWithSigData calldata vars)
@@ -320,7 +318,7 @@ library MetaTxHelpers {
             }
         }
         return
-            _validateRecoveredAddress(
+            _validateRecoveredAddressWithReturn(
                 _calculateDigest(
                     keccak256(
                         abi.encode(
@@ -334,7 +332,7 @@ library MetaTxHelpers {
                 ),
                 vars.follower,
                 vars.sig,
-                FOLLOW_BIT_MASK
+                true
             );
     }
 
@@ -343,7 +341,7 @@ library MetaTxHelpers {
         returns (address)
     {
         return
-            _validateRecoveredAddress(
+            _validateRecoveredAddressWithReturn(
                 _calculateDigest(
                     keccak256(
                         abi.encode(
@@ -358,7 +356,7 @@ library MetaTxHelpers {
                 ),
                 vars.collector,
                 vars.sig,
-                COLLECT_BIT_MASK
+                true
             );
     }
 
@@ -370,22 +368,16 @@ library MetaTxHelpers {
      * @dev Wrapper for ecrecover to reduce code size, used in meta-tx specific functions.
      * TODO: Consider using OZ's implementation for ECDSA recovery.
      * TODO: Add a parameter for the delegated executor bit offset.
-     *
-     * @return address The recovered address, which is either:
-     *      - The expected address if the expectedAddress is the signing EOA
-     *      - The expected address if the expectedAddress is a valid EIP1271-implementing smart contract.
-     *      - The recovered address if the recovered address is a delegated executor of the expected address.
      */
     function _validateRecoveredAddress(
         bytes32 digest,
         address expectedAddress,
         DataTypes.EIP712Signature calldata sig,
-        uint8 actionBitOffset
-    ) internal view returns (address) {
+        bool acceptDelegatedExecutor
+    ) internal view {
         if (sig.deadline < block.timestamp) revert Errors.SignatureExpired();
-
         address recoveredAddress = expectedAddress;
-        if (expectedAddress.code.length != 0) {
+        if (recoveredAddress.code.length != 0) {
             bytes memory concatenatedSig = abi.encodePacked(sig.r, sig.s, sig.v);
             if (
                 IEIP1271Implementer(expectedAddress).isValidSignature(digest, concatenatedSig) !=
@@ -394,15 +386,38 @@ library MetaTxHelpers {
         } else {
             recoveredAddress = ecrecover(digest, sig.v, sig.r, sig.s);
             // TODO: Add delegated executor check.
+            if (recoveredAddress == address(0)) revert Errors.SignatureInvalid();
+            if (recoveredAddress != expectedAddress && acceptDelegatedExecutor) {
+                GeneralHelpers.validateOnBehalfOfOrExecutor(expectedAddress, recoveredAddress);
+            } else {
+                revert Errors.SignatureInvalid();
+            }
+        }
+    }
+
+    function _validateRecoveredAddressWithReturn(
+        bytes32 digest,
+        address expectedAddress,
+        DataTypes.EIP712Signature calldata sig,
+        bool acceptDelegatedExecutor
+    ) internal view returns (address) {
+        if (sig.deadline < block.timestamp) revert Errors.SignatureExpired();
+        address recoveredAddress = expectedAddress;
+        if (recoveredAddress.code.length != 0) {
+            bytes memory concatenatedSig = abi.encodePacked(sig.r, sig.s, sig.v);
             if (
-                recoveredAddress == address(0) ||
-                (recoveredAddress != expectedAddress &&
-                    !GeneralHelpers.isDelegatedExecutor(
-                        expectedAddress,
-                        recoveredAddress,
-                        actionBitOffset
-                    ))
+                IEIP1271Implementer(expectedAddress).isValidSignature(digest, concatenatedSig) !=
+                EIP1271_MAGIC_VALUE
             ) revert Errors.SignatureInvalid();
+        } else {
+            recoveredAddress = ecrecover(digest, sig.v, sig.r, sig.s);
+            // TODO: Add delegated executor check.
+            if (recoveredAddress == address(0)) revert Errors.SignatureInvalid();
+            if (recoveredAddress != expectedAddress && acceptDelegatedExecutor) {
+                GeneralHelpers.validateOnBehalfOfOrExecutor(expectedAddress, recoveredAddress);
+            } else {
+                revert Errors.SignatureInvalid();
+            }
         }
         return recoveredAddress;
     }

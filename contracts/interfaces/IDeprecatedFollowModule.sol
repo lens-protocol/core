@@ -6,21 +6,19 @@ pragma solidity 0.8.15;
  * @title IFollowModule
  * @author Lens Protocol
  *
- * @notice This is the standard interface for all Lens-compatible FollowModules.
+ * @notice This is the deprecated interface for previously Lens-compatible FollowModules.
  */
-interface IFollowModule {
+interface IDeprecatedFollowModule {
     /**
      * @notice Initializes a follow module for a given Lens profile. This can only be called by the hub contract.
      *
      * @param profileId The token ID of the profile to initialize this follow module for.
-     * @param executor The owner or an approved delegated executor.
      * @param data Arbitrary data passed by the profile creator.
      *
      * @return bytes The encoded data to emit in the hub.
      */
     function initializeFollowModule(
         uint256 profileId,
-        address executor,
         bytes calldata data
     ) external returns (bytes memory);
 
@@ -28,13 +26,11 @@ interface IFollowModule {
      * @notice Processes a given follow, this can only be called from the LensHub contract.
      *
      * @param follower The follower address.
-     * @param executor The owner or an approved delegated executor.
      * @param profileId The token ID of the profile being followed.
      * @param data Arbitrary data passed by the follower.
      */
     function processFollow(
         address follower,
-        address executor,
         uint256 profileId,
         bytes calldata data
     ) external;

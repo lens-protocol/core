@@ -160,12 +160,10 @@ library GeneralHelpers {
         return owner;
     }
 
-    function isDelegatedExecutor(
-        address onBehalfOf,
-        address executor,
-        uint8 actionBitMask
-    ) internal view returns (bool) {
-        bool isApprovedDelegatedExecutor;
+    function validateOnBehalfOfOrExecutor(address onBehalfOf, address executor) internal view {
+        // TODO: Test this check in the below assembly block instead.
+        if (onBehalfOf == executor) return;
+        bool invalidExecutor;
         assembly {
             //If the caller is not the owner, check if they are an approved delegated executor.
             mstore(0, onBehalfOf)
@@ -174,10 +172,9 @@ library GeneralHelpers {
             mstore(0, executor)
             let slot := keccak256(0, 64)
 
-            // if the permission is granted, the result of the and() will be non-zero, so we double up on
-            // iszero() operations to convert it to a positive boolean.
-            isApprovedDelegatedExecutor := iszero(iszero(and(sload(slot), actionBitMask)))
+            invalidExecutor := iszero(sload(slot))
         }
-        return isApprovedDelegatedExecutor;
+        // TODO: Maybe introduce a better error, this isn't necessarily the caller.
+        if (invalidExecutor) revert Errors.CallerInvalid();
     }
 }

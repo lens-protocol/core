@@ -11,6 +11,9 @@ import {Events} from './Events.sol';
 import {IFollowModule} from '../interfaces/IFollowModule.sol';
 import {ICollectModule} from '../interfaces/ICollectModule.sol';
 import {IReferenceModule} from '../interfaces/IReferenceModule.sol';
+import {IDeprecatedFollowModule} from '../interfaces/IDeprecatedFollowModule.sol';
+import {IDeprecatedCollectModule} from '../interfaces/IDeprecatedCollectModule.sol';
+import {IDeprecatedReferenceModule} from '../interfaces/IDeprecatedReferenceModule.sol';
 
 import './Constants.sol';
 
@@ -159,9 +162,12 @@ library GeneralLib {
                 sstore(slot, followModule)
             }
 
+            // @note We don't need to check for deprecated modules here because deprecated modules
+            // are no longer whitelisted.
             // Initialize the follow module.
             followModuleReturnData = _initFollowModule(
                 profileId,
+                vars.to,
                 vars.followModule,
                 vars.followModuleInitData
             );
@@ -214,7 +220,7 @@ library GeneralLib {
         address followModule,
         bytes calldata followModuleInitData
     ) external {
-        _setFollowModule(profileId, followModule, followModuleInitData);
+        _setFollowModule(profileId, msg.sender, followModule, followModuleInitData);
     }
 
     /**
@@ -223,8 +229,8 @@ library GeneralLib {
      * @param vars the SetFollowModuleWithSigData struct containing the relevant parameters.
      */
     function setFollowModuleWithSig(DataTypes.SetFollowModuleWithSigData calldata vars) external {
-        MetaTxHelpers.baseSetFollowModuleWithSig(vars);
-        _setFollowModule(vars.profileId, vars.followModule, vars.followModuleInitData);
+        address executor = MetaTxHelpers.baseSetFollowModuleWithSig(vars);
+        _setFollowModule(vars.profileId, executor, vars.followModule, vars.followModuleInitData);
     }
 
     /**
@@ -266,7 +272,7 @@ library GeneralLib {
 
      */
     function setProfileImageURI(uint256 profileId, string calldata imageURI) external {
-        _validateCallerIsProfileOwnerOrValid(profileId, PROFILE_IMAGE_URI_BIT_MASK);
+        _validateCallerIsOwnerOrDispatcherOrExecutor(profileId);
         _setProfileImageURI(profileId, imageURI);
     }
 
@@ -289,7 +295,7 @@ library GeneralLib {
      * @param followNFTURI The follow NFT URI to set.
      */
     function setFollowNFTURI(uint256 profileId, string calldata followNFTURI) external {
-        _validateCallerIsProfileOwnerOrValid(profileId, FOLLOW_NFT_URI_BIT_MASK);
+        _validateCallerIsOwnerOrDispatcherOrExecutor(profileId);
         _setFollowNFTURI(profileId, followNFTURI);
     }
 
@@ -312,9 +318,10 @@ library GeneralLib {
      */
     function post(DataTypes.PostData calldata vars) external returns (uint256) {
         uint256 pubId = _preIncrementPubCount(vars.profileId);
-        _validateCallerIsProfileOwnerOrValid(vars.profileId, POST_BIT_MASK);
+        _validateCallerIsOwnerOrDispatcherOrExecutor(vars.profileId);
         _createPost(
             vars.profileId,
+            msg.sender,
             pubId,
             vars.contentURI,
             vars.collectModule,
@@ -334,9 +341,10 @@ library GeneralLib {
      */
     function postWithSig(DataTypes.PostWithSigData calldata vars) external returns (uint256) {
         uint256 pubId = _preIncrementPubCount(vars.profileId);
-        MetaTxHelpers.basePostWithSig(vars);
+        address executor = MetaTxHelpers.basePostWithSig(vars);
         _createPost(
             vars.profileId,
+            executor,
             pubId,
             vars.contentURI,
             vars.collectModule,
@@ -356,8 +364,8 @@ library GeneralLib {
      */
     function comment(DataTypes.CommentData calldata vars) external returns (uint256) {
         uint256 pubId = _preIncrementPubCount(vars.profileId);
-        _validateCallerIsProfileOwnerOrValid(vars.profileId, COMMENT_BIT_MASK);
-        _createComment(vars, pubId);
+        _validateCallerIsOwnerOrDispatcherOrExecutor(vars.profileId);
+        _createComment(vars, pubId); // caller is executor
         return pubId;
     }
 
@@ -370,8 +378,8 @@ library GeneralLib {
      */
     function commentWithSig(DataTypes.CommentWithSigData calldata vars) external returns (uint256) {
         uint256 pubId = _preIncrementPubCount(vars.profileId);
-        MetaTxHelpers.baseCommentWithSig(vars);
-        _createCommentWithSigStruct(vars, pubId);
+        address executor = MetaTxHelpers.baseCommentWithSig(vars);
+        _createCommentWithSigStruct(vars, executor, pubId);
         return pubId;
     }
 
@@ -384,8 +392,8 @@ library GeneralLib {
      */
     function mirror(DataTypes.MirrorData calldata vars) external returns (uint256) {
         uint256 pubId = _preIncrementPubCount(vars.profileId);
-        _validateCallerIsProfileOwnerOrValid(vars.profileId, MIRROR_BIT_MASK);
-        _createMirror(vars, pubId);
+        _validateCallerIsOwnerOrDispatcherOrExecutor(vars.profileId);
+        _createMirror(vars, pubId); // caller is executor
         return pubId;
     }
 
@@ -398,25 +406,26 @@ library GeneralLib {
      */
     function mirrorWithSig(DataTypes.MirrorWithSigData calldata vars) external returns (uint256) {
         uint256 pubId = _preIncrementPubCount(vars.profileId);
-        MetaTxHelpers.baseMirrorWithSig(vars);
-        _createMirrorWithSigStruct(vars, pubId);
+        address executor = MetaTxHelpers.baseMirrorWithSig(vars);
+        _createMirrorWithSigStruct(vars, executor, pubId);
         return pubId;
     }
 
     /**
      * @notice Follows the given profiles, executing the necessary logic and module calls before minting the follow
      * NFT(s) to the follower.
-     *
+     * todo: add natspec
      * @param profileIds The array of profile token IDs to follow.
      * @param followModuleDatas The array of follow module data parameters to pass to each profile's follow module.
      *
      * @return uint256[] An array of integers representing the minted follow NFTs token IDs.
      */
-    function follow(uint256[] calldata profileIds, bytes[] calldata followModuleDatas)
-        external
-        returns (uint256[] memory)
-    {
-        return InteractionHelpers.follow(msg.sender, profileIds, followModuleDatas);
+    function follow(
+        address onBehalfOf,
+        uint256[] calldata profileIds,
+        bytes[] calldata followModuleDatas
+    ) external returns (uint256[] memory) {
+        return InteractionHelpers.follow(onBehalfOf, msg.sender, profileIds, followModuleDatas);
     }
 
     /**
@@ -429,8 +438,8 @@ library GeneralLib {
         external
         returns (uint256[] memory)
     {
-        MetaTxHelpers.baseFollowWithSig(vars);
-        return InteractionHelpers.follow(vars.follower, vars.profileIds, vars.datas);
+        address executor = MetaTxHelpers.baseFollowWithSig(vars);
+        return InteractionHelpers.follow(vars.follower, executor, vars.profileIds, vars.datas);
     }
 
     /**
@@ -453,8 +462,7 @@ library GeneralLib {
         address collectNFTImpl
     ) external returns (uint256) {
         // Maybe validate that the msg.sender is a delegated executor or owner
-        if (!GeneralHelpers.isDelegatedExecutor(onBehalfOf, msg.sender, COLLECT_BIT_MASK))
-            revert Errors.CallerInvalid();
+        GeneralHelpers.validateOnBehalfOfOrExecutor(onBehalfOf, msg.sender);
         return
             InteractionHelpers.collect(
                 onBehalfOf,
@@ -638,6 +646,7 @@ library GeneralLib {
 
     function _setFollowModule(
         uint256 profileId,
+        address executor,
         address followModule,
         bytes calldata followModuleInitData
     ) private {
@@ -658,6 +667,7 @@ library GeneralLib {
         if (followModule != address(0))
             followModuleReturnData = _initFollowModule(
                 profileId,
+                executor,
                 followModule,
                 followModuleInitData
             );
@@ -807,6 +817,7 @@ library GeneralLib {
      * @notice Creates a post publication mapped to the given profile.
      *
      * @param profileId The profile ID to associate this publication to.
+     * @param executor The executor, which is either the owner or an approved delegated executor.
      * @param pubId The publication ID to associate with this publication.
      * @param contentURI The URI to set for this publication.
      * @param collectModule The collect module to set for this publication.
@@ -816,6 +827,7 @@ library GeneralLib {
      */
     function _createPost(
         uint256 profileId,
+        address executor,
         uint256 pubId,
         string calldata contentURI,
         address collectModule,
@@ -827,6 +839,7 @@ library GeneralLib {
 
         bytes memory collectModuleReturnData = _initPubCollectModule(
             profileId,
+            executor,
             pubId,
             collectModule,
             collectModuleInitData
@@ -835,6 +848,7 @@ library GeneralLib {
         // Reference module initialization
         bytes memory referenceModuleReturnData = _initPubReferenceModule(
             profileId,
+            executor,
             pubId,
             referenceModule,
             referenceModuleInitData
@@ -874,6 +888,7 @@ library GeneralLib {
 
         bytes memory collectModuleReturnData = _initPubCollectModule(
             vars.profileId,
+            msg.sender,
             pubId,
             vars.collectModule,
             vars.collectModuleInitData
@@ -881,6 +896,7 @@ library GeneralLib {
 
         bytes memory referenceModuleReturnData = _initPubReferenceModule(
             vars.profileId,
+            msg.sender,
             pubId,
             vars.referenceModule,
             vars.referenceModuleInitData
@@ -888,6 +904,7 @@ library GeneralLib {
 
         _processCommentIfNeeded(
             vars.profileId,
+            msg.sender,
             vars.profileIdPointed,
             vars.pubIdPointed,
             vars.referenceModuleData
@@ -908,9 +925,12 @@ library GeneralLib {
         );
     }
 
-    function _createCommentWithSigStruct(DataTypes.CommentWithSigData calldata vars, uint256 pubId)
-        private
-    {
+    // TODO: natspec
+    function _createCommentWithSigStruct(
+        DataTypes.CommentWithSigData calldata vars,
+        address executor,
+        uint256 pubId
+    ) private {
         uint256 pubCountPointed = _getPubCount(vars.profileIdPointed);
         if (pubCountPointed < vars.pubIdPointed || vars.pubIdPointed == 0)
             revert Errors.PublicationDoesNotExist();
@@ -923,6 +943,7 @@ library GeneralLib {
 
         bytes memory collectModuleReturnData = _initPubCollectModule(
             vars.profileId,
+            executor,
             pubId,
             vars.collectModule,
             vars.collectModuleInitData
@@ -930,6 +951,7 @@ library GeneralLib {
 
         bytes memory referenceModuleReturnData = _initPubReferenceModule(
             vars.profileId,
+            executor,
             pubId,
             vars.referenceModule,
             vars.referenceModuleInitData
@@ -937,6 +959,7 @@ library GeneralLib {
 
         _processCommentIfNeeded(
             vars.profileId,
+            executor,
             vars.profileIdPointed,
             vars.pubIdPointed,
             vars.referenceModuleData
@@ -959,18 +982,30 @@ library GeneralLib {
 
     function _processCommentIfNeeded(
         uint256 profileId,
+        address executor,
         uint256 profileIdPointed,
         uint256 pubIdPointed,
         bytes calldata referenceModuleData
     ) private {
         address refModule = _getReferenceModule(profileIdPointed, pubIdPointed);
         if (refModule != address(0)) {
-            IReferenceModule(refModule).processComment(
-                profileId,
-                profileIdPointed,
-                pubIdPointed,
-                referenceModuleData
-            );
+            try
+                IReferenceModule(refModule).processComment(
+                    profileId,
+                    executor,
+                    profileIdPointed,
+                    pubIdPointed,
+                    referenceModuleData
+                )
+            {} catch {
+                // TODO: require owner is exec
+                IDeprecatedReferenceModule(refModule).processComment(
+                    profileId,
+                    profileIdPointed,
+                    pubIdPointed,
+                    referenceModuleData
+                );
+            }
         }
     }
 
@@ -988,6 +1023,7 @@ library GeneralLib {
 
         bytes memory referenceModuleReturnData = _initPubReferenceModule(
             vars.profileId,
+            msg.sender,
             pubId,
             vars.referenceModule,
             vars.referenceModuleInitData
@@ -995,6 +1031,7 @@ library GeneralLib {
 
         _processMirrorIfNeeded(
             vars.profileId,
+            msg.sender,
             rootProfileIdPointed,
             rootPubIdPointed,
             vars.referenceModuleData
@@ -1016,11 +1053,14 @@ library GeneralLib {
      * @notice Creates a mirror publication mapped to the given profile.
      *
      * @param vars The MirrorWithSigData struct to use to create the mirror.
+     * @param executor The owner or an approved delegated executor.
      * @param pubId The publication ID to associate with this publication.
      */
-    function _createMirrorWithSigStruct(DataTypes.MirrorWithSigData calldata vars, uint256 pubId)
-        private
-    {
+    function _createMirrorWithSigStruct(
+        DataTypes.MirrorWithSigData calldata vars,
+        address executor,
+        uint256 pubId
+    ) private {
         (uint256 rootProfileIdPointed, uint256 rootPubIdPointed) = GeneralHelpers
             .getPointedIfMirror(vars.profileIdPointed, vars.pubIdPointed);
 
@@ -1028,6 +1068,7 @@ library GeneralLib {
 
         bytes memory referenceModuleReturnData = _initPubReferenceModule(
             vars.profileId,
+            executor,
             pubId,
             vars.referenceModule,
             vars.referenceModuleInitData
@@ -1035,6 +1076,7 @@ library GeneralLib {
 
         _processMirrorIfNeeded(
             vars.profileId,
+            executor,
             rootProfileIdPointed,
             rootPubIdPointed,
             vars.referenceModuleData
@@ -1054,18 +1096,30 @@ library GeneralLib {
 
     function _processMirrorIfNeeded(
         uint256 profileId,
+        address executor,
         uint256 profileIdPointed,
         uint256 pubIdPointed,
         bytes calldata referenceModuleData
     ) private {
         address refModule = _getReferenceModule(profileIdPointed, pubIdPointed);
         if (refModule != address(0)) {
-            IReferenceModule(refModule).processMirror(
-                profileId,
-                profileIdPointed,
-                pubIdPointed,
-                referenceModuleData
-            );
+            try
+                IReferenceModule(refModule).processMirror(
+                    profileId,
+                    executor,
+                    profileIdPointed,
+                    pubIdPointed,
+                    referenceModuleData
+                )
+            {} catch {
+                // TODO: require owner is exec
+                IDeprecatedReferenceModule(refModule).processMirror(
+                    profileId,
+                    profileIdPointed,
+                    pubIdPointed,
+                    referenceModuleData
+                );
+            }
         }
     }
 
@@ -1085,15 +1139,22 @@ library GeneralLib {
 
     function _initFollowModule(
         uint256 profileId,
+        address executor,
         address followModule,
         bytes memory followModuleInitData
     ) private returns (bytes memory) {
         _validateFollowModuleWhitelisted(followModule);
-        return IFollowModule(followModule).initializeFollowModule(profileId, followModuleInitData);
+        return
+            IFollowModule(followModule).initializeFollowModule(
+                profileId,
+                executor,
+                followModuleInitData
+            );
     }
 
     function _initPubCollectModule(
         uint256 profileId,
+        address executor,
         uint256 pubId,
         address collectModule,
         bytes memory collectModuleInitData
@@ -1112,6 +1173,7 @@ library GeneralLib {
         return
             ICollectModule(collectModule).initializePublicationCollectModule(
                 profileId,
+                executor,
                 pubId,
                 collectModuleInitData
             );
@@ -1119,6 +1181,7 @@ library GeneralLib {
 
     function _initPubReferenceModule(
         uint256 profileId,
+        address executor,
         uint256 pubId,
         address referenceModule,
         bytes memory referenceModuleInitData
@@ -1138,6 +1201,7 @@ library GeneralLib {
         return
             IReferenceModule(referenceModule).initializeReferenceModule(
                 profileId,
+                executor,
                 pubId,
                 referenceModuleInitData
             );
@@ -1172,12 +1236,10 @@ library GeneralLib {
         return referenceModule;
     }
 
-    function _validateCallerIsProfileOwnerOrValid(uint256 profileId, uint256 actionBitMask)
-        private
-        view
-    {
+    function _validateCallerIsOwnerOrDispatcherOrExecutor(uint256 profileId) private view {
         // It's safe to use the `unsafeOwnerOf()` function here because the sender cannot be
-        // the zero address and the dispatcher is cleared on burn.
+        // the zero address, the dispatcher is cleared on burn and the zero address cannot approve
+        // a delegated executor.
         address owner = GeneralHelpers.unsafeOwnerOf(profileId);
         if (msg.sender == owner) {
             return;
@@ -1195,15 +1257,13 @@ library GeneralLib {
 
             bool invalidExecutor;
             assembly {
-                // If the caller is not the owner, check if they are an approved delegated executor.
-                if iszero(eq(owner, caller())) {
-                    mstore(0, owner)
-                    mstore(32, DELEGATED_EXECUTOR_APPROVAL_MAPPING_SLOT)
-                    mstore(32, keccak256(0, 64))
-                    mstore(0, caller())
-                    let slot := keccak256(0, 64)
-                    invalidExecutor := iszero(and(sload(slot), actionBitMask))
-                }
+                // Check if the caller is are an approved delegated executor.
+                mstore(0, owner)
+                mstore(32, DELEGATED_EXECUTOR_APPROVAL_MAPPING_SLOT)
+                mstore(32, keccak256(0, 64))
+                mstore(0, caller())
+                let slot := keccak256(0, 64)
+                invalidExecutor := iszero(sload(slot))
             }
             if (invalidExecutor) revert Errors.NotProfileOwnerOrValid();
         }
