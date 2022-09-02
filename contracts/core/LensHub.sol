@@ -348,13 +348,13 @@ contract LensHub is LensNFTBase, VersionedInitializable, LensMultiState, LensHub
     /// ***************************************
 
     /// @inheritdoc ILensHub
-    function follow(uint256[] calldata profileIds, bytes[] calldata datas)
+    function follow(address onBehalfOf, uint256[] calldata profileIds, bytes[] calldata datas)
         external
         override
         whenNotPaused
         returns (uint256[] memory)
     {
-        return GeneralLib.follow(profileIds, datas);
+        return GeneralLib.follow(onBehalfOf, profileIds, datas);
     }
 
     /// @inheritdoc ILensHub
