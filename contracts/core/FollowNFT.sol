@@ -94,7 +94,8 @@ contract FollowNFT is LensNFTBase, IFollowNFT {
                     )
                 ),
                 delegator,
-                sig
+                sig,
+                false // TODO: Use a different implementation.
             );
         }
         _delegate(delegator, delegatee);

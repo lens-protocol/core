@@ -74,7 +74,7 @@ abstract contract LensNFTBase is ERC721Enumerable, ILensNFTBase {
                 ),
                 owner,
                 sig,
-                false
+                false // TODO: Use a different implementation.
             );
         }
         _approve(spender, tokenId);
@@ -104,7 +104,7 @@ abstract contract LensNFTBase is ERC721Enumerable, ILensNFTBase {
                 ),
                 owner,
                 sig,
-                false
+                false // TODO: Use a different implementation.
             );
         }
         _setOperatorApproval(owner, operator, approved);
@@ -142,7 +142,7 @@ abstract contract LensNFTBase is ERC721Enumerable, ILensNFTBase {
                 ),
                 owner,
                 sig,
-                false
+                false // TODO: Use a different implementation.
             );
         }
         _burn(tokenId);

@@ -98,10 +98,10 @@ contract ApprovalFollowModule is FollowValidatorFollowModuleBase {
      * @dev We don't need to execute any additional logic on transfers in this follow module.
      */
     function followModuleTransferHook(
-        uint256,
-        address,
-        address,
-        uint256
+        uint256 profileId,
+        address from,
+        address to,
+        uint256 followNFTTokenId
     ) external override {}
 
     /**

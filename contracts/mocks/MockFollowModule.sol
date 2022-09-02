@@ -8,12 +8,11 @@ import {IFollowModule} from '../interfaces/IFollowModule.sol';
  * @dev This is a simple mock follow module to be used for testing.
  */
 contract MockFollowModule is IFollowModule {
-    function initializeFollowModule(uint256 profileId, bytes calldata data)
-        external
-        pure
-        override
-        returns (bytes memory)
-    {
+    function initializeFollowModule(
+        uint256,
+        address,
+        bytes calldata data
+    ) external pure override returns (bytes memory) {
         uint256 number = abi.decode(data, (uint256));
         require(number == 1, 'MockFollowModule: invalid');
         return new bytes(0);
@@ -21,15 +20,16 @@ contract MockFollowModule is IFollowModule {
 
     function processFollow(
         address follower,
+        address executor,
         uint256 profileId,
         bytes calldata data
     ) external override {}
 
     function isFollowing(
-        uint256 profileId,
-        address follower,
-        uint256 followNFTTokenId
-    ) external view override returns (bool) {
+        uint256,
+        address,
+        uint256
+    ) external pure override returns (bool) {
         return true;
     }
 
