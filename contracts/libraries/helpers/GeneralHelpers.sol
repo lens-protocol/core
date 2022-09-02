@@ -143,10 +143,8 @@ library GeneralHelpers {
      * @dev This fetches the owner address for a given token ID. Note that this does not check and
      * revert upon loading a zero address.
      *
-     * However, this function is only used if this caveat is checked or if it is followed by a call
-     * to `_validateRecoveredAddress()` with the returned address from this function as the signer,
-     * and since `_validateRecoveredAddress()` reverts upon recovering the zero address, the execution
-     * will always revert if the owner returned is the zero address.
+     * However, this function is only used if the result is compared to the caller or a recovered signer,
+     * which is already checked for the zero address.
      */
     function unsafeOwnerOf(uint256 tokenId) internal view returns (address) {
         address owner;

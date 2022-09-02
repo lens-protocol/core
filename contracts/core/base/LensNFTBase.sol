@@ -60,7 +60,7 @@ abstract contract LensNFTBase is ERC721Enumerable, ILensNFTBase {
         if (spender == address(0)) revert Errors.ZeroSpender();
         address owner = ownerOf(tokenId);
         unchecked {
-            MetaTxHelpers._validateRecoveredAddress(
+            MetaTxHelpers._validateRecoveredAddressNoExecutor(
                 _calculateDigest(
                     keccak256(
                         abi.encode(
@@ -73,8 +73,7 @@ abstract contract LensNFTBase is ERC721Enumerable, ILensNFTBase {
                     )
                 ),
                 owner,
-                sig,
-                false // TODO: Use a different implementation.
+                sig
             );
         }
         _approve(spender, tokenId);
@@ -89,7 +88,7 @@ abstract contract LensNFTBase is ERC721Enumerable, ILensNFTBase {
     ) external virtual override {
         if (operator == address(0)) revert Errors.ZeroSpender();
         unchecked {
-            MetaTxHelpers._validateRecoveredAddress(
+            MetaTxHelpers._validateRecoveredAddressNoExecutor(
                 _calculateDigest(
                     keccak256(
                         abi.encode(
@@ -103,8 +102,7 @@ abstract contract LensNFTBase is ERC721Enumerable, ILensNFTBase {
                     )
                 ),
                 owner,
-                sig,
-                false // TODO: Use a different implementation.
+                sig
             );
         }
         _setOperatorApproval(owner, operator, approved);
@@ -129,7 +127,7 @@ abstract contract LensNFTBase is ERC721Enumerable, ILensNFTBase {
     {
         address owner = ownerOf(tokenId);
         unchecked {
-            MetaTxHelpers._validateRecoveredAddress(
+            MetaTxHelpers._validateRecoveredAddressNoExecutor(
                 _calculateDigest(
                     keccak256(
                         abi.encode(
@@ -141,8 +139,7 @@ abstract contract LensNFTBase is ERC721Enumerable, ILensNFTBase {
                     )
                 ),
                 owner,
-                sig,
-                false // TODO: Use a different implementation.
+                sig
             );
         }
         _burn(tokenId);

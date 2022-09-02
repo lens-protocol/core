@@ -81,7 +81,7 @@ contract FollowNFT is LensNFTBase, IFollowNFT {
         DataTypes.EIP712Signature calldata sig
     ) external override {
         unchecked {
-            MetaTxHelpers._validateRecoveredAddress(
+            MetaTxHelpers._validateRecoveredAddressNoExecutor(
                 _calculateDigest(
                     keccak256(
                         abi.encode(
@@ -94,8 +94,7 @@ contract FollowNFT is LensNFTBase, IFollowNFT {
                     )
                 ),
                 delegator,
-                sig,
-                false // TODO: Use a different implementation.
+                sig
             );
         }
         _delegate(delegator, delegatee);
