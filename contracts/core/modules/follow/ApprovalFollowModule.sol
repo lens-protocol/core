@@ -58,12 +58,11 @@ contract ApprovalFollowModule is FollowValidatorFollowModuleBase {
      *
      * @return bytes An abi encoded bytes parameter, which is the same as the passed data parameter.
      */
-    function initializeFollowModule(uint256 profileId, bytes calldata data)
-        external
-        override
-        onlyHub
-        returns (bytes memory)
-    {
+    function initializeFollowModule(
+        uint256 profileId,
+        address,
+        bytes calldata data
+    ) external override onlyHub returns (bytes memory) {
         address owner = IERC721(HUB).ownerOf(profileId);
 
         if (data.length > 0) {
@@ -85,8 +84,9 @@ contract ApprovalFollowModule is FollowValidatorFollowModuleBase {
      */
     function processFollow(
         address follower,
+        address,
         uint256 profileId,
-        bytes calldata data
+        bytes calldata
     ) external override onlyHub {
         address owner = IERC721(HUB).ownerOf(profileId);
         if (!_approvedByProfileByOwner[owner][profileId][follower])
@@ -98,10 +98,10 @@ contract ApprovalFollowModule is FollowValidatorFollowModuleBase {
      * @dev We don't need to execute any additional logic on transfers in this follow module.
      */
     function followModuleTransferHook(
-        uint256 profileId,
-        address from,
-        address to,
-        uint256 followNFTTokenId
+        uint256,
+        address,
+        address,
+        uint256
     ) external override {}
 
     /**

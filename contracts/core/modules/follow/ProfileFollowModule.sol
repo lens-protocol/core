@@ -25,17 +25,13 @@ contract ProfileFollowModule is FollowValidatorFollowModuleBase {
     /**
      * @notice This follow module works on custom profile owner approvals.
      *
-     * @param profileId The profile ID of the profile to initialize this module for.
-     * @param data The arbitrary data parameter, which in this particular module initialization will be just ignored.
-     *
      * @return bytes Empty bytes.
      */
-    function initializeFollowModule(uint256 profileId, bytes calldata data)
-        external
-        override
-        onlyHub
-        returns (bytes memory)
-    {
+    function initializeFollowModule(
+        uint256,
+        address,
+        bytes calldata
+    ) external view override onlyHub returns (bytes memory) {
         return new bytes(0);
     }
 
@@ -47,6 +43,7 @@ contract ProfileFollowModule is FollowValidatorFollowModuleBase {
      */
     function processFollow(
         address follower,
+        address,
         uint256 profileId,
         bytes calldata data
     ) external override onlyHub {
@@ -65,9 +62,9 @@ contract ProfileFollowModule is FollowValidatorFollowModuleBase {
      * @dev We don't need to execute any additional logic on transfers in this follow module.
      */
     function followModuleTransferHook(
-        uint256 profileId,
-        address from,
-        address to,
-        uint256 followNFTTokenId
+        uint256,
+        address,
+        address,
+        uint256
     ) external override {}
 }

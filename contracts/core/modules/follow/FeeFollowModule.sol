@@ -50,12 +50,11 @@ contract FeeFollowModule is FeeModuleBase, FollowValidatorFollowModuleBase {
      *
      * @return bytes An abi encoded bytes parameter, which is the same as the passed data parameter.
      */
-    function initializeFollowModule(uint256 profileId, bytes calldata data)
-        external
-        override
-        onlyHub
-        returns (bytes memory)
-    {
+    function initializeFollowModule(
+        uint256 profileId,
+        address,
+        bytes calldata data
+    ) external override onlyHub returns (bytes memory) {
         (uint256 amount, address currency, address recipient) = abi.decode(
             data,
             (uint256, address, address)
@@ -74,7 +73,8 @@ contract FeeFollowModule is FeeModuleBase, FollowValidatorFollowModuleBase {
      *  1. Charging a fee
      */
     function processFollow(
-        address follower,
+        address,
+        address executor,
         uint256 profileId,
         bytes calldata data
     ) external override onlyHub {
@@ -87,19 +87,19 @@ contract FeeFollowModule is FeeModuleBase, FollowValidatorFollowModuleBase {
         uint256 treasuryAmount = (amount * treasuryFee) / BPS_MAX;
         uint256 adjustedAmount = amount - treasuryAmount;
 
-        IERC20(currency).safeTransferFrom(follower, recipient, adjustedAmount);
+        IERC20(currency).safeTransferFrom(executor, recipient, adjustedAmount);
         if (treasuryAmount > 0)
-            IERC20(currency).safeTransferFrom(follower, treasury, treasuryAmount);
+            IERC20(currency).safeTransferFrom(executor, treasury, treasuryAmount);
     }
 
     /**
      * @dev We don't need to execute any additional logic on transfers in this follow module.
      */
     function followModuleTransferHook(
-        uint256 profileId,
-        address from,
-        address to,
-        uint256 followNFTTokenId
+        uint256,
+        address,
+        address,
+        uint256
     ) external override {}
 
     /**
