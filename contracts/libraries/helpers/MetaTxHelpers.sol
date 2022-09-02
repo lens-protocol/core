@@ -366,8 +366,6 @@ library MetaTxHelpers {
 
     /**
      * @dev Wrapper for ecrecover to reduce code size, used in meta-tx specific functions.
-     * TODO: Consider using OZ's implementation for ECDSA recovery.
-     * TODO: Add a parameter for the delegated executor bit offset.
      */
     function _validateRecoveredAddress(
         bytes32 digest,

@@ -4,7 +4,9 @@ pragma solidity 0.8.15;
 
 import {IEIP1271Implementer} from '../interfaces/IEIP1271Implementer.sol';
 
-// todo: should receive 65 length bytes and decode manually.
+/**
+ * @dev This is a mock contract that validates an EIP1271 signature against its deployer.
+ */
 contract MockEIP1271Implementer is IEIP1271Implementer {
     // bytes4(keccak256("isValidSignature(bytes32,bytes)")
     bytes4 internal constant MAGIC_VALUE = 0x1626ba7e;

@@ -4,7 +4,9 @@ pragma solidity 0.8.15;
 
 import {IEIP1271Implementer} from '../interfaces/IEIP1271Implementer.sol';
 
-// todo: should receive 65 length bytes and decode manually.
+/**
+ * @dev This is a mock contract that always returns the wrong value upon being checked with EIP-1271.
+ */
 contract BadMockEIP1271Implementer is IEIP1271Implementer {
     function isValidSignature(bytes32 _hash, bytes memory _signature)
         external

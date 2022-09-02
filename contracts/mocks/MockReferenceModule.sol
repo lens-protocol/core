@@ -4,6 +4,9 @@ pragma solidity 0.8.15;
 
 import {IReferenceModule} from '../interfaces/IReferenceModule.sol';
 
+/**
+ * @dev This is a simple mock follow module to be used for testing.
+ */
 contract MockReferenceModule is IReferenceModule {
     function initializeReferenceModule(
         uint256 profileId,
