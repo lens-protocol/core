@@ -24,6 +24,7 @@ contract FreeCollectModule is FollowValidationModuleBase, ICollectModule {
      */
     function initializePublicationCollectModule(
         uint256 profileId,
+        address,
         uint256 pubId,
         bytes calldata data
     ) external override onlyHub returns (bytes memory) {
@@ -37,11 +38,12 @@ contract FreeCollectModule is FollowValidationModuleBase, ICollectModule {
      *  1. Ensuring the collector is a follower, if needed
      */
     function processCollect(
-        uint256 referrerProfileId,
+        uint256,
         address collector,
+        address,
         uint256 profileId,
         uint256 pubId,
-        bytes calldata data
+        bytes calldata
     ) external view override {
         if (_followerOnlyByPublicationByProfile[profileId][pubId])
             _checkFollowValidity(profileId, collector);
