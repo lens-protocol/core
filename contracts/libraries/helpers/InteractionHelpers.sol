@@ -104,34 +104,38 @@ library InteractionHelpers {
     ) internal returns (uint256) {
         (uint256 rootProfileId, uint256 rootPubId, address rootCollectModule) = GeneralHelpers
             .getPointedIfMirrorWithCollectModule(profileId, pubId);
-
-        uint256 collectNFTSlot;
         address collectNFT;
 
-        // Load the collect NFT and for the given publication being collected, and cache the
-        // collect NFT slot.
-        assembly {
-            mstore(0, rootProfileId)
-            mstore(32, PUB_BY_ID_BY_PROFILE_MAPPING_SLOT)
-            mstore(32, keccak256(0, 64))
-            mstore(0, rootPubId)
-            collectNFTSlot := add(keccak256(0, 64), PUBLICATION_COLLECT_NFT_OFFSET)
-            collectNFT := sload(collectNFTSlot)
-        }
+        // Prevents stack too deep.
+        {
+            uint256 collectNFTSlot;
 
-        if (collectNFT == address(0)) {
-            collectNFT = _deployCollectNFT(
-                rootProfileId,
-                rootPubId,
-                _handle(rootProfileId),
-                collectNFTImpl
-            );
-
-            // Store the collect NFT in the cached slot.
+            // Load the collect NFT and for the given publication being collected, and cache the
+            // collect NFT slot.
             assembly {
-                sstore(collectNFTSlot, collectNFT)
+                mstore(0, rootProfileId)
+                mstore(32, PUB_BY_ID_BY_PROFILE_MAPPING_SLOT)
+                mstore(32, keccak256(0, 64))
+                mstore(0, rootPubId)
+                collectNFTSlot := add(keccak256(0, 64), PUBLICATION_COLLECT_NFT_OFFSET)
+                collectNFT := sload(collectNFTSlot)
+            }
+
+            if (collectNFT == address(0)) {
+                collectNFT = _deployCollectNFT(
+                    rootProfileId,
+                    rootPubId,
+                    _handle(rootProfileId),
+                    collectNFTImpl
+                );
+
+                // Store the collect NFT in the cached slot.
+                assembly {
+                    sstore(collectNFTSlot, collectNFT)
+                }
             }
         }
+
         uint256 tokenId = ICollectNFT(collectNFT).mint(onBehalfOf);
 
         try

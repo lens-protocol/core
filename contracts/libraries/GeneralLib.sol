@@ -934,9 +934,12 @@ library GeneralLib {
         address executor,
         uint256 pubId
     ) private {
-        uint256 pubCountPointed = _getPubCount(vars.profileIdPointed);
-        if (pubCountPointed < vars.pubIdPointed || vars.pubIdPointed == 0)
-            revert Errors.PublicationDoesNotExist();
+        // Prevents stack too deep.
+        {
+            uint256 pubCountPointed = _getPubCount(vars.profileIdPointed);
+            if (pubCountPointed < vars.pubIdPointed || vars.pubIdPointed == 0)
+                revert Errors.PublicationDoesNotExist();
+        }
 
         if (vars.profileId == vars.profileIdPointed && vars.pubIdPointed == pubId)
             revert Errors.CannotCommentOnSelf();
