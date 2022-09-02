@@ -846,7 +846,6 @@ library GeneralLib {
             collectModuleInitData
         );
 
-        // Reference module initialization
         bytes memory referenceModuleReturnData = _initPubReferenceModule(
             profileId,
             executor,
