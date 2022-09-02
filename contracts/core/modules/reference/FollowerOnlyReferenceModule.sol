@@ -21,9 +21,10 @@ contract FollowerOnlyReferenceModule is FollowValidationModuleBase, IReferenceMo
      * @dev There is nothing needed at initialization.
      */
     function initializeReferenceModule(
-        uint256 profileId,
-        uint256 pubId,
-        bytes calldata data
+        uint256,
+        address,
+        uint256,
+        bytes calldata
     ) external pure override returns (bytes memory) {
         return new bytes(0);
     }
@@ -35,9 +36,10 @@ contract FollowerOnlyReferenceModule is FollowValidationModuleBase, IReferenceMo
      */
     function processComment(
         uint256 profileId,
+        address,
         uint256 profileIdPointed,
-        uint256 pubIdPointed,
-        bytes calldata data
+        uint256,
+        bytes calldata
     ) external view override {
         address commentCreator = IERC721(HUB).ownerOf(profileId);
         _checkFollowValidity(profileIdPointed, commentCreator);
@@ -50,9 +52,10 @@ contract FollowerOnlyReferenceModule is FollowValidationModuleBase, IReferenceMo
      */
     function processMirror(
         uint256 profileId,
+        address,
         uint256 profileIdPointed,
-        uint256 pubIdPointed,
-        bytes calldata data
+        uint256,
+        bytes calldata
     ) external view override {
         address mirrorCreator = IERC721(HUB).ownerOf(profileId);
         _checkFollowValidity(profileIdPointed, mirrorCreator);
