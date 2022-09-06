@@ -939,13 +939,15 @@ makeSuiteCleanRoom('Multi-State Hub', function () {
 
         await expect(lensHub.connect(governance).setState(ProtocolState.Paused)).to.not.be.reverted;
 
-        await expect(lensHub.follow([FIRST_PROFILE_ID], [[]])).to.be.revertedWith(ERRORS.PAUSED);
+        await expect(lensHub.follow(userAddress, [FIRST_PROFILE_ID], [[]])).to.be.revertedWith(
+          ERRORS.PAUSED
+        );
 
         await expect(
           lensHub.connect(governance).setState(ProtocolState.Unpaused)
         ).to.not.be.reverted;
 
-        await expect(lensHub.follow([FIRST_PROFILE_ID], [[]])).to.not.be.reverted;
+        await expect(lensHub.follow(userAddress, [FIRST_PROFILE_ID], [[]])).to.not.be.reverted;
       });
 
       it('Governance should pause the hub, following with sig should fail, then governance unpauses the hub and following with sig should work', async function () {
@@ -1031,17 +1033,19 @@ makeSuiteCleanRoom('Multi-State Hub', function () {
           })
         ).to.not.be.reverted;
 
-        await expect(lensHub.follow([FIRST_PROFILE_ID], [[]])).to.not.be.reverted;
+        await expect(lensHub.follow(userAddress, [FIRST_PROFILE_ID], [[]])).to.not.be.reverted;
 
         await expect(lensHub.connect(governance).setState(ProtocolState.Paused)).to.not.be.reverted;
 
-        await expect(lensHub.collect(FIRST_PROFILE_ID, 1, [])).to.be.revertedWith(ERRORS.PAUSED);
+        await expect(lensHub.collect(userAddress, FIRST_PROFILE_ID, 1, [])).to.be.revertedWith(
+          ERRORS.PAUSED
+        );
 
         await expect(
           lensHub.connect(governance).setState(ProtocolState.Unpaused)
         ).to.not.be.reverted;
 
-        await expect(lensHub.collect(FIRST_PROFILE_ID, 1, [])).to.not.be.reverted;
+        await expect(lensHub.collect(userAddress, FIRST_PROFILE_ID, 1, [])).to.not.be.reverted;
       });
 
       it('Governance should pause the hub, collecting with sig should fail, then governance unpauses the hub and collecting with sig should work', async function () {
@@ -1072,7 +1076,7 @@ makeSuiteCleanRoom('Multi-State Hub', function () {
         ).to.not.be.reverted;
 
         await expect(
-          lensHub.connect(testWallet).follow([FIRST_PROFILE_ID], [[]])
+          lensHub.connect(testWallet).follow(testWallet.address, [FIRST_PROFILE_ID], [[]])
         ).to.not.be.reverted;
 
         await expect(lensHub.connect(governance).setState(ProtocolState.Paused)).to.not.be.reverted;
@@ -1777,7 +1781,7 @@ makeSuiteCleanRoom('Multi-State Hub', function () {
           lensHub.connect(governance).setState(ProtocolState.PublishingPaused)
         ).to.not.be.reverted;
 
-        await expect(lensHub.follow([FIRST_PROFILE_ID], [[]])).to.not.be.reverted;
+        await expect(lensHub.follow(userAddress, [FIRST_PROFILE_ID], [[]])).to.not.be.reverted;
       });
 
       it('Governance should pause publishing, following with sig should work', async function () {
@@ -1847,13 +1851,13 @@ makeSuiteCleanRoom('Multi-State Hub', function () {
           })
         ).to.not.be.reverted;
 
-        await expect(lensHub.follow([FIRST_PROFILE_ID], [[]])).to.not.be.reverted;
+        await expect(lensHub.follow(userAddress, [FIRST_PROFILE_ID], [[]])).to.not.be.reverted;
 
         await expect(
           lensHub.connect(governance).setState(ProtocolState.PublishingPaused)
         ).to.not.be.reverted;
 
-        await expect(lensHub.collect(FIRST_PROFILE_ID, 1, [])).to.not.be.reverted;
+        await expect(lensHub.collect(userAddress, FIRST_PROFILE_ID, 1, [])).to.not.be.reverted;
       });
 
       it('Governance should pause publishing, collecting with sig should work', async function () {
@@ -1884,7 +1888,7 @@ makeSuiteCleanRoom('Multi-State Hub', function () {
         ).to.not.be.reverted;
 
         await expect(
-          lensHub.connect(testWallet).follow([FIRST_PROFILE_ID], [[]])
+          lensHub.connect(testWallet).follow(testWallet.address, [FIRST_PROFILE_ID], [[]])
         ).to.not.be.reverted;
 
         await expect(

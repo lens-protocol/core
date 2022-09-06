@@ -45,8 +45,8 @@ makeSuiteCleanRoom('Collect NFT', function () {
         referenceModuleInitData: [],
       })
     ).to.not.be.reverted;
-    await expect(lensHub.follow([FIRST_PROFILE_ID], [[]])).to.not.be.reverted;
-    await expect(lensHub.collect(FIRST_PROFILE_ID, 1, [])).to.not.be.reverted;
+    await expect(lensHub.follow(userAddress, [FIRST_PROFILE_ID], [[]])).to.not.be.reverted;
+    await expect(lensHub.collect(userAddress, FIRST_PROFILE_ID, 1, [])).to.not.be.reverted;
     collectNFT = CollectNFT__factory.connect(
       await lensHub.getCollectNFT(FIRST_PROFILE_ID, 1),
       user

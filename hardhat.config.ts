@@ -48,6 +48,9 @@ const mainnetFork = MAINNET_FORK
   : undefined;
 
 const config: HardhatUserConfig = {
+  tracer: {
+    enabled: true,
+  },
   solidity: {
     compilers: [
       {

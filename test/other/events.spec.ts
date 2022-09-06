@@ -439,7 +439,7 @@ makeSuiteCleanRoom('Events', function () {
       );
 
       const mockData = abiCoder.encode(['uint256'], [123]);
-      receipt = await waitForTx(lensHub.connect(userTwo).follow([FIRST_PROFILE_ID], [mockData]));
+      receipt = await waitForTx(lensHub.connect(userTwo).follow(userTwoAddress, [FIRST_PROFILE_ID], [mockData]));
       const followNFT = await lensHub.getFollowNFT(FIRST_PROFILE_ID);
 
       const expectedName = MOCK_PROFILE_HANDLE + '-Follower';
@@ -489,14 +489,14 @@ makeSuiteCleanRoom('Events', function () {
         })
       );
 
-      await waitForTx(lensHub.connect(userTwo).follow([FIRST_PROFILE_ID], [[]]));
+      await waitForTx(lensHub.connect(userTwo).follow(userTwoAddress, [FIRST_PROFILE_ID], [[]]));
 
       await expect(currency.mint(userTwoAddress, MAX_UINT256)).to.not.be.reverted;
       await expect(
         currency.connect(userTwo).approve(feeCollectModule.address, MAX_UINT256)
       ).to.not.be.reverted;
       const collectData = abiCoder.encode(['address', 'uint256'], [currency.address, collectPrice]);
-      receipt = await waitForTx(lensHub.connect(userTwo).collect(FIRST_PROFILE_ID, 1, collectData));
+      receipt = await waitForTx(lensHub.connect(userTwo).collect(userTwoAddress, FIRST_PROFILE_ID, 1, collectData));
       const collectNFT = await lensHub.getCollectNFT(FIRST_PROFILE_ID, 1);
       const expectedName = MOCK_PROFILE_HANDLE + '-Collect-' + '1';
       const expectedSymbol = getAbbreviation(MOCK_PROFILE_HANDLE) + '-Cl-' + '1';
@@ -557,7 +557,7 @@ makeSuiteCleanRoom('Events', function () {
         })
       );
 
-      await waitForTx(lensHub.connect(userTwo).follow([FIRST_PROFILE_ID], [[]]));
+      await waitForTx(lensHub.connect(userTwo).follow(userTwoAddress, [FIRST_PROFILE_ID], [[]]));
 
       await waitForTx(
         lensHub.connect(userTwo).createProfile({
@@ -587,7 +587,7 @@ makeSuiteCleanRoom('Events', function () {
       ).to.not.be.reverted;
       const collectData = abiCoder.encode(['address', 'uint256'], [currency.address, collectPrice]);
 
-      receipt = await waitForTx(lensHub.connect(userTwo).collect(secondProfileId, 1, collectData));
+      receipt = await waitForTx(lensHub.connect(userTwo).collect(userTwoAddress, secondProfileId, 1, collectData));
       const collectNFT = await lensHub.getCollectNFT(FIRST_PROFILE_ID, 1);
       const expectedName = MOCK_PROFILE_HANDLE + '-Collect-' + '1';
       const expectedSymbol = getAbbreviation(MOCK_PROFILE_HANDLE) + '-Cl-' + '1';

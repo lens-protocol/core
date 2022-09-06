@@ -46,7 +46,7 @@ makeSuiteCleanRoom('Revert Collect Module', function () {
 
   context('Collecting', function () {
     it('UserTwo should fail to collect without following', async function () {
-      await expect(lensHub.connect(userTwo).collect(FIRST_PROFILE_ID, 1, [])).to.be.revertedWith(
+      await expect(lensHub.connect(userTwo).collect(userTwoAddress,FIRST_PROFILE_ID, 1, [])).to.be.revertedWith(
         ERRORS.COLLECT_NOT_ALLOWED
       );
     });
@@ -74,14 +74,14 @@ makeSuiteCleanRoom('Revert Collect Module', function () {
         })
       ).to.not.be.reverted;
 
-      await expect(lensHub.connect(userTwo).collect(secondProfileId, 1, [])).to.be.revertedWith(
+      await expect(lensHub.connect(userTwo).collect(userTwoAddress,secondProfileId, 1, [])).to.be.revertedWith(
         ERRORS.COLLECT_NOT_ALLOWED
       );
     });
 
     it('UserTwo should fail to collect while following', async function () {
-      await expect(lensHub.connect(userTwo).follow([FIRST_PROFILE_ID], [[]])).to.not.be.reverted;
-      await expect(lensHub.connect(userTwo).collect(FIRST_PROFILE_ID, 1, [])).to.be.revertedWith(
+      await expect(lensHub.connect(userTwo).follow(userTwoAddress, [FIRST_PROFILE_ID], [[]])).to.not.be.reverted;
+      await expect(lensHub.connect(userTwo).collect(userTwoAddress,FIRST_PROFILE_ID, 1, [])).to.be.revertedWith(
         ERRORS.COLLECT_NOT_ALLOWED
       );
     });
@@ -109,8 +109,8 @@ makeSuiteCleanRoom('Revert Collect Module', function () {
         })
       ).to.not.be.reverted;
 
-      await expect(lensHub.connect(userTwo).follow([FIRST_PROFILE_ID], [[]])).to.not.be.reverted;
-      await expect(lensHub.connect(userTwo).collect(secondProfileId, 1, [])).to.be.revertedWith(
+      await expect(lensHub.connect(userTwo).follow(userTwoAddress, [FIRST_PROFILE_ID], [[]])).to.not.be.reverted;
+      await expect(lensHub.connect(userTwo).collect(userTwoAddress,secondProfileId, 1, [])).to.be.revertedWith(
         ERRORS.COLLECT_NOT_ALLOWED
       );
     });

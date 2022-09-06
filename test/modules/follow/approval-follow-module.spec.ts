@@ -41,7 +41,7 @@ makeSuiteCleanRoom('Approval Follow Module', function () {
     context('Initialization', function () {
       it('Initialize call should fail when sender is not the hub', async function () {
         await expect(
-          approvalFollowModule.initializeFollowModule(FIRST_PROFILE_ID, [])
+          approvalFollowModule.initializeFollowModule(FIRST_PROFILE_ID, userAddress, [])
         ).to.be.revertedWith(ERRORS.NOT_HUB);
       });
     });
@@ -69,7 +69,9 @@ makeSuiteCleanRoom('Approval Follow Module', function () {
     context('Processing follow', function () {
       it('UserTwo should fail to process follow without being the hub', async function () {
         await expect(
-          approvalFollowModule.connect(userTwo).processFollow(userTwoAddress, FIRST_PROFILE_ID, [])
+          approvalFollowModule
+            .connect(userTwo)
+            .processFollow(userTwoAddress, userTwoAddress, FIRST_PROFILE_ID, [])
         ).to.be.revertedWith(ERRORS.NOT_HUB);
       });
 
@@ -77,9 +79,9 @@ makeSuiteCleanRoom('Approval Follow Module', function () {
         await expect(
           lensHub.setFollowModule(FIRST_PROFILE_ID, approvalFollowModule.address, [])
         ).to.not.be.reverted;
-        await expect(lensHub.connect(userTwo).follow([FIRST_PROFILE_ID], [[]])).to.be.revertedWith(
-          ERRORS.FOLLOW_NOT_APPROVED
-        );
+        await expect(
+          lensHub.connect(userTwo).follow(userTwoAddress, [FIRST_PROFILE_ID], [[]])
+        ).to.be.revertedWith(ERRORS.FOLLOW_NOT_APPROVED);
       });
 
       it('Follow should fail when follower address approval is revoked after being approved', async function () {
@@ -90,16 +92,16 @@ makeSuiteCleanRoom('Approval Follow Module', function () {
         await expect(
           approvalFollowModule.connect(user).approve(FIRST_PROFILE_ID, [userTwoAddress], [false])
         ).to.not.be.reverted;
-        await expect(lensHub.connect(userTwo).follow([FIRST_PROFILE_ID], [[]])).to.be.revertedWith(
-          ERRORS.FOLLOW_NOT_APPROVED
-        );
+        await expect(
+          lensHub.connect(userTwo).follow(userTwoAddress, [FIRST_PROFILE_ID], [[]])
+        ).to.be.revertedWith(ERRORS.FOLLOW_NOT_APPROVED);
       });
 
       it('Follow should fail when follower address is not approved even when following itself', async function () {
         await expect(
           lensHub.setFollowModule(FIRST_PROFILE_ID, approvalFollowModule.address, [])
         ).to.not.be.reverted;
-        await expect(lensHub.follow([FIRST_PROFILE_ID], [[]])).to.be.revertedWith(
+        await expect(lensHub.follow(userAddress, [FIRST_PROFILE_ID], [[]])).to.be.revertedWith(
           ERRORS.FOLLOW_NOT_APPROVED
         );
       });
@@ -164,7 +166,9 @@ makeSuiteCleanRoom('Approval Follow Module', function () {
         await expect(
           lensHub.setFollowModule(FIRST_PROFILE_ID, approvalFollowModule.address, data)
         ).to.not.be.reverted;
-        await expect(lensHub.connect(userTwo).follow([FIRST_PROFILE_ID], [[]])).to.not.be.reverted;
+        await expect(
+          lensHub.connect(userTwo).follow(userTwoAddress, [FIRST_PROFILE_ID], [[]])
+        ).to.not.be.reverted;
       });
     });
 
@@ -193,7 +197,9 @@ makeSuiteCleanRoom('Approval Follow Module', function () {
         await expect(
           approvalFollowModule.connect(user).approve(FIRST_PROFILE_ID, [userTwoAddress], [true])
         ).to.not.be.reverted;
-        await expect(lensHub.connect(userTwo).follow([FIRST_PROFILE_ID], [[]])).to.not.be.reverted;
+        await expect(
+          lensHub.connect(userTwo).follow(userTwoAddress, [FIRST_PROFILE_ID], [[]])
+        ).to.not.be.reverted;
       });
 
       it('Follow call to self should work when address was previously approved', async function () {
@@ -203,7 +209,7 @@ makeSuiteCleanRoom('Approval Follow Module', function () {
         await expect(
           approvalFollowModule.connect(user).approve(FIRST_PROFILE_ID, [userAddress], [true])
         ).to.not.be.reverted;
-        await expect(lensHub.follow([FIRST_PROFILE_ID], [[]])).to.not.be.reverted;
+        await expect(lensHub.follow(userAddress, [FIRST_PROFILE_ID], [[]])).to.not.be.reverted;
       });
     });
 

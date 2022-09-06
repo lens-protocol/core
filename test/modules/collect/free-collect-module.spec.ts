@@ -50,7 +50,7 @@ makeSuiteCleanRoom('Free Collect Module', function () {
             referenceModuleInitData: [],
           })
         ).to.not.be.reverted;
-        await expect(lensHub.connect(userTwo).collect(FIRST_PROFILE_ID, 1, [])).to.be.revertedWith(
+        await expect(lensHub.connect(userTwo).collect(userTwoAddress, FIRST_PROFILE_ID, 1, [])).to.be.revertedWith(
           ERRORS.FOLLOW_INVALID
         );
       });
@@ -88,7 +88,7 @@ makeSuiteCleanRoom('Free Collect Module', function () {
           })
         ).to.not.be.reverted;
 
-        await expect(lensHub.connect(userTwo).collect(secondProfileId, 1, [])).to.be.revertedWith(
+        await expect(lensHub.connect(userTwo).collect(userTwoAddress, secondProfileId, 1, [])).to.be.revertedWith(
           ERRORS.FOLLOW_INVALID
         );
       });
@@ -107,7 +107,7 @@ makeSuiteCleanRoom('Free Collect Module', function () {
           referenceModuleInitData: [],
         })
       ).to.not.be.reverted;
-      await expect(lensHub.connect(userTwo).collect(FIRST_PROFILE_ID, 1, [])).to.not.be.reverted;
+      await expect(lensHub.connect(userTwo).collect(userTwoAddress, FIRST_PROFILE_ID, 1, [])).to.not.be.reverted;
     });
 
     it('UserTwo should collect with success when following if the configuration only allows followers', async function () {
@@ -121,8 +121,8 @@ makeSuiteCleanRoom('Free Collect Module', function () {
           referenceModuleInitData: [],
         })
       ).to.not.be.reverted;
-      await expect(lensHub.connect(userTwo).follow([FIRST_PROFILE_ID], [[]])).to.not.be.reverted;
-      await expect(lensHub.connect(userTwo).collect(FIRST_PROFILE_ID, 1, [])).to.not.be.reverted;
+      await expect(lensHub.connect(userTwo).follow(userTwoAddress, [FIRST_PROFILE_ID], [[]])).to.not.be.reverted;
+      await expect(lensHub.connect(userTwo).collect(userTwoAddress, FIRST_PROFILE_ID, 1, [])).to.not.be.reverted;
     });
 
     it('UserTwo should collect with success when following according the follow module set', async function () {
@@ -145,8 +145,8 @@ makeSuiteCleanRoom('Free Collect Module', function () {
       await expect(
         approvalFollowModule.connect(user).approve(FIRST_PROFILE_ID, [userTwoAddress], [true])
       ).to.not.be.reverted;
-      await expect(lensHub.connect(userTwo).follow([FIRST_PROFILE_ID], [[]])).to.not.be.reverted;
-      await expect(lensHub.connect(userTwo).collect(FIRST_PROFILE_ID, 1, [])).to.not.be.reverted;
+      await expect(lensHub.connect(userTwo).follow(userTwoAddress, [FIRST_PROFILE_ID], [[]])).to.not.be.reverted;
+      await expect(lensHub.connect(userTwo).collect(userTwoAddress, FIRST_PROFILE_ID, 1, [])).to.not.be.reverted;
     });
 
     it('UserTwo should mirror the original post, collect with success from their mirror when following the original profile which has no follow module set', async function () {
@@ -161,7 +161,7 @@ makeSuiteCleanRoom('Free Collect Module', function () {
         })
       ).to.not.be.reverted;
       const secondProfileId = FIRST_PROFILE_ID + 1;
-      await expect(lensHub.connect(userTwo).follow([FIRST_PROFILE_ID], [[]])).to.not.be.reverted;
+      await expect(lensHub.connect(userTwo).follow(userTwoAddress, [FIRST_PROFILE_ID], [[]])).to.not.be.reverted;
       await expect(
         lensHub.connect(userTwo).createProfile({
           to: userTwoAddress,
@@ -183,7 +183,7 @@ makeSuiteCleanRoom('Free Collect Module', function () {
         })
       ).to.not.be.reverted;
 
-      await expect(lensHub.connect(userTwo).collect(secondProfileId, 1, [])).to.not.be.reverted;
+      await expect(lensHub.connect(userTwo).collect(userTwoAddress, secondProfileId, 1, [])).to.not.be.reverted;
     });
   });
 });

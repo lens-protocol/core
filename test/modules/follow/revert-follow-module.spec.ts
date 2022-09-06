@@ -5,6 +5,7 @@ import { ERRORS } from '../../helpers/errors';
 import {
   FIRST_PROFILE_ID,
   governance,
+  userTwoAddress,
   lensHub,
   makeSuiteCleanRoom,
   MOCK_FOLLOW_NFT_URI,
@@ -36,7 +37,7 @@ makeSuiteCleanRoom('Revert Follow Module', function () {
     context('Initialization', function () {
       it('Initialize call should fail when sender is not the hub', async function () {
         await expect(
-          revertFollowModule.initializeFollowModule(FIRST_PROFILE_ID, [])
+          revertFollowModule.initializeFollowModule(FIRST_PROFILE_ID, userAddress, [])
         ).to.be.revertedWith(ERRORS.NOT_HUB);
       });
     });
@@ -47,9 +48,9 @@ makeSuiteCleanRoom('Revert Follow Module', function () {
         expect(await lensHub.getFollowModule(FIRST_PROFILE_ID)).to.be.equal(
           revertFollowModule.address
         );
-        await expect(lensHub.connect(userTwo).follow([FIRST_PROFILE_ID], [[]])).to.be.revertedWith(
-          ERRORS.FOLLOW_INVALID
-        );
+        await expect(
+          lensHub.connect(userTwo).follow(userTwoAddress, [FIRST_PROFILE_ID], [[]])
+        ).to.be.revertedWith(ERRORS.FOLLOW_INVALID);
       });
     });
   });
@@ -61,7 +62,7 @@ makeSuiteCleanRoom('Revert Follow Module', function () {
         expect(
           await revertFollowModule
             .connect(lensHub.address)
-            .initializeFollowModule(FIRST_PROFILE_ID, nonEmptyData)
+            .initializeFollowModule(FIRST_PROFILE_ID, userAddress, nonEmptyData)
         ).to.be.equals('0x');
       });
     });

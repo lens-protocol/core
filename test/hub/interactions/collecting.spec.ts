@@ -1,4 +1,5 @@
 import '@nomiclabs/hardhat-ethers';
+import hre from 'hardhat';
 import { expect } from 'chai';
 import { CollectNFT__factory, FollowNFT__factory } from '../../../typechain-types';
 import { MAX_UINT256, ZERO_ADDRESS } from '../../helpers/constants';
@@ -57,14 +58,16 @@ makeSuiteCleanRoom('Collecting', function () {
 
   context('Generic', function () {
     context('Negatives', function () {
-      it('User two should fail to collect without being a follower', async function () {
-        await expect(lensHub.connect(userTwo).collect(FIRST_PROFILE_ID, 1, [])).to.be.revertedWith(
-          ERRORS.FOLLOW_INVALID
-        );
+      it.only('User two should fail to collect without being a follower', async function () {
+        await expect(
+          lensHub.connect(userTwo).collect(userTwoAddress, FIRST_PROFILE_ID, 1, [])
+        ).to.be.revertedWith(ERRORS.FOLLOW_INVALID);
       });
 
       it('User two should follow, then transfer the followNFT and fail to collect', async function () {
-        await expect(lensHub.connect(userTwo).follow([FIRST_PROFILE_ID], [[]])).to.not.be.reverted;
+        await expect(
+          lensHub.connect(userTwo).follow(userTwoAddress, [FIRST_PROFILE_ID], [[]])
+        ).to.not.be.reverted;
         const followNftAddr = await lensHub.getFollowNFT(FIRST_PROFILE_ID);
         await expect(
           FollowNFT__factory.connect(followNftAddr, userTwo).transferFrom(
@@ -73,13 +76,13 @@ makeSuiteCleanRoom('Collecting', function () {
             1
           )
         ).to.not.be.reverted;
-        await expect(lensHub.connect(userTwo).collect(FIRST_PROFILE_ID, 1, [])).to.be.revertedWith(
-          ERRORS.FOLLOW_INVALID
-        );
+        await expect(
+          lensHub.connect(userTwo).collect(userTwoAddress, FIRST_PROFILE_ID, 1, [])
+        ).to.be.revertedWith(ERRORS.FOLLOW_INVALID);
       });
 
       it('User two should fail to collect a nonexistent publication', async function () {
-        await expect(lensHub.connect(userTwo).collect(0, 0, [])).to.be.revertedWith(
+        await expect(lensHub.connect(userTwo).collect(userTwoAddress, 0, 0, [])).to.be.revertedWith(
           ERRORS.PUBLICATION_DOES_NOT_EXIST
         );
       });
@@ -87,11 +90,11 @@ makeSuiteCleanRoom('Collecting', function () {
 
     context('Scenarios', function () {
       it('Collecting should work if the collector is the publication owner even when he is not following himself and follow NFT was not deployed', async function () {
-        await expect(lensHub.collect(FIRST_PROFILE_ID, 1, [])).to.not.be.reverted;
+        await expect(lensHub.collect(userAddress, FIRST_PROFILE_ID, 1, [])).to.not.be.reverted;
       });
 
       it('Collecting should work if the collector is the publication owner even when he is not following himself and follow NFT was deployed', async function () {
-        await expect(lensHub.follow([FIRST_PROFILE_ID], [[]])).to.not.be.reverted;
+        await expect(lensHub.follow(userAddress, [FIRST_PROFILE_ID], [[]])).to.not.be.reverted;
         const followNFT = FollowNFT__factory.connect(
           await lensHub.getFollowNFT(FIRST_PROFILE_ID),
           user
@@ -99,13 +102,13 @@ makeSuiteCleanRoom('Collecting', function () {
 
         await expect(followNFT.transferFrom(userAddress, userTwoAddress, 1)).to.not.be.reverted;
 
-        await expect(lensHub.collect(FIRST_PROFILE_ID, 1, [])).to.not.be.reverted;
+        await expect(lensHub.collect(userAddress, FIRST_PROFILE_ID, 1, [])).to.not.be.reverted;
       });
 
       it('Should return the expected token IDs when collecting publications', async function () {
-        await expect(lensHub.connect(userTwo).follow([FIRST_PROFILE_ID], [[]])).to.not.be.reverted;
+        await expect(lensHub.connect(userTwo).follow(userTwoAddress, [FIRST_PROFILE_ID], [[]])).to.not.be.reverted;
         await expect(
-          lensHub.connect(testWallet).follow([FIRST_PROFILE_ID], [[]])
+          lensHub.connect(testWallet).follow(testWallet.address, [FIRST_PROFILE_ID], [[]])
         ).to.not.be.reverted;
 
         expect(
@@ -166,8 +169,10 @@ makeSuiteCleanRoom('Collecting', function () {
       });
 
       it('UserTwo should follow, then collect, receive a collect NFT with the expected properties', async function () {
-        await expect(lensHub.connect(userTwo).follow([FIRST_PROFILE_ID], [[]])).to.not.be.reverted;
-        await expect(lensHub.connect(userTwo).collect(FIRST_PROFILE_ID, 1, [])).to.not.be.reverted;
+        await expect(lensHub.connect(userTwo).follow(userTwoAddress, [FIRST_PROFILE_ID], [[]])).to.not.be.reverted;
+        await expect(
+          lensHub.connect(userTwo).collect(userTwoAddress, FIRST_PROFILE_ID, 1, [])
+        ).to.not.be.reverted;
         const timestamp = await getTimestamp();
 
         const collectNFTAddr = await lensHub.getCollectNFT(FIRST_PROFILE_ID, 1);
@@ -196,7 +201,7 @@ makeSuiteCleanRoom('Collecting', function () {
       });
 
       it('UserTwo should follow, then mirror, then collect on their mirror, receive a collect NFT with expected properties', async function () {
-        await expect(lensHub.connect(userTwo).follow([FIRST_PROFILE_ID], [[]])).to.not.be.reverted;
+        await expect(lensHub.connect(userTwo).follow(userTwoAddress, [FIRST_PROFILE_ID], [[]])).to.not.be.reverted;
         const secondProfileId = FIRST_PROFILE_ID + 1;
         await expect(
           lensHub.connect(userTwo).createProfile({
@@ -220,7 +225,9 @@ makeSuiteCleanRoom('Collecting', function () {
           })
         ).to.not.be.reverted;
 
-        await expect(lensHub.connect(userTwo).collect(secondProfileId, 1, [])).to.not.be.reverted;
+        await expect(
+          lensHub.connect(userTwo).collect(userTwoAddress, secondProfileId, 1, [])
+        ).to.not.be.reverted;
 
         const collectNFTAddr = await lensHub.getCollectNFT(FIRST_PROFILE_ID, 1);
         expect(collectNFTAddr).to.not.eq(ZERO_ADDRESS);
@@ -240,7 +247,7 @@ makeSuiteCleanRoom('Collecting', function () {
       });
 
       it('UserTwo should follow, then mirror, mirror their mirror then collect on their latest mirror, receive a collect NFT with expected properties', async function () {
-        await expect(lensHub.connect(userTwo).follow([FIRST_PROFILE_ID], [[]])).to.not.be.reverted;
+        await expect(lensHub.connect(userTwo).follow(userTwoAddress, [FIRST_PROFILE_ID], [[]])).to.not.be.reverted;
         const secondProfileId = FIRST_PROFILE_ID + 1;
         await expect(
           lensHub.connect(userTwo).createProfile({
@@ -275,7 +282,9 @@ makeSuiteCleanRoom('Collecting', function () {
           })
         ).to.not.be.reverted;
 
-        await expect(lensHub.connect(userTwo).collect(secondProfileId, 2, [])).to.not.be.reverted;
+        await expect(
+          lensHub.connect(userTwo).collect(userTwoAddress, secondProfileId, 2, [])
+        ).to.not.be.reverted;
 
         const collectNFTAddr = await lensHub.getCollectNFT(FIRST_PROFILE_ID, 1);
         expect(collectNFTAddr).to.not.eq(ZERO_ADDRESS);
@@ -396,7 +405,7 @@ makeSuiteCleanRoom('Collecting', function () {
 
       it('TestWallet should sign attempt to collect with sig, cancel via empty permitForAll, fail to collect with sig', async function () {
         await expect(
-          lensHub.connect(testWallet).follow([FIRST_PROFILE_ID], [[]])
+          lensHub.connect(testWallet).follow(testWallet.address, [FIRST_PROFILE_ID], [[]])
         ).to.not.be.reverted;
 
         const nonce = (await lensHub.sigNonces(testWallet.address)).toNumber();
@@ -431,7 +440,7 @@ makeSuiteCleanRoom('Collecting', function () {
     context('Scenarios', function () {
       it('TestWallet should follow, then collect with sig, receive a collect NFT with expected properties', async function () {
         await expect(
-          lensHub.connect(testWallet).follow([FIRST_PROFILE_ID], [[]])
+          lensHub.connect(testWallet).follow(testWallet.address, [FIRST_PROFILE_ID], [[]])
         ).to.not.be.reverted;
 
         const nonce = (await lensHub.sigNonces(testWallet.address)).toNumber();
@@ -478,7 +487,7 @@ makeSuiteCleanRoom('Collecting', function () {
 
       it('TestWallet should follow, mirror, then collect with sig on their mirror', async function () {
         await expect(
-          lensHub.connect(testWallet).follow([FIRST_PROFILE_ID], [[]])
+          lensHub.connect(testWallet).follow(testWallet.address, [FIRST_PROFILE_ID], [[]])
         ).to.not.be.reverted;
         const secondProfileId = FIRST_PROFILE_ID + 1;
         await expect(

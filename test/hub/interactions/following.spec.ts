@@ -42,25 +42,27 @@ makeSuiteCleanRoom('Following', function () {
     context('Negatives', function () {
       it('UserTwo should fail to follow a nonexistent profile', async function () {
         await expect(
-          lensHub.connect(userTwo).follow([FIRST_PROFILE_ID + 1], [[]])
+          lensHub.connect(userTwo).follow(userTwoAddress, [FIRST_PROFILE_ID + 1], [[]])
         ).to.be.revertedWith(ERRORS.TOKEN_DOES_NOT_EXIST);
       });
 
       it('UserTwo should fail to follow with array mismatch', async function () {
         await expect(
-          lensHub.connect(userTwo).follow([FIRST_PROFILE_ID, FIRST_PROFILE_ID], [[]])
+          lensHub
+            .connect(userTwo)
+            .follow(userTwoAddress, [FIRST_PROFILE_ID, FIRST_PROFILE_ID], [[]])
         ).to.be.revertedWith(ERRORS.ARRAY_MISMATCH);
       });
 
       it('UserTwo should fail to follow a profile that has been burned', async function () {
         await expect(lensHub.burn(FIRST_PROFILE_ID)).to.not.be.reverted;
-        await expect(lensHub.connect(userTwo).follow([FIRST_PROFILE_ID], [[]])).to.be.revertedWith(
-          ERRORS.TOKEN_DOES_NOT_EXIST
-        );
+        await expect(
+          lensHub.connect(userTwo).follow(userTwoAddress, [FIRST_PROFILE_ID], [[]])
+        ).to.be.revertedWith(ERRORS.TOKEN_DOES_NOT_EXIST);
       });
 
       it('UserTwo should fail to follow profile with id 0', async function () {
-        await expect(lensHub.connect(userTwo).follow([0], [[]])).to.be.revertedWith(
+        await expect(lensHub.connect(userTwo).follow(userTwoAddress, [0], [[]])).to.be.revertedWith(
           ERRORS.TOKEN_DOES_NOT_EXIST
         );
       });
@@ -68,7 +70,9 @@ makeSuiteCleanRoom('Following', function () {
 
     context('Scenarios', function () {
       it('UserTwo should follow profile 1, receive a followNFT with ID 1, followNFT properties should be correct', async function () {
-        await expect(lensHub.connect(userTwo).follow([FIRST_PROFILE_ID], [[]])).to.not.be.reverted;
+        await expect(
+          lensHub.connect(userTwo).follow(userTwoAddress, [FIRST_PROFILE_ID], [[]])
+        ).to.not.be.reverted;
         const timestamp = await getTimestamp();
 
         const followNFTAddress = await lensHub.getFollowNFT(FIRST_PROFILE_ID);
@@ -93,8 +97,12 @@ makeSuiteCleanRoom('Following', function () {
       });
 
       it('UserTwo should follow profile 1 twice, receiving followNFTs with IDs 1 and 2', async function () {
-        await expect(lensHub.connect(userTwo).follow([FIRST_PROFILE_ID], [[]])).to.not.be.reverted;
-        await expect(lensHub.connect(userTwo).follow([FIRST_PROFILE_ID], [[]])).to.not.be.reverted;
+        await expect(
+          lensHub.connect(userTwo).follow(userTwoAddress, [FIRST_PROFILE_ID], [[]])
+        ).to.not.be.reverted;
+        await expect(
+          lensHub.connect(userTwo).follow(userTwoAddress, [FIRST_PROFILE_ID], [[]])
+        ).to.not.be.reverted;
         const followNFTAddress = await lensHub.getFollowNFT(FIRST_PROFILE_ID);
         const followNFT = FollowNFT__factory.connect(followNFTAddress, user);
         const idOne = await followNFT.tokenOfOwnerByIndex(userTwoAddress, 0);
@@ -107,7 +115,11 @@ makeSuiteCleanRoom('Following', function () {
         await expect(
           lensHub
             .connect(userTwo)
-            .follow([FIRST_PROFILE_ID, FIRST_PROFILE_ID, FIRST_PROFILE_ID], [[], [], []])
+            .follow(
+              userTwoAddress,
+              [FIRST_PROFILE_ID, FIRST_PROFILE_ID, FIRST_PROFILE_ID],
+              [[], [], []]
+            )
         ).to.not.be.reverted;
         const followNFTAddress = await lensHub.getFollowNFT(FIRST_PROFILE_ID);
         const followNFT = FollowNFT__factory.connect(followNFTAddress, user);

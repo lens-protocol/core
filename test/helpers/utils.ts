@@ -579,8 +579,12 @@ export async function followReturningTokenIds({
     tokenIds = await lensHub.connect(sender).callStatic.followWithSig(vars);
     await expect(lensHub.connect(sender).followWithSig(vars)).to.not.be.reverted;
   } else {
-    tokenIds = await lensHub.connect(sender).callStatic.follow(vars.profileIds, vars.datas);
-    await expect(lensHub.connect(sender).follow(vars.profileIds, vars.datas)).to.not.be.reverted;
+    tokenIds = await lensHub
+      .connect(sender)
+      .callStatic.follow(await sender.getAddress(), vars.profileIds, vars.datas);
+    await expect(
+      lensHub.connect(sender).follow(await sender.getAddress(), vars.profileIds, vars.datas)
+    ).to.not.be.reverted;
   }
   return tokenIds;
 }
@@ -607,9 +611,12 @@ export async function collectReturningTokenIds({
   } else {
     tokenId = await lensHub
       .connect(sender)
-      .callStatic.collect(vars.profileId, vars.pubId, vars.data);
-    await expect(lensHub.connect(sender).collect(vars.profileId, vars.pubId, vars.data)).to.not.be
-      .reverted;
+      .callStatic.collect(await sender.getAddress(), vars.profileId, vars.pubId, vars.data);
+    await expect(
+      lensHub
+        .connect(sender)
+        .collect(await sender.getAddress(), vars.profileId, vars.pubId, vars.data)
+    ).to.not.be.reverted;
   }
   return tokenId;
 }

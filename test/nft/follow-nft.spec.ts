@@ -43,7 +43,7 @@ makeSuiteCleanRoom('Follow NFT', function () {
   context('generic', function () {
     context('Negatives', function () {
       it('User should follow, and fail to re-initialize the follow NFT', async function () {
-        await expect(lensHub.follow([FIRST_PROFILE_ID], [[]])).to.not.be.reverted;
+        await expect(lensHub.follow(userAddress, [FIRST_PROFILE_ID], [[]])).to.not.be.reverted;
         const followNFT = FollowNFT__factory.connect(
           await lensHub.getFollowNFT(FIRST_PROFILE_ID),
           user
@@ -53,7 +53,7 @@ makeSuiteCleanRoom('Follow NFT', function () {
       });
 
       it("User should follow, userTwo should fail to burn user's follow NFT", async function () {
-        await expect(lensHub.follow([FIRST_PROFILE_ID], [[]])).to.not.be.reverted;
+        await expect(lensHub.follow(userAddress, [FIRST_PROFILE_ID], [[]])).to.not.be.reverted;
         const followNFT = FollowNFT__factory.connect(
           await lensHub.getFollowNFT(FIRST_PROFILE_ID),
           userTwo
@@ -63,7 +63,7 @@ makeSuiteCleanRoom('Follow NFT', function () {
       });
 
       it('User should follow, then fail to mint a follow NFT directly', async function () {
-        await expect(lensHub.follow([FIRST_PROFILE_ID], [[]])).to.not.be.reverted;
+        await expect(lensHub.follow(userAddress, [FIRST_PROFILE_ID], [[]])).to.not.be.reverted;
         const followNFT = FollowNFT__factory.connect(
           await lensHub.getFollowNFT(FIRST_PROFILE_ID),
           user
@@ -73,7 +73,7 @@ makeSuiteCleanRoom('Follow NFT', function () {
       });
 
       it('User should follow, then fail to get the power at a future block', async function () {
-        await expect(lensHub.follow([FIRST_PROFILE_ID], [[]])).to.not.be.reverted;
+        await expect(lensHub.follow(userAddress, [FIRST_PROFILE_ID], [[]])).to.not.be.reverted;
         const followNFT = FollowNFT__factory.connect(
           await lensHub.getFollowNFT(FIRST_PROFILE_ID),
           user
@@ -90,7 +90,7 @@ makeSuiteCleanRoom('Follow NFT', function () {
       });
 
       it('user should follow, then fail to get the URI for a token that does not exist', async function () {
-        await expect(lensHub.follow([FIRST_PROFILE_ID], [[]])).to.not.be.reverted;
+        await expect(lensHub.follow(userAddress, [FIRST_PROFILE_ID], [[]])).to.not.be.reverted;
         const followNFT = FollowNFT__factory.connect(
           await lensHub.getFollowNFT(FIRST_PROFILE_ID),
           user
@@ -101,7 +101,7 @@ makeSuiteCleanRoom('Follow NFT', function () {
 
     context('Scenarios', function () {
       it('User should follow, then burn their follow NFT, governance power is zero before and after', async function () {
-        await expect(lensHub.follow([FIRST_PROFILE_ID], [[]])).to.not.be.reverted;
+        await expect(lensHub.follow(userAddress, [FIRST_PROFILE_ID], [[]])).to.not.be.reverted;
         const followNFT = FollowNFT__factory.connect(
           await lensHub.getFollowNFT(FIRST_PROFILE_ID),
           user
@@ -119,7 +119,7 @@ makeSuiteCleanRoom('Follow NFT', function () {
       });
 
       it('User should follow, delegate to themself, governance power should be zero before the last block, and 1 at the current block', async function () {
-        await expect(lensHub.follow([FIRST_PROFILE_ID], [[]])).to.not.be.reverted;
+        await expect(lensHub.follow(userAddress, [FIRST_PROFILE_ID], [[]])).to.not.be.reverted;
         const followNFT = FollowNFT__factory.connect(
           await lensHub.getFollowNFT(FIRST_PROFILE_ID),
           user
@@ -136,8 +136,10 @@ makeSuiteCleanRoom('Follow NFT', function () {
       });
 
       it('User and userTwo should follow, governance power should be zero, then users delegate multiple times, governance power should be accurate throughout', async function () {
-        await expect(lensHub.follow([FIRST_PROFILE_ID], [[]])).to.not.be.reverted;
-        await expect(lensHub.connect(userTwo).follow([FIRST_PROFILE_ID], [[]])).to.not.be.reverted;
+        await expect(lensHub.follow(userAddress, [FIRST_PROFILE_ID], [[]])).to.not.be.reverted;
+        await expect(
+          lensHub.connect(userTwo).follow(userTwoAddress, [FIRST_PROFILE_ID], [[]])
+        ).to.not.be.reverted;
         const followNFT = FollowNFT__factory.connect(
           await lensHub.getFollowNFT(FIRST_PROFILE_ID),
           user
@@ -231,8 +233,10 @@ makeSuiteCleanRoom('Follow NFT', function () {
       });
 
       it('User and userTwo should follow, delegate to themselves, 10 blocks later user delegates to userTwo, 10 blocks later both delegate to user, governance power should be accurate throughout', async function () {
-        await expect(lensHub.follow([FIRST_PROFILE_ID], [[]])).to.not.be.reverted;
-        await expect(lensHub.connect(userTwo).follow([FIRST_PROFILE_ID], [[]])).to.not.be.reverted;
+        await expect(lensHub.follow(userAddress, [FIRST_PROFILE_ID], [[]])).to.not.be.reverted;
+        await expect(
+          lensHub.connect(userTwo).follow(userTwoAddress, [FIRST_PROFILE_ID], [[]])
+        ).to.not.be.reverted;
         const followNFT = FollowNFT__factory.connect(
           await lensHub.getFollowNFT(FIRST_PROFILE_ID),
           user
@@ -276,8 +280,10 @@ makeSuiteCleanRoom('Follow NFT', function () {
       });
 
       it('user and userTwo should follow, user delegates to userTwo twice, governance power should be accurate', async function () {
-        await expect(lensHub.follow([FIRST_PROFILE_ID], [[]])).to.not.be.reverted;
-        await expect(lensHub.connect(userTwo).follow([FIRST_PROFILE_ID], [[]])).to.not.be.reverted;
+        await expect(lensHub.follow(userAddress, [FIRST_PROFILE_ID], [[]])).to.not.be.reverted;
+        await expect(
+          lensHub.connect(userTwo).follow(userTwoAddress, [FIRST_PROFILE_ID], [[]])
+        ).to.not.be.reverted;
         const followNFT = FollowNFT__factory.connect(
           await lensHub.getFollowNFT(FIRST_PROFILE_ID),
           user
@@ -293,8 +299,10 @@ makeSuiteCleanRoom('Follow NFT', function () {
       });
 
       it('User and userTwo should follow, then transfer their NFTs to the helper contract, then the helper contract batch delegates to user one, then user two, governance power should be accurate', async function () {
-        await expect(lensHub.follow([FIRST_PROFILE_ID], [[]])).to.not.be.reverted;
-        await expect(lensHub.connect(userTwo).follow([FIRST_PROFILE_ID], [[]])).to.not.be.reverted;
+        await expect(lensHub.follow(userAddress, [FIRST_PROFILE_ID], [[]])).to.not.be.reverted;
+        await expect(
+          lensHub.connect(userTwo).follow(userTwoAddress, [FIRST_PROFILE_ID], [[]])
+        ).to.not.be.reverted;
         const followNFT = FollowNFT__factory.connect(
           await lensHub.getFollowNFT(FIRST_PROFILE_ID),
           user
@@ -334,7 +342,7 @@ makeSuiteCleanRoom('Follow NFT', function () {
       });
 
       it('user should follow, then get the URI for their token, URI should be accurate', async function () {
-        await expect(lensHub.follow([FIRST_PROFILE_ID], [[]])).to.not.be.reverted;
+        await expect(lensHub.follow(userAddress, [FIRST_PROFILE_ID], [[]])).to.not.be.reverted;
         const followNFT = FollowNFT__factory.connect(
           await lensHub.getFollowNFT(FIRST_PROFILE_ID),
           user
@@ -347,7 +355,9 @@ makeSuiteCleanRoom('Follow NFT', function () {
   context('meta-tx', function () {
     let followNFT: FollowNFT;
     beforeEach(async function () {
-      await expect(lensHub.connect(testWallet).follow([FIRST_PROFILE_ID], [[]])).to.not.be.reverted;
+      await expect(
+        lensHub.connect(testWallet).follow(testWallet.address, [FIRST_PROFILE_ID], [[]])
+      ).to.not.be.reverted;
       followNFT = FollowNFT__factory.connect(await lensHub.getFollowNFT(FIRST_PROFILE_ID), user);
     });
 

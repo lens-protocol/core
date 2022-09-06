@@ -115,7 +115,7 @@ makeSuiteCleanRoom('Fee Follow Module', function () {
 
       it('UserTwo should fail to process follow without being the hub', async function () {
         await expect(
-          feeFollowModule.connect(userTwo).processFollow(userTwoAddress, FIRST_PROFILE_ID, [])
+          feeFollowModule.connect(userTwo).processFollow(userTwoAddress, userTwoAddress, FIRST_PROFILE_ID, [])
         ).to.be.revertedWith(ERRORS.NOT_HUB);
       });
 
@@ -130,7 +130,7 @@ makeSuiteCleanRoom('Fee Follow Module', function () {
           currency.connect(userTwo).approve(feeFollowModule.address, MAX_UINT256)
         ).to.not.be.reverted;
 
-        const tx = lensHub.connect(userTwo).follow([FIRST_PROFILE_ID], [data]);
+        const tx = lensHub.connect(userTwo).follow(userTwoAddress, [FIRST_PROFILE_ID], [data]);
         const receipt = await waitForTx(tx);
 
         let currencyEventCount = 0;
@@ -155,14 +155,14 @@ makeSuiteCleanRoom('Fee Follow Module', function () {
           [currency.address, DEFAULT_FOLLOW_PRICE.div(2)]
         );
         await expect(
-          lensHub.connect(userTwo).follow([FIRST_PROFILE_ID], [data])
+          lensHub.connect(userTwo).follow(userTwoAddress, [FIRST_PROFILE_ID], [data])
         ).to.be.revertedWith(ERRORS.MODULE_DATA_MISMATCH);
       });
 
       it('UserTwo should fail to follow passing a different expected currency in data', async function () {
         const data = abiCoder.encode(['address', 'uint256'], [userAddress, DEFAULT_FOLLOW_PRICE]);
         await expect(
-          lensHub.connect(userTwo).follow([FIRST_PROFILE_ID], [data])
+          lensHub.connect(userTwo).follow(userTwoAddress, [FIRST_PROFILE_ID], [data])
         ).to.be.revertedWith(ERRORS.MODULE_DATA_MISMATCH);
       });
 
@@ -174,7 +174,7 @@ makeSuiteCleanRoom('Fee Follow Module', function () {
           [currency.address, DEFAULT_FOLLOW_PRICE]
         );
         await expect(
-          lensHub.connect(userTwo).follow([FIRST_PROFILE_ID], [data])
+          lensHub.connect(userTwo).follow(userTwoAddress, [FIRST_PROFILE_ID], [data])
         ).to.be.revertedWith(ERRORS.ERC20_INSUFFICIENT_ALLOWANCE);
       });
     });
@@ -291,7 +291,7 @@ makeSuiteCleanRoom('Fee Follow Module', function () {
         ['address', 'uint256'],
         [currency.address, DEFAULT_FOLLOW_PRICE]
       );
-      await expect(lensHub.connect(userTwo).follow([FIRST_PROFILE_ID], [data])).to.not.be.reverted;
+      await expect(lensHub.connect(userTwo).follow(userTwoAddress, [FIRST_PROFILE_ID], [data])).to.not.be.reverted;
 
       const expectedTreasuryAmount = BigNumber.from(DEFAULT_FOLLOW_PRICE)
         .mul(TREASURY_FEE_BPS)
@@ -330,8 +330,8 @@ makeSuiteCleanRoom('Fee Follow Module', function () {
         ['address', 'uint256'],
         [currency.address, DEFAULT_FOLLOW_PRICE]
       );
-      await expect(lensHub.connect(userTwo).follow([FIRST_PROFILE_ID], [data])).to.not.be.reverted;
-      await expect(lensHub.connect(userTwo).follow([FIRST_PROFILE_ID], [data])).to.not.be.reverted;
+      await expect(lensHub.connect(userTwo).follow(userTwoAddress, [FIRST_PROFILE_ID], [data])).to.not.be.reverted;
+      await expect(lensHub.connect(userTwo).follow(userTwoAddress, [FIRST_PROFILE_ID], [data])).to.not.be.reverted;
 
       const expectedTreasuryAmount = BigNumber.from(DEFAULT_FOLLOW_PRICE)
         .mul(TREASURY_FEE_BPS)

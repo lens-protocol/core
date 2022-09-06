@@ -45,6 +45,7 @@ import {
   lensPeriphery,
   followNFTImpl,
   collectNFTImpl,
+  userThreeAddress,
 } from '../__setup.spec';
 
 /**
@@ -128,7 +129,7 @@ makeSuiteCleanRoom('Misc', function () {
     it('Profile follow NFT getter should return the zero address before the first follow, then the correct address afterwards', async function () {
       expect(await lensHub.getFollowNFT(FIRST_PROFILE_ID)).to.eq(ZERO_ADDRESS);
 
-      await expect(lensHub.follow([FIRST_PROFILE_ID], [[]])).to.not.be.reverted;
+      await expect(lensHub.follow(userAddress, [FIRST_PROFILE_ID], [[]])).to.not.be.reverted;
 
       expect(await lensHub.getFollowNFT(FIRST_PROFILE_ID)).to.not.eq(ZERO_ADDRESS);
     });
@@ -569,7 +570,7 @@ makeSuiteCleanRoom('Misc', function () {
     });
 
     it('User should fail to call processFollow directly on a follow module inheriting from the FollowValidatorFollowModuleBase', async function () {
-      await expect(approvalFollowModule.processFollow(ZERO_ADDRESS, 0, [])).to.be.revertedWith(
+      await expect(approvalFollowModule.processFollow(ZERO_ADDRESS, userAddress, 0, [])).to.be.revertedWith(
         ERRORS.NOT_HUB
       );
     });
@@ -584,7 +585,7 @@ makeSuiteCleanRoom('Misc', function () {
       await expect(
         approvalFollowModule.connect(user).approve(FIRST_PROFILE_ID, [userAddress], [true])
       ).to.not.be.reverted;
-      await expect(lensHub.follow([FIRST_PROFILE_ID], [[]])).to.not.be.reverted;
+      await expect(lensHub.follow(userAddress, [FIRST_PROFILE_ID], [[]])).to.not.be.reverted;
 
       expect(
         await approvalFollowModule.isFollowing(FIRST_PROFILE_ID, userTwoAddress, 0)
@@ -595,7 +596,7 @@ makeSuiteCleanRoom('Misc', function () {
       await expect(
         approvalFollowModule.connect(user).approve(FIRST_PROFILE_ID, [userAddress], [true])
       ).to.not.be.reverted;
-      await expect(lensHub.follow([FIRST_PROFILE_ID], [[]])).to.not.be.reverted;
+      await expect(lensHub.follow(userAddress, [FIRST_PROFILE_ID], [[]])).to.not.be.reverted;
 
       await expect(
         approvalFollowModule.isFollowing(FIRST_PROFILE_ID, userAddress, 2)
@@ -606,7 +607,7 @@ makeSuiteCleanRoom('Misc', function () {
       await expect(
         approvalFollowModule.connect(user).approve(FIRST_PROFILE_ID, [userAddress], [true])
       ).to.not.be.reverted;
-      await expect(lensHub.follow([FIRST_PROFILE_ID], [[]])).to.not.be.reverted;
+      await expect(lensHub.follow(userAddress, [FIRST_PROFILE_ID], [[]])).to.not.be.reverted;
 
       expect(
         await approvalFollowModule.isFollowing(FIRST_PROFILE_ID, userTwoAddress, 1)
@@ -617,7 +618,7 @@ makeSuiteCleanRoom('Misc', function () {
       await expect(
         approvalFollowModule.connect(user).approve(FIRST_PROFILE_ID, [userAddress], [true])
       ).to.not.be.reverted;
-      await expect(lensHub.follow([FIRST_PROFILE_ID], [[]])).to.not.be.reverted;
+      await expect(lensHub.follow(userAddress, [FIRST_PROFILE_ID], [[]])).to.not.be.reverted;
 
       expect(await approvalFollowModule.isFollowing(FIRST_PROFILE_ID, userAddress, 1)).to.be.true;
     });
@@ -626,7 +627,7 @@ makeSuiteCleanRoom('Misc', function () {
   context('Collect Module Misc', function () {
     it('Should fail to call processCollect directly on a collect module inheriting from the FollowValidationModuleBase contract', async function () {
       await expect(
-        timedFeeCollectModule.processCollect(0, ZERO_ADDRESS, 0, 0, [])
+        timedFeeCollectModule.processCollect(0, ZERO_ADDRESS, userAddress, 0, 0, [])
       ).to.be.revertedWith(ERRORS.NOT_HUB);
     });
   });
@@ -787,12 +788,14 @@ makeSuiteCleanRoom('Misc', function () {
             followNFTURI: MOCK_FOLLOW_NFT_URI,
           })
         ).to.not.be.reverted;
-        await expect(lensHub.connect(userTwo).follow([FIRST_PROFILE_ID], [[]])).to.not.be.reverted;
         await expect(
-          lensHub.connect(userThree).follow([FIRST_PROFILE_ID], [[]])
+          lensHub.connect(userTwo).follow(userTwoAddress, [FIRST_PROFILE_ID], [[]])
         ).to.not.be.reverted;
         await expect(
-          lensHub.connect(testWallet).follow([FIRST_PROFILE_ID], [[]])
+          lensHub.connect(userThree).follow(userThreeAddress, [FIRST_PROFILE_ID], [[]])
+        ).to.not.be.reverted;
+        await expect(
+          lensHub.connect(testWallet).follow(testWallet.address, [FIRST_PROFILE_ID], [[]])
         ).to.not.be.reverted;
       });
 
@@ -858,7 +861,7 @@ makeSuiteCleanRoom('Misc', function () {
               })
             ).to.not.be.reverted;
             await expect(
-              lensHub.connect(userTwo).follow([FIRST_PROFILE_ID + 1], [[]])
+              lensHub.connect(userTwo).follow(userTwoAddress, [FIRST_PROFILE_ID + 1], [[]])
             ).to.not.be.reverted;
 
             const tx = lensPeriphery

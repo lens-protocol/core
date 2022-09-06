@@ -37,7 +37,7 @@ makeSuiteCleanRoom('Profile Follow Module', function () {
     context('Initialization', function () {
       it('Initialize call should fail when sender is not the hub', async function () {
         await expect(
-          profileFollowModule.initializeFollowModule(FIRST_PROFILE_ID, EMPTY_BYTES)
+          profileFollowModule.initializeFollowModule(FIRST_PROFILE_ID, userAddress, EMPTY_BYTES)
         ).to.be.revertedWith(ERRORS.NOT_HUB);
       });
     });
@@ -58,20 +58,22 @@ makeSuiteCleanRoom('Profile Follow Module', function () {
 
       it('UserTwo should fail to process follow without being the hub', async function () {
         await expect(
-          profileFollowModule.connect(userTwo).processFollow(userTwoAddress, FIRST_PROFILE_ID, [])
+          profileFollowModule
+            .connect(userTwo)
+            .processFollow(userTwoAddress, userTwoAddress, FIRST_PROFILE_ID, [])
         ).to.be.revertedWith(ERRORS.NOT_HUB);
       });
 
       it('Follow should fail when data is not holding the follower profile id encoded', async function () {
-        await expect(lensHub.connect(userTwo).follow([FIRST_PROFILE_ID], [])).to.be.revertedWith(
-          ERRORS.ARRAY_MISMATCH
-        );
+        await expect(
+          lensHub.connect(userTwo).follow(userTwoAddress, [FIRST_PROFILE_ID], [])
+        ).to.be.revertedWith(ERRORS.ARRAY_MISMATCH);
       });
 
       it('Follow should fail when the passed follower profile does not exist because has never been minted', async function () {
         const data = abiCoder.encode(['uint256'], [FIRST_PROFILE_ID + 1]);
         await expect(
-          lensHub.connect(userTwo).follow([FIRST_PROFILE_ID], [data])
+          lensHub.connect(userTwo).follow(userTwoAddress, [FIRST_PROFILE_ID], [data])
         ).to.be.revertedWith(ERRORS.ERC721_OWNER_QUERY_FOR_NONEXISTENT_TOKEN);
       });
 
@@ -91,7 +93,7 @@ makeSuiteCleanRoom('Profile Follow Module', function () {
 
         const data = abiCoder.encode(['uint256'], [secondProfileId]);
         await expect(
-          lensHub.connect(userTwo).follow([FIRST_PROFILE_ID], [data])
+          lensHub.connect(userTwo).follow(userTwoAddress, [FIRST_PROFILE_ID], [data])
         ).to.be.revertedWith(ERRORS.ERC721_OWNER_QUERY_FOR_NONEXISTENT_TOKEN);
       });
 
@@ -108,7 +110,7 @@ makeSuiteCleanRoom('Profile Follow Module', function () {
         ).to.not.be.reverted;
 
         await expect(
-          lensHub.connect(userTwo).follow([FIRST_PROFILE_ID], [DEFAULT_FOLLOW_DATA])
+          lensHub.connect(userTwo).follow(userTwoAddress, [FIRST_PROFILE_ID], [DEFAULT_FOLLOW_DATA])
         ).to.be.revertedWith(ERRORS.NOT_PROFILE_OWNER);
       });
 
@@ -124,14 +126,14 @@ makeSuiteCleanRoom('Profile Follow Module', function () {
           })
         ).to.not.be.reverted;
         await expect(
-          lensHub.connect(userTwo).follow([FIRST_PROFILE_ID], [DEFAULT_FOLLOW_DATA])
+          lensHub.connect(userTwo).follow(userTwoAddress, [FIRST_PROFILE_ID], [DEFAULT_FOLLOW_DATA])
         ).to.not.be.reverted;
         const followerProfileId = FIRST_PROFILE_ID + 1;
         expect(
           await profileFollowModule.isProfileFollowing(followerProfileId, FIRST_PROFILE_ID)
         ).to.be.true;
         await expect(
-          lensHub.connect(userTwo).follow([FIRST_PROFILE_ID], [DEFAULT_FOLLOW_DATA])
+          lensHub.connect(userTwo).follow(userTwoAddress, [FIRST_PROFILE_ID], [DEFAULT_FOLLOW_DATA])
         ).to.be.revertedWith(ERRORS.FOLLOW_INVALID);
       });
 
@@ -147,7 +149,7 @@ makeSuiteCleanRoom('Profile Follow Module', function () {
           })
         ).to.not.be.reverted;
         await expect(
-          lensHub.connect(userTwo).follow([FIRST_PROFILE_ID], [DEFAULT_FOLLOW_DATA])
+          lensHub.connect(userTwo).follow(userTwoAddress, [FIRST_PROFILE_ID], [DEFAULT_FOLLOW_DATA])
         ).to.not.be.reverted;
         const followerProfileId = FIRST_PROFILE_ID + 1;
         expect(
@@ -162,7 +164,7 @@ makeSuiteCleanRoom('Profile Follow Module', function () {
         ).to.be.true;
 
         await expect(
-          lensHub.connect(userTwo).follow([FIRST_PROFILE_ID], [DEFAULT_FOLLOW_DATA])
+          lensHub.connect(userTwo).follow(userTwoAddress, [FIRST_PROFILE_ID], [DEFAULT_FOLLOW_DATA])
         ).to.be.revertedWith(ERRORS.FOLLOW_INVALID);
       });
     });
@@ -174,7 +176,11 @@ makeSuiteCleanRoom('Profile Follow Module', function () {
         expect(
           await profileFollowModule
             .connect(lensHub.address)
-            .callStatic.initializeFollowModule(FIRST_PROFILE_ID, abiCoder.encode(['uint256'], [0]))
+            .callStatic.initializeFollowModule(
+              FIRST_PROFILE_ID,
+              userAddress,
+              abiCoder.encode(['uint256'], [0])
+            )
         ).to.eq(EMPTY_BYTES);
       });
 
@@ -265,7 +271,7 @@ makeSuiteCleanRoom('Profile Follow Module', function () {
           await profileFollowModule.isProfileFollowing(followerProfileId, FIRST_PROFILE_ID)
         ).to.be.false;
         await expect(
-          lensHub.connect(userTwo).follow([FIRST_PROFILE_ID], [DEFAULT_FOLLOW_DATA])
+          lensHub.connect(userTwo).follow(userTwoAddress, [FIRST_PROFILE_ID], [DEFAULT_FOLLOW_DATA])
         ).to.not.be.reverted;
       });
 
@@ -292,11 +298,11 @@ makeSuiteCleanRoom('Profile Follow Module', function () {
         ).to.not.be.reverted;
 
         await expect(
-          lensHub.connect(userTwo).follow([FIRST_PROFILE_ID], [DEFAULT_FOLLOW_DATA])
+          lensHub.connect(userTwo).follow(userTwoAddress, [FIRST_PROFILE_ID], [DEFAULT_FOLLOW_DATA])
         ).to.not.be.reverted;
         const data = abiCoder.encode(['uint256'], [FIRST_PROFILE_ID + 2]);
         await expect(
-          lensHub.connect(userTwo).follow([FIRST_PROFILE_ID], [data])
+          lensHub.connect(userTwo).follow(userTwoAddress, [FIRST_PROFILE_ID], [data])
         ).to.not.be.reverted;
       });
     });
