@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: MIT
 
 pragma solidity 0.8.15;
+import "hardhat/console.sol";
 
 import {IFollowModule} from '../../interfaces/IFollowModule.sol';
 import {ILensHub} from '../../interfaces/ILensHub.sol';
@@ -39,6 +40,7 @@ abstract contract FollowValidationModuleBase is ModuleBase {
             isFollowing = followNFT != address(0) && IERC721(followNFT).balanceOf(user) != 0;
         }
         if (!isFollowing && IERC721(HUB).ownerOf(profileId) != user) {
+            console.log("REVERTING WITH FOLLOWINVALID");
             revert Errors.FollowInvalid();
         }
     }

@@ -33,6 +33,8 @@ uint256 constant GOVERNANCE_SLOT = 23;
 uint256 constant EMERGENCY_ADMIN_SLOT = 24;
 uint256 constant DELEGATED_EXECUTOR_APPROVAL_MAPPING_SLOT = 25;
 uint256 constant NAME_SLOT_GT_31 = 0x290decd9548b62a8d60345a988386fc84ba6bc95484008f6362f93160ef3e563;
+
+// We store the polygon chain ID and domain separator as constants to save gas.
 uint256 constant POLYGON_CHAIN_ID = 137;
 bytes32 constant POLYGON_DOMAIN_SEPARATOR = 0x78e10b2874b1a1d4436464e65903d3bdc28b68f8d023df2e47b65f8caa45c4bb;
 // keccak256(

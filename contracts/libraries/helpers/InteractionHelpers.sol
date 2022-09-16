@@ -2,6 +2,8 @@
 
 pragma solidity 0.8.15;
 
+import 'hardhat/console.sol';
+
 import {FollowNFTProxy} from '../../upgradeability/FollowNFTProxy.sol';
 import {GeneralHelpers} from './GeneralHelpers.sol';
 import {DataTypes} from '../DataTypes.sol';
@@ -102,11 +104,16 @@ library InteractionHelpers {
         bytes calldata collectModuleData,
         address collectNFTImpl
     ) internal returns (uint256) {
+        uint256 profileIdCached = profileId;
+        uint256 pubIdCached = pubId;
+        address onBehalfOfCached = onBehalfOf;
+        address delegatedExecutorCached = delegatedExecutor;
+
         (uint256 rootProfileId, uint256 rootPubId, address rootCollectModule) = GeneralHelpers
-            .getPointedIfMirrorWithCollectModule(profileId, pubId);
-        address collectNFT;
+            .getPointedIfMirrorWithCollectModule(profileIdCached, pubIdCached);
 
         // Prevents stack too deep.
+        address collectNFT;
         {
             uint256 collectNFTSlot;
 
@@ -136,20 +143,53 @@ library InteractionHelpers {
             }
         }
 
-        uint256 tokenId = ICollectNFT(collectNFT).mint(onBehalfOf);
+        uint256 tokenId = ICollectNFT(collectNFT).mint(onBehalfOfCached);
+        _processCollect(
+            rootCollectModule,
+            collectModuleData,
+            profileIdCached,
+            pubIdCached,
+            onBehalfOfCached,
+            delegatedExecutorCached,
+            rootProfileId,
+            rootPubId
+        );
 
+        return tokenId;
+    }
+    error FollowInvalid();
+
+    function _processCollect(
+        address collectModule,
+        bytes calldata collectModuleData,
+        uint256 profileId,
+        uint256 pubId,
+        address onBehalfOf,
+        address executor,
+        uint256 rootProfileId,
+        uint256 rootPubId
+    ) private {
+        console.log('HEre0');
+        console.log("ERROR SELECTOR EXPECTED:");
+        console.logBytes4(FollowInvalid.selector);
         try
-            ICollectModule(rootCollectModule).processCollect(
+            ICollectModule(collectModule).processCollect(
                 profileId,
                 onBehalfOf,
-                delegatedExecutor,
+                executor,
                 rootProfileId,
                 rootPubId,
                 collectModuleData
             )
-        {} catch {
-            if (onBehalfOf != delegatedExecutor) revert Errors.CallerInvalid();
-            IDeprecatedCollectModule(rootCollectModule).processCollect(
+        {} catch (bytes memory err) {
+            console.log('FAILED!');
+            console.log(bytes(err).length);
+            console.logBytes(err);
+            assembly {
+                revert(add(err, 32), 4)
+            }
+            if (onBehalfOf != executor) revert Errors.CallerInvalid();
+            IDeprecatedCollectModule(collectModule).processCollect(
                 profileId,
                 onBehalfOf,
                 rootProfileId,
@@ -157,6 +197,7 @@ library InteractionHelpers {
                 collectModuleData
             );
         }
+
         _emitCollectedEvent(
             onBehalfOf,
             profileId,
@@ -165,9 +206,14 @@ library InteractionHelpers {
             rootPubId,
             collectModuleData
         );
-
-        return tokenId;
     }
+
+    // function _setCollectModule(
+    // uint256 profileId,
+    // uint256 pubId,
+    // address onBehalfOf,
+    // address executor
+    // ) internal {}
 
     /**
      * @notice Deploys the given profile's Follow NFT contract.

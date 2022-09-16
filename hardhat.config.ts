@@ -49,7 +49,7 @@ const mainnetFork = MAINNET_FORK
 
 const config: HardhatUserConfig = {
   tracer: {
-    enabled: true,
+    enabled: false,
   },
   solidity: {
     compilers: [

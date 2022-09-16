@@ -9,6 +9,14 @@ pragma solidity 0.8.15;
  * @notice This is the standard interface for all Lens-compatible ReferenceModules.
  */
 interface IReferenceModule {
+    // function getModuleVersion() external view returns (uint256);
+
+    // function processModuleChange(
+        // uint256 profileId,
+        // uint256 pubId,
+        // bytes calldata data
+    // ) external;
+
     /**
      * @notice Initializes data for a given publication being published. This can only be called by the hub.
      *
