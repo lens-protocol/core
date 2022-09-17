@@ -145,14 +145,14 @@ struct PublicationStruct {
 
 This is the standard publication type, akin to a regular post on traditional social media platforms. Posts contain:
 
-1. A URI, pointing to the actual publication body's metadata JSON, including any images or text.
+1. A URI, pointing to the actual publication body's [metadata](https://docs.lens.xyz/docs/metadata-standards) JSON, including any images or text.
 2. An uninitialized pointer, since pointers are only needed in mirrors and comments.
 
 ##### Comment
 
 This is a publication type that points back to another publication, whether it be a post, comment or mirror, akin to a regular comment on traditional social media. Comments contain:
 
-1. A URI, just like posts, pointing to the publication body's metadata JSON.
+1. A URI, just like posts, pointing to the publication body's [metadata](https://docs.lens.xyz/docs/metadata-standards) JSON.
 2. An initialized pointer, containing the profile ID and the publication ID of the publication commented on.
 
 ##### Mirror
