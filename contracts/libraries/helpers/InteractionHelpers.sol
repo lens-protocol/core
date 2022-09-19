@@ -164,8 +164,6 @@ library InteractionHelpers {
         return tokenId;
     }
 
-    error FollowInvalid();
-
     function _processCollect(
         address collectModule,
         bytes calldata collectModuleData,
