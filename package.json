@@ -50,7 +50,7 @@
     "eslint-config-prettier": "8.3.0",
     "eslint-plugin-prettier": "4.0.0",
     "ethereum-waffle": "3.4.0",
-    "ethers": "5.5.1",
+    "ethers": "^5.7.1",
     "hardhat": "^2.11.0",
     "hardhat-contract-sizer": "2.1.1",
     "hardhat-gas-reporter": "1.0.6",

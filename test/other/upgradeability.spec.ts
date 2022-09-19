@@ -25,6 +25,7 @@ makeSuiteCleanRoom('Upgradeability', function () {
 
   // This validates that adding a storage slot works as expected.
   it("Should upgrade and set a new variable's value, previous storage is unchanged, new value is accurate", async function () {
+    const getStorageAt = ethers.provider.getStorageAt;
     const newImpl = await new MockLensHubV2__factory(deployer).deploy();
     const proxyHub = TransparentUpgradeableProxy__factory.connect(lensHub.address, deployer);
 
@@ -50,13 +51,6 @@ makeSuiteCleanRoom('Upgradeability', function () {
 
     expect(newNextSlot).to.eq(encodeUint(valueToSet));
   });
-
-  async function getStorageAt(address: string, slot: number): Promise<any> {
-    return await hre.network.provider.request({
-      method: 'eth_getStorageAt',
-      params: [address, abiCoder.encode(['uint256'], [slot])],
-    });
-  }
 
   function encodeUint(num: BigNumberish): string {
     return abiCoder.encode(['uint256'], [num]);
