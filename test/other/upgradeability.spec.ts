@@ -13,7 +13,7 @@ import { abiCoder, deployer, lensHub, makeSuiteCleanRoom, user } from '../__setu
 
 makeSuiteCleanRoom('Upgradeability', function () {
   const valueToSet = 123;
-  const totalSlotsUsed = 25; // Slots 0-24 are used.
+  const totalSlotsUsed = 26; // Slots 0-25 are used.
 
   it('Should fail to initialize an implementation with the same revision', async function () {
     const newImpl = await new MockLensHubV2BadRevision__factory(deployer).deploy();
@@ -23,8 +23,7 @@ makeSuiteCleanRoom('Upgradeability', function () {
     await expect(hub.initialize(valueToSet)).to.be.revertedWith(ERRORS.INITIALIZED);
   });
 
-  // The LensHub contract's last storage variable by default is at the 23nd slot (index 22) and contains the emergency admin
-  // We're going to validate the first 23 slots and the 24rd slot before and after the change
+  // This validates that adding a storage slot works as expected.
   it("Should upgrade and set a new variable's value, previous storage is unchanged, new value is accurate", async function () {
     const newImpl = await new MockLensHubV2__factory(deployer).deploy();
     const proxyHub = TransparentUpgradeableProxy__factory.connect(lensHub.address, deployer);
@@ -42,7 +41,6 @@ makeSuiteCleanRoom('Upgradeability', function () {
       MockLensHubV2__factory.connect(proxyHub.address, user).setAdditionalValue(valueToSet)
     ).to.not.be.reverted;
 
-    console.log('1');
     for (let i = 0; i < totalSlotsUsed; ++i) {
       const valueAt = await getStorageAt(proxyHub.address, i);
       expect(valueAt).to.eq(prevStorage[i]);
