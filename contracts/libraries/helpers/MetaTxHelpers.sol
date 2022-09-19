@@ -147,7 +147,7 @@ library MetaTxHelpers {
                         SET_DELEGATED_EXECUTOR_APPROVAL_WITH_SIG_TYPEHASH,
                         vars.onBehalfOf,
                         vars.executor,
-                        vars.approvalBitmap,
+                        vars.approved,
                         _sigNonces(vars.onBehalfOf),
                         vars.sig.deadline
                     )

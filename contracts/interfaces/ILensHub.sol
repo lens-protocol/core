@@ -157,9 +157,9 @@ interface ILensHub {
      * @notice Sets the approval for a delegated executor to act on behalf of the caller.
      *
      * @param executor The executor to set the approval for.
-     * @param approvalBitmap The approval bitmap to grant the executor.
+     * @param approved The approval to set.
      */
-    function setDelegatedExecutorApproval(address executor, uint256 approvalBitmap) external;
+    function setDelegatedExecutorApproval(address executor, bool approved) external;
 
     /**
      * @notice Sets the approval for a delegated executor to act on behalf of a given signer.

@@ -416,7 +416,7 @@ makeSuiteCleanRoom('Publishing Comments', function () {
               deadline: MAX_UINT256,
             },
           })
-        ).to.be.revertedWith(ERRORS.SIGNATURE_INVALID);
+        ).to.be.revertedWith(ERRORS.CALLER_INVALID);
       });
 
       it('Testwallet should fail to comment with sig with invalid deadline', async function () {
@@ -498,7 +498,7 @@ makeSuiteCleanRoom('Publishing Comments', function () {
               deadline: MAX_UINT256,
             },
           })
-        ).to.be.revertedWith(ERRORS.SIGNATURE_INVALID);
+        ).to.be.revertedWith(ERRORS.CALLER_INVALID);
       });
 
       it('Testwallet should fail to comment with sig with unwhitelisted collect module', async function () {
@@ -723,7 +723,7 @@ makeSuiteCleanRoom('Publishing Comments', function () {
               deadline: MAX_UINT256,
             },
           })
-        ).to.be.revertedWith(ERRORS.SIGNATURE_INVALID);
+        ).to.be.revertedWith(ERRORS.CALLER_INVALID);
       });
     });
 

@@ -4,6 +4,7 @@ export const ERRORS = {
   SIGNATURE_EXPIRED: 'SignatureExpired()',
   ZERO_SPENDER: 'ZeroSpender()',
   SIGNATURE_INVALID: 'SignatureInvalid()',
+  CALLER_INVALID: 'CallerInvalid()',
   NOT_OWNER_OR_APPROVED: 'NotOwnerOrApproved()',
   NOT_HUB: 'NotHub()',
   TOKEN_DOES_NOT_EXIST: 'TokenDoesNotExist()',
@@ -47,5 +48,5 @@ export const ERRORS = {
   PAUSED: 'Paused()',
   PUBLISHING_PAUSED: 'PublishingPaused()',
   NO_REASON_ABI_DECODE:
-    "Transaction reverted and Hardhat couldn't infer the reason. Please report this to help us improve Hardhat.",
+    "Transaction reverted and Hardhat couldn't infer the reason.",
 };

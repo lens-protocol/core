@@ -119,7 +119,7 @@ makeSuiteCleanRoom('Setting Follow Module', function () {
               deadline: MAX_UINT256,
             },
           })
-        ).to.be.revertedWith(ERRORS.SIGNATURE_INVALID);
+        ).to.be.revertedWith(ERRORS.CALLER_INVALID);
       });
 
       it('TestWallet should fail to set a follow module with sig with invalid deadline', async function () {
@@ -181,7 +181,7 @@ makeSuiteCleanRoom('Setting Follow Module', function () {
               deadline: MAX_UINT256,
             },
           })
-        ).to.be.revertedWith(ERRORS.SIGNATURE_INVALID);
+        ).to.be.revertedWith(ERRORS.CALLER_INVALID);
       });
 
       it('TestWallet should fail to set a follow module with sig with an unwhitelisted follow module', async function () {
@@ -240,7 +240,7 @@ makeSuiteCleanRoom('Setting Follow Module', function () {
               deadline: MAX_UINT256,
             },
           })
-        ).to.be.revertedWith(ERRORS.SIGNATURE_INVALID);
+        ).to.be.revertedWith(ERRORS.CALLER_INVALID);
       });
     });
 

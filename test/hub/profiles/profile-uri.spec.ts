@@ -274,7 +274,7 @@ makeSuiteCleanRoom('Profile URI Functionality', function () {
               deadline: MAX_UINT256,
             },
           })
-        ).to.be.revertedWith(ERRORS.SIGNATURE_INVALID);
+        ).to.be.revertedWith(ERRORS.CALLER_INVALID);
       });
 
       it('TestWallet should fail to set profile URI with sig with invalid deadline', async function () {
@@ -320,7 +320,7 @@ makeSuiteCleanRoom('Profile URI Functionality', function () {
               deadline: MAX_UINT256,
             },
           })
-        ).to.be.revertedWith(ERRORS.SIGNATURE_INVALID);
+        ).to.be.revertedWith(ERRORS.CALLER_INVALID);
       });
 
       it('TestWallet should sign attempt to set profile URI with sig, cancel with empty permitForAll, then fail to set profile URI with sig', async function () {
@@ -345,7 +345,7 @@ makeSuiteCleanRoom('Profile URI Functionality', function () {
               deadline: MAX_UINT256,
             },
           })
-        ).to.be.revertedWith(ERRORS.SIGNATURE_INVALID);
+        ).to.be.revertedWith(ERRORS.CALLER_INVALID);
       });
 
       it('TestWallet should fail to set the follow NFT URI with sig with signature deadline mismatch', async function () {
@@ -368,7 +368,7 @@ makeSuiteCleanRoom('Profile URI Functionality', function () {
               deadline: MAX_UINT256,
             },
           })
-        ).to.be.revertedWith(ERRORS.SIGNATURE_INVALID);
+        ).to.be.revertedWith(ERRORS.CALLER_INVALID);
       });
 
       it('TestWallet should fail to set the follow NFT URI with sig with invalid deadline', async function () {
@@ -414,7 +414,7 @@ makeSuiteCleanRoom('Profile URI Functionality', function () {
               deadline: MAX_UINT256,
             },
           })
-        ).to.be.revertedWith(ERRORS.SIGNATURE_INVALID);
+        ).to.be.revertedWith(ERRORS.CALLER_INVALID);
       });
 
       it('TestWallet should sign attempt to set follow NFT URI with sig, cancel with empty permitForAll, then fail to set follow NFT URI with sig', async function () {
@@ -439,7 +439,7 @@ makeSuiteCleanRoom('Profile URI Functionality', function () {
               deadline: MAX_UINT256,
             },
           })
-        ).to.be.revertedWith(ERRORS.SIGNATURE_INVALID);
+        ).to.be.revertedWith(ERRORS.CALLER_INVALID);
       });
     });
 

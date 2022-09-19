@@ -210,12 +210,12 @@ contract LensHub is LensNFTBase, VersionedInitializable, LensMultiState, LensHub
     }
 
     /// @inheritdoc ILensHub
-    function setDelegatedExecutorApproval(address executor, uint256 approvalBitmap)
+    function setDelegatedExecutorApproval(address executor, bool approved)
         external
         override
         whenNotPaused
     {
-        GeneralLib.setDelegatedExecutorApproval(executor, approvalBitmap);
+        GeneralLib.setDelegatedExecutorApproval(executor, approved);
     }
 
     /// @inheritdoc ILensHub

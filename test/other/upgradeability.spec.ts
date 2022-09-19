@@ -1,5 +1,7 @@
 import '@nomiclabs/hardhat-ethers';
+import hre from 'hardhat';
 import { expect } from 'chai';
+import { BigNumber, BigNumberish } from 'ethers';
 import { ethers } from 'hardhat';
 import {
   MockLensHubV2BadRevision__factory,
@@ -11,6 +13,7 @@ import { abiCoder, deployer, lensHub, makeSuiteCleanRoom, user } from '../__setu
 
 makeSuiteCleanRoom('Upgradeability', function () {
   const valueToSet = 123;
+  const totalSlotsUsed = 25; // Slots 0-24 are used.
 
   it('Should fail to initialize an implementation with the same revision', async function () {
     const newImpl = await new MockLensHubV2BadRevision__factory(deployer).deploy();
@@ -27,27 +30,37 @@ makeSuiteCleanRoom('Upgradeability', function () {
     const proxyHub = TransparentUpgradeableProxy__factory.connect(lensHub.address, deployer);
 
     let prevStorage: string[] = [];
-    for (let i = 0; i < 24; i++) {
-      const valueAt = await ethers.provider.getStorageAt(proxyHub.address, i);
+    for (let i = 0; i < totalSlotsUsed; ++i) {
+      const valueAt = await getStorageAt(proxyHub.address, i);
       prevStorage.push(valueAt);
     }
-
-    let prevNextSlot = await ethers.provider.getStorageAt(proxyHub.address, 24);
-    const formattedZero = abiCoder.encode(['uint256'], [0]);
-    expect(prevNextSlot).to.eq(formattedZero);
+    let prevNextSlot = await getStorageAt(proxyHub.address, totalSlotsUsed);
+    expect(prevNextSlot).to.eq(encodeUint(0));
 
     await proxyHub.upgradeTo(newImpl.address);
     await expect(
       MockLensHubV2__factory.connect(proxyHub.address, user).setAdditionalValue(valueToSet)
     ).to.not.be.reverted;
 
-    for (let i = 0; i < 24; i++) {
-      const valueAt = await ethers.provider.getStorageAt(proxyHub.address, i);
+    console.log('1');
+    for (let i = 0; i < totalSlotsUsed; ++i) {
+      const valueAt = await getStorageAt(proxyHub.address, i);
       expect(valueAt).to.eq(prevStorage[i]);
     }
 
-    const newNextSlot = await ethers.provider.getStorageAt(proxyHub.address, 24);
-    const formattedValue = abiCoder.encode(['uint256'], [valueToSet]);
-    expect(newNextSlot).to.eq(formattedValue);
+    const newNextSlot = await getStorageAt(proxyHub.address, totalSlotsUsed);
+
+    expect(newNextSlot).to.eq(encodeUint(valueToSet));
   });
+
+  async function getStorageAt(address: string, slot: number): Promise<any> {
+    return await hre.network.provider.request({
+      method: 'eth_getStorageAt',
+      params: [address, abiCoder.encode(['uint256'], [slot])],
+    });
+  }
+
+  function encodeUint(num: BigNumberish): string {
+    return abiCoder.encode(['uint256'], [num]);
+  }
 });

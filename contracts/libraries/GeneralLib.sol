@@ -253,15 +253,15 @@ library GeneralLib {
         emit Events.DispatcherSet(profileId, dispatcher, block.timestamp);
     }
 
-    function setDelegatedExecutorApproval(address executor, uint256 approvalBitmap) external {
-        _setDelegatedExecutorApproval(msg.sender, executor, approvalBitmap);
+    function setDelegatedExecutorApproval(address executor, bool approved) external {
+        _setDelegatedExecutorApproval(msg.sender, executor, approved);
     }
 
     function setDelegatedExecutorApprovalWithSig(
         DataTypes.SetDelegatedExecutorApprovalWithSigData calldata vars
     ) external {
         MetaTxHelpers.baseSetDelegatedExecutorApprovalWithSig(vars);
-        _setDelegatedExecutorApproval(vars.onBehalfOf, vars.executor, vars.approvalBitmap);
+        _setDelegatedExecutorApproval(vars.onBehalfOf, vars.executor, vars.approved);
     }
 
     /**
@@ -683,7 +683,7 @@ library GeneralLib {
     function _setDelegatedExecutorApproval(
         address onBehalfOf,
         address executor,
-        uint256 approvalBitmap
+        bool approved
     ) private {
         // Store the approval in the appropriate slot for the given caller and executor.
         assembly {
@@ -692,9 +692,9 @@ library GeneralLib {
             mstore(32, keccak256(0, 64))
             mstore(0, executor)
             let slot := keccak256(0, 64)
-            sstore(slot, approvalBitmap)
+            sstore(slot, approved)
         }
-        emit Events.DelegatedExecutorApprovalSet(onBehalfOf, executor, approvalBitmap);
+        emit Events.DelegatedExecutorApprovalSet(onBehalfOf, executor, approved);
     }
 
     function _setProfileImageURI(uint256 profileId, string calldata imageURI) private {
@@ -1003,7 +1003,15 @@ library GeneralLib {
                     pubIdPointed,
                     referenceModuleData
                 )
-            {} catch {
+            {} catch (bytes memory err) {
+                assembly {
+                    /// Equivalent to reverting with the returned error selector if
+                    /// the length is not zero.
+                    let length := mload(err)
+                    if iszero(iszero(length)) {
+                        revert(add(err, 32), length)
+                    }
+                }
                 if (executor != GeneralHelpers.unsafeOwnerOf(profileId))
                     revert Errors.CallerInvalid();
                 IDeprecatedReferenceModule(refModule).processComment(
@@ -1118,7 +1126,15 @@ library GeneralLib {
                     pubIdPointed,
                     referenceModuleData
                 )
-            {} catch {
+            {} catch (bytes memory err) {
+                assembly {
+                    /// Equivalent to reverting with the returned error selector if
+                    /// the length is not zero.
+                    let length := mload(err)
+                    if iszero(iszero(length)) {
+                        revert(add(err, 32), length)
+                    }
+                }
                 if (executor != GeneralHelpers.unsafeOwnerOf(profileId))
                     revert Errors.CallerInvalid();
                 IDeprecatedReferenceModule(refModule).processMirror(

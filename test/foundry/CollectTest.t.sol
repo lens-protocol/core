@@ -2,9 +2,9 @@
 pragma solidity ^0.8.13;
 
 import 'forge-std/Test.sol';
-import './BaseSetup.t.sol';
+import './base/BaseTest.t.sol';
 
-contract CollectTest is BaseSetup {
+contract CollectTest is BaseTest {
     function setUp() public override {
         super.setUp();
         vm.prank(profileOwner);
@@ -66,5 +66,10 @@ contract CollectTest is BaseSetup {
         CollectNFT nft = CollectNFT(hub.getCollectNFT(1, 1));
         assertEq(nftId, 1);
         assertEq(nft.ownerOf(1), me);
+    }
+
+    // Meta-tx
+    function testCollectWithSigInvalidSignatureFails() public {
+
     }
 }

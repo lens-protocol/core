@@ -1,21 +1,21 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity ^0.8.13;
 
-import "forge-std/Test.sol";
+import 'forge-std/Test.sol';
 
 // Deployments
-import "../../contracts/core/LensHub.sol";
-import "../../contracts/core/FollowNFT.sol";
-import "../../contracts/core/CollectNFT.sol";
-import "../../contracts/core/modules/collect/FreeCollectModule.sol";
-import "../../contracts/upgradeability/TransparentUpgradeableProxy.sol";
-import "../../contracts/libraries/DataTypes.sol";
-import "../../contracts/libraries/Constants.sol";
-import "../../contracts/libraries/Errors.sol";
-import "../../contracts/libraries/GeneralLib.sol";
-import "../../contracts/libraries/ProfileTokenURILogic.sol";
+import '../../../contracts/core/LensHub.sol';
+import '../../../contracts/core/FollowNFT.sol';
+import '../../../contracts/core/CollectNFT.sol';
+import '../../../contracts/core/modules/collect/FreeCollectModule.sol';
+import '../../../contracts/upgradeability/TransparentUpgradeableProxy.sol';
+import '../../../contracts/libraries/DataTypes.sol';
+import '../../../contracts/libraries/Constants.sol';
+import '../../../contracts/libraries/Errors.sol';
+import '../../../contracts/libraries/GeneralLib.sol';
+import '../../../contracts/libraries/ProfileTokenURILogic.sol';
 
-contract BaseSetup is Test {
+contract BaseTest is Test {
     uint256 constant firstProfileId = 1;
     address constant deployer = address(1);
     address constant profileOwner = address(2);
@@ -23,11 +23,12 @@ contract BaseSetup is Test {
     address constant otherUser = address(3);
     address constant governance = address(4);
 
-    string constant mockHandle = "handle.lens";
-    string constant mockURI =
-        "ipfs://QmUXfQWe43RKx31VzA2BnbwhSMW8WuaJvszFWChD59m76U";
+    string constant mockHandle = 'handle.lens';
+    string constant mockURI = 'ipfs://QmUXfQWe43RKx31VzA2BnbwhSMW8WuaJvszFWChD59m76U';
 
     address immutable me = address(this);
+    bytes32 immutable domainSeparator;
+
     CollectNFT immutable collectNFT;
     FollowNFT immutable followNFT;
     LensHub immutable hubImpl;
@@ -41,7 +42,7 @@ contract BaseSetup is Test {
             handle: mockHandle,
             imageURI: mockURI,
             followModule: address(0),
-            followModuleInitData: "",
+            followModuleInitData: '',
             followNFTURI: mockURI
         });
 
@@ -50,7 +51,7 @@ contract BaseSetup is Test {
     constructor() {
         // Start deployments.
         vm.startPrank(deployer);
-        
+
         // Precompute needed addresss.
         address followNFTAddr = computeCreateAddress(deployer, 1);
         address collectNFTAddr = computeCreateAddress(deployer, 2);
@@ -64,14 +65,10 @@ contract BaseSetup is Test {
         // Deploy and initialize proxy.
         bytes memory initData = abi.encodeCall(
             hubImpl.initialize,
-            ("Lens Protocol Profiles", "LPP", governance)
+            ('Lens Protocol Profiles', 'LPP', governance)
         );
-        hubAsProxy = new TransparentUpgradeableProxy(
-            address(hubImpl),
-            deployer,
-            initData
-        );
-        
+        hubAsProxy = new TransparentUpgradeableProxy(address(hubImpl), deployer, initData);
+
         // Cast proxy to LensHub interface.
         hub = LensHub(address(hubAsProxy));
 
@@ -96,6 +93,17 @@ contract BaseSetup is Test {
         // End governance actions.
         vm.stopPrank();
 
+        // Compute the domain separator.
+        domainSeparator = keccak256(
+            abi.encode(
+                EIP712_DOMAIN_TYPEHASH,
+                keccak256('Lens Protocol Profiles'),
+                EIP712_REVISION_HASH,
+                block.chainid,
+                hubProxyAddr
+            )
+        );
+
         // Precompute basic post data.
         mockPostData = DataTypes.PostData({
             profileId: firstProfileId,
@@ -103,7 +111,7 @@ contract BaseSetup is Test {
             collectModule: address(freeCollectModule),
             collectModuleInitData: abi.encode(false),
             referenceModule: address(0),
-            referenceModuleInitData: ""
+            referenceModuleInitData: ''
         });
     }
 
@@ -111,21 +119,13 @@ contract BaseSetup is Test {
         hub.createProfile(mockCreateProfileData);
     }
 
-    function _toUint256Array(uint256 n)
-        internal
-        pure
-        returns (uint256[] memory)
-    {
+    function _toUint256Array(uint256 n) internal pure returns (uint256[] memory) {
         uint256[] memory ret = new uint256[](1);
         ret[0] = n;
         return ret;
     }
 
-    function _toBytesArray(bytes memory n)
-        internal
-        pure
-        returns (bytes[] memory)
-    {
+    function _toBytesArray(bytes memory n) internal pure returns (bytes[] memory) {
         bytes[] memory ret = new bytes[](1);
         ret[0] = n;
         return ret;

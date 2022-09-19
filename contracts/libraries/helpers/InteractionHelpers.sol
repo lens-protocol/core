@@ -2,21 +2,21 @@
 
 pragma solidity 0.8.15;
 
-import {FollowNFTProxy} from "../../upgradeability/FollowNFTProxy.sol";
-import {GeneralHelpers} from "./GeneralHelpers.sol";
-import {DataTypes} from "../DataTypes.sol";
-import {Errors} from "../Errors.sol";
-import {Events} from "../Events.sol";
-import {IFollowNFT} from "../../interfaces/IFollowNFT.sol";
-import {ICollectNFT} from "../../interfaces/ICollectNFT.sol";
-import {IFollowModule} from "../../interfaces/IFollowModule.sol";
-import {ICollectModule} from "../../interfaces/ICollectModule.sol";
-import {IDeprecatedFollowModule} from "../../interfaces/IDeprecatedFollowModule.sol";
-import {IDeprecatedCollectModule} from "../../interfaces/IDeprecatedCollectModule.sol";
-import {Clones} from "@openzeppelin/contracts/proxy/Clones.sol";
-import {Strings} from "@openzeppelin/contracts/utils/Strings.sol";
+import {FollowNFTProxy} from '../../upgradeability/FollowNFTProxy.sol';
+import {GeneralHelpers} from './GeneralHelpers.sol';
+import {DataTypes} from '../DataTypes.sol';
+import {Errors} from '../Errors.sol';
+import {Events} from '../Events.sol';
+import {IFollowNFT} from '../../interfaces/IFollowNFT.sol';
+import {ICollectNFT} from '../../interfaces/ICollectNFT.sol';
+import {IFollowModule} from '../../interfaces/IFollowModule.sol';
+import {ICollectModule} from '../../interfaces/ICollectModule.sol';
+import {IDeprecatedFollowModule} from '../../interfaces/IDeprecatedFollowModule.sol';
+import {IDeprecatedCollectModule} from '../../interfaces/IDeprecatedCollectModule.sol';
+import {Clones} from '@openzeppelin/contracts/proxy/Clones.sol';
+import {Strings} from '@openzeppelin/contracts/utils/Strings.sol';
 
-import "../Constants.sol";
+import '../Constants.sol';
 
 /**
  * @title InteractionHelpers
@@ -35,8 +35,7 @@ library InteractionHelpers {
         uint256[] calldata profileIds,
         bytes[] calldata followModuleDatas
     ) internal returns (uint256[] memory) {
-        if (profileIds.length != followModuleDatas.length)
-            revert Errors.ArrayMismatch();
+        if (profileIds.length != followModuleDatas.length) revert Errors.ArrayMismatch();
         uint256[] memory tokenIds = new uint256[](profileIds.length);
 
         for (uint256 i = 0; i < profileIds.length; ) {
@@ -54,10 +53,7 @@ library InteractionHelpers {
                 mstore(32, PROFILE_BY_ID_MAPPING_SLOT)
                 // The follow NFT offset is 2, the follow module offset is 1,
                 // so we just need to subtract 1 instead of recalculating the slot.
-                followNFTSlot := add(
-                    keccak256(0, 64),
-                    PROFILE_FOLLOW_NFT_OFFSET
-                )
+                followNFTSlot := add(keccak256(0, 64), PROFILE_FOLLOW_NFT_OFFSET)
                 followModule := sload(sub(followNFTSlot, 1))
                 followNFT := sload(followNFTSlot)
             }
@@ -81,7 +77,15 @@ library InteractionHelpers {
                         profileId,
                         followModuleDatas[i]
                     )
-                {} catch {
+                {} catch (bytes memory err) {
+                    assembly {
+                        /// Equivalent to reverting with the returned error selector if
+                        /// the length is not zero.
+                        let length := mload(err)
+                        if iszero(iszero(length)) {
+                            revert(add(err, 32), length)
+                        }
+                    }
                     if (executor != follower) revert Errors.CallerInvalid();
                     IDeprecatedFollowModule(followModule).processFollow(
                         follower,
@@ -94,12 +98,7 @@ library InteractionHelpers {
                 ++i;
             }
         }
-        emit Events.Followed(
-            follower,
-            profileIds,
-            followModuleDatas,
-            block.timestamp
-        );
+        emit Events.Followed(follower, profileIds, followModuleDatas, block.timestamp);
         return tokenIds;
     }
 
@@ -116,14 +115,8 @@ library InteractionHelpers {
         address onBehalfOfCached = onBehalfOf;
         address delegatedExecutorCached = delegatedExecutor;
 
-        (
-            uint256 rootProfileId,
-            uint256 rootPubId,
-            address rootCollectModule
-        ) = GeneralHelpers.getPointedIfMirrorWithCollectModule(
-                profileIdCached,
-                pubIdCached
-            );
+        (uint256 rootProfileId, uint256 rootPubId, address rootCollectModule) = GeneralHelpers
+            .getPointedIfMirrorWithCollectModule(profileIdCached, pubIdCached);
 
         // Prevents stack too deep.
         address collectNFT;
@@ -137,10 +130,7 @@ library InteractionHelpers {
                 mstore(32, PUB_BY_ID_BY_PROFILE_MAPPING_SLOT)
                 mstore(32, keccak256(0, 64))
                 mstore(0, rootPubId)
-                collectNFTSlot := add(
-                    keccak256(0, 64),
-                    PUBLICATION_COLLECT_NFT_OFFSET
-                )
+                collectNFTSlot := add(keccak256(0, 64), PUBLICATION_COLLECT_NFT_OFFSET)
                 collectNFT := sload(collectNFTSlot)
             }
 
@@ -199,8 +189,9 @@ library InteractionHelpers {
             assembly {
                 /// Equivalent to reverting with the returned error selector if
                 /// the length is not zero.
-                if iszero(iszero(err)) {
-                    revert(add(err, 32), 4)
+                let length := mload(err)
+                if iszero(iszero(length)) {
+                    revert(add(err, 32), length)
                 }
             }
             if (onBehalfOf != executor) revert Errors.CallerInvalid();
@@ -272,25 +263,11 @@ library InteractionHelpers {
             abi.encodePacked(handle, COLLECT_NFT_NAME_INFIX, pubId.toString())
         );
         string memory collectNFTSymbol = string(
-            abi.encodePacked(
-                firstBytes,
-                COLLECT_NFT_SYMBOL_INFIX,
-                pubId.toString()
-            )
+            abi.encodePacked(firstBytes, COLLECT_NFT_SYMBOL_INFIX, pubId.toString())
         );
 
-        ICollectNFT(collectNFT).initialize(
-            profileId,
-            pubId,
-            collectNFTName,
-            collectNFTSymbol
-        );
-        emit Events.CollectNFTDeployed(
-            profileId,
-            pubId,
-            collectNFT,
-            block.timestamp
-        );
+        ICollectNFT(collectNFT).initialize(profileId, pubId, collectNFTName, collectNFTSymbol);
+        emit Events.CollectNFTDeployed(profileId, pubId, collectNFT, block.timestamp);
 
         return collectNFT;
     }
@@ -380,10 +357,7 @@ library InteractionHelpers {
         return ptr;
     }
 
-    function _validateCallerIsDelegatedExecutor(address onBehalfOf)
-        private
-        view
-    {
+    function _validateCallerIsDelegatedExecutor(address onBehalfOf) private view {
         bool isApprovedDelegatedExecutor;
         assembly {
             //If the caller is not the owner, check if they are an approved delegated executor.
