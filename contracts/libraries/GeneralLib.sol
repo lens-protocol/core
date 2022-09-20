@@ -187,13 +187,13 @@ library GeneralLib {
 
     /**
      * @notice Sets the default profile for a given wallet.
-     * 
-     * @param wallet The wallet.
+     *
+     * @param onBehalfOf The wallet to set the default profile for.
      * @param profileId The profile ID to set.
-
-    */
-    function setDefaultProfile(address wallet, uint256 profileId) external {
-        _setDefaultProfile(wallet, profileId);
+     */
+    function setDefaultProfile(address onBehalfOf, uint256 profileId) external {
+        GeneralHelpers.validateOnBehalfOfOrExecutor(onBehalfOf, msg.sender);
+        _setDefaultProfile(onBehalfOf, profileId);
     }
 
     /**
@@ -220,6 +220,7 @@ library GeneralLib {
         address followModule,
         bytes calldata followModuleInitData
     ) external {
+        // _validateCallerIsOwnerOrDispatcherOrExecutor(profileId);
         _setFollowModule(profileId, msg.sender, followModule, followModuleInitData);
     }
 
@@ -1282,7 +1283,7 @@ library GeneralLib {
 
             bool invalidExecutor;
             assembly {
-                // Check if the caller is are an approved delegated executor.
+                // Check if the caller is an approved delegated executor.
                 mstore(0, owner)
                 mstore(32, DELEGATED_EXECUTOR_APPROVAL_MAPPING_SLOT)
                 mstore(32, keccak256(0, 64))
@@ -1290,7 +1291,7 @@ library GeneralLib {
                 let slot := keccak256(0, 64)
                 invalidExecutor := iszero(sload(slot))
             }
-            if (invalidExecutor) revert Errors.NotProfileOwnerOrValid();
+            if (invalidExecutor) revert Errors.CallerInvalid();
         }
     }
 

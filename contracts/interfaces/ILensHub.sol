@@ -106,9 +106,10 @@ interface ILensHub {
     /**
      * @notice Sets the mapping between wallet and its main profile identity.
      *
+     * @param onBehalfOf The address to set the default profile on behalf of.
      * @param profileId The token ID of the profile to set as the main profile identity.
      */
-    function setDefaultProfile(uint256 profileId) external;
+    function setDefaultProfile(address onBehalfOf, uint256 profileId) external;
 
     /**
      * @notice Sets the mapping between wallet and its main profile identity via signature with the specified parameters.

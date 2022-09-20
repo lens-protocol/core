@@ -162,8 +162,12 @@ contract LensHub is LensNFTBase, VersionedInitializable, LensMultiState, LensHub
     }
 
     /// @inheritdoc ILensHub
-    function setDefaultProfile(uint256 profileId) external override whenNotPaused {
-        GeneralLib.setDefaultProfile(msg.sender, profileId);
+    function setDefaultProfile(address onBehalfOf, uint256 profileId)
+        external
+        override
+        whenNotPaused
+    {
+        GeneralLib.setDefaultProfile(onBehalfOf, profileId);
     }
 
     /// @inheritdoc ILensHub
@@ -348,12 +352,11 @@ contract LensHub is LensNFTBase, VersionedInitializable, LensMultiState, LensHub
     /// ***************************************
 
     /// @inheritdoc ILensHub
-    function follow(address onBehalfOf, uint256[] calldata profileIds, bytes[] calldata datas)
-        external
-        override
-        whenNotPaused
-        returns (uint256[] memory)
-    {
+    function follow(
+        address onBehalfOf,
+        uint256[] calldata profileIds,
+        bytes[] calldata datas
+    ) external override whenNotPaused returns (uint256[] memory) {
         return GeneralLib.follow(onBehalfOf, profileIds, datas);
     }
 
