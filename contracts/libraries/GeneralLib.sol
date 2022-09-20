@@ -426,6 +426,7 @@ library GeneralLib {
         uint256[] calldata profileIds,
         bytes[] calldata followModuleDatas
     ) external returns (uint256[] memory) {
+        GeneralHelpers.validateOnBehalfOfOrExecutor(onBehalfOf, msg.sender);
         return InteractionHelpers.follow(onBehalfOf, msg.sender, profileIds, followModuleDatas);
     }
 
