@@ -1,122 +1,69 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity ^0.8.13;
 
-import 'forge-std/Test.sol';
+import './TestSetup.t.sol';
 
-// Deployments
-import '../../../contracts/core/LensHub.sol';
-import '../../../contracts/core/FollowNFT.sol';
-import '../../../contracts/core/CollectNFT.sol';
-import '../../../contracts/core/modules/collect/FreeCollectModule.sol';
-import '../../../contracts/upgradeability/TransparentUpgradeableProxy.sol';
-import '../../../contracts/libraries/DataTypes.sol';
-import '../../../contracts/libraries/Constants.sol';
-import '../../../contracts/libraries/Errors.sol';
-import '../../../contracts/libraries/GeneralLib.sol';
-import '../../../contracts/libraries/ProfileTokenURILogic.sol';
+contract BaseTest is TestSetup {
+    function _getFollowTypedDataHash(
+        uint256[] memory profileIds,
+        bytes[] memory datas,
+        uint256 nonce,
+        uint256 deadline
+    ) internal view returns (bytes32) {
+        uint256 dataLength = datas.length;
+        bytes32[] memory dataHashes = new bytes32[](dataLength);
+        for (uint256 i = 0; i < dataLength; ) {
+            dataHashes[i] = keccak256(datas[i]);
+            unchecked {
+                ++i;
+            }
+        }
 
-contract BaseTest is Test {
-    uint256 constant firstProfileId = 1;
-    address constant deployer = address(1);
-    address constant profileOwner = address(2);
-    // UserOne is the test address, replaced with "me."
-    address constant otherUser = address(3);
-    address constant governance = address(4);
-
-    string constant mockHandle = 'handle.lens';
-    string constant mockURI = 'ipfs://QmUXfQWe43RKx31VzA2BnbwhSMW8WuaJvszFWChD59m76U';
-
-    address immutable me = address(this);
-    bytes32 immutable domainSeparator;
-
-    CollectNFT immutable collectNFT;
-    FollowNFT immutable followNFT;
-    LensHub immutable hubImpl;
-    TransparentUpgradeableProxy immutable hubAsProxy;
-    LensHub immutable hub;
-    FreeCollectModule immutable freeCollectModule;
-
-    DataTypes.CreateProfileData mockCreateProfileData =
-        DataTypes.CreateProfileData({
-            to: profileOwner,
-            handle: mockHandle,
-            imageURI: mockURI,
-            followModule: address(0),
-            followModuleInitData: '',
-            followNFTURI: mockURI
-        });
-
-    DataTypes.PostData mockPostData;
-
-    constructor() {
-        // Start deployments.
-        vm.startPrank(deployer);
-
-        // Precompute needed addresss.
-        address followNFTAddr = computeCreateAddress(deployer, 1);
-        address collectNFTAddr = computeCreateAddress(deployer, 2);
-        address hubProxyAddr = computeCreateAddress(deployer, 3);
-
-        // Deploy implementation contracts.
-        hubImpl = new LensHub(followNFTAddr, collectNFTAddr);
-        followNFT = new FollowNFT(hubProxyAddr);
-        collectNFT = new CollectNFT(hubProxyAddr);
-
-        // Deploy and initialize proxy.
-        bytes memory initData = abi.encodeCall(
-            hubImpl.initialize,
-            ('Lens Protocol Profiles', 'LPP', governance)
-        );
-        hubAsProxy = new TransparentUpgradeableProxy(address(hubImpl), deployer, initData);
-
-        // Cast proxy to LensHub interface.
-        hub = LensHub(address(hubAsProxy));
-
-        // Deploy the FreeCollectModule.
-        freeCollectModule = new FreeCollectModule(hubProxyAddr);
-
-        // End deployments.
-        vm.stopPrank();
-
-        // Start governance actions.
-        vm.startPrank(governance);
-
-        // Set the state to unpaused.
-        hub.setState(DataTypes.ProtocolState.Unpaused);
-
-        // Whitelist the FreeCollectModule.
-        hub.whitelistCollectModule(address(freeCollectModule), true);
-
-        // Whitelist the test contract as a profile creator
-        hub.whitelistProfileCreator(me, true);
-
-        // End governance actions.
-        vm.stopPrank();
-
-        // Compute the domain separator.
-        domainSeparator = keccak256(
+        bytes32 structHash = keccak256(
             abi.encode(
-                EIP712_DOMAIN_TYPEHASH,
-                keccak256('Lens Protocol Profiles'),
-                EIP712_REVISION_HASH,
-                block.chainid,
-                hubProxyAddr
+                FOLLOW_WITH_SIG_TYPEHASH,
+                keccak256(abi.encodePacked(profileIds)),
+                keccak256(abi.encodePacked(dataHashes)),
+                nonce,
+                deadline
             )
         );
 
-        // Precompute basic post data.
-        mockPostData = DataTypes.PostData({
-            profileId: firstProfileId,
-            contentURI: mockURI,
-            collectModule: address(freeCollectModule),
-            collectModuleInitData: abi.encode(false),
-            referenceModule: address(0),
-            referenceModuleInitData: ''
-        });
+        return _calculateDigest(structHash);
     }
 
-    function setUp() public virtual {
-        hub.createProfile(mockCreateProfileData);
+    function _getCollectTypeDataHash(
+        uint256 profileId,
+        uint256 pubId,
+        bytes memory data,
+        uint256 nonce,
+        uint256 deadline
+    ) internal view returns (bytes32) {
+        bytes32 structHash = keccak256(
+            abi.encode(
+                COLLECT_WITH_SIG_TYPEHASH,
+                profileId,
+                pubId,
+                keccak256(data),
+                nonce,
+                deadline
+            )
+        );
+        return _calculateDigest(structHash);
+    }
+
+    function _calculateDigest(bytes32 hashedMessage) internal view returns (bytes32) {
+        bytes32 digest = keccak256(abi.encodePacked('\x19\x01', domainSeparator, hashedMessage));
+        return digest;
+    }
+
+    function _getSigStruct(
+        uint256 pKey,
+        bytes32 digest,
+        uint256 deadline
+    ) internal returns (DataTypes.EIP712Signature memory) {
+        (uint8 v, bytes32 r, bytes32 s) = vm.sign(pKey, digest);
+        return DataTypes.EIP712Signature({v: v, r: r, s: s, deadline: deadline});
     }
 
     function _toUint256Array(uint256 n) internal pure returns (uint256[] memory) {

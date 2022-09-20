@@ -4,7 +4,7 @@ pragma solidity ^0.8.13;
 import 'forge-std/Test.sol';
 import '../base/BaseTest.t.sol';
 
-contract CollectTest is BaseTest {
+contract FollowTest is BaseTest {
     // Negatives
     function testFollowNotExecutorFails() public {
         vm.prank(otherUser);
@@ -47,5 +47,88 @@ contract CollectTest is BaseTest {
         assertEq(nftIds.length, 1);
         assertEq(nftIds[0], 1);
         assertEq(nft.ownerOf(1), me);
+    }
+
+    // Meta-tx
+    // Negatives
+    function testFollowWithSigInvalidSignerFails() public {
+        uint256[] memory profileIds = new uint256[](1);
+        profileIds[0] = firstProfileId;
+        bytes[] memory datas = new bytes[](1);
+        datas[0] = '';
+        uint256 nonce = 0;
+        uint256 deadline = type(uint256).max;
+        bytes32 digest = _getFollowTypedDataHash(profileIds, datas, nonce, deadline);
+
+        vm.expectRevert(Errors.CallerInvalid.selector);
+        hub.followWithSig(
+            DataTypes.FollowWithSigData({
+                follower: signer,
+                profileIds: profileIds,
+                datas: datas,
+                sig: _getSigStruct(otherSignerKey, digest, deadline)
+            })
+        );
+    }
+
+    // Positives
+    function testFollowWithSig() public {
+        assertEq(hub.getFollowNFT(firstProfileId), address(0));
+
+        uint256[] memory profileIds = new uint256[](1);
+        profileIds[0] = firstProfileId;
+        bytes[] memory datas = new bytes[](1);
+        datas[0] = '';
+        uint256 nonce = 0;
+        uint256 deadline = type(uint256).max;
+        bytes32 digest = _getFollowTypedDataHash(profileIds, datas, nonce, deadline);
+
+        uint256[] memory nftIds = hub.followWithSig(
+            DataTypes.FollowWithSigData({
+                follower: signer,
+                profileIds: profileIds,
+                datas: datas,
+                sig: _getSigStruct(signerKey, digest, deadline)
+            })
+        );
+
+        FollowNFT nft = FollowNFT(hub.getFollowNFT(firstProfileId));
+        assertEq(nftIds.length, 1);
+        assertEq(nftIds[0], 1);
+        assertEq(nft.ownerOf(1), signer);
+
+        string memory expectedName = string(abi.encodePacked(mockHandle, FOLLOW_NFT_NAME_SUFFIX));
+        string memory expectedSymbol = string(
+            abi.encodePacked(bytes4(bytes(mockHandle)), FOLLOW_NFT_SYMBOL_SUFFIX)
+        );
+        assertEq(nft.name(), expectedName);
+        assertEq(nft.symbol(), expectedSymbol);
+    }
+
+    function testExecutorFollowWithSig() public {
+        vm.prank(signer);
+        hub.setDelegatedExecutorApproval(otherSigner, true);
+
+        uint256[] memory profileIds = new uint256[](1);
+        profileIds[0] = firstProfileId;
+        bytes[] memory datas = new bytes[](1);
+        datas[0] = '';
+        uint256 nonce = 0;
+        uint256 deadline = type(uint256).max;
+        bytes32 digest = _getFollowTypedDataHash(profileIds, datas, nonce, deadline);
+
+        uint256[] memory nftIds = hub.followWithSig(
+            DataTypes.FollowWithSigData({
+                follower: signer,
+                profileIds: profileIds,
+                datas: datas,
+                sig: _getSigStruct(otherSignerKey, digest, deadline)
+            })
+        );
+
+        FollowNFT nft = FollowNFT(hub.getFollowNFT(firstProfileId));
+        assertEq(nftIds.length, 1);
+        assertEq(nftIds[0], 1);
+        assertEq(nft.ownerOf(1), signer);
     }
 }
