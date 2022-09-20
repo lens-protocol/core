@@ -10,6 +10,34 @@ contract BaseSigTest is BaseTest {
     address immutable signer = vm.addr(signerKey);
     address immutable otherSigner = vm.addr(otherSignerKey);
 
+    function _getFollowTypedDataHash(
+        uint256[] memory profileIds,
+        bytes[] memory datas,
+        uint256 nonce,
+        uint256 deadline
+    ) internal view returns (bytes32) {
+        uint256 dataLength = datas.length;
+        bytes32[] memory dataHashes = new bytes32[](dataLength);
+        for (uint256 i = 0; i < dataLength; ) {
+            dataHashes[i] = keccak256(datas[i]);
+            unchecked {
+                ++i;
+            }
+        }
+
+        bytes32 structHash = keccak256(
+            abi.encode(
+                FOLLOW_WITH_SIG_TYPEHASH,
+                keccak256(abi.encodePacked(profileIds)),
+                keccak256(abi.encodePacked(dataHashes)),
+                nonce,
+                deadline
+            )
+        );
+
+        return _calculateDigest(structHash);
+    }
+
     function _getCollectTypeDataHash(
         uint256 profileId,
         uint256 pubId,

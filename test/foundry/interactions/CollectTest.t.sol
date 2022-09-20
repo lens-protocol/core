@@ -2,7 +2,7 @@
 pragma solidity ^0.8.13;
 
 import 'forge-std/Test.sol';
-import './base/BaseTest.t.sol';
+import '../base/BaseTest.t.sol';
 
 contract CollectTest is BaseTest {
     function setUp() public override {
@@ -20,6 +20,12 @@ contract CollectTest is BaseTest {
     function testCollectZeroPublicationFails() public {
         vm.expectRevert(Errors.PublicationDoesNotExist.selector);
         hub.collect(me, 0, 0, '');
+    }
+
+    function testCollectNotExecutorFails() public {
+        vm.prank(otherUser);
+        vm.expectRevert(Errors.CallerInvalid.selector);
+        hub.collect(me, firstProfileId, 1, '');
     }
 
     // positives
@@ -42,9 +48,18 @@ contract CollectTest is BaseTest {
         assertEq(nft.symbol(), expectedSymbol);
     }
 
-    function testCollectMirror() public {
-        assertEq(hub.getCollectNFT(1, 1), address(0));
+    function testExecutorCollect() public {
+        hub.setDelegatedExecutorApproval(otherUser, true);
 
+        vm.prank(otherUser);
+        uint256 nftId = hub.collect(me, firstProfileId, 1, '');
+
+        CollectNFT nft = CollectNFT(hub.getCollectNFT(firstProfileId, 1));
+        assertEq(nftId, 1);
+        assertEq(nft.ownerOf(1), me);
+    }
+
+    function testCollectMirror() public {
         vm.prank(profileOwner);
         hub.mirror(
             DataTypes.MirrorData({
@@ -63,13 +78,8 @@ contract CollectTest is BaseTest {
         assertEq(hub.getCollectNFT(firstProfileId, 2), address(0));
 
         // Ensure the original publication does have an associated collect NFT.
-        CollectNFT nft = CollectNFT(hub.getCollectNFT(1, 1));
+        CollectNFT nft = CollectNFT(hub.getCollectNFT(firstProfileId, 1));
         assertEq(nftId, 1);
         assertEq(nft.ownerOf(1), me);
-    }
-
-    // Meta-tx
-    function testCollectWithSigInvalidSignatureFails() public {
-
     }
 }

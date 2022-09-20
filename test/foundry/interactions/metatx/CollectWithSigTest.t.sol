@@ -2,7 +2,7 @@
 pragma solidity ^0.8.13;
 
 import 'forge-std/Test.sol';
-import './base/BaseSigTest.t.sol';
+import '../../base/BaseSigTest.t.sol';
 
 contract CollectWithSigTest is BaseSigTest {
     function setUp() public override {
@@ -16,7 +16,8 @@ contract CollectWithSigTest is BaseSigTest {
         uint256 nonce = 0;
         uint256 deadline = type(uint256).max;
         bytes32 digest = _getCollectTypeDataHash(firstProfileId, 1, '', nonce, deadline);
-        uint256 nftId = hub.collectWithSig(
+        vm.expectRevert(Errors.CallerInvalid.selector);
+        hub.collectWithSig(
             DataTypes.CollectWithSigData({
                 collector: signer,
                 profileId: firstProfileId,
@@ -25,10 +26,6 @@ contract CollectWithSigTest is BaseSigTest {
                 sig: _getSigStruct(otherSignerKey, digest, deadline)
             })
         );
-        vm.expectRevert();
-        CollectNFT nft = CollectNFT(hub.getCollectNFT(firstProfileId, 1));
-        assertEq(nftId, 1);
-        assertEq(nft.ownerOf(1), signer);
     }
 
     // positives
