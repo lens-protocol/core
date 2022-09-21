@@ -220,7 +220,7 @@ library GeneralLib {
         address followModule,
         bytes calldata followModuleInitData
     ) external {
-        // _validateCallerIsOwnerOrDispatcherOrExecutor(profileId);
+        _validateCallerIsOwnerOrDispatcherOrExecutor(profileId);
         _setFollowModule(profileId, msg.sender, followModule, followModuleInitData);
     }
 

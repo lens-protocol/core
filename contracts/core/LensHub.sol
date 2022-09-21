@@ -185,7 +185,6 @@ contract LensHub is LensNFTBase, VersionedInitializable, LensMultiState, LensHub
         address followModule,
         bytes calldata followModuleInitData
     ) external override whenNotPaused {
-        _validateCallerIsProfileOwner(profileId);
         GeneralLib.setFollowModule(profileId, followModule, followModuleInitData);
     }
 
