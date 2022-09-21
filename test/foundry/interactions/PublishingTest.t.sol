@@ -5,9 +5,26 @@ import '../base/BaseTest.t.sol';
 
 contract PublishingTest is BaseTest {
     // negatives
-    function testPostCallerInvalidFails() public {
-        vm.prank(otherUser);
+    function testPostNotExecutorFails() public {
         vm.expectRevert(Errors.CallerInvalid.selector);
         hub.post(mockPostData);
     }
+
+    function testCommentNotExecutorFails() public {
+        vm.prank(profileOwner);
+        hub.post(mockPostData);
+
+        vm.expectRevert(Errors.CallerInvalid.selector);
+        hub.comment(mockCommentData);
+    }
+
+    function testMirrorNotExecutorFails() public {
+        vm.prank(profileOwner);
+        hub.post(mockPostData);
+
+        vm.expectRevert(Errors.CallerInvalid.selector);
+        hub.mirror(mockMirrorData);
+    }
+
+    // positives
 }

@@ -51,6 +51,8 @@ contract TestSetup is Test {
         });
 
     DataTypes.PostData mockPostData;
+    DataTypes.CommentData mockCommentData;
+    DataTypes.MirrorData mockMirrorData;
 
     constructor() {
         // Start deployments.
@@ -114,6 +116,29 @@ contract TestSetup is Test {
             contentURI: mockURI,
             collectModule: address(freeCollectModule),
             collectModuleInitData: abi.encode(false),
+            referenceModule: address(0),
+            referenceModuleInitData: ''
+        });
+
+        // Precompute basic comment data.
+        mockCommentData = DataTypes.CommentData({
+            profileId: firstProfileId,
+            contentURI: mockURI,
+            profileIdPointed: firstProfileId,
+            pubIdPointed: 1,
+            referenceModuleData: '',
+            collectModule: address(freeCollectModule),
+            collectModuleInitData: abi.encode(false),
+            referenceModule: address(0),
+            referenceModuleInitData: ''
+        });
+
+        // Precompute basic mirror data.
+        mockMirrorData = DataTypes.MirrorData({
+            profileId: firstProfileId,
+            profileIdPointed: firstProfileId,
+            pubIdPointed: 1,
+            referenceModuleData: '',
             referenceModule: address(0),
             referenceModuleInitData: ''
         });

@@ -32,7 +32,7 @@ contract BaseTest is TestSetup {
         return _calculateDigest(structHash);
     }
 
-    function _getCollectTypeDataHash(
+    function _getCollectTypedDataHash(
         uint256 profileId,
         uint256 pubId,
         bytes memory data,
