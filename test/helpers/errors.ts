@@ -16,7 +16,6 @@ export const ERRORS = {
   REFERENCE_MODULE_NOT_WHITELISTED: 'ReferenceModuleNotWhitelisted()',
   PROFILE_CREATOR_NOT_WHITELISTED: 'ProfileCreatorNotWhitelisted()',
   NOT_PROFILE_OWNER: 'NotProfileOwner()',
-  NOT_PROFILE_OWNER_OR_VALID: 'NotProfileOwnerOrValid()',
   PUBLICATION_DOES_NOT_EXIST: 'PublicationDoesNotExist()',
   PROFILE_HANDLE_TAKEN: 'HandleTaken()',
   INVALID_HANDLE_LENGTH: 'HandleLengthInvalid()',

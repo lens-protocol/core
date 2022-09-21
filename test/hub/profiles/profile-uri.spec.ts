@@ -48,7 +48,7 @@ makeSuiteCleanRoom('Profile URI Functionality', function () {
       it('UserTwo should fail to set the profile URI on profile owned by user 1', async function () {
         await expect(
           lensHub.connect(userTwo).setProfileImageURI(FIRST_PROFILE_ID, MOCK_URI)
-        ).to.be.revertedWith(ERRORS.NOT_PROFILE_OWNER_OR_VALID);
+        ).to.be.revertedWith(ERRORS.CALLER_INVALID);
       });
 
       it('UserTwo should fail to set the profile URI on profile owned by user 1', async function () {
@@ -62,7 +62,7 @@ makeSuiteCleanRoom('Profile URI Functionality', function () {
       it('UserTwo should fail to change the follow NFT URI for profile one', async function () {
         await expect(
           lensHub.connect(userTwo).setFollowNFTURI(FIRST_PROFILE_ID, OTHER_MOCK_URI)
-        ).to.be.revertedWith(ERRORS.NOT_PROFILE_OWNER_OR_VALID);
+        ).to.be.revertedWith(ERRORS.CALLER_INVALID);
       });
     });
 

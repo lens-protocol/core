@@ -55,15 +55,16 @@ makeSuiteCleanRoom('Dispatcher Functionality', function () {
             referenceModule: ZERO_ADDRESS,
             referenceModuleInitData: [],
           })
-        ).to.be.revertedWith(ERRORS.NOT_PROFILE_OWNER_OR_VALID);
+        ).to.be.revertedWith(ERRORS.CALLER_INVALID);
       });
 
-      it("User should set userTwo as dispatcher, userTwo should fail to set follow module on user's profile", async function () {
-        await expect(lensHub.setDispatcher(FIRST_PROFILE_ID, userTwoAddress)).to.not.be.reverted;
-        await expect(
-          lensHub.connect(userTwo).setFollowModule(FIRST_PROFILE_ID, ZERO_ADDRESS, [])
-        ).to.be.revertedWith(ERRORS.NOT_PROFILE_OWNER);
-      });
+      // Note: Dispatcher can now do this.
+      // it("User should set userTwo as dispatcher, userTwo should fail to set follow module on user's profile", async function () {
+      //   await expect(lensHub.setDispatcher(FIRST_PROFILE_ID, userTwoAddress)).to.not.be.reverted;
+      //   await expect(
+      //     lensHub.connect(userTwo).setFollowModule(FIRST_PROFILE_ID, ZERO_ADDRESS, [])
+      //   ).to.be.revertedWith(ERRORS.NOT_PROFILE_OWNER);
+      // });
     });
 
     context('Scenarios', function () {

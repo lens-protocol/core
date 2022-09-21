@@ -37,7 +37,7 @@ makeSuiteCleanRoom('Setting Follow Module', function () {
       it('UserTwo should fail to set the follow module for the profile owned by User', async function () {
         await expect(
           lensHub.connect(userTwo).setFollowModule(FIRST_PROFILE_ID, userAddress, [])
-        ).to.be.revertedWith(ERRORS.NOT_PROFILE_OWNER);
+        ).to.be.revertedWith(ERRORS.CALLER_INVALID);
       });
 
       it('User should fail to set a follow module that is not whitelisted', async function () {

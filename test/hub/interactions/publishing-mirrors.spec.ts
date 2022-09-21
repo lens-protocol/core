@@ -70,7 +70,7 @@ makeSuiteCleanRoom('Publishing mirrors', function () {
             referenceModule: ZERO_ADDRESS,
             referenceModuleInitData: [],
           })
-        ).to.be.revertedWith(ERRORS.NOT_PROFILE_OWNER_OR_VALID);
+        ).to.be.revertedWith(ERRORS.CALLER_INVALID);
       });
 
       it('User should fail to mirror with an unwhitelisted reference module', async function () {
