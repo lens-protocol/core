@@ -315,7 +315,7 @@ library GeneralLib {
      *
      * @param vars The PostData struct.
      *
-     * @return uint256 An created publication's pubId.
+     * @return uint256 The created publication's pubId.
      */
     function post(DataTypes.PostData calldata vars) external returns (uint256) {
         uint256 pubId = _preIncrementPubCount(vars.profileId);
