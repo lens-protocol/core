@@ -82,6 +82,33 @@ contract CollectTest is BaseTest {
         assertEq(nft.ownerOf(1), me);
     }
 
+    function testExecutorCollectMirror() public {
+        vm.prank(profileOwner);
+        hub.mirror(
+            DataTypes.MirrorData({
+                profileId: firstProfileId,
+                profileIdPointed: firstProfileId,
+                pubIdPointed: 1,
+                referenceModuleData: '',
+                referenceModule: address(0),
+                referenceModuleInitData: ''
+            })
+        );
+
+        hub.setDelegatedExecutorApproval(otherUser, true);
+
+        vm.prank(otherUser);
+        uint256 nftId = hub.collect(me, firstProfileId, 2, '');
+
+        // Ensure the mirror doesn't have an associated collect NFT.
+        assertEq(hub.getCollectNFT(firstProfileId, 2), address(0));
+
+        // Ensure the original publication does have an associated collect NFT.
+        CollectNFT nft = CollectNFT(hub.getCollectNFT(firstProfileId, 1));
+        assertEq(nftId, 1);
+        assertEq(nft.ownerOf(1), me);
+    }
+
     // Meta-tx
     // negatives
     function testCollectWithSigInvalidSignerFails() public {
