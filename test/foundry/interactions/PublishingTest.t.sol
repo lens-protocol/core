@@ -27,4 +27,31 @@ contract PublishingTest is BaseTest {
     }
 
     // positives
+    function testExecutorPost() public {
+        vm.prank(profileOwner);
+        hub.setDelegatedExecutorApproval(otherUser, true);
+
+        vm.prank(otherUser);
+        hub.post(mockPostData);
+    }
+
+    function testExecutorComment() public {
+        vm.startPrank(profileOwner);
+        hub.post(mockPostData);
+        hub.setDelegatedExecutorApproval(otherUser, true);
+        vm.stopPrank();
+
+        vm.prank(otherUser);
+        hub.comment(mockCommentData);
+    }
+
+    function testExecutorMirror() public {
+        vm.startPrank(profileOwner);
+        hub.post(mockPostData);
+        hub.setDelegatedExecutorApproval(otherUser, true);
+        vm.stopPrank();
+
+        vm.prank(otherUser);
+        hub.mirror(mockMirrorData);
+    }
 }
