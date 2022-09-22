@@ -4,6 +4,33 @@ pragma solidity ^0.8.13;
 import './TestSetup.t.sol';
 
 contract BaseTest is TestSetup {
+    function _getPostTypedDataHash(
+        uint256 profileId,
+        string memory contentURI,
+        address collectModule,
+        bytes memory collectModuleInitData,
+        address referenceModule,
+        bytes memory referenceModuleInitData,
+        uint256 nonce,
+        uint256 deadline
+    ) internal view returns (bytes32) {
+        bytes32 structHash = keccak256(
+            abi.encode(
+                POST_WITH_SIG_TYPEHASH,
+                profileId,
+                keccak256(bytes(contentURI)),
+                collectModule,
+                keccak256(collectModuleInitData),
+                referenceModule,
+                keccak256(referenceModuleInitData),
+                nonce,
+                deadline
+            )
+        );
+
+        return _calculateDigest(structHash);
+    }
+
     function _getFollowTypedDataHash(
         uint256[] memory profileIds,
         bytes[] memory datas,
