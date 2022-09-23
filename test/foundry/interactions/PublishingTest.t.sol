@@ -32,7 +32,8 @@ contract PublishingTest is BaseTest {
         hub.setDelegatedExecutorApproval(otherUser, true);
 
         vm.prank(otherUser);
-        hub.post(mockPostData);
+        uint256 pubId = hub.post(mockPostData);
+        assertEq(pubId, 1);
     }
 
     function testExecutorComment() public {
@@ -42,7 +43,8 @@ contract PublishingTest is BaseTest {
         vm.stopPrank();
 
         vm.prank(otherUser);
-        hub.comment(mockCommentData);
+        uint256 pubId = hub.comment(mockCommentData);
+        assertEq(pubId, 2);
     }
 
     function testExecutorMirror() public {
@@ -52,6 +54,181 @@ contract PublishingTest is BaseTest {
         vm.stopPrank();
 
         vm.prank(otherUser);
-        hub.mirror(mockMirrorData);
+        uint256 pubId = hub.mirror(mockMirrorData);
+        assertEq(pubId, 2);
+    }
+
+    // Meta-tx
+    // Negatives
+    function testPostWithSigInvalidSignerFails() public {
+        bytes memory collectModuleInitData = abi.encode(false);
+        uint256 nonce = 0;
+        uint256 deadline = type(uint256).max;
+        bytes32 digest = _getPostTypedDataHash(
+            firstProfileId,
+            mockURI,
+            address(freeCollectModule),
+            collectModuleInitData,
+            address(0),
+            '',
+            nonce,
+            deadline
+        );
+
+        vm.expectRevert(Errors.CallerInvalid.selector);
+        hub.postWithSig(
+            DataTypes.PostWithSigData({
+                profileId: firstProfileId,
+                contentURI: mockURI,
+                collectModule: address(freeCollectModule),
+                collectModuleInitData: collectModuleInitData,
+                referenceModule: address(0),
+                referenceModuleInitData: '',
+                sig: _getSigStruct(otherSignerKey, digest, deadline)
+            })
+        );
+    }
+
+    function testCommentWithSigInvalidSignerFails() public {
+        vm.prank(profileOwner);
+        hub.post(mockPostData);
+
+        bytes memory collectModuleInitData = abi.encode(false);
+        uint256 nonce = 0;
+        uint256 deadline = type(uint256).max;
+        bytes32 digest = _getCommentTypedDataHash(
+            firstProfileId,
+            mockURI,
+            firstProfileId,
+            1,
+            '',
+            address(freeCollectModule),
+            collectModuleInitData,
+            address(0),
+            '',
+            nonce,
+            deadline
+        );
+
+        vm.expectRevert(Errors.CallerInvalid.selector);
+        hub.commentWithSig(
+            DataTypes.CommentWithSigData({
+                profileId: firstProfileId,
+                contentURI: mockURI,
+                profileIdPointed: firstProfileId,
+                pubIdPointed: 1,
+                referenceModuleData: '',
+                collectModule: address(freeCollectModule),
+                collectModuleInitData: collectModuleInitData,
+                referenceModule: address(0),
+                referenceModuleInitData: '',
+                sig: _getSigStruct(otherSignerKey, digest, deadline)
+            })
+        );
+    }
+
+    function testMirrorWithSigInvalidSignerFails() public {
+        vm.prank(profileOwner);
+        hub.post(mockPostData);
+
+        uint256 nonce = 0;
+        uint256 deadline = type(uint256).max;
+        bytes32 digest = _getMirrorTypedDataHash(
+            firstProfileId,
+            firstProfileId,
+            1,
+            '',
+            address(0),
+            '',
+            nonce,
+            deadline
+        );
+
+        vm.expectRevert(Errors.CallerInvalid.selector);
+        hub.mirrorWithSig(
+            DataTypes.MirrorWithSigData({
+                profileId: firstProfileId,
+                profileIdPointed: firstProfileId,
+                pubIdPointed: 1,
+                referenceModuleData: '',
+                referenceModule: address(0),
+                referenceModuleInitData: '',
+                sig: _getSigStruct(otherSignerKey, digest, deadline)
+            })
+        );
+    }
+
+    // Positives
+    function testExecutorPostWithSig() public {
+        vm.prank(profileOwner);
+        hub.setDelegatedExecutorApproval(otherSigner, true);
+
+        bytes memory collectModuleInitData = abi.encode(false);
+        uint256 nonce = 0;
+        uint256 deadline = type(uint256).max;
+        bytes32 digest = _getPostTypedDataHash(
+            firstProfileId,
+            mockURI,
+            address(freeCollectModule),
+            collectModuleInitData,
+            address(0),
+            '',
+            nonce,
+            deadline
+        );
+
+        uint256 pubId = hub.postWithSig(
+            DataTypes.PostWithSigData({
+                profileId: firstProfileId,
+                contentURI: mockURI,
+                collectModule: address(freeCollectModule),
+                collectModuleInitData: collectModuleInitData,
+                referenceModule: address(0),
+                referenceModuleInitData: '',
+                sig: _getSigStruct(profileOwnerKey, digest, deadline)
+            })
+        );
+        assertEq(pubId, 1);
+    }
+
+    function testExecutorCommentWithSig() public {
+        vm.startPrank(profileOwner);
+        hub.setDelegatedExecutorApproval(otherSigner, true);
+        hub.post(mockPostData);
+        vm.stopPrank();
+
+        bytes memory collectModuleInitData = abi.encode(false);
+        uint256 nonce = 0;
+        uint256 deadline = type(uint256).max;
+        bytes32 digest = _getCommentTypedDataHash(
+            firstProfileId,
+            mockURI,
+            firstProfileId,
+            1,
+            '',
+            address(freeCollectModule),
+            collectModuleInitData,
+            address(0),
+            '',
+            nonce,
+            deadline
+        );
+
+        uint256 pubId = hub.commentWithSig(
+            DataTypes.CommentWithSigData({
+                profileId: firstProfileId,
+                contentURI: mockURI,
+                profileIdPointed: firstProfileId,
+                pubIdPointed: 1,
+                referenceModuleData: '',
+                collectModule: address(freeCollectModule),
+                collectModuleInitData: collectModuleInitData,
+                referenceModule: address(0),
+                referenceModuleInitData: '',
+                sig: _getSigStruct(otherSignerKey, digest, deadline)
+            })
+        );
+
+        assertEq(pubId, 2);
     }
 }

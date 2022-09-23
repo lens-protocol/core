@@ -118,7 +118,7 @@ contract CollectTest is BaseTest {
         vm.expectRevert(Errors.CallerInvalid.selector);
         hub.collectWithSig(
             DataTypes.CollectWithSigData({
-                collector: signer,
+                collector: profileOwner,
                 profileId: firstProfileId,
                 pubId: 1,
                 data: '',
@@ -134,17 +134,17 @@ contract CollectTest is BaseTest {
         bytes32 digest = _getCollectTypedDataHash(firstProfileId, 1, '', nonce, deadline);
         uint256 nftId = hub.collectWithSig(
             DataTypes.CollectWithSigData({
-                collector: signer,
+                collector: otherSigner,
                 profileId: firstProfileId,
                 pubId: 1,
                 data: '',
-                sig: _getSigStruct(signerKey, digest, deadline)
+                sig: _getSigStruct(otherSignerKey, digest, deadline)
             })
         );
 
         CollectNFT nft = CollectNFT(hub.getCollectNFT(firstProfileId, 1));
         assertEq(nftId, 1);
-        assertEq(nft.ownerOf(1), signer);
+        assertEq(nft.ownerOf(1), otherSigner);
     }
 
     function testCollectWithSigMirror() public {
@@ -166,11 +166,11 @@ contract CollectTest is BaseTest {
 
         uint256 nftId = hub.collectWithSig(
             DataTypes.CollectWithSigData({
-                collector: signer,
+                collector: otherSigner,
                 profileId: firstProfileId,
                 pubId: 2,
                 data: '',
-                sig: _getSigStruct(signerKey, digest, deadline)
+                sig: _getSigStruct(otherSignerKey, digest, deadline)
             })
         );
 
@@ -180,34 +180,34 @@ contract CollectTest is BaseTest {
         // Ensure the original publication does have an associated collect NFT.
         CollectNFT nft = CollectNFT(hub.getCollectNFT(1, 1));
         assertEq(nftId, 1);
-        assertEq(nft.ownerOf(1), signer);
+        assertEq(nft.ownerOf(1), otherSigner);
     }
 
     function testExecutorCollectWithSig() public {
-        vm.prank(signer);
-        hub.setDelegatedExecutorApproval(otherSigner, true);
+        vm.prank(otherSigner);
+        hub.setDelegatedExecutorApproval(profileOwner, true);
 
         uint256 nonce = 0;
         uint256 deadline = type(uint256).max;
         bytes32 digest = _getCollectTypedDataHash(firstProfileId, 1, '', nonce, deadline);
         uint256 nftId = hub.collectWithSig(
             DataTypes.CollectWithSigData({
-                collector: signer,
+                collector: otherSigner,
                 profileId: firstProfileId,
                 pubId: 1,
                 data: '',
-                sig: _getSigStruct(otherSignerKey, digest, deadline)
+                sig: _getSigStruct(profileOwnerKey, digest, deadline)
             })
         );
 
         CollectNFT nft = CollectNFT(hub.getCollectNFT(firstProfileId, 1));
         assertEq(nftId, 1);
-        assertEq(nft.ownerOf(1), signer);
+        assertEq(nft.ownerOf(1), otherSigner);
     }
 
     function testExecutorCollectWithSigMirror() public {
-        vm.prank(signer);
-        hub.setDelegatedExecutorApproval(otherSigner, true);
+        vm.prank(otherSigner);
+        hub.setDelegatedExecutorApproval(profileOwner, true);
 
         uint256 nonce = 0;
         uint256 deadline = type(uint256).max;
@@ -227,11 +227,11 @@ contract CollectTest is BaseTest {
 
         uint256 nftId = hub.collectWithSig(
             DataTypes.CollectWithSigData({
-                collector: signer,
+                collector: otherSigner,
                 profileId: firstProfileId,
                 pubId: 2,
                 data: '',
-                sig: _getSigStruct(otherSignerKey, digest, deadline)
+                sig: _getSigStruct(profileOwnerKey, digest, deadline)
             })
         );
 
@@ -241,6 +241,6 @@ contract CollectTest is BaseTest {
         // Ensure the original publication does have an associated collect NFT.
         CollectNFT nft = CollectNFT(hub.getCollectNFT(1, 1));
         assertEq(nftId, 1);
-        assertEq(nft.ownerOf(1), signer);
+        assertEq(nft.ownerOf(1), otherSigner);
     }
 }

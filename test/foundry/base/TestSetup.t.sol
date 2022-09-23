@@ -18,17 +18,16 @@ import '../../../contracts/libraries/ProfileTokenURILogic.sol';
 contract TestSetup is Test {
     uint256 constant firstProfileId = 1;
     address constant deployer = address(1);
-    address constant profileOwner = address(2);
     // UserOne is the test address, replaced with "me."
-    address constant otherUser = address(3);
-    address constant governance = address(4);
+    address constant otherUser = address(2);
+    address constant governance = address(3);
 
     string constant mockHandle = 'handle.lens';
     string constant mockURI = 'ipfs://QmUXfQWe43RKx31VzA2BnbwhSMW8WuaJvszFWChD59m76U';
-    uint256 constant signerKey = 0x04546b;
+    uint256 constant profileOwnerKey = 0x04546b;
     uint256 constant otherSignerKey = 0x737562;
 
-    address immutable signer = vm.addr(signerKey);
+    address immutable profileOwner = vm.addr(profileOwnerKey);
     address immutable otherSigner = vm.addr(otherSignerKey);
     address immutable me = address(this);
     bytes32 immutable domainSeparator;
@@ -40,15 +39,7 @@ contract TestSetup is Test {
     LensHub immutable hub;
     FreeCollectModule immutable freeCollectModule;
 
-    DataTypes.CreateProfileData mockCreateProfileData =
-        DataTypes.CreateProfileData({
-            to: profileOwner,
-            handle: mockHandle,
-            imageURI: mockURI,
-            followModule: address(0),
-            followModuleInitData: '',
-            followNFTURI: mockURI
-        });
+    DataTypes.CreateProfileData mockCreateProfileData;
 
     DataTypes.PostData mockPostData;
     DataTypes.CommentData mockCommentData;
@@ -109,6 +100,16 @@ contract TestSetup is Test {
                 hubProxyAddr
             )
         );
+
+        // precompute basic profile creaton data.
+        mockCreateProfileData = DataTypes.CreateProfileData({
+            to: profileOwner,
+            handle: mockHandle,
+            imageURI: mockURI,
+            followModule: address(0),
+            followModuleInitData: '',
+            followNFTURI: mockURI
+        });
 
         // Precompute basic post data.
         mockPostData = DataTypes.PostData({

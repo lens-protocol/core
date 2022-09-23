@@ -62,7 +62,7 @@ contract FollowTest is BaseTest {
         vm.expectRevert(Errors.CallerInvalid.selector);
         hub.followWithSig(
             DataTypes.FollowWithSigData({
-                follower: signer,
+                follower: profileOwner,
                 profileIds: profileIds,
                 datas: datas,
                 sig: _getSigStruct(otherSignerKey, digest, deadline)
@@ -84,17 +84,17 @@ contract FollowTest is BaseTest {
 
         uint256[] memory nftIds = hub.followWithSig(
             DataTypes.FollowWithSigData({
-                follower: signer,
+                follower: otherSigner,
                 profileIds: profileIds,
                 datas: datas,
-                sig: _getSigStruct(signerKey, digest, deadline)
+                sig: _getSigStruct(otherSignerKey, digest, deadline)
             })
         );
 
         FollowNFT nft = FollowNFT(hub.getFollowNFT(firstProfileId));
         assertEq(nftIds.length, 1);
         assertEq(nftIds[0], 1);
-        assertEq(nft.ownerOf(1), signer);
+        assertEq(nft.ownerOf(1), otherSigner);
 
         string memory expectedName = string(abi.encodePacked(mockHandle, FOLLOW_NFT_NAME_SUFFIX));
         string memory expectedSymbol = string(
@@ -105,8 +105,8 @@ contract FollowTest is BaseTest {
     }
 
     function testExecutorFollowWithSig() public {
-        vm.prank(signer);
-        hub.setDelegatedExecutorApproval(otherSigner, true);
+        vm.prank(otherSigner);
+        hub.setDelegatedExecutorApproval(profileOwner, true);
 
         uint256[] memory profileIds = new uint256[](1);
         profileIds[0] = firstProfileId;
@@ -118,16 +118,16 @@ contract FollowTest is BaseTest {
 
         uint256[] memory nftIds = hub.followWithSig(
             DataTypes.FollowWithSigData({
-                follower: signer,
+                follower: otherSigner,
                 profileIds: profileIds,
                 datas: datas,
-                sig: _getSigStruct(otherSignerKey, digest, deadline)
+                sig: _getSigStruct(profileOwnerKey, digest, deadline)
             })
         );
 
         FollowNFT nft = FollowNFT(hub.getFollowNFT(firstProfileId));
         assertEq(nftIds.length, 1);
         assertEq(nftIds[0], 1);
-        assertEq(nft.ownerOf(1), signer);
+        assertEq(nft.ownerOf(1), otherSigner);
     }
 }

@@ -4,6 +4,64 @@ pragma solidity ^0.8.13;
 import './TestSetup.t.sol';
 
 contract BaseTest is TestSetup {
+    function _getMirrorTypedDataHash(
+        uint256 profileId,
+        uint256 profileIdPointed,
+        uint256 pubIdPointed,
+        bytes memory referenceModuleData,
+        address referenceModule,
+        bytes memory referenceModuleInitData,
+        uint256 nonce,
+        uint256 deadline
+    ) internal view returns (bytes32) {
+        bytes32 structHash = keccak256(
+            abi.encode(
+                MIRROR_WITH_SIG_TYPEHASH,
+                profileId,
+                profileIdPointed,
+                pubIdPointed,
+                keccak256(referenceModuleData),
+                referenceModule,
+                keccak256(referenceModuleInitData),
+                nonce,
+                deadline
+            )
+        );
+        return _calculateDigest(structHash);
+    }
+
+    function _getCommentTypedDataHash(
+        uint256 profileId,
+        string memory contentURI,
+        uint256 profileIdPointed,
+        uint256 pubIdPointed,
+        bytes memory referenceModuleData,
+        address collectModule,
+        bytes memory collectModuleInitData,
+        address referenceModule,
+        bytes memory referenceModuleInitData,
+        uint256 nonce,
+        uint256 deadline
+    ) internal view returns (bytes32) {
+        bytes32 structHash = keccak256(
+            abi.encode(
+                COMMENT_WITH_SIG_TYPEHASH,
+                profileId,
+                keccak256(bytes(contentURI)),
+                profileIdPointed,
+                pubIdPointed,
+                keccak256(referenceModuleData),
+                collectModule,
+                keccak256(collectModuleInitData),
+                referenceModule,
+                keccak256(referenceModuleInitData),
+                nonce,
+                deadline
+            )
+        );
+        return _calculateDigest(structHash);
+    }
+
     function _getPostTypedDataHash(
         uint256 profileId,
         string memory contentURI,
@@ -14,6 +72,18 @@ contract BaseTest is TestSetup {
         uint256 nonce,
         uint256 deadline
     ) internal view returns (bytes32) {
+        // abi.encode(
+        // POST_WITH_SIG_TYPEHASH,
+        // vars.profileId,
+        // keccak256(bytes(vars.contentURI)),
+        // vars.collectModule,
+        // keccak256(vars.collectModuleInitData),
+        // vars.referenceModule,
+        // keccak256(vars.referenceModuleInitData),
+        // _sigNonces(owner),
+        // vars.sig.deadline
+        // )
+
         bytes32 structHash = keccak256(
             abi.encode(
                 POST_WITH_SIG_TYPEHASH,
@@ -27,7 +97,6 @@ contract BaseTest is TestSetup {
                 deadline
             )
         );
-
         return _calculateDigest(structHash);
     }
 
@@ -55,7 +124,6 @@ contract BaseTest is TestSetup {
                 deadline
             )
         );
-
         return _calculateDigest(structHash);
     }
 
@@ -90,7 +158,7 @@ contract BaseTest is TestSetup {
         uint256 deadline
     ) internal returns (DataTypes.EIP712Signature memory) {
         (uint8 v, bytes32 r, bytes32 s) = vm.sign(pKey, digest);
-        return DataTypes.EIP712Signature({v: v, r: r, s: s, deadline: deadline});
+        return DataTypes.EIP712Signature(v, r, s, deadline);
     }
 
     function _toUint256Array(uint256 n) internal pure returns (uint256[] memory) {
