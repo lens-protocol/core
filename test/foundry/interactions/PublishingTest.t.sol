@@ -224,7 +224,39 @@ contract PublishingTest is BaseTest {
                 sig: _getSigStruct(otherSignerKey, digest, deadline)
             })
         );
+        assertEq(pubId, 2);
+    }
 
+    function testExecutorMirrorWithSig() public {
+        vm.startPrank(profileOwner);
+        hub.setDelegatedExecutorApproval(otherSigner, true);
+        hub.post(mockPostData);
+        vm.stopPrank();
+
+        uint256 nonce = 0;
+        uint256 deadline = type(uint256).max;
+        bytes32 digest = _getMirrorTypedDataHash(
+            firstProfileId,
+            firstProfileId,
+            1,
+            '',
+            address(0),
+            '',
+            nonce,
+            deadline
+        );
+
+        uint256 pubId = hub.mirrorWithSig(
+            DataTypes.MirrorWithSigData({
+                profileId: firstProfileId,
+                profileIdPointed: firstProfileId,
+                pubIdPointed: 1,
+                referenceModuleData: '',
+                referenceModule: address(0),
+                referenceModuleInitData: '',
+                sig: _getSigStruct(otherSignerKey, digest, deadline)
+            })
+        );
         assertEq(pubId, 2);
     }
 }
