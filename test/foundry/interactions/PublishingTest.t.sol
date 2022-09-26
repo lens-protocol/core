@@ -61,14 +61,13 @@ contract PublishingTest is BaseTest {
     // Meta-tx
     // Negatives
     function testPostWithSigInvalidSignerFails() public {
-        bytes memory collectModuleInitData = abi.encode(false);
         uint256 nonce = 0;
         uint256 deadline = type(uint256).max;
         bytes32 digest = _getPostTypedDataHash(
             firstProfileId,
             mockURI,
             address(freeCollectModule),
-            collectModuleInitData,
+            abi.encode(false),
             address(0),
             '',
             nonce,
@@ -81,7 +80,7 @@ contract PublishingTest is BaseTest {
                 profileId: firstProfileId,
                 contentURI: mockURI,
                 collectModule: address(freeCollectModule),
-                collectModuleInitData: collectModuleInitData,
+                collectModuleInitData: abi.encode(false),
                 referenceModule: address(0),
                 referenceModuleInitData: '',
                 sig: _getSigStruct(otherSignerKey, digest, deadline)
@@ -93,7 +92,6 @@ contract PublishingTest is BaseTest {
         vm.prank(profileOwner);
         hub.post(mockPostData);
 
-        bytes memory collectModuleInitData = abi.encode(false);
         uint256 nonce = 0;
         uint256 deadline = type(uint256).max;
         bytes32 digest = _getCommentTypedDataHash(
@@ -103,7 +101,7 @@ contract PublishingTest is BaseTest {
             1,
             '',
             address(freeCollectModule),
-            collectModuleInitData,
+            abi.encode(false),
             address(0),
             '',
             nonce,
@@ -119,7 +117,7 @@ contract PublishingTest is BaseTest {
                 pubIdPointed: 1,
                 referenceModuleData: '',
                 collectModule: address(freeCollectModule),
-                collectModuleInitData: collectModuleInitData,
+                collectModuleInitData: abi.encode(false),
                 referenceModule: address(0),
                 referenceModuleInitData: '',
                 sig: _getSigStruct(otherSignerKey, digest, deadline)
@@ -163,14 +161,13 @@ contract PublishingTest is BaseTest {
         vm.prank(profileOwner);
         hub.setDelegatedExecutorApproval(otherSigner, true);
 
-        bytes memory collectModuleInitData = abi.encode(false);
         uint256 nonce = 0;
         uint256 deadline = type(uint256).max;
         bytes32 digest = _getPostTypedDataHash(
             firstProfileId,
             mockURI,
             address(freeCollectModule),
-            collectModuleInitData,
+            abi.encode(false),
             address(0),
             '',
             nonce,
@@ -182,7 +179,7 @@ contract PublishingTest is BaseTest {
                 profileId: firstProfileId,
                 contentURI: mockURI,
                 collectModule: address(freeCollectModule),
-                collectModuleInitData: collectModuleInitData,
+                collectModuleInitData: abi.encode(false),
                 referenceModule: address(0),
                 referenceModuleInitData: '',
                 sig: _getSigStruct(profileOwnerKey, digest, deadline)
@@ -197,7 +194,6 @@ contract PublishingTest is BaseTest {
         hub.post(mockPostData);
         vm.stopPrank();
 
-        bytes memory collectModuleInitData = abi.encode(false);
         uint256 nonce = 0;
         uint256 deadline = type(uint256).max;
         bytes32 digest = _getCommentTypedDataHash(
@@ -207,7 +203,7 @@ contract PublishingTest is BaseTest {
             1,
             '',
             address(freeCollectModule),
-            collectModuleInitData,
+            abi.encode(false),
             address(0),
             '',
             nonce,
@@ -222,7 +218,7 @@ contract PublishingTest is BaseTest {
                 pubIdPointed: 1,
                 referenceModuleData: '',
                 collectModule: address(freeCollectModule),
-                collectModuleInitData: collectModuleInitData,
+                collectModuleInitData: abi.encode(false),
                 referenceModule: address(0),
                 referenceModuleInitData: '',
                 sig: _getSigStruct(otherSignerKey, digest, deadline)
