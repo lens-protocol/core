@@ -212,13 +212,6 @@ library InteractionHelpers {
         );
     }
 
-    // function _setCollectModule(
-    // uint256 profileId,
-    // uint256 pubId,
-    // address onBehalfOf,
-    // address executor
-    // ) internal {}
-
     /**
      * @notice Deploys the given profile's Follow NFT contract.
      *

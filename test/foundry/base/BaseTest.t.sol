@@ -4,6 +4,26 @@ pragma solidity ^0.8.13;
 import './TestSetup.t.sol';
 
 contract BaseTest is TestSetup {
+    function _getSetFollowModuleTypedDataHash(
+        uint256 profileId,
+        address followModule,
+        bytes memory followModuleInitData,
+        uint256 nonce,
+        uint256 deadline
+    ) internal view returns (bytes32) {
+        bytes32 structHash = keccak256(
+            abi.encode(
+                SET_FOLLOW_MODULE_WITH_SIG_TYPEHASH,
+                profileId,
+                followModule,
+                keccak256(followModuleInitData),
+                nonce,
+                deadline
+            )
+        );
+        return _calculateDigest(structHash);
+    }
+
     function _getMirrorTypedDataHash(
         uint256 profileId,
         uint256 profileIdPointed,
@@ -72,18 +92,6 @@ contract BaseTest is TestSetup {
         uint256 nonce,
         uint256 deadline
     ) internal view returns (bytes32) {
-        // abi.encode(
-        // POST_WITH_SIG_TYPEHASH,
-        // vars.profileId,
-        // keccak256(bytes(vars.contentURI)),
-        // vars.collectModule,
-        // keccak256(vars.collectModuleInitData),
-        // vars.referenceModule,
-        // keccak256(vars.referenceModuleInitData),
-        // _sigNonces(owner),
-        // vars.sig.deadline
-        // )
-
         bytes32 structHash = keccak256(
             abi.encode(
                 POST_WITH_SIG_TYPEHASH,
