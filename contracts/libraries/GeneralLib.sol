@@ -192,6 +192,7 @@ library GeneralLib {
      * @param profileId The profile ID to set.
      */
     function setDefaultProfile(address onBehalfOf, uint256 profileId) external {
+        _validateCallerIsOnBehalfOfOrExecutor(onBehalfOf);
         _setDefaultProfile(onBehalfOf, profileId);
     }
 
@@ -1024,6 +1025,7 @@ library GeneralLib {
         );
     }
 
+    // TODO: Should be in InteractionHelpers.
     function _processCommentIfNeeded(
         uint256 profileId,
         address executor,
@@ -1147,6 +1149,7 @@ library GeneralLib {
         );
     }
 
+    // TODO: Should be in InteractionHelpers.
     function _processMirrorIfNeeded(
         uint256 profileId,
         address executor,
@@ -1389,22 +1392,6 @@ library GeneralLib {
         }
         if (!whitelisted) revert Errors.ReferenceModuleNotWhitelisted();
     }
-
-    // function _validateCallerIsDelegatedExecutor(address onBehalfOf) private view {
-    // bool isApprovedDelegatedExecutor;
-    // assembly {
-    // If the caller is not the owner, check if they are an approved delegated executor.
-    // if iszero(eq(onBehalfOf, caller())) {
-    // mstore(0, onBehalfOf)
-    // mstore(32, DELEGATED_EXECUTOR_APPROVAL_MAPPING_SLOT)
-    // mstore(32, keccak256(0, 64))
-    // mstore(0, caller())
-    // let slot := keccak256(0, 64)
-    // isApprovedDelegatedExecutor := sload(slot)
-    // }
-    // }
-    // if (!isApprovedDelegatedExecutor) revert Errors.CallerInvalid();
-    // }
 
     function _validateHandle(string calldata handle) private pure {
         bytes memory byteHandle = bytes(handle);
