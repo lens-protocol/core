@@ -192,7 +192,6 @@ library GeneralLib {
      * @param profileId The profile ID to set.
      */
     function setDefaultProfile(address onBehalfOf, uint256 profileId) external {
-        GeneralHelpers.validateOnBehalfOfOrExecutor(onBehalfOf, msg.sender);
         _setDefaultProfile(onBehalfOf, profileId);
     }
 
@@ -204,7 +203,12 @@ library GeneralLib {
     function setDefaultProfileWithSig(DataTypes.SetDefaultProfileWithSigData calldata vars)
         external
     {
-        MetaTxHelpers.baseSetDefaultProfileWithSig(vars);
+        uint256 profileId = vars.profileId;
+        address signer = _getOriginatorOrDelegatedExecutorSigner(
+            GeneralHelpers.unsafeOwnerOf(profileId),
+            vars.delegatedSigner
+        );
+        MetaTxHelpers.baseSetDefaultProfileWithSig(signer, vars);
         _setDefaultProfile(vars.wallet, vars.profileId);
     }
 
@@ -230,8 +234,13 @@ library GeneralLib {
      * @param vars the SetFollowModuleWithSigData struct containing the relevant parameters.
      */
     function setFollowModuleWithSig(DataTypes.SetFollowModuleWithSigData calldata vars) external {
-        address executor = MetaTxHelpers.baseSetFollowModuleWithSig(vars);
-        _setFollowModule(vars.profileId, executor, vars.followModule, vars.followModuleInitData);
+        uint256 profileId = vars.profileId;
+        address signer = _getOriginatorOrDelegatedExecutorSigner(
+            GeneralHelpers.unsafeOwnerOf(profileId),
+            vars.delegatedSigner
+        );
+        MetaTxHelpers.baseSetFollowModuleWithSig(signer, vars);
+        _setFollowModule(vars.profileId, signer, vars.followModule, vars.followModuleInitData);
     }
 
     /**
@@ -285,7 +294,12 @@ library GeneralLib {
     function setProfileImageURIWithSig(DataTypes.SetProfileImageURIWithSigData calldata vars)
         external
     {
-        MetaTxHelpers.baseSetProfileImageURIWithSig(vars);
+        uint256 profileId = vars.profileId;
+        address signer = _getOriginatorOrDelegatedExecutorSigner(
+            GeneralHelpers.unsafeOwnerOf(profileId),
+            vars.delegatedSigner
+        );
+        MetaTxHelpers.baseSetProfileImageURIWithSig(signer, vars);
         _setProfileImageURI(vars.profileId, vars.imageURI);
     }
 
@@ -306,7 +320,12 @@ library GeneralLib {
      * @param vars the SetFollowNFTURIWithSigData struct containing the relevant parameters.
      */
     function setFollowNFTURIWithSig(DataTypes.SetFollowNFTURIWithSigData calldata vars) external {
-        MetaTxHelpers.baseSetFollowNFTURIWithSig(vars);
+        uint256 profileId = vars.profileId;
+        address signer = _getOriginatorOrDelegatedExecutorSigner(
+            GeneralHelpers.unsafeOwnerOf(profileId),
+            vars.delegatedSigner
+        );
+        MetaTxHelpers.baseSetFollowNFTURIWithSig(signer, vars);
         _setFollowNFTURI(vars.profileId, vars.followNFTURI);
     }
 
@@ -341,11 +360,16 @@ library GeneralLib {
      * @return uint256 The created publication's pubId.
      */
     function postWithSig(DataTypes.PostWithSigData calldata vars) external returns (uint256) {
-        uint256 pubId = _preIncrementPubCount(vars.profileId);
-        address executor = MetaTxHelpers.basePostWithSig(vars);
+        uint256 profileId = vars.profileId;
+        address signer = _getOriginatorOrDelegatedExecutorSigner(
+            GeneralHelpers.unsafeOwnerOf(profileId),
+            vars.delegatedSigner
+        );
+        uint256 pubId = _preIncrementPubCount(profileId);
+        MetaTxHelpers.basePostWithSig(signer, vars);
         _createPost(
-            vars.profileId,
-            executor,
+            profileId,
+            signer,
             pubId,
             vars.contentURI,
             vars.collectModule,
@@ -378,9 +402,14 @@ library GeneralLib {
      * @return uint256 The created publication's pubId.
      */
     function commentWithSig(DataTypes.CommentWithSigData calldata vars) external returns (uint256) {
-        uint256 pubId = _preIncrementPubCount(vars.profileId);
-        address executor = MetaTxHelpers.baseCommentWithSig(vars);
-        _createCommentWithSigStruct(vars, executor, pubId);
+        uint256 profileId = vars.profileId;
+        address signer = _getOriginatorOrDelegatedExecutorSigner(
+            GeneralHelpers.unsafeOwnerOf(profileId),
+            vars.delegatedSigner
+        );
+        uint256 pubId = _preIncrementPubCount(profileId);
+        MetaTxHelpers.baseCommentWithSig(signer, vars);
+        _createCommentWithSigStruct(vars, signer, pubId);
         return pubId;
     }
 
@@ -406,9 +435,14 @@ library GeneralLib {
      * @return uint256 The created publication's pubId.
      */
     function mirrorWithSig(DataTypes.MirrorWithSigData calldata vars) external returns (uint256) {
-        uint256 pubId = _preIncrementPubCount(vars.profileId);
-        address executor = MetaTxHelpers.baseMirrorWithSig(vars);
-        _createMirrorWithSigStruct(vars, executor, pubId);
+        uint256 profileId = vars.profileId;
+        address signer = _getOriginatorOrDelegatedExecutorSigner(
+            GeneralHelpers.unsafeOwnerOf(profileId),
+            vars.delegatedSigner
+        );
+        uint256 pubId = _preIncrementPubCount(profileId);
+        MetaTxHelpers.baseMirrorWithSig(signer, vars);
+        _createMirrorWithSigStruct(vars, signer, pubId);
         return pubId;
     }
 
@@ -427,7 +461,7 @@ library GeneralLib {
         uint256[] calldata profileIds,
         bytes[] calldata followModuleDatas
     ) external returns (uint256[] memory) {
-        GeneralHelpers.validateOnBehalfOfOrExecutor(onBehalfOf, msg.sender);
+        _validateCallerIsOnBehalfOfOrExecutor(onBehalfOf);
         return InteractionHelpers.follow(onBehalfOf, msg.sender, profileIds, followModuleDatas);
     }
 
@@ -441,8 +475,10 @@ library GeneralLib {
         external
         returns (uint256[] memory)
     {
-        address executor = MetaTxHelpers.baseFollowWithSig(vars);
-        return InteractionHelpers.follow(vars.follower, executor, vars.profileIds, vars.datas);
+        address follower = vars.follower;
+        address signer = _getOriginatorOrDelegatedExecutorSigner(follower, vars.delegatedSigner);
+        MetaTxHelpers.baseFollowWithSig(signer, vars);
+        return InteractionHelpers.follow(follower, signer, vars.profileIds, vars.datas);
     }
 
     /**
@@ -464,8 +500,7 @@ library GeneralLib {
         bytes calldata collectModuleData,
         address collectNFTImpl
     ) external returns (uint256) {
-        // Maybe validate that the msg.sender is a delegated executor or owner
-        GeneralHelpers.validateOnBehalfOfOrExecutor(onBehalfOf, msg.sender);
+        _validateCallerIsOnBehalfOfOrExecutor(onBehalfOf);
         return
             InteractionHelpers.collect(
                 onBehalfOf,
@@ -487,12 +522,13 @@ library GeneralLib {
         external
         returns (uint256)
     {
-        // This is problematic because we may end up doing executor validation twice. Some significant refactoring is due.
-        address executor = MetaTxHelpers.baseCollectWithSig(vars);
+        address collector = vars.collector;
+        address signer = _getOriginatorOrDelegatedExecutorSigner(collector, vars.delegatedSigner);
+        MetaTxHelpers.baseCollectWithSig(signer, vars);
         return
             InteractionHelpers.collect(
-                vars.collector,
-                executor,
+                collector,
+                signer,
                 vars.profileId,
                 vars.pubId,
                 vars.data,
@@ -1233,6 +1269,21 @@ library GeneralLib {
             );
     }
 
+    /**
+     * @dev Returns either the profile owner or the delegated signer if valid.
+     */
+    function _getOriginatorOrDelegatedExecutorSigner(address originator, address delegatedSigner)
+        private
+        view
+        returns (address)
+    {
+        if (delegatedSigner != address(0)) {
+            GeneralHelpers.validateDelegatedExecutor(originator, delegatedSigner);
+            return delegatedSigner;
+        }
+        return originator;
+    }
+
     function _getPubCount(uint256 profileId) private view returns (uint256) {
         uint256 pubCount;
 
@@ -1262,14 +1313,17 @@ library GeneralLib {
         return referenceModule;
     }
 
+    function _validateCallerIsOnBehalfOfOrExecutor(address onBehalfOf) private view {
+        if (onBehalfOf != msg.sender)
+            GeneralHelpers.validateDelegatedExecutor(onBehalfOf, msg.sender);
+    }
+
     function _validateCallerIsOwnerOrDispatcherOrExecutor(uint256 profileId) private view {
         // It's safe to use the `unsafeOwnerOf()` function here because the sender cannot be
         // the zero address, the dispatcher is cleared on burn and the zero address cannot approve
         // a delegated executor.
         address owner = GeneralHelpers.unsafeOwnerOf(profileId);
-        if (msg.sender == owner) {
-            return;
-        } else {
+        if (msg.sender != owner) {
             address dispatcher;
 
             // Load the dispatcher for the given profile.
@@ -1280,18 +1334,7 @@ library GeneralLib {
                 dispatcher := sload(slot)
             }
             if (msg.sender == dispatcher) return;
-
-            bool invalidExecutor;
-            assembly {
-                // Check if the caller is an approved delegated executor.
-                mstore(0, owner)
-                mstore(32, DELEGATED_EXECUTOR_APPROVAL_MAPPING_SLOT)
-                mstore(32, keccak256(0, 64))
-                mstore(0, caller())
-                let slot := keccak256(0, 64)
-                invalidExecutor := iszero(sload(slot))
-            }
-            if (invalidExecutor) revert Errors.CallerInvalid();
+            GeneralHelpers.validateDelegatedExecutor(owner, msg.sender);
         }
     }
 
