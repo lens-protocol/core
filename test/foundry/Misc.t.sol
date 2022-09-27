@@ -12,7 +12,7 @@ contract MiscTest is BaseTest {
 
     function testSetDefaultProfileInvalidCallerFails() public {
         vm.expectRevert(Errors.CallerInvalid.selector);
-        
+        hub.setDefaultProfile(profileOwner, firstProfileId);
     }
 
     // Positives
@@ -37,9 +37,10 @@ contract MiscTest is BaseTest {
             deadline
         );
 
-        vm.expectRevert(Errors.CallerInvalid.selector);
+        vm.expectRevert(Errors.SignatureInvalid.selector);
         hub.setFollowModuleWithSig(
             DataTypes.SetFollowModuleWithSigData({
+                delegatedSigner: address(0),
                 profileId: firstProfileId,
                 followModule: address(0),
                 followModuleInitData: '',
@@ -65,6 +66,7 @@ contract MiscTest is BaseTest {
 
         hub.setFollowModuleWithSig(
             DataTypes.SetFollowModuleWithSigData({
+                delegatedSigner: otherSigner,
                 profileId: firstProfileId,
                 followModule: address(0),
                 followModuleInitData: '',

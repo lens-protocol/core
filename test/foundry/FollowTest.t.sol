@@ -59,9 +59,10 @@ contract FollowTest is BaseTest {
         uint256 deadline = type(uint256).max;
         bytes32 digest = _getFollowTypedDataHash(profileIds, datas, nonce, deadline);
 
-        vm.expectRevert(Errors.CallerInvalid.selector);
+        vm.expectRevert(Errors.SignatureInvalid.selector);
         hub.followWithSig(
             DataTypes.FollowWithSigData({
+                delegatedSigner: address(0),
                 follower: profileOwner,
                 profileIds: profileIds,
                 datas: datas,
@@ -84,6 +85,7 @@ contract FollowTest is BaseTest {
 
         uint256[] memory nftIds = hub.followWithSig(
             DataTypes.FollowWithSigData({
+                delegatedSigner: address(0),
                 follower: otherSigner,
                 profileIds: profileIds,
                 datas: datas,
@@ -118,6 +120,7 @@ contract FollowTest is BaseTest {
 
         uint256[] memory nftIds = hub.followWithSig(
             DataTypes.FollowWithSigData({
+                delegatedSigner: profileOwner,
                 follower: otherSigner,
                 profileIds: profileIds,
                 datas: datas,

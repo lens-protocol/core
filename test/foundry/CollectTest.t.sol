@@ -115,9 +115,10 @@ contract CollectTest is BaseTest {
         uint256 nonce = 0;
         uint256 deadline = type(uint256).max;
         bytes32 digest = _getCollectTypedDataHash(firstProfileId, 1, '', nonce, deadline);
-        vm.expectRevert(Errors.CallerInvalid.selector);
+        vm.expectRevert(Errors.SignatureInvalid.selector);
         hub.collectWithSig(
             DataTypes.CollectWithSigData({
+                delegatedSigner: address(0),
                 collector: profileOwner,
                 profileId: firstProfileId,
                 pubId: 1,
@@ -134,6 +135,7 @@ contract CollectTest is BaseTest {
         bytes32 digest = _getCollectTypedDataHash(firstProfileId, 1, '', nonce, deadline);
         uint256 nftId = hub.collectWithSig(
             DataTypes.CollectWithSigData({
+                delegatedSigner: address(0),
                 collector: otherSigner,
                 profileId: firstProfileId,
                 pubId: 1,
@@ -166,6 +168,7 @@ contract CollectTest is BaseTest {
 
         uint256 nftId = hub.collectWithSig(
             DataTypes.CollectWithSigData({
+                delegatedSigner: address(0),
                 collector: otherSigner,
                 profileId: firstProfileId,
                 pubId: 2,
@@ -192,6 +195,7 @@ contract CollectTest is BaseTest {
         bytes32 digest = _getCollectTypedDataHash(firstProfileId, 1, '', nonce, deadline);
         uint256 nftId = hub.collectWithSig(
             DataTypes.CollectWithSigData({
+                delegatedSigner: profileOwner,
                 collector: otherSigner,
                 profileId: firstProfileId,
                 pubId: 1,
@@ -227,6 +231,7 @@ contract CollectTest is BaseTest {
 
         uint256 nftId = hub.collectWithSig(
             DataTypes.CollectWithSigData({
+                delegatedSigner: profileOwner,
                 collector: otherSigner,
                 profileId: firstProfileId,
                 pubId: 2,

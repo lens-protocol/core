@@ -58,7 +58,6 @@ library Errors {
     error CannotCommentOnSelf();
     error NotWhitelisted();
     error CallerInvalid();
-    error ExecutorInvalid();
 
     // Module Errors
     error InitParamsInvalid();

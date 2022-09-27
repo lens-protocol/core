@@ -74,9 +74,10 @@ contract PublishingTest is BaseTest {
             deadline
         );
 
-        vm.expectRevert(Errors.CallerInvalid.selector);
+        vm.expectRevert(Errors.SignatureInvalid.selector);
         hub.postWithSig(
             DataTypes.PostWithSigData({
+                delegatedSigner: address(0),
                 profileId: firstProfileId,
                 contentURI: mockURI,
                 collectModule: address(freeCollectModule),
@@ -108,9 +109,10 @@ contract PublishingTest is BaseTest {
             deadline
         );
 
-        vm.expectRevert(Errors.CallerInvalid.selector);
+        vm.expectRevert(Errors.SignatureInvalid.selector);
         hub.commentWithSig(
             DataTypes.CommentWithSigData({
+                delegatedSigner: address(0),
                 profileId: firstProfileId,
                 contentURI: mockURI,
                 profileIdPointed: firstProfileId,
@@ -142,9 +144,10 @@ contract PublishingTest is BaseTest {
             deadline
         );
 
-        vm.expectRevert(Errors.CallerInvalid.selector);
+        vm.expectRevert(Errors.SignatureInvalid.selector);
         hub.mirrorWithSig(
             DataTypes.MirrorWithSigData({
+                delegatedSigner: address(0),
                 profileId: firstProfileId,
                 profileIdPointed: firstProfileId,
                 pubIdPointed: 1,
@@ -176,13 +179,14 @@ contract PublishingTest is BaseTest {
 
         uint256 pubId = hub.postWithSig(
             DataTypes.PostWithSigData({
+                delegatedSigner: otherSigner,
                 profileId: firstProfileId,
                 contentURI: mockURI,
                 collectModule: address(freeCollectModule),
                 collectModuleInitData: abi.encode(false),
                 referenceModule: address(0),
                 referenceModuleInitData: '',
-                sig: _getSigStruct(profileOwnerKey, digest, deadline)
+                sig: _getSigStruct(otherSignerKey, digest, deadline)
             })
         );
         assertEq(pubId, 1);
@@ -212,6 +216,7 @@ contract PublishingTest is BaseTest {
 
         uint256 pubId = hub.commentWithSig(
             DataTypes.CommentWithSigData({
+                delegatedSigner: otherSigner,
                 profileId: firstProfileId,
                 contentURI: mockURI,
                 profileIdPointed: firstProfileId,
@@ -248,6 +253,7 @@ contract PublishingTest is BaseTest {
 
         uint256 pubId = hub.mirrorWithSig(
             DataTypes.MirrorWithSigData({
+                delegatedSigner: otherSigner,
                 profileId: firstProfileId,
                 profileIdPointed: firstProfileId,
                 pubIdPointed: 1,

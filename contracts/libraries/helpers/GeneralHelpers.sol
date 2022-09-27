@@ -169,6 +169,6 @@ library GeneralHelpers {
             let slot := keccak256(0, 64)
             invalidExecutor := iszero(sload(slot))
         }
-        if (invalidExecutor) revert Errors.ExecutorInvalid();
+        if (invalidExecutor) revert Errors.CallerInvalid();
     }
 }
