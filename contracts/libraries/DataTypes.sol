@@ -113,11 +113,13 @@ library DataTypes {
      * @notice A struct containing the parameters required for the `setDefaultProfileWithSig()` function. Parameters are
      * the same as the regular `setDefaultProfile()` function, with an added EIP712Signature.
      *
+     * @param delegatedSigner The delegated executor signer, must be either zero, defaulting to the wallet owner, or a delegated executor.
      * @param wallet The address of the wallet setting the default profile.
      * @param profileId The token ID of the profile which will be set as default, or zero.
      * @param sig The EIP712Signature struct containing the profile owner's signature.
      */
     struct SetDefaultProfileWithSigData {
+        address delegatedSigner;
         address wallet;
         uint256 profileId;
         EIP712Signature sig;
@@ -127,12 +129,14 @@ library DataTypes {
      * @notice A struct containing the parameters required for the `setFollowModuleWithSig()` function. Parameters are
      * the same as the regular `setFollowModule()` function, with an added EIP712Signature.
      *
+     * @param delegatedSigner The delegated executor signer, must be either zero, defaulting to the profile owner, or a delegated executor.
      * @param profileId The token ID of the profile to change the followModule for.
      * @param followModule The followModule to set for the given profile, must be whitelisted.
      * @param followModuleInitData The data to be passed to the followModule for initialization.
      * @param sig The EIP712Signature struct containing the profile owner's signature.
      */
     struct SetFollowModuleWithSigData {
+        address delegatedSigner;
         uint256 profileId;
         address followModule;
         bytes followModuleInitData;
@@ -141,7 +145,7 @@ library DataTypes {
 
     /**
      * @notice A struct containing the parameters required for the `setDispatcherWithSig()` function. Parameters are the same
-     * as the regular `setDispatcher()` function, with an added EIP712Signature.
+     * as the regular `setDispatcher()` function, with an added EIP712Signature. The signer must be the owner.
      *
      * @param profileId The token ID of the profile to set the dispatcher for.
      * @param dispatcher The dispatcher address to set for the profile.
@@ -155,7 +159,7 @@ library DataTypes {
 
     /**
      * @notice A struct containing the parameters required for the `setDelegatedExecutorApprovalWithSig()` function. Parameters
-     * are the same as the regular `setDelegatedExecutorApproval()` function.
+     * are the same as the regular `setDelegatedExecutorApproval()` function. The signer must be the owner.
      *
      * @param onBehalfOf The address the delegated executor is to be granted or revoked approval to act on behalf of.
      * @param executor The executor to set the approval for.
@@ -173,11 +177,13 @@ library DataTypes {
      * @notice A struct containing the parameters required for the `setProfileImageURIWithSig()` function. Parameters are the same
      * as the regular `setProfileImageURI()` function, with an added EIP712Signature.
      *
+     * @param delegatedSigner The delegated executor signer, must be either zero, defaulting to the profile owner, or a delegated executor.
      * @param profileId The token ID of the profile to set the URI for.
      * @param imageURI The URI to set for the given profile image.
      * @param sig The EIP712Signature struct containing the profile owner's signature.
      */
     struct SetProfileImageURIWithSigData {
+        address delegatedSigner;
         uint256 profileId;
         string imageURI;
         EIP712Signature sig;
@@ -187,11 +193,13 @@ library DataTypes {
      * @notice A struct containing the parameters required for the `setFollowNFTURIWithSig()` function. Parameters are the same
      * as the regular `setFollowNFTURI()` function, with an added EIP712Signature.
      *
+     * @param delegatedSigner The delegated executor signer, must be either zero, defaulting to the profile owner, or a delegated executor.
      * @param profileId The token ID of the profile for which to set the followNFT URI.
      * @param followNFTURI The follow NFT URI to set.
      * @param sig The EIP712Signature struct containing the followNFT's associated profile owner's signature.
      */
     struct SetFollowNFTURIWithSigData {
+        address delegatedSigner;
         uint256 profileId;
         string followNFTURI;
         EIP712Signature sig;
@@ -220,6 +228,7 @@ library DataTypes {
      * @notice A struct containing the parameters required for the `postWithSig()` function. Parameters are the same as
      * the regular `post()` function, with an added EIP712Signature.
      *
+     * @param delegatedSigner The delegated executor signer, must be either zero, defaulting to the profile owner, or a delegated executor.
      * @param profileId The token ID of the profile to publish to.
      * @param contentURI The URI to set for this new publication.
      * @param collectModule The collectModule to set for this new publication.
@@ -229,6 +238,7 @@ library DataTypes {
      * @param sig The EIP712Signature struct containing the profile owner's signature.
      */
     struct PostWithSigData {
+        address delegatedSigner;
         uint256 profileId;
         string contentURI;
         address collectModule;
@@ -267,6 +277,7 @@ library DataTypes {
      * @notice A struct containing the parameters required for the `commentWithSig()` function. Parameters are the same as
      * the regular `comment()` function, with an added EIP712Signature.
      *
+     * @param delegatedSigner The delegated executor signer, must be either zero, defaulting to the profile owner, or a delegated executor.
      * @param profileId The token ID of the profile to publish to.
      * @param contentURI The URI to set for this new publication.
      * @param profileIdPointed The profile token ID to point the comment to.
@@ -279,6 +290,7 @@ library DataTypes {
      * @param sig The EIP712Signature struct containing the profile owner's signature.
      */
     struct CommentWithSigData {
+        address delegatedSigner;
         uint256 profileId;
         string contentURI;
         uint256 profileIdPointed;
@@ -314,6 +326,7 @@ library DataTypes {
      * @notice A struct containing the parameters required for the `mirrorWithSig()` function. Parameters are the same as
      * the regular `mirror()` function, with an added EIP712Signature.
      *
+     * @param delegatedSigner The delegated executor signer, must be either zero, defaulting to the profile owner, or a delegated executor.
      * @param profileId The token ID of the profile to publish to.
      * @param profileIdPointed The profile token ID to point the mirror to.
      * @param pubIdPointed The publication ID to point the mirror to.
@@ -323,6 +336,7 @@ library DataTypes {
      * @param sig The EIP712Signature struct containing the profile owner's signature.
      */
     struct MirrorWithSigData {
+        address delegatedSigner;
         uint256 profileId;
         uint256 profileIdPointed;
         uint256 pubIdPointed;
@@ -336,12 +350,14 @@ library DataTypes {
      * @notice A struct containing the parameters required for the `followWithSig()` function. Parameters are the same
      * as the regular `follow()` function, with the follower's (signer) address and an EIP712Signature added.
      *
+     * @param delegatedSigner The delegated executor signer, must be either zero, defaulting to the follower, or a delegated executor.
      * @param follower The follower which is the message signer.
      * @param profileIds The array of token IDs of the profiles to follow.
      * @param datas The array of arbitrary data to pass to the followModules if needed.
      * @param sig The EIP712Signature struct containing the follower's signature.
      */
     struct FollowWithSigData {
+        address delegatedSigner;
         address follower;
         uint256[] profileIds;
         bytes[] datas;
@@ -352,6 +368,7 @@ library DataTypes {
      * @notice A struct containing the parameters required for the `collectWithSig()` function. Parameters are the same as
      * the regular `collect()` function, with the collector's (signer) address and an EIP712Signature added.
      *
+     * @param delegatedSigner The delegated executor signer, must be either zero, defaulting to the collector, or a delegated executor.
      * @param collector The collector which is the message signer.
      * @param profileId The token ID of the profile that published the publication to collect.
      * @param pubId The publication to collect's publication ID.
@@ -359,6 +376,7 @@ library DataTypes {
      * @param sig The EIP712Signature struct containing the collector's signature.
      */
     struct CollectWithSigData {
+        address delegatedSigner;
         address collector;
         uint256 profileId;
         uint256 pubId;
@@ -369,11 +387,13 @@ library DataTypes {
     /**
      * @notice A struct containing the parameters required for the `setProfileMetadataWithSig()` function.
      *
+     * @param delegatedSigner The delegated executor signer, must be either zero, defaulting to the profile owner, or a delegated executor.
      * @param profileId The profile ID for which to set the metadata.
      * @param metadata The metadata string to set for the profile and user.
      * @param sig The EIP712Signature struct containing the user's signature.
      */
     struct SetProfileMetadataWithSigData {
+        address delegatedSigner;
         uint256 profileId;
         string metadata;
         EIP712Signature sig;
@@ -382,12 +402,14 @@ library DataTypes {
     /**
      * @notice A struct containing the parameters required for the `toggleFollowWithSig()` function.
      *
+     * @param delegatedSigner The delegated executor signer, must be either zero, defaulting to the follower, or a delegated executor.
      * @param follower The follower which is the message signer.
      * @param profileIds The token ID array of the profiles.
      * @param enables The array of booleans to enable/disable follows.
      * @param sig The EIP712Signature struct containing the follower's signature.
      */
     struct ToggleFollowWithSigData {
+        address delegatedSigner;
         address follower;
         uint256[] profileIds;
         bool[] enables;
