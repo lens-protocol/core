@@ -29,9 +29,9 @@ contract PublishingTest is BaseTest {
     // positives
     function testExecutorPost() public {
         vm.prank(profileOwner);
-        hub.setDelegatedExecutorApproval(otherUser, true);
+        hub.setDelegatedExecutorApproval(otherSigner, true);
 
-        vm.prank(otherUser);
+        vm.prank(otherSigner);
         uint256 pubId = hub.post(mockPostData);
         assertEq(pubId, 1);
     }
@@ -39,10 +39,10 @@ contract PublishingTest is BaseTest {
     function testExecutorComment() public {
         vm.startPrank(profileOwner);
         hub.post(mockPostData);
-        hub.setDelegatedExecutorApproval(otherUser, true);
+        hub.setDelegatedExecutorApproval(otherSigner, true);
         vm.stopPrank();
 
-        vm.prank(otherUser);
+        vm.prank(otherSigner);
         uint256 pubId = hub.comment(mockCommentData);
         assertEq(pubId, 2);
     }
@@ -50,10 +50,10 @@ contract PublishingTest is BaseTest {
     function testExecutorMirror() public {
         vm.startPrank(profileOwner);
         hub.post(mockPostData);
-        hub.setDelegatedExecutorApproval(otherUser, true);
+        hub.setDelegatedExecutorApproval(otherSigner, true);
         vm.stopPrank();
 
-        vm.prank(otherUser);
+        vm.prank(otherSigner);
         uint256 pubId = hub.mirror(mockMirrorData);
         assertEq(pubId, 2);
     }

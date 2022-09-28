@@ -15,6 +15,16 @@ contract MiscTest is BaseTest {
         hub.setDefaultProfile(profileOwner, firstProfileId);
     }
 
+    function testSetProfileImageURINotExecutorFails() public {
+        vm.expectRevert(Errors.ExecutorInvalid.selector);
+        hub.setProfileImageURI(firstProfileId, mockURI);
+    }
+
+    function testSetFollowNFTURINotExecutorFails() public {
+        vm.expectRevert(Errors.ExecutorInvalid.selector);
+        hub.setFollowNFTURI(firstProfileId, mockURI);
+    }
+
     // Positives
     function testExecutorSetFollowModule() public {
         vm.prank(profileOwner);
@@ -30,6 +40,22 @@ contract MiscTest is BaseTest {
 
         vm.prank(otherSigner);
         hub.setDefaultProfile(profileOwner, firstProfileId);
+    }
+
+    function testExecutorSetProfileImageURI() public {
+        vm.prank(profileOwner);
+        hub.setDelegatedExecutorApproval(otherSigner, true);
+
+        vm.prank(otherSigner);
+        hub.setProfileImageURI(firstProfileId, mockURI);
+    }
+
+    function testExecutorSetFollowNFTURI() public {
+        vm.prank(profileOwner);
+        hub.setDelegatedExecutorApproval(otherSigner, true);
+
+        vm.prank(otherSigner);
+        hub.setFollowNFTURI(firstProfileId, mockURI);
     }
 
     // Meta-tx
@@ -117,6 +143,80 @@ contract MiscTest is BaseTest {
                 delegatedSigner: otherSigner,
                 wallet: profileOwner,
                 profileId: firstProfileId,
+                sig: _getSigStruct(otherSignerKey, digest, deadline)
+            })
+        );
+    }
+
+    function testSetProfileImageURIWithSigInvalidSignerFails() public {
+        uint256 nonce = 0;
+        uint256 deadline = type(uint256).max;
+        bytes32 digest = _getSetProfileImageURITypedDataHash(
+            firstProfileId,
+            mockURI,
+            nonce,
+            deadline
+        );
+
+        vm.expectRevert(Errors.SignatureInvalid.selector);
+        hub.setProfileImageURIWithSig(
+            DataTypes.SetProfileImageURIWithSigData({
+                delegatedSigner: address(0),
+                profileId: firstProfileId,
+                imageURI: mockURI,
+                sig: _getSigStruct(otherSignerKey, digest, deadline)
+            })
+        );
+    }
+
+    function testSetProfileImageURIWithSigNotExecutorFails() public {
+        uint256 nonce = 0;
+        uint256 deadline = type(uint256).max;
+        bytes32 digest = _getSetProfileImageURITypedDataHash(
+            firstProfileId,
+            mockURI,
+            nonce,
+            deadline
+        );
+
+        vm.expectRevert(Errors.ExecutorInvalid.selector);
+        hub.setProfileImageURIWithSig(
+            DataTypes.SetProfileImageURIWithSigData({
+                delegatedSigner: otherSigner,
+                profileId: firstProfileId,
+                imageURI: mockURI,
+                sig: _getSigStruct(otherSignerKey, digest, deadline)
+            })
+        );
+    }
+
+    function testSetFollowNFTURIWithSigInvalidSignerFails() public {
+        uint256 nonce = 0;
+        uint256 deadline = type(uint256).max;
+        bytes32 digest = _getSetFollowNFTURITypedDatahash(firstProfileId, mockURI, nonce, deadline);
+
+        vm.expectRevert(Errors.SignatureInvalid.selector);
+        hub.setFollowNFTURIWithSig(
+            DataTypes.SetFollowNFTURIWithSigData({
+                delegatedSigner: address(0),
+                profileId: firstProfileId,
+                followNFTURI: mockURI,
+                sig: _getSigStruct(otherSignerKey, digest, deadline)
+            })
+        );
+    }
+
+    function testSetFollowNFTURIWithSigNotExecutorFails() public {
+        uint256 nonce = 0;
+        uint256 deadline = type(uint256).max;
+        bytes32 digest = _getSetFollowNFTURITypedDatahash(firstProfileId, mockURI, nonce, deadline);
+
+        vm.expectRevert(Errors.ExecutorInvalid.selector);
+        hub.setFollowNFTURIWithSig(
+            DataTypes.SetFollowNFTURIWithSigData({
+                delegatedSigner: otherSigner,
+                profileId: firstProfileId,
+                followNFTURI: mockURI,
                 sig: _getSigStruct(otherSignerKey, digest, deadline)
             })
         );

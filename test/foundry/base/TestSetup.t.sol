@@ -19,8 +19,7 @@ contract TestSetup is Test {
     uint256 constant firstProfileId = 1;
     address constant deployer = address(1);
     // UserOne is the test address, replaced with "me."
-    address constant otherUser = address(2);
-    address constant governance = address(3);
+    address constant governance = address(2);
 
     string constant mockHandle = 'handle.lens';
     string constant mockURI = 'ipfs://QmUXfQWe43RKx31VzA2BnbwhSMW8WuaJvszFWChD59m76U';

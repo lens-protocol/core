@@ -6,7 +6,7 @@ import './base/BaseTest.t.sol';
 contract FollowTest is BaseTest {
     // Negatives
     function testFollowNotExecutorFails() public {
-        vm.prank(otherUser);
+        vm.prank(otherSigner);
         vm.expectRevert(Errors.ExecutorInvalid.selector);
         hub.follow(me, _toUint256Array(firstProfileId), _toBytesArray(''));
     }
@@ -34,9 +34,9 @@ contract FollowTest is BaseTest {
     }
 
     function testExecutorFollow() public {
-        hub.setDelegatedExecutorApproval(otherUser, true);
+        hub.setDelegatedExecutorApproval(otherSigner, true);
 
-        vm.prank(otherUser);
+        vm.prank(otherSigner);
         uint256[] memory nftIds = hub.follow(
             me,
             _toUint256Array(firstProfileId),

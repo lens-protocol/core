@@ -22,7 +22,7 @@ contract CollectTest is BaseTest {
     }
 
     function testCollectNotExecutorFails() public {
-        vm.prank(otherUser);
+        vm.prank(otherSigner);
         vm.expectRevert(Errors.ExecutorInvalid.selector);
         hub.collect(me, firstProfileId, 1, '');
     }
@@ -48,9 +48,9 @@ contract CollectTest is BaseTest {
     }
 
     function testExecutorCollect() public {
-        hub.setDelegatedExecutorApproval(otherUser, true);
+        hub.setDelegatedExecutorApproval(otherSigner, true);
 
-        vm.prank(otherUser);
+        vm.prank(otherSigner);
         uint256 nftId = hub.collect(me, firstProfileId, 1, '');
 
         CollectNFT nft = CollectNFT(hub.getCollectNFT(firstProfileId, 1));
@@ -95,9 +95,9 @@ contract CollectTest is BaseTest {
             })
         );
 
-        hub.setDelegatedExecutorApproval(otherUser, true);
+        hub.setDelegatedExecutorApproval(otherSigner, true);
 
-        vm.prank(otherUser);
+        vm.prank(otherSigner);
         uint256 nftId = hub.collect(me, firstProfileId, 2, '');
 
         // Ensure the mirror doesn't have an associated collect NFT.
