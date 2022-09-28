@@ -6,7 +6,7 @@ import './base/BaseTest.t.sol';
 contract PublishingTest is BaseTest {
     // negatives
     function testPostNotExecutorFails() public {
-        vm.expectRevert(Errors.CallerInvalid.selector);
+        vm.expectRevert(Errors.ExecutorInvalid.selector);
         hub.post(mockPostData);
     }
 
@@ -14,7 +14,7 @@ contract PublishingTest is BaseTest {
         vm.prank(profileOwner);
         hub.post(mockPostData);
 
-        vm.expectRevert(Errors.CallerInvalid.selector);
+        vm.expectRevert(Errors.ExecutorInvalid.selector);
         hub.comment(mockCommentData);
     }
 
@@ -22,7 +22,7 @@ contract PublishingTest is BaseTest {
         vm.prank(profileOwner);
         hub.post(mockPostData);
 
-        vm.expectRevert(Errors.CallerInvalid.selector);
+        vm.expectRevert(Errors.ExecutorInvalid.selector);
         hub.mirror(mockMirrorData);
     }
 
@@ -89,6 +89,35 @@ contract PublishingTest is BaseTest {
         );
     }
 
+    function testPostWithSigNotExecutorFails() public {
+        uint256 nonce = 0;
+        uint256 deadline = type(uint256).max;
+        bytes32 digest = _getPostTypedDataHash(
+            firstProfileId,
+            mockURI,
+            address(freeCollectModule),
+            abi.encode(false),
+            address(0),
+            '',
+            nonce,
+            deadline
+        );
+
+        vm.expectRevert(Errors.ExecutorInvalid.selector);
+        hub.postWithSig(
+            DataTypes.PostWithSigData({
+                delegatedSigner: otherSigner,
+                profileId: firstProfileId,
+                contentURI: mockURI,
+                collectModule: address(freeCollectModule),
+                collectModuleInitData: abi.encode(false),
+                referenceModule: address(0),
+                referenceModuleInitData: '',
+                sig: _getSigStruct(otherSignerKey, digest, deadline)
+            })
+        );
+    }
+
     function testCommentWithSigInvalidSignerFails() public {
         vm.prank(profileOwner);
         hub.post(mockPostData);
@@ -127,6 +156,44 @@ contract PublishingTest is BaseTest {
         );
     }
 
+    function testCommentWithSigNotExecutorFails() public {
+        vm.prank(profileOwner);
+        hub.post(mockPostData);
+
+        uint256 nonce = 0;
+        uint256 deadline = type(uint256).max;
+        bytes32 digest = _getCommentTypedDataHash(
+            firstProfileId,
+            mockURI,
+            firstProfileId,
+            1,
+            '',
+            address(freeCollectModule),
+            abi.encode(false),
+            address(0),
+            '',
+            nonce,
+            deadline
+        );
+
+        vm.expectRevert(Errors.ExecutorInvalid.selector);
+        hub.commentWithSig(
+            DataTypes.CommentWithSigData({
+                delegatedSigner: otherSigner,
+                profileId: firstProfileId,
+                contentURI: mockURI,
+                profileIdPointed: firstProfileId,
+                pubIdPointed: 1,
+                referenceModuleData: '',
+                collectModule: address(freeCollectModule),
+                collectModuleInitData: abi.encode(false),
+                referenceModule: address(0),
+                referenceModuleInitData: '',
+                sig: _getSigStruct(otherSignerKey, digest, deadline)
+            })
+        );
+    }
+
     function testMirrorWithSigInvalidSignerFails() public {
         vm.prank(profileOwner);
         hub.post(mockPostData);
@@ -148,6 +215,38 @@ contract PublishingTest is BaseTest {
         hub.mirrorWithSig(
             DataTypes.MirrorWithSigData({
                 delegatedSigner: address(0),
+                profileId: firstProfileId,
+                profileIdPointed: firstProfileId,
+                pubIdPointed: 1,
+                referenceModuleData: '',
+                referenceModule: address(0),
+                referenceModuleInitData: '',
+                sig: _getSigStruct(otherSignerKey, digest, deadline)
+            })
+        );
+    }
+
+    function testMirrorWithSigNotExecutorFails() public {
+        vm.prank(profileOwner);
+        hub.post(mockPostData);
+
+        uint256 nonce = 0;
+        uint256 deadline = type(uint256).max;
+        bytes32 digest = _getMirrorTypedDataHash(
+            firstProfileId,
+            firstProfileId,
+            1,
+            '',
+            address(0),
+            '',
+            nonce,
+            deadline
+        );
+
+        vm.expectRevert(Errors.ExecutorInvalid.selector);
+        hub.mirrorWithSig(
+            DataTypes.MirrorWithSigData({
+                delegatedSigner: otherSigner,
                 profileId: firstProfileId,
                 profileIdPointed: firstProfileId,
                 pubIdPointed: 1,

@@ -86,7 +86,7 @@ library InteractionHelpers {
                             revert(add(err, 32), length)
                         }
                     }
-                    if (executor != follower) revert Errors.CallerInvalid();
+                    if (executor != follower) revert Errors.ExecutorInvalid();
                     IDeprecatedFollowModule(followModule).processFollow(
                         follower,
                         profileId,
@@ -192,7 +192,7 @@ library InteractionHelpers {
                     revert(add(err, 32), length)
                 }
             }
-            if (onBehalfOf != executor) revert Errors.CallerInvalid();
+            if (onBehalfOf != executor) revert Errors.ExecutorInvalid();
             IDeprecatedCollectModule(collectModule).processCollect(
                 profileId,
                 onBehalfOf,

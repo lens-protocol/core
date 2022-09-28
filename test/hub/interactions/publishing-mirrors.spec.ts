@@ -70,7 +70,7 @@ makeSuiteCleanRoom('Publishing mirrors', function () {
             referenceModule: ZERO_ADDRESS,
             referenceModuleInitData: [],
           })
-        ).to.be.revertedWith(ERRORS.CALLER_INVALID);
+        ).to.be.revertedWith(ERRORS.EXECUTOR_INVALID);
       });
 
       it('User should fail to mirror with an unwhitelisted reference module', async function () {
@@ -351,7 +351,7 @@ makeSuiteCleanRoom('Publishing mirrors', function () {
               deadline: MAX_UINT256,
             },
           })
-        ).to.be.revertedWith(ERRORS.CALLER_INVALID);
+        ).to.be.revertedWith(ERRORS.EXECUTOR_INVALID);
       });
 
       it('Testwallet should fail to mirror with sig with invalid deadline', async function () {
@@ -419,7 +419,7 @@ makeSuiteCleanRoom('Publishing mirrors', function () {
               deadline: MAX_UINT256,
             },
           })
-        ).to.be.revertedWith(ERRORS.CALLER_INVALID);
+        ).to.be.revertedWith(ERRORS.EXECUTOR_INVALID);
       });
 
       it('Testwallet should fail to mirror with sig with unwhitelisted reference module', async function () {
@@ -522,7 +522,7 @@ makeSuiteCleanRoom('Publishing mirrors', function () {
               deadline: MAX_UINT256,
             },
           })
-        ).to.be.revertedWith(ERRORS.CALLER_INVALID);
+        ).to.be.revertedWith(ERRORS.EXECUTOR_INVALID);
       });
     });
 

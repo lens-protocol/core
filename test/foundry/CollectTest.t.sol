@@ -23,7 +23,7 @@ contract CollectTest is BaseTest {
 
     function testCollectNotExecutorFails() public {
         vm.prank(otherUser);
-        vm.expectRevert(Errors.CallerInvalid.selector);
+        vm.expectRevert(Errors.ExecutorInvalid.selector);
         hub.collect(me, firstProfileId, 1, '');
     }
 
@@ -119,6 +119,23 @@ contract CollectTest is BaseTest {
         hub.collectWithSig(
             DataTypes.CollectWithSigData({
                 delegatedSigner: address(0),
+                collector: profileOwner,
+                profileId: firstProfileId,
+                pubId: 1,
+                data: '',
+                sig: _getSigStruct(otherSignerKey, digest, deadline)
+            })
+        );
+    }
+
+    function testCollectWithSigNotExecutorFails() public {
+        uint256 nonce = 0;
+        uint256 deadline = type(uint256).max;
+        bytes32 digest = _getCollectTypedDataHash(firstProfileId, 1, '', nonce, deadline);
+        vm.expectRevert(Errors.ExecutorInvalid.selector);
+        hub.collectWithSig(
+            DataTypes.CollectWithSigData({
+                delegatedSigner: otherSigner,
                 collector: profileOwner,
                 profileId: firstProfileId,
                 pubId: 1,

@@ -4,7 +4,7 @@ export const ERRORS = {
   SIGNATURE_EXPIRED: 'SignatureExpired()',
   ZERO_SPENDER: 'ZeroSpender()',
   SIGNATURE_INVALID: 'SignatureInvalid()',
-  CALLER_INVALID: 'CallerInvalid()',
+  EXECUTOR_INVALID: 'ExecutorInvalid()',
   NOT_OWNER_OR_APPROVED: 'NotOwnerOrApproved()',
   NOT_HUB: 'NotHub()',
   TOKEN_DOES_NOT_EXIST: 'TokenDoesNotExist()',

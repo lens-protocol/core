@@ -55,7 +55,7 @@ makeSuiteCleanRoom('Dispatcher Functionality', function () {
             referenceModule: ZERO_ADDRESS,
             referenceModuleInitData: [],
           })
-        ).to.be.revertedWith(ERRORS.CALLER_INVALID);
+        ).to.be.revertedWith(ERRORS.EXECUTOR_INVALID);
       });
 
       // Note: Dispatcher can now do this.

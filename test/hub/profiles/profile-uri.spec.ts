@@ -48,7 +48,7 @@ makeSuiteCleanRoom('Profile URI Functionality', function () {
       it('UserTwo should fail to set the profile URI on profile owned by user 1', async function () {
         await expect(
           lensHub.connect(userTwo).setProfileImageURI(FIRST_PROFILE_ID, MOCK_URI)
-        ).to.be.revertedWith(ERRORS.CALLER_INVALID);
+        ).to.be.revertedWith(ERRORS.EXECUTOR_INVALID);
       });
 
       it('UserTwo should fail to set the profile URI on profile owned by user 1', async function () {
@@ -62,7 +62,7 @@ makeSuiteCleanRoom('Profile URI Functionality', function () {
       it('UserTwo should fail to change the follow NFT URI for profile one', async function () {
         await expect(
           lensHub.connect(userTwo).setFollowNFTURI(FIRST_PROFILE_ID, OTHER_MOCK_URI)
-        ).to.be.revertedWith(ERRORS.CALLER_INVALID);
+        ).to.be.revertedWith(ERRORS.EXECUTOR_INVALID);
       });
     });
 
@@ -274,7 +274,7 @@ makeSuiteCleanRoom('Profile URI Functionality', function () {
               deadline: MAX_UINT256,
             },
           })
-        ).to.be.revertedWith(ERRORS.CALLER_INVALID);
+        ).to.be.revertedWith(ERRORS.EXECUTOR_INVALID);
       });
 
       it('TestWallet should fail to set profile URI with sig with invalid deadline', async function () {
@@ -320,7 +320,7 @@ makeSuiteCleanRoom('Profile URI Functionality', function () {
               deadline: MAX_UINT256,
             },
           })
-        ).to.be.revertedWith(ERRORS.CALLER_INVALID);
+        ).to.be.revertedWith(ERRORS.EXECUTOR_INVALID);
       });
 
       it('TestWallet should sign attempt to set profile URI with sig, cancel with empty permitForAll, then fail to set profile URI with sig', async function () {
@@ -345,7 +345,7 @@ makeSuiteCleanRoom('Profile URI Functionality', function () {
               deadline: MAX_UINT256,
             },
           })
-        ).to.be.revertedWith(ERRORS.CALLER_INVALID);
+        ).to.be.revertedWith(ERRORS.EXECUTOR_INVALID);
       });
 
       it('TestWallet should fail to set the follow NFT URI with sig with signature deadline mismatch', async function () {
@@ -368,7 +368,7 @@ makeSuiteCleanRoom('Profile URI Functionality', function () {
               deadline: MAX_UINT256,
             },
           })
-        ).to.be.revertedWith(ERRORS.CALLER_INVALID);
+        ).to.be.revertedWith(ERRORS.EXECUTOR_INVALID);
       });
 
       it('TestWallet should fail to set the follow NFT URI with sig with invalid deadline', async function () {
@@ -414,7 +414,7 @@ makeSuiteCleanRoom('Profile URI Functionality', function () {
               deadline: MAX_UINT256,
             },
           })
-        ).to.be.revertedWith(ERRORS.CALLER_INVALID);
+        ).to.be.revertedWith(ERRORS.EXECUTOR_INVALID);
       });
 
       it('TestWallet should sign attempt to set follow NFT URI with sig, cancel with empty permitForAll, then fail to set follow NFT URI with sig', async function () {
@@ -439,7 +439,7 @@ makeSuiteCleanRoom('Profile URI Functionality', function () {
               deadline: MAX_UINT256,
             },
           })
-        ).to.be.revertedWith(ERRORS.CALLER_INVALID);
+        ).to.be.revertedWith(ERRORS.EXECUTOR_INVALID);
       });
     });
 

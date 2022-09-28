@@ -333,7 +333,7 @@ makeSuiteCleanRoom('Collecting', function () {
               deadline: MAX_UINT256,
             },
           })
-        ).to.be.revertedWith(ERRORS.CALLER_INVALID);
+        ).to.be.revertedWith(ERRORS.EXECUTOR_INVALID);
       });
 
       it('TestWallet should fail to collect with sig with invalid deadline', async function () {
@@ -381,7 +381,7 @@ makeSuiteCleanRoom('Collecting', function () {
               deadline: MAX_UINT256,
             },
           })
-        ).to.be.revertedWith(ERRORS.CALLER_INVALID);
+        ).to.be.revertedWith(ERRORS.EXECUTOR_INVALID);
       });
 
       it('TestWallet should fail to collect with sig without being a follower', async function () {
@@ -441,7 +441,7 @@ makeSuiteCleanRoom('Collecting', function () {
               deadline: MAX_UINT256,
             },
           })
-        ).to.be.revertedWith(ERRORS.CALLER_INVALID);
+        ).to.be.revertedWith(ERRORS.EXECUTOR_INVALID);
       });
     });
 

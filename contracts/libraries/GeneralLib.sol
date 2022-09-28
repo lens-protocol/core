@@ -1053,7 +1053,7 @@ library GeneralLib {
                     }
                 }
                 if (executor != GeneralHelpers.unsafeOwnerOf(profileId))
-                    revert Errors.CallerInvalid();
+                    revert Errors.ExecutorInvalid();
                 IDeprecatedReferenceModule(refModule).processComment(
                     profileId,
                     profileIdPointed,
@@ -1177,7 +1177,7 @@ library GeneralLib {
                     }
                 }
                 if (executor != GeneralHelpers.unsafeOwnerOf(profileId))
-                    revert Errors.CallerInvalid();
+                    revert Errors.ExecutorInvalid();
                 IDeprecatedReferenceModule(refModule).processMirror(
                     profileId,
                     profileIdPointed,

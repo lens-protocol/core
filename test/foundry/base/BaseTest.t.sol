@@ -4,6 +4,19 @@ pragma solidity ^0.8.13;
 import './TestSetup.t.sol';
 
 contract BaseTest is TestSetup {
+    function _getSetDefaultProfileTypedDataHash(
+        address wallet,
+        uint256 profileId,
+        uint256 nonce,
+        uint256 deadline
+    ) internal view returns (bytes32) {
+        bytes32 structHash = keccak256(
+            abi.encode(SET_DEFAULT_PROFILE_WITH_SIG_TYPEHASH, wallet, profileId, nonce, deadline)
+        );
+
+        return _calculateDigest(structHash);
+    }
+
     function _getSetFollowModuleTypedDataHash(
         uint256 profileId,
         address followModule,
