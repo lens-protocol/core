@@ -38,7 +38,6 @@ contract MiscTest is BaseTest {
         hub.setDelegatedExecutorApproval(otherSigner, true);
 
         address mockFollowModule = address(new MockFollowModule());
-
         vm.prank(governance);
         hub.whitelistFollowModule(mockFollowModule, true);
 
@@ -295,50 +294,63 @@ contract MiscTest is BaseTest {
 
     // Postivies
     function testSetFollowModuleWithSig() public {
+        address mockFollowModule = address(new MockFollowModule());
+        vm.prank(governance);
+        hub.whitelistFollowModule(mockFollowModule, true);
+
         uint256 nonce = 0;
         uint256 deadline = type(uint256).max;
+
         bytes32 digest = _getSetFollowModuleTypedDataHash(
             firstProfileId,
-            address(0),
-            '',
+            mockFollowModule,
+            abi.encode(1),
             nonce,
             deadline
         );
 
+        assertEq(hub.getFollowModule(firstProfileId), address(0));
         hub.setFollowModuleWithSig(
             DataTypes.SetFollowModuleWithSigData({
                 delegatedSigner: address(0),
                 profileId: firstProfileId,
-                followModule: address(0),
-                followModuleInitData: '',
+                followModule: mockFollowModule,
+                followModuleInitData: abi.encode(1),
                 sig: _getSigStruct(profileOwnerKey, digest, deadline)
             })
         );
+        assertEq(hub.getFollowModule(firstProfileId), mockFollowModule);
     }
 
     function testExecutorSetFollowModuleWithSig() public {
         vm.prank(profileOwner);
         hub.setDelegatedExecutorApproval(otherSigner, true);
 
+        address mockFollowModule = address(new MockFollowModule());
+        vm.prank(governance);
+        hub.whitelistFollowModule(mockFollowModule, true);
+
         uint256 nonce = 0;
         uint256 deadline = type(uint256).max;
         bytes32 digest = _getSetFollowModuleTypedDataHash(
             firstProfileId,
-            address(0),
-            '',
+            mockFollowModule,
+            abi.encode(1),
             nonce,
             deadline
         );
 
+        assertEq(hub.getFollowModule(firstProfileId), address(0));
         hub.setFollowModuleWithSig(
             DataTypes.SetFollowModuleWithSigData({
                 delegatedSigner: otherSigner,
                 profileId: firstProfileId,
-                followModule: address(0),
-                followModuleInitData: '',
+                followModule: mockFollowModule,
+                followModuleInitData: abi.encode(1),
                 sig: _getSigStruct(otherSignerKey, digest, deadline)
             })
         );
+        assertEq(hub.getFollowModule(firstProfileId), mockFollowModule);
     }
 
     function testSetDefaultProfileWithSig() public {
@@ -351,6 +363,7 @@ contract MiscTest is BaseTest {
             deadline
         );
 
+        assertEq(hub.getDefaultProfile(profileOwner), 0);
         hub.setDefaultProfileWithSig(
             DataTypes.SetDefaultProfileWithSigData({
                 delegatedSigner: address(0),
@@ -359,6 +372,7 @@ contract MiscTest is BaseTest {
                 sig: _getSigStruct(profileOwnerKey, digest, deadline)
             })
         );
+        assertEq(hub.getDefaultProfile(profileOwner), firstProfileId);
     }
 
     function testExecutorSetDefaultProfileWithSig() public {
@@ -374,6 +388,7 @@ contract MiscTest is BaseTest {
             deadline
         );
 
+        assertEq(hub.getDefaultProfile(profileOwner), 0);
         hub.setDefaultProfileWithSig(
             DataTypes.SetDefaultProfileWithSigData({
                 delegatedSigner: otherSigner,
@@ -382,6 +397,7 @@ contract MiscTest is BaseTest {
                 sig: _getSigStruct(otherSignerKey, digest, deadline)
             })
         );
+        assertEq(hub.getDefaultProfile(profileOwner), firstProfileId);
     }
 
     function testSetProfileImageURIWithSig() public {
@@ -389,19 +405,21 @@ contract MiscTest is BaseTest {
         uint256 deadline = type(uint256).max;
         bytes32 digest = _getSetProfileImageURITypedDataHash(
             firstProfileId,
-            mockURI,
+            'test',
             nonce,
             deadline
         );
 
+        assertEq(hub.getProfileImageURI(firstProfileId), mockURI);
         hub.setProfileImageURIWithSig(
             DataTypes.SetProfileImageURIWithSigData({
                 delegatedSigner: address(0),
                 profileId: firstProfileId,
-                imageURI: mockURI,
+                imageURI: 'test',
                 sig: _getSigStruct(profileOwnerKey, digest, deadline)
             })
         );
+        assertEq(hub.getProfileImageURI(firstProfileId), 'test');
     }
 
     function testExecutorSetProfileImageURIWithSig() public {
@@ -412,34 +430,38 @@ contract MiscTest is BaseTest {
         uint256 deadline = type(uint256).max;
         bytes32 digest = _getSetProfileImageURITypedDataHash(
             firstProfileId,
-            mockURI,
+            'test',
             nonce,
             deadline
         );
 
+        assertEq(hub.getProfileImageURI(firstProfileId), mockURI);
         hub.setProfileImageURIWithSig(
             DataTypes.SetProfileImageURIWithSigData({
                 delegatedSigner: otherSigner,
                 profileId: firstProfileId,
-                imageURI: mockURI,
+                imageURI: 'test',
                 sig: _getSigStruct(otherSignerKey, digest, deadline)
             })
         );
+        assertEq(hub.getProfileImageURI(firstProfileId), 'test');
     }
 
     function testSetFollowNFTURIWithSig() public {
         uint256 nonce = 0;
         uint256 deadline = type(uint256).max;
-        bytes32 digest = _getSetFollowNFTURITypedDatahash(firstProfileId, mockURI, nonce, deadline);
+        bytes32 digest = _getSetFollowNFTURITypedDatahash(firstProfileId, 'test', nonce, deadline);
 
+        assertEq(hub.getFollowNFTURI(firstProfileId), mockURI);
         hub.setFollowNFTURIWithSig(
             DataTypes.SetFollowNFTURIWithSigData({
                 delegatedSigner: address(0),
                 profileId: firstProfileId,
-                followNFTURI: mockURI,
+                followNFTURI: 'test',
                 sig: _getSigStruct(profileOwnerKey, digest, deadline)
             })
         );
+        assertEq(hub.getFollowNFTURI(firstProfileId), 'test');
     }
 
     function testExecutorSetFollowNFTURIWithSig() public {
@@ -448,16 +470,18 @@ contract MiscTest is BaseTest {
 
         uint256 nonce = 0;
         uint256 deadline = type(uint256).max;
-        bytes32 digest = _getSetFollowNFTURITypedDatahash(firstProfileId, mockURI, nonce, deadline);
+        bytes32 digest = _getSetFollowNFTURITypedDatahash(firstProfileId, 'test', nonce, deadline);
 
+        assertEq(hub.getFollowNFTURI(firstProfileId), mockURI);
         hub.setFollowNFTURIWithSig(
             DataTypes.SetFollowNFTURIWithSigData({
                 delegatedSigner: otherSigner,
                 profileId: firstProfileId,
-                followNFTURI: mockURI,
+                followNFTURI: 'test',
                 sig: _getSigStruct(otherSignerKey, digest, deadline)
             })
         );
+        assertEq(hub.getFollowNFTURI(firstProfileId), 'test');
     }
 
     function testSetProfileMetadataURIWithSig() public {
@@ -470,6 +494,7 @@ contract MiscTest is BaseTest {
             deadline
         );
 
+        assertEq(hub.getProfileMetadataURI(firstProfileId), '');
         hub.setProfileMetadataURIWithSig(
             DataTypes.SetProfileMetadataURIWithSigData({
                 delegatedSigner: address(0),
@@ -478,6 +503,7 @@ contract MiscTest is BaseTest {
                 sig: _getSigStruct(profileOwnerKey, digest, deadline)
             })
         );
+        assertEq(hub.getProfileMetadataURI(firstProfileId), mockURI);
     }
 
     function testExecutorSetProfileMetadataURIWithSig() public {
@@ -493,6 +519,7 @@ contract MiscTest is BaseTest {
             deadline
         );
 
+        assertEq(hub.getProfileMetadataURI(firstProfileId), '');
         hub.setProfileMetadataURIWithSig(
             DataTypes.SetProfileMetadataURIWithSigData({
                 delegatedSigner: otherSigner,
@@ -501,5 +528,6 @@ contract MiscTest is BaseTest {
                 sig: _getSigStruct(otherSignerKey, digest, deadline)
             })
         );
+        assertEq(hub.getProfileMetadataURI(firstProfileId), mockURI);
     }
 }

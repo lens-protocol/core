@@ -20,17 +20,17 @@ contract FollowTest is BaseTest {
             _toUint256Array(firstProfileId),
             _toBytesArray('')
         );
-        FollowNFT nft = FollowNFT(hub.getFollowNFT(firstProfileId));
-        assertEq(nftIds.length, 1);
-        assertEq(nftIds[0], 1);
-        assertEq(nft.ownerOf(1), me);
 
+        FollowNFT nft = FollowNFT(hub.getFollowNFT(firstProfileId));
         string memory expectedName = string(abi.encodePacked(mockHandle, FOLLOW_NFT_NAME_SUFFIX));
         string memory expectedSymbol = string(
             abi.encodePacked(bytes4(bytes(mockHandle)), FOLLOW_NFT_SYMBOL_SUFFIX)
         );
         assertEq(nft.name(), expectedName);
         assertEq(nft.symbol(), expectedSymbol);
+        assertEq(nftIds.length, 1);
+        assertEq(nftIds[0], 1);
+        assertEq(nft.ownerOf(1), me);
     }
 
     function testExecutorFollow() public {
@@ -42,7 +42,14 @@ contract FollowTest is BaseTest {
             _toUint256Array(firstProfileId),
             _toBytesArray('')
         );
+
         FollowNFT nft = FollowNFT(hub.getFollowNFT(firstProfileId));
+        string memory expectedName = string(abi.encodePacked(mockHandle, FOLLOW_NFT_NAME_SUFFIX));
+        string memory expectedSymbol = string(
+            abi.encodePacked(bytes4(bytes(mockHandle)), FOLLOW_NFT_SYMBOL_SUFFIX)
+        );
+        assertEq(nft.name(), expectedName);
+        assertEq(nft.symbol(), expectedSymbol);
         assertEq(nftIds.length, 1);
         assertEq(nftIds[0], 1);
         assertEq(nft.ownerOf(1), me);
@@ -115,16 +122,15 @@ contract FollowTest is BaseTest {
         );
 
         FollowNFT nft = FollowNFT(hub.getFollowNFT(firstProfileId));
-        assertEq(nftIds.length, 1);
-        assertEq(nftIds[0], 1);
-        assertEq(nft.ownerOf(1), otherSigner);
-
         string memory expectedName = string(abi.encodePacked(mockHandle, FOLLOW_NFT_NAME_SUFFIX));
         string memory expectedSymbol = string(
             abi.encodePacked(bytes4(bytes(mockHandle)), FOLLOW_NFT_SYMBOL_SUFFIX)
         );
         assertEq(nft.name(), expectedName);
         assertEq(nft.symbol(), expectedSymbol);
+        assertEq(nftIds.length, 1);
+        assertEq(nftIds[0], 1);
+        assertEq(nft.ownerOf(1), otherSigner);
     }
 
     function testExecutorFollowWithSig() public {
@@ -150,6 +156,12 @@ contract FollowTest is BaseTest {
         );
 
         FollowNFT nft = FollowNFT(hub.getFollowNFT(firstProfileId));
+        string memory expectedName = string(abi.encodePacked(mockHandle, FOLLOW_NFT_NAME_SUFFIX));
+        string memory expectedSymbol = string(
+            abi.encodePacked(bytes4(bytes(mockHandle)), FOLLOW_NFT_SYMBOL_SUFFIX)
+        );
+        assertEq(nft.name(), expectedName);
+        assertEq(nft.symbol(), expectedSymbol);
         assertEq(nftIds.length, 1);
         assertEq(nftIds[0], 1);
         assertEq(nft.ownerOf(1), otherSigner);
