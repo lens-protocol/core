@@ -389,13 +389,13 @@ library DataTypes {
      *
      * @param delegatedSigner The delegated executor signer, must be either zero, defaulting to the profile owner, or a delegated executor.
      * @param profileId The profile ID for which to set the metadata.
-     * @param metadata The metadata string to set for the profile and user.
+     * @param metadataURI The metadata string to set for the profile and user.
      * @param sig The EIP712Signature struct containing the user's signature.
      */
-    struct SetProfileMetadataWithSigData {
+    struct SetProfileMetadataURIWithSigData {
         address delegatedSigner;
         uint256 profileId;
-        string metadata;
+        string metadataURI;
         EIP712Signature sig;
     }
 

@@ -83,7 +83,7 @@ library GeneralLib {
      *
      * @param newState The new protocol state to set.
      */
-    function setStateFull(DataTypes.ProtocolState newState) external {
+    function setState(DataTypes.ProtocolState newState) external {
         address emergencyAdmin;
         address governance;
         DataTypes.ProtocolState prevState;
@@ -211,6 +211,23 @@ library GeneralLib {
         );
         MetaTxHelpers.baseSetDefaultProfileWithSig(signer, vars);
         _setDefaultProfile(vars.wallet, vars.profileId);
+    }
+
+    function setProfileMetadataURI(uint256 profileId, string calldata metadataURI) external {
+        _validateCallerIsOwnerOrDispatcherOrExecutor(profileId);
+        _setProfileMetadataURI(profileId, metadataURI);
+    }
+
+    function setProfileMetadataURIWithSig(DataTypes.SetProfileMetadataURIWithSigData calldata vars)
+        external
+    {
+        uint256 profileId = vars.profileId;
+        address signer = _getOriginatorOrDelegatedExecutorSigner(
+            GeneralHelpers.unsafeOwnerOf(profileId),
+            vars.delegatedSigner
+        );
+        MetaTxHelpers.baseSetProfileMetadataURIWithSig(signer, vars);
+        _setProfileMetadataURI(vars.profileId, vars.metadataURI);
     }
 
     /**
@@ -682,6 +699,43 @@ library GeneralLib {
             sstore(slot, profileId)
         }
         emit Events.DefaultProfileSet(wallet, profileId, block.timestamp);
+    }
+
+    function _setProfileMetadataURI(uint256 profileId, string calldata metadataURI) private {
+        assembly {
+            let length := metadataURI.length
+            let cdOffset := metadataURI.offset
+            mstore(0, profileId)
+            mstore(32, PROFILE_METADATA_MAPPING_SLOT)
+            let slot := keccak256(0, 64)
+
+            // If the length is greater than 31, storage rules are different.
+            switch gt(length, 31)
+            case 1 {
+                // The length is > 31, so we need to store the actual string in a new slot,
+                // equivalent to keccak256(startSlot), and store length*2+1 in startSlot.
+                sstore(slot, add(shl(1, length), 1))
+
+                // Calculate the amount of storage slots we need to store the full string.
+                // This is equivalent to (string.length + 31)/32.
+                let totalStorageSlots := shr(5, add(length, 31))
+
+                // Compute the slot where the actual string will begin, which is the keccak256
+                // hash of the slot where we stored the modified length.
+                mstore(0, slot)
+                slot := keccak256(0, 32)
+
+                // Write the actual string to storage starting at the computed slot.
+                // prettier-ignore
+                for { let i := 0 } lt(i, totalStorageSlots) { i := add(i, 1) } {
+                    sstore(add(slot, i), calldataload(add(cdOffset, mul(32, i))))
+                }
+            }
+            default {
+                // The length is <= 31 so store the string and the length*2 in the same slot.
+                sstore(slot, or(calldataload(cdOffset), shl(1, length)))
+            }
+        }
     }
 
     function _setFollowModule(

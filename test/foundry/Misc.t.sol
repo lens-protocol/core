@@ -2,6 +2,7 @@
 pragma solidity ^0.8.13;
 
 import './base/BaseTest.t.sol';
+import '../../contracts/mocks/MockFollowModule.sol';
 
 contract MiscTest is BaseTest {
     // Negatives
@@ -25,37 +26,64 @@ contract MiscTest is BaseTest {
         hub.setFollowNFTURI(firstProfileId, mockURI);
     }
 
+    function testSetProfileMetadataURINotExecutorFails() public {
+        vm.expectRevert(Errors.ExecutorInvalid.selector);
+        hub.setProfileMetadataURI(firstProfileId, mockURI);
+    }
+
     // Positives
     function testExecutorSetFollowModule() public {
+        assertEq(hub.getFollowModule(firstProfileId), address(0));
         vm.prank(profileOwner);
         hub.setDelegatedExecutorApproval(otherSigner, true);
 
+        address mockFollowModule = address(new MockFollowModule());
+        vm.prank(governance);
+        hub.whitelistFollowModule(mockFollowModule, true);
+
         vm.prank(otherSigner);
-        hub.setFollowModule(firstProfileId, address(0), '');
+        hub.setFollowModule(firstProfileId, mockFollowModule, abi.encode(1));
+        assertEq(hub.getFollowModule(firstProfileId), mockFollowModule);
     }
 
     function testExecutorSetDefaultProfile() public {
+        assertEq(hub.getDefaultProfile(profileOwner), 0);
         vm.prank(profileOwner);
         hub.setDelegatedExecutorApproval(otherSigner, true);
 
         vm.prank(otherSigner);
         hub.setDefaultProfile(profileOwner, firstProfileId);
+        assertEq(hub.getDefaultProfile(profileOwner), firstProfileId);
     }
 
     function testExecutorSetProfileImageURI() public {
+        assertEq(hub.getProfileImageURI(firstProfileId), mockURI);
         vm.prank(profileOwner);
         hub.setDelegatedExecutorApproval(otherSigner, true);
 
         vm.prank(otherSigner);
-        hub.setProfileImageURI(firstProfileId, mockURI);
+        hub.setProfileImageURI(firstProfileId, 'test');
+        assertEq(hub.getProfileImageURI(firstProfileId), 'test');
     }
 
     function testExecutorSetFollowNFTURI() public {
+        assertEq(hub.getFollowNFTURI(firstProfileId), mockURI);
         vm.prank(profileOwner);
         hub.setDelegatedExecutorApproval(otherSigner, true);
 
         vm.prank(otherSigner);
-        hub.setFollowNFTURI(firstProfileId, mockURI);
+        hub.setFollowNFTURI(firstProfileId, 'test');
+        assertEq(hub.getFollowNFTURI(firstProfileId), 'test');
+    }
+
+    function testExecutorSetProfileMetadataURI() public {
+        assertEq(hub.getProfileMetadataURI(firstProfileId), '');
+        vm.prank(profileOwner);
+        hub.setDelegatedExecutorApproval(otherSigner, true);
+
+        vm.prank(otherSigner);
+        hub.setProfileMetadataURI(firstProfileId, mockURI);
+        assertEq(hub.getProfileMetadataURI(firstProfileId), mockURI);
     }
 
     // Meta-tx
@@ -222,33 +250,132 @@ contract MiscTest is BaseTest {
         );
     }
 
-    // Postivies
-    function testExecutorSetFollowModuleWithSig() public {
-        vm.prank(profileOwner);
-        hub.setDelegatedExecutorApproval(otherSigner, true);
-
+    function testSetProfileMetadataURIWithSigInvalidSignerFails() public {
         uint256 nonce = 0;
         uint256 deadline = type(uint256).max;
-        bytes32 digest = _getSetFollowModuleTypedDataHash(
+        bytes32 digest = _getSetProfileMetadataURITypedDataHash(
             firstProfileId,
-            address(0),
-            '',
+            mockURI,
             nonce,
             deadline
         );
 
-        hub.setFollowModuleWithSig(
-            DataTypes.SetFollowModuleWithSigData({
-                delegatedSigner: otherSigner,
+        vm.expectRevert(Errors.SignatureInvalid.selector);
+        hub.setProfileMetadataURIWithSig(
+            DataTypes.SetProfileMetadataURIWithSigData({
+                delegatedSigner: address(0),
                 profileId: firstProfileId,
-                followModule: address(0),
-                followModuleInitData: '',
+                metadataURI: mockURI,
                 sig: _getSigStruct(otherSignerKey, digest, deadline)
             })
         );
     }
 
-    function testExecutorSetDefaultProfileWithSigInvalidSigner() public {
+    function testSetProfileMetadataURIWithSigNotExecutorFails() public {
+        uint256 nonce = 0;
+        uint256 deadline = type(uint256).max;
+        bytes32 digest = _getSetProfileMetadataURITypedDataHash(
+            firstProfileId,
+            mockURI,
+            nonce,
+            deadline
+        );
+
+        vm.expectRevert(Errors.ExecutorInvalid.selector);
+        hub.setProfileMetadataURIWithSig(
+            DataTypes.SetProfileMetadataURIWithSigData({
+                delegatedSigner: otherSigner,
+                profileId: firstProfileId,
+                metadataURI: mockURI,
+                sig: _getSigStruct(otherSignerKey, digest, deadline)
+            })
+        );
+    }
+
+    // Postivies
+    function testSetFollowModuleWithSig() public {
+        address mockFollowModule = address(new MockFollowModule());
+        vm.prank(governance);
+        hub.whitelistFollowModule(mockFollowModule, true);
+
+        uint256 nonce = 0;
+        uint256 deadline = type(uint256).max;
+
+        bytes32 digest = _getSetFollowModuleTypedDataHash(
+            firstProfileId,
+            mockFollowModule,
+            abi.encode(1),
+            nonce,
+            deadline
+        );
+
+        assertEq(hub.getFollowModule(firstProfileId), address(0));
+        hub.setFollowModuleWithSig(
+            DataTypes.SetFollowModuleWithSigData({
+                delegatedSigner: address(0),
+                profileId: firstProfileId,
+                followModule: mockFollowModule,
+                followModuleInitData: abi.encode(1),
+                sig: _getSigStruct(profileOwnerKey, digest, deadline)
+            })
+        );
+        assertEq(hub.getFollowModule(firstProfileId), mockFollowModule);
+    }
+
+    function testExecutorSetFollowModuleWithSig() public {
+        vm.prank(profileOwner);
+        hub.setDelegatedExecutorApproval(otherSigner, true);
+
+        address mockFollowModule = address(new MockFollowModule());
+        vm.prank(governance);
+        hub.whitelistFollowModule(mockFollowModule, true);
+
+        uint256 nonce = 0;
+        uint256 deadline = type(uint256).max;
+        bytes32 digest = _getSetFollowModuleTypedDataHash(
+            firstProfileId,
+            mockFollowModule,
+            abi.encode(1),
+            nonce,
+            deadline
+        );
+
+        assertEq(hub.getFollowModule(firstProfileId), address(0));
+        hub.setFollowModuleWithSig(
+            DataTypes.SetFollowModuleWithSigData({
+                delegatedSigner: otherSigner,
+                profileId: firstProfileId,
+                followModule: mockFollowModule,
+                followModuleInitData: abi.encode(1),
+                sig: _getSigStruct(otherSignerKey, digest, deadline)
+            })
+        );
+        assertEq(hub.getFollowModule(firstProfileId), mockFollowModule);
+    }
+
+    function testSetDefaultProfileWithSig() public {
+        uint256 nonce = 0;
+        uint256 deadline = type(uint256).max;
+        bytes32 digest = _getSetDefaultProfileTypedDataHash(
+            profileOwner,
+            firstProfileId,
+            nonce,
+            deadline
+        );
+
+        assertEq(hub.getDefaultProfile(profileOwner), 0);
+        hub.setDefaultProfileWithSig(
+            DataTypes.SetDefaultProfileWithSigData({
+                delegatedSigner: address(0),
+                wallet: profileOwner,
+                profileId: firstProfileId,
+                sig: _getSigStruct(profileOwnerKey, digest, deadline)
+            })
+        );
+        assertEq(hub.getDefaultProfile(profileOwner), firstProfileId);
+    }
+
+    function testExecutorSetDefaultProfileWithSig() public {
         vm.prank(profileOwner);
         hub.setDelegatedExecutorApproval(otherSigner, true);
 
@@ -261,6 +388,7 @@ contract MiscTest is BaseTest {
             deadline
         );
 
+        assertEq(hub.getDefaultProfile(profileOwner), 0);
         hub.setDefaultProfileWithSig(
             DataTypes.SetDefaultProfileWithSigData({
                 delegatedSigner: otherSigner,
@@ -269,5 +397,137 @@ contract MiscTest is BaseTest {
                 sig: _getSigStruct(otherSignerKey, digest, deadline)
             })
         );
+        assertEq(hub.getDefaultProfile(profileOwner), firstProfileId);
+    }
+
+    function testSetProfileImageURIWithSig() public {
+        uint256 nonce = 0;
+        uint256 deadline = type(uint256).max;
+        bytes32 digest = _getSetProfileImageURITypedDataHash(
+            firstProfileId,
+            'test',
+            nonce,
+            deadline
+        );
+
+        assertEq(hub.getProfileImageURI(firstProfileId), mockURI);
+        hub.setProfileImageURIWithSig(
+            DataTypes.SetProfileImageURIWithSigData({
+                delegatedSigner: address(0),
+                profileId: firstProfileId,
+                imageURI: 'test',
+                sig: _getSigStruct(profileOwnerKey, digest, deadline)
+            })
+        );
+        assertEq(hub.getProfileImageURI(firstProfileId), 'test');
+    }
+
+    function testExecutorSetProfileImageURIWithSig() public {
+        vm.prank(profileOwner);
+        hub.setDelegatedExecutorApproval(otherSigner, true);
+
+        uint256 nonce = 0;
+        uint256 deadline = type(uint256).max;
+        bytes32 digest = _getSetProfileImageURITypedDataHash(
+            firstProfileId,
+            'test',
+            nonce,
+            deadline
+        );
+
+        assertEq(hub.getProfileImageURI(firstProfileId), mockURI);
+        hub.setProfileImageURIWithSig(
+            DataTypes.SetProfileImageURIWithSigData({
+                delegatedSigner: otherSigner,
+                profileId: firstProfileId,
+                imageURI: 'test',
+                sig: _getSigStruct(otherSignerKey, digest, deadline)
+            })
+        );
+        assertEq(hub.getProfileImageURI(firstProfileId), 'test');
+    }
+
+    function testSetFollowNFTURIWithSig() public {
+        uint256 nonce = 0;
+        uint256 deadline = type(uint256).max;
+        bytes32 digest = _getSetFollowNFTURITypedDatahash(firstProfileId, 'test', nonce, deadline);
+
+        assertEq(hub.getFollowNFTURI(firstProfileId), mockURI);
+        hub.setFollowNFTURIWithSig(
+            DataTypes.SetFollowNFTURIWithSigData({
+                delegatedSigner: address(0),
+                profileId: firstProfileId,
+                followNFTURI: 'test',
+                sig: _getSigStruct(profileOwnerKey, digest, deadline)
+            })
+        );
+        assertEq(hub.getFollowNFTURI(firstProfileId), 'test');
+    }
+
+    function testExecutorSetFollowNFTURIWithSig() public {
+        vm.prank(profileOwner);
+        hub.setDelegatedExecutorApproval(otherSigner, true);
+
+        uint256 nonce = 0;
+        uint256 deadline = type(uint256).max;
+        bytes32 digest = _getSetFollowNFTURITypedDatahash(firstProfileId, 'test', nonce, deadline);
+
+        assertEq(hub.getFollowNFTURI(firstProfileId), mockURI);
+        hub.setFollowNFTURIWithSig(
+            DataTypes.SetFollowNFTURIWithSigData({
+                delegatedSigner: otherSigner,
+                profileId: firstProfileId,
+                followNFTURI: 'test',
+                sig: _getSigStruct(otherSignerKey, digest, deadline)
+            })
+        );
+        assertEq(hub.getFollowNFTURI(firstProfileId), 'test');
+    }
+
+    function testSetProfileMetadataURIWithSig() public {
+        uint256 nonce = 0;
+        uint256 deadline = type(uint256).max;
+        bytes32 digest = _getSetProfileMetadataURITypedDataHash(
+            firstProfileId,
+            mockURI,
+            nonce,
+            deadline
+        );
+
+        assertEq(hub.getProfileMetadataURI(firstProfileId), '');
+        hub.setProfileMetadataURIWithSig(
+            DataTypes.SetProfileMetadataURIWithSigData({
+                delegatedSigner: address(0),
+                profileId: firstProfileId,
+                metadataURI: mockURI,
+                sig: _getSigStruct(profileOwnerKey, digest, deadline)
+            })
+        );
+        assertEq(hub.getProfileMetadataURI(firstProfileId), mockURI);
+    }
+
+    function testExecutorSetProfileMetadataURIWithSig() public {
+        vm.prank(profileOwner);
+        hub.setDelegatedExecutorApproval(otherSigner, true);
+
+        uint256 nonce = 0;
+        uint256 deadline = type(uint256).max;
+        bytes32 digest = _getSetProfileMetadataURITypedDataHash(
+            firstProfileId,
+            mockURI,
+            nonce,
+            deadline
+        );
+
+        assertEq(hub.getProfileMetadataURI(firstProfileId), '');
+        hub.setProfileMetadataURIWithSig(
+            DataTypes.SetProfileMetadataURIWithSigData({
+                delegatedSigner: otherSigner,
+                profileId: firstProfileId,
+                metadataURI: mockURI,
+                sig: _getSigStruct(otherSignerKey, digest, deadline)
+            })
+        );
+        assertEq(hub.getProfileMetadataURI(firstProfileId), mockURI);
     }
 }

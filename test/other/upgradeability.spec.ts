@@ -13,7 +13,7 @@ import { abiCoder, deployer, lensHub, makeSuiteCleanRoom, user } from '../__setu
 
 makeSuiteCleanRoom('Upgradeability', function () {
   const valueToSet = 123;
-  const totalSlotsUsed = 26; // Slots 0-25 are used.
+  const totalSlotsUsed = 27; // Slots 0-26 are used.
 
   it('Should fail to initialize an implementation with the same revision', async function () {
     const newImpl = await new MockLensHubV2BadRevision__factory(deployer).deploy();

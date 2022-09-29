@@ -34,6 +34,14 @@ contract PublishingTest is BaseTest {
         vm.prank(otherSigner);
         uint256 pubId = hub.post(mockPostData);
         assertEq(pubId, 1);
+
+        DataTypes.PublicationStruct memory pub = hub.getPub(firstProfileId, pubId);
+        assertEq(pub.profileIdPointed, 0);
+        assertEq(pub.pubIdPointed, 0);
+        assertEq(pub.contentURI, mockPostData.contentURI);
+        assertEq(pub.referenceModule, mockPostData.referenceModule);
+        assertEq(pub.collectModule, mockPostData.collectModule);
+        assertEq(pub.collectNFT, address(0));
     }
 
     function testExecutorComment() public {
@@ -45,6 +53,14 @@ contract PublishingTest is BaseTest {
         vm.prank(otherSigner);
         uint256 pubId = hub.comment(mockCommentData);
         assertEq(pubId, 2);
+
+        DataTypes.PublicationStruct memory pub = hub.getPub(firstProfileId, pubId);
+        assertEq(pub.profileIdPointed, mockCommentData.profileIdPointed);
+        assertEq(pub.pubIdPointed, mockCommentData.pubIdPointed);
+        assertEq(pub.contentURI, mockCommentData.contentURI);
+        assertEq(pub.referenceModule, mockCommentData.referenceModule);
+        assertEq(pub.collectModule, mockCommentData.collectModule);
+        assertEq(pub.collectNFT, address(0));
     }
 
     function testExecutorMirror() public {
@@ -56,6 +72,14 @@ contract PublishingTest is BaseTest {
         vm.prank(otherSigner);
         uint256 pubId = hub.mirror(mockMirrorData);
         assertEq(pubId, 2);
+
+        DataTypes.PublicationStruct memory pub = hub.getPub(firstProfileId, pubId);
+        assertEq(pub.profileIdPointed, mockMirrorData.profileIdPointed);
+        assertEq(pub.pubIdPointed, mockMirrorData.pubIdPointed);
+        assertEq(pub.contentURI, '');
+        assertEq(pub.referenceModule, mockMirrorData.referenceModule);
+        assertEq(pub.collectModule, address(0));
+        assertEq(pub.collectNFT, address(0));
     }
 
     // Meta-tx
@@ -289,6 +313,14 @@ contract PublishingTest is BaseTest {
             })
         );
         assertEq(pubId, 1);
+
+        DataTypes.PublicationStruct memory pub = hub.getPub(firstProfileId, pubId);
+        assertEq(pub.profileIdPointed, 0);
+        assertEq(pub.pubIdPointed, 0);
+        assertEq(pub.contentURI, mockPostData.contentURI);
+        assertEq(pub.referenceModule, mockPostData.referenceModule);
+        assertEq(pub.collectModule, mockPostData.collectModule);
+        assertEq(pub.collectNFT, address(0));
     }
 
     function testExecutorCommentWithSig() public {
@@ -329,6 +361,14 @@ contract PublishingTest is BaseTest {
             })
         );
         assertEq(pubId, 2);
+
+        DataTypes.PublicationStruct memory pub = hub.getPub(firstProfileId, pubId);
+        assertEq(pub.profileIdPointed, mockCommentData.profileIdPointed);
+        assertEq(pub.pubIdPointed, mockCommentData.pubIdPointed);
+        assertEq(pub.contentURI, mockCommentData.contentURI);
+        assertEq(pub.referenceModule, mockCommentData.referenceModule);
+        assertEq(pub.collectModule, mockCommentData.collectModule);
+        assertEq(pub.collectNFT, address(0));
     }
 
     function testExecutorMirrorWithSig() public {
@@ -363,5 +403,13 @@ contract PublishingTest is BaseTest {
             })
         );
         assertEq(pubId, 2);
+
+        DataTypes.PublicationStruct memory pub = hub.getPub(firstProfileId, pubId);
+        assertEq(pub.profileIdPointed, mockMirrorData.profileIdPointed);
+        assertEq(pub.pubIdPointed, mockMirrorData.pubIdPointed);
+        assertEq(pub.contentURI, '');
+        assertEq(pub.referenceModule, mockMirrorData.referenceModule);
+        assertEq(pub.collectModule, address(0));
+        assertEq(pub.collectNFT, address(0));
     }
 }

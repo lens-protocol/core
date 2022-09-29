@@ -104,7 +104,8 @@ interface ILensHub {
     function createProfile(DataTypes.CreateProfileData calldata vars) external returns (uint256);
 
     /**
-     * @notice Sets the mapping between wallet and its main profile identity.
+     * @notice Sets the mapping between wallet and its main profile identity. Must be called either by the wallet or a
+     * delegated executor.
      *
      * @param onBehalfOf The address to set the default profile on behalf of.
      * @param profileId The token ID of the profile to set as the main profile identity.
@@ -112,7 +113,8 @@ interface ILensHub {
     function setDefaultProfile(address onBehalfOf, uint256 profileId) external;
 
     /**
-     * @notice Sets the mapping between wallet and its main profile identity via signature with the specified parameters.
+     * @notice Sets the mapping between wallet and its main profile identity via signature with the specified parameters. The 
+     * signer must either be the profile owner or a delegated executor.
      *
      * @param vars A SetDefaultProfileWithSigData struct, including the regular parameters and an EIP712Signature struct.
      */
@@ -120,7 +122,24 @@ interface ILensHub {
         external;
 
     /**
-     * @notice Sets a profile's follow module, must be called by the profile owner.
+     * @notice Sets the metadata URI for the given profile. Must be called either from the profile owner, a delegated
+     * executor, or the profile's dispatcher.
+     *
+     * @param profileId The token ID of the profile to set the metadata URI for.
+     * @param metadataURI The metadata URI to set for the given profile.
+     */
+    function setProfileMetadataURI(uint256 profileId, string calldata metadataURI) external;
+
+    /**
+     * @notice Sets the metadata URI via signature for the given profile with the specified parameters. The signer must
+     * either be the profile owner or a delegated executor.
+     * 
+     * @param vars A SetProfileMetadataURIWithSigData struct, including the regular parameters and an EIP712Signature struct.
+     */
+    function setProfileMetadataURIWithSig(DataTypes.SetProfileMetadataURIWithSigData calldata vars) external;
+
+    /**
+     * @notice Sets the follow module for the given profile. Must be called by the profile owner.
      *
      * @param profileId The token ID of the profile to set the follow module for.
      * @param followModule The follow module to set for the given profile, must be whitelisted.
@@ -133,7 +152,8 @@ interface ILensHub {
     ) external;
 
     /**
-     * @notice Sets a profile's follow module via signature with the specified parameters.
+     * @notice Sets the follow module via signature for the given profile with the specified parameters. The signer must
+     * either be the profile owner or a delegated executor.
      *
      * @param vars A SetFollowModuleWithSigData struct, including the regular parameters and an EIP712Signature struct.
      */
@@ -173,7 +193,7 @@ interface ILensHub {
     ) external;
 
     /**
-     * @notice Sets a profile's URI, which is reflected in the `tokenURI()` function.
+     * @notice Sets a profile's image URI, which is reflected in the `tokenURI()` function.
      *
      * @param profileId The token ID of the profile of the profile to set the URI for.
      * @param imageURI The URI to set for the given profile.
@@ -181,7 +201,8 @@ interface ILensHub {
     function setProfileImageURI(uint256 profileId, string calldata imageURI) external;
 
     /**
-     * @notice Sets a profile's URI via signature with the specified parameters.
+     * @notice Sets the image URI via signature for the given profile with the specified parameters. The signer must
+     * either be the profile owner or a delegated executor.
      *
      * @param vars A SetProfileImageURIWithSigData struct, including the regular parameters and an EIP712Signature struct.
      */
@@ -197,7 +218,8 @@ interface ILensHub {
     function setFollowNFTURI(uint256 profileId, string calldata followNFTURI) external;
 
     /**
-     * @notice Sets a followNFT URI via signature with the specified parameters.
+     * @notice Sets a followNFT URI via signature for the given profile with the specified parameters. The signer must
+     * either be the profile owner or a delegated executor.
      *
      * @param vars A SetFollowNFTURIWithSigData struct, including the regular parameters and an EIP712Signature struct.
      */
@@ -213,7 +235,8 @@ interface ILensHub {
     function post(DataTypes.PostData calldata vars) external returns (uint256);
 
     /**
-     * @notice Publishes a post to a given profile via signature with the specified parameters.
+     * @notice Publishes a post to a given profile via signature with the specified parameters. The signer must
+     * either be the profile owner or a delegated executor.
      *
      * @param vars A PostWithSigData struct containing the regular parameters and an EIP712Signature struct.
      *
@@ -231,7 +254,8 @@ interface ILensHub {
     function comment(DataTypes.CommentData calldata vars) external returns (uint256);
 
     /**
-     * @notice Publishes a comment to a given profile via signature with the specified parameters.
+     * @notice Publishes a comment to a given profile via signature with the specified parameters. The signer must
+     * either be the profile owner or a delegated executor.
      *
      * @param vars A CommentWithSigData struct containing the regular parameters and an EIP712Signature struct.
      *
@@ -249,7 +273,8 @@ interface ILensHub {
     function mirror(DataTypes.MirrorData calldata vars) external returns (uint256);
 
     /**
-     * @notice Publishes a mirror to a given profile via signature with the specified parameters.
+     * @notice Publishes a mirror to a given profile via signature with the specified parameters. The signer must
+     * either be the profile owner or a delegated executor.
      *
      * @param vars A MirrorWithSigData struct containing the regular parameters and an EIP712Signature struct.
      *
@@ -275,7 +300,8 @@ interface ILensHub {
     ) external returns (uint256[] memory);
 
     /**
-     * @notice Follows a given profile via signature with the specified parameters.
+     * @notice Follows a given profile via signature with the specified parameters. The signer must either be the follower
+     * or a delegated executor.
      *
      * @param vars A FollowWithSigData struct containing the regular parameters as well as the signing follower's address
      * and an EIP712Signature struct.
@@ -304,7 +330,8 @@ interface ILensHub {
     ) external returns (uint256);
 
     /**
-     * @notice Collects a given publication via signature with the specified parameters.
+     * @notice Collects a given publication via signature with the specified parameters. The signer must either be the collector
+     * or a delegated executor.
      *
      * @param vars A CollectWithSigData struct containing the regular parameters as well as the collector's address and
      * an EIP712Signature struct.
@@ -361,15 +388,6 @@ interface ILensHub {
     function isProfileCreatorWhitelisted(address profileCreator) external view returns (bool);
 
     /**
-     * @notice Returns default profile for a given wallet address
-     *
-     * @param wallet The address to find the default mapping
-     *
-     * @return uint256 The default profile id, which will be 0 if not mapped.
-     */
-    function defaultProfile(address wallet) external view returns (uint256);
-
-    /**
      * @notice Returns whether or not a follow module is whitelisted.
      *
      * @param followModule The address of the follow module to check.
@@ -404,22 +422,49 @@ interface ILensHub {
     function getGovernance() external view returns (address);
 
     /**
-     * @notice Returns the dispatcher associated with a profile.
+     * @notice Returns the default profile for a given wallet address
+     *
+     * @param wallet The address to find the default mapping
+     *
+     * @return uint256 The default profile id, which will be 0 if not mapped.
+     */
+    function getDefaultProfile(address wallet) external view returns (uint256);
+
+    /**
+     * @notice Returns the metadata URI for a given profile
+     *
+     * @param profileId The token ID of the profile to query the metadata URI for.
+     *
+     * @return string The metadata URI associated with the given profile.
+     */
+    function getProfileMetadataURI(uint256 profileId) external view returns (string memory);
+
+    /**
+     * @notice Returns the dispatcher for a given profile.
      *
      * @param profileId The token ID of the profile to query the dispatcher for.
      *
-     * @return address The dispatcher address associated with the profile.
+     * @return address The dispatcher address associated with the given profile.
      */
     function getDispatcher(uint256 profileId) external view returns (address);
 
     /**
      * @notice Returns the publication count for a given profile.
      *
-     * @param profileId The token ID of the profile to query.
+     * @param profileId The token ID of the profile to query the publication count for.
      *
-     * @return uint256 The number of publications associated with the queried profile.
+     * @return uint256 The number of publications associated with the given profile.
      */
     function getPubCount(uint256 profileId) external view returns (uint256);
+
+    /**
+     * @notice Returns the image URI for a given profile
+     *
+     * @param profileId The token ID of the profile to query the image URI for.
+     *
+     * @return string The image URI associated with the given profile.
+     */
+    function getProfileImageURI(uint256 profileId) external view returns (string memory);
 
     /**
      * @notice Returns the followNFT associated with a given profile, if any.
@@ -445,7 +490,7 @@ interface ILensHub {
      * @param profileId The token ID of the profile that published the publication to query.
      * @param pubId The publication ID of the publication to query.
      *
-     * @return address The address of the collectNFT associated with the queried publication.
+     * @return address The address of the collectNFT associated with the given publication.
      */
     function getCollectNFT(uint256 profileId, uint256 pubId) external view returns (address);
 

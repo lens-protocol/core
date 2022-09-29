@@ -32,6 +32,7 @@ uint256 constant PROFILE_COUNTER_SLOT = 22;
 uint256 constant GOVERNANCE_SLOT = 23;
 uint256 constant EMERGENCY_ADMIN_SLOT = 24;
 uint256 constant DELEGATED_EXECUTOR_APPROVAL_MAPPING_SLOT = 25;
+uint256 constant PROFILE_METADATA_MAPPING_SLOT = 26;
 uint256 constant NAME_SLOT_GT_31 = 0x290decd9548b62a8d60345a988386fc84ba6bc95484008f6362f93160ef3e563;
 
 // We store the polygon chain ID and domain separator as constants to save gas.
@@ -109,6 +110,9 @@ bytes32 constant FOLLOW_WITH_SIG_TYPEHASH = keccak256(
 );
 bytes32 constant COLLECT_WITH_SIG_TYPEHASH = keccak256(
     'CollectWithSig(uint256 profileId,uint256 pubId,bytes data,uint256 nonce,uint256 deadline)'
+);
+bytes32 constant SET_PROFILE_METADATA_URI_WITH_SIG_TYPEHASH = keccak256(
+    'SetProfileMetadataURIWithSig(uint256 profileId,string metadata,uint256 nonce,uint256 deadline)'
 );
 
 bytes4 constant EIP1271_MAGIC_VALUE = 0x1626ba7e;
