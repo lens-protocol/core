@@ -58,7 +58,7 @@ makeSuiteCleanRoom('Publishing Posts', function () {
             referenceModule: ZERO_ADDRESS,
             referenceModuleInitData: [],
           })
-        ).to.be.revertedWith(ERRORS.CALLER_INVALID);
+        ).to.be.revertedWith(ERRORS.EXECUTOR_INVALID);
       });
 
       it('User should fail to post with an unwhitelisted collect module', async function () {
@@ -328,7 +328,7 @@ makeSuiteCleanRoom('Publishing Posts', function () {
               deadline: MAX_UINT256,
             },
           })
-        ).to.be.revertedWith(ERRORS.CALLER_INVALID);
+        ).to.be.revertedWith(ERRORS.EXECUTOR_INVALID);
       });
 
       it('Testwallet should fail to post with sig with invalid deadline', async function () {
@@ -404,7 +404,7 @@ makeSuiteCleanRoom('Publishing Posts', function () {
               deadline: MAX_UINT256,
             },
           })
-        ).to.be.revertedWith(ERRORS.CALLER_INVALID);
+        ).to.be.revertedWith(ERRORS.EXECUTOR_INVALID);
       });
 
       it('Testwallet should fail to post with sig with an unwhitelisted collect module', async function () {
@@ -515,7 +515,7 @@ makeSuiteCleanRoom('Publishing Posts', function () {
               deadline: MAX_UINT256,
             },
           })
-        ).to.be.revertedWith(ERRORS.CALLER_INVALID);
+        ).to.be.revertedWith(ERRORS.EXECUTOR_INVALID);
       });
 
       it('TestWallet should deploy bad EIP1271 implementer, transfer profile to it, then fail to post with sig', async function () {

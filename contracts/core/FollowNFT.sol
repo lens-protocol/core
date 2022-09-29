@@ -81,7 +81,7 @@ contract FollowNFT is LensNFTBase, IFollowNFT {
         DataTypes.EIP712Signature calldata sig
     ) external override {
         unchecked {
-            MetaTxHelpers._validateRecoveredAddressNoExecutor(
+            MetaTxHelpers._validateRecoveredAddress(
                 _calculateDigest(
                     keccak256(
                         abi.encode(

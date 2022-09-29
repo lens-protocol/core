@@ -9,8 +9,6 @@ pragma solidity 0.8.15;
  * @notice This is the standard interface for all Lens-compatible FollowModules.
  */
 interface IFollowModule {
-    // function getModuleVersion() external view returns (uint256);
-
     /**
      * @notice Initializes a follow module for a given Lens profile. This can only be called by the hub contract.
      *

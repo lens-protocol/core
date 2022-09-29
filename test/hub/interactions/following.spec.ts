@@ -208,7 +208,7 @@ makeSuiteCleanRoom('Following', function () {
               deadline: MAX_UINT256,
             },
           })
-        ).to.be.revertedWith(ERRORS.CALLER_INVALID);
+        ).to.be.revertedWith(ERRORS.EXECUTOR_INVALID);
       });
 
       it('TestWallet should fail to follow with sig with invalid deadline', async function () {
@@ -251,7 +251,7 @@ makeSuiteCleanRoom('Following', function () {
               deadline: MAX_UINT256,
             },
           })
-        ).to.be.revertedWith(ERRORS.CALLER_INVALID);
+        ).to.be.revertedWith(ERRORS.EXECUTOR_INVALID);
       });
 
       it('TestWallet should fail to follow a nonexistent profile with sig', async function () {
@@ -302,7 +302,7 @@ makeSuiteCleanRoom('Following', function () {
               deadline: MAX_UINT256,
             },
           })
-        ).to.be.revertedWith(ERRORS.CALLER_INVALID);
+        ).to.be.revertedWith(ERRORS.EXECUTOR_INVALID);
       });
     });
 

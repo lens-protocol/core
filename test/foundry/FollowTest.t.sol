@@ -6,8 +6,8 @@ import './base/BaseTest.t.sol';
 contract FollowTest is BaseTest {
     // Negatives
     function testFollowNotExecutorFails() public {
-        vm.prank(otherUser);
-        vm.expectRevert(Errors.CallerInvalid.selector);
+        vm.prank(otherSigner);
+        vm.expectRevert(Errors.ExecutorInvalid.selector);
         hub.follow(me, _toUint256Array(firstProfileId), _toBytesArray(''));
     }
 
@@ -34,9 +34,9 @@ contract FollowTest is BaseTest {
     }
 
     function testExecutorFollow() public {
-        hub.setDelegatedExecutorApproval(otherUser, true);
+        hub.setDelegatedExecutorApproval(otherSigner, true);
 
-        vm.prank(otherUser);
+        vm.prank(otherSigner);
         uint256[] memory nftIds = hub.follow(
             me,
             _toUint256Array(firstProfileId),
@@ -59,9 +59,31 @@ contract FollowTest is BaseTest {
         uint256 deadline = type(uint256).max;
         bytes32 digest = _getFollowTypedDataHash(profileIds, datas, nonce, deadline);
 
-        vm.expectRevert(Errors.CallerInvalid.selector);
+        vm.expectRevert(Errors.SignatureInvalid.selector);
         hub.followWithSig(
             DataTypes.FollowWithSigData({
+                delegatedSigner: address(0),
+                follower: profileOwner,
+                profileIds: profileIds,
+                datas: datas,
+                sig: _getSigStruct(otherSignerKey, digest, deadline)
+            })
+        );
+    }
+
+    function testFollowWithSigNotExecutorFails() public {
+        uint256[] memory profileIds = new uint256[](1);
+        profileIds[0] = firstProfileId;
+        bytes[] memory datas = new bytes[](1);
+        datas[0] = '';
+        uint256 nonce = 0;
+        uint256 deadline = type(uint256).max;
+        bytes32 digest = _getFollowTypedDataHash(profileIds, datas, nonce, deadline);
+
+        vm.expectRevert(Errors.ExecutorInvalid.selector);
+        hub.followWithSig(
+            DataTypes.FollowWithSigData({
+                delegatedSigner: otherSigner,
                 follower: profileOwner,
                 profileIds: profileIds,
                 datas: datas,
@@ -84,6 +106,7 @@ contract FollowTest is BaseTest {
 
         uint256[] memory nftIds = hub.followWithSig(
             DataTypes.FollowWithSigData({
+                delegatedSigner: address(0),
                 follower: otherSigner,
                 profileIds: profileIds,
                 datas: datas,
@@ -118,6 +141,7 @@ contract FollowTest is BaseTest {
 
         uint256[] memory nftIds = hub.followWithSig(
             DataTypes.FollowWithSigData({
+                delegatedSigner: profileOwner,
                 follower: otherSigner,
                 profileIds: profileIds,
                 datas: datas,

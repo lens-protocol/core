@@ -158,9 +158,7 @@ library GeneralHelpers {
         return owner;
     }
 
-    function validateOnBehalfOfOrExecutor(address onBehalfOf, address executor) internal view {
-        // TODO: Test putting this check in the below assembly block instead for gas.
-        if (onBehalfOf == executor) return;
+    function validateDelegatedExecutor(address onBehalfOf, address executor) internal view {
         bool invalidExecutor;
         assembly {
             //If the caller is not the owner, check if they are an approved delegated executor.
@@ -169,10 +167,8 @@ library GeneralHelpers {
             mstore(32, keccak256(0, 64))
             mstore(0, executor)
             let slot := keccak256(0, 64)
-
             invalidExecutor := iszero(sload(slot))
         }
-        // TODO: Maybe introduce a better error, this isn't necessarily the caller.
-        if (invalidExecutor) revert Errors.CallerInvalid();
+        if (invalidExecutor) revert Errors.ExecutorInvalid();
     }
 }
