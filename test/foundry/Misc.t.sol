@@ -2,6 +2,7 @@
 pragma solidity ^0.8.13;
 
 import './base/BaseTest.t.sol';
+import '../../contracts/mocks/MockFollowModule.sol';
 
 contract MiscTest is BaseTest {
     // Negatives
@@ -25,37 +26,65 @@ contract MiscTest is BaseTest {
         hub.setFollowNFTURI(firstProfileId, mockURI);
     }
 
+    function testSetProfileMetadataURINotExecutorFails() public {
+        vm.expectRevert(Errors.ExecutorInvalid.selector);
+        hub.setProfileMetadataURI(firstProfileId, mockURI);
+    }
+
     // Positives
     function testExecutorSetFollowModule() public {
+        assertEq(hub.getFollowModule(firstProfileId), address(0));
         vm.prank(profileOwner);
         hub.setDelegatedExecutorApproval(otherSigner, true);
 
+        address mockFollowModule = address(new MockFollowModule());
+
+        vm.prank(governance);
+        hub.whitelistFollowModule(mockFollowModule, true);
+
         vm.prank(otherSigner);
-        hub.setFollowModule(firstProfileId, address(0), '');
+        hub.setFollowModule(firstProfileId, mockFollowModule, abi.encode(1));
+        assertEq(hub.getFollowModule(firstProfileId), mockFollowModule);
     }
 
     function testExecutorSetDefaultProfile() public {
+        assertEq(hub.getDefaultProfile(profileOwner), 0);
         vm.prank(profileOwner);
         hub.setDelegatedExecutorApproval(otherSigner, true);
 
         vm.prank(otherSigner);
         hub.setDefaultProfile(profileOwner, firstProfileId);
+        assertEq(hub.getDefaultProfile(profileOwner), firstProfileId);
     }
 
     function testExecutorSetProfileImageURI() public {
+        assertEq(hub.getProfileImageURI(firstProfileId), mockURI);
         vm.prank(profileOwner);
         hub.setDelegatedExecutorApproval(otherSigner, true);
 
         vm.prank(otherSigner);
-        hub.setProfileImageURI(firstProfileId, mockURI);
+        hub.setProfileImageURI(firstProfileId, 'test');
+        assertEq(hub.getProfileImageURI(firstProfileId), 'test');
     }
 
     function testExecutorSetFollowNFTURI() public {
+        assertEq(hub.getFollowNFTURI(firstProfileId), mockURI);
         vm.prank(profileOwner);
         hub.setDelegatedExecutorApproval(otherSigner, true);
 
         vm.prank(otherSigner);
-        hub.setFollowNFTURI(firstProfileId, mockURI);
+        hub.setFollowNFTURI(firstProfileId, 'test');
+        assertEq(hub.getFollowNFTURI(firstProfileId), 'test');
+    }
+
+    function testExecutorSetProfileMetadataURI() public {
+        assertEq(hub.getProfileMetadataURI(firstProfileId), '');
+        vm.prank(profileOwner);
+        hub.setDelegatedExecutorApproval(otherSigner, true);
+
+        vm.prank(otherSigner);
+        hub.setProfileMetadataURI(firstProfileId, mockURI);
+        assertEq(hub.getProfileMetadataURI(firstProfileId), mockURI);
     }
 
     // Meta-tx
