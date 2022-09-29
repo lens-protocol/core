@@ -411,7 +411,7 @@ interface ILensHub {
      *
      * @return uint256 The default profile id, which will be 0 if not mapped.
      */
-    function defaultProfile(address wallet) external view returns (uint256);
+    function getDefaultProfile(address wallet) external view returns (uint256);
 
     /**
      * @notice Returns the metadata URI for a given profile

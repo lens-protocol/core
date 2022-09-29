@@ -475,7 +475,7 @@ contract LensHub is LensNFTBase, VersionedInitializable, LensMultiState, LensHub
     }
 
     /// @inheritdoc ILensHub
-    function defaultProfile(address wallet) external view override returns (uint256) {
+    function getDefaultProfile(address wallet) external view override returns (uint256) {
         return _defaultProfileByAddress[wallet];
     }
 
