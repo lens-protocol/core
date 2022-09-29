@@ -84,7 +84,7 @@ contract LensHub is LensNFTBase, VersionedInitializable, LensMultiState, LensHub
 
     /// @inheritdoc ILensHub
     function setState(DataTypes.ProtocolState newState) external override {
-        GeneralLib.setStateFull(newState);
+        GeneralLib.setState(newState);
     }
 
     ///@inheritdoc ILensHub
@@ -186,6 +186,15 @@ contract LensHub is LensNFTBase, VersionedInitializable, LensMultiState, LensHub
         whenNotPaused
     {
         GeneralLib.setProfileMetadataURI(profileId, metadataURI);
+    }
+
+    /// @inheritdoc ILensHub
+    function setProfileMetadataURIWithSig(DataTypes.SetProfileMetadataURIWithSigData calldata vars)
+        external
+        override
+        whenNotPaused
+    {
+        GeneralLib.setProfileMetadataURIWithSig(vars);
     }
 
     /// @inheritdoc ILensHub

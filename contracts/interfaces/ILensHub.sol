@@ -113,7 +113,8 @@ interface ILensHub {
     function setDefaultProfile(address onBehalfOf, uint256 profileId) external;
 
     /**
-     * @notice Sets the mapping between wallet and its main profile identity via signature with the specified parameters.
+     * @notice Sets the mapping between wallet and its main profile identity via signature with the specified parameters. The 
+     * signer must either be the profile owner or a delegated executor.
      *
      * @param vars A SetDefaultProfileWithSigData struct, including the regular parameters and an EIP712Signature struct.
      */
@@ -130,7 +131,15 @@ interface ILensHub {
     function setProfileMetadataURI(uint256 profileId, string calldata metadataURI) external;
 
     /**
-     * @notice Sets a profile's follow module, must be called by the profile owner.
+     * @notice Sets the metadata URI via signature for the given profile with the specified parameters. The signer must
+     * either be the profile owner or a delegated executor.
+     * 
+     * @param vars A SetProfileMetadataURIWithSigData struct, including the regular parameters and an EIP712Signature struct.
+     */
+    function setProfileMetadataURIWithSig(DataTypes.SetProfileMetadataURIWithSigData calldata vars) external;
+
+    /**
+     * @notice Sets the follow module for the given profile. Must be called by the profile owner.
      *
      * @param profileId The token ID of the profile to set the follow module for.
      * @param followModule The follow module to set for the given profile, must be whitelisted.
@@ -143,7 +152,8 @@ interface ILensHub {
     ) external;
 
     /**
-     * @notice Sets a profile's follow module via signature with the specified parameters.
+     * @notice Sets the follow module via signature for the given profile with the specified parameters. The signer must
+     * either be the profile owner or a delegated executor.
      *
      * @param vars A SetFollowModuleWithSigData struct, including the regular parameters and an EIP712Signature struct.
      */
@@ -183,7 +193,7 @@ interface ILensHub {
     ) external;
 
     /**
-     * @notice Sets a profile's URI, which is reflected in the `tokenURI()` function.
+     * @notice Sets a profile's image URI, which is reflected in the `tokenURI()` function.
      *
      * @param profileId The token ID of the profile of the profile to set the URI for.
      * @param imageURI The URI to set for the given profile.
@@ -191,7 +201,8 @@ interface ILensHub {
     function setProfileImageURI(uint256 profileId, string calldata imageURI) external;
 
     /**
-     * @notice Sets a profile's URI via signature with the specified parameters.
+     * @notice Sets the image URI via signature for the given profile with the specified parameters. The signer must
+     * either be the profile owner or a delegated executor.
      *
      * @param vars A SetProfileImageURIWithSigData struct, including the regular parameters and an EIP712Signature struct.
      */
@@ -207,7 +218,8 @@ interface ILensHub {
     function setFollowNFTURI(uint256 profileId, string calldata followNFTURI) external;
 
     /**
-     * @notice Sets a followNFT URI via signature with the specified parameters.
+     * @notice Sets a followNFT URI via signature for the given profile with the specified parameters. The signer must
+     * either be the profile owner or a delegated executor.
      *
      * @param vars A SetFollowNFTURIWithSigData struct, including the regular parameters and an EIP712Signature struct.
      */
@@ -223,7 +235,8 @@ interface ILensHub {
     function post(DataTypes.PostData calldata vars) external returns (uint256);
 
     /**
-     * @notice Publishes a post to a given profile via signature with the specified parameters.
+     * @notice Publishes a post to a given profile via signature with the specified parameters. The signer must
+     * either be the profile owner or a delegated executor.
      *
      * @param vars A PostWithSigData struct containing the regular parameters and an EIP712Signature struct.
      *
@@ -241,7 +254,8 @@ interface ILensHub {
     function comment(DataTypes.CommentData calldata vars) external returns (uint256);
 
     /**
-     * @notice Publishes a comment to a given profile via signature with the specified parameters.
+     * @notice Publishes a comment to a given profile via signature with the specified parameters. The signer must
+     * either be the profile owner or a delegated executor.
      *
      * @param vars A CommentWithSigData struct containing the regular parameters and an EIP712Signature struct.
      *
@@ -259,7 +273,8 @@ interface ILensHub {
     function mirror(DataTypes.MirrorData calldata vars) external returns (uint256);
 
     /**
-     * @notice Publishes a mirror to a given profile via signature with the specified parameters.
+     * @notice Publishes a mirror to a given profile via signature with the specified parameters. The signer must
+     * either be the profile owner or a delegated executor.
      *
      * @param vars A MirrorWithSigData struct containing the regular parameters and an EIP712Signature struct.
      *
@@ -285,7 +300,8 @@ interface ILensHub {
     ) external returns (uint256[] memory);
 
     /**
-     * @notice Follows a given profile via signature with the specified parameters.
+     * @notice Follows a given profile via signature with the specified parameters. The signer must either be the follower
+     * or a delegated executor.
      *
      * @param vars A FollowWithSigData struct containing the regular parameters as well as the signing follower's address
      * and an EIP712Signature struct.
@@ -314,7 +330,8 @@ interface ILensHub {
     ) external returns (uint256);
 
     /**
-     * @notice Collects a given publication via signature with the specified parameters.
+     * @notice Collects a given publication via signature with the specified parameters. The signer must either be the collector
+     * or a delegated executor.
      *
      * @param vars A CollectWithSigData struct containing the regular parameters as well as the collector's address and
      * an EIP712Signature struct.

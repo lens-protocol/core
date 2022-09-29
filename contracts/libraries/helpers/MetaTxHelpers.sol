@@ -100,6 +100,27 @@ library MetaTxHelpers {
         );
     }
 
+    function baseSetProfileMetadataURIWithSig(
+        address signer,
+        DataTypes.SetProfileMetadataURIWithSigData calldata vars
+    ) external {
+        _validateRecoveredAddress(
+            _calculateDigest(
+                keccak256(
+                    abi.encode(
+                        SET_PROFILE_METADATA_URI_WITH_SIG_TYPEHASH,
+                        vars.profileId,
+                        keccak256(bytes(vars.metadataURI)),
+                        _sigNonces(signer),
+                        vars.sig.deadline
+                    )
+                )
+            ),
+            signer,
+            vars.sig
+        );
+    }
+
     function baseSetFollowModuleWithSig(
         address signer,
         DataTypes.SetFollowModuleWithSigData calldata vars

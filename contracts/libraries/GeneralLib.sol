@@ -83,7 +83,7 @@ library GeneralLib {
      *
      * @param newState The new protocol state to set.
      */
-    function setStateFull(DataTypes.ProtocolState newState) external {
+    function setState(DataTypes.ProtocolState newState) external {
         address emergencyAdmin;
         address governance;
         DataTypes.ProtocolState prevState;
@@ -216,6 +216,18 @@ library GeneralLib {
     function setProfileMetadataURI(uint256 profileId, string calldata metadataURI) external {
         _validateCallerIsOwnerOrDispatcherOrExecutor(profileId);
         _setProfileMetadataURI(profileId, metadataURI);
+    }
+
+    function setProfileMetadataURIWithSig(DataTypes.SetProfileMetadataURIWithSigData calldata vars)
+        external
+    {
+        uint256 profileId = vars.profileId;
+        address signer = _getOriginatorOrDelegatedExecutorSigner(
+            GeneralHelpers.unsafeOwnerOf(profileId),
+            vars.delegatedSigner
+        );
+        MetaTxHelpers.baseSetProfileMetadataURIWithSig(signer, vars);
+        _setProfileMetadataURI(vars.profileId, vars.metadataURI);
     }
 
     /**

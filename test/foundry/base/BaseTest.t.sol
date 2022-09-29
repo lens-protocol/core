@@ -4,6 +4,24 @@ pragma solidity ^0.8.13;
 import './TestSetup.t.sol';
 
 contract BaseTest is TestSetup {
+    function _getSetProfileMetadataURITypedDataHash(
+        uint256 profileId,
+        string memory metadataURI,
+        uint256 nonce,
+        uint256 deadline
+    ) internal view returns (bytes32) {
+        bytes32 structHash = keccak256(
+            abi.encode(
+                SET_PROFILE_METADATA_URI_WITH_SIG_TYPEHASH,
+                profileId,
+                keccak256(bytes(metadataURI)),
+                nonce,
+                deadline
+            )
+        );
+        return _calculateDigest(structHash);
+    }
+
     function _getSetFollowNFTURITypedDatahash(
         uint256 profileId,
         string memory followNFTURI,

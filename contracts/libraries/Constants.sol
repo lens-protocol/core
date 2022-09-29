@@ -111,7 +111,7 @@ bytes32 constant FOLLOW_WITH_SIG_TYPEHASH = keccak256(
 bytes32 constant COLLECT_WITH_SIG_TYPEHASH = keccak256(
     'CollectWithSig(uint256 profileId,uint256 pubId,bytes data,uint256 nonce,uint256 deadline)'
 );
-bytes32 constant SET_PROFILE_METADATA_WITH_SIG_TYPEHASH = keccak256(
+bytes32 constant SET_PROFILE_METADATA_URI_WITH_SIG_TYPEHASH = keccak256(
     'SetProfileMetadataURIWithSig(uint256 profileId,string metadata,uint256 nonce,uint256 deadline)'
 );
 
