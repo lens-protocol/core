@@ -31,4 +31,5 @@ abstract contract LensHubStorage {
 
     // new storage
     mapping(address => mapping(address => bool)) internal _delegatedExecutorApproval; // slot 25
+    mapping(uint256 => string) internal _metadataByProfile; // slot 26
 }

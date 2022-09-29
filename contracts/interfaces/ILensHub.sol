@@ -104,7 +104,8 @@ interface ILensHub {
     function createProfile(DataTypes.CreateProfileData calldata vars) external returns (uint256);
 
     /**
-     * @notice Sets the mapping between wallet and its main profile identity.
+     * @notice Sets the mapping between wallet and its main profile identity. Must be called either by the wallet or a
+     * delegated executor.
      *
      * @param onBehalfOf The address to set the default profile on behalf of.
      * @param profileId The token ID of the profile to set as the main profile identity.
@@ -118,6 +119,15 @@ interface ILensHub {
      */
     function setDefaultProfileWithSig(DataTypes.SetDefaultProfileWithSigData calldata vars)
         external;
+
+    /**
+     * @notice Sets the metadata URI for the given profile. Must be called either from the profile owner, a delegated
+     * executor, or the profile's dispatcher.
+     *
+     * @param profileId The token ID of the profile to set the metadata URI for.
+     * @param metadataURI The metadata URI to set for the given profile.
+     */
+    function setProfileMetadataURI(uint256 profileId, string calldata metadataURI) external;
 
     /**
      * @notice Sets a profile's follow module, must be called by the profile owner.
@@ -361,15 +371,6 @@ interface ILensHub {
     function isProfileCreatorWhitelisted(address profileCreator) external view returns (bool);
 
     /**
-     * @notice Returns default profile for a given wallet address
-     *
-     * @param wallet The address to find the default mapping
-     *
-     * @return uint256 The default profile id, which will be 0 if not mapped.
-     */
-    function defaultProfile(address wallet) external view returns (uint256);
-
-    /**
      * @notice Returns whether or not a follow module is whitelisted.
      *
      * @param followModule The address of the follow module to check.
@@ -404,22 +405,49 @@ interface ILensHub {
     function getGovernance() external view returns (address);
 
     /**
-     * @notice Returns the dispatcher associated with a profile.
+     * @notice Returns the default profile for a given wallet address
+     *
+     * @param wallet The address to find the default mapping
+     *
+     * @return uint256 The default profile id, which will be 0 if not mapped.
+     */
+    function defaultProfile(address wallet) external view returns (uint256);
+
+    /**
+     * @notice Returns the metadata URI for a given profile
+     *
+     * @param profileId The token ID of the profile to query the metadata URI for.
+     *
+     * @return string The metadata URI associated with the given profile.
+     */
+    function getProfileMetadataURI(uint256 profileId) external view returns (string memory);
+
+    /**
+     * @notice Returns the dispatcher for a given profile.
      *
      * @param profileId The token ID of the profile to query the dispatcher for.
      *
-     * @return address The dispatcher address associated with the profile.
+     * @return address The dispatcher address associated with the given profile.
      */
     function getDispatcher(uint256 profileId) external view returns (address);
 
     /**
      * @notice Returns the publication count for a given profile.
      *
-     * @param profileId The token ID of the profile to query.
+     * @param profileId The token ID of the profile to query the publication count for.
      *
-     * @return uint256 The number of publications associated with the queried profile.
+     * @return uint256 The number of publications associated with the given profile.
      */
     function getPubCount(uint256 profileId) external view returns (uint256);
+
+    /**
+     * @notice Returns the image URI for a given profile
+     *
+     * @param profileId The token ID of the profile to query the image URI for.
+     *
+     * @return string The image URI associated with the given profile.
+     */
+    function getProfileImageURI(uint256 profileId) external view returns (string memory);
 
     /**
      * @notice Returns the followNFT associated with a given profile, if any.
@@ -445,7 +473,7 @@ interface ILensHub {
      * @param profileId The token ID of the profile that published the publication to query.
      * @param pubId The publication ID of the publication to query.
      *
-     * @return address The address of the collectNFT associated with the queried publication.
+     * @return address The address of the collectNFT associated with the given publication.
      */
     function getCollectNFT(uint256 profileId, uint256 pubId) external view returns (address);
 

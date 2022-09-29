@@ -180,6 +180,15 @@ contract LensHub is LensNFTBase, VersionedInitializable, LensMultiState, LensHub
     }
 
     /// @inheritdoc ILensHub
+    function setProfileMetadataURI(uint256 profileId, string calldata metadataURI)
+        external
+        override
+        whenNotPaused
+    {
+        GeneralLib.setProfileMetadataURI(profileId, metadataURI);
+    }
+
+    /// @inheritdoc ILensHub
     function setFollowModule(
         uint256 profileId,
         address followModule,
@@ -436,11 +445,6 @@ contract LensHub is LensNFTBase, VersionedInitializable, LensMultiState, LensHub
     }
 
     /// @inheritdoc ILensHub
-    function defaultProfile(address wallet) external view override returns (uint256) {
-        return _defaultProfileByAddress[wallet];
-    }
-
-    /// @inheritdoc ILensHub
     function isFollowModuleWhitelisted(address followModule) external view override returns (bool) {
         return _followModuleWhitelisted[followModule];
     }
@@ -471,6 +475,21 @@ contract LensHub is LensNFTBase, VersionedInitializable, LensMultiState, LensHub
     }
 
     /// @inheritdoc ILensHub
+    function defaultProfile(address wallet) external view override returns (uint256) {
+        return _defaultProfileByAddress[wallet];
+    }
+
+    /// @inheritdoc ILensHub
+    function getProfileMetadataURI(uint256 profileId)
+        external
+        view
+        override
+        returns (string memory)
+    {
+        return _metadataByProfile[profileId];
+    }
+
+    /// @inheritdoc ILensHub
     function getDispatcher(uint256 profileId) external view override returns (address) {
         return _dispatcherByProfile[profileId];
     }
@@ -478,6 +497,11 @@ contract LensHub is LensNFTBase, VersionedInitializable, LensMultiState, LensHub
     /// @inheritdoc ILensHub
     function getPubCount(uint256 profileId) external view override returns (uint256) {
         return _profileById[profileId].pubCount;
+    }
+
+    /// @inheritdoc ILensHub
+    function getProfileImageURI(uint256 profileId) external view override returns (string memory) {
+        return _profileById[profileId].imageURI;
     }
 
     /// @inheritdoc ILensHub
