@@ -103,7 +103,7 @@ library MetaTxHelpers {
     function baseSetProfileMetadataURIWithSig(
         address signer,
         DataTypes.SetProfileMetadataURIWithSigData calldata vars
-    ) external {
+    ) internal {
         _validateRecoveredAddress(
             _calculateDigest(
                 keccak256(
