@@ -159,7 +159,7 @@ library DataTypes {
 
     /**
      * @notice A struct containing the parameters required for the `setDelegatedExecutorApprovalWithSig()` function. Parameters
-     * are the same as the regular `setDelegatedExecutorApproval()` function. The signer must be the owner.
+     * are the same as the regular `setDelegatedExecutorApproval()` function. The signer must be the onBehalfOf address.
      *
      * @param onBehalfOf The address the delegated executor is to be granted or revoked approval to act on behalf of.
      * @param executor The executor to set the approval for.

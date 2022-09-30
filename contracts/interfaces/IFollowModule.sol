@@ -28,7 +28,7 @@ interface IFollowModule {
      * @notice Processes a given follow, this can only be called from the LensHub contract.
      *
      * @param follower The follower address.
-     * @param executor The owner or an approved delegated executor.
+     * @param executor The follower or an approved delegated executor.
      * @param profileId The token ID of the profile being followed.
      * @param data Arbitrary data passed by the follower.
      */
