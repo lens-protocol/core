@@ -38,7 +38,7 @@ makeSuiteCleanRoom('Following', function () {
       })
     ).to.not.be.reverted;
   });
-  context('Generic', function () {
+  context.only('Generic', function () {
     context('Negatives', function () {
       it('UserTwo should fail to follow a nonexistent profile', async function () {
         await expect(
@@ -152,6 +152,7 @@ makeSuiteCleanRoom('Following', function () {
         expectEqualArrays(
           await followReturningTokenIds({
             vars: {
+              delegatedSigner: ZERO_ADDRESS,
               follower: testWallet.address,
               profileIds: [FIRST_PROFILE_ID],
               datas: [[]],
@@ -190,7 +191,7 @@ makeSuiteCleanRoom('Following', function () {
     });
   });
 
-  context('Meta-tx', function () {
+  context.only('Meta-tx', function () {
     context('Negatives', function () {
       it('TestWallet should fail to follow with sig with signature deadline mismatch', async function () {
         const nonce = (await lensHub.sigNonces(testWallet.address)).toNumber();
@@ -198,6 +199,7 @@ makeSuiteCleanRoom('Following', function () {
         const { v, r, s } = await getFollowWithSigParts([FIRST_PROFILE_ID], [[]], nonce, '0');
         await expect(
           lensHub.followWithSig({
+            delegatedSigner: ZERO_ADDRESS,
             follower: testWallet.address,
             profileIds: [FIRST_PROFILE_ID],
             datas: [[]],
@@ -208,7 +210,7 @@ makeSuiteCleanRoom('Following', function () {
               deadline: MAX_UINT256,
             },
           })
-        ).to.be.revertedWith(ERRORS.EXECUTOR_INVALID);
+        ).to.be.revertedWith(ERRORS.SIGNATURE_INVALID);
       });
 
       it('TestWallet should fail to follow with sig with invalid deadline', async function () {
@@ -217,6 +219,7 @@ makeSuiteCleanRoom('Following', function () {
         const { v, r, s } = await getFollowWithSigParts([FIRST_PROFILE_ID], [[]], nonce, '0');
         await expect(
           lensHub.followWithSig({
+            delegatedSigner: ZERO_ADDRESS,
             follower: testWallet.address,
             profileIds: [FIRST_PROFILE_ID],
             datas: [[]],
@@ -241,6 +244,7 @@ makeSuiteCleanRoom('Following', function () {
         );
         await expect(
           lensHub.followWithSig({
+            delegatedSigner: ZERO_ADDRESS,
             follower: testWallet.address,
             profileIds: [FIRST_PROFILE_ID],
             datas: [[]],
@@ -251,7 +255,7 @@ makeSuiteCleanRoom('Following', function () {
               deadline: MAX_UINT256,
             },
           })
-        ).to.be.revertedWith(ERRORS.EXECUTOR_INVALID);
+        ).to.be.revertedWith(ERRORS.SIGNATURE_INVALID);
       });
 
       it('TestWallet should fail to follow a nonexistent profile with sig', async function () {
@@ -265,6 +269,7 @@ makeSuiteCleanRoom('Following', function () {
         );
         await expect(
           lensHub.followWithSig({
+            delegatedSigner: ZERO_ADDRESS,
             follower: testWallet.address,
             profileIds: [FIRST_PROFILE_ID + 1],
             datas: [[]],
@@ -292,6 +297,7 @@ makeSuiteCleanRoom('Following', function () {
 
         await expect(
           lensHub.followWithSig({
+            delegatedSigner: ZERO_ADDRESS,
             follower: testWallet.address,
             profileIds: [FIRST_PROFILE_ID],
             datas: [[]],
@@ -302,11 +308,11 @@ makeSuiteCleanRoom('Following', function () {
               deadline: MAX_UINT256,
             },
           })
-        ).to.be.revertedWith(ERRORS.EXECUTOR_INVALID);
+        ).to.be.revertedWith(ERRORS.SIGNATURE_INVALID);
       });
     });
 
-    context('Scenarios', function () {
+    context.only('Scenarios', function () {
       it('TestWallet should follow profile 1 with sig, receive a follow NFT with ID 1, follow NFT name and symbol should be correct', async function () {
         const nonce = (await lensHub.sigNonces(testWallet.address)).toNumber();
 
@@ -319,6 +325,7 @@ makeSuiteCleanRoom('Following', function () {
 
         await expect(
           lensHub.followWithSig({
+            delegatedSigner: ZERO_ADDRESS,
             follower: testWallet.address,
             profileIds: [FIRST_PROFILE_ID],
             datas: [[]],
@@ -353,6 +360,7 @@ makeSuiteCleanRoom('Following', function () {
 
         await expect(
           lensHub.followWithSig({
+            delegatedSigner: ZERO_ADDRESS,
             follower: testWallet.address,
             profileIds: [FIRST_PROFILE_ID, FIRST_PROFILE_ID],
             datas: [[], []],
