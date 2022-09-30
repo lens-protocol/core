@@ -205,12 +205,10 @@ library GeneralLib {
         external
     {
         uint256 profileId = vars.profileId;
-        address signer = _getOriginatorOrDelegatedExecutorSigner(
-            GeneralHelpers.unsafeOwnerOf(profileId),
-            vars.delegatedSigner
-        );
+        address wallet = vars.wallet;
+        address signer = _getOriginatorOrDelegatedExecutorSigner(wallet, vars.delegatedSigner);
         MetaTxHelpers.baseSetDefaultProfileWithSig(signer, vars);
-        _setDefaultProfile(vars.wallet, vars.profileId);
+        _setDefaultProfile(wallet, profileId);
     }
 
     function setProfileMetadataURI(uint256 profileId, string calldata metadataURI) external {
@@ -688,7 +686,7 @@ library GeneralLib {
     }
 
     function _setDefaultProfile(address wallet, uint256 profileId) private {
-        if (profileId > 0 && wallet != GeneralHelpers.unsafeOwnerOf(profileId))
+        if (profileId != 0 && wallet != GeneralHelpers.unsafeOwnerOf(profileId))
             revert Errors.NotProfileOwner();
 
         // Store the default profile in the appropriate slot for the given wallet.
