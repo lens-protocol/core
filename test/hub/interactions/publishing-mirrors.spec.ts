@@ -26,7 +26,7 @@ import {
 } from '../../__setup.spec';
 
 makeSuiteCleanRoom('Publishing mirrors', function () {
-  context.only('Generic', function () {
+  context('Generic', function () {
     beforeEach(async function () {
       await expect(
         lensHub.createProfile({
@@ -291,7 +291,7 @@ makeSuiteCleanRoom('Publishing mirrors', function () {
     });
   });
 
-  context.only('Meta-tx', function () {
+  context('Meta-tx', function () {
     beforeEach(async function () {
       await expect(
         lensHub.connect(testWallet).createProfile({

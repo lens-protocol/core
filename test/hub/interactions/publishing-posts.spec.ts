@@ -201,6 +201,7 @@ makeSuiteCleanRoom('Publishing Posts', function () {
         expect(
           await postReturningTokenId({
             vars: {
+              delegatedSigner: ZERO_ADDRESS,
               profileId: FIRST_PROFILE_ID + 1,
               contentURI: MOCK_URI,
               collectModule: freeCollectModule.address,
@@ -315,6 +316,7 @@ makeSuiteCleanRoom('Publishing Posts', function () {
 
         await expect(
           lensHub.postWithSig({
+            delegatedSigner: ZERO_ADDRESS,
             profileId: FIRST_PROFILE_ID,
             contentURI: MOCK_URI,
             collectModule: ZERO_ADDRESS,
@@ -328,7 +330,7 @@ makeSuiteCleanRoom('Publishing Posts', function () {
               deadline: MAX_UINT256,
             },
           })
-        ).to.be.revertedWith(ERRORS.EXECUTOR_INVALID);
+        ).to.be.revertedWith(ERRORS.SIGNATURE_INVALID);
       });
 
       it('Testwallet should fail to post with sig with invalid deadline', async function () {
@@ -353,6 +355,7 @@ makeSuiteCleanRoom('Publishing Posts', function () {
 
         await expect(
           lensHub.postWithSig({
+            delegatedSigner: ZERO_ADDRESS,
             profileId: FIRST_PROFILE_ID,
             contentURI: MOCK_URI,
             collectModule: ZERO_ADDRESS,
@@ -391,6 +394,7 @@ makeSuiteCleanRoom('Publishing Posts', function () {
 
         await expect(
           lensHub.postWithSig({
+            delegatedSigner: ZERO_ADDRESS,
             profileId: FIRST_PROFILE_ID,
             contentURI: MOCK_URI,
             collectModule: ZERO_ADDRESS,
@@ -404,7 +408,7 @@ makeSuiteCleanRoom('Publishing Posts', function () {
               deadline: MAX_UINT256,
             },
           })
-        ).to.be.revertedWith(ERRORS.EXECUTOR_INVALID);
+        ).to.be.revertedWith(ERRORS.SIGNATURE_INVALID);
       });
 
       it('Testwallet should fail to post with sig with an unwhitelisted collect module', async function () {
@@ -425,6 +429,7 @@ makeSuiteCleanRoom('Publishing Posts', function () {
 
         await expect(
           lensHub.postWithSig({
+            delegatedSigner: ZERO_ADDRESS,
             profileId: FIRST_PROFILE_ID,
             contentURI: MOCK_URI,
             collectModule: userAddress,
@@ -463,6 +468,7 @@ makeSuiteCleanRoom('Publishing Posts', function () {
 
         await expect(
           lensHub.postWithSig({
+            delegatedSigner: ZERO_ADDRESS,
             profileId: FIRST_PROFILE_ID,
             contentURI: MOCK_URI,
             collectModule: freeCollectModule.address,
@@ -502,6 +508,7 @@ makeSuiteCleanRoom('Publishing Posts', function () {
 
         await expect(
           lensHub.postWithSig({
+            delegatedSigner: ZERO_ADDRESS,
             profileId: FIRST_PROFILE_ID,
             contentURI: MOCK_URI,
             collectModule: freeCollectModule.address,
@@ -515,7 +522,7 @@ makeSuiteCleanRoom('Publishing Posts', function () {
               deadline: MAX_UINT256,
             },
           })
-        ).to.be.revertedWith(ERRORS.EXECUTOR_INVALID);
+        ).to.be.revertedWith(ERRORS.SIGNATURE_INVALID);
       });
 
       it('TestWallet should deploy bad EIP1271 implementer, transfer profile to it, then fail to post with sig', async function () {
@@ -542,6 +549,7 @@ makeSuiteCleanRoom('Publishing Posts', function () {
 
         await expect(
           lensHub.postWithSig({
+            delegatedSigner: ZERO_ADDRESS,
             profileId: FIRST_PROFILE_ID,
             contentURI: MOCK_URI,
             collectModule: freeCollectModule.address,
@@ -582,6 +590,7 @@ makeSuiteCleanRoom('Publishing Posts', function () {
 
         await expect(
           lensHub.postWithSig({
+            delegatedSigner: ZERO_ADDRESS,
             profileId: FIRST_PROFILE_ID,
             contentURI: MOCK_URI,
             collectModule: freeCollectModule.address,
@@ -634,6 +643,7 @@ makeSuiteCleanRoom('Publishing Posts', function () {
 
         await expect(
           lensHub.postWithSig({
+            delegatedSigner: ZERO_ADDRESS,
             profileId: FIRST_PROFILE_ID,
             contentURI: MOCK_URI,
             collectModule: freeCollectModule.address,

@@ -31,7 +31,7 @@ import {
 } from '../../__setup.spec';
 
 makeSuiteCleanRoom('Multi-State Hub', function () {
-  context.only('Common', function () {
+  context('Common', function () {
     context('Negatives', function () {
       it('User should fail to set the state on the hub', async function () {
         await expect(lensHub.setState(ProtocolState.Paused)).to.be.revertedWith(
@@ -122,7 +122,7 @@ makeSuiteCleanRoom('Multi-State Hub', function () {
     });
   });
 
-  context.only('Paused State', function () {
+  context('Paused State', function () {
     context('Scenarios', async function () {
       it('User should create a profile, governance should pause the hub, transferring the profile should fail', async function () {
         await expect(
@@ -1144,7 +1144,7 @@ makeSuiteCleanRoom('Multi-State Hub', function () {
     });
   });
 
-  context.only('PublishingPaused State', function () {
+  context('PublishingPaused State', function () {
     context('Scenarios', async function () {
       it('Governance should pause publishing, profile creation should work', async function () {
         await expect(

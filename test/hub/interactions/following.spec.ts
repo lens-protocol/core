@@ -38,7 +38,7 @@ makeSuiteCleanRoom('Following', function () {
       })
     ).to.not.be.reverted;
   });
-  context.only('Generic', function () {
+  context('Generic', function () {
     context('Negatives', function () {
       it('UserTwo should fail to follow a nonexistent profile', async function () {
         await expect(
@@ -191,7 +191,7 @@ makeSuiteCleanRoom('Following', function () {
     });
   });
 
-  context.only('Meta-tx', function () {
+  context('Meta-tx', function () {
     context('Negatives', function () {
       it('TestWallet should fail to follow with sig with signature deadline mismatch', async function () {
         const nonce = (await lensHub.sigNonces(testWallet.address)).toNumber();
@@ -312,7 +312,7 @@ makeSuiteCleanRoom('Following', function () {
       });
     });
 
-    context.only('Scenarios', function () {
+    context('Scenarios', function () {
       it('TestWallet should follow profile 1 with sig, receive a follow NFT with ID 1, follow NFT name and symbol should be correct', async function () {
         const nonce = (await lensHub.sigNonces(testWallet.address)).toNumber();
 
