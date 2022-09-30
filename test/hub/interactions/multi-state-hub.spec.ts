@@ -31,7 +31,7 @@ import {
 } from '../../__setup.spec';
 
 makeSuiteCleanRoom('Multi-State Hub', function () {
-  context('Common', function () {
+  context.only('Common', function () {
     context('Negatives', function () {
       it('User should fail to set the state on the hub', async function () {
         await expect(lensHub.setState(ProtocolState.Paused)).to.be.revertedWith(
@@ -122,7 +122,7 @@ makeSuiteCleanRoom('Multi-State Hub', function () {
     });
   });
 
-  context('Paused State', function () {
+  context.only('Paused State', function () {
     context('Scenarios', async function () {
       it('User should create a profile, governance should pause the hub, transferring the profile should fail', async function () {
         await expect(
@@ -226,6 +226,7 @@ makeSuiteCleanRoom('Multi-State Hub', function () {
 
         await expect(
           lensHub.setFollowModuleWithSig({
+            delegatedSigner: ZERO_ADDRESS,
             profileId: FIRST_PROFILE_ID,
             followModule: ZERO_ADDRESS,
             followModuleInitData: [],
@@ -244,6 +245,7 @@ makeSuiteCleanRoom('Multi-State Hub', function () {
 
         await expect(
           lensHub.setFollowModuleWithSig({
+            delegatedSigner: ZERO_ADDRESS,
             profileId: FIRST_PROFILE_ID,
             followModule: ZERO_ADDRESS,
             followModuleInitData: [],
@@ -384,6 +386,7 @@ makeSuiteCleanRoom('Multi-State Hub', function () {
 
         await expect(
           lensHub.setProfileImageURIWithSig({
+            delegatedSigner: ZERO_ADDRESS,
             profileId: FIRST_PROFILE_ID,
             imageURI: MOCK_URI,
             sig: {
@@ -401,6 +404,7 @@ makeSuiteCleanRoom('Multi-State Hub', function () {
 
         await expect(
           lensHub.setProfileImageURIWithSig({
+            delegatedSigner: ZERO_ADDRESS,
             profileId: FIRST_PROFILE_ID,
             imageURI: MOCK_URI,
             sig: {
@@ -462,6 +466,7 @@ makeSuiteCleanRoom('Multi-State Hub', function () {
 
         await expect(
           lensHub.setFollowNFTURIWithSig({
+            delegatedSigner: ZERO_ADDRESS,
             profileId: FIRST_PROFILE_ID,
             followNFTURI: MOCK_URI,
             sig: {
@@ -479,6 +484,7 @@ makeSuiteCleanRoom('Multi-State Hub', function () {
 
         await expect(
           lensHub.setFollowNFTURIWithSig({
+            delegatedSigner: ZERO_ADDRESS,
             profileId: FIRST_PROFILE_ID,
             followNFTURI: MOCK_URI,
             sig: {
@@ -571,6 +577,7 @@ makeSuiteCleanRoom('Multi-State Hub', function () {
 
         await expect(
           lensHub.postWithSig({
+            delegatedSigner: ZERO_ADDRESS,
             profileId: FIRST_PROFILE_ID,
             contentURI: MOCK_URI,
             collectModule: freeCollectModule.address,
@@ -592,6 +599,7 @@ makeSuiteCleanRoom('Multi-State Hub', function () {
 
         await expect(
           lensHub.postWithSig({
+            delegatedSigner: ZERO_ADDRESS,
             profileId: FIRST_PROFILE_ID,
             contentURI: MOCK_URI,
             collectModule: freeCollectModule.address,
@@ -720,6 +728,7 @@ makeSuiteCleanRoom('Multi-State Hub', function () {
 
         await expect(
           lensHub.commentWithSig({
+            delegatedSigner: ZERO_ADDRESS,
             profileId: FIRST_PROFILE_ID,
             contentURI: MOCK_URI,
             profileIdPointed: FIRST_PROFILE_ID,
@@ -744,6 +753,7 @@ makeSuiteCleanRoom('Multi-State Hub', function () {
 
         await expect(
           lensHub.commentWithSig({
+            delegatedSigner: ZERO_ADDRESS,
             profileId: FIRST_PROFILE_ID,
             contentURI: MOCK_URI,
             profileIdPointed: FIRST_PROFILE_ID,
@@ -865,6 +875,7 @@ makeSuiteCleanRoom('Multi-State Hub', function () {
 
         await expect(
           lensHub.mirrorWithSig({
+            delegatedSigner: ZERO_ADDRESS,
             profileId: FIRST_PROFILE_ID,
             profileIdPointed: FIRST_PROFILE_ID,
             pubIdPointed: '1',
@@ -886,6 +897,7 @@ makeSuiteCleanRoom('Multi-State Hub', function () {
 
         await expect(
           lensHub.mirrorWithSig({
+            delegatedSigner: ZERO_ADDRESS,
             profileId: FIRST_PROFILE_ID,
             profileIdPointed: FIRST_PROFILE_ID,
             pubIdPointed: '1',
@@ -975,6 +987,7 @@ makeSuiteCleanRoom('Multi-State Hub', function () {
 
         await expect(
           lensHub.followWithSig({
+            delegatedSigner: ZERO_ADDRESS,
             follower: testWallet.address,
             profileIds: [FIRST_PROFILE_ID],
             datas: [[]],
@@ -993,6 +1006,7 @@ makeSuiteCleanRoom('Multi-State Hub', function () {
 
         await expect(
           lensHub.followWithSig({
+            delegatedSigner: ZERO_ADDRESS,
             follower: testWallet.address,
             profileIds: [FIRST_PROFILE_ID],
             datas: [[]],
@@ -1093,6 +1107,7 @@ makeSuiteCleanRoom('Multi-State Hub', function () {
 
         await expect(
           lensHub.collectWithSig({
+            delegatedSigner: ZERO_ADDRESS,
             collector: testWallet.address,
             profileId: FIRST_PROFILE_ID,
             pubId: '1',
@@ -1112,6 +1127,7 @@ makeSuiteCleanRoom('Multi-State Hub', function () {
 
         await expect(
           lensHub.collectWithSig({
+            delegatedSigner: ZERO_ADDRESS,
             collector: testWallet.address,
             profileId: FIRST_PROFILE_ID,
             pubId: '1',
@@ -1128,7 +1144,7 @@ makeSuiteCleanRoom('Multi-State Hub', function () {
     });
   });
 
-  context('PublishingPaused State', function () {
+  context.only('PublishingPaused State', function () {
     context('Scenarios', async function () {
       it('Governance should pause publishing, profile creation should work', async function () {
         await expect(
@@ -1196,6 +1212,7 @@ makeSuiteCleanRoom('Multi-State Hub', function () {
 
         await expect(
           lensHub.setFollowModuleWithSig({
+            delegatedSigner: ZERO_ADDRESS,
             profileId: FIRST_PROFILE_ID,
             followModule: ZERO_ADDRESS,
             followModuleInitData: [],
@@ -1311,6 +1328,7 @@ makeSuiteCleanRoom('Multi-State Hub', function () {
 
         await expect(
           lensHub.setProfileImageURIWithSig({
+            delegatedSigner: ZERO_ADDRESS,
             profileId: FIRST_PROFILE_ID,
             imageURI: MOCK_URI,
             sig: {
@@ -1407,6 +1425,7 @@ makeSuiteCleanRoom('Multi-State Hub', function () {
 
         await expect(
           lensHub.postWithSig({
+            delegatedSigner: ZERO_ADDRESS,
             profileId: FIRST_PROFILE_ID,
             contentURI: MOCK_URI,
             collectModule: freeCollectModule.address,
@@ -1428,6 +1447,7 @@ makeSuiteCleanRoom('Multi-State Hub', function () {
 
         await expect(
           lensHub.postWithSig({
+            delegatedSigner: ZERO_ADDRESS,
             profileId: FIRST_PROFILE_ID,
             contentURI: MOCK_URI,
             collectModule: freeCollectModule.address,
@@ -1560,6 +1580,7 @@ makeSuiteCleanRoom('Multi-State Hub', function () {
 
         await expect(
           lensHub.commentWithSig({
+            delegatedSigner: ZERO_ADDRESS,
             profileId: FIRST_PROFILE_ID,
             contentURI: MOCK_URI,
             profileIdPointed: FIRST_PROFILE_ID,
@@ -1584,6 +1605,7 @@ makeSuiteCleanRoom('Multi-State Hub', function () {
 
         await expect(
           lensHub.commentWithSig({
+            delegatedSigner: ZERO_ADDRESS,
             profileId: FIRST_PROFILE_ID,
             contentURI: MOCK_URI,
             profileIdPointed: FIRST_PROFILE_ID,
@@ -1709,6 +1731,7 @@ makeSuiteCleanRoom('Multi-State Hub', function () {
 
         await expect(
           lensHub.mirrorWithSig({
+            delegatedSigner: ZERO_ADDRESS,
             profileId: FIRST_PROFILE_ID,
             profileIdPointed: FIRST_PROFILE_ID,
             pubIdPointed: '1',
@@ -1730,6 +1753,7 @@ makeSuiteCleanRoom('Multi-State Hub', function () {
 
         await expect(
           lensHub.mirrorWithSig({
+            delegatedSigner: ZERO_ADDRESS,
             profileId: FIRST_PROFILE_ID,
             profileIdPointed: FIRST_PROFILE_ID,
             pubIdPointed: '1',
@@ -1811,6 +1835,7 @@ makeSuiteCleanRoom('Multi-State Hub', function () {
 
         await expect(
           lensHub.followWithSig({
+            delegatedSigner: ZERO_ADDRESS,
             follower: testWallet.address,
             profileIds: [FIRST_PROFILE_ID],
             datas: [[]],
@@ -1907,6 +1932,7 @@ makeSuiteCleanRoom('Multi-State Hub', function () {
 
         await expect(
           lensHub.collectWithSig({
+            delegatedSigner: ZERO_ADDRESS,
             collector: testWallet.address,
             profileId: FIRST_PROFILE_ID,
             pubId: '1',
