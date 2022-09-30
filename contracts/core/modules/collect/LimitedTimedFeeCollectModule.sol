@@ -123,6 +123,7 @@ contract LimitedTimedFeeCollectModule is FeeModuleBase, FollowValidationModuleBa
      *  4. Charging a fee
      */
     function processCollect(
+        uint256,
         uint256 referrerProfileId,
         address collector,
         address executor,

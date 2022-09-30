@@ -83,6 +83,7 @@ contract ApprovalFollowModule is FollowValidatorFollowModuleBase {
      *  1. Validating that the follower has been approved for that profile by the profile owner
      */
     function processFollow(
+        uint256,
         address follower,
         address,
         uint256 profileId,

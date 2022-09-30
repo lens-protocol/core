@@ -72,6 +72,7 @@ library InteractionHelpers {
             if (followModule != address(0)) {
                 try
                     IFollowModule(followModule).processFollow(
+                        0,
                         follower,
                         executor,
                         profileId,
@@ -177,6 +178,7 @@ library InteractionHelpers {
         try
             ICollectModule(collectModule).processCollect(
                 profileId,
+                0,
                 onBehalfOf,
                 executor,
                 rootProfileId,

@@ -39,6 +39,7 @@ contract FreeCollectModule is FollowValidationModuleBase, ICollectModule {
      */
     function processCollect(
         uint256,
+        uint256,
         address collector,
         address,
         uint256 profileId,

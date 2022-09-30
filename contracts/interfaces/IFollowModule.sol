@@ -27,12 +27,14 @@ interface IFollowModule {
     /**
      * @notice Processes a given follow, this can only be called from the LensHub contract.
      *
+     * @param followerProfileId The LensHub profile token ID of the follower's profile (currently unused, preemptive interface upgrade).
      * @param follower The follower address.
      * @param executor The follower or an approved delegated executor.
      * @param profileId The token ID of the profile being followed.
      * @param data Arbitrary data passed by the follower.
      */
     function processFollow(
+        uint256 followerProfileId,
         address follower,
         address executor,
         uint256 profileId,

@@ -73,6 +73,7 @@ contract FeeFollowModule is FeeModuleBase, FollowValidatorFollowModuleBase {
      *  1. Charging a fee
      */
     function processFollow(
+        uint256,
         address,
         address executor,
         uint256 profileId,

@@ -95,6 +95,7 @@ contract FeeCollectModule is FeeModuleBase, FollowValidationModuleBase, ICollect
      */
     function processCollect(
         uint256 referrerProfileId,
+        uint256,
         address collector,
         address executor,
         uint256 profileId,

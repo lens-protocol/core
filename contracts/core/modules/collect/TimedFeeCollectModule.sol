@@ -109,6 +109,7 @@ contract TimedFeeCollectModule is FeeModuleBase, FollowValidationModuleBase, ICo
      *  3. Charging a fee
      */
     function processCollect(
+        uint256,
         uint256 referrerProfileId,
         address collector,
         address executor,

@@ -42,6 +42,7 @@ contract ProfileFollowModule is FollowValidatorFollowModuleBase {
      *     given profile.
      */
     function processFollow(
+        uint256,
         address follower,
         address,
         uint256 profileId,

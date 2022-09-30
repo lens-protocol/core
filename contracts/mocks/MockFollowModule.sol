@@ -19,6 +19,7 @@ contract MockFollowModule is IFollowModule {
     }
 
     function processFollow(
+        uint256 followerProfileId,
         address follower,
         address executor,
         uint256 profileId,

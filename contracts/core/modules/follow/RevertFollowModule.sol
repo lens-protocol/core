@@ -32,6 +32,7 @@ contract RevertFollowModule is FollowValidatorFollowModuleBase {
      * @dev Processes a follow by rejecting it and reverting the transaction.
      */
     function processFollow(
+        uint256,
         address,
         address,
         uint256,

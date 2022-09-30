@@ -9,15 +9,6 @@ pragma solidity 0.8.15;
  * @notice This is the standard interface for all Lens-compatible CollectModules.
  */
 interface ICollectModule {
-    // function getModuleVersion() external view returns (uint256);
-
-    //
-    // function processModuleChange(
-    // uint256 profileId,
-    // uint256 pubId,
-    // bytes calldata data
-    // ) external;
-    //
     /**
      * @notice Initializes data for a given publication being published. This can only be called by the hub.
      *
@@ -40,6 +31,7 @@ interface ICollectModule {
      * @notice Processes a collect action for a given publication, this can only be called by the hub.
      *
      * @param referrerProfileId The LensHub profile token ID of the referrer's profile (only different in case of mirrors).
+     * @param collectorProfileId The LensHub profile token ID of the collector's profile (currently unused, preemptive interface upgrade).
      * @param collector The collector address.
      * @param executor The collector or an approved delegated executor.
      * @param profileId The token ID of the profile associated with the publication being collected.
@@ -48,6 +40,7 @@ interface ICollectModule {
      */
     function processCollect(
         uint256 referrerProfileId,
+        uint256 collectorProfileId,
         address collector,
         address executor,
         uint256 profileId,

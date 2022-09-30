@@ -32,6 +32,7 @@ contract RevertCollectModule is ICollectModule {
      */
     function processCollect(
         uint256,
+        uint256,
         address,
         address,
         uint256,
