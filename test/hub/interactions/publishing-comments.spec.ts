@@ -248,6 +248,7 @@ makeSuiteCleanRoom('Publishing Comments', function () {
         expect(
           await commentReturningTokenId({
             vars: {
+              delegatedSigner: ZERO_ADDRESS,
               profileId: FIRST_PROFILE_ID + 1,
               contentURI: OTHER_MOCK_URI,
               profileIdPointed: FIRST_PROFILE_ID,
@@ -400,6 +401,7 @@ makeSuiteCleanRoom('Publishing Comments', function () {
 
         await expect(
           lensHub.commentWithSig({
+            delegatedSigner: ZERO_ADDRESS,
             profileId: FIRST_PROFILE_ID,
             contentURI: MOCK_URI,
             profileIdPointed: FIRST_PROFILE_ID,
@@ -416,7 +418,7 @@ makeSuiteCleanRoom('Publishing Comments', function () {
               deadline: MAX_UINT256,
             },
           })
-        ).to.be.revertedWith(ERRORS.EXECUTOR_INVALID);
+        ).to.be.revertedWith(ERRORS.SIGNATURE_INVALID);
       });
 
       it('Testwallet should fail to comment with sig with invalid deadline', async function () {
@@ -441,6 +443,7 @@ makeSuiteCleanRoom('Publishing Comments', function () {
 
         await expect(
           lensHub.commentWithSig({
+            delegatedSigner: ZERO_ADDRESS,
             profileId: FIRST_PROFILE_ID,
             contentURI: MOCK_URI,
             profileIdPointed: FIRST_PROFILE_ID,
@@ -482,6 +485,7 @@ makeSuiteCleanRoom('Publishing Comments', function () {
 
         await expect(
           lensHub.commentWithSig({
+            delegatedSigner: ZERO_ADDRESS,
             profileId: FIRST_PROFILE_ID,
             contentURI: MOCK_URI,
             profileIdPointed: FIRST_PROFILE_ID,
@@ -498,7 +502,7 @@ makeSuiteCleanRoom('Publishing Comments', function () {
               deadline: MAX_UINT256,
             },
           })
-        ).to.be.revertedWith(ERRORS.EXECUTOR_INVALID);
+        ).to.be.revertedWith(ERRORS.SIGNATURE_INVALID);
       });
 
       it('Testwallet should fail to comment with sig with unwhitelisted collect module', async function () {
@@ -523,6 +527,7 @@ makeSuiteCleanRoom('Publishing Comments', function () {
 
         await expect(
           lensHub.commentWithSig({
+            delegatedSigner: ZERO_ADDRESS,
             profileId: FIRST_PROFILE_ID,
             contentURI: MOCK_URI,
             profileIdPointed: FIRST_PROFILE_ID,
@@ -568,6 +573,7 @@ makeSuiteCleanRoom('Publishing Comments', function () {
 
         await expect(
           lensHub.commentWithSig({
+            delegatedSigner: ZERO_ADDRESS,
             profileId: FIRST_PROFILE_ID,
             contentURI: MOCK_URI,
             profileIdPointed: FIRST_PROFILE_ID,
@@ -613,6 +619,7 @@ makeSuiteCleanRoom('Publishing Comments', function () {
 
         await expect(
           lensHub.commentWithSig({
+            delegatedSigner: ZERO_ADDRESS,
             profileId: FIRST_PROFILE_ID,
             contentURI: OTHER_MOCK_URI,
             profileIdPointed: FIRST_PROFILE_ID,
@@ -657,6 +664,7 @@ makeSuiteCleanRoom('Publishing Comments', function () {
 
         await expect(
           lensHub.commentWithSig({
+            delegatedSigner: ZERO_ADDRESS,
             profileId: FIRST_PROFILE_ID,
             contentURI: OTHER_MOCK_URI,
             profileIdPointed: FIRST_PROFILE_ID,
@@ -707,6 +715,7 @@ makeSuiteCleanRoom('Publishing Comments', function () {
 
         await expect(
           lensHub.commentWithSig({
+            delegatedSigner: ZERO_ADDRESS,
             profileId: FIRST_PROFILE_ID,
             contentURI: OTHER_MOCK_URI,
             profileIdPointed: FIRST_PROFILE_ID,
@@ -723,7 +732,7 @@ makeSuiteCleanRoom('Publishing Comments', function () {
               deadline: MAX_UINT256,
             },
           })
-        ).to.be.revertedWith(ERRORS.EXECUTOR_INVALID);
+        ).to.be.revertedWith(ERRORS.SIGNATURE_INVALID);
       });
     });
 
@@ -754,6 +763,7 @@ makeSuiteCleanRoom('Publishing Comments', function () {
 
         await expect(
           lensHub.commentWithSig({
+            delegatedSigner: ZERO_ADDRESS,
             profileId: FIRST_PROFILE_ID,
             contentURI: OTHER_MOCK_URI,
             profileIdPointed: FIRST_PROFILE_ID,
