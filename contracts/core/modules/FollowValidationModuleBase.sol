@@ -33,7 +33,7 @@ abstract contract FollowValidationModuleBase is ModuleBase {
         address followModule = ILensHub(HUB).getFollowModule(profileId);
         bool isFollowing;
         if (followModule != address(0)) {
-            isFollowing = IFollowModule(followModule).isFollowing(profileId, user, 0);
+            isFollowing = IFollowModule(followModule).isFollowing(0, profileId, user, 0);
         } else {
             address followNFT = ILensHub(HUB).getFollowNFT(profileId);
             isFollowing = followNFT != address(0) && IERC721(followNFT).balanceOf(user) != 0;

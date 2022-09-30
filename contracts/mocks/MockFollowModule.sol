@@ -28,6 +28,7 @@ contract MockFollowModule is IFollowModule {
 
     function isFollowing(
         uint256,
+        uint256,
         address,
         uint256
     ) external pure override returns (bool) {

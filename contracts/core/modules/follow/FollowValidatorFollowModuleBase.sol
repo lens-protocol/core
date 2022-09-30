@@ -21,6 +21,7 @@ abstract contract FollowValidatorFollowModuleBase is ModuleBase, IFollowModule {
      * and other properties.
      */
     function isFollowing(
+        uint256,
         uint256 profileId,
         address follower,
         uint256 followNFTTokenId

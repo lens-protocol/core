@@ -77,6 +77,7 @@ interface IFollowModule {
      *      2. The follow module:
      *          - Validates the subscription status for that given NFT, reverting on an invalid subscription.
      *
+     * @param followerProfileId The LensHub profile token ID of the follower's profile (currently unused, preemptive interface upgrade).
      * @param profileId The token ID of the profile to validate the follow for.
      * @param follower The follower address to validate the follow for.
      * @param followNFTTokenId The followNFT token ID to validate the follow for.
@@ -84,6 +85,7 @@ interface IFollowModule {
      * @return true if the given address is following the given profile ID, false otherwise.
      */
     function isFollowing(
+        uint256 followerProfileId,
         uint256 profileId,
         address follower,
         uint256 followNFTTokenId
