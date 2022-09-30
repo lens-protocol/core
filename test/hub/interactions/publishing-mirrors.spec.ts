@@ -26,7 +26,7 @@ import {
 } from '../../__setup.spec';
 
 makeSuiteCleanRoom('Publishing mirrors', function () {
-  context('Generic', function () {
+  context.only('Generic', function () {
     beforeEach(async function () {
       await expect(
         lensHub.createProfile({
@@ -180,6 +180,7 @@ makeSuiteCleanRoom('Publishing mirrors', function () {
         expect(
           await mirrorReturningTokenId({
             vars: {
+              delegatedSigner: ZERO_ADDRESS,
               profileId: FIRST_PROFILE_ID + 1,
               profileIdPointed: FIRST_PROFILE_ID,
               pubIdPointed: '1',
@@ -290,7 +291,7 @@ makeSuiteCleanRoom('Publishing mirrors', function () {
     });
   });
 
-  context('Meta-tx', function () {
+  context.only('Meta-tx', function () {
     beforeEach(async function () {
       await expect(
         lensHub.connect(testWallet).createProfile({
@@ -338,6 +339,7 @@ makeSuiteCleanRoom('Publishing mirrors', function () {
 
         await expect(
           lensHub.mirrorWithSig({
+            delegatedSigner: ZERO_ADDRESS,
             profileId: FIRST_PROFILE_ID,
             profileIdPointed: FIRST_PROFILE_ID,
             pubIdPointed: '1',
@@ -351,7 +353,7 @@ makeSuiteCleanRoom('Publishing mirrors', function () {
               deadline: MAX_UINT256,
             },
           })
-        ).to.be.revertedWith(ERRORS.EXECUTOR_INVALID);
+        ).to.be.revertedWith(ERRORS.SIGNATURE_INVALID);
       });
 
       it('Testwallet should fail to mirror with sig with invalid deadline', async function () {
@@ -372,6 +374,7 @@ makeSuiteCleanRoom('Publishing mirrors', function () {
 
         await expect(
           lensHub.mirrorWithSig({
+            delegatedSigner: ZERO_ADDRESS,
             profileId: FIRST_PROFILE_ID,
             profileIdPointed: FIRST_PROFILE_ID,
             pubIdPointed: '1',
@@ -406,6 +409,7 @@ makeSuiteCleanRoom('Publishing mirrors', function () {
 
         await expect(
           lensHub.mirrorWithSig({
+            delegatedSigner: ZERO_ADDRESS,
             profileId: FIRST_PROFILE_ID,
             profileIdPointed: FIRST_PROFILE_ID,
             pubIdPointed: '1',
@@ -419,7 +423,7 @@ makeSuiteCleanRoom('Publishing mirrors', function () {
               deadline: MAX_UINT256,
             },
           })
-        ).to.be.revertedWith(ERRORS.EXECUTOR_INVALID);
+        ).to.be.revertedWith(ERRORS.SIGNATURE_INVALID);
       });
 
       it('Testwallet should fail to mirror with sig with unwhitelisted reference module', async function () {
@@ -439,6 +443,7 @@ makeSuiteCleanRoom('Publishing mirrors', function () {
 
         await expect(
           lensHub.mirrorWithSig({
+            delegatedSigner: ZERO_ADDRESS,
             profileId: FIRST_PROFILE_ID,
             profileIdPointed: FIRST_PROFILE_ID,
             pubIdPointed: '1',
@@ -473,6 +478,7 @@ makeSuiteCleanRoom('Publishing mirrors', function () {
 
         await expect(
           lensHub.mirrorWithSig({
+            delegatedSigner: ZERO_ADDRESS,
             profileId: FIRST_PROFILE_ID,
             profileIdPointed: FIRST_PROFILE_ID,
             pubIdPointed: '2',
@@ -509,6 +515,7 @@ makeSuiteCleanRoom('Publishing mirrors', function () {
 
         await expect(
           lensHub.mirrorWithSig({
+            delegatedSigner: ZERO_ADDRESS,
             profileId: FIRST_PROFILE_ID,
             profileIdPointed: FIRST_PROFILE_ID,
             pubIdPointed: '1',
@@ -522,7 +529,7 @@ makeSuiteCleanRoom('Publishing mirrors', function () {
               deadline: MAX_UINT256,
             },
           })
-        ).to.be.revertedWith(ERRORS.EXECUTOR_INVALID);
+        ).to.be.revertedWith(ERRORS.SIGNATURE_INVALID);
       });
     });
 
@@ -545,6 +552,7 @@ makeSuiteCleanRoom('Publishing mirrors', function () {
 
         await expect(
           lensHub.mirrorWithSig({
+            delegatedSigner: ZERO_ADDRESS,
             profileId: FIRST_PROFILE_ID,
             profileIdPointed: FIRST_PROFILE_ID,
             pubIdPointed: '1',
@@ -598,6 +606,7 @@ makeSuiteCleanRoom('Publishing mirrors', function () {
 
         await expect(
           lensHub.mirrorWithSig({
+            delegatedSigner: ZERO_ADDRESS,
             profileId: FIRST_PROFILE_ID,
             profileIdPointed: FIRST_PROFILE_ID,
             pubIdPointed: '2',
