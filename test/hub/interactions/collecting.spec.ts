@@ -145,6 +145,7 @@ makeSuiteCleanRoom('Collecting', function () {
         expect(
           await collectReturningTokenIds({
             vars: {
+              delegatedSigner: ZERO_ADDRESS,
               collector: testWallet.address,
               profileId: FIRST_PROFILE_ID,
               pubId: '1',
@@ -322,6 +323,7 @@ makeSuiteCleanRoom('Collecting', function () {
 
         await expect(
           lensHub.collectWithSig({
+            delegatedSigner: ZERO_ADDRESS,
             collector: testWallet.address,
             profileId: FIRST_PROFILE_ID,
             pubId: '1',
@@ -333,7 +335,7 @@ makeSuiteCleanRoom('Collecting', function () {
               deadline: MAX_UINT256,
             },
           })
-        ).to.be.revertedWith(ERRORS.EXECUTOR_INVALID);
+        ).to.be.revertedWith(ERRORS.SIGNATURE_INVALID);
       });
 
       it('TestWallet should fail to collect with sig with invalid deadline', async function () {
@@ -343,6 +345,7 @@ makeSuiteCleanRoom('Collecting', function () {
 
         await expect(
           lensHub.collectWithSig({
+            delegatedSigner: ZERO_ADDRESS,
             collector: testWallet.address,
             profileId: FIRST_PROFILE_ID,
             pubId: '1',
@@ -370,6 +373,7 @@ makeSuiteCleanRoom('Collecting', function () {
 
         await expect(
           lensHub.collectWithSig({
+            delegatedSigner: ZERO_ADDRESS,
             collector: testWallet.address,
             profileId: FIRST_PROFILE_ID,
             pubId: '1',
@@ -381,7 +385,7 @@ makeSuiteCleanRoom('Collecting', function () {
               deadline: MAX_UINT256,
             },
           })
-        ).to.be.revertedWith(ERRORS.EXECUTOR_INVALID);
+        ).to.be.revertedWith(ERRORS.SIGNATURE_INVALID);
       });
 
       it('TestWallet should fail to collect with sig without being a follower', async function () {
@@ -397,6 +401,7 @@ makeSuiteCleanRoom('Collecting', function () {
 
         await expect(
           lensHub.collectWithSig({
+            delegatedSigner: ZERO_ADDRESS,
             collector: testWallet.address,
             profileId: FIRST_PROFILE_ID,
             pubId: '1',
@@ -430,6 +435,7 @@ makeSuiteCleanRoom('Collecting', function () {
 
         await expect(
           lensHub.collectWithSig({
+            delegatedSigner: ZERO_ADDRESS,
             collector: testWallet.address,
             profileId: FIRST_PROFILE_ID,
             pubId: '1',
@@ -441,7 +447,7 @@ makeSuiteCleanRoom('Collecting', function () {
               deadline: MAX_UINT256,
             },
           })
-        ).to.be.revertedWith(ERRORS.EXECUTOR_INVALID);
+        ).to.be.revertedWith(ERRORS.SIGNATURE_INVALID);
       });
     });
 
@@ -463,6 +469,7 @@ makeSuiteCleanRoom('Collecting', function () {
 
         await expect(
           lensHub.collectWithSig({
+            delegatedSigner: ZERO_ADDRESS,
             collector: testWallet.address,
             profileId: FIRST_PROFILE_ID,
             pubId: '1',
@@ -532,6 +539,7 @@ makeSuiteCleanRoom('Collecting', function () {
 
         await expect(
           lensHub.collectWithSig({
+            delegatedSigner: ZERO_ADDRESS,
             collector: testWallet.address,
             profileId: secondProfileId,
             pubId: '1',
