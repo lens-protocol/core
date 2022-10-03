@@ -50,7 +50,7 @@ makeSuiteCleanRoom('Limited Timed Fee Collect Module', function () {
     ).to.not.be.reverted;
   });
 
-  context.only('Negatives', function () {
+  context('Negatives', function () {
     context('Publication Creation', function () {
       it('user should fail to post with limited timed fee collect module using zero collect limit', async function () {
         const collectModuleInitData = abiCoder.encode(
@@ -499,7 +499,7 @@ makeSuiteCleanRoom('Limited Timed Fee Collect Module', function () {
     });
   });
 
-  context.only('Scenarios', function () {
+  context('Scenarios', function () {
     it('User should post with limited timed fee collect module as the collect module and data, correct events should be emitted', async function () {
       const collectModuleInitData = abiCoder.encode(
         ['uint256', 'uint256', 'address', 'address', 'uint16', 'bool'],
