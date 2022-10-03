@@ -402,14 +402,14 @@ library DataTypes {
     /**
      * @notice A struct containing the parameters required for the `toggleFollowWithSig()` function.
      *
-     * @param delegatedSigner The delegated executor signer, must be either zero, defaulting to the follower, or a delegated executor.
+     * @note This does not include a delegatedSigner parameter as it is marked for deprecation.
+     * 
      * @param follower The follower which is the message signer.
      * @param profileIds The token ID array of the profiles.
      * @param enables The array of booleans to enable/disable follows.
      * @param sig The EIP712Signature struct containing the follower's signature.
      */
     struct ToggleFollowWithSigData {
-        address delegatedSigner;
         address follower;
         uint256[] profileIds;
         bool[] enables;
