@@ -60,7 +60,7 @@ makeSuiteCleanRoom('Profile Follow Module', function () {
         await expect(
           profileFollowModule
             .connect(userTwo)
-            .processFollow(userTwoAddress, userTwoAddress, FIRST_PROFILE_ID, [])
+            .processFollow(0, userTwoAddress, userTwoAddress, FIRST_PROFILE_ID, [])
         ).to.be.revertedWith(ERRORS.NOT_HUB);
       });
 
