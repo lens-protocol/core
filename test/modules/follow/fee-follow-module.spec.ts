@@ -115,7 +115,7 @@ makeSuiteCleanRoom('Fee Follow Module', function () {
 
       it('UserTwo should fail to process follow without being the hub', async function () {
         await expect(
-          feeFollowModule.connect(userTwo).processFollow(userTwoAddress, userTwoAddress, FIRST_PROFILE_ID, [])
+          feeFollowModule.connect(userTwo).processFollow(0, userTwoAddress, userTwoAddress, FIRST_PROFILE_ID, [])
         ).to.be.revertedWith(ERRORS.NOT_HUB);
       });
 
