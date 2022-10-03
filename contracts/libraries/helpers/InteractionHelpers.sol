@@ -104,7 +104,7 @@ library InteractionHelpers {
     }
 
     function collect(
-        address onBehalfOf,
+        address collector,
         address delegatedExecutor,
         uint256 profileId,
         uint256 pubId,
@@ -113,7 +113,7 @@ library InteractionHelpers {
     ) internal returns (uint256) {
         uint256 profileIdCached = profileId;
         uint256 pubIdCached = pubId;
-        address onBehalfOfCached = onBehalfOf;
+        address collectorCached = collector;
         address delegatedExecutorCached = delegatedExecutor;
 
         (uint256 rootProfileId, uint256 rootPubId, address rootCollectModule) = GeneralHelpers
@@ -150,13 +150,13 @@ library InteractionHelpers {
             }
         }
 
-        uint256 tokenId = ICollectNFT(collectNFT).mint(onBehalfOfCached);
+        uint256 tokenId = ICollectNFT(collectNFT).mint(collectorCached);
         _processCollect(
             rootCollectModule,
             collectModuleData,
             profileIdCached,
             pubIdCached,
-            onBehalfOfCached,
+            collectorCached,
             delegatedExecutorCached,
             rootProfileId,
             rootPubId
@@ -170,7 +170,7 @@ library InteractionHelpers {
         bytes calldata collectModuleData,
         uint256 profileId,
         uint256 pubId,
-        address onBehalfOf,
+        address collector,
         address executor,
         uint256 rootProfileId,
         uint256 rootPubId
@@ -179,7 +179,7 @@ library InteractionHelpers {
             ICollectModule(collectModule).processCollect(
                 profileId,
                 0,
-                onBehalfOf,
+                collector,
                 executor,
                 rootProfileId,
                 rootPubId,
@@ -194,10 +194,10 @@ library InteractionHelpers {
                     revert(add(err, 32), length)
                 }
             }
-            if (onBehalfOf != executor) revert Errors.ExecutorInvalid();
+            if (collector != executor) revert Errors.ExecutorInvalid();
             IDeprecatedCollectModule(collectModule).processCollect(
                 profileId,
-                onBehalfOf,
+                collector,
                 rootProfileId,
                 rootPubId,
                 collectModuleData
@@ -205,7 +205,7 @@ library InteractionHelpers {
         }
 
         _emitCollectedEvent(
-            onBehalfOf,
+            collector,
             profileId,
             pubId,
             rootProfileId,
