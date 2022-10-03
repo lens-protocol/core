@@ -109,6 +109,7 @@ makeSuiteCleanRoom('Setting Follow Module', function () {
 
         await expect(
           lensHub.setFollowModuleWithSig({
+            delegatedSigner: ZERO_ADDRESS,
             profileId: FIRST_PROFILE_ID,
             followModule: mockFollowModule.address,
             followModuleInitData: followModuleInitData,
@@ -119,7 +120,7 @@ makeSuiteCleanRoom('Setting Follow Module', function () {
               deadline: MAX_UINT256,
             },
           })
-        ).to.be.revertedWith(ERRORS.EXECUTOR_INVALID);
+        ).to.be.revertedWith(ERRORS.SIGNATURE_INVALID);
       });
 
       it('TestWallet should fail to set a follow module with sig with invalid deadline', async function () {
@@ -140,6 +141,7 @@ makeSuiteCleanRoom('Setting Follow Module', function () {
 
         await expect(
           lensHub.setFollowModuleWithSig({
+            delegatedSigner: ZERO_ADDRESS,
             profileId: FIRST_PROFILE_ID,
             followModule: mockFollowModule.address,
             followModuleInitData: followModuleInitData,
@@ -171,6 +173,7 @@ makeSuiteCleanRoom('Setting Follow Module', function () {
 
         await expect(
           lensHub.setFollowModuleWithSig({
+            delegatedSigner: ZERO_ADDRESS,
             profileId: FIRST_PROFILE_ID,
             followModule: mockFollowModule.address,
             followModuleInitData: followModuleInitData,
@@ -181,7 +184,7 @@ makeSuiteCleanRoom('Setting Follow Module', function () {
               deadline: MAX_UINT256,
             },
           })
-        ).to.be.revertedWith(ERRORS.EXECUTOR_INVALID);
+        ).to.be.revertedWith(ERRORS.SIGNATURE_INVALID);
       });
 
       it('TestWallet should fail to set a follow module with sig with an unwhitelisted follow module', async function () {
@@ -198,6 +201,7 @@ makeSuiteCleanRoom('Setting Follow Module', function () {
 
         await expect(
           lensHub.setFollowModuleWithSig({
+            delegatedSigner: ZERO_ADDRESS,
             profileId: FIRST_PROFILE_ID,
             followModule: mockFollowModule.address,
             followModuleInitData: followModuleInitData,
@@ -230,6 +234,7 @@ makeSuiteCleanRoom('Setting Follow Module', function () {
 
         await expect(
           lensHub.setFollowModuleWithSig({
+            delegatedSigner: ZERO_ADDRESS,
             profileId: FIRST_PROFILE_ID,
             followModule: mockFollowModule.address,
             followModuleInitData: mockModuleData,
@@ -240,7 +245,7 @@ makeSuiteCleanRoom('Setting Follow Module', function () {
               deadline: MAX_UINT256,
             },
           })
-        ).to.be.revertedWith(ERRORS.EXECUTOR_INVALID);
+        ).to.be.revertedWith(ERRORS.SIGNATURE_INVALID);
       });
     });
 
@@ -262,6 +267,7 @@ makeSuiteCleanRoom('Setting Follow Module', function () {
 
         await expect(
           lensHub.setFollowModuleWithSig({
+            delegatedSigner: ZERO_ADDRESS,
             profileId: FIRST_PROFILE_ID,
             followModule: mockFollowModule.address,
             followModuleInitData: mockModuleData,
