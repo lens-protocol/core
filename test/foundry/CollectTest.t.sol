@@ -60,16 +60,7 @@ contract CollectTest is BaseTest {
 
     function testCollectMirror() public {
         vm.prank(profileOwner);
-        hub.mirror(
-            DataTypes.MirrorData({
-                profileId: firstProfileId,
-                profileIdPointed: firstProfileId,
-                pubIdPointed: 1,
-                referenceModuleData: '',
-                referenceModule: address(0),
-                referenceModuleInitData: ''
-            })
-        );
+        hub.mirror(mockMirrorData);
 
         uint256 nftId = hub.collect(me, firstProfileId, 2, '');
 
@@ -84,16 +75,7 @@ contract CollectTest is BaseTest {
 
     function testExecutorCollectMirror() public {
         vm.prank(profileOwner);
-        hub.mirror(
-            DataTypes.MirrorData({
-                profileId: firstProfileId,
-                profileIdPointed: firstProfileId,
-                pubIdPointed: 1,
-                referenceModuleData: '',
-                referenceModule: address(0),
-                referenceModuleInitData: ''
-            })
-        );
+        hub.mirror(mockMirrorData);
 
         hub.setDelegatedExecutorApproval(otherSigner, true);
 
@@ -117,7 +99,7 @@ contract CollectTest is BaseTest {
         bytes32 digest = _getCollectTypedDataHash(firstProfileId, 1, '', nonce, deadline);
         vm.expectRevert(Errors.SignatureInvalid.selector);
         hub.collectWithSig(
-            DataTypes.CollectWithSigData({
+            _buildCollectWithSigData({
                 delegatedSigner: address(0),
                 collector: profileOwner,
                 profileId: firstProfileId,
@@ -134,7 +116,7 @@ contract CollectTest is BaseTest {
         bytes32 digest = _getCollectTypedDataHash(firstProfileId, 1, '', nonce, deadline);
         vm.expectRevert(Errors.ExecutorInvalid.selector);
         hub.collectWithSig(
-            DataTypes.CollectWithSigData({
+            _buildCollectWithSigData({
                 delegatedSigner: otherSigner,
                 collector: profileOwner,
                 profileId: firstProfileId,
@@ -151,7 +133,7 @@ contract CollectTest is BaseTest {
         uint256 deadline = type(uint256).max;
         bytes32 digest = _getCollectTypedDataHash(firstProfileId, 1, '', nonce, deadline);
         uint256 nftId = hub.collectWithSig(
-            DataTypes.CollectWithSigData({
+            _buildCollectWithSigData({
                 delegatedSigner: address(0),
                 collector: otherSigner,
                 profileId: firstProfileId,
@@ -172,19 +154,10 @@ contract CollectTest is BaseTest {
         bytes32 digest = _getCollectTypedDataHash(firstProfileId, 2, '', nonce, deadline);
 
         vm.prank(profileOwner);
-        hub.mirror(
-            DataTypes.MirrorData({
-                profileId: firstProfileId,
-                profileIdPointed: firstProfileId,
-                pubIdPointed: 1,
-                referenceModuleData: '',
-                referenceModule: address(0),
-                referenceModuleInitData: ''
-            })
-        );
+        hub.mirror(mockMirrorData);
 
         uint256 nftId = hub.collectWithSig(
-            DataTypes.CollectWithSigData({
+            _buildCollectWithSigData({
                 delegatedSigner: address(0),
                 collector: otherSigner,
                 profileId: firstProfileId,
@@ -211,7 +184,7 @@ contract CollectTest is BaseTest {
         uint256 deadline = type(uint256).max;
         bytes32 digest = _getCollectTypedDataHash(firstProfileId, 1, '', nonce, deadline);
         uint256 nftId = hub.collectWithSig(
-            DataTypes.CollectWithSigData({
+            _buildCollectWithSigData({
                 delegatedSigner: profileOwner,
                 collector: otherSigner,
                 profileId: firstProfileId,
@@ -235,19 +208,10 @@ contract CollectTest is BaseTest {
         bytes32 digest = _getCollectTypedDataHash(firstProfileId, 2, '', nonce, deadline);
 
         vm.prank(profileOwner);
-        hub.mirror(
-            DataTypes.MirrorData({
-                profileId: firstProfileId,
-                profileIdPointed: firstProfileId,
-                pubIdPointed: 1,
-                referenceModuleData: '',
-                referenceModule: address(0),
-                referenceModuleInitData: ''
-            })
-        );
+        hub.mirror(mockMirrorData);
 
         uint256 nftId = hub.collectWithSig(
-            DataTypes.CollectWithSigData({
+            _buildCollectWithSigData({
                 delegatedSigner: profileOwner,
                 collector: otherSigner,
                 profileId: firstProfileId,
@@ -264,5 +228,18 @@ contract CollectTest is BaseTest {
         CollectNFT nft = CollectNFT(hub.getCollectNFT(1, 1));
         assertEq(nftId, 1);
         assertEq(nft.ownerOf(1), otherSigner);
+    }
+
+    // Private functions
+    function _buildCollectWithSigData(
+        address delegatedSigner,
+        address collector,
+        uint256 profileId,
+        uint256 pubId,
+        bytes memory data,
+        DataTypes.EIP712Signature memory sig
+    ) private pure returns (DataTypes.CollectWithSigData memory) {
+        return
+            DataTypes.CollectWithSigData(delegatedSigner, collector, profileId, pubId, data, sig);
     }
 }

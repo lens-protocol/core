@@ -68,7 +68,7 @@ contract FollowTest is BaseTest {
 
         vm.expectRevert(Errors.SignatureInvalid.selector);
         hub.followWithSig(
-            DataTypes.FollowWithSigData({
+            _buildFollowWithSigData({
                 delegatedSigner: address(0),
                 follower: profileOwner,
                 profileIds: profileIds,
@@ -89,7 +89,7 @@ contract FollowTest is BaseTest {
 
         vm.expectRevert(Errors.ExecutorInvalid.selector);
         hub.followWithSig(
-            DataTypes.FollowWithSigData({
+            _buildFollowWithSigData({
                 delegatedSigner: otherSigner,
                 follower: profileOwner,
                 profileIds: profileIds,
@@ -112,7 +112,7 @@ contract FollowTest is BaseTest {
         bytes32 digest = _getFollowTypedDataHash(profileIds, datas, nonce, deadline);
 
         uint256[] memory nftIds = hub.followWithSig(
-            DataTypes.FollowWithSigData({
+            _buildFollowWithSigData({
                 delegatedSigner: address(0),
                 follower: otherSigner,
                 profileIds: profileIds,
@@ -146,7 +146,7 @@ contract FollowTest is BaseTest {
         bytes32 digest = _getFollowTypedDataHash(profileIds, datas, nonce, deadline);
 
         uint256[] memory nftIds = hub.followWithSig(
-            DataTypes.FollowWithSigData({
+            _buildFollowWithSigData({
                 delegatedSigner: profileOwner,
                 follower: otherSigner,
                 profileIds: profileIds,
@@ -165,5 +165,16 @@ contract FollowTest is BaseTest {
         assertEq(nftIds.length, 1);
         assertEq(nftIds[0], 1);
         assertEq(nft.ownerOf(1), otherSigner);
+    }
+
+    // Private functions
+    function _buildFollowWithSigData(
+        address delegatedSigner,
+        address follower,
+        uint256[] memory profileIds,
+        bytes[] memory datas,
+        DataTypes.EIP712Signature memory sig
+    ) private pure returns (DataTypes.FollowWithSigData memory) {
+        return DataTypes.FollowWithSigData(delegatedSigner, follower, profileIds, datas, sig);
     }
 }

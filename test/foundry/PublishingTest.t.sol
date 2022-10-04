@@ -100,7 +100,7 @@ contract PublishingTest is BaseTest {
 
         vm.expectRevert(Errors.SignatureInvalid.selector);
         hub.postWithSig(
-            DataTypes.PostWithSigData({
+            _buildPostWithSigData({
                 delegatedSigner: address(0),
                 profileId: firstProfileId,
                 contentURI: mockURI,
@@ -129,7 +129,7 @@ contract PublishingTest is BaseTest {
 
         vm.expectRevert(Errors.ExecutorInvalid.selector);
         hub.postWithSig(
-            DataTypes.PostWithSigData({
+            _buildPostWithSigData({
                 delegatedSigner: otherSigner,
                 profileId: firstProfileId,
                 contentURI: mockURI,
@@ -161,10 +161,11 @@ contract PublishingTest is BaseTest {
             nonce,
             deadline
         );
+        DataTypes.EIP712Signature memory sig = _getSigStruct(otherSignerKey, digest, deadline);
 
         vm.expectRevert(Errors.SignatureInvalid.selector);
         hub.commentWithSig(
-            DataTypes.CommentWithSigData({
+            _buildCommentWithSigData({
                 delegatedSigner: address(0),
                 profileId: firstProfileId,
                 contentURI: mockURI,
@@ -175,7 +176,7 @@ contract PublishingTest is BaseTest {
                 collectModuleInitData: abi.encode(false),
                 referenceModule: address(0),
                 referenceModuleInitData: '',
-                sig: _getSigStruct(otherSignerKey, digest, deadline)
+                sig: sig
             })
         );
     }
@@ -199,10 +200,11 @@ contract PublishingTest is BaseTest {
             nonce,
             deadline
         );
+        DataTypes.EIP712Signature memory sig = _getSigStruct(otherSignerKey, digest, deadline);
 
         vm.expectRevert(Errors.ExecutorInvalid.selector);
         hub.commentWithSig(
-            DataTypes.CommentWithSigData({
+            _buildCommentWithSigData({
                 delegatedSigner: otherSigner,
                 profileId: firstProfileId,
                 contentURI: mockURI,
@@ -213,7 +215,7 @@ contract PublishingTest is BaseTest {
                 collectModuleInitData: abi.encode(false),
                 referenceModule: address(0),
                 referenceModuleInitData: '',
-                sig: _getSigStruct(otherSignerKey, digest, deadline)
+                sig: sig
             })
         );
     }
@@ -237,7 +239,7 @@ contract PublishingTest is BaseTest {
 
         vm.expectRevert(Errors.SignatureInvalid.selector);
         hub.mirrorWithSig(
-            DataTypes.MirrorWithSigData({
+            _buildMirrorWithSigData({
                 delegatedSigner: address(0),
                 profileId: firstProfileId,
                 profileIdPointed: firstProfileId,
@@ -269,7 +271,7 @@ contract PublishingTest is BaseTest {
 
         vm.expectRevert(Errors.ExecutorInvalid.selector);
         hub.mirrorWithSig(
-            DataTypes.MirrorWithSigData({
+            _buildMirrorWithSigData({
                 delegatedSigner: otherSigner,
                 profileId: firstProfileId,
                 profileIdPointed: firstProfileId,
@@ -301,7 +303,7 @@ contract PublishingTest is BaseTest {
         );
 
         uint256 pubId = hub.postWithSig(
-            DataTypes.PostWithSigData({
+            _buildPostWithSigData({
                 delegatedSigner: otherSigner,
                 profileId: firstProfileId,
                 contentURI: mockURI,
@@ -344,9 +346,10 @@ contract PublishingTest is BaseTest {
             nonce,
             deadline
         );
+        DataTypes.EIP712Signature memory sig = _getSigStruct(otherSignerKey, digest, deadline);
 
         uint256 pubId = hub.commentWithSig(
-            DataTypes.CommentWithSigData({
+            _buildCommentWithSigData({
                 delegatedSigner: otherSigner,
                 profileId: firstProfileId,
                 contentURI: mockURI,
@@ -357,7 +360,7 @@ contract PublishingTest is BaseTest {
                 collectModuleInitData: abi.encode(false),
                 referenceModule: address(0),
                 referenceModuleInitData: '',
-                sig: _getSigStruct(otherSignerKey, digest, deadline)
+                sig: sig
             })
         );
         assertEq(pubId, 2);
@@ -391,7 +394,7 @@ contract PublishingTest is BaseTest {
         );
 
         uint256 pubId = hub.mirrorWithSig(
-            DataTypes.MirrorWithSigData({
+            _buildMirrorWithSigData({
                 delegatedSigner: otherSigner,
                 profileId: firstProfileId,
                 profileIdPointed: firstProfileId,
@@ -411,5 +414,81 @@ contract PublishingTest is BaseTest {
         assertEq(pub.referenceModule, mockMirrorData.referenceModule);
         assertEq(pub.collectModule, address(0));
         assertEq(pub.collectNFT, address(0));
+    }
+
+    // Private functions
+    function _buildPostWithSigData(
+        address delegatedSigner,
+        uint256 profileId,
+        string memory contentURI,
+        address collectModule,
+        bytes memory collectModuleInitData,
+        address referenceModule,
+        bytes memory referenceModuleInitData,
+        DataTypes.EIP712Signature memory sig
+    ) private pure returns (DataTypes.PostWithSigData memory) {
+        return
+            DataTypes.PostWithSigData(
+                delegatedSigner,
+                profileId,
+                contentURI,
+                collectModule,
+                collectModuleInitData,
+                referenceModule,
+                referenceModuleInitData,
+                sig
+            );
+    }
+
+    function _buildCommentWithSigData(
+        address delegatedSigner,
+        uint256 profileId,
+        string memory contentURI,
+        uint256 profileIdPointed,
+        uint256 pubIdPointed,
+        bytes memory referenceModuleData,
+        address collectModule,
+        bytes memory collectModuleInitData,
+        address referenceModule,
+        bytes memory referenceModuleInitData,
+        DataTypes.EIP712Signature memory sig
+    ) private pure returns (DataTypes.CommentWithSigData memory) {
+        return
+            DataTypes.CommentWithSigData(
+                delegatedSigner,
+                profileId,
+                contentURI,
+                profileIdPointed,
+                pubIdPointed,
+                referenceModuleData,
+                collectModule,
+                collectModuleInitData,
+                referenceModule,
+                referenceModuleInitData,
+                sig
+            );
+    }
+
+    function _buildMirrorWithSigData(
+        address delegatedSigner,
+        uint256 profileId,
+        uint256 profileIdPointed,
+        uint256 pubIdPointed,
+        bytes memory referenceModuleData,
+        address referenceModule,
+        bytes memory referenceModuleInitData,
+        DataTypes.EIP712Signature memory sig
+    ) private pure returns (DataTypes.MirrorWithSigData memory) {
+        return
+            DataTypes.MirrorWithSigData(
+                delegatedSigner,
+                profileId,
+                profileIdPointed,
+                pubIdPointed,
+                referenceModuleData,
+                referenceModule,
+                referenceModuleInitData,
+                sig
+            );
     }
 }
