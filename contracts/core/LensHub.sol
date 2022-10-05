@@ -9,6 +9,7 @@ import {Events} from '../libraries/Events.sol';
 import {DataTypes} from '../libraries/DataTypes.sol';
 import {Errors} from '../libraries/Errors.sol';
 import {GeneralLib} from '../libraries/GeneralLib.sol';
+import {PublishingLib} from '../libraries/PublishingLib.sol';
 import {ProfileTokenURILogic} from '../libraries/ProfileTokenURILogic.sol';
 import '../libraries/Constants.sol';
 
@@ -287,7 +288,7 @@ contract LensHub is LensNFTBase, VersionedInitializable, LensMultiState, LensHub
         whenPublishingEnabled
         returns (uint256)
     {
-        return GeneralLib.post(vars);
+        return PublishingLib.post(vars);
     }
 
     /// @inheritdoc ILensHub
@@ -297,7 +298,7 @@ contract LensHub is LensNFTBase, VersionedInitializable, LensMultiState, LensHub
         whenPublishingEnabled
         returns (uint256)
     {
-        return GeneralLib.postWithSig(vars);
+        return PublishingLib.postWithSig(vars);
     }
 
     /// @inheritdoc ILensHub
@@ -307,7 +308,7 @@ contract LensHub is LensNFTBase, VersionedInitializable, LensMultiState, LensHub
         whenPublishingEnabled
         returns (uint256)
     {
-        return GeneralLib.comment(vars);
+        return PublishingLib.comment(vars);
     }
 
     /// @inheritdoc ILensHub
@@ -317,7 +318,7 @@ contract LensHub is LensNFTBase, VersionedInitializable, LensMultiState, LensHub
         whenPublishingEnabled
         returns (uint256)
     {
-        return GeneralLib.commentWithSig(vars);
+        return PublishingLib.commentWithSig(vars);
     }
 
     /// @inheritdoc ILensHub
@@ -327,7 +328,7 @@ contract LensHub is LensNFTBase, VersionedInitializable, LensMultiState, LensHub
         whenPublishingEnabled
         returns (uint256)
     {
-        return GeneralLib.mirror(vars);
+        return PublishingLib.mirror(vars);
     }
 
     /// @inheritdoc ILensHub
@@ -337,7 +338,7 @@ contract LensHub is LensNFTBase, VersionedInitializable, LensMultiState, LensHub
         whenPublishingEnabled
         returns (uint256)
     {
-        return GeneralLib.mirrorWithSig(vars);
+        return PublishingLib.mirrorWithSig(vars);
     }
 
     /**

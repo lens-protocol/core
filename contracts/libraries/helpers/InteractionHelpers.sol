@@ -11,8 +11,10 @@ import {IFollowNFT} from '../../interfaces/IFollowNFT.sol';
 import {ICollectNFT} from '../../interfaces/ICollectNFT.sol';
 import {IFollowModule} from '../../interfaces/IFollowModule.sol';
 import {ICollectModule} from '../../interfaces/ICollectModule.sol';
+import {IReferenceModule} from '../../interfaces/IReferenceModule.sol';
 import {IDeprecatedFollowModule} from '../../interfaces/IDeprecatedFollowModule.sol';
 import {IDeprecatedCollectModule} from '../../interfaces/IDeprecatedCollectModule.sol';
+import {IDeprecatedReferenceModule} from '../../interfaces/IDeprecatedReferenceModule.sol';
 import {Clones} from '@openzeppelin/contracts/proxy/Clones.sol';
 import {Strings} from '@openzeppelin/contracts/utils/Strings.sol';
 
