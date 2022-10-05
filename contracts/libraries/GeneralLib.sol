@@ -17,7 +17,6 @@ import {IDeprecatedReferenceModule} from '../interfaces/IDeprecatedReferenceModu
 
 import './Constants.sol';
 
-// TODO: Update comments, especially for withSig functions.
 /**
  * @title GeneralLib
  * @author Lens Protocol
