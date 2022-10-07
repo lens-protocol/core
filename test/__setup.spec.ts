@@ -52,6 +52,7 @@ import {
   RevertFollowModule,
   RevertFollowModule__factory,
   PublishingLib__factory,
+  ProfileLib__factory,
 } from '../typechain-types';
 import { LensHubLibraryAddresses } from '../typechain-types/factories/LensHub__factory';
 import { FAKE_PRIVATEKEY, ZERO_ADDRESS } from './helpers/constants';
@@ -165,10 +166,12 @@ before(async function () {
     TREASURY_FEE_BPS
   );
   const generalLib = await new GeneralLib__factory(deployer).deploy();
+  const profileLib = await new ProfileLib__factory(deployer).deploy();
   const publishingLib = await new PublishingLib__factory(deployer).deploy();
   const profileTokenURILogic = await new ProfileTokenURILogic__factory(deployer).deploy();
   hubLibs = {
     'contracts/libraries/PublishingLib.sol:PublishingLib': publishingLib.address,
+    'contracts/libraries/ProfileLib.sol:ProfileLib': profileLib.address,
     'contracts/libraries/GeneralLib.sol:GeneralLib': generalLib.address,
     'contracts/libraries/ProfileTokenURILogic.sol:ProfileTokenURILogic':
       profileTokenURILogic.address,

@@ -9,6 +9,7 @@ import {Events} from '../libraries/Events.sol';
 import {DataTypes} from '../libraries/DataTypes.sol';
 import {Errors} from '../libraries/Errors.sol';
 import {GeneralLib} from '../libraries/GeneralLib.sol';
+import {ProfileLib} from '../libraries/ProfileLib.sol';
 import {PublishingLib} from '../libraries/PublishingLib.sol';
 import {ProfileTokenURILogic} from '../libraries/ProfileTokenURILogic.sol';
 import '../libraries/Constants.sol';
@@ -157,7 +158,7 @@ contract LensHub is LensNFTBase, VersionedInitializable, LensMultiState, LensHub
         unchecked {
             uint256 profileId = ++_profileCounter;
             _mint(vars.to, profileId);
-            GeneralLib.createProfile(vars, profileId);
+            ProfileLib.createProfile(vars, profileId);
             return profileId;
         }
     }
@@ -186,7 +187,7 @@ contract LensHub is LensNFTBase, VersionedInitializable, LensMultiState, LensHub
         override
         whenNotPaused
     {
-        GeneralLib.setProfileMetadataURI(profileId, metadataURI);
+        ProfileLib.setProfileMetadataURI(profileId, metadataURI);
     }
 
     /// @inheritdoc ILensHub
@@ -195,7 +196,7 @@ contract LensHub is LensNFTBase, VersionedInitializable, LensMultiState, LensHub
         override
         whenNotPaused
     {
-        GeneralLib.setProfileMetadataURIWithSig(vars);
+        ProfileLib.setProfileMetadataURIWithSig(vars);
     }
 
     /// @inheritdoc ILensHub
@@ -204,7 +205,7 @@ contract LensHub is LensNFTBase, VersionedInitializable, LensMultiState, LensHub
         address followModule,
         bytes calldata followModuleInitData
     ) external override whenNotPaused {
-        GeneralLib.setFollowModule(profileId, followModule, followModuleInitData);
+        ProfileLib.setFollowModule(profileId, followModule, followModuleInitData);
     }
 
     /// @inheritdoc ILensHub
@@ -213,7 +214,7 @@ contract LensHub is LensNFTBase, VersionedInitializable, LensMultiState, LensHub
         override
         whenNotPaused
     {
-        GeneralLib.setFollowModuleWithSig(vars);
+        ProfileLib.setFollowModuleWithSig(vars);
     }
 
     /// @inheritdoc ILensHub
@@ -228,7 +229,7 @@ contract LensHub is LensNFTBase, VersionedInitializable, LensMultiState, LensHub
         override
         whenNotPaused
     {
-        GeneralLib.setDispatcherWithSig(vars);
+        ProfileLib.setDispatcherWithSig(vars);
     }
 
     /// @inheritdoc ILensHub
@@ -251,7 +252,7 @@ contract LensHub is LensNFTBase, VersionedInitializable, LensMultiState, LensHub
         override
         whenNotPaused
     {
-        GeneralLib.setProfileImageURI(profileId, imageURI);
+        ProfileLib.setProfileImageURI(profileId, imageURI);
     }
 
     /// @inheritdoc ILensHub
@@ -260,7 +261,7 @@ contract LensHub is LensNFTBase, VersionedInitializable, LensMultiState, LensHub
         override
         whenNotPaused
     {
-        GeneralLib.setProfileImageURIWithSig(vars);
+        ProfileLib.setProfileImageURIWithSig(vars);
     }
 
     /// @inheritdoc ILensHub
@@ -269,7 +270,7 @@ contract LensHub is LensNFTBase, VersionedInitializable, LensMultiState, LensHub
         override
         whenNotPaused
     {
-        GeneralLib.setFollowNFTURI(profileId, followNFTURI);
+        ProfileLib.setFollowNFTURI(profileId, followNFTURI);
     }
 
     /// @inheritdoc ILensHub
@@ -278,7 +279,7 @@ contract LensHub is LensNFTBase, VersionedInitializable, LensMultiState, LensHub
         override
         whenNotPaused
     {
-        GeneralLib.setFollowNFTURIWithSig(vars);
+        ProfileLib.setFollowNFTURIWithSig(vars);
     }
 
     /// @inheritdoc ILensHub
