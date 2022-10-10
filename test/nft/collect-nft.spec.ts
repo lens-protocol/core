@@ -1,5 +1,6 @@
 import '@nomiclabs/hardhat-ethers';
 import { expect } from 'chai';
+import { BigNumber } from 'ethers';
 import { CollectNFT, CollectNFT__factory } from '../../typechain-types';
 import { ZERO_ADDRESS } from '../helpers/constants';
 import { ERRORS } from '../helpers/errors';
@@ -17,6 +18,7 @@ import {
   userAddress,
   userTwo,
   abiCoder,
+  userTwoAddress,
 } from '../__setup.spec';
 
 makeSuiteCleanRoom('Collect NFT', function () {
@@ -73,6 +75,19 @@ makeSuiteCleanRoom('Collect NFT', function () {
     it('User should fail to get the URI for a token that does not exist', async function () {
       await expect(collectNFT.tokenURI(2)).to.be.revertedWith(ERRORS.TOKEN_DOES_NOT_EXIST);
     });
+
+    it('User should fail to change the royalty percentage if he is not the owner of the publication', async function () {
+      await expect(collectNFT.connect(userTwo).setRoyalty(100)).to.be.revertedWith(
+        ERRORS.NOT_PROFILE_OWNER
+      );
+    });
+
+    it('User should fail to change the royalty percentage if the value passed exceeds the royalty basis points', async function () {
+      const royaltyBasisPoints = 10000;
+      const newRoyalty = royaltyBasisPoints + 1;
+      expect(newRoyalty).to.be.greaterThan(royaltyBasisPoints);
+      await expect(collectNFT.setRoyalty(newRoyalty)).to.be.revertedWith(ERRORS.INVALID_PARAMETER);
+    });
   });
 
   context('Scenarios', function () {
@@ -88,6 +103,46 @@ makeSuiteCleanRoom('Collect NFT', function () {
 
     it('User should burn their collect NFT', async function () {
       await expect(collectNFT.burn(1)).to.not.be.reverted;
+    });
+
+    it('Default royalties are set to 10%', async function () {
+      const royaltyInfo = await collectNFT.royaltyInfo(1, 6900);
+      expect(royaltyInfo[0]).to.eq(userAddress);
+      expect(royaltyInfo[1]).to.eq(BigNumber.from(690));
+    });
+
+    it('User should be able to change the royalties if owns the profile and passes a valid royalty percentage in basis points', async function () {
+      await expect(collectNFT.setRoyalty(5000)).to.not.be.reverted;
+      const royaltyInfo = await collectNFT.royaltyInfo(1, 3000);
+      expect(royaltyInfo[0]).to.eq(userAddress);
+      expect(royaltyInfo[1]).to.eq(BigNumber.from(1500));
+    });
+
+    it('User should be able to get the royalty info even over a token that does not exist yet', async function () {
+      const unexistentTokenId = 69;
+      await expect(collectNFT.tokenURI(unexistentTokenId)).to.be.revertedWith(
+        ERRORS.TOKEN_DOES_NOT_EXIST
+      );
+      const royaltyInfo = await collectNFT.royaltyInfo(unexistentTokenId, 3000);
+      expect(royaltyInfo[0]).to.eq(userAddress);
+      expect(royaltyInfo[1]).to.eq(BigNumber.from(300));
+    });
+
+    it('Publication owner should be able to remove royalties by setting them as zero', async function () {
+      await expect(collectNFT.setRoyalty(0)).to.not.be.reverted;
+      const royaltyInfo = await collectNFT.royaltyInfo(1, 3000);
+      expect(royaltyInfo[0]).to.eq(userAddress);
+      expect(royaltyInfo[1]).to.eq(BigNumber.from(0));
+    });
+
+    it('If the profile authoring the publication is transferred the royalty info now returns the new owner as recipient', async function () {
+      let royaltyInfo = await collectNFT.royaltyInfo(1, 69);
+      expect(royaltyInfo[0]).to.eq(userAddress);
+      await expect(
+        lensHub.transferFrom(userAddress, userTwoAddress, FIRST_PROFILE_ID)
+      ).to.not.be.reverted;
+      royaltyInfo = await collectNFT.royaltyInfo(1, 69);
+      expect(royaltyInfo[0]).to.eq(userTwoAddress);
     });
   });
 });

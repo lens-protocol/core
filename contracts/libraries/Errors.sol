@@ -34,6 +34,7 @@ library Errors {
     error ArrayMismatch();
     error CannotCommentOnSelf();
     error NotWhitelisted();
+    error InvalidParameter();
 
     // Module Errors
     error InitParamsInvalid();
