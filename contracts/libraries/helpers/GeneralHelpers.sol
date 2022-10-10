@@ -158,6 +158,26 @@ library GeneralHelpers {
         return owner;
     }
 
+    function validateCallerIsOwnerOrDispatcherOrExecutor(uint256 profileId) internal view {
+        // It's safe to use the `unsafeOwnerOf()` function here because the sender cannot be
+        // the zero address, the dispatcher is cleared on burn and the zero address cannot approve
+        // a delegated executor.
+        address owner = unsafeOwnerOf(profileId);
+        if (msg.sender != owner) {
+            address dispatcher;
+
+            // Load the dispatcher for the given profile.
+            assembly {
+                mstore(0, profileId)
+                mstore(32, DISPATCHER_BY_PROFILE_MAPPING_SLOT)
+                let slot := keccak256(0, 64)
+                dispatcher := sload(slot)
+            }
+            if (msg.sender == dispatcher) return;
+            validateDelegatedExecutor(owner, msg.sender);
+        }
+    }
+
     function validateDelegatedExecutor(address onBehalfOf, address executor) internal view {
         bool invalidExecutor;
         assembly {
@@ -170,5 +190,20 @@ library GeneralHelpers {
             invalidExecutor := iszero(sload(slot))
         }
         if (invalidExecutor) revert Errors.ExecutorInvalid();
+    }
+
+    /**
+     * @dev Returns either the profile owner or the delegated signer if valid.
+     */
+    function getOriginatorOrDelegatedExecutorSigner(address originator, address delegatedSigner)
+        internal
+        view
+        returns (address)
+    {
+        if (delegatedSigner != address(0)) {
+            validateDelegatedExecutor(originator, delegatedSigner);
+            return delegatedSigner;
+        }
+        return originator;
     }
 }
