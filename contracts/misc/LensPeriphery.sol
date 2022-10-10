@@ -2,7 +2,7 @@
 
 pragma solidity 0.8.15;
 
-import {IERC721Time} from '../core/base/IERC721Time.sol';
+import {IERC721Time} from '../interfaces/IERC721Time.sol';
 import {ILensHub} from '../interfaces/ILensHub.sol';
 import {DataTypes} from '../libraries/DataTypes.sol';
 import {Events} from '../libraries/Events.sol';

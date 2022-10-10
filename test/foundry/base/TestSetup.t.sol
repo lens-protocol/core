@@ -26,17 +26,17 @@ contract TestSetup is Test {
     uint256 constant profileOwnerKey = 0x04546b;
     uint256 constant otherSignerKey = 0x737562;
 
-    address immutable profileOwner = vm.addr(profileOwnerKey);
-    address immutable otherSigner = vm.addr(otherSignerKey);
-    address immutable me = address(this);
-    bytes32 immutable domainSeparator;
+    address profileOwner = vm.addr(profileOwnerKey);
+    address otherSigner = vm.addr(otherSignerKey);
+    address me = address(this);
+    bytes32 domainSeparator;
 
-    CollectNFT immutable collectNFT;
-    FollowNFT immutable followNFT;
-    LensHub immutable hubImpl;
-    TransparentUpgradeableProxy immutable hubAsProxy;
-    LensHub immutable hub;
-    FreeCollectModule immutable freeCollectModule;
+    CollectNFT collectNFT;
+    FollowNFT followNFT;
+    LensHub hubImpl;
+    TransparentUpgradeableProxy hubAsProxy;
+    LensHub hub;
+    FreeCollectModule freeCollectModule;
 
     DataTypes.CreateProfileData mockCreateProfileData;
 
@@ -44,7 +44,7 @@ contract TestSetup is Test {
     DataTypes.CommentData mockCommentData;
     DataTypes.MirrorData mockMirrorData;
 
-    constructor() {
+    function setUp() public virtual {
         // Start deployments.
         vm.startPrank(deployer);
 
@@ -142,9 +142,7 @@ contract TestSetup is Test {
             referenceModule: address(0),
             referenceModuleInitData: ''
         });
-    }
 
-    function setUp() public virtual {
         hub.createProfile(mockCreateProfileData);
     }
 }
