@@ -57,6 +57,7 @@ library Errors {
     error ArrayMismatch();
     error CannotCommentOnSelf();
     error NotWhitelisted();
+    error InvalidParameter();
     error ExecutorInvalid();
 
     // Module Errors
