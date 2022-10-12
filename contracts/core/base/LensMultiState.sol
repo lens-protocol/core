@@ -5,6 +5,7 @@ pragma solidity 0.8.15;
 import {Events} from '../../libraries/Events.sol';
 import {DataTypes} from '../../libraries/DataTypes.sol';
 import {Errors} from '../../libraries/Errors.sol';
+import {ILensMultiState} from '../../interfaces/ILensMultiState.sol';
 
 /**
  * @title LensMultiState
@@ -15,7 +16,7 @@ import {Errors} from '../../libraries/Errors.sol';
  * whenNotPaused: Either publishingPaused or Unpaused.
  * whenPublishingEnabled: When Unpaused only.
  */
-abstract contract LensMultiState {
+abstract contract LensMultiState is ILensMultiState {
     DataTypes.ProtocolState private _state; // slot 12
 
     modifier whenNotPaused() {
@@ -36,7 +37,7 @@ abstract contract LensMultiState {
      *      1: PublishingPaused
      *      2: Paused
      */
-    function getState() external view returns (DataTypes.ProtocolState) {
+    function getState() external view override returns (DataTypes.ProtocolState) {
         return _state;
     }
 
