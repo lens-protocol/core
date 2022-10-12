@@ -14,6 +14,10 @@ import '../../../contracts/mocks/MockFollowModule.sol';
 import '../../../contracts/mocks/MockDeprecatedFollowModule.sol';
 import '../../../contracts/interfaces/IERC721Time.sol';
 
+interface IOldHub {
+    function setDefaultProfile(uint256 profileId) external;
+}
+
 contract UpgradeForkTest is BaseTest {
     bytes32 constant ADMIN_SLOT = bytes32(uint256(keccak256('eip1967.proxy.admin')) - 1);
     address constant POLYGON_HUB_PROXY = 0xDb46d1Dc155634FbC732f92E853b10B288AD5a1d;
@@ -182,6 +186,8 @@ contract UpgradeForkTest is BaseTest {
             mockCreateProfileData.followModule = mockDeprecatedFollowModule;
             profileId = hub.createProfile(mockCreateProfileData);
         }
+
+        IOldHub(address(hub)).setDefaultProfile(profileId);
 
         return profileId;
     }
