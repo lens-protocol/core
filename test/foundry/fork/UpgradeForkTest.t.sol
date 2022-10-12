@@ -13,18 +13,34 @@ import '../../../contracts/mocks/MockDeprecatedCollectModule.sol';
 import '../../../contracts/mocks/MockFollowModule.sol';
 import '../../../contracts/mocks/MockDeprecatedFollowModule.sol';
 import '../../../contracts/interfaces/IERC721Time.sol';
+import '../../../contracts/interfaces/ILensMultiState.sol';
 
 interface IOldHub {
+    function follow(uint256[] calldata profileIds, bytes[] calldata datas) external;
+
+    function collect(
+        uint256 profileId,
+        uint256 pubId,
+        bytes calldata data
+    ) external;
+
     function setDefaultProfile(uint256 profileId) external;
+
+    function defaultProfile(address wallet) external view returns (uint256);
 }
 
 contract UpgradeForkTest is BaseTest {
     bytes32 constant ADMIN_SLOT = bytes32(uint256(keccak256('eip1967.proxy.admin')) - 1);
+    address constant MOCK_DISPATCHER_ADDRESS = address(0x4546b);
     address constant POLYGON_HUB_PROXY = 0xDb46d1Dc155634FbC732f92E853b10B288AD5a1d;
     address constant MUMBAI_HUB_PROXY = 0x60Ae865ee4C725cd04353b5AAb364553f56ceF82;
 
     uint256 polygonForkId;
     uint256 mumbaiForkId;
+
+    address mockCollectModuleAddr;
+    address mockFollowModuleAddr;
+    address mockReferenceModuleAddr;
 
     function setUp() public override {
         string memory polygonForkUrl = vm.envString('POLYGON_RPC_URL');
@@ -36,28 +52,46 @@ contract UpgradeForkTest is BaseTest {
 
     function testUpgradePolygon() public {
         vm.selectFork(polygonForkId);
-        super.setUp();
         ILensHub oldHub = ILensHub(POLYGON_HUB_PROXY);
         TransparentUpgradeableProxy oldHubAsProxy = TransparentUpgradeableProxy(
             payable(POLYGON_HUB_PROXY)
         );
 
-        // First, get the previous data.
-        address gov = oldHub.getGovernance();
         address proxyAdmin = address(uint160(uint256(vm.load(POLYGON_HUB_PROXY, ADMIN_SLOT))));
+        address gov = oldHub.getGovernance();
 
-        // Create a profile on the old hub, set the default profile.
+        // Setup the new deployment and helper memory structs.
+        _forkSetup(POLYGON_HUB_PROXY, gov);
+
+        // Create a profile on the old hub, set the default profile and dispatcher.
         uint256 profileId = _fullCreateProfileSequence(gov, oldHub);
+
+        // Get the profile hash.
+        DataTypes.ProfileStruct memory profileStruct = oldHub.getProfile(profileId);
+        bytes memory encodedProfile = abi.encode(profileStruct);
+        console2.logBytes(encodedProfile);
 
         // Post, comment, mirror.
         _fullPublishSequence(profileId, gov, oldHub);
 
-        // Second, upgrade the hub.
+        // Follow, Collect.
+        _fullFollowCollectSequence(profileId, oldHub);
+
+        // Upgrade the hub.
         vm.prank(proxyAdmin);
         oldHubAsProxy.upgradeTo(address(hubImpl));
 
-        // Third, get the data and ensure it's equal to the old data (getters access the same slots).
+        // Ensure governance is the same.
         assertEq(oldHub.getGovernance(), gov);
+
+        // Create a profile on the new hub, set the default profile and dispatcher.
+        profileId = _fullCreateProfileSequence(gov, oldHub);
+
+        // Post, comment, mirror.
+        _fullPublishSequence(profileId, gov, oldHub);
+
+        // Follow, Collect.
+        _fullFollowCollectSequence(profileId, oldHub);
 
         // Fourth, set new data and ensure getters return the new data (proper slots set).
         vm.prank(gov);
@@ -65,38 +99,107 @@ contract UpgradeForkTest is BaseTest {
         assertEq(oldHub.getGovernance(), me);
     }
 
+    function _fullCreateProfileSequence(address gov, ILensHub hub) private returns (uint256) {
+        // In order to make this test suite evergreen, we must try setting a modern follow module since we don't know
+        // which version of the hub we're working with, if this fails, then we should use a deprecated one.
+
+        mockCreateProfileData.handle = vm.toString(IERC721Enumerable(address(hub)).totalSupply());
+        mockCreateProfileData.followModule = mockFollowModuleAddr;
+
+        uint256 profileId;
+        try hub.createProfile(mockCreateProfileData) returns (uint256 retProfileId) {
+            profileId = retProfileId;
+            console2.log('Profile created with modern follow module.');
+            hub.setDefaultProfile(me, profileId);
+            assertEq(hub.getDefaultProfile(me), profileId);
+        } catch {
+            console2.log(
+                'Profile creation with modern follow module failed. Attempting with deprecated module.'
+            );
+            address mockDeprecatedFollowModule = address(new MockDeprecatedFollowModule());
+
+            vm.prank(gov);
+            hub.whitelistFollowModule(mockDeprecatedFollowModule, true);
+
+            mockCreateProfileData.followModule = mockDeprecatedFollowModule;
+            profileId = hub.createProfile(mockCreateProfileData);
+            IOldHub(address(hub)).setDefaultProfile(profileId);
+            assertEq(IOldHub(address(hub)).defaultProfile(me), profileId);
+        }
+        hub.setDispatcher(profileId, MOCK_DISPATCHER_ADDRESS);
+        assertEq(hub.getDispatcher(profileId), MOCK_DISPATCHER_ADDRESS);
+        return profileId;
+    }
+
     function _fullPublishSequence(
         uint256 profileId,
         address gov,
         ILensHub hub
     ) private {
-        // In order to make this test suite evergreen, we must try publishing with a modern collect and reference
-        // module since we don't know which version of the hub we're working with. If this fails, then we should
-        // use deprecated modules.
-        address mockReferenceModule = address(new MockReferenceModule());
+        // First check if the new interface works, if not, use the old interface.
 
-        vm.startPrank(gov);
-        hub.whitelistCollectModule(address(mockCollectModule), true);
-        hub.whitelistReferenceModule(mockReferenceModule, true);
-        vm.stopPrank();
-
-        // Set the proper profile ID, reference module data, and profile ID pointed.
+        // Set the proper initial params, these must be redundantly reset as they may have been set
+        // to different values in memory.
         mockPostData.profileId = profileId;
-        mockPostData.referenceModuleInitData = abi.encode(1);
+        mockPostData.collectModule = mockCollectModuleAddr;
+        mockPostData.referenceModule = mockReferenceModuleAddr;
+
         mockCommentData.profileId = profileId;
         mockCommentData.profileIdPointed = profileId;
-        mockCommentData.referenceModuleInitData = abi.encode(1);
+
         mockMirrorData.profileId = profileId;
         mockMirrorData.profileIdPointed = profileId;
-        mockMirrorData.referenceModuleInitData = abi.encode(1);
 
         // Set the modern reference module, the modern collect module is already set by default.
-        mockPostData.referenceModule = mockReferenceModule;
+        mockPostData.referenceModule = mockReferenceModuleAddr;
 
         try hub.post(mockPostData) returns (uint256 retPubId) {
-            console2.log('Post published with modern collect and reference module.');
+            console2.log(
+                'Post published with modern collect and reference module, continuing with modern modules.'
+            );
             uint256 postId = retPubId;
             assertEq(postId, 1);
+
+            mockCommentData.collectModule = mockCollectModuleAddr;
+            mockCommentData.referenceModule = mockReferenceModuleAddr;
+            mockMirrorData.referenceModule = mockReferenceModuleAddr;
+
+            // Validate post.
+            assertEq(postId, 1);
+            DataTypes.PublicationStruct memory pub = hub.getPub(profileId, postId);
+            assertEq(pub.profileIdPointed, 0);
+            assertEq(pub.pubIdPointed, 0);
+            assertEq(pub.contentURI, mockPostData.contentURI);
+            assertEq(pub.referenceModule, mockPostData.referenceModule);
+            assertEq(pub.collectModule, mockPostData.collectModule);
+            assertEq(pub.collectNFT, address(0));
+
+            // Comment.
+            uint256 commentId = hub.comment(mockCommentData);
+
+            // Validate comment.
+            assertEq(commentId, 2);
+            pub = hub.getPub(profileId, commentId);
+            assertEq(pub.profileIdPointed, mockCommentData.profileIdPointed);
+            assertEq(pub.pubIdPointed, mockCommentData.pubIdPointed);
+            assertEq(pub.contentURI, mockCommentData.contentURI);
+            assertEq(pub.referenceModule, mockCommentData.referenceModule);
+            assertEq(pub.collectModule, mockCommentData.collectModule);
+            assertEq(pub.collectNFT, address(0));
+
+            // Mirror.
+            uint256 mirrorId = hub.mirror(mockMirrorData);
+
+            // Validate mirror.
+            assertEq(mirrorId, 3);
+            pub = hub.getPub(profileId, mirrorId);
+            assertEq(pub.profileIdPointed, mockMirrorData.profileIdPointed);
+            assertEq(pub.pubIdPointed, mockMirrorData.pubIdPointed);
+            assertEq(pub.contentURI, '');
+            assertEq(pub.referenceModule, mockMirrorData.referenceModule);
+            assertEq(pub.collectModule, address(0));
+            assertEq(pub.collectNFT, address(0));
+
         } catch {
             console2.log(
                 'Post with modern collect and reference module failed, Attempting with deprecated modules'
@@ -156,39 +259,117 @@ contract UpgradeForkTest is BaseTest {
         }
     }
 
-    function _fullCreateProfileSequence(address gov, ILensHub hub) private returns (uint256) {
-        // In order to make this test suite evergreen, we must try setting a modern follow module since we don't know
-        // which version of the hub we're working with, if this fails, then we should use a deprecated one.
+    function _fullFollowCollectSequence(uint256 profileId, ILensHub hub) private {
+        // First check if the new interface works, if not, use the old interface.
+        uint256[] memory profileIds = new uint256[](1);
+        profileIds[0] = profileId;
+        bytes[] memory datas = new bytes[](1);
+        datas[0] = '';
 
-        address mockFollowModule = address(new MockFollowModule());
-        vm.startPrank(gov);
-        hub.whitelistProfileCreator(me, true);
-        hub.whitelistFollowModule(mockFollowModule, true);
-        vm.stopPrank();
-
-        mockCreateProfileData.to = me;
-        mockCreateProfileData.handle = vm.toString(IERC721Enumerable(address(hub)).totalSupply());
-        mockCreateProfileData.followModule = mockFollowModule;
-        mockCreateProfileData.followModuleInitData = abi.encode(1);
-        uint256 profileId;
-
-        try hub.createProfile(mockCreateProfileData) returns (uint256 retProfileId) {
-            profileId = retProfileId;
-            console2.log('Profile created with modern follow module.');
+        try hub.follow(me, profileIds, datas) {
+            console2.log(
+                'Follow with modern interface succeeded, continuing with modern interface.'
+            );
+            hub.collect(me, profileId, 1, '');
+            hub.collect(me, profileId, 2, '');
+            hub.collect(me, profileId, 3, '');
         } catch {
             console2.log(
-                'Profile creation with modern follow module failed. Attempting with deprecated module.'
+                'Follow with modern interface failed, proceeding with deprecated interface.'
             );
-            address mockDeprecatedFollowModule = address(new MockDeprecatedFollowModule());
-            vm.prank(gov);
-            hub.whitelistFollowModule(mockDeprecatedFollowModule, true);
-
-            mockCreateProfileData.followModule = mockDeprecatedFollowModule;
-            profileId = hub.createProfile(mockCreateProfileData);
+            IOldHub(address(hub)).follow(profileIds, datas);
+            IOldHub(address(hub)).collect(profileId, 1, '');
+            IOldHub(address(hub)).collect(profileId, 2, '');
+            IOldHub(address(hub)).collect(profileId, 3, '');
         }
+    }
 
-        IOldHub(address(hub)).setDefaultProfile(profileId);
+    function _forkSetup(address hubProxyAddr, address gov) private {
+        // Start deployments.
+        vm.startPrank(deployer);
 
-        return profileId;
+        // Precompute needed addresss.
+        address followNFTAddr = computeCreateAddress(deployer, 1);
+        address collectNFTAddr = computeCreateAddress(deployer, 2);
+
+        // Deploy implementation contracts.
+        hubImpl = new LensHub(followNFTAddr, collectNFTAddr);
+        followNFT = new FollowNFT(hubProxyAddr);
+        collectNFT = new CollectNFT(hubProxyAddr);
+
+        // Deploy the mock modules.
+        mockCollectModuleAddr = address(new MockCollectModule());
+        mockReferenceModuleAddr = address(new MockReferenceModule());
+        mockFollowModuleAddr = address(new MockFollowModule());
+
+        // End deployments.
+        vm.stopPrank();
+
+        hub = LensHub(hubProxyAddr);
+        // Start gov actions.
+        vm.startPrank(gov);
+        hub.whitelistProfileCreator(me, true);
+        hub.whitelistFollowModule(mockFollowModuleAddr, true);
+        hub.whitelistCollectModule(mockCollectModuleAddr, true);
+        hub.whitelistReferenceModule(mockReferenceModuleAddr, true);
+
+        // End gov actions.
+        vm.stopPrank();
+
+        // Compute the domain separator.
+        domainSeparator = keccak256(
+            abi.encode(
+                EIP712_DOMAIN_TYPEHASH,
+                keccak256('Lens Protocol Profiles'),
+                EIP712_REVISION_HASH,
+                block.chainid,
+                hubProxyAddr
+            )
+        );
+
+        // NOTE: Structs are invalid as-is. Handle and modules must be set on the fly.
+
+        // precompute basic profile creaton data.
+        mockCreateProfileData = DataTypes.CreateProfileData({
+            to: me,
+            handle: '',
+            imageURI: mockURI,
+            followModule: address(0),
+            followModuleInitData: abi.encode(1),
+            followNFTURI: mockURI
+        });
+
+        // Precompute basic post data.
+        mockPostData = DataTypes.PostData({
+            profileId: 0,
+            contentURI: mockURI,
+            collectModule: address(0),
+            collectModuleInitData: abi.encode(1),
+            referenceModule: address(0),
+            referenceModuleInitData: abi.encode(1)
+        });
+
+        // Precompute basic comment data.
+        mockCommentData = DataTypes.CommentData({
+            profileId: 0,
+            contentURI: mockURI,
+            profileIdPointed: firstProfileId,
+            pubIdPointed: 1,
+            referenceModuleData: '',
+            collectModule: address(0),
+            collectModuleInitData: abi.encode(1),
+            referenceModule: address(0),
+            referenceModuleInitData: abi.encode(1)
+        });
+
+        // Precompute basic mirror data.
+        mockMirrorData = DataTypes.MirrorData({
+            profileId: 0,
+            profileIdPointed: firstProfileId,
+            pubIdPointed: 1,
+            referenceModuleData: '',
+            referenceModule: address(0),
+            referenceModuleInitData: abi.encode(1)
+        });
     }
 }
