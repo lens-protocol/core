@@ -66,16 +66,15 @@ contract UpgradeForkTest is BaseTest {
         // Create a profile on the old hub, set the default profile and dispatcher.
         uint256 profileId = _fullCreateProfileSequence(gov, oldHub);
 
-        // Get the profile hash.
-        DataTypes.ProfileStruct memory profileStruct = oldHub.getProfile(profileId);
-        bytes memory encodedProfile = abi.encode(profileStruct);
-        console2.logBytes(encodedProfile);
-
         // Post, comment, mirror.
         _fullPublishSequence(profileId, gov, oldHub);
 
         // Follow, Collect.
         _fullFollowCollectSequence(profileId, oldHub);
+
+        // Get the profile.
+        DataTypes.ProfileStruct memory profileStruct = oldHub.getProfile(profileId);
+        bytes memory encodedProfile = abi.encode(profileStruct);
 
         // Upgrade the hub.
         vm.prank(proxyAdmin);
@@ -83,6 +82,11 @@ contract UpgradeForkTest is BaseTest {
 
         // Ensure governance is the same.
         assertEq(oldHub.getGovernance(), gov);
+
+        // Ensure profile is the same.
+        profileStruct = oldHub.getProfile(profileId);
+        bytes memory postUpgradeEncodedProfile = abi.encode(profileStruct);
+        assertEq(postUpgradeEncodedProfile, encodedProfile);
 
         // Create a profile on the new hub, set the default profile and dispatcher.
         profileId = _fullCreateProfileSequence(gov, oldHub);
@@ -199,7 +203,6 @@ contract UpgradeForkTest is BaseTest {
             assertEq(pub.referenceModule, mockMirrorData.referenceModule);
             assertEq(pub.collectModule, address(0));
             assertEq(pub.collectNFT, address(0));
-
         } catch {
             console2.log(
                 'Post with modern collect and reference module failed, Attempting with deprecated modules'
