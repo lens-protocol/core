@@ -7,13 +7,13 @@ import 'forge-std/Test.sol';
 import '../../../contracts/core/LensHub.sol';
 import '../../../contracts/core/FollowNFT.sol';
 import '../../../contracts/core/CollectNFT.sol';
-import '../../../contracts/core/modules/collect/FreeCollectModule.sol';
 import '../../../contracts/upgradeability/TransparentUpgradeableProxy.sol';
 import '../../../contracts/libraries/DataTypes.sol';
 import '../../../contracts/libraries/Constants.sol';
 import '../../../contracts/libraries/Errors.sol';
 import '../../../contracts/libraries/GeneralLib.sol';
 import '../../../contracts/libraries/ProfileTokenURILogic.sol';
+import '../../../contracts/mocks/MockCollectModule.sol';
 
 contract TestSetup is Test {
     uint256 constant firstProfileId = 1;
@@ -36,7 +36,7 @@ contract TestSetup is Test {
     LensHub hubImpl;
     TransparentUpgradeableProxy hubAsProxy;
     LensHub hub;
-    FreeCollectModule freeCollectModule;
+    MockCollectModule mockCollectModule;
 
     DataTypes.CreateProfileData mockCreateProfileData;
 
@@ -68,8 +68,8 @@ contract TestSetup is Test {
         // Cast proxy to LensHub interface.
         hub = LensHub(address(hubAsProxy));
 
-        // Deploy the FreeCollectModule.
-        freeCollectModule = new FreeCollectModule(hubProxyAddr);
+        // Deploy the MockCollectModule.
+        mockCollectModule = new MockCollectModule();
 
         // End deployments.
         vm.stopPrank();
@@ -81,7 +81,7 @@ contract TestSetup is Test {
         hub.setState(DataTypes.ProtocolState.Unpaused);
 
         // Whitelist the FreeCollectModule.
-        hub.whitelistCollectModule(address(freeCollectModule), true);
+        hub.whitelistCollectModule(address(mockCollectModule), true);
 
         // Whitelist the test contract as a profile creator
         hub.whitelistProfileCreator(me, true);
@@ -114,8 +114,8 @@ contract TestSetup is Test {
         mockPostData = DataTypes.PostData({
             profileId: firstProfileId,
             contentURI: mockURI,
-            collectModule: address(freeCollectModule),
-            collectModuleInitData: abi.encode(false),
+            collectModule: address(mockCollectModule),
+            collectModuleInitData: abi.encode(1),
             referenceModule: address(0),
             referenceModuleInitData: ''
         });
@@ -127,8 +127,8 @@ contract TestSetup is Test {
             profileIdPointed: firstProfileId,
             pubIdPointed: 1,
             referenceModuleData: '',
-            collectModule: address(freeCollectModule),
-            collectModuleInitData: abi.encode(false),
+            collectModule: address(mockCollectModule),
+            collectModuleInitData: abi.encode(1),
             referenceModule: address(0),
             referenceModuleInitData: ''
         });
