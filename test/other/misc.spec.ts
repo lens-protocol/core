@@ -1,7 +1,11 @@
 import '@nomiclabs/hardhat-ethers';
 import { expect } from 'chai';
 import { keccak256, toUtf8Bytes } from 'ethers/lib/utils';
-import { FollowNFT__factory, UIDataProvider__factory } from '../../typechain-types';
+import {
+  FollowNFT__factory,
+  ProfileAccess__factory,
+  UIDataProvider__factory,
+} from '../../typechain-types';
 import { MAX_UINT256, ZERO_ADDRESS } from '../helpers/constants';
 import { ERRORS } from '../helpers/errors';
 import {
@@ -1250,6 +1254,50 @@ makeSuiteCleanRoom('Misc', function () {
           });
         });
       });
+    });
+  });
+
+  context('ProfileAccess', function () {
+    let profileAccess;
+    before(async function () {
+      profileAccess = await new ProfileAccess__factory(deployer).deploy(lensHub.address);
+    });
+    beforeEach(async function () {
+      const receipt = await waitForTx(
+        lensHub.createProfile({
+          to: userAddress,
+          handle: MOCK_PROFILE_HANDLE,
+          imageURI: MOCK_PROFILE_URI,
+          followModule: ZERO_ADDRESS,
+          followModuleInitData: [],
+          followNFTURI: MOCK_FOLLOW_NFT_URI,
+        })
+      );
+
+      expect(receipt.logs.length).to.eq(2);
+      matchEvent(receipt, 'ProfileCreated', [
+        FIRST_PROFILE_ID,
+        userAddress,
+        userAddress,
+        MOCK_PROFILE_HANDLE,
+        MOCK_PROFILE_URI,
+        ZERO_ADDRESS,
+        [],
+        MOCK_FOLLOW_NFT_URI,
+        await getTimestamp(),
+      ]);
+    });
+
+    it('ProfileAccess should return true if user owns the profile', async function () {
+      // Deploy the ProfileAccess contract
+      expect(await lensHub.ownerOf(FIRST_PROFILE_ID)).to.be.eq(userAddress);
+      expect(await profileAccess.hasAccess(userAddress, FIRST_PROFILE_ID, [])).to.be.true;
+    });
+
+    it('ProfileAccess should return false if user does not own the profile', async function () {
+      // Deploy the ProfileAccess contract
+      expect(await lensHub.ownerOf(FIRST_PROFILE_ID)).to.not.be.eq(userTwoAddress);
+      expect(await profileAccess.hasAccess(userTwoAddress, FIRST_PROFILE_ID, [])).to.be.false;
     });
   });
 });
