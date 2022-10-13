@@ -2,7 +2,7 @@
 
 pragma solidity 0.8.10;
 
-import {ILensHub} from '../interfaces/ILensHub.sol';
+import {IERC721} from '@openzeppelin/contracts/token/ERC721/IERC721.sol';
 
 contract ProfileAccess {
     address internal immutable LENS_HUB;
@@ -24,6 +24,6 @@ contract ProfileAccess {
         uint256 profileId,
         bytes memory data
     ) external view returns (bool) {
-        return ILensHub(LENS_HUB).ownerOf(profileId) == requestorAddress;
+        return IERC721(LENS_HUB).ownerOf(profileId) == requestorAddress;
     }
 }
