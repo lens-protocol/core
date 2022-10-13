@@ -17,6 +17,8 @@ contract MockProfileAccessV2BadRevision is VersionedInitializable {
 
     address internal immutable LENS_HUB;
 
+    uint256 public randomNumber = 7; // contract must be different to original
+
     constructor(address _lensHub) {
         LENS_HUB = _lensHub;
     }

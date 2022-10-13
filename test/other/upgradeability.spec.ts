@@ -4,10 +4,26 @@ import { ethers } from 'hardhat';
 import {
   MockLensHubV2BadRevision__factory,
   MockLensHubV2__factory,
+  MockProfileAccessV2BadRevision__factory,
+  MockProfileAccessV2__factory,
+  ProfileAccess__factory,
   TransparentUpgradeableProxy__factory,
 } from '../../typechain-types';
+import { ZERO_ADDRESS } from '../helpers/constants';
 import { ERRORS } from '../helpers/errors';
-import { abiCoder, deployer, lensHub, makeSuiteCleanRoom, user } from '../__setup.spec';
+import {
+  abiCoder,
+  deployer,
+  deployerAddress,
+  FIRST_PROFILE_ID,
+  lensHub,
+  makeSuiteCleanRoom,
+  MOCK_FOLLOW_NFT_URI,
+  MOCK_PROFILE_HANDLE,
+  MOCK_PROFILE_URI,
+  user,
+  userAddress,
+} from '../__setup.spec';
 
 makeSuiteCleanRoom('Upgradeability', function () {
   const valueToSet = 123;
@@ -26,13 +42,13 @@ makeSuiteCleanRoom('Upgradeability', function () {
     const newImpl = await new MockLensHubV2__factory(deployer).deploy();
     const proxyHub = TransparentUpgradeableProxy__factory.connect(lensHub.address, deployer);
 
-    let prevStorage: string[] = [];
+    const prevStorage: string[] = [];
     for (let i = 0; i < 24; i++) {
       const valueAt = await ethers.provider.getStorageAt(proxyHub.address, i);
       prevStorage.push(valueAt);
     }
 
-    let prevNextSlot = await ethers.provider.getStorageAt(proxyHub.address, 24);
+    const prevNextSlot = await ethers.provider.getStorageAt(proxyHub.address, 24);
     const formattedZero = abiCoder.encode(['uint256'], [0]);
     expect(prevNextSlot).to.eq(formattedZero);
 
@@ -49,5 +65,53 @@ makeSuiteCleanRoom('Upgradeability', function () {
     const newNextSlot = await ethers.provider.getStorageAt(proxyHub.address, 24);
     const formattedValue = abiCoder.encode(['uint256'], [valueToSet]);
     expect(newNextSlot).to.eq(formattedValue);
+  });
+
+  context('ProfileAccess Upgradability', function () {
+    let profileAccess, profileAccessImpl, profileAccessProxy;
+    before(async function () {
+      profileAccessImpl = await new ProfileAccess__factory(deployer).deploy(lensHub.address);
+
+      const data = profileAccessImpl.interface.encodeFunctionData('initialize', []);
+
+      profileAccessProxy = await new TransparentUpgradeableProxy__factory(deployer).deploy(
+        profileAccessImpl.address,
+        deployerAddress,
+        data
+      );
+
+      profileAccess = ProfileAccess__factory.connect(profileAccessProxy.address, user);
+    });
+
+    beforeEach(async function () {
+      await lensHub.createProfile({
+        to: userAddress,
+        handle: MOCK_PROFILE_HANDLE,
+        imageURI: MOCK_PROFILE_URI,
+        followModule: ZERO_ADDRESS,
+        followModuleInitData: [],
+        followNFTURI: MOCK_FOLLOW_NFT_URI,
+      });
+    });
+
+    it('ProfileAccess upgrade should fail to initialize an implementation with the same revision', async function () {
+      const newImpl = await new MockProfileAccessV2BadRevision__factory(deployer).deploy(
+        lensHub.address
+      );
+      await expect(profileAccessProxy.upgradeTo(newImpl.address)).to.not.be.reverted;
+      await expect(profileAccess.initialize()).to.be.revertedWith(ERRORS.INITIALIZED);
+    });
+
+    it('ProfileAccess upgrade should behave as expected before and after being upgraded', async function () {
+      expect(await lensHub.ownerOf(FIRST_PROFILE_ID)).to.be.eq(userAddress);
+      expect(await profileAccess.hasAccess(userAddress, FIRST_PROFILE_ID, [])).to.be.true;
+
+      const newImpl = await new MockProfileAccessV2__factory(deployer).deploy(lensHub.address);
+      await expect(profileAccessProxy.upgradeTo(newImpl.address)).to.not.be.reverted;
+      await expect(profileAccess.initialize()).to.not.be.reverted;
+
+      expect(await lensHub.ownerOf(FIRST_PROFILE_ID)).to.be.eq(userAddress);
+      expect(await profileAccess.hasAccess(userAddress, FIRST_PROFILE_ID, [])).to.be.true;
+    });
   });
 });
