@@ -52,55 +52,63 @@ contract UpgradeForkTest is BaseTest {
 
     function testUpgradePolygon() public {
         vm.selectFork(polygonForkId);
-        ILensHub oldHub = ILensHub(POLYGON_HUB_PROXY);
-        TransparentUpgradeableProxy oldHubAsProxy = TransparentUpgradeableProxy(
-            payable(POLYGON_HUB_PROXY)
-        );
+        _fullRun(POLYGON_HUB_PROXY);
+    }
 
-        address proxyAdmin = address(uint160(uint256(vm.load(POLYGON_HUB_PROXY, ADMIN_SLOT))));
-        address gov = oldHub.getGovernance();
+    function testUpgradeMumbai() public {
+        vm.selectFork(mumbaiForkId);
+        _fullRun(MUMBAI_HUB_PROXY);
+    }
+
+    function _fullRun(address hubProxyAddr) private {
+        ILensHub hub = ILensHub(hubProxyAddr);
+        address proxyAdmin = address(uint160(uint256(vm.load(hubProxyAddr, ADMIN_SLOT))));
+        address gov = hub.getGovernance();
 
         // Setup the new deployment and helper memory structs.
-        _forkSetup(POLYGON_HUB_PROXY, gov);
+        _forkSetup(hubProxyAddr, gov);
 
         // Create a profile on the old hub, set the default profile and dispatcher.
-        uint256 profileId = _fullCreateProfileSequence(gov, oldHub);
+        uint256 profileId = _fullCreateProfileSequence(gov, hub);
 
         // Post, comment, mirror.
-        _fullPublishSequence(profileId, gov, oldHub);
+        _fullPublishSequence(profileId, gov, hub);
 
         // Follow, Collect.
-        _fullFollowCollectSequence(profileId, oldHub);
+        _fullFollowCollectSequence(profileId, hub);
 
         // Get the profile.
-        DataTypes.ProfileStruct memory profileStruct = oldHub.getProfile(profileId);
+        DataTypes.ProfileStruct memory profileStruct = hub.getProfile(profileId);
         bytes memory encodedProfile = abi.encode(profileStruct);
 
         // Upgrade the hub.
+        TransparentUpgradeableProxy oldHubAsProxy = TransparentUpgradeableProxy(
+            payable(hubProxyAddr)
+        );
         vm.prank(proxyAdmin);
         oldHubAsProxy.upgradeTo(address(hubImpl));
 
         // Ensure governance is the same.
-        assertEq(oldHub.getGovernance(), gov);
+        assertEq(hub.getGovernance(), gov);
 
         // Ensure profile is the same.
-        profileStruct = oldHub.getProfile(profileId);
+        profileStruct = hub.getProfile(profileId);
         bytes memory postUpgradeEncodedProfile = abi.encode(profileStruct);
         assertEq(postUpgradeEncodedProfile, encodedProfile);
 
         // Create a profile on the new hub, set the default profile and dispatcher.
-        profileId = _fullCreateProfileSequence(gov, oldHub);
+        profileId = _fullCreateProfileSequence(gov, hub);
 
         // Post, comment, mirror.
-        _fullPublishSequence(profileId, gov, oldHub);
+        _fullPublishSequence(profileId, gov, hub);
 
         // Follow, Collect.
-        _fullFollowCollectSequence(profileId, oldHub);
+        _fullFollowCollectSequence(profileId, hub);
 
         // Fourth, set new data and ensure getters return the new data (proper slots set).
         vm.prank(gov);
-        oldHub.setGovernance(me);
-        assertEq(oldHub.getGovernance(), me);
+        hub.setGovernance(me);
+        assertEq(hub.getGovernance(), me);
     }
 
     function _fullCreateProfileSequence(address gov, ILensHub hub) private returns (uint256) {
