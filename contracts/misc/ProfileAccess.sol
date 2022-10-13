@@ -14,7 +14,7 @@ contract ProfileAccess is VersionedInitializable {
         LENS_HUB = _lensHub;
     }
 
-    function initialize() external override initializer {}
+    function initialize() external initializer {}
 
     /**
      * @dev Function used to check whether an address is the owner of a profile.
