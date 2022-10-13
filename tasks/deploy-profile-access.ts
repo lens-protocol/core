@@ -47,7 +47,7 @@ task('deploy-profile-access', 'deploys the Profile Access contract with explorer
       'contracts/upgradeability/TransparentUpgradeableProxy.sol:TransparentUpgradeableProxy'
     );
 
-    // Connect the hub proxy to the LensHub factory and the governance for ease of use.
+    // Connect the profileAccess proxy to the ProfileAccess factory and the governance for ease of use.
     const profileAccess = ProfileAccess__factory.connect(proxy.address, governance);
 
     // Save and log the addresses
