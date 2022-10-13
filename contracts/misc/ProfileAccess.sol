@@ -2,14 +2,19 @@
 
 pragma solidity 0.8.10;
 
+import {VersionedInitializable} from '../upgradeability/VersionedInitializable.sol';
 import {IERC721} from '@openzeppelin/contracts/token/ERC721/IERC721.sol';
 
-contract ProfileAccess {
+contract ProfileAccess is VersionedInitializable {
+    uint256 internal constant REVISION = 1;
+
     address internal immutable LENS_HUB;
 
     constructor(address _lensHub) {
         LENS_HUB = _lensHub;
     }
+
+    function initialize() external override initializer {}
 
     /**
      * @dev Function used to check whether an address is the owner of a profile.
@@ -25,5 +30,9 @@ contract ProfileAccess {
         bytes memory data
     ) external view returns (bool) {
         return IERC721(LENS_HUB).ownerOf(profileId) == requestorAddress;
+    }
+
+    function getRevision() internal pure virtual override returns (uint256) {
+        return REVISION;
     }
 }
