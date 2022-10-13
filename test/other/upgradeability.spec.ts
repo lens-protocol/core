@@ -23,6 +23,7 @@ import {
   MOCK_PROFILE_URI,
   user,
   userAddress,
+  userTwoAddress,
 } from '../__setup.spec';
 
 makeSuiteCleanRoom('Upgradeability', function () {
@@ -105,6 +106,7 @@ makeSuiteCleanRoom('Upgradeability', function () {
     it('ProfileAccess upgrade should behave as expected before and after being upgraded', async function () {
       expect(await lensHub.ownerOf(FIRST_PROFILE_ID)).to.be.eq(userAddress);
       expect(await profileAccess.hasAccess(userAddress, FIRST_PROFILE_ID, [])).to.be.true;
+      expect(await profileAccess.hasAccess(userTwoAddress, FIRST_PROFILE_ID, [])).to.be.false;
 
       const newImpl = await new MockProfileAccessV2__factory(deployer).deploy(lensHub.address);
       await expect(profileAccessProxy.upgradeTo(newImpl.address)).to.not.be.reverted;
@@ -112,6 +114,7 @@ makeSuiteCleanRoom('Upgradeability', function () {
 
       expect(await lensHub.ownerOf(FIRST_PROFILE_ID)).to.be.eq(userAddress);
       expect(await profileAccess.hasAccess(userAddress, FIRST_PROFILE_ID, [])).to.be.true;
+      expect(await profileAccess.hasAccess(userTwoAddress, FIRST_PROFILE_ID, [])).to.be.false;
     });
   });
 });
