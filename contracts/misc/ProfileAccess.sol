@@ -5,6 +5,13 @@ pragma solidity 0.8.10;
 import {VersionedInitializable} from '../upgradeability/VersionedInitializable.sol';
 import {IERC721} from '@openzeppelin/contracts/token/ERC721/IERC721.sol';
 
+/**
+ * @title ProfileAccess
+ * @author Lens Protocol
+ *
+ * @notice This contract enables additional access control for encrypted publications on Lens by reporting whether
+ *      an address owns or has control over a given profile.
+ */
 contract ProfileAccess is VersionedInitializable {
     uint256 internal constant REVISION = 1;
 
