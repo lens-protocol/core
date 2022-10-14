@@ -1,10 +1,12 @@
 import '@nomiclabs/hardhat-ethers';
+import { formatEther } from 'ethers/lib/utils';
 import fs from 'fs';
 import { task } from 'hardhat/config';
 import { HardhatRuntimeEnvironment } from 'hardhat/types';
 import { TransparentUpgradeableProxy__factory, ProfileAccess__factory } from '../typechain-types';
 import { deployWithVerify } from './helpers/utils';
 
+const LENS_HUB_SANDBOX = '0x7582177F9E536aB0b6c721e11f383C326F2Ad1D5';
 const LENS_HUB_MUMBAI = '0x60Ae865ee4C725cd04353b5AAb364553f56ceF82';
 const LENS_HUB_POLYGON = '0xDb46d1Dc155634FbC732f92E853b10B288AD5a1d';
 
@@ -24,7 +26,34 @@ task('deploy-profile-access', 'deploys the Profile Access contract with explorer
 
     // Setting Lens Hub address if left undefined
     if (!lensHubAddress)
-      lensHubAddress = process.env.HARDHAT_NETWORK == 'matic' ? LENS_HUB_POLYGON : LENS_HUB_MUMBAI;
+      switch (hre.network.name) {
+        case 'matic':
+          lensHubAddress = LENS_HUB_POLYGON;
+          break;
+        case 'mumbai':
+          lensHubAddress = LENS_HUB_MUMBAI;
+          break;
+        case 'sandbox':
+          lensHubAddress = LENS_HUB_SANDBOX;
+          break;
+        default:
+          console.log(
+            '\n\tUnsupported network:',
+            hre.network.name,
+            '\n\t === HALTING DEPLOYMENT ==='
+          );
+          process.exit();
+      }
+
+    console.log(`\n\tNetwork: ${hre.network.name}`);
+    console.log(`\n\tDeployer:`, deployer.address);
+    console.log(
+      `\n\tDeployer balance:`,
+      formatEther(await ethers.provider.getBalance(deployer.address))
+    );
+    console.log(`\n\tGovernance:`, governance.address);
+    console.log(`\n\tproxyAdminAddress:`, proxyAdminAddress);
+    console.log(`\n\tlensHubAddress:`, lensHubAddress);
 
     console.log('\n\t-- Deploying Profile Access Implementation --');
 
