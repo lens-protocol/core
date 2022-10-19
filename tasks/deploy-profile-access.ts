@@ -13,8 +13,9 @@ const LENS_HUB_POLYGON = '0xDb46d1Dc155634FbC732f92E853b10B288AD5a1d';
 export let runtimeHRE: HardhatRuntimeEnvironment;
 
 task('deploy-profile-access', 'deploys the Profile Access contract with explorer verification')
-  .addOptionalParam('lensHubAddress')
-  .setAction(async ({ lensHubAddress }, hre) => {
+  .addOptionalParam('lensHubAddress', 'Address of the LensHub proxy')
+  .addFlag('broadcast', 'Submit transactions on-chain (will run a dry-run without this flag)')
+  .setAction(async ({ lensHubAddress, broadcast }, hre) => {
     // Note that the use of these signers is a placeholder and is not meant to be used in
     // production.
     runtimeHRE = hre;
@@ -55,37 +56,40 @@ task('deploy-profile-access', 'deploys the Profile Access contract with explorer
     console.log(`\n\tproxyAdminAddress:`, proxyAdminAddress);
     console.log(`\n\tlensHubAddress:`, lensHubAddress);
 
-    console.log('\n\t-- Deploying Profile Access Implementation --');
+    if (broadcast) {
+      console.log('\n\t-- Deploying Profile Access Implementation --');
+      const profileAccessImpl = await deployWithVerify(
+        new ProfileAccess__factory(deployer).deploy(lensHubAddress),
+        [lensHubAddress],
+        'contracts/misc/ProfileAccess.sol:ProfileAccess'
+      );
 
-    const profileAccessImpl = await deployWithVerify(
-      new ProfileAccess__factory(deployer).deploy(lensHubAddress),
-      [lensHubAddress],
-      'contracts/misc/ProfileAccess.sol:ProfileAccess'
-    );
+      const data = profileAccessImpl.interface.encodeFunctionData('initialize', []);
 
-    const data = profileAccessImpl.interface.encodeFunctionData('initialize', []);
+      console.log('\n\t-- Deploying Profile Access Proxy --');
+      const proxy = await deployWithVerify(
+        new TransparentUpgradeableProxy__factory(deployer).deploy(
+          profileAccessImpl.address,
+          proxyAdminAddress,
+          data
+        ),
+        [profileAccessImpl.address, deployer.address, data],
+        'contracts/upgradeability/TransparentUpgradeableProxy.sol:TransparentUpgradeableProxy'
+      );
 
-    console.log('\n\t-- Deploying Profile Access Proxy --');
-    const proxy = await deployWithVerify(
-      new TransparentUpgradeableProxy__factory(deployer).deploy(
-        profileAccessImpl.address,
-        proxyAdminAddress,
-        data
-      ),
-      [profileAccessImpl.address, deployer.address, data],
-      'contracts/upgradeability/TransparentUpgradeableProxy.sol:TransparentUpgradeableProxy'
-    );
+      // Connect the profileAccess proxy to the ProfileAccess factory and the governance for ease of use.
+      const profileAccess = ProfileAccess__factory.connect(proxy.address, governance);
 
-    // Connect the profileAccess proxy to the ProfileAccess factory and the governance for ease of use.
-    const profileAccess = ProfileAccess__factory.connect(proxy.address, governance);
+      // Save and log the addresses
+      const addrs = {
+        'profileAccess proxy': profileAccess.address,
+        'profileAccess impl': profileAccessImpl.address,
+      };
+      const json = JSON.stringify(addrs, null, 2);
+      console.log(json);
 
-    // Save and log the addresses
-    const addrs = {
-      'profileAccess proxy': profileAccess.address,
-      'profileAccess impl': profileAccessImpl.address,
-    };
-    const json = JSON.stringify(addrs, null, 2);
-    console.log(json);
-
-    fs.writeFileSync('addresses.json', json, 'utf-8');
+      fs.writeFileSync('addresses.json', json, 'utf-8');
+    } else {
+      console.log('\n--- To broadcast transactions on-chain: add --broadcast flag\n');
+    }
   });
