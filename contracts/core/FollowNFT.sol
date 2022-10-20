@@ -127,14 +127,16 @@ contract FollowNFT is LensNFTBase, IFollowNFT {
     }
 
     function name() public view override returns (string memory) {
-        string memory handle = ILensHub(HUB).getHandle(_profileId);
-        return string(abi.encodePacked(handle, FOLLOW_NFT_NAME_SUFFIX));
+        return 'Follow NFT';
+        // string memory handle = ILensHub(HUB).getHandle(_profileId);
+        // return string(abi.encodePacked(handle, FOLLOW_NFT_NAME_SUFFIX));
     }
 
     function symbol() public view override returns (string memory) {
-        string memory handle = ILensHub(HUB).getHandle(_profileId);
-        bytes4 firstBytes = bytes4(bytes(handle));
-        return string(abi.encodePacked(firstBytes, FOLLOW_NFT_SYMBOL_SUFFIX));
+        return 'FNFT';
+        // string memory handle = ILensHub(HUB).getHandle(_profileId);
+        // bytes4 firstBytes = bytes4(bytes(handle));
+        // return string(abi.encodePacked(firstBytes, FOLLOW_NFT_SYMBOL_SUFFIX));
     }
 
     /**

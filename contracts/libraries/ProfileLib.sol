@@ -17,7 +17,6 @@ library ProfileLib {
      *
      * @param vars The CreateProfileData struct containing the following parameters:
      *      to: The address receiving the profile.
-     *      handle: The handle to set for the profile, must be unique and non-empty.
      *      imageURI: The URI to set for the profile image.
      *      followModule: The follow module to use, can be the zero address.
      *      followModuleInitData: The follow module initialization data, if any
@@ -26,30 +25,10 @@ library ProfileLib {
      */
     function createProfile(DataTypes.CreateProfileData calldata vars, uint256 profileId) external {
         _validateProfileCreatorWhitelisted();
-        _validateHandle(vars.handle);
 
         if (bytes(vars.imageURI).length > MAX_PROFILE_IMAGE_URI_LENGTH)
             revert Errors.ProfileImageURILengthInvalid();
 
-        bytes32 handleHash = keccak256(bytes(vars.handle));
-        uint256 resolvedProfileId;
-        uint256 handleHashSlot;
-
-        // Load the profile ID the passed handle's hash resolves to, if it is non-zero, revert.
-        assembly {
-            mstore(0, handleHash)
-            mstore(32, PROFILE_ID_BY_HANDLE_HASH_MAPPING_SLOT)
-            handleHashSlot := keccak256(0, 64)
-            resolvedProfileId := sload(handleHashSlot)
-        }
-        if (resolvedProfileId != 0) revert Errors.HandleTaken();
-
-        // Store the profile ID so that the handle's hash now resolves to it.
-        assembly {
-            sstore(handleHashSlot, profileId)
-        }
-
-        _setProfileString(profileId, PROFILE_HANDLE_OFFSET, vars.handle);
         _setProfileString(profileId, PROFILE_IMAGE_URI_OFFSET, vars.imageURI);
         _setProfileString(profileId, PROFILE_FOLLOW_NFT_URI_OFFSET, vars.followNFTURI);
 
@@ -81,7 +60,6 @@ library ProfileLib {
             profileId,
             msg.sender,
             vars.to,
-            vars.handle,
             vars.imageURI,
             vars.followModule,
             followModuleReturnData,
@@ -377,26 +355,5 @@ library ProfileLib {
             whitelisted := sload(slot)
         }
         if (!whitelisted) revert Errors.ProfileCreatorNotWhitelisted();
-    }
-
-    function _validateHandle(string calldata handle) private pure {
-        bytes memory byteHandle = bytes(handle);
-        if (byteHandle.length == 0 || byteHandle.length > MAX_HANDLE_LENGTH)
-            revert Errors.HandleLengthInvalid();
-
-        uint256 byteHandleLength = byteHandle.length;
-        for (uint256 i = 0; i < byteHandleLength; ) {
-            if (
-                (byteHandle[i] < '0' ||
-                    byteHandle[i] > 'z' ||
-                    (byteHandle[i] > '9' && byteHandle[i] < 'a')) &&
-                byteHandle[i] != '.' &&
-                byteHandle[i] != '-' &&
-                byteHandle[i] != '_'
-            ) revert Errors.HandleContainsInvalidCharacters();
-            unchecked {
-                ++i;
-            }
-        }
     }
 }

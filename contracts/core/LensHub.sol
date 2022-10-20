@@ -345,18 +345,15 @@ contract LensHub is LensNFTBase, VersionedInitializable, LensMultiState, LensHub
     }
 
     /**
-     * @notice Burns a profile, this maintains the profile data struct, but deletes the
-     * handle hash to profile ID mapping value.
+     * @notice Burns a profile, this maintains the profile data struct.
      */
     function burn(uint256 tokenId) public override whenNotPaused {
         if (!_isApprovedOrOwner(msg.sender, tokenId)) revert Errors.NotOwnerOrApproved();
         _burn(tokenId);
-        _clearHandleHash(tokenId);
     }
 
     /**
-     * @notice Burns a profile with a signature, this maintains the profile data struct, but deletes the
-     * handle hash to profile ID mapping value.
+     * @notice Burns a profile with a signature, this maintains the profile data struct.
      */
     function burnWithSig(uint256 tokenId, DataTypes.EIP712Signature calldata sig)
         public
@@ -365,7 +362,6 @@ contract LensHub is LensNFTBase, VersionedInitializable, LensMultiState, LensHub
     {
         GeneralLib.baseBurnWithSig(tokenId, sig);
         _burn(tokenId);
-        _clearHandleHash(tokenId);
     }
 
     /// ***************************************
@@ -572,11 +568,6 @@ contract LensHub is LensNFTBase, VersionedInitializable, LensMultiState, LensHub
     }
 
     /// @inheritdoc ILensHub
-    function getHandle(uint256 profileId) external view override returns (string memory) {
-        return _profileById[profileId].handle;
-    }
-
-    /// @inheritdoc ILensHub
     function getPubPointer(uint256 profileId, uint256 pubId)
         external
         view
@@ -596,12 +587,6 @@ contract LensHub is LensNFTBase, VersionedInitializable, LensMultiState, LensHub
         returns (string memory)
     {
         return GeneralLib.getContentURI(profileId, pubId);
-    }
-
-    /// @inheritdoc ILensHub
-    function getProfileIdByHandle(string calldata handle) external view override returns (uint256) {
-        bytes32 handleHash = keccak256(bytes(handle));
-        return _profileIdByHandleHash[handleHash];
     }
 
     /// @inheritdoc ILensHub
@@ -669,7 +654,7 @@ contract LensHub is LensNFTBase, VersionedInitializable, LensMultiState, LensHub
                 tokenId,
                 followNFT == address(0) ? 0 : IERC721Enumerable(followNFT).totalSupply(),
                 ownerOf(tokenId),
-                _profileById[tokenId].handle,
+                "Lens Profile",
                 _profileById[tokenId].imageURI
             );
     }
@@ -685,11 +670,6 @@ contract LensHub is LensNFTBase, VersionedInitializable, LensMultiState, LensHub
     function _setDispatcher(uint256 profileId, address dispatcher) internal {
         _dispatcherByProfile[profileId] = dispatcher;
         emit Events.DispatcherSet(profileId, dispatcher, block.timestamp);
-    }
-
-    function _clearHandleHash(uint256 profileId) internal {
-        bytes32 handleHash = keccak256(bytes(_profileById[profileId].handle));
-        _profileIdByHandleHash[handleHash] = 0;
     }
 
     function _beforeTokenTransfer(

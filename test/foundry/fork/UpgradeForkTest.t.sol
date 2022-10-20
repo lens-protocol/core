@@ -15,7 +15,18 @@ import '../../../contracts/mocks/MockDeprecatedFollowModule.sol';
 import '../../../contracts/interfaces/IERC721Time.sol';
 import '../../../contracts/interfaces/ILensMultiState.sol';
 
+struct OldCreateProfileData {
+    address to;
+    string handle;
+    string imageURI;
+    address followModule;
+    bytes followModuleInitData;
+    string followNFTURI;
+}
+
 interface IOldHub {
+    function createProfile(OldCreateProfileData memory vars) external returns (uint256);
+
     function follow(uint256[] calldata profileIds, bytes[] calldata datas) external;
 
     function collect(
@@ -115,7 +126,7 @@ contract UpgradeForkTest is BaseTest {
         // In order to make this test suite evergreen, we must try setting a modern follow module since we don't know
         // which version of the hub we're working with, if this fails, then we should use a deprecated one.
 
-        mockCreateProfileData.handle = vm.toString(IERC721Enumerable(address(hub)).totalSupply());
+        // mockCreateProfileData.handle = vm.toString(IERC721Enumerable(address(hub)).totalSupply());
         mockCreateProfileData.followModule = mockFollowModuleAddr;
 
         uint256 profileId;
@@ -128,13 +139,32 @@ contract UpgradeForkTest is BaseTest {
             console2.log(
                 'Profile creation with modern follow module failed. Attempting with deprecated module.'
             );
+
             address mockDeprecatedFollowModule = address(new MockDeprecatedFollowModule());
 
             vm.prank(gov);
             hub.whitelistFollowModule(mockDeprecatedFollowModule, true);
 
-            mockCreateProfileData.followModule = mockDeprecatedFollowModule;
-            profileId = hub.createProfile(mockCreateProfileData);
+            // precompute basic profile creaton data.
+            mockCreateProfileData = DataTypes.CreateProfileData({
+                to: me,
+                imageURI: mockURI,
+                followModule: address(0),
+                followModuleInitData: abi.encode(1),
+                followNFTURI: mockURI
+            });
+
+            OldCreateProfileData memory oldCreateProfileData = OldCreateProfileData(
+                mockCreateProfileData.to,
+                vm.toString((IERC721Enumerable(address(hub)).totalSupply())),
+                mockCreateProfileData.imageURI,
+                mockDeprecatedFollowModule,
+                mockCreateProfileData.followModuleInitData,
+                mockCreateProfileData.followNFTURI
+            );
+
+            oldCreateProfileData.followModule = mockDeprecatedFollowModule;
+            profileId = IOldHub(address(hub)).createProfile(oldCreateProfileData);
             IOldHub(address(hub)).setDefaultProfile(profileId);
             assertEq(IOldHub(address(hub)).defaultProfile(me), profileId);
         }
@@ -343,7 +373,6 @@ contract UpgradeForkTest is BaseTest {
         // precompute basic profile creaton data.
         mockCreateProfileData = DataTypes.CreateProfileData({
             to: me,
-            handle: '',
             imageURI: mockURI,
             followModule: address(0),
             followModuleInitData: abi.encode(1),

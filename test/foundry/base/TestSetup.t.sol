@@ -103,7 +103,6 @@ contract TestSetup is Test {
         // precompute basic profile creaton data.
         mockCreateProfileData = DataTypes.CreateProfileData({
             to: profileOwner,
-            handle: mockHandle,
             imageURI: mockURI,
             followModule: address(0),
             followModuleInitData: '',
