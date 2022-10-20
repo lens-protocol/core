@@ -488,7 +488,7 @@ contract LensHub is LensNFTBase, VersionedInitializable, LensMultiState, LensHub
     }
 
     /// @inheritdoc ILensHub
-    function getDelegatedExecutorApproval(address wallet, address executor)
+    function isDelegatedExecutorApproved(address wallet, address executor)
         external
         view
         returns (bool)

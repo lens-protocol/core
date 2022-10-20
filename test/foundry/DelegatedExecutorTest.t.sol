@@ -9,7 +9,7 @@ contract DelegatedExecutorTest is BaseTest {
     // Positives
     function testSetDelegatedExecutor() public {
         hub.setDelegatedExecutorApproval(otherSigner, true);
-        assertEq(hub.getDelegatedExecutorApproval(me, otherSigner), true);
+        assertEq(hub.isDelegatedExecutorApproved(me, otherSigner), true);
     }
 
     // Meta-tx
@@ -39,7 +39,7 @@ contract DelegatedExecutorTest is BaseTest {
             )
         );
 
-        assertEq(hub.getDelegatedExecutorApproval(profileOwner, executor), true);
+        assertEq(hub.isDelegatedExecutorApproved(profileOwner, executor), true);
     }
 
     // Private functions

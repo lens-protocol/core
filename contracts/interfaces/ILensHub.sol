@@ -431,7 +431,7 @@ interface ILensHub {
      * @return bool True if the executor is approved as a delegated executor to act on behalf of the wallet,
      * false otherwise.
      */
-    function getDelegatedExecutorApproval(address wallet, address executor) external view returns (bool);
+    function isDelegatedExecutorApproved(address wallet, address executor) external view returns (bool);
 
     /**
      * @notice Returns the default profile for a given wallet address
