@@ -422,6 +422,18 @@ interface ILensHub {
     function getGovernance() external view returns (address);
 
     /**
+     * @notice Returns whether the given delegated executor is approved to act on behalf of the given
+     * wallet.
+     *
+     * @param wallet The wallet to check the delegated executor approval for.
+     * @param executor The executor to query the delegated executor approval for.
+     *
+     * @return bool True if the executor is approved as a delegated executor to act on behalf of the wallet,
+     * false otherwise.
+     */
+    function getDelegatedExecutorApproval(address wallet, address executor) external view returns (bool);
+
+    /**
      * @notice Returns the default profile for a given wallet address
      *
      * @param wallet The address to find the default mapping

@@ -244,7 +244,9 @@ contract LensHub is LensNFTBase, VersionedInitializable, LensMultiState, LensHub
     /// @inheritdoc ILensHub
     function setDelegatedExecutorApprovalWithSig(
         DataTypes.SetDelegatedExecutorApprovalWithSigData calldata vars
-    ) external override whenNotPaused {}
+    ) external override whenNotPaused {
+        GeneralLib.setDelegatedExecutorApprovalWithSig(vars);
+    }
 
     /// @inheritdoc ILensHub
     function setProfileImageURI(uint256 profileId, string calldata imageURI)
@@ -483,6 +485,15 @@ contract LensHub is LensNFTBase, VersionedInitializable, LensMultiState, LensHub
     /// @inheritdoc ILensHub
     function getGovernance() external view override returns (address) {
         return _governance;
+    }
+
+    /// @inheritdoc ILensHub
+    function getDelegatedExecutorApproval(address wallet, address executor)
+        external
+        view
+        returns (bool)
+    {
+        return _delegatedExecutorApproval[wallet][executor];
     }
 
     /// @inheritdoc ILensHub

@@ -4,6 +4,18 @@ pragma solidity ^0.8.13;
 import './TestSetup.t.sol';
 
 contract BaseTest is TestSetup {
+    function _getSetDefaultProfileTypedDataHash(
+        address wallet,
+        uint256 profileId,
+        uint256 nonce,
+        uint256 deadline
+    ) internal view returns (bytes32) {
+        bytes32 structHash = keccak256(
+            abi.encode(SET_DEFAULT_PROFILE_WITH_SIG_TYPEHASH, wallet, profileId, nonce, deadline)
+        );
+        return _calculateDigest(structHash);
+    }
+
     function _getSetProfileMetadataURITypedDataHash(
         uint256 profileId,
         string memory metadataURI,
@@ -22,17 +34,39 @@ contract BaseTest is TestSetup {
         return _calculateDigest(structHash);
     }
 
-    function _getSetFollowNFTURITypedDatahash(
+    function _getSetFollowModuleTypedDataHash(
         uint256 profileId,
-        string memory followNFTURI,
+        address followModule,
+        bytes memory followModuleInitData,
         uint256 nonce,
         uint256 deadline
     ) internal view returns (bytes32) {
         bytes32 structHash = keccak256(
             abi.encode(
-                SET_FOLLOW_NFT_URI_WITH_SIG_TYPEHASH,
+                SET_FOLLOW_MODULE_WITH_SIG_TYPEHASH,
                 profileId,
-                keccak256(bytes(followNFTURI)),
+                followModule,
+                keccak256(followModuleInitData),
+                nonce,
+                deadline
+            )
+        );
+        return _calculateDigest(structHash);
+    }
+
+    function _getSetDelegatedExecutorApprovalTypedDataHash(
+        address onBehalfOf,
+        address executor,
+        bool approved,
+        uint256 nonce,
+        uint256 deadline
+    ) internal view returns (bytes32) {
+        bytes32 structHash = keccak256(
+            abi.encode(
+                SET_DELEGATED_EXECUTOR_APPROVAL_WITH_SIG_TYPEHASH,
+                onBehalfOf,
+                executor,
+                approved,
                 nonce,
                 deadline
             )
@@ -58,31 +92,17 @@ contract BaseTest is TestSetup {
         return _calculateDigest(structHash);
     }
 
-    function _getSetDefaultProfileTypedDataHash(
-        address wallet,
+    function _getSetFollowNFTURITypedDatahash(
         uint256 profileId,
-        uint256 nonce,
-        uint256 deadline
-    ) internal view returns (bytes32) {
-        bytes32 structHash = keccak256(
-            abi.encode(SET_DEFAULT_PROFILE_WITH_SIG_TYPEHASH, wallet, profileId, nonce, deadline)
-        );
-        return _calculateDigest(structHash);
-    }
-
-    function _getSetFollowModuleTypedDataHash(
-        uint256 profileId,
-        address followModule,
-        bytes memory followModuleInitData,
+        string memory followNFTURI,
         uint256 nonce,
         uint256 deadline
     ) internal view returns (bytes32) {
         bytes32 structHash = keccak256(
             abi.encode(
-                SET_FOLLOW_MODULE_WITH_SIG_TYPEHASH,
+                SET_FOLLOW_NFT_URI_WITH_SIG_TYPEHASH,
                 profileId,
-                followModule,
-                keccak256(followModuleInitData),
+                keccak256(bytes(followNFTURI)),
                 nonce,
                 deadline
             )
@@ -90,11 +110,11 @@ contract BaseTest is TestSetup {
         return _calculateDigest(structHash);
     }
 
-    function _getMirrorTypedDataHash(
+    function _getPostTypedDataHash(
         uint256 profileId,
-        uint256 profileIdPointed,
-        uint256 pubIdPointed,
-        bytes memory referenceModuleData,
+        string memory contentURI,
+        address collectModule,
+        bytes memory collectModuleInitData,
         address referenceModule,
         bytes memory referenceModuleInitData,
         uint256 nonce,
@@ -102,11 +122,11 @@ contract BaseTest is TestSetup {
     ) internal view returns (bytes32) {
         bytes32 structHash = keccak256(
             abi.encode(
-                MIRROR_WITH_SIG_TYPEHASH,
+                POST_WITH_SIG_TYPEHASH,
                 profileId,
-                profileIdPointed,
-                pubIdPointed,
-                keccak256(referenceModuleData),
+                keccak256(bytes(contentURI)),
+                collectModule,
+                keccak256(collectModuleInitData),
                 referenceModule,
                 keccak256(referenceModuleInitData),
                 nonce,
@@ -148,11 +168,11 @@ contract BaseTest is TestSetup {
         return _calculateDigest(structHash);
     }
 
-    function _getPostTypedDataHash(
+    function _getMirrorTypedDataHash(
         uint256 profileId,
-        string memory contentURI,
-        address collectModule,
-        bytes memory collectModuleInitData,
+        uint256 profileIdPointed,
+        uint256 pubIdPointed,
+        bytes memory referenceModuleData,
         address referenceModule,
         bytes memory referenceModuleInitData,
         uint256 nonce,
@@ -160,11 +180,11 @@ contract BaseTest is TestSetup {
     ) internal view returns (bytes32) {
         bytes32 structHash = keccak256(
             abi.encode(
-                POST_WITH_SIG_TYPEHASH,
+                MIRROR_WITH_SIG_TYPEHASH,
                 profileId,
-                keccak256(bytes(contentURI)),
-                collectModule,
-                keccak256(collectModuleInitData),
+                profileIdPointed,
+                pubIdPointed,
+                keccak256(referenceModuleData),
                 referenceModule,
                 keccak256(referenceModuleInitData),
                 nonce,
