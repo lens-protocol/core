@@ -138,11 +138,7 @@ library InteractionHelpers {
             }
 
             if (collectNFT == address(0)) {
-                collectNFT = _deployCollectNFT(
-                    rootProfileId,
-                    rootPubId,
-                    collectNFTImpl
-                );
+                collectNFT = _deployCollectNFT(rootProfileId, rootPubId, collectNFTImpl);
 
                 // Store the collect NFT in the cached slot.
                 assembly {
@@ -249,16 +245,14 @@ library InteractionHelpers {
     ) private returns (address) {
         address collectNFT = Clones.clone(collectNFTImpl);
 
-        // bytes4 firstBytes = bytes4(bytes(handle));
-        //
-        // string memory collectNFTName = string(
-        // abi.encodePacked(handle, COLLECT_NFT_NAME_INFIX, pubId.toString())
-        // );
-        // string memory collectNFTSymbol = string(
-        // abi.encodePacked(firstBytes, COLLECT_NFT_SYMBOL_INFIX, pubId.toString())
-        // );
+        string memory collectNFTName = string(
+            abi.encodePacked(profileId.toString(), COLLECT_NFT_NAME_INFIX, pubId.toString())
+        );
+        string memory collectNFTSymbol = string(
+            abi.encodePacked(profileId.toString(), COLLECT_NFT_SYMBOL_INFIX, pubId.toString())
+        );
 
-        ICollectNFT(collectNFT).initialize(profileId, pubId, 'Collect NFT', 'CNFT');
+        ICollectNFT(collectNFT).initialize(profileId, pubId, collectNFTName, collectNFTSymbol);
         emit Events.CollectNFTDeployed(profileId, pubId, collectNFT, block.timestamp);
 
         return collectNFT;
