@@ -14,7 +14,7 @@ contract MockDeprecatedReferenceModule is IDeprecatedReferenceModule {
         bytes calldata data
     ) external pure override returns (bytes memory) {
         uint256 number = abi.decode(data, (uint256));
-        require(number == 1, 'MockReferenceModule: invalid');
+        require(number == 1, 'MockDeprecatedReferenceModule: invalid');
         return new bytes(0);
     }
 
