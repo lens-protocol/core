@@ -369,4 +369,8 @@ contract BaseTest is TestSetup {
     {
         return hub.getPub(profileId, pubId);
     }
+
+    function _getSigNonce(address signer) internal view returns (uint256) {
+        return hub.sigNonces(signer);
+    }
 }

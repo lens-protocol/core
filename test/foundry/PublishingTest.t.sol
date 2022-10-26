@@ -22,12 +22,26 @@ contract PublishingTest_Post is BaseTest, SignatureHelpers, PublishingHelpers, S
     }
 
     // negatives
-    function testPostNotExecutorFails() public {
+    function testCannotPostIfNotExecutor() public {
         vm.expectRevert(Errors.ExecutorInvalid.selector);
         _post(mockPostData);
     }
 
-    function testPostWithSigInvalidSignerFails() public {
+    function testCannotPostNotWhitelistedCollectModule() public {
+        mockPostData.collectModule = address(0xC0FFEE);
+        vm.prank(profileOwner);
+        vm.expectRevert(Errors.CollectModuleNotWhitelisted.selector);
+        _post(mockPostData);
+    }
+
+    function testCannotPostNotWhitelistedReferenceModule() public {
+        mockPostData.referenceModule = address(0xC0FFEE);
+        vm.prank(profileOwner);
+        vm.expectRevert(Errors.ReferenceModuleNotWhitelisted.selector);
+        _post(mockPostData);
+    }
+
+    function testCannotPostWithSigInvalidSigner() public {
         bytes32 digest = _getPostTypedDataHash(mockPostData, nonce, deadline);
 
         vm.expectRevert(Errors.SignatureInvalid.selector);
@@ -40,7 +54,62 @@ contract PublishingTest_Post is BaseTest, SignatureHelpers, PublishingHelpers, S
         );
     }
 
-    function testPostWithSigNotExecutorFails() public {
+    function testCannotPostWithSigInvalidNonce() public {
+        nonce = _getSigNonce(otherSigner) + 1;
+        bytes32 digest = _getPostTypedDataHash(mockPostData, nonce, deadline);
+
+        vm.expectRevert(Errors.SignatureInvalid.selector);
+        _postWithSig(
+            _buildPostWithSigData({
+                delegatedSigner: address(0),
+                postData: mockPostData,
+                sig: _getSigStruct(otherSignerKey, digest, deadline)
+            })
+        );
+    }
+
+    function testCannotPostIfNonceWasIncrementedWithAnotherAction() public {
+        assertEq(_getSigNonce(profileOwner), nonce);
+        bytes32 digest = _getPostTypedDataHash(mockPostData, nonce, deadline);
+
+        uint256 pubId = _postWithSig(
+            _buildPostWithSigData({
+                delegatedSigner: address(0),
+                postData: mockPostData,
+                sig: _getSigStruct(profileOwnerKey, digest, deadline)
+            })
+        );
+        assertEq(pubId, 1);
+
+        assert(_getSigNonce(profileOwner) != nonce);
+        digest = _getPostTypedDataHash(mockPostData, nonce, deadline);
+
+        vm.expectRevert(Errors.SignatureInvalid.selector);
+        _postWithSig(
+            _buildPostWithSigData({
+                delegatedSigner: address(0),
+                postData: mockPostData,
+                sig: _getSigStruct(profileOwnerKey, digest, deadline)
+            })
+        );
+    }
+
+    function testCannotPostWithSigExpiredDeadline() public {
+        deadline = 10;
+        vm.warp(20);
+        bytes32 digest = _getPostTypedDataHash(mockPostData, nonce, deadline);
+
+        vm.expectRevert(Errors.SignatureExpired.selector);
+        _postWithSig(
+            _buildPostWithSigData({
+                delegatedSigner: address(0),
+                postData: mockPostData,
+                sig: _getSigStruct(otherSignerKey, digest, deadline)
+            })
+        );
+    }
+
+    function testCannotPostWithSigNotExecutor() public {
         bytes32 digest = _getPostTypedDataHash(mockPostData, nonce, deadline);
 
         vm.expectRevert(Errors.ExecutorInvalid.selector);
@@ -63,6 +132,33 @@ contract PublishingTest_Post is BaseTest, SignatureHelpers, PublishingHelpers, S
         _verifyPublication(pub, _expectedPubFromInitData(mockPostData));
     }
 
+    function testPostWithAWhitelistedReferenceModule() public {
+        mockPostData.referenceModule = address(mockReferenceModule);
+        mockPostData.referenceModuleInitData = abi.encode(1);
+        vm.prank(profileOwner);
+        uint256 pubId = _post(mockPostData);
+        assertEq(pubId, 1);
+
+        DataTypes.PublicationStruct memory pub = _getPub(firstProfileId, pubId);
+        _verifyPublication(pub, _expectedPubFromInitData(mockPostData));
+    }
+
+    function testPostWithSig() public {
+        bytes32 digest = _getPostTypedDataHash(mockPostData, nonce, deadline);
+
+        uint256 pubId = _postWithSig(
+            _buildPostWithSigData({
+                delegatedSigner: address(0),
+                postData: mockPostData,
+                sig: _getSigStruct(profileOwnerKey, digest, deadline)
+            })
+        );
+        assertEq(pubId, 1);
+
+        DataTypes.PublicationStruct memory pub = _getPub(firstProfileId, pubId);
+        _verifyPublication(pub, _expectedPubFromInitData(mockPostData));
+    }
+
     function testExecutorPost() public {
         vm.prank(profileOwner);
         _setDelegatedExecutorApproval(otherSigner, true);
@@ -79,8 +175,6 @@ contract PublishingTest_Post is BaseTest, SignatureHelpers, PublishingHelpers, S
         vm.prank(profileOwner);
         _setDelegatedExecutorApproval(otherSigner, true);
 
-        uint256 nonce = 0;
-        uint256 deadline = type(uint256).max;
         bytes32 digest = _getPostTypedDataHash(mockPostData, nonce, deadline);
 
         uint256 pubId = _postWithSig(
