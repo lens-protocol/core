@@ -5,7 +5,7 @@ import {
   MockLensHubV2BadRevision__factory,
   MockLensHubV2__factory,
   MockAccessControlV2BadRevision__factory,
-  MockAccessControlV2__factory,
+  AccessControlV2__factory,
   AccessControl__factory,
   TransparentUpgradeableProxy__factory,
 } from '../../typechain-types';
@@ -108,13 +108,16 @@ makeSuiteCleanRoom('Upgradeability', function () {
       expect(await accessControl.hasAccess(userAddress, FIRST_PROFILE_ID, [])).to.be.true;
       expect(await accessControl.hasAccess(userTwoAddress, FIRST_PROFILE_ID, [])).to.be.false;
 
-      const newImpl = await new MockAccessControlV2__factory(deployer).deploy(lensHub.address);
-      await expect(accessControlProxy.upgradeTo(newImpl.address)).to.not.be.reverted;
-      await expect(accessControl.initialize()).to.not.be.reverted;
+      const newImpl = await new AccessControlV2__factory(deployer).deploy(lensHub.address);
+      const data = accessControlImpl.interface.encodeFunctionData('initialize', []);
+      await expect(accessControlProxy.upgradeToAndCall(newImpl.address, data)).to.not.be.reverted;
+      await expect(accessControl.initialize()).to.be.revertedWith(ERRORS.INITIALIZED);
 
       expect(await lensHub.ownerOf(FIRST_PROFILE_ID)).to.be.eq(userAddress);
       expect(await accessControl.hasAccess(userAddress, FIRST_PROFILE_ID, [])).to.be.true;
       expect(await accessControl.hasAccess(userTwoAddress, FIRST_PROFILE_ID, [])).to.be.false;
+
+      // See access-control.spec.ts tests for thorough upgrade testing.
     });
   });
 });

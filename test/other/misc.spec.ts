@@ -1,11 +1,6 @@
 import '@nomiclabs/hardhat-ethers';
 import { expect } from 'chai';
-import { keccak256, toUtf8Bytes } from 'ethers/lib/utils';
-import {
-  FollowNFT__factory,
-  AccessControl__factory,
-  UIDataProvider__factory,
-} from '../../typechain-types';
+import { FollowNFT__factory, UIDataProvider__factory } from '../../typechain-types';
 import { MAX_UINT256, ZERO_ADDRESS } from '../helpers/constants';
 import { ERRORS } from '../helpers/errors';
 import {

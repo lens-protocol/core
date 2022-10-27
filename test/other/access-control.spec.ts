@@ -4,9 +4,12 @@ import {
   FollowNFT__factory,
   CollectNFT__factory,
   AccessControl__factory,
+  AccessControlV2__factory,
   FeeFollowModule__factory,
+  TransparentUpgradeableProxy__factory,
 } from '../../typechain-types';
 import { MAX_UINT256, ZERO_ADDRESS } from '../helpers/constants';
+import { ERRORS } from '../helpers/errors';
 import { getTimestamp, matchEvent, waitForTx } from '../helpers/utils';
 import {
   deployer,
@@ -34,10 +37,27 @@ import {
  * @dev Some of these tests may be redundant, but are still present to ensure an isolated environment,
  * in particular if other test files are changed.
  */
-makeSuiteCleanRoom('AccessControl', function () {
-  let accessControl;
+makeSuiteCleanRoom('AccessControlV2', function () {
+  let accessControl, accessControlImpl, accessControlV2Impl, accessControlProxy;
   before(async function () {
-    accessControl = await new AccessControl__factory(deployer).deploy(lensHub.address);
+    accessControlImpl = await new AccessControl__factory(deployer).deploy(lensHub.address);
+
+    const data = accessControlImpl.interface.encodeFunctionData('initialize', []);
+
+    accessControlProxy = await new TransparentUpgradeableProxy__factory(deployer).deploy(
+      accessControlImpl.address,
+      await deployer.getAddress(),
+      data
+    );
+
+    accessControlV2Impl = await new AccessControlV2__factory(deployer).deploy(lensHub.address);
+
+    await expect(
+      accessControlProxy.upgradeToAndCall(accessControlV2Impl.address, data)
+    ).to.not.be.reverted;
+
+    accessControl = AccessControlV2__factory.connect(accessControlProxy.address, user);
+    await expect(accessControl.initialize()).to.be.revertedWith(ERRORS.INITIALIZED);
   });
 
   beforeEach(async function () {

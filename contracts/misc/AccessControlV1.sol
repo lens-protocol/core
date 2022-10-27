@@ -3,8 +3,6 @@
 pragma solidity 0.8.10;
 
 import {VersionedInitializable} from '../upgradeability/VersionedInitializable.sol';
-import {ILensHub} from '../interfaces/ILensHub.sol';
-import {IFollowModule} from '../interfaces/IFollowModule.sol';
 import {IERC721} from '@openzeppelin/contracts/token/ERC721/IERC721.sol';
 
 /**
@@ -15,7 +13,7 @@ import {IERC721} from '@openzeppelin/contracts/token/ERC721/IERC721.sol';
  *      an address owns or has control over a given profile.
  */
 contract AccessControl is VersionedInitializable {
-    uint256 internal constant REVISION = 2;
+    uint256 internal constant REVISION = 1;
 
     address internal immutable LENS_HUB;
 
@@ -39,37 +37,6 @@ contract AccessControl is VersionedInitializable {
         bytes memory data
     ) external view returns (bool) {
         return IERC721(LENS_HUB).ownerOf(profileId) == requestorAddress;
-    }
-
-    function hasCollected(
-        address requestorAddress,
-        uint256 publisherId,
-        uint256 pubId,
-        uint256 collectorProfileId,
-        bytes memory data
-    ) external view returns (bool) {
-        address collectNFT = ILensHub(LENS_HUB).getCollectNFT(publisherId, pubId);
-
-        return collectNFT != address(0) && IERC721(collectNFT).balanceOf(requestorAddress) > 0;
-    }
-
-    function isFollowing(
-        address requestorAddress,
-        uint256 profileId,
-        uint256 followerProfileId,
-        bytes memory data
-    ) external view returns (bool) {
-        address followModule = ILensHub(LENS_HUB).getFollowModule(profileId);
-        bool following;
-        if (followModule != address(0)) {
-            following = IFollowModule(followModule).isFollowing(profileId, requestorAddress, 0);
-        } else {
-            address followNFT = ILensHub(LENS_HUB).getFollowNFT(profileId);
-            following =
-                followNFT != address(0) &&
-                IERC721(followNFT).balanceOf(requestorAddress) != 0;
-        }
-        return following || IERC721(LENS_HUB).ownerOf(profileId) == requestorAddress;
     }
 
     function getRevision() internal pure virtual override returns (uint256) {
