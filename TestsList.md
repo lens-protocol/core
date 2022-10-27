@@ -109,52 +109,55 @@ Scenarios
 Publishing Comments
 Generic
 Negatives
-[ ] UserTwo should fail to publish a comment to a profile owned by User
-[ ] User should fail to comment with an unwhitelisted collect module
-[ ] User should fail to comment with an unwhitelisted reference module
-[ ] User should fail to comment with invalid collect module data format
-[ ] User should fail to comment with invalid reference module data format
+[X] UserTwo should fail to publish a comment to a profile owned by User
+[X] User should fail to comment with an unwhitelisted collect module
+[X] User should fail to comment with an unwhitelisted reference module
+[-] (Module Tests) User should fail to comment with invalid collect module data format
+[-] (Module Tests) User should fail to comment with invalid reference module data format
 [ ] User should fail to comment on a publication that does not exist
 [ ] User should fail to comment on the same comment they are creating (pubId = 2, commentCeption)
 Scenarios
-[ ] User should create a comment with empty collect module data, reference module, and reference module data, fetched comment data should be accurate (75ms)
-[ ] Should return the expected token IDs when commenting publications (513ms)
+[X] User should create a comment with empty collect module data, reference module, and reference module data, fetched comment data should be accurate (75ms)
+[X] Should return the expected token IDs when commenting publications (513ms)
 [ ] User should create a post using the mock reference module as reference module, then comment on that post (145ms)
 Meta-tx
 Negatives
-[ ] Testwallet should fail to comment with sig with signature deadline mismatch
-[ ] Testwallet should fail to comment with sig with invalid deadline
-[ ] Testwallet should fail to comment with sig with invalid nonce
-[ ] Testwallet should fail to comment with sig with unwhitelisted collect module
-[ ] TestWallet should fail to comment with sig with unwhitelisted reference module
-[ ] TestWallet should fail to comment with sig on a publication that does not exist
-[ ] TestWallet should fail to comment with sig on the comment they are creating (commentCeption)
-[ ] TestWallet should sign attempt to comment with sig, cancel via empty permitForAll, then fail to comment with sig (67ms)
+[X] Testwallet should fail to comment with sig with signature deadline mismatch
+[X] Testwallet should fail to comment with sig with invalid deadline
+[X] Testwallet should fail to comment with sig with invalid nonce
+// TODO: Do we really need these?
+[?] Testwallet should fail to comment with sig with unwhitelisted collect module
+[?] TestWallet should fail to comment with sig with unwhitelisted reference module
+[?] TestWallet should fail to comment with sig on a publication that does not exist
+[?] TestWallet should fail to comment with sig on the comment they are creating (commentCeption)
+[X] TestWallet should sign attempt to comment with sig, cancel via empty permitForAll, then fail to comment with sig (67ms)
 Scenarios
-[ ] TestWallet should comment with sig, fetched comment data should be accurate (123ms)
+[X] TestWallet should comment with sig, fetched comment data should be accurate (123ms)
 
 Publishing mirrors
 Generic
 Negatives
-[ ] UserTwo should fail to publish a mirror to a profile owned by User
-[ ] User should fail to mirror with an unwhitelisted reference module
-[ ] User should fail to mirror with invalid reference module data format
+[X] UserTwo should fail to publish a mirror to a profile owned by User
+[X] User should fail to mirror with an unwhitelisted reference module
+[-] (Module Tests) User should fail to mirror with invalid reference module data format
 [ ] User should fail to mirror a publication that does not exist
 Scenarios
-[ ] Should return the expected token IDs when mirroring publications (362ms)
-[ ] User should create a mirror with empty reference module and reference module data, fetched mirror data should be accurate (42ms)
+[X] Should return the expected token IDs when mirroring publications (362ms)
+[X] User should create a mirror with empty reference module and reference module data, fetched mirror data should be accurate (42ms)
 [ ] User should mirror a mirror with empty reference module and reference module data, fetched mirror data should be accurate and point to the original post (85ms)
 [ ] User should create a post using the mock reference module as reference module, then mirror that post (118ms)
 Meta-tx
 Negatives
-[ ] Testwallet should fail to mirror with sig with signature deadline mismatch
-[ ] Testwallet should fail to mirror with sig with invalid deadline
-[ ] Testwallet should fail to mirror with sig with invalid deadline
-[ ] Testwallet should fail to mirror with sig with unwhitelisted reference module
+[X] Testwallet should fail to mirror with sig with signature deadline mismatch
+[X] Testwallet should fail to mirror with sig with invalid deadline
+// TODO: That's the same?
+[?] Testwallet should fail to mirror with sig with invalid deadline
+// TODO: Do we really need this?
+[?] Testwallet should fail to mirror with sig with unwhitelisted reference module
 [ ] TestWallet should fail to mirror a publication with sig that does not exist yet
 [ ] TestWallet should sign attempt to mirror with sig, cancel via empty permitForAll, then fail to mirror with sig (150ms)
 Scenarios
-[ ] Testwallet should mirror with sig, fetched mirror data should be accurate (62ms)
+[X] Testwallet should mirror with sig, fetched mirror data should be accurate (62ms)
 [ ] TestWallet should mirror a mirror with sig, fetched mirror data should be accurate (107ms)
 
 Publishing Posts

@@ -16,346 +16,269 @@ contract SigSetup {
 }
 
 contract PublishingTest_Post is BaseTest, SignatureHelpers, PublishingHelpers, SigSetup {
-    function setUp() public override(SigSetup, TestSetup) {
+    function replicateInitData() internal virtual {}
+
+    function _publish() internal virtual returns (uint256) {
+        return _post(mockPostData);
+    }
+
+    function _publishWithSig(address delegatedSigner, uint256 signerPrivKey)
+        internal
+        virtual
+        returns (uint256)
+    {
+        bytes32 digest = _getPostTypedDataHash(mockPostData, nonce, deadline);
+
+        return
+            _postWithSig(
+                _buildPostWithSigData(
+                    delegatedSigner,
+                    mockPostData,
+                    _getSigStruct(signerPrivKey, digest, deadline)
+                )
+            );
+    }
+
+    function _expectedPubFromInitData()
+        internal
+        view
+        virtual
+        returns (DataTypes.PublicationStruct memory)
+    {
+        return _expectedPubFromInitData(mockPostData);
+    }
+
+    function setUp() public virtual override(SigSetup, TestSetup) {
         TestSetup.setUp();
         SigSetup.setUp();
     }
 
     // negatives
-    function testCannotPostIfNotExecutor() public {
+    function testCannotPublishIfNotExecutor() public {
         vm.expectRevert(Errors.ExecutorInvalid.selector);
-        _post(mockPostData);
+        _publish();
     }
 
-    function testCannotPostNotWhitelistedCollectModule() public {
+    function testCannotPublishNotWhitelistedCollectModule() public virtual {
         mockPostData.collectModule = address(0xC0FFEE);
+        replicateInitData();
         vm.prank(profileOwner);
         vm.expectRevert(Errors.CollectModuleNotWhitelisted.selector);
-        _post(mockPostData);
+        _publish();
     }
 
-    function testCannotPostNotWhitelistedReferenceModule() public {
+    function testCannotPublishNotWhitelistedReferenceModule() public {
         mockPostData.referenceModule = address(0xC0FFEE);
+        replicateInitData();
         vm.prank(profileOwner);
         vm.expectRevert(Errors.ReferenceModuleNotWhitelisted.selector);
-        _post(mockPostData);
+        _publish();
     }
 
-    function testCannotPostWithSigInvalidSigner() public {
-        bytes32 digest = _getPostTypedDataHash(mockPostData, nonce, deadline);
-
+    function testCannotPublishWithSigInvalidSigner() public {
         vm.expectRevert(Errors.SignatureInvalid.selector);
-        _postWithSig(
-            _buildPostWithSigData({
-                delegatedSigner: address(0),
-                postData: mockPostData,
-                sig: _getSigStruct(otherSignerKey, digest, deadline)
-            })
-        );
+        _publishWithSig({delegatedSigner: address(0), signerPrivKey: otherSignerKey});
     }
 
-    function testCannotPostWithSigInvalidNonce() public {
+    function testCannotPublishWithSigInvalidNonce() public {
         nonce = _getSigNonce(otherSigner) + 1;
-        bytes32 digest = _getPostTypedDataHash(mockPostData, nonce, deadline);
-
         vm.expectRevert(Errors.SignatureInvalid.selector);
-        _postWithSig(
-            _buildPostWithSigData({
-                delegatedSigner: address(0),
-                postData: mockPostData,
-                sig: _getSigStruct(otherSignerKey, digest, deadline)
-            })
-        );
+        _publishWithSig({delegatedSigner: address(0), signerPrivKey: otherSignerKey});
     }
 
-    function testCannotPostIfNonceWasIncrementedWithAnotherAction() public {
-        assertEq(_getSigNonce(profileOwner), nonce);
-        bytes32 digest = _getPostTypedDataHash(mockPostData, nonce, deadline);
+    function testCannotPublishIfNonceWasIncrementedWithAnotherAction() public {
+        assertEq(_getSigNonce(profileOwner), nonce, 'Wrong nonce before posting');
 
-        uint256 pubId = _postWithSig(
-            _buildPostWithSigData({
-                delegatedSigner: address(0),
-                postData: mockPostData,
-                sig: _getSigStruct(profileOwnerKey, digest, deadline)
-            })
-        );
-        assertEq(pubId, 1);
+        uint256 expectedPubId = _getPubCount(firstProfileId) + 1;
 
-        assert(_getSigNonce(profileOwner) != nonce);
-        digest = _getPostTypedDataHash(mockPostData, nonce, deadline);
+        uint256 pubId = _publishWithSig({
+            delegatedSigner: address(0),
+            signerPrivKey: profileOwnerKey
+        });
+        assertEq(pubId, expectedPubId, 'Wrong pubId');
+
+        assertTrue(_getSigNonce(profileOwner) != nonce, 'Wrong nonce after posting');
 
         vm.expectRevert(Errors.SignatureInvalid.selector);
-        _postWithSig(
-            _buildPostWithSigData({
-                delegatedSigner: address(0),
-                postData: mockPostData,
-                sig: _getSigStruct(profileOwnerKey, digest, deadline)
-            })
-        );
+        _publishWithSig({delegatedSigner: address(0), signerPrivKey: profileOwnerKey});
     }
 
-    function testCannotPostWithSigExpiredDeadline() public {
+    function testCannotPublishWithSigExpiredDeadline() public {
         deadline = 10;
         vm.warp(20);
-        bytes32 digest = _getPostTypedDataHash(mockPostData, nonce, deadline);
 
         vm.expectRevert(Errors.SignatureExpired.selector);
-        _postWithSig(
-            _buildPostWithSigData({
-                delegatedSigner: address(0),
-                postData: mockPostData,
-                sig: _getSigStruct(otherSignerKey, digest, deadline)
-            })
-        );
+        _publishWithSig({delegatedSigner: address(0), signerPrivKey: otherSignerKey});
     }
 
-    function testCannotPostWithSigNotExecutor() public {
-        bytes32 digest = _getPostTypedDataHash(mockPostData, nonce, deadline);
-
+    function testCannotPublishWithSigNotExecutor() public {
         vm.expectRevert(Errors.ExecutorInvalid.selector);
-        _postWithSig(
-            _buildPostWithSigData({
-                delegatedSigner: otherSigner,
-                postData: mockPostData,
-                sig: _getSigStruct(otherSignerKey, digest, deadline)
-            })
-        );
+        _publishWithSig({delegatedSigner: otherSigner, signerPrivKey: otherSignerKey});
     }
 
     // positives
-    function testPost() public {
+    function testPublish() public {
+        uint256 expectedPubId = _getPubCount(firstProfileId) + 1;
+
         vm.prank(profileOwner);
-        uint256 pubId = _post(mockPostData);
-        assertEq(pubId, 1);
+        uint256 pubId = _publish();
+
+        assertEq(pubId, expectedPubId);
 
         DataTypes.PublicationStruct memory pub = _getPub(firstProfileId, pubId);
-        _verifyPublication(pub, _expectedPubFromInitData(mockPostData));
+        _verifyPublication(pub, _expectedPubFromInitData());
     }
 
-    function testPostWithAWhitelistedReferenceModule() public {
+    function testPublishWithAWhitelistedReferenceModule() public {
         mockPostData.referenceModule = address(mockReferenceModule);
         mockPostData.referenceModuleInitData = abi.encode(1);
+        replicateInitData();
+
+        uint256 expectedPubId = _getPubCount(firstProfileId) + 1;
+
         vm.prank(profileOwner);
-        uint256 pubId = _post(mockPostData);
-        assertEq(pubId, 1);
+        uint256 pubId = _publish();
+
+        assertEq(pubId, expectedPubId);
 
         DataTypes.PublicationStruct memory pub = _getPub(firstProfileId, pubId);
-        _verifyPublication(pub, _expectedPubFromInitData(mockPostData));
+        _verifyPublication(pub, _expectedPubFromInitData());
     }
 
-    function testPostWithSig() public {
-        bytes32 digest = _getPostTypedDataHash(mockPostData, nonce, deadline);
+    function testPublishWithSig() public {
+        uint256 expectedPubId = _getPubCount(firstProfileId) + 1;
 
-        uint256 pubId = _postWithSig(
-            _buildPostWithSigData({
-                delegatedSigner: address(0),
-                postData: mockPostData,
-                sig: _getSigStruct(profileOwnerKey, digest, deadline)
-            })
-        );
-        assertEq(pubId, 1);
+        uint256 pubId = _publishWithSig({
+            delegatedSigner: address(0),
+            signerPrivKey: profileOwnerKey
+        });
+        assertEq(pubId, expectedPubId);
 
         DataTypes.PublicationStruct memory pub = _getPub(firstProfileId, pubId);
-        _verifyPublication(pub, _expectedPubFromInitData(mockPostData));
+        _verifyPublication(pub, _expectedPubFromInitData());
     }
 
-    function testExecutorPost() public {
+    function testExecutorPublish() public {
         vm.prank(profileOwner);
         _setDelegatedExecutorApproval(otherSigner, true);
+
+        uint256 expectedPubId = _getPubCount(firstProfileId) + 1;
 
         vm.prank(otherSigner);
-        uint256 pubId = _post(mockPostData);
-        assertEq(pubId, 1);
+        uint256 pubId = _publish();
+        assertEq(pubId, expectedPubId);
 
         DataTypes.PublicationStruct memory pub = _getPub(firstProfileId, pubId);
-        _verifyPublication(pub, _expectedPubFromInitData(mockPostData));
+        _verifyPublication(pub, _expectedPubFromInitData());
     }
 
-    function testExecutorPostWithSig() public {
+    function testExecutorPublishWithSig() public {
         vm.prank(profileOwner);
         _setDelegatedExecutorApproval(otherSigner, true);
 
-        bytes32 digest = _getPostTypedDataHash(mockPostData, nonce, deadline);
-
-        uint256 pubId = _postWithSig(
-            _buildPostWithSigData({
-                delegatedSigner: otherSigner,
-                postData: mockPostData,
-                sig: _getSigStruct(otherSignerKey, digest, deadline)
-            })
-        );
-        assertEq(pubId, 1);
+        uint256 expectedPubId = _getPubCount(firstProfileId) + 1;
+        uint256 pubId = _publishWithSig({
+            delegatedSigner: otherSigner,
+            signerPrivKey: otherSignerKey
+        });
+        assertEq(pubId, expectedPubId);
 
         DataTypes.PublicationStruct memory pub = _getPub(firstProfileId, pubId);
-        _verifyPublication(pub, _expectedPubFromInitData(mockPostData));
+        _verifyPublication(pub, _expectedPubFromInitData());
     }
 }
 
-contract PublishingTest_Comment is BaseTest, SignatureHelpers, PublishingHelpers, SigSetup {
-    function setUp() public override(SigSetup, TestSetup) {
-        TestSetup.setUp();
-        SigSetup.setUp();
+contract PublishingTest_Comment is PublishingTest_Post {
+    function replicateInitData() internal override {
+        mockCommentData.profileId = mockPostData.profileId;
+        mockCommentData.contentURI = mockPostData.contentURI;
+        mockCommentData.collectModule = mockPostData.collectModule;
+        mockCommentData.collectModuleInitData = mockPostData.collectModuleInitData;
+        mockCommentData.referenceModule = mockPostData.referenceModule;
+        mockCommentData.referenceModuleInitData = mockPostData.referenceModuleInitData;
+    }
+
+    function _publish() internal override returns (uint256) {
+        return _comment(mockCommentData);
+    }
+
+    function _publishWithSig(address delegatedSigner, uint256 signerPrivKey)
+        internal
+        override
+        returns (uint256)
+    {
+        bytes32 digest = _getCommentTypedDataHash(mockCommentData, nonce, deadline);
+
+        return
+            _commentWithSig(
+                _buildCommentWithSigData(
+                    delegatedSigner,
+                    mockCommentData,
+                    _getSigStruct(signerPrivKey, digest, deadline)
+                )
+            );
+    }
+
+    function _expectedPubFromInitData()
+        internal
+        view
+        override
+        returns (DataTypes.PublicationStruct memory)
+    {
+        return _expectedPubFromInitData(mockCommentData);
+    }
+
+    function setUp() public override {
+        PublishingTest_Post.setUp();
+
+        vm.prank(profileOwner);
+        _post(mockPostData);
+    }
+}
+
+contract PublishingTest_Mirror is PublishingTest_Post {
+    function replicateInitData() internal override {
+        mockMirrorData.profileId = mockPostData.profileId;
+        mockMirrorData.referenceModule = mockPostData.referenceModule;
+        mockMirrorData.referenceModuleInitData = mockPostData.referenceModuleInitData;
+    }
+
+    function _publish() internal override returns (uint256) {
+        return _mirror(mockMirrorData);
+    }
+
+    function _publishWithSig(address delegatedSigner, uint256 signerPrivKey)
+        internal
+        override
+        returns (uint256)
+    {
+        bytes32 digest = _getMirrorTypedDataHash(mockMirrorData, nonce, deadline);
+
+        return
+            _mirrorWithSig(
+                _buildMirrorWithSigData(
+                    delegatedSigner,
+                    mockMirrorData,
+                    _getSigStruct(signerPrivKey, digest, deadline)
+                )
+            );
+    }
+
+    function _expectedPubFromInitData()
+        internal
+        view
+        override
+        returns (DataTypes.PublicationStruct memory)
+    {
+        return _expectedPubFromInitData(mockMirrorData);
+    }
+
+    function setUp() public override {
+        PublishingTest_Post.setUp();
 
         vm.prank(profileOwner);
         _post(mockPostData);
     }
 
-    // Negatives
-    function testCommentNotExecutorFails() public {
-        vm.expectRevert(Errors.ExecutorInvalid.selector);
-        _comment(mockCommentData);
-    }
-
-    function testCommentWithSigInvalidSignerFails() public {
-        bytes32 digest = _getCommentTypedDataHash(mockCommentData, nonce, deadline);
-        DataTypes.EIP712Signature memory sig = _getSigStruct(otherSignerKey, digest, deadline);
-
-        vm.expectRevert(Errors.SignatureInvalid.selector);
-        _commentWithSig(
-            _buildCommentWithSigData({
-                delegatedSigner: address(0),
-                commentData: mockCommentData,
-                sig: sig
-            })
-        );
-    }
-
-    function testCommentWithSigNotExecutorFails() public {
-        bytes32 digest = _getCommentTypedDataHash(mockCommentData, nonce, deadline);
-        DataTypes.EIP712Signature memory sig = _getSigStruct(otherSignerKey, digest, deadline);
-
-        vm.expectRevert(Errors.ExecutorInvalid.selector);
-        _commentWithSig(
-            _buildCommentWithSigData({
-                delegatedSigner: otherSigner,
-                commentData: mockCommentData,
-                sig: sig
-            })
-        );
-    }
-
-    // positives
-    function testComment() public {
-        vm.prank(profileOwner);
-        uint256 pubId = _comment(mockCommentData);
-        assertEq(pubId, 2);
-
-        DataTypes.PublicationStruct memory pub = _getPub(firstProfileId, pubId);
-        _verifyPublication(pub, _expectedPubFromInitData(mockCommentData));
-    }
-
-    function testExecutorComment() public {
-        vm.prank(profileOwner);
-        _setDelegatedExecutorApproval(otherSigner, true);
-
-        vm.prank(otherSigner);
-        uint256 pubId = _comment(mockCommentData);
-        assertEq(pubId, 2);
-
-        DataTypes.PublicationStruct memory pub = _getPub(firstProfileId, pubId);
-        _verifyPublication(pub, _expectedPubFromInitData(mockCommentData));
-    }
-
-    function testExecutorCommentWithSig() public {
-        vm.prank(profileOwner);
-        _setDelegatedExecutorApproval(otherSigner, true);
-
-        bytes32 digest = _getCommentTypedDataHash(mockCommentData, nonce, deadline);
-        DataTypes.EIP712Signature memory sig = _getSigStruct(otherSignerKey, digest, deadline);
-
-        uint256 pubId = _commentWithSig(
-            _buildCommentWithSigData({
-                delegatedSigner: otherSigner,
-                commentData: mockCommentData,
-                sig: sig
-            })
-        );
-        assertEq(pubId, 2);
-
-        DataTypes.PublicationStruct memory pub = _getPub(firstProfileId, pubId);
-        _verifyPublication(pub, _expectedPubFromInitData(mockCommentData));
-    }
-}
-
-contract PublishingTest_Mirror is BaseTest, SignatureHelpers, PublishingHelpers, SigSetup {
-    function setUp() public override(SigSetup, TestSetup) {
-        TestSetup.setUp();
-        SigSetup.setUp();
-        vm.prank(profileOwner);
-        _post(mockPostData);
-    }
-
-    // Negatives
-    function testMirrorNotExecutorFails() public {
-        vm.expectRevert(Errors.ExecutorInvalid.selector);
-        _mirror(mockMirrorData);
-    }
-
-    function testMirrorWithSigInvalidSignerFails() public {
-        bytes32 digest = _getMirrorTypedDataHash(mockMirrorData, nonce, deadline);
-
-        vm.expectRevert(Errors.SignatureInvalid.selector);
-        _mirrorWithSig(
-            _buildMirrorWithSigData({
-                delegatedSigner: address(0),
-                mirrorData: mockMirrorData,
-                sig: _getSigStruct(otherSignerKey, digest, deadline)
-            })
-        );
-    }
-
-    function testMirrorWithSigNotExecutorFails() public {
-        bytes32 digest = _getMirrorTypedDataHash(mockMirrorData, nonce, deadline);
-
-        vm.expectRevert(Errors.ExecutorInvalid.selector);
-        _mirrorWithSig(
-            _buildMirrorWithSigData({
-                delegatedSigner: otherSigner,
-                mirrorData: mockMirrorData,
-                sig: _getSigStruct(otherSignerKey, digest, deadline)
-            })
-        );
-    }
-
-    // Positives
-
-    function testMirror() public {
-        vm.prank(profileOwner);
-        uint256 pubId = _mirror(mockMirrorData);
-        assertEq(pubId, 2);
-
-        DataTypes.PublicationStruct memory pub = _getPub(firstProfileId, pubId);
-        _verifyPublication(pub, _expectedPubFromInitData(mockMirrorData));
-    }
-
-    function testExecutorMirror() public {
-        vm.prank(profileOwner);
-        _setDelegatedExecutorApproval(otherSigner, true);
-
-        vm.prank(otherSigner);
-        uint256 pubId = _mirror(mockMirrorData);
-        assertEq(pubId, 2);
-
-        DataTypes.PublicationStruct memory pub = _getPub(firstProfileId, pubId);
-        _verifyPublication(pub, _expectedPubFromInitData(mockMirrorData));
-    }
-
-    function testExecutorMirrorWithSig() public {
-        vm.prank(profileOwner);
-        _setDelegatedExecutorApproval(otherSigner, true);
-
-        bytes32 digest = _getMirrorTypedDataHash(mockMirrorData, nonce, deadline);
-
-        uint256 pubId = _mirrorWithSig(
-            _buildMirrorWithSigData({
-                delegatedSigner: otherSigner,
-                mirrorData: mockMirrorData,
-                sig: _getSigStruct(otherSignerKey, digest, deadline)
-            })
-        );
-        assertEq(pubId, 2);
-
-        DataTypes.PublicationStruct memory pub = _getPub(firstProfileId, pubId);
-        _verifyPublication(pub, _expectedPubFromInitData(mockMirrorData));
-    }
+    function testCannotPublishNotWhitelistedCollectModule() public override {}
 }
