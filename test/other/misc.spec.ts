@@ -1256,48 +1256,4 @@ makeSuiteCleanRoom('Misc', function () {
       });
     });
   });
-
-  context('AccessControl', function () {
-    let accessControl;
-    before(async function () {
-      accessControl = await new AccessControl__factory(deployer).deploy(lensHub.address);
-    });
-    beforeEach(async function () {
-      const receipt = await waitForTx(
-        lensHub.createProfile({
-          to: userAddress,
-          handle: MOCK_PROFILE_HANDLE,
-          imageURI: MOCK_PROFILE_URI,
-          followModule: ZERO_ADDRESS,
-          followModuleInitData: [],
-          followNFTURI: MOCK_FOLLOW_NFT_URI,
-        })
-      );
-
-      expect(receipt.logs.length).to.eq(2);
-      matchEvent(receipt, 'ProfileCreated', [
-        FIRST_PROFILE_ID,
-        userAddress,
-        userAddress,
-        MOCK_PROFILE_HANDLE,
-        MOCK_PROFILE_URI,
-        ZERO_ADDRESS,
-        [],
-        MOCK_FOLLOW_NFT_URI,
-        await getTimestamp(),
-      ]);
-    });
-
-    it('AccessControl should return true if user owns the profile', async function () {
-      // Deploy the AccessControl contract
-      expect(await lensHub.ownerOf(FIRST_PROFILE_ID)).to.be.eq(userAddress);
-      expect(await accessControl.hasAccess(userAddress, FIRST_PROFILE_ID, [])).to.be.true;
-    });
-
-    it('AccessControl should return false if user does not own the profile', async function () {
-      // Deploy the AccessControl contract
-      expect(await lensHub.ownerOf(FIRST_PROFILE_ID)).to.not.be.eq(userTwoAddress);
-      expect(await accessControl.hasAccess(userTwoAddress, FIRST_PROFILE_ID, [])).to.be.false;
-    });
-  });
 });
