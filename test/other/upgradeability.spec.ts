@@ -4,9 +4,9 @@ import { ethers } from 'hardhat';
 import {
   MockLensHubV2BadRevision__factory,
   MockLensHubV2__factory,
-  MockProfileAccessV2BadRevision__factory,
-  MockProfileAccessV2__factory,
-  ProfileAccess__factory,
+  MockAccessControlV2BadRevision__factory,
+  MockAccessControlV2__factory,
+  AccessControl__factory,
   TransparentUpgradeableProxy__factory,
 } from '../../typechain-types';
 import { ZERO_ADDRESS } from '../helpers/constants';
@@ -68,20 +68,20 @@ makeSuiteCleanRoom('Upgradeability', function () {
     expect(newNextSlot).to.eq(formattedValue);
   });
 
-  context('ProfileAccess Upgradability', function () {
-    let profileAccess, profileAccessImpl, profileAccessProxy;
+  context('AccessControl Upgradability', function () {
+    let accessControl, accessControlImpl, accessControlProxy;
     before(async function () {
-      profileAccessImpl = await new ProfileAccess__factory(deployer).deploy(lensHub.address);
+      accessControlImpl = await new AccessControl__factory(deployer).deploy(lensHub.address);
 
-      const data = profileAccessImpl.interface.encodeFunctionData('initialize', []);
+      const data = accessControlImpl.interface.encodeFunctionData('initialize', []);
 
-      profileAccessProxy = await new TransparentUpgradeableProxy__factory(deployer).deploy(
-        profileAccessImpl.address,
+      accessControlProxy = await new TransparentUpgradeableProxy__factory(deployer).deploy(
+        accessControlImpl.address,
         deployerAddress,
         data
       );
 
-      profileAccess = ProfileAccess__factory.connect(profileAccessProxy.address, user);
+      accessControl = AccessControl__factory.connect(accessControlProxy.address, user);
     });
 
     beforeEach(async function () {
@@ -95,26 +95,26 @@ makeSuiteCleanRoom('Upgradeability', function () {
       });
     });
 
-    it('ProfileAccess upgrade should fail to initialize an implementation with the same revision', async function () {
-      const newImpl = await new MockProfileAccessV2BadRevision__factory(deployer).deploy(
+    it('AccessControl upgrade should fail to initialize an implementation with the same revision', async function () {
+      const newImpl = await new MockAccessControlV2BadRevision__factory(deployer).deploy(
         lensHub.address
       );
-      await expect(profileAccessProxy.upgradeTo(newImpl.address)).to.not.be.reverted;
-      await expect(profileAccess.initialize()).to.be.revertedWith(ERRORS.INITIALIZED);
+      await expect(accessControlProxy.upgradeTo(newImpl.address)).to.not.be.reverted;
+      await expect(accessControl.initialize()).to.be.revertedWith(ERRORS.INITIALIZED);
     });
 
-    it('ProfileAccess upgrade should behave as expected before and after being upgraded', async function () {
+    it('AccessControl upgrade should behave as expected before and after being upgraded', async function () {
       expect(await lensHub.ownerOf(FIRST_PROFILE_ID)).to.be.eq(userAddress);
-      expect(await profileAccess.hasAccess(userAddress, FIRST_PROFILE_ID, [])).to.be.true;
-      expect(await profileAccess.hasAccess(userTwoAddress, FIRST_PROFILE_ID, [])).to.be.false;
+      expect(await accessControl.hasAccess(userAddress, FIRST_PROFILE_ID, [])).to.be.true;
+      expect(await accessControl.hasAccess(userTwoAddress, FIRST_PROFILE_ID, [])).to.be.false;
 
-      const newImpl = await new MockProfileAccessV2__factory(deployer).deploy(lensHub.address);
-      await expect(profileAccessProxy.upgradeTo(newImpl.address)).to.not.be.reverted;
-      await expect(profileAccess.initialize()).to.not.be.reverted;
+      const newImpl = await new MockAccessControlV2__factory(deployer).deploy(lensHub.address);
+      await expect(accessControlProxy.upgradeTo(newImpl.address)).to.not.be.reverted;
+      await expect(accessControl.initialize()).to.not.be.reverted;
 
       expect(await lensHub.ownerOf(FIRST_PROFILE_ID)).to.be.eq(userAddress);
-      expect(await profileAccess.hasAccess(userAddress, FIRST_PROFILE_ID, [])).to.be.true;
-      expect(await profileAccess.hasAccess(userTwoAddress, FIRST_PROFILE_ID, [])).to.be.false;
+      expect(await accessControl.hasAccess(userAddress, FIRST_PROFILE_ID, [])).to.be.true;
+      expect(await accessControl.hasAccess(userTwoAddress, FIRST_PROFILE_ID, [])).to.be.false;
     });
   });
 });

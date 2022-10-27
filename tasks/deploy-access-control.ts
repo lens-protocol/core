@@ -3,7 +3,7 @@ import { formatEther } from 'ethers/lib/utils';
 import fs from 'fs';
 import { task } from 'hardhat/config';
 import { HardhatRuntimeEnvironment } from 'hardhat/types';
-import { TransparentUpgradeableProxy__factory, ProfileAccess__factory } from '../typechain-types';
+import { TransparentUpgradeableProxy__factory, AccessControl__factory } from '../typechain-types';
 import { deployWithVerify } from './helpers/utils';
 
 const LENS_HUB_SANDBOX = '0x7582177F9E536aB0b6c721e11f383C326F2Ad1D5';
@@ -12,7 +12,7 @@ const LENS_HUB_POLYGON = '0xDb46d1Dc155634FbC732f92E853b10B288AD5a1d';
 
 export let runtimeHRE: HardhatRuntimeEnvironment;
 
-task('deploy-profile-access', 'deploys the Profile Access contract with explorer verification')
+task('deploy-access-control', 'deploys the Access Control contract with explorer verification')
   .addOptionalParam('lensHubAddress', 'Address of the LensHub proxy')
   .addFlag('broadcast', 'Submit transactions on-chain (will run a dry-run without this flag)')
   .setAction(async ({ lensHubAddress, broadcast }, hre) => {
@@ -57,33 +57,33 @@ task('deploy-profile-access', 'deploys the Profile Access contract with explorer
     console.log(`\n\tlensHubAddress:`, lensHubAddress);
 
     if (broadcast) {
-      console.log('\n\t-- Deploying Profile Access Implementation --');
-      const profileAccessImpl = await deployWithVerify(
-        new ProfileAccess__factory(deployer).deploy(lensHubAddress),
+      console.log('\n\t-- Deploying Access Control Implementation --');
+      const accessControlImpl = await deployWithVerify(
+        new AccessControl__factory(deployer).deploy(lensHubAddress),
         [lensHubAddress],
-        'contracts/misc/ProfileAccess.sol:ProfileAccess'
+        'contracts/misc/AccessControl.sol:AccessControl'
       );
 
-      const data = profileAccessImpl.interface.encodeFunctionData('initialize', []);
+      const data = accessControlImpl.interface.encodeFunctionData('initialize', []);
 
-      console.log('\n\t-- Deploying Profile Access Proxy --');
+      console.log('\n\t-- Deploying Access Control Proxy --');
       const proxy = await deployWithVerify(
         new TransparentUpgradeableProxy__factory(deployer).deploy(
-          profileAccessImpl.address,
+          accessControlImpl.address,
           proxyAdminAddress,
           data
         ),
-        [profileAccessImpl.address, deployer.address, data],
+        [accessControlImpl.address, deployer.address, data],
         'contracts/upgradeability/TransparentUpgradeableProxy.sol:TransparentUpgradeableProxy'
       );
 
-      // Connect the profileAccess proxy to the ProfileAccess factory and the governance for ease of use.
-      const profileAccess = ProfileAccess__factory.connect(proxy.address, governance);
+      // Connect the accessControl proxy to the AccessControl factory and the governance for ease of use.
+      const accessControl = AccessControl__factory.connect(proxy.address, governance);
 
       // Save and log the addresses
       const addrs = {
-        'profileAccess proxy': profileAccess.address,
-        'profileAccess impl': profileAccessImpl.address,
+        'accessControl proxy': accessControl.address,
+        'accessControl impl': accessControlImpl.address,
       };
       const json = JSON.stringify(addrs, null, 2);
       console.log(json);

@@ -6,13 +6,13 @@ import {VersionedInitializable} from '../upgradeability/VersionedInitializable.s
 import {IERC721} from '@openzeppelin/contracts/token/ERC721/IERC721.sol';
 
 /**
- * @title MockProfileAccessV2BadRevision
+ * @title MockAccessControlV2BadRevision
  * @author Lens Protocol
  *
  * @notice This contract enables additional access control for encrypted publications on Lens by reporting whether
  *      an address owns or has control over a given profile.
  */
-contract MockProfileAccessV2BadRevision is VersionedInitializable {
+contract MockAccessControlV2BadRevision is VersionedInitializable {
     uint256 internal constant REVISION = 1;
 
     address internal immutable LENS_HUB;

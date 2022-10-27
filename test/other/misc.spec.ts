@@ -3,7 +3,7 @@ import { expect } from 'chai';
 import { keccak256, toUtf8Bytes } from 'ethers/lib/utils';
 import {
   FollowNFT__factory,
-  ProfileAccess__factory,
+  AccessControl__factory,
   UIDataProvider__factory,
 } from '../../typechain-types';
 import { MAX_UINT256, ZERO_ADDRESS } from '../helpers/constants';
@@ -1257,10 +1257,10 @@ makeSuiteCleanRoom('Misc', function () {
     });
   });
 
-  context('ProfileAccess', function () {
-    let profileAccess;
+  context('AccessControl', function () {
+    let accessControl;
     before(async function () {
-      profileAccess = await new ProfileAccess__factory(deployer).deploy(lensHub.address);
+      accessControl = await new AccessControl__factory(deployer).deploy(lensHub.address);
     });
     beforeEach(async function () {
       const receipt = await waitForTx(
@@ -1288,16 +1288,16 @@ makeSuiteCleanRoom('Misc', function () {
       ]);
     });
 
-    it('ProfileAccess should return true if user owns the profile', async function () {
-      // Deploy the ProfileAccess contract
+    it('AccessControl should return true if user owns the profile', async function () {
+      // Deploy the AccessControl contract
       expect(await lensHub.ownerOf(FIRST_PROFILE_ID)).to.be.eq(userAddress);
-      expect(await profileAccess.hasAccess(userAddress, FIRST_PROFILE_ID, [])).to.be.true;
+      expect(await accessControl.hasAccess(userAddress, FIRST_PROFILE_ID, [])).to.be.true;
     });
 
-    it('ProfileAccess should return false if user does not own the profile', async function () {
-      // Deploy the ProfileAccess contract
+    it('AccessControl should return false if user does not own the profile', async function () {
+      // Deploy the AccessControl contract
       expect(await lensHub.ownerOf(FIRST_PROFILE_ID)).to.not.be.eq(userTwoAddress);
-      expect(await profileAccess.hasAccess(userTwoAddress, FIRST_PROFILE_ID, [])).to.be.false;
+      expect(await accessControl.hasAccess(userTwoAddress, FIRST_PROFILE_ID, [])).to.be.false;
     });
   });
 });
