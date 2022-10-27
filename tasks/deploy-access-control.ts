@@ -14,16 +14,19 @@ export let runtimeHRE: HardhatRuntimeEnvironment;
 
 task('deploy-access-control', 'deploys the Access Control contract with explorer verification')
   .addOptionalParam('lensHubAddress', 'Address of the LensHub proxy')
+  .addOptionalParam('proxyAdmin', 'Address of the Access Control proxy admin to set')
   .addFlag('broadcast', 'Submit transactions on-chain (will run a dry-run without this flag)')
-  .setAction(async ({ lensHubAddress, broadcast }, hre) => {
+  .addFlag('onlyImpl', 'Deploy only the implementation, without proxy (for upgrades)')
+  .addFlag('upgrade', 'Perform an upgrade instead of deploying from scratch')
+  .setAction(async ({ lensHubAddress, proxyAdmin, broadcast, onlyImpl, upgrade }, hre) => {
     // Note that the use of these signers is a placeholder and is not meant to be used in
     // production.
     runtimeHRE = hre;
     const ethers = hre.ethers;
     const accounts = await ethers.getSigners();
     const deployer = accounts[0];
-    const governance = accounts[1];
-    const proxyAdminAddress = deployer.address;
+    // const governance = accounts[1];
+    const proxyAdminAddress = proxyAdmin ?? deployer.address;
 
     // Setting Lens Hub address if left undefined
     if (!lensHubAddress)
@@ -52,9 +55,36 @@ task('deploy-access-control', 'deploys the Access Control contract with explorer
       `\n\tDeployer balance:`,
       formatEther(await ethers.provider.getBalance(deployer.address))
     );
-    console.log(`\n\tGovernance:`, governance.address);
     console.log(`\n\tproxyAdminAddress:`, proxyAdminAddress);
     console.log(`\n\tlensHubAddress:`, lensHubAddress);
+
+    let proxyAddress;
+    if (!upgrade && !onlyImpl) {
+      console.log(`\n\n\t Deployment mode: Proxy + Implementation`);
+    } else {
+      let addresses;
+      try {
+        addresses = JSON.parse(fs.readFileSync('addresses.json', 'utf-8'));
+      } catch (err) {
+        console.error(
+          '\nERROR: No addresses.json found. It is required to fetch existing Proxy address'
+        );
+        process.exit();
+      }
+      proxyAddress = addresses['profileAccess proxy'];
+      if (proxyAddress == undefined || proxyAddress.length != 42) {
+        console.error('\nERROR: Proxy address not found or invalid');
+        process.exit();
+      }
+      if (
+        (await ethers.provider.getCode(proxyAddress)).length <= 2 ||
+        (await ethers.provider.getCode(proxyAddress)) == '0x'
+      ) {
+        console.error('\nERROR Proxy address is not a contract (doesnt have code)');
+        process.exit();
+      }
+      console.log('\n\tAccess Control Proxy found:', proxyAddress);
+    }
 
     if (broadcast) {
       console.log('\n\t-- Deploying Access Control Implementation --');
@@ -66,19 +96,21 @@ task('deploy-access-control', 'deploys the Access Control contract with explorer
 
       const data = accessControlImpl.interface.encodeFunctionData('initialize', []);
 
-      console.log('\n\t-- Deploying Access Control Proxy --');
-      const proxy = await deployWithVerify(
-        new TransparentUpgradeableProxy__factory(deployer).deploy(
-          accessControlImpl.address,
-          proxyAdminAddress,
-          data
-        ),
-        [accessControlImpl.address, deployer.address, data],
-        'contracts/upgradeability/TransparentUpgradeableProxy.sol:TransparentUpgradeableProxy'
-      );
+      let proxy;
+      if (!upgrade && !onlyImpl) {
+        console.log('\n\t-- Deploying Access Control Proxy --');
+        proxy = await deployWithVerify(
+          new TransparentUpgradeableProxy__factory(deployer).deploy(
+            accessControlImpl.address,
+            proxyAdminAddress,
+            data
+          ),
+          [accessControlImpl.address, deployer.address, data],
+          'contracts/upgradeability/TransparentUpgradeableProxy.sol:TransparentUpgradeableProxy'
+        );
+      }
 
-      // Connect the accessControl proxy to the AccessControl factory and the governance for ease of use.
-      const accessControl = AccessControl__factory.connect(proxy.address, governance);
+      const accessControl = AccessControl__factory.connect(proxy.address, deployer);
 
       // Save and log the addresses
       const addrs = {
@@ -89,6 +121,15 @@ task('deploy-access-control', 'deploys the Access Control contract with explorer
       console.log(json);
 
       fs.writeFileSync('addresses.json', json, 'utf-8');
+
+      if (upgrade) {
+        console.log('\n\t-- Trying to perform an upgrade (with the deployer) --');
+
+        proxy = TransparentUpgradeableProxy__factory.connect(proxyAddress, deployer);
+        await proxy.upgradeToAndCall(accessControlImpl.address, data);
+
+        console.log('\n\t Looks like the upgrade succeeded!');
+      }
     } else {
       console.log('\n--- To broadcast transactions on-chain: add --broadcast flag\n');
     }
