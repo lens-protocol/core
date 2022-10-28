@@ -87,6 +87,15 @@ const config: HardhatUserConfig = {
       })),
       forking: mainnetFork,
     },
+    local: {
+      url: 'http://127.0.0.1:8545/',
+      accounts: {
+        mnemonic: MNEMONIC,
+        path: MNEMONIC_PATH,
+        initialIndex: 0,
+        count: 20,
+      },
+    },
   },
   gasReporter: {
     enabled: TRACK_GAS,
