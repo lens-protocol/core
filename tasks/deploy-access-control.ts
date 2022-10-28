@@ -180,12 +180,8 @@ task('deploy-access-control', 'deploys the Access Control contract with explorer
           );
 
           proxy = TransparentUpgradeableProxy__factory.connect(proxyAddress, deployer);
-          try {
-            await proxy.upgradeToAndCall(accessControlImpl.address, data);
-          } catch (err) {
-            console.log(err);
-            throw err;
-          }
+          const tx = await proxy.upgradeToAndCall(accessControlImpl.address, data);
+          await tx.wait(3);
 
           console.log('\n\t Looks like the upgrade succeeded!');
 
