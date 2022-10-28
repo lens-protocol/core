@@ -16,6 +16,13 @@ import '../../../contracts/libraries/ProfileTokenURILogic.sol';
 import '../../../contracts/mocks/MockCollectModule.sol';
 import '../../../contracts/mocks/MockReferenceModule.sol';
 
+struct MockCollectData {
+    address collector;
+    uint256 profileId;
+    uint256 pubId;
+    bytes data;
+}
+
 contract TestSetup is Test {
     uint256 constant firstProfileId = 1;
     address constant deployer = address(1);
@@ -45,6 +52,7 @@ contract TestSetup is Test {
     DataTypes.PostData mockPostData;
     DataTypes.CommentData mockCommentData;
     DataTypes.MirrorData mockMirrorData;
+    MockCollectData mockCollectData;
 
     function setUp() public virtual {
         // Start deployments.
@@ -148,6 +156,14 @@ contract TestSetup is Test {
             referenceModuleData: '',
             referenceModule: address(0),
             referenceModuleInitData: ''
+        });
+
+        // Precompute basic collect data. No struct for simple collect.
+        mockCollectData = MockCollectData({
+            collector: profileOwner,
+            profileId: firstProfileId,
+            pubId: 1,
+            data: ''
         });
 
         hub.createProfile(mockCreateProfileData);

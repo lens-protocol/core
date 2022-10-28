@@ -401,7 +401,7 @@ library DataTypes {
      * @notice A struct containing the parameters required for the `toggleFollowWithSig()` function.
      *
      * @note This does not include a delegatedSigner parameter as it is marked for deprecation.
-     * 
+     *
      * @param follower The follower which is the message signer.
      * @param profileIds The token ID array of the profiles.
      * @param enables The array of booleans to enable/disable follows.
