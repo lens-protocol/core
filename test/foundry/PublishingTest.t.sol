@@ -189,6 +189,8 @@ contract PublishingTest_Post is BaseTest, SignatureHelpers, PublishingHelpers, S
 }
 
 contract PublishingTest_Comment is PublishingTest_Post {
+    uint256 postId;
+
     function replicateInitData() internal override {
         mockCommentData.profileId = mockPostData.profileId;
         mockCommentData.contentURI = mockPostData.contentURI;
@@ -232,11 +234,51 @@ contract PublishingTest_Comment is PublishingTest_Post {
         PublishingTest_Post.setUp();
 
         vm.prank(profileOwner);
-        _post(mockPostData);
+        postId = _post(mockPostData);
+    }
+
+    // negatives
+    function testCannotCommentOnNonExistentPublication() public {
+        uint256 nonExistentPubId = _getPubCount(firstProfileId) + 10;
+
+        replicateInitData();
+        mockCommentData.pubIdPointed = nonExistentPubId;
+
+        vm.prank(profileOwner);
+        vm.expectRevert(Errors.PublicationDoesNotExist.selector);
+        _publish();
+    }
+
+    function testCannotCommentOnTheSamePublicationBeingCreated() public {
+        uint256 nextPubId = _getPubCount(firstProfileId) + 1;
+
+        replicateInitData();
+        mockCommentData.pubIdPointed = nextPubId;
+
+        vm.prank(profileOwner);
+        vm.expectRevert(Errors.CannotCommentOnSelf.selector);
+        uint256 pubId = _publish();
+    }
+
+    // scenarios
+    function testPostWithReferenceModuleAndComment() public {
+        mockPostData.referenceModule = address(mockReferenceModule);
+        mockPostData.referenceModuleInitData = abi.encode(1);
+        vm.prank(profileOwner);
+        postId = _post(mockPostData);
+
+        mockCommentData.pubIdPointed = postId;
+        vm.prank(profileOwner);
+        uint256 commentPubId = _publish();
+
+        DataTypes.PublicationStruct memory pub = _getPub(firstProfileId, commentPubId);
+        _verifyPublication(pub, _expectedPubFromInitData());
     }
 }
 
 contract PublishingTest_Mirror is PublishingTest_Post {
+    uint256 postId;
+
     function replicateInitData() internal override {
         mockMirrorData.profileId = mockPostData.profileId;
         mockMirrorData.referenceModule = mockPostData.referenceModule;
@@ -277,8 +319,37 @@ contract PublishingTest_Mirror is PublishingTest_Post {
         PublishingTest_Post.setUp();
 
         vm.prank(profileOwner);
-        _post(mockPostData);
+        postId = _post(mockPostData);
     }
 
+    // negatives
+
+    // This test doesn't apply to mirrors
     function testCannotPublishNotWhitelistedCollectModule() public override {}
+
+    function testCannotMirrorNonExistentPublication() public {
+        uint256 nonExistentPubId = _getPubCount(firstProfileId) + 10;
+
+        replicateInitData();
+        mockMirrorData.pubIdPointed = nonExistentPubId;
+
+        vm.prank(profileOwner);
+        vm.expectRevert(Errors.PublicationDoesNotExist.selector);
+        _publish();
+    }
+
+    // scenarios
+    function testMirrorAnotherMirrorShouldPointToOriginalPost() public {
+        mockMirrorData.pubIdPointed = postId;
+        vm.prank(profileOwner);
+        uint256 firstMirrorId = _publish();
+
+        mockMirrorData.pubIdPointed = firstMirrorId;
+        vm.prank(profileOwner);
+        uint256 secondMirrorId = _publish();
+
+        DataTypes.PublicationStruct memory pub = _getPub(firstProfileId, secondMirrorId);
+        mockMirrorData.pubIdPointed = postId; // We're expecting a mirror to point at the original post ID
+        _verifyPublication(pub, _expectedPubFromInitData(mockMirrorData));
+    }
 }
