@@ -392,6 +392,24 @@ contract LensHub is LensNFTBase, VersionedInitializable, LensMultiState, LensHub
     }
 
     /// @inheritdoc ILensHub
+    function setBlockStatus(
+        uint256 byProfile,
+        uint256[] calldata profileIds,
+        bool[] calldata blocked
+    ) external override whenNotPaused {
+        //
+    }
+
+    /// @inheritdoc ILensHub
+    function setBlockStatusWithSig(DataTypes.SetBlockStatusWithSigData vars)
+        external
+        override
+        whenNotPaused
+    {
+        //
+    }
+
+    /// @inheritdoc ILensHub
     function collect(
         address onBehalfOf,
         uint256 profileId,
@@ -441,6 +459,17 @@ contract LensHub is LensNFTBase, VersionedInitializable, LensMultiState, LensHub
             to,
             block.timestamp
         );
+    }
+
+    /// @inheritdoc ILensHub
+    function emitUnfollowedEvent(
+        uint256 unfollower,
+        uint256 profile,
+        uint128 followId
+    ) external override {
+        address expectedFollowNFT = _profileById[profileId].followNFT;
+        if (msg.sender != expectedFollowNFT) revert Errors.CallerNotFollowNFT();
+        // emit Unfollowed();
     }
 
     /// *********************************
@@ -494,6 +523,11 @@ contract LensHub is LensNFTBase, VersionedInitializable, LensMultiState, LensHub
         returns (bool)
     {
         return _delegatedExecutorApproval[wallet][executor];
+    }
+
+    /// @inheritdoc ILensHub
+    function isBlocked(uint256 profile, uint256 byProfile) external view returns (bool) {
+        //
     }
 
     /// @inheritdoc ILensHub
