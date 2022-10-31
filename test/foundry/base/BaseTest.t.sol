@@ -341,7 +341,7 @@ contract BaseTest is TestSetup {
         address onBehalfOf,
         uint256 profileId,
         uint256 pubId,
-        bytes calldata data
+        bytes memory data
     ) internal returns (uint256) {
         return hub.collect(onBehalfOf, profileId, pubId, data);
     }
