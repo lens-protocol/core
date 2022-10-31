@@ -15,9 +15,7 @@ contract SigSetup {
     }
 }
 
-contract CollectingTest_Collect is BaseTest, SignatureHelpers, CollectingHelpers, SigSetup {
-    function replicateInitData() internal virtual {}
-
+contract CollectingTest_Base is BaseTest, SignatureHelpers, CollectingHelpers, SigSetup {
     function _mockCollect() internal virtual returns (uint256) {
         return
             _collect(
@@ -55,70 +53,74 @@ contract CollectingTest_Collect is BaseTest, SignatureHelpers, CollectingHelpers
         TestSetup.setUp();
         SigSetup.setUp();
     }
+}
 
-    // negatives
-    function testCannotCollectIfNotExecutor() public {
+contract CollectingTest_Generic is CollectingTest_Base {
+    function setUp() public override {
+        CollectingTest_Base.setUp();
+    }
+
+    // NEGATIVES
+
+    function testFailCollectIfNotExecutor() public {
         vm.expectRevert(Errors.ExecutorInvalid.selector);
         _mockCollect();
     }
 
-    function testCannotCollectWithSigIfNotExecutor() public {
+    function testFailCollectIfNonexistantPub() public {}
+
+    function testFailCollectIfZeroPub() public {}
+
+    // SCENARIOS
+
+    // TODO check expected token IDs returned
+    // TODO check events fired
+    function testCollect() public {
+        assertEq(hub.getCollectNFT(firstProfileId, 1), address(0));
+
+        _mockCollect();
+    }
+
+    function testCollectMirror() public {}
+
+    function testExecutorCollect() public {}
+
+    function testExecutorCollectMirror() public {}
+}
+
+contract CollectingTest_WithSig is CollectingTest_Base {
+    function setUp() public override {
+        CollectingTest_Base.setUp();
+    }
+
+    // NEGATIVES
+
+    function testFailCollectWithSigIfNotExecutor() public {
         vm.expectRevert(Errors.ExecutorInvalid.selector);
         _mockCollectWithSig({delegatedSigner: otherSigner, signerPrivKey: otherSignerKey});
     }
 
-    // positives
-    // function testCollect() public {
-    //     uint256 expectedPubId = _getPubCount(firstProfileId) + 1;
+    function testFailCollectWithSigIfNonexistantPub() public {}
 
-    //     vm.prank(profileOwner);
-    //     uint256 pubId = _collect();
+    function testFailCollectWithSigIfZeroPub() public {}
 
-    //     assertEq(pubId, expectedPubId);
+    function testFailCollectWithSigOnDeadlineMismatch() public {}
 
-    //     DataTypes.PublicationStruct memory pub = _getPub(firstProfileId, pubId);
-    //     _verifyPublication(pub, _expectedPubFromInitData());
-    // }
+    function testFailCollectWithSigOnInvalidDeadline() public {}
 
-    // function testCollectWithSig() public {
-    //     uint256 expectedPubId = _getPubCount(firstProfileId) + 1;
+    function testFailCollectWithSigOnInvalidNonce() public {}
 
-    //     uint256 pubId = _publishWithSig({
-    //         delegatedSigner: address(0),
-    //         signerPrivKey: profileOwnerKey
-    //     });
-    //     assertEq(pubId, expectedPubId);
+    function testFailCollectWithSigIfCancelledViaEmptyPermitForAll() public {}
 
-    //     DataTypes.PublicationStruct memory pub = _getPub(firstProfileId, pubId);
-    //     _verifyPublication(pub, _expectedPubFromInitData());
-    // }
+    // SCENARIOS
 
-    // function testExecutorCollect() public {
-    //     vm.prank(profileOwner);
-    //     _setDelegatedExecutorApproval(otherSigner, true);
+    function testCollectWithSig() public {
+        //TODO
+    }
 
-    //     uint256 expectedPubId = _getPubCount(firstProfileId) + 1;
+    function testCollectWithSigMirror() public {}
 
-    //     vm.prank(otherSigner);
-    //     uint256 pubId = _collect();
-    //     assertEq(pubId, expectedPubId);
+    function testExecutorCollectWithSig() public {}
 
-    //     DataTypes.PublicationStruct memory pub = _getPub(firstProfileId, pubId);
-    //     _verifyPublication(pub, _expectedPubFromInitData());
-    // }
-
-    // function testExecutorCollectWithSig() public {
-    //     vm.prank(profileOwner);
-    //     _setDelegatedExecutorApproval(otherSigner, true);
-
-    //     uint256 expectedPubId = _getPubCount(firstProfileId) + 1;
-    //     uint256 pubId = _publishWithSig({
-    //         delegatedSigner: otherSigner,
-    //         signerPrivKey: otherSignerKey
-    //     });
-    //     assertEq(pubId, expectedPubId);
-
-    //     DataTypes.PublicationStruct memory pub = _getPub(firstProfileId, pubId);
-    //     _verifyPublication(pub, _expectedPubFromInitData());
-    // }
+    function testExecutorCollectWithSigMirror() public {}
 }
