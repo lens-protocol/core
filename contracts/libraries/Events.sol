@@ -348,6 +348,20 @@ library Events {
         uint256 timestamp
     );
 
+    event Followed(
+        uint256 indexed follower,
+        uint256 indexed profile,
+        uint128 indexed followId,
+        uint48 followTimestamp
+    );
+
+    event Unfollowed(
+        uint256 indexed unfollower,
+        uint256 indexed profile,
+        uint128 indexed followId,
+        uint48 followTimestamp
+    );
+
     /**
      * @dev Emitted via callback when a followNFT is transferred.
      *
