@@ -3,7 +3,7 @@ pragma solidity ^0.8.13;
 
 import './base/BaseTest.t.sol';
 import './helpers/SignatureHelpers.sol';
-import './helpers/PublishingHelpers.sol';
+import {PublishingHelpers} from './helpers/PublishingHelpers.sol';
 
 contract SigSetup {
     uint256 nonce;
