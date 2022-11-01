@@ -12,30 +12,11 @@ import {DataTypes} from '../libraries/DataTypes.sol';
 import {LensNFTBase} from './base/LensNFTBase.sol';
 import '../libraries/Constants.sol';
 
-/**
- * TODO: Right now the `TokenData` is stored like this:
- *
- *                  struct TokenData {
- *                      address owner;
- *                      uint96 mintTimestamp;
- *                  }
- *
- * We should check how `owner` and `mintTimestamp` are being aligned in the slot, as maybe we can migrate to this...
- *
- *                  struct FollowData {
- *                      address owner;
- *                      uint48 mintTimestamp;
- *                      uint48 followTimestamp;
- *                      uint256 follower;
- *                  }
- *
- * ...maintaining the old storage and just writing the new struct fields.
- */
 struct FollowData {
-    uint256 follower;
-    uint48 followTimestamp;
-    uint48 mintTimestamp;
     address owner;
+    uint48 mintTimestamp;
+    uint48 followTimestamp;
+    uint256 follower;
 }
 
 contract FollowNFT {
@@ -117,8 +98,11 @@ contract FollowNFT {
             followerOwner == executor ||
             ILensHub(HUB).isDelegatedExecutorApproved(followerOwner, executor)
         ) {
-            uint128 followId = ++_lastFollowId;
-            _followers++;
+            uint128 followId;
+            unchecked {
+                followId = ++_lastFollowId;
+                ++_followers;
+            }
             _followIdByFollowerId[followId] = follower;
             _followDataByFollowId[followId] = FollowData(
                 follower,
@@ -168,7 +152,9 @@ contract FollowNFT {
                     // TODO: Call hub to emit event.
                     // ILensHub(HUB).emitUnfollowedEvent(...);
                 } else {
-                    _followers++;
+                    unchecked {
+                        ++_followers;
+                    }
                 }
                 // Perform the follow.
                 _followIdByFollowerId[follower] = followId;
@@ -226,8 +212,6 @@ contract FollowNFT {
      * @param follower The ID of the profile that is perfrorming the unfollow operation.
      * @param executor The address executing the operation.
      */
-    // TODO: Still wondering if maybe the best solution is wrapping when the unfollow is done by DE, so you always keep
-    // the asset.
     function unfollow(uint256 follower, address executor) onlyHub {
         uint256 followId = _followIdByFollowerId[follower];
         if (followId == 0) {
@@ -238,7 +222,9 @@ contract FollowNFT {
         address owner = _followDataByFollowId[followId].owner;
         _followIdByFollowerId[follower] = 0;
         _followDataByFollowId[followId].follower = 0;
-        _followers--;
+        unchecked {
+            --_followers;
+        }
     }
 
     function _burn(uint256 followId, address owner) {
