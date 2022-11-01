@@ -125,11 +125,10 @@ Negatives
 [X] Testwallet should fail to comment with sig with signature deadline mismatch
 [X] Testwallet should fail to comment with sig with invalid deadline
 [X] Testwallet should fail to comment with sig with invalid nonce
-// TODO: Do we really need these?
-[?] Testwallet should fail to comment with sig with unwhitelisted collect module
-[?] TestWallet should fail to comment with sig with unwhitelisted reference module
-[?] TestWallet should fail to comment with sig on a publication that does not exist
-[?] TestWallet should fail to comment with sig on the comment they are creating (commentCeption)
+[X] Testwallet should fail to comment with sig with unwhitelisted collect module
+[X] TestWallet should fail to comment with sig with unwhitelisted reference module
+[X] TestWallet should fail to comment with sig on a publication that does not exist
+[X] TestWallet should fail to comment with sig on the comment they are creating (commentCeption)
 [X] TestWallet should sign attempt to comment with sig, cancel via empty permitForAll, then fail to comment with sig (67ms)
 Scenarios
 [X] TestWallet should comment with sig, fetched comment data should be accurate (123ms)
@@ -151,14 +150,12 @@ Negatives
 [X] Testwallet should fail to mirror with sig with signature deadline mismatch
 [X] Testwallet should fail to mirror with sig with invalid deadline
 [X] Testwallet should fail to mirror with sig with invalid nonce
-// TODO: Do we really need these?
-[?] Testwallet should fail to mirror with sig with unwhitelisted reference module
-[?] TestWallet should fail to mirror a publication with sig that does not exist yet
+[X] Testwallet should fail to mirror with sig with unwhitelisted reference module
+[X] TestWallet should fail to mirror a publication with sig that does not exist yet
 [X] TestWallet should sign attempt to mirror with sig, cancel via empty permitForAll, then fail to mirror with sig (150ms)
 Scenarios
 [X] Testwallet should mirror with sig, fetched mirror data should be accurate (62ms)
-// TODO: Do we really need this?
-[?] TestWallet should mirror a mirror with sig, fetched mirror data should be accurate (107ms)
+[X] TestWallet should mirror a mirror with sig, fetched mirror data should be accurate (107ms)
 
 Publishing Posts
 Generic
@@ -174,13 +171,11 @@ Scenarios
 [X] User should create a post with a whitelisted collect and reference module (109ms)
 Meta-tx
 Negatives
-// TODO: What's the difference between these two? signature deadline mismatch VS invalid deadline
-[?] Testwallet should fail to post with sig with signature deadline mismatch
-[?] Testwallet should fail to post with sig with invalid deadline
+[X] Testwallet should fail to post with sig with signature deadline mismatch
+[X] Testwallet should fail to post with sig with invalid deadline
 [X] Testwallet should fail to post with sig with invalid nonce
-// TODO: Do we really need these? Already tested without sig and function \_createPost used is the same
-[?] Testwallet should fail to post with sig with an unwhitelisted collect module
-[?] Testwallet should fail to post with sig with an unwhitelisted reference module
+[X] Testwallet should fail to post with sig with an unwhitelisted collect module
+[X] Testwallet should fail to post with sig with an unwhitelisted reference module
 [X] (Replaced it with another post with same nonce) TestWallet should sign attempt to post with sig, cancel via empty permitForAll, then fail to post with sig (65ms)
 Scenarios
 [X] TestWallet should post with sig, fetched post data should be accurate (100ms)
