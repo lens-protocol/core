@@ -101,20 +101,37 @@ contract CollectingTest_Generic is CollectingTest_Base {
     // SCENARIOS
 
     function testCollect() public {
-        assertEq(hub.getCollectNFT(firstProfileId, mockCollectData.pubId), address(0));
+        assertEq(hub.getCollectNFT(mockCollectData.profileId, mockCollectData.pubId), address(0));
 
         vm.startPrank(profileOwner);
         uint256 nftId = _mockCollect();
         vm.stopPrank();
 
-        CollectNFT nft = CollectNFT(hub.getCollectNFT(firstProfileId, mockCollectData.pubId));
+        CollectNFT nft = CollectNFT(
+            hub.getCollectNFT(mockCollectData.profileId, mockCollectData.pubId)
+        );
         assertEq(nftId, mockCollectData.pubId);
         assertEq(nft.ownerOf(mockCollectData.pubId), mockCollectData.collector);
         assertEq(nft.name(), _expectedName());
         assertEq(nft.symbol(), _expectedSymbol());
     }
 
-    function testCollectMirror() public {}
+    function testCollectMirror() public {
+        assertEq(hub.getCollectNFT(mockCollectData.profileId, mockCollectData.pubId), address(0));
+
+        vm.startPrank(profileOwner);
+        hub.mirror(mockMirrorData);
+        uint256 nftId = _mockCollect();
+        vm.stopPrank();
+
+        CollectNFT nft = CollectNFT(
+            hub.getCollectNFT(mockCollectData.profileId, mockCollectData.pubId)
+        );
+        assertEq(nftId, mockCollectData.pubId);
+        assertEq(nft.ownerOf(mockCollectData.pubId), mockCollectData.collector);
+        assertEq(nft.name(), _expectedName());
+        assertEq(nft.symbol(), _expectedSymbol());
+    }
 
     function testExecutorCollect() public {}
 
