@@ -16,6 +16,8 @@ contract SigSetup {
 }
 
 contract CollectingTest_Base is BaseTest, SignatureHelpers, CollectingHelpers, SigSetup {
+    using Strings for uint256;
+
     function _mockCollect() internal virtual returns (uint256) {
         return
             _collect(
@@ -49,9 +51,34 @@ contract CollectingTest_Base is BaseTest, SignatureHelpers, CollectingHelpers, S
             );
     }
 
+    function _expectedName() internal view virtual returns (string memory) {
+        return
+            string(
+                abi.encodePacked(
+                    mockCollectData.profileId.toString(),
+                    COLLECT_NFT_NAME_INFIX,
+                    uint256(mockCollectData.pubId).toString()
+                )
+            );
+    }
+
+    function _expectedSymbol() internal view virtual returns (string memory) {
+        return
+            string(
+                abi.encodePacked(
+                    mockCollectData.profileId.toString(),
+                    COLLECT_NFT_SYMBOL_INFIX,
+                    uint256(mockCollectData.pubId).toString()
+                )
+            );
+    }
+
     function setUp() public virtual override(SigSetup, TestSetup) {
         TestSetup.setUp();
         SigSetup.setUp();
+
+        vm.prank(profileOwner);
+        hub.post(mockPostData);
     }
 }
 
@@ -73,12 +100,18 @@ contract CollectingTest_Generic is CollectingTest_Base {
 
     // SCENARIOS
 
-    // TODO check expected token IDs returned
-    // TODO check events fired
     function testCollect() public {
-        assertEq(hub.getCollectNFT(firstProfileId, 1), address(0));
+        assertEq(hub.getCollectNFT(firstProfileId, mockCollectData.pubId), address(0));
 
-        _mockCollect();
+        vm.startPrank(profileOwner);
+        uint256 nftId = _mockCollect();
+        vm.stopPrank();
+
+        CollectNFT nft = CollectNFT(hub.getCollectNFT(firstProfileId, mockCollectData.pubId));
+        assertEq(nftId, mockCollectData.pubId);
+        assertEq(nft.ownerOf(mockCollectData.pubId), mockCollectData.collector);
+        assertEq(nft.name(), _expectedName());
+        assertEq(nft.symbol(), _expectedSymbol());
     }
 
     function testCollectMirror() public {}
