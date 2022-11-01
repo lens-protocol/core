@@ -55,14 +55,14 @@ Scenarios
 Multi-State Hub
 Common
 Negatives
-[ ] User should fail to set the state on the hub
-[ ] User should fail to set the emergency admin
-[ ] Governance should set user as emergency admin, user should fail to set protocol state to Unpaused
-[ ] Governance should set user as emergency admin, user should fail to set protocol state to PublishingPaused or Paused from Paused
+[X] User should fail to set the state on the hub
+[X] User should fail to set the emergency admin
+[X] Governance should set user as emergency admin, user should fail to set protocol state to Unpaused
+[X] Governance should set user as emergency admin, user should fail to set protocol state to PublishingPaused or Paused from Paused
 Scenarios
-[ ] Governance should set user as emergency admin, user sets protocol state but fails to set emergency admin, governance sets emergency admin to the zero address, user fails to set protocol state
-[ ] Governance should set the protocol state, fetched protocol state should be accurate
-[ ] Governance should set user as emergency admin, user should set protocol state to PublishingPaused, then Paused, then fail to set it to PublishingPaused
+[X] Governance should set user as emergency admin, user sets protocol state but fails to set emergency admin, governance sets emergency admin to the zero address, user fails to set protocol state
+[X] Governance should set the protocol state, fetched protocol state should be accurate
+[X] Governance should set user as emergency admin, user should set protocol state to PublishingPaused, then Paused, then fail to set it to PublishingPaused
 Paused State
 Scenarios
 [ ] User should create a profile, governance should pause the hub, transferring the profile should fail
