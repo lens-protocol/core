@@ -10,43 +10,71 @@ import {Errors} from '../libraries/Errors.sol';
 import {Events} from '../libraries/Events.sol';
 import {DataTypes} from '../libraries/DataTypes.sol';
 import {LensNFTBase} from './base/LensNFTBase.sol';
+import {ModuleBase} from './modules/ModuleBase.sol';
+import {IERC721} from '@openzeppelin/contracts/token/ERC721/IERC721.sol';
+import {ERC721Time} from './base/ERC721Time.sol';
 import '../libraries/Constants.sol';
 
-struct FollowData {
-    address owner;
-    uint48 mintTimestamp;
-    uint48 followTimestamp;
-    uint256 follower;
+error AlreadyFollowing();
+error NotFollowing();
+error FollowTokenDoesNotExist();
+error AlreadyUntied();
+error AlreadyTied();
+error Blocked();
+error OnlyFollowOwner();
+error OnlyWrappedFollows();
+error DoesNotHavePermissions();
+
+struct Snapshot {
+    uint128 blockNumber;
+    uint128 value;
 }
 
-contract FollowNFT {
-    error AlreadyFollowing();
-    error NotFollowing();
-    error FollowTokenDoesNotExist();
-    error AlreadyUntied();
-    error AlreadyTied();
-    error Blocked();
-    error OnlyFollowOwner();
-    error OnlyWrappedFollows();
-    error DoesNotHavePermissions();
+struct FollowData {
+    uint160 follower;
+    uint96 followTimestamp;
+}
 
-    address immutable HUB;
+contract FollowNFT is ModuleBase, LensNFTBase, IFollowNFT {
+    bytes32 internal constant DELEGATE_BY_SIG_TYPEHASH =
+        keccak256(
+            'DelegateBySig(address delegator,address delegatee,uint256 nonce,uint256 deadline)'
+        );
 
-    uint256 internal _profile;
+    mapping(address => mapping(uint256 => Snapshot)) internal _snapshots;
+    mapping(address => address) internal _delegates;
+    mapping(address => uint256) internal _snapshotCount;
+    mapping(uint256 => Snapshot) internal _delSupplySnapshots;
+    uint256 internal _delSupplySnapshotCount;
+    uint256 internal _profileId;
+    uint256 internal _lastFollowId;
+
+    bool private _initialized;
+
     uint128 internal _followers;
-    uint128 internal _lastFollowId;
     mapping(uint256 => FollowData) internal _followDataByFollowId;
     mapping(uint256 => uint256) internal _followIdByFollowerId;
     mapping(uint256 => uint256) internal _approvedToFollowByFollowerId;
     mapping(uint256 => address) internal _approvedToSetFollowerByFollowId;
-    mapping(uint256 => address) internal _approvedByFollowId;
+
+    // We create the FollowNFT with the pre-computed HUB address before deploying the hub.
+    constructor(address hub) ModuleBase(hub) {
+        _initialized = true;
+    }
+
+    /// @inheritdoc IFollowNFT
+    function initialize(uint256 profileId) external override {
+        if (_initialized) revert Errors.Initialized();
+        _initialized = true;
+        _profileId = profileId;
+        emit Events.FollowNFTInitialized(profileId, block.timestamp);
+    }
 
     /**
      * @param follower The ID of the profile acting as the follower.
      * @param executor The address executing the operation.
      * @param followId The follow token ID to be used for this follow operation. Use zero if a new follow token should
      * be minted.
-     * @param tied Whether the follow should be tied to the profile or untied as ERC-721.
      * @param data Custom data for processing the follow.
      */
     function follow(
@@ -54,7 +82,7 @@ contract FollowNFT {
         address executor,
         uint256 followId,
         bytes calldata data
-    ) onlyHub returns (uint256) {
+    ) external onlyHub returns (uint256) {
         if (_followIdByFollowerId[follower] != 0) {
             revert AlreadyFollowing();
         }
@@ -66,7 +94,7 @@ contract FollowNFT {
 
         if (followId == 0) {
             followIdUsed = _followWithoutToken(follower, executor, followerOwner);
-        } else if ((currentOwner = _followDataByFollowId[followId].owner) != adderss(0)) {
+        } else if ((currentOwner = _tokenData[followId].owner) != address(0)) {
             _followWithWrappedToken(follower, executor, followId, followerOwner, currentOwner);
         } else if ((currentFollower = _followDataByFollowId[followId].follower) != 0) {
             _followWithUnwrappedToken(follower, executor, followId, followerOwner, currentFollower);
@@ -93,22 +121,20 @@ contract FollowNFT {
         uint256 follower,
         address executor,
         address followerOwner
-    ) returns (uint256) {
+    ) internal returns (uint256) {
         if (
             followerOwner == executor ||
             ILensHub(HUB).isDelegatedExecutorApproved(followerOwner, executor)
         ) {
-            uint128 followId;
+            uint256 followId;
             unchecked {
                 followId = ++_lastFollowId;
                 ++_followers;
             }
-            _followIdByFollowerId[followId] = follower;
+            _followIdByFollowerId[followId] = uint160(follower);
             _followDataByFollowId[followId] = FollowData(
-                follower,
-                block.timestamp,
-                block.timestamp,
-                address(0)
+                uint160(follower),
+                uint96(block.timestamp)
             );
             return followId;
         } else {
@@ -122,7 +148,7 @@ contract FollowNFT {
         uint256 followId,
         address followerOwner,
         address currentOwner
-    ) {
+    ) internal {
         if (
             followerOwner == currentOwner ||
             executor == currentOwner ||
@@ -138,7 +164,7 @@ contract FollowNFT {
             if (
                 executor == followerOwner ||
                 ILensHub(HUB).isDelegatedExecutorApproved(followerOwner, executor) ||
-                approvedToFollowUsed = (_approvedToFollowByFollowerId[follower] == followId)
+                (approvedToFollowUsed = (_approvedToFollowByFollowerId[follower] == followId))
             ) {
                 // The executor is allowed to follow on behalf.
                 if (approvedToFollowUsed) {
@@ -158,8 +184,8 @@ contract FollowNFT {
                 }
                 // Perform the follow.
                 _followIdByFollowerId[follower] = followId;
-                _followDataByFollowId[followId].follower = follower;
-                _followDataByFollowId[followId].followTimestamp = block.timestamp;
+                _followDataByFollowId[followId].follower = uint160(follower);
+                _followDataByFollowId[followId].followTimestamp = uint96(block.timestamp);
             } else {
                 revert DoesNotHavePermissions();
             }
@@ -172,21 +198,21 @@ contract FollowNFT {
         uint256 followId,
         address followerOwner,
         uint256 currentFollower
-    ) {
+    ) internal {
         address currentFollowerOwner = IERC721(HUB).ownerOf(currentFollower);
-        if (currentFollowerOwner == executor || _approvedByFollowId[followId] == executor) {
+        if (currentFollowerOwner == executor || _tokenApprovals[followId] == executor) {
             // The executor is allowed to transfer the follow.
             // TODO: Allow approvedForAll operators of currentFollowerOwner?
             if (currentFollowerOwner != executor) {
-                // `_approvedByFollowId` used, now needs to be cleared.
-                _approvedByFollowId[followId] = address(0);
+                // `_tokenApprovals` used, now needs to be cleared.
+                _tokenApprovals[followId] = address(0);
                 emit Approval(currentFollowerOwner, address(0), followId);
             }
             bool approvedToFollowUsed;
             if (
                 executor == followerOwner ||
                 ILensHub(HUB).isDelegatedExecutorApproved(followerOwner, executor) ||
-                approvedToFollowUsed = (_approvedToFollowByFollowerId[follower] == followId)
+                (approvedToFollowUsed = (_approvedToFollowByFollowerId[follower] == followId))
             ) {
                 // The executor is allowed to follow on behalf.
                 if (approvedToFollowUsed) {
@@ -200,26 +226,30 @@ contract FollowNFT {
 
                 // Perform the follow.
                 _followIdByFollowerId[follower] = followId;
-                _followDataByFollowId[followId].follower = follower;
-                _followDataByFollowId[followId].followTimestamp = block.timestamp;
+                _followDataByFollowId[followId].follower = uint160(follower);
+                _followDataByFollowId[followId].followTimestamp = uint96(block.timestamp);
             } else {
                 revert DoesNotHavePermissions();
             }
         }
     }
 
+    function mint(address to) external returns (uint256) {
+        // TODO: Remove me after fixing IFollowNFT interface
+    }
+
     /**
      * @param follower The ID of the profile that is perfrorming the unfollow operation.
      * @param executor The address executing the operation.
      */
-    function unfollow(uint256 follower, address executor) onlyHub {
+    function unfollow(uint256 follower, address executor) external onlyHub {
         uint256 followId = _followIdByFollowerId[follower];
         if (followId == 0) {
             revert NotFollowing();
         }
-        address followerOwner = ILensHub(HUB).ownerOf(follower);
+        address followerOwner = IERC721(HUB).ownerOf(follower);
 
-        address owner = _followDataByFollowId[followId].owner;
+        address owner = _tokenData[followId].owner;
         _followIdByFollowerId[follower] = 0;
         _followDataByFollowId[followId].follower = 0;
         unchecked {
@@ -227,40 +257,47 @@ contract FollowNFT {
         }
     }
 
-    function _burn(uint256 followId, address owner) {
+    function _burn(uint256 followId, address owner) external {
         _followDataByFollowId[followId].follower = 0;
-        _followDataByFollowId[followId].owner = address(0);
+        _tokenData[followId].owner = address(0);
         emit Transfer(owner, address(0), followId);
     }
 
     // Get the follower profile from a given follow token.
     // Zero if not being used as a follow.
-    function getFollower(uint256 followId) public view returns (uint256) {
-        FollowData memory followData = _followDataByFollowId[followId];
-        if (followData.mintTimestamp == 0) {
+    function getFollower(uint256 followId) external view returns (uint256) {
+        if (_tokenData[followId].mintTimestamp == 0) {
             revert FollowTokenDoesNotExist();
         }
-        return followData.follower;
+        return _followDataByFollowId[followId].follower;
     }
 
-    function isFollowing(uint256 follower) public returns (bool) {
+    function isFollowing(uint256 follower) external returns (bool) {
         return _followIdByFollowerId[follower] != 0;
+    }
+
+    // TODO: Consider renaming
+    function isUnwrappedAndTied(uint256 followId) external returns (bool) {
+        if (_tokenData[followId].mintTimestamp == 0) {
+            revert FollowTokenDoesNotExist();
+        }
+        return !_exists(followId);
     }
 
     // Approve someone to set me as follower on a specific asset.
     // For any asset you must use delegated execution feature with a contract adding restrictions.
-    function approveFollow(uint256 follower, uint256 followId) {
+    function approveFollow(uint256 follower, uint256 followId) external {
         // TODO: followId exists, and verify msg.sender owns the follower.
         _approvedToFollowByFollowerId[follower] = followId;
     }
 
     // Approve someone to set any follower on one of my wrapped tokens.
     // To get the follow you can use `approve`.
-    function approveSetFollower(address operator, uint256 followId) {
+    function approveSetFollower(address operator, uint256 followId) external {
         address owner;
         if (
             _followDataByFollowId[followId].follower == 0 &&
-            (owner = _followDataByFollowId[followId].owner) == address(0)
+            (owner = _tokenData[followId].owner) == address(0)
         ) {
             revert FollowTokenDoesNotExist();
         }
@@ -270,12 +307,12 @@ contract FollowNFT {
         if (msg.sender != owner) {
             revert OnlyFollowOwner();
         }
-        _approvedToSetFollower[followId] = operator;
+        _approvedToSetFollowerByFollowId[followId] = operator;
     }
 
     // TODO
     function _transferHook(uint256 followId) internal {
-        _approvedToSetFollower[followId] = address(0);
+        _approvedToSetFollowerByFollowId[followId] = address(0);
     }
 
     /**
@@ -283,18 +320,18 @@ contract FollowNFT {
      * collection.
      */
     // TODO: Add a recipient of the wrapped token? so it works like an atomic wrap and transferFrom?
-    function untieAndWrap(uint256 followId) {
-        FollowData memory followData = _followDataByFollowId[followId];
-        if (followData.mintTimestamp == 0) {
+    function untieAndWrap(uint256 followId) external {
+        // TODO: Optimize
+        if (_tokenData[followId].mintTimestamp == 0) {
             revert FollowTokenDoesNotExist();
         }
-        if (followData.owner != address(0)) {
+        if (_tokenData[followId].owner != address(0)) {
             revert AlreadyUntied();
         }
-        address followerOwner = IERC721(HUB).ownerOf(followData.follower);
-        followData.owner = followerOwner;
+        address followerOwner = IERC721(HUB).ownerOf(_followDataByFollowId[followId].follower);
+        _tokenData[followId].owner = followerOwner;
         // Mint IERC721 untied collection
-        _mint(IERC721(HUB).ownerOf(followData.follower), followId);
+        _mint(IERC721(HUB).ownerOf(_followDataByFollowId[followId].follower), followId);
     }
 
     /**
@@ -302,12 +339,12 @@ contract FollowNFT {
      * token.
      */
     // TODO: Add the profile to which should be tied to? or it has to be following already?
-    function unwrapAndTie() {
+    function unwrapAndTie() external {
         //
     }
 
     // Burns the NFT
-    function burn() {
+    function burn() external {
         // Burns
         //
         // if has follower...
@@ -318,11 +355,11 @@ contract FollowNFT {
     // Maybe this should be in the lenshub? So we don't allow to comment/mirror if blocked
     // But should collect be allowed?
     // And this function should be called by the hub when blockling, so the follow nft is aware of it
-    function block(uint256 follower, bool blocked) onlyHub {
-        if (isFollowing[follower]) {
-            // Unfollows
-            // Wraps and unties
-        }
+    function block(uint256 follower, bool blocked) external onlyHub {
+        // if (isFollowing[follower]) {
+        //     // Unfollows
+        //     // Wraps and unties
+        // }
     }
 
     function royaltyInfo(uint256 _tokenId, uint256 _salePrice)
@@ -333,58 +370,23 @@ contract FollowNFT {
         //
     }
 
-    /////////////////////////////
-    //         ERC-721         //
-    /////////////////////////////
-
-    function balanceOf(address _owner) external view returns (uint256) {
-        // Default ERC-721 impl, take from NFT base contract
-    }
-
-    function ownerOf(uint256 followId) external view returns (address) {
-        // Default ERC-721 impl, take from NFT base contract
-    }
-
-    function safeTransferFrom(
-        address _from,
-        address _to,
-        uint256 followId,
-        bytes data
-    ) external payable {
-        // Default ERC-721 impl, take from NFT base contract
-    }
-
-    function safeTransferFrom(
-        address _from,
-        address _to,
-        uint256 followId
-    ) external payable {
-        // Default ERC-721 impl, take from NFT base contract
-    }
-
-    function transferFrom(
-        address _from,
-        address _to,
-        uint256 followId
-    ) external payable {
-        // Default ERC-721 impl, take from NFT base contract
-    }
-
     /// NOTE: We allow approve for unwrapped assets to, which is not supposed to be part of ERC-721.
-    function approve(address operator, uint256 followId) external payable {
+    function approve(address operator, uint256 followId) public override(ERC721Time, IERC721) {
         uint256 follower;
         address owner;
         if (
             (follower = _followDataByFollowId[followId].follower) == 0 &&
-            (owner = _followDataByFollowId[followId].owner) == address(0)
+            (owner = _tokenData[followId].owner) == address(0)
         ) {
             revert FollowTokenDoesNotExist();
         }
-        if (msg.sender != owner) {
-            // TODO: Allow approved-for-all operators too
-            revert OnlyFollowOwner();
+        if (operator == owner) {
+            revert Errors.ERC721Time_ApprovalToCurrentOwner();
         }
-        _approvedByFollowId[followId] = operator;
+        if (_msgSender() != owner && !isApprovedForAll(owner, _msgSender())) {
+            revert Errors.ERC721Time_ApproveCallerNotOwnerOrApprovedForAll();
+        }
+        _tokenApprovals[followId] = operator;
         emit Approval(
             owner == address(0) ? IERC721(HUB).ownerOf(follower) : owner,
             operator,
@@ -392,15 +394,230 @@ contract FollowNFT {
         );
     }
 
-    function setApprovalForAll(address _operator, bool _approved) external {
-        // Default ERC-721 impl, take from NFT base contract
+    /// @inheritdoc IFollowNFT
+    function delegate(address delegatee) external override {
+        _delegate(msg.sender, delegatee);
     }
 
-    function getApproved(uint256 followId) external view returns (address) {
-        // Default ERC-721 impl, take from NFT base contract
+    /// @inheritdoc IFollowNFT
+    function delegateBySig(
+        address delegator,
+        address delegatee,
+        DataTypes.EIP712Signature calldata sig
+    ) external override {
+        unchecked {
+            MetaTxHelpers._validateRecoveredAddress(
+                _calculateDigest(
+                    keccak256(
+                        abi.encode(
+                            DELEGATE_BY_SIG_TYPEHASH,
+                            delegator,
+                            delegatee,
+                            sigNonces[delegator]++,
+                            sig.deadline
+                        )
+                    )
+                ),
+                delegator,
+                sig
+            );
+        }
+        _delegate(delegator, delegatee);
     }
 
-    function isApprovedForAll(address _owner, address _operator) external view returns (bool) {
-        // Default ERC-721 impl, take from NFT base contract
+    /// @inheritdoc IFollowNFT
+    function getPowerByBlockNumber(address user, uint256 blockNumber)
+        external
+        view
+        override
+        returns (uint256)
+    {
+        if (blockNumber > block.number) revert Errors.BlockNumberInvalid();
+        uint256 snapshotCount = _snapshotCount[user];
+        if (snapshotCount == 0) return 0; // Returning zero since this means the user never delegated and has no power
+        return _getSnapshotValueByBlockNumber(_snapshots[user], blockNumber, snapshotCount);
+    }
+
+    /// @inheritdoc IFollowNFT
+    function getDelegatedSupplyByBlockNumber(uint256 blockNumber)
+        external
+        view
+        override
+        returns (uint256)
+    {
+        if (blockNumber > block.number) revert Errors.BlockNumberInvalid();
+        uint256 snapshotCount = _delSupplySnapshotCount;
+        if (snapshotCount == 0) return 0; // Returning zero since this means a delegation has never occurred
+        return _getSnapshotValueByBlockNumber(_delSupplySnapshots, blockNumber, snapshotCount);
+    }
+
+    function name() public view override returns (string memory) {
+        string memory handle = ILensHub(HUB).getHandle(_profileId);
+        return string(abi.encodePacked(handle, FOLLOW_NFT_NAME_SUFFIX));
+    }
+
+    function symbol() public view override returns (string memory) {
+        string memory handle = ILensHub(HUB).getHandle(_profileId);
+        bytes4 firstBytes = bytes4(bytes(handle));
+        return string(abi.encodePacked(firstBytes, FOLLOW_NFT_SYMBOL_SUFFIX));
+    }
+
+    /**
+     * @dev This returns the follow NFT URI fetched from the hub.
+     */
+    function tokenURI(uint256 tokenId) public view override returns (string memory) {
+        if (!_exists(tokenId)) revert Errors.TokenDoesNotExist();
+        return ILensHub(HUB).getFollowNFTURI(_profileId);
+    }
+
+    /**
+     * @dev Upon transfers, we move the appropriate delegations, and emit the transfer event in the hub.
+     */
+    function _beforeTokenTransfer(
+        address from,
+        address to,
+        uint256 tokenId
+    ) internal override {
+        address fromDelegatee = _delegates[from];
+        address toDelegatee = _delegates[to];
+        address followModule = ILensHub(HUB).getFollowModule(_profileId);
+
+        _moveDelegate(fromDelegatee, toDelegatee, 1);
+
+        super._beforeTokenTransfer(from, to, tokenId);
+        ILensHub(HUB).emitFollowNFTTransferEvent(_profileId, tokenId, from, to);
+        if (followModule != address(0)) {
+            IFollowModule(followModule).followModuleTransferHook(_profileId, from, to, tokenId);
+        }
+    }
+
+    function _getSnapshotValueByBlockNumber(
+        mapping(uint256 => Snapshot) storage _shots,
+        uint256 blockNumber,
+        uint256 snapshotCount
+    ) internal view returns (uint256) {
+        unchecked {
+            uint256 lower = 0;
+            uint256 upper = snapshotCount - 1;
+
+            // First check most recent snapshot
+            if (_shots[upper].blockNumber <= blockNumber) return _shots[upper].value;
+
+            // Next check implicit zero balance
+            if (_shots[lower].blockNumber > blockNumber) return 0;
+
+            while (upper > lower) {
+                uint256 center = upper - (upper - lower) / 2;
+                Snapshot memory snapshot = _shots[center];
+                if (snapshot.blockNumber == blockNumber) {
+                    return snapshot.value;
+                } else if (snapshot.blockNumber < blockNumber) {
+                    lower = center;
+                } else {
+                    upper = center - 1;
+                }
+            }
+            return _shots[lower].value;
+        }
+    }
+
+    function _delegate(address delegator, address delegatee) internal {
+        uint256 delegatorBalance = balanceOf(delegator);
+        address previousDelegate = _delegates[delegator];
+        _delegates[delegator] = delegatee;
+        _moveDelegate(previousDelegate, delegatee, delegatorBalance);
+    }
+
+    function _moveDelegate(
+        address from,
+        address to,
+        uint256 amount
+    ) internal {
+        unchecked {
+            bool fromZero = from == address(0);
+            if (!fromZero) {
+                uint256 fromSnapshotCount = _snapshotCount[from];
+
+                // Underflow is impossible since, if from != address(0), then a delegation must have occurred (at least 1 snapshot)
+                uint256 previous = _snapshots[from][fromSnapshotCount - 1].value;
+                uint128 newValue = uint128(previous - amount);
+
+                _writeSnapshot(from, newValue, fromSnapshotCount);
+                emit Events.FollowNFTDelegatedPowerChanged(from, newValue, block.timestamp);
+            }
+
+            if (to != address(0)) {
+                // if from == address(0) then this is an initial delegation (add amount to supply)
+                if (fromZero) {
+                    // It is expected behavior that the `previousDelSupply` underflows upon the first delegation,
+                    // returning the expected value of zero
+                    uint256 delSupplySnapshotCount = _delSupplySnapshotCount;
+                    uint128 previousDelSupply = _delSupplySnapshots[delSupplySnapshotCount - 1]
+                        .value;
+                    uint128 newDelSupply = uint128(previousDelSupply + amount);
+                    _writeSupplySnapshot(newDelSupply, delSupplySnapshotCount);
+                }
+
+                // It is expected behavior that `previous` underflows upon the first delegation to an address,
+                // returning the expected value of zero
+                uint256 toSnapshotCount = _snapshotCount[to];
+                uint128 previous = _snapshots[to][toSnapshotCount - 1].value;
+                uint128 newValue = uint128(previous + amount);
+                _writeSnapshot(to, newValue, toSnapshotCount);
+                emit Events.FollowNFTDelegatedPowerChanged(to, newValue, block.timestamp);
+            } else {
+                // If from != address(0) then this is removing a delegation, otherwise we're dealing with a
+                // non-delegated burn of tokens and don't need to take any action
+                if (!fromZero) {
+                    // Upon removing delegation (from != address(0) && to == address(0)), supply calculations cannot
+                    // underflow because if from != address(0), then a delegation must have previously occurred, so
+                    // the snapshot count must be >= 1 and the previous delegated supply must be >= amount
+                    uint256 delSupplySnapshotCount = _delSupplySnapshotCount;
+                    uint128 previousDelSupply = _delSupplySnapshots[delSupplySnapshotCount - 1]
+                        .value;
+                    uint128 newDelSupply = uint128(previousDelSupply - amount);
+                    _writeSupplySnapshot(newDelSupply, delSupplySnapshotCount);
+                }
+            }
+        }
+    }
+
+    function _writeSnapshot(
+        address owner,
+        uint128 newValue,
+        uint256 ownerSnapshotCount
+    ) internal {
+        unchecked {
+            uint128 currentBlock = uint128(block.number);
+            mapping(uint256 => Snapshot) storage ownerSnapshots = _snapshots[owner];
+
+            // Doing multiple operations in the same block
+            if (
+                ownerSnapshotCount != 0 &&
+                ownerSnapshots[ownerSnapshotCount - 1].blockNumber == currentBlock
+            ) {
+                ownerSnapshots[ownerSnapshotCount - 1].value = newValue;
+            } else {
+                ownerSnapshots[ownerSnapshotCount] = Snapshot(currentBlock, newValue);
+                _snapshotCount[owner] = ownerSnapshotCount + 1;
+            }
+        }
+    }
+
+    function _writeSupplySnapshot(uint128 newValue, uint256 supplySnapshotCount) internal {
+        unchecked {
+            uint128 currentBlock = uint128(block.number);
+
+            // Doing multiple operations in the same block
+            if (
+                supplySnapshotCount != 0 &&
+                _delSupplySnapshots[supplySnapshotCount - 1].blockNumber == currentBlock
+            ) {
+                _delSupplySnapshots[supplySnapshotCount - 1].value = newValue;
+            } else {
+                _delSupplySnapshots[supplySnapshotCount] = Snapshot(currentBlock, newValue);
+                _delSupplySnapshotCount = supplySnapshotCount + 1;
+            }
+        }
     }
 }
