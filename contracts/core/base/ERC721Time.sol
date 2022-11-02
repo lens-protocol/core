@@ -35,16 +35,16 @@ abstract contract ERC721Time is Context, ERC165, IERC721Time, IERC721Metadata {
 
     // Mapping from token ID to token Data (owner address and mint timestamp uint96), this
     // replaces the original mapping(uint256 => address) private _owners;
-    mapping(uint256 => IERC721Time.TokenData) private _tokenData;
+    mapping(uint256 => IERC721Time.TokenData) internal _tokenData;
 
     // Mapping owner address to token count
     mapping(address => uint256) private _balances;
 
     // Mapping from token ID to approved address
-    mapping(uint256 => address) private _tokenApprovals;
+    mapping(uint256 => address) internal _tokenApprovals;
 
     // Mapping from owner to operator approvals
-    mapping(address => mapping(address => bool)) private _operatorApprovals;
+    mapping(address => mapping(address => bool)) internal _operatorApprovals;
 
     /**
      * @dev Initializes the ERC721 name and symbol.
@@ -100,7 +100,7 @@ abstract contract ERC721Time is Context, ERC165, IERC721Time, IERC721Metadata {
     }
 
     /**
-     * @dev See {IERC721Time-mintTimestampOf}
+     * @dev See {IERC721Time-tokenDataOf}
      */
     function tokenDataOf(uint256 tokenId)
         public
