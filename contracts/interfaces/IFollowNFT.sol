@@ -56,7 +56,7 @@ interface IFollowNFT {
      *
      * @return uint256 The power of the given user at the given block number.
      */
-    function getPowerByBlockNumber(address user, uint256 blockNumber) external returns (uint256);
+    function getPowerByBlockNumber(address user, uint256 blockNumber) external view returns (uint256);
 
     /**
      * @notice Returns the total delegated supply at a specified block number. This is the sum of all
@@ -66,5 +66,5 @@ interface IFollowNFT {
      *
      * @return uint256 The delegated supply at the given block number.
      */
-    function getDelegatedSupplyByBlockNumber(uint256 blockNumber) external returns (uint256);
+    function getDelegatedSupplyByBlockNumber(uint256 blockNumber) external view returns (uint256);
 }
