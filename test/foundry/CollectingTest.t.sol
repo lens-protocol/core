@@ -82,7 +82,14 @@ contract CollectingTest_Generic is CollectingTest_Base {
     }
 
     function testCollectFailsIfZeroPub() public {
-        // mockCollectData.
+        mockCollectData.pubId = 0;
+        // Check that the publication doesn't exist.
+        assertEq(_getPub(mockCollectData.profileId, mockCollectData.pubId).profileIdPointed, 0);
+
+        vm.startPrank(profileOwner);
+        vm.expectRevert(Errors.PublicationDoesNotExist.selector);
+        _mockCollect();
+        vm.stopPrank();
     }
 
     // SCENARIOS
@@ -153,7 +160,14 @@ contract CollectingTest_WithSig is CollectingTest_Base {
         _mockCollectWithSig({delegatedSigner: otherSigner, signerPrivKey: otherSignerKey});
     }
 
-    function testCollectFailsWithSigIfNonexistantPub() public {}
+    function testCollectFailsWithSigIfNonexistantPub() public {
+        mockCollectData.pubId = 2;
+        // Check that the publication doesn't exist.
+        assertEq(_getPub(mockCollectData.profileId, mockCollectData.pubId).profileIdPointed, 0);
+
+        vm.expectRevert(Errors.PublicationDoesNotExist.selector);
+        _mockCollectWithSig({delegatedSigner: address(0), signerPrivKey: profileOwnerKey});
+    }
 
     function testCollectFailsWithSigIfZeroPub() public {}
 
@@ -168,12 +182,61 @@ contract CollectingTest_WithSig is CollectingTest_Base {
     // SCENARIOS
 
     function testCollectWithSig() public {
-        //TODO
+        _checkCollectNFTBefore();
+
+        uint256 nftId = _mockCollectWithSig({
+            delegatedSigner: address(0),
+            signerPrivKey: profileOwnerKey
+        });
+
+        _checkCollectNFTAfter(nftId);
     }
 
-    function testCollectWithSigMirror() public {}
+    function testCollectWithSigMirror() public {
+        _checkCollectNFTBefore();
 
-    function testExecutorCollectWithSig() public {}
+        vm.prank(profileOwner);
+        hub.mirror(mockMirrorData);
 
-    function testExecutorCollectWithSigMirror() public {}
+        uint256 nftId = _mockCollectWithSig({
+            delegatedSigner: address(0),
+            signerPrivKey: profileOwnerKey
+        });
+
+        _checkCollectNFTAfter(nftId);
+    }
+
+    function testExecutorCollectWithSig() public {
+        _checkCollectNFTBefore();
+
+        // delegate power to executor
+        vm.prank(profileOwner);
+        _setDelegatedExecutorApproval(otherSigner, true);
+
+        // collect from executor
+        uint256 nftId = _mockCollectWithSig({
+            delegatedSigner: otherSigner,
+            signerPrivKey: otherSignerKey
+        });
+
+        _checkCollectNFTAfter(nftId);
+    }
+
+    function testExecutorCollectWithSigMirror() public {
+        _checkCollectNFTBefore();
+
+        // mirror, then delegate power to executor
+        vm.startPrank(profileOwner);
+        hub.mirror(mockMirrorData);
+        _setDelegatedExecutorApproval(otherSigner, true);
+        vm.stopPrank();
+
+        // collect from executor
+        uint256 nftId = _mockCollectWithSig({
+            delegatedSigner: otherSigner,
+            signerPrivKey: otherSignerKey
+        });
+
+        _checkCollectNFTAfter(nftId);
+    }
 }
