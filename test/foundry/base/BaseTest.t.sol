@@ -377,4 +377,48 @@ contract BaseTest is TestSetup {
     function _getPubCount(uint256 profileId) internal view returns (uint256) {
         return hub.getPubCount(profileId);
     }
+
+    function _createProfile(address newProfileOwner) internal returns (uint256) {
+        DataTypes.CreateProfileData memory createProfileData = DataTypes.CreateProfileData({
+            to: newProfileOwner,
+            imageURI: mockCreateProfileData.imageURI,
+            followModule: mockCreateProfileData.followModule,
+            followModuleInitData: mockCreateProfileData.followModuleInitData,
+            followNFTURI: mockCreateProfileData.followNFTURI
+        });
+
+        return hub.createProfile(createProfileData);
+    }
+
+    function _setState(DataTypes.ProtocolState newState) internal {
+        hub.setState(newState);
+    }
+
+    function _getState() internal view returns (DataTypes.ProtocolState) {
+        return hub.getState();
+    }
+
+    function _setEmergencyAdmin(address newEmergencyAdmin) internal {
+        hub.setEmergencyAdmin(newEmergencyAdmin);
+    }
+
+    function _transferProfile(
+        address msgSender,
+        address from,
+        address to,
+        uint256 tokenId
+    ) internal {
+        vm.prank(msgSender);
+        hub.transferFrom(from, to, tokenId);
+    }
+
+    function _setFollowModule(
+        address msgSender,
+        uint256 profileId,
+        address followModule,
+        bytes memory followModuleInitData
+    ) internal {
+        vm.prank(msgSender);
+        hub.setFollowModule(profileId, followModule, followModuleInitData);
+    }
 }

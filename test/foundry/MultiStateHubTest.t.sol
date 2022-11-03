@@ -3,7 +3,7 @@ pragma solidity ^0.8.13;
 
 import './base/BaseTest.t.sol';
 
-contract MultiStateHubTest is BaseTest {
+contract MultiStateHubTest_Common is BaseTest {
     // Negatives
     function testCannotSetStateAsRegularUser() public {
         vm.expectRevert(Errors.NotGovernanceOrEmergencyAdmin.selector);
@@ -105,16 +105,44 @@ contract MultiStateHubTest is BaseTest {
         vm.expectRevert(Errors.NotGovernanceOrEmergencyAdmin.selector);
         _setState(DataTypes.ProtocolState.Paused);
     }
+}
 
-    function _setState(DataTypes.ProtocolState newState) internal {
-        hub.setState(newState);
+contract MultiStateHubTest_PausedState is BaseTest {
+    function setUp() public override {
+        super.setUp();
+
+        vm.prank(governance);
+        _setState(DataTypes.ProtocolState.Paused);
     }
 
-    function _getState() internal view returns (DataTypes.ProtocolState) {
-        return hub.getState();
+    // Negatives
+    function testCantTransferProfileWhilePaused() public {
+        vm.expectRevert(Errors.Paused.selector);
+        _transferProfile({
+            msgSender: profileOwner,
+            from: profileOwner,
+            to: address(111),
+            tokenId: firstProfileId
+        });
     }
 
-    function _setEmergencyAdmin(address newEmergencyAdmin) internal {
-        hub.setEmergencyAdmin(newEmergencyAdmin);
+    function testCantCreateProfileWhilePaused() public {
+        vm.expectRevert(Errors.Paused.selector);
+        _createProfile(address(this));
+
+        vm.prank(governance);
+        _setState(DataTypes.ProtocolState.Unpaused);
+
+        _createProfile(address(this));
+    }
+
+    function testCantSetFollowModuleWhilePaused() public {
+        vm.expectRevert(Errors.Paused.selector);
+        _setFollowModule(profileOwner, firstProfileId, address(0), '');
+
+        vm.prank(governance);
+        _setState(DataTypes.ProtocolState.Unpaused);
+
+        _setFollowModule(profileOwner, firstProfileId, address(0), '');
     }
 }
