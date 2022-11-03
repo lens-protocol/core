@@ -88,13 +88,13 @@ contract FollowNFT is ModuleBase, LensNFTBase, IFollowNFT {
 
         uint256 followIdUsed = followId;
         address followerOwner = IERC721(HUB).ownerOf(follower);
-        address currentOwner;
+        address tokenOwner;
         uint256 currentFollower;
 
         if (followId == 0) {
             followIdUsed = _followWithoutToken(follower, executor, followerOwner);
-        } else if ((currentOwner = _tokenData[followId].owner) != address(0)) {
-            _followWithWrappedToken(follower, executor, followId, followerOwner, currentOwner);
+        } else if ((tokenOwner = _tokenData[followId].owner) != address(0)) {
+            _followWithWrappedToken(follower, executor, followId, followerOwner, tokenOwner);
         } else if ((currentFollower = _followDataByFollowId[followId].follower) != 0) {
             _followWithUnwrappedToken(follower, executor, followId, followerOwner, currentFollower);
         } else {
@@ -146,16 +146,16 @@ contract FollowNFT is ModuleBase, LensNFTBase, IFollowNFT {
         address executor,
         uint256 followId,
         address followerOwner,
-        address currentOwner
+        address tokenOwner
     ) internal {
         if (
-            followerOwner == currentOwner ||
-            executor == currentOwner ||
+            followerOwner == tokenOwner ||
+            executor == tokenOwner ||
             _approvedToSetFollowerByFollowId[followId] == executor
         ) {
             // The executor is allowed to write the follower in that wrapped token.
-            // TODO: Allow approvedForAll operators of currentOwner?
-            if (followerOwner != currentOwner && executor != currentOwner) {
+            // TODO: Allow approvedForAll operators of tokenOwner?
+            if (followerOwner != tokenOwner && executor != tokenOwner) {
                 // The `_approvedToSetFollowerByFollowId` was used, now needs to be cleared.
                 _approvedToSetFollowerByFollowId[followId] = address(0);
             }
