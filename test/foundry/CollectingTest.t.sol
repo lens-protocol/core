@@ -65,14 +65,25 @@ contract CollectingTest_Generic is CollectingTest_Base {
 
     // NEGATIVES
 
-    function testFailCollectIfNotExecutor() public {
+    function testCollectFailsIfNotExecutor() public {
         vm.expectRevert(Errors.ExecutorInvalid.selector);
         _mockCollect();
     }
 
-    function testFailCollectIfNonexistantPub() public {}
+    function testCollectFailsIfNonexistantPub() public {
+        mockCollectData.pubId = 2;
+        // Check that the publication doesn't exist.
+        assertEq(_getPub(mockCollectData.profileId, mockCollectData.pubId).profileIdPointed, 0);
 
-    function testFailCollectIfZeroPub() public {}
+        vm.startPrank(profileOwner);
+        vm.expectRevert(Errors.PublicationDoesNotExist.selector);
+        _mockCollect();
+        vm.stopPrank();
+    }
+
+    function testCollectFailsIfZeroPub() public {
+        // mockCollectData.
+    }
 
     // SCENARIOS
 
@@ -137,22 +148,22 @@ contract CollectingTest_WithSig is CollectingTest_Base {
 
     // NEGATIVES
 
-    function testFailCollectWithSigIfNotExecutor() public {
+    function testCollectFailsWithSigIfNotExecutor() public {
         vm.expectRevert(Errors.ExecutorInvalid.selector);
         _mockCollectWithSig({delegatedSigner: otherSigner, signerPrivKey: otherSignerKey});
     }
 
-    function testFailCollectWithSigIfNonexistantPub() public {}
+    function testCollectFailsWithSigIfNonexistantPub() public {}
 
-    function testFailCollectWithSigIfZeroPub() public {}
+    function testCollectFailsWithSigIfZeroPub() public {}
 
-    function testFailCollectWithSigOnDeadlineMismatch() public {}
+    function testCollectFailsWithSigOnDeadlineMismatch() public {}
 
-    function testFailCollectWithSigOnInvalidDeadline() public {}
+    function testCollectFailsWithSigOnInvalidDeadline() public {}
 
-    function testFailCollectWithSigOnInvalidNonce() public {}
+    function testCollectFailsWithSigOnInvalidNonce() public {}
 
-    function testFailCollectWithSigIfCancelledViaEmptyPermitForAll() public {}
+    function testCollectFailsWithSigIfCancelledViaEmptyPermitForAll() public {}
 
     // SCENARIOS
 
