@@ -130,7 +130,7 @@ contract FollowNFT is ModuleBase, LensNFTBase, IFollowNFT {
                 followId = ++_lastFollowId;
                 ++_followers;
             }
-            _followIdByFollowerId[followId] = uint160(follower);
+            _followIdByFollowerId[follower] = followId;
             _followDataByFollowId[followId] = FollowData(
                 uint160(follower),
                 uint96(block.timestamp)
