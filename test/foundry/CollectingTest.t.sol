@@ -77,7 +77,7 @@ contract CollectingTest_Generic is CollectingTest_Base {
     // SCENARIOS
 
     function testCollect() public {
-        assertEq(hub.getCollectNFT(mockCollectData.profileId, mockCollectData.pubId), address(0));
+        _checkCollectNFTBefore();
 
         vm.startPrank(profileOwner);
         uint256 nftId = _mockCollect();
@@ -87,7 +87,7 @@ contract CollectingTest_Generic is CollectingTest_Base {
     }
 
     function testCollectMirror() public {
-        assertEq(hub.getCollectNFT(mockCollectData.profileId, mockCollectData.pubId), address(0));
+        _checkCollectNFTBefore();
 
         vm.startPrank(profileOwner);
         hub.mirror(mockMirrorData);
@@ -98,7 +98,7 @@ contract CollectingTest_Generic is CollectingTest_Base {
     }
 
     function testExecutorCollect() public {
-        assertEq(hub.getCollectNFT(mockCollectData.profileId, mockCollectData.pubId), address(0));
+        _checkCollectNFTBefore();
 
         // delegate power to executor
         vm.prank(profileOwner);
@@ -112,7 +112,22 @@ contract CollectingTest_Generic is CollectingTest_Base {
         _checkCollectNFTAfter(nftId);
     }
 
-    function testExecutorCollectMirror() public {}
+    function testExecutorCollectMirror() public {
+        _checkCollectNFTBefore();
+
+        // mirror, then delegate power to executor
+        vm.startPrank(profileOwner);
+        hub.mirror(mockMirrorData);
+        _setDelegatedExecutorApproval(otherSigner, true);
+        vm.stopPrank();
+
+        // collect from executor
+        vm.startPrank(otherSigner);
+        uint256 nftId = _mockCollect();
+        vm.stopPrank();
+
+        _checkCollectNFTAfter(nftId);
+    }
 }
 
 contract CollectingTest_WithSig is CollectingTest_Base {

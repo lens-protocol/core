@@ -10,6 +10,11 @@ contract CollectingHelpers is TestSetup {
 
     CollectNFT _collectNftAfter;
 
+    function _checkCollectNFTBefore() internal {
+        // collect NFT doesn't exist yet
+        assertEq(hub.getCollectNFT(mockCollectData.profileId, mockCollectData.pubId), address(0));
+    }
+
     function _checkCollectNFTAfter(uint256 nftId) internal {
         _collectNftAfter = CollectNFT(
             hub.getCollectNFT(mockCollectData.profileId, mockCollectData.pubId)
