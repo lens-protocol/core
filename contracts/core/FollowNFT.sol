@@ -96,7 +96,14 @@ contract FollowNFT is ModuleBase, LensNFTBase, IFollowNFT {
         } else if ((tokenOwner = _tokenData[followId].owner) != address(0)) {
             _followWithWrappedToken(follower, executor, followId, followerOwner, tokenOwner);
         } else if ((currentFollower = _followDataByFollowId[followId].follower) != 0) {
-            _followWithUnwrappedToken(follower, executor, followId, followerOwner, currentFollower);
+            _followWithUnwrappedToken(
+                follower,
+                executor,
+                followId,
+                followerOwner,
+                tokenOwner,
+                currentFollower
+            );
         } else {
             revert FollowTokenDoesNotExist();
         }
@@ -148,14 +155,15 @@ contract FollowNFT is ModuleBase, LensNFTBase, IFollowNFT {
         address followerOwner,
         address tokenOwner
     ) internal {
+        bool approvedToSetFollower;
         if (
             followerOwner == tokenOwner ||
             executor == tokenOwner ||
-            _approvedToSetFollowerByFollowId[followId] == executor
+            _operatorApprovals[tokenOwner][executor] ||
+            (approvedToSetFollower = (_approvedToSetFollowerByFollowId[followId] == executor))
         ) {
             // The executor is allowed to write the follower in that wrapped token.
-            // TODO: Allow approvedForAll operators of tokenOwner?
-            if (followerOwner != tokenOwner && executor != tokenOwner) {
+            if (approvedToSetFollower) {
                 // The `_approvedToSetFollowerByFollowId` was used, now needs to be cleared.
                 _approvedToSetFollowerByFollowId[followId] = address(0);
             }
@@ -196,13 +204,18 @@ contract FollowNFT is ModuleBase, LensNFTBase, IFollowNFT {
         address executor,
         uint256 followId,
         address followerOwner,
+        address tokenOwner,
         uint256 currentFollower
     ) internal {
+        bool tokenApproved;
         address currentFollowerOwner = IERC721(HUB).ownerOf(currentFollower);
-        if (currentFollowerOwner == executor || _tokenApprovals[followId] == executor) {
+        if (
+            currentFollowerOwner == executor ||
+            _operatorApprovals[tokenOwner][executor] ||
+            (tokenApproved = (_tokenApprovals[followId] == executor))
+        ) {
             // The executor is allowed to transfer the follow.
-            // TODO: Allow approvedForAll operators of currentFollowerOwner?
-            if (currentFollowerOwner != executor) {
+            if (tokenApproved) {
                 // `_tokenApprovals` used, now needs to be cleared.
                 _tokenApprovals[followId] = address(0);
                 emit Approval(currentFollowerOwner, address(0), followId);
