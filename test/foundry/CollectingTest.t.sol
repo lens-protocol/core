@@ -169,15 +169,26 @@ contract CollectingTest_WithSig is CollectingTest_Base {
         _mockCollectWithSig({delegatedSigner: address(0), signerPrivKey: profileOwnerKey});
     }
 
-    function testCollectFailsWithSigIfZeroPub() public {}
+    function testCollectFailsWithSigIfZeroPub() public {
+        mockCollectData.pubId = 0;
+        // Check that the publication doesn't exist.
+        assertEq(_getPub(mockCollectData.profileId, mockCollectData.pubId).profileIdPointed, 0);
 
-    function testCollectFailsWithSigOnDeadlineMismatch() public {}
+        vm.expectRevert(Errors.PublicationDoesNotExist.selector);
+        _mockCollectWithSig({delegatedSigner: address(0), signerPrivKey: profileOwnerKey});
+    }
 
-    function testCollectFailsWithSigOnInvalidDeadline() public {}
+    function testCollectFailsWithSigOnExpiredDeadline() public {
+        deadline = block.timestamp - 1;
+        vm.expectRevert(Errors.SignatureExpired.selector);
+        _mockCollectWithSig({delegatedSigner: address(0), signerPrivKey: profileOwnerKey});
+    }
 
-    function testCollectFailsWithSigOnInvalidNonce() public {}
-
-    function testCollectFailsWithSigIfCancelledViaEmptyPermitForAll() public {}
+    function testCollectFailsWithSigOnInvalidNonce() public {
+        nonce = 5;
+        vm.expectRevert(Errors.SignatureInvalid.selector);
+        _mockCollectWithSig({delegatedSigner: address(0), signerPrivKey: profileOwnerKey});
+    }
 
     // SCENARIOS
 
