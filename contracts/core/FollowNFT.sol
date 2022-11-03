@@ -47,17 +47,16 @@ contract FollowNFT is ModuleBase, LensNFTBase, IFollowNFT {
     mapping(uint256 => Snapshot) internal _delSupplySnapshots;
     uint256 internal _delSupplySnapshotCount;
     uint256 internal _profileId;
-    uint256 internal _lastFollowId;
+    uint128 internal _lastFollowId;
+    uint128 internal _followers;
 
     bool private _initialized;
 
-    uint128 internal _followers;
     mapping(uint256 => FollowData) internal _followDataByFollowId;
     mapping(uint256 => uint256) internal _followIdByFollowerId;
     mapping(uint256 => uint256) internal _approvedToFollowByFollowerId;
     mapping(uint256 => address) internal _approvedToSetFollowerByFollowId;
 
-    // We create the FollowNFT with the pre-computed HUB address before deploying the hub.
     constructor(address hub) ModuleBase(hub) {
         _initialized = true;
     }
