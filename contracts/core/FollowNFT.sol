@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: MIT
 
-pragma solidity ^0.8.15;
+pragma solidity 0.8.15;
 
 import {IFollowNFT} from '../interfaces/IFollowNFT.sol';
 import {IFollowModule} from '../interfaces/IFollowModule.sol';
@@ -10,7 +10,7 @@ import {Errors} from '../libraries/Errors.sol';
 import {Events} from '../libraries/Events.sol';
 import {DataTypes} from '../libraries/DataTypes.sol';
 import {LensNFTBase} from './base/LensNFTBase.sol';
-import {ModuleBase} from './modules/ModuleBase.sol';
+import {HubRestricted} from './base/HubRestricted.sol';
 import {IERC721} from '@openzeppelin/contracts/token/ERC721/IERC721.sol';
 import {ERC721Time} from './base/ERC721Time.sol';
 import '../libraries/Constants.sol';
@@ -35,7 +35,7 @@ struct FollowData {
     uint96 followTimestamp;
 }
 
-contract FollowNFT is ModuleBase, LensNFTBase, IFollowNFT {
+contract FollowNFT is HubRestricted, LensNFTBase, IFollowNFT {
     bytes32 internal constant DELEGATE_BY_SIG_TYPEHASH =
         keccak256(
             'DelegateBySig(address delegator,address delegatee,uint256 nonce,uint256 deadline)'
@@ -57,7 +57,7 @@ contract FollowNFT is ModuleBase, LensNFTBase, IFollowNFT {
     mapping(uint256 => uint256) internal _approvedToFollowByFollowerId;
     mapping(uint256 => address) internal _approvedToSetFollowerByFollowId;
 
-    constructor(address hub) ModuleBase(hub) {
+    constructor(address hub) HubRestricted(hub) {
         _initialized = true;
     }
 
@@ -534,7 +534,7 @@ contract FollowNFT is ModuleBase, LensNFTBase, IFollowNFT {
     }
 
     function _delegate(address delegator, address delegatee) internal {
-        uint256 delegatorBalance = balanceOf(delegator);
+        uint256 delegatorBalance = balanceOf(delegator); // TODO: This is only getting the wrapped tokens balance
         address previousDelegate = _delegates[delegator];
         _delegates[delegator] = delegatee;
         _moveDelegate(previousDelegate, delegatee, delegatorBalance);
