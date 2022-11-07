@@ -182,8 +182,7 @@ contract FollowNFT is HubRestricted, LensNFTBase, IFollowNFT {
                 if (currentFollower != 0) {
                     // As it has a follower, unfollow first.
                     _followIdByFollowerId[currentFollower] = 0;
-                    // TODO: Call hub to emit event.
-                    // ILensHub(HUB).emitUnfollowedEvent(...);
+                    ILensHub(HUB).emitUnfollowedEvent(currentFollower, _profileId, followId);
                 } else {
                     unchecked {
                         ++_followers;
@@ -233,9 +232,7 @@ contract FollowNFT is HubRestricted, LensNFTBase, IFollowNFT {
                 }
                 // Perform the unfollow.
                 _followIdByFollowerId[currentFollower] = 0;
-                // TODO: Call hub to emit event.
-                // ILensHub(HUB).emitUnfollowedEvent(...);
-
+                ILensHub(HUB).emitUnfollowedEvent(currentFollower, _profileId, followId);
                 // Perform the follow.
                 _followIdByFollowerId[follower] = followId;
                 _followDataByFollowId[followId].follower = uint160(follower);
@@ -251,28 +248,24 @@ contract FollowNFT is HubRestricted, LensNFTBase, IFollowNFT {
     }
 
     /**
-     * @param follower The ID of the profile that is perfrorming the unfollow operation.
+     * @param unfollower The ID of the profile that is perfrorming the unfollow operation.
      * @param executor The address executing the operation.
      */
-    function unfollow(uint256 follower, address executor) external onlyHub {
-        uint256 followId = _followIdByFollowerId[follower];
+    // TODO: Allow _profileId owner to make others unfollow here? Or just through the block feature?
+    function unfollow(uint256 unfollower, address executor) external onlyHub {
+        uint256 followId = _followIdByFollowerId[unfollower];
         if (followId == 0) {
             revert NotFollowing();
         }
-        address followerOwner = IERC721(HUB).ownerOf(follower);
-
-        address owner = _tokenData[followId].owner;
-        _followIdByFollowerId[follower] = 0;
-        _followDataByFollowId[followId].follower = 0;
-        unchecked {
-            --_followers;
+        if (
+            IERC721(HUB).ownerOf(unfollower) != executor &&
+            !ILensHub(HUB).isDelegatedExecutorApproved(followerOwner, executor) &&
+            _tokenData[followId].owner != executor &&
+            !_operatorApprovals[tokenOwner][executor]
+        ) {
+            revert DoesNotHavePermissions();
         }
-    }
-
-    function _burn(uint256 followId, address owner) external {
-        _followDataByFollowId[followId].follower = 0;
-        _tokenData[followId].owner = address(0);
-        emit Transfer(owner, address(0), followId);
+        _unfollow(unfollower, followId);
     }
 
     // Get the follower profile from a given follow token.
@@ -355,23 +348,20 @@ contract FollowNFT is HubRestricted, LensNFTBase, IFollowNFT {
         //
     }
 
-    // Burns the NFT
-    function burn() external {
-        // Burns
-        //
-        // if has follower...
-        // ILensHub(HUB).emitUnfollowEvent();
+    function burn(uint256 followId) public virtual override {
+        uint256 follower = _followDataByFollowId[followId].follower;
+        if (follower != 0) {
+            _unfollow(follower, tokenId);
+            ILensHub(HUB).emitUnfollowedEvent(follower, _profileId, followId);
+        }
+        super.burn(followId);
     }
 
-    // Blocks follow but not having the asset!
-    // Maybe this should be in the lenshub? So we don't allow to comment/mirror if blocked
-    // But should collect be allowed?
-    // And this function should be called by the hub when blockling, so the follow nft is aware of it
     function block(uint256 follower, bool blocked) external onlyHub {
-        // if (isFollowing[follower]) {
-        //     // Unfollows
-        //     // Wraps and unties
-        // }
+        if (_followIdByFollowerId[follower] != 0) {
+            _unfollow(follower, tokenId);
+            ILensHub(HUB).emitUnfollowedEvent(follower, _profileId, followId);
+        }
     }
 
     function royaltyInfo(uint256 _tokenId, uint256 _salePrice)
@@ -395,7 +385,7 @@ contract FollowNFT is HubRestricted, LensNFTBase, IFollowNFT {
         if (operator == owner) {
             revert Errors.ERC721Time_ApprovalToCurrentOwner();
         }
-        if (_msgSender() != owner && !isApprovedForAll(owner, _msgSender())) {
+        if (msg.sender != owner && !_operatorApprovals[owner][msg.sender]) {
             revert Errors.ERC721Time_ApproveCallerNotOwnerOrApprovedForAll();
         }
         _tokenApprovals[followId] = operator;
@@ -480,6 +470,14 @@ contract FollowNFT is HubRestricted, LensNFTBase, IFollowNFT {
     function tokenURI(uint256 tokenId) public view override returns (string memory) {
         if (!_exists(tokenId)) revert Errors.TokenDoesNotExist();
         return ILensHub(HUB).getFollowNFTURI(_profileId);
+    }
+
+    function _unfollow(uint256 unfollower, uint256 followId) internal {
+        delete _followIdByFollowerId[unfollower];
+        delete _followDataByFollowId[followId];
+        unchecked {
+            --_followers;
+        }
     }
 
     /**
