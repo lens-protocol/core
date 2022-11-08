@@ -137,11 +137,12 @@ contract FollowNFT is HubRestricted, LensNFTBase, IFollowNFT {
                 followId = ++_lastFollowId;
                 ++_followers;
             }
-            _followIdByFollowerId[follower] = followId;
+            _tokenData[followId].mintTimestamp = uint96(block.timestamp);
             _followDataByFollowId[followId] = FollowData(
                 uint160(follower),
                 uint96(block.timestamp)
             );
+            _followIdByFollowerId[follower] = followId;
             return followId;
         } else {
             revert DoesNotHavePermissions();
@@ -257,10 +258,12 @@ contract FollowNFT is HubRestricted, LensNFTBase, IFollowNFT {
         if (followId == 0) {
             revert NotFollowing();
         }
+        address tokenOwner;
+        address unfollowerOwner = IERC721(HUB).ownerOf(unfollower);
         if (
-            IERC721(HUB).ownerOf(unfollower) != executor &&
-            !ILensHub(HUB).isDelegatedExecutorApproved(followerOwner, executor) &&
-            _tokenData[followId].owner != executor &&
+            unfollowerOwner != executor &&
+            !ILensHub(HUB).isDelegatedExecutorApproved(unfollowerOwner, executor) &&
+            (tokenOwner = _tokenData[followId].owner) != executor &&
             !_operatorApprovals[tokenOwner][executor]
         ) {
             revert DoesNotHavePermissions();
@@ -299,17 +302,14 @@ contract FollowNFT is HubRestricted, LensNFTBase, IFollowNFT {
     // Approve someone to set any follower on one of my wrapped tokens.
     // To get the follow you can use `approve`.
     function approveSetFollower(address operator, uint256 followId) external {
-        address owner;
-        if (
-            _followDataByFollowId[followId].follower == 0 &&
-            (owner = _tokenData[followId].owner) == address(0)
-        ) {
+        TokenData memory tokenData = _tokenData[followId];
+        if (tokenData.mintTimestamp == 0) {
             revert FollowTokenDoesNotExist();
         }
-        if (owner == address(0)) {
+        if (tokenData.owner == address(0)) {
             revert OnlyWrappedFollows();
         }
-        if (msg.sender != owner) {
+        if (msg.sender != tokenData.owner) {
             revert OnlyFollowOwner();
         }
         _approvedToSetFollowerByFollowId[followId] = operator;
@@ -324,18 +324,14 @@ contract FollowNFT is HubRestricted, LensNFTBase, IFollowNFT {
      * @dev Unties the follow token from the follower's profile token, and wrapps it into the ERC-721 untied follow
      * collection.
      */
-    // TODO: Add a recipient of the wrapped token? so it works like an atomic wrap and transferFrom?
     function untieAndWrap(uint256 followId) external {
-        // TODO: Optimize
-        if (_tokenData[followId].mintTimestamp == 0) {
+        TokenData memory tokenData = _tokenData[followId];
+        if (tokenData.mintTimestamp == 0) {
             revert FollowTokenDoesNotExist();
         }
-        if (_tokenData[followId].owner != address(0)) {
+        if (tokenData.owner != address(0)) {
             revert AlreadyUntied();
         }
-        address followerOwner = IERC721(HUB).ownerOf(_followDataByFollowId[followId].follower);
-        _tokenData[followId].owner = followerOwner;
-        // Mint IERC721 untied collection
         _mint(IERC721(HUB).ownerOf(_followDataByFollowId[followId].follower), followId);
     }
 
@@ -343,31 +339,39 @@ contract FollowNFT is HubRestricted, LensNFTBase, IFollowNFT {
      * @dev Unwrapps the follow token from the ERC-721 untied follow collection, and ties it to the follower's profile
      * token.
      */
-    // TODO: Add the profile to which should be tied to? or it has to be following already?
-    function unwrapAndTie() external {
-        //
+    function unwrapAndTie(uint256 follower) external {
+        uint256 followId = _followIdByFollowerId[follower];
+        if (followId == 0) {
+            revert NotFollowing();
+        }
+        address owner = _tokenData[followId].owner;
+        if (owner == address(0)) {
+            revert AlreadyTied();
+        }
+        super.burn(followId); //TODO: This clears approvals, and we don't want that here!
     }
 
     function burn(uint256 followId) public virtual override {
         uint256 follower = _followDataByFollowId[followId].follower;
         if (follower != 0) {
-            _unfollow(follower, tokenId);
+            _unfollow(follower, followId);
             ILensHub(HUB).emitUnfollowedEvent(follower, _profileId, followId);
         }
         super.burn(followId);
     }
 
     function block(uint256 follower, bool blocked) external onlyHub {
-        if (_followIdByFollowerId[follower] != 0) {
-            _unfollow(follower, tokenId);
+        uint256 followId = _followIdByFollowerId[follower];
+        if (followId != 0) {
+            _unfollow(follower, followId);
             ILensHub(HUB).emitUnfollowedEvent(follower, _profileId, followId);
         }
     }
 
-    function royaltyInfo(uint256 _tokenId, uint256 _salePrice)
+    function royaltyInfo(uint256 tokenId, uint256 salePrice)
         external
         view
-        returns (address receiver, uint256 royaltyAmount)
+        returns (address, uint256)
     {
         //
     }
@@ -478,6 +482,21 @@ contract FollowNFT is HubRestricted, LensNFTBase, IFollowNFT {
         unchecked {
             --_followers;
         }
+    }
+
+    function _mint(address to, uint256 tokenId) internal virtual override {
+        if (to == address(0)) {
+            revert Errors.ERC721Time_MintToZeroAddress();
+        }
+        if (_exists(tokenId)) {
+            revert Errors.ERC721Time_TokenAlreadyMinted();
+        }
+        _beforeTokenTransfer(address(0), to, tokenId);
+        unchecked {
+            ++_balances[to];
+        }
+        _tokenData[tokenId].owner = to;
+        emit Transfer(address(0), to, tokenId);
     }
 
     /**
