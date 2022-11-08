@@ -308,16 +308,12 @@ library DataTypes {
      * @param profileIdPointed The profile token ID to point the mirror to.
      * @param pubIdPointed The publication ID to point the mirror to.
      * @param referenceModuleData The data passed to the reference module.
-     * @param referenceModule The reference module to set for the given publication, must be whitelisted.
-     * @param referenceModuleInitData The data to be passed to the reference module for initialization.
      */
     struct MirrorData {
         uint256 profileId;
         uint256 profileIdPointed;
         uint256 pubIdPointed;
         bytes referenceModuleData;
-        address referenceModule;
-        bytes referenceModuleInitData;
     }
 
     /**
@@ -339,8 +335,6 @@ library DataTypes {
         uint256 profileIdPointed;
         uint256 pubIdPointed;
         bytes referenceModuleData;
-        address referenceModule;
-        bytes referenceModuleInitData;
         EIP712Signature sig;
     }
 
@@ -401,7 +395,7 @@ library DataTypes {
      * @notice A struct containing the parameters required for the `toggleFollowWithSig()` function.
      *
      * @note This does not include a delegatedSigner parameter as it is marked for deprecation.
-     * 
+     *
      * @param follower The follower which is the message signer.
      * @param profileIds The token ID array of the profiles.
      * @param enables The array of booleans to enable/disable follows.
