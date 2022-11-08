@@ -113,7 +113,7 @@ interface ILensHub {
     function setDefaultProfile(address onBehalfOf, uint256 profileId) external;
 
     /**
-     * @notice Sets the mapping between wallet and its main profile identity via signature with the specified parameters. The 
+     * @notice Sets the mapping between wallet and its main profile identity via signature with the specified parameters. The
      * signer must either be the profile owner or a delegated executor.
      *
      * @param vars A SetDefaultProfileWithSigData struct, including the regular parameters and an EIP712Signature struct.
@@ -133,10 +133,11 @@ interface ILensHub {
     /**
      * @notice Sets the metadata URI via signature for the given profile with the specified parameters. The signer must
      * either be the profile owner or a delegated executor.
-     * 
+     *
      * @param vars A SetProfileMetadataURIWithSigData struct, including the regular parameters and an EIP712Signature struct.
      */
-    function setProfileMetadataURIWithSig(DataTypes.SetProfileMetadataURIWithSigData calldata vars) external;
+    function setProfileMetadataURIWithSig(DataTypes.SetProfileMetadataURIWithSigData calldata vars)
+        external;
 
     /**
      * @notice Sets the follow module for the given profile. Must be called by the profile owner.
@@ -374,6 +375,13 @@ interface ILensHub {
         address to
     ) external;
 
+    //TODO: Add natspec
+    function emitUnfollowedEvent(
+        uint256 unfollower,
+        uint256 profileId,
+        uint256 followId
+    ) external;
+
     /// ************************
     /// *****VIEW FUNCTIONS*****
     /// ************************
@@ -431,7 +439,10 @@ interface ILensHub {
      * @return bool True if the executor is approved as a delegated executor to act on behalf of the wallet,
      * false otherwise.
      */
-    function isDelegatedExecutorApproved(address wallet, address executor) external view returns (bool);
+    function isDelegatedExecutorApproved(address wallet, address executor)
+        external
+        view
+        returns (bool);
 
     /**
      * @notice Returns the default profile for a given wallet address
