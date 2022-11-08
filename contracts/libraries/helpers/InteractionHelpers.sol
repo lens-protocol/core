@@ -138,12 +138,7 @@ library InteractionHelpers {
             }
 
             if (collectNFT == address(0)) {
-                collectNFT = _deployCollectNFT(
-                    rootProfileId,
-                    rootPubId,
-                    _handle(rootProfileId),
-                    collectNFTImpl
-                );
+                collectNFT = _deployCollectNFT(rootProfileId, rootPubId, collectNFTImpl);
 
                 // Store the collect NFT in the cached slot.
                 assembly {
@@ -239,7 +234,6 @@ library InteractionHelpers {
      *
      * @param profileId The token ID of the profile which Collect NFT should be deployed.
      * @param pubId The publication ID of the publication being collected, which Collect NFT should be deployed.
-     * @param handle The profile's associated handle.
      * @param collectNFTImpl The address of the Collect NFT implementation that should be used for the deployment.
      *
      * @return address The address of the deployed Collect NFT contract.
@@ -247,18 +241,15 @@ library InteractionHelpers {
     function _deployCollectNFT(
         uint256 profileId,
         uint256 pubId,
-        string memory handle,
         address collectNFTImpl
     ) private returns (address) {
         address collectNFT = Clones.clone(collectNFTImpl);
 
-        bytes4 firstBytes = bytes4(bytes(handle));
-
         string memory collectNFTName = string(
-            abi.encodePacked(handle, COLLECT_NFT_NAME_INFIX, pubId.toString())
+            abi.encodePacked(profileId.toString(), COLLECT_NFT_NAME_INFIX, pubId.toString())
         );
         string memory collectNFTSymbol = string(
-            abi.encodePacked(firstBytes, COLLECT_NFT_SYMBOL_INFIX, pubId.toString())
+            abi.encodePacked(profileId.toString(), COLLECT_NFT_SYMBOL_INFIX, pubId.toString())
         );
 
         ICollectNFT(collectNFT).initialize(profileId, pubId, collectNFTName, collectNFTSymbol);
@@ -296,60 +287,6 @@ library InteractionHelpers {
             data,
             block.timestamp
         );
-    }
-
-    function _handle(uint256 profileId) private view returns (string memory) {
-        string memory ptr;
-        assembly {
-            // Load the free memory pointer, where we'll return the value
-            ptr := mload(64)
-
-            // Load the slot, which either contains the handle + 2*length if length < 32 or
-            // 2*length+1 if length >= 32, and the actual string starts at slot keccak256(slot)
-            mstore(0, profileId)
-            mstore(32, PROFILE_BY_ID_MAPPING_SLOT)
-            let slot := add(keccak256(0, 64), PROFILE_HANDLE_OFFSET)
-
-            let slotLoad := sload(slot)
-            let size
-            // Determine if the length > 32 by checking the lowest order bit, meaning the string
-            // itself is stored at keccak256(slot)
-            switch and(slotLoad, 1)
-            case 0 {
-                // The handle is in the same slot
-                // Determine the size by dividing the last byte's value by 2
-                size := shr(1, and(slotLoad, 255))
-
-                // Store the size in the first slot
-                mstore(ptr, size)
-
-                // Store the actual string in the second slot (without the size)
-                mstore(add(ptr, 32), and(slotLoad, not(255)))
-            }
-            case 1 {
-                // The handle is not in the same slot
-                // Determine the size by dividing the value in the whole slot minus 1 by 2
-                size := shr(1, sub(slotLoad, 1))
-
-                // Store the size in the first slot
-                mstore(ptr, size)
-
-                // Compute the total memory slots we need, this is (size + 31) / 32
-                let totalMemorySlots := shr(5, add(size, 31))
-
-                mstore(0, slot)
-                let handleSlot := keccak256(0, 32)
-
-                // Iterate through the words in memory and store the string word by word
-                // prettier-ignore
-                for { let i := 0 } lt(i, totalMemorySlots) { i := add(i, 1) } {
-                    mstore(add(add(ptr, 32), mul(32, i)), sload(add(handleSlot, i)))
-                }
-            }
-            // Store the new memory pointer in the free memory pointer slot
-            mstore(64, add(add(ptr, 32), size))
-        }
-        return ptr;
     }
 
     function _validateProfileExists(uint256 profileId) private view {

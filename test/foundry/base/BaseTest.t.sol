@@ -2,6 +2,7 @@
 pragma solidity ^0.8.13;
 
 import './TestSetup.t.sol';
+import '../../../contracts/libraries/DataTypes.sol';
 
 contract BaseTest is TestSetup {
     function _getSetDefaultProfileTypedDataHash(
@@ -136,6 +137,24 @@ contract BaseTest is TestSetup {
         return _calculateDigest(structHash);
     }
 
+    function _getPostTypedDataHash(
+        DataTypes.PostData memory postData,
+        uint256 nonce,
+        uint256 deadline
+    ) internal view returns (bytes32) {
+        return
+            _getPostTypedDataHash({
+                profileId: postData.profileId,
+                contentURI: postData.contentURI,
+                collectModule: postData.collectModule,
+                collectModuleInitData: postData.collectModuleInitData,
+                referenceModule: postData.referenceModule,
+                referenceModuleInitData: postData.referenceModuleInitData,
+                nonce: nonce,
+                deadline: deadline
+            });
+    }
+
     function _getCommentTypedDataHash(
         uint256 profileId,
         string memory contentURI,
@@ -168,6 +187,27 @@ contract BaseTest is TestSetup {
         return _calculateDigest(structHash);
     }
 
+    function _getCommentTypedDataHash(
+        DataTypes.CommentData memory commentData,
+        uint256 nonce,
+        uint256 deadline
+    ) internal view returns (bytes32) {
+        return
+            _getCommentTypedDataHash({
+                profileId: commentData.profileId,
+                contentURI: commentData.contentURI,
+                profileIdPointed: commentData.profileIdPointed,
+                pubIdPointed: commentData.pubIdPointed,
+                referenceModuleData: commentData.referenceModuleData,
+                collectModule: commentData.collectModule,
+                collectModuleInitData: commentData.collectModuleInitData,
+                referenceModule: commentData.referenceModule,
+                referenceModuleInitData: commentData.referenceModuleInitData,
+                nonce: nonce,
+                deadline: deadline
+            });
+    }
+
     function _getMirrorTypedDataHash(
         uint256 profileId,
         uint256 profileIdPointed,
@@ -192,6 +232,24 @@ contract BaseTest is TestSetup {
             )
         );
         return _calculateDigest(structHash);
+    }
+
+    function _getMirrorTypedDataHash(
+        DataTypes.MirrorData memory mirrorData,
+        uint256 nonce,
+        uint256 deadline
+    ) internal view returns (bytes32) {
+        return
+            _getMirrorTypedDataHash({
+                profileId: mirrorData.profileId,
+                profileIdPointed: mirrorData.profileIdPointed,
+                pubIdPointed: mirrorData.pubIdPointed,
+                referenceModuleData: mirrorData.referenceModuleData,
+                referenceModule: mirrorData.referenceModule,
+                referenceModuleInitData: mirrorData.referenceModuleInitData,
+                nonce: nonce,
+                deadline: deadline
+            });
     }
 
     function _getFollowTypedDataHash(
@@ -265,5 +323,58 @@ contract BaseTest is TestSetup {
         bytes[] memory ret = new bytes[](1);
         ret[0] = n;
         return ret;
+    }
+
+    function _post(DataTypes.PostData memory postData) internal returns (uint256) {
+        return hub.post(postData);
+    }
+
+    function _comment(DataTypes.CommentData memory commentData) internal returns (uint256) {
+        return hub.comment(commentData);
+    }
+
+    function _mirror(DataTypes.MirrorData memory mirrorData) internal returns (uint256) {
+        return hub.mirror(mirrorData);
+    }
+
+    function _postWithSig(DataTypes.PostWithSigData memory postWithSigData)
+        internal
+        returns (uint256)
+    {
+        return hub.postWithSig(postWithSigData);
+    }
+
+    function _commentWithSig(DataTypes.CommentWithSigData memory commentWithSigData)
+        internal
+        returns (uint256)
+    {
+        return hub.commentWithSig(commentWithSigData);
+    }
+
+    function _mirrorWithSig(DataTypes.MirrorWithSigData memory mirrorWithSigData)
+        internal
+        returns (uint256)
+    {
+        return hub.mirrorWithSig(mirrorWithSigData);
+    }
+
+    function _setDelegatedExecutorApproval(address executor, bool approved) internal {
+        hub.setDelegatedExecutorApproval(executor, approved);
+    }
+
+    function _getPub(uint256 profileId, uint256 pubId)
+        internal
+        view
+        returns (DataTypes.PublicationStruct memory)
+    {
+        return hub.getPub(profileId, pubId);
+    }
+
+    function _getSigNonce(address signer) internal view returns (uint256) {
+        return hub.sigNonces(signer);
+    }
+
+    function _getPubCount(uint256 profileId) internal view returns (uint256) {
+        return hub.getPubCount(profileId);
     }
 }

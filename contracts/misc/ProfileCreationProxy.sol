@@ -23,21 +23,6 @@ contract ProfileCreationProxy is Ownable {
     }
 
     function proxyCreateProfile(DataTypes.CreateProfileData memory vars) external onlyOwner {
-        uint256 handleLength = bytes(vars.handle).length;
-        if (handleLength < 5) revert Errors.HandleLengthInvalid();
-
-        bytes1 firstByte = bytes(vars.handle)[0];
-        if (firstByte == '-' || firstByte == '_' || firstByte == '.')
-            revert Errors.HandleFirstCharInvalid();
-
-        for (uint256 i = 1; i < handleLength; ) {
-            if (bytes(vars.handle)[i] == '.') revert Errors.HandleContainsInvalidCharacters();
-            unchecked {
-                ++i;
-            }
-        }
-
-        vars.handle = string(abi.encodePacked(vars.handle, '.lens'));
         LENS_HUB.createProfile(vars);
     }
 }

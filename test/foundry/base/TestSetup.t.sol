@@ -14,6 +14,7 @@ import '../../../contracts/libraries/Errors.sol';
 import '../../../contracts/libraries/GeneralLib.sol';
 import '../../../contracts/libraries/ProfileTokenURILogic.sol';
 import '../../../contracts/mocks/MockCollectModule.sol';
+import '../../../contracts/mocks/MockReferenceModule.sol';
 
 contract TestSetup is Test {
     uint256 constant firstProfileId = 1;
@@ -37,6 +38,7 @@ contract TestSetup is Test {
     TransparentUpgradeableProxy hubAsProxy;
     LensHub hub;
     MockCollectModule mockCollectModule;
+    MockReferenceModule mockReferenceModule;
 
     DataTypes.CreateProfileData mockCreateProfileData;
 
@@ -71,6 +73,9 @@ contract TestSetup is Test {
         // Deploy the MockCollectModule.
         mockCollectModule = new MockCollectModule();
 
+        // Deploy the MockReferenceModule.
+        mockReferenceModule = new MockReferenceModule();
+
         // End deployments.
         vm.stopPrank();
 
@@ -82,6 +87,9 @@ contract TestSetup is Test {
 
         // Whitelist the FreeCollectModule.
         hub.whitelistCollectModule(address(mockCollectModule), true);
+
+        // Whitelist the MockReferenceModule.
+        hub.whitelistReferenceModule(address(mockReferenceModule), true);
 
         // Whitelist the test contract as a profile creator
         hub.whitelistProfileCreator(me, true);
@@ -103,7 +111,6 @@ contract TestSetup is Test {
         // precompute basic profile creaton data.
         mockCreateProfileData = DataTypes.CreateProfileData({
             to: profileOwner,
-            handle: mockHandle,
             imageURI: mockURI,
             followModule: address(0),
             followModuleInitData: '',
