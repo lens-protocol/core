@@ -40,17 +40,19 @@ contract FollowNFT is HubRestricted, LensNFTBase, IFollowNFT {
         keccak256(
             'DelegateBySig(address delegator,address delegatee,uint256 nonce,uint256 deadline)'
         );
+    uint16 internal constant BASIS_POINTS = 10000;
 
     mapping(address => mapping(uint256 => Snapshot)) internal _snapshots;
     mapping(address => address) internal _delegates;
     mapping(address => uint256) internal _snapshotCount;
     mapping(uint256 => Snapshot) internal _delSupplySnapshots;
     uint256 internal _delSupplySnapshotCount;
-    uint256 internal _profileId;
+    uint256 internal _followedProfileId;
     uint128 internal _lastFollowId;
     uint128 internal _followers;
 
     bool private _initialized;
+    uint16 internal _royaltyBasisPoints;
 
     mapping(uint256 => FollowData) internal _followDataByFollowId;
     mapping(uint256 => uint256) internal _followIdByFollowerId;
@@ -65,7 +67,8 @@ contract FollowNFT is HubRestricted, LensNFTBase, IFollowNFT {
     function initialize(uint256 profileId) external override {
         if (_initialized) revert Errors.Initialized();
         _initialized = true;
-        _profileId = profileId;
+        _followedProfileId = profileId;
+        _royaltyBasisPoints = 1000; // 10% of royalties
         emit Events.FollowNFTInitialized(profileId, block.timestamp);
     }
 
@@ -183,7 +186,11 @@ contract FollowNFT is HubRestricted, LensNFTBase, IFollowNFT {
                 if (currentFollower != 0) {
                     // As it has a follower, unfollow first.
                     _followIdByFollowerId[currentFollower] = 0;
-                    ILensHub(HUB).emitUnfollowedEvent(currentFollower, _profileId, followId);
+                    ILensHub(HUB).emitUnfollowedEvent(
+                        currentFollower,
+                        _followedProfileId,
+                        followId
+                    );
                 } else {
                     unchecked {
                         ++_followers;
@@ -233,7 +240,7 @@ contract FollowNFT is HubRestricted, LensNFTBase, IFollowNFT {
                 }
                 // Perform the unfollow.
                 _followIdByFollowerId[currentFollower] = 0;
-                ILensHub(HUB).emitUnfollowedEvent(currentFollower, _profileId, followId);
+                ILensHub(HUB).emitUnfollowedEvent(currentFollower, _followedProfileId, followId);
                 // Perform the follow.
                 _followIdByFollowerId[follower] = followId;
                 _followDataByFollowId[followId].follower = uint160(follower);
@@ -252,7 +259,7 @@ contract FollowNFT is HubRestricted, LensNFTBase, IFollowNFT {
      * @param unfollower The ID of the profile that is perfrorming the unfollow operation.
      * @param executor The address executing the operation.
      */
-    // TODO: Allow _profileId owner to make others unfollow here? Or just through the block feature?
+    // TODO: Allow _followedProfileId owner to make others unfollow here? Or just through the block feature?
     function unfollow(uint256 unfollower, address executor) external onlyHub {
         uint256 followId = _followIdByFollowerId[unfollower];
         if (followId == 0) {
@@ -355,7 +362,7 @@ contract FollowNFT is HubRestricted, LensNFTBase, IFollowNFT {
         uint256 follower = _followDataByFollowId[followId].follower;
         if (follower != 0) {
             _unfollow(follower, followId);
-            ILensHub(HUB).emitUnfollowedEvent(follower, _profileId, followId);
+            ILensHub(HUB).emitUnfollowedEvent(follower, _followedProfileId, followId);
         }
         super.burn(followId);
     }
@@ -364,16 +371,49 @@ contract FollowNFT is HubRestricted, LensNFTBase, IFollowNFT {
         uint256 followId = _followIdByFollowerId[follower];
         if (followId != 0) {
             _unfollow(follower, followId);
-            ILensHub(HUB).emitUnfollowedEvent(follower, _profileId, followId);
+            ILensHub(HUB).emitUnfollowedEvent(follower, _followedProfileId, followId);
         }
     }
 
-    function royaltyInfo(uint256 tokenId, uint256 salePrice)
+    /**
+     * @notice Changes the royalty percentage for secondary sales. Can only be called publication's
+     *         profile owner.
+     *
+     * @param royaltyBasisPoints The royalty percentage meassured in basis points. Each basis point
+     *                           represents 0.01%.
+     */
+    // TODO: We can move this to a base contract and share logic between Follow and Collect NFTs
+    function setRoyalty(uint256 royaltyBasisPoints) external {
+        if (IERC721(HUB).ownerOf(_followedProfileId) == msg.sender) {
+            if (royaltyBasisPoints > BASIS_POINTS) {
+                revert Errors.InvalidParameter();
+            } else {
+                _royaltyBasisPoints = uint16(royaltyBasisPoints);
+            }
+        } else {
+            revert Errors.NotProfileOwner();
+        }
+    }
+
+    /**
+     * @notice Called with the sale price to determine how much royalty
+     *         is owed and to whom.
+     *
+     * @param followId The ID of the follow token queried for royalty information.
+     * @param salePrice The sale price of the token specified.
+     * @return A tuple with the address who should receive the royalties and the royalty
+     * payment amount for the given sale price.
+     */
+    // TODO: We can move this to a base contract and share logic between Follow and Collect NFTs
+    function royaltyInfo(uint256 followId, uint256 salePrice)
         external
         view
         returns (address, uint256)
     {
-        //
+        return (
+            IERC721(HUB).ownerOf(_followedProfileId),
+            (salePrice * _royaltyBasisPoints) / BASIS_POINTS
+        );
     }
 
     /// NOTE: We allow approve for unwrapped assets to, which is not supposed to be part of ERC-721.
@@ -458,12 +498,12 @@ contract FollowNFT is HubRestricted, LensNFTBase, IFollowNFT {
     }
 
     function name() public view override returns (string memory) {
-        string memory handle = ILensHub(HUB).getHandle(_profileId);
+        string memory handle = ILensHub(HUB).getHandle(_followedProfileId);
         return string(abi.encodePacked(handle, FOLLOW_NFT_NAME_SUFFIX));
     }
 
     function symbol() public view override returns (string memory) {
-        string memory handle = ILensHub(HUB).getHandle(_profileId);
+        string memory handle = ILensHub(HUB).getHandle(_followedProfileId);
         bytes4 firstBytes = bytes4(bytes(handle));
         return string(abi.encodePacked(firstBytes, FOLLOW_NFT_SYMBOL_SUFFIX));
     }
@@ -473,7 +513,7 @@ contract FollowNFT is HubRestricted, LensNFTBase, IFollowNFT {
      */
     function tokenURI(uint256 tokenId) public view override returns (string memory) {
         if (!_exists(tokenId)) revert Errors.TokenDoesNotExist();
-        return ILensHub(HUB).getFollowNFTURI(_profileId);
+        return ILensHub(HUB).getFollowNFTURI(_followedProfileId);
     }
 
     function _unfollow(uint256 unfollower, uint256 followId) internal {
@@ -509,14 +549,19 @@ contract FollowNFT is HubRestricted, LensNFTBase, IFollowNFT {
     ) internal override {
         address fromDelegatee = _delegates[from];
         address toDelegatee = _delegates[to];
-        address followModule = ILensHub(HUB).getFollowModule(_profileId);
+        address followModule = ILensHub(HUB).getFollowModule(_followedProfileId);
 
         _moveDelegate(fromDelegatee, toDelegatee, 1);
 
         super._beforeTokenTransfer(from, to, tokenId);
-        ILensHub(HUB).emitFollowNFTTransferEvent(_profileId, tokenId, from, to);
+        ILensHub(HUB).emitFollowNFTTransferEvent(_followedProfileId, tokenId, from, to);
         if (followModule != address(0)) {
-            IFollowModule(followModule).followModuleTransferHook(_profileId, from, to, tokenId);
+            IFollowModule(followModule).followModuleTransferHook(
+                _followedProfileId,
+                from,
+                to,
+                tokenId
+            );
         }
     }
 
