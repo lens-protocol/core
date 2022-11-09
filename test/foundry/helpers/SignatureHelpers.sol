@@ -99,8 +99,6 @@ contract SignatureHelpers {
         uint256 profileIdPointed,
         uint256 pubIdPointed,
         bytes memory referenceModuleData,
-        address referenceModule,
-        bytes memory referenceModuleInitData,
         DataTypes.EIP712Signature memory sig
     ) internal pure returns (DataTypes.MirrorWithSigData memory) {
         return
@@ -110,8 +108,6 @@ contract SignatureHelpers {
                 profileIdPointed,
                 pubIdPointed,
                 referenceModuleData,
-                referenceModule,
-                referenceModuleInitData,
                 sig
             );
     }
@@ -128,8 +124,6 @@ contract SignatureHelpers {
                 profileIdPointed: mirrorData.profileIdPointed,
                 pubIdPointed: mirrorData.pubIdPointed,
                 referenceModuleData: mirrorData.referenceModuleData,
-                referenceModule: mirrorData.referenceModule,
-                referenceModuleInitData: mirrorData.referenceModuleInitData,
                 sig: sig
             });
     }

@@ -6,12 +6,12 @@ contract PublishingHelpers is Test {
         DataTypes.PublicationStruct memory pub,
         DataTypes.PublicationStruct memory expectedPub
     ) internal {
-        assertEq(pub.profileIdPointed, expectedPub.profileIdPointed);
-        assertEq(pub.pubIdPointed, expectedPub.pubIdPointed);
-        assertEq(pub.contentURI, expectedPub.contentURI);
-        assertEq(pub.referenceModule, expectedPub.referenceModule);
-        assertEq(pub.collectModule, expectedPub.collectModule);
-        assertEq(pub.collectNFT, expectedPub.collectNFT);
+        assertEq(pub.profileIdPointed, expectedPub.profileIdPointed, 'Unexpected profileIdPointed');
+        assertEq(pub.pubIdPointed, expectedPub.pubIdPointed, 'Unexpected pubIdPointed');
+        assertEq(pub.contentURI, expectedPub.contentURI, 'Unexpected contentURI');
+        assertEq(pub.referenceModule, expectedPub.referenceModule, 'Unexpected referenceModule');
+        assertEq(pub.collectModule, expectedPub.collectModule, 'Unexpected collectModule');
+        assertEq(pub.collectNFT, expectedPub.collectNFT, 'Unexpected collectNFT');
     }
 
     function _expectedPubFromInitData(DataTypes.PostData memory postData)
@@ -56,7 +56,7 @@ contract PublishingHelpers is Test {
                 profileIdPointed: mirrorData.profileIdPointed,
                 pubIdPointed: mirrorData.pubIdPointed,
                 contentURI: '',
-                referenceModule: mirrorData.referenceModule,
+                referenceModule: address(0),
                 collectModule: address(0),
                 collectNFT: address(0)
             });

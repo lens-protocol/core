@@ -76,7 +76,7 @@ contract PublishingTest_Post is BaseTest, SignatureHelpers, PublishingHelpers, S
         _publish();
     }
 
-    function testCannotPublishNotWhitelistedReferenceModule() public {
+    function testCannotPublishNotWhitelistedReferenceModule() public virtual {
         mockPostData.referenceModule = address(0xC0FFEE);
         replicateInitData();
         vm.prank(profileOwner);
@@ -91,7 +91,7 @@ contract PublishingTest_Post is BaseTest, SignatureHelpers, PublishingHelpers, S
         _publishWithSig({delegatedSigner: address(0), signerPrivKey: profileOwnerKey});
     }
 
-    function testCannotPublishWithSigNotWhitelistedReferenceModule() public {
+    function testCannotPublishWithSigNotWhitelistedReferenceModule() public virtual {
         mockPostData.referenceModule = address(0xC0FFEE);
         replicateInitData();
         vm.expectRevert(Errors.ReferenceModuleNotWhitelisted.selector);
@@ -300,7 +300,7 @@ contract PublishingTest_Comment is PublishingTest_Post {
         mockCommentData.pubIdPointed = nextPubId;
 
         vm.prank(profileOwner);
-        vm.expectRevert(Errors.CannotCommentOnSelf.selector);
+        vm.expectRevert(Errors.PublicationDoesNotExist.selector);
         _publish();
     }
 
@@ -310,7 +310,7 @@ contract PublishingTest_Comment is PublishingTest_Post {
         replicateInitData();
         mockCommentData.pubIdPointed = nextPubId;
 
-        vm.expectRevert(Errors.CannotCommentOnSelf.selector);
+        vm.expectRevert(Errors.PublicationDoesNotExist.selector);
         _publishWithSig({delegatedSigner: address(0), signerPrivKey: profileOwnerKey});
     }
 
@@ -328,6 +328,36 @@ contract PublishingTest_Comment is PublishingTest_Post {
         DataTypes.PublicationStruct memory pub = _getPub(firstProfileId, commentPubId);
         _verifyPublication(pub, _expectedPubFromInitData());
     }
+
+    function testCommentOnMirrorShouldPointToOriginalPost() public {
+        mockMirrorData.pubIdPointed = postId;
+        vm.prank(profileOwner);
+        uint256 mirrorId = _mirror(mockMirrorData);
+
+        mockCommentData.pubIdPointed = mirrorId;
+        vm.prank(profileOwner);
+        uint256 commentId = _publish();
+
+        DataTypes.PublicationStruct memory pub = _getPub(firstProfileId, commentId);
+        mockCommentData.pubIdPointed = postId; // We're expecting a mirror to point at the original post ID
+        _verifyPublication(pub, _expectedPubFromInitData(mockCommentData));
+    }
+
+    function testCommentWithSigOnMirrorShouldPointToOriginalPost() public {
+        mockMirrorData.pubIdPointed = postId;
+        vm.prank(profileOwner);
+        uint256 mirrorId = _mirror(mockMirrorData);
+
+        mockCommentData.pubIdPointed = mirrorId;
+        uint256 commentId = _publishWithSig({
+            delegatedSigner: address(0),
+            signerPrivKey: profileOwnerKey
+        });
+
+        DataTypes.PublicationStruct memory pub = _getPub(firstProfileId, commentId);
+        mockCommentData.pubIdPointed = postId; // We're expecting a mirror to point at the original post ID
+        _verifyPublication(pub, _expectedPubFromInitData(mockCommentData));
+    }
 }
 
 contract PublishingTest_Mirror is PublishingTest_Post {
@@ -335,8 +365,6 @@ contract PublishingTest_Mirror is PublishingTest_Post {
 
     function replicateInitData() internal override {
         mockMirrorData.profileId = mockPostData.profileId;
-        mockMirrorData.referenceModule = mockPostData.referenceModule;
-        mockMirrorData.referenceModuleInitData = mockPostData.referenceModuleInitData;
     }
 
     function _publish() internal override returns (uint256) {
@@ -381,6 +409,10 @@ contract PublishingTest_Mirror is PublishingTest_Post {
     function testCannotPublishNotWhitelistedCollectModule() public override {}
 
     function testCannotPublishWithSigNotWhitelistedCollectModule() public override {}
+
+    function testCannotPublishNotWhitelistedReferenceModule() public override {}
+
+    function testCannotPublishWithSigNotWhitelistedReferenceModule() public override {}
 
     // negatives
 

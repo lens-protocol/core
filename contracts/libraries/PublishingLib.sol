@@ -326,24 +326,20 @@ library PublishingLib {
         address executor,
         uint256 pubId
     ) private {
-        // Prevents stack too deep.
-        {
-            uint256 pubCountPointed = _getPubCount(vars.profileIdPointed);
-            if (pubCountPointed < vars.pubIdPointed || vars.pubIdPointed == 0)
-                revert Errors.PublicationDoesNotExist();
-        }
+        (uint256 rootProfileIdPointed, uint256 rootPubIdPointed) = GeneralHelpers
+            .getPointedIfMirror(vars.profileIdPointed, vars.pubIdPointed);
 
-        if (vars.profileId == vars.profileIdPointed && vars.pubIdPointed == pubId)
-            revert Errors.CannotCommentOnSelf();
-
-        _setPublicationPointer(vars.profileId, pubId, vars.profileIdPointed, vars.pubIdPointed);
+        _setPublicationPointer(vars.profileId, pubId, rootProfileIdPointed, rootPubIdPointed);
         _setPublicationContentURI(vars.profileId, pubId, vars.contentURI);
+
+        address referenceModule = vars.referenceModule;
+        address collectModule = vars.collectModule;
 
         bytes memory collectModuleReturnData = _initPubCollectModule(
             vars.profileId,
             executor,
             pubId,
-            vars.collectModule,
+            collectModule,
             vars.collectModuleInitData
         );
 
@@ -351,15 +347,15 @@ library PublishingLib {
             vars.profileId,
             executor,
             pubId,
-            vars.referenceModule,
+            referenceModule,
             vars.referenceModuleInitData
         );
 
         _processCommentIfNeeded(
             vars.profileId,
             executor,
-            vars.profileIdPointed,
-            vars.pubIdPointed,
+            rootProfileIdPointed,
+            rootPubIdPointed,
             vars.referenceModuleData
         );
 
@@ -367,12 +363,12 @@ library PublishingLib {
             vars.profileId,
             pubId,
             vars.contentURI,
-            vars.profileIdPointed,
-            vars.pubIdPointed,
+            rootProfileIdPointed,
+            rootPubIdPointed,
             vars.referenceModuleData,
-            vars.collectModule,
+            collectModule,
             collectModuleReturnData,
-            vars.referenceModule,
+            referenceModule,
             referenceModuleReturnData,
             block.timestamp
         );

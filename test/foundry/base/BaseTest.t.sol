@@ -213,8 +213,6 @@ contract BaseTest is TestSetup {
         uint256 profileIdPointed,
         uint256 pubIdPointed,
         bytes memory referenceModuleData,
-        address referenceModule,
-        bytes memory referenceModuleInitData,
         uint256 nonce,
         uint256 deadline
     ) internal view returns (bytes32) {
@@ -225,8 +223,6 @@ contract BaseTest is TestSetup {
                 profileIdPointed,
                 pubIdPointed,
                 keccak256(referenceModuleData),
-                referenceModule,
-                keccak256(referenceModuleInitData),
                 nonce,
                 deadline
             )
@@ -245,8 +241,6 @@ contract BaseTest is TestSetup {
                 profileIdPointed: mirrorData.profileIdPointed,
                 pubIdPointed: mirrorData.pubIdPointed,
                 referenceModuleData: mirrorData.referenceModuleData,
-                referenceModule: mirrorData.referenceModule,
-                referenceModuleInitData: mirrorData.referenceModuleInitData,
                 nonce: nonce,
                 deadline: deadline
             });

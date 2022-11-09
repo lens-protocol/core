@@ -145,9 +145,7 @@ contract TestSetup is Test {
             profileId: firstProfileId,
             profileIdPointed: firstProfileId,
             pubIdPointed: 1,
-            referenceModuleData: '',
-            referenceModule: address(0),
-            referenceModuleInitData: ''
+            referenceModuleData: ''
         });
 
         hub.createProfile(mockCreateProfileData);
