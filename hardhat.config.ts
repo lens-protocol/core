@@ -1,12 +1,11 @@
+import { BLOCK_EXPLORER_KEY, MAINNET_FORK, MNEMONIC, SKIP_LOAD, TRACK_GAS } from './env';
 import { HardhatUserConfig } from 'hardhat/types';
 import { accounts } from './helpers/test-wallets';
 import { eEthereumNetwork, eNetwork, ePolygonNetwork, eXDaiNetwork } from './helpers/types';
 import { HARDHATEVM_CHAINID } from './helpers/hardhat-constants';
 import { NETWORKS_RPC_URL } from './helper-hardhat-config';
-import dotenv from 'dotenv';
 import glob from 'glob';
 import path from 'path';
-dotenv.config({ path: '../.env' });
 
 import '@nomiclabs/hardhat-ethers';
 import '@nomiclabs/hardhat-etherscan';
@@ -17,7 +16,7 @@ import 'hardhat-contract-sizer';
 import 'hardhat-log-remover';
 import 'hardhat-spdx-license-identifier';
 
-if (!process.env.SKIP_LOAD) {
+if (!SKIP_LOAD) {
   glob.sync('./tasks/**/*.ts').forEach(function (file) {
     require(path.resolve(file));
   });
@@ -25,10 +24,6 @@ if (!process.env.SKIP_LOAD) {
 
 const DEFAULT_BLOCK_GAS_LIMIT = 12450000;
 const MNEMONIC_PATH = "m/44'/60'/0'/0";
-const MNEMONIC = process.env.MNEMONIC || '';
-const MAINNET_FORK = process.env.MAINNET_FORK === 'true';
-const TRACK_GAS = process.env.TRACK_GAS === 'true';
-const BLOCK_EXPLORER_KEY = process.env.BLOCK_EXPLORER_KEY || '';
 
 const getCommonNetworkConfig = (networkName: eNetwork, networkId: number) => ({
   url: NETWORKS_RPC_URL[networkName] ?? '',

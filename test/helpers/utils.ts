@@ -29,6 +29,7 @@ import {
   PostDataStruct,
   PostWithSigDataStruct,
 } from '../../typechain-types/LensHub';
+import { MAINNET_RPC_URL } from '../../env';
 
 export enum ProtocolState {
   Unpaused,
@@ -173,7 +174,7 @@ export async function resetFork(): Promise<void> {
     params: [
       {
         forking: {
-          jsonRpcUrl: process.env.MAINNET_RPC_URL,
+          jsonRpcUrl: MAINNET_RPC_URL,
           blockNumber: 12012081,
         },
       },
