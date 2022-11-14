@@ -355,15 +355,20 @@ contract FollowNFT is HubRestricted, LensNFTBase, IFollowNFT {
         if (owner == address(0)) {
             revert AlreadyTied();
         }
-        super.burn(followId); //TODO: This clears approvals, and we don't want that here!
+        _burnWithoutClearingApprovals(followId);
+    }
+
+    function burnWithSig(uint256 followId, DataTypes.EIP712Signature calldata sig)
+        public
+        virtual
+        override
+    {
+        _unfollowIfHasFollower(followId);
+        super.burnWithSig(followId, sig);
     }
 
     function burn(uint256 followId) public virtual override {
-        uint256 follower = _followDataByFollowId[followId].follower;
-        if (follower != 0) {
-            _unfollow(follower, followId);
-            ILensHub(HUB).emitUnfollowedEvent(follower, _followedProfileId, followId);
-        }
+        _unfollowIfHasFollower(followId);
         super.burn(followId);
     }
 
@@ -516,6 +521,14 @@ contract FollowNFT is HubRestricted, LensNFTBase, IFollowNFT {
         return ILensHub(HUB).getFollowNFTURI(_followedProfileId);
     }
 
+    function _unfollowIfHasFollower(uint256 followId) internal virtual {
+        uint256 follower = _followDataByFollowId[followId].follower;
+        if (follower != 0) {
+            _unfollow(follower, followId);
+            ILensHub(HUB).emitUnfollowedEvent(follower, _followedProfileId, followId);
+        }
+    }
+
     function _unfollow(uint256 unfollower, uint256 followId) internal {
         delete _followIdByFollowerId[unfollower];
         delete _followDataByFollowId[followId];
@@ -537,6 +550,21 @@ contract FollowNFT is HubRestricted, LensNFTBase, IFollowNFT {
         }
         _tokenData[tokenId].owner = to;
         emit Transfer(address(0), to, tokenId);
+    }
+
+    function _burn(uint256 tokenId) internal virtual override {
+        _burnWithoutClearingApprovals(tokenId);
+        _approve(address(0), tokenId);
+    }
+
+    function _burnWithoutClearingApprovals(uint256 tokenId) internal virtual {
+        address owner = ERC721Time.ownerOf(tokenId);
+        _beforeTokenTransfer(owner, address(0), tokenId);
+        unchecked {
+            --_balances[owner];
+        }
+        delete _tokenData[tokenId];
+        emit Transfer(owner, address(0), tokenId);
     }
 
     /**
