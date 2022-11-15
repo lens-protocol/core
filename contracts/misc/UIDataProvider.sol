@@ -42,19 +42,4 @@ contract UIDataProvider {
         uint256 pubCount = profileStruct.pubCount;
         return LatestData(profileStruct, HUB.getPub(profileId, pubCount));
     }
-
-    /**
-     * @notice Returns the profile struct and latest publication struct associated with the passed
-     * profile ID.
-     *
-     * @param handle The handle to query.
-     *
-     * @return LensData A struct containing the `ProfileStruct` and the `PublicationStruct` queried.
-     */
-    function getLatestDataByHandle(string memory handle) external view returns (LatestData memory) {
-        uint256 profileId = HUB.getProfileIdByHandle(handle);
-        DataTypes.ProfileStruct memory profileStruct = HUB.getProfile(profileId);
-        uint256 pubCount = profileStruct.pubCount;
-        return LatestData(profileStruct, HUB.getPub(profileId, pubCount));
-    }
 }

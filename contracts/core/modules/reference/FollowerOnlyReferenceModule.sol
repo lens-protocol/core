@@ -46,7 +46,7 @@ contract FollowerOnlyReferenceModule is FollowValidationModuleBase, IReferenceMo
     }
 
     /**
-     * @notice Validates that the commenting profile's owner is a follower.
+     * @notice Validates that the mirroring profile's owner is a follower.
      *
      * NOTE: We don't need to care what the pointed publication is in this context.
      */

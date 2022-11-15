@@ -96,7 +96,6 @@ interface ILensHub {
      *
      * @param vars A CreateProfileData struct containing the following params:
      *      to: The address receiving the profile.
-     *      handle: The handle to set for the profile, must be unique and non-empty.
      *      imageURI: The URI to set for the profile image.
      *      followModule: The follow module to use, can be the zero address.
      *      followModuleInitData: The follow module initialization data, if any.
@@ -553,15 +552,6 @@ interface ILensHub {
     function getReferenceModule(uint256 profileId, uint256 pubId) external view returns (address);
 
     /**
-     * @notice Returns the handle associated with a profile.
-     *
-     * @param profileId The token ID of the profile to query the handle for.
-     *
-     * @return string The handle associated with the profile.
-     */
-    function getHandle(uint256 profileId) external view returns (string memory);
-
-    /**
      * @notice Returns the publication pointer (profileId & pubId) associated with a given publication.
      *
      * @param profileId The token ID of the profile that published the publication to query the pointer for.
@@ -584,15 +574,6 @@ interface ILensHub {
      * @return string The URI associated with a given publication.
      */
     function getContentURI(uint256 profileId, uint256 pubId) external view returns (string memory);
-
-    /**
-     * @notice Returns the profile token ID according to a given handle.
-     *
-     * @param handle The handle to resolve the profile token ID with.
-     *
-     * @return uint256 The profile ID the passed handle points to.
-     */
-    function getProfileIdByHandle(string calldata handle) external view returns (uint256);
 
     /**
      * @notice Returns the full profile struct associated with a given profile token ID.

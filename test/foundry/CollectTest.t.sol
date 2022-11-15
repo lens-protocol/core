@@ -2,8 +2,11 @@
 pragma solidity ^0.8.13;
 
 import './base/BaseTest.t.sol';
+import {Strings} from '@openzeppelin/contracts/utils/Strings.sol';
 
 contract CollectTest is BaseTest {
+    using Strings for uint256;
+
     function setUp() public override {
         super.setUp();
         vm.prank(profileOwner);
@@ -37,10 +40,18 @@ contract CollectTest is BaseTest {
         assertEq(nft.ownerOf(1), me);
 
         string memory expectedName = string(
-            abi.encodePacked(mockHandle, COLLECT_NFT_NAME_INFIX, '1')
+            abi.encodePacked(
+                firstProfileId.toString(),
+                COLLECT_NFT_NAME_INFIX,
+                uint256(1).toString()
+            )
         );
         string memory expectedSymbol = string(
-            abi.encodePacked(bytes4(bytes(mockHandle)), COLLECT_NFT_SYMBOL_INFIX, '1')
+            abi.encodePacked(
+                firstProfileId.toString(),
+                COLLECT_NFT_SYMBOL_INFIX,
+                uint256(1).toString()
+            )
         );
 
         assertEq(nft.name(), expectedName);
@@ -144,6 +155,24 @@ contract CollectTest is BaseTest {
         );
 
         CollectNFT nft = CollectNFT(hub.getCollectNFT(firstProfileId, 1));
+        
+        string memory expectedName = string(
+            abi.encodePacked(
+                firstProfileId.toString(),
+                COLLECT_NFT_NAME_INFIX,
+                uint256(1).toString()
+            )
+        );
+        string memory expectedSymbol = string(
+            abi.encodePacked(
+                firstProfileId.toString(),
+                COLLECT_NFT_SYMBOL_INFIX,
+                uint256(1).toString()
+            )
+        );
+
+        assertEq(nft.name(), expectedName);
+        assertEq(nft.symbol(), expectedSymbol);
         assertEq(nftId, 1);
         assertEq(nft.ownerOf(1), otherSigner);
     }

@@ -2,18 +2,19 @@
 
 pragma solidity 0.8.15;
 
-import {IFollowNFT} from '../interfaces/IFollowNFT.sol';
-import {IFollowModule} from '../interfaces/IFollowModule.sol';
-import {ILensHub} from '../interfaces/ILensHub.sol';
-import {MetaTxHelpers} from '../libraries/helpers/MetaTxHelpers.sol';
+import '../libraries/Constants.sol';
+import {DataTypes} from '../libraries/DataTypes.sol';
+import {ERC721Time} from './base/ERC721Time.sol';
 import {Errors} from '../libraries/Errors.sol';
 import {Events} from '../libraries/Events.sol';
-import {DataTypes} from '../libraries/DataTypes.sol';
-import {LensNFTBase} from './base/LensNFTBase.sol';
 import {HubRestricted} from './base/HubRestricted.sol';
 import {IERC721} from '@openzeppelin/contracts/token/ERC721/IERC721.sol';
-import {ERC721Time} from './base/ERC721Time.sol';
-import '../libraries/Constants.sol';
+import {IFollowModule} from '../interfaces/IFollowModule.sol';
+import {IFollowNFT} from '../interfaces/IFollowNFT.sol';
+import {ILensHub} from '../interfaces/ILensHub.sol';
+import {LensNFTBase} from './base/LensNFTBase.sol';
+import {MetaTxHelpers} from '../libraries/helpers/MetaTxHelpers.sol';
+import {Strings} from '@openzeppelin/contracts/utils/Strings.sol';
 
 error AlreadyFollowing();
 error NotFollowing();
@@ -36,6 +37,8 @@ struct FollowData {
 }
 
 contract FollowNFT is HubRestricted, LensNFTBase, IFollowNFT {
+    using Strings for uint256;
+
     bytes32 internal constant DELEGATE_BY_SIG_TYPEHASH =
         keccak256(
             'DelegateBySig(address delegator,address delegatee,uint256 nonce,uint256 deadline)'
@@ -487,14 +490,11 @@ contract FollowNFT is HubRestricted, LensNFTBase, IFollowNFT {
     }
 
     function name() public view override returns (string memory) {
-        string memory handle = ILensHub(HUB).getHandle(_followedProfileId);
-        return string(abi.encodePacked(handle, FOLLOW_NFT_NAME_SUFFIX));
+        return string(abi.encodePacked(_followedProfileId.toString(), FOLLOW_NFT_NAME_SUFFIX));
     }
 
     function symbol() public view override returns (string memory) {
-        string memory handle = ILensHub(HUB).getHandle(_followedProfileId);
-        bytes4 firstBytes = bytes4(bytes(handle));
-        return string(abi.encodePacked(firstBytes, FOLLOW_NFT_SYMBOL_SUFFIX));
+        return string(abi.encodePacked(_followedProfileId.toString(), FOLLOW_NFT_SYMBOL_SUFFIX));
     }
 
     /**

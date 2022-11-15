@@ -58,7 +58,7 @@ library DataTypes {
      * @param pubCount The number of publications made to this profile.
      * @param followModule The address of the current follow module in use by this profile, can be empty.
      * @param followNFT The address of the followNFT associated with this profile, can be empty..
-     * @param handle The profile's associated handle.
+     * @param handleUnused The deprecated handle slot, no longer used. .
      * @param imageURI The URI to be used for the profile's image.
      * @param followNFTURI The URI to be used for the follow NFT.
      */
@@ -66,7 +66,7 @@ library DataTypes {
         uint256 pubCount; // offset 0
         address followModule; // offset 1
         address followNFT; // offset 2
-        string handle; // offset 3
+        string handleDeprecated; // offset 3
         string imageURI; // offset 4
         string followNFTURI; // offset 5
     }
@@ -94,7 +94,6 @@ library DataTypes {
      * @notice A struct containing the parameters required for the `createProfile()` function.
      *
      * @param to The address receiving the profile.
-     * @param handle The handle to set for the profile, must be unique and non-empty.
      * @param imageURI The URI to set for the profile image.
      * @param followModule The follow module to use, can be the zero address.
      * @param followModuleInitData The follow module initialization data, if any.
@@ -102,7 +101,6 @@ library DataTypes {
      */
     struct CreateProfileData {
         address to;
-        string handle;
         string imageURI;
         address followModule;
         bytes followModuleInitData;
