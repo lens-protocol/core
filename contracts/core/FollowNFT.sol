@@ -202,10 +202,7 @@ contract FollowNFT is HubRestricted, LensNFTBase, IFollowNFT {
 
     function _follow(uint256 follower, uint256 followId) internal {
         _followIdByFollowerId[follower] = followId;
-        _followDataByFollowId[followId].follower = FollowData(
-            uint160(follower),
-            uint96(block.timestamp)
-        );
+        _followDataByFollowId[followId] = FollowData(uint160(follower), uint96(block.timestamp));
     }
 
     function _followWithUnwrappedToken(
@@ -359,7 +356,7 @@ contract FollowNFT is HubRestricted, LensNFTBase, IFollowNFT {
         super.burn(followId);
     }
 
-    function block(uint256 follower, bool blocked) external onlyHub {
+    function block(uint256 follower) external override onlyHub {
         uint256 followId = _followIdByFollowerId[follower];
         if (followId != 0) {
             _unfollow(follower, followId);

@@ -391,13 +391,12 @@ contract LensHub is LensNFTBase, VersionedInitializable, LensMultiState, LensHub
         return GeneralLib.followWithSig(vars);
     }
 
-    //TODO: Add to ILensHub
     function setBlockStatus(
         uint256 byProfile,
         uint256[] calldata profileIds,
         bool[] calldata blocked
-    ) external whenNotPaused {
-        //
+    ) external override whenNotPaused {
+        return GeneralLib.setBlockStatus(byProfile, profileIds, blocked);
     }
 
     /// @inheritdoc ILensHub

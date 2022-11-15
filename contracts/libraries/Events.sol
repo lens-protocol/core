@@ -362,6 +362,8 @@ library Events {
         uint48 followTimestamp
     );
 
+    event BlockStatusSet(uint256 indexed byProfile, uint256[] profileIds, bool[] blocked);
+
     /**
      * @dev Emitted via callback when a followNFT is transferred.
      *

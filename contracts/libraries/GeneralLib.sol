@@ -183,6 +183,15 @@ library GeneralLib {
         return InteractionHelpers.follow(follower, signer, vars.profileIds, vars.datas);
     }
 
+    function setBlockStatus(
+        uint256 byProfile,
+        uint256[] calldata profileIds,
+        bool[] calldata blocked
+    ) external {
+        GeneralHelpers.validateCallerIsOwnerOrDispatcherOrExecutor(byProfile);
+        InteractionHelpers.setBlockStatus(byProfile, profileIds, blocked);
+    }
+
     /**
      * @notice Collects the given publication, executing the necessary logic and module call before minting the
      * collect NFT to the collector.

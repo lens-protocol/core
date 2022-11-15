@@ -313,6 +313,12 @@ interface ILensHub {
         external
         returns (uint256[] memory);
 
+    function setBlockStatus(
+        uint256 byProfile,
+        uint256[] calldata profileIds,
+        bool[] calldata blocked
+    ) external;
+
     /**
      * @notice Collects a given publication, executing collect module logic and minting a collectNFT to the caller.
      *

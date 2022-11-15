@@ -28,6 +28,8 @@ interface IFollowNFT {
      */
     function mint(address to) external returns (uint256);
 
+    function block(uint256 follower) external;
+
     /**
      * @notice Delegates the caller's governance power to the given delegatee address.
      *

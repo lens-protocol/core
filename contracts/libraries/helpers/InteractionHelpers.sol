@@ -105,6 +105,52 @@ library InteractionHelpers {
         return tokenIds;
     }
 
+    function setBlockStatus(
+        uint256 byProfile,
+        uint256[] calldata profileIds,
+        bool[] calldata blocked
+    ) external {
+        if (profileIds.length != blocked.length) {
+            revert Errors.ArrayMismatch();
+        }
+        uint256 blockStatusByProfileSlot;
+        // Calculates the slot of the block status internal mapping once accessed by `byProfile`.
+        // i.e. the slot of `_blockStatusByProfileByBlockee[byProfile]`
+        assembly {
+            mstore(0, byProfile)
+            mstore(32, BLOCK_STATUS_MAPPING_SLOT)
+            blockStatusByProfileSlot := keccak256(0, 64)
+        }
+        address followNFT;
+        // Loads the Follow NFT address from storage.
+        // i.e. `followNFT = _profileById[byProfile].followNFT;`
+        assembly {
+            mstore(0, byProfile)
+            mstore(32, PROFILE_BY_ID_MAPPING_SLOT)
+            followNFT := sload(add(keccak256(0, 64), PROFILE_FOLLOW_NFT_OFFSET))
+        }
+        uint256 i;
+        uint256 profileId;
+        bool blockStatus;
+        while (i < profileIds.length) {
+            profileId = profileIds[i];
+            if (followNFT != address(0) && (blockStatus = blocked[i])) {
+                IFollowNFT(followNFT).block(profileId);
+            }
+            // Stores the block status.
+            // i.e. `_blockStatusByProfileByBlockee[byProfile][profileId] = blockStatus;`
+            assembly {
+                mstore(0, profileId)
+                mstore(32, blockStatusByProfileSlot)
+                sstore(keccak256(0, 64), blockStatus)
+            }
+            unchecked {
+                ++i;
+            }
+        }
+        emit Events.BlockStatusSet(byProfile, profileIds, blocked);
+    }
+
     function collect(
         address collector,
         address delegatedExecutor,

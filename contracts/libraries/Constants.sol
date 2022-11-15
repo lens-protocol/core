@@ -33,7 +33,7 @@ uint256 constant GOVERNANCE_SLOT = 23;
 uint256 constant EMERGENCY_ADMIN_SLOT = 24;
 uint256 constant DELEGATED_EXECUTOR_APPROVAL_MAPPING_SLOT = 25;
 uint256 constant PROFILE_METADATA_MAPPING_SLOT = 26;
-uint256 constant PROFILE_BLOCKED_MAPPING_SLOT = 27;
+uint256 constant BLOCK_STATUS_MAPPING_SLOT = 27;
 uint256 constant NAME_SLOT_GT_31 = 0x290decd9548b62a8d60345a988386fc84ba6bc95484008f6362f93160ef3e563;
 
 // We store the polygon chain ID and domain separator as constants to save gas.
