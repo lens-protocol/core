@@ -141,11 +141,7 @@ contract FollowNFT is HubRestricted, LensNFTBase, IFollowNFT {
                 ++_followers;
             }
             _tokenData[followId].mintTimestamp = uint96(block.timestamp);
-            _followDataByFollowId[followId] = FollowData(
-                uint160(follower),
-                uint96(block.timestamp)
-            );
-            _followIdByFollowerId[follower] = followId;
+            _follow(follower, followId);
             return followId;
         } else {
             revert DoesNotHavePermissions();
@@ -197,13 +193,19 @@ contract FollowNFT is HubRestricted, LensNFTBase, IFollowNFT {
                     }
                 }
                 // Perform the follow.
-                _followIdByFollowerId[follower] = followId;
-                _followDataByFollowId[followId].follower = uint160(follower);
-                _followDataByFollowId[followId].followTimestamp = uint96(block.timestamp);
+                _follow(follower, followId);
             } else {
                 revert DoesNotHavePermissions();
             }
         }
+    }
+
+    function _follow(uint256 follower, uint256 followId) internal {
+        _followIdByFollowerId[follower] = followId;
+        _followDataByFollowId[followId].follower = FollowData(
+            uint160(follower),
+            uint96(block.timestamp)
+        );
     }
 
     function _followWithUnwrappedToken(
@@ -242,9 +244,7 @@ contract FollowNFT is HubRestricted, LensNFTBase, IFollowNFT {
                 _followIdByFollowerId[currentFollower] = 0;
                 ILensHub(HUB).emitUnfollowedEvent(currentFollower, _followedProfileId, followId);
                 // Perform the follow.
-                _followIdByFollowerId[follower] = followId;
-                _followDataByFollowId[followId].follower = uint160(follower);
-                _followDataByFollowId[followId].followTimestamp = uint96(block.timestamp);
+                _follow(follower, followId);
             } else {
                 revert DoesNotHavePermissions();
             }
@@ -289,14 +289,6 @@ contract FollowNFT is HubRestricted, LensNFTBase, IFollowNFT {
 
     function isFollowing(uint256 follower) external returns (bool) {
         return _followIdByFollowerId[follower] != 0;
-    }
-
-    // TODO: Consider renaming
-    function isUnwrappedAndTied(uint256 followId) external returns (bool) {
-        if (_tokenData[followId].mintTimestamp == 0) {
-            revert FollowTokenDoesNotExist();
-        }
-        return !_exists(followId);
     }
 
     // Approve someone to set me as follower on a specific asset.
@@ -351,23 +343,18 @@ contract FollowNFT is HubRestricted, LensNFTBase, IFollowNFT {
         if (followId == 0) {
             revert NotFollowing();
         }
-        address owner = _tokenData[followId].owner;
-        if (owner == address(0)) {
+        if (_tokenData[followId].owner == address(0)) {
             revert AlreadyTied();
         }
         _burnWithoutClearingApprovals(followId);
     }
 
-    function burnWithSig(uint256 followId, DataTypes.EIP712Signature calldata sig)
-        public
-        virtual
-        override
-    {
+    function burnWithSig(uint256 followId, DataTypes.EIP712Signature calldata sig) public override {
         _unfollowIfHasFollower(followId);
         super.burnWithSig(followId, sig);
     }
 
-    function burn(uint256 followId) public virtual override {
+    function burn(uint256 followId) public override {
         _unfollowIfHasFollower(followId);
         super.burn(followId);
     }
@@ -521,7 +508,7 @@ contract FollowNFT is HubRestricted, LensNFTBase, IFollowNFT {
         return ILensHub(HUB).getFollowNFTURI(_followedProfileId);
     }
 
-    function _unfollowIfHasFollower(uint256 followId) internal virtual {
+    function _unfollowIfHasFollower(uint256 followId) internal {
         uint256 follower = _followDataByFollowId[followId].follower;
         if (follower != 0) {
             _unfollow(follower, followId);
@@ -537,7 +524,7 @@ contract FollowNFT is HubRestricted, LensNFTBase, IFollowNFT {
         }
     }
 
-    function _mint(address to, uint256 tokenId) internal virtual override {
+    function _mint(address to, uint256 tokenId) internal override {
         if (to == address(0)) {
             revert Errors.ERC721Time_MintToZeroAddress();
         }
@@ -552,12 +539,12 @@ contract FollowNFT is HubRestricted, LensNFTBase, IFollowNFT {
         emit Transfer(address(0), to, tokenId);
     }
 
-    function _burn(uint256 tokenId) internal virtual override {
+    function _burn(uint256 tokenId) internal override {
         _burnWithoutClearingApprovals(tokenId);
         _approve(address(0), tokenId);
     }
 
-    function _burnWithoutClearingApprovals(uint256 tokenId) internal virtual {
+    function _burnWithoutClearingApprovals(uint256 tokenId) internal {
         address owner = ERC721Time.ownerOf(tokenId);
         _beforeTokenTransfer(owner, address(0), tokenId);
         unchecked {
