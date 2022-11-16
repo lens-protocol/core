@@ -2,12 +2,12 @@
 
 pragma solidity 0.8.15;
 
-import {IFollowModule} from '../interfaces/IFollowModule.sol';
+import {IFollowModuleLegacy} from '../interfaces/IFollowModuleLegacy.sol';
 
 /**
  * @dev This is a simple mock follow module to be used for testing.
  */
-contract MockFollowModule is IFollowModule {
+contract MockFollowModule is IFollowModuleLegacy {
     function initializeFollowModule(
         uint256,
         address,
