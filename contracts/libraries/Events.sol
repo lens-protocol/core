@@ -331,33 +331,19 @@ library Events {
         uint256 timestamp
     );
 
-    /**
-     * @dev Emitted upon a successful follow action.
-     *
-     * @param follower The address following the given profiles.
-     * @param profileIds The token ID array of the profiles being followed.
-     * @param followModuleDatas The array of data parameters passed to each follow module.
-     * @param timestamp The current block timestamp.
-     */
-    event Followed(
-        address indexed follower,
-        uint256[] profileIds,
-        bytes[] followModuleDatas,
-        uint256 timestamp
-    );
-
     event Followed(
         uint256 indexed follower,
-        uint256 indexed profile,
-        uint128 indexed followId,
-        uint48 followTimestamp
+        uint256 profile,
+        uint256 followIdAssigned,
+        bytes followModuleData,
+        uint256 followTimestamp
     );
 
     event Unfollowed(
         uint256 indexed unfollower,
-        uint256 indexed profile,
-        uint128 indexed followId,
-        uint48 followTimestamp
+        uint256 profile,
+        uint256 followId,
+        uint256 followTimestamp
     );
 
     event BlockStatusSet(uint256 indexed byProfile, uint256[] profileIds, bool[] blocked);

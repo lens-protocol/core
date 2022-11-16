@@ -349,15 +349,17 @@ library DataTypes {
      * as the regular `follow()` function, with the follower's (signer) address and an EIP712Signature added.
      *
      * @param delegatedSigner The delegated executor signer, must be either zero, defaulting to the follower, or a delegated executor.
-     * @param follower The follower which is the message signer.
+     * @param follower The ID of the profile performing the follow.
      * @param profileIds The array of token IDs of the profiles to follow.
+     * @param followIds The array of follow token IDs to use for each follow.
      * @param datas The array of arbitrary data to pass to the followModules if needed.
      * @param sig The EIP712Signature struct containing the follower's signature.
      */
     struct FollowWithSigData {
         address delegatedSigner;
-        address follower;
+        uint256 follower;
         uint256[] profileIds;
+        uint256[] followIds;
         bytes[] datas;
         EIP712Signature sig;
     }
@@ -401,7 +403,7 @@ library DataTypes {
      * @notice A struct containing the parameters required for the `toggleFollowWithSig()` function.
      *
      * @note This does not include a delegatedSigner parameter as it is marked for deprecation.
-     * 
+     *
      * @param follower The follower which is the message signer.
      * @param profileIds The token ID array of the profiles.
      * @param enables The array of booleans to enable/disable follows.
