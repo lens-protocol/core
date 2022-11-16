@@ -109,6 +109,9 @@ bytes32 constant MIRROR_WITH_SIG_TYPEHASH = keccak256(
 bytes32 constant FOLLOW_WITH_SIG_TYPEHASH = keccak256(
     'FollowWithSig(uint256[] profileIds,bytes[] datas,uint256 nonce,uint256 deadline)'
 );
+bytes32 constant SET_BLOCK_STATUS_WITH_SIG_TYPEHASH = keccak256(
+    'SetBlockStatusWithSig(uint256 byProfile,uint256[] profileIds,bool[] blocked,uint256 nonce,uint256 deadline)'
+);
 bytes32 constant COLLECT_WITH_SIG_TYPEHASH = keccak256(
     'CollectWithSig(uint256 profileId,uint256 pubId,bytes data,uint256 nonce,uint256 deadline)'
 );

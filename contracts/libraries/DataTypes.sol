@@ -364,6 +364,14 @@ library DataTypes {
         EIP712Signature sig;
     }
 
+    struct SetBlockStatusWithSigData {
+        address delegatedSigner;
+        uint256 byProfile,
+        uint256[] profileIds,
+        bool[] blocked
+        EIP712Signature sig;
+    }
+
     /**
      * @notice A struct containing the parameters required for the `collectWithSig()` function. Parameters are the same as
      * the regular `collect()` function, with the collector's (signer) address and an EIP712Signature added.

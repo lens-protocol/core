@@ -209,6 +209,17 @@ library GeneralLib {
         InteractionHelpers.setBlockStatus(byProfile, profileIds, blocked);
     }
 
+    function setBlockStatusWithSig(DataTypes.SetBlockStatusWithSigData vars) external {
+        // Safe to use the `unsafeOwnerOf` as the signer can not be address zero
+        address followerOwner = GeneralHelpers.unsafeOwnerOf(vars.follower);
+        address signer = GeneralHelpers.getOriginatorOrDelegatedExecutorSigner(
+            followerOwner,
+            vars.delegatedSigner
+        );
+        MetaTxHelpers.baseSetBlockStatusWithSig(signer, vars);
+        InteractionHelpers.setBlockStatus(vars.byProfile, vars.profileIds, vars.blocked);
+    }
+
     /**
      * @notice Collects the given publication, executing the necessary logic and module call before minting the
      * collect NFT to the collector.

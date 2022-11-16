@@ -337,6 +337,29 @@ library MetaTxHelpers {
         );
     }
 
+    function baseSetBlockStatusWithSig(
+        address signer,
+        DataTypes.SetBlockStatusWithSigData calldata vars
+    ) internal {
+        uint256 dataLength = vars.datas.length;
+        _validateRecoveredAddress(
+            _calculateDigest(
+                keccak256(
+                    abi.encode(
+                        SET_BLOCK_STATUS_WITH_SIG_TYPEHASH,
+                        vars.byProfile,
+                        keccak256(abi.encodePacked(vars.profileIds)),
+                        keccak256(abi.encodePacked(vars.blocked)),
+                        _sigNonces(signer),
+                        vars.sig.deadline
+                    )
+                )
+            ),
+            signer,
+            vars.sig
+        );
+    }
+
     function baseCollectWithSig(address signer, DataTypes.CollectWithSigData calldata vars)
         internal
     {
