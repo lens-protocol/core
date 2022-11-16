@@ -28,14 +28,15 @@ interface IFollowModule {
      * @notice Processes a given follow, this can only be called from the LensHub contract.
      *
      * @param followerProfileId The LensHub profile token ID of the follower's profile (currently unused, preemptive interface upgrade).
-     * @param follower The follower address.
+     * @param followId The ID of the follow token used to follow. Zero if a new one was minted, in this case, the follow ID assigned
+     * can be queried from the Follow NFT collection if needed.
      * @param executor The follower or an approved delegated executor.
      * @param profileId The token ID of the profile being followed.
      * @param data Arbitrary data passed by the follower.
      */
     function processFollow(
         uint256 followerProfileId,
-        address follower,
+        uint256 followId,
         address executor,
         uint256 profileId,
         bytes calldata data

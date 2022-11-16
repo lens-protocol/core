@@ -18,17 +18,26 @@ interface IFollowNFT {
      */
     function initialize(uint256 profileId) external;
 
-    /**
-     * @notice Mints a follow NFT to the specified address. This can only be called by the hub, and is called
-     * upon follow.
-     *
-     * @param to The address to mint the NFT to.
-     *
-     * @return uint256 An interger representing the minted token ID.
-     */
-    function mint(address to) external returns (uint256);
+    function follow(
+        uint256 follower,
+        address executor,
+        address followerOwner,
+        uint256 followId
+    ) external returns (uint256);
+
+    function unfollow(
+        uint256 unfollower,
+        address executor,
+        address unfollowerOwner
+    ) external;
 
     function block(uint256 follower) external;
+
+    function getFollower(uint256 followId) external view returns (uint256);
+
+    function isFollowing(uint256 follower) external view returns (bool);
+
+    function getFollowId(uint256 follower) external view returns (uint256);
 
     /**
      * @notice Delegates the caller's governance power to the given delegatee address.

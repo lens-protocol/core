@@ -287,15 +287,17 @@ interface ILensHub {
      *
      * NOTE: Both the `profileIds` and `datas` arrays must be of the same length, regardless if the profiles do not have a follow module set.
      *
-     * @param onBehalfOf The address the follow is being executed for, different from the sender for delegated executors.
+     * @param follower The profile the follow is being executed for.
      * @param profileIds The token ID array of the profiles to follow.
+     * @param followIds The array of follow token IDs to use for each follow.
      * @param datas The arbitrary data array to pass to the follow module for each profile if needed.
      *
      * @return uint256[] An array of integers representing the minted follow NFTs token IDs.
      */
     function follow(
-        address onBehalfOf,
+        uint256 follower,
         uint256[] calldata profileIds,
+        uint256[] calldata followIds,
         bytes[] calldata datas
     ) external returns (uint256[] memory);
 
