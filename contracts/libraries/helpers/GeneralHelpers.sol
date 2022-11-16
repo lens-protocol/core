@@ -178,6 +178,16 @@ library GeneralHelpers {
         }
     }
 
+    function validateCallerIsOwnerOrDelegatedExecutor(uint256 profileId) internal view {
+        // It's safe to use the `unsafeOwnerOf()` function here because the sender cannot be
+        // the zero address, the dispatcher is cleared on burn and the zero address cannot approve
+        // a delegated executor.
+        address owner = unsafeOwnerOf(profileId);
+        if (msg.sender != owner) {
+            validateDelegatedExecutor(owner, msg.sender);
+        }
+    }
+
     function validateDelegatedExecutor(address onBehalfOf, address executor) internal view {
         bool invalidExecutor;
         assembly {
