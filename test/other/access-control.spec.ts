@@ -1,5 +1,4 @@
-import '@nomiclabs/hardhat-ethers';
-import { ethers } from 'hardhat';
+import hre, { ethers } from 'hardhat';
 import fs from 'fs';
 import { expect } from 'chai';
 import {
@@ -21,7 +20,7 @@ import {
   deployer,
   freeCollectModule as freeCollectModuleImported,
   FIRST_PROFILE_ID,
-  governance,
+  governance as governanceImported,
   lensHub as lensHubImported,
   makeSuiteCleanRoom,
   MOCK_FOLLOW_NFT_URI,
@@ -50,6 +49,7 @@ makeSuiteCleanRoom('AccessControlV2', function () {
   let accessControl, accessControlImpl, accessControlV2Impl, accessControlProxy;
   let lensHub, mockProfileCreationProxy, feeFollowModule, moduleGlobals, freeCollectModule;
   let profileId = FIRST_PROFILE_ID;
+  let governance;
 
   before(async function () {
     if (fork) {
@@ -74,11 +74,17 @@ makeSuiteCleanRoom('AccessControlV2', function () {
         addresses['FreeCollectModule'],
         deployer
       );
+      await hre.network.provider.request({
+        method: 'hardhat_impersonateAccount',
+        params: [await lensHub.getGovernance()],
+      });
+      governance = await ethers.getSigner(await lensHub.getGovernance());
     } else {
       lensHub = lensHubImported;
       feeFollowModule = feeFollowModuleImported;
       moduleGlobals = moduleGlobalsImported;
       freeCollectModule = freeCollectModuleImported;
+      governance = governanceImported;
       accessControlImpl = await new AccessControl__factory(deployer).deploy(lensHub.address);
 
       const data = accessControlImpl.interface.encodeFunctionData('initialize', []);
@@ -154,12 +160,13 @@ makeSuiteCleanRoom('AccessControlV2', function () {
 
   context('Is Following', function () {
     before(async function () {
-      await expect(
-        lensHub.connect(governance).whitelistFollowModule(feeFollowModule.address, true)
-      ).to.not.be.reverted;
-      await expect(
-        moduleGlobals.connect(governance).whitelistCurrency(currency.address, true)
-      ).to.not.be.reverted;
+      await lensHub.connect(governance).whitelistFollowModule(feeFollowModule.address, true);
+
+      expect(await lensHub.isFollowModuleWhitelisted(feeFollowModule.address)).to.be.true;
+
+      await moduleGlobals.connect(governance).whitelistCurrency(currency.address, true);
+
+      expect(await moduleGlobals.isCurrencyWhitelisted(currency.address)).to.be.true;
     });
 
     it('isFollowing should return true if user follows the profile (without follow module, by holding a followNFT)', async function () {
@@ -229,9 +236,7 @@ makeSuiteCleanRoom('AccessControlV2', function () {
 
   context('Has Collected', function () {
     before(async function () {
-      await expect(
-        lensHub.connect(governance).whitelistCollectModule(freeCollectModule.address, true)
-      ).to.not.be.reverted;
+      await lensHub.connect(governance).whitelistCollectModule(freeCollectModule.address, true);
     });
 
     beforeEach(async function () {
