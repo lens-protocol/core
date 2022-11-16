@@ -149,19 +149,28 @@ library GeneralLib {
      * @notice Follows the given profiles, executing the necessary logic and module calls before minting the follow
      * NFT(s) to the follower.
      *
-     * @param onBehalfOf The address the follow is being executed for, different from the sender for delegated executors.
+     * @param follower The profile the follow is being executed for.
      * @param profileIds The array of profile token IDs to follow.
+     * @param followIds The array of follow token IDs to use for each follow.
      * @param followModuleDatas The array of follow module data parameters to pass to each profile's follow module.
      *
      * @return uint256[] An array of integers representing the minted follow NFTs token IDs.
      */
     function follow(
-        address onBehalfOf,
+        uint256 follower,
         uint256[] calldata profileIds,
+        uint256[] calldata followIds,
         bytes[] calldata followModuleDatas
     ) external returns (uint256[] memory) {
-        _validateCallerIsOnBehalfOfOrExecutor(onBehalfOf);
-        return InteractionHelpers.follow(onBehalfOf, msg.sender, profileIds, followModuleDatas);
+        GeneralHelpers.validateCallerIsOwnerOrDelegatedExecutor(follower);
+        return
+            InteractionHelpers.follow(
+                follower,
+                msg.sender,
+                profileIds,
+                followIds,
+                followModuleDatas
+            );
     }
 
     /**
@@ -174,13 +183,21 @@ library GeneralLib {
         external
         returns (uint256[] memory)
     {
-        address follower = vars.follower;
+        // Safe to use the `unsafeOwnerOf` as the signer can not be address zero
+        address followerOwner = GeneralHelpers.unsafeOwnerOf(vars.follower);
         address signer = GeneralHelpers.getOriginatorOrDelegatedExecutorSigner(
-            follower,
+            followerOwner,
             vars.delegatedSigner
         );
         MetaTxHelpers.baseFollowWithSig(signer, vars);
-        return InteractionHelpers.follow(follower, signer, vars.profileIds, vars.datas);
+        return
+            InteractionHelpers.follow(
+                vars.follower,
+                signer,
+                vars.profileIds,
+                vars.followIds,
+                vars.datas
+            );
     }
 
     function setBlockStatus(

@@ -370,11 +370,12 @@ contract LensHub is LensNFTBase, VersionedInitializable, LensMultiState, LensHub
 
     /// @inheritdoc ILensHub
     function follow(
-        address onBehalfOf,
+        uint256 follower,
         uint256[] calldata profileIds,
+        uint256[] calldata followIds,
         bytes[] calldata datas
     ) external override whenNotPaused returns (uint256[] memory) {
-        return GeneralLib.follow(onBehalfOf, profileIds, datas);
+        return GeneralLib.follow(follower, profileIds, followIds, datas);
     }
 
     /// @inheritdoc ILensHub
@@ -687,7 +688,7 @@ contract LensHub is LensNFTBase, VersionedInitializable, LensMultiState, LensHub
                 tokenId,
                 followNFT == address(0) ? 0 : IERC721Enumerable(followNFT).totalSupply(),
                 ownerOf(tokenId),
-                "Lens Profile",
+                'Lens Profile',
                 _profileById[tokenId].imageURI
             );
     }

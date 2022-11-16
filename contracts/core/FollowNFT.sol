@@ -34,6 +34,7 @@ struct Snapshot {
 struct FollowData {
     uint160 follower;
     uint96 followTimestamp;
+    uint256 recoverableBy;
 }
 
 contract FollowNFT is HubRestricted, LensNFTBase, IFollowNFT {
@@ -78,27 +79,24 @@ contract FollowNFT is HubRestricted, LensNFTBase, IFollowNFT {
     /**
      * @param follower The ID of the profile acting as the follower.
      * @param executor The address executing the operation.
+     * @param followerOwner The address holding the follower profile.
      * @param followId The follow token ID to be used for this follow operation. Use zero if a new follow token should
      * be minted.
-     * @param data Custom data for processing the follow.
      */
     function follow(
         uint256 follower,
         address executor,
-        uint256 followId,
-        bytes calldata data
-    ) external onlyHub returns (uint256) {
+        address followerOwner,
+        uint256 followId
+    ) external override onlyHub returns (uint256) {
         if (_followIdByFollowerId[follower] != 0) {
             revert AlreadyFollowing();
         }
-
-        uint256 followIdUsed = followId;
-        address followerOwner = IERC721(HUB).ownerOf(follower);
+        uint256 followIdAssigned = followId;
         address tokenOwner;
         uint256 currentFollower;
-
         if (followId == 0) {
-            followIdUsed = _followWithoutToken(follower, executor, followerOwner);
+            followIdAssigned = _followMintingNewToken(follower, executor, 0, followerOwner);
         } else if ((tokenOwner = _tokenData[followId].owner) != address(0)) {
             _followWithWrappedToken(follower, executor, followId, followerOwner, tokenOwner);
         } else if ((currentFollower = _followDataByFollowId[followId].follower) != 0) {
@@ -110,42 +108,32 @@ contract FollowNFT is HubRestricted, LensNFTBase, IFollowNFT {
                 tokenOwner,
                 currentFollower
             );
+        } else if (_followDataByFollowId[followId].recoverableBy == follower) {
+            _followMintingNewToken(follower, executor, followId, followerOwner);
         } else {
             revert FollowTokenDoesNotExist();
         }
-
-        // `Followed` event will be emitted by the hub itself after finishing this execution
-
-        // TODO: This is probably the biggest question. Should follwing with followId != 0 call processFollow again?
-        // If not, means the follow NFT works as a "right to follow", no matter which follow module you have now.
-        // If yes, means you can customize it. It could make the follow NFT useless, for example rejecting all follows
-        // with followId != 0, or having a module with a followId blacklist.
-
-        // The processFollow call passes the followId, so then the follow module decides if allows follows
-        // automatically when using a followId, or if it will re-process the conditions
-
-        // processFollow(...); <-- This call is actually in the Hub after this execution finishes
-
-        return followIdUsed;
+        return followIdAssigned;
     }
 
-    function _followWithoutToken(
+    function _followMintingNewToken(
         uint256 follower,
         address executor,
+        uint256 followId,
         address followerOwner
     ) internal returns (uint256) {
         if (
             followerOwner == executor ||
             ILensHub(HUB).isDelegatedExecutorApproved(followerOwner, executor)
         ) {
-            uint256 followId;
+            uint256 followIdAssigned;
             unchecked {
-                followId = ++_lastFollowId;
+                followIdAssigned = followId == 0 ? ++_lastFollowId : followId;
                 ++_followers;
             }
-            _tokenData[followId].mintTimestamp = uint96(block.timestamp);
-            _follow(follower, followId);
-            return followId;
+            _tokenData[followIdAssigned].mintTimestamp = uint96(block.timestamp);
+            _follow(follower, followIdAssigned);
+            return followIdAssigned;
         } else {
             revert DoesNotHavePermissions();
         }
@@ -205,7 +193,7 @@ contract FollowNFT is HubRestricted, LensNFTBase, IFollowNFT {
 
     function _follow(uint256 follower, uint256 followId) internal {
         _followIdByFollowerId[follower] = followId;
-        _followDataByFollowId[followId] = FollowData(uint160(follower), uint96(block.timestamp));
+        _followDataByFollowId[followId] = FollowData(uint160(follower), uint96(block.timestamp), 0);
     }
 
     function _followWithUnwrappedToken(
@@ -251,44 +239,50 @@ contract FollowNFT is HubRestricted, LensNFTBase, IFollowNFT {
         }
     }
 
-    function mint(address to) external returns (uint256) {
-        // TODO: Remove me after fixing IFollowNFT interface
-    }
-
     /**
      * @param unfollower The ID of the profile that is perfrorming the unfollow operation.
      * @param executor The address executing the operation.
+     * @param unfollowerOwner The address holding the unfollower profile.
      */
-    // TODO: Allow _followedProfileId owner to make others unfollow here? Or just through the block feature?
-    function unfollow(uint256 unfollower, address executor) external onlyHub {
+    function unfollow(
+        uint256 unfollower,
+        address executor,
+        address unfollowerOwner
+    ) external override onlyHub {
         uint256 followId = _followIdByFollowerId[unfollower];
         if (followId == 0) {
             revert NotFollowing();
         }
-        address tokenOwner;
-        address unfollowerOwner = IERC721(HUB).ownerOf(unfollower);
+        address tokenOwner = _tokenData[followId].owner;
         if (
             unfollowerOwner != executor &&
             !ILensHub(HUB).isDelegatedExecutorApproved(unfollowerOwner, executor) &&
-            (tokenOwner = _tokenData[followId].owner) != executor &&
+            tokenOwner != executor &&
             !_operatorApprovals[tokenOwner][executor]
         ) {
             revert DoesNotHavePermissions();
         }
         _unfollow(unfollower, followId);
+        if (tokenOwner == address(0)) {
+            _followDataByFollowId[followId].recoverableBy = unfollower;
+        }
     }
 
     // Get the follower profile from a given follow token.
     // Zero if not being used as a follow.
-    function getFollower(uint256 followId) external view returns (uint256) {
+    function getFollower(uint256 followId) external view override returns (uint256) {
         if (_tokenData[followId].mintTimestamp == 0) {
             revert FollowTokenDoesNotExist();
         }
         return _followDataByFollowId[followId].follower;
     }
 
-    function isFollowing(uint256 follower) external returns (bool) {
+    function isFollowing(uint256 follower) external view override returns (bool) {
         return _followIdByFollowerId[follower] != 0;
+    }
+
+    function getFollowId(uint256 follower) external view override returns (uint256) {
+        return _followIdByFollowerId[follower];
     }
 
     // Approve someone to set me as follower on a specific asset.
@@ -362,6 +356,10 @@ contract FollowNFT is HubRestricted, LensNFTBase, IFollowNFT {
     function block(uint256 follower) external override onlyHub {
         uint256 followId = _followIdByFollowerId[follower];
         if (followId != 0) {
+            if (_tokenData[followId].owner != address(0)) {
+                // Wrap it first, so the user stops following but does not lose the token when being blocked.
+                _mint(IERC721(HUB).ownerOf(_followDataByFollowId[followId].follower), followId);
+            }
             _unfollow(follower, followId);
             ILensHub(HUB).emitUnfollowedEvent(follower, _followedProfileId, followId);
         }

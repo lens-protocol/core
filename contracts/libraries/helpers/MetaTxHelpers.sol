@@ -325,6 +325,7 @@ library MetaTxHelpers {
                     abi.encode(
                         FOLLOW_WITH_SIG_TYPEHASH,
                         keccak256(abi.encodePacked(vars.profileIds)),
+                        keccak256(abi.encodePacked(vars.followIds)),
                         keccak256(abi.encodePacked(dataHashes)),
                         _sigNonces(signer),
                         vars.sig.deadline
