@@ -10,7 +10,7 @@ export enum eEthereumNetwork {
   main = 'main',
   hardhat = 'hardhat',
   tenderlyMain = 'tenderlyMain',
-  harhatevm = 'harhatevm',
+  hardhatevm = 'hardhatevm',
 }
 
 export enum ePolygonNetwork {
@@ -46,7 +46,7 @@ export interface iParamsPerNetworkAll<T>
     iXDaiParamsPerNetwork<T> {}
 
 export interface iEthereumParamsPerNetwork<eNetwork> {
-  [eEthereumNetwork.harhatevm]: eNetwork;
+  [eEthereumNetwork.hardhatevm]: eNetwork;
   [eEthereumNetwork.kovan]: eNetwork;
   [eEthereumNetwork.ropsten]: eNetwork;
   [eEthereumNetwork.main]: eNetwork;
