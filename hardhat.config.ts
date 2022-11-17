@@ -70,6 +70,7 @@ const config: HardhatUserConfig = {
     main: getCommonNetworkConfig(eEthereumNetwork.main, 1),
     tenderlyMain: getCommonNetworkConfig(eEthereumNetwork.tenderlyMain, 3030),
     matic: getCommonNetworkConfig(ePolygonNetwork.matic, 137),
+    sandbox: getCommonNetworkConfig(ePolygonNetwork.mumbai, 80001),
     mumbai: getCommonNetworkConfig(ePolygonNetwork.mumbai, 80001),
     xdai: getCommonNetworkConfig(eXDaiNetwork.xdai, 100),
     hardhat: {
@@ -85,6 +86,15 @@ const config: HardhatUserConfig = {
         balance,
       })),
       forking: mainnetFork,
+    },
+    local: {
+      url: 'http://127.0.0.1:8545/',
+      accounts: {
+        mnemonic: MNEMONIC,
+        path: MNEMONIC_PATH,
+        initialIndex: 0,
+        count: 20,
+      },
     },
   },
   gasReporter: {
