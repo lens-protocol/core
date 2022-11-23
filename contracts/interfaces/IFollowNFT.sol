@@ -39,22 +39,10 @@ interface IFollowNFT {
 
     function getFollowId(uint256 follower) external view returns (uint256);
 
-    /**
-     * @notice Delegates the caller's governance power to the given delegatee address.
-     *
-     * @param delegatee The delegatee address to delegate governance power to.
-     */
-    function delegate(address delegatee) external;
+    function delegate(uint256 delegatorProfile, address delegatee) external;
 
-    /**
-     * @notice Delegates the delegator's governance power via meta-tx to the given delegatee address.
-     *
-     * @param delegator The delegator address, who is the signer.
-     * @param delegatee The delegatee address, who is receiving the governance power delegation.
-     * @param sig The EIP712Signature struct containing the necessary parameters to recover the delegator's signature.
-     */
     function delegateBySig(
-        address delegator,
+        uint256 delegatorProfile,
         address delegatee,
         DataTypes.EIP712Signature calldata sig
     ) external;

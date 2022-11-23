@@ -47,7 +47,8 @@ contract FollowNFT is HubRestricted, LensNFTBase, IFollowNFT {
     uint16 internal constant BASIS_POINTS = 10000;
 
     mapping(address => mapping(uint256 => Snapshot)) internal _snapshots;
-    mapping(address => address) internal _delegates;
+    // TODO: Check that nobody has used this feature before doing this mapping modifiation, otherwise use new slot.
+    mapping(uint256 => address) internal _delegates;
     mapping(address => uint256) internal _snapshotCount;
     mapping(uint256 => Snapshot) internal _delSupplySnapshots;
     uint256 internal _delSupplySnapshotCount;
@@ -178,6 +179,7 @@ contract FollowNFT is HubRestricted, LensNFTBase, IFollowNFT {
                 if (currentFollower != 0) {
                     // As it has a follower, unfollow first.
                     _followIdByFollowerId[currentFollower] = 0;
+                    _delegate(currentFollower, address(0));
                     ILensHub(HUB).emitUnfollowedEvent(
                         currentFollower,
                         _followedProfileId,
@@ -441,34 +443,44 @@ contract FollowNFT is HubRestricted, LensNFTBase, IFollowNFT {
     }
 
     /// @inheritdoc IFollowNFT
-    function delegate(address delegatee) external override {
-        _delegate(msg.sender, delegatee);
+    function delegate(uint256 delegatorProfile, address delegatee) external override {
+        if (_followIdByFollowerId[delegatorProfile] == 0) {
+            revert NotFollowing();
+        }
+        if (msg.sender != IERC721(HUB).ownerOf(delegatorProfile)) {
+            revert Errors.NotProfileOwner();
+        }
+        _delegate(delegatorProfile, delegatee);
     }
 
     /// @inheritdoc IFollowNFT
     function delegateBySig(
-        address delegator,
+        uint256 delegatorProfile,
         address delegatee,
         DataTypes.EIP712Signature calldata sig
     ) external override {
+        if (_followIdByFollowerId[delegatorProfile] == 0) {
+            revert NotFollowing();
+        }
+        address delegatorOwner = IERC721(HUB).ownerOf(delegatorProfile);
         unchecked {
             MetaTxHelpers._validateRecoveredAddress(
                 _calculateDigest(
                     keccak256(
                         abi.encode(
                             DELEGATE_BY_SIG_TYPEHASH,
-                            delegator,
+                            delegatorProfile,
                             delegatee,
-                            sigNonces[delegator]++,
+                            sigNonces[delegatorOwner]++,
                             sig.deadline
                         )
                     )
                 ),
-                delegator,
+                delegatorOwner,
                 sig
             );
         }
-        _delegate(delegator, delegatee);
+        _delegate(delegatorProfile, delegatee);
     }
 
     /// @inheritdoc IFollowNFT
@@ -522,6 +534,7 @@ contract FollowNFT is HubRestricted, LensNFTBase, IFollowNFT {
     }
 
     function _unfollow(uint256 unfollower, uint256 followId) internal {
+        _delegate(unfollower, address(0));
         delete _followIdByFollowerId[unfollower];
         delete _followDataByFollowId[followId];
         unchecked {
@@ -577,12 +590,7 @@ contract FollowNFT is HubRestricted, LensNFTBase, IFollowNFT {
         address to,
         uint256 tokenId
     ) internal override {
-        address fromDelegatee = _delegates[from];
-        address toDelegatee = _delegates[to];
         address followModule = ILensHub(HUB).getFollowModule(_followedProfileId);
-
-        _moveDelegate(fromDelegatee, toDelegatee, 1);
-
         super._beforeTokenTransfer(from, to, tokenId);
         ILensHub(HUB).emitFollowNFTTransferEvent(_followedProfileId, tokenId, from, to);
         if (followModule != address(0)) {
@@ -625,48 +633,39 @@ contract FollowNFT is HubRestricted, LensNFTBase, IFollowNFT {
         }
     }
 
-    function _delegate(address delegator, address delegatee) internal {
-        uint256 delegatorBalance = balanceOf(delegator); // TODO: This is only getting the wrapped tokens balance
-        address previousDelegate = _delegates[delegator];
-        _delegates[delegator] = delegatee;
-        _moveDelegate(previousDelegate, delegatee, delegatorBalance);
+    function _delegate(uint256 delegatorProfile, address delegatee) internal {
+        address previousDelegate = _delegates[delegatorProfile];
+        if (previousDelegate != delegatee) {
+            _delegates[delegatorProfile] = delegatee;
+            _moveDelegate(previousDelegate, delegatee);
+        }
     }
 
-    function _moveDelegate(
-        address from,
-        address to,
-        uint256 amount
-    ) internal {
+    function _moveDelegate(address from, address to) internal {
         unchecked {
             bool fromZero = from == address(0);
             if (!fromZero) {
                 uint256 fromSnapshotCount = _snapshotCount[from];
-
                 // Underflow is impossible since, if from != address(0), then a delegation must have occurred (at least 1 snapshot)
-                uint256 previous = _snapshots[from][fromSnapshotCount - 1].value;
-                uint128 newValue = uint128(previous - amount);
-
+                uint128 newValue = _snapshots[from][fromSnapshotCount - 1].value + 1;
                 _writeSnapshot(from, newValue, fromSnapshotCount);
                 emit Events.FollowNFTDelegatedPowerChanged(from, newValue, block.timestamp);
             }
-
             if (to != address(0)) {
-                // if from == address(0) then this is an initial delegation (add amount to supply)
+                // if from == address(0) then this is an initial delegation, increment supply.
                 if (fromZero) {
                     // It is expected behavior that the `previousDelSupply` underflows upon the first delegation,
                     // returning the expected value of zero
                     uint256 delSupplySnapshotCount = _delSupplySnapshotCount;
-                    uint128 previousDelSupply = _delSupplySnapshots[delSupplySnapshotCount - 1]
-                        .value;
-                    uint128 newDelSupply = uint128(previousDelSupply + amount);
-                    _writeSupplySnapshot(newDelSupply, delSupplySnapshotCount);
+                    _writeSupplySnapshot(
+                        _delSupplySnapshots[delSupplySnapshotCount - 1].value + 1,
+                        delSupplySnapshotCount
+                    );
                 }
-
                 // It is expected behavior that `previous` underflows upon the first delegation to an address,
                 // returning the expected value of zero
                 uint256 toSnapshotCount = _snapshotCount[to];
-                uint128 previous = _snapshots[to][toSnapshotCount - 1].value;
-                uint128 newValue = uint128(previous + amount);
+                uint128 newValue = _snapshots[to][toSnapshotCount - 1].value + 1;
                 _writeSnapshot(to, newValue, toSnapshotCount);
                 emit Events.FollowNFTDelegatedPowerChanged(to, newValue, block.timestamp);
             } else {
@@ -677,9 +676,8 @@ contract FollowNFT is HubRestricted, LensNFTBase, IFollowNFT {
                     // underflow because if from != address(0), then a delegation must have previously occurred, so
                     // the snapshot count must be >= 1 and the previous delegated supply must be >= amount
                     uint256 delSupplySnapshotCount = _delSupplySnapshotCount;
-                    uint128 previousDelSupply = _delSupplySnapshots[delSupplySnapshotCount - 1]
-                        .value;
-                    uint128 newDelSupply = uint128(previousDelSupply - amount);
+                    uint128 newDelSupply = _delSupplySnapshots[delSupplySnapshotCount - 1].value -
+                        1;
                     _writeSupplySnapshot(newDelSupply, delSupplySnapshotCount);
                 }
             }

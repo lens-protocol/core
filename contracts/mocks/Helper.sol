@@ -26,7 +26,7 @@ contract Helper {
         address first,
         address second
     ) external {
-        nft.delegate(first);
-        nft.delegate(second);
+        // nft.delegate(first); TODO: Adapt mock to new interface later.
+        // nft.delegate(second); TODO: Adapt mock to new interface later.
     }
 }
