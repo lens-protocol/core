@@ -388,7 +388,7 @@ interface ILensHub {
         uint256 unfollower,
         uint256 profileId,
         uint256 followId
-    );
+    ) external;
 
     /// ************************
     /// *****VIEW FUNCTIONS*****

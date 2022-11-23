@@ -463,10 +463,10 @@ contract LensHub is LensNFTBase, VersionedInitializable, LensMultiState, LensHub
         uint256 unfollower,
         uint256 profileId,
         uint256 followId
-    ) external {
+    ) external override {
         address expectedFollowNFT = _profileById[profileId].followNFT;
         if (msg.sender != expectedFollowNFT) revert Errors.CallerNotFollowNFT();
-        emit Unfollowed(unfollower, profile, followId, block.timestamp);
+        emit Events.Unfollowed(unfollower, profileId, followId, block.timestamp);
     }
 
     /// *********************************
