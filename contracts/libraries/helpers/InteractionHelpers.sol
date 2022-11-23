@@ -51,6 +51,8 @@ library InteractionHelpers {
         for (uint256 i = 0; i < profileIds.length; ) {
             _validateProfileExists(profileIds[i]);
 
+            _validateNotBlocked(follower, profileIds[i]);
+
             followIdsAssigned[i] = _follow(
                 follower,
                 followerOwner,
@@ -362,5 +364,20 @@ library InteractionHelpers {
     function _validateProfileExists(uint256 profileId) private view {
         if (GeneralHelpers.unsafeOwnerOf(profileId) == address(0))
             revert Errors.TokenDoesNotExist();
+    }
+
+    function _validateNotBlocked(uint256 profile, uint256 byProfile) private view {
+        bool isBlocked;
+        assembly {
+            mstore(0, byProfile)
+            mstore(32, BLOCK_STATUS_MAPPING_SLOT)
+            let blockStatusByProfileSlot := keccak256(0, 64)
+            mstore(0, profile)
+            mstore(32, blockStatusByProfileSlot)
+            isBlocked := sload(keccak256(0, 64))
+        }
+        if (isBlocked) {
+            revert Errors.Blocked();
+        }
     }
 }

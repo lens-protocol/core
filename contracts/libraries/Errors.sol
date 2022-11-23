@@ -59,6 +59,7 @@ library Errors {
     error NotWhitelisted();
     error InvalidParameter();
     error ExecutorInvalid();
+    error Blocked();
 
     // Module Errors
     error InitParamsInvalid();
