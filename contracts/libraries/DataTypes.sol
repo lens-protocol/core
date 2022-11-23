@@ -366,9 +366,9 @@ library DataTypes {
 
     struct SetBlockStatusWithSigData {
         address delegatedSigner;
-        uint256 byProfile,
-        uint256[] profileIds,
-        bool[] blocked
+        uint256 byProfile;
+        uint256[] profileIds;
+        bool[] blocked;
         EIP712Signature sig;
     }
 

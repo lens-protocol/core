@@ -388,6 +388,7 @@ contract LensHub is LensNFTBase, VersionedInitializable, LensMultiState, LensHub
         return GeneralLib.followWithSig(vars);
     }
 
+    /// @inheritdoc ILensHub
     function setBlockStatus(
         uint256 byProfile,
         uint256[] calldata profileIds,
@@ -396,7 +397,8 @@ contract LensHub is LensNFTBase, VersionedInitializable, LensMultiState, LensHub
         return GeneralLib.setBlockStatus(byProfile, profileIds, blocked);
     }
 
-    function setBlockStatusWithSig(DataTypes.SetBlockStatusWithSigData vars)
+    /// @inheritdoc ILensHub
+    function setBlockStatusWithSig(DataTypes.SetBlockStatusWithSigData calldata vars)
         external
         override
         whenNotPaused
@@ -456,7 +458,7 @@ contract LensHub is LensNFTBase, VersionedInitializable, LensMultiState, LensHub
         );
     }
 
-    //TODO: Add to ILensHub
+    /// @inheritdoc ILensHub
     function emitUnfollowedEvent(
         uint256 unfollower,
         uint256 profileId,
@@ -464,7 +466,7 @@ contract LensHub is LensNFTBase, VersionedInitializable, LensMultiState, LensHub
     ) external {
         address expectedFollowNFT = _profileById[profileId].followNFT;
         if (msg.sender != expectedFollowNFT) revert Errors.CallerNotFollowNFT();
-        // emit Unfollowed();
+        emit Unfollowed(unfollower, profile, followId, block.timestamp);
     }
 
     /// *********************************
@@ -520,9 +522,9 @@ contract LensHub is LensNFTBase, VersionedInitializable, LensMultiState, LensHub
         return _delegatedExecutorApproval[wallet][executor];
     }
 
-    //TODO: Add to ILensHub
+    /// @inheritdoc ILensHub
     function isBlocked(uint256 profile, uint256 byProfile) external view returns (bool) {
-        //
+        return _blockStatusByProfileByBlockee[byProfile][profile];
     }
 
     /// @inheritdoc ILensHub

@@ -209,11 +209,11 @@ library GeneralLib {
         InteractionHelpers.setBlockStatus(byProfile, profileIds, blocked);
     }
 
-    function setBlockStatusWithSig(DataTypes.SetBlockStatusWithSigData vars) external {
+    function setBlockStatusWithSig(DataTypes.SetBlockStatusWithSigData calldata vars) external {
         // Safe to use the `unsafeOwnerOf` as the signer can not be address zero
-        address followerOwner = GeneralHelpers.unsafeOwnerOf(vars.follower);
+        address byProfileOwner = GeneralHelpers.unsafeOwnerOf(vars.byProfile);
         address signer = GeneralHelpers.getOriginatorOrDelegatedExecutorSigner(
-            followerOwner,
+            byProfileOwner,
             vars.delegatedSigner
         );
         MetaTxHelpers.baseSetBlockStatusWithSig(signer, vars);

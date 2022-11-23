@@ -341,7 +341,6 @@ library MetaTxHelpers {
         address signer,
         DataTypes.SetBlockStatusWithSigData calldata vars
     ) internal {
-        uint256 dataLength = vars.datas.length;
         _validateRecoveredAddress(
             _calculateDigest(
                 keccak256(

@@ -60,8 +60,11 @@ contract FollowNFT is HubRestricted, LensNFTBase, IFollowNFT {
 
     mapping(uint256 => FollowData) internal _followDataByFollowId;
     mapping(uint256 => uint256) internal _followIdByFollowerId;
-    mapping(uint256 => uint256) internal _approvedToFollowByFollowerId;
-    mapping(uint256 => address) internal _approvedToSetFollowerByFollowId;
+    mapping(uint256 => uint256) internal _approvedFollowWithTokenByFollowerId;
+    mapping(uint256 => address) internal _approvedSetFollowerInTokenByFollowId;
+
+    event SetFollowerInTokenApproved(uint256 indexed followId, address approved);
+    event FollowWithTokenApproved(uint256 indexed follower, uint256 followId);
 
     constructor(address hub) HubRestricted(hub) {
         _initialized = true;
@@ -146,28 +149,30 @@ contract FollowNFT is HubRestricted, LensNFTBase, IFollowNFT {
         address followerOwner,
         address tokenOwner
     ) internal {
-        bool approvedToSetFollower;
+        bool approvedTetFollowerInToken;
         if (
             followerOwner == tokenOwner ||
             executor == tokenOwner ||
             _operatorApprovals[tokenOwner][executor] ||
-            (approvedToSetFollower = (_approvedToSetFollowerByFollowId[followId] == executor))
+            (approvedTetFollowerInToken = (_approvedSetFollowerInTokenByFollowId[followId] ==
+                executor))
         ) {
             // The executor is allowed to write the follower in that wrapped token.
-            if (approvedToSetFollower) {
-                // The `_approvedToSetFollowerByFollowId` was used, now needs to be cleared.
-                _approvedToSetFollowerByFollowId[followId] = address(0);
+            if (approvedTetFollowerInToken) {
+                // The `_approvedSetFollowerInTokenByFollowId` was used, now needs to be cleared.
+                _approveSetFollowerInToken(address(0), followId);
             }
-            bool approvedToFollowUsed;
+            bool approvedFollowWithTokenUsed;
             if (
                 executor == followerOwner ||
                 ILensHub(HUB).isDelegatedExecutorApproved(followerOwner, executor) ||
-                (approvedToFollowUsed = (_approvedToFollowByFollowerId[follower] == followId))
+                (approvedFollowWithTokenUsed = (_approvedFollowWithTokenByFollowerId[follower] ==
+                    followId))
             ) {
                 // The executor is allowed to follow on behalf.
-                if (approvedToFollowUsed) {
-                    // The `_approvedToFollowByFollowerId` was used, now needs to be cleared.
-                    _approvedToFollowByFollowerId[follower] = 0;
+                if (approvedFollowWithTokenUsed) {
+                    // The `_approvedFollowWithTokenByFollowerId` was used, now needs to be cleared.
+                    _approveFollowWithToken(follower, 0);
                 }
                 uint256 currentFollower = _followDataByFollowId[followId].follower;
                 if (currentFollower != 0) {
@@ -217,16 +222,17 @@ contract FollowNFT is HubRestricted, LensNFTBase, IFollowNFT {
                 _tokenApprovals[followId] = address(0);
                 emit Approval(currentFollowerOwner, address(0), followId);
             }
-            bool approvedToFollowUsed;
+            bool approvedFollowWithTokenUsed;
             if (
                 executor == followerOwner ||
                 ILensHub(HUB).isDelegatedExecutorApproved(followerOwner, executor) ||
-                (approvedToFollowUsed = (_approvedToFollowByFollowerId[follower] == followId))
+                (approvedFollowWithTokenUsed = (_approvedFollowWithTokenByFollowerId[follower] ==
+                    followId))
             ) {
                 // The executor is allowed to follow on behalf.
-                if (approvedToFollowUsed) {
-                    // The `_approvedToFollowByFollowerId` was used, now needs to be cleared.
-                    _approvedToFollowByFollowerId[follower] = 0;
+                if (approvedFollowWithTokenUsed) {
+                    // The `_approvedFollowWithTokenByFollowerId` was used, now needs to be cleared.
+                    _approveFollowWithToken(follower, 0);
                 }
                 // Perform the unfollow.
                 _followIdByFollowerId[currentFollower] = 0;
@@ -287,14 +293,23 @@ contract FollowNFT is HubRestricted, LensNFTBase, IFollowNFT {
 
     // Approve someone to set me as follower on a specific asset.
     // For any asset you must use delegated execution feature with a contract adding restrictions.
-    function approveFollow(uint256 follower, uint256 followId) external {
-        // TODO: followId exists, and verify msg.sender owns the follower.
-        _approvedToFollowByFollowerId[follower] = followId;
+    function approveFollowWithToken(uint256 follower, uint256 followId) external {
+        if (_tokenData[followId].mintTimestamp == 0) {
+            revert FollowTokenDoesNotExist();
+        }
+        if (IERC721(HUB).ownerOf(follower) != msg.sender) {
+            revert DoesNotHavePermissions();
+        }
+        _approveFollowWithToken(follower, followId);
+    }
+
+    function _approveFollowWithToken(uint256 follower, uint256 followId) internal {
+        _approvedFollowWithTokenByFollowerId[follower] = followId;
+        emit FollowWithTokenApproved(follower, followId);
     }
 
     // Approve someone to set any follower on one of my wrapped tokens.
-    // To get the follow you can use `approve`.
-    function approveSetFollower(address operator, uint256 followId) external {
+    function approveSetFollowerInToken(address operator, uint256 followId) external {
         TokenData memory tokenData = _tokenData[followId];
         if (tokenData.mintTimestamp == 0) {
             revert FollowTokenDoesNotExist();
@@ -305,12 +320,7 @@ contract FollowNFT is HubRestricted, LensNFTBase, IFollowNFT {
         if (msg.sender != tokenData.owner) {
             revert OnlyFollowOwner();
         }
-        _approvedToSetFollowerByFollowId[followId] = operator;
-    }
-
-    // TODO
-    function _transferHook(uint256 followId) internal {
-        _approvedToSetFollowerByFollowId[followId] = address(0);
+        _approveSetFollowerInToken(operator, followId);
     }
 
     /**
@@ -536,7 +546,7 @@ contract FollowNFT is HubRestricted, LensNFTBase, IFollowNFT {
 
     function _burn(uint256 tokenId) internal override {
         _burnWithoutClearingApprovals(tokenId);
-        _approve(address(0), tokenId);
+        _clearApprovals(tokenId);
     }
 
     function _burnWithoutClearingApprovals(uint256 tokenId) internal {
@@ -547,6 +557,16 @@ contract FollowNFT is HubRestricted, LensNFTBase, IFollowNFT {
         }
         delete _tokenData[tokenId];
         emit Transfer(owner, address(0), tokenId);
+    }
+
+    function _clearApprovals(uint256 followId) internal {
+        _approveSetFollowerInToken(address(0), followId);
+        _approve(address(0), followId);
+    }
+
+    function _approveSetFollowerInToken(address operator, uint256 followId) internal {
+        _approvedSetFollowerInTokenByFollowId[followId] = operator;
+        emit SetFollowerInTokenApproved(followId, operator);
     }
 
     /**

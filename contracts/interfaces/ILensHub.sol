@@ -320,6 +320,8 @@ interface ILensHub {
         bool[] calldata blocked
     ) external;
 
+    function setBlockStatusWithSig(DataTypes.SetBlockStatusWithSigData calldata vars) external;
+
     /**
      * @notice Collects a given publication, executing collect module logic and minting a collectNFT to the caller.
      *
@@ -382,12 +384,11 @@ interface ILensHub {
         address to
     ) external;
 
-    //TODO: Add natspec
     function emitUnfollowedEvent(
         uint256 unfollower,
         uint256 profileId,
         uint256 followId
-    ) external;
+    );
 
     /// ************************
     /// *****VIEW FUNCTIONS*****
@@ -450,6 +451,8 @@ interface ILensHub {
         external
         view
         returns (bool);
+
+    function isBlocked(uint256 profile, uint256 byProfile) external view returns (bool);
 
     /**
      * @notice Returns the default profile for a given wallet address
