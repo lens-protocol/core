@@ -4,6 +4,8 @@ pragma solidity 0.8.15;
 
 import '../libraries/Constants.sol';
 import {DataTypes} from '../libraries/DataTypes.sol';
+import {ERC2981CollectionRoyalties} from './base/ERC2981CollectionRoyalties.sol';
+import {ERC721Enumerable} from './base/ERC721Enumerable.sol';
 import {ERC721Time} from './base/ERC721Time.sol';
 import {Errors} from '../libraries/Errors.sol';
 import {Events} from '../libraries/Events.sol';
@@ -37,14 +39,14 @@ struct FollowData {
     uint256 recoverableBy;
 }
 
-contract FollowNFT is HubRestricted, LensNFTBase, IFollowNFT {
+contract FollowNFT is HubRestricted, LensNFTBase, ERC2981CollectionRoyalties, IFollowNFT {
     using Strings for uint256;
 
     bytes32 internal constant DELEGATE_BY_SIG_TYPEHASH =
         keccak256(
             'DelegateBySig(address delegator,address delegatee,uint256 nonce,uint256 deadline)'
         );
-    uint16 internal constant BASIS_POINTS = 10000;
+    uint8 internal constant ROYALTIES_IN_BASIS_POINTS_SLOT = 23;
 
     mapping(address => mapping(uint256 => Snapshot)) internal _snapshots;
     // TODO: Check that nobody has used this feature before doing this mapping modifiation, otherwise use new slot.
@@ -57,12 +59,12 @@ contract FollowNFT is HubRestricted, LensNFTBase, IFollowNFT {
     uint128 internal _followers;
 
     bool private _initialized;
-    uint16 internal _royaltyBasisPoints;
 
     mapping(uint256 => FollowData) internal _followDataByFollowId;
     mapping(uint256 => uint256) internal _followIdByFollowerId;
     mapping(uint256 => uint256) internal _approvedFollowWithTokenByFollowerId;
     mapping(uint256 => address) internal _approvedSetFollowerInTokenByFollowId;
+    uint256 internal _royaltiesInBasisPoints;
 
     event SetFollowerInTokenApproved(uint256 indexed followId, address approved);
     event FollowWithTokenApproved(uint256 indexed follower, uint256 followId);
@@ -76,7 +78,7 @@ contract FollowNFT is HubRestricted, LensNFTBase, IFollowNFT {
         if (_initialized) revert Errors.Initialized();
         _initialized = true;
         _followedProfileId = profileId;
-        _royaltyBasisPoints = 1000; // 10% of royalties
+        _setRoyalty(1000); // 10% of royalties
         emit Events.FollowNFTInitialized(profileId, block.timestamp);
     }
 
@@ -378,44 +380,32 @@ contract FollowNFT is HubRestricted, LensNFTBase, IFollowNFT {
     }
 
     /**
-     * @notice Changes the royalty percentage for secondary sales. Can only be called publication's
-     *         profile owner.
-     *
-     * @param royaltyBasisPoints The royalty percentage meassured in basis points. Each basis point
-     *                           represents 0.01%.
+     * @dev See {IERC165-supportsInterface}.
      */
-    // TODO: We can move this to a base contract and share logic between Follow and Collect NFTs
-    function setRoyalty(uint256 royaltyBasisPoints) external {
-        if (IERC721(HUB).ownerOf(_followedProfileId) == msg.sender) {
-            if (royaltyBasisPoints > BASIS_POINTS) {
-                revert Errors.InvalidParameter();
-            } else {
-                _royaltyBasisPoints = uint16(royaltyBasisPoints);
-            }
-        } else {
+    function supportsInterface(bytes4 interfaceId)
+        public
+        view
+        virtual
+        override(ERC2981CollectionRoyalties, ERC721Enumerable)
+        returns (bool)
+    {
+        return
+            ERC2981CollectionRoyalties.supportsInterface(interfaceId) ||
+            ERC721Enumerable.supportsInterface(interfaceId);
+    }
+
+    function _getReceiver(uint256 tokenId) internal view override returns (address) {
+        return IERC721(HUB).ownerOf(_followedProfileId);
+    }
+
+    function _beforeRoyaltiesSet(uint256 royaltiesInBasisPoints) internal override {
+        if (IERC721(HUB).ownerOf(_followedProfileId) != msg.sender) {
             revert Errors.NotProfileOwner();
         }
     }
 
-    /**
-     * @notice Called with the sale price to determine how much royalty
-     *         is owed and to whom.
-     *
-     * @param followId The ID of the follow token queried for royalty information.
-     * @param salePrice The sale price of the token specified.
-     * @return A tuple with the address who should receive the royalties and the royalty
-     * payment amount for the given sale price.
-     */
-    // TODO: We can move this to a base contract and share logic between Follow and Collect NFTs
-    function royaltyInfo(uint256 followId, uint256 salePrice)
-        external
-        view
-        returns (address, uint256)
-    {
-        return (
-            IERC721(HUB).ownerOf(_followedProfileId),
-            (salePrice * _royaltyBasisPoints) / BASIS_POINTS
-        );
+    function _getRoyaltiesInBasisPointsSlot() internal view override returns (uint256) {
+        return ROYALTIES_IN_BASIS_POINTS_SLOT;
     }
 
     /// NOTE: We allow approve for unwrapped assets to, which is not supposed to be part of ERC-721.
