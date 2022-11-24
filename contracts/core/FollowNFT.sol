@@ -590,17 +590,13 @@ contract FollowNFT is HubRestricted, LensNFTBase, IFollowNFT {
         address to,
         uint256 tokenId
     ) internal override {
-        address followModule = ILensHub(HUB).getFollowModule(_followedProfileId);
+        if (from != address(0) && to != address(0)) {
+            // It is not necessary to clear approvals when minting. And the approvals should not be cleared here for the
+            // burn case, as it could be a token unwrap instead of a regular burn.
+            _clearApprovals(tokenId);
+        }
         super._beforeTokenTransfer(from, to, tokenId);
         ILensHub(HUB).emitFollowNFTTransferEvent(_followedProfileId, tokenId, from, to);
-        if (followModule != address(0)) {
-            IFollowModule(followModule).followModuleTransferHook(
-                _followedProfileId,
-                from,
-                to,
-                tokenId
-            );
-        }
     }
 
     function _getSnapshotValueByBlockNumber(
