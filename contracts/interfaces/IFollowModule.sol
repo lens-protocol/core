@@ -41,34 +41,4 @@ interface IFollowModule {
         uint256 profileId,
         bytes calldata data
     ) external;
-
-    /**
-     * @notice This is a helper function that could be used in conjunction with specific collect modules.
-     *
-     * NOTE: This function IS meant to replace a check on follower NFT ownership.
-     *
-     * NOTE: It is assumed that not all collect modules are aware of the token ID to pass. In these cases,
-     * this should receive a `followNFTTokenId` of 0, which is impossible regardless.
-     *
-     * One example of a use case for this would be a subscription-based following system:
-     *      1. The collect module:
-     *          - Decodes a follower NFT token ID from user-passed data.
-     *          - Fetches the follow module from the hub.
-     *          - Calls `isFollowing` passing the profile ID, follower & follower token ID and checks it returned true.
-     *      2. The follow module:
-     *          - Validates the subscription status for that given NFT, reverting on an invalid subscription.
-     *
-     * @param followerProfileId The LensHub profile token ID of the follower's profile (currently unused, preemptive interface upgrade).
-     * @param profileId The token ID of the profile to validate the follow for.
-     * @param follower The follower address to validate the follow for.
-     * @param followNFTTokenId The followNFT token ID to validate the follow for.
-     *
-     * @return true if the given address is following the given profile ID, false otherwise.
-     */
-    function isFollowing(
-        uint256 followerProfileId,
-        uint256 profileId,
-        address follower,
-        uint256 followNFTTokenId
-    ) external view returns (bool);
 }
