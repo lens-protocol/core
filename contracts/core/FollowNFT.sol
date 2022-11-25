@@ -46,7 +46,6 @@ contract FollowNFT is HubRestricted, LensNFTBase, ERC2981CollectionRoyalties, IF
         keccak256(
             'DelegateBySig(address delegator,address delegatee,uint256 nonce,uint256 deadline)'
         );
-    uint8 internal constant ROYALTIES_IN_BASIS_POINTS_SLOT = 23;
 
     mapping(address => mapping(uint256 => Snapshot)) internal _snapshots;
     // TODO: Check that nobody has used this feature before doing this mapping modifiation, otherwise use new slot.
@@ -405,7 +404,11 @@ contract FollowNFT is HubRestricted, LensNFTBase, ERC2981CollectionRoyalties, IF
     }
 
     function _getRoyaltiesInBasisPointsSlot() internal view override returns (uint256) {
-        return ROYALTIES_IN_BASIS_POINTS_SLOT;
+        uint256 slot;
+        assembly {
+            slot := _royaltiesInBasisPoints.slot
+        }
+        return slot;
     }
 
     /// NOTE: We allow approve for unwrapped assets to, which is not supposed to be part of ERC-721.

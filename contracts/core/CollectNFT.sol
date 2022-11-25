@@ -20,7 +20,6 @@ import {LensNFTBase} from './base/LensNFTBase.sol';
  */
 contract CollectNFT is LensNFTBase, ERC2981CollectionRoyalties, ICollectNFT {
     address public immutable HUB;
-    uint8 internal constant ROYALTIES_IN_BASIS_POINTS_SLOT = 15;
 
     uint256 internal _profileId;
     uint256 internal _pubId;
@@ -100,7 +99,11 @@ contract CollectNFT is LensNFTBase, ERC2981CollectionRoyalties, ICollectNFT {
     }
 
     function _getRoyaltiesInBasisPointsSlot() internal view override returns (uint256) {
-        return ROYALTIES_IN_BASIS_POINTS_SLOT;
+        uint256 slot;
+        assembly {
+            slot := _royaltiesInBasisPoints.slot
+        }
+        return slot;
     }
 
     /**
