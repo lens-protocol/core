@@ -421,4 +421,8 @@ contract BaseTest is TestSetup {
         vm.prank(msgSender);
         hub.setFollowModule(profileId, followModule, followModuleInitData);
     }
+
+    function _setFollowModuleWithSig(DataTypes.SetFollowModuleWithSigData memory vars) internal {
+        hub.setFollowModuleWithSig(vars);
+    }
 }

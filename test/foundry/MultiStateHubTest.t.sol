@@ -2,6 +2,7 @@
 pragma solidity ^0.8.13;
 
 import './base/BaseTest.t.sol';
+import {SigSetup} from './helpers/SignatureHelpers.sol';
 
 contract MultiStateHubTest_Common is BaseTest {
     // Negatives
@@ -107,16 +108,20 @@ contract MultiStateHubTest_Common is BaseTest {
     }
 }
 
-contract MultiStateHubTest_PausedState is BaseTest {
-    function setUp() public override {
+contract MultiStateHubTest_PausedState_Direct is BaseTest {
+    function setUp() public virtual override {
         super.setUp();
 
         vm.prank(governance);
         _setState(DataTypes.ProtocolState.Paused);
     }
 
+    function _mockSetFollowModule() internal virtual {
+        return _setFollowModule(profileOwner, firstProfileId, address(0), '');
+    }
+
     // Negatives
-    function testCantTransferProfileWhilePaused() public {
+    function testCantTransferProfileWhilePaused() public virtual {
         vm.expectRevert(Errors.Paused.selector);
         _transferProfile({
             msgSender: profileOwner,
@@ -126,7 +131,7 @@ contract MultiStateHubTest_PausedState is BaseTest {
         });
     }
 
-    function testCantCreateProfileWhilePaused() public {
+    function testCantCreateProfileWhilePaused() public virtual {
         vm.expectRevert(Errors.Paused.selector);
         _createProfile(address(this));
 
@@ -138,11 +143,44 @@ contract MultiStateHubTest_PausedState is BaseTest {
 
     function testCantSetFollowModuleWhilePaused() public {
         vm.expectRevert(Errors.Paused.selector);
-        _setFollowModule(profileOwner, firstProfileId, address(0), '');
+        _mockSetFollowModule();
 
         vm.prank(governance);
         _setState(DataTypes.ProtocolState.Unpaused);
 
-        _setFollowModule(profileOwner, firstProfileId, address(0), '');
+        _mockSetFollowModule();
     }
+}
+
+contract MultiStateHubTest_PausedState_WithSig is MultiStateHubTest_PausedState_Direct, SigSetup {
+    function setUp() public override(MultiStateHubTest_PausedState_Direct, SigSetup) {
+        MultiStateHubTest_PausedState_Direct.setUp();
+        SigSetup.setUp();
+    }
+
+    function _mockSetFollowModule() internal override {
+        bytes32 digest = _getSetFollowModuleTypedDataHash(
+            firstProfileId,
+            address(0),
+            '',
+            nonce,
+            deadline
+        );
+
+        return
+            _setFollowModuleWithSig(
+                DataTypes.SetFollowModuleWithSigData({
+                    delegatedSigner: profileOwner,
+                    profileId: firstProfileId,
+                    followModule: address(0),
+                    followModuleInitData: '',
+                    sig: _getSigStruct(profileOwnerKey, digest, deadline)
+                })
+            );
+    }
+
+    // Methods that cannot be called with sig
+    function testCantTransferProfileWhilePaused() public override {}
+
+    function testCantCreateProfileWhilePaused() public override {}
 }

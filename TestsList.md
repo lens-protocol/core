@@ -65,9 +65,9 @@ Scenarios
 [X] Governance should set user as emergency admin, user should set protocol state to PublishingPaused, then Paused, then fail to set it to PublishingPaused
 Paused State
 Scenarios
-[ ] User should create a profile, governance should pause the hub, transferring the profile should fail
-[ ] Governance should pause the hub, profile creation should fail, then governance unpauses the hub and profile creation should work
-[ ] Governance should pause the hub, setting follow module should fail, then governance unpauses the hub and setting follow module should work
+[X] User should create a profile, governance should pause the hub, transferring the profile should fail
+[X] Governance should pause the hub, profile creation should fail, then governance unpauses the hub and profile creation should work
+[X] Governance should pause the hub, setting follow module should fail, then governance unpauses the hub and setting follow module should work
 [ ] Governance should pause the hub, setting follow module with sig should fail, then governance unpauses the hub and setting follow module with sig should work
 [ ] Governance should pause the hub, setting dispatcher should fail, then governance unpauses the hub and setting dispatcher should work
 [ ] Governance should pause the hub, setting dispatcher with sig should fail, then governance unpauses the hub and setting dispatcher with sig should work
