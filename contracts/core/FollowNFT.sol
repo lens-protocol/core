@@ -105,14 +105,7 @@ contract FollowNFT is HubRestricted, LensNFTBase, ERC2981CollectionRoyalties, IF
         } else if ((tokenOwner = _tokenData[followId].owner) != address(0)) {
             _followWithWrappedToken(follower, executor, followId, followerOwner, tokenOwner);
         } else if ((currentFollower = _followDataByFollowId[followId].follower) != 0) {
-            _followWithUnwrappedToken(
-                follower,
-                executor,
-                followId,
-                followerOwner,
-                tokenOwner,
-                currentFollower
-            );
+            _followWithUnwrappedToken(follower, executor, followId, followerOwner, currentFollower);
         } else if (_followDataByFollowId[followId].recoverableBy == follower) {
             _followMintingNewToken(follower, executor, followId, followerOwner);
         } else {
@@ -155,7 +148,7 @@ contract FollowNFT is HubRestricted, LensNFTBase, ERC2981CollectionRoyalties, IF
         if (
             followerOwner == tokenOwner ||
             executor == tokenOwner ||
-            _operatorApprovals[tokenOwner][executor] ||
+            isApprovedForAll(tokenOwner, executor) ||
             (approvedTetFollowerInToken = (_approvedSetFollowerInTokenByFollowId[followId] ==
                 executor))
         ) {
@@ -209,15 +202,14 @@ contract FollowNFT is HubRestricted, LensNFTBase, ERC2981CollectionRoyalties, IF
         address executor,
         uint256 followId,
         address followerOwner,
-        address tokenOwner,
         uint256 currentFollower
     ) internal {
         bool tokenApproved;
         address currentFollowerOwner = IERC721(HUB).ownerOf(currentFollower);
         if (
             currentFollowerOwner == executor ||
-            _operatorApprovals[tokenOwner][executor] ||
-            (tokenApproved = (_tokenApprovals[followId] == executor))
+            isApprovedForAll(currentFollowerOwner, executor) ||
+            (tokenApproved = (getApproved(followId) == executor))
         ) {
             // The executor is allowed to transfer the follow.
             if (tokenApproved) {
@@ -267,7 +259,7 @@ contract FollowNFT is HubRestricted, LensNFTBase, ERC2981CollectionRoyalties, IF
             unfollowerOwner != executor &&
             !ILensHub(HUB).isDelegatedExecutorApproved(unfollowerOwner, executor) &&
             tokenOwner != executor &&
-            !_operatorApprovals[tokenOwner][executor]
+            !isApprovedForAll(tokenOwner, executor)
         ) {
             revert DoesNotHavePermissions();
         }
@@ -424,7 +416,7 @@ contract FollowNFT is HubRestricted, LensNFTBase, ERC2981CollectionRoyalties, IF
         if (operator == owner) {
             revert Errors.ERC721Time_ApprovalToCurrentOwner();
         }
-        if (msg.sender != owner && !_operatorApprovals[owner][msg.sender]) {
+        if (msg.sender != owner && !isApprovedForAll(owner, msg.sender)) {
             revert Errors.ERC721Time_ApproveCallerNotOwnerOrApprovedForAll();
         }
         _tokenApprovals[followId] = operator;
@@ -433,6 +425,15 @@ contract FollowNFT is HubRestricted, LensNFTBase, ERC2981CollectionRoyalties, IF
             operator,
             followId
         );
+    }
+
+    function getApproved(uint256 followId)
+        public
+        view
+        override(ERC721Time, IERC721)
+        returns (address)
+    {
+        return _tokenApprovals[followId];
     }
 
     /// @inheritdoc IFollowNFT
