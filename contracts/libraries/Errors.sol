@@ -60,6 +60,7 @@ library Errors {
     error InvalidParameter();
     error ExecutorInvalid();
     error Blocked();
+    error NotFollowing();
 
     // Module Errors
     error InitParamsInvalid();

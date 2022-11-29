@@ -310,7 +310,7 @@ library MetaTxHelpers {
         );
     }
 
-    function baseFollowWithSig(address signer, DataTypes.FollowWithSigData calldata vars) internal {
+    function baseFollowWithSig(DataTypes.FollowWithSigData calldata vars) internal {
         uint256 dataLength = vars.datas.length;
         bytes32[] memory dataHashes = new bytes32[](dataLength);
         for (uint256 i = 0; i < dataLength; ) {
@@ -324,15 +324,34 @@ library MetaTxHelpers {
                 keccak256(
                     abi.encode(
                         FOLLOW_WITH_SIG_TYPEHASH,
+                        vars.follower,
                         keccak256(abi.encodePacked(vars.profileIds)),
                         keccak256(abi.encodePacked(vars.followIds)),
                         keccak256(abi.encodePacked(dataHashes)),
-                        _sigNonces(signer),
+                        _sigNonces(vars.delegatedSigner),
                         vars.sig.deadline
                     )
                 )
             ),
-            signer,
+            vars.delegatedSigner,
+            vars.sig
+        );
+    }
+
+    function baseUnfollowWithSig(DataTypes.UnfollowWithSigData calldata vars) internal {
+        _validateRecoveredAddress(
+            _calculateDigest(
+                keccak256(
+                    abi.encode(
+                        UNFOLLOW_WITH_SIG_TYPEHASH,
+                        vars.unfollower,
+                        keccak256(abi.encodePacked(vars.profileIds)),
+                        _sigNonces(vars.delegatedSigner),
+                        vars.sig.deadline
+                    )
+                )
+            ),
+            vars.delegatedSigner,
             vars.sig
         );
     }

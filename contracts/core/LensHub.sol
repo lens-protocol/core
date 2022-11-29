@@ -389,6 +389,24 @@ contract LensHub is LensNFTBase, VersionedInitializable, LensMultiState, LensHub
     }
 
     /// @inheritdoc ILensHub
+    function unfollow(uint256 unfollower, uint256[] calldata profileIds)
+        external
+        override
+        whenNotPaused
+    {
+        return GeneralLib.unfollow(unfollower, profileIds);
+    }
+
+    /// @inheritdoc ILensHub
+    function unfollowWithSig(DataTypes.UnfollowWithSigData calldata vars)
+        external
+        override
+        whenNotPaused
+    {
+        return GeneralLib.unfollowWithSig(vars);
+    }
+
+    /// @inheritdoc ILensHub
     function setBlockStatus(
         uint256 byProfile,
         uint256[] calldata profileIds,

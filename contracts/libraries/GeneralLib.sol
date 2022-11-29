@@ -162,11 +162,11 @@ library GeneralLib {
         uint256[] calldata followIds,
         bytes[] calldata followModuleDatas
     ) external returns (uint256[] memory) {
-        GeneralHelpers.validateCallerIsOwnerOrDelegatedExecutor(follower);
         return
             InteractionHelpers.follow(
                 follower,
                 msg.sender,
+                GeneralHelpers.ownerOf(follower),
                 profileIds,
                 followIds,
                 followModuleDatas
@@ -183,20 +183,42 @@ library GeneralLib {
         external
         returns (uint256[] memory)
     {
-        // Safe to use the `unsafeOwnerOf` as the signer can not be address zero
-        address followerOwner = GeneralHelpers.unsafeOwnerOf(vars.follower);
-        address signer = GeneralHelpers.getOriginatorOrDelegatedExecutorSigner(
-            followerOwner,
-            vars.delegatedSigner
-        );
-        MetaTxHelpers.baseFollowWithSig(signer, vars);
+        MetaTxHelpers.baseFollowWithSig(vars);
         return
             InteractionHelpers.follow(
                 vars.follower,
-                signer,
+                GeneralHelpers.ownerOf(vars.follower),
+                vars.delegatedSigner,
                 vars.profileIds,
                 vars.followIds,
                 vars.datas
+            );
+    }
+
+    function unfollow(uint256 unfollower, uint256[] calldata profileIds) external {
+        return
+            InteractionHelpers.unfollow(
+                unfollower,
+                GeneralHelpers.ownerOf(unfollower),
+                msg.sender,
+                profileIds
+            );
+    }
+
+    /**
+     * @notice Validates parameters and increments the nonce for a given owner using the
+     * `unfollowWithSig()` function.
+     *
+     * @param vars the UnfollowWithSigData struct containing the relevant parameters.
+     */
+    function unfollowWithSig(DataTypes.UnfollowWithSigData calldata vars) external {
+        MetaTxHelpers.baseUnfollowWithSig(vars);
+        return
+            InteractionHelpers.unfollow(
+                vars.unfollower,
+                GeneralHelpers.ownerOf(vars.unfollower),
+                vars.delegatedSigner,
+                vars.profileIds
             );
     }
 

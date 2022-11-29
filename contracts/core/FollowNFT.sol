@@ -400,16 +400,16 @@ contract FollowNFT is HubRestricted, LensNFTBase, ERC2981CollectionRoyalties, IF
         address followerOwner,
         address tokenOwner
     ) internal {
-        bool approvedTetFollowerInToken;
+        bool approvedSetFollowerInToken;
         if (
             followerOwner == tokenOwner ||
             executor == tokenOwner ||
             isApprovedForAll(tokenOwner, executor) ||
-            (approvedTetFollowerInToken = (_approvedSetFollowerInTokenByFollowId[followId] ==
+            (approvedSetFollowerInToken = (_approvedSetFollowerInTokenByFollowId[followId] ==
                 executor))
         ) {
             // The executor is allowed to write the follower in that wrapped token.
-            if (approvedTetFollowerInToken) {
+            if (approvedSetFollowerInToken) {
                 // The `_approvedSetFollowerInTokenByFollowId` was used, now needs to be cleared.
                 _approveSetFollowerInToken(address(0), followId);
             }

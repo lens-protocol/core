@@ -152,8 +152,16 @@ library GeneralHelpers {
             mstore(0, tokenId)
             mstore(32, TOKEN_DATA_MAPPING_SLOT)
             let slot := keccak256(0, 64)
-            // this weird bit shift is necessary to remove the packing from the variable.
+            // This bit shift is necessary to remove the packing from the variable.
             owner := shr(96, shl(96, sload(slot)))
+        }
+        return owner;
+    }
+
+    function ownerOf(uint256 tokenId) internal view returns (address) {
+        address owner = unsafeOwnerOf(tokenId);
+        if (owner == address(0)) {
+            revert Errors.TokenDoesNotExist();
         }
         return owner;
     }

@@ -314,6 +314,10 @@ interface ILensHub {
         external
         returns (uint256[] memory);
 
+    function unfollow(uint256 unfollower, uint256[] calldata profileIds) external;
+
+    function unfollowWithSig(DataTypes.UnfollowWithSigData calldata vars) external;
+
     function setBlockStatus(
         uint256 byProfile,
         uint256[] calldata profileIds,

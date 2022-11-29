@@ -34,6 +34,7 @@ library InteractionHelpers {
     function follow(
         uint256 follower,
         address executor,
+        address followerOwner,
         uint256[] calldata profileIds,
         uint256[] calldata followIds,
         bytes[] calldata followModuleDatas
@@ -44,19 +45,17 @@ library InteractionHelpers {
             revert Errors.ArrayMismatch();
         }
 
-        address followerOwner = GeneralHelpers.unsafeOwnerOf(follower);
-
         uint256[] memory followIdsAssigned = new uint256[](profileIds.length);
-
-        for (uint256 i = 0; i < profileIds.length; ) {
+        uint256 i;
+        while (i < profileIds.length) {
             _validateProfileExists(profileIds[i]);
 
             _validateNotBlocked(follower, profileIds[i]);
 
             followIdsAssigned[i] = _follow(
                 follower,
-                followerOwner,
                 executor,
+                followerOwner,
                 profileIds[i],
                 followIds[i],
                 followModuleDatas[i]
@@ -69,65 +68,36 @@ library InteractionHelpers {
         return followIdsAssigned;
     }
 
-    function _follow(
-        uint256 follower,
-        address followerOwner,
+    function unfollow(
+        uint256 unfollower,
         address executor,
-        uint256 profileId,
-        uint256 followId,
-        bytes calldata followModuleData
-    ) internal returns (uint256) {
-        uint256 followNFTSlot;
-        address followModule;
-        address followNFT;
+        address unfollowerOwner,
+        uint256[] calldata profileIds
+    ) internal {
+        uint256 i;
+        while (i < profileIds.length) {
+            uint256 profileId = profileIds[i];
+            _validateProfileExists(profileId);
 
-        // Load the follow NFT and follow module for the given profile being followed, and cache
-        // the follow NFT slot.
-        assembly {
-            mstore(0, profileId)
-            mstore(32, PROFILE_BY_ID_MAPPING_SLOT)
-            // The follow NFT offset is 2, the follow module offset is 1,
-            // so we just need to subtract 1 instead of recalculating the slot.
-            followNFTSlot := add(keccak256(0, 64), PROFILE_FOLLOW_NFT_OFFSET)
-            followModule := sload(sub(followNFTSlot, 1))
-            followNFT := sload(followNFTSlot)
-        }
-
-        if (followNFT == address(0)) {
-            followNFT = _deployFollowNFT(profileId);
-
-            // Store the follow NFT in the cached slot.
+            address followNFT;
+            // Load the Follow NFT for the profile being unfollowed.
             assembly {
-                sstore(followNFTSlot, followNFT)
+                mstore(0, profileId)
+                mstore(32, PROFILE_BY_ID_MAPPING_SLOT)
+                let followNFTSlot := add(keccak256(0, 64), PROFILE_FOLLOW_NFT_OFFSET)
+                followNFT := sload(followNFTSlot)
+            }
+
+            if (followNFT == address(0)) {
+                revert Errors.NotFollowing();
+            }
+
+            IFollowNFT(followNFT).unfollow(unfollower, executor, unfollowerOwner);
+
+            unchecked {
+                ++i;
             }
         }
-
-        uint256 followIdAssigned = IFollowNFT(followNFT).follow(
-            follower,
-            executor,
-            followerOwner,
-            followId
-        );
-
-        if (followModule != address(0)) {
-            IFollowModule(followModule).processFollow(
-                follower,
-                followId,
-                executor,
-                profileId,
-                followModuleData
-            );
-        }
-
-        emit Events.Followed(
-            follower,
-            profileId,
-            followIdAssigned,
-            followModuleData,
-            block.timestamp
-        );
-
-        return followIdAssigned;
     }
 
     function setBlockStatus(
@@ -284,24 +254,6 @@ library InteractionHelpers {
     }
 
     /**
-     * @notice Deploys the given profile's Follow NFT contract.
-     *
-     * @param profileId The token ID of the profile which Follow NFT should be deployed.
-     *
-     * @return address The address of the deployed Follow NFT contract.
-     */
-    function _deployFollowNFT(uint256 profileId) private returns (address) {
-        bytes memory functionData = abi.encodeWithSelector(
-            IFollowNFT.initialize.selector,
-            profileId
-        );
-        address followNFT = address(new FollowNFTProxy(functionData));
-        emit Events.FollowNFTDeployed(profileId, followNFT, block.timestamp);
-
-        return followNFT;
-    }
-
-    /**
      * @notice Deploys the given profile's Collect NFT contract.
      *
      * @param profileId The token ID of the profile which Collect NFT should be deployed.
@@ -359,6 +311,85 @@ library InteractionHelpers {
             data,
             block.timestamp
         );
+    }
+
+    function _follow(
+        uint256 follower,
+        address executor,
+        address followerOwner,
+        uint256 profileId,
+        uint256 followId,
+        bytes calldata followModuleData
+    ) internal returns (uint256) {
+        uint256 followNFTSlot;
+        address followModule;
+        address followNFT;
+
+        // Load the follow NFT and follow module for the given profile being followed, and cache
+        // the follow NFT slot.
+        assembly {
+            mstore(0, profileId)
+            mstore(32, PROFILE_BY_ID_MAPPING_SLOT)
+            // The follow NFT offset is 2, the follow module offset is 1,
+            // so we just need to subtract 1 instead of recalculating the slot.
+            followNFTSlot := add(keccak256(0, 64), PROFILE_FOLLOW_NFT_OFFSET)
+            followModule := sload(sub(followNFTSlot, 1))
+            followNFT := sload(followNFTSlot)
+        }
+
+        if (followNFT == address(0)) {
+            followNFT = _deployFollowNFT(profileId);
+
+            // Store the follow NFT in the cached slot.
+            assembly {
+                sstore(followNFTSlot, followNFT)
+            }
+        }
+
+        uint256 followIdAssigned = IFollowNFT(followNFT).follow(
+            follower,
+            executor,
+            followerOwner,
+            followId
+        );
+
+        if (followModule != address(0)) {
+            IFollowModule(followModule).processFollow(
+                follower,
+                followId,
+                executor,
+                profileId,
+                followModuleData
+            );
+        }
+
+        emit Events.Followed(
+            follower,
+            profileId,
+            followIdAssigned,
+            followModuleData,
+            block.timestamp
+        );
+
+        return followIdAssigned;
+    }
+
+    /**
+     * @notice Deploys the given profile's Follow NFT contract.
+     *
+     * @param profileId The token ID of the profile which Follow NFT should be deployed.
+     *
+     * @return address The address of the deployed Follow NFT contract.
+     */
+    function _deployFollowNFT(uint256 profileId) private returns (address) {
+        bytes memory functionData = abi.encodeWithSelector(
+            IFollowNFT.initialize.selector,
+            profileId
+        );
+        address followNFT = address(new FollowNFTProxy(functionData));
+        emit Events.FollowNFTDeployed(profileId, followNFT, block.timestamp);
+
+        return followNFT;
     }
 
     function _validateProfileExists(uint256 profileId) private view {

@@ -364,6 +364,13 @@ library DataTypes {
         EIP712Signature sig;
     }
 
+    struct UnfollowWithSigData {
+        address delegatedSigner;
+        uint256 unfollower;
+        uint256[] profileIds;
+        EIP712Signature sig;
+    }
+
     struct SetBlockStatusWithSigData {
         address delegatedSigner;
         uint256 byProfile;
