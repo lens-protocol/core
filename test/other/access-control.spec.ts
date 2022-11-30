@@ -39,7 +39,7 @@ import {
 } from '../__setup.spec';
 import { formatEther } from 'ethers/lib/utils';
 
-const fork = process.env.FORK;
+const fork = process.env.FORK == 'true' || process.env.FORK == 'True' || process.env.FORK == 'TRUE';
 
 /**
  * @dev Some of these tests may be redundant, but are still present to ensure an isolated environment,

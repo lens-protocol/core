@@ -778,4 +778,442 @@ makeSuiteCleanRoom('Publishing Comments', function () {
       });
     });
   });
+
+  // These tests are exactly same as Meta-tx above, but the profile owner is UserTwo,
+  // and dispatcher is set to TestWallet (so the dispatcher signs the Meta-Txs)
+  context('Meta-tx - Dispatcher as Signer', function () {
+    beforeEach(async function () {
+      await expect(
+        lensHub.connect(userTwo).createProfile({
+          to: userTwoAddress,
+          handle: MOCK_PROFILE_HANDLE,
+          imageURI: MOCK_PROFILE_URI,
+          followModule: ZERO_ADDRESS,
+          followModuleInitData: [],
+          followNFTURI: MOCK_FOLLOW_NFT_URI,
+        })
+      ).to.not.be.reverted;
+
+      await expect(
+        lensHub.connect(governance).whitelistCollectModule(freeCollectModule.address, true)
+      ).to.not.be.reverted;
+
+      await expect(
+        lensHub.connect(userTwo).post({
+          profileId: FIRST_PROFILE_ID,
+          contentURI: MOCK_URI,
+          collectModule: freeCollectModule.address,
+          collectModuleInitData: abiCoder.encode(['bool'], [true]),
+          referenceModule: ZERO_ADDRESS,
+          referenceModuleInitData: [],
+        })
+      ).to.not.be.reverted;
+
+      await expect(
+        lensHub.connect(userTwo).setDispatcher(FIRST_PROFILE_ID, testWallet.address)
+      ).to.not.be.reverted;
+    });
+
+    context('Negatives', function () {
+      it('Testwallet should fail to comment with sig with signature deadline mismatch', async function () {
+        const nonce = (await lensHub.sigNonces(testWallet.address)).toNumber();
+        const collectModuleInitData = abiCoder.encode(['bool'], [true]);
+        const referenceModuleInitData = [];
+        const referenceModuleData = [];
+
+        const { v, r, s } = await getCommentWithSigParts(
+          FIRST_PROFILE_ID,
+          MOCK_URI,
+          FIRST_PROFILE_ID,
+          '1',
+          referenceModuleData,
+          ZERO_ADDRESS,
+          collectModuleInitData,
+          ZERO_ADDRESS,
+          referenceModuleInitData,
+          nonce,
+          '0'
+        );
+
+        await expect(
+          lensHub.commentWithSig_Dispatcher({
+            profileId: FIRST_PROFILE_ID,
+            contentURI: MOCK_URI,
+            profileIdPointed: FIRST_PROFILE_ID,
+            pubIdPointed: '1',
+            referenceModuleData: referenceModuleData,
+            collectModule: ZERO_ADDRESS,
+            collectModuleInitData: collectModuleInitData,
+            referenceModule: ZERO_ADDRESS,
+            referenceModuleInitData: referenceModuleInitData,
+            sig: {
+              v,
+              r,
+              s,
+              deadline: MAX_UINT256,
+            },
+          })
+        ).to.be.revertedWith(ERRORS.SIGNATURE_INVALID);
+      });
+
+      it('Testwallet should fail to comment with sig with invalid deadline', async function () {
+        const nonce = (await lensHub.sigNonces(testWallet.address)).toNumber();
+        const collectModuleInitData = [];
+        const referenceModuleInitData = [];
+        const referenceModuleData = [];
+
+        const { v, r, s } = await getCommentWithSigParts(
+          FIRST_PROFILE_ID,
+          MOCK_URI,
+          FIRST_PROFILE_ID,
+          '1',
+          referenceModuleData,
+          ZERO_ADDRESS,
+          collectModuleInitData,
+          ZERO_ADDRESS,
+          referenceModuleInitData,
+          nonce,
+          '0'
+        );
+
+        await expect(
+          lensHub.commentWithSig_Dispatcher({
+            profileId: FIRST_PROFILE_ID,
+            contentURI: MOCK_URI,
+            profileIdPointed: FIRST_PROFILE_ID,
+            pubIdPointed: '1',
+            referenceModuleData: referenceModuleData,
+            collectModule: ZERO_ADDRESS,
+            collectModuleInitData: collectModuleInitData,
+            referenceModule: ZERO_ADDRESS,
+            referenceModuleInitData: referenceModuleInitData,
+            sig: {
+              v,
+              r,
+              s,
+              deadline: '0',
+            },
+          })
+        ).to.be.revertedWith(ERRORS.SIGNATURE_EXPIRED);
+      });
+
+      it('Testwallet should fail to comment with sig with invalid nonce', async function () {
+        const nonce = (await lensHub.sigNonces(testWallet.address)).toNumber();
+        const collectModuleInitData = [];
+        const referenceModuleInitData = [];
+        const referenceModuleData = [];
+
+        const { v, r, s } = await getCommentWithSigParts(
+          FIRST_PROFILE_ID,
+          MOCK_URI,
+          FIRST_PROFILE_ID,
+          '1',
+          referenceModuleData,
+          ZERO_ADDRESS,
+          collectModuleInitData,
+          ZERO_ADDRESS,
+          referenceModuleInitData,
+          nonce + 1,
+          MAX_UINT256
+        );
+
+        await expect(
+          lensHub.commentWithSig_Dispatcher({
+            profileId: FIRST_PROFILE_ID,
+            contentURI: MOCK_URI,
+            profileIdPointed: FIRST_PROFILE_ID,
+            pubIdPointed: '1',
+            referenceModuleData: referenceModuleData,
+            collectModule: ZERO_ADDRESS,
+            collectModuleInitData: collectModuleInitData,
+            referenceModule: ZERO_ADDRESS,
+            referenceModuleInitData: referenceModuleInitData,
+            sig: {
+              v,
+              r,
+              s,
+              deadline: MAX_UINT256,
+            },
+          })
+        ).to.be.revertedWith(ERRORS.SIGNATURE_INVALID);
+      });
+
+      it('Testwallet should fail to comment with sig with unwhitelisted collect module', async function () {
+        const nonce = (await lensHub.sigNonces(testWallet.address)).toNumber();
+        const collectModuleInitData = [];
+        const referenceModuleInitData = [];
+        const referenceModuleData = [];
+
+        const { v, r, s } = await getCommentWithSigParts(
+          FIRST_PROFILE_ID,
+          MOCK_URI,
+          FIRST_PROFILE_ID,
+          '1',
+          referenceModuleData,
+          userAddress,
+          collectModuleInitData,
+          ZERO_ADDRESS,
+          referenceModuleInitData,
+          nonce,
+          MAX_UINT256
+        );
+
+        await expect(
+          lensHub.commentWithSig_Dispatcher({
+            profileId: FIRST_PROFILE_ID,
+            contentURI: MOCK_URI,
+            profileIdPointed: FIRST_PROFILE_ID,
+            pubIdPointed: '1',
+            referenceModuleData: referenceModuleData,
+            collectModule: userAddress,
+            collectModuleInitData: collectModuleInitData,
+            referenceModule: ZERO_ADDRESS,
+            referenceModuleInitData: referenceModuleInitData,
+            sig: {
+              v,
+              r,
+              s,
+              deadline: MAX_UINT256,
+            },
+          })
+        ).to.be.revertedWith(ERRORS.COLLECT_MODULE_NOT_WHITELISTED);
+      });
+
+      it('TestWallet should fail to comment with sig with unwhitelisted reference module', async function () {
+        await expect(
+          lensHub.connect(governance).whitelistCollectModule(freeCollectModule.address, true)
+        ).to.not.be.reverted;
+
+        const nonce = (await lensHub.sigNonces(testWallet.address)).toNumber();
+        const collectModuleInitData = abiCoder.encode(['bool'], [true]);
+        const referenceModuleInitData = [];
+        const referenceModuleData = [];
+
+        const { v, r, s } = await getCommentWithSigParts(
+          FIRST_PROFILE_ID,
+          MOCK_URI,
+          FIRST_PROFILE_ID,
+          '1',
+          referenceModuleData,
+          freeCollectModule.address,
+          collectModuleInitData,
+          mockReferenceModule.address,
+          referenceModuleInitData,
+          nonce,
+          MAX_UINT256
+        );
+
+        await expect(
+          lensHub.commentWithSig_Dispatcher({
+            profileId: FIRST_PROFILE_ID,
+            contentURI: MOCK_URI,
+            profileIdPointed: FIRST_PROFILE_ID,
+            pubIdPointed: '1',
+            referenceModuleData,
+            collectModule: freeCollectModule.address,
+            collectModuleInitData: collectModuleInitData,
+            referenceModule: mockReferenceModule.address,
+            referenceModuleInitData: referenceModuleInitData,
+            sig: {
+              v,
+              r,
+              s,
+              deadline: MAX_UINT256,
+            },
+          })
+        ).to.be.revertedWith(ERRORS.REFERENCE_MODULE_NOT_WHITELISTED);
+      });
+
+      it('TestWallet should fail to comment with sig on a publication that does not exist', async function () {
+        await expect(
+          lensHub.connect(governance).whitelistCollectModule(freeCollectModule.address, true)
+        ).to.not.be.reverted;
+
+        const nonce = (await lensHub.sigNonces(testWallet.address)).toNumber();
+        const collectModuleInitData = abiCoder.encode(['bool'], [true]);
+        const referenceModuleInitData = [];
+        const referenceModuleData = [];
+
+        const { v, r, s } = await getCommentWithSigParts(
+          FIRST_PROFILE_ID,
+          OTHER_MOCK_URI,
+          FIRST_PROFILE_ID,
+          '3',
+          referenceModuleData,
+          freeCollectModule.address,
+          collectModuleInitData,
+          ZERO_ADDRESS,
+          referenceModuleInitData,
+          nonce,
+          MAX_UINT256
+        );
+
+        await expect(
+          lensHub.commentWithSig_Dispatcher({
+            profileId: FIRST_PROFILE_ID,
+            contentURI: OTHER_MOCK_URI,
+            profileIdPointed: FIRST_PROFILE_ID,
+            pubIdPointed: '3',
+            referenceModuleData: referenceModuleData,
+            collectModule: freeCollectModule.address,
+            collectModuleInitData: collectModuleInitData,
+            referenceModule: ZERO_ADDRESS,
+            referenceModuleInitData: referenceModuleInitData,
+            sig: {
+              v,
+              r,
+              s,
+              deadline: MAX_UINT256,
+            },
+          })
+        ).to.be.revertedWith(ERRORS.PUBLICATION_DOES_NOT_EXIST);
+      });
+
+      it('TestWallet should fail to comment with sig on the comment they are creating (commentCeption)', async function () {
+        await expect(
+          lensHub.connect(governance).whitelistCollectModule(freeCollectModule.address, true)
+        ).to.not.be.reverted;
+
+        const nonce = (await lensHub.sigNonces(testWallet.address)).toNumber();
+        const collectModuleInitData = [];
+        const referenceModuleInitData = [];
+        const referenceModuleData = [];
+        const { v, r, s } = await getCommentWithSigParts(
+          FIRST_PROFILE_ID,
+          OTHER_MOCK_URI,
+          FIRST_PROFILE_ID,
+          '2',
+          referenceModuleData,
+          freeCollectModule.address,
+          collectModuleInitData,
+          ZERO_ADDRESS,
+          referenceModuleInitData,
+          nonce,
+          MAX_UINT256
+        );
+
+        await expect(
+          lensHub.commentWithSig_Dispatcher({
+            profileId: FIRST_PROFILE_ID,
+            contentURI: OTHER_MOCK_URI,
+            profileIdPointed: FIRST_PROFILE_ID,
+            pubIdPointed: '2',
+            referenceModuleData: referenceModuleData,
+            collectModule: freeCollectModule.address,
+            collectModuleInitData: collectModuleInitData,
+            referenceModule: ZERO_ADDRESS,
+            referenceModuleInitData: referenceModuleInitData,
+            sig: {
+              v,
+              r,
+              s,
+              deadline: MAX_UINT256,
+            },
+          })
+        ).to.be.revertedWith(ERRORS.CANNOT_COMMENT_ON_SELF);
+      });
+
+      it('TestWallet should sign attempt to comment with sig, cancel via empty permitForAll, then fail to comment with sig', async function () {
+        await expect(
+          lensHub.connect(governance).whitelistCollectModule(freeCollectModule.address, true)
+        ).to.not.be.reverted;
+
+        const nonce = (await lensHub.sigNonces(testWallet.address)).toNumber();
+        const collectModuleInitData = abiCoder.encode(['bool'], [true]);
+        const referenceModuleInitData = [];
+        const referenceModuleData = [];
+
+        const { v, r, s } = await getCommentWithSigParts(
+          FIRST_PROFILE_ID,
+          OTHER_MOCK_URI,
+          FIRST_PROFILE_ID,
+          '1',
+          referenceModuleData,
+          freeCollectModule.address,
+          collectModuleInitData,
+          ZERO_ADDRESS,
+          referenceModuleInitData,
+          nonce,
+          MAX_UINT256
+        );
+
+        await cancelWithPermitForAll();
+
+        await expect(
+          lensHub.commentWithSig_Dispatcher({
+            profileId: FIRST_PROFILE_ID,
+            contentURI: OTHER_MOCK_URI,
+            profileIdPointed: FIRST_PROFILE_ID,
+            pubIdPointed: '1',
+            referenceModuleData: referenceModuleData,
+            collectModule: freeCollectModule.address,
+            collectModuleInitData: collectModuleInitData,
+            referenceModule: ZERO_ADDRESS,
+            referenceModuleInitData: referenceModuleInitData,
+            sig: {
+              v,
+              r,
+              s,
+              deadline: MAX_UINT256,
+            },
+          })
+        ).to.be.revertedWith(ERRORS.SIGNATURE_INVALID);
+      });
+    });
+
+    context('Scenarios', function () {
+      it('TestWallet should comment with sig, fetched comment data should be accurate', async function () {
+        await expect(
+          lensHub.connect(governance).whitelistCollectModule(freeCollectModule.address, true)
+        ).to.not.be.reverted;
+
+        const nonce = (await lensHub.sigNonces(testWallet.address)).toNumber();
+        const collectModuleInitData = abiCoder.encode(['bool'], [true]);
+        const referenceModuleInitData = [];
+        const referenceModuleData = [];
+
+        const { v, r, s } = await getCommentWithSigParts(
+          FIRST_PROFILE_ID,
+          OTHER_MOCK_URI,
+          FIRST_PROFILE_ID,
+          '1',
+          referenceModuleData,
+          freeCollectModule.address,
+          collectModuleInitData,
+          ZERO_ADDRESS,
+          referenceModuleInitData,
+          nonce,
+          MAX_UINT256
+        );
+
+        await expect(
+          lensHub.commentWithSig_Dispatcher({
+            profileId: FIRST_PROFILE_ID,
+            contentURI: OTHER_MOCK_URI,
+            profileIdPointed: FIRST_PROFILE_ID,
+            pubIdPointed: '1',
+            referenceModuleData: referenceModuleData,
+            collectModule: freeCollectModule.address,
+            collectModuleInitData: collectModuleInitData,
+            referenceModule: ZERO_ADDRESS,
+            referenceModuleInitData: referenceModuleInitData,
+            sig: {
+              v,
+              r,
+              s,
+              deadline: MAX_UINT256,
+            },
+          })
+        ).to.not.be.reverted;
+
+        const pub = await lensHub.getPub(FIRST_PROFILE_ID, 2);
+        expect(pub.profileIdPointed).to.eq(FIRST_PROFILE_ID);
+        expect(pub.pubIdPointed).to.eq(1);
+        expect(pub.contentURI).to.eq(OTHER_MOCK_URI);
+        expect(pub.collectModule).to.eq(freeCollectModule.address);
+        expect(pub.collectNFT).to.eq(ZERO_ADDRESS);
+        expect(pub.referenceModule).to.eq(ZERO_ADDRESS);
+      });
+    });
+  });
 });

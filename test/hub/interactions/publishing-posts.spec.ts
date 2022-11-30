@@ -563,4 +563,300 @@ makeSuiteCleanRoom('Publishing Posts', function () {
       });
     });
   });
+
+  // These tests are exactly same as Meta-tx above, but the profile owner is UserTwo,
+  // and dispatcher is set to TestWallet (so the dispatcher signs the Meta-Txs)
+  context('Meta-tx - Dispatcher as Signer', function () {
+    beforeEach(async function () {
+      await expect(
+        lensHub.connect(userTwo).createProfile({
+          to: userTwoAddress,
+          handle: MOCK_PROFILE_HANDLE,
+          imageURI: MOCK_PROFILE_URI,
+          followModule: ZERO_ADDRESS,
+          followModuleInitData: [],
+          followNFTURI: MOCK_FOLLOW_NFT_URI,
+        })
+      ).to.not.be.reverted;
+      await expect(
+        lensHub.connect(userTwo).setDispatcher(FIRST_PROFILE_ID, testWallet.address)
+      ).to.not.be.reverted;
+    });
+
+    context('Negatives', function () {
+      it('Testwallet should fail to post with sig with signature deadline mismatch', async function () {
+        await expect(
+          lensHub.connect(governance).whitelistCollectModule(freeCollectModule.address, true)
+        ).to.not.be.reverted;
+
+        const nonce = (await lensHub.sigNonces(testWallet.address)).toNumber();
+        const collectModuleInitData = [];
+        const referenceModuleInitData = [];
+        const referenceModuleData = [];
+        const { v, r, s } = await getPostWithSigParts(
+          FIRST_PROFILE_ID,
+          MOCK_URI,
+          ZERO_ADDRESS,
+          collectModuleInitData,
+          ZERO_ADDRESS,
+          referenceModuleInitData,
+          nonce,
+          '0'
+        );
+
+        await expect(
+          lensHub.postWithSig({
+            profileId: FIRST_PROFILE_ID,
+            contentURI: MOCK_URI,
+            collectModule: ZERO_ADDRESS,
+            collectModuleInitData: collectModuleInitData,
+            referenceModule: ZERO_ADDRESS,
+            referenceModuleInitData: referenceModuleInitData,
+            sig: {
+              v,
+              r,
+              s,
+              deadline: MAX_UINT256,
+            },
+          })
+        ).to.be.revertedWith(ERRORS.SIGNATURE_INVALID);
+      });
+
+      it('Testwallet should fail to post with sig with invalid deadline', async function () {
+        await expect(
+          lensHub.connect(governance).whitelistCollectModule(freeCollectModule.address, true)
+        ).to.not.be.reverted;
+
+        const nonce = (await lensHub.sigNonces(testWallet.address)).toNumber();
+        const collectModuleInitData = [];
+        const referenceModuleInitData = [];
+        const referenceModuleData = [];
+        const { v, r, s } = await getPostWithSigParts(
+          FIRST_PROFILE_ID,
+          MOCK_URI,
+          ZERO_ADDRESS,
+          collectModuleInitData,
+          ZERO_ADDRESS,
+          referenceModuleInitData,
+          nonce,
+          '0'
+        );
+
+        await expect(
+          lensHub.postWithSig_Dispatcher({
+            profileId: FIRST_PROFILE_ID,
+            contentURI: MOCK_URI,
+            collectModule: ZERO_ADDRESS,
+            collectModuleInitData: collectModuleInitData,
+            referenceModule: ZERO_ADDRESS,
+            referenceModuleInitData: referenceModuleInitData,
+            sig: {
+              v,
+              r,
+              s,
+              deadline: '0',
+            },
+          })
+        ).to.be.revertedWith(ERRORS.SIGNATURE_EXPIRED);
+      });
+
+      it('Testwallet should fail to post with sig with invalid nonce', async function () {
+        await expect(
+          lensHub.connect(governance).whitelistCollectModule(freeCollectModule.address, true)
+        ).to.not.be.reverted;
+
+        const nonce = (await lensHub.sigNonces(testWallet.address)).toNumber();
+        const collectModuleInitData = [];
+        const referenceModuleInitData = [];
+        const referenceModuleData = [];
+        const { v, r, s } = await getPostWithSigParts(
+          FIRST_PROFILE_ID,
+          MOCK_URI,
+          ZERO_ADDRESS,
+          collectModuleInitData,
+          ZERO_ADDRESS,
+          referenceModuleInitData,
+          nonce + 1,
+          MAX_UINT256
+        );
+
+        await expect(
+          lensHub.postWithSig_Dispatcher({
+            profileId: FIRST_PROFILE_ID,
+            contentURI: MOCK_URI,
+            collectModule: ZERO_ADDRESS,
+            collectModuleInitData: collectModuleInitData,
+            referenceModule: ZERO_ADDRESS,
+            referenceModuleInitData: referenceModuleInitData,
+            sig: {
+              v,
+              r,
+              s,
+              deadline: MAX_UINT256,
+            },
+          })
+        ).to.be.revertedWith(ERRORS.SIGNATURE_INVALID);
+      });
+
+      it('Testwallet should fail to post with sig with an unwhitelisted collect module', async function () {
+        const nonce = (await lensHub.sigNonces(testWallet.address)).toNumber();
+        const collectModuleInitData = [];
+        const referenceModuleInitData = [];
+        const referenceModuleData = [];
+        const { v, r, s } = await getPostWithSigParts(
+          FIRST_PROFILE_ID,
+          MOCK_URI,
+          userAddress,
+          collectModuleInitData,
+          ZERO_ADDRESS,
+          referenceModuleInitData,
+          nonce,
+          MAX_UINT256
+        );
+
+        await expect(
+          lensHub.postWithSig_Dispatcher({
+            profileId: FIRST_PROFILE_ID,
+            contentURI: MOCK_URI,
+            collectModule: userAddress,
+            collectModuleInitData: collectModuleInitData,
+            referenceModule: ZERO_ADDRESS,
+            referenceModuleInitData: referenceModuleInitData,
+            sig: {
+              v,
+              r,
+              s,
+              deadline: MAX_UINT256,
+            },
+          })
+        ).to.be.revertedWith(ERRORS.COLLECT_MODULE_NOT_WHITELISTED);
+      });
+
+      it('Testwallet should fail to post with sig with an unwhitelisted reference module', async function () {
+        await expect(
+          lensHub.connect(governance).whitelistCollectModule(freeCollectModule.address, true)
+        ).to.not.be.reverted;
+
+        const nonce = (await lensHub.sigNonces(testWallet.address)).toNumber();
+        const collectModuleInitData = abiCoder.encode(['bool'], [true]);
+        const referenceModuleInitData = [];
+        const referenceModuleData = [];
+        const { v, r, s } = await getPostWithSigParts(
+          FIRST_PROFILE_ID,
+          MOCK_URI,
+          freeCollectModule.address,
+          collectModuleInitData,
+          userAddress,
+          referenceModuleInitData,
+          nonce,
+          MAX_UINT256
+        );
+
+        await expect(
+          lensHub.postWithSig_Dispatcher({
+            profileId: FIRST_PROFILE_ID,
+            contentURI: MOCK_URI,
+            collectModule: freeCollectModule.address,
+            collectModuleInitData: collectModuleInitData,
+            referenceModule: userAddress,
+            referenceModuleInitData: referenceModuleInitData,
+            sig: {
+              v,
+              r,
+              s,
+              deadline: MAX_UINT256,
+            },
+          })
+        ).to.be.revertedWith(ERRORS.REFERENCE_MODULE_NOT_WHITELISTED);
+      });
+
+      it('TestWallet should sign attempt to post with sig, cancel via empty permitForAll, then fail to post with sig', async function () {
+        await expect(
+          lensHub.connect(governance).whitelistCollectModule(freeCollectModule.address, true)
+        ).to.not.be.reverted;
+
+        const nonce = (await lensHub.sigNonces(testWallet.address)).toNumber();
+        const collectModuleInitData = abiCoder.encode(['bool'], [true]);
+        const referenceModuleInitData = [];
+        const referenceModuleData = [];
+        const { v, r, s } = await getPostWithSigParts(
+          FIRST_PROFILE_ID,
+          MOCK_URI,
+          freeCollectModule.address,
+          collectModuleInitData,
+          ZERO_ADDRESS,
+          referenceModuleInitData,
+          nonce,
+          MAX_UINT256
+        );
+
+        await cancelWithPermitForAll();
+
+        await expect(
+          lensHub.postWithSig_Dispatcher({
+            profileId: FIRST_PROFILE_ID,
+            contentURI: MOCK_URI,
+            collectModule: freeCollectModule.address,
+            collectModuleInitData: collectModuleInitData,
+            referenceModule: ZERO_ADDRESS,
+            referenceModuleInitData: referenceModuleInitData,
+            sig: {
+              v,
+              r,
+              s,
+              deadline: MAX_UINT256,
+            },
+          })
+        ).to.be.revertedWith(ERRORS.SIGNATURE_INVALID);
+      });
+    });
+
+    context('Scenarios', function () {
+      it('TestWallet should post with sig, fetched post data should be accurate', async function () {
+        await expect(
+          lensHub.connect(governance).whitelistCollectModule(freeCollectModule.address, true)
+        ).to.not.be.reverted;
+
+        const nonce = (await lensHub.sigNonces(testWallet.address)).toNumber();
+        const collectModuleInitData = abiCoder.encode(['bool'], [true]);
+        const referenceModuleInitData = [];
+        const referenceModuleData = [];
+        const { v, r, s } = await getPostWithSigParts(
+          FIRST_PROFILE_ID,
+          MOCK_URI,
+          freeCollectModule.address,
+          collectModuleInitData,
+          ZERO_ADDRESS,
+          referenceModuleInitData,
+          nonce,
+          MAX_UINT256
+        );
+
+        await expect(
+          lensHub.postWithSig_Dispatcher({
+            profileId: FIRST_PROFILE_ID,
+            contentURI: MOCK_URI,
+            collectModule: freeCollectModule.address,
+            collectModuleInitData: collectModuleInitData,
+            referenceModule: ZERO_ADDRESS,
+            referenceModuleInitData: referenceModuleInitData,
+            sig: {
+              v,
+              r,
+              s,
+              deadline: MAX_UINT256,
+            },
+          })
+        ).to.not.be.reverted;
+
+        const pub = await lensHub.getPub(FIRST_PROFILE_ID, 1);
+        expect(pub.profileIdPointed).to.eq(0);
+        expect(pub.pubIdPointed).to.eq(0);
+        expect(pub.contentURI).to.eq(MOCK_URI);
+        expect(pub.collectModule).to.eq(freeCollectModule.address);
+        expect(pub.collectNFT).to.eq(ZERO_ADDRESS);
+        expect(pub.referenceModule).to.eq(ZERO_ADDRESS);
+      });
+    });
+  });
 });

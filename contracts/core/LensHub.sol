@@ -409,6 +409,53 @@ contract LensHub is LensNFTBase, VersionedInitializable, LensMultiState, LensHub
             );
     }
 
+    /**
+     * @notice Publishes a post to a given profile via signature of a Dispatcher with the specified parameters.
+     *
+     * @param vars A PostWithSigData struct containing the regular parameters and an EIP712Signature struct.
+     *
+     * @return uint256 An integer representing the post's publication ID.
+     */
+    function postWithSig_Dispatcher(DataTypes.PostWithSigData calldata vars)
+        external
+        whenPublishingEnabled
+        returns (uint256)
+    {
+        address dispatcher = _dispatcherByProfile[vars.profileId];
+        if (dispatcher == address(0)) revert Errors.DispatcherNotSet();
+
+        unchecked {
+            _validateRecoveredAddress(
+                _calculateDigest(
+                    keccak256(
+                        abi.encode(
+                            POST_WITH_SIG_TYPEHASH,
+                            vars.profileId,
+                            keccak256(bytes(vars.contentURI)),
+                            vars.collectModule,
+                            keccak256(vars.collectModuleInitData),
+                            vars.referenceModule,
+                            keccak256(vars.referenceModuleInitData),
+                            sigNonces[dispatcher]++,
+                            vars.sig.deadline
+                        )
+                    )
+                ),
+                dispatcher,
+                vars.sig
+            );
+        }
+        return
+            _createPost(
+                vars.profileId,
+                vars.contentURI,
+                vars.collectModule,
+                vars.collectModuleInitData,
+                vars.referenceModule,
+                vars.referenceModuleInitData
+            );
+    }
+
     /// @inheritdoc ILensHub
     function comment(DataTypes.CommentData calldata vars)
         external
@@ -468,6 +515,61 @@ contract LensHub is LensNFTBase, VersionedInitializable, LensMultiState, LensHub
             );
     }
 
+    /**
+     * @notice Publishes a comment to a given profile via signature of Dispatcher with the specified parameters.
+     *
+     * @param vars A CommentWithSigData struct containing the regular parameters and an EIP712Signature struct.
+     *
+     * @return uint256 An integer representing the comment's publication ID.
+     */
+    function commentWithSig_Dispatcher(DataTypes.CommentWithSigData calldata vars)
+        external
+        whenPublishingEnabled
+        returns (uint256)
+    {
+        address dispatcher = _dispatcherByProfile[vars.profileId];
+        if (dispatcher == address(0)) revert Errors.DispatcherNotSet();
+
+        unchecked {
+            _validateRecoveredAddress(
+                _calculateDigest(
+                    keccak256(
+                        abi.encode(
+                            COMMENT_WITH_SIG_TYPEHASH,
+                            vars.profileId,
+                            keccak256(bytes(vars.contentURI)),
+                            vars.profileIdPointed,
+                            vars.pubIdPointed,
+                            keccak256(vars.referenceModuleData),
+                            vars.collectModule,
+                            keccak256(vars.collectModuleInitData),
+                            vars.referenceModule,
+                            keccak256(vars.referenceModuleInitData),
+                            sigNonces[dispatcher]++,
+                            vars.sig.deadline
+                        )
+                    )
+                ),
+                dispatcher,
+                vars.sig
+            );
+        }
+        return
+            _createComment(
+                DataTypes.CommentData(
+                    vars.profileId,
+                    vars.contentURI,
+                    vars.profileIdPointed,
+                    vars.pubIdPointed,
+                    vars.referenceModuleData,
+                    vars.collectModule,
+                    vars.collectModuleInitData,
+                    vars.referenceModule,
+                    vars.referenceModuleInitData
+                )
+            );
+    }
+
     /// @inheritdoc ILensHub
     function mirror(DataTypes.MirrorData calldata vars)
         external
@@ -505,6 +607,55 @@ contract LensHub is LensNFTBase, VersionedInitializable, LensMultiState, LensHub
                     )
                 ),
                 owner,
+                vars.sig
+            );
+        }
+        return
+            _createMirror(
+                DataTypes.MirrorData(
+                    vars.profileId,
+                    vars.profileIdPointed,
+                    vars.pubIdPointed,
+                    vars.referenceModuleData,
+                    vars.referenceModule,
+                    vars.referenceModuleInitData
+                )
+            );
+    }
+
+    /**
+     * @notice Publishes a mirror to a given profile via signature of Dispatcher with the specified parameters.
+     *
+     * @param vars A MirrorWithSigData struct containing the regular parameters and an EIP712Signature struct.
+     *
+     * @return uint256 An integer representing the mirror's publication ID.
+     */
+    function mirrorWithSig_Dispatcher(DataTypes.MirrorWithSigData calldata vars)
+        external
+        whenPublishingEnabled
+        returns (uint256)
+    {
+        address dispatcher = _dispatcherByProfile[vars.profileId];
+        if (dispatcher == address(0)) revert Errors.DispatcherNotSet();
+
+        unchecked {
+            _validateRecoveredAddress(
+                _calculateDigest(
+                    keccak256(
+                        abi.encode(
+                            MIRROR_WITH_SIG_TYPEHASH,
+                            vars.profileId,
+                            vars.profileIdPointed,
+                            vars.pubIdPointed,
+                            keccak256(vars.referenceModuleData),
+                            vars.referenceModule,
+                            keccak256(vars.referenceModuleInitData),
+                            sigNonces[dispatcher]++,
+                            vars.sig.deadline
+                        )
+                    )
+                ),
+                dispatcher,
                 vars.sig
             );
         }

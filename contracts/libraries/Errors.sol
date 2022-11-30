@@ -35,6 +35,7 @@ library Errors {
     error CannotCommentOnSelf();
     error NotWhitelisted();
     error InvalidParameter();
+    error DispatcherNotSet();
 
     // Module Errors
     error InitParamsInvalid();
