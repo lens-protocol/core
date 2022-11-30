@@ -15,6 +15,8 @@ contract SigSetup {
     }
 }
 
+// TODO add check for _initialize() called for fork tests - check name and symbol set
+
 contract CollectingTest_Base is BaseTest, SignatureHelpers, CollectingHelpers, SigSetup {
     function _mockCollect() internal virtual returns (uint256) {
         return
@@ -65,12 +67,12 @@ contract CollectingTest_Generic is CollectingTest_Base {
 
     // NEGATIVES
 
-    function testCollectFailsIfNotExecutor() public {
+    function testCannotCollectIfNotExecutor() public {
         vm.expectRevert(Errors.ExecutorInvalid.selector);
         _mockCollect();
     }
 
-    function testCollectFailsIfNonexistantPub() public {
+    function testCannotCollectIfNonexistantPub() public {
         mockCollectData.pubId = 2;
         // Check that the publication doesn't exist.
         assertEq(_getPub(mockCollectData.profileId, mockCollectData.pubId).profileIdPointed, 0);
@@ -81,7 +83,7 @@ contract CollectingTest_Generic is CollectingTest_Base {
         vm.stopPrank();
     }
 
-    function testCollectFailsIfZeroPub() public {
+    function testCannotCollectIfZeroPub() public {
         mockCollectData.pubId = 0;
         // Check that the publication doesn't exist.
         assertEq(_getPub(mockCollectData.profileId, mockCollectData.pubId).profileIdPointed, 0);
@@ -155,12 +157,12 @@ contract CollectingTest_WithSig is CollectingTest_Base {
 
     // NEGATIVES
 
-    function testCollectFailsWithSigIfNotExecutor() public {
+    function testCannotCollectWithSigIfNotExecutor() public {
         vm.expectRevert(Errors.ExecutorInvalid.selector);
         _mockCollectWithSig({delegatedSigner: otherSigner, signerPrivKey: otherSignerKey});
     }
 
-    function testCollectFailsWithSigIfNonexistantPub() public {
+    function testCannotCollectWithSigIfNonexistantPub() public {
         mockCollectData.pubId = 2;
         // Check that the publication doesn't exist.
         assertEq(_getPub(mockCollectData.profileId, mockCollectData.pubId).profileIdPointed, 0);
@@ -169,7 +171,7 @@ contract CollectingTest_WithSig is CollectingTest_Base {
         _mockCollectWithSig({delegatedSigner: address(0), signerPrivKey: profileOwnerKey});
     }
 
-    function testCollectFailsWithSigIfZeroPub() public {
+    function testCannotCollectWithSigIfZeroPub() public {
         mockCollectData.pubId = 0;
         // Check that the publication doesn't exist.
         assertEq(_getPub(mockCollectData.profileId, mockCollectData.pubId).profileIdPointed, 0);
@@ -178,13 +180,13 @@ contract CollectingTest_WithSig is CollectingTest_Base {
         _mockCollectWithSig({delegatedSigner: address(0), signerPrivKey: profileOwnerKey});
     }
 
-    function testCollectFailsWithSigOnExpiredDeadline() public {
+    function testCannotCollectWithSigOnExpiredDeadline() public {
         deadline = block.timestamp - 1;
         vm.expectRevert(Errors.SignatureExpired.selector);
         _mockCollectWithSig({delegatedSigner: address(0), signerPrivKey: profileOwnerKey});
     }
 
-    function testCollectFailsWithSigOnInvalidNonce() public {
+    function testCannotCollectWithSigOnInvalidNonce() public {
         nonce = 5;
         vm.expectRevert(Errors.SignatureInvalid.selector);
         _mockCollectWithSig({delegatedSigner: address(0), signerPrivKey: profileOwnerKey});

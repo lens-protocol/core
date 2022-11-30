@@ -13,6 +13,8 @@ contract CollectingHelpers is TestSetup {
     function _checkCollectNFTBefore() internal {
         // collect NFT doesn't exist yet
         assertEq(hub.getCollectNFT(mockCollectData.profileId, mockCollectData.pubId), address(0));
+
+        // TODO return nft id here, then can be used in function below for expected
     }
 
     function _checkCollectNFTAfter(uint256 nftId) internal {
@@ -20,6 +22,8 @@ contract CollectingHelpers is TestSetup {
             hub.getCollectNFT(mockCollectData.profileId, mockCollectData.pubId)
         );
 
+        // TODO check nftId against expected nftId (passed as param)
+        // assertEq(nftId, mockCollectData.pubId);
         assertEq(_collectNftAfter.ownerOf(mockCollectData.pubId), mockCollectData.collector);
         assertEq(_collectNftAfter.name(), _expectedName());
         assertEq(_collectNftAfter.symbol(), _expectedSymbol());
