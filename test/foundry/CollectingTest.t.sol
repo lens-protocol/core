@@ -97,28 +97,28 @@ contract CollectingTest_Generic is CollectingTest_Base {
     // SCENARIOS
 
     function testCollect() public {
-        _checkCollectNFTBefore();
+        uint256 startNftId = _checkCollectNFTBefore();
 
         vm.startPrank(profileOwner);
         uint256 nftId = _mockCollect();
         vm.stopPrank();
 
-        _checkCollectNFTAfter(nftId);
+        _checkCollectNFTAfter(nftId, startNftId + 1);
     }
 
     function testCollectMirror() public {
-        _checkCollectNFTBefore();
+        uint256 startNftId = _checkCollectNFTBefore();
 
         vm.startPrank(profileOwner);
         hub.mirror(mockMirrorData);
         uint256 nftId = _mockCollect();
         vm.stopPrank();
 
-        _checkCollectNFTAfter(nftId);
+        _checkCollectNFTAfter(nftId, startNftId + 1);
     }
 
     function testExecutorCollect() public {
-        _checkCollectNFTBefore();
+        uint256 startNftId = _checkCollectNFTBefore();
 
         // delegate power to executor
         vm.prank(profileOwner);
@@ -129,11 +129,11 @@ contract CollectingTest_Generic is CollectingTest_Base {
         uint256 nftId = _mockCollect();
         vm.stopPrank();
 
-        _checkCollectNFTAfter(nftId);
+        _checkCollectNFTAfter(nftId, startNftId + 1);
     }
 
     function testExecutorCollectMirror() public {
-        _checkCollectNFTBefore();
+        uint256 startNftId = _checkCollectNFTBefore();
 
         // mirror, then delegate power to executor
         vm.startPrank(profileOwner);
@@ -146,7 +146,7 @@ contract CollectingTest_Generic is CollectingTest_Base {
         uint256 nftId = _mockCollect();
         vm.stopPrank();
 
-        _checkCollectNFTAfter(nftId);
+        _checkCollectNFTAfter(nftId, startNftId + 1);
     }
 }
 
@@ -195,18 +195,18 @@ contract CollectingTest_WithSig is CollectingTest_Base {
     // SCENARIOS
 
     function testCollectWithSig() public {
-        _checkCollectNFTBefore();
+        uint256 startNftId = _checkCollectNFTBefore();
 
         uint256 nftId = _mockCollectWithSig({
             delegatedSigner: address(0),
             signerPrivKey: profileOwnerKey
         });
 
-        _checkCollectNFTAfter(nftId);
+        _checkCollectNFTAfter(nftId, startNftId + 1);
     }
 
     function testCollectWithSigMirror() public {
-        _checkCollectNFTBefore();
+        uint256 startNftId = _checkCollectNFTBefore();
 
         vm.prank(profileOwner);
         hub.mirror(mockMirrorData);
@@ -216,11 +216,11 @@ contract CollectingTest_WithSig is CollectingTest_Base {
             signerPrivKey: profileOwnerKey
         });
 
-        _checkCollectNFTAfter(nftId);
+        _checkCollectNFTAfter(nftId, startNftId + 1);
     }
 
     function testExecutorCollectWithSig() public {
-        _checkCollectNFTBefore();
+        uint256 startNftId = _checkCollectNFTBefore();
 
         // delegate power to executor
         vm.prank(profileOwner);
@@ -232,11 +232,11 @@ contract CollectingTest_WithSig is CollectingTest_Base {
             signerPrivKey: otherSignerKey
         });
 
-        _checkCollectNFTAfter(nftId);
+        _checkCollectNFTAfter(nftId, startNftId + 1);
     }
 
     function testExecutorCollectWithSigMirror() public {
-        _checkCollectNFTBefore();
+        uint256 startNftId = _checkCollectNFTBefore();
 
         // mirror, then delegate power to executor
         vm.startPrank(profileOwner);
@@ -250,6 +250,6 @@ contract CollectingTest_WithSig is CollectingTest_Base {
             signerPrivKey: otherSignerKey
         });
 
-        _checkCollectNFTAfter(nftId);
+        _checkCollectNFTAfter(nftId, startNftId + 1);
     }
 }

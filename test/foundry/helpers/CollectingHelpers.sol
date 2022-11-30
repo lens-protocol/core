@@ -10,20 +10,31 @@ contract CollectingHelpers is TestSetup {
 
     CollectNFT _collectNftAfter;
 
-    function _checkCollectNFTBefore() internal {
+    function _checkCollectNFTBefore() internal returns (uint256) {
         // collect NFT doesn't exist yet
-        assertEq(hub.getCollectNFT(mockCollectData.profileId, mockCollectData.pubId), address(0));
 
-        // TODO return nft id here, then can be used in function below for expected
+        address collectNftAddress = hub.getCollectNFT(
+            mockCollectData.profileId,
+            mockCollectData.pubId
+        );
+
+        // TODO improve this for fork tests
+        assertEq(collectNftAddress, address(0));
+
+        // returns nft ID or 0 if no collect nft yet
+        if (collectNftAddress != address(0)) {
+            return CollectNFT(collectNftAddress).totalSupply();
+        } else {
+            return 0;
+        }
     }
 
-    function _checkCollectNFTAfter(uint256 nftId) internal {
+    function _checkCollectNFTAfter(uint256 nftId, uint256 expectedNftId) internal {
         _collectNftAfter = CollectNFT(
             hub.getCollectNFT(mockCollectData.profileId, mockCollectData.pubId)
         );
 
-        // TODO check nftId against expected nftId (passed as param)
-        // assertEq(nftId, mockCollectData.pubId);
+        assertEq(nftId, expectedNftId);
         assertEq(_collectNftAfter.ownerOf(mockCollectData.pubId), mockCollectData.collector);
         assertEq(_collectNftAfter.name(), _expectedName());
         assertEq(_collectNftAfter.symbol(), _expectedSymbol());
