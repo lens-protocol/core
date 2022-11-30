@@ -117,7 +117,7 @@ contract MultiStateHubTest_PausedState_Direct is BaseTest {
     }
 
     function _mockSetFollowModule() internal virtual {
-        return _setFollowModule(profileOwner, firstProfileId, address(0), '');
+        _setFollowModule(profileOwner, firstProfileId, address(0), '');
     }
 
     // Negatives
@@ -170,7 +170,7 @@ contract MultiStateHubTest_PausedState_WithSig is MultiStateHubTest_PausedState_
         return
             _setFollowModuleWithSig(
                 DataTypes.SetFollowModuleWithSigData({
-                    delegatedSigner: profileOwner,
+                    delegatedSigner: address(0),
                     profileId: firstProfileId,
                     followModule: address(0),
                     followModuleInitData: '',
