@@ -151,7 +151,7 @@ library GeneralLib {
      *
      * @param followerProfileId The profile the follow is being executed for.
      * @param idsOfProfilesToFollow The array of profile token IDs to follow.
-     * @param followIds The array of follow token IDs to use for each follow.
+     * @param followTokenIds The array of follow token IDs to use for each follow.
      * @param followModuleDatas The array of follow module data parameters to pass to each profile's follow module.
      *
      * @return uint256[] An array of integers representing the minted follow NFTs token IDs.
@@ -159,7 +159,7 @@ library GeneralLib {
     function follow(
         uint256 followerProfileId,
         uint256[] calldata idsOfProfilesToFollow,
-        uint256[] calldata followIds,
+        uint256[] calldata followTokenIds,
         bytes[] calldata followModuleDatas
     ) external returns (uint256[] memory) {
         return
@@ -168,7 +168,7 @@ library GeneralLib {
                 msg.sender,
                 GeneralHelpers.ownerOf(followerProfileId),
                 idsOfProfilesToFollow,
-                followIds,
+                followTokenIds,
                 followModuleDatas
             );
     }
@@ -190,7 +190,7 @@ library GeneralLib {
                 GeneralHelpers.ownerOf(vars.followerProfileId),
                 vars.delegatedSigner,
                 vars.idsOfProfilesToFollow,
-                vars.followIds,
+                vars.followTokenIds,
                 vars.datas
             );
     }

@@ -334,7 +334,7 @@ library Events {
     event Followed(
         uint256 indexed followerProfileId,
         uint256 idOfProfileFollowed,
-        uint256 followIdAssigned,
+        uint256 followTokenIdAssigned,
         bytes followModuleData,
         uint256 followTimestamp
     );
@@ -342,7 +342,7 @@ library Events {
     event Unfollowed(
         uint256 indexed unfollowerProfileId,
         uint256 idOfProfileUnfollowed,
-        uint256 followId,
+        uint256 followTokenId,
         uint256 followTimestamp
     );
 

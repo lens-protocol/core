@@ -373,10 +373,10 @@ contract LensHub is LensNFTBase, VersionedInitializable, LensMultiState, LensHub
     function follow(
         uint256 followerProfileId,
         uint256[] calldata idsOfProfilesToFollow,
-        uint256[] calldata followIds,
+        uint256[] calldata followTokenIds,
         bytes[] calldata datas
     ) external override whenNotPaused returns (uint256[] memory) {
-        return GeneralLib.follow(followerProfileId, idsOfProfilesToFollow, followIds, datas);
+        return GeneralLib.follow(followerProfileId, idsOfProfilesToFollow, followTokenIds, datas);
     }
 
     /// @inheritdoc ILensHub
@@ -482,14 +482,16 @@ contract LensHub is LensNFTBase, VersionedInitializable, LensMultiState, LensHub
     function emitUnfollowedEvent(
         uint256 unfollowerProfileId,
         uint256 idOfProfileUnfollowed,
-        uint256 followId
+        uint256 followTokenId
     ) external override {
         address expectedFollowNFT = _profileById[idOfProfileUnfollowed].followNFT;
-        if (msg.sender != expectedFollowNFT) revert Errors.CallerNotFollowNFT();
+        if (msg.sender != expectedFollowNFT) {
+            revert Errors.CallerNotFollowNFT();
+        }
         emit Events.Unfollowed(
             unfollowerProfileId,
             idOfProfileUnfollowed,
-            followId,
+            followTokenId,
             block.timestamp
         );
     }

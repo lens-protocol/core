@@ -23,7 +23,7 @@ interface IFollowNFT {
         address executor,
         address followerProfileOwner,
         bool isExecutorApproved,
-        uint256 followId
+        uint256 followTokenId
     ) external returns (uint256);
 
     function unfollow(
@@ -35,11 +35,11 @@ interface IFollowNFT {
 
     function block(uint256 followerProfileId) external;
 
-    function getFollowerProfileId(uint256 followId) external view returns (uint256);
+    function getFollowerProfileId(uint256 followTokenId) external view returns (uint256);
 
     function isFollowing(uint256 followerProfileId) external view returns (bool);
 
-    function getFollowId(uint256 followerProfileId) external view returns (uint256);
+    function getFollowTokenId(uint256 followerProfileId) external view returns (uint256);
 
     function delegate(uint256 delegatorProfile, address delegatee) external;
 

@@ -351,7 +351,7 @@ library DataTypes {
      * @param delegatedSigner The delegated executor signer, must be either zero, defaulting to the follower, or a delegated executor.
      * @param followerProfileId The ID of the profile performing the follow.
      * @param idsOfProfilesToFollow The array of token IDs of the profiles to follow.
-     * @param followIds The array of follow token IDs to use for each follow.
+     * @param followTokenIds The array of follow token IDs to use for each follow.
      * @param datas The array of arbitrary data to pass to the followModules if needed.
      * @param sig The EIP712Signature struct containing the follower's signature.
      */
@@ -359,7 +359,7 @@ library DataTypes {
         address delegatedSigner;
         uint256 followerProfileId;
         uint256[] idsOfProfilesToFollow;
-        uint256[] followIds;
+        uint256[] followTokenIds;
         bytes[] datas;
         EIP712Signature sig;
     }

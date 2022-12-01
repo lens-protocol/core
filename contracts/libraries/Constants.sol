@@ -107,7 +107,7 @@ bytes32 constant MIRROR_WITH_SIG_TYPEHASH = keccak256(
     'MirrorWithSig(uint256 profileId,uint256 profileIdPointed,uint256 pubIdPointed,bytes referenceModuleData,address referenceModule,bytes referenceModuleInitData,uint256 nonce,uint256 deadline)'
 );
 bytes32 constant FOLLOW_WITH_SIG_TYPEHASH = keccak256(
-    'FollowWithSig(uint256 followerProfileId,uint256[] idsOfProfilesToFollow,uint256[] followIds,bytes[] datas,uint256 nonce,uint256 deadline)'
+    'FollowWithSig(uint256 followerProfileId,uint256[] idsOfProfilesToFollow,uint256[] followTokenIds,bytes[] datas,uint256 nonce,uint256 deadline)'
 );
 bytes32 constant UNFOLLOW_WITH_SIG_TYPEHASH = keccak256(
     'UnfollowWithSig(uint256 unfollowerProfileId,uint256[] idsOfProfilesToUnfollow,uint256 nonce,uint256 deadline)'

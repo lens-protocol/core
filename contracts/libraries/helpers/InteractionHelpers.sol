@@ -36,30 +36,30 @@ library InteractionHelpers {
         address executor,
         address followerProfileOwner,
         uint256[] calldata idsOfProfilesToFollow,
-        uint256[] calldata followIds,
+        uint256[] calldata followTokenIds,
         bytes[] calldata followModuleDatas
     ) internal returns (uint256[] memory) {
         if (
-            idsOfProfilesToFollow.length != followIds.length ||
+            idsOfProfilesToFollow.length != followTokenIds.length ||
             idsOfProfilesToFollow.length != followModuleDatas.length
         ) {
             revert Errors.ArrayMismatch();
         }
         bool isExecutorApproved = GeneralHelpers.isExecutorApproved(followerProfileOwner, executor);
-        uint256[] memory followIdsAssigned = new uint256[](idsOfProfilesToFollow.length);
+        uint256[] memory followTokenIdsAssigned = new uint256[](idsOfProfilesToFollow.length);
         uint256 i;
         while (i < idsOfProfilesToFollow.length) {
             _validateProfileExists(idsOfProfilesToFollow[i]);
 
             _validateNotBlocked(followerProfileId, idsOfProfilesToFollow[i]);
 
-            followIdsAssigned[i] = _follow(
+            followTokenIdsAssigned[i] = _follow(
                 followerProfileId,
                 executor,
                 followerProfileOwner,
                 isExecutorApproved,
                 idsOfProfilesToFollow[i],
-                followIds[i],
+                followTokenIds[i],
                 followModuleDatas[i]
             );
 
@@ -67,7 +67,7 @@ library InteractionHelpers {
                 ++i;
             }
         }
-        return followIdsAssigned;
+        return followTokenIdsAssigned;
     }
 
     function unfollow(
@@ -330,7 +330,7 @@ library InteractionHelpers {
         address followerProfileOwner,
         bool isExecutorApproved,
         uint256 idOfProfileToFollow,
-        uint256 followId,
+        uint256 followTokenId,
         bytes calldata followModuleData
     ) internal returns (uint256) {
         uint256 followNFTSlot;
@@ -358,18 +358,18 @@ library InteractionHelpers {
             }
         }
 
-        uint256 followIdAssigned = IFollowNFT(followNFT).follow(
+        uint256 followTokenIdAssigned = IFollowNFT(followNFT).follow(
             followerProfileId,
             executor,
             followerProfileOwner,
             isExecutorApproved,
-            followId
+            followTokenId
         );
 
         if (followModule != address(0)) {
             IFollowModule(followModule).processFollow(
                 followerProfileId,
-                followId,
+                followTokenId,
                 executor,
                 idOfProfileToFollow,
                 followModuleData
@@ -379,12 +379,12 @@ library InteractionHelpers {
         emit Events.Followed(
             followerProfileId,
             idOfProfileToFollow,
-            followIdAssigned,
+            followTokenIdAssigned,
             followModuleData,
             block.timestamp
         );
 
-        return followIdAssigned;
+        return followTokenIdAssigned;
     }
 
     /**

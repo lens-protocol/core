@@ -326,7 +326,7 @@ library MetaTxHelpers {
                         FOLLOW_WITH_SIG_TYPEHASH,
                         vars.followerProfileId,
                         keccak256(abi.encodePacked(vars.idsOfProfilesToFollow)),
-                        keccak256(abi.encodePacked(vars.followIds)),
+                        keccak256(abi.encodePacked(vars.followTokenIds)),
                         keccak256(abi.encodePacked(dataHashes)),
                         _sigNonces(vars.delegatedSigner),
                         vars.sig.deadline

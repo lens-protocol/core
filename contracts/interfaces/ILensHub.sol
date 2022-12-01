@@ -289,7 +289,7 @@ interface ILensHub {
      *
      * @param followerProfileId The profile the follow is being executed for.
      * @param idsOfProfilesToFollow The token ID array of the profiles to follow.
-     * @param followIds The array of follow token IDs to use for each follow.
+     * @param followTokenIds The array of follow token IDs to use for each follow.
      * @param datas The arbitrary data array to pass to the follow module for each profile if needed.
      *
      * @return uint256[] An array of integers representing the minted follow NFTs token IDs.
@@ -297,7 +297,7 @@ interface ILensHub {
     function follow(
         uint256 followerProfileId,
         uint256[] calldata idsOfProfilesToFollow,
-        uint256[] calldata followIds,
+        uint256[] calldata followTokenIds,
         bytes[] calldata datas
     ) external returns (uint256[] memory);
 
@@ -392,7 +392,7 @@ interface ILensHub {
     function emitUnfollowedEvent(
         uint256 unfollowerProfileId,
         uint256 idOfProfileUnfollowed,
-        uint256 followId
+        uint256 followTokenId
     ) external;
 
     /// ************************
