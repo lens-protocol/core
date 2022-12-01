@@ -120,6 +120,12 @@ contract MultiStateHubTest_PausedState_Direct is BaseTest {
         _setFollowModule(profileOwner, firstProfileId, address(0), '');
     }
 
+    function _mockSetDelegatedExecutorApproval() internal virtual {
+        address executor = otherSigner;
+        bool approved = true;
+        _setDelegatedExecutorApproval(profileOwner, executor, approved);
+    }
+
     // Negatives
     function testCantTransferProfileWhilePaused() public virtual {
         vm.expectRevert(Errors.Paused.selector);
@@ -149,6 +155,19 @@ contract MultiStateHubTest_PausedState_Direct is BaseTest {
         _setState(DataTypes.ProtocolState.Unpaused);
 
         _mockSetFollowModule();
+        // TODO: Consider if we should check if the follow module was set (or its enough to do that in Follow module tests)
+    }
+
+    function testCantSetDelegatedExecutorWhilePaused() public {
+        vm.expectRevert(Errors.Paused.selector);
+        _mockSetDelegatedExecutorApproval();
+
+        vm.prank(governance);
+        _setState(DataTypes.ProtocolState.Unpaused);
+
+        _mockSetDelegatedExecutorApproval();
+        // TODO: Consider if we should check if the delegated executor was set (or its enough to do that in DE tests)
+        // assertEq(hub.isDelegatedExecutorApproved(profileOwner, executor), approved);
     }
 }
 
@@ -177,6 +196,28 @@ contract MultiStateHubTest_PausedState_WithSig is MultiStateHubTest_PausedState_
                     sig: _getSigStruct(profileOwnerKey, digest, deadline)
                 })
             );
+    }
+
+    // Positives
+    function _mockSetDelegatedExecutorApproval() internal override {
+        address onBehalfOf = profileOwner;
+        address executor = otherSigner;
+
+        bytes32 digest = _getSetDelegatedExecutorApprovalTypedDataHash({
+            onBehalfOf: onBehalfOf,
+            executor: executor,
+            approved: true,
+            nonce: nonce,
+            deadline: deadline
+        });
+        hub.setDelegatedExecutorApprovalWithSig(
+            _buildSetDelegatedExecutorApprovalWithSigData({
+                onBehalfOf: onBehalfOf,
+                executor: executor,
+                approved: true,
+                sig: _getSigStruct(profileOwnerKey, digest, deadline)
+            })
+        );
     }
 
     // Methods that cannot be called with sig

@@ -325,6 +325,17 @@ contract BaseTest is TestSetup {
         return ret;
     }
 
+    // Private functions
+    function _buildSetDelegatedExecutorApprovalWithSigData(
+        address onBehalfOf,
+        address executor,
+        bool approved,
+        DataTypes.EIP712Signature memory sig
+    ) internal pure returns (DataTypes.SetDelegatedExecutorApprovalWithSigData memory) {
+        return
+            DataTypes.SetDelegatedExecutorApprovalWithSigData(onBehalfOf, executor, approved, sig);
+    }
+
     function _post(DataTypes.PostData memory postData) internal returns (uint256) {
         return hub.post(postData);
     }
@@ -410,6 +421,15 @@ contract BaseTest is TestSetup {
     ) internal {
         vm.prank(msgSender);
         hub.transferFrom(from, to, tokenId);
+    }
+
+    function _setDelegatedExecutorApproval(
+        address msgSender,
+        address executor,
+        bool approved
+    ) internal {
+        vm.prank(msgSender);
+        hub.setDelegatedExecutorApproval(executor, approved);
     }
 
     function _setFollowModule(
