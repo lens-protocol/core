@@ -2,6 +2,7 @@
 
 pragma solidity 0.8.15;
 
+import {IFollowNFT} from '../interfaces/IFollowNFT.sol';
 import {ILensNFTBase} from '../interfaces/ILensNFTBase.sol';
 import {ILensHub} from '../interfaces/ILensHub.sol';
 
