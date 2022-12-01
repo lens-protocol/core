@@ -18,9 +18,6 @@ contract CollectingHelpers is TestSetup {
             mockCollectData.pubId
         );
 
-        // TODO improve this for fork tests
-        assertEq(collectNftAddress, address(0));
-
         // returns nft ID or 0 if no collect nft yet
         if (collectNftAddress != address(0)) {
             return CollectNFT(collectNftAddress).totalSupply();
