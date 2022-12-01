@@ -332,21 +332,25 @@ library Events {
     );
 
     event Followed(
-        uint256 indexed follower,
-        uint256 profile,
+        uint256 indexed followerProfileId,
+        uint256 idOfProfileFollowed,
         uint256 followIdAssigned,
         bytes followModuleData,
         uint256 followTimestamp
     );
 
     event Unfollowed(
-        uint256 indexed unfollower,
-        uint256 profile,
+        uint256 indexed unfollowerProfileId,
+        uint256 idOfProfileUnfollowed,
         uint256 followId,
         uint256 followTimestamp
     );
 
-    event BlockStatusSet(uint256 indexed byProfile, uint256[] profileIds, bool[] blocked);
+    event BlockStatusSet(
+        uint256 indexed blockerProfileId,
+        uint256[] idsOfProfilesToSetBlockStatus,
+        bool[] blockStatus
+    );
 
     /**
      * @dev Emitted via callback when a followNFT is transferred.

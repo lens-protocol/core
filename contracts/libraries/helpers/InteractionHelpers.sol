@@ -32,32 +32,33 @@ library InteractionHelpers {
     using Strings for uint256;
 
     function follow(
-        uint256 follower,
+        uint256 followerProfileId,
         address executor,
-        address followerOwner,
-        uint256[] calldata profileIds,
+        address followerProfileOwner,
+        uint256[] calldata idsOfProfilesToFollow,
         uint256[] calldata followIds,
         bytes[] calldata followModuleDatas
     ) internal returns (uint256[] memory) {
         if (
-            profileIds.length != followIds.length || profileIds.length != followModuleDatas.length
+            idsOfProfilesToFollow.length != followIds.length ||
+            idsOfProfilesToFollow.length != followModuleDatas.length
         ) {
             revert Errors.ArrayMismatch();
         }
-        bool isExecutorApproved = GeneralHelpers.isExecutorApproved(followerOwner, executor);
-        uint256[] memory followIdsAssigned = new uint256[](profileIds.length);
+        bool isExecutorApproved = GeneralHelpers.isExecutorApproved(followerProfileOwner, executor);
+        uint256[] memory followIdsAssigned = new uint256[](idsOfProfilesToFollow.length);
         uint256 i;
-        while (i < profileIds.length) {
-            _validateProfileExists(profileIds[i]);
+        while (i < idsOfProfilesToFollow.length) {
+            _validateProfileExists(idsOfProfilesToFollow[i]);
 
-            _validateNotBlocked(follower, profileIds[i]);
+            _validateNotBlocked(followerProfileId, idsOfProfilesToFollow[i]);
 
             followIdsAssigned[i] = _follow(
-                follower,
+                followerProfileId,
                 executor,
-                followerOwner,
+                followerProfileOwner,
                 isExecutorApproved,
-                profileIds[i],
+                idsOfProfilesToFollow[i],
                 followIds[i],
                 followModuleDatas[i]
             );
@@ -70,21 +71,24 @@ library InteractionHelpers {
     }
 
     function unfollow(
-        uint256 unfollower,
+        uint256 unfollowerProfileId,
         address executor,
-        address unfollowerOwner,
-        uint256[] calldata profileIds
+        address unfollowerProfileOwner,
+        uint256[] calldata idsOfProfilesToUnfollow
     ) internal {
-        bool isExecutorApproved = GeneralHelpers.isExecutorApproved(unfollowerOwner, executor);
+        bool isExecutorApproved = GeneralHelpers.isExecutorApproved(
+            unfollowerProfileOwner,
+            executor
+        );
         uint256 i;
-        while (i < profileIds.length) {
-            uint256 profileId = profileIds[i];
-            _validateProfileExists(profileId);
+        while (i < idsOfProfilesToUnfollow.length) {
+            uint256 idOfProfileToUnfollow = idsOfProfilesToUnfollow[i];
+            _validateProfileExists(idOfProfileToUnfollow);
 
             address followNFT;
             // Load the Follow NFT for the profile being unfollowed.
             assembly {
-                mstore(0, profileId)
+                mstore(0, idOfProfileToUnfollow)
                 mstore(32, PROFILE_BY_ID_MAPPING_SLOT)
                 let followNFTSlot := add(keccak256(0, 64), PROFILE_FOLLOW_NFT_OFFSET)
                 followNFT := sload(followNFTSlot)
@@ -95,10 +99,10 @@ library InteractionHelpers {
             }
 
             IFollowNFT(followNFT).unfollow(
-                unfollower,
+                unfollowerProfileId,
                 executor,
                 isExecutorApproved,
-                unfollowerOwner
+                unfollowerProfileOwner
             );
 
             unchecked {
@@ -108,50 +112,50 @@ library InteractionHelpers {
     }
 
     function setBlockStatus(
-        uint256 byProfile,
-        uint256[] calldata profileIds,
-        bool[] calldata blocked
+        uint256 blockerProfileId,
+        uint256[] calldata idsOfProfilesToSetBlockStatus,
+        bool[] calldata blockStatus
     ) external {
-        if (profileIds.length != blocked.length) {
+        if (idsOfProfilesToSetBlockStatus.length != blockStatus.length) {
             revert Errors.ArrayMismatch();
         }
         uint256 blockStatusByProfileSlot;
-        // Calculates the slot of the block status internal mapping once accessed by `byProfile`.
-        // i.e. the slot of `_blockStatusByProfileByBlockee[byProfile]`
+        // Calculates the slot of the block status internal mapping once accessed by `blockerProfileId`.
+        // i.e. the slot of `_blockStatusByProfileByBlockee[blockerProfileId]`
         assembly {
-            mstore(0, byProfile)
+            mstore(0, blockerProfileId)
             mstore(32, BLOCK_STATUS_MAPPING_SLOT)
             blockStatusByProfileSlot := keccak256(0, 64)
         }
         address followNFT;
         // Loads the Follow NFT address from storage.
-        // i.e. `followNFT = _profileById[byProfile].followNFT;`
+        // i.e. `followNFT = _profileById[blockerProfileId].followNFT;`
         assembly {
-            mstore(0, byProfile)
+            mstore(0, blockerProfileId)
             mstore(32, PROFILE_BY_ID_MAPPING_SLOT)
             followNFT := sload(add(keccak256(0, 64), PROFILE_FOLLOW_NFT_OFFSET))
         }
         uint256 i;
-        uint256 profileId;
-        bool blockStatus;
-        while (i < profileIds.length) {
-            profileId = profileIds[i];
-            _validateProfileExists(profileId);
-            if (followNFT != address(0) && (blockStatus = blocked[i])) {
-                IFollowNFT(followNFT).block(profileId);
+        uint256 idOfProfileToSetBlockStatus;
+        bool blocked;
+        while (i < idsOfProfilesToSetBlockStatus.length) {
+            idOfProfileToSetBlockStatus = idsOfProfilesToSetBlockStatus[i];
+            _validateProfileExists(idOfProfileToSetBlockStatus);
+            if (followNFT != address(0) && (blocked = blockStatus[i])) {
+                IFollowNFT(followNFT).block(idOfProfileToSetBlockStatus);
             }
             // Stores the block status.
-            // i.e. `_blockStatusByProfileByBlockee[byProfile][profileId] = blockStatus;`
+            // i.e. `_blockStatusByProfileByBlockee[blockerProfileId][idOfProfileToSetBlockStatus] = blocked;`
             assembly {
-                mstore(0, profileId)
+                mstore(0, idOfProfileToSetBlockStatus)
                 mstore(32, blockStatusByProfileSlot)
-                sstore(keccak256(0, 64), blockStatus)
+                sstore(keccak256(0, 64), blocked)
             }
             unchecked {
                 ++i;
             }
         }
-        emit Events.BlockStatusSet(byProfile, profileIds, blocked);
+        emit Events.BlockStatusSet(blockerProfileId, idsOfProfilesToSetBlockStatus, blockStatus);
     }
 
     function collect(
@@ -321,11 +325,11 @@ library InteractionHelpers {
     }
 
     function _follow(
-        uint256 follower,
+        uint256 followerProfileId,
         address executor,
-        address followerOwner,
+        address followerProfileOwner,
         bool isExecutorApproved,
-        uint256 profileId,
+        uint256 idOfProfileToFollow,
         uint256 followId,
         bytes calldata followModuleData
     ) internal returns (uint256) {
@@ -336,7 +340,7 @@ library InteractionHelpers {
         // Load the follow NFT and follow module for the given profile being followed, and cache
         // the follow NFT slot.
         assembly {
-            mstore(0, profileId)
+            mstore(0, idOfProfileToFollow)
             mstore(32, PROFILE_BY_ID_MAPPING_SLOT)
             // The follow NFT offset is 2, the follow module offset is 1,
             // so we just need to subtract 1 instead of recalculating the slot.
@@ -346,7 +350,7 @@ library InteractionHelpers {
         }
 
         if (followNFT == address(0)) {
-            followNFT = _deployFollowNFT(profileId);
+            followNFT = _deployFollowNFT(idOfProfileToFollow);
 
             // Store the follow NFT in the cached slot.
             assembly {
@@ -355,26 +359,26 @@ library InteractionHelpers {
         }
 
         uint256 followIdAssigned = IFollowNFT(followNFT).follow(
-            follower,
+            followerProfileId,
             executor,
-            followerOwner,
+            followerProfileOwner,
             isExecutorApproved,
             followId
         );
 
         if (followModule != address(0)) {
             IFollowModule(followModule).processFollow(
-                follower,
+                followerProfileId,
                 followId,
                 executor,
-                profileId,
+                idOfProfileToFollow,
                 followModuleData
             );
         }
 
         emit Events.Followed(
-            follower,
-            profileId,
+            followerProfileId,
+            idOfProfileToFollow,
             followIdAssigned,
             followModuleData,
             block.timestamp

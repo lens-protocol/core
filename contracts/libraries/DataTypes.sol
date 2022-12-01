@@ -349,16 +349,16 @@ library DataTypes {
      * as the regular `follow()` function, with the follower's (signer) address and an EIP712Signature added.
      *
      * @param delegatedSigner The delegated executor signer, must be either zero, defaulting to the follower, or a delegated executor.
-     * @param follower The ID of the profile performing the follow.
-     * @param profileIds The array of token IDs of the profiles to follow.
+     * @param followerProfileId The ID of the profile performing the follow.
+     * @param idsOfProfilesToFollow The array of token IDs of the profiles to follow.
      * @param followIds The array of follow token IDs to use for each follow.
      * @param datas The array of arbitrary data to pass to the followModules if needed.
      * @param sig The EIP712Signature struct containing the follower's signature.
      */
     struct FollowWithSigData {
         address delegatedSigner;
-        uint256 follower;
-        uint256[] profileIds;
+        uint256 followerProfileId;
+        uint256[] idsOfProfilesToFollow;
         uint256[] followIds;
         bytes[] datas;
         EIP712Signature sig;
@@ -366,16 +366,16 @@ library DataTypes {
 
     struct UnfollowWithSigData {
         address delegatedSigner;
-        uint256 unfollower;
-        uint256[] profileIds;
+        uint256 unfollowerProfileId;
+        uint256[] idsOfProfilesToUnfollow;
         EIP712Signature sig;
     }
 
     struct SetBlockStatusWithSigData {
         address delegatedSigner;
-        uint256 byProfile;
-        uint256[] profileIds;
-        bool[] blocked;
+        uint256 blockerProfileId;
+        uint256[] idsOfProfilesToSetBlockStatus;
+        bool[] blockStatus;
         EIP712Signature sig;
     }
 

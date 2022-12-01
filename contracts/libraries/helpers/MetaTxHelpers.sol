@@ -324,8 +324,8 @@ library MetaTxHelpers {
                 keccak256(
                     abi.encode(
                         FOLLOW_WITH_SIG_TYPEHASH,
-                        vars.follower,
-                        keccak256(abi.encodePacked(vars.profileIds)),
+                        vars.followerProfileId,
+                        keccak256(abi.encodePacked(vars.idsOfProfilesToFollow)),
                         keccak256(abi.encodePacked(vars.followIds)),
                         keccak256(abi.encodePacked(dataHashes)),
                         _sigNonces(vars.delegatedSigner),
@@ -344,8 +344,8 @@ library MetaTxHelpers {
                 keccak256(
                     abi.encode(
                         UNFOLLOW_WITH_SIG_TYPEHASH,
-                        vars.unfollower,
-                        keccak256(abi.encodePacked(vars.profileIds)),
+                        vars.unfollowerProfileId,
+                        keccak256(abi.encodePacked(vars.idsOfProfilesToUnfollow)),
                         _sigNonces(vars.delegatedSigner),
                         vars.sig.deadline
                     )
@@ -365,9 +365,9 @@ library MetaTxHelpers {
                 keccak256(
                     abi.encode(
                         SET_BLOCK_STATUS_WITH_SIG_TYPEHASH,
-                        vars.byProfile,
-                        keccak256(abi.encodePacked(vars.profileIds)),
-                        keccak256(abi.encodePacked(vars.blocked)),
+                        vars.blockerProfileId,
+                        keccak256(abi.encodePacked(vars.idsOfProfilesToSetBlockStatus)),
+                        keccak256(abi.encodePacked(vars.blockStatus)),
                         _sigNonces(signer),
                         vars.sig.deadline
                     )

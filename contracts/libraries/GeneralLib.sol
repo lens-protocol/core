@@ -149,25 +149,25 @@ library GeneralLib {
      * @notice Follows the given profiles, executing the necessary logic and module calls before minting the follow
      * NFT(s) to the follower.
      *
-     * @param follower The profile the follow is being executed for.
-     * @param profileIds The array of profile token IDs to follow.
+     * @param followerProfileId The profile the follow is being executed for.
+     * @param idsOfProfilesToFollow The array of profile token IDs to follow.
      * @param followIds The array of follow token IDs to use for each follow.
      * @param followModuleDatas The array of follow module data parameters to pass to each profile's follow module.
      *
      * @return uint256[] An array of integers representing the minted follow NFTs token IDs.
      */
     function follow(
-        uint256 follower,
-        uint256[] calldata profileIds,
+        uint256 followerProfileId,
+        uint256[] calldata idsOfProfilesToFollow,
         uint256[] calldata followIds,
         bytes[] calldata followModuleDatas
     ) external returns (uint256[] memory) {
         return
             InteractionHelpers.follow(
-                follower,
+                followerProfileId,
                 msg.sender,
-                GeneralHelpers.ownerOf(follower),
-                profileIds,
+                GeneralHelpers.ownerOf(followerProfileId),
+                idsOfProfilesToFollow,
                 followIds,
                 followModuleDatas
             );
@@ -186,22 +186,24 @@ library GeneralLib {
         MetaTxHelpers.baseFollowWithSig(vars);
         return
             InteractionHelpers.follow(
-                vars.follower,
-                GeneralHelpers.ownerOf(vars.follower),
+                vars.followerProfileId,
+                GeneralHelpers.ownerOf(vars.followerProfileId),
                 vars.delegatedSigner,
-                vars.profileIds,
+                vars.idsOfProfilesToFollow,
                 vars.followIds,
                 vars.datas
             );
     }
 
-    function unfollow(uint256 unfollower, uint256[] calldata profileIds) external {
+    function unfollow(uint256 unfollowerProfileId, uint256[] calldata idsOfProfilesToUnfollow)
+        external
+    {
         return
             InteractionHelpers.unfollow(
-                unfollower,
-                GeneralHelpers.ownerOf(unfollower),
+                unfollowerProfileId,
+                GeneralHelpers.ownerOf(unfollowerProfileId),
                 msg.sender,
-                profileIds
+                idsOfProfilesToUnfollow
             );
     }
 
@@ -215,31 +217,39 @@ library GeneralLib {
         MetaTxHelpers.baseUnfollowWithSig(vars);
         return
             InteractionHelpers.unfollow(
-                vars.unfollower,
-                GeneralHelpers.ownerOf(vars.unfollower),
+                vars.unfollowerProfileId,
+                GeneralHelpers.ownerOf(vars.unfollowerProfileId),
                 vars.delegatedSigner,
-                vars.profileIds
+                vars.idsOfProfilesToUnfollow
             );
     }
 
     function setBlockStatus(
-        uint256 byProfile,
-        uint256[] calldata profileIds,
-        bool[] calldata blocked
+        uint256 blockerProfileId,
+        uint256[] calldata idsOfProfilesToSetBlockStatus,
+        bool[] calldata blockStatus
     ) external {
-        GeneralHelpers.validateCallerIsOwnerOrDispatcherOrExecutor(byProfile);
-        InteractionHelpers.setBlockStatus(byProfile, profileIds, blocked);
+        GeneralHelpers.validateCallerIsOwnerOrDelegatedExecutor(blockerProfileId);
+        InteractionHelpers.setBlockStatus(
+            blockerProfileId,
+            idsOfProfilesToSetBlockStatus,
+            blockStatus
+        );
     }
 
     function setBlockStatusWithSig(DataTypes.SetBlockStatusWithSigData calldata vars) external {
         // Safe to use the `unsafeOwnerOf` as the signer can not be address zero
-        address byProfileOwner = GeneralHelpers.unsafeOwnerOf(vars.byProfile);
+        address blockerProfileOwner = GeneralHelpers.unsafeOwnerOf(vars.blockerProfileId);
         address signer = GeneralHelpers.getOriginatorOrDelegatedExecutorSigner(
-            byProfileOwner,
+            blockerProfileOwner,
             vars.delegatedSigner
         );
         MetaTxHelpers.baseSetBlockStatusWithSig(signer, vars);
-        InteractionHelpers.setBlockStatus(vars.byProfile, vars.profileIds, vars.blocked);
+        InteractionHelpers.setBlockStatus(
+            vars.blockerProfileId,
+            vars.idsOfProfilesToSetBlockStatus,
+            vars.blockStatus
+        );
     }
 
     /**

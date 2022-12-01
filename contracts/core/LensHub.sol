@@ -370,12 +370,12 @@ contract LensHub is LensNFTBase, VersionedInitializable, LensMultiState, LensHub
 
     /// @inheritdoc ILensHub
     function follow(
-        uint256 follower,
-        uint256[] calldata profileIds,
+        uint256 followerProfileId,
+        uint256[] calldata idsOfProfilesToFollow,
         uint256[] calldata followIds,
         bytes[] calldata datas
     ) external override whenNotPaused returns (uint256[] memory) {
-        return GeneralLib.follow(follower, profileIds, followIds, datas);
+        return GeneralLib.follow(followerProfileId, idsOfProfilesToFollow, followIds, datas);
     }
 
     /// @inheritdoc ILensHub
@@ -389,12 +389,12 @@ contract LensHub is LensNFTBase, VersionedInitializable, LensMultiState, LensHub
     }
 
     /// @inheritdoc ILensHub
-    function unfollow(uint256 unfollower, uint256[] calldata profileIds)
+    function unfollow(uint256 unfollowerProfileId, uint256[] calldata idsOfProfilesToUnfollow)
         external
         override
         whenNotPaused
     {
-        return GeneralLib.unfollow(unfollower, profileIds);
+        return GeneralLib.unfollow(unfollowerProfileId, idsOfProfilesToUnfollow);
     }
 
     /// @inheritdoc ILensHub
@@ -408,11 +408,12 @@ contract LensHub is LensNFTBase, VersionedInitializable, LensMultiState, LensHub
 
     /// @inheritdoc ILensHub
     function setBlockStatus(
-        uint256 byProfile,
-        uint256[] calldata profileIds,
-        bool[] calldata blocked
+        uint256 blockerProfileId,
+        uint256[] calldata idsOfProfilesToSetBlockStatus,
+        bool[] calldata blockStatus
     ) external override whenNotPaused {
-        return GeneralLib.setBlockStatus(byProfile, profileIds, blocked);
+        return
+            GeneralLib.setBlockStatus(blockerProfileId, idsOfProfilesToSetBlockStatus, blockStatus);
     }
 
     /// @inheritdoc ILensHub
@@ -478,13 +479,18 @@ contract LensHub is LensNFTBase, VersionedInitializable, LensMultiState, LensHub
 
     /// @inheritdoc ILensHub
     function emitUnfollowedEvent(
-        uint256 unfollower,
-        uint256 profileId,
+        uint256 unfollowerProfileId,
+        uint256 idOfProfileUnfollowed,
         uint256 followId
     ) external override {
-        address expectedFollowNFT = _profileById[profileId].followNFT;
+        address expectedFollowNFT = _profileById[idOfProfileUnfollowed].followNFT;
         if (msg.sender != expectedFollowNFT) revert Errors.CallerNotFollowNFT();
-        emit Events.Unfollowed(unfollower, profileId, followId, block.timestamp);
+        emit Events.Unfollowed(
+            unfollowerProfileId,
+            idOfProfileUnfollowed,
+            followId,
+            block.timestamp
+        );
     }
 
     /// *********************************

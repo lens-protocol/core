@@ -287,16 +287,16 @@ interface ILensHub {
      *
      * NOTE: Both the `profileIds` and `datas` arrays must be of the same length, regardless if the profiles do not have a follow module set.
      *
-     * @param follower The profile the follow is being executed for.
-     * @param profileIds The token ID array of the profiles to follow.
+     * @param followerProfileId The profile the follow is being executed for.
+     * @param idsOfProfilesToFollow The token ID array of the profiles to follow.
      * @param followIds The array of follow token IDs to use for each follow.
      * @param datas The arbitrary data array to pass to the follow module for each profile if needed.
      *
      * @return uint256[] An array of integers representing the minted follow NFTs token IDs.
      */
     function follow(
-        uint256 follower,
-        uint256[] calldata profileIds,
+        uint256 followerProfileId,
+        uint256[] calldata idsOfProfilesToFollow,
         uint256[] calldata followIds,
         bytes[] calldata datas
     ) external returns (uint256[] memory);
@@ -314,14 +314,15 @@ interface ILensHub {
         external
         returns (uint256[] memory);
 
-    function unfollow(uint256 unfollower, uint256[] calldata profileIds) external;
+    function unfollow(uint256 unfollowerProfileId, uint256[] calldata idsOfProfilesToUnfollow)
+        external;
 
     function unfollowWithSig(DataTypes.UnfollowWithSigData calldata vars) external;
 
     function setBlockStatus(
-        uint256 byProfile,
-        uint256[] calldata profileIds,
-        bool[] calldata blocked
+        uint256 blockerProfileId,
+        uint256[] calldata idsOfProfilesToSetBlockStatus,
+        bool[] calldata blockStatus
     ) external;
 
     function setBlockStatusWithSig(DataTypes.SetBlockStatusWithSigData calldata vars) external;
@@ -389,8 +390,8 @@ interface ILensHub {
     ) external;
 
     function emitUnfollowedEvent(
-        uint256 unfollower,
-        uint256 profileId,
+        uint256 unfollowerProfileId,
+        uint256 idOfProfileUnfollowed,
         uint256 followId
     ) external;
 

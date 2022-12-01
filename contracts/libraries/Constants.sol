@@ -107,13 +107,13 @@ bytes32 constant MIRROR_WITH_SIG_TYPEHASH = keccak256(
     'MirrorWithSig(uint256 profileId,uint256 profileIdPointed,uint256 pubIdPointed,bytes referenceModuleData,address referenceModule,bytes referenceModuleInitData,uint256 nonce,uint256 deadline)'
 );
 bytes32 constant FOLLOW_WITH_SIG_TYPEHASH = keccak256(
-    'FollowWithSig(uint256 follower,uint256[] profileIds,uint256[] followIds,bytes[] datas,uint256 nonce,uint256 deadline)'
+    'FollowWithSig(uint256 followerProfileId,uint256[] idsOfProfilesToFollow,uint256[] followIds,bytes[] datas,uint256 nonce,uint256 deadline)'
 );
 bytes32 constant UNFOLLOW_WITH_SIG_TYPEHASH = keccak256(
-    'UnfollowWithSig(uint256 unfollower,uint256[] profileIds,uint256 nonce,uint256 deadline)'
+    'UnfollowWithSig(uint256 unfollowerProfileId,uint256[] idsOfProfilesToUnfollow,uint256 nonce,uint256 deadline)'
 );
 bytes32 constant SET_BLOCK_STATUS_WITH_SIG_TYPEHASH = keccak256(
-    'SetBlockStatusWithSig(uint256 byProfile,uint256[] profileIds,bool[] blocked,uint256 nonce,uint256 deadline)'
+    'SetBlockStatusWithSig(uint256 blockerProfileId,uint256[] idsOfProfilesToSetBlockStatus,bool[] blockStatus,uint256 nonce,uint256 deadline)'
 );
 bytes32 constant COLLECT_WITH_SIG_TYPEHASH = keccak256(
     'CollectWithSig(uint256 profileId,uint256 pubId,bytes data,uint256 nonce,uint256 deadline)'
