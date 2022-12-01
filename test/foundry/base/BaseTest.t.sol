@@ -393,4 +393,13 @@ contract BaseTest is TestSetup {
     function _getPubCount(uint256 profileId) internal view returns (uint256) {
         return hub.getPubCount(profileId);
     }
+
+    function _getCollectCount(uint256 profileId, uint256 pubId) internal view returns (uint256) {
+        address collectNft = hub.getCollectNFT(profileId, pubId);
+        if (collectNft == address(0)) {
+            return 0;
+        } else {
+            return CollectNFT(collectNft).totalSupply();
+        }
+    }
 }

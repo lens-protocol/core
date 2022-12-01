@@ -212,36 +212,22 @@ contract CollectingTest_WithSig is CollectingTest_Base {
         _mockCollectWithSig({delegatedSigner: address(0), signerPrivKey: profileOwnerKey});
     }
 
-    function testCannotCollectWithSigIfNonceWasIncrementedWithAnotherAction() public {
-        // TODO clean up
-        address delegatedSigner = address(0);
-        uint256 signerPrivKey = profileOwnerKey;
-
+    function testCannotCollectIfNonceWasIncrementedWithAnotherAction() public {
         assertEq(_getSigNonce(profileOwner), nonce, 'Wrong nonce before posting');
 
-        // cancel with permitForAll
+        uint256 expectedCollectId = _getCollectCount(firstProfileId, mockCollectData.pubId) + 1;
 
-        // bytes32 collectDigest = _getCollectTypedDataHash(
-        //     mockCollectData.profileId,
-        //     mockCollectData.pubId,
-        //     mockCollectData.data,
-        //     nonce,
-        //     deadline
-        // );
+        uint256 nftId = _mockCollectWithSig({
+            delegatedSigner: address(0),
+            signerPrivKey: profileOwnerKey
+        });
 
-        // hub.permitForAll();
+        assertEq(nftId, expectedCollectId, 'Wrong collectId');
 
-        // _collectWithSig(
-        //     _buildCollectWithSigData(
-        //         delegatedSigner,
-        //         mockCollectData,
-        //         _getSigStruct(signerPrivKey, collectDigest, deadline)
-        //     )
-        // );
+        assertTrue(_getSigNonce(profileOwner) != nonce, 'Wrong nonce after collecting');
 
-        // // TODO fix
-        // vm.expectRevert(Errors.SignatureInvalid.selector);
-        // _mockCollectWithSig({delegatedSigner: address(0), signerPrivKey: otherSignerKey});
+        vm.expectRevert(Errors.SignatureInvalid.selector);
+        _mockCollectWithSig({delegatedSigner: address(0), signerPrivKey: profileOwnerKey});
     }
 
     // SCENARIOS
