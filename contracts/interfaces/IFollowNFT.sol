@@ -22,12 +22,14 @@ interface IFollowNFT {
         uint256 follower,
         address executor,
         address followerOwner,
+        bool isExecutorApproved,
         uint256 followId
     ) external returns (uint256);
 
     function unfollow(
         uint256 unfollower,
         address executor,
+        bool isExecutorApproved,
         address unfollowerOwner
     ) external;
 

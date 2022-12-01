@@ -44,7 +44,7 @@ library InteractionHelpers {
         ) {
             revert Errors.ArrayMismatch();
         }
-
+        bool isExecutorApproved = GeneralHelpers.isExecutorApproved(followerOwner, executor);
         uint256[] memory followIdsAssigned = new uint256[](profileIds.length);
         uint256 i;
         while (i < profileIds.length) {
@@ -56,6 +56,7 @@ library InteractionHelpers {
                 follower,
                 executor,
                 followerOwner,
+                isExecutorApproved,
                 profileIds[i],
                 followIds[i],
                 followModuleDatas[i]
@@ -74,6 +75,7 @@ library InteractionHelpers {
         address unfollowerOwner,
         uint256[] calldata profileIds
     ) internal {
+        bool isExecutorApproved = GeneralHelpers.isExecutorApproved(unfollowerOwner, executor);
         uint256 i;
         while (i < profileIds.length) {
             uint256 profileId = profileIds[i];
@@ -92,7 +94,12 @@ library InteractionHelpers {
                 revert Errors.NotFollowing();
             }
 
-            IFollowNFT(followNFT).unfollow(unfollower, executor, unfollowerOwner);
+            IFollowNFT(followNFT).unfollow(
+                unfollower,
+                executor,
+                isExecutorApproved,
+                unfollowerOwner
+            );
 
             unchecked {
                 ++i;
@@ -317,6 +324,7 @@ library InteractionHelpers {
         uint256 follower,
         address executor,
         address followerOwner,
+        bool isExecutorApproved,
         uint256 profileId,
         uint256 followId,
         bytes calldata followModuleData
@@ -350,6 +358,7 @@ library InteractionHelpers {
             follower,
             executor,
             followerOwner,
+            isExecutorApproved,
             followId
         );
 

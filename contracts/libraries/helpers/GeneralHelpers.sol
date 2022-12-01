@@ -197,17 +197,22 @@ library GeneralHelpers {
     }
 
     function validateDelegatedExecutor(address onBehalfOf, address executor) internal view {
-        bool invalidExecutor;
+        if (!isExecutorApproved(onBehalfOf, executor)) {
+            revert Errors.ExecutorInvalid();
+        }
+    }
+
+    function isExecutorApproved(address onBehalfOf, address executor) internal view returns (bool) {
+        bool isExecutorApproved;
         assembly {
-            //If the caller is not the owner, check if they are an approved delegated executor.
             mstore(0, onBehalfOf)
             mstore(32, DELEGATED_EXECUTOR_APPROVAL_MAPPING_SLOT)
             mstore(32, keccak256(0, 64))
             mstore(0, executor)
             let slot := keccak256(0, 64)
-            invalidExecutor := iszero(sload(slot))
+            isExecutorApproved := sload(slot)
         }
-        if (invalidExecutor) revert Errors.ExecutorInvalid();
+        return isExecutorApproved;
     }
 
     /**
