@@ -1,26 +1,29 @@
 Collecting
 Generic
 Negatives
-[ ] User two should fail to collect without being a follower
-[ ] User two should follow, then transfer the followNFT and fail to collect
-[ ] User two should fail to collect a nonexistent publication
+// TODO: Move to only follows module test?
+[?] User two should fail to collect without being a follower
+[?] User two should follow, then transfer the followNFT and fail to collect
+[X] User two should fail to collect a nonexistent publication
 Scenarios
-[ ] Collecting should work if the collector is the publication owner even when he is not following himself and follow NFT was not deployed
-[ ] Collecting should work if the collector is the publication owner even when he is not following himself and follow NFT was deployed
+// TODO: Move to only follows module test?
+[?] Collecting should work if the collector is the publication owner even when he is not following himself and follow NFT was not deployed
+[?] Collecting should work if the collector is the publication owner even when he is not following himself and follow NFT was deployed
 [ ] Should return the expected token IDs when collecting publications
 [ ] UserTwo should follow, then collect, receive a collect NFT with the expected properties
-[ ] UserTwo should follow, then mirror, then collect on their mirror, receive a collect NFT with expected properties
+[X] UserTwo should follow, then mirror, then collect on their mirror, receive a collect NFT with expected properties
 [ ] UserTwo should follow, then mirror, mirror their mirror then collect on their latest mirror, receive a collect NFT with expected properties
 Meta-tx
 Negatives
-[ ] TestWallet should fail to collect with sig with signature deadline mismatch
-[ ] TestWallet should fail to collect with sig with invalid deadline
-[ ] TestWallet should fail to collect with sig with invalid nonce
-[ ] TestWallet should fail to collect with sig without being a follower
+[X] TestWallet should fail to collect with sig with signature deadline mismatch
+[X] TestWallet should fail to collect with sig with invalid deadline
+[X] TestWallet should fail to collect with sig with invalid nonce
+[?] TestWallet should fail to collect with sig without being a follower
 [ ] TestWallet should sign attempt to collect with sig, cancel via empty permitForAll, fail to collect with sig
 Scenarios
-[ ] TestWallet should follow, then collect with sig, receive a collect NFT with expected properties
-[ ] TestWallet should follow, mirror, then collect with sig on their mirror
+// TODO: Move to only follows module test?
+[?] TestWallet should follow, then collect with sig, receive a collect NFT with expected properties
+[X] TestWallet should follow, mirror, then collect with sig on their mirror
 
 Following
 Generic
@@ -55,19 +58,19 @@ Scenarios
 Multi-State Hub
 Common
 Negatives
-[ ] User should fail to set the state on the hub
-[ ] User should fail to set the emergency admin
-[ ] Governance should set user as emergency admin, user should fail to set protocol state to Unpaused
-[ ] Governance should set user as emergency admin, user should fail to set protocol state to PublishingPaused or Paused from Paused
+[X] User should fail to set the state on the hub
+[X] User should fail to set the emergency admin
+[X] Governance should set user as emergency admin, user should fail to set protocol state to Unpaused
+[X] Governance should set user as emergency admin, user should fail to set protocol state to PublishingPaused or Paused from Paused
 Scenarios
-[ ] Governance should set user as emergency admin, user sets protocol state but fails to set emergency admin, governance sets emergency admin to the zero address, user fails to set protocol state
-[ ] Governance should set the protocol state, fetched protocol state should be accurate
-[ ] Governance should set user as emergency admin, user should set protocol state to PublishingPaused, then Paused, then fail to set it to PublishingPaused
+[X] Governance should set user as emergency admin, user sets protocol state but fails to set emergency admin, governance sets emergency admin to the zero address, user fails to set protocol state
+[X] Governance should set the protocol state, fetched protocol state should be accurate
+[X] Governance should set user as emergency admin, user should set protocol state to PublishingPaused, then Paused, then fail to set it to PublishingPaused
 Paused State
 Scenarios
-[ ] User should create a profile, governance should pause the hub, transferring the profile should fail
-[ ] Governance should pause the hub, profile creation should fail, then governance unpauses the hub and profile creation should work
-[ ] Governance should pause the hub, setting follow module should fail, then governance unpauses the hub and setting follow module should work
+[X] User should create a profile, governance should pause the hub, transferring the profile should fail
+[X] Governance should pause the hub, profile creation should fail, then governance unpauses the hub and profile creation should work
+[X] Governance should pause the hub, setting follow module should fail, then governance unpauses the hub and setting follow module should work
 [ ] Governance should pause the hub, setting follow module with sig should fail, then governance unpauses the hub and setting follow module with sig should work
 [ ] Governance should pause the hub, setting dispatcher should fail, then governance unpauses the hub and setting dispatcher should work
 [ ] Governance should pause the hub, setting dispatcher with sig should fail, then governance unpauses the hub and setting dispatcher with sig should work
