@@ -41,15 +41,4 @@ contract DelegatedExecutorTest is BaseTest {
 
         assertEq(hub.isDelegatedExecutorApproved(profileOwner, executor), true);
     }
-
-    // Private functions
-    function _buildSetDelegatedExecutorApprovalWithSigData(
-        address onBehalfOf,
-        address executor,
-        bool approved,
-        DataTypes.EIP712Signature memory sig
-    ) private pure returns (DataTypes.SetDelegatedExecutorApprovalWithSigData memory) {
-        return
-            DataTypes.SetDelegatedExecutorApprovalWithSigData(onBehalfOf, executor, approved, sig);
-    }
 }
