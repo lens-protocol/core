@@ -31,6 +31,10 @@ contract CollectingHelpers is TestSetup {
             hub.getCollectNFT(mockCollectData.profileId, mockCollectData.pubId)
         );
 
+        (uint256 profileId, uint256 pubId) = _collectNftAfter.getSourcePublicationPointer();
+        assertEq(profileId, mockCollectData.profileId);
+        assertEq(pubId, mockCollectData.pubId);
+
         assertEq(nftId, expectedNftId);
         assertEq(_collectNftAfter.ownerOf(mockCollectData.pubId), mockCollectData.collector);
         assertEq(_collectNftAfter.name(), _expectedName());

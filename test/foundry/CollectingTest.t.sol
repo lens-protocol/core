@@ -117,7 +117,7 @@ contract CollectingTest_Generic is CollectingTest_Base {
         _checkCollectNFTAfter(nftId, startNftId + 1);
     }
 
-    function testCollectMirrorMirror() public {
+    function testCollectMirrorOfMirrorPointsToOriginalPost() public {
         uint256 startNftId = _checkCollectNFTBefore();
         uint256 startMirrorId = mockMirrorData.pubIdPointed;
 
@@ -131,6 +131,8 @@ contract CollectingTest_Generic is CollectingTest_Base {
         newPubId = hub.mirror(mockMirrorData);
         assertEq(newPubId, startMirrorId + 2);
 
+        // We're expecting a mirror to point at the original post ID
+        mockCollectData.pubId = startMirrorId;
         uint256 nftId = _mockCollect();
         vm.stopPrank();
 
