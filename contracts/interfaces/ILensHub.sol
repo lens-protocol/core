@@ -399,6 +399,11 @@ interface ILensHub {
     /// *****VIEW FUNCTIONS*****
     /// ************************
 
+    function isFollowing(uint256 followerProfileId, uint256 followedProfileId)
+        external
+        view
+        returns (bool);
+
     /**
      * @notice Returns whether or not a profile creator is whitelisted.
      *

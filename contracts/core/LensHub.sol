@@ -497,6 +497,15 @@ contract LensHub is LensNFTBase, VersionedInitializable, LensMultiState, LensHub
     /// *****EXTERNAL VIEW FUNCTIONS*****
     /// *********************************
 
+    function isFollowing(uint256 followerProfileId, uint256 followedProfileId)
+        external
+        view
+        returns (bool)
+    {
+        address followNFT = _profileById[followedProfileId].followNFT;
+        return followNFT != address(0) && IFollowNFT(followNFT).isFollowing(followerProfileId);
+    }
+
     /// @inheritdoc ILensHub
     function isProfileCreatorWhitelisted(address profileCreator)
         external
