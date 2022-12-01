@@ -117,6 +117,26 @@ contract CollectingTest_Generic is CollectingTest_Base {
         _checkCollectNFTAfter(nftId, startNftId + 1);
     }
 
+    function testCollectMirrorMirror() public {
+        uint256 startNftId = _checkCollectNFTBefore();
+        uint256 startMirrorId = mockMirrorData.pubIdPointed;
+
+        // mirror once
+        vm.startPrank(profileOwner);
+        uint256 newPubId = hub.mirror(mockMirrorData);
+        assertEq(newPubId, startMirrorId + 1);
+
+        // mirror again
+        mockMirrorData.pubIdPointed = newPubId;
+        newPubId = hub.mirror(mockMirrorData);
+        assertEq(newPubId, startMirrorId + 2);
+
+        uint256 nftId = _mockCollect();
+        vm.stopPrank();
+
+        _checkCollectNFTAfter(nftId, startNftId + 1);
+    }
+
     function testExecutorCollect() public {
         uint256 startNftId = _checkCollectNFTBefore();
 
@@ -190,6 +210,38 @@ contract CollectingTest_WithSig is CollectingTest_Base {
         nonce = 5;
         vm.expectRevert(Errors.SignatureInvalid.selector);
         _mockCollectWithSig({delegatedSigner: address(0), signerPrivKey: profileOwnerKey});
+    }
+
+    function testCannotCollectWithSigIfNonceWasIncrementedWithAnotherAction() public {
+        // TODO clean up
+        address delegatedSigner = address(0);
+        uint256 signerPrivKey = profileOwnerKey;
+
+        assertEq(_getSigNonce(profileOwner), nonce, 'Wrong nonce before posting');
+
+        // cancel with permitForAll
+
+        // bytes32 collectDigest = _getCollectTypedDataHash(
+        //     mockCollectData.profileId,
+        //     mockCollectData.pubId,
+        //     mockCollectData.data,
+        //     nonce,
+        //     deadline
+        // );
+
+        // hub.permitForAll();
+
+        // _collectWithSig(
+        //     _buildCollectWithSigData(
+        //         delegatedSigner,
+        //         mockCollectData,
+        //         _getSigStruct(signerPrivKey, collectDigest, deadline)
+        //     )
+        // );
+
+        // // TODO fix
+        // vm.expectRevert(Errors.SignatureInvalid.selector);
+        // _mockCollectWithSig({delegatedSigner: address(0), signerPrivKey: otherSignerKey});
     }
 
     // SCENARIOS
