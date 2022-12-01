@@ -102,7 +102,7 @@ contract FollowNFT is HubRestricted, LensNFTBase, ERC2981CollectionRoyalties, IF
         }
         uint256 followTokenIdAssigned = followTokenId;
         address followTokenOwner;
-        uint256 currentFollower;
+        uint256 currentFollowerProfileId;
         if (followTokenId == 0) {
             followTokenIdAssigned = _followMintingNewToken(
                 followerProfileId,
@@ -121,7 +121,8 @@ contract FollowNFT is HubRestricted, LensNFTBase, ERC2981CollectionRoyalties, IF
                 followTokenOwner
             );
         } else if (
-            (currentFollower = _followDataByFollowTokenId[followTokenId].followerProfileId) != 0
+            (currentFollowerProfileId = _followDataByFollowTokenId[followTokenId]
+                .followerProfileId) != 0
         ) {
             _followWithUnwrappedToken(
                 followerProfileId,
@@ -129,7 +130,7 @@ contract FollowNFT is HubRestricted, LensNFTBase, ERC2981CollectionRoyalties, IF
                 isExecutorApproved,
                 followTokenId,
                 followerProfileOwner,
-                currentFollower
+                currentFollowerProfileId
             );
         } else if (
             _followDataByFollowTokenId[followTokenId].profileIdAllowedToRecover == followerProfileId
@@ -475,14 +476,14 @@ contract FollowNFT is HubRestricted, LensNFTBase, ERC2981CollectionRoyalties, IF
                     // The `_approvedFollowWithTokenByFollowerProfileId` was used, now needs to be cleared.
                     _approveFollowWithToken(followerProfileId, 0);
                 }
-                uint256 currentFollower = _followDataByFollowTokenId[followTokenId]
+                uint256 currentFollowerProfileId = _followDataByFollowTokenId[followTokenId]
                     .followerProfileId;
-                if (currentFollower != 0) {
+                if (currentFollowerProfileId != 0) {
                     // As it has a follower, unfollow first.
-                    _followTokenIdByFollowerProfileId[currentFollower] = 0;
-                    _delegate(currentFollower, address(0));
+                    _followTokenIdByFollowerProfileId[currentFollowerProfileId] = 0;
+                    _delegate(currentFollowerProfileId, address(0));
                     ILensHub(HUB).emitUnfollowedEvent(
-                        currentFollower,
+                        currentFollowerProfileId,
                         _followedProfileId,
                         followTokenId
                     );
@@ -505,20 +506,20 @@ contract FollowNFT is HubRestricted, LensNFTBase, ERC2981CollectionRoyalties, IF
         bool isExecutorApproved,
         uint256 followTokenId,
         address followerProfileOwner,
-        uint256 currentFollower
+        uint256 currentFollowerProfileId
     ) internal {
         bool tokenApproved;
-        address currentFollowerOwner = IERC721(HUB).ownerOf(currentFollower);
+        address currentFollowerProfileOwner = IERC721(HUB).ownerOf(currentFollowerProfileId);
         if (
-            currentFollowerOwner == executor ||
-            isApprovedForAll(currentFollowerOwner, executor) ||
+            currentFollowerProfileOwner == executor ||
+            isApprovedForAll(currentFollowerProfileOwner, executor) ||
             (tokenApproved = (getApproved(followTokenId) == executor))
         ) {
             // The executor is allowed to transfer the follow.
             if (tokenApproved) {
                 // `_tokenApprovals` used, now needs to be cleared.
                 _tokenApprovals[followTokenId] = address(0);
-                emit Approval(currentFollowerOwner, address(0), followTokenId);
+                emit Approval(currentFollowerProfileOwner, address(0), followTokenId);
             }
             bool approvedFollowWithTokenUsed;
             if (
@@ -534,9 +535,9 @@ contract FollowNFT is HubRestricted, LensNFTBase, ERC2981CollectionRoyalties, IF
                     _approveFollowWithToken(followerProfileId, 0);
                 }
                 // Perform the unfollow.
-                _followTokenIdByFollowerProfileId[currentFollower] = 0;
+                _followTokenIdByFollowerProfileId[currentFollowerProfileId] = 0;
                 ILensHub(HUB).emitUnfollowedEvent(
-                    currentFollower,
+                    currentFollowerProfileId,
                     _followedProfileId,
                     followTokenId
                 );
