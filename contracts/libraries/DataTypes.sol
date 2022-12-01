@@ -58,7 +58,7 @@ library DataTypes {
      * @param pubCount The number of publications made to this profile.
      * @param followModule The address of the current follow module in use by this profile, can be empty.
      * @param followNFT The address of the followNFT associated with this profile, can be empty..
-     * @param handleUnused The deprecated handle slot, no longer used. .
+     * @param handleDeprecated The deprecated handle slot, no longer used. .
      * @param imageURI The URI to be used for the profile's image.
      * @param followNFTURI The URI to be used for the follow NFT.
      */

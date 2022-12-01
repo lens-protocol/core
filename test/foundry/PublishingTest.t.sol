@@ -3,7 +3,7 @@ pragma solidity ^0.8.13;
 
 import './base/BaseTest.t.sol';
 import './helpers/SignatureHelpers.sol';
-import './helpers/PublishingHelpers.sol';
+import {PublishingHelpers} from './helpers/PublishingHelpers.sol';
 
 contract SigSetup {
     uint256 nonce;
@@ -27,14 +27,23 @@ contract PublishingTest_Post is BaseTest, SignatureHelpers, PublishingHelpers, S
         virtual
         returns (uint256)
     {
-        bytes32 digest = _getPostTypedDataHash(mockPostData, nonce, deadline);
+        return _publishWithSig(delegatedSigner, signerPrivKey, deadline, deadline);
+    }
+
+    function _publishWithSig(
+        address delegatedSigner,
+        uint256 signerPrivKey,
+        uint256 digestDeadline,
+        uint256 sigDeadline
+    ) internal virtual returns (uint256) {
+        bytes32 digest = _getPostTypedDataHash(mockPostData, nonce, digestDeadline);
 
         return
             _postWithSig(
                 _buildPostWithSigData(
                     delegatedSigner,
                     mockPostData,
-                    _getSigStruct(signerPrivKey, digest, deadline)
+                    _getSigStruct(signerPrivKey, digest, sigDeadline)
                 )
             );
     }
@@ -75,6 +84,20 @@ contract PublishingTest_Post is BaseTest, SignatureHelpers, PublishingHelpers, S
         _publish();
     }
 
+    function testCannotPublishWithSigNotWhitelistedCollectModule() public virtual {
+        mockPostData.collectModule = address(0xC0FFEE);
+        replicateInitData();
+        vm.expectRevert(Errors.CollectModuleNotWhitelisted.selector);
+        _publishWithSig({delegatedSigner: address(0), signerPrivKey: profileOwnerKey});
+    }
+
+    function testCannotPublishWithSigNotWhitelistedReferenceModule() public {
+        mockPostData.referenceModule = address(0xC0FFEE);
+        replicateInitData();
+        vm.expectRevert(Errors.ReferenceModuleNotWhitelisted.selector);
+        _publishWithSig({delegatedSigner: address(0), signerPrivKey: profileOwnerKey});
+    }
+
     function testCannotPublishWithSigInvalidSigner() public {
         vm.expectRevert(Errors.SignatureInvalid.selector);
         _publishWithSig({delegatedSigner: address(0), signerPrivKey: otherSignerKey});
@@ -84,6 +107,16 @@ contract PublishingTest_Post is BaseTest, SignatureHelpers, PublishingHelpers, S
         nonce = _getSigNonce(otherSigner) + 1;
         vm.expectRevert(Errors.SignatureInvalid.selector);
         _publishWithSig({delegatedSigner: address(0), signerPrivKey: otherSignerKey});
+    }
+
+    function testCannotPublishWithSigInvalidDeadline() public {
+        vm.expectRevert(Errors.SignatureInvalid.selector);
+        _publishWithSig({
+            delegatedSigner: address(0),
+            signerPrivKey: profileOwnerKey,
+            digestDeadline: type(uint256).max,
+            sigDeadline: block.timestamp + 10
+        });
     }
 
     function testCannotPublishIfNonceWasIncrementedWithAnotherAction() public {
@@ -189,6 +222,8 @@ contract PublishingTest_Post is BaseTest, SignatureHelpers, PublishingHelpers, S
 }
 
 contract PublishingTest_Comment is PublishingTest_Post {
+    uint256 postId;
+
     function replicateInitData() internal override {
         mockCommentData.profileId = mockPostData.profileId;
         mockCommentData.contentURI = mockPostData.contentURI;
@@ -202,19 +237,20 @@ contract PublishingTest_Comment is PublishingTest_Post {
         return _comment(mockCommentData);
     }
 
-    function _publishWithSig(address delegatedSigner, uint256 signerPrivKey)
-        internal
-        override
-        returns (uint256)
-    {
-        bytes32 digest = _getCommentTypedDataHash(mockCommentData, nonce, deadline);
+    function _publishWithSig(
+        address delegatedSigner,
+        uint256 signerPrivKey,
+        uint256 digestDeadline,
+        uint256 sigDeadline
+    ) internal override returns (uint256) {
+        bytes32 digest = _getCommentTypedDataHash(mockCommentData, nonce, digestDeadline);
 
         return
             _commentWithSig(
                 _buildCommentWithSigData(
                     delegatedSigner,
                     mockCommentData,
-                    _getSigStruct(signerPrivKey, digest, deadline)
+                    _getSigStruct(signerPrivKey, digest, sigDeadline)
                 )
             );
     }
@@ -232,11 +268,71 @@ contract PublishingTest_Comment is PublishingTest_Post {
         PublishingTest_Post.setUp();
 
         vm.prank(profileOwner);
-        _post(mockPostData);
+        postId = _post(mockPostData);
+    }
+
+    // negatives
+    function testCannotCommentOnNonExistentPublication() public {
+        uint256 nonExistentPubId = _getPubCount(firstProfileId) + 10;
+
+        replicateInitData();
+        mockCommentData.pubIdPointed = nonExistentPubId;
+
+        vm.prank(profileOwner);
+        vm.expectRevert(Errors.PublicationDoesNotExist.selector);
+        _publish();
+    }
+
+    function testCannotCommentWithSigOnNonExistentPublication() public {
+        uint256 nonExistentPubId = _getPubCount(firstProfileId) + 10;
+
+        replicateInitData();
+        mockCommentData.pubIdPointed = nonExistentPubId;
+
+        vm.expectRevert(Errors.PublicationDoesNotExist.selector);
+        _publishWithSig({delegatedSigner: address(0), signerPrivKey: profileOwnerKey});
+    }
+
+    function testCannotCommentOnTheSamePublicationBeingCreated() public {
+        uint256 nextPubId = _getPubCount(firstProfileId) + 1;
+
+        replicateInitData();
+        mockCommentData.pubIdPointed = nextPubId;
+
+        vm.prank(profileOwner);
+        vm.expectRevert(Errors.CannotCommentOnSelf.selector);
+        _publish();
+    }
+
+    function testCannotCommentWithSigOnTheSamePublicationBeingCreated() public {
+        uint256 nextPubId = _getPubCount(firstProfileId) + 1;
+
+        replicateInitData();
+        mockCommentData.pubIdPointed = nextPubId;
+
+        vm.expectRevert(Errors.CannotCommentOnSelf.selector);
+        _publishWithSig({delegatedSigner: address(0), signerPrivKey: profileOwnerKey});
+    }
+
+    // scenarios
+    function testPostWithReferenceModuleAndComment() public {
+        mockPostData.referenceModule = address(mockReferenceModule);
+        mockPostData.referenceModuleInitData = abi.encode(1);
+        vm.prank(profileOwner);
+        postId = _post(mockPostData);
+
+        mockCommentData.pubIdPointed = postId;
+        vm.prank(profileOwner);
+        uint256 commentPubId = _publish();
+
+        DataTypes.PublicationStruct memory pub = _getPub(firstProfileId, commentPubId);
+        _verifyPublication(pub, _expectedPubFromInitData());
     }
 }
 
 contract PublishingTest_Mirror is PublishingTest_Post {
+    uint256 postId;
+
     function replicateInitData() internal override {
         mockMirrorData.profileId = mockPostData.profileId;
         mockMirrorData.referenceModule = mockPostData.referenceModule;
@@ -247,19 +343,20 @@ contract PublishingTest_Mirror is PublishingTest_Post {
         return _mirror(mockMirrorData);
     }
 
-    function _publishWithSig(address delegatedSigner, uint256 signerPrivKey)
-        internal
-        override
-        returns (uint256)
-    {
-        bytes32 digest = _getMirrorTypedDataHash(mockMirrorData, nonce, deadline);
+    function _publishWithSig(
+        address delegatedSigner,
+        uint256 signerPrivKey,
+        uint256 digestDeadline,
+        uint256 sigDeadline
+    ) internal override returns (uint256) {
+        bytes32 digest = _getMirrorTypedDataHash(mockMirrorData, nonce, digestDeadline);
 
         return
             _mirrorWithSig(
                 _buildMirrorWithSigData(
                     delegatedSigner,
                     mockMirrorData,
-                    _getSigStruct(signerPrivKey, digest, deadline)
+                    _getSigStruct(signerPrivKey, digest, sigDeadline)
                 )
             );
     }
@@ -277,8 +374,65 @@ contract PublishingTest_Mirror is PublishingTest_Post {
         PublishingTest_Post.setUp();
 
         vm.prank(profileOwner);
-        _post(mockPostData);
+        postId = _post(mockPostData);
     }
 
+    // ignored - these tests don't apply to mirrors
     function testCannotPublishNotWhitelistedCollectModule() public override {}
+
+    function testCannotPublishWithSigNotWhitelistedCollectModule() public override {}
+
+    // negatives
+
+    function testCannotMirrorNonExistentPublication() public {
+        uint256 nonExistentPubId = _getPubCount(firstProfileId) + 10;
+
+        replicateInitData();
+        mockMirrorData.pubIdPointed = nonExistentPubId;
+
+        vm.prank(profileOwner);
+        vm.expectRevert(Errors.PublicationDoesNotExist.selector);
+        _publish();
+    }
+
+    function testCannotMirrorWithSigNonExistentPublication() public {
+        uint256 nonExistentPubId = _getPubCount(firstProfileId) + 10;
+
+        replicateInitData();
+        mockMirrorData.pubIdPointed = nonExistentPubId;
+
+        vm.expectRevert(Errors.PublicationDoesNotExist.selector);
+        _publishWithSig({delegatedSigner: address(0), signerPrivKey: profileOwnerKey});
+    }
+
+    // scenarios
+    function testMirrorAnotherMirrorShouldPointToOriginalPost() public {
+        mockMirrorData.pubIdPointed = postId;
+        vm.prank(profileOwner);
+        uint256 firstMirrorId = _publish();
+
+        mockMirrorData.pubIdPointed = firstMirrorId;
+        vm.prank(profileOwner);
+        uint256 secondMirrorId = _publish();
+
+        DataTypes.PublicationStruct memory pub = _getPub(firstProfileId, secondMirrorId);
+        mockMirrorData.pubIdPointed = postId; // We're expecting a mirror to point at the original post ID
+        _verifyPublication(pub, _expectedPubFromInitData(mockMirrorData));
+    }
+
+    function testMirrorAnotherMirrorWithSigShouldPointToOriginalPost() public {
+        mockMirrorData.pubIdPointed = postId;
+        vm.prank(profileOwner);
+        uint256 firstMirrorId = _publish();
+
+        mockMirrorData.pubIdPointed = firstMirrorId;
+        uint256 secondMirrorId = _publishWithSig({
+            delegatedSigner: address(0),
+            signerPrivKey: profileOwnerKey
+        });
+
+        DataTypes.PublicationStruct memory pub = _getPub(firstProfileId, secondMirrorId);
+        mockMirrorData.pubIdPointed = postId; // We're expecting a mirror to point at the original post ID
+        _verifyPublication(pub, _expectedPubFromInitData(mockMirrorData));
+    }
 }
