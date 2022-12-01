@@ -1,26 +1,29 @@
 Collecting
 Generic
 Negatives
-[ ] User two should fail to collect without being a follower
-[ ] User two should follow, then transfer the followNFT and fail to collect
-[ ] User two should fail to collect a nonexistent publication
+// TODO: Move to only follows module test?
+[?] User two should fail to collect without being a follower
+[?] User two should follow, then transfer the followNFT and fail to collect
+[X] User two should fail to collect a nonexistent publication
 Scenarios
-[ ] Collecting should work if the collector is the publication owner even when he is not following himself and follow NFT was not deployed
-[ ] Collecting should work if the collector is the publication owner even when he is not following himself and follow NFT was deployed
+// TODO: Move to only follows module test?
+[?] Collecting should work if the collector is the publication owner even when he is not following himself and follow NFT was not deployed
+[?] Collecting should work if the collector is the publication owner even when he is not following himself and follow NFT was deployed
 [ ] Should return the expected token IDs when collecting publications
 [ ] UserTwo should follow, then collect, receive a collect NFT with the expected properties
-[ ] UserTwo should follow, then mirror, then collect on their mirror, receive a collect NFT with expected properties
+[X] UserTwo should follow, then mirror, then collect on their mirror, receive a collect NFT with expected properties
 [ ] UserTwo should follow, then mirror, mirror their mirror then collect on their latest mirror, receive a collect NFT with expected properties
 Meta-tx
 Negatives
-[ ] TestWallet should fail to collect with sig with signature deadline mismatch
-[ ] TestWallet should fail to collect with sig with invalid deadline
-[ ] TestWallet should fail to collect with sig with invalid nonce
-[ ] TestWallet should fail to collect with sig without being a follower
+[X] TestWallet should fail to collect with sig with signature deadline mismatch
+[X] TestWallet should fail to collect with sig with invalid deadline
+[X] TestWallet should fail to collect with sig with invalid nonce
+[?] TestWallet should fail to collect with sig without being a follower
 [ ] TestWallet should sign attempt to collect with sig, cancel via empty permitForAll, fail to collect with sig
 Scenarios
-[ ] TestWallet should follow, then collect with sig, receive a collect NFT with expected properties
-[ ] TestWallet should follow, mirror, then collect with sig on their mirror
+// TODO: Move to only follows module test?
+[?] TestWallet should follow, then collect with sig, receive a collect NFT with expected properties
+[X] TestWallet should follow, mirror, then collect with sig on their mirror
 
 Following
 Generic

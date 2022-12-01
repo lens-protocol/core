@@ -58,7 +58,7 @@ library DataTypes {
      * @param pubCount The number of publications made to this profile.
      * @param followModule The address of the current follow module in use by this profile, can be empty.
      * @param followNFT The address of the followNFT associated with this profile, can be empty..
-     * @param handleUnused The deprecated handle slot, no longer used. .
+     * @param handleDeprecated The deprecated handle slot, no longer used. .
      * @param imageURI The URI to be used for the profile's image.
      * @param followNFTURI The URI to be used for the follow NFT.
      */
@@ -363,6 +363,21 @@ library DataTypes {
     }
 
     /**
+     * @notice A struct containing the parameters required for the `collect()` function.
+     *
+     * @param collector The address of the collector.
+     * @param profileId The token ID of the profile to that published the content being collected.
+     * @param pubId The ID of the publication being collected.
+     * @param data The data passed to the collect module.
+     */
+    struct CollectData {
+        address collector;
+        uint256 profileId;
+        uint256 pubId;
+        bytes data;
+    }
+
+    /**
      * @notice A struct containing the parameters required for the `collectWithSig()` function. Parameters are the same as
      * the regular `collect()` function, with the collector's (signer) address and an EIP712Signature added.
      *
@@ -401,7 +416,7 @@ library DataTypes {
      * @notice A struct containing the parameters required for the `toggleFollowWithSig()` function.
      *
      * @note This does not include a delegatedSigner parameter as it is marked for deprecation.
-     * 
+     *
      * @param follower The follower which is the message signer.
      * @param profileIds The token ID array of the profiles.
      * @param enables The array of booleans to enable/disable follows.

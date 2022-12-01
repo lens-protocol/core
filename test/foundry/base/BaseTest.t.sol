@@ -348,6 +348,15 @@ contract BaseTest is TestSetup {
         return hub.mirror(mirrorData);
     }
 
+    function _collect(
+        address onBehalfOf,
+        uint256 profileId,
+        uint256 pubId,
+        bytes memory data
+    ) internal returns (uint256) {
+        return hub.collect(onBehalfOf, profileId, pubId, data);
+    }
+
     function _postWithSig(DataTypes.PostWithSigData memory postWithSigData)
         internal
         returns (uint256)
@@ -367,6 +376,13 @@ contract BaseTest is TestSetup {
         returns (uint256)
     {
         return hub.mirrorWithSig(mirrorWithSigData);
+    }
+
+    function _collectWithSig(DataTypes.CollectWithSigData memory collectWithSigData)
+        internal
+        returns (uint256)
+    {
+        return hub.collectWithSig(collectWithSigData);
     }
 
     function _setDelegatedExecutorApproval(address executor, bool approved) internal {
@@ -444,5 +460,14 @@ contract BaseTest is TestSetup {
 
     function _setFollowModuleWithSig(DataTypes.SetFollowModuleWithSigData memory vars) internal {
         hub.setFollowModuleWithSig(vars);
+    }
+    
+    function _getCollectCount(uint256 profileId, uint256 pubId) internal view returns (uint256) {
+        address collectNft = hub.getCollectNFT(profileId, pubId);
+        if (collectNft == address(0)) {
+            return 0;
+        } else {
+            return CollectNFT(collectNft).totalSupply();
+        }
     }
 }

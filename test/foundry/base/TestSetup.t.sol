@@ -45,6 +45,7 @@ contract TestSetup is Test {
     DataTypes.PostData mockPostData;
     DataTypes.CommentData mockCommentData;
     DataTypes.MirrorData mockMirrorData;
+    DataTypes.CollectData mockCollectData;
 
     function setUp() public virtual {
         // Start deployments.
@@ -148,6 +149,14 @@ contract TestSetup is Test {
             referenceModuleData: '',
             referenceModule: address(0),
             referenceModuleInitData: ''
+        });
+
+        // Precompute basic collect data.
+        mockCollectData = DataTypes.CollectData({
+            collector: profileOwner,
+            profileId: firstProfileId,
+            pubId: 1,
+            data: ''
         });
 
         hub.createProfile(mockCreateProfileData);

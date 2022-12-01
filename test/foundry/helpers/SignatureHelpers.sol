@@ -143,4 +143,20 @@ contract SignatureHelpers {
                 sig: sig
             });
     }
+
+    function _buildCollectWithSigData(
+        address delegatedSigner,
+        DataTypes.CollectData memory collectData,
+        DataTypes.EIP712Signature memory sig
+    ) internal pure returns (DataTypes.CollectWithSigData memory) {
+        return
+            DataTypes.CollectWithSigData({
+                delegatedSigner: delegatedSigner,
+                collector: collectData.collector,
+                profileId: collectData.profileId,
+                pubId: collectData.pubId,
+                data: collectData.data,
+                sig: sig
+            });
+    }
 }
