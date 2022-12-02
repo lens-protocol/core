@@ -44,7 +44,7 @@ contract FollowNFT is HubRestricted, LensNFTBase, ERC2981CollectionRoyalties, IF
 
     bytes32 internal constant DELEGATE_BY_SIG_TYPEHASH =
         keccak256(
-            'DelegateBySig(address delegator,address delegatee,uint256 nonce,uint256 deadline)'
+            'DelegateBySig(uint256 delegatorProfileId,address delegatee,uint256 nonce,uint256 deadline)'
         );
 
     mapping(address => mapping(uint256 => Snapshot)) internal _snapshots;
@@ -200,7 +200,10 @@ contract FollowNFT is HubRestricted, LensNFTBase, ERC2981CollectionRoyalties, IF
 
     // Approve someone to set me as follower on a specific asset.
     // For any asset you must use delegated execution feature with a contract adding restrictions.
-    function approveFollowWithToken(uint256 followerProfileId, uint256 followTokenId) external {
+    function approveFollowWithToken(uint256 followerProfileId, uint256 followTokenId)
+        external
+        override
+    {
         if (_tokenData[followTokenId].mintTimestamp == 0) {
             revert FollowTokenDoesNotExist();
         }
@@ -211,7 +214,7 @@ contract FollowNFT is HubRestricted, LensNFTBase, ERC2981CollectionRoyalties, IF
     }
 
     // Approve someone to set any follower on one of my wrapped tokens.
-    function approveSetFollowerInToken(address operator, uint256 followTokenId) external {
+    function approveSetFollowerInToken(address operator, uint256 followTokenId) external override {
         TokenData memory followToken = _tokenData[followTokenId];
         if (followToken.mintTimestamp == 0) {
             revert FollowTokenDoesNotExist();
@@ -229,7 +232,7 @@ contract FollowNFT is HubRestricted, LensNFTBase, ERC2981CollectionRoyalties, IF
      * @dev Unties the follow token from the follower's profile token, and wrapps it into the ERC-721 untied follow
      * collection.
      */
-    function untieAndWrap(uint256 followTokenId) external {
+    function untieAndWrap(uint256 followTokenId) external override {
         TokenData memory followToken = _tokenData[followTokenId];
         if (followToken.mintTimestamp == 0) {
             revert FollowTokenDoesNotExist();
@@ -247,7 +250,7 @@ contract FollowNFT is HubRestricted, LensNFTBase, ERC2981CollectionRoyalties, IF
      * @dev Unwrapps the follow token from the ERC-721 untied follow collection, and ties it to the follower's profile
      * token.
      */
-    function unwrapAndTie(uint256 followerProfileId) external {
+    function unwrapAndTie(uint256 followerProfileId) external override {
         uint256 followTokenId = _followTokenIdByFollowerProfileId[followerProfileId];
         if (followTokenId == 0) {
             revert NotFollowing();
@@ -276,33 +279,33 @@ contract FollowNFT is HubRestricted, LensNFTBase, ERC2981CollectionRoyalties, IF
     }
 
     /// @inheritdoc IFollowNFT
-    function delegate(uint256 delegatorProfile, address delegatee) external override {
-        if (_followTokenIdByFollowerProfileId[delegatorProfile] == 0) {
+    function delegate(uint256 delegatorProfileId, address delegatee) external override {
+        if (_followTokenIdByFollowerProfileId[delegatorProfileId] == 0) {
             revert NotFollowing();
         }
-        if (msg.sender != IERC721(HUB).ownerOf(delegatorProfile)) {
+        if (msg.sender != IERC721(HUB).ownerOf(delegatorProfileId)) {
             revert Errors.NotProfileOwner();
         }
-        _delegate(delegatorProfile, delegatee);
+        _delegate(delegatorProfileId, delegatee);
     }
 
     /// @inheritdoc IFollowNFT
     function delegateBySig(
-        uint256 delegatorProfile,
+        uint256 delegatorProfileId,
         address delegatee,
         DataTypes.EIP712Signature calldata sig
     ) external override {
-        if (_followTokenIdByFollowerProfileId[delegatorProfile] == 0) {
+        if (_followTokenIdByFollowerProfileId[delegatorProfileId] == 0) {
             revert NotFollowing();
         }
-        address delegatorOwner = IERC721(HUB).ownerOf(delegatorProfile);
+        address delegatorOwner = IERC721(HUB).ownerOf(delegatorProfileId);
         unchecked {
             MetaTxHelpers._validateRecoveredAddress(
                 _calculateDigest(
                     keccak256(
                         abi.encode(
                             DELEGATE_BY_SIG_TYPEHASH,
-                            delegatorProfile,
+                            delegatorProfileId,
                             delegatee,
                             sigNonces[delegatorOwner]++,
                             sig.deadline
@@ -313,7 +316,7 @@ contract FollowNFT is HubRestricted, LensNFTBase, ERC2981CollectionRoyalties, IF
                 sig
             );
         }
-        _delegate(delegatorProfile, delegatee);
+        _delegate(delegatorProfileId, delegatee);
     }
 
     /// @inheritdoc IFollowNFT
@@ -685,10 +688,10 @@ contract FollowNFT is HubRestricted, LensNFTBase, ERC2981CollectionRoyalties, IF
         }
     }
 
-    function _delegate(uint256 delegatorProfile, address delegatee) internal {
-        address previousDelegate = _delegates[delegatorProfile];
+    function _delegate(uint256 delegatorProfileId, address delegatee) internal {
+        address previousDelegate = _delegates[delegatorProfileId];
         if (previousDelegate != delegatee) {
-            _delegates[delegatorProfile] = delegatee;
+            _delegates[delegatorProfileId] = delegatee;
             _moveDelegate(previousDelegate, delegatee);
         }
     }
