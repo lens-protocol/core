@@ -4,16 +4,7 @@ pragma solidity ^0.8.13;
 import './base/BaseTest.t.sol';
 import './helpers/SignatureHelpers.sol';
 import {PublishingHelpers} from './helpers/PublishingHelpers.sol';
-
-contract SigSetup {
-    uint256 nonce;
-    uint256 deadline;
-
-    function setUp() public virtual {
-        nonce = 0;
-        deadline = type(uint256).max;
-    }
-}
+import {SigSetup} from './helpers/SignatureHelpers.sol';
 
 contract PublishingTest_Post is BaseTest, SignatureHelpers, PublishingHelpers, SigSetup {
     function replicateInitData() internal virtual {}

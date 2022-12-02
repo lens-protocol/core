@@ -54,6 +54,7 @@ contract UpgradeForkTest is BaseTest {
     address mockReferenceModuleAddr;
 
     function setUp() public override {
+        // TODO: Consider adding a "FORK" bool env variable to explicitly enable fork testing and not require ENVs for general tests
         string memory polygonForkUrl = vm.envString('POLYGON_RPC_URL');
         string memory mumbaiForkUrl = vm.envString('MUMBAI_RPC_URL');
 

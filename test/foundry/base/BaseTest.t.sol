@@ -325,6 +325,17 @@ contract BaseTest is TestSetup {
         return ret;
     }
 
+    // Private functions
+    function _buildSetDelegatedExecutorApprovalWithSigData(
+        address onBehalfOf,
+        address executor,
+        bool approved,
+        DataTypes.EIP712Signature memory sig
+    ) internal pure returns (DataTypes.SetDelegatedExecutorApprovalWithSigData memory) {
+        return
+            DataTypes.SetDelegatedExecutorApprovalWithSigData(onBehalfOf, executor, approved, sig);
+    }
+
     function _post(DataTypes.PostData memory postData) internal returns (uint256) {
         return hub.post(postData);
     }
@@ -335,6 +346,15 @@ contract BaseTest is TestSetup {
 
     function _mirror(DataTypes.MirrorData memory mirrorData) internal returns (uint256) {
         return hub.mirror(mirrorData);
+    }
+
+    function _collect(
+        address onBehalfOf,
+        uint256 profileId,
+        uint256 pubId,
+        bytes memory data
+    ) internal returns (uint256) {
+        return hub.collect(onBehalfOf, profileId, pubId, data);
     }
 
     function _postWithSig(DataTypes.PostWithSigData memory postWithSigData)
@@ -358,6 +378,13 @@ contract BaseTest is TestSetup {
         return hub.mirrorWithSig(mirrorWithSigData);
     }
 
+    function _collectWithSig(DataTypes.CollectWithSigData memory collectWithSigData)
+        internal
+        returns (uint256)
+    {
+        return hub.collectWithSig(collectWithSigData);
+    }
+
     function _setDelegatedExecutorApproval(address executor, bool approved) internal {
         hub.setDelegatedExecutorApproval(executor, approved);
     }
@@ -376,5 +403,71 @@ contract BaseTest is TestSetup {
 
     function _getPubCount(uint256 profileId) internal view returns (uint256) {
         return hub.getPubCount(profileId);
+    }
+
+    function _createProfile(address newProfileOwner) internal returns (uint256) {
+        DataTypes.CreateProfileData memory createProfileData = DataTypes.CreateProfileData({
+            to: newProfileOwner,
+            imageURI: mockCreateProfileData.imageURI,
+            followModule: mockCreateProfileData.followModule,
+            followModuleInitData: mockCreateProfileData.followModuleInitData,
+            followNFTURI: mockCreateProfileData.followNFTURI
+        });
+
+        return hub.createProfile(createProfileData);
+    }
+
+    function _setState(DataTypes.ProtocolState newState) internal {
+        hub.setState(newState);
+    }
+
+    function _getState() internal view returns (DataTypes.ProtocolState) {
+        return hub.getState();
+    }
+
+    function _setEmergencyAdmin(address newEmergencyAdmin) internal {
+        hub.setEmergencyAdmin(newEmergencyAdmin);
+    }
+
+    function _transferProfile(
+        address msgSender,
+        address from,
+        address to,
+        uint256 tokenId
+    ) internal {
+        vm.prank(msgSender);
+        hub.transferFrom(from, to, tokenId);
+    }
+
+    function _setDelegatedExecutorApproval(
+        address msgSender,
+        address executor,
+        bool approved
+    ) internal {
+        vm.prank(msgSender);
+        hub.setDelegatedExecutorApproval(executor, approved);
+    }
+
+    function _setFollowModule(
+        address msgSender,
+        uint256 profileId,
+        address followModule,
+        bytes memory followModuleInitData
+    ) internal {
+        vm.prank(msgSender);
+        hub.setFollowModule(profileId, followModule, followModuleInitData);
+    }
+
+    function _setFollowModuleWithSig(DataTypes.SetFollowModuleWithSigData memory vars) internal {
+        hub.setFollowModuleWithSig(vars);
+    }
+    
+    function _getCollectCount(uint256 profileId, uint256 pubId) internal view returns (uint256) {
+        address collectNft = hub.getCollectNFT(profileId, pubId);
+        if (collectNft == address(0)) {
+            return 0;
+        } else {
+            return CollectNFT(collectNft).totalSupply();
+        }
     }
 }

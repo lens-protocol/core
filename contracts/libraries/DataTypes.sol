@@ -58,7 +58,7 @@ library DataTypes {
      * @param pubCount The number of publications made to this profile.
      * @param followModule The address of the current follow module in use by this profile, can be empty.
      * @param followNFT The address of the followNFT associated with this profile, can be empty..
-     * @param handleUnused The deprecated handle slot, no longer used. .
+     * @param handleDeprecated The deprecated handle slot, no longer used. .
      * @param imageURI The URI to be used for the profile's image.
      * @param followNFTURI The URI to be used for the follow NFT.
      */
@@ -377,6 +377,21 @@ library DataTypes {
         uint256[] idsOfProfilesToSetBlockStatus;
         bool[] blockStatus;
         EIP712Signature sig;
+    }
+
+    /**
+     * @notice A struct containing the parameters required for the `collect()` function.
+     *
+     * @param collector The address of the collector.
+     * @param profileId The token ID of the profile to that published the content being collected.
+     * @param pubId The ID of the publication being collected.
+     * @param data The data passed to the collect module.
+     */
+    struct CollectData {
+        address collector;
+        uint256 profileId;
+        uint256 pubId;
+        bytes data;
     }
 
     /**

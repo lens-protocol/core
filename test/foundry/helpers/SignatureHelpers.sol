@@ -1,5 +1,15 @@
 import '../../../contracts/libraries/DataTypes.sol';
 
+contract SigSetup {
+    uint256 nonce;
+    uint256 deadline;
+
+    function setUp() public virtual {
+        nonce = 0;
+        deadline = type(uint256).max;
+    }
+}
+
 contract SignatureHelpers {
     // Private functions
     function _buildPostWithSigData(
@@ -130,6 +140,22 @@ contract SignatureHelpers {
                 referenceModuleData: mirrorData.referenceModuleData,
                 referenceModule: mirrorData.referenceModule,
                 referenceModuleInitData: mirrorData.referenceModuleInitData,
+                sig: sig
+            });
+    }
+
+    function _buildCollectWithSigData(
+        address delegatedSigner,
+        DataTypes.CollectData memory collectData,
+        DataTypes.EIP712Signature memory sig
+    ) internal pure returns (DataTypes.CollectWithSigData memory) {
+        return
+            DataTypes.CollectWithSigData({
+                delegatedSigner: delegatedSigner,
+                collector: collectData.collector,
+                profileId: collectData.profileId,
+                pubId: collectData.pubId,
+                data: collectData.data,
                 sig: sig
             });
     }
