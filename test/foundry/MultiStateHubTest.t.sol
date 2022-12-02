@@ -117,7 +117,7 @@ contract MultiStateHubTest_PausedState_Direct is BaseTest {
     }
 
     function _mockSetFollowModule() internal virtual {
-        _setFollowModule(profileOwner, firstProfileId, address(0), '');
+        _setFollowModule(profileOwner, newProfileId, address(0), '');
     }
 
     function _mockSetDelegatedExecutorApproval() internal virtual {
@@ -133,7 +133,7 @@ contract MultiStateHubTest_PausedState_Direct is BaseTest {
             msgSender: profileOwner,
             from: profileOwner,
             to: address(111),
-            tokenId: firstProfileId
+            tokenId: newProfileId
         });
     }
 
@@ -179,7 +179,7 @@ contract MultiStateHubTest_PausedState_WithSig is MultiStateHubTest_PausedState_
 
     function _mockSetFollowModule() internal override {
         bytes32 digest = _getSetFollowModuleTypedDataHash(
-            firstProfileId,
+            newProfileId,
             address(0),
             '',
             nonce,
@@ -190,7 +190,7 @@ contract MultiStateHubTest_PausedState_WithSig is MultiStateHubTest_PausedState_
             _setFollowModuleWithSig(
                 DataTypes.SetFollowModuleWithSigData({
                     delegatedSigner: address(0),
-                    profileId: firstProfileId,
+                    profileId: newProfileId,
                     followModule: address(0),
                     followModuleInitData: '',
                     sig: _getSigStruct(profileOwnerKey, digest, deadline)

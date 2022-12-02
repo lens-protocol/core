@@ -149,10 +149,10 @@ contract UpgradeForkTest is BaseTest {
             // precompute basic profile creaton data.
             mockCreateProfileData = DataTypes.CreateProfileData({
                 to: me,
-                imageURI: mockURI,
+                imageURI: MOCK_URI,
                 followModule: address(0),
                 followModuleInitData: abi.encode(1),
-                followNFTURI: mockURI
+                followNFTURI: MOCK_URI
             });
 
             OldCreateProfileData memory oldCreateProfileData = OldCreateProfileData(
@@ -374,16 +374,16 @@ contract UpgradeForkTest is BaseTest {
         // precompute basic profile creaton data.
         mockCreateProfileData = DataTypes.CreateProfileData({
             to: me,
-            imageURI: mockURI,
+            imageURI: MOCK_URI,
             followModule: address(0),
             followModuleInitData: abi.encode(1),
-            followNFTURI: mockURI
+            followNFTURI: MOCK_URI
         });
 
         // Precompute basic post data.
         mockPostData = DataTypes.PostData({
             profileId: 0,
-            contentURI: mockURI,
+            contentURI: MOCK_URI,
             collectModule: address(0),
             collectModuleInitData: abi.encode(1),
             referenceModule: address(0),
@@ -393,8 +393,8 @@ contract UpgradeForkTest is BaseTest {
         // Precompute basic comment data.
         mockCommentData = DataTypes.CommentData({
             profileId: 0,
-            contentURI: mockURI,
-            profileIdPointed: firstProfileId,
+            contentURI: MOCK_URI,
+            profileIdPointed: newProfileId,
             pubIdPointed: 1,
             referenceModuleData: '',
             collectModule: address(0),
@@ -406,7 +406,7 @@ contract UpgradeForkTest is BaseTest {
         // Precompute basic mirror data.
         mockMirrorData = DataTypes.MirrorData({
             profileId: 0,
-            profileIdPointed: firstProfileId,
+            profileIdPointed: newProfileId,
             pubIdPointed: 1,
             referenceModuleData: '',
             referenceModule: address(0),

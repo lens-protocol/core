@@ -6,8 +6,6 @@ import 'forge-std/Test.sol';
 import 'contracts/libraries/DataTypes.sol';
 
 contract CollectingHelpers is TestSetup {
-    using Strings for uint256;
-
     CollectNFT _collectNftAfter;
 
     function _checkCollectNFTBefore() internal returns (uint256) {
@@ -41,24 +39,24 @@ contract CollectingHelpers is TestSetup {
         assertEq(_collectNftAfter.symbol(), _expectedSymbol());
     }
 
-    function _expectedName() internal view virtual returns (string memory) {
+    function _expectedName() internal virtual returns (string memory) {
         return
             string(
                 abi.encodePacked(
-                    mockCollectData.profileId.toString(),
+                    vm.toString(mockCollectData.profileId),
                     COLLECT_NFT_NAME_INFIX,
-                    uint256(mockCollectData.pubId).toString()
+                    vm.toString(mockCollectData.pubId)
                 )
             );
     }
 
-    function _expectedSymbol() internal view virtual returns (string memory) {
+    function _expectedSymbol() internal virtual returns (string memory) {
         return
             string(
                 abi.encodePacked(
-                    mockCollectData.profileId.toString(),
+                    vm.toString(mockCollectData.profileId),
                     COLLECT_NFT_SYMBOL_INFIX,
-                    uint256(mockCollectData.pubId).toString()
+                    vm.toString(mockCollectData.pubId)
                 )
             );
     }

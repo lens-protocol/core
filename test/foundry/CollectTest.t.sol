@@ -16,7 +16,7 @@ contract CollectTest is BaseTest {
     // negatives
     function testCollectNonexistantPublicationFails() public {
         vm.expectRevert(Errors.PublicationDoesNotExist.selector);
-        hub.collect(me, firstProfileId, 2, '');
+        hub.collect(me, newProfileId, 2, '');
     }
 
     function testCollectZeroPublicationFails() public {
@@ -27,28 +27,24 @@ contract CollectTest is BaseTest {
     function testCollectNotExecutorFails() public {
         vm.prank(otherSigner);
         vm.expectRevert(Errors.ExecutorInvalid.selector);
-        hub.collect(me, firstProfileId, 1, '');
+        hub.collect(me, newProfileId, 1, '');
     }
 
     // positives
     function testCollect() public {
-        assertEq(hub.getCollectNFT(firstProfileId, 1), address(0));
+        assertEq(hub.getCollectNFT(newProfileId, 1), address(0));
 
-        uint256 nftId = hub.collect(me, firstProfileId, 1, '');
-        CollectNFT nft = CollectNFT(hub.getCollectNFT(firstProfileId, 1));
+        uint256 nftId = hub.collect(me, newProfileId, 1, '');
+        CollectNFT nft = CollectNFT(hub.getCollectNFT(newProfileId, 1));
         assertEq(nftId, 1);
         assertEq(nft.ownerOf(1), me);
 
         string memory expectedName = string(
-            abi.encodePacked(
-                firstProfileId.toString(),
-                COLLECT_NFT_NAME_INFIX,
-                uint256(1).toString()
-            )
+            abi.encodePacked(newProfileId.toString(), COLLECT_NFT_NAME_INFIX, uint256(1).toString())
         );
         string memory expectedSymbol = string(
             abi.encodePacked(
-                firstProfileId.toString(),
+                newProfileId.toString(),
                 COLLECT_NFT_SYMBOL_INFIX,
                 uint256(1).toString()
             )
@@ -62,9 +58,9 @@ contract CollectTest is BaseTest {
         hub.setDelegatedExecutorApproval(otherSigner, true);
 
         vm.prank(otherSigner);
-        uint256 nftId = hub.collect(me, firstProfileId, 1, '');
+        uint256 nftId = hub.collect(me, newProfileId, 1, '');
 
-        CollectNFT nft = CollectNFT(hub.getCollectNFT(firstProfileId, 1));
+        CollectNFT nft = CollectNFT(hub.getCollectNFT(newProfileId, 1));
         assertEq(nftId, 1);
         assertEq(nft.ownerOf(1), me);
     }
@@ -73,13 +69,13 @@ contract CollectTest is BaseTest {
         vm.prank(profileOwner);
         hub.mirror(mockMirrorData);
 
-        uint256 nftId = hub.collect(me, firstProfileId, 2, '');
+        uint256 nftId = hub.collect(me, newProfileId, 2, '');
 
         // Ensure the mirror doesn't have an associated collect NFT.
-        assertEq(hub.getCollectNFT(firstProfileId, 2), address(0));
+        assertEq(hub.getCollectNFT(newProfileId, 2), address(0));
 
         // Ensure the original publication does have an associated collect NFT.
-        CollectNFT nft = CollectNFT(hub.getCollectNFT(firstProfileId, 1));
+        CollectNFT nft = CollectNFT(hub.getCollectNFT(newProfileId, 1));
         assertEq(nftId, 1);
         assertEq(nft.ownerOf(1), me);
     }
@@ -91,13 +87,13 @@ contract CollectTest is BaseTest {
         hub.setDelegatedExecutorApproval(otherSigner, true);
 
         vm.prank(otherSigner);
-        uint256 nftId = hub.collect(me, firstProfileId, 2, '');
+        uint256 nftId = hub.collect(me, newProfileId, 2, '');
 
         // Ensure the mirror doesn't have an associated collect NFT.
-        assertEq(hub.getCollectNFT(firstProfileId, 2), address(0));
+        assertEq(hub.getCollectNFT(newProfileId, 2), address(0));
 
         // Ensure the original publication does have an associated collect NFT.
-        CollectNFT nft = CollectNFT(hub.getCollectNFT(firstProfileId, 1));
+        CollectNFT nft = CollectNFT(hub.getCollectNFT(newProfileId, 1));
         assertEq(nftId, 1);
         assertEq(nft.ownerOf(1), me);
     }
@@ -107,13 +103,13 @@ contract CollectTest is BaseTest {
     function testCollectWithSigInvalidSignerFails() public {
         uint256 nonce = 0;
         uint256 deadline = type(uint256).max;
-        bytes32 digest = _getCollectTypedDataHash(firstProfileId, 1, '', nonce, deadline);
+        bytes32 digest = _getCollectTypedDataHash(newProfileId, 1, '', nonce, deadline);
         vm.expectRevert(Errors.SignatureInvalid.selector);
         hub.collectWithSig(
             _buildCollectWithSigData({
                 delegatedSigner: address(0),
                 collector: profileOwner,
-                profileId: firstProfileId,
+                profileId: newProfileId,
                 pubId: 1,
                 data: '',
                 sig: _getSigStruct(otherSignerKey, digest, deadline)
@@ -124,13 +120,13 @@ contract CollectTest is BaseTest {
     function testCollectWithSigNotExecutorFails() public {
         uint256 nonce = 0;
         uint256 deadline = type(uint256).max;
-        bytes32 digest = _getCollectTypedDataHash(firstProfileId, 1, '', nonce, deadline);
+        bytes32 digest = _getCollectTypedDataHash(newProfileId, 1, '', nonce, deadline);
         vm.expectRevert(Errors.ExecutorInvalid.selector);
         hub.collectWithSig(
             _buildCollectWithSigData({
                 delegatedSigner: otherSigner,
                 collector: profileOwner,
-                profileId: firstProfileId,
+                profileId: newProfileId,
                 pubId: 1,
                 data: '',
                 sig: _getSigStruct(otherSignerKey, digest, deadline)
@@ -142,30 +138,26 @@ contract CollectTest is BaseTest {
     function testCollectWithSig() public {
         uint256 nonce = 0;
         uint256 deadline = type(uint256).max;
-        bytes32 digest = _getCollectTypedDataHash(firstProfileId, 1, '', nonce, deadline);
+        bytes32 digest = _getCollectTypedDataHash(newProfileId, 1, '', nonce, deadline);
         uint256 nftId = hub.collectWithSig(
             _buildCollectWithSigData({
                 delegatedSigner: address(0),
                 collector: otherSigner,
-                profileId: firstProfileId,
+                profileId: newProfileId,
                 pubId: 1,
                 data: '',
                 sig: _getSigStruct(otherSignerKey, digest, deadline)
             })
         );
 
-        CollectNFT nft = CollectNFT(hub.getCollectNFT(firstProfileId, 1));
-        
+        CollectNFT nft = CollectNFT(hub.getCollectNFT(newProfileId, 1));
+
         string memory expectedName = string(
-            abi.encodePacked(
-                firstProfileId.toString(),
-                COLLECT_NFT_NAME_INFIX,
-                uint256(1).toString()
-            )
+            abi.encodePacked(newProfileId.toString(), COLLECT_NFT_NAME_INFIX, uint256(1).toString())
         );
         string memory expectedSymbol = string(
             abi.encodePacked(
-                firstProfileId.toString(),
+                newProfileId.toString(),
                 COLLECT_NFT_SYMBOL_INFIX,
                 uint256(1).toString()
             )
@@ -180,7 +172,7 @@ contract CollectTest is BaseTest {
     function testCollectWithSigMirror() public {
         uint256 nonce = 0;
         uint256 deadline = type(uint256).max;
-        bytes32 digest = _getCollectTypedDataHash(firstProfileId, 2, '', nonce, deadline);
+        bytes32 digest = _getCollectTypedDataHash(newProfileId, 2, '', nonce, deadline);
 
         vm.prank(profileOwner);
         hub.mirror(mockMirrorData);
@@ -189,7 +181,7 @@ contract CollectTest is BaseTest {
             _buildCollectWithSigData({
                 delegatedSigner: address(0),
                 collector: otherSigner,
-                profileId: firstProfileId,
+                profileId: newProfileId,
                 pubId: 2,
                 data: '',
                 sig: _getSigStruct(otherSignerKey, digest, deadline)
@@ -197,7 +189,7 @@ contract CollectTest is BaseTest {
         );
 
         // Ensure the mirror doesn't have an associated collect NFT.
-        assertEq(hub.getCollectNFT(firstProfileId, 2), address(0));
+        assertEq(hub.getCollectNFT(newProfileId, 2), address(0));
 
         // Ensure the original publication does have an associated collect NFT.
         CollectNFT nft = CollectNFT(hub.getCollectNFT(1, 1));
@@ -211,19 +203,19 @@ contract CollectTest is BaseTest {
 
         uint256 nonce = 0;
         uint256 deadline = type(uint256).max;
-        bytes32 digest = _getCollectTypedDataHash(firstProfileId, 1, '', nonce, deadline);
+        bytes32 digest = _getCollectTypedDataHash(newProfileId, 1, '', nonce, deadline);
         uint256 nftId = hub.collectWithSig(
             _buildCollectWithSigData({
                 delegatedSigner: profileOwner,
                 collector: otherSigner,
-                profileId: firstProfileId,
+                profileId: newProfileId,
                 pubId: 1,
                 data: '',
                 sig: _getSigStruct(profileOwnerKey, digest, deadline)
             })
         );
 
-        CollectNFT nft = CollectNFT(hub.getCollectNFT(firstProfileId, 1));
+        CollectNFT nft = CollectNFT(hub.getCollectNFT(newProfileId, 1));
         assertEq(nftId, 1);
         assertEq(nft.ownerOf(1), otherSigner);
     }
@@ -234,7 +226,7 @@ contract CollectTest is BaseTest {
 
         uint256 nonce = 0;
         uint256 deadline = type(uint256).max;
-        bytes32 digest = _getCollectTypedDataHash(firstProfileId, 2, '', nonce, deadline);
+        bytes32 digest = _getCollectTypedDataHash(newProfileId, 2, '', nonce, deadline);
 
         vm.prank(profileOwner);
         hub.mirror(mockMirrorData);
@@ -243,7 +235,7 @@ contract CollectTest is BaseTest {
             _buildCollectWithSigData({
                 delegatedSigner: profileOwner,
                 collector: otherSigner,
-                profileId: firstProfileId,
+                profileId: newProfileId,
                 pubId: 2,
                 data: '',
                 sig: _getSigStruct(profileOwnerKey, digest, deadline)
@@ -251,7 +243,7 @@ contract CollectTest is BaseTest {
         );
 
         // Ensure the mirror doesn't have an associated collect NFT.
-        assertEq(hub.getCollectNFT(firstProfileId, 2), address(0));
+        assertEq(hub.getCollectNFT(newProfileId, 2), address(0));
 
         // Ensure the original publication does have an associated collect NFT.
         CollectNFT nft = CollectNFT(hub.getCollectNFT(1, 1));

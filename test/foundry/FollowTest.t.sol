@@ -11,25 +11,21 @@ contract FollowTest is BaseTest {
     function testFollowNotExecutorFails() public {
         vm.prank(otherSigner);
         vm.expectRevert(Errors.ExecutorInvalid.selector);
-        hub.follow(me, _toUint256Array(firstProfileId), _toBytesArray(''));
+        hub.follow(me, _toUint256Array(newProfileId), _toBytesArray(''));
     }
 
     // Positives
     function testFollow() public {
-        assertEq(hub.getFollowNFT(firstProfileId), address(0));
+        assertEq(hub.getFollowNFT(newProfileId), address(0));
 
-        uint256[] memory nftIds = hub.follow(
-            me,
-            _toUint256Array(firstProfileId),
-            _toBytesArray('')
-        );
+        uint256[] memory nftIds = hub.follow(me, _toUint256Array(newProfileId), _toBytesArray(''));
 
-        FollowNFT nft = FollowNFT(hub.getFollowNFT(firstProfileId));
+        FollowNFT nft = FollowNFT(hub.getFollowNFT(newProfileId));
         string memory expectedName = string(
-            abi.encodePacked(firstProfileId.toString(), FOLLOW_NFT_NAME_SUFFIX)
+            abi.encodePacked(newProfileId.toString(), FOLLOW_NFT_NAME_SUFFIX)
         );
         string memory expectedSymbol = string(
-            abi.encodePacked(firstProfileId.toString(), FOLLOW_NFT_SYMBOL_SUFFIX)
+            abi.encodePacked(newProfileId.toString(), FOLLOW_NFT_SYMBOL_SUFFIX)
         );
         assertEq(nft.name(), expectedName);
         assertEq(nft.symbol(), expectedSymbol);
@@ -42,13 +38,9 @@ contract FollowTest is BaseTest {
         hub.setDelegatedExecutorApproval(otherSigner, true);
 
         vm.prank(otherSigner);
-        uint256[] memory nftIds = hub.follow(
-            me,
-            _toUint256Array(firstProfileId),
-            _toBytesArray('')
-        );
+        uint256[] memory nftIds = hub.follow(me, _toUint256Array(newProfileId), _toBytesArray(''));
 
-        FollowNFT nft = FollowNFT(hub.getFollowNFT(firstProfileId));
+        FollowNFT nft = FollowNFT(hub.getFollowNFT(newProfileId));
         assertEq(nftIds.length, 1);
         assertEq(nftIds[0], 1);
         assertEq(nft.ownerOf(1), me);
@@ -58,7 +50,7 @@ contract FollowTest is BaseTest {
     // Negatives
     function testFollowWithSigInvalidSignerFails() public {
         uint256[] memory profileIds = new uint256[](1);
-        profileIds[0] = firstProfileId;
+        profileIds[0] = newProfileId;
         bytes[] memory datas = new bytes[](1);
         datas[0] = '';
         uint256 nonce = 0;
@@ -79,7 +71,7 @@ contract FollowTest is BaseTest {
 
     function testFollowWithSigNotExecutorFails() public {
         uint256[] memory profileIds = new uint256[](1);
-        profileIds[0] = firstProfileId;
+        profileIds[0] = newProfileId;
         bytes[] memory datas = new bytes[](1);
         datas[0] = '';
         uint256 nonce = 0;
@@ -100,10 +92,10 @@ contract FollowTest is BaseTest {
 
     // Positives
     function testFollowWithSig() public {
-        assertEq(hub.getFollowNFT(firstProfileId), address(0));
+        assertEq(hub.getFollowNFT(newProfileId), address(0));
 
         uint256[] memory profileIds = new uint256[](1);
-        profileIds[0] = firstProfileId;
+        profileIds[0] = newProfileId;
         bytes[] memory datas = new bytes[](1);
         datas[0] = '';
         uint256 nonce = 0;
@@ -120,12 +112,12 @@ contract FollowTest is BaseTest {
             })
         );
 
-        FollowNFT nft = FollowNFT(hub.getFollowNFT(firstProfileId));
+        FollowNFT nft = FollowNFT(hub.getFollowNFT(newProfileId));
         string memory expectedName = string(
-            abi.encodePacked(firstProfileId.toString(), FOLLOW_NFT_NAME_SUFFIX)
+            abi.encodePacked(newProfileId.toString(), FOLLOW_NFT_NAME_SUFFIX)
         );
         string memory expectedSymbol = string(
-            abi.encodePacked(firstProfileId.toString(), FOLLOW_NFT_SYMBOL_SUFFIX)
+            abi.encodePacked(newProfileId.toString(), FOLLOW_NFT_SYMBOL_SUFFIX)
         );
         assertEq(nft.name(), expectedName);
         assertEq(nft.symbol(), expectedSymbol);
@@ -139,7 +131,7 @@ contract FollowTest is BaseTest {
         hub.setDelegatedExecutorApproval(profileOwner, true);
 
         uint256[] memory profileIds = new uint256[](1);
-        profileIds[0] = firstProfileId;
+        profileIds[0] = newProfileId;
         bytes[] memory datas = new bytes[](1);
         datas[0] = '';
         uint256 nonce = 0;
@@ -156,7 +148,7 @@ contract FollowTest is BaseTest {
             })
         );
 
-        FollowNFT nft = FollowNFT(hub.getFollowNFT(firstProfileId));
+        FollowNFT nft = FollowNFT(hub.getFollowNFT(newProfileId));
         assertEq(nftIds.length, 1);
         assertEq(nftIds[0], 1);
         assertEq(nft.ownerOf(1), otherSigner);
