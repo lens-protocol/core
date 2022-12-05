@@ -75,21 +75,21 @@ Scenarios
 // Replaced dispatcher with DelegatedExecutor for the following two tests:
 [X] Governance should pause the hub, setting dispatcher should fail, then governance unpauses the hub and setting dispatcher should work
 [X] Governance should pause the hub, setting dispatcher with sig should fail, then governance unpauses the hub and setting dispatcher with sig should work
-[ ] Governance should pause the hub, setting profile URI should fail, then governance unpauses the hub and setting profile URI should work
-[ ] Governance should pause the hub, setting profile URI with sig should fail, then governance unpauses the hub and setting profile URI should work
-[ ] Governance should pause the hub, setting follow NFT URI should fail, then governance unpauses the hub and setting follow NFT URI should work
-[ ] Governance should pause the hub, setting follow NFT URI with sig should fail, then governance unpauses the hub and setting follow NFT URI should work
-[ ] Governance should pause the hub, posting should fail, then governance unpauses the hub and posting should work
-[ ] Governance should pause the hub, posting with sig should fail, then governance unpauses the hub and posting with sig should work
-[ ] Governance should pause the hub, commenting should fail, then governance unpauses the hub and commenting should work
-[ ] Governance should pause the hub, commenting with sig should fail, then governance unpauses the hub and commenting with sig should work
-[ ] Governance should pause the hub, mirroring should fail, then governance unpauses the hub and mirroring should work
-[ ] Governance should pause the hub, mirroring with sig should fail, then governance unpauses the hub and mirroring with sig should work
-[ ] Governance should pause the hub, burning should fail, then governance unpauses the hub and burning should work
-[ ] Governance should pause the hub, following should fail, then governance unpauses the hub and following should work
-[ ] Governance should pause the hub, following with sig should fail, then governance unpauses the hub and following with sig should work
-[ ] Governance should pause the hub, collecting should fail, then governance unpauses the hub and collecting should work
-[ ] Governance should pause the hub, collecting with sig should fail, then governance unpauses the hub and collecting with sig should work
+[X] Governance should pause the hub, setting profile URI should fail, then governance unpauses the hub and setting profile URI should work
+[X] Governance should pause the hub, setting profile URI with sig should fail, then governance unpauses the hub and setting profile URI should work
+[X] Governance should pause the hub, setting follow NFT URI should fail, then governance unpauses the hub and setting follow NFT URI should work
+[X] Governance should pause the hub, setting follow NFT URI with sig should fail, then governance unpauses the hub and setting follow NFT URI should work
+[X] Governance should pause the hub, posting should fail, then governance unpauses the hub and posting should work
+[X] Governance should pause the hub, posting with sig should fail, then governance unpauses the hub and posting with sig should work
+[X] Governance should pause the hub, commenting should fail, then governance unpauses the hub and commenting should work
+[X] Governance should pause the hub, commenting with sig should fail, then governance unpauses the hub and commenting with sig should work
+[X] Governance should pause the hub, mirroring should fail, then governance unpauses the hub and mirroring should work
+[X] Governance should pause the hub, mirroring with sig should fail, then governance unpauses the hub and mirroring with sig should work
+[X] Governance should pause the hub, burning should fail, then governance unpauses the hub and burning should work
+[X] Governance should pause the hub, following should fail, then governance unpauses the hub and following should work
+[X] Governance should pause the hub, following with sig should fail, then governance unpauses the hub and following with sig should work
+[X] Governance should pause the hub, collecting should fail, then governance unpauses the hub and collecting should work
+[X] Governance should pause the hub, collecting with sig should fail, then governance unpauses the hub and collecting with sig should work
 PublishingPaused State
 Scenarios
 [ ] Governance should pause publishing, profile creation should work

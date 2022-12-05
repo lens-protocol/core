@@ -93,7 +93,7 @@ contract BaseTest is TestSetup {
         return _calculateDigest(structHash);
     }
 
-    function _getSetFollowNFTURITypedDatahash(
+    function _getSetFollowNFTURITypedDataHash(
         uint256 profileId,
         string memory followNFTURI,
         uint256 nonce,
@@ -107,6 +107,17 @@ contract BaseTest is TestSetup {
                 nonce,
                 deadline
             )
+        );
+        return _calculateDigest(structHash);
+    }
+
+    function _getBurnTypedDataHash(
+        uint256 profileId,
+        uint256 nonce,
+        uint256 deadline
+    ) internal view returns (bytes32) {
+        bytes32 structHash = keccak256(
+            abi.encode(BURN_WITH_SIG_TYPEHASH, profileId, nonce, deadline)
         );
         return _calculateDigest(structHash);
     }
@@ -385,24 +396,21 @@ contract BaseTest is TestSetup {
         return hub.collectWithSig(collectWithSigData);
     }
 
-    function _setDelegatedExecutorApproval(address executor, bool approved) internal {
-        hub.setDelegatedExecutorApproval(executor, approved);
+    function _follow(
+        address msgSender,
+        address onBehalfOf,
+        uint256 profileId,
+        bytes memory data
+    ) internal returns (uint256[] memory) {
+        vm.prank(msgSender);
+        return hub.follow(onBehalfOf, _toUint256Array(profileId), _toBytesArray(data));
     }
 
-    function _getPub(uint256 profileId, uint256 pubId)
+    function _followWithSig(DataTypes.FollowWithSigData memory vars)
         internal
-        view
-        returns (DataTypes.PublicationStruct memory)
+        returns (uint256[] memory)
     {
-        return hub.getPub(profileId, pubId);
-    }
-
-    function _getSigNonce(address signer) internal view returns (uint256) {
-        return hub.sigNonces(signer);
-    }
-
-    function _getPubCount(uint256 profileId) internal view returns (uint256) {
-        return hub.getPubCount(profileId);
+        return hub.followWithSig(vars);
     }
 
     function _createProfile(address newProfileOwner) internal returns (uint256) {
@@ -461,7 +469,60 @@ contract BaseTest is TestSetup {
     function _setFollowModuleWithSig(DataTypes.SetFollowModuleWithSigData memory vars) internal {
         hub.setFollowModuleWithSig(vars);
     }
-    
+
+    function _setProfileImageURI(
+        address msgSender,
+        uint256 profileId,
+        string memory imageURI
+    ) internal {
+        vm.prank(msgSender);
+        hub.setProfileImageURI(profileId, imageURI);
+    }
+
+    function _setProfileImageURIWithSig(DataTypes.SetProfileImageURIWithSigData memory vars)
+        internal
+    {
+        hub.setProfileImageURIWithSig(vars);
+    }
+
+    function _setFollowNFTURI(
+        address msgSender,
+        uint256 profileId,
+        string memory followNFTURI
+    ) internal {
+        vm.prank(msgSender);
+        hub.setFollowNFTURI(profileId, followNFTURI);
+    }
+
+    function _setFollowNFTURIWithSig(DataTypes.SetFollowNFTURIWithSigData memory vars) internal {
+        hub.setFollowNFTURIWithSig(vars);
+    }
+
+    function _burn(address msgSender, uint256 profileId) internal {
+        vm.prank(msgSender);
+        hub.burn(profileId);
+    }
+
+    function _burnWithSig(uint256 profileId, DataTypes.EIP712Signature memory sig) internal {
+        hub.burnWithSig(profileId, sig);
+    }
+
+    function _getPub(uint256 profileId, uint256 pubId)
+        internal
+        view
+        returns (DataTypes.PublicationStruct memory)
+    {
+        return hub.getPub(profileId, pubId);
+    }
+
+    function _getSigNonce(address signer) internal view returns (uint256) {
+        return hub.sigNonces(signer);
+    }
+
+    function _getPubCount(uint256 profileId) internal view returns (uint256) {
+        return hub.getPubCount(profileId);
+    }
+
     function _getCollectCount(uint256 profileId, uint256 pubId) internal view returns (uint256) {
         address collectNft = hub.getCollectNFT(profileId, pubId);
         if (collectNft == address(0)) {

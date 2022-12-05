@@ -221,7 +221,7 @@ contract MiscTest is BaseTest {
     function testSetFollowNFTURIWithSigInvalidSignerFails() public {
         uint256 nonce = 0;
         uint256 deadline = type(uint256).max;
-        bytes32 digest = _getSetFollowNFTURITypedDatahash(newProfileId, MOCK_URI, nonce, deadline);
+        bytes32 digest = _getSetFollowNFTURITypedDataHash(newProfileId, MOCK_URI, nonce, deadline);
 
         vm.expectRevert(Errors.SignatureInvalid.selector);
         hub.setFollowNFTURIWithSig(
@@ -237,7 +237,7 @@ contract MiscTest is BaseTest {
     function testSetFollowNFTURIWithSigNotExecutorFails() public {
         uint256 nonce = 0;
         uint256 deadline = type(uint256).max;
-        bytes32 digest = _getSetFollowNFTURITypedDatahash(newProfileId, MOCK_URI, nonce, deadline);
+        bytes32 digest = _getSetFollowNFTURITypedDataHash(newProfileId, MOCK_URI, nonce, deadline);
 
         vm.expectRevert(Errors.ExecutorInvalid.selector);
         hub.setFollowNFTURIWithSig(
@@ -440,7 +440,7 @@ contract MiscTest is BaseTest {
     function testSetFollowNFTURIWithSig() public {
         uint256 nonce = 0;
         uint256 deadline = type(uint256).max;
-        bytes32 digest = _getSetFollowNFTURITypedDatahash(newProfileId, 'test', nonce, deadline);
+        bytes32 digest = _getSetFollowNFTURITypedDataHash(newProfileId, 'test', nonce, deadline);
 
         assertEq(hub.getFollowNFTURI(newProfileId), MOCK_URI);
         hub.setFollowNFTURIWithSig(
@@ -460,7 +460,7 @@ contract MiscTest is BaseTest {
 
         uint256 nonce = 0;
         uint256 deadline = type(uint256).max;
-        bytes32 digest = _getSetFollowNFTURITypedDatahash(newProfileId, 'test', nonce, deadline);
+        bytes32 digest = _getSetFollowNFTURITypedDataHash(newProfileId, 'test', nonce, deadline);
 
         assertEq(hub.getFollowNFTURI(newProfileId), MOCK_URI);
         hub.setFollowNFTURIWithSig(
