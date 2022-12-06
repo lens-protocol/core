@@ -133,8 +133,7 @@ contract CollectingTest_Generic is CollectingTest_Base {
         uint256 startNftId = _checkCollectNFTBefore();
 
         // delegate power to executor
-        vm.prank(profileOwner);
-        _setDelegatedExecutorApproval(otherSigner, true);
+        _setDelegatedExecutorApproval(profileOwner, otherSigner, true);
 
         // collect from executor
         vm.startPrank(otherSigner);
@@ -148,10 +147,9 @@ contract CollectingTest_Generic is CollectingTest_Base {
         uint256 startNftId = _checkCollectNFTBefore();
 
         // mirror, then delegate power to executor
-        vm.startPrank(profileOwner);
+        vm.prank(profileOwner);
         hub.mirror(mockMirrorData);
-        _setDelegatedExecutorApproval(otherSigner, true);
-        vm.stopPrank();
+        _setDelegatedExecutorApproval(profileOwner, otherSigner, true);
 
         // collect from executor
         vm.startPrank(otherSigner);
@@ -253,8 +251,7 @@ contract CollectingTest_WithSig is CollectingTest_Base {
         uint256 startNftId = _checkCollectNFTBefore();
 
         // delegate power to executor
-        vm.prank(profileOwner);
-        _setDelegatedExecutorApproval(otherSigner, true);
+        _setDelegatedExecutorApproval(profileOwner, otherSigner, true);
 
         // collect from executor
         uint256 nftId = _mockCollectWithSig({
@@ -269,10 +266,9 @@ contract CollectingTest_WithSig is CollectingTest_Base {
         uint256 startNftId = _checkCollectNFTBefore();
 
         // mirror, then delegate power to executor
-        vm.startPrank(profileOwner);
+        vm.prank(profileOwner);
         hub.mirror(mockMirrorData);
-        _setDelegatedExecutorApproval(otherSigner, true);
-        vm.stopPrank();
+        _setDelegatedExecutorApproval(profileOwner, otherSigner, true);
 
         // collect from executor
         uint256 nftId = _mockCollectWithSig({

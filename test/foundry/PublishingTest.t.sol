@@ -4,7 +4,6 @@ pragma solidity ^0.8.13;
 import './base/BaseTest.t.sol';
 import './helpers/SignatureHelpers.sol';
 import {PublishingHelpers} from './helpers/PublishingHelpers.sol';
-import {SigSetup} from './helpers/SignatureHelpers.sol';
 
 contract PublishingTest_Post is BaseTest, SignatureHelpers, PublishingHelpers, SigSetup {
     function replicateInitData() internal virtual {}
@@ -183,8 +182,7 @@ contract PublishingTest_Post is BaseTest, SignatureHelpers, PublishingHelpers, S
     }
 
     function testExecutorPublish() public {
-        vm.prank(profileOwner);
-        _setDelegatedExecutorApproval(otherSigner, true);
+        _setDelegatedExecutorApproval(profileOwner, otherSigner, true);
 
         uint256 expectedPubId = _getPubCount(newProfileId) + 1;
 
@@ -197,8 +195,7 @@ contract PublishingTest_Post is BaseTest, SignatureHelpers, PublishingHelpers, S
     }
 
     function testExecutorPublishWithSig() public {
-        vm.prank(profileOwner);
-        _setDelegatedExecutorApproval(otherSigner, true);
+        _setDelegatedExecutorApproval(profileOwner, otherSigner, true);
 
         uint256 expectedPubId = _getPubCount(newProfileId) + 1;
         uint256 pubId = _publishWithSig({
