@@ -274,20 +274,20 @@ Scenarios
 Setting Follow Module
 Generic
 Negatives
-[ ] UserTwo should fail to set the follow module for the profile owned by User
-[ ] User should fail to set a follow module that is not whitelisted
-[ ] User should fail to set a follow module with invalid follow module data format
+[X] UserTwo should fail to set the follow module for the profile owned by User
+[X] User should fail to set a follow module that is not whitelisted
+[X] User should fail to set a follow module with invalid follow module data format
 Scenarios
-[ ] User should set a whitelisted follow module, fetching the profile follow module should return the correct address, user then sets it to the zero address and fetching returns the zero address
+[X] User should set a whitelisted follow module, fetching the profile follow module should return the correct address, user then sets it to the zero address and fetching returns the zero address
 Meta-tx
 Negatives
-[ ] TestWallet should fail to set a follow module with sig with signature deadline mismatch
-[ ] TestWallet should fail to set a follow module with sig with invalid deadline
-[ ] TestWallet should fail to set a follow module with sig with invalid nonce
-[ ] TestWallet should fail to set a follow module with sig with an unwhitelisted follow module
-[ ] TestWallet should sign attempt to set follow module with sig, then cancel with empty permitForAll, then fail to set follow module with sig
+[X] TestWallet should fail to set a follow module with sig with signature deadline mismatch
+[X] TestWallet should fail to set a follow module with sig with invalid deadline
+[X] TestWallet should fail to set a follow module with sig with invalid nonce
+[X] TestWallet should fail to set a follow module with sig with an unwhitelisted follow module
+[X] TestWallet should sign attempt to set follow module with sig, then cancel with empty permitForAll, then fail to set follow module with sig
 Scenarios
-[ ] TestWallet should set a whitelisted follow module with sig, fetching the profile follow module should return the correct address
+[X] TestWallet should set a whitelisted follow module with sig, fetching the profile follow module should return the correct address
 
 Collect NFT
 Negatives

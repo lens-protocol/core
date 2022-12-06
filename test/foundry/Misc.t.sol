@@ -6,11 +6,6 @@ import '../../contracts/mocks/MockFollowModule.sol';
 
 contract MiscTest is BaseTest {
     // Negatives
-    function testSetFollowModuleNotExecutorFails() public {
-        vm.expectRevert(Errors.ExecutorInvalid.selector);
-        hub.setFollowModule(newProfileId, address(0), '');
-    }
-
     function testSetDefaultProfileNotExecutorFails() public {
         vm.expectRevert(Errors.ExecutorInvalid.selector);
         hub.setDefaultProfile(profileOwner, newProfileId);
@@ -32,20 +27,6 @@ contract MiscTest is BaseTest {
     }
 
     // Positives
-    function testExecutorSetFollowModule() public {
-        assertEq(hub.getFollowModule(newProfileId), address(0));
-        vm.prank(profileOwner);
-        hub.setDelegatedExecutorApproval(otherSigner, true);
-
-        address mockFollowModule = address(new MockFollowModule());
-        vm.prank(governance);
-        hub.whitelistFollowModule(mockFollowModule, true);
-
-        vm.prank(otherSigner);
-        hub.setFollowModule(newProfileId, mockFollowModule, abi.encode(1));
-        assertEq(hub.getFollowModule(newProfileId), mockFollowModule);
-    }
-
     function testExecutorSetDefaultProfile() public {
         assertEq(hub.getDefaultProfile(profileOwner), 0);
         vm.prank(profileOwner);
@@ -88,52 +69,6 @@ contract MiscTest is BaseTest {
 
     // Meta-tx
     // Negatives
-    function testSetFollowModuleWithSigInvalidSignerFails() public {
-        uint256 nonce = 0;
-        uint256 deadline = type(uint256).max;
-        bytes32 digest = _getSetFollowModuleTypedDataHash(
-            newProfileId,
-            address(0),
-            '',
-            nonce,
-            deadline
-        );
-
-        vm.expectRevert(Errors.SignatureInvalid.selector);
-        hub.setFollowModuleWithSig(
-            DataTypes.SetFollowModuleWithSigData({
-                delegatedSigner: address(0),
-                profileId: newProfileId,
-                followModule: address(0),
-                followModuleInitData: '',
-                sig: _getSigStruct(otherSignerKey, digest, deadline)
-            })
-        );
-    }
-
-    function testSetFollowModuleWithSigNotExecutorFails() public {
-        uint256 nonce = 0;
-        uint256 deadline = type(uint256).max;
-        bytes32 digest = _getSetFollowModuleTypedDataHash(
-            newProfileId,
-            address(0),
-            '',
-            nonce,
-            deadline
-        );
-
-        vm.expectRevert(Errors.ExecutorInvalid.selector);
-        hub.setFollowModuleWithSig(
-            DataTypes.SetFollowModuleWithSigData({
-                delegatedSigner: otherSigner,
-                profileId: newProfileId,
-                followModule: address(0),
-                followModuleInitData: '',
-                sig: _getSigStruct(otherSignerKey, digest, deadline)
-            })
-        );
-    }
-
     function testSetDefaultProfileWithSigInvalidSignerFails() public {
         uint256 nonce = 0;
         uint256 deadline = type(uint256).max;
@@ -293,66 +228,6 @@ contract MiscTest is BaseTest {
     }
 
     // Postivies
-    function testSetFollowModuleWithSig() public {
-        address mockFollowModule = address(new MockFollowModule());
-        vm.prank(governance);
-        hub.whitelistFollowModule(mockFollowModule, true);
-
-        uint256 nonce = 0;
-        uint256 deadline = type(uint256).max;
-
-        bytes32 digest = _getSetFollowModuleTypedDataHash(
-            newProfileId,
-            mockFollowModule,
-            abi.encode(1),
-            nonce,
-            deadline
-        );
-
-        assertEq(hub.getFollowModule(newProfileId), address(0));
-        hub.setFollowModuleWithSig(
-            DataTypes.SetFollowModuleWithSigData({
-                delegatedSigner: address(0),
-                profileId: newProfileId,
-                followModule: mockFollowModule,
-                followModuleInitData: abi.encode(1),
-                sig: _getSigStruct(profileOwnerKey, digest, deadline)
-            })
-        );
-        assertEq(hub.getFollowModule(newProfileId), mockFollowModule);
-    }
-
-    function testExecutorSetFollowModuleWithSig() public {
-        vm.prank(profileOwner);
-        hub.setDelegatedExecutorApproval(otherSigner, true);
-
-        address mockFollowModule = address(new MockFollowModule());
-        vm.prank(governance);
-        hub.whitelistFollowModule(mockFollowModule, true);
-
-        uint256 nonce = 0;
-        uint256 deadline = type(uint256).max;
-        bytes32 digest = _getSetFollowModuleTypedDataHash(
-            newProfileId,
-            mockFollowModule,
-            abi.encode(1),
-            nonce,
-            deadline
-        );
-
-        assertEq(hub.getFollowModule(newProfileId), address(0));
-        hub.setFollowModuleWithSig(
-            DataTypes.SetFollowModuleWithSigData({
-                delegatedSigner: otherSigner,
-                profileId: newProfileId,
-                followModule: mockFollowModule,
-                followModuleInitData: abi.encode(1),
-                sig: _getSigStruct(otherSignerKey, digest, deadline)
-            })
-        );
-        assertEq(hub.getFollowModule(newProfileId), mockFollowModule);
-    }
-
     function testSetDefaultProfileWithSig() public {
         uint256 nonce = 0;
         uint256 deadline = type(uint256).max;
