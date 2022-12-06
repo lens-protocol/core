@@ -345,14 +345,15 @@ library DataTypes {
     }
 
     /**
-     * @notice A struct containing the parameters required for the `followWithSig()` function. Parameters are the same
-     * as the regular `follow()` function, with the follower's (signer) address and an EIP712Signature added.
+     * @notice A struct containing the parameters required for the `followWithSig` function. Parameters are the same
+     * as the regular `follow` function, with the signer address and an EIP712Signature added.
      *
-     * @param delegatedSigner The delegated executor signer, must be either zero, defaulting to the follower, or a delegated executor.
-     * @param followerProfileId The ID of the profile performing the follow.
-     * @param idsOfProfilesToFollow The array of token IDs of the profiles to follow.
+     * @param delegatedSigner The delegated executor signer, must be either zero, defaulting to the follower,
+     * or a delegated executor.
+     * @param followerProfileId The ID of the profile the follows are being executed for.
+     * @param idsOfProfilesToFollow The array of IDs of profiles to follow.
      * @param followTokenIds The array of follow token IDs to use for each follow.
-     * @param datas The array of arbitrary data to pass to the followModules if needed.
+     * @param datas The arbitrary data array to pass to the follow module for each profile if needed.
      * @param sig The EIP712Signature struct containing the follower's signature.
      */
     struct FollowWithSigData {
@@ -364,6 +365,16 @@ library DataTypes {
         EIP712Signature sig;
     }
 
+    /**
+     * @notice A struct containing the parameters required for the `unfollowWithSig` function. Parameters are the same
+     * as the regular `unfollow` function, with the signer address and an EIP712Signature added.
+     *
+     * @param delegatedSigner The delegated executor signer, must be either zero, defaulting to the follower,
+     * or a delegated executor.
+     * @param unfollowerProfileId The ID of the profile the unfollows are being executed for.
+     * @param idsOfProfilesToUnfollow The array of IDs of profiles to unfollow.
+     * @param sig The EIP712Signature struct containing the follower's signature.
+     */
     struct UnfollowWithSigData {
         address delegatedSigner;
         uint256 unfollowerProfileId;
@@ -371,6 +382,17 @@ library DataTypes {
         EIP712Signature sig;
     }
 
+    /**
+     * @notice A struct containing the parameters required for the `setBlockStatusWithSig` function. Parameters are the
+     * same as the regular `setBlockStatus` function, with the signer address and an EIP712Signature added.
+     *
+     * @param delegatedSigner The delegated executor signer, must be either zero, defaulting to the blocker,
+     * or a delegated executor.
+     * @param blockerProfileId The ID of the profile the block status sets are being executed for.
+     * @param idsOfProfilesToSetBlockStatus The array of IDs of profiles to set block status.
+     * @param blockStatus The array of block status to use for each setting.
+     * @param sig The EIP712Signature struct containing the blocker's signature.
+     */
     struct SetBlockStatusWithSigData {
         address delegatedSigner;
         uint256 blockerProfileId;

@@ -508,6 +508,14 @@ interface ILensHub {
         view
         returns (bool);
 
+    /**
+     * @notice Returns whether `profile` is blocked by `byProfile`.
+     *
+     * @param profile The ID of the profile whose blocked status should be queried.
+     * @param byProfile The ID of the profile whose blocker status should be queried.
+     *
+     * @return bool True if `profile` blocked `byProfile`, flase otherwise.
+     */
     function isBlocked(uint256 profile, uint256 byProfile) external view returns (bool);
 
     /**
