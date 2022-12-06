@@ -121,6 +121,7 @@ contract MultiStateHubTest_PausedState_Direct is BaseTest {
         _setState(DataTypes.ProtocolState.Paused);
     }
 
+    // TODO: Consider extracting these mock actions functions somewhere because they're used in several places
     function _mockSetFollowModule() internal virtual {
         _setFollowModule(profileOwner, newProfileId, address(0), '');
     }
@@ -469,4 +470,320 @@ contract MultiStateHubTest_PausedState_WithSig is
     function testCannotTransferProfileWhilePaused() public override {}
 
     function testCannotCreateProfileWhilePaused() public override {}
+}
+
+contract MultiStateHubTest_PublishingPausedState_Direct is BaseTest {
+    uint256 postId;
+
+    function setUp() public virtual override {
+        super.setUp();
+
+        vm.prank(profileOwner);
+        postId = _post(mockPostData);
+
+        vm.prank(governance);
+        _setState(DataTypes.ProtocolState.PublishingPaused);
+    }
+
+    // TODO: Consider extracting these mock actions functions somewhere because they're used in several places
+    function _mockSetFollowModule() internal virtual {
+        _setFollowModule(profileOwner, newProfileId, address(0), '');
+    }
+
+    function _mockSetDelegatedExecutorApproval() internal virtual {
+        address executor = otherSigner;
+        bool approved = true;
+        _setDelegatedExecutorApproval(profileOwner, executor, approved);
+    }
+
+    function _mockSetProfileImageURI() internal virtual {
+        _setProfileImageURI(profileOwner, newProfileId, MOCK_URI);
+    }
+
+    function _mockSetFollowNFTURI() internal virtual {
+        _setFollowNFTURI(profileOwner, newProfileId, MOCK_URI);
+    }
+
+    function _mockPost() internal virtual {
+        vm.prank(profileOwner);
+        _post(mockPostData);
+    }
+
+    function _mockComment() internal virtual {
+        mockCommentData.pubIdPointed = postId;
+        vm.prank(profileOwner);
+        _comment(mockCommentData);
+    }
+
+    function _mockMirror() internal virtual {
+        mockMirrorData.pubIdPointed = postId;
+        vm.prank(profileOwner);
+        _mirror(mockMirrorData);
+    }
+
+    function _mockBurn() internal virtual {
+        _burn(profileOwner, newProfileId);
+    }
+
+    function _mockFollow() internal virtual {
+        _follow({msgSender: me, onBehalfOf: me, profileId: newProfileId, data: ''});
+    }
+
+    // TODO: The following two functions were copy-pasted from CollectingTest.t.sol
+    // TODO: Consider extracting them somewhere else to be used by both of tests
+    function _mockCollect() internal virtual {
+        vm.prank(profileOwner);
+        _collect(
+            mockCollectData.collector,
+            mockCollectData.profileId,
+            mockCollectData.pubId,
+            mockCollectData.data
+        );
+    }
+
+    // Negatives
+    function testCanTransferProfileWhilePublishingPaused() public virtual {
+        _transferProfile({
+            msgSender: profileOwner,
+            from: profileOwner,
+            to: address(111),
+            tokenId: newProfileId
+        });
+    }
+
+    function testCanCreateProfileWhilePublishingPaused() public virtual {
+        _createProfile(address(this));
+    }
+
+    function testCanSetFollowModuleWhilePublishingPaused() public {
+        _mockSetFollowModule();
+    }
+
+    function testCanSetDelegatedExecutorWhilePublishingPaused() public {
+        _mockSetDelegatedExecutorApproval();
+    }
+
+    function testCanSetProfileImageURIWhilePublishingPaused() public {
+        _mockSetProfileImageURI();
+    }
+
+    function testCanSetFollowNFTURIWhilePublishingPaused() public {
+        _mockSetFollowNFTURI();
+    }
+
+    function testCanBurnWhilePublishingPaused() public {
+        _mockBurn();
+    }
+
+    function testCanFollowWhilePublishingPaused() public {
+        _mockFollow();
+    }
+
+    function testCanCollectWhilePublishingPaused() public {
+        _mockCollect();
+    }
+
+    function testCannotPostWhilePublishingPaused() public {
+        vm.expectRevert(Errors.PublishingPaused.selector);
+        _mockPost();
+
+        vm.prank(governance);
+        _setState(DataTypes.ProtocolState.Unpaused);
+
+        _mockPost();
+    }
+
+    function testCannotCommentWhilePublishingPaused() public {
+        vm.expectRevert(Errors.PublishingPaused.selector);
+        _mockComment();
+
+        vm.prank(governance);
+        _setState(DataTypes.ProtocolState.Unpaused);
+
+        _mockComment();
+    }
+
+    function testCannotMirrorWhilePublishingPaused() public {
+        vm.expectRevert(Errors.PublishingPaused.selector);
+        _mockMirror();
+
+        vm.prank(governance);
+        _setState(DataTypes.ProtocolState.Unpaused);
+
+        _mockMirror();
+    }
+}
+
+contract MultiStateHubTest_PublishingPausedState_WithSig is
+    MultiStateHubTest_PublishingPausedState_Direct,
+    SignatureHelpers,
+    SigSetup
+{
+    // TODO: Consider refactoring this contract somehow cause it's all just pure copy-paste of the PausedState_WithSig
+    function setUp() public override(MultiStateHubTest_PublishingPausedState_Direct, SigSetup) {
+        MultiStateHubTest_PublishingPausedState_Direct.setUp();
+        SigSetup.setUp();
+    }
+
+    function _mockSetFollowModule() internal override {
+        bytes32 digest = _getSetFollowModuleTypedDataHash(
+            newProfileId,
+            address(0),
+            '',
+            nonce,
+            deadline
+        );
+
+        _setFollowModuleWithSig(
+            DataTypes.SetFollowModuleWithSigData({
+                delegatedSigner: address(0),
+                profileId: newProfileId,
+                followModule: address(0),
+                followModuleInitData: '',
+                sig: _getSigStruct(profileOwnerKey, digest, deadline)
+            })
+        );
+    }
+
+    // Positives
+    function _mockSetDelegatedExecutorApproval() internal override {
+        address onBehalfOf = profileOwner;
+        address executor = otherSigner;
+
+        bytes32 digest = _getSetDelegatedExecutorApprovalTypedDataHash({
+            onBehalfOf: onBehalfOf,
+            executor: executor,
+            approved: true,
+            nonce: nonce,
+            deadline: deadline
+        });
+        hub.setDelegatedExecutorApprovalWithSig(
+            _buildSetDelegatedExecutorApprovalWithSigData({
+                onBehalfOf: onBehalfOf,
+                executor: executor,
+                approved: true,
+                sig: _getSigStruct(profileOwnerKey, digest, deadline)
+            })
+        );
+    }
+
+    function _mockSetProfileImageURI() internal override {
+        bytes32 digest = _getSetProfileImageURITypedDataHash(
+            newProfileId,
+            MOCK_URI,
+            nonce,
+            deadline
+        );
+
+        _setProfileImageURIWithSig(
+            DataTypes.SetProfileImageURIWithSigData({
+                delegatedSigner: address(0),
+                profileId: newProfileId,
+                imageURI: MOCK_URI,
+                sig: _getSigStruct(profileOwnerKey, digest, deadline)
+            })
+        );
+    }
+
+    function _mockSetFollowNFTURI() internal override {
+        bytes32 digest = _getSetFollowNFTURITypedDataHash(newProfileId, MOCK_URI, nonce, deadline);
+
+        _setFollowNFTURIWithSig(
+            DataTypes.SetFollowNFTURIWithSigData({
+                delegatedSigner: address(0),
+                profileId: newProfileId,
+                followNFTURI: MOCK_URI,
+                sig: _getSigStruct(profileOwnerKey, digest, deadline)
+            })
+        );
+    }
+
+    function _mockPost() internal override {
+        bytes32 digest = _getPostTypedDataHash(mockPostData, nonce, deadline);
+
+        _postWithSig(
+            _buildPostWithSigData({
+                delegatedSigner: address(0),
+                postData: mockPostData,
+                sig: _getSigStruct(profileOwnerKey, digest, deadline)
+            })
+        );
+    }
+
+    function _mockComment() internal override {
+        mockCommentData.pubIdPointed = postId;
+        bytes32 digest = _getCommentTypedDataHash(mockCommentData, nonce, deadline);
+
+        _commentWithSig(
+            _buildCommentWithSigData({
+                delegatedSigner: address(0),
+                commentData: mockCommentData,
+                sig: _getSigStruct(profileOwnerKey, digest, deadline)
+            })
+        );
+    }
+
+    function _mockMirror() internal override {
+        mockMirrorData.pubIdPointed = postId;
+        bytes32 digest = _getMirrorTypedDataHash(mockMirrorData, nonce, deadline);
+
+        _mirrorWithSig(
+            _buildMirrorWithSigData({
+                delegatedSigner: address(0),
+                mirrorData: mockMirrorData,
+                sig: _getSigStruct(profileOwnerKey, digest, deadline)
+            })
+        );
+    }
+
+    function _mockBurn() internal override {
+        bytes32 digest = _getBurnTypedDataHash(newProfileId, nonce, deadline);
+
+        _burnWithSig({
+            profileId: newProfileId,
+            sig: _getSigStruct(profileOwnerKey, digest, deadline)
+        });
+    }
+
+    function _mockFollow() internal override {
+        bytes32 digest = _getFollowTypedDataHash(
+            _toUint256Array(newProfileId),
+            _toBytesArray(''),
+            nonce,
+            deadline
+        );
+
+        uint256[] memory nftIds = _followWithSig(
+            _buildFollowWithSigData({
+                delegatedSigner: address(0),
+                follower: otherSigner,
+                profileIds: _toUint256Array(newProfileId),
+                datas: _toBytesArray(''),
+                sig: _getSigStruct(otherSignerKey, digest, deadline)
+            })
+        );
+    }
+
+    function _mockCollect() internal override {
+        bytes32 digest = _getCollectTypedDataHash(
+            mockCollectData.profileId,
+            mockCollectData.pubId,
+            mockCollectData.data,
+            nonce,
+            deadline
+        );
+
+        _collectWithSig(
+            _buildCollectWithSigData({
+                delegatedSigner: address(0),
+                collectData: mockCollectData,
+                sig: _getSigStruct(profileOwnerKey, digest, deadline)
+            })
+        );
+    }
+
+    // Methods that cannot be called with sig
+    function testCanTransferProfileWhilePublishingPaused() public override {}
+
+    function testCanCreateProfileWhilePublishingPaused() public override {}
 }

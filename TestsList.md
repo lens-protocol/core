@@ -92,24 +92,24 @@ Scenarios
 [X] Governance should pause the hub, collecting with sig should fail, then governance unpauses the hub and collecting with sig should work
 PublishingPaused State
 Scenarios
-[ ] Governance should pause publishing, profile creation should work
-[ ] Governance should pause publishing, setting follow module should work
-[ ] Governance should pause publishing, setting follow module with sig should work
-[ ] Governance should pause publishing, setting dispatcher should work
-[ ] Governance should pause publishing, setting dispatcher with sig should work
-[ ] Governance should pause publishing, setting profile URI should work
-[ ] Governance should pause publishing, setting profile URI with sig should work
-[ ] Governance should pause publishing, posting should fail, then governance unpauses the hub and posting should work
-[ ] Governance should pause publishing, posting with sig should fail, then governance unpauses the hub and posting with sig should work
-[ ] Governance should pause publishing, commenting should fail, then governance unpauses the hub and commenting should work
-[ ] Governance should pause publishing, commenting with sig should fail, then governance unpauses the hub and commenting with sig should work
-[ ] Governance should pause publishing, mirroring should fail, then governance unpauses the hub and mirroring should work
-[ ] Governance should pause publishing, mirroring with sig should fail, then governance unpauses the hub and mirroring with sig should work
-[ ] Governance should pause publishing, burning should work
-[ ] Governance should pause publishing, following should work
-[ ] Governance should pause publishing, following with sig should work
-[ ] Governance should pause publishing, collecting should work
-[ ] Governance should pause publishing, collecting with sig should work
+[X] Governance should pause publishing, profile creation should work
+[X] Governance should pause publishing, setting follow module should work
+[X] Governance should pause publishing, setting follow module with sig should work
+[X] Governance should pause publishing, setting dispatcher should work
+[X] Governance should pause publishing, setting dispatcher with sig should work
+[X] Governance should pause publishing, setting profile URI should work
+[X] Governance should pause publishing, setting profile URI with sig should work
+[X] Governance should pause publishing, posting should fail, then governance unpauses the hub and posting should work
+[X] Governance should pause publishing, posting with sig should fail, then governance unpauses the hub and posting with sig should work
+[X] Governance should pause publishing, commenting should fail, then governance unpauses the hub and commenting should work
+[X] Governance should pause publishing, commenting with sig should fail, then governance unpauses the hub and commenting with sig should work
+[X] Governance should pause publishing, mirroring should fail, then governance unpauses the hub and mirroring should work
+[X] Governance should pause publishing, mirroring with sig should fail, then governance unpauses the hub and mirroring with sig should work
+[X] Governance should pause publishing, burning should work
+[X] Governance should pause publishing, following should work
+[X] Governance should pause publishing, following with sig should work
+[X] Governance should pause publishing, collecting should work
+[X] Governance should pause publishing, collecting with sig should work
 
 Publishing Comments
 Generic
