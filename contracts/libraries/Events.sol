@@ -331,6 +331,15 @@ library Events {
         uint256 timestamp
     );
 
+    /**
+     * @dev Emitted upon a successful follow operation.
+     *
+     * @param followerProfileId The ID of the profile that executed the follow.
+     * @param idOfProfileFollowed The ID of the profile that was followed.
+     * @param followTokenIdAssigned The ID of the follow token assigned to the follower.
+     * @param followModuleData The data to passed to the follow module, if any.
+     * @param followTimestamp The timestamp of the follow operation.
+     */
     event Followed(
         uint256 indexed followerProfileId,
         uint256 idOfProfileFollowed,
@@ -339,13 +348,28 @@ library Events {
         uint256 followTimestamp
     );
 
+    /**
+     * @dev Emitted upon a successful unfollow operation.
+     *
+     * @param unfollowerProfileId The ID of the profile that executed the unfollow.
+     * @param idOfProfileUnfollowed The ID of the profile that was unfollowed.
+     * @param followTokenId The ID of the token that was used to follow before unfollowing.
+     * @param unfollowTimestamp The timestamp of the unfollow operation.
+     */
     event Unfollowed(
         uint256 indexed unfollowerProfileId,
         uint256 idOfProfileUnfollowed,
         uint256 followTokenId,
-        uint256 followTimestamp
+        uint256 unfollowTimestamp
     );
 
+    /**
+     * @dev Emitted upon a successful block status setting operation.
+     *
+     * @param blockerProfileId The ID of the profile that executed the blocks.
+     * @param idsOfProfilesToSetBlockStatus The IDs of the profiles whose block status have been set.
+     * @param blockStatus The block status that have been set for each profile.
+     */
     event BlockStatusSet(
         uint256 indexed blockerProfileId,
         uint256[] idsOfProfilesToSetBlockStatus,

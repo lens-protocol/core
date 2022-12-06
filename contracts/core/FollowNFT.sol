@@ -81,15 +81,7 @@ contract FollowNFT is HubRestricted, LensNFTBase, ERC2981CollectionRoyalties, IF
         emit Events.FollowNFTInitialized(profileId, block.timestamp);
     }
 
-    /**
-     * @param followerProfileId The ID of the profile acting as the follower.
-     * @param executor The address executing the operation.
-     * @param followerProfileOwner The address holding the follower profile.
-     * @param isExecutorApproved A boolean indicading whether the executor is an approved delegated executor of the
-     * follower profile's owner.
-     * @param followTokenId The follow token ID to be used for this follow operation. Use zero if a new follow token should
-     * be minted.
-     */
+    /// @inheritdoc IFollowNFT
     function follow(
         uint256 followerProfileId,
         address executor,
@@ -148,13 +140,7 @@ contract FollowNFT is HubRestricted, LensNFTBase, ERC2981CollectionRoyalties, IF
         return followTokenIdAssigned;
     }
 
-    /**
-     * @param unfollowerProfileId The ID of the profile that is perfrorming the unfollow operation.
-     * @param executor The address executing the operation.
-     * @param isExecutorApproved A boolean indicading whether the executor is an approved delegated executor of the
-     * unfollower profile's owner.
-     * @param unfollowerProfileOwner The address holding the unfollower profile.
-     */
+    /// @inheritdoc IFollowNFT
     function unfollow(
         uint256 unfollowerProfileId,
         address executor,
@@ -181,8 +167,7 @@ contract FollowNFT is HubRestricted, LensNFTBase, ERC2981CollectionRoyalties, IF
         }
     }
 
-    // Get the follower profile from a given follow token.
-    // Zero if not being used as a follow.
+    /// @inheritdoc IFollowNFT
     function getFollowerProfileId(uint256 followTokenId) external view override returns (uint256) {
         if (_tokenData[followTokenId].mintTimestamp == 0) {
             revert FollowTokenDoesNotExist();
@@ -190,16 +175,17 @@ contract FollowNFT is HubRestricted, LensNFTBase, ERC2981CollectionRoyalties, IF
         return _followDataByFollowTokenId[followTokenId].followerProfileId;
     }
 
+    /// @inheritdoc IFollowNFT
     function isFollowing(uint256 followerProfileId) external view override returns (bool) {
         return _followTokenIdByFollowerProfileId[followerProfileId] != 0;
     }
 
+    /// @inheritdoc IFollowNFT
     function getFollowTokenId(uint256 followerProfileId) external view override returns (uint256) {
         return _followTokenIdByFollowerProfileId[followerProfileId];
     }
 
-    // Approve someone to set me as follower on a specific asset.
-    // For any asset you must use delegated execution feature with a contract adding restrictions.
+    /// @inheritdoc IFollowNFT
     function approveFollowWithToken(uint256 followerProfileId, uint256 followTokenId)
         external
         override
@@ -213,7 +199,7 @@ contract FollowNFT is HubRestricted, LensNFTBase, ERC2981CollectionRoyalties, IF
         _approveFollowWithToken(followerProfileId, followTokenId);
     }
 
-    // Approve someone to set any follower on one of my wrapped tokens.
+    /// @inheritdoc IFollowNFT
     function approveSetFollowerInToken(address operator, uint256 followTokenId) external override {
         TokenData memory followToken = _tokenData[followTokenId];
         if (followToken.mintTimestamp == 0) {
@@ -228,10 +214,7 @@ contract FollowNFT is HubRestricted, LensNFTBase, ERC2981CollectionRoyalties, IF
         _approveSetFollowerInToken(operator, followTokenId);
     }
 
-    /**
-     * @dev Unties the follow token from the follower's profile token, and wrapps it into the ERC-721 untied follow
-     * collection.
-     */
+    /// @inheritdoc IFollowNFT
     function untieAndWrap(uint256 followTokenId) external override {
         TokenData memory followToken = _tokenData[followTokenId];
         if (followToken.mintTimestamp == 0) {
@@ -246,10 +229,7 @@ contract FollowNFT is HubRestricted, LensNFTBase, ERC2981CollectionRoyalties, IF
         );
     }
 
-    /**
-     * @dev Unwrapps the follow token from the ERC-721 untied follow collection, and ties it to the follower's profile
-     * token.
-     */
+    /// @inheritdoc IFollowNFT
     function unwrapAndTie(uint256 followerProfileId) external override {
         uint256 followTokenId = _followTokenIdByFollowerProfileId[followerProfileId];
         if (followTokenId == 0) {
@@ -261,6 +241,7 @@ contract FollowNFT is HubRestricted, LensNFTBase, ERC2981CollectionRoyalties, IF
         _burnWithoutClearingApprovals(followTokenId);
     }
 
+    /// @inheritdoc IFollowNFT
     function block(uint256 followerProfileId) external override onlyHub {
         uint256 followTokenId = _followTokenIdByFollowerProfileId[followerProfileId];
         if (followTokenId != 0) {
