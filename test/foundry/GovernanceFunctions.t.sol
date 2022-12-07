@@ -8,7 +8,27 @@ contract GovernanceFunctionsTest is BaseTest {
         TestSetup.setUp();
     }
 
-    function testUserCannotCallGovernanceFunctions() public {}
+    // NEGATIVES
+
+    function testUserCannotCallGovernanceFunctions() public {
+        vm.startPrank(profileOwner);
+
+        vm.expectRevert(Errors.NotGovernance.selector);
+        hub.setGovernance(profileOwner);
+
+        vm.expectRevert(Errors.NotGovernance.selector);
+        hub.whitelistFollowModule(profileOwner, true);
+
+        vm.expectRevert(Errors.NotGovernance.selector);
+        hub.whitelistReferenceModule(profileOwner, true);
+
+        vm.expectRevert(Errors.NotGovernance.selector);
+        hub.whitelistCollectModule(profileOwner, true);
+
+        vm.stopPrank();
+    }
+
+    // SCENARIOS
 
     function testGovernanceCanWhitelistModules() public {}
 
