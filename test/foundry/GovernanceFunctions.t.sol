@@ -30,9 +30,44 @@ contract GovernanceFunctionsTest is BaseTest {
 
     // SCENARIOS
 
-    function testGovernanceCanWhitelistModules() public {}
+    function testGovernanceCanWhitelistAndUnwhitelistModules() public {
+        vm.startPrank(governance);
 
-    function testGovernanceCanUnwhitelistModules() public {}
+        // Whitelist
 
-    function testGovernanceCanChangeGovernanceAddress() public {}
+        assertEq(hub.isFollowModuleWhitelisted(profileOwner), false);
+        hub.whitelistFollowModule(profileOwner, true);
+        assertEq(hub.isFollowModuleWhitelisted(profileOwner), true);
+
+        assertEq(hub.isReferenceModuleWhitelisted(profileOwner), false);
+        hub.whitelistReferenceModule(profileOwner, true);
+        assertEq(hub.isReferenceModuleWhitelisted(profileOwner), true);
+
+        assertEq(hub.isCollectModuleWhitelisted(profileOwner), false);
+        hub.whitelistCollectModule(profileOwner, true);
+        assertEq(hub.isCollectModuleWhitelisted(profileOwner), true);
+
+        // Unwhitelist
+
+        hub.whitelistFollowModule(profileOwner, false);
+        assertEq(hub.isFollowModuleWhitelisted(profileOwner), false);
+
+        hub.whitelistReferenceModule(profileOwner, false);
+        assertEq(hub.isReferenceModuleWhitelisted(profileOwner), false);
+
+        hub.whitelistCollectModule(profileOwner, false);
+        assertEq(hub.isCollectModuleWhitelisted(profileOwner), false);
+
+        vm.stopPrank();
+    }
+
+    function testGovernanceCanChangeGovernanceAddress() public {
+        vm.startPrank(governance);
+
+        assertEq(hub.getGovernance(), governance);
+        hub.setGovernance(profileOwner);
+        assertEq(hub.getGovernance(), profileOwner);
+
+        vm.stopPrank();
+    }
 }
