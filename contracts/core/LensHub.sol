@@ -409,13 +409,7 @@ contract LensHub is LensNFTBase, VersionedInitializable, LensMultiState, LensHub
             );
     }
 
-    /**
-     * @notice Publishes a post to a given profile via signature of a Dispatcher with the specified parameters.
-     *
-     * @param vars A PostWithSigData struct containing the regular parameters and an EIP712Signature struct.
-     *
-     * @return uint256 An integer representing the post's publication ID.
-     */
+    /// @inheritdoc ILensHub
     function postWithSig_Dispatcher(DataTypes.PostWithSigData calldata vars)
         external
         whenPublishingEnabled
@@ -515,13 +509,7 @@ contract LensHub is LensNFTBase, VersionedInitializable, LensMultiState, LensHub
             );
     }
 
-    /**
-     * @notice Publishes a comment to a given profile via signature of Dispatcher with the specified parameters.
-     *
-     * @param vars A CommentWithSigData struct containing the regular parameters and an EIP712Signature struct.
-     *
-     * @return uint256 An integer representing the comment's publication ID.
-     */
+    /// @inheritdoc ILensHub
     function commentWithSig_Dispatcher(DataTypes.CommentWithSigData calldata vars)
         external
         whenPublishingEnabled
@@ -623,13 +611,7 @@ contract LensHub is LensNFTBase, VersionedInitializable, LensMultiState, LensHub
             );
     }
 
-    /**
-     * @notice Publishes a mirror to a given profile via signature of Dispatcher with the specified parameters.
-     *
-     * @param vars A MirrorWithSigData struct containing the regular parameters and an EIP712Signature struct.
-     *
-     * @return uint256 An integer representing the mirror's publication ID.
-     */
+    /// @inheritdoc ILensHub
     function mirrorWithSig_Dispatcher(DataTypes.MirrorWithSigData calldata vars)
         external
         whenPublishingEnabled

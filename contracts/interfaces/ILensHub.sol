@@ -203,6 +203,17 @@ interface ILensHub {
     function postWithSig(DataTypes.PostWithSigData calldata vars) external returns (uint256);
 
     /**
+     * @notice Publishes a post to a given profile via signature of a Dispatcher with the specified parameters.
+     *
+     * @param vars A PostWithSigData struct containing the regular parameters and an EIP712Signature struct.
+     *
+     * @return uint256 An integer representing the post's publication ID.
+     */
+    function postWithSig_Dispatcher(DataTypes.PostWithSigData calldata vars)
+        external
+        returns (uint256);
+
+    /**
      * @notice Publishes a comment to a given profile, must be called by the profile owner.
      *
      * @param vars A CommentData struct containing the needed parameters.
@@ -221,6 +232,17 @@ interface ILensHub {
     function commentWithSig(DataTypes.CommentWithSigData calldata vars) external returns (uint256);
 
     /**
+     * @notice Publishes a comment to a given profile via signature of Dispatcher with the specified parameters.
+     *
+     * @param vars A CommentWithSigData struct containing the regular parameters and an EIP712Signature struct.
+     *
+     * @return uint256 An integer representing the comment's publication ID.
+     */
+    function commentWithSig_Dispatcher(DataTypes.CommentWithSigData calldata vars)
+        external
+        returns (uint256);
+
+    /**
      * @notice Publishes a mirror to a given profile, must be called by the profile owner.
      *
      * @param vars A MirrorData struct containing the necessary parameters.
@@ -237,6 +259,17 @@ interface ILensHub {
      * @return uint256 An integer representing the mirror's publication ID.
      */
     function mirrorWithSig(DataTypes.MirrorWithSigData calldata vars) external returns (uint256);
+
+    /**
+     * @notice Publishes a mirror to a given profile via signature of Dispatcher with the specified parameters.
+     *
+     * @param vars A MirrorWithSigData struct containing the regular parameters and an EIP712Signature struct.
+     *
+     * @return uint256 An integer representing the mirror's publication ID.
+     */
+    function mirrorWithSig_Dispatcher(DataTypes.MirrorWithSigData calldata vars)
+        external
+        returns (uint256);
 
     /**
      * @notice Follows the given profiles, executing each profile's follow module logic (if any) and minting followNFTs to the caller.
