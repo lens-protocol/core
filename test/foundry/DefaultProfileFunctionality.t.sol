@@ -121,8 +121,6 @@ contract DefaultProfileFunctionalityTest_WithSig is BaseTest, SigSetup, Signatur
         });
     }
 
-    function testCannotSetDefaultProfileWithSigIfCancelledWithPermitForAll() public {}
-
     // SCENARIOS
 
     function testCanSetDefaultProfileWithSig() public {
