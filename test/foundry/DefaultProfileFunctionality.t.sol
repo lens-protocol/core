@@ -97,7 +97,7 @@ contract DefaultProfileFunctionalityTest_WithSig is BaseTest, SigSetup, Signatur
     // SCENARIOS
 
     function testCanSetDefaultProfileWithSig() public {
-        _setDefaultProfileWithSig(otherSigner, profileOwnerKey);
+        _setDefaultProfileWithSig({delegatedSigner: address(0), signerPrivKey: profileOwnerKey});
         assertEq(hub.getDefaultProfile(profileOwner), FIRST_PROFILE_ID);
     }
 
