@@ -59,7 +59,11 @@ contract DefaultProfileFunctionalityTest_Generic is BaseTest {
 }
 
 contract DefaultProfileFunctionalityTest_WithSig is BaseTest, SigSetup, SignatureHelpers {
-    function _setDefaultProfileWithSig(address delegatedSigner, uint256 signerPrivKey) public {
+    function _setDefaultProfileWithSig(
+        address delegatedSigner,
+        uint256 signerPrivKey,
+        uint256 possiblyBadDeadline
+    ) public {
         bytes32 digest = _getSetDefaulProfileTypedDataHash(
             mockSetDefaultProfileData.wallet,
             mockSetDefaultProfileData.profileId,
@@ -73,7 +77,7 @@ contract DefaultProfileFunctionalityTest_WithSig is BaseTest, SigSetup, Signatur
                 delegatedSigner,
                 mockSetDefaultProfileData.wallet,
                 mockSetDefaultProfileData.profileId,
-                _getSigStruct(signerPrivKey, digest, deadline)
+                _getSigStruct(signerPrivKey, digest, possiblyBadDeadline)
             )
         );
     }
@@ -85,41 +89,87 @@ contract DefaultProfileFunctionalityTest_WithSig is BaseTest, SigSetup, Signatur
 
     // NEGATIVES
 
-    function testCannotSetDefaultProfileWithSigIfDeadlineMismatch() public {}
+    function testCannotSetDefaultProfileWithSigIfDeadlineMismatch() public {
+        vm.expectRevert(Errors.SignatureInvalid.selector);
+        _setDefaultProfileWithSig({
+            delegatedSigner: address(0),
+            signerPrivKey: profileOwnerKey,
+            possiblyBadDeadline: block.timestamp + 1
+        });
+    }
 
-    function testCannotSetDefaultProfileWithSigIfInvalidDeadline() public {}
+    function testCannotSetDefaultProfileWithSigIfInvalidDeadline() public {
+        vm.expectRevert(Errors.SignatureExpired.selector);
+        _setDefaultProfileWithSig({
+            delegatedSigner: address(0),
+            signerPrivKey: profileOwnerKey,
+            possiblyBadDeadline: 0
+        });
+    }
 
-    function testCannotSetDefaultProfileWithSigIfInvalidNonce() public {}
+    function testCannotSetDefaultProfileWithSigIfInvalidNonce() public {
+        _setDefaultProfileWithSig({
+            delegatedSigner: address(0),
+            signerPrivKey: profileOwnerKey,
+            possiblyBadDeadline: deadline
+        });
+        vm.expectRevert(Errors.SignatureInvalid.selector);
+        _setDefaultProfileWithSig({
+            delegatedSigner: address(0),
+            signerPrivKey: profileOwnerKey,
+            possiblyBadDeadline: deadline
+        });
+    }
 
     function testCannotSetDefaultProfileWithSigIfCancelledWithPermitForAll() public {}
 
     // SCENARIOS
 
     function testCanSetDefaultProfileWithSig() public {
-        _setDefaultProfileWithSig({delegatedSigner: address(0), signerPrivKey: profileOwnerKey});
+        _setDefaultProfileWithSig({
+            delegatedSigner: address(0),
+            signerPrivKey: profileOwnerKey,
+            possiblyBadDeadline: deadline
+        });
         assertEq(hub.getDefaultProfile(profileOwner), FIRST_PROFILE_ID);
     }
 
     function testCanSetDefaultProfileWithSigThenUnset() public {
-        _setDefaultProfileWithSig({delegatedSigner: address(0), signerPrivKey: profileOwnerKey});
+        _setDefaultProfileWithSig({
+            delegatedSigner: address(0),
+            signerPrivKey: profileOwnerKey,
+            possiblyBadDeadline: deadline
+        });
         assertEq(hub.getDefaultProfile(profileOwner), FIRST_PROFILE_ID);
 
         mockSetDefaultProfileData.profileId = 0;
         nonce++;
 
-        _setDefaultProfileWithSig({delegatedSigner: address(0), signerPrivKey: profileOwnerKey});
+        _setDefaultProfileWithSig({
+            delegatedSigner: address(0),
+            signerPrivKey: profileOwnerKey,
+            possiblyBadDeadline: deadline
+        });
         assertEq(hub.getDefaultProfile(profileOwner), 0);
     }
 
     function testCanSetDefaultProfileWithSigThenChange() public {
-        _setDefaultProfileWithSig({delegatedSigner: address(0), signerPrivKey: profileOwnerKey});
+        _setDefaultProfileWithSig({
+            delegatedSigner: address(0),
+            signerPrivKey: profileOwnerKey,
+            possiblyBadDeadline: deadline
+        });
         assertEq(hub.getDefaultProfile(profileOwner), FIRST_PROFILE_ID);
 
         uint256 anotherProfileId = hub.createProfile(mockCreateProfileData);
         mockSetDefaultProfileData.profileId = anotherProfileId;
         nonce++;
 
-        _setDefaultProfileWithSig({delegatedSigner: address(0), signerPrivKey: profileOwnerKey});
+        _setDefaultProfileWithSig({
+            delegatedSigner: address(0),
+            signerPrivKey: profileOwnerKey,
+            possiblyBadDeadline: deadline
+        });
         assertEq(hub.getDefaultProfile(profileOwner), mockSetDefaultProfileData.profileId);
         assertFalse(mockSetDefaultProfileData.profileId == FIRST_PROFILE_ID);
     }
