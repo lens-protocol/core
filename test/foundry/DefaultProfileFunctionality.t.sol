@@ -40,7 +40,6 @@ contract DefaultProfileFunctionalityTest_Generic is BaseTest {
         hub.setDefaultProfile(profileOwner, FIRST_PROFILE_ID);
         assertEq(hub.getDefaultProfile(profileOwner), FIRST_PROFILE_ID);
 
-        vm.prank(me);
         uint256 newProfileId = hub.createProfile(mockCreateProfileData);
 
         vm.prank(profileOwner);
@@ -101,7 +100,27 @@ contract DefaultProfileFunctionalityTest_WithSig is BaseTest, SigSetup, Signatur
         assertEq(hub.getDefaultProfile(profileOwner), FIRST_PROFILE_ID);
     }
 
-    function testCanSetDefaultProfileWithSigThenUnset() public {}
+    function testCanSetDefaultProfileWithSigThenUnset() public {
+        _setDefaultProfileWithSig({delegatedSigner: address(0), signerPrivKey: profileOwnerKey});
+        assertEq(hub.getDefaultProfile(profileOwner), FIRST_PROFILE_ID);
 
-    function testCanSetDefaultProfileWithSigThenChange() public {}
+        mockSetDefaultProfileData.profileId = 0;
+        nonce++;
+
+        _setDefaultProfileWithSig({delegatedSigner: address(0), signerPrivKey: profileOwnerKey});
+        assertEq(hub.getDefaultProfile(profileOwner), 0);
+    }
+
+    function testCanSetDefaultProfileWithSigThenChange() public {
+        _setDefaultProfileWithSig({delegatedSigner: address(0), signerPrivKey: profileOwnerKey});
+        assertEq(hub.getDefaultProfile(profileOwner), FIRST_PROFILE_ID);
+
+        uint256 anotherProfileId = hub.createProfile(mockCreateProfileData);
+        mockSetDefaultProfileData.profileId = anotherProfileId;
+        nonce++;
+
+        _setDefaultProfileWithSig({delegatedSigner: address(0), signerPrivKey: profileOwnerKey});
+        assertEq(hub.getDefaultProfile(profileOwner), mockSetDefaultProfileData.profileId);
+        assertFalse(mockSetDefaultProfileData.profileId == FIRST_PROFILE_ID);
+    }
 }
