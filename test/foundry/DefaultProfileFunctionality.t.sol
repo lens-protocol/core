@@ -2,8 +2,9 @@
 pragma solidity ^0.8.13;
 
 import './base/BaseTest.t.sol';
+import './helpers/SignatureHelpers.sol';
 
-contract DefaultProfileFunctionalityTest is BaseTest {
+contract DefaultProfileFunctionalityTest_Generic is BaseTest {
     function setUp() public override {
         TestSetup.setUp();
     }
@@ -46,4 +47,61 @@ contract DefaultProfileFunctionalityTest is BaseTest {
         hub.setDefaultProfile(profileOwner, newProfileId);
         assertEq(hub.getDefaultProfile(profileOwner), newProfileId);
     }
+
+    function testTransferUnsetsDefaultProfile() public {
+        vm.startPrank(profileOwner);
+        hub.setDefaultProfile(profileOwner, FIRST_PROFILE_ID);
+        assertEq(hub.getDefaultProfile(profileOwner), FIRST_PROFILE_ID);
+
+        hub.transferFrom(profileOwner, otherSigner, FIRST_PROFILE_ID);
+
+        assertEq(hub.getDefaultProfile(profileOwner), 0);
+    }
+}
+
+contract DefaultProfileFunctionalityTest_WithSig is BaseTest, SigSetup, SignatureHelpers {
+    function _setDefaultProfileWithSig(address delegatedSigner, uint256 signerPrivKey) public {
+        bytes32 digest = _getSetDefaulProfileTypedDataHash(
+            mockSetDefaultProfileData.wallet,
+            mockSetDefaultProfileData.profileId,
+            nonce,
+            deadline
+        );
+
+        vm.prank(delegatedSigner);
+        hub.setDefaultProfileWithSig(
+            _buildSetDefaultProfileWithSigData(
+                delegatedSigner,
+                mockSetDefaultProfileData.wallet,
+                mockSetDefaultProfileData.profileId,
+                _getSigStruct(signerPrivKey, digest, deadline)
+            )
+        );
+    }
+
+    function setUp() public override(SigSetup, TestSetup) {
+        TestSetup.setUp();
+        SigSetup.setUp();
+    }
+
+    // NEGATIVES
+
+    function testCannotSetDefaultProfileWithSigIfDeadlineMismatch() public {}
+
+    function testCannotSetDefaultProfileWithSigIfInvalidDeadline() public {}
+
+    function testCannotSetDefaultProfileWithSigIfInvalidNonce() public {}
+
+    function testCannotSetDefaultProfileWithSigIfCancelledWithPermitForAll() public {}
+
+    // SCENARIOS
+
+    function testCanSetDefaultProfileWithSig() public {
+        _setDefaultProfileWithSig(otherSigner, profileOwnerKey);
+        assertEq(hub.getDefaultProfile(profileOwner), FIRST_PROFILE_ID);
+    }
+
+    function testCanSetDefaultProfileWithSigThenUnset() public {}
+
+    function testCanSetDefaultProfileWithSigThenChange() public {}
 }

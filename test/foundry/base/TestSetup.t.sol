@@ -63,6 +63,7 @@ contract TestSetup is Test, ForkManagement {
     DataTypes.CommentData mockCommentData;
     DataTypes.MirrorData mockMirrorData;
     DataTypes.CollectData mockCollectData;
+    DataTypes.SetDefaultProfileWithSigData mockSetDefaultProfileData;
 
     function isEnvSet(string memory key) internal returns (bool) {
         try vm.envString(key) {
@@ -268,6 +269,13 @@ contract TestSetup is Test, ForkManagement {
             profileId: newProfileId,
             pubId: FIRST_PUB_ID,
             data: ''
+        });
+
+        mockSetDefaultProfileData = DataTypes.SetDefaultProfileWithSigData({
+            delegatedSigner: otherSigner,
+            wallet: profileOwner,
+            profileId: newProfileId,
+            sig: DataTypes.EIP712Signature({v: 0, r: bytes32(0), s: bytes32(0), deadline: 0}) // blank sig
         });
 
         hub.createProfile(mockCreateProfileData);
