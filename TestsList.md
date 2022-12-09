@@ -50,10 +50,10 @@ Scenarios
 
 Governance Functions
 Negatives
-[ ] User should not be able to call governance functions
+[X] User should not be able to call governance functions
 Scenarios
-[ ] Governance should successfully whitelist and unwhitelist modules
-[ ] Governance should successfully change the governance address
+[X] Governance should successfully whitelist and unwhitelist modules
+[X] Governance should successfully change the governance address
 
 Multi-State Hub
 Common
