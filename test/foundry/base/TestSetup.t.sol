@@ -18,7 +18,7 @@ import {ProfileTokenURILogic} from 'contracts/libraries/ProfileTokenURILogic.sol
 import {MockCollectModule} from 'contracts/mocks/MockCollectModule.sol';
 import {MockReferenceModule} from 'contracts/mocks/MockReferenceModule.sol';
 import '../helpers/ForkManagement.sol';
-import '../constants.sol';
+import '../Constants.sol';
 
 contract TestSetup is Test, ForkManagement {
     using stdJson for string;
