@@ -5,16 +5,6 @@ import './base/BaseTest.t.sol';
 import './helpers/SignatureHelpers.sol';
 import './helpers/CollectingHelpers.sol';
 
-contract SigSetup {
-    uint256 nonce;
-    uint256 deadline;
-
-    function setUp() public virtual {
-        nonce = 0;
-        deadline = type(uint256).max;
-    }
-}
-
 // TODO add check for _initialize() called for fork tests - check name and symbol set
 
 contract CollectingTest_Base is BaseTest, SignatureHelpers, CollectingHelpers, SigSetup {
@@ -143,8 +133,7 @@ contract CollectingTest_Generic is CollectingTest_Base {
         uint256 startNftId = _checkCollectNFTBefore();
 
         // delegate power to executor
-        vm.prank(profileOwner);
-        _setDelegatedExecutorApproval(otherSigner, true);
+        _setDelegatedExecutorApproval(profileOwner, otherSigner, true);
 
         // collect from executor
         vm.startPrank(otherSigner);
@@ -158,10 +147,9 @@ contract CollectingTest_Generic is CollectingTest_Base {
         uint256 startNftId = _checkCollectNFTBefore();
 
         // mirror, then delegate power to executor
-        vm.startPrank(profileOwner);
+        vm.prank(profileOwner);
         hub.mirror(mockMirrorData);
-        _setDelegatedExecutorApproval(otherSigner, true);
-        vm.stopPrank();
+        _setDelegatedExecutorApproval(profileOwner, otherSigner, true);
 
         // collect from executor
         vm.startPrank(otherSigner);
@@ -217,7 +205,7 @@ contract CollectingTest_WithSig is CollectingTest_Base {
     function testCannotCollectIfNonceWasIncrementedWithAnotherAction() public {
         assertEq(_getSigNonce(profileOwner), nonce, 'Wrong nonce before posting');
 
-        uint256 expectedCollectId = _getCollectCount(firstProfileId, mockCollectData.pubId) + 1;
+        uint256 expectedCollectId = _getCollectCount(newProfileId, mockCollectData.pubId) + 1;
 
         uint256 nftId = _mockCollectWithSig({
             delegatedSigner: address(0),
@@ -263,8 +251,7 @@ contract CollectingTest_WithSig is CollectingTest_Base {
         uint256 startNftId = _checkCollectNFTBefore();
 
         // delegate power to executor
-        vm.prank(profileOwner);
-        _setDelegatedExecutorApproval(otherSigner, true);
+        _setDelegatedExecutorApproval(profileOwner, otherSigner, true);
 
         // collect from executor
         uint256 nftId = _mockCollectWithSig({
@@ -279,10 +266,9 @@ contract CollectingTest_WithSig is CollectingTest_Base {
         uint256 startNftId = _checkCollectNFTBefore();
 
         // mirror, then delegate power to executor
-        vm.startPrank(profileOwner);
+        vm.prank(profileOwner);
         hub.mirror(mockMirrorData);
-        _setDelegatedExecutorApproval(otherSigner, true);
-        vm.stopPrank();
+        _setDelegatedExecutorApproval(profileOwner, otherSigner, true);
 
         // collect from executor
         uint256 nftId = _mockCollectWithSig({

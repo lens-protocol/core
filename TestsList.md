@@ -50,10 +50,10 @@ Scenarios
 
 Governance Functions
 Negatives
-[ ] User should not be able to call governance functions
+[X] User should not be able to call governance functions
 Scenarios
-[ ] Governance should successfully whitelist and unwhitelist modules
-[ ] Governance should successfully change the governance address
+[X] Governance should successfully whitelist and unwhitelist modules
+[X] Governance should successfully change the governance address
 
 Multi-State Hub
 Common
@@ -75,41 +75,41 @@ Scenarios
 // Replaced dispatcher with DelegatedExecutor for the following two tests:
 [X] Governance should pause the hub, setting dispatcher should fail, then governance unpauses the hub and setting dispatcher should work
 [X] Governance should pause the hub, setting dispatcher with sig should fail, then governance unpauses the hub and setting dispatcher with sig should work
-[ ] Governance should pause the hub, setting profile URI should fail, then governance unpauses the hub and setting profile URI should work
-[ ] Governance should pause the hub, setting profile URI with sig should fail, then governance unpauses the hub and setting profile URI should work
-[ ] Governance should pause the hub, setting follow NFT URI should fail, then governance unpauses the hub and setting follow NFT URI should work
-[ ] Governance should pause the hub, setting follow NFT URI with sig should fail, then governance unpauses the hub and setting follow NFT URI should work
-[ ] Governance should pause the hub, posting should fail, then governance unpauses the hub and posting should work
-[ ] Governance should pause the hub, posting with sig should fail, then governance unpauses the hub and posting with sig should work
-[ ] Governance should pause the hub, commenting should fail, then governance unpauses the hub and commenting should work
-[ ] Governance should pause the hub, commenting with sig should fail, then governance unpauses the hub and commenting with sig should work
-[ ] Governance should pause the hub, mirroring should fail, then governance unpauses the hub and mirroring should work
-[ ] Governance should pause the hub, mirroring with sig should fail, then governance unpauses the hub and mirroring with sig should work
-[ ] Governance should pause the hub, burning should fail, then governance unpauses the hub and burning should work
-[ ] Governance should pause the hub, following should fail, then governance unpauses the hub and following should work
-[ ] Governance should pause the hub, following with sig should fail, then governance unpauses the hub and following with sig should work
-[ ] Governance should pause the hub, collecting should fail, then governance unpauses the hub and collecting should work
-[ ] Governance should pause the hub, collecting with sig should fail, then governance unpauses the hub and collecting with sig should work
+[X] Governance should pause the hub, setting profile URI should fail, then governance unpauses the hub and setting profile URI should work
+[X] Governance should pause the hub, setting profile URI with sig should fail, then governance unpauses the hub and setting profile URI should work
+[X] Governance should pause the hub, setting follow NFT URI should fail, then governance unpauses the hub and setting follow NFT URI should work
+[X] Governance should pause the hub, setting follow NFT URI with sig should fail, then governance unpauses the hub and setting follow NFT URI should work
+[X] Governance should pause the hub, posting should fail, then governance unpauses the hub and posting should work
+[X] Governance should pause the hub, posting with sig should fail, then governance unpauses the hub and posting with sig should work
+[X] Governance should pause the hub, commenting should fail, then governance unpauses the hub and commenting should work
+[X] Governance should pause the hub, commenting with sig should fail, then governance unpauses the hub and commenting with sig should work
+[X] Governance should pause the hub, mirroring should fail, then governance unpauses the hub and mirroring should work
+[X] Governance should pause the hub, mirroring with sig should fail, then governance unpauses the hub and mirroring with sig should work
+[X] Governance should pause the hub, burning should fail, then governance unpauses the hub and burning should work
+[X] Governance should pause the hub, following should fail, then governance unpauses the hub and following should work
+[X] Governance should pause the hub, following with sig should fail, then governance unpauses the hub and following with sig should work
+[X] Governance should pause the hub, collecting should fail, then governance unpauses the hub and collecting should work
+[X] Governance should pause the hub, collecting with sig should fail, then governance unpauses the hub and collecting with sig should work
 PublishingPaused State
 Scenarios
-[ ] Governance should pause publishing, profile creation should work
-[ ] Governance should pause publishing, setting follow module should work
-[ ] Governance should pause publishing, setting follow module with sig should work
-[ ] Governance should pause publishing, setting dispatcher should work
-[ ] Governance should pause publishing, setting dispatcher with sig should work
-[ ] Governance should pause publishing, setting profile URI should work
-[ ] Governance should pause publishing, setting profile URI with sig should work
-[ ] Governance should pause publishing, posting should fail, then governance unpauses the hub and posting should work
-[ ] Governance should pause publishing, posting with sig should fail, then governance unpauses the hub and posting with sig should work
-[ ] Governance should pause publishing, commenting should fail, then governance unpauses the hub and commenting should work
-[ ] Governance should pause publishing, commenting with sig should fail, then governance unpauses the hub and commenting with sig should work
-[ ] Governance should pause publishing, mirroring should fail, then governance unpauses the hub and mirroring should work
-[ ] Governance should pause publishing, mirroring with sig should fail, then governance unpauses the hub and mirroring with sig should work
-[ ] Governance should pause publishing, burning should work
-[ ] Governance should pause publishing, following should work
-[ ] Governance should pause publishing, following with sig should work
-[ ] Governance should pause publishing, collecting should work
-[ ] Governance should pause publishing, collecting with sig should work
+[X] Governance should pause publishing, profile creation should work
+[X] Governance should pause publishing, setting follow module should work
+[X] Governance should pause publishing, setting follow module with sig should work
+[X] Governance should pause publishing, setting dispatcher should work
+[X] Governance should pause publishing, setting dispatcher with sig should work
+[X] Governance should pause publishing, setting profile URI should work
+[X] Governance should pause publishing, setting profile URI with sig should work
+[X] Governance should pause publishing, posting should fail, then governance unpauses the hub and posting should work
+[X] Governance should pause publishing, posting with sig should fail, then governance unpauses the hub and posting with sig should work
+[X] Governance should pause publishing, commenting should fail, then governance unpauses the hub and commenting should work
+[X] Governance should pause publishing, commenting with sig should fail, then governance unpauses the hub and commenting with sig should work
+[X] Governance should pause publishing, mirroring should fail, then governance unpauses the hub and mirroring should work
+[X] Governance should pause publishing, mirroring with sig should fail, then governance unpauses the hub and mirroring with sig should work
+[X] Governance should pause publishing, burning should work
+[X] Governance should pause publishing, following should work
+[X] Governance should pause publishing, following with sig should work
+[X] Governance should pause publishing, collecting should work
+[X] Governance should pause publishing, collecting with sig should work
 
 Publishing Comments
 Generic
@@ -274,20 +274,20 @@ Scenarios
 Setting Follow Module
 Generic
 Negatives
-[ ] UserTwo should fail to set the follow module for the profile owned by User
-[ ] User should fail to set a follow module that is not whitelisted
-[ ] User should fail to set a follow module with invalid follow module data format
+[X] UserTwo should fail to set the follow module for the profile owned by User
+[X] User should fail to set a follow module that is not whitelisted
+[X] User should fail to set a follow module with invalid follow module data format
 Scenarios
-[ ] User should set a whitelisted follow module, fetching the profile follow module should return the correct address, user then sets it to the zero address and fetching returns the zero address
+[X] User should set a whitelisted follow module, fetching the profile follow module should return the correct address, user then sets it to the zero address and fetching returns the zero address
 Meta-tx
 Negatives
-[ ] TestWallet should fail to set a follow module with sig with signature deadline mismatch
-[ ] TestWallet should fail to set a follow module with sig with invalid deadline
-[ ] TestWallet should fail to set a follow module with sig with invalid nonce
-[ ] TestWallet should fail to set a follow module with sig with an unwhitelisted follow module
-[ ] TestWallet should sign attempt to set follow module with sig, then cancel with empty permitForAll, then fail to set follow module with sig
+[X] TestWallet should fail to set a follow module with sig with signature deadline mismatch
+[X] TestWallet should fail to set a follow module with sig with invalid deadline
+[X] TestWallet should fail to set a follow module with sig with invalid nonce
+[X] TestWallet should fail to set a follow module with sig with an unwhitelisted follow module
+[X] TestWallet should sign attempt to set follow module with sig, then cancel with empty permitForAll, then fail to set follow module with sig
 Scenarios
-[ ] TestWallet should set a whitelisted follow module with sig, fetching the profile follow module should return the correct address
+[X] TestWallet should set a whitelisted follow module with sig, fetching the profile follow module should return the correct address
 
 Collect NFT
 Negatives

@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: UNLICENSED
+pragma solidity ^0.8.13;
+
 import '../../../contracts/libraries/DataTypes.sol';
 
 contract SigSetup {
@@ -158,5 +161,15 @@ contract SignatureHelpers {
                 data: collectData.data,
                 sig: sig
             });
+    }
+
+    function _buildFollowWithSigData(
+        address delegatedSigner,
+        address follower,
+        uint256[] memory profileIds,
+        bytes[] memory datas,
+        DataTypes.EIP712Signature memory sig
+    ) internal pure returns (DataTypes.FollowWithSigData memory) {
+        return DataTypes.FollowWithSigData(delegatedSigner, follower, profileIds, datas, sig);
     }
 }
