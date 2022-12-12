@@ -119,7 +119,9 @@ contract TestSetup is Test, ForkManagement {
     }
 
     function loadBaseAddresses(string memory targetEnv) internal virtual {
-        bytes32 PROXY_IMPLEMENTATION_STORAGE_SLOT = 0xb53127684a568b3173ae13b9f8a6016e243e63b6e8ee1178d6a717850b5d6103;
+        bytes32 PROXY_IMPLEMENTATION_STORAGE_SLOT = bytes32(
+            uint256(keccak256('eip1967.proxy.implementation')) - 1
+        );
 
         console.log('targetEnv:', targetEnv);
 
