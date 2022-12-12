@@ -5,12 +5,19 @@ import './base/BaseTest.t.sol';
 import './helpers/SignatureHelpers.sol';
 import {PublishingHelpers} from './helpers/PublishingHelpers.sol';
 
-contract PublishingTest_Post is BaseTest, SignatureHelpers, PublishingHelpers, SigSetup {
-    function replicateInitData() internal virtual {}
-
-    function _publish() internal virtual returns (uint256) {
-        return _post(mockPostData);
+abstract contract PublishingTest is BaseTest, SignatureHelpers, PublishingHelpers, SigSetup {
+    function replicateInitData() internal virtual {
+        // Default implementation does nothing.
     }
+
+    function _publish() internal virtual returns (uint256);
+
+    function _publishWithSig(
+        address delegatedSigner,
+        uint256 signerPrivKey,
+        uint256 digestDeadline,
+        uint256 sigDeadline
+    ) internal virtual returns (uint256);
 
     function _publishWithSig(address delegatedSigner, uint256 signerPrivKey)
         internal
@@ -20,32 +27,11 @@ contract PublishingTest_Post is BaseTest, SignatureHelpers, PublishingHelpers, S
         return _publishWithSig(delegatedSigner, signerPrivKey, deadline, deadline);
     }
 
-    function _publishWithSig(
-        address delegatedSigner,
-        uint256 signerPrivKey,
-        uint256 digestDeadline,
-        uint256 sigDeadline
-    ) internal virtual returns (uint256) {
-        bytes32 digest = _getPostTypedDataHash(mockPostData, nonce, digestDeadline);
-
-        return
-            _postWithSig(
-                _buildPostWithSigData(
-                    delegatedSigner,
-                    mockPostData,
-                    _getSigStruct(signerPrivKey, digest, sigDeadline)
-                )
-            );
-    }
-
     function _expectedPubFromInitData()
         internal
         view
         virtual
-        returns (DataTypes.PublicationStruct memory)
-    {
-        return _expectedPubFromInitData(mockPostData);
-    }
+        returns (DataTypes.PublicationStruct memory);
 
     function setUp() public virtual override(SigSetup, TestSetup) {
         TestSetup.setUp();
@@ -209,7 +195,41 @@ contract PublishingTest_Post is BaseTest, SignatureHelpers, PublishingHelpers, S
     }
 }
 
-contract PublishingTest_Comment is PublishingTest_Post {
+contract PostTest is PublishingTest {
+    function _publish() internal virtual override returns (uint256) {
+        return _post(mockPostData);
+    }
+
+    function _publishWithSig(
+        address delegatedSigner,
+        uint256 signerPrivKey,
+        uint256 digestDeadline,
+        uint256 sigDeadline
+    ) internal virtual override returns (uint256) {
+        bytes32 digest = _getPostTypedDataHash(mockPostData, nonce, digestDeadline);
+
+        return
+            _postWithSig(
+                _buildPostWithSigData(
+                    delegatedSigner,
+                    mockPostData,
+                    _getSigStruct(signerPrivKey, digest, sigDeadline)
+                )
+            );
+    }
+
+    function _expectedPubFromInitData()
+        internal
+        view
+        virtual
+        override
+        returns (DataTypes.PublicationStruct memory)
+    {
+        return _expectedPubFromInitData(mockPostData);
+    }
+}
+
+contract CommentTest is PublishingTest {
     uint256 postId;
 
     function replicateInitData() internal override {
@@ -253,7 +273,7 @@ contract PublishingTest_Comment is PublishingTest_Post {
     }
 
     function setUp() public override {
-        PublishingTest_Post.setUp();
+        PublishingTest.setUp();
 
         vm.prank(profileOwner);
         postId = _post(mockPostData);
@@ -318,7 +338,7 @@ contract PublishingTest_Comment is PublishingTest_Post {
     }
 }
 
-contract PublishingTest_Mirror is PublishingTest_Post {
+contract MirrorTest is PublishingTest {
     uint256 postId;
 
     function replicateInitData() internal override {
@@ -359,7 +379,7 @@ contract PublishingTest_Mirror is PublishingTest_Post {
     }
 
     function setUp() public override {
-        PublishingTest_Post.setUp();
+        PublishingTest.setUp();
 
         vm.prank(profileOwner);
         postId = _post(mockPostData);
