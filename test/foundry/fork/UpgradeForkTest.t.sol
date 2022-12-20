@@ -87,7 +87,7 @@ contract UpgradeForkTest is BaseTest {
         _fullPublishSequence(profileId, gov, hub);
 
         // Follow, Collect.
-        _fullFollowCollectSequence(profileId, hub);
+        _fullFollowCollectSequence(profileId, gov, hub);
 
         // Get the profile.
         DataTypes.ProfileStruct memory profileStruct = hub.getProfile(profileId);
@@ -115,7 +115,7 @@ contract UpgradeForkTest is BaseTest {
         _fullPublishSequence(profileId, gov, hub);
 
         // Follow, Collect.
-        _fullFollowCollectSequence(profileId, hub);
+        _fullFollowCollectSequence(profileId, gov, hub);
 
         // Fourth, set new data and ensure getters return the new data (proper slots set).
         vm.prank(gov);
@@ -301,14 +301,22 @@ contract UpgradeForkTest is BaseTest {
         }
     }
 
-    function _fullFollowCollectSequence(uint256 profileId, ILensHub hub) private {
+    function _fullFollowCollectSequence(
+        uint256 profileId,
+        address gov,
+        ILensHub hub
+    ) private {
         // First check if the new interface works, if not, use the old interface.
         uint256[] memory profileIds = new uint256[](1);
         profileIds[0] = profileId;
+        uint256[] memory followTokenIds = new uint256[](1);
+        followTokenIds[0] = 0;
         bytes[] memory datas = new bytes[](1);
         datas[0] = '';
 
-        try hub.follow(me, profileIds, datas) {
+        uint256 secondProfileId = _fullCreateProfileSequence(gov, hub);
+
+        try hub.follow(secondProfileId, profileIds, followTokenIds, datas) {
             console2.log(
                 'Follow with modern interface succeeded, continuing with modern interface.'
             );

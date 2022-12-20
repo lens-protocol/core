@@ -8,11 +8,15 @@ import './helpers/SignatureHelpers.sol';
 contract FollowTest is BaseTest, SignatureHelpers {
     using Strings for uint256;
 
-    // Negatives
-    function testFollowNotExecutorFails() public {
-        vm.expectRevert(Errors.ExecutorInvalid.selector);
-        _follow({msgSender: otherSigner, onBehalfOf: me, profileId: newProfileId, data: ''});
+    uint256 followerProfileId;
+
+    function setUp() public virtual override {
+        super.setUp();
+        followerProfileId = _createProfile(me);
     }
+
+    // Negatives
+    // TODO
 
     // Positives
     function testFollow() public {
@@ -20,8 +24,9 @@ contract FollowTest is BaseTest, SignatureHelpers {
 
         uint256[] memory nftIds = _follow({
             msgSender: me,
-            onBehalfOf: me,
-            profileId: newProfileId,
+            followerProfileId: followerProfileId,
+            idOfProfileToFollow: newProfileId,
+            followTokenId: 0,
             data: ''
         });
 
@@ -36,7 +41,8 @@ contract FollowTest is BaseTest, SignatureHelpers {
         assertEq(nft.symbol(), expectedSymbol);
         assertEq(nftIds.length, 1);
         assertEq(nftIds[0], 1);
-        assertEq(nft.ownerOf(1), me);
+        assertEq(nft.getFollowerProfileId(1), followerProfileId);
+        assertEq(nft.getFollowTokenId(followerProfileId), 1);
     }
 
     function testExecutorFollow() public {
@@ -44,60 +50,22 @@ contract FollowTest is BaseTest, SignatureHelpers {
 
         uint256[] memory nftIds = _follow({
             msgSender: otherSigner,
-            onBehalfOf: me,
-            profileId: newProfileId,
+            followerProfileId: followerProfileId,
+            idOfProfileToFollow: newProfileId,
+            followTokenId: 0,
             data: ''
         });
 
         FollowNFT nft = FollowNFT(hub.getFollowNFT(newProfileId));
         assertEq(nftIds.length, 1);
         assertEq(nftIds[0], 1);
-        assertEq(nft.ownerOf(1), me);
+        assertEq(nft.getFollowerProfileId(1), followerProfileId);
+        assertEq(nft.getFollowTokenId(followerProfileId), 1);
     }
 
     // Meta-tx
     // Negatives
-    function testFollowWithSigInvalidSignerFails() public {
-        uint256[] memory profileIds = new uint256[](1);
-        profileIds[0] = newProfileId;
-        bytes[] memory datas = new bytes[](1);
-        datas[0] = '';
-        uint256 nonce = 0;
-        uint256 deadline = type(uint256).max;
-        bytes32 digest = _getFollowTypedDataHash(profileIds, datas, nonce, deadline);
-
-        vm.expectRevert(Errors.SignatureInvalid.selector);
-        _followWithSig(
-            _buildFollowWithSigData({
-                delegatedSigner: address(0),
-                follower: profileOwner,
-                profileIds: profileIds,
-                datas: datas,
-                sig: _getSigStruct(otherSignerKey, digest, deadline)
-            })
-        );
-    }
-
-    function testFollowWithSigNotExecutorFails() public {
-        uint256[] memory profileIds = new uint256[](1);
-        profileIds[0] = newProfileId;
-        bytes[] memory datas = new bytes[](1);
-        datas[0] = '';
-        uint256 nonce = 0;
-        uint256 deadline = type(uint256).max;
-        bytes32 digest = _getFollowTypedDataHash(profileIds, datas, nonce, deadline);
-
-        vm.expectRevert(Errors.ExecutorInvalid.selector);
-        _followWithSig(
-            _buildFollowWithSigData({
-                delegatedSigner: otherSigner,
-                follower: profileOwner,
-                profileIds: profileIds,
-                datas: datas,
-                sig: _getSigStruct(otherSignerKey, digest, deadline)
-            })
-        );
-    }
+    // TODO
 
     // Positives
     function testFollowWithSig() public {
@@ -109,13 +77,22 @@ contract FollowTest is BaseTest, SignatureHelpers {
         datas[0] = '';
         uint256 nonce = 0;
         uint256 deadline = type(uint256).max;
-        bytes32 digest = _getFollowTypedDataHash(profileIds, datas, nonce, deadline);
+        uint256 followerProfileId = _createProfile(otherSigner);
+        bytes32 digest = _getFollowTypedDataHash(
+            followerProfileId,
+            profileIds,
+            _toUint256Array(0),
+            datas,
+            nonce,
+            deadline
+        );
 
         uint256[] memory nftIds = _followWithSig(
-            _buildFollowWithSigData({
+            DataTypes.FollowWithSigData({
                 delegatedSigner: address(0),
-                follower: otherSigner,
-                profileIds: profileIds,
+                followerProfileId: followerProfileId,
+                idsOfProfilesToFollow: profileIds,
+                followTokenIds: _toUint256Array(0),
                 datas: datas,
                 sig: _getSigStruct(otherSignerKey, digest, deadline)
             })
@@ -132,7 +109,8 @@ contract FollowTest is BaseTest, SignatureHelpers {
         assertEq(nft.symbol(), expectedSymbol);
         assertEq(nftIds.length, 1);
         assertEq(nftIds[0], 1);
-        assertEq(nft.ownerOf(1), otherSigner);
+        assertEq(nft.getFollowerProfileId(1), followerProfileId);
+        assertEq(nft.getFollowTokenId(followerProfileId), 1);
     }
 
     function testExecutorFollowWithSig() public {
@@ -145,13 +123,21 @@ contract FollowTest is BaseTest, SignatureHelpers {
         datas[0] = '';
         uint256 nonce = 0;
         uint256 deadline = type(uint256).max;
-        bytes32 digest = _getFollowTypedDataHash(profileIds, datas, nonce, deadline);
-
+        uint256 followerProfileId = _createProfile(otherSigner);
+        bytes32 digest = _getFollowTypedDataHash(
+            followerProfileId,
+            profileIds,
+            _toUint256Array(0),
+            datas,
+            nonce,
+            deadline
+        );
         uint256[] memory nftIds = _followWithSig(
-            _buildFollowWithSigData({
+            DataTypes.FollowWithSigData({
                 delegatedSigner: profileOwner,
-                follower: otherSigner,
-                profileIds: profileIds,
+                followerProfileId: followerProfileId,
+                idsOfProfilesToFollow: profileIds,
+                followTokenIds: _toUint256Array(0),
                 datas: datas,
                 sig: _getSigStruct(profileOwnerKey, digest, deadline)
             })
@@ -160,6 +146,7 @@ contract FollowTest is BaseTest, SignatureHelpers {
         FollowNFT nft = FollowNFT(hub.getFollowNFT(newProfileId));
         assertEq(nftIds.length, 1);
         assertEq(nftIds[0], 1);
-        assertEq(nft.ownerOf(1), otherSigner);
+        assertEq(nft.getFollowerProfileId(1), followerProfileId);
+        assertEq(nft.getFollowTokenId(followerProfileId), 1);
     }
 }

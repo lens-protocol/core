@@ -264,7 +264,9 @@ contract BaseTest is TestSetup {
     }
 
     function _getFollowTypedDataHash(
-        uint256[] memory profileIds,
+        uint256 followerProfileId,
+        uint256[] memory idsOfProfilesToFollow,
+        uint256[] memory followTokenIds,
         bytes[] memory datas,
         uint256 nonce,
         uint256 deadline
@@ -281,7 +283,9 @@ contract BaseTest is TestSetup {
         bytes32 structHash = keccak256(
             abi.encode(
                 FOLLOW_WITH_SIG_TYPEHASH,
-                keccak256(abi.encodePacked(profileIds)),
+                followerProfileId,
+                keccak256(abi.encodePacked(idsOfProfilesToFollow)),
+                keccak256(abi.encodePacked(followTokenIds)),
                 keccak256(abi.encodePacked(dataHashes)),
                 nonce,
                 deadline
@@ -398,12 +402,19 @@ contract BaseTest is TestSetup {
 
     function _follow(
         address msgSender,
-        address onBehalfOf,
-        uint256 profileId,
+        uint256 followerProfileId,
+        uint256 idOfProfileToFollow,
+        uint256 followTokenId,
         bytes memory data
     ) internal returns (uint256[] memory) {
         vm.prank(msgSender);
-        return hub.follow(onBehalfOf, _toUint256Array(profileId), _toBytesArray(data));
+        return
+            hub.follow(
+                followerProfileId,
+                _toUint256Array(idOfProfileToFollow),
+                _toUint256Array(followTokenId),
+                _toBytesArray(data)
+            );
     }
 
     function _followWithSig(DataTypes.FollowWithSigData memory vars)
