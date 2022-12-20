@@ -310,7 +310,7 @@ library MetaTxHelpers {
         );
     }
 
-    function baseFollowWithSig(DataTypes.FollowWithSigData calldata vars) internal {
+    function baseFollowWithSig(address signer, DataTypes.FollowWithSigData calldata vars) internal {
         uint256 dataLength = vars.datas.length;
         bytes32[] memory dataHashes = new bytes32[](dataLength);
         for (uint256 i = 0; i < dataLength; ) {
@@ -328,17 +328,19 @@ library MetaTxHelpers {
                         keccak256(abi.encodePacked(vars.idsOfProfilesToFollow)),
                         keccak256(abi.encodePacked(vars.followTokenIds)),
                         keccak256(abi.encodePacked(dataHashes)),
-                        _sigNonces(vars.delegatedSigner),
+                        _sigNonces(signer),
                         vars.sig.deadline
                     )
                 )
             ),
-            vars.delegatedSigner,
+            signer,
             vars.sig
         );
     }
 
-    function baseUnfollowWithSig(DataTypes.UnfollowWithSigData calldata vars) internal {
+    function baseUnfollowWithSig(address signer, DataTypes.UnfollowWithSigData calldata vars)
+        internal
+    {
         _validateRecoveredAddress(
             _calculateDigest(
                 keccak256(
@@ -346,12 +348,12 @@ library MetaTxHelpers {
                         UNFOLLOW_WITH_SIG_TYPEHASH,
                         vars.unfollowerProfileId,
                         keccak256(abi.encodePacked(vars.idsOfProfilesToUnfollow)),
-                        _sigNonces(vars.delegatedSigner),
+                        _sigNonces(signer),
                         vars.sig.deadline
                     )
                 )
             ),
-            vars.delegatedSigner,
+            signer,
             vars.sig
         );
     }
@@ -412,9 +414,8 @@ library MetaTxHelpers {
         DataTypes.EIP712Signature calldata sig
     ) internal view {
         if (sig.deadline < block.timestamp) revert Errors.SignatureExpired();
-        address recoveredAddress = expectedAddress;
         // If the expected address is a contract, check the signature there.
-        if (recoveredAddress.code.length != 0) {
+        if (expectedAddress.code.length != 0) {
             bytes memory concatenatedSig = abi.encodePacked(sig.r, sig.s, sig.v);
             if (
                 IEIP1271Implementer(expectedAddress).isValidSignature(digest, concatenatedSig) !=
@@ -423,7 +424,7 @@ library MetaTxHelpers {
                 revert Errors.SignatureInvalid();
             }
         } else {
-            recoveredAddress = ecrecover(digest, sig.v, sig.r, sig.s);
+            address recoveredAddress = ecrecover(digest, sig.v, sig.r, sig.s);
             if (recoveredAddress == address(0) || recoveredAddress != expectedAddress) {
                 revert Errors.SignatureInvalid();
             }

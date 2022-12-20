@@ -183,12 +183,16 @@ library GeneralLib {
         external
         returns (uint256[] memory)
     {
-        MetaTxHelpers.baseFollowWithSig(vars);
+        address followerProfileOwner = GeneralHelpers.ownerOf(vars.followerProfileId);
+        address signer = vars.delegatedSigner == address(0)
+            ? followerProfileOwner
+            : vars.delegatedSigner;
+        MetaTxHelpers.baseFollowWithSig(signer, vars);
         return
             InteractionHelpers.follow(
                 vars.followerProfileId,
-                GeneralHelpers.ownerOf(vars.followerProfileId),
-                vars.delegatedSigner,
+                signer,
+                followerProfileOwner,
                 vars.idsOfProfilesToFollow,
                 vars.followTokenIds,
                 vars.datas
@@ -201,8 +205,8 @@ library GeneralLib {
         return
             InteractionHelpers.unfollow(
                 unfollowerProfileId,
-                GeneralHelpers.ownerOf(unfollowerProfileId),
                 msg.sender,
+                GeneralHelpers.ownerOf(unfollowerProfileId),
                 idsOfProfilesToUnfollow
             );
     }
@@ -214,12 +218,16 @@ library GeneralLib {
      * @param vars the UnfollowWithSigData struct containing the relevant parameters.
      */
     function unfollowWithSig(DataTypes.UnfollowWithSigData calldata vars) external {
-        MetaTxHelpers.baseUnfollowWithSig(vars);
+        address unfollowerProfileOwner = GeneralHelpers.ownerOf(vars.unfollowerProfileId);
+        address signer = vars.delegatedSigner == address(0)
+            ? unfollowerProfileOwner
+            : vars.delegatedSigner;
+        MetaTxHelpers.baseUnfollowWithSig(signer, vars);
         return
             InteractionHelpers.unfollow(
                 vars.unfollowerProfileId,
-                GeneralHelpers.ownerOf(vars.unfollowerProfileId),
-                vars.delegatedSigner,
+                signer,
+                unfollowerProfileOwner,
                 vars.idsOfProfilesToUnfollow
             );
     }

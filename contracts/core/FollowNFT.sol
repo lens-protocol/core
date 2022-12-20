@@ -356,13 +356,9 @@ contract FollowNFT is HubRestricted, LensNFTBase, ERC2981CollectionRoyalties, IF
 
     /// NOTE: We allow approve for unwrapped assets to, which is not supposed to be part of ERC-721.
     function approve(address operator, uint256 followTokenId) public override(ERC721Time, IERC721) {
-        uint256 followerProfileId;
-        address owner;
-        if (
-            (followerProfileId = _followDataByFollowTokenId[followTokenId].followerProfileId) ==
-            0 &&
-            (owner = _tokenData[followTokenId].owner) == address(0)
-        ) {
+        uint256 followerProfileId = _followDataByFollowTokenId[followTokenId].followerProfileId;
+        address owner = _tokenData[followTokenId].owner;
+        if (followerProfileId == 0 && owner == address(0)) {
             revert FollowTokenDoesNotExist();
         }
         if (operator == owner) {
@@ -598,8 +594,8 @@ contract FollowNFT is HubRestricted, LensNFTBase, ERC2981CollectionRoyalties, IF
     }
 
     function _burn(uint256 followTokenId) internal override {
-        _burnWithoutClearingApprovals(followTokenId);
         _clearApprovals(followTokenId);
+        _burnWithoutClearingApprovals(followTokenId);
     }
 
     function _burnWithoutClearingApprovals(uint256 followTokenId) internal {
