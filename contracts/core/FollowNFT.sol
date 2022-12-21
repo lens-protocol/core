@@ -21,9 +21,7 @@ import {Strings} from '@openzeppelin/contracts/utils/Strings.sol';
 error AlreadyFollowing();
 error NotFollowing();
 error FollowTokenDoesNotExist();
-error AlreadyUntied();
-error AlreadyTied();
-error Blocked();
+error AlreadyUntiedAndWrapped();
 error OnlyFollowOwner();
 error OnlyWrappedFollows();
 error DoesNotHavePermissions();
@@ -31,12 +29,6 @@ error DoesNotHavePermissions();
 struct Snapshot {
     uint128 blockNumber;
     uint128 value;
-}
-
-struct FollowData {
-    uint160 followerProfileId;
-    uint96 followTimestamp;
-    uint256 profileIdAllowedToRecover;
 }
 
 contract FollowNFT is HubRestricted, LensNFTBase, ERC2981CollectionRoyalties, IFollowNFT {
@@ -61,12 +53,10 @@ contract FollowNFT is HubRestricted, LensNFTBase, ERC2981CollectionRoyalties, IF
 
     mapping(uint256 => FollowData) internal _followDataByFollowTokenId;
     mapping(uint256 => uint256) internal _followTokenIdByFollowerProfileId;
-    mapping(uint256 => uint256) internal _approvedFollowWithTokenByFollowerProfileId;
-    mapping(uint256 => address) internal _approvedSetFollowerInTokenByFollowTokenId;
+    mapping(uint256 => uint256) internal _followApprovalByFollowTokenId;
     uint256 internal _royaltiesInBasisPoints;
 
-    event SetFollowerInTokenApproved(uint256 indexed followTokenId, address approved);
-    event FollowWithTokenApproved(uint256 indexed followerProfileId, uint256 followTokenId);
+    event FollowApproval(uint256 indexed followerProfileId, uint256 indexed followTokenId);
 
     constructor(address hub) HubRestricted(hub) {
         _initialized = true;
@@ -103,7 +93,7 @@ contract FollowNFT is HubRestricted, LensNFTBase, ERC2981CollectionRoyalties, IF
                 0,
                 followerProfileOwner
             );
-        } else if ((followTokenOwner = _tokenData[followTokenId].owner) != address(0)) {
+        } else if ((followTokenOwner = _unsafeOwnerOf(followTokenId)) != address(0)) {
             _followWithWrappedToken(
                 followerProfileId,
                 executor,
@@ -151,7 +141,7 @@ contract FollowNFT is HubRestricted, LensNFTBase, ERC2981CollectionRoyalties, IF
         if (followTokenId == 0) {
             revert NotFollowing();
         }
-        address followTokenOwner = _tokenData[followTokenId].owner;
+        address followTokenOwner = _unsafeOwnerOf(followTokenId);
         if (
             unfollowerProfileOwner != executor &&
             !isExecutorApproved &&
@@ -169,9 +159,6 @@ contract FollowNFT is HubRestricted, LensNFTBase, ERC2981CollectionRoyalties, IF
 
     /// @inheritdoc IFollowNFT
     function getFollowerProfileId(uint256 followTokenId) external view override returns (uint256) {
-        if (_tokenData[followTokenId].mintTimestamp == 0) {
-            revert FollowTokenDoesNotExist();
-        }
         return _followDataByFollowTokenId[followTokenId].followerProfileId;
     }
 
@@ -186,47 +173,92 @@ contract FollowNFT is HubRestricted, LensNFTBase, ERC2981CollectionRoyalties, IF
     }
 
     /// @inheritdoc IFollowNFT
-    function approveFollowWithToken(uint256 followerProfileId, uint256 followTokenId)
+    function getOriginalFollowTimestamp(uint256 followTokenId)
         external
+        view
         override
+        returns (uint256)
     {
-        if (_tokenData[followTokenId].mintTimestamp == 0) {
-            revert FollowTokenDoesNotExist();
-        }
-        if (IERC721(HUB).ownerOf(followerProfileId) != msg.sender) {
-            revert DoesNotHavePermissions();
-        }
-        _approveFollowWithToken(followerProfileId, followTokenId);
+        return _followDataByFollowTokenId[followTokenId].originalFollowTimestamp;
     }
 
     /// @inheritdoc IFollowNFT
-    function approveSetFollowerInToken(address operator, uint256 followTokenId) external override {
-        TokenData memory followToken = _tokenData[followTokenId];
-        if (followToken.mintTimestamp == 0) {
+    function getFollowTimestamp(uint256 followTokenId) external view override returns (uint256) {
+        return _followDataByFollowTokenId[followTokenId].followTimestamp;
+    }
+
+    /// @inheritdoc IFollowNFT
+    function getProfileIdAllowedToRecover(uint256 followTokenId)
+        external
+        view
+        override
+        returns (uint256)
+    {
+        return _followDataByFollowTokenId[followTokenId].profileIdAllowedToRecover;
+    }
+
+    /// @inheritdoc IFollowNFT
+    function getFollowData(uint256 followTokenId)
+        external
+        view
+        override
+        returns (FollowData memory)
+    {
+        return _followDataByFollowTokenId[followTokenId];
+    }
+
+    /// @inheritdoc IFollowNFT
+    function getFollowApproved(uint256 followTokenId) external view override returns (uint256) {
+        return _followApprovalByFollowTokenId[followTokenId];
+    }
+
+    /// @inheritdoc IFollowNFT
+    function approveFollow(uint256 followerProfileId, uint256 followTokenId) external override {
+        uint256 currentFollowerProfileId;
+        address followTokenOwner = _unsafeOwnerOf(followTokenId);
+        if (followTokenOwner != address(0)) {
+            // Follow token is wrapped, sender must be the follow token's owner or be approved-for-all by him.
+            if (followTokenOwner == msg.sender || isApprovedForAll(followTokenOwner, msg.sender)) {
+                _approveFollow(followerProfileId, followTokenId);
+            } else {
+                revert DoesNotHavePermissions();
+            }
+        } else if (
+            (currentFollowerProfileId = _followDataByFollowTokenId[followTokenId]
+                .followerProfileId) != 0
+        ) {
+            // Follow token is unwrapped, sender must be the current follower's owner or be approved by him.
+            address currentFollowerOwner = IERC721(HUB).ownerOf(currentFollowerProfileId);
+            if (
+                currentFollowerOwner == msg.sender ||
+                isApprovedForAll(currentFollowerOwner, msg.sender)
+            ) {
+                _approveFollow(followerProfileId, followTokenId);
+            } else {
+                revert DoesNotHavePermissions();
+            }
+        } else {
             revert FollowTokenDoesNotExist();
         }
-        if (followToken.owner == address(0)) {
-            revert OnlyWrappedFollows();
-        }
-        if (msg.sender != followToken.owner) {
-            revert OnlyFollowOwner();
-        }
-        _approveSetFollowerInToken(operator, followTokenId);
     }
 
     /// @inheritdoc IFollowNFT
     function untieAndWrap(uint256 followTokenId) external override {
-        TokenData memory followToken = _tokenData[followTokenId];
-        if (followToken.mintTimestamp == 0) {
+        if (_followTokenIsWrapped(followTokenId)) {
+            revert AlreadyUntiedAndWrapped();
+        }
+        uint256 followerProfileId = _followDataByFollowTokenId[followTokenId].followerProfileId;
+        if (followerProfileId == 0) {
             revert FollowTokenDoesNotExist();
         }
-        if (followToken.owner != address(0)) {
-            revert AlreadyUntied();
+        address followerProfileOwner = IERC721(HUB).ownerOf(followerProfileId);
+        if (
+            msg.sender != followerProfileOwner ||
+            !isApprovedForAll(followerProfileOwner, msg.sender)
+        ) {
+            revert DoesNotHavePermissions();
         }
-        _mint(
-            IERC721(HUB).ownerOf(_followDataByFollowTokenId[followTokenId].followerProfileId),
-            followTokenId
-        );
+        _mint(followerProfileOwner, followTokenId);
     }
 
     /// @inheritdoc IFollowNFT
@@ -235,24 +267,16 @@ contract FollowNFT is HubRestricted, LensNFTBase, ERC2981CollectionRoyalties, IF
         if (followTokenId == 0) {
             revert NotFollowing();
         }
-        if (_tokenData[followTokenId].owner == address(0)) {
-            revert AlreadyTied();
-        }
-        _burnWithoutClearingApprovals(followTokenId);
+        super.burn(followTokenId);
     }
 
     /// @inheritdoc IFollowNFT
     function block(uint256 followerProfileId) external override onlyHub {
         uint256 followTokenId = _followTokenIdByFollowerProfileId[followerProfileId];
         if (followTokenId != 0) {
-            if (_tokenData[followTokenId].owner != address(0)) {
+            if (!_followTokenIsWrapped(followTokenId)) {
                 // Wrap it first, so the user stops following but does not lose the token when being blocked.
-                _mint(
-                    IERC721(HUB).ownerOf(
-                        _followDataByFollowTokenId[followTokenId].followerProfileId
-                    ),
-                    followTokenId
-                );
+                _mint(IERC721(HUB).ownerOf(followerProfileId), followTokenId);
             }
             _unfollow(followerProfileId, followTokenId);
             ILensHub(HUB).emitUnfollowedEvent(followerProfileId, _followedProfileId, followTokenId);
@@ -354,36 +378,6 @@ contract FollowNFT is HubRestricted, LensNFTBase, ERC2981CollectionRoyalties, IF
             ERC721Enumerable.supportsInterface(interfaceId);
     }
 
-    /// NOTE: We allow approve for unwrapped assets to, which is not supposed to be part of ERC-721.
-    function approve(address operator, uint256 followTokenId) public override(ERC721Time, IERC721) {
-        uint256 followerProfileId = _followDataByFollowTokenId[followTokenId].followerProfileId;
-        address owner = _tokenData[followTokenId].owner;
-        if (followerProfileId == 0 && owner == address(0)) {
-            revert FollowTokenDoesNotExist();
-        }
-        if (operator == owner) {
-            revert Errors.ERC721Time_ApprovalToCurrentOwner();
-        }
-        if (msg.sender != owner && !isApprovedForAll(owner, msg.sender)) {
-            revert Errors.ERC721Time_ApproveCallerNotOwnerOrApprovedForAll();
-        }
-        _tokenApprovals[followTokenId] = operator;
-        emit Approval(
-            owner == address(0) ? IERC721(HUB).ownerOf(followerProfileId) : owner,
-            operator,
-            followTokenId
-        );
-    }
-
-    function getApproved(uint256 followTokenId)
-        public
-        view
-        override(ERC721Time, IERC721)
-        returns (address)
-    {
-        return _tokenApprovals[followTokenId];
-    }
-
     function name() public view override returns (string memory) {
         return string(abi.encodePacked(_followedProfileId.toString(), FOLLOW_NFT_NAME_SUFFIX));
     }
@@ -413,8 +407,7 @@ contract FollowNFT is HubRestricted, LensNFTBase, ERC2981CollectionRoyalties, IF
                 followTokenIdAssigned = followTokenId == 0 ? ++_lastFollowTokenId : followTokenId;
                 ++_followers;
             }
-            _tokenData[followTokenIdAssigned].mintTimestamp = uint96(block.timestamp);
-            _follow(followerProfileId, followTokenIdAssigned);
+            _follow(followerProfileId, followTokenIdAssigned, true);
             return followTokenIdAssigned;
         } else {
             revert DoesNotHavePermissions();
@@ -429,51 +422,25 @@ contract FollowNFT is HubRestricted, LensNFTBase, ERC2981CollectionRoyalties, IF
         address followerProfileOwner,
         address followTokenOwner
     ) internal {
-        bool approvedSetFollowerInToken;
+        bool approvedFollow;
         if (
             followerProfileOwner == followTokenOwner ||
             executor == followTokenOwner ||
             isApprovedForAll(followTokenOwner, executor) ||
-            (approvedSetFollowerInToken = (_approvedSetFollowerInTokenByFollowTokenId[
-                followTokenId
-            ] == executor))
+            (approvedFollow = (_followApprovalByFollowTokenId[followTokenId] == followerProfileId))
         ) {
             // The executor is allowed to write the follower in that wrapped token.
-            if (approvedSetFollowerInToken) {
-                // The `_approvedSetFollowerInTokenByFollowTokenId` was used, now needs to be cleared.
-                _approveSetFollowerInToken(address(0), followTokenId);
+            if (approvedFollow) {
+                // The `_followApprovalByFollowTokenId` was used, now needs to be cleared.
+                _approveFollow(0, followTokenId);
             }
-            bool approvedFollowWithTokenUsed;
-            if (
-                executor == followerProfileOwner ||
-                isExecutorApproved ||
-                (approvedFollowWithTokenUsed = (_approvedFollowWithTokenByFollowerProfileId[
-                    followerProfileId
-                ] == followTokenId))
-            ) {
+            if (executor == followerProfileOwner || isExecutorApproved) {
                 // The executor is allowed to follow on behalf.
-                if (approvedFollowWithTokenUsed) {
-                    // The `_approvedFollowWithTokenByFollowerProfileId` was used, now needs to be cleared.
-                    _approveFollowWithToken(followerProfileId, 0);
-                }
-                uint256 currentFollowerProfileId = _followDataByFollowTokenId[followTokenId]
-                    .followerProfileId;
-                if (currentFollowerProfileId != 0) {
-                    // As it has a follower, unfollow first.
-                    _followTokenIdByFollowerProfileId[currentFollowerProfileId] = 0;
-                    _delegate(currentFollowerProfileId, address(0));
-                    ILensHub(HUB).emitUnfollowedEvent(
-                        currentFollowerProfileId,
-                        _followedProfileId,
-                        followTokenId
-                    );
-                } else {
-                    unchecked {
-                        ++_followers;
-                    }
-                }
-                // Perform the follow.
-                _follow(followerProfileId, followTokenId);
+                _replaceFollower(
+                    _followDataByFollowTokenId[followTokenId].followerProfileId,
+                    followerProfileId,
+                    followTokenId
+                );
             } else {
                 revert DoesNotHavePermissions();
             }
@@ -488,72 +455,77 @@ contract FollowNFT is HubRestricted, LensNFTBase, ERC2981CollectionRoyalties, IF
         address followerProfileOwner,
         uint256 currentFollowerProfileId
     ) internal {
-        bool tokenApproved;
+        bool followApproved;
         address currentFollowerProfileOwner = IERC721(HUB).ownerOf(currentFollowerProfileId);
         if (
             currentFollowerProfileOwner == executor ||
             isApprovedForAll(currentFollowerProfileOwner, executor) ||
-            (tokenApproved = (getApproved(followTokenId) == executor))
+            (followApproved = (_followApprovalByFollowTokenId[followTokenId] == followerProfileId))
         ) {
-            // The executor is allowed to transfer the follow.
-            if (tokenApproved) {
-                // `_tokenApprovals` used, now needs to be cleared.
-                _tokenApprovals[followTokenId] = address(0);
-                emit Approval(currentFollowerProfileOwner, address(0), followTokenId);
+            // The profile attempting to follow is allowed to pull the unwrapped token from current follower profile.
+            if (followApproved) {
+                // `_followApprovalByFollowTokenId` was used, now needs to be cleared.
+                _approveFollow(0, followTokenId);
             }
-            bool approvedFollowWithTokenUsed;
-            if (
-                executor == followerProfileOwner ||
-                isExecutorApproved ||
-                (approvedFollowWithTokenUsed = (_approvedFollowWithTokenByFollowerProfileId[
-                    followerProfileId
-                ] == followTokenId))
-            ) {
+            if (executor == followerProfileOwner || isExecutorApproved) {
                 // The executor is allowed to follow on behalf.
-                if (approvedFollowWithTokenUsed) {
-                    // The `_approvedFollowWithTokenByFollowerProfileId` was used, now needs to be cleared.
-                    _approveFollowWithToken(followerProfileId, 0);
-                }
-                // Perform the unfollow.
-                _followTokenIdByFollowerProfileId[currentFollowerProfileId] = 0;
-                ILensHub(HUB).emitUnfollowedEvent(
-                    currentFollowerProfileId,
-                    _followedProfileId,
-                    followTokenId
-                );
-                // Perform the follow.
-                _follow(followerProfileId, followTokenId);
+                _replaceFollower(currentFollowerProfileId, followerProfileId, followTokenId);
             } else {
                 revert DoesNotHavePermissions();
             }
         }
     }
 
-    function _follow(uint256 followerProfileId, uint256 followTokenId) internal {
-        _followTokenIdByFollowerProfileId[followerProfileId] = followTokenId;
-        _followDataByFollowTokenId[followTokenId] = FollowData(
-            uint160(followerProfileId),
-            uint96(block.timestamp),
-            0
-        );
+    function _replaceFollower(
+        uint256 currentFollowerProfileId,
+        uint256 newFollowerProfileId,
+        uint256 followTokenId
+    ) internal {
+        if (currentFollowerProfileId != 0) {
+            // As it has a follower, unfollow first, removing current follower.
+            delete _followTokenIdByFollowerProfileId[currentFollowerProfileId];
+            _delegate(currentFollowerProfileId, address(0));
+            ILensHub(HUB).emitUnfollowedEvent(
+                currentFollowerProfileId,
+                _followedProfileId,
+                followTokenId
+            );
+        } else {
+            unchecked {
+                ++_followers;
+            }
+        }
+        // Perform the follow, setting new follower.
+        _follow(newFollowerProfileId, followTokenId, false);
     }
 
-    function _approveFollowWithToken(uint256 followerProfileId, uint256 followTokenId) internal {
-        _approvedFollowWithTokenByFollowerProfileId[followerProfileId] = followTokenId;
-        emit FollowWithTokenApproved(followerProfileId, followTokenId);
+    function _follow(
+        uint256 followerProfileId,
+        uint256 followTokenId,
+        bool isOriginalFollow
+    ) internal {
+        _followTokenIdByFollowerProfileId[followerProfileId] = followTokenId;
+        _followDataByFollowTokenId[followTokenId].followerProfileId = uint160(followerProfileId);
+        _followDataByFollowTokenId[followTokenId].followTimestamp = uint48(block.timestamp);
+        _followDataByFollowTokenId[followTokenId].profileIdAllowedToRecover = 0;
+        if (isOriginalFollow) {
+            _followDataByFollowTokenId[followTokenId].originalFollowTimestamp = uint48(
+                block.timestamp
+            );
+        }
     }
 
     function _getReceiver(uint256 followTokenId) internal view override returns (address) {
         return IERC721(HUB).ownerOf(_followedProfileId);
     }
 
-    function _beforeRoyaltiesSet(uint256 royaltiesInBasisPoints) internal override {
+    function _beforeRoyaltiesSet(uint256 royaltiesInBasisPoints) internal view override {
         if (IERC721(HUB).ownerOf(_followedProfileId) != msg.sender) {
             revert Errors.NotProfileOwner();
         }
     }
 
-    function _getRoyaltiesInBasisPointsSlot() internal view override returns (uint256) {
+    function _getRoyaltiesInBasisPointsSlot() internal pure override returns (uint256) {
         uint256 slot;
         assembly {
             slot := _royaltiesInBasisPoints.slot
@@ -572,50 +544,27 @@ contract FollowNFT is HubRestricted, LensNFTBase, ERC2981CollectionRoyalties, IF
     function _unfollow(uint256 unfollower, uint256 followTokenId) internal {
         _delegate(unfollower, address(0));
         delete _followTokenIdByFollowerProfileId[unfollower];
-        delete _followDataByFollowTokenId[followTokenId];
+        delete _followDataByFollowTokenId[followTokenId].followerProfileId;
+        delete _followDataByFollowTokenId[followTokenId].followTimestamp;
+        delete _followDataByFollowTokenId[followTokenId].profileIdAllowedToRecover;
         unchecked {
             --_followers;
         }
     }
 
-    function _mint(address to, uint256 followTokenId) internal override {
-        if (to == address(0)) {
-            revert Errors.ERC721Time_MintToZeroAddress();
-        }
-        if (_exists(followTokenId)) {
-            revert Errors.ERC721Time_TokenAlreadyMinted();
-        }
-        _beforeTokenTransfer(address(0), to, followTokenId);
-        unchecked {
-            ++_balances[to];
-        }
-        _tokenData[followTokenId].owner = to;
-        emit Transfer(address(0), to, followTokenId);
+    function _approveFollow(uint256 followerProfileId, uint256 followTokenId) internal {
+        _followApprovalByFollowTokenId[followTokenId] = followerProfileId;
+        emit FollowApproval(followerProfileId, followTokenId);
     }
 
-    function _burn(uint256 followTokenId) internal override {
-        _clearApprovals(followTokenId);
-        _burnWithoutClearingApprovals(followTokenId);
+    function _followTokenIsWrapped(uint256 followTokenId) internal view returns (bool) {
+        return _exists(followTokenId);
     }
 
-    function _burnWithoutClearingApprovals(uint256 followTokenId) internal {
-        address owner = ERC721Time.ownerOf(followTokenId);
-        _beforeTokenTransfer(owner, address(0), followTokenId);
-        unchecked {
-            --_balances[owner];
-        }
-        delete _tokenData[followTokenId];
-        emit Transfer(owner, address(0), followTokenId);
-    }
-
-    function _clearApprovals(uint256 followTokenId) internal {
-        _approveSetFollowerInToken(address(0), followTokenId);
-        _approve(address(0), followTokenId);
-    }
-
-    function _approveSetFollowerInToken(address operator, uint256 followTokenId) internal {
-        _approvedSetFollowerInTokenByFollowTokenId[followTokenId] = operator;
-        emit SetFollowerInTokenApproved(followTokenId, operator);
+    function _followTokenExists(uint256 followTokenId) internal view returns (bool) {
+        return
+            _followDataByFollowTokenId[followTokenId].followerProfileId != 0 ||
+            _followTokenIsWrapped(followTokenId);
     }
 
     /**
@@ -626,11 +575,7 @@ contract FollowNFT is HubRestricted, LensNFTBase, ERC2981CollectionRoyalties, IF
         address to,
         uint256 followTokenId
     ) internal override {
-        if (from != address(0) && to != address(0)) {
-            // It is not necessary to clear approvals when minting. And the approvals should not be cleared here for the
-            // burn case, as it could be a token unwrap instead of a regular burn.
-            _clearApprovals(followTokenId);
-        }
+        _approveFollow(0, followTokenId);
         super._beforeTokenTransfer(from, to, followTokenId);
         ILensHub(HUB).emitFollowNFTTransferEvent(_followedProfileId, followTokenId, from, to);
     }
