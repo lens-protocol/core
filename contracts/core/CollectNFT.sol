@@ -92,13 +92,13 @@ contract CollectNFT is LensNFTBase, ERC2981CollectionRoyalties, ICollectNFT {
         return IERC721(HUB).ownerOf(_profileId);
     }
 
-    function _beforeRoyaltiesSet(uint256 royaltiesInBasisPoints) internal override {
+    function _beforeRoyaltiesSet(uint256 royaltiesInBasisPoints) internal view override {
         if (IERC721(HUB).ownerOf(_profileId) != msg.sender) {
             revert Errors.NotProfileOwner();
         }
     }
 
-    function _getRoyaltiesInBasisPointsSlot() internal view override returns (uint256) {
+    function _getRoyaltiesInBasisPointsSlot() internal pure override returns (uint256) {
         uint256 slot;
         assembly {
             slot := _royaltiesInBasisPoints.slot
