@@ -12,6 +12,21 @@ import {DataTypes} from '../libraries/DataTypes.sol';
  */
 interface IFollowNFT {
     /**
+     * @notice A struct containing token follow-realted data.
+     *
+     * @param followerProfileId The ID of the profile using the token to follow.
+     * @param originalFollowTimestamp The timestamp of the first follow performed with the token.
+     * @param followTimestamp The timestamp of the current follow, if a profile is using the token to follow.
+     * @param profileIdAllowedToRecover The ID of the profile allowed to recover the follow ID, if any.
+     */
+    struct FollowData {
+        uint160 followerProfileId;
+        uint48 originalFollowTimestamp;
+        uint48 followTimestamp;
+        uint256 profileIdAllowedToRecover;
+    }
+
+    /**
      * @notice Initializes the follow NFT.
      *
      * @dev Sets the hub as priviliged sender, the targeted profile, and the token royalties.
@@ -68,9 +83,45 @@ interface IFollowNFT {
      *
      * @param followTokenId The ID of the follow token whose follower should be queried.
      *
-     * @return uint256 The ID of the profile set as follower in the given token, zero if it is not being used to follow.
+     * @return uint256 The ID of the profile following with the given token, zero if it is not being used to follow.
      */
     function getFollowerProfileId(uint256 followTokenId) external view returns (uint256);
+
+    /**
+     * @notice Gets the original follow timestamp of the given follow token.
+     *
+     * @param followTokenId The ID of the follow token whose original follow timestamp should be queried.
+     *
+     * @return uint256 The timestamp of the first follow performed with the token, zero if was not used to follow yet.
+     */
+    function getOriginalFollowTimestamp(uint256 followTokenId) external view returns (uint256);
+
+    /**
+     * @notice Gets the current follow timestamp of the given follow token.
+     *
+     * @param followTokenId The ID of the follow token whose follow timestamp should be queried.
+     *
+     * @return uint256 The timestamp of the current follow of the token, zero if it is not being used to follow.
+     */
+    function getFollowTimestamp(uint256 followTokenId) external view returns (uint256);
+
+    /**
+     * @notice Gets the ID of the profile allowed to recover the given follow token.
+     *
+     * @param followTokenId The ID of the follow token whose allowed profile to recover should be queried.
+     *
+     * @return uint256 The ID of the profile allowed to recover the given follow token, zero if none of them is allowed.
+     */
+    function getProfileIdAllowedToRecover(uint256 followTokenId) external view returns (uint256);
+
+    /**
+     * @notice Gets the follow data of the given follow token.
+     *
+     * @param followTokenId The ID of the follow token whose follow data should be queried.
+     *
+     * @return FollowData The token data associated with the given follow token.
+     */
+    function getFollowData(uint256 followTokenId) external view returns (FollowData memory);
 
     /**
      * @notice Tells if the given profile is following the profile targeted in this contract.
@@ -82,29 +133,35 @@ interface IFollowNFT {
     function isFollowing(uint256 followerProfileId) external view returns (bool);
 
     /**
-     * @notice Tells if the given profile is following the profile targeted in this contract.
+     * @notice Gets the ID of the token being used to follow by the given follower.
      *
-     * @param followerProfileId The ID of the profile whose following state should be queried.
+     * @param followerProfileId The ID of the profile whose follow ID should be queried.
      *
-     * @return uint256 The ID of the profile set as follower in the given token, zero if it is not being used to follow.
+     * @return uint256 The ID of the token being used to follow by the given follower, zero if he is not following.
      */
     function getFollowTokenId(uint256 followerProfileId) external view returns (uint256);
 
     /**
-     * @notice Approves the given profile to follow with the given follow token.
+     * @notice Gets the ID of the profile approved to follow with the given token.
      *
-     * @param followerProfileId The ID of the profile to approve to follow.
-     * @param followTokenId The ID of the follow token to approve to follow with.
+     * @param followTokenId The ID of the token whose approved to follow should be queried.
+     *
+     * @return uint256 The ID of the profile approved to follow with the given token, zero if none of them is approved.
      */
-    function approveFollowWithToken(uint256 followerProfileId, uint256 followTokenId) external; // TODO: maybe rename to approveProfileToFollowWithToken
+    function getFollowApproved(uint256 followTokenId) external view returns (uint256);
 
     /**
-     * @notice Approves the given address to set a follower on a given wrapped token.
+     * @notice Approves the given token to be used to follow by the given profile.
      *
-     * @param operator The address to approve to set the follower in the token.
-     * @param followTokenId The ID of the follow token to approve for the follower to be set in.
+     * @dev This replaces the ERC-721's `approve` function for unwrapped follow tokens, which means approving a profile
+     * to pull the follow form another profile. While, for wrapped tokens, it approves setting the follower on the
+     * follow token without losing its ownership.
+     * This approval is cleared in both unwrapped and wrapped transfers, as well as in wraps and unwraps.
+     *
+     * @param followerProfileId The ID of the profile approved to follow with the given token.
+     * @param followTokenId The ID of the follow token to be approved for the given profile.
      */
-    function approveSetFollowerInToken(address operator, uint256 followTokenId) external; // TODO: maybe rename to approveTokenToBeUsedToFollowByProfile
+    function approveFollow(uint256 followerProfileId, uint256 followTokenId) external;
 
     /**
      * @notice Unties the follow token from the follower's profile token, and wrapps it into the ERC-721 untied follow
