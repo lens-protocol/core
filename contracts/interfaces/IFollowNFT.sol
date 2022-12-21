@@ -11,6 +11,14 @@ import {DataTypes} from '../libraries/DataTypes.sol';
  * @notice This is the interface for the FollowNFT contract, which is cloned upon the first follow for any profile.
  */
 interface IFollowNFT {
+    error AlreadyFollowing();
+    error NotFollowing();
+    error FollowTokenDoesNotExist();
+    error AlreadyUntiedAndWrapped();
+    error OnlyFollowOwner();
+    error OnlyWrappedFollows();
+    error DoesNotHavePermissions();
+
     /**
      * @notice A struct containing token follow-realted data.
      *
@@ -77,6 +85,13 @@ interface IFollowNFT {
         bool isExecutorApproved,
         address unfollowerProfileOwner
     ) external;
+
+    /**
+     * @notice Gets quantity of followers the profile has, which is altered by each follow and unfollow opreation.
+     *
+     * @return uint256 The quantity of followers the profile has.
+     */
+    function getFollowers() external view returns (uint256);
 
     /**
      * @notice Gets the ID of the profile following with the given follow token.

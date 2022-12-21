@@ -18,14 +18,6 @@ import {LensNFTBase} from './base/LensNFTBase.sol';
 import {MetaTxHelpers} from '../libraries/helpers/MetaTxHelpers.sol';
 import {Strings} from '@openzeppelin/contracts/utils/Strings.sol';
 
-error AlreadyFollowing();
-error NotFollowing();
-error FollowTokenDoesNotExist();
-error AlreadyUntiedAndWrapped();
-error OnlyFollowOwner();
-error OnlyWrappedFollows();
-error DoesNotHavePermissions();
-
 struct Snapshot {
     uint128 blockNumber;
     uint128 value;
@@ -155,6 +147,11 @@ contract FollowNFT is HubRestricted, LensNFTBase, ERC2981CollectionRoyalties, IF
             _followDataByFollowTokenId[followTokenId]
                 .profileIdAllowedToRecover = unfollowerProfileId;
         }
+    }
+
+    /// @inheritdoc IFollowNFT
+    function getFollowers() external view override returns (uint256) {
+        return _followers;
     }
 
     /// @inheritdoc IFollowNFT
