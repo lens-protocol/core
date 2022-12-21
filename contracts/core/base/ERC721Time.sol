@@ -35,16 +35,16 @@ abstract contract ERC721Time is Context, ERC165, IERC721Time, IERC721Metadata {
 
     // Mapping from token ID to token Data (owner address and mint timestamp uint96), this
     // replaces the original mapping(uint256 => address) private _owners;
-    mapping(uint256 => IERC721Time.TokenData) internal _tokenData;
+    mapping(uint256 => IERC721Time.TokenData) private _tokenData;
 
     // Mapping owner address to token count
-    mapping(address => uint256) internal _balances;
+    mapping(address => uint256) private _balances;
 
     // Mapping from token ID to approved address
-    mapping(uint256 => address) internal _tokenApprovals;
+    mapping(uint256 => address) private _tokenApprovals;
 
     // Mapping from owner to operator approvals
-    mapping(address => mapping(address => bool)) internal _operatorApprovals;
+    mapping(address => mapping(address => bool)) private _operatorApprovals;
 
     /**
      * @dev Initializes the ERC721 name and symbol.
@@ -236,6 +236,19 @@ abstract contract ERC721Time is Context, ERC165, IERC721Time, IERC721Metadata {
         if (!_isApprovedOrOwner(_msgSender(), tokenId))
             revert Errors.ERC721Time_TransferCallerNotOwnerOrApproved();
         _safeTransfer(from, to, tokenId, _data);
+    }
+
+    /**
+     * @notice Returns the owner of the `tokenId` token.
+     *
+     * @dev It is prefixed as `unsafe` as it does not revert when the token does not exist.
+     *
+     * @param tokenId The token which owner is being queried.
+     *
+     * @return address The address owning the given token, zero address if the token does not exist.
+     */
+    function _unsafeOwnerOf(uint256 tokenId) internal view returns (address) {
+        return _tokenData[tokenId].owner;
     }
 
     /**
