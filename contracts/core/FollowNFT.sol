@@ -253,7 +253,7 @@ contract FollowNFT is HubRestricted, LensNFTBase, ERC2981CollectionRoyalties, IF
         }
         address followerProfileOwner = IERC721(HUB).ownerOf(followerProfileId);
         if (
-            msg.sender != followerProfileOwner ||
+            msg.sender != followerProfileOwner &&
             !isApprovedForAll(followerProfileOwner, msg.sender)
         ) {
             revert DoesNotHavePermissions();
