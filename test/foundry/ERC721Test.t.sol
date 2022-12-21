@@ -211,7 +211,7 @@ abstract contract ERC721Test is Test {
     }
 
     function testFailMintToZero() public {
-        uint256 tokenId = _mintERC721(address(0));
+        _mintERC721(address(0));
     }
 
     function testFailBurnUnMinted() public {

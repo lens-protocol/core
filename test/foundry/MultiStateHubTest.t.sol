@@ -453,7 +453,7 @@ contract MultiStateHubTest_PausedState_WithSig is
             deadline
         );
 
-        uint256[] memory nftIds = _followWithSig(
+        _followWithSig(
             DataTypes.FollowWithSigData({
                 delegatedSigner: address(0),
                 followerProfileId: followerProfileId,
@@ -779,7 +779,7 @@ contract MultiStateHubTest_PublishingPausedState_WithSig is
             deadline
         );
 
-        uint256[] memory nftIds = _followWithSig(
+        _followWithSig(
             DataTypes.FollowWithSigData({
                 delegatedSigner: address(0),
                 followerProfileId: followerProfileId,

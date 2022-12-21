@@ -8,7 +8,7 @@ import 'contracts/libraries/DataTypes.sol';
 contract CollectingHelpers is TestSetup {
     CollectNFT _collectNftAfter;
 
-    function _checkCollectNFTBefore() internal returns (uint256) {
+    function _checkCollectNFTBefore() internal view returns (uint256) {
         // collect NFT doesn't exist yet
 
         address collectNftAddress = hub.getCollectNFT(
