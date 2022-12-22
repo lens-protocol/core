@@ -201,7 +201,8 @@ Negatives
 [X] TestWallet should fail to set default profile with sig with signature deadline mismatch
 [X] TestWallet should fail to set default profile with sig with invalid deadline
 [X] TestWallet should fail to set default profile with sig with invalid nonce
-[ ] TestWallet should sign attempt to set default profile with sig, cancel with empty permitForAll, then fail to set default profile with sig
+<!-- Already tested in invalid nonce test above -->
+[-] TestWallet should sign attempt to set default profile with sig, cancel with empty permitForAll, then fail to set default profile with sig
 Scenarios
 [X] TestWallet should set the default profile with sig
 [X] TestWallet should set the default profile with sig and then be able to unset it
