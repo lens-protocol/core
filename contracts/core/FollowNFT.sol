@@ -6,12 +6,11 @@ import '../libraries/Constants.sol';
 import {DataTypes} from '../libraries/DataTypes.sol';
 import {ERC2981CollectionRoyalties} from './base/ERC2981CollectionRoyalties.sol';
 import {ERC721Enumerable} from './base/ERC721Enumerable.sol';
-import {ERC721Time} from './base/ERC721Time.sol';
 import {Errors} from '../libraries/Errors.sol';
 import {Events} from '../libraries/Events.sol';
 import {HubRestricted} from './base/HubRestricted.sol';
 import {IERC721} from '@openzeppelin/contracts/token/ERC721/IERC721.sol';
-import {IFollowModule} from '../interfaces/IFollowModule.sol';
+import {IERC721Time} from '../interfaces/IERC721Time.sol';
 import {IFollowNFT} from '../interfaces/IFollowNFT.sol';
 import {ILensHub} from '../interfaces/ILensHub.sol';
 import {LensNFTBase} from './base/LensNFTBase.sol';
@@ -39,7 +38,7 @@ contract FollowNFT is HubRestricted, LensNFTBase, ERC2981CollectionRoyalties, IF
     uint256 internal _delSupplySnapshotCount;
     uint256 internal _followedProfileId;
     uint128 internal _lastFollowTokenId;
-    uint128 internal _followers;
+    uint128 internal _followers; //TODO[Question for reviewer]: Burning a follower profile won't decrease the followers count, does it still worth to keep this?
 
     bool private _initialized;
 
@@ -421,7 +420,11 @@ contract FollowNFT is HubRestricted, LensNFTBase, ERC2981CollectionRoyalties, IF
         uint256 currentFollowerProfileId
     ) internal {
         bool followApproved = _followApprovalByFollowTokenId[followTokenId] == followerProfileId;
-        if (followApproved || IERC721(HUB).ownerOf(currentFollowerProfileId) == executor) {
+        if (
+            followApproved ||
+            !IERC721Time(HUB).exists(currentFollowerProfileId) ||
+            IERC721(HUB).ownerOf(currentFollowerProfileId) == executor
+        ) {
             // The profile attempting to follow is allowed to pull the unwrapped token from current follower profile.
             if (followApproved) {
                 // `_followApprovalByFollowTokenId` was used, now needs to be cleared.
