@@ -190,9 +190,9 @@ interface IFollowNFT {
      * @notice Unwrapps the follow token from the ERC-721 untied follow tokens collection, and ties it to the follower's
      * profile token.
      *
-     * @param followerProfileId The ID of the profile whose token being used to follow should be unwrapped and tied.
+     * @param followTokenId The ID of the follow token to unwrap and tie to its follower.
      */
-    function unwrapAndTie(uint256 followerProfileId) external;
+    function unwrapAndTie(uint256 followTokenId) external;
 
     /**
      * @notice Blocks the given profile. If it was following the targetted profile, this will make it to unfollow.

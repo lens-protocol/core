@@ -511,12 +511,12 @@ interface ILensHub {
     /**
      * @notice Returns whether `profile` is blocked by `byProfile`.
      *
-     * @param profile The ID of the profile whose blocked status should be queried.
-     * @param byProfile The ID of the profile whose blocker status should be queried.
+     * @param profileId The ID of the profile whose blocked status should be queried.
+     * @param byProfileId The ID of the profile whose blocker status should be queried.
      *
-     * @return bool True if `profile` blocked `byProfile`, flase otherwise.
+     * @return bool True if `profileId` is blocked by `byProfileId`, flase otherwise.
      */
-    function isBlocked(uint256 profile, uint256 byProfile) external view returns (bool);
+    function isBlocked(uint256 profileId, uint256 byProfileId) external view returns (bool);
 
     /**
      * @notice Returns the default profile for a given wallet address
