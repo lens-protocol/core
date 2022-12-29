@@ -986,7 +986,7 @@ contract FollowNFTTest is BaseTest, ERC721Test {
 
         vm.expectRevert(IFollowNFT.NotFollowing.selector);
         vm.prank(alreadyFollowingProfileOwner);
-        followNFT.unwrapAndTie(alreadyFollowingProfileId);
+        followNFT.unwrapAndTie(followTokenId);
     }
 
     function testCannotUnwrapAndTieIfTokenIsAlreadyUnwrappedAndTied() public {
@@ -994,7 +994,7 @@ contract FollowNFTTest is BaseTest, ERC721Test {
 
         vm.expectRevert(Errors.ERC721Time_OperatorQueryForNonexistantToken.selector);
         vm.prank(alreadyFollowingProfileOwner);
-        followNFT.unwrapAndTie(alreadyFollowingProfileId);
+        followNFT.unwrapAndTie(followTokenId);
     }
 
     function testCannotUnwrapAndTieIfSenderIsNotTokenOwnerOrApprovedOrApprovedForAll(address sender)
@@ -1012,7 +1012,7 @@ contract FollowNFTTest is BaseTest, ERC721Test {
 
         vm.expectRevert(Errors.NotOwnerOrApproved.selector);
         vm.prank(sender);
-        followNFT.unwrapAndTie(alreadyFollowingProfileId);
+        followNFT.unwrapAndTie(followTokenId);
     }
 
     //////////////////////////////////////////////////////////
@@ -1025,7 +1025,7 @@ contract FollowNFTTest is BaseTest, ERC721Test {
         followNFT.untieAndWrap(followTokenId);
 
         vm.prank(alreadyFollowingProfileOwner);
-        followNFT.unwrapAndTie(alreadyFollowingProfileId);
+        followNFT.unwrapAndTie(followTokenId);
 
         assertFalse(followNFT.exists(followTokenId));
     }
@@ -1042,7 +1042,7 @@ contract FollowNFTTest is BaseTest, ERC721Test {
         followNFT.untieAndWrap(followTokenId);
 
         vm.prank(approvedForAll);
-        followNFT.unwrapAndTie(alreadyFollowingProfileId);
+        followNFT.unwrapAndTie(followTokenId);
 
         assertFalse(followNFT.exists(followTokenId));
     }
@@ -1059,7 +1059,7 @@ contract FollowNFTTest is BaseTest, ERC721Test {
         followNFT.approve(approved, followTokenId);
 
         vm.prank(approved);
-        followNFT.unwrapAndTie(alreadyFollowingProfileId);
+        followNFT.unwrapAndTie(followTokenId);
 
         assertFalse(followNFT.exists(followTokenId));
     }
@@ -1103,9 +1103,107 @@ contract FollowNFTTest is BaseTest, ERC721Test {
     // Block - Negatives
     //////////////////////////////////////////////////////////
 
+    function testCannotCallBlockIfNotTheHub(address sender) public {
+        vm.assume(sender != address(hub));
+        vm.assume(sender != address(0));
+
+        vm.prank(sender);
+
+        vm.expectRevert(Errors.NotHub.selector);
+        followNFT.block(followerProfileId);
+    }
+
     //////////////////////////////////////////////////////////
     // Block - Scenarios
     //////////////////////////////////////////////////////////
+
+    function testCanBlockSomeoneAlreadyBlocked() public {
+        vm.prank(address(hub));
+        followNFT.block(followerProfileId);
+
+        vm.prank(address(hub));
+        followNFT.block(followerProfileId);
+    }
+
+    function testBlockingFollowerThatWasFollowingWithWrappedTokenMakesHimUnfollowButKeepsTheWrappedToken()
+        public
+    {
+        uint256 followTokenId = followNFT.getFollowTokenId(alreadyFollowingProfileId);
+
+        vm.prank(alreadyFollowingProfileOwner);
+        followNFT.untieAndWrap(followTokenId);
+
+        assertTrue(followNFT.isFollowing(alreadyFollowingProfileId));
+
+        vm.prank(address(hub));
+        followNFT.block(alreadyFollowingProfileId);
+
+        assertFalse(followNFT.isFollowing(alreadyFollowingProfileId));
+
+        assertEq(followNFT.ownerOf(followTokenId), alreadyFollowingProfileOwner);
+    }
+
+    function testBlockingFollowerThatWasFollowingWithUnwrappedFirstWrapsTokenAndThenMakesHimUnfollowKeepingItWrapped()
+        public
+    {
+        uint256 followTokenId = followNFT.getFollowTokenId(alreadyFollowingProfileId);
+
+        assertFalse(followNFT.exists(followTokenId));
+        assertTrue(followNFT.isFollowing(alreadyFollowingProfileId));
+
+        vm.prank(address(hub));
+        followNFT.block(alreadyFollowingProfileId);
+
+        assertFalse(followNFT.isFollowing(alreadyFollowingProfileId));
+        assertEq(followNFT.ownerOf(followTokenId), alreadyFollowingProfileOwner);
+    }
+
+    function testBlockingProfileThatWasNotFollowingButItsOwnerHoldsWrappedFollowTokenDoesNotChangeAnything()
+        public
+    {
+        uint256 followTokenId = followNFT.getFollowTokenId(alreadyFollowingProfileId);
+
+        vm.prank(alreadyFollowingProfileOwner);
+        followNFT.untieAndWrap(followTokenId);
+
+        vm.prank(address(hub));
+        followNFT.unfollow({
+            unfollowerProfileId: alreadyFollowingProfileId,
+            executor: alreadyFollowingProfileOwner,
+            isExecutorApproved: false,
+            unfollowerProfileOwner: alreadyFollowingProfileOwner
+        });
+
+        assertFalse(followNFT.isFollowing(alreadyFollowingProfileId));
+        assertEq(followNFT.ownerOf(followTokenId), alreadyFollowingProfileOwner);
+
+        vm.prank(address(hub));
+        followNFT.block(alreadyFollowingProfileId);
+
+        assertFalse(followNFT.isFollowing(alreadyFollowingProfileId));
+        assertEq(followNFT.ownerOf(followTokenId), alreadyFollowingProfileOwner);
+    }
+
+    function testBlockingProfileThatWasNotFollowingButItsOwnerHoldsWrappedFollowTokenWithFollowerDoesNotChangeAnything()
+        public
+    {
+        uint256 followTokenId = followNFT.getFollowTokenId(alreadyFollowingProfileId);
+
+        vm.prank(alreadyFollowingProfileOwner);
+        followNFT.untieAndWrap(followTokenId);
+
+        vm.prank(alreadyFollowingProfileOwner);
+        followNFT.transferFrom(alreadyFollowingProfileOwner, followerProfileOwner, followTokenId);
+
+        assertTrue(followNFT.isFollowing(alreadyFollowingProfileId));
+        assertEq(followNFT.ownerOf(followTokenId), followerProfileOwner);
+
+        vm.prank(address(hub));
+        followNFT.block(followerProfileId);
+
+        assertTrue(followNFT.isFollowing(alreadyFollowingProfileId));
+        assertEq(followNFT.ownerOf(followTokenId), followerProfileOwner);
+    }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
