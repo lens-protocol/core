@@ -1019,15 +1019,50 @@ contract FollowNFTTest is BaseTest, ERC721Test {
     // Unwrap & Tie - Scenarios
     //////////////////////////////////////////////////////////
 
-    /****************[ Token owner can unwrap ]*/
+    function testTokenOwnerCanUnwrapAndTieIt() public {
+        uint256 followTokenId = followNFT.getFollowTokenId(alreadyFollowingProfileId);
+        vm.prank(alreadyFollowingProfileOwner);
+        followNFT.untieAndWrap(followTokenId);
 
-    /****************[ Approved for all can unwrap ]*/
+        vm.prank(alreadyFollowingProfileOwner);
+        followNFT.unwrapAndTie(alreadyFollowingProfileId);
 
-    /****************[ Approved (by approve()) can unwrap ]*/
+        assertFalse(followNFT.exists(followTokenId));
+    }
 
-    /****************[ Unwrap and tie back from wrapped ]*/
+    function testApprovedForAllCanUnwrapAndTieAToken(address approvedForAll) public {
+        vm.assume(approvedForAll != alreadyFollowingProfileOwner);
+        vm.assume(approvedForAll != address(0));
 
-    /****************[ Owner reverts, balance is 0 ]*/
+        vm.prank(alreadyFollowingProfileOwner);
+        followNFT.setApprovalForAll(approvedForAll, true);
+
+        uint256 followTokenId = followNFT.getFollowTokenId(alreadyFollowingProfileId);
+        vm.prank(alreadyFollowingProfileOwner);
+        followNFT.untieAndWrap(followTokenId);
+
+        vm.prank(approvedForAll);
+        followNFT.unwrapAndTie(alreadyFollowingProfileId);
+
+        assertFalse(followNFT.exists(followTokenId));
+    }
+
+    function testApprovedForATokenCanUnwrapAndTieIt(address approved) public {
+        vm.assume(approved != alreadyFollowingProfileOwner);
+        vm.assume(approved != address(0));
+
+        uint256 followTokenId = followNFT.getFollowTokenId(alreadyFollowingProfileId);
+        vm.prank(alreadyFollowingProfileOwner);
+        followNFT.untieAndWrap(followTokenId);
+
+        vm.prank(alreadyFollowingProfileOwner);
+        followNFT.approve(approved, followTokenId);
+
+        vm.prank(approved);
+        followNFT.unwrapAndTie(alreadyFollowingProfileId);
+
+        assertFalse(followNFT.exists(followTokenId));
+    }
 
     function testUnwrappedTokenStillTiedToFollowerProfileAfterAFollowerProfileTransfer(
         address newFollowerProfileOwner
