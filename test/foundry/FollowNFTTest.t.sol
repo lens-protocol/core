@@ -1211,7 +1211,95 @@ contract FollowNFTTest is BaseTest, ERC721Test {
     // Approve follow - Negatives
     //////////////////////////////////////////////////////////
 
+    function testCannotApproveFollowForUnexistentProfile(uint256 unexistentProfileId) public {
+        vm.assume(!hub.exists(unexistentProfileId));
+
+        uint256 followTokenId = followNFT.getFollowTokenId(alreadyFollowingProfileId);
+
+        vm.expectRevert(Errors.TokenDoesNotExist.selector);
+        vm.prank(alreadyFollowingProfileOwner);
+        followNFT.approveFollow(unexistentProfileId, followTokenId);
+    }
+
+    function testCannotApproveFollowForUnexistentFollowToken(uint256 unexistentFollowTokenId)
+        public
+    {
+        vm.assume(!followNFT.exists(unexistentFollowTokenId));
+        vm.assume(followNFT.getFollowerProfileId(unexistentFollowTokenId) == 0);
+
+        vm.expectRevert(IFollowNFT.FollowTokenDoesNotExist.selector);
+        followNFT.approveFollow(followerProfileId, unexistentFollowTokenId);
+    }
+
+    function testCannotApproveFollowForWrappedTokenIfCallerIsNotItsOwnerOrApprovedForAllByHim(
+        address sender
+    ) public {
+        vm.assume(sender != alreadyFollowingProfileOwner);
+        vm.assume(!followNFT.isApprovedForAll(alreadyFollowingProfileOwner, sender));
+
+        uint256 followTokenId = followNFT.getFollowTokenId(alreadyFollowingProfileId);
+
+        vm.prank(alreadyFollowingProfileOwner);
+        followNFT.untieAndWrap(followTokenId);
+
+        vm.expectRevert(IFollowNFT.DoesNotHavePermissions.selector);
+        vm.prank(sender);
+        followNFT.approveFollow(followerProfileId, followTokenId);
+    }
+
+    function testCannotApproveFollowForUnwrappedTokenIfCallerIsNotItsFollowerOwner(address sender)
+        public
+    {
+        vm.assume(sender != alreadyFollowingProfileOwner);
+
+        uint256 followTokenId = followNFT.getFollowTokenId(alreadyFollowingProfileId);
+
+        vm.expectRevert(IFollowNFT.DoesNotHavePermissions.selector);
+        vm.prank(sender);
+        followNFT.approveFollow(followerProfileId, followTokenId);
+    }
+
     //////////////////////////////////////////////////////////
     // Approve follow - Scenarios
     //////////////////////////////////////////////////////////
+
+    function testApproveFollowWhenTokenIsWrappedAndCallerIsItsOwner() public {
+        uint256 followTokenId = followNFT.getFollowTokenId(alreadyFollowingProfileId);
+
+        vm.prank(alreadyFollowingProfileOwner);
+        followNFT.untieAndWrap(followTokenId);
+
+        vm.prank(alreadyFollowingProfileOwner);
+        followNFT.approveFollow(followerProfileId, followTokenId);
+
+        assertEq(followNFT.getFollowApproved(followTokenId), followerProfileId);
+    }
+
+    function testApproveFollowWhenTokenIsWrappedAndCallerIsApprovedForAllByItsOwner(
+        address approvedForAll
+    ) public {
+        vm.assume(approvedForAll != alreadyFollowingProfileOwner);
+        vm.assume(approvedForAll != address(0));
+
+        uint256 followTokenId = followNFT.getFollowTokenId(alreadyFollowingProfileId);
+        vm.prank(alreadyFollowingProfileOwner);
+        followNFT.untieAndWrap(followTokenId);
+
+        vm.prank(alreadyFollowingProfileOwner);
+        followNFT.setApprovalForAll(approvedForAll, true);
+
+        vm.prank(approvedForAll);
+        followNFT.approveFollow(followerProfileId, followTokenId);
+
+        assertEq(followNFT.getFollowApproved(followTokenId), followerProfileId);
+    }
+
+    function testApproveFollowWhenTokenIsUnwrappedAndCallerIsItsFollowerOwner() public {
+        uint256 followTokenId = followNFT.getFollowTokenId(alreadyFollowingProfileId);
+
+        vm.prank(alreadyFollowingProfileOwner);
+        followNFT.approveFollow(followerProfileId, followTokenId);
+
+        assertEq(followNFT.getFollowApproved(followTokenId), followerProfileId);
+    }
 }
