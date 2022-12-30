@@ -200,6 +200,9 @@ contract FollowNFT is HubRestricted, LensNFTBase, ERC2981CollectionRoyalties, IF
     function approveFollow(uint256 followerProfileId, uint256 followTokenId) external override {
         uint256 currentFollowerProfileId;
         address followTokenOwner = _unsafeOwnerOf(followTokenId);
+        if (!IERC721Time(HUB).exists(followerProfileId)) {
+            revert Errors.TokenDoesNotExist();
+        }
         if (followTokenOwner != address(0)) {
             // Follow token is wrapped, sender must be the follow token's owner or be approved-for-all by him.
             if (followTokenOwner == msg.sender || isApprovedForAll(followTokenOwner, msg.sender)) {
