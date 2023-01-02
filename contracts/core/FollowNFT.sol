@@ -258,7 +258,7 @@ contract FollowNFT is HubRestricted, LensNFTBase, ERC2981CollectionRoyalties, IF
                 _mint(IERC721(HUB).ownerOf(followerProfileId), followTokenId);
             }
             _unfollow(followerProfileId, followTokenId);
-            ILensHub(HUB).emitUnfollowedEvent(followerProfileId, _followedProfileId, followTokenId);
+            ILensHub(HUB).emitUnfollowedEvent(followerProfileId, _followedProfileId);
         }
     }
 
@@ -447,11 +447,7 @@ contract FollowNFT is HubRestricted, LensNFTBase, ERC2981CollectionRoyalties, IF
             // As it has a follower, unfollow first, removing current follower.
             delete _followTokenIdByFollowerProfileId[currentFollowerProfileId];
             _delegate(currentFollowerProfileId, address(0));
-            ILensHub(HUB).emitUnfollowedEvent(
-                currentFollowerProfileId,
-                _followedProfileId,
-                followTokenId
-            );
+            ILensHub(HUB).emitUnfollowedEvent(currentFollowerProfileId, _followedProfileId);
         } else {
             unchecked {
                 ++_followers;
@@ -499,7 +495,7 @@ contract FollowNFT is HubRestricted, LensNFTBase, ERC2981CollectionRoyalties, IF
         uint256 followerProfileId = _followDataByFollowTokenId[followTokenId].followerProfileId;
         if (followerProfileId != 0) {
             _unfollow(followerProfileId, followTokenId);
-            ILensHub(HUB).emitUnfollowedEvent(followerProfileId, _followedProfileId, followTokenId);
+            ILensHub(HUB).emitUnfollowedEvent(followerProfileId, _followedProfileId);
         }
     }
 

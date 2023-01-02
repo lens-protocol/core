@@ -105,6 +105,8 @@ library InteractionHelpers {
                 unfollowerProfileOwner
             );
 
+            emit Events.Unfollowed(unfollowerProfileId, idOfProfileToUnfollow, block.timestamp);
+
             unchecked {
                 ++i;
             }

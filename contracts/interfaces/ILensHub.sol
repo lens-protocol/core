@@ -425,13 +425,9 @@ interface ILensHub {
      *
      * @param unfollowerProfileId The ID of the profile that executed the unfollow.
      * @param idOfProfileUnfollowed The ID of the profile that was unfollowed.
-     * @param followTokenId The ID of the token that was used to follow before unfollowing.
      */
-    function emitUnfollowedEvent(
-        uint256 unfollowerProfileId,
-        uint256 idOfProfileUnfollowed,
-        uint256 followTokenId
-    ) external;
+    function emitUnfollowedEvent(uint256 unfollowerProfileId, uint256 idOfProfileUnfollowed)
+        external;
 
     /// ************************
     /// *****VIEW FUNCTIONS*****

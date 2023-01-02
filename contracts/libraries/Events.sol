@@ -353,13 +353,11 @@ library Events {
      *
      * @param unfollowerProfileId The ID of the profile that executed the unfollow.
      * @param idOfProfileUnfollowed The ID of the profile that was unfollowed.
-     * @param followTokenId The ID of the token that was used to follow before unfollowing.
      * @param unfollowTimestamp The timestamp of the unfollow operation.
      */
     event Unfollowed(
         uint256 indexed unfollowerProfileId,
         uint256 idOfProfileUnfollowed,
-        uint256 followTokenId,
         uint256 unfollowTimestamp
     );
 

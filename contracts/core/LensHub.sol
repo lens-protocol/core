@@ -479,21 +479,15 @@ contract LensHub is LensNFTBase, VersionedInitializable, LensMultiState, LensHub
     }
 
     /// @inheritdoc ILensHub
-    function emitUnfollowedEvent(
-        uint256 unfollowerProfileId,
-        uint256 idOfProfileUnfollowed,
-        uint256 followTokenId
-    ) external override {
+    function emitUnfollowedEvent(uint256 unfollowerProfileId, uint256 idOfProfileUnfollowed)
+        external
+        override
+    {
         address expectedFollowNFT = _profileById[idOfProfileUnfollowed].followNFT;
         if (msg.sender != expectedFollowNFT) {
             revert Errors.CallerNotFollowNFT();
         }
-        emit Events.Unfollowed(
-            unfollowerProfileId,
-            idOfProfileUnfollowed,
-            followTokenId,
-            block.timestamp
-        );
+        emit Events.Unfollowed(unfollowerProfileId, idOfProfileUnfollowed, block.timestamp);
     }
 
     /// *********************************
