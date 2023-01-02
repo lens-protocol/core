@@ -339,12 +339,12 @@ interface ILensHub {
      *
      * @dev Both the `idsOfProfilesToSetBlockStatus` and `blockStatus` arrays must be of the same length.
      *
-     * @param blockerProfileId The ID of the profile the block status sets are being executed for.
+     * @param byProfileId The ID of the profile the block status sets are being executed for.
      * @param idsOfProfilesToSetBlockStatus The array of IDs of profiles to set block status.
      * @param blockStatus The array of block status to use for each setting.
      */
     function setBlockStatus(
-        uint256 blockerProfileId,
+        uint256 byProfileId,
         uint256[] calldata idsOfProfilesToSetBlockStatus,
         bool[] calldata blockStatus
     ) external;

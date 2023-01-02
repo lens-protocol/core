@@ -113,7 +113,7 @@ bytes32 constant UNFOLLOW_WITH_SIG_TYPEHASH = keccak256(
     'UnfollowWithSig(uint256 unfollowerProfileId,uint256[] idsOfProfilesToUnfollow,uint256 nonce,uint256 deadline)'
 );
 bytes32 constant SET_BLOCK_STATUS_WITH_SIG_TYPEHASH = keccak256(
-    'SetBlockStatusWithSig(uint256 blockerProfileId,uint256[] idsOfProfilesToSetBlockStatus,bool[] blockStatus,uint256 nonce,uint256 deadline)'
+    'SetBlockStatusWithSig(uint256 byProfileId,uint256[] idsOfProfilesToSetBlockStatus,bool[] blockStatus,uint256 nonce,uint256 deadline)'
 );
 bytes32 constant COLLECT_WITH_SIG_TYPEHASH = keccak256(
     'CollectWithSig(uint256 profileId,uint256 pubId,bytes data,uint256 nonce,uint256 deadline)'

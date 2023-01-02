@@ -409,12 +409,11 @@ contract LensHub is LensNFTBase, VersionedInitializable, LensMultiState, LensHub
 
     /// @inheritdoc ILensHub
     function setBlockStatus(
-        uint256 blockerProfileId,
+        uint256 byProfileId,
         uint256[] calldata idsOfProfilesToSetBlockStatus,
         bool[] calldata blockStatus
     ) external override whenNotPaused {
-        return
-            GeneralLib.setBlockStatus(blockerProfileId, idsOfProfilesToSetBlockStatus, blockStatus);
+        return GeneralLib.setBlockStatus(byProfileId, idsOfProfilesToSetBlockStatus, blockStatus);
     }
 
     /// @inheritdoc ILensHub
@@ -554,7 +553,7 @@ contract LensHub is LensNFTBase, VersionedInitializable, LensMultiState, LensHub
 
     /// @inheritdoc ILensHub
     function isBlocked(uint256 profileId, uint256 byProfileId) external view returns (bool) {
-        return _blockStatusByProfileByBlockee[byProfileId][profileId];
+        return _blockStatusByProfileIdByBlockeeProfileId[byProfileId][profileId];
     }
 
     /// @inheritdoc ILensHub

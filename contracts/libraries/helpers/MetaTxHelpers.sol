@@ -367,7 +367,7 @@ library MetaTxHelpers {
                 keccak256(
                     abi.encode(
                         SET_BLOCK_STATUS_WITH_SIG_TYPEHASH,
-                        vars.blockerProfileId,
+                        vars.byProfileId,
                         keccak256(abi.encodePacked(vars.idsOfProfilesToSetBlockStatus)),
                         keccak256(abi.encodePacked(vars.blockStatus)),
                         _sigNonces(signer),

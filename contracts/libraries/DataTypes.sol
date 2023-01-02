@@ -388,14 +388,14 @@ library DataTypes {
      *
      * @param delegatedSigner The delegated executor signer, must be either zero, defaulting to the blocker,
      * or a delegated executor.
-     * @param blockerProfileId The ID of the profile the block status sets are being executed for.
+     * @param byProfileId The ID of the profile the block status sets are being executed for.
      * @param idsOfProfilesToSetBlockStatus The array of IDs of profiles to set block status.
      * @param blockStatus The array of block status to use for each setting.
      * @param sig The EIP712Signature struct containing the blocker's signature.
      */
     struct SetBlockStatusWithSigData {
         address delegatedSigner;
-        uint256 blockerProfileId;
+        uint256 byProfileId;
         uint256[] idsOfProfilesToSetBlockStatus;
         bool[] blockStatus;
         EIP712Signature sig;

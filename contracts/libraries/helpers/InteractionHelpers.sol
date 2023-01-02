@@ -114,7 +114,7 @@ library InteractionHelpers {
     }
 
     function setBlockStatus(
-        uint256 blockerProfileId,
+        uint256 byProfileId,
         uint256[] calldata idsOfProfilesToSetBlockStatus,
         bool[] calldata blockStatus
     ) external {
@@ -122,18 +122,18 @@ library InteractionHelpers {
             revert Errors.ArrayMismatch();
         }
         uint256 blockStatusByProfileSlot;
-        // Calculates the slot of the block status internal mapping once accessed by `blockerProfileId`.
-        // i.e. the slot of `_blockStatusByProfileByBlockee[blockerProfileId]`
+        // Calculates the slot of the block status internal mapping once accessed by `byProfileId`.
+        // i.e. the slot of `_blockStatusByProfileIdByBlockeeProfileId[byProfileId]`
         assembly {
-            mstore(0, blockerProfileId)
+            mstore(0, byProfileId)
             mstore(32, BLOCK_STATUS_MAPPING_SLOT)
             blockStatusByProfileSlot := keccak256(0, 64)
         }
         address followNFT;
         // Loads the Follow NFT address from storage.
-        // i.e. `followNFT = _profileById[blockerProfileId].followNFT;`
+        // i.e. `followNFT = _profileById[byProfileId].followNFT;`
         assembly {
-            mstore(0, blockerProfileId)
+            mstore(0, byProfileId)
             mstore(32, PROFILE_BY_ID_MAPPING_SLOT)
             followNFT := sload(add(keccak256(0, 64), PROFILE_FOLLOW_NFT_OFFSET))
         }
@@ -147,17 +147,21 @@ library InteractionHelpers {
                 IFollowNFT(followNFT).block(idOfProfileToSetBlockStatus);
             }
             // Stores the block status.
-            // i.e. `_blockStatusByProfileByBlockee[blockerProfileId][idOfProfileToSetBlockStatus] = blocked;`
+            // i.e. `_blockStatusByProfileIdByBlockeeProfileId[byProfileId][idOfProfileToSetBlockStatus] = blocked;`
             assembly {
                 mstore(0, idOfProfileToSetBlockStatus)
                 mstore(32, blockStatusByProfileSlot)
                 sstore(keccak256(0, 64), blocked)
             }
+            if (blocked) {
+                emit Events.Blocked(byProfileId, idOfProfileToSetBlockStatus);
+            } else {
+                emit Events.Unblocked(byProfileId, idOfProfileToSetBlockStatus);
+            }
             unchecked {
                 ++i;
             }
         }
-        emit Events.BlockStatusSet(blockerProfileId, idsOfProfilesToSetBlockStatus, blockStatus);
     }
 
     function collect(

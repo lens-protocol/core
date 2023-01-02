@@ -362,17 +362,20 @@ library Events {
     );
 
     /**
-     * @dev Emitted upon a successful block status setting operation.
+     * @dev Emitted upon a successful block, through a block status setting operation.
      *
-     * @param blockerProfileId The ID of the profile that executed the blocks.
-     * @param idsOfProfilesToSetBlockStatus The IDs of the profiles whose block status have been set.
-     * @param blockStatus The block status that have been set for each profile.
+     * @param byProfileId The ID of the profile that executed the block status change.
+     * @param idOfProfileBlocked The ID of the profile whose block status have been set to blocked.
      */
-    event BlockStatusSet(
-        uint256 indexed blockerProfileId,
-        uint256[] idsOfProfilesToSetBlockStatus,
-        bool[] blockStatus
-    );
+    event Blocked(uint256 indexed byProfileId, uint256 idOfProfileBlocked);
+
+    /**
+     * @dev Emitted upon a successful unblock, through a block status setting operation.
+     *
+     * @param byProfileId The ID of the profile that executed the block status change.
+     * @param idOfProfileUnblocked The ID of the profile whose block status have been set to unblocked.
+     */
+    event Unblocked(uint256 indexed byProfileId, uint256 idOfProfileUnblocked);
 
     /**
      * @dev Emitted via callback when a followNFT is transferred.

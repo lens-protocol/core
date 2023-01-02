@@ -233,28 +233,24 @@ library GeneralLib {
     }
 
     function setBlockStatus(
-        uint256 blockerProfileId,
+        uint256 byProfileId,
         uint256[] calldata idsOfProfilesToSetBlockStatus,
         bool[] calldata blockStatus
     ) external {
-        GeneralHelpers.validateCallerIsOwnerOrDelegatedExecutor(blockerProfileId);
-        InteractionHelpers.setBlockStatus(
-            blockerProfileId,
-            idsOfProfilesToSetBlockStatus,
-            blockStatus
-        );
+        GeneralHelpers.validateCallerIsOwnerOrDelegatedExecutor(byProfileId);
+        InteractionHelpers.setBlockStatus(byProfileId, idsOfProfilesToSetBlockStatus, blockStatus);
     }
 
     function setBlockStatusWithSig(DataTypes.SetBlockStatusWithSigData calldata vars) external {
         // Safe to use the `unsafeOwnerOf` as the signer can not be address zero
-        address blockerProfileOwner = GeneralHelpers.unsafeOwnerOf(vars.blockerProfileId);
+        address blockerProfileOwner = GeneralHelpers.unsafeOwnerOf(vars.byProfileId);
         address signer = GeneralHelpers.getOriginatorOrDelegatedExecutorSigner(
             blockerProfileOwner,
             vars.delegatedSigner
         );
         MetaTxHelpers.baseSetBlockStatusWithSig(signer, vars);
         InteractionHelpers.setBlockStatus(
-            vars.blockerProfileId,
+            vars.byProfileId,
             vars.idsOfProfilesToSetBlockStatus,
             vars.blockStatus
         );
