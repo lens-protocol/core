@@ -90,6 +90,25 @@ contract FollowNFTTest is BaseTest, ERC721Test {
         });
     }
 
+    function testCannotFollowWithTokenIfTheTokenDoesNotExist(uint256 unexistentTokenId) public {
+        vm.assume(unexistentTokenId != MINT_NEW_TOKEN);
+        vm.assume(followNFT.getFollowerProfileId(unexistentTokenId) == 0);
+        vm.assume(!followNFT.exists(unexistentTokenId));
+        vm.assume(followNFT.getProfileIdAllowedToRecover(unexistentTokenId) == 0);
+
+        vm.prank(address(hub));
+
+        vm.expectRevert(IFollowNFT.FollowTokenDoesNotExist.selector);
+
+        followNFT.follow({
+            followerProfileId: followerProfileId,
+            executor: followerProfileOwner,
+            followerProfileOwner: followerProfileOwner,
+            isExecutorApproved: false,
+            followTokenId: unexistentTokenId
+        });
+    }
+
     //////////////////////////////////////////////////////////
     // Follow - Minting new token - Negatives
     //////////////////////////////////////////////////////////
