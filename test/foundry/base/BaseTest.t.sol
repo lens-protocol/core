@@ -334,9 +334,27 @@ contract BaseTest is TestSetup {
         return ret;
     }
 
-    function _toBytesArray(bytes memory n) internal pure returns (bytes[] memory) {
+    function _toUint256Array(uint256 n0, uint256 n1) internal pure returns (uint256[] memory) {
+        uint256[] memory ret = new uint256[](2);
+        ret[0] = n0;
+        ret[1] = n1;
+        return ret;
+    }
+
+    function _toBytesArray(bytes memory b) internal pure returns (bytes[] memory) {
         bytes[] memory ret = new bytes[](1);
-        ret[0] = n;
+        ret[0] = b;
+        return ret;
+    }
+
+    function _toBytesArray(bytes memory b0, bytes memory b1)
+        internal
+        pure
+        returns (bytes[] memory)
+    {
+        bytes[] memory ret = new bytes[](2);
+        ret[0] = b0;
+        ret[1] = b1;
         return ret;
     }
 
