@@ -13,6 +13,7 @@ import {TransparentUpgradeableProxy} from 'contracts/upgradeability/TransparentU
 import {DataTypes} from 'contracts/libraries/DataTypes.sol';
 import 'contracts/libraries/Constants.sol';
 import {Errors} from 'contracts/libraries/Errors.sol';
+import {Events} from 'contracts/libraries/Events.sol';
 import {GeneralLib} from 'contracts/libraries/GeneralLib.sol';
 import {ProfileTokenURILogic} from 'contracts/libraries/ProfileTokenURILogic.sol';
 import {MockCollectModule} from 'contracts/mocks/MockCollectModule.sol';
