@@ -358,6 +358,19 @@ contract BaseTest is TestSetup {
         return ret;
     }
 
+    function _toBoolArray(bool b) internal pure returns (bool[] memory) {
+        bool[] memory ret = new bool[](1);
+        ret[0] = b;
+        return ret;
+    }
+
+    function _toBoolArray(bool b0, bool b1) internal pure returns (bool[] memory) {
+        bool[] memory ret = new bool[](2);
+        ret[0] = b0;
+        ret[1] = b1;
+        return ret;
+    }
+
     // Private functions
     function _buildSetDelegatedExecutorApprovalWithSigData(
         address onBehalfOf,
