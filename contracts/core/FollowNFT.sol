@@ -25,20 +25,9 @@ struct Snapshot {
 contract FollowNFT is HubRestricted, LensNFTBase, ERC2981CollectionRoyalties, IFollowNFT {
     using Strings for uint256;
 
-    bytes32 internal constant DELEGATE_BY_SIG_TYPEHASH =
-        keccak256(
-            'DelegateBySig(uint256 delegatorProfileId,address delegatee,uint256 nonce,uint256 deadline)'
-        );
-
-    mapping(address => mapping(uint256 => Snapshot)) internal _snapshots;
-    // TODO: Check that nobody has used this feature before doing this mapping modifiation, otherwise use new slot.
-    mapping(uint256 => address) internal _delegates;
-    mapping(address => uint256) internal _snapshotCount;
-    mapping(uint256 => Snapshot) internal _delSupplySnapshots;
-    uint256 internal _delSupplySnapshotCount;
+    uint256[5] ___DEPRECATED_SLOTS; // Deprecated slots, previously used for delegations.
     uint256 internal _followedProfileId;
-    uint128 internal _lastFollowTokenId;
-    uint128 internal _followers; //TODO[Question for reviewer]: Burning a follower profile won't decrease the followers count, does it still worth to keep this?
+    uint256 internal _lastFollowTokenId;
 
     bool private _initialized;
 
@@ -134,11 +123,6 @@ contract FollowNFT is HubRestricted, LensNFTBase, ERC2981CollectionRoyalties, IF
             _followDataByFollowTokenId[followTokenId]
                 .profileIdAllowedToRecover = unfollowerProfileId;
         }
-    }
-
-    /// @inheritdoc IFollowNFT
-    function getFollowers() external view override returns (uint256) {
-        return _followers;
     }
 
     /// @inheritdoc IFollowNFT
@@ -262,73 +246,6 @@ contract FollowNFT is HubRestricted, LensNFTBase, ERC2981CollectionRoyalties, IF
         }
     }
 
-    /// @inheritdoc IFollowNFT
-    function delegate(uint256 delegatorProfileId, address delegatee) external override {
-        if (_followTokenIdByFollowerProfileId[delegatorProfileId] == 0) {
-            revert NotFollowing();
-        }
-        if (msg.sender != IERC721(HUB).ownerOf(delegatorProfileId)) {
-            revert Errors.NotProfileOwner();
-        }
-        _delegate(delegatorProfileId, delegatee);
-    }
-
-    /// @inheritdoc IFollowNFT
-    function delegateBySig(
-        uint256 delegatorProfileId,
-        address delegatee,
-        DataTypes.EIP712Signature calldata sig
-    ) external override {
-        if (_followTokenIdByFollowerProfileId[delegatorProfileId] == 0) {
-            revert NotFollowing();
-        }
-        address delegatorOwner = IERC721(HUB).ownerOf(delegatorProfileId);
-        unchecked {
-            MetaTxHelpers._validateRecoveredAddress(
-                _calculateDigest(
-                    keccak256(
-                        abi.encode(
-                            DELEGATE_BY_SIG_TYPEHASH,
-                            delegatorProfileId,
-                            delegatee,
-                            sigNonces[delegatorOwner]++,
-                            sig.deadline
-                        )
-                    )
-                ),
-                delegatorOwner,
-                sig
-            );
-        }
-        _delegate(delegatorProfileId, delegatee);
-    }
-
-    /// @inheritdoc IFollowNFT
-    function getPowerByBlockNumber(address user, uint256 blockNumber)
-        external
-        view
-        override
-        returns (uint256)
-    {
-        if (blockNumber > block.number) revert Errors.BlockNumberInvalid();
-        uint256 snapshotCount = _snapshotCount[user];
-        if (snapshotCount == 0) return 0; // Returning zero since this means the user never delegated and has no power
-        return _getSnapshotValueByBlockNumber(_snapshots[user], blockNumber, snapshotCount);
-    }
-
-    /// @inheritdoc IFollowNFT
-    function getDelegatedSupplyByBlockNumber(uint256 blockNumber)
-        external
-        view
-        override
-        returns (uint256)
-    {
-        if (blockNumber > block.number) revert Errors.BlockNumberInvalid();
-        uint256 snapshotCount = _delSupplySnapshotCount;
-        if (snapshotCount == 0) return 0; // Returning zero since this means a delegation has never occurred
-        return _getSnapshotValueByBlockNumber(_delSupplySnapshots, blockNumber, snapshotCount);
-    }
-
     function burnWithSig(uint256 followTokenId, DataTypes.EIP712Signature calldata sig)
         public
         override
@@ -380,7 +297,6 @@ contract FollowNFT is HubRestricted, LensNFTBase, ERC2981CollectionRoyalties, IF
         uint256 followTokenIdAssigned;
         unchecked {
             followTokenIdAssigned = followTokenId == 0 ? ++_lastFollowTokenId : followTokenId;
-            ++_followers;
         }
         _follow(followerProfileId, followTokenIdAssigned, true);
         return followTokenIdAssigned;
@@ -446,12 +362,7 @@ contract FollowNFT is HubRestricted, LensNFTBase, ERC2981CollectionRoyalties, IF
         if (currentFollowerProfileId != 0) {
             // As it has a follower, unfollow first, removing current follower.
             delete _followTokenIdByFollowerProfileId[currentFollowerProfileId];
-            _delegate(currentFollowerProfileId, address(0));
             ILensHub(HUB).emitUnfollowedEvent(currentFollowerProfileId, _followedProfileId);
-        } else {
-            unchecked {
-                ++_followers;
-            }
         }
         // Perform the follow, setting new follower.
         _follow(newFollowerProfileId, followTokenId, false);
@@ -500,14 +411,10 @@ contract FollowNFT is HubRestricted, LensNFTBase, ERC2981CollectionRoyalties, IF
     }
 
     function _unfollow(uint256 unfollower, uint256 followTokenId) internal {
-        _delegate(unfollower, address(0));
         delete _followTokenIdByFollowerProfileId[unfollower];
         delete _followDataByFollowTokenId[followTokenId].followerProfileId;
         delete _followDataByFollowTokenId[followTokenId].followTimestamp;
         delete _followDataByFollowTokenId[followTokenId].profileIdAllowedToRecover;
-        unchecked {
-            --_followers;
-        }
     }
 
     function _approveFollow(uint256 followerProfileId, uint256 followTokenId) internal {
@@ -526,7 +433,7 @@ contract FollowNFT is HubRestricted, LensNFTBase, ERC2981CollectionRoyalties, IF
     }
 
     /**
-     * @dev Upon transfers, we move the appropriate delegations, and emit the transfer event in the hub.
+     * @dev Upon transfers, we clear follow approvals, and emit the transfer event in the hub.
      */
     function _beforeTokenTransfer(
         address from,
@@ -536,125 +443,5 @@ contract FollowNFT is HubRestricted, LensNFTBase, ERC2981CollectionRoyalties, IF
         _approveFollow(0, followTokenId);
         super._beforeTokenTransfer(from, to, followTokenId);
         ILensHub(HUB).emitFollowNFTTransferEvent(_followedProfileId, followTokenId, from, to);
-    }
-
-    function _getSnapshotValueByBlockNumber(
-        mapping(uint256 => Snapshot) storage _shots,
-        uint256 blockNumber,
-        uint256 snapshotCount
-    ) internal view returns (uint256) {
-        unchecked {
-            uint256 lower = 0;
-            uint256 upper = snapshotCount - 1;
-
-            // First check most recent snapshot
-            if (_shots[upper].blockNumber <= blockNumber) return _shots[upper].value;
-
-            // Next check implicit zero balance
-            if (_shots[lower].blockNumber > blockNumber) return 0;
-
-            while (upper > lower) {
-                uint256 center = upper - (upper - lower) / 2;
-                Snapshot memory snapshot = _shots[center];
-                if (snapshot.blockNumber == blockNumber) {
-                    return snapshot.value;
-                } else if (snapshot.blockNumber < blockNumber) {
-                    lower = center;
-                } else {
-                    upper = center - 1;
-                }
-            }
-            return _shots[lower].value;
-        }
-    }
-
-    function _delegate(uint256 delegatorProfileId, address delegatee) internal {
-        address previousDelegate = _delegates[delegatorProfileId];
-        if (previousDelegate != delegatee) {
-            _delegates[delegatorProfileId] = delegatee;
-            _moveDelegate(previousDelegate, delegatee);
-        }
-    }
-
-    function _moveDelegate(address from, address to) internal {
-        unchecked {
-            bool fromZero = from == address(0);
-            if (!fromZero) {
-                uint256 fromSnapshotCount = _snapshotCount[from];
-                // Underflow is impossible since, if from != address(0), then a delegation must have occurred (at least 1 snapshot)
-                uint128 newValue = _snapshots[from][fromSnapshotCount - 1].value + 1;
-                _writeSnapshot(from, newValue, fromSnapshotCount);
-                emit Events.FollowNFTDelegatedPowerChanged(from, newValue, block.timestamp);
-            }
-            if (to != address(0)) {
-                // if from == address(0) then this is an initial delegation, increment supply.
-                if (fromZero) {
-                    // It is expected behavior that the `previousDelSupply` underflows upon the first delegation,
-                    // returning the expected value of zero
-                    uint256 delSupplySnapshotCount = _delSupplySnapshotCount;
-                    _writeSupplySnapshot(
-                        _delSupplySnapshots[delSupplySnapshotCount - 1].value + 1,
-                        delSupplySnapshotCount
-                    );
-                }
-                // It is expected behavior that `previous` underflows upon the first delegation to an address,
-                // returning the expected value of zero
-                uint256 toSnapshotCount = _snapshotCount[to];
-                uint128 newValue = _snapshots[to][toSnapshotCount - 1].value + 1;
-                _writeSnapshot(to, newValue, toSnapshotCount);
-                emit Events.FollowNFTDelegatedPowerChanged(to, newValue, block.timestamp);
-            } else {
-                // If from != address(0) then this is removing a delegation, otherwise we're dealing with a
-                // non-delegated burn of tokens and don't need to take any action
-                if (!fromZero) {
-                    // Upon removing delegation (from != address(0) && to == address(0)), supply calculations cannot
-                    // underflow because if from != address(0), then a delegation must have previously occurred, so
-                    // the snapshot count must be >= 1 and the previous delegated supply must be >= amount
-                    uint256 delSupplySnapshotCount = _delSupplySnapshotCount;
-                    uint128 newDelSupply = _delSupplySnapshots[delSupplySnapshotCount - 1].value -
-                        1;
-                    _writeSupplySnapshot(newDelSupply, delSupplySnapshotCount);
-                }
-            }
-        }
-    }
-
-    function _writeSnapshot(
-        address owner,
-        uint128 newValue,
-        uint256 ownerSnapshotCount
-    ) internal {
-        unchecked {
-            uint128 currentBlock = uint128(block.number);
-            mapping(uint256 => Snapshot) storage ownerSnapshots = _snapshots[owner];
-
-            // Doing multiple operations in the same block
-            if (
-                ownerSnapshotCount != 0 &&
-                ownerSnapshots[ownerSnapshotCount - 1].blockNumber == currentBlock
-            ) {
-                ownerSnapshots[ownerSnapshotCount - 1].value = newValue;
-            } else {
-                ownerSnapshots[ownerSnapshotCount] = Snapshot(currentBlock, newValue);
-                _snapshotCount[owner] = ownerSnapshotCount + 1;
-            }
-        }
-    }
-
-    function _writeSupplySnapshot(uint128 newValue, uint256 supplySnapshotCount) internal {
-        unchecked {
-            uint128 currentBlock = uint128(block.number);
-
-            // Doing multiple operations in the same block
-            if (
-                supplySnapshotCount != 0 &&
-                _delSupplySnapshots[supplySnapshotCount - 1].blockNumber == currentBlock
-            ) {
-                _delSupplySnapshots[supplySnapshotCount - 1].value = newValue;
-            } else {
-                _delSupplySnapshots[supplySnapshotCount] = Snapshot(currentBlock, newValue);
-                _delSupplySnapshotCount = supplySnapshotCount + 1;
-            }
-        }
     }
 }

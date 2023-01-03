@@ -87,13 +87,6 @@ interface IFollowNFT {
     ) external;
 
     /**
-     * @notice Gets quantity of followers the profile has, which is altered by each follow and unfollow opreation.
-     *
-     * @return uint256 The quantity of followers the profile has.
-     */
-    function getFollowers() external view returns (uint256);
-
-    /**
      * @notice Gets the ID of the profile following with the given follow token.
      *
      * @param followTokenId The ID of the follow token whose follower should be queried.
@@ -202,49 +195,4 @@ interface IFollowNFT {
      * @param followerProfileId The ID of the follow token to unwrap and tie.
      */
     function block(uint256 followerProfileId) external;
-
-    /**
-     * @notice Delegates voting power from the given profile to the given address.
-     *
-     * @dev The profile must be following to be able to have or delegate voting power.
-     *
-     * @param delegatorProfileId The ID of the profile delegating voting power.
-     * @param delegatee The address which voting power is delegated to.
-     */
-    function delegate(uint256 delegatorProfileId, address delegatee) external;
-
-    /**
-     * @notice Delegates voting power from the given profile to the given address through meta-transactions.
-     *
-     * @dev The profile must be following to be able to have or delegate voting power.
-     *
-     * @param delegatorProfileId The ID of the profile delegating voting power.
-     * @param delegatee The address which voting power is delegated to.
-     * @param sig An EIP712Signature struct containing the signature for the `DelegateBySig` message.
-     */
-    function delegateBySig(
-        uint256 delegatorProfileId,
-        address delegatee,
-        DataTypes.EIP712Signature calldata sig
-    ) external;
-
-    /**
-     * @notice Returns the governance power for a given user at a specified block number.
-     *
-     * @param user The user to query governance power for.
-     * @param blockNumber The block number to query the user's governance power at.
-     *
-     * @return uint256 The power of the given user at the given block number.
-     */
-    function getPowerByBlockNumber(address user, uint256 blockNumber) external returns (uint256);
-
-    /**
-     * @notice Returns the total delegated supply at a specified block number. This is the sum of all
-     * current available voting power at a given block.
-     *
-     * @param blockNumber The block number to query the delegated supply at.
-     *
-     * @return uint256 The delegated supply at the given block number.
-     */
-    function getDelegatedSupplyByBlockNumber(uint256 blockNumber) external returns (uint256);
 }

@@ -17,14 +17,4 @@ contract FollowNFTInitialConditionsTest is FollowNFTTest {
 
         assertEq(assignedTokenId, 1);
     }
-
-    function testFirstFollowIncrementsFollowersCountToOne() public {
-        uint256 profileIdToFollow = _createProfile(me);
-
-        _follow(followerProfileOwner, followerProfileId, profileIdToFollow, 0, '')[0];
-
-        uint256 followers = FollowNFT(hub.getFollowNFT(profileIdToFollow)).getFollowers();
-
-        assertEq(followers, 1);
-    }
 }

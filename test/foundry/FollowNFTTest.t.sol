@@ -151,22 +151,6 @@ contract FollowNFTTest is BaseTest, ERC721Test {
         assertEq(assignedTokenId, lastAssignedTokenId + 1);
     }
 
-    function testFollowMintingNewTokenIncrementsFollowersByOne() public {
-        uint256 followersBefore = followNFT.getFollowers();
-
-        vm.prank(address(hub));
-
-        uint256 followersAfter = followNFT.follow({
-            followerProfileId: followerProfileId,
-            executor: followerProfileOwner,
-            followerProfileOwner: followerProfileOwner,
-            isExecutorApproved: false,
-            followTokenId: MINT_NEW_TOKEN
-        });
-
-        assertEq(followersAfter, followersBefore + 1);
-    }
-
     function testFollowingMintingNewTokenSetsFollowerStatusCorrectly() public {
         vm.prank(address(hub));
 
