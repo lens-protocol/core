@@ -162,4 +162,23 @@ contract SignatureHelpers {
                 sig: sig
             });
     }
+
+    function _buildFollowWithSigData(
+        address delegatedSigner,
+        address follower,
+        uint256[] memory profileIds,
+        bytes[] memory datas,
+        DataTypes.EIP712Signature memory sig
+    ) internal pure returns (DataTypes.FollowWithSigData memory) {
+        return DataTypes.FollowWithSigData(delegatedSigner, follower, profileIds, datas, sig);
+    }
+
+    function _buildSetDefaultProfileWithSigData(
+        address delegatedSigner,
+        address wallet,
+        uint256 profileId,
+        DataTypes.EIP712Signature memory sig
+    ) internal pure returns (DataTypes.SetDefaultProfileWithSigData memory) {
+        return DataTypes.SetDefaultProfileWithSigData(delegatedSigner, wallet, profileId, sig);
+    }
 }

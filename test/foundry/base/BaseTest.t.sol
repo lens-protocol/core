@@ -314,6 +314,18 @@ contract BaseTest is TestSetup {
         return _calculateDigest(structHash);
     }
 
+    function _getSetDefaulProfileTypedDataHash(
+        address wallet,
+        uint256 profileId,
+        uint256 nonce,
+        uint256 deadline
+    ) internal view returns (bytes32) {
+        bytes32 structHash = keccak256(
+            abi.encode(SET_DEFAULT_PROFILE_WITH_SIG_TYPEHASH, wallet, profileId, nonce, deadline)
+        );
+        return _calculateDigest(structHash);
+    }
+
     function _calculateDigest(bytes32 structHash) internal view returns (bytes32) {
         bytes32 digest = keccak256(abi.encodePacked('\x19\x01', domainSeparator, structHash));
         return digest;

@@ -190,22 +190,23 @@ Scenarios
 Default profile Functionality
 Generic
 Negatives
-[ ] UserTwo should fail to set the default profile as a profile owned by user 1
+[X] UserTwo should fail to set the default profile as a profile owned by user 1
 Scenarios
-[ ] User should set the default profile
-[ ] User should set the default profile and then be able to unset it
-[ ] User should set the default profile and then be able to change it to another
-[ ] User should set the default profile and then transfer it, their default profile should be unset
+[X] User should set the default profile
+[X] User should set the default profile and then be able to unset it
+[X] User should set the default profile and then be able to change it to another
+[X] User should set the default profile and then transfer it, their default profile should be unset
 Meta-tx
 Negatives
-[ ] TestWallet should fail to set default profile with sig with signature deadline mismatch
-[ ] TestWallet should fail to set default profile with sig with invalid deadline
-[ ] TestWallet should fail to set default profile with sig with invalid nonce
-[ ] TestWallet should sign attempt to set default profile with sig, cancel with empty permitForAll, then fail to set default profile with sig
+[X] TestWallet should fail to set default profile with sig with signature deadline mismatch
+[X] TestWallet should fail to set default profile with sig with invalid deadline
+[X] TestWallet should fail to set default profile with sig with invalid nonce
+<!-- Already tested in invalid nonce test above -->
+[-] TestWallet should sign attempt to set default profile with sig, cancel with empty permitForAll, then fail to set default profile with sig
 Scenarios
-[ ] TestWallet should set the default profile with sig
-[ ] TestWallet should set the default profile with sig and then be able to unset it
-[ ] TestWallet should set the default profile and then be able to change it to another
+[X] TestWallet should set the default profile with sig
+[X] TestWallet should set the default profile with sig and then be able to unset it
+[X] TestWallet should set the default profile and then be able to change it to another
 
 Dispatcher Functionality
 Generic
