@@ -139,24 +139,25 @@ library InteractionHelpers {
         }
         uint256 i;
         uint256 idOfProfileToSetBlockStatus;
-        bool blocked;
+        bool setToBlocked;
         while (i < idsOfProfilesToSetBlockStatus.length) {
             idOfProfileToSetBlockStatus = idsOfProfilesToSetBlockStatus[i];
             _validateProfileExists(idOfProfileToSetBlockStatus);
-            if (followNFT != address(0) && (blocked = blockStatus[i])) {
+            setToBlocked = blockStatus[i];
+            if (followNFT != address(0) && setToBlocked) {
                 IFollowNFT(followNFT).block(idOfProfileToSetBlockStatus);
             }
             // Stores the block status.
-            // i.e. `_blockStatusByProfileIdByBlockeeProfileId[byProfileId][idOfProfileToSetBlockStatus] = blocked;`
+            // i.e. `_blockStatusByProfileIdByBlockeeProfileId[byProfileId][idOfProfileToSetBlockStatus] = setToBlocked;`
             assembly {
                 mstore(0, idOfProfileToSetBlockStatus)
                 mstore(32, blockStatusByProfileSlot)
-                sstore(keccak256(0, 64), blocked)
+                sstore(keccak256(0, 64), setToBlocked)
             }
-            if (blocked) {
-                emit Events.Blocked(byProfileId, idOfProfileToSetBlockStatus);
+            if (setToBlocked) {
+                emit Events.Blocked(byProfileId, idOfProfileToSetBlockStatus, block.timestamp);
             } else {
-                emit Events.Unblocked(byProfileId, idOfProfileToSetBlockStatus);
+                emit Events.Unblocked(byProfileId, idOfProfileToSetBlockStatus, block.timestamp);
             }
             unchecked {
                 ++i;

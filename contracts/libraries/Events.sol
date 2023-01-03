@@ -338,14 +338,14 @@ library Events {
      * @param idOfProfileFollowed The ID of the profile that was followed.
      * @param followTokenIdAssigned The ID of the follow token assigned to the follower.
      * @param followModuleData The data to passed to the follow module, if any.
-     * @param followTimestamp The timestamp of the follow operation.
+     * @param timestamp The timestamp of the follow operation.
      */
     event Followed(
         uint256 indexed followerProfileId,
         uint256 idOfProfileFollowed,
         uint256 followTokenIdAssigned,
         bytes followModuleData,
-        uint256 followTimestamp
+        uint256 timestamp
     );
 
     /**
@@ -353,12 +353,12 @@ library Events {
      *
      * @param unfollowerProfileId The ID of the profile that executed the unfollow.
      * @param idOfProfileUnfollowed The ID of the profile that was unfollowed.
-     * @param unfollowTimestamp The timestamp of the unfollow operation.
+     * @param timestamp The timestamp of the unfollow operation.
      */
     event Unfollowed(
         uint256 indexed unfollowerProfileId,
         uint256 idOfProfileUnfollowed,
-        uint256 unfollowTimestamp
+        uint256 timestamp
     );
 
     /**
@@ -366,16 +366,18 @@ library Events {
      *
      * @param byProfileId The ID of the profile that executed the block status change.
      * @param idOfProfileBlocked The ID of the profile whose block status have been set to blocked.
+     * @param timestamp The timestamp of the block operation.
      */
-    event Blocked(uint256 indexed byProfileId, uint256 idOfProfileBlocked);
+    event Blocked(uint256 indexed byProfileId, uint256 idOfProfileBlocked, uint256 timestamp);
 
     /**
      * @dev Emitted upon a successful unblock, through a block status setting operation.
      *
      * @param byProfileId The ID of the profile that executed the block status change.
      * @param idOfProfileUnblocked The ID of the profile whose block status have been set to unblocked.
+     * @param timestamp The timestamp of the unblock operation.
      */
-    event Unblocked(uint256 indexed byProfileId, uint256 idOfProfileUnblocked);
+    event Unblocked(uint256 indexed byProfileId, uint256 idOfProfileUnblocked, uint256 timestamp);
 
     /**
      * @dev Emitted via callback when a followNFT is transferred.
