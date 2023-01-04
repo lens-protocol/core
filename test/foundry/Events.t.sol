@@ -3,6 +3,8 @@ pragma solidity ^0.8.13;
 
 import "./base/BaseTest.t.sol";
 
+import { Events } from 'contracts/libraries/Events.sol';
+
 contract EventTest is BaseTest {
     function setUp() public override {
         TestSetup.setUp();
@@ -10,13 +12,32 @@ contract EventTest is BaseTest {
 
     // MISC
 
-    function testProxyInitEmitsExpectedEvents() public {}
+    function testProxyInitEmitsExpectedEvents() public {
+
+        
+        // Events to detect on proxy init:
+        // Upgraded
+        // AdminChanged
+        // GovernanceSet
+        // StateSet
+        // BaseInitialized
+    }
 
     // HUB GOVERNANCE
 
-    function testGovernanceEmitsExpectedEvents() public {}
+    function testGovernanceEmitsExpectedEvents() public {
+        vm.prank(governance);
+        vm.expectEmit(true, true, true, true, address(hub));
+        emit Events.GovernanceSet(governance, governance, me, block.timestamp);
+        hub.setGovernance(me);
+    }
 
-    function testEmergencyAdminChangeEmitsExpectedEvents() public {}
+    function testEmergencyAdminChangeEmitsExpectedEvents() public {
+        vm.prank(governance);
+        vm.expectEmit(true, true, true, true, address(hub));
+        emit Events.EmergencyAdminSet(governance, address(0), me, block.timestamp);
+        hub.setEmergencyAdmin(me);
+    }
 
     function testProtocolStateChangeEmitsExpectedEvents() public {}
 
