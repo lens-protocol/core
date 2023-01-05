@@ -201,7 +201,9 @@ Negatives
 [X] TestWallet should fail to set default profile with sig with signature deadline mismatch
 [X] TestWallet should fail to set default profile with sig with invalid deadline
 [X] TestWallet should fail to set default profile with sig with invalid nonce
+
 <!-- Already tested in invalid nonce test above -->
+
 [-] TestWallet should sign attempt to set default profile with sig, cancel with empty permitForAll, then fail to set default profile with sig
 Scenarios
 [X] TestWallet should set the default profile with sig
@@ -412,8 +414,8 @@ Module Globals Governance
 
 Misc
 NFT Transfer Emitters
-[ ] User should not be able to call the follow NFT transfer event emitter function
-[ ] User should not be able to call the collect NFT transfer event emitter function
+[X] User should not be able to call the follow NFT transfer event emitter function
+[X] User should not be able to call the collect NFT transfer event emitter function
 Lens Hub Misc
 [ ] UserTwo should fail to burn profile owned by user without being approved
 [ ] User should burn profile owned by user
