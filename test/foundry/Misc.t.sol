@@ -36,11 +36,6 @@ contract MiscTest is BaseTest {
         hub.setFollowNFTURI(newProfileId, MOCK_URI);
     }
 
-    function testSetProfileMetadataURINotExecutorFails() public {
-        vm.expectRevert(Errors.ExecutorInvalid.selector);
-        hub.setProfileMetadataURI(newProfileId, MOCK_URI);
-    }
-
     // Positives
     function testExecutorSetDefaultProfile() public {
         assertEq(hub.getDefaultProfile(profileOwner), 0);
@@ -70,16 +65,6 @@ contract MiscTest is BaseTest {
         vm.prank(otherSigner);
         hub.setFollowNFTURI(newProfileId, 'test');
         assertEq(hub.getFollowNFTURI(newProfileId), 'test');
-    }
-
-    function testExecutorSetProfileMetadataURI() public {
-        assertEq(hub.getProfileMetadataURI(newProfileId), '');
-        vm.prank(profileOwner);
-        hub.setDelegatedExecutorApproval(otherSigner, true);
-
-        vm.prank(otherSigner);
-        hub.setProfileMetadataURI(newProfileId, MOCK_URI);
-        assertEq(hub.getProfileMetadataURI(newProfileId), MOCK_URI);
     }
 
     // Meta-tx
@@ -195,48 +180,6 @@ contract MiscTest is BaseTest {
                 delegatedSigner: otherSigner,
                 profileId: newProfileId,
                 followNFTURI: MOCK_URI,
-                sig: _getSigStruct(otherSignerKey, digest, deadline)
-            })
-        );
-    }
-
-    function testSetProfileMetadataURIWithSigInvalidSignerFails() public {
-        uint256 nonce = 0;
-        uint256 deadline = type(uint256).max;
-        bytes32 digest = _getSetProfileMetadataURITypedDataHash(
-            newProfileId,
-            MOCK_URI,
-            nonce,
-            deadline
-        );
-
-        vm.expectRevert(Errors.SignatureInvalid.selector);
-        hub.setProfileMetadataURIWithSig(
-            DataTypes.SetProfileMetadataURIWithSigData({
-                delegatedSigner: address(0),
-                profileId: newProfileId,
-                metadataURI: MOCK_URI,
-                sig: _getSigStruct(otherSignerKey, digest, deadline)
-            })
-        );
-    }
-
-    function testSetProfileMetadataURIWithSigNotExecutorFails() public {
-        uint256 nonce = 0;
-        uint256 deadline = type(uint256).max;
-        bytes32 digest = _getSetProfileMetadataURITypedDataHash(
-            newProfileId,
-            MOCK_URI,
-            nonce,
-            deadline
-        );
-
-        vm.expectRevert(Errors.ExecutorInvalid.selector);
-        hub.setProfileMetadataURIWithSig(
-            DataTypes.SetProfileMetadataURIWithSigData({
-                delegatedSigner: otherSigner,
-                profileId: newProfileId,
-                metadataURI: MOCK_URI,
                 sig: _getSigStruct(otherSignerKey, digest, deadline)
             })
         );
@@ -362,52 +305,5 @@ contract MiscTest is BaseTest {
             })
         );
         assertEq(hub.getFollowNFTURI(newProfileId), 'test');
-    }
-
-    function testSetProfileMetadataURIWithSig() public {
-        uint256 nonce = 0;
-        uint256 deadline = type(uint256).max;
-        bytes32 digest = _getSetProfileMetadataURITypedDataHash(
-            newProfileId,
-            MOCK_URI,
-            nonce,
-            deadline
-        );
-
-        assertEq(hub.getProfileMetadataURI(newProfileId), '');
-        hub.setProfileMetadataURIWithSig(
-            DataTypes.SetProfileMetadataURIWithSigData({
-                delegatedSigner: address(0),
-                profileId: newProfileId,
-                metadataURI: MOCK_URI,
-                sig: _getSigStruct(profileOwnerKey, digest, deadline)
-            })
-        );
-        assertEq(hub.getProfileMetadataURI(newProfileId), MOCK_URI);
-    }
-
-    function testExecutorSetProfileMetadataURIWithSig() public {
-        vm.prank(profileOwner);
-        hub.setDelegatedExecutorApproval(otherSigner, true);
-
-        uint256 nonce = 0;
-        uint256 deadline = type(uint256).max;
-        bytes32 digest = _getSetProfileMetadataURITypedDataHash(
-            newProfileId,
-            MOCK_URI,
-            nonce,
-            deadline
-        );
-
-        assertEq(hub.getProfileMetadataURI(newProfileId), '');
-        hub.setProfileMetadataURIWithSig(
-            DataTypes.SetProfileMetadataURIWithSigData({
-                delegatedSigner: otherSigner,
-                profileId: newProfileId,
-                metadataURI: MOCK_URI,
-                sig: _getSigStruct(otherSignerKey, digest, deadline)
-            })
-        );
-        assertEq(hub.getProfileMetadataURI(newProfileId), MOCK_URI);
     }
 }

@@ -492,18 +492,18 @@ Scenarios
 Profile Metadata URI
 Generic
 Negatives
-[ ] User two should fail to set profile metadata URI for a profile that is not theirs while they are not the dispatcher
+[X] User two should fail to set profile metadata URI for a profile that is not theirs while they are not the dispatcher
 Scenarios
-[ ] User should set user two as dispatcher, user two should set profile metadata URI for user one's profile, fetched data should be accurate
-[ ] Setting profile metadata should emit the correct event
-[ ] Setting profile metadata via dispatcher should emit the correct event
+[X] User should set user two as dispatcher, user two should set profile metadata URI for user one's profile, fetched data should be accurate
+[X] Setting profile metadata should emit the correct event
+[X] Setting profile metadata via dispatcher should emit the correct event
 Meta-tx
 Negatives
-[ ] TestWallet should fail to set profile metadata URI with sig with signature deadline mismatch
-[ ] TestWallet should fail to set profile metadata URI with sig with invalid deadline
-[ ] TestWallet should fail to set profile metadata URI with sig with invalid nonce
+[X] TestWallet should fail to set profile metadata URI with sig with signature deadline mismatch
+[X] TestWallet should fail to set profile metadata URI with sig with invalid deadline
+[X] TestWallet should fail to set profile metadata URI with sig with invalid nonce
 Scenarios
-[ ] TestWallet should set profile metadata URI with sig, fetched data should be accurate and correct event should be emitted
+[X] TestWallet should set profile metadata URI with sig, fetched data should be accurate and correct event should be emitted
 
 Mock Profile Creation Proxy
 Negatives
