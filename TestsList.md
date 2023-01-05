@@ -454,17 +454,17 @@ Collect Module Misc
 [ ] Should fail to call processCollect directly on a collect module inheriting from the FollowValidationModuleBase contract
 Module Globals
 Negatives
-[ ] User should fail to set the governance address on the module globals
-[ ] User should fail to set the treasury on the module globals
-[ ] User should fail to set the treasury fee on the module globals
+[X] User should fail to set the governance address on the module globals
+[X] User should fail to set the treasury on the module globals
+[X] User should fail to set the treasury fee on the module globals
 Scenarios
-[ ] Governance should set the governance address on the module globals
-[ ] Governance should set the treasury on the module globals
-[ ] Governance should set the treasury fee on the module globals
-[ ] Governance should fail to whitelist the zero address as a currency
-[ ] Governance getter should return expected address
-[ ] Treasury getter should return expected address
-[ ] Treasury fee getter should return the expected fee
+[X] Governance should set the governance address on the module globals
+[X] Governance should set the treasury on the module globals
+[X] Governance should set the treasury fee on the module globals
+[X] Governance should fail to whitelist the zero address as a currency
+[X] Governance getter should return expected address
+[X] Treasury getter should return expected address
+[X] Treasury fee getter should return the expected fee
 UI Data Provider
 [ ] UI Data Provider should return expected values
 LensPeriphery

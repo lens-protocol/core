@@ -163,6 +163,7 @@ contract TestSetup is Test, ForkManagement {
         newProfileId = FIRST_PROFILE_ID;
         deployer = address(1);
         governance = address(2);
+        treasury = address(3);
 
         TREASURY_FEE_BPS = 50;
 
@@ -194,6 +195,8 @@ contract TestSetup is Test, ForkManagement {
 
         // Deploy the MockReferenceModule.
         mockReferenceModule = new MockReferenceModule();
+
+        moduleGlobals = new ModuleGlobals(governance, treasury, TREASURY_FEE_BPS);
 
         vm.stopPrank();
         ///////////////////////////////////////// End deployments.
