@@ -71,11 +71,41 @@ contract EventTest is BaseTest {
         hub.setState(DataTypes.ProtocolState.Paused);
     }
 
-    function testFollowModuleWhitelistEmitsExpectedEvents() public {}
+    function testFollowModuleWhitelistEmitsExpectedEvents() public {
+        vm.prank(governance);
+        vm.expectEmit(true, true, true, true, address(hub));
+        emit Events.FollowModuleWhitelisted(me, true, block.timestamp);
+        hub.whitelistFollowModule(me, true);
 
-    function testReferenceModuleWhitelistEmitsExpectedEvents() public {}
+        vm.prank(governance);
+        vm.expectEmit(true, true, true, true, address(hub));
+        emit Events.FollowModuleWhitelisted(me, false, block.timestamp);
+        hub.whitelistFollowModule(me, false);
+    }
 
-    function testCollectModuleWhitelistEmitsExpectedEvents() public {}
+    function testReferenceModuleWhitelistEmitsExpectedEvents() public {
+        vm.prank(governance);
+        vm.expectEmit(true, true, true, true, address(hub));
+        emit Events.ReferenceModuleWhitelisted(me, true, block.timestamp);
+        hub.whitelistReferenceModule(me, true);
+
+        vm.prank(governance);
+        vm.expectEmit(true, true, true, true, address(hub));
+        emit Events.ReferenceModuleWhitelisted(me, false, block.timestamp);
+        hub.whitelistReferenceModule(me, false);
+    }
+
+    function testCollectModuleWhitelistEmitsExpectedEvents() public {
+        vm.prank(governance);
+        vm.expectEmit(true, true, true, true, address(hub));
+        emit Events.CollectModuleWhitelisted(me, true, block.timestamp);
+        hub.whitelistCollectModule(me, true);
+
+        vm.prank(governance);
+        vm.expectEmit(true, true, true, true, address(hub));
+        emit Events.CollectModuleWhitelisted(me, false, block.timestamp);
+        hub.whitelistCollectModule(me, false);
+    }
 
     // HUB INTERACTION
 
