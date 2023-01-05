@@ -3,9 +3,11 @@ pragma solidity ^0.8.13;
 
 import "./base/BaseTest.t.sol";
 
-import { Events } from 'contracts/libraries/Events.sol';
+import {Events} from "contracts/libraries/Events.sol";
 
 contract EventTest is BaseTest {
+    address profileOwnerTwo = address(0x2222);
+
     function setUp() public override {
         TestSetup.setUp();
     }
@@ -13,8 +15,6 @@ contract EventTest is BaseTest {
     // MISC
 
     function testProxyInitEmitsExpectedEvents() public {
-
-        
         // Events to detect on proxy init:
         // Upgraded
         // AdminChanged
@@ -42,17 +42,23 @@ contract EventTest is BaseTest {
     function testProtocolStateChangeByGovEmitsExpectedEvents() public {
         vm.prank(governance);
         vm.expectEmit(true, true, true, true, address(hub));
-        emit Events.StateSet(governance, DataTypes.ProtocolState.Unpaused, DataTypes.ProtocolState.Paused, block.timestamp);
+        emit Events.StateSet(
+            governance, DataTypes.ProtocolState.Unpaused, DataTypes.ProtocolState.Paused, block.timestamp
+            );
         hub.setState(DataTypes.ProtocolState.Paused);
 
         vm.prank(governance);
         vm.expectEmit(true, true, true, true, address(hub));
-        emit Events.StateSet(governance, DataTypes.ProtocolState.Paused, DataTypes.ProtocolState.PublishingPaused, block.timestamp);
+        emit Events.StateSet(
+            governance, DataTypes.ProtocolState.Paused, DataTypes.ProtocolState.PublishingPaused, block.timestamp
+            );
         hub.setState(DataTypes.ProtocolState.PublishingPaused);
 
         vm.prank(governance);
         vm.expectEmit(true, true, true, true, address(hub));
-        emit Events.StateSet(governance, DataTypes.ProtocolState.PublishingPaused, DataTypes.ProtocolState.Unpaused, block.timestamp);
+        emit Events.StateSet(
+            governance, DataTypes.ProtocolState.PublishingPaused, DataTypes.ProtocolState.Unpaused, block.timestamp
+            );
         hub.setState(DataTypes.ProtocolState.Unpaused);
     }
 
@@ -62,12 +68,16 @@ contract EventTest is BaseTest {
 
         vm.prank(profileOwner);
         vm.expectEmit(true, true, true, true, address(hub));
-        emit Events.StateSet(profileOwner, DataTypes.ProtocolState.Unpaused, DataTypes.ProtocolState.PublishingPaused, block.timestamp);
+        emit Events.StateSet(
+            profileOwner, DataTypes.ProtocolState.Unpaused, DataTypes.ProtocolState.PublishingPaused, block.timestamp
+            );
         hub.setState(DataTypes.ProtocolState.PublishingPaused);
 
         vm.prank(profileOwner);
         vm.expectEmit(true, true, true, true, address(hub));
-        emit Events.StateSet(profileOwner, DataTypes.ProtocolState.PublishingPaused, DataTypes.ProtocolState.Paused, block.timestamp);
+        emit Events.StateSet(
+            profileOwner, DataTypes.ProtocolState.PublishingPaused, DataTypes.ProtocolState.Paused, block.timestamp
+            );
         hub.setState(DataTypes.ProtocolState.Paused);
     }
 
@@ -109,7 +119,21 @@ contract EventTest is BaseTest {
 
     // HUB INTERACTION
 
-    function testProfileCreationEmitsExpectedEvents() public {}
+    function testProfileCreationEmitsExpectedEvents() public {
+        mockCreateProfileData.to = profileOwnerTwo;
+        vm.expectEmit(true, true, true, true, address(hub));
+        emit Events.ProfileCreated(
+            2,
+            me,
+            profileOwnerTwo,
+            mockCreateProfileData.imageURI,
+            mockCreateProfileData.followModule,
+            "",
+            mockCreateProfileData.followNFTURI,
+            block.timestamp
+            );
+        hub.createProfile(mockCreateProfileData);
+    }
 
     function testProfileCreationForOtherUserEmitsExpectedEvents() public {}
 
