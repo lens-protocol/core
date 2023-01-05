@@ -4,6 +4,21 @@ pragma solidity ^0.8.13;
 import './base/BaseTest.t.sol';
 import '../../contracts/mocks/MockFollowModule.sol';
 
+// Original Misc
+contract NFTTransferEmittersTest is BaseTest {
+    // Negatives
+    function testCannotEmitFollowNFTTransferEvent() public {
+        vm.expectRevert(Errors.CallerNotFollowNFT.selector);
+        hub.emitFollowNFTTransferEvent(newProfileId, 1, profileOwner, otherSigner);
+    }
+
+    function testCannotEmitCollectNFTTransferEvent() public {
+        vm.expectRevert(Errors.CallerNotCollectNFT.selector);
+        hub.emitCollectNFTTransferEvent(newProfileId, 1, 1, profileOwner, otherSigner);
+    }
+}
+
+// New Misc
 contract MiscTest is BaseTest {
     // Negatives
     function testSetDefaultProfileNotExecutorFails() public {
