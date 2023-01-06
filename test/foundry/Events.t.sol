@@ -226,23 +226,131 @@ contract EventTest is BaseTest {
         hub.post(mockPostData);
     }
 
-    function testCommentingEmitsExpectedEvents() public {}
+    function testCommentingEmitsExpectedEvents() public {
+        vm.startPrank(profileOwner);
+        hub.post(mockPostData);
+        vm.expectEmit(true, true, false, true, address(hub));
+        emit Events.CommentCreated(
+            newProfileId,
+            2,
+            mockCommentData.contentURI,
+            newProfileId,
+            1,
+            "",
+            mockCommentData.collectModule,
+            "",
+            mockCommentData.referenceModule,
+            "",
+            block.timestamp
+        );
+        hub.comment(mockCommentData);
+        vm.stopPrank();
+    }
 
-    function testMirroringEmitsExpectedEvents() public {}
+    function testMirroringEmitsExpectedEvents() public {
+        vm.startPrank(profileOwner);
+        hub.post(mockPostData);
+        vm.expectEmit(true, true, false, true, address(hub));
+        emit Events.MirrorCreated(
+            newProfileId,
+            2,
+            newProfileId,
+            1,
+            "",
+            mockMirrorData.referenceModule,
+            "",
+            block.timestamp
+        );
+        hub.mirror(mockMirrorData);
+        vm.stopPrank();
+    }
 
-    function testFollowingEmitsExpectedEvents() public {}
+    function testFollowingEmitsExpectedEvents() public {
+        uint256[] memory followTargetIds = new uint256[](1);
+        followTargetIds[0] = 1;
+        bytes[] memory followDatas = new bytes[](1);
+        followDatas[0] = "";
+        vm.prank(profileOwner);
+        // vm.expectEmit(true, true, false, true, address(hub));
+        // emit Events.FollowNFTDeployed(
+        //     newProfileId,
+        //     address(0), // TODO should be addr of NFT deployed in follow() below
+        //     block.timestamp
+        // );
+        vm.expectEmit(true, true, false, true, address(hub));
+        // TODO more events needed
+        emit Events.Followed(
+            profileOwner,
+            followTargetIds,
+            followDatas,
+            block.timestamp
+        );
+        hub.follow(profileOwner, followTargetIds, followDatas);
+    }
 
-    function testCollectingEmitsExpectedEvents() public {}
+    function testCollectingEmitsExpectedEvents() public {
+        // TODO
+    }
 
-    function testCollectingFromMirrorEmitsExpectedEvents() public {}
+    function testCollectingFromMirrorEmitsExpectedEvents() public {
+        // TODO
+    }
 
     // MODULE GLOBALS GOVERNANCE
 
-    function testGovernanceChangeEmitsExpectedEvents() public {}
+    function testGovernanceChangeEmitsExpectedEvents() public {
+        vm.prank(governance);
+        vm.expectEmit(true, true, true, true, address(moduleGlobals));
+        emit Events.ModuleGlobalsGovernanceSet(
+            governance,
+            me,
+            block.timestamp
+        );
+        moduleGlobals.setGovernance(me);
+    }
 
-    function testTreasuryChangeEmitsExpectedEvents() public {}
+    function testTreasuryChangeEmitsExpectedEvents() public {
+        vm.prank(governance);
+        vm.expectEmit(true, true, false, true, address(moduleGlobals));
+        emit Events.ModuleGlobalsTreasurySet(
+            treasury,
+            me,
+            block.timestamp
+        );
+        moduleGlobals.setTreasury(me);
+    }
 
-    function testTreasuryFeeChangeEmitsExpectedEvents() public {}
+    function testTreasuryFeeChangeEmitsExpectedEvents() public {
+        uint16 newFee = 1;
+        vm.prank(governance);
+        vm.expectEmit(true, true, false, true, address(moduleGlobals));
+        emit Events.ModuleGlobalsTreasuryFeeSet(
+            TREASURY_FEE_BPS,
+            newFee,
+            block.timestamp
+        );
+        moduleGlobals.setTreasuryFee(newFee);
+    }
 
-    function testCurrencyWhitelistEmitsExpectedEvents() public {}
+    function testCurrencyWhitelistEmitsExpectedEvents() public {
+        vm.prank(governance);
+        vm.expectEmit(true, true, true, true, address(moduleGlobals));
+        emit Events.ModuleGlobalsCurrencyWhitelisted(
+            me,
+            false,
+            true,
+            block.timestamp
+        );
+        moduleGlobals.whitelistCurrency(me, true);
+
+        vm.prank(governance);
+        vm.expectEmit(true, true, true, true, address(moduleGlobals));
+        emit Events.ModuleGlobalsCurrencyWhitelisted(
+            me,
+            true,
+            false,
+            block.timestamp
+        );
+        moduleGlobals.whitelistCurrency(me, false);
+    }
 }
