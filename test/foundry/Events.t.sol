@@ -1,15 +1,21 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity ^0.8.13;
 
-import "./base/BaseTest.t.sol";
+import './base/BaseTest.t.sol';
 
-import {Events} from "contracts/libraries/Events.sol";
+import {Events} from 'contracts/libraries/Events.sol';
+import {MockFollowModule} from 'contracts/mocks/MockFollowModule.sol';
+import {IERC721Enumerable} from '@openzeppelin/contracts/token/ERC721/extensions/IERC721Enumerable.sol';
 
 contract EventTest is BaseTest {
     address profileOwnerTwo = address(0x2222);
+    address mockFollowModule;
 
     function setUp() public override {
         TestSetup.setUp();
+        mockFollowModule = address(new MockFollowModule());
+        vm.prank(governance);
+        hub.whitelistFollowModule(mockFollowModule, true);
     }
 
     // MISC
@@ -43,22 +49,31 @@ contract EventTest is BaseTest {
         vm.prank(governance);
         vm.expectEmit(true, true, true, true, address(hub));
         emit Events.StateSet(
-            governance, DataTypes.ProtocolState.Unpaused, DataTypes.ProtocolState.Paused, block.timestamp
-            );
+            governance,
+            DataTypes.ProtocolState.Unpaused,
+            DataTypes.ProtocolState.Paused,
+            block.timestamp
+        );
         hub.setState(DataTypes.ProtocolState.Paused);
 
         vm.prank(governance);
         vm.expectEmit(true, true, true, true, address(hub));
         emit Events.StateSet(
-            governance, DataTypes.ProtocolState.Paused, DataTypes.ProtocolState.PublishingPaused, block.timestamp
-            );
+            governance,
+            DataTypes.ProtocolState.Paused,
+            DataTypes.ProtocolState.PublishingPaused,
+            block.timestamp
+        );
         hub.setState(DataTypes.ProtocolState.PublishingPaused);
 
         vm.prank(governance);
         vm.expectEmit(true, true, true, true, address(hub));
         emit Events.StateSet(
-            governance, DataTypes.ProtocolState.PublishingPaused, DataTypes.ProtocolState.Unpaused, block.timestamp
-            );
+            governance,
+            DataTypes.ProtocolState.PublishingPaused,
+            DataTypes.ProtocolState.Unpaused,
+            block.timestamp
+        );
         hub.setState(DataTypes.ProtocolState.Unpaused);
     }
 
@@ -69,15 +84,21 @@ contract EventTest is BaseTest {
         vm.prank(profileOwner);
         vm.expectEmit(true, true, true, true, address(hub));
         emit Events.StateSet(
-            profileOwner, DataTypes.ProtocolState.Unpaused, DataTypes.ProtocolState.PublishingPaused, block.timestamp
-            );
+            profileOwner,
+            DataTypes.ProtocolState.Unpaused,
+            DataTypes.ProtocolState.PublishingPaused,
+            block.timestamp
+        );
         hub.setState(DataTypes.ProtocolState.PublishingPaused);
 
         vm.prank(profileOwner);
         vm.expectEmit(true, true, true, true, address(hub));
         emit Events.StateSet(
-            profileOwner, DataTypes.ProtocolState.PublishingPaused, DataTypes.ProtocolState.Paused, block.timestamp
-            );
+            profileOwner,
+            DataTypes.ProtocolState.PublishingPaused,
+            DataTypes.ProtocolState.Paused,
+            block.timestamp
+        );
         hub.setState(DataTypes.ProtocolState.Paused);
     }
 
@@ -121,6 +142,28 @@ contract EventTest is BaseTest {
 
     function testProfileCreationEmitsExpectedEvents() public {
         mockCreateProfileData.to = profileOwnerTwo;
+        vm.prank(governance);
+        hub.whitelistProfileCreator(profileOwnerTwo, true);
+        vm.prank(profileOwnerTwo);
+        vm.expectEmit(true, true, true, true, address(hub));
+        emit Events.ProfileCreated(
+            2,
+            profileOwnerTwo,
+            profileOwnerTwo,
+            mockCreateProfileData.imageURI,
+            mockCreateProfileData.followModule,
+            '',
+            mockCreateProfileData.followNFTURI,
+            block.timestamp
+        );
+        // TODO also check transfer event - not finding on OZ interfaces
+        // vm.expectEmit(true, true, true, true, address(hub));
+        // emit IERC721Enumerable.Transfer(address(0), profileOwnerTwo, 2);
+        hub.createProfile(mockCreateProfileData);
+    }
+
+    function testProfileCreationForOtherUserEmitsExpectedEvents() public {
+        mockCreateProfileData.to = profileOwnerTwo;
         vm.expectEmit(true, true, true, true, address(hub));
         emit Events.ProfileCreated(
             2,
@@ -128,16 +171,30 @@ contract EventTest is BaseTest {
             profileOwnerTwo,
             mockCreateProfileData.imageURI,
             mockCreateProfileData.followModule,
-            "",
+            '',
             mockCreateProfileData.followNFTURI,
             block.timestamp
-            );
+        );
+        // TODO also check transfer event - not finding on OZ interfaces
+        // vm.expectEmit(true, true, true, true, address(hub));
+        // emit IERC721Enumerable.Transfer(address(0), profileOwnerTwo, 2);
         hub.createProfile(mockCreateProfileData);
     }
 
-    function testProfileCreationForOtherUserEmitsExpectedEvents() public {}
-
-    function testSettingFollowModuleEmitsExpectedEvents() public {}
+    function testSettingFollowModuleEmitsExpectedEvents() public {
+        mockCreateProfileData.to = profileOwnerTwo;
+        uint expectedProfileId = 2;
+        hub.createProfile(mockCreateProfileData);
+        vm.prank(profileOwnerTwo);
+        vm.expectEmit(true, true, true, true, address(hub));
+        emit Events.FollowModuleSet(
+            expectedProfileId,
+            address(mockFollowModule),
+            '',
+            block.timestamp
+        );
+        hub.setFollowModule(expectedProfileId, address(mockFollowModule), abi.encode(1));
+    }
 
     function testSettingDispatcherEmitsExpectedEvents() public {}
 
