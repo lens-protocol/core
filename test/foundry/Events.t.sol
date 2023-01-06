@@ -210,7 +210,21 @@ contract EventTest is BaseTest {
         hub.setDispatcher(expectedProfileId, me);
     }
 
-    function testPostingEmitsExpectedEvents() public {}
+    function testPostingEmitsExpectedEvents() public {
+        vm.prank(profileOwner);
+        vm.expectEmit(true, true, false, true, address(hub));
+        emit Events.PostCreated(
+            newProfileId,
+            1,
+            mockPostData.contentURI,
+            mockPostData.collectModule,
+            "",
+            mockPostData.referenceModule,
+            "",
+            block.timestamp
+        );
+        hub.post(mockPostData);
+    }
 
     function testCommentingEmitsExpectedEvents() public {}
 
