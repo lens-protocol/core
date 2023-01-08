@@ -57,7 +57,7 @@ export function matchEvent(
     // Throw if the sigHash was not found
     if (!sigHash) {
       logger.throwError(
-        `Event "${name}" not found in provided contract (default: Events libary). \nAre you sure you're using the right contract?`
+        `Event "${name}" not found in provided contract (default: Events library). \nAre you sure you're using the right contract?`
       );
     }
 
@@ -158,7 +158,7 @@ export function findEvent(
     // Throw if the sigHash was not found
     if (!sigHash) {
       logger.throwError(
-        `Event "${name}" not found in provided contract (default: Events libary). \nAre you sure you're using the right contract?`
+        `Event "${name}" not found in provided contract (default: Events library). \nAre you sure you're using the right contract?`
       );
     }
 

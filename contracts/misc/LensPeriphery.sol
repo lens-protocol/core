@@ -56,7 +56,7 @@ contract LensPeriphery {
     /**
      * @notice Sets the profile metadata for a given profile via signature with the specified parameters.
      *
-     * @param vars A SetProfileMetadataWithSigData struct containingthe regular parameters and an EIP712Signature struct.
+     * @param vars A SetProfileMetadataWithSigData struct containing the regular parameters and an EIP712Signature struct.
      */
     function setProfileMetadataURIWithSig(DataTypes.SetProfileMetadataWithSigData calldata vars)
         external
@@ -83,7 +83,7 @@ contract LensPeriphery {
     }
 
     /**
-     * @notice Toggle Follows on the given profiles, emiting toggle event for each FollowNFT.
+     * @notice Toggle Follows on the given profiles, emitting toggle event for each FollowNFT.
      *
      * NOTE: `profileIds`, `followNFTIds` and `enables` arrays must be of the same length.
      *

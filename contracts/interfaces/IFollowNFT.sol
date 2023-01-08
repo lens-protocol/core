@@ -24,7 +24,7 @@ interface IFollowNFT {
      *
      * @param to The address to mint the NFT to.
      *
-     * @return uint256 An interger representing the minted token ID.
+     * @return uint256 An integer representing the minted token ID.
      */
     function mint(address to) external returns (uint256);
 

@@ -426,7 +426,7 @@ interface ILensHub {
     function getCollectNFT(uint256 profileId, uint256 pubId) external view returns (address);
 
     /**
-     * @notice Returns the follow module associated witha  given profile, if any.
+     * @notice Returns the follow module associated with a given profile, if any.
      *
      * @param profileId The token ID of the profile to query the follow module for.
      *
@@ -445,9 +445,9 @@ interface ILensHub {
     function getCollectModule(uint256 profileId, uint256 pubId) external view returns (address);
 
     /**
-     * @notice Returns the reference module associated witha  given profile, if any.
+     * @notice Returns the reference module associated with a given profile, if any.
      *
-     * @param profileId The token ID of the profile that published the publication to querythe reference module for.
+     * @param profileId The token ID of the profile that published the publication to query the reference module for.
      * @param pubId The publication ID of the publication to query the reference module for.
      *
      * @return address The address of the reference module associated with the given profile.
