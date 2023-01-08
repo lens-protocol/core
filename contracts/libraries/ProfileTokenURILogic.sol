@@ -89,14 +89,14 @@ library ProfileTokenURILogic {
     }
 
     /**
-     * @notice Gets the fragment of the SVG correponding to the profile picture.
+     * @notice Gets the fragment of the SVG corresponding to the profile picture.
      *
      * @dev If the image URI was set and meets URI format conditions, this will return an image tag referencing it.
      * Otherwise, a group tag that renders the default picture will be returned.
      *
      * @param imageURI The profile's picture URI. An empty string if has not been set.
      *
-     * @return string The fragment of the SVG token's image correspondending to the profile picture.
+     * @return string The fragment of the SVG token's image corresponding to the profile picture.
      */
     function _getSVGProfilePicture(string memory imageURI) internal pure returns (string memory) {
         if (_shouldUseCustomPicture(imageURI)) {
