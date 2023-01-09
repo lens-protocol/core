@@ -22,12 +22,45 @@ contract EventTest is BaseTest {
     // MISC
 
     function testProxyInitEmitsExpectedEvents() public {
-        // Events to detect on proxy init:
+        string memory expectedNFTName = "Lens Protocol Profiles";
+        string memory expectedNFTSymbol = "LPP";
+
+        vm.startPrank(deployer);
+
+        address followNFTAddr = utils.predictContractAddress(deployer, 1);
+        address collectNFTAddr = utils.predictContractAddress(deployer, 2);
+        hubProxyAddr = utils.predictContractAddress(deployer, 3);
+
+        // Deploy implementation contracts.
+        hubImpl = new LensHub(followNFTAddr, collectNFTAddr);
+        followNFT = new FollowNFT(hubProxyAddr);
+        collectNFT = new CollectNFT(hubProxyAddr);
+
+        // Deploy and initialize proxy.
+        bytes memory initData = abi.encodeCall(
+            hubImpl.initialize,
+            (expectedNFTName, expectedNFTSymbol, governance)
+        );
+
+        // Event tests
+
+        // BaseInitialized
+        vm.expectEmit(false, false, false, true, hubProxyAddr);
+        emit Events.BaseInitialized(
+            expectedNFTName,
+            expectedNFTSymbol,
+            block.timestamp
+        );
+
+        // TODO finish these event tests
+
         // Upgraded
         // AdminChanged
         // GovernanceSet
         // StateSet
-        // BaseInitialized
+
+        hubAsProxy = new TransparentUpgradeableProxy(address(hubImpl), deployer, initData);
+        vm.stopPrank();
     }
 
     // HUB GOVERNANCE
@@ -369,7 +402,7 @@ contract EventTest is BaseTest {
         hub.mirror(mockMirrorData);
 
         // BaseInitialized
-        vm.expectEmit(true, true, true, true, expectedCollectNFTAddress);
+        vm.expectEmit(false, false, false, true, expectedCollectNFTAddress);
         emit Events.BaseInitialized(
             expectedNFTName,
             expectedNFTSymbol,
