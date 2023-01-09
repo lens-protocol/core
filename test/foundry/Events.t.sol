@@ -5,11 +5,12 @@ import './base/BaseTest.t.sol';
 
 import {Events} from 'contracts/libraries/Events.sol';
 import {MockFollowModule} from 'contracts/mocks/MockFollowModule.sol';
-import {IERC721Enumerable} from '@openzeppelin/contracts/token/ERC721/extensions/IERC721Enumerable.sol';
 
 contract EventTest is BaseTest {
     address profileOwnerTwo = address(0x2222);
     address mockFollowModule;
+
+    event Transfer(address indexed from, address indexed to, uint256 indexed tokenId);
 
     function setUp() public override {
         TestSetup.setUp();
@@ -141,13 +142,16 @@ contract EventTest is BaseTest {
     // HUB INTERACTION
 
     function testProfileCreationEmitsExpectedEvents() public {
+        uint256 expectedTokenId = 2;
         mockCreateProfileData.to = profileOwnerTwo;
         vm.prank(governance);
         hub.whitelistProfileCreator(profileOwnerTwo, true);
         vm.prank(profileOwnerTwo);
         vm.expectEmit(true, true, true, true, address(hub));
+        emit Transfer(address(0), profileOwnerTwo, expectedTokenId);
+        vm.expectEmit(true, true, true, true, address(hub));
         emit Events.ProfileCreated(
-            2,
+            expectedTokenId,
             profileOwnerTwo,
             profileOwnerTwo,
             mockCreateProfileData.imageURI,
@@ -156,17 +160,17 @@ contract EventTest is BaseTest {
             mockCreateProfileData.followNFTURI,
             block.timestamp
         );
-        // TODO also check transfer event - not finding on OZ interfaces
-        // vm.expectEmit(true, true, true, true, address(hub));
-        // emit IERC721Enumerable.Transfer(address(0), profileOwnerTwo, 2);
         hub.createProfile(mockCreateProfileData);
     }
 
     function testProfileCreationForOtherUserEmitsExpectedEvents() public {
+        uint256 expectedTokenId = 2;
         mockCreateProfileData.to = profileOwnerTwo;
         vm.expectEmit(true, true, true, true, address(hub));
+        emit Transfer(address(0), profileOwnerTwo, expectedTokenId);
+        vm.expectEmit(true, true, true, true, address(hub));
         emit Events.ProfileCreated(
-            2,
+            expectedTokenId,
             me,
             profileOwnerTwo,
             mockCreateProfileData.imageURI,
@@ -175,9 +179,6 @@ contract EventTest is BaseTest {
             mockCreateProfileData.followNFTURI,
             block.timestamp
         );
-        // TODO also check transfer event - not finding on OZ interfaces
-        // vm.expectEmit(true, true, true, true, address(hub));
-        // emit IERC721Enumerable.Transfer(address(0), profileOwnerTwo, 2);
         hub.createProfile(mockCreateProfileData);
     }
 
@@ -202,11 +203,7 @@ contract EventTest is BaseTest {
         hub.createProfile(mockCreateProfileData);
         vm.prank(profileOwnerTwo);
         vm.expectEmit(true, true, false, true, address(hub));
-        emit Events.DispatcherSet(
-            expectedProfileId,
-            me,
-            block.timestamp
-        );
+        emit Events.DispatcherSet(expectedProfileId, me, block.timestamp);
         hub.setDispatcher(expectedProfileId, me);
     }
 
@@ -218,9 +215,9 @@ contract EventTest is BaseTest {
             1,
             mockPostData.contentURI,
             mockPostData.collectModule,
-            "",
+            '',
             mockPostData.referenceModule,
-            "",
+            '',
             block.timestamp
         );
         hub.post(mockPostData);
@@ -236,11 +233,11 @@ contract EventTest is BaseTest {
             mockCommentData.contentURI,
             newProfileId,
             1,
-            "",
+            '',
             mockCommentData.collectModule,
-            "",
+            '',
             mockCommentData.referenceModule,
-            "",
+            '',
             block.timestamp
         );
         hub.comment(mockCommentData);
@@ -256,9 +253,9 @@ contract EventTest is BaseTest {
             2,
             newProfileId,
             1,
-            "",
+            '',
             mockMirrorData.referenceModule,
-            "",
+            '',
             block.timestamp
         );
         hub.mirror(mockMirrorData);
@@ -269,7 +266,7 @@ contract EventTest is BaseTest {
         uint256[] memory followTargetIds = new uint256[](1);
         followTargetIds[0] = 1;
         bytes[] memory followDatas = new bytes[](1);
-        followDatas[0] = "";
+        followDatas[0] = '';
         vm.prank(profileOwner);
         // vm.expectEmit(true, true, false, true, address(hub));
         // emit Events.FollowNFTDeployed(
@@ -277,14 +274,15 @@ contract EventTest is BaseTest {
         //     address(0), // TODO should be addr of NFT deployed in follow() below
         //     block.timestamp
         // );
+
+        // vm.expectEmit(true, true, true, true, address(hub)); // TODO emits from the follow NFT not hub
+        // emit Transfer(address(0), profileOwner, 1);
+
         vm.expectEmit(true, true, false, true, address(hub));
-        // TODO more events needed
-        emit Events.Followed(
-            profileOwner,
-            followTargetIds,
-            followDatas,
-            block.timestamp
-        );
+        emit Events.Followed(profileOwner, followTargetIds, followDatas, block.timestamp);
+
+        // vm.expectEmit(true, true, true, true, address(hub));
+        // emit Events.FollowNFTTransferred(address(0), profileOwner, 1);
         hub.follow(profileOwner, followTargetIds, followDatas);
     }
 
@@ -301,22 +299,14 @@ contract EventTest is BaseTest {
     function testGovernanceChangeEmitsExpectedEvents() public {
         vm.prank(governance);
         vm.expectEmit(true, true, true, true, address(moduleGlobals));
-        emit Events.ModuleGlobalsGovernanceSet(
-            governance,
-            me,
-            block.timestamp
-        );
+        emit Events.ModuleGlobalsGovernanceSet(governance, me, block.timestamp);
         moduleGlobals.setGovernance(me);
     }
 
     function testTreasuryChangeEmitsExpectedEvents() public {
         vm.prank(governance);
         vm.expectEmit(true, true, false, true, address(moduleGlobals));
-        emit Events.ModuleGlobalsTreasurySet(
-            treasury,
-            me,
-            block.timestamp
-        );
+        emit Events.ModuleGlobalsTreasurySet(treasury, me, block.timestamp);
         moduleGlobals.setTreasury(me);
     }
 
@@ -324,33 +314,19 @@ contract EventTest is BaseTest {
         uint16 newFee = 1;
         vm.prank(governance);
         vm.expectEmit(true, true, false, true, address(moduleGlobals));
-        emit Events.ModuleGlobalsTreasuryFeeSet(
-            TREASURY_FEE_BPS,
-            newFee,
-            block.timestamp
-        );
+        emit Events.ModuleGlobalsTreasuryFeeSet(TREASURY_FEE_BPS, newFee, block.timestamp);
         moduleGlobals.setTreasuryFee(newFee);
     }
 
     function testCurrencyWhitelistEmitsExpectedEvents() public {
         vm.prank(governance);
         vm.expectEmit(true, true, true, true, address(moduleGlobals));
-        emit Events.ModuleGlobalsCurrencyWhitelisted(
-            me,
-            false,
-            true,
-            block.timestamp
-        );
+        emit Events.ModuleGlobalsCurrencyWhitelisted(me, false, true, block.timestamp);
         moduleGlobals.whitelistCurrency(me, true);
 
         vm.prank(governance);
         vm.expectEmit(true, true, true, true, address(moduleGlobals));
-        emit Events.ModuleGlobalsCurrencyWhitelisted(
-            me,
-            true,
-            false,
-            block.timestamp
-        );
+        emit Events.ModuleGlobalsCurrencyWhitelisted(me, true, false, block.timestamp);
         moduleGlobals.whitelistCurrency(me, false);
     }
 }
