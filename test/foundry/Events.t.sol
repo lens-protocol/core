@@ -267,22 +267,25 @@ contract EventTest is BaseTest {
         followTargetIds[0] = 1;
         bytes[] memory followDatas = new bytes[](1);
         followDatas[0] = '';
-        vm.prank(profileOwner);
-        // vm.expectEmit(true, true, false, true, address(hub));
-        // emit Events.FollowNFTDeployed(
-        //     newProfileId,
-        //     address(0), // TODO should be addr of NFT deployed in follow() below
-        //     block.timestamp
-        // );
+        address expectedFollowNFTAddress = utils.predictContractAddress(address(hub), 0);
 
-        // vm.expectEmit(true, true, true, true, address(hub)); // TODO emits from the follow NFT not hub
-        // emit Transfer(address(0), profileOwner, 1);
+        vm.prank(profileOwner);
+        vm.expectEmit(true, true, false, true, address(hub));
+        emit Events.FollowNFTDeployed(
+            newProfileId,
+            expectedFollowNFTAddress,
+            block.timestamp
+        );
+
+        vm.expectEmit(true, true, true, true, address(hub));
+        emit Events.FollowNFTTransferred(1, 1, address(0), profileOwner, block.timestamp);
+
+        vm.expectEmit(true, true, true, true, expectedFollowNFTAddress);
+        emit Transfer(address(0), profileOwner, 1);
 
         vm.expectEmit(true, true, false, true, address(hub));
         emit Events.Followed(profileOwner, followTargetIds, followDatas, block.timestamp);
-
-        // vm.expectEmit(true, true, true, true, address(hub));
-        // emit Events.FollowNFTTransferred(address(0), profileOwner, 1);
+        
         hub.follow(profileOwner, followTargetIds, followDatas);
     }
 
