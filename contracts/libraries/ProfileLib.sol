@@ -70,7 +70,7 @@ library ProfileLib {
 
     /**
      * @notice Sets the profile image URI for a given profile.
-     * 
+     *
      * @param profileId The profile ID.
      * @param imageURI The image URI to set.
 
@@ -267,6 +267,7 @@ library ProfileLib {
                 sstore(slot, or(calldataload(cdOffset), shl(1, length)))
             }
         }
+        emit Events.ProfileMetadataSet(profileId, metadataURI, block.timestamp);
     }
 
     function _setFollowModule(

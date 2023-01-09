@@ -38,8 +38,10 @@ contract TestSetup is Test, ForkManagement {
 
     uint256 constant otherSignerKey = 0x737562;
     uint256 constant profileOwnerKey = 0x04546b;
+    uint256 constant alienSignerKey = 0x123456;
     address immutable profileOwner = vm.addr(profileOwnerKey);
     address immutable otherSigner = vm.addr(otherSignerKey);
+    address immutable alienSigner = vm.addr(alienSignerKey);
     address immutable me = address(this);
 
     bytes32 domainSeparator;
