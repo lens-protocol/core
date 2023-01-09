@@ -290,7 +290,68 @@ contract EventTest is BaseTest {
     }
 
     function testCollectingEmitsExpectedEvents() public {
-        // TODO
+        vm.startPrank(profileOwner);
+        hub.post(mockPostData);
+
+        uint256 expectedPubId = 1;
+        address expectedCollectNFTAddress = utils.predictContractAddress(address(hub), 0);
+        string memory expectedNFTName = "1-Collect-1";
+        string memory expectedNFTSymbol = "1-Cl-1";
+
+        // BaseInitialized
+        vm.expectEmit(true, true, true, true, expectedCollectNFTAddress);
+        emit Events.BaseInitialized(
+            expectedNFTName,
+            expectedNFTSymbol,
+            block.timestamp
+        );
+
+        // CollectNFTInitialized
+        vm.expectEmit(true, true, true, true, expectedCollectNFTAddress);
+        emit Events.CollectNFTInitialized(
+            newProfileId,
+            expectedPubId,
+            block.timestamp
+        );
+
+        // CollectNFTDeployed
+        vm.expectEmit(true, true, true, true, address(hub));
+        emit Events.CollectNFTDeployed(
+            newProfileId,
+            expectedPubId,
+            expectedCollectNFTAddress,
+            block.timestamp
+        );
+
+        // CollectNFTTransferred
+        vm.expectEmit(true, true, true, true, address(hub));
+        emit Events.CollectNFTTransferred(
+            newProfileId,
+            expectedPubId,
+            1, // collect nft id
+            address(0),
+            profileOwner,
+            block.timestamp
+        );
+        
+        // Transfer
+        vm.expectEmit(true, true, true, true, expectedCollectNFTAddress);
+        emit Transfer(address(0), profileOwner, 1);
+
+        // Collected
+        vm.expectEmit(true, true, true, true, address(hub));
+        emit Events.Collected(
+            profileOwner,
+            newProfileId,
+            expectedPubId,
+            newProfileId,
+            expectedPubId,
+            '',
+            block.timestamp
+        );
+
+        hub.collect(profileOwner, newProfileId, expectedPubId, '');
+        vm.stopPrank();
     }
 
     function testCollectingFromMirrorEmitsExpectedEvents() public {
