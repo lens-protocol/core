@@ -229,4 +229,19 @@ library GeneralHelpers {
         }
         return originator;
     }
+
+    function validateNotBlocked(uint256 profile, uint256 byProfile) internal view {
+        bool isBlocked;
+        assembly {
+            mstore(0, byProfile)
+            mstore(32, BLOCK_STATUS_MAPPING_SLOT)
+            let blockStatusByProfileSlot := keccak256(0, 64)
+            mstore(0, profile)
+            mstore(32, blockStatusByProfileSlot)
+            isBlocked := sload(keccak256(0, 64))
+        }
+        if (isBlocked) {
+            revert Errors.Blocked();
+        }
+    }
 }
