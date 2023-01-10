@@ -170,20 +170,22 @@ library InteractionHelpers {
     }
 
     function collect(
-        address collector,
-        address delegatedExecutor,
-        uint256 profileId,
+        uint256 collectorProfileId,
+        address collectorProfileOwner,
+        address transactionExecutor,
+        uint256 publisherProfileId,
         uint256 pubId,
         bytes calldata collectModuleData,
         address collectNFTImpl
     ) internal returns (uint256) {
-        uint256 profileIdCached = profileId;
+        uint256 publisherProfileIdCached = publisherProfileId;
         uint256 pubIdCached = pubId;
-        address collectorCached = collector;
-        address delegatedExecutorCached = delegatedExecutor;
+        uint256 collectorProfileIdCached = collectorProfileId;
+        address collectorProfileOwnerCached = collectorProfileOwner;
+        address transactionExecutorCached = transactionExecutor;
 
         (uint256 rootProfileId, uint256 rootPubId, address rootCollectModule) = GeneralHelpers
-            .getPointedIfMirrorWithCollectModule(profileIdCached, pubIdCached);
+            .getPointedIfMirrorWithCollectModule(publisherProfileIdCached, pubIdCached);
 
         // Prevents stack too deep.
         address collectNFT;
@@ -211,39 +213,47 @@ library InteractionHelpers {
             }
         }
 
-        uint256 tokenId = ICollectNFT(collectNFT).mint(collectorCached);
+        uint256 tokenId = ICollectNFT(collectNFT).mint(collectorProfileOwnerCached);
         _processCollect(
-            rootCollectModule,
-            collectModuleData,
-            profileIdCached,
-            pubIdCached,
-            collectorCached,
-            delegatedExecutorCached,
-            rootProfileId,
-            rootPubId
+            ProcessCollectVars({
+                collectModule: rootCollectModule,
+                publisherProfileId: publisherProfileIdCached,
+                collectorProfileId: collectorProfileIdCached,
+                collectorProfileOwner: collectorProfileOwnerCached,
+                transactionExecutor: transactionExecutorCached,
+                rootProfileId: rootProfileId,
+                rootPubId: rootPubId,
+                pubId: pubIdCached
+            }),
+            collectModuleData
         );
 
         return tokenId;
     }
 
-    function _processCollect(
-        address collectModule,
-        bytes calldata collectModuleData,
-        uint256 profileId,
-        uint256 pubId,
-        address collector,
-        address executor,
-        uint256 rootProfileId,
-        uint256 rootPubId
-    ) private {
+    // TODO: Think about how to make this better... (it's needed for stack too deep)
+    struct ProcessCollectVars {
+        address collectModule;
+        uint256 publisherProfileId;
+        uint256 collectorProfileId;
+        address collectorProfileOwner;
+        address transactionExecutor;
+        uint256 rootProfileId;
+        uint256 rootPubId;
+        uint256 pubId;
+    }
+
+    function _processCollect(ProcessCollectVars memory vars, bytes calldata collectModuleData)
+        private
+    {
         try
-            ICollectModule(collectModule).processCollect(
-                profileId,
-                0,
-                collector,
-                executor,
-                rootProfileId,
-                rootPubId,
+            ICollectModule(vars.collectModule).processCollect(
+                vars.publisherProfileId,
+                vars.collectorProfileId,
+                vars.collectorProfileOwner,
+                vars.transactionExecutor,
+                vars.rootProfileId,
+                vars.rootPubId,
                 collectModuleData
             )
         {} catch (bytes memory err) {
@@ -255,22 +265,23 @@ library InteractionHelpers {
                     revert(add(err, 32), length)
                 }
             }
-            if (collector != executor) revert Errors.ExecutorInvalid();
-            IDeprecatedCollectModule(collectModule).processCollect(
-                profileId,
-                collector,
-                rootProfileId,
-                rootPubId,
+            if (vars.collectorProfileOwner != vars.transactionExecutor)
+                revert Errors.ExecutorInvalid();
+            IDeprecatedCollectModule(vars.collectModule).processCollect(
+                vars.publisherProfileId,
+                vars.collectorProfileOwner,
+                vars.rootProfileId,
+                vars.rootPubId,
                 collectModuleData
             );
         }
 
         _emitCollectedEvent(
-            collector,
-            profileId,
-            pubId,
-            rootProfileId,
-            rootPubId,
+            vars.collectorProfileId,
+            vars.publisherProfileId,
+            vars.pubId,
+            vars.rootProfileId,
+            vars.rootPubId,
             collectModuleData
         );
     }
@@ -309,24 +320,24 @@ library InteractionHelpers {
      *
      * @dev This is done through this function to prevent stack too deep compilation error.
      *
-     * @param collector The address collecting the publication.
-     * @param profileId The token ID of the profile that the collect was initiated towards, useful to differentiate mirrors.
+     * @param collectorProfileId The owner address of the profile collecting the publication.
+     * @param publisherProfileId The token ID of the profile that the collect was initiated towards, useful to differentiate mirrors.
      * @param pubId The publication ID that the collect was initiated towards, useful to differentiate mirrors.
      * @param rootProfileId The profile token ID of the profile whose publication is being collected.
      * @param rootPubId The publication ID of the publication being collected.
      * @param data The data passed to the collect module.
      */
     function _emitCollectedEvent(
-        address collector,
-        uint256 profileId,
+        uint256 collectorProfileId,
+        uint256 publisherProfileId,
         uint256 pubId,
         uint256 rootProfileId,
         uint256 rootPubId,
         bytes calldata data
     ) private {
         emit Events.Collected(
-            collector,
-            profileId,
+            collectorProfileId,
+            publisherProfileId,
             pubId,
             rootProfileId,
             rootPubId,

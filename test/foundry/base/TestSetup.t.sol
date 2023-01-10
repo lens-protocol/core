@@ -268,8 +268,8 @@ contract TestSetup is Test, ForkManagement {
 
         // Precompute basic collect data.
         mockCollectData = DataTypes.CollectData({
-            collector: profileOwner,
-            profileId: newProfileId,
+            collectorProfileId: newProfileId,
+            publisherProfileId: newProfileId,
             pubId: FIRST_PUB_ID,
             data: ''
         });

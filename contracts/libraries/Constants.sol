@@ -116,7 +116,7 @@ bytes32 constant SET_BLOCK_STATUS_WITH_SIG_TYPEHASH = keccak256(
     'SetBlockStatusWithSig(uint256 byProfileId,uint256[] idsOfProfilesToSetBlockStatus,bool[] blockStatus,uint256 nonce,uint256 deadline)'
 );
 bytes32 constant COLLECT_WITH_SIG_TYPEHASH = keccak256(
-    'CollectWithSig(uint256 profileId,uint256 pubId,bytes data,uint256 nonce,uint256 deadline)'
+    'CollectWithSig(uint256 collectorProfileId,uint256 publisherProfileId,uint256 pubId,bytes data,uint256 nonce,uint256 deadline)'
 );
 bytes32 constant SET_PROFILE_METADATA_URI_WITH_SIG_TYPEHASH = keccak256(
     'SetProfileMetadataURIWithSig(uint256 profileId,string metadata,uint256 nonce,uint256 deadline)'

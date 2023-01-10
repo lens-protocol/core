@@ -11,8 +11,8 @@ contract CollectingTest_Base is BaseTest, SignatureHelpers, CollectingHelpers, S
     function _mockCollect() internal virtual returns (uint256) {
         return
             _collect(
-                mockCollectData.collector,
-                mockCollectData.profileId,
+                mockCollectData.collectorProfileId,
+                mockCollectData.publisherProfileId,
                 mockCollectData.pubId,
                 mockCollectData.data
             );
@@ -24,7 +24,8 @@ contract CollectingTest_Base is BaseTest, SignatureHelpers, CollectingHelpers, S
         returns (uint256)
     {
         bytes32 digest = _getCollectTypedDataHash(
-            mockCollectData.profileId,
+            mockCollectData.collectorProfileId,
+            mockCollectData.publisherProfileId,
             mockCollectData.pubId,
             mockCollectData.data,
             nonce,
@@ -59,13 +60,17 @@ contract CollectingTest_Generic is CollectingTest_Base {
 
     function testCannotCollectIfNotExecutor() public {
         vm.expectRevert(Errors.ExecutorInvalid.selector);
+        vm.startPrank(otherSigner);
         _mockCollect();
     }
 
     function testCannotCollectIfNonexistantPub() public {
         mockCollectData.pubId = 2;
         // Check that the publication doesn't exist.
-        assertEq(_getPub(mockCollectData.profileId, mockCollectData.pubId).profileIdPointed, 0);
+        assertEq(
+            _getPub(mockCollectData.publisherProfileId, mockCollectData.pubId).profileIdPointed,
+            0
+        );
 
         vm.startPrank(profileOwner);
         vm.expectRevert(Errors.PublicationDoesNotExist.selector);
@@ -76,7 +81,10 @@ contract CollectingTest_Generic is CollectingTest_Base {
     function testCannotCollectIfZeroPub() public {
         mockCollectData.pubId = 0;
         // Check that the publication doesn't exist.
-        assertEq(_getPub(mockCollectData.profileId, mockCollectData.pubId).profileIdPointed, 0);
+        assertEq(
+            _getPub(mockCollectData.publisherProfileId, mockCollectData.pubId).profileIdPointed,
+            0
+        );
 
         vm.startPrank(profileOwner);
         vm.expectRevert(Errors.PublicationDoesNotExist.selector);
@@ -175,7 +183,10 @@ contract CollectingTest_WithSig is CollectingTest_Base {
     function testCannotCollectWithSigIfNonexistantPub() public {
         mockCollectData.pubId = 2;
         // Check that the publication doesn't exist.
-        assertEq(_getPub(mockCollectData.profileId, mockCollectData.pubId).profileIdPointed, 0);
+        assertEq(
+            _getPub(mockCollectData.publisherProfileId, mockCollectData.pubId).profileIdPointed,
+            0
+        );
 
         vm.expectRevert(Errors.PublicationDoesNotExist.selector);
         _mockCollectWithSig({delegatedSigner: address(0), signerPrivKey: profileOwnerKey});
@@ -184,7 +195,10 @@ contract CollectingTest_WithSig is CollectingTest_Base {
     function testCannotCollectWithSigIfZeroPub() public {
         mockCollectData.pubId = 0;
         // Check that the publication doesn't exist.
-        assertEq(_getPub(mockCollectData.profileId, mockCollectData.pubId).profileIdPointed, 0);
+        assertEq(
+            _getPub(mockCollectData.publisherProfileId, mockCollectData.pubId).profileIdPointed,
+            0
+        );
 
         vm.expectRevert(Errors.PublicationDoesNotExist.selector);
         _mockCollectWithSig({delegatedSigner: address(0), signerPrivKey: profileOwnerKey});

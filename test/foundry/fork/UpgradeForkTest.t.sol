@@ -320,9 +320,9 @@ contract UpgradeForkTest is BaseTest {
             console2.log(
                 'Follow with modern interface succeeded, continuing with modern interface.'
             );
-            hub.collect(me, profileId, 1, '');
-            hub.collect(me, profileId, 2, '');
-            hub.collect(me, profileId, 3, '');
+            hub.collect(profileId, profileId, 1, '');
+            hub.collect(profileId, profileId, 2, '');
+            hub.collect(profileId, profileId, 3, '');
         } catch {
             console2.log(
                 'Follow with modern interface failed, proceeding with deprecated interface.'
