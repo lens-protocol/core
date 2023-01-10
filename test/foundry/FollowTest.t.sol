@@ -199,6 +199,19 @@ contract FollowTest is BaseTest, AssumptionHelpers {
         });
     }
 
+    function testCannotSelfFollow() public {
+        vm.expectRevert(Errors.SelfFollow.selector);
+
+        _follow({
+            pk: targetProfileOwnerPk,
+            isFollowerProfileOwner: true,
+            followerProfileId: targetProfileId,
+            idsOfProfilesToFollow: _toUint256Array(targetProfileId),
+            followTokenIds: _toUint256Array(MINT_NEW_TOKEN),
+            datas: _toBytesArray('')
+        });
+    }
+
     // Positives
 
     function testFollowAsFollowerOwner() public {

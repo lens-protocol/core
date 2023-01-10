@@ -53,6 +53,10 @@ library InteractionHelpers {
 
             _validateNotBlocked(followerProfileId, idsOfProfilesToFollow[i]);
 
+            if (followerProfileId == idsOfProfilesToFollow[i]) {
+                revert Errors.SelfFollow();
+            }
+
             followTokenIdsAssigned[i] = _follow(
                 followerProfileId,
                 executor,

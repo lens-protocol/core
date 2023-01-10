@@ -61,6 +61,7 @@ library Errors {
     error ExecutorInvalid();
     error Blocked();
     error NotFollowing();
+    error SelfFollow();
 
     // Module Errors
     error InitParamsInvalid();
