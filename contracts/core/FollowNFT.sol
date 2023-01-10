@@ -337,15 +337,13 @@ contract FollowNFT is HubRestricted, LensNFTBase, ERC2981CollectionRoyalties, IF
         uint256 followTokenId,
         uint256 currentFollowerProfileId
     ) internal {
-        bool followApproved = _followApprovalByFollowTokenId[followTokenId] == followerProfileId;
+        uint256 approvedToFollow = _followApprovalByFollowTokenId[followTokenId];
         if (
-            followApproved ||
+            approvedToFollow == followerProfileId ||
             !IERC721Time(HUB).exists(currentFollowerProfileId) ||
             IERC721(HUB).ownerOf(currentFollowerProfileId) == executor
         ) {
-            // The profile attempting to follow is allowed to pull the unwrapped token from current follower profile.
-            if (followApproved) {
-                // `_followApprovalByFollowTokenId` was used, now needs to be cleared.
+            if (approvedToFollow != 0) {
                 _approveFollow(0, followTokenId);
             }
             _replaceFollower(currentFollowerProfileId, followerProfileId, followTokenId);
