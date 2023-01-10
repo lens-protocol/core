@@ -10,7 +10,10 @@ contract EventTest is BaseTest {
     address profileOwnerTwo = address(0x2222);
     address mockFollowModule;
 
+    // Non-Lens Events
     event Transfer(address indexed from, address indexed to, uint256 indexed tokenId);
+    event Upgraded(address indexed implementation);
+    event AdminChanged(address previousAdmin, address newAdmin);
 
     function setUp() public override {
         TestSetup.setUp();
@@ -43,6 +46,9 @@ contract EventTest is BaseTest {
         );
 
         // Event tests
+        // Upgraded
+        vm.expectEmit(true, false, false, true, hubProxyAddr);
+        emit Upgraded(address(hubImpl));
 
         // BaseInitialized
         vm.expectEmit(false, false, false, true, hubProxyAddr);
@@ -52,13 +58,18 @@ contract EventTest is BaseTest {
             block.timestamp
         );
 
-        // TODO finish these event tests
-
-        // Upgraded
-        // AdminChanged
-        // GovernanceSet
         // StateSet
+        vm.expectEmit(true, true, true, true, hubProxyAddr);
+        emit Events.StateSet(deployer, DataTypes.ProtocolState.Unpaused, DataTypes.ProtocolState.Paused, block.timestamp);
 
+        // GovernanceSet
+        vm.expectEmit(true, true, true, true, hubProxyAddr);
+        emit Events.GovernanceSet(deployer, address(0), governance, block.timestamp);
+    
+        // AdminChanged
+        vm.expectEmit(false, false, false, true, hubProxyAddr);
+        emit AdminChanged(address(0), deployer);
+        
         hubAsProxy = new TransparentUpgradeableProxy(address(hubImpl), deployer, initData);
         vm.stopPrank();
     }
