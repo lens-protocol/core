@@ -32,7 +32,7 @@ contract TestSetup is Test, ForkManagement {
     uint256 newProfileId;
     address deployer;
     address governance;
-    address treasury = address(0x666);
+    address treasury;
 
     string constant MOCK_URI = 'ipfs://QmUXfQWe43RKx31VzA2BnbwhSMW8WuaJvszFWChD59m76U';
 
@@ -191,13 +191,6 @@ contract TestSetup is Test, ForkManagement {
 
         // Cast proxy to LensHub interface.
         hub = LensHub(address(hubAsProxy));
-
-        // Deploy the ModuleGlobals contract.
-        moduleGlobals = new ModuleGlobals(
-            governance,
-            treasury,
-            TREASURY_FEE_BPS
-        );
 
         // Deploy the MockCollectModule.
         mockCollectModule = new MockCollectModule();
