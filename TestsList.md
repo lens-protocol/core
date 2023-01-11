@@ -386,31 +386,31 @@ deployment validation
 
 Events
 Misc
-[ ] Proxy initialization should emit expected events
+[X] Proxy initialization should emit expected events
 Hub Governance
-[ ] Governance change should emit expected event
-[ ] Emergency admin change should emit expected event
-[ ] Protocol state change by governance should emit expected event
-[ ] Protocol state change by emergency admin should emit expected events
-[ ] Follow module whitelisting functions should emit expected event
-[ ] Reference module whitelisting functions should emit expected event
-[ ] Collect module whitelisting functions should emit expected event
+[X] Governance change should emit expected event
+[X] Emergency admin change should emit expected event
+[X] Protocol state change by governance should emit expected event
+[X] Protocol state change by emergency admin should emit expected events
+[X] Follow module whitelisting functions should emit expected event
+[X] Reference module whitelisting functions should emit expected event
+[X] Collect module whitelisting functions should emit expected event
 Hub Interaction
-[ ] Profile creation for other user should emit the correct events
-[ ] Profile creation should emit the correct events
-[ ] Setting follow module should emit correct events
-[ ] Setting dispatcher should emit correct events
-[ ] Posting should emit the correct events
-[ ] Commenting should emit the correct events
-[ ] Mirroring should emit the correct events
-[ ] Following should emit correct events
-[ ] Collecting should emit correct events
-[ ] Collecting from a mirror should emit correct events
+[X] Profile creation for other user should emit the correct events
+[X] Profile creation should emit the correct events
+[X] Setting follow module should emit correct events
+[X] Setting dispatcher should emit correct events
+[X] Posting should emit the correct events
+[X] Commenting should emit the correct events
+[X] Mirroring should emit the correct events
+[X] Following should emit correct events
+[X] Collecting should emit correct events
+[X] Collecting from a mirror should emit correct events
 Module Globals Governance
-[ ] Governance change should emit expected event
-[ ] Treasury change should emit expected event
-[ ] Treasury fee change should emit expected event
-[ ] Currency whitelisting should emit expected event
+[X] Governance change should emit expected event
+[X] Treasury change should emit expected event
+[X] Treasury fee change should emit expected event
+[X] Currency whitelisting should emit expected event
 
 Misc
 NFT Transfer Emitters
