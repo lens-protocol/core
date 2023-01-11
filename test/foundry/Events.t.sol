@@ -22,6 +22,10 @@ contract EventTest is BaseTest {
         hub.whitelistFollowModule(mockFollowModule, true);
     }
 
+    function predictContractAddress(address user, uint256 distanceFromCurrentNonce) internal returns(address) {
+        return computeCreateAddress(user, vm.getNonce(user) + distanceFromCurrentNonce);
+    }
+
     // MISC
 
     function testProxyInitEmitsExpectedEvents() public {
@@ -30,9 +34,9 @@ contract EventTest is BaseTest {
 
         vm.startPrank(deployer);
 
-        address followNFTAddr = utils.predictContractAddress(deployer, 1);
-        address collectNFTAddr = utils.predictContractAddress(deployer, 2);
-        hubProxyAddr = utils.predictContractAddress(deployer, 3);
+        address followNFTAddr = predictContractAddress(deployer, 1);
+        address collectNFTAddr = predictContractAddress(deployer, 2);
+        hubProxyAddr = predictContractAddress(deployer, 3);
 
         // Deploy implementation contracts.
         hubImpl = new LensHub(followNFTAddr, collectNFTAddr);
@@ -311,7 +315,7 @@ contract EventTest is BaseTest {
         followTargetIds[0] = 1;
         bytes[] memory followDatas = new bytes[](1);
         followDatas[0] = '';
-        address expectedFollowNFTAddress = utils.predictContractAddress(address(hub), 0);
+        address expectedFollowNFTAddress = predictContractAddress(address(hub), 0);
 
         vm.prank(profileOwner);
         vm.expectEmit(true, true, false, true, address(hub));
@@ -338,7 +342,7 @@ contract EventTest is BaseTest {
         hub.post(mockPostData);
 
         uint256 expectedPubId = 1;
-        address expectedCollectNFTAddress = utils.predictContractAddress(address(hub), 0);
+        address expectedCollectNFTAddress = predictContractAddress(address(hub), 0);
         string memory expectedNFTName = "1-Collect-1";
         string memory expectedNFTSymbol = "1-Cl-1";
 
@@ -404,7 +408,7 @@ contract EventTest is BaseTest {
         bytes[] memory followDatas = new bytes[](1);
         followDatas[0] = '';
         uint256 expectedPubId = 1;
-        address expectedCollectNFTAddress = utils.predictContractAddress(address(hub), 0);
+        address expectedCollectNFTAddress = predictContractAddress(address(hub), 0);
         string memory expectedNFTName = "1-Collect-1";
         string memory expectedNFTSymbol = "1-Cl-1";
 

@@ -17,14 +17,11 @@ import {GeneralLib} from 'contracts/libraries/GeneralLib.sol';
 import {ProfileTokenURILogic} from 'contracts/libraries/ProfileTokenURILogic.sol';
 import {MockCollectModule} from 'contracts/mocks/MockCollectModule.sol';
 import {MockReferenceModule} from 'contracts/mocks/MockReferenceModule.sol';
-import {Utils} from '../helpers/Utils.sol';
 import '../helpers/ForkManagement.sol';
 import '../Constants.sol';
 
 contract TestSetup is Test, ForkManagement {
     using stdJson for string;
-
-    Utils internal utils;
 
     string forkEnv;
     bool fork;
@@ -222,8 +219,6 @@ contract TestSetup is Test, ForkManagement {
     }
 
     function setUp() public virtual {
-        utils = new Utils();
-
         // Compute the domain separator.
         domainSeparator = keccak256(
             abi.encode(
