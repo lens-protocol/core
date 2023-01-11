@@ -38,8 +38,10 @@ contract TestSetup is Test, ForkManagement {
 
     uint256 constant otherSignerKey = 0x737562;
     uint256 constant profileOwnerKey = 0x04546b;
+    uint256 constant alienSignerKey = 0x123456;
     address immutable profileOwner = vm.addr(profileOwnerKey);
     address immutable otherSigner = vm.addr(otherSignerKey);
+    address immutable alienSigner = vm.addr(alienSignerKey);
     address immutable me = address(this);
 
     bytes32 domainSeparator;
@@ -163,6 +165,7 @@ contract TestSetup is Test, ForkManagement {
         newProfileId = FIRST_PROFILE_ID;
         deployer = address(1);
         governance = address(2);
+        treasury = address(3);
 
         TREASURY_FEE_BPS = 50;
 
@@ -201,6 +204,8 @@ contract TestSetup is Test, ForkManagement {
 
         // Deploy the MockReferenceModule.
         mockReferenceModule = new MockReferenceModule();
+
+        moduleGlobals = new ModuleGlobals(governance, treasury, TREASURY_FEE_BPS);
 
         vm.stopPrank();
         ///////////////////////////////////////// End deployments.
