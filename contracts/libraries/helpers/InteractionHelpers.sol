@@ -184,6 +184,11 @@ library InteractionHelpers {
         address collectorProfileOwnerCached = collectorProfileOwner;
         address transactionExecutorCached = transactionExecutor;
 
+        GeneralHelpers.validateAddressIsOwnerOrDelegatedExecutor({
+            transactionExecutor: transactionExecutor,
+            profileOwner: collectorProfileOwner
+        });
+
         (uint256 rootProfileId, uint256 rootPubId, address rootCollectModule) = GeneralHelpers
             .getPointedIfMirrorWithCollectModule(publisherProfileIdCached, pubIdCached);
 
