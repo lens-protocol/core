@@ -25,7 +25,7 @@ abstract contract LensHubStorage {
 
     mapping(address => uint256) internal _defaultProfileByAddress; // slot 21
 
-    uint256 internal _profileCounter; // slot 22
+    uint256 internal _profileCounter; // slot 22 - this is different to TotalSupply, as TotalSupply is decreased when the Profile is burned
     address internal _governance; // slot 23
     address internal _emergencyAdmin; // slot 24
 
