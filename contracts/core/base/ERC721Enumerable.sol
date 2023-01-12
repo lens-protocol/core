@@ -59,6 +59,8 @@ abstract contract ERC721Enumerable is ERC721Time, IERC721Enumerable {
 
     /**
      * @dev See {IERC721Enumerable-totalSupply}.
+     * @dev TotalSupply is decreased when the Profile is burned.
+     * @dev If you're looking how to get the next ProfileId created - see _profileCounter
      */
     function totalSupply() public view virtual override returns (uint256) {
         return _allTokens.length;
