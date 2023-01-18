@@ -19,7 +19,7 @@ interface IFollowNFT {
     error DoesNotHavePermissions();
 
     /**
-     * @notice A struct containing token follow-realted data.
+     * @notice A struct containing token follow-related data.
      *
      * @param followerProfileId The ID of the profile using the token to follow.
      * @param originalFollowTimestamp The timestamp of the first follow performed with the token.
