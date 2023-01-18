@@ -83,6 +83,43 @@ interface IFollowNFT {
     ) external;
 
     /**
+     * @notice Approves the given profile to follow with the given wrapped token.
+     *
+     * @dev It approves setting a follower on the given wrapped follow token, which lets the follow token owner to allow
+     * a profile to follow with his token without losing its ownership. This approval is cleared on transfers, as well
+     * as when unwrapping.
+     *
+     * @param approvedProfileId The ID of the profile approved to follow with the given token.
+     * @param followTokenId The ID of the follow token to be approved for the given profile.
+     */
+    function approveFollow(uint256 approvedProfileId, uint256 followTokenId) external;
+
+    /**
+     * @notice Unties the follow token from the follower's profile token, and wraps it into the ERC-721 untied follow
+     * tokens collection.
+     *
+     * @param followTokenId The ID of the follow token to untie and wrap.
+     */
+    function untieAndWrap(uint256 followTokenId) external;
+
+    /**
+     * @notice Unwraps the follow token from the ERC-721 untied follow tokens collection, and ties it to the follower's
+     * profile token.
+     *
+     * @param followTokenId The ID of the follow token to unwrap and tie to its follower.
+     */
+    function unwrapAndTie(uint256 followTokenId) external;
+
+    /**
+     * @notice Blocks the given profile. If it was following the targetted profile, this will make it to unfollow.
+     *
+     * @dev This must be only callable by the LensHub contract.
+     *
+     * @param followerProfileId The ID of the follow token to unwrap and tie.
+     */
+    function block(uint256 followerProfileId) external;
+
+    /**
      * @notice Gets the ID of the profile following with the given follow token.
      *
      * @param followTokenId The ID of the follow token whose follower should be queried.
@@ -153,41 +190,4 @@ interface IFollowNFT {
      * @return uint256 The ID of the profile approved to follow with the given token, zero if none of them is approved.
      */
     function getFollowApproved(uint256 followTokenId) external view returns (uint256);
-
-    /**
-     * @notice Approves the given profile to follow with the given wrapped token.
-     *
-     * @dev It approves setting a follower on the given wrapped follow token, which lets the follow token owner to allow
-     * a profile to follow with his token without losing its ownership. This approval is cleared on transfers, as well
-     * as when unwrapping.
-     *
-     * @param approvedProfileId The ID of the profile approved to follow with the given token.
-     * @param followTokenId The ID of the follow token to be approved for the given profile.
-     */
-    function approveFollow(uint256 approvedProfileId, uint256 followTokenId) external;
-
-    /**
-     * @notice Unties the follow token from the follower's profile token, and wraps it into the ERC-721 untied follow
-     * tokens collection.
-     *
-     * @param followTokenId The ID of the follow token to untie and wrap.
-     */
-    function untieAndWrap(uint256 followTokenId) external;
-
-    /**
-     * @notice Unwraps the follow token from the ERC-721 untied follow tokens collection, and ties it to the follower's
-     * profile token.
-     *
-     * @param followTokenId The ID of the follow token to unwrap and tie to its follower.
-     */
-    function unwrapAndTie(uint256 followTokenId) external;
-
-    /**
-     * @notice Blocks the given profile. If it was following the targetted profile, this will make it to unfollow.
-     *
-     * @dev This must be only callable by the LensHub contract.
-     *
-     * @param followerProfileId The ID of the follow token to unwrap and tie.
-     */
-    function block(uint256 followerProfileId) external;
 }

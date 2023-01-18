@@ -122,61 +122,6 @@ contract FollowNFT is HubRestricted, LensNFTBase, ERC2981CollectionRoyalties, IF
     }
 
     /// @inheritdoc IFollowNFT
-    function getFollowerProfileId(uint256 followTokenId) external view override returns (uint256) {
-        return _followDataByFollowTokenId[followTokenId].followerProfileId;
-    }
-
-    /// @inheritdoc IFollowNFT
-    function isFollowing(uint256 followerProfileId) external view override returns (bool) {
-        return _followTokenIdByFollowerProfileId[followerProfileId] != 0;
-    }
-
-    /// @inheritdoc IFollowNFT
-    function getFollowTokenId(uint256 followerProfileId) external view override returns (uint256) {
-        return _followTokenIdByFollowerProfileId[followerProfileId];
-    }
-
-    /// @inheritdoc IFollowNFT
-    function getOriginalFollowTimestamp(uint256 followTokenId)
-        external
-        view
-        override
-        returns (uint256)
-    {
-        return _followDataByFollowTokenId[followTokenId].originalFollowTimestamp;
-    }
-
-    /// @inheritdoc IFollowNFT
-    function getFollowTimestamp(uint256 followTokenId) external view override returns (uint256) {
-        return _followDataByFollowTokenId[followTokenId].followTimestamp;
-    }
-
-    /// @inheritdoc IFollowNFT
-    function getProfileIdAllowedToRecover(uint256 followTokenId)
-        external
-        view
-        override
-        returns (uint256)
-    {
-        return _followDataByFollowTokenId[followTokenId].profileIdAllowedToRecover;
-    }
-
-    /// @inheritdoc IFollowNFT
-    function getFollowData(uint256 followTokenId)
-        external
-        view
-        override
-        returns (FollowData memory)
-    {
-        return _followDataByFollowTokenId[followTokenId];
-    }
-
-    /// @inheritdoc IFollowNFT
-    function getFollowApproved(uint256 followTokenId) external view override returns (uint256) {
-        return _followApprovalByFollowTokenId[followTokenId];
-    }
-
-    /// @inheritdoc IFollowNFT
     function approveFollow(uint256 followerProfileId, uint256 followTokenId) external override {
         uint256 currentFollowerProfileId;
         address followTokenOwner = _unsafeOwnerOf(followTokenId);
@@ -240,6 +185,61 @@ contract FollowNFT is HubRestricted, LensNFTBase, ERC2981CollectionRoyalties, IF
             _unfollow(followerProfileId, followTokenId);
             ILensHub(HUB).emitUnfollowedEvent(followerProfileId, _followedProfileId);
         }
+    }
+
+    /// @inheritdoc IFollowNFT
+    function getFollowerProfileId(uint256 followTokenId) external view override returns (uint256) {
+        return _followDataByFollowTokenId[followTokenId].followerProfileId;
+    }
+
+    /// @inheritdoc IFollowNFT
+    function isFollowing(uint256 followerProfileId) external view override returns (bool) {
+        return _followTokenIdByFollowerProfileId[followerProfileId] != 0;
+    }
+
+    /// @inheritdoc IFollowNFT
+    function getFollowTokenId(uint256 followerProfileId) external view override returns (uint256) {
+        return _followTokenIdByFollowerProfileId[followerProfileId];
+    }
+
+    /// @inheritdoc IFollowNFT
+    function getOriginalFollowTimestamp(uint256 followTokenId)
+        external
+        view
+        override
+        returns (uint256)
+    {
+        return _followDataByFollowTokenId[followTokenId].originalFollowTimestamp;
+    }
+
+    /// @inheritdoc IFollowNFT
+    function getFollowTimestamp(uint256 followTokenId) external view override returns (uint256) {
+        return _followDataByFollowTokenId[followTokenId].followTimestamp;
+    }
+
+    /// @inheritdoc IFollowNFT
+    function getProfileIdAllowedToRecover(uint256 followTokenId)
+        external
+        view
+        override
+        returns (uint256)
+    {
+        return _followDataByFollowTokenId[followTokenId].profileIdAllowedToRecover;
+    }
+
+    /// @inheritdoc IFollowNFT
+    function getFollowData(uint256 followTokenId)
+        external
+        view
+        override
+        returns (FollowData memory)
+    {
+        return _followDataByFollowTokenId[followTokenId];
+    }
+
+    /// @inheritdoc IFollowNFT
+    function getFollowApproved(uint256 followTokenId) external view override returns (uint256) {
+        return _followApprovalByFollowTokenId[followTokenId];
     }
 
     function burnWithSig(uint256 followTokenId, DataTypes.EIP712Signature calldata sig)
@@ -373,24 +373,6 @@ contract FollowNFT is HubRestricted, LensNFTBase, ERC2981CollectionRoyalties, IF
         }
     }
 
-    function _getReceiver(uint256 followTokenId) internal view override returns (address) {
-        return IERC721(HUB).ownerOf(_followedProfileId);
-    }
-
-    function _beforeRoyaltiesSet(uint256 royaltiesInBasisPoints) internal view override {
-        if (IERC721(HUB).ownerOf(_followedProfileId) != msg.sender) {
-            revert Errors.NotProfileOwner();
-        }
-    }
-
-    function _getRoyaltiesInBasisPointsSlot() internal pure override returns (uint256) {
-        uint256 slot;
-        assembly {
-            slot := _royaltiesInBasisPoints.slot
-        }
-        return slot;
-    }
-
     function _unfollowIfHasFollower(uint256 followTokenId) internal {
         uint256 followerProfileId = _followDataByFollowTokenId[followTokenId].followerProfileId;
         if (followerProfileId != 0) {
@@ -414,16 +396,6 @@ contract FollowNFT is HubRestricted, LensNFTBase, ERC2981CollectionRoyalties, IF
         emit FollowApproval(approvedProfileId, followTokenId);
     }
 
-    function _followTokenIsWrapped(uint256 followTokenId) internal view returns (bool) {
-        return _exists(followTokenId);
-    }
-
-    function _followTokenExists(uint256 followTokenId) internal view returns (bool) {
-        return
-            _followDataByFollowTokenId[followTokenId].followerProfileId != 0 ||
-            _followTokenIsWrapped(followTokenId);
-    }
-
     /**
      * @dev Upon transfers, we clear follow approvals, and emit the transfer event in the hub.
      */
@@ -439,5 +411,33 @@ contract FollowNFT is HubRestricted, LensNFTBase, ERC2981CollectionRoyalties, IF
         }
         super._beforeTokenTransfer(from, to, followTokenId);
         ILensHub(HUB).emitFollowNFTTransferEvent(_followedProfileId, followTokenId, from, to);
+    }
+
+    function _getReceiver(uint256 followTokenId) internal view override returns (address) {
+        return IERC721(HUB).ownerOf(_followedProfileId);
+    }
+
+    function _beforeRoyaltiesSet(uint256 royaltiesInBasisPoints) internal view override {
+        if (IERC721(HUB).ownerOf(_followedProfileId) != msg.sender) {
+            revert Errors.NotProfileOwner();
+        }
+    }
+
+    function _followTokenIsWrapped(uint256 followTokenId) internal view returns (bool) {
+        return _exists(followTokenId);
+    }
+
+    function _followTokenExists(uint256 followTokenId) internal view returns (bool) {
+        return
+            _followDataByFollowTokenId[followTokenId].followerProfileId != 0 ||
+            _followTokenIsWrapped(followTokenId);
+    }
+
+    function _getRoyaltiesInBasisPointsSlot() internal pure override returns (uint256) {
+        uint256 slot;
+        assembly {
+            slot := _royaltiesInBasisPoints.slot
+        }
+        return slot;
     }
 }
