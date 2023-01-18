@@ -410,6 +410,7 @@ library DataTypes {
      * @param data The data passed to the collect module.
      */
     struct CollectData {
+        // TODO: Move this to tests? And the one below
         uint256 collectorProfileId;
         uint256 publisherProfileId;
         uint256 pubId;
