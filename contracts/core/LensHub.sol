@@ -428,7 +428,7 @@ contract LensHub is LensNFTBase, VersionedInitializable, LensMultiState, LensHub
     /// @inheritdoc ILensHub
     function collect(
         uint256 collectorProfileId,
-        uint256 publisherProfileId,
+        uint256 publisherProfileId, // TODO: Think if we can have better naming
         uint256 pubId,
         bytes calldata data
     ) external override whenNotPaused returns (uint256) {

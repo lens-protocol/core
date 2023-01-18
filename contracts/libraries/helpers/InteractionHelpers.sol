@@ -172,7 +172,7 @@ library InteractionHelpers {
     function collect(
         uint256 collectorProfileId,
         address collectorProfileOwner,
-        address transactionExecutor,
+        address transactionExecutor, // TODO: (ex-delegatedExecutor) - revisit the naming later
         uint256 publisherProfileId,
         uint256 pubId,
         bytes calldata collectModuleData,
