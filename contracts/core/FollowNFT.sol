@@ -294,7 +294,7 @@ contract FollowNFT is HubRestricted, LensNFTBase, ERC2981CollectionRoyalties, IF
         unchecked {
             followTokenIdAssigned = followTokenId == 0 ? ++_lastFollowTokenId : followTokenId;
         }
-        _follow(followerProfileId, followTokenIdAssigned, true);
+        _baseFollow(followerProfileId, followTokenIdAssigned, true);
         return followTokenIdAssigned;
     }
 
@@ -354,10 +354,10 @@ contract FollowNFT is HubRestricted, LensNFTBase, ERC2981CollectionRoyalties, IF
             ILensHub(HUB).emitUnfollowedEvent(currentFollowerProfileId, _followedProfileId);
         }
         // Perform the follow, setting new follower.
-        _follow(newFollowerProfileId, followTokenId, false);
+        _baseFollow(newFollowerProfileId, followTokenId, false);
     }
 
-    function _follow(
+    function _baseFollow(
         uint256 followerProfileId,
         uint256 followTokenId,
         bool isOriginalFollow
