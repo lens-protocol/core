@@ -45,7 +45,6 @@ library InteractionHelpers {
         ) {
             revert Errors.ArrayMismatch();
         }
-        bool isExecutorApproved = GeneralHelpers.isExecutorApproved(followerProfileOwner, executor);
         uint256[] memory followTokenIdsAssigned = new uint256[](idsOfProfilesToFollow.length);
         uint256 i;
         while (i < idsOfProfilesToFollow.length) {
@@ -61,7 +60,6 @@ library InteractionHelpers {
                 followerProfileId,
                 executor,
                 followerProfileOwner,
-                isExecutorApproved,
                 idsOfProfilesToFollow[i],
                 followTokenIds[i],
                 followModuleDatas[i]
@@ -339,7 +337,6 @@ library InteractionHelpers {
         uint256 followerProfileId,
         address executor,
         address followerProfileOwner,
-        bool isExecutorApproved,
         uint256 idOfProfileToFollow,
         uint256 followTokenId,
         bytes calldata followModuleData
@@ -373,7 +370,6 @@ library InteractionHelpers {
             followerProfileId,
             executor,
             followerProfileOwner,
-            isExecutorApproved,
             followTokenId
         );
 

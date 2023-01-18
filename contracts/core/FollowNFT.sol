@@ -56,14 +56,10 @@ contract FollowNFT is HubRestricted, LensNFTBase, ERC2981CollectionRoyalties, IF
         uint256 followerProfileId,
         address executor,
         address followerProfileOwner,
-        bool isExecutorApproved,
         uint256 followTokenId
     ) external override onlyHub returns (uint256) {
         if (_followTokenIdByFollowerProfileId[followerProfileId] != 0) {
             revert AlreadyFollowing();
-        }
-        if (executor != followerProfileOwner && !isExecutorApproved) {
-            revert DoesNotHavePermissions();
         }
         uint256 followTokenIdAssigned = followTokenId;
         address followTokenOwner;

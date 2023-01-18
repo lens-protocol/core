@@ -162,6 +162,7 @@ library GeneralLib {
         uint256[] calldata followTokenIds,
         bytes[] calldata followModuleDatas
     ) external returns (uint256[] memory) {
+        GeneralHelpers.validateCallerIsOwnerOrDelegatedExecutor(followerProfileId);
         return
             InteractionHelpers.follow(
                 followerProfileId,
@@ -184,9 +185,10 @@ library GeneralLib {
         returns (uint256[] memory)
     {
         address followerProfileOwner = GeneralHelpers.ownerOf(vars.followerProfileId);
-        address signer = vars.delegatedSigner == address(0)
-            ? followerProfileOwner
-            : vars.delegatedSigner;
+        address signer = GeneralHelpers.getOriginatorOrDelegatedExecutorSigner(
+            followerProfileOwner,
+            vars.delegatedSigner
+        );
         MetaTxHelpers.baseFollowWithSig(signer, vars);
         return
             InteractionHelpers.follow(
@@ -242,8 +244,7 @@ library GeneralLib {
     }
 
     function setBlockStatusWithSig(DataTypes.SetBlockStatusWithSigData calldata vars) external {
-        // Safe to use the `unsafeOwnerOf` as the signer can not be address zero
-        address blockerProfileOwner = GeneralHelpers.unsafeOwnerOf(vars.byProfileId);
+        address blockerProfileOwner = GeneralHelpers.ownerOf(vars.byProfileId);
         address signer = GeneralHelpers.getOriginatorOrDelegatedExecutorSigner(
             blockerProfileOwner,
             vars.delegatedSigner

@@ -51,8 +51,6 @@ interface IFollowNFT {
      * @param executor The address executing the operation, which is the signer in case of using meta-transactions or
      * the sender otherwise.
      * @param followerProfileOwner The address holding the follower profile.
-     * @param isExecutorApproved A boolean indicading whether the executor is an approved delegated executor of the
-     * follower profile's owner.
      * @param followTokenId The ID of the follow token to be used for this follow operation. Zero if a new follow token
      * should be minted.
      *
@@ -62,7 +60,6 @@ interface IFollowNFT {
         uint256 followerProfileId,
         address executor,
         address followerProfileOwner,
-        bool isExecutorApproved,
         uint256 followTokenId
     ) external returns (uint256);
 

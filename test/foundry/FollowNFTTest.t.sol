@@ -72,7 +72,6 @@ contract FollowNFTTest is BaseTest, ERC721Test {
             followerProfileId: followerProfileId,
             executor: followerProfileOwner,
             followerProfileOwner: followerProfileOwner,
-            isExecutorApproved: false,
             followTokenId: MINT_NEW_TOKEN
         });
     }
@@ -85,7 +84,6 @@ contract FollowNFTTest is BaseTest, ERC721Test {
             followerProfileId: alreadyFollowingProfileId,
             executor: alreadyFollowingProfileOwner,
             followerProfileOwner: alreadyFollowingProfileOwner,
-            isExecutorApproved: false,
             followTokenId: MINT_NEW_TOKEN
         });
     }
@@ -104,7 +102,6 @@ contract FollowNFTTest is BaseTest, ERC721Test {
             followerProfileId: followerProfileId,
             executor: followerProfileOwner,
             followerProfileOwner: followerProfileOwner,
-            isExecutorApproved: false,
             followTokenId: unexistentTokenId
         });
     }
@@ -113,25 +110,7 @@ contract FollowNFTTest is BaseTest, ERC721Test {
     // Follow - Minting new token - Negatives
     //////////////////////////////////////////////////////////
 
-    function testCannotFollowMintingNewTokenIfExecutorIsNotTheProfileOwnerOrHisApprovedExecutor(
-        address executor
-    ) public {
-        vm.assume(executor != followerProfileOwner);
-        vm.assume(executor != address(0));
-        vm.assume(!hub.isDelegatedExecutorApproved(followerProfileOwner, executor));
-
-        vm.prank(address(hub));
-
-        vm.expectRevert(IFollowNFT.DoesNotHavePermissions.selector);
-
-        followNFT.follow({
-            followerProfileId: followerProfileId,
-            executor: executor,
-            followerProfileOwner: followerProfileOwner,
-            isExecutorApproved: false,
-            followTokenId: MINT_NEW_TOKEN
-        });
-    }
+    // No negatives when minting a new token, all the failing cases will occur at LensHub level. See `FollowTest.t.sol`.
 
     //////////////////////////////////////////////////////////
     // Follow - Minting new token - Scenarios
@@ -144,7 +123,6 @@ contract FollowNFTTest is BaseTest, ERC721Test {
             followerProfileId: followerProfileId,
             executor: followerProfileOwner,
             followerProfileOwner: followerProfileOwner,
-            isExecutorApproved: false,
             followTokenId: MINT_NEW_TOKEN
         });
 
@@ -158,7 +136,6 @@ contract FollowNFTTest is BaseTest, ERC721Test {
             followerProfileId: followerProfileId,
             executor: followerProfileOwner,
             followerProfileOwner: followerProfileOwner,
-            isExecutorApproved: false,
             followTokenId: MINT_NEW_TOKEN
         });
 
@@ -179,7 +156,6 @@ contract FollowNFTTest is BaseTest, ERC721Test {
             followerProfileId: followerProfileId,
             executor: followerProfileOwner,
             followerProfileOwner: followerProfileOwner,
-            isExecutorApproved: false,
             followTokenId: MINT_NEW_TOKEN
         });
 
@@ -198,7 +174,6 @@ contract FollowNFTTest is BaseTest, ERC721Test {
             followerProfileId: followerProfileId,
             executor: followerProfileOwner,
             followerProfileOwner: followerProfileOwner,
-            isExecutorApproved: false,
             followTokenId: MINT_NEW_TOKEN
         });
 
@@ -231,7 +206,6 @@ contract FollowNFTTest is BaseTest, ERC721Test {
             followerProfileId: followerProfileId,
             executor: executor,
             followerProfileOwner: followerProfileOwner,
-            isExecutorApproved: false,
             followTokenId: followTokenId
         });
     }
@@ -252,7 +226,6 @@ contract FollowNFTTest is BaseTest, ERC721Test {
             followerProfileId: followerProfileId,
             executor: alreadyFollowingProfileOwner,
             followerProfileOwner: alreadyFollowingProfileOwner,
-            isExecutorApproved: false,
             followTokenId: followTokenId
         });
 
@@ -273,7 +246,6 @@ contract FollowNFTTest is BaseTest, ERC721Test {
             followerProfileId: followerProfileId,
             executor: alreadyFollowingProfileOwner,
             followerProfileOwner: followerProfileOwner,
-            isExecutorApproved: true,
             followTokenId: followTokenId
         });
 
@@ -298,7 +270,6 @@ contract FollowNFTTest is BaseTest, ERC721Test {
             followerProfileId: followerProfileId,
             executor: followerProfileOwner,
             followerProfileOwner: followerProfileOwner,
-            isExecutorApproved: false,
             followTokenId: followTokenId
         });
 
@@ -327,7 +298,6 @@ contract FollowNFTTest is BaseTest, ERC721Test {
             followerProfileId: followerProfileId,
             executor: executorAsApprovedDelegatee,
             followerProfileOwner: followerProfileOwner,
-            isExecutorApproved: true,
             followTokenId: followTokenId
         });
 
@@ -362,7 +332,6 @@ contract FollowNFTTest is BaseTest, ERC721Test {
             followerProfileId: followerProfileId,
             executor: executor,
             followerProfileOwner: followerProfileOwner,
-            isExecutorApproved: false,
             followTokenId: followTokenId
         });
     }
@@ -388,7 +357,6 @@ contract FollowNFTTest is BaseTest, ERC721Test {
             followerProfileId: followerProfileId,
             executor: followerProfileOwner,
             followerProfileOwner: followerProfileOwner,
-            isExecutorApproved: false,
             followTokenId: followTokenId
         });
 
@@ -418,7 +386,6 @@ contract FollowNFTTest is BaseTest, ERC721Test {
             followerProfileId: followerProfileId,
             executor: executorAsApprovedDelegatee,
             followerProfileOwner: followerProfileOwner,
-            isExecutorApproved: true,
             followTokenId: followTokenId
         });
 
@@ -452,7 +419,6 @@ contract FollowNFTTest is BaseTest, ERC721Test {
             followerProfileId: followerProfileId,
             executor: executorAsApprovedDelegatee,
             followerProfileOwner: followerProfileOwner,
-            isExecutorApproved: true,
             followTokenId: followTokenId
         });
 
@@ -479,7 +445,6 @@ contract FollowNFTTest is BaseTest, ERC721Test {
             followerProfileId: followerProfileId,
             executor: followerProfileOwner,
             followerProfileOwner: followerProfileOwner,
-            isExecutorApproved: false,
             followTokenId: followTokenId
         });
 
@@ -510,7 +475,6 @@ contract FollowNFTTest is BaseTest, ERC721Test {
             followerProfileId: followerProfileId,
             executor: executorAsApprovedDelegatee,
             followerProfileOwner: followerProfileOwner,
-            isExecutorApproved: true,
             followTokenId: followTokenId
         });
 
@@ -538,7 +502,6 @@ contract FollowNFTTest is BaseTest, ERC721Test {
             followerProfileId: followerProfileId,
             executor: followerProfileOwner,
             followerProfileOwner: followerProfileOwner,
-            isExecutorApproved: false,
             followTokenId: followTokenId
         });
 
@@ -570,7 +533,6 @@ contract FollowNFTTest is BaseTest, ERC721Test {
             followerProfileId: followerProfileId,
             executor: executorAsApprovedDelegatee,
             followerProfileOwner: followerProfileOwner,
-            isExecutorApproved: true,
             followTokenId: followTokenId
         });
 
@@ -606,7 +568,6 @@ contract FollowNFTTest is BaseTest, ERC721Test {
             followerProfileId: alreadyFollowingProfileId,
             executor: alreadyFollowingProfileOwner,
             followerProfileOwner: alreadyFollowingProfileOwner,
-            isExecutorApproved: false,
             followTokenId: followTokenId
         });
 
@@ -890,7 +851,6 @@ contract FollowNFTTest is BaseTest, ERC721Test {
             followerProfileId: followerProfileId,
             executor: followerProfileOwner,
             followerProfileOwner: followerProfileOwner,
-            isExecutorApproved: false,
             followTokenId: MINT_NEW_TOKEN
         });
 
@@ -1025,7 +985,6 @@ contract FollowNFTTest is BaseTest, ERC721Test {
             followerProfileId: followerProfileId,
             executor: followerProfileOwner,
             followerProfileOwner: followerProfileOwner,
-            isExecutorApproved: false,
             followTokenId: MINT_NEW_TOKEN
         });
 
