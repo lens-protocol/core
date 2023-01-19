@@ -54,20 +54,22 @@ contract UpgradeForkTest is BaseTest {
     address mockReferenceModuleAddr;
 
     function setUp() public override {
-        // TODO: Consider adding a "FORK" bool env variable to explicitly enable fork testing and not require ENVs for general tests
-        string memory polygonForkUrl = vm.envString('POLYGON_RPC_URL');
-        string memory mumbaiForkUrl = vm.envString('MUMBAI_RPC_URL');
+        if (bytes(forkEnv).length > 0) {
+            // TODO: Consider adding a "FORK" bool env variable to explicitly enable fork testing and not require ENVs for general tests
+            string memory polygonForkUrl = vm.envString('POLYGON_RPC_URL');
+            string memory mumbaiForkUrl = vm.envString('MUMBAI_RPC_URL');
 
-        polygonForkId = vm.createFork(polygonForkUrl);
-        mumbaiForkId = vm.createFork(mumbaiForkUrl);
+            polygonForkId = vm.createFork(polygonForkUrl);
+            mumbaiForkId = vm.createFork(mumbaiForkUrl);
+        }
     }
 
-    function testUpgradePolygon() public {
+    function testUpgradePolygon() public onlyFork {
         vm.selectFork(polygonForkId);
         _fullRun(POLYGON_HUB_PROXY);
     }
 
-    function testUpgradeMumbai() public {
+    function testUpgradeMumbai() public onlyFork {
         vm.selectFork(mumbaiForkId);
         _fullRun(MUMBAI_HUB_PROXY);
     }

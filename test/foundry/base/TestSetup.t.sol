@@ -24,12 +24,6 @@ import '../Constants.sol';
 contract TestSetup is Test, ForkManagement {
     using stdJson for string;
 
-    string forkEnv;
-    bool fork;
-    string network;
-    string json;
-    uint256 forkBlockNumber;
-
     uint256 newProfileId;
     address deployer;
     address governance;

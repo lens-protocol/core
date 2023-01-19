@@ -6,6 +6,17 @@ import 'forge-std/Script.sol';
 contract ForkManagement is Script {
     using stdJson for string;
 
+    string forkEnv;
+    bool fork;
+    string network;
+    string json;
+    uint256 forkBlockNumber;
+
+    modifier onlyFork() {
+        if (bytes(forkEnv).length == 0) return;
+        _;
+    }
+
     function loadJson() internal returns (string memory) {
         string memory root = vm.projectRoot();
         string memory path = string.concat(root, '/addresses.json');
