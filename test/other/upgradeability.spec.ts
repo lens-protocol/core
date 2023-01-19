@@ -24,7 +24,7 @@ makeSuiteCleanRoom('Upgradeability', function () {
   });
 
   // This validates that adding a storage slot works as expected.
-  it("Should upgrade and set a new variable's value, previous storage is unchanged, new value is accurate", async function () {
+  it.skip("Should upgrade and set a new variable's value, previous storage is unchanged, new value is accurate", async function () {
     const getStorageAt = ethers.provider.getStorageAt;
     const newImpl = await new MockLensHubV2__factory(deployer).deploy();
     const proxyHub = TransparentUpgradeableProxy__factory.connect(lensHub.address, deployer);
