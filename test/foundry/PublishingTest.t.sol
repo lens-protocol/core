@@ -322,6 +322,29 @@ contract CommentTest is PublishingTest {
         _publishWithSig({delegatedSigner: address(0), signerPrivKey: profileOwnerKey});
     }
 
+    function testCannotCommentIfBlocked() public {
+        vm.prank(profileOwner);
+        hub.setBlockStatus(
+            mockPostData.profileId,
+            _toUint256Array(newProfileId),
+            _toBoolArray(true)
+        );
+        vm.expectRevert(Errors.Blocked.selector);
+        vm.prank(profileOwner);
+        _publish();
+    }
+
+    function testCannotCommentWithSigIfBlocked() public {
+        vm.prank(profileOwner);
+        hub.setBlockStatus(
+            mockPostData.profileId,
+            _toUint256Array(newProfileId),
+            _toBoolArray(true)
+        );
+        vm.expectRevert(Errors.Blocked.selector);
+        _publishWithSig({delegatedSigner: address(0), signerPrivKey: profileOwnerKey});
+    }
+
     // scenarios
     function testPostWithReferenceModuleAndComment() public {
         mockPostData.referenceModule = address(mockReferenceModule);
@@ -410,6 +433,29 @@ contract MirrorTest is PublishingTest {
         mockMirrorData.pubIdPointed = nonExistentPubId;
 
         vm.expectRevert(Errors.PublicationDoesNotExist.selector);
+        _publishWithSig({delegatedSigner: address(0), signerPrivKey: profileOwnerKey});
+    }
+
+    function testCannotMirrorIfBlocked() public {
+        vm.prank(profileOwner);
+        hub.setBlockStatus(
+            mockPostData.profileId,
+            _toUint256Array(newProfileId),
+            _toBoolArray(true)
+        );
+        vm.expectRevert(Errors.Blocked.selector);
+        vm.prank(profileOwner);
+        _publish();
+    }
+
+    function testCannotMirrorWithSigIfBlocked() public {
+        vm.prank(profileOwner);
+        hub.setBlockStatus(
+            mockPostData.profileId,
+            _toUint256Array(newProfileId),
+            _toBoolArray(true)
+        );
+        vm.expectRevert(Errors.Blocked.selector);
         _publishWithSig({delegatedSigner: address(0), signerPrivKey: profileOwnerKey});
     }
 
