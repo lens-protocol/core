@@ -119,7 +119,7 @@ library InteractionHelpers {
         uint256 byProfileId,
         uint256[] calldata idsOfProfilesToSetBlockStatus,
         bool[] calldata blockStatus
-    ) external {
+    ) internal {
         if (idsOfProfilesToSetBlockStatus.length != blockStatus.length) {
             revert Errors.ArrayMismatch();
         }
