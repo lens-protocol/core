@@ -298,49 +298,6 @@ makeSuiteCleanRoom('Follow NFT', function () {
         expect(await followNFT.getDelegatedSupplyByBlockNumber(blockNumber)).to.eq(1);
       });
 
-      it('User and userTwo should follow, then transfer their NFTs to the helper contract, then the helper contract batch delegates to user one, then user two, governance power should be accurate', async function () {
-        await expect(lensHub.follow(userAddress, [FIRST_PROFILE_ID], [[]])).to.not.be.reverted;
-        await expect(
-          lensHub.connect(userTwo).follow(userTwoAddress, [FIRST_PROFILE_ID], [[]])
-        ).to.not.be.reverted;
-        const followNFT = FollowNFT__factory.connect(
-          await lensHub.getFollowNFT(FIRST_PROFILE_ID),
-          user
-        );
-
-        await expect(followNFT.transferFrom(userAddress, helper.address, 1)).to.not.be.reverted;
-        await expect(
-          followNFT.connect(userTwo).transferFrom(userTwoAddress, helper.address, 2)
-        ).to.not.be.reverted;
-
-        const firstCheckpointBlock = await getBlockNumber();
-        await expect(
-          helper.batchDelegate(followNFT.address, userAddress, userTwoAddress)
-        ).to.not.be.reverted;
-
-        const secondCheckpointBlock = await getBlockNumber();
-
-        // First validation
-        expect(await followNFT.getPowerByBlockNumber(userAddress, firstCheckpointBlock)).to.eq(0);
-        expect(await followNFT.getPowerByBlockNumber(userTwoAddress, firstCheckpointBlock)).to.eq(
-          0
-        );
-        expect(await followNFT.getPowerByBlockNumber(helper.address, firstCheckpointBlock)).to.eq(
-          0
-        );
-        expect(await followNFT.getDelegatedSupplyByBlockNumber(firstCheckpointBlock)).to.eq(0);
-
-        // Second validation
-        expect(await followNFT.getPowerByBlockNumber(userAddress, secondCheckpointBlock)).to.eq(0);
-        expect(await followNFT.getPowerByBlockNumber(userTwoAddress, secondCheckpointBlock)).to.eq(
-          2
-        );
-        expect(await followNFT.getPowerByBlockNumber(helper.address, secondCheckpointBlock)).to.eq(
-          0
-        );
-        expect(await followNFT.getDelegatedSupplyByBlockNumber(secondCheckpointBlock)).to.eq(2);
-      });
-
       it('user should follow, then get the URI for their token, URI should be accurate', async function () {
         await expect(lensHub.follow(userAddress, [FIRST_PROFILE_ID], [[]])).to.not.be.reverted;
         const followNFT = FollowNFT__factory.connect(

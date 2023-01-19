@@ -95,6 +95,27 @@ contract FollowTest is BaseTest, AssumptionHelpers {
         });
     }
 
+    function testCannotFollowIfExecutorIsNotTheProfileOwnerOrHisApprovedExecutor(uint256 executorPk)
+        public
+    {
+        vm.assume(_isValidPk(executorPk));
+        address executor = vm.addr(executorPk);
+        vm.assume(executor != address(0));
+        vm.assume(executor != followerProfileOwner);
+        vm.assume(!hub.isDelegatedExecutorApproved(followerProfileOwner, executor));
+
+        vm.expectRevert(Errors.ExecutorInvalid.selector);
+
+        _follow({
+            pk: executorPk,
+            isFollowerProfileOwner: false,
+            followerProfileId: followerProfileId,
+            idsOfProfilesToFollow: _toUint256Array(targetProfileId),
+            followTokenIds: _toUint256Array(MINT_NEW_TOKEN),
+            datas: _toBytesArray('', '')
+        });
+    }
+
     function testCannotFollowIfAmountOfTokenIdsPassedDiffersFromAmountOfProfilesToFollow() public {
         vm.expectRevert(Errors.ArrayMismatch.selector);
 
@@ -235,13 +256,7 @@ contract FollowTest is BaseTest, AssumptionHelpers {
             targetFollowNFTAddress,
             abi.encodeCall(
                 followNFT.follow,
-                (
-                    followerProfileId,
-                    followerProfileOwner,
-                    followerProfileOwner,
-                    false,
-                    MINT_NEW_TOKEN
-                )
+                (followerProfileId, followerProfileOwner, followerProfileOwner, MINT_NEW_TOKEN)
             )
         );
 
@@ -304,13 +319,7 @@ contract FollowTest is BaseTest, AssumptionHelpers {
             targetFollowNFTAddress,
             abi.encodeCall(
                 followNFT.follow,
-                (
-                    followerProfileId,
-                    approvedDelegatedExecutor,
-                    followerProfileOwner,
-                    true,
-                    MINT_NEW_TOKEN
-                )
+                (followerProfileId, approvedDelegatedExecutor, followerProfileOwner, MINT_NEW_TOKEN)
             )
         );
 

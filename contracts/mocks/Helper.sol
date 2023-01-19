@@ -17,16 +17,4 @@ contract Helper {
     function getBlockNumber() external view returns (uint256) {
         return block.number;
     }
-
-    /**
-     * @dev This is a helper function to aid in testing same-block delegation in the FollowNFT contract.
-     */
-    function batchDelegate(
-        IFollowNFT nft,
-        address first,
-        address second
-    ) external {
-        // nft.delegate(first); TODO: Adapt mock to new interface later.
-        // nft.delegate(second); TODO: Adapt mock to new interface later.
-    }
 }

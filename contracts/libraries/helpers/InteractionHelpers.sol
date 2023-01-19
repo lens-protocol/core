@@ -45,7 +45,6 @@ library InteractionHelpers {
         ) {
             revert Errors.ArrayMismatch();
         }
-        bool isExecutorApproved = GeneralHelpers.isExecutorApproved(followerProfileOwner, executor);
         uint256[] memory followTokenIdsAssigned = new uint256[](idsOfProfilesToFollow.length);
         uint256 i;
         while (i < idsOfProfilesToFollow.length) {
@@ -61,7 +60,6 @@ library InteractionHelpers {
                 followerProfileId,
                 executor,
                 followerProfileOwner,
-                isExecutorApproved,
                 idsOfProfilesToFollow[i],
                 followTokenIds[i],
                 followModuleDatas[i]
@@ -121,13 +119,13 @@ library InteractionHelpers {
         uint256 byProfileId,
         uint256[] calldata idsOfProfilesToSetBlockStatus,
         bool[] calldata blockStatus
-    ) external {
+    ) internal {
         if (idsOfProfilesToSetBlockStatus.length != blockStatus.length) {
             revert Errors.ArrayMismatch();
         }
         uint256 blockStatusByProfileSlot;
         // Calculates the slot of the block status internal mapping once accessed by `byProfileId`.
-        // i.e. the slot of `_blockStatusByProfileIdByBlockeeProfileId[byProfileId]`
+        // i.e. the slot of `_blockStatusByBlockeeProfileIdByProfileId[byProfileId]`
         assembly {
             mstore(0, byProfileId)
             mstore(32, BLOCK_STATUS_MAPPING_SLOT)
@@ -152,7 +150,7 @@ library InteractionHelpers {
                 IFollowNFT(followNFT).block(idOfProfileToSetBlockStatus);
             }
             // Stores the block status.
-            // i.e. `_blockStatusByProfileIdByBlockeeProfileId[byProfileId][idOfProfileToSetBlockStatus] = setToBlocked;`
+            // i.e. `_blockStatusByBlockeeProfileIdByProfileId[byProfileId][idOfProfileToSetBlockStatus] = setToBlocked;`
             assembly {
                 mstore(0, idOfProfileToSetBlockStatus)
                 mstore(32, blockStatusByProfileSlot)
@@ -339,7 +337,6 @@ library InteractionHelpers {
         uint256 followerProfileId,
         address executor,
         address followerProfileOwner,
-        bool isExecutorApproved,
         uint256 idOfProfileToFollow,
         uint256 followTokenId,
         bytes calldata followModuleData
@@ -373,7 +370,6 @@ library InteractionHelpers {
             followerProfileId,
             executor,
             followerProfileOwner,
-            isExecutorApproved,
             followTokenId
         );
 

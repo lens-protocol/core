@@ -62,7 +62,7 @@ contract SetBlockStatusTest is BaseTest, AssumptionHelpers {
         vm.prank(statusSetterProfileOwner);
         hub.burn(statusSetterProfileId);
 
-        vm.expectRevert(Errors.ExecutorInvalid.selector);
+        vm.expectRevert(Errors.TokenDoesNotExist.selector);
 
         _setBlockStatus({
             pk: statusSetterProfileOwnerPk,
@@ -357,21 +357,6 @@ contract SetBlockStatusMetaTxTest is SetBlockStatusTest, MetaTxNegatives {
                     deadline: deadline
                 })
             });
-    }
-
-    function testCannotSetBlockStatusIfSetterProfileDoesNotExist() public override {
-        vm.prank(statusSetterProfileOwner);
-        hub.burn(statusSetterProfileId);
-
-        vm.expectRevert(Errors.SignatureInvalid.selector);
-
-        _setBlockStatus({
-            pk: statusSetterProfileOwnerPk,
-            isStatusSetterProfileOwner: true,
-            byProfileId: statusSetterProfileId,
-            idsOfProfilesToSetBlockStatus: _toUint256Array(blockeeProfileId),
-            blockStatus: _toBoolArray(true)
-        });
     }
 
     function testCannotSetBlockStatusIfNotOwnerOrApprovedDelegatedExecutorOfSetterProfile(

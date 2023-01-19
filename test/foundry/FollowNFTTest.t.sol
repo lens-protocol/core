@@ -72,7 +72,6 @@ contract FollowNFTTest is BaseTest, ERC721Test {
             followerProfileId: followerProfileId,
             executor: followerProfileOwner,
             followerProfileOwner: followerProfileOwner,
-            isExecutorApproved: false,
             followTokenId: MINT_NEW_TOKEN
         });
     }
@@ -85,7 +84,6 @@ contract FollowNFTTest is BaseTest, ERC721Test {
             followerProfileId: alreadyFollowingProfileId,
             executor: alreadyFollowingProfileOwner,
             followerProfileOwner: alreadyFollowingProfileOwner,
-            isExecutorApproved: false,
             followTokenId: MINT_NEW_TOKEN
         });
     }
@@ -104,7 +102,6 @@ contract FollowNFTTest is BaseTest, ERC721Test {
             followerProfileId: followerProfileId,
             executor: followerProfileOwner,
             followerProfileOwner: followerProfileOwner,
-            isExecutorApproved: false,
             followTokenId: unexistentTokenId
         });
     }
@@ -113,25 +110,7 @@ contract FollowNFTTest is BaseTest, ERC721Test {
     // Follow - Minting new token - Negatives
     //////////////////////////////////////////////////////////
 
-    function testCannotFollowMintingNewTokenIfExecutorIsNotTheProfileOwnerOrHisApprovedExecutor(
-        address executor
-    ) public {
-        vm.assume(executor != followerProfileOwner);
-        vm.assume(executor != address(0));
-        vm.assume(!hub.isDelegatedExecutorApproved(followerProfileOwner, executor));
-
-        vm.prank(address(hub));
-
-        vm.expectRevert(IFollowNFT.DoesNotHavePermissions.selector);
-
-        followNFT.follow({
-            followerProfileId: followerProfileId,
-            executor: executor,
-            followerProfileOwner: followerProfileOwner,
-            isExecutorApproved: false,
-            followTokenId: MINT_NEW_TOKEN
-        });
-    }
+    // No negatives when minting a new token, all the failing cases will occur at LensHub level. See `FollowTest.t.sol`.
 
     //////////////////////////////////////////////////////////
     // Follow - Minting new token - Scenarios
@@ -144,7 +123,6 @@ contract FollowNFTTest is BaseTest, ERC721Test {
             followerProfileId: followerProfileId,
             executor: followerProfileOwner,
             followerProfileOwner: followerProfileOwner,
-            isExecutorApproved: false,
             followTokenId: MINT_NEW_TOKEN
         });
 
@@ -158,7 +136,6 @@ contract FollowNFTTest is BaseTest, ERC721Test {
             followerProfileId: followerProfileId,
             executor: followerProfileOwner,
             followerProfileOwner: followerProfileOwner,
-            isExecutorApproved: false,
             followTokenId: MINT_NEW_TOKEN
         });
 
@@ -179,7 +156,6 @@ contract FollowNFTTest is BaseTest, ERC721Test {
             followerProfileId: followerProfileId,
             executor: followerProfileOwner,
             followerProfileOwner: followerProfileOwner,
-            isExecutorApproved: false,
             followTokenId: MINT_NEW_TOKEN
         });
 
@@ -198,7 +174,6 @@ contract FollowNFTTest is BaseTest, ERC721Test {
             followerProfileId: followerProfileId,
             executor: followerProfileOwner,
             followerProfileOwner: followerProfileOwner,
-            isExecutorApproved: false,
             followTokenId: MINT_NEW_TOKEN
         });
 
@@ -231,7 +206,6 @@ contract FollowNFTTest is BaseTest, ERC721Test {
             followerProfileId: followerProfileId,
             executor: executor,
             followerProfileOwner: followerProfileOwner,
-            isExecutorApproved: false,
             followTokenId: followTokenId
         });
     }
@@ -252,7 +226,6 @@ contract FollowNFTTest is BaseTest, ERC721Test {
             followerProfileId: followerProfileId,
             executor: alreadyFollowingProfileOwner,
             followerProfileOwner: alreadyFollowingProfileOwner,
-            isExecutorApproved: false,
             followTokenId: followTokenId
         });
 
@@ -273,7 +246,6 @@ contract FollowNFTTest is BaseTest, ERC721Test {
             followerProfileId: followerProfileId,
             executor: alreadyFollowingProfileOwner,
             followerProfileOwner: followerProfileOwner,
-            isExecutorApproved: true,
             followTokenId: followTokenId
         });
 
@@ -281,61 +253,6 @@ contract FollowNFTTest is BaseTest, ERC721Test {
         assertTrue(followNFT.isFollowing(followerProfileId));
         assertEq(assignedTokenId, followTokenId);
         assertEq(followNFT.getFollowTokenId(followerProfileId), followTokenId);
-    }
-
-    function testFollowWithUnwrappedTokenWhenProfileIsApprovedToFollowAndExecutorIsFollowerOwner()
-        public
-    {
-        uint256 followTokenId = followNFT.getFollowTokenId(alreadyFollowingProfileId);
-
-        vm.prank(alreadyFollowingProfileOwner);
-        followNFT.approveFollow(followerProfileId, followTokenId);
-        assertEq(followNFT.getFollowApproved(followTokenId), followerProfileId);
-
-        vm.prank(address(hub));
-
-        uint256 assignedTokenId = followNFT.follow({
-            followerProfileId: followerProfileId,
-            executor: followerProfileOwner,
-            followerProfileOwner: followerProfileOwner,
-            isExecutorApproved: false,
-            followTokenId: followTokenId
-        });
-
-        assertFalse(followNFT.isFollowing(alreadyFollowingProfileId));
-        assertTrue(followNFT.isFollowing(followerProfileId));
-        assertEq(assignedTokenId, followTokenId);
-        assertEq(followNFT.getFollowTokenId(followerProfileId), followTokenId);
-        assertEq(followNFT.getFollowApproved(followTokenId), 0);
-    }
-
-    function testFollowWithUnwrappedTokenWhenProfileIsApprovedToFollowAndExecutorIsApprovedDelegatee(
-        address executorAsApprovedDelegatee
-    ) public {
-        vm.assume(executorAsApprovedDelegatee != followerProfileOwner);
-        vm.assume(executorAsApprovedDelegatee != address(0));
-
-        uint256 followTokenId = followNFT.getFollowTokenId(alreadyFollowingProfileId);
-
-        vm.prank(alreadyFollowingProfileOwner);
-        followNFT.approveFollow(followerProfileId, followTokenId);
-        assertEq(followNFT.getFollowApproved(followTokenId), followerProfileId);
-
-        vm.prank(address(hub));
-
-        uint256 assignedTokenId = followNFT.follow({
-            followerProfileId: followerProfileId,
-            executor: executorAsApprovedDelegatee,
-            followerProfileOwner: followerProfileOwner,
-            isExecutorApproved: true,
-            followTokenId: followTokenId
-        });
-
-        assertFalse(followNFT.isFollowing(alreadyFollowingProfileId));
-        assertTrue(followNFT.isFollowing(followerProfileId));
-        assertEq(assignedTokenId, followTokenId);
-        assertEq(followNFT.getFollowTokenId(followerProfileId), followTokenId);
-        assertEq(followNFT.getFollowApproved(followTokenId), 0);
     }
 
     function testFollowWithUnwrappedTokenWhenCurrentFollowerWasBurnedAndExecutorIsFollowerOwner()
@@ -353,7 +270,6 @@ contract FollowNFTTest is BaseTest, ERC721Test {
             followerProfileId: followerProfileId,
             executor: followerProfileOwner,
             followerProfileOwner: followerProfileOwner,
-            isExecutorApproved: false,
             followTokenId: followTokenId
         });
 
@@ -382,7 +298,6 @@ contract FollowNFTTest is BaseTest, ERC721Test {
             followerProfileId: followerProfileId,
             executor: executorAsApprovedDelegatee,
             followerProfileOwner: followerProfileOwner,
-            isExecutorApproved: true,
             followTokenId: followTokenId
         });
 
@@ -417,7 +332,6 @@ contract FollowNFTTest is BaseTest, ERC721Test {
             followerProfileId: followerProfileId,
             executor: executor,
             followerProfileOwner: followerProfileOwner,
-            isExecutorApproved: false,
             followTokenId: followTokenId
         });
     }
@@ -443,7 +357,6 @@ contract FollowNFTTest is BaseTest, ERC721Test {
             followerProfileId: followerProfileId,
             executor: followerProfileOwner,
             followerProfileOwner: followerProfileOwner,
-            isExecutorApproved: false,
             followTokenId: followTokenId
         });
 
@@ -473,7 +386,6 @@ contract FollowNFTTest is BaseTest, ERC721Test {
             followerProfileId: followerProfileId,
             executor: executorAsApprovedDelegatee,
             followerProfileOwner: followerProfileOwner,
-            isExecutorApproved: true,
             followTokenId: followTokenId
         });
 
@@ -507,7 +419,6 @@ contract FollowNFTTest is BaseTest, ERC721Test {
             followerProfileId: followerProfileId,
             executor: executorAsApprovedDelegatee,
             followerProfileOwner: followerProfileOwner,
-            isExecutorApproved: true,
             followTokenId: followTokenId
         });
 
@@ -534,7 +445,6 @@ contract FollowNFTTest is BaseTest, ERC721Test {
             followerProfileId: followerProfileId,
             executor: followerProfileOwner,
             followerProfileOwner: followerProfileOwner,
-            isExecutorApproved: false,
             followTokenId: followTokenId
         });
 
@@ -548,6 +458,7 @@ contract FollowNFTTest is BaseTest, ERC721Test {
         address executorAsApprovedDelegatee
     ) public {
         vm.assume(executorAsApprovedDelegatee != followerProfileOwner);
+        vm.assume(executorAsApprovedDelegatee != alreadyFollowingProfileOwner);
         vm.assume(executorAsApprovedDelegatee != address(0));
 
         uint256 followTokenId = followNFT.getFollowTokenId(alreadyFollowingProfileId);
@@ -564,7 +475,6 @@ contract FollowNFTTest is BaseTest, ERC721Test {
             followerProfileId: followerProfileId,
             executor: executorAsApprovedDelegatee,
             followerProfileOwner: followerProfileOwner,
-            isExecutorApproved: true,
             followTokenId: followTokenId
         });
 
@@ -592,7 +502,6 @@ contract FollowNFTTest is BaseTest, ERC721Test {
             followerProfileId: followerProfileId,
             executor: followerProfileOwner,
             followerProfileOwner: followerProfileOwner,
-            isExecutorApproved: false,
             followTokenId: followTokenId
         });
 
@@ -624,7 +533,6 @@ contract FollowNFTTest is BaseTest, ERC721Test {
             followerProfileId: followerProfileId,
             executor: executorAsApprovedDelegatee,
             followerProfileOwner: followerProfileOwner,
-            isExecutorApproved: true,
             followTokenId: followTokenId
         });
 
@@ -660,7 +568,6 @@ contract FollowNFTTest is BaseTest, ERC721Test {
             followerProfileId: alreadyFollowingProfileId,
             executor: alreadyFollowingProfileOwner,
             followerProfileOwner: alreadyFollowingProfileOwner,
-            isExecutorApproved: false,
             followTokenId: followTokenId
         });
 
@@ -944,7 +851,6 @@ contract FollowNFTTest is BaseTest, ERC721Test {
             followerProfileId: followerProfileId,
             executor: followerProfileOwner,
             followerProfileOwner: followerProfileOwner,
-            isExecutorApproved: false,
             followTokenId: MINT_NEW_TOKEN
         });
 
@@ -1079,7 +985,6 @@ contract FollowNFTTest is BaseTest, ERC721Test {
             followerProfileId: followerProfileId,
             executor: followerProfileOwner,
             followerProfileOwner: followerProfileOwner,
-            isExecutorApproved: false,
             followTokenId: MINT_NEW_TOKEN
         });
 
@@ -1250,15 +1155,12 @@ contract FollowNFTTest is BaseTest, ERC721Test {
         followNFT.approveFollow(followerProfileId, followTokenId);
     }
 
-    function testCannotApproveFollowForUnwrappedTokenIfCallerIsNotItsFollowerOwner(address sender)
-        public
-    {
-        vm.assume(sender != alreadyFollowingProfileOwner);
-
+    function testCannotApproveFollowIfTokenIsUnwrapped() public {
         uint256 followTokenId = followNFT.getFollowTokenId(alreadyFollowingProfileId);
 
-        vm.expectRevert(IFollowNFT.DoesNotHavePermissions.selector);
-        vm.prank(sender);
+        vm.expectRevert(IFollowNFT.OnlyWrappedFollowTokens.selector);
+
+        vm.prank(alreadyFollowingProfileOwner);
         followNFT.approveFollow(followerProfileId, followTokenId);
     }
 
@@ -1297,12 +1199,68 @@ contract FollowNFTTest is BaseTest, ERC721Test {
         assertEq(followNFT.getFollowApproved(followTokenId), followerProfileId);
     }
 
-    function testApproveFollowWhenTokenIsUnwrappedAndCallerIsItsFollowerOwner() public {
+    function testFollowApprovalIsClearedAfterUnwrapping() public {
         uint256 followTokenId = followNFT.getFollowTokenId(alreadyFollowingProfileId);
+
+        vm.prank(alreadyFollowingProfileOwner);
+        followNFT.untieAndWrap(followTokenId);
 
         vm.prank(alreadyFollowingProfileOwner);
         followNFT.approveFollow(followerProfileId, followTokenId);
 
         assertEq(followNFT.getFollowApproved(followTokenId), followerProfileId);
+
+        vm.prank(alreadyFollowingProfileOwner);
+        followNFT.unwrapAndTie(followTokenId);
+
+        assertEq(followNFT.getFollowApproved(followTokenId), 0);
+
+        // Wraps again and checks that it keeps being clear.
+
+        vm.prank(alreadyFollowingProfileOwner);
+        followNFT.untieAndWrap(followTokenId);
+
+        assertEq(followNFT.getFollowApproved(followTokenId), 0);
+    }
+
+    function testFollowApprovalIsClearedAfterTransfer() public {
+        uint256 followTokenId = followNFT.getFollowTokenId(alreadyFollowingProfileId);
+
+        vm.prank(alreadyFollowingProfileOwner);
+        followNFT.untieAndWrap(followTokenId);
+
+        vm.prank(alreadyFollowingProfileOwner);
+        followNFT.approveFollow(followerProfileId, followTokenId);
+
+        assertEq(followNFT.getFollowApproved(followTokenId), followerProfileId);
+
+        vm.prank(alreadyFollowingProfileOwner);
+        followNFT.transferFrom(alreadyFollowingProfileOwner, followerProfileOwner, followTokenId);
+
+        assertEq(followNFT.getFollowApproved(followTokenId), 0);
+
+        // Transfers back to previous owner and checks that it keeps being clear.
+
+        vm.prank(followerProfileOwner);
+        followNFT.transferFrom(followerProfileOwner, alreadyFollowingProfileOwner, followTokenId);
+
+        assertEq(followNFT.getFollowApproved(followTokenId), 0);
+    }
+
+    function testFollowApprovalIsClearedAfterBurning() public {
+        uint256 followTokenId = followNFT.getFollowTokenId(alreadyFollowingProfileId);
+
+        vm.prank(alreadyFollowingProfileOwner);
+        followNFT.untieAndWrap(followTokenId);
+
+        vm.prank(alreadyFollowingProfileOwner);
+        followNFT.approveFollow(followerProfileId, followTokenId);
+
+        assertEq(followNFT.getFollowApproved(followTokenId), followerProfileId);
+
+        vm.prank(alreadyFollowingProfileOwner);
+        followNFT.burn(followTokenId);
+
+        assertEq(followNFT.getFollowApproved(followTokenId), 0);
     }
 }

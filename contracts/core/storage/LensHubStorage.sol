@@ -32,5 +32,5 @@ abstract contract LensHubStorage {
     // new storage
     mapping(address => mapping(address => bool)) internal _delegatedExecutorApproval; // slot 25
     mapping(uint256 => string) internal _metadataByProfile; // slot 26
-    mapping(uint256 => mapping(uint256 => bool)) internal _blockStatusByProfileIdByBlockeeProfileId; // slot 27
+    mapping(uint256 => mapping(uint256 => bool)) internal _blockStatusByBlockeeProfileIdByProfileId; // slot 27
 }
