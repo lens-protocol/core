@@ -37,6 +37,8 @@ jobs:
           node-version: 16
       - name: Install dependencies
         run: npm ci
+      - name: Install LCOV
+        run: sudo apt-get -y install lcov
       - name: Install Foundry
         uses: foundry-rs/foundry-toolchain@v1
         with:
