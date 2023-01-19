@@ -20,7 +20,7 @@ jobs:
       - name: Install dependencies
         run: npm ci
       - name: Compile code and run test coverage
-        run: npm run coverage
+        run: npm run hardhat:coverage
 
   foundry:
     strategy:
@@ -50,3 +50,5 @@ jobs:
           cp .env.example .env
           source .env
           forge test -vvv
+      - name: Run Full Merged Coverage
+        run: npm run coverage
