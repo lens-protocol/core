@@ -21,3 +21,32 @@ jobs:
         run: npm ci
       - name: Compile code and run test coverage
         run: npm run coverage
+
+  foundry:
+    strategy:
+      fail-fast: true
+
+    name: Foundry Tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          submodules: recursive
+      - uses: actions/setup-node@v3
+        with:
+          node-version: 16
+      - name: Install dependencies
+        run: npm ci
+      - name: Install Foundry
+        uses: foundry-rs/foundry-toolchain@v1
+        with:
+          version: nightly
+      - name: Run Forge build
+        run: |
+          forge --version
+          forge build
+      - name: Run Forge tests
+        run: |
+          cp .env.example .env
+          source .env
+          forge test -vvv
