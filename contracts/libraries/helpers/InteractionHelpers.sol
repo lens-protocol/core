@@ -187,6 +187,8 @@ library InteractionHelpers {
             profileOwner: collectorProfileOwner
         });
 
+        GeneralHelpers.validateNotBlocked(collectorProfileId, publisherProfileId);
+
         (uint256 rootProfileId, uint256 rootPubId, address rootCollectModule) = GeneralHelpers
             .getPointedIfMirrorWithCollectModule(publisherProfileIdCached, pubIdCached);
 
