@@ -193,6 +193,15 @@ library GeneralHelpers {
         }
     }
 
+    function validateAddressIsOwnerOrDelegatedExecutor(
+        address transactionExecutor,
+        address profileOwner
+    ) internal view {
+        if (transactionExecutor != profileOwner) {
+            validateDelegatedExecutor(profileOwner, transactionExecutor);
+        }
+    }
+
     function validateDelegatedExecutor(address onBehalfOf, address executor) internal view {
         if (!isExecutorApproved(onBehalfOf, executor)) {
             revert Errors.ExecutorInvalid();

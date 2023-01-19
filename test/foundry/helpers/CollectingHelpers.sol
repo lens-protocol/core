@@ -12,7 +12,7 @@ contract CollectingHelpers is TestSetup {
         // collect NFT doesn't exist yet
 
         address collectNftAddress = hub.getCollectNFT(
-            mockCollectData.profileId,
+            mockCollectData.publisherProfileId,
             mockCollectData.pubId
         );
 
@@ -26,15 +26,18 @@ contract CollectingHelpers is TestSetup {
 
     function _checkCollectNFTAfter(uint256 nftId, uint256 expectedNftId) internal {
         _collectNftAfter = CollectNFT(
-            hub.getCollectNFT(mockCollectData.profileId, mockCollectData.pubId)
+            hub.getCollectNFT(mockCollectData.publisherProfileId, mockCollectData.pubId)
         );
 
         (uint256 profileId, uint256 pubId) = _collectNftAfter.getSourcePublicationPointer();
-        assertEq(profileId, mockCollectData.profileId);
+        assertEq(profileId, mockCollectData.publisherProfileId);
         assertEq(pubId, mockCollectData.pubId);
 
         assertEq(nftId, expectedNftId);
-        assertEq(_collectNftAfter.ownerOf(mockCollectData.pubId), mockCollectData.collector);
+        assertEq(
+            _collectNftAfter.ownerOf(mockCollectData.pubId),
+            hub.ownerOf(mockCollectData.collectorProfileId)
+        );
         assertEq(_collectNftAfter.name(), _expectedName());
         assertEq(_collectNftAfter.symbol(), _expectedSymbol());
     }
@@ -43,7 +46,7 @@ contract CollectingHelpers is TestSetup {
         return
             string(
                 abi.encodePacked(
-                    vm.toString(mockCollectData.profileId),
+                    vm.toString(mockCollectData.publisherProfileId),
                     COLLECT_NFT_NAME_INFIX,
                     vm.toString(mockCollectData.pubId)
                 )
@@ -54,7 +57,7 @@ contract CollectingHelpers is TestSetup {
         return
             string(
                 abi.encodePacked(
-                    vm.toString(mockCollectData.profileId),
+                    vm.toString(mockCollectData.publisherProfileId),
                     COLLECT_NFT_SYMBOL_INFIX,
                     vm.toString(mockCollectData.pubId)
                 )

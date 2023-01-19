@@ -388,7 +388,8 @@ library MetaTxHelpers {
                 keccak256(
                     abi.encode(
                         COLLECT_WITH_SIG_TYPEHASH,
-                        vars.profileId,
+                        vars.collectorProfileId,
+                        vars.publisherProfileId,
                         vars.pubId,
                         keccak256(vars.data),
                         _sigNonces(signer),

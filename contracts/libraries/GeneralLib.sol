@@ -261,8 +261,8 @@ library GeneralLib {
      * @notice Collects the given publication, executing the necessary logic and module call before minting the
      * collect NFT to the collector.
      *
-     * @param onBehalfOf The address the collect is being executed for, different from the sender for delegated executors.
-     * @param profileId The token ID of the publication being collected's parent profile.
+     * @param collectorProfileId The profile that collect is being executed for.
+     * @param publisherProfileId The token ID of the publisher profile of the collected publication.
      * @param pubId The publication ID of the publication being collected.
      * @param collectModuleData The data to pass to the publication's collect module.
      * @param collectNFTImpl The address of the collect NFT implementation, which has to be passed because it's an immutable in the hub.
@@ -270,22 +270,22 @@ library GeneralLib {
      * @return uint256 An integer representing the minted token ID.
      */
     function collect(
-        address onBehalfOf,
-        uint256 profileId,
+        uint256 collectorProfileId,
+        uint256 publisherProfileId,
         uint256 pubId,
         bytes calldata collectModuleData,
         address collectNFTImpl
     ) external returns (uint256) {
-        _validateCallerIsOnBehalfOfOrExecutor(onBehalfOf);
         return
-            InteractionHelpers.collect(
-                onBehalfOf,
-                msg.sender,
-                profileId,
-                pubId,
-                collectModuleData,
-                collectNFTImpl
-            );
+            InteractionHelpers.collect({
+                collectorProfileId: collectorProfileId,
+                collectorProfileOwner: GeneralHelpers.ownerOf(collectorProfileId),
+                transactionExecutor: msg.sender,
+                publisherProfileId: publisherProfileId,
+                pubId: pubId,
+                collectModuleData: collectModuleData,
+                collectNFTImpl: collectNFTImpl
+            });
     }
 
     /**
@@ -298,21 +298,22 @@ library GeneralLib {
         external
         returns (uint256)
     {
-        address collector = vars.collector;
-        address signer = GeneralHelpers.getOriginatorOrDelegatedExecutorSigner(
-            collector,
+        address collectorProfileOwner = GeneralHelpers.ownerOf(vars.collectorProfileId);
+        address transactionSigner = GeneralHelpers.getOriginatorOrDelegatedExecutorSigner(
+            collectorProfileOwner,
             vars.delegatedSigner
         );
-        MetaTxHelpers.baseCollectWithSig(signer, vars);
+        MetaTxHelpers.baseCollectWithSig(transactionSigner, vars);
         return
-            InteractionHelpers.collect(
-                collector,
-                signer,
-                vars.profileId,
-                vars.pubId,
-                vars.data,
-                collectNFTImpl
-            );
+            InteractionHelpers.collect({
+                collectorProfileId: vars.collectorProfileId,
+                collectorProfileOwner: collectorProfileOwner,
+                transactionExecutor: transactionSigner,
+                publisherProfileId: vars.publisherProfileId,
+                pubId: vars.pubId,
+                collectModuleData: vars.data,
+                collectNFTImpl: collectNFTImpl
+            });
     }
 
     /**
