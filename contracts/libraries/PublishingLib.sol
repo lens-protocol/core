@@ -68,12 +68,13 @@ library PublishingLib {
      * @notice Publishes a comment to a given profile via signature.
      *
      * @param vars the CommentData struct.
-     * 
+     *
      * @return uint256 The created publication's pubId.
      */
     function comment(DataTypes.CommentData calldata vars) external returns (uint256) {
         uint256 pubId = _preIncrementPubCount(vars.profileId);
         GeneralHelpers.validateCallerIsOwnerOrDispatcherOrExecutor(vars.profileId);
+        GeneralHelpers.validateNotBlocked(vars.profileId, vars.profileIdPointed);
         _createComment(vars, pubId); // caller is executor
         return pubId;
     }
@@ -92,6 +93,7 @@ library PublishingLib {
             vars.delegatedSigner
         );
         uint256 pubId = _preIncrementPubCount(profileId);
+        GeneralHelpers.validateNotBlocked(vars.profileId, vars.profileIdPointed);
         MetaTxHelpers.baseCommentWithSig(signer, vars);
         _createCommentWithSigStruct(vars, signer, pubId);
         return pubId;
@@ -107,6 +109,7 @@ library PublishingLib {
     function mirror(DataTypes.MirrorData calldata vars) external returns (uint256) {
         uint256 pubId = _preIncrementPubCount(vars.profileId);
         GeneralHelpers.validateCallerIsOwnerOrDispatcherOrExecutor(vars.profileId);
+        GeneralHelpers.validateNotBlocked(vars.profileId, vars.profileIdPointed);
         _createMirror(vars, pubId); // caller is executor
         return pubId;
     }
@@ -125,6 +128,7 @@ library PublishingLib {
             vars.delegatedSigner
         );
         uint256 pubId = _preIncrementPubCount(profileId);
+        GeneralHelpers.validateNotBlocked(vars.profileId, vars.profileIdPointed);
         MetaTxHelpers.baseMirrorWithSig(signer, vars);
         _createMirrorWithSigStruct(vars, signer, pubId);
         return pubId;

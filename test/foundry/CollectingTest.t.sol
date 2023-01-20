@@ -115,6 +115,14 @@ contract CollectingTest_Generic is CollectingTest_Base {
         vm.stopPrank();
     }
 
+    function testCannotCollectIfBlocked() public {
+        vm.prank(profileOwner);
+        hub.setBlockStatus(newProfileId, _toUint256Array(collectorProfileId), _toBoolArray(true));
+        vm.expectRevert(Errors.Blocked.selector);
+        vm.startPrank(collectorProfileOwner);
+        _mockCollect();
+    }
+
     // SCENARIOS
 
     function testCollect() public {
@@ -267,6 +275,14 @@ contract CollectingTest_WithSig is CollectingTest_Base {
         assertTrue(_getSigNonce(collectorProfileOwner) != nonce, 'Wrong nonce after collecting');
 
         vm.expectRevert(Errors.SignatureInvalid.selector);
+        _mockCollectWithSig({delegatedSigner: address(0), signerPrivKey: collectorProfileOwnerPk});
+    }
+
+    function testCannotCollectWithSigIfBlocked() public {
+        vm.prank(profileOwner);
+        hub.setBlockStatus(newProfileId, _toUint256Array(collectorProfileId), _toBoolArray(true));
+        vm.expectRevert(Errors.Blocked.selector);
+        vm.startPrank(collectorProfileOwner);
         _mockCollectWithSig({delegatedSigner: address(0), signerPrivKey: collectorProfileOwnerPk});
     }
 
