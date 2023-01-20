@@ -295,7 +295,8 @@ contract BaseTest is TestSetup {
     }
 
     function _getCollectTypedDataHash(
-        uint256 profileId,
+        uint256 collectorProfileId,
+        uint256 publisherProfileId,
         uint256 pubId,
         bytes memory data,
         uint256 nonce,
@@ -304,7 +305,8 @@ contract BaseTest is TestSetup {
         bytes32 structHash = keccak256(
             abi.encode(
                 COLLECT_WITH_SIG_TYPEHASH,
-                profileId,
+                collectorProfileId,
+                publisherProfileId,
                 pubId,
                 keccak256(data),
                 nonce,
@@ -407,12 +409,12 @@ contract BaseTest is TestSetup {
     }
 
     function _collect(
-        address onBehalfOf,
-        uint256 profileId,
+        uint256 collectorProfileId,
+        uint256 publisherProfileId,
         uint256 pubId,
         bytes memory data
     ) internal returns (uint256) {
-        return hub.collect(onBehalfOf, profileId, pubId, data);
+        return hub.collect(collectorProfileId, publisherProfileId, pubId, data);
     }
 
     function _postWithSig(DataTypes.PostWithSigData memory postWithSigData)

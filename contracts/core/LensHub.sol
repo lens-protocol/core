@@ -427,12 +427,19 @@ contract LensHub is LensNFTBase, VersionedInitializable, LensMultiState, LensHub
 
     /// @inheritdoc ILensHub
     function collect(
-        address onBehalfOf,
-        uint256 profileId,
+        uint256 collectorProfileId,
+        uint256 publisherProfileId, // TODO: Think if we can have better naming
         uint256 pubId,
         bytes calldata data
     ) external override whenNotPaused returns (uint256) {
-        return GeneralLib.collect(onBehalfOf, profileId, pubId, data, COLLECT_NFT_IMPL);
+        return
+            GeneralLib.collect({
+                collectorProfileId: collectorProfileId,
+                publisherProfileId: publisherProfileId,
+                pubId: pubId,
+                collectModuleData: data,
+                collectNFTImpl: COLLECT_NFT_IMPL
+            });
     }
 
     /// @inheritdoc ILensHub

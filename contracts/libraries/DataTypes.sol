@@ -410,8 +410,9 @@ library DataTypes {
      * @param data The data passed to the collect module.
      */
     struct CollectData {
-        address collector;
-        uint256 profileId;
+        // TODO: Move this to tests? And the one below
+        uint256 collectorProfileId;
+        uint256 publisherProfileId;
         uint256 pubId;
         bytes data;
     }
@@ -420,17 +421,17 @@ library DataTypes {
      * @notice A struct containing the parameters required for the `collectWithSig()` function. Parameters are the same as
      * the regular `collect()` function, with the collector's (signer) address and an EIP712Signature added.
      *
-     * @param delegatedSigner The delegated executor signer, must be either zero, defaulting to the collector, or a delegated executor.
-     * @param collector The collector which is the message signer.
-     * @param profileId The token ID of the profile that published the publication to collect.
+     * @param delegatedSigner The delegated executor signer, must be either zero, defaulting to the collector profile owner, or a delegated executor.
+     * @param collectorProfileId The collector profile.
+     * @param publisherProfileId The token ID of the profile that published the publication to collect.
      * @param pubId The publication to collect's publication ID.
      * @param data The arbitrary data to pass to the collectModule if needed.
      * @param sig The EIP712Signature struct containing the collector's signature.
      */
     struct CollectWithSigData {
         address delegatedSigner;
-        address collector;
-        uint256 profileId;
+        uint256 collectorProfileId;
+        uint256 publisherProfileId;
         uint256 pubId;
         bytes data;
         EIP712Signature sig;
