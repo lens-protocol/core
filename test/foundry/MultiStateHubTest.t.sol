@@ -179,8 +179,8 @@ contract MultiStateHubTest_PausedState_Direct is BaseTest {
     function _mockCollect() internal virtual {
         vm.prank(profileOwner);
         _collect(
-            mockCollectData.collector,
-            mockCollectData.profileId,
+            mockCollectData.collectorProfileId,
+            mockCollectData.publisherProfileId,
             mockCollectData.pubId,
             mockCollectData.data
         );
@@ -467,7 +467,8 @@ contract MultiStateHubTest_PausedState_WithSig is
 
     function _mockCollect() internal override {
         bytes32 digest = _getCollectTypedDataHash(
-            mockCollectData.profileId,
+            mockCollectData.collectorProfileId,
+            mockCollectData.publisherProfileId,
             mockCollectData.pubId,
             mockCollectData.data,
             nonce,
@@ -557,8 +558,8 @@ contract MultiStateHubTest_PublishingPausedState_Direct is BaseTest {
     function _mockCollect() internal virtual {
         vm.prank(profileOwner);
         _collect(
-            mockCollectData.collector,
-            mockCollectData.profileId,
+            mockCollectData.collectorProfileId,
+            mockCollectData.publisherProfileId,
             mockCollectData.pubId,
             mockCollectData.data
         );
@@ -793,7 +794,8 @@ contract MultiStateHubTest_PublishingPausedState_WithSig is
 
     function _mockCollect() internal override {
         bytes32 digest = _getCollectTypedDataHash(
-            mockCollectData.profileId,
+            mockCollectData.collectorProfileId,
+            mockCollectData.publisherProfileId,
             mockCollectData.pubId,
             mockCollectData.data,
             nonce,

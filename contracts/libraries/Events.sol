@@ -313,8 +313,8 @@ library Events {
     /**
      * @dev Emitted upon a successful collect action.
      *
-     * @param collector The address collecting the publication.
-     * @param profileId The token ID of the profile that the collect was initiated towards, useful to differentiate mirrors.
+     * @param collectorProfileId The address collecting the publication.
+     * @param publisherProfileId The token ID of the profile that the collect was initiated towards, useful to differentiate mirrors.
      * @param pubId The publication ID that the collect was initiated towards, useful to differentiate mirrors.
      * @param rootProfileId The profile token ID of the profile whose publication is being collected.
      * @param rootPubId The publication ID of the publication being collected.
@@ -322,8 +322,8 @@ library Events {
      * @param timestamp The current block timestamp.
      */
     event Collected(
-        address indexed collector,
-        uint256 indexed profileId,
+        uint256 indexed collectorProfileId,
+        uint256 indexed publisherProfileId,
         uint256 indexed pubId,
         uint256 rootProfileId,
         uint256 rootPubId,

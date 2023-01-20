@@ -24,7 +24,8 @@ import '../Constants.sol';
 contract TestSetup is Test, ForkManagement {
     using stdJson for string;
 
-    uint256 newProfileId;
+    uint256 newProfileId; // TODO: We should get rid of this everywhere, and create dedicated profiles instead (see Follow tests)
+
     address deployer;
     address governance;
     address treasury;
@@ -143,7 +144,7 @@ contract TestSetup is Test, ForkManagement {
             json.readAddress(string(abi.encodePacked('.', targetEnv, '.ModuleGlobals')))
         );
 
-        newProfileId = uint256(vm.load(hubProxyAddr, bytes32(uint256(22)))) + 1;
+        newProfileId = _getNextProfileId();
         console.log('newProfileId:', newProfileId);
 
         deployer = address(1);
@@ -262,8 +263,8 @@ contract TestSetup is Test, ForkManagement {
 
         // Precompute basic collect data.
         mockCollectData = DataTypes.CollectData({
-            collector: profileOwner,
-            profileId: newProfileId,
+            collectorProfileId: newProfileId,
+            publisherProfileId: newProfileId,
             pubId: FIRST_PUB_ID,
             data: ''
         });
@@ -276,5 +277,10 @@ contract TestSetup is Test, ForkManagement {
         });
 
         hub.createProfile(mockCreateProfileData);
+    }
+
+    // TODO: Find a better place for such helpers that have access to Hub without rekting inheritance
+    function _getNextProfileId() internal returns (uint256) {
+        return uint256(vm.load(hubProxyAddr, bytes32(uint256(PROFILE_COUNTER_SLOT)))) + 1;
     }
 }

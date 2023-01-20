@@ -193,6 +193,15 @@ library GeneralHelpers {
         }
     }
 
+    function validateAddressIsOwnerOrDelegatedExecutor(
+        address transactionExecutor,
+        address profileOwner
+    ) internal view {
+        if (transactionExecutor != profileOwner) {
+            validateDelegatedExecutor(profileOwner, transactionExecutor);
+        }
+    }
+
     function validateDelegatedExecutor(address onBehalfOf, address executor) internal view {
         if (!isExecutorApproved(onBehalfOf, executor)) {
             revert Errors.ExecutorInvalid();
@@ -225,5 +234,20 @@ library GeneralHelpers {
             return delegatedSigner;
         }
         return originator;
+    }
+
+    function validateNotBlocked(uint256 profile, uint256 byProfile) internal view {
+        bool isBlocked;
+        assembly {
+            mstore(0, byProfile)
+            mstore(32, BLOCK_STATUS_MAPPING_SLOT)
+            let blockStatusByProfileSlot := keccak256(0, 64)
+            mstore(0, profile)
+            mstore(32, blockStatusByProfileSlot)
+            isBlocked := sload(keccak256(0, 64))
+        }
+        if (isBlocked) {
+            revert Errors.Blocked();
+        }
     }
 }

@@ -155,8 +155,8 @@ contract SignatureHelpers {
         return
             DataTypes.CollectWithSigData({
                 delegatedSigner: delegatedSigner,
-                collector: collectData.collector,
-                profileId: collectData.profileId,
+                collectorProfileId: collectData.collectorProfileId,
+                publisherProfileId: collectData.publisherProfileId,
                 pubId: collectData.pubId,
                 data: collectData.data,
                 sig: sig
