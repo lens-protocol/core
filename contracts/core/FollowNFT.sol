@@ -55,7 +55,6 @@ contract FollowNFT is HubRestricted, LensNFTBase, ERC2981CollectionRoyalties, IF
     function follow(
         uint256 followerProfileId,
         address executor,
-        address followerProfileOwner,
         uint256 followTokenId
     ) external override onlyHub returns (uint256) {
         if (_followTokenIdByFollowerProfileId[followerProfileId] != 0) {
@@ -74,7 +73,6 @@ contract FollowNFT is HubRestricted, LensNFTBase, ERC2981CollectionRoyalties, IF
                 followerProfileId: followerProfileId,
                 executor: executor,
                 followTokenId: followTokenId,
-                followerProfileOwner: followerProfileOwner,
                 followTokenOwner: followTokenOwner
             });
         } else if (
@@ -83,7 +81,6 @@ contract FollowNFT is HubRestricted, LensNFTBase, ERC2981CollectionRoyalties, IF
         ) {
             _followWithUnwrappedToken({
                 followerProfileId: followerProfileId,
-                executor: executor,
                 followTokenId: followTokenId,
                 currentFollowerProfileId: currentFollowerProfileId
             });
@@ -312,15 +309,14 @@ contract FollowNFT is HubRestricted, LensNFTBase, ERC2981CollectionRoyalties, IF
         uint256 followerProfileId,
         address executor,
         uint256 followTokenId,
-        address followerProfileOwner,
         address followTokenOwner
     ) internal {
         bool isFollowApproved = _followApprovalByFollowTokenId[followTokenId] == followerProfileId;
+        address followerProfileOwner = IERC721(HUB).ownerOf(followerProfileId);
         if (
             isFollowApproved ||
             followerProfileOwner == followTokenOwner ||
-            executor == followTokenOwner ||
-            isApprovedForAll(followTokenOwner, executor)
+            executor == followTokenOwner
         ) {
             // The executor is allowed to write the follower in that wrapped token.
             if (isFollowApproved) {
@@ -340,14 +336,10 @@ contract FollowNFT is HubRestricted, LensNFTBase, ERC2981CollectionRoyalties, IF
 
     function _followWithUnwrappedToken(
         uint256 followerProfileId,
-        address executor,
         uint256 followTokenId,
         uint256 currentFollowerProfileId
     ) internal {
-        if (
-            !IERC721Time(HUB).exists(currentFollowerProfileId) ||
-            IERC721(HUB).ownerOf(currentFollowerProfileId) == executor
-        ) {
+        if (!IERC721Time(HUB).exists(currentFollowerProfileId)) {
             _replaceFollower({
                 currentFollowerProfileId: currentFollowerProfileId,
                 newFollowerProfileId: followerProfileId,

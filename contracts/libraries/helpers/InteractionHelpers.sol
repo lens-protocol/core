@@ -34,7 +34,6 @@ library InteractionHelpers {
     function follow(
         uint256 followerProfileId,
         address executor,
-        address followerProfileOwner,
         uint256[] calldata idsOfProfilesToFollow,
         uint256[] calldata followTokenIds,
         bytes[] calldata followModuleDatas
@@ -62,7 +61,6 @@ library InteractionHelpers {
             followTokenIdsAssigned[i] = _follow({
                 followerProfileId: followerProfileId,
                 executor: executor,
-                followerProfileOwner: followerProfileOwner,
                 idOfProfileToFollow: idsOfProfilesToFollow[i],
                 followTokenId: followTokenIds[i],
                 followModuleData: followModuleDatas[i]
@@ -357,7 +355,6 @@ library InteractionHelpers {
     function _follow(
         uint256 followerProfileId,
         address executor,
-        address followerProfileOwner,
         uint256 idOfProfileToFollow,
         uint256 followTokenId,
         bytes calldata followModuleData
@@ -390,7 +387,6 @@ library InteractionHelpers {
         uint256 followTokenIdAssigned = IFollowNFT(followNFT).follow({
             followerProfileId: followerProfileId,
             executor: executor,
-            followerProfileOwner: followerProfileOwner,
             followTokenId: followTokenId
         });
 
