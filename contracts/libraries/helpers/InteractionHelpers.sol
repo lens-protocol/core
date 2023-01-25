@@ -146,6 +146,9 @@ library InteractionHelpers {
         while (i < idsOfProfilesToSetBlockStatus.length) {
             idOfProfileToSetBlockStatus = idsOfProfilesToSetBlockStatus[i];
             _validateProfileExists(idOfProfileToSetBlockStatus);
+            if (byProfileId == idOfProfileToSetBlockStatus) {
+                revert Errors.SelfBlock();
+            }
             setToBlocked = blockStatus[i];
             if (followNFT != address(0) && setToBlocked) {
                 IFollowNFT(followNFT).block(idOfProfileToSetBlockStatus);

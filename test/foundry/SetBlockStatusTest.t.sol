@@ -135,6 +135,18 @@ contract SetBlockStatusTest is BaseTest, AssumptionHelpers {
         });
     }
 
+    function testCannotBlockItself() public virtual {
+        vm.expectRevert(Errors.SelfBlock.selector);
+
+        _setBlockStatus({
+            pk: statusSetterProfileOwnerPk,
+            isStatusSetterProfileOwner: true,
+            byProfileId: statusSetterProfileId,
+            idsOfProfilesToSetBlockStatus: _toUint256Array(statusSetterProfileId),
+            blockStatus: _toBoolArray(true)
+        });
+    }
+
     //////////////////////////////////////////////////////////
     // Set block status - Scenarios
     //////////////////////////////////////////////////////////

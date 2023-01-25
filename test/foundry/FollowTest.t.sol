@@ -116,6 +116,55 @@ contract FollowTest is BaseTest, AssumptionHelpers {
         });
     }
 
+    function testCannotFollowWithUnwrappedTokenIfExecutorIsNotTheProfileOwnerOrHisApprovedExecutor(
+        uint256 executorPk
+    ) public {
+        vm.assume(_isValidPk(executorPk));
+        address executor = vm.addr(executorPk);
+        vm.assume(executor != address(0));
+        vm.assume(executor != followerProfileOwner);
+        vm.assume(!hub.isDelegatedExecutorApproved(followerProfileOwner, executor));
+
+        uint256 followTokenId = followNFT.getFollowTokenId(alreadyFollowingProfileId);
+        assertFalse(followNFT.exists(followTokenId));
+
+        vm.expectRevert(Errors.ExecutorInvalid.selector);
+
+        _follow({
+            pk: executorPk,
+            isFollowerProfileOwner: false,
+            followerProfileId: followerProfileId,
+            idsOfProfilesToFollow: _toUint256Array(targetProfileId),
+            followTokenIds: _toUint256Array(followTokenId),
+            datas: _toBytesArray('', '')
+        });
+    }
+
+    function testCannotFollowWithWrappedTokenIfExecutorIsNotTheProfileOwnerOrHisApprovedExecutor(
+        uint256 executorPk
+    ) public {
+        vm.assume(_isValidPk(executorPk));
+        address executor = vm.addr(executorPk);
+        vm.assume(executor != address(0));
+        vm.assume(executor != followerProfileOwner);
+        vm.assume(!hub.isDelegatedExecutorApproved(followerProfileOwner, executor));
+
+        uint256 followTokenId = followNFT.getFollowTokenId(alreadyFollowingProfileId);
+        vm.prank(alreadyFollowingProfileOwner);
+        followNFT.untieAndWrap(followTokenId);
+
+        vm.expectRevert(Errors.ExecutorInvalid.selector);
+
+        _follow({
+            pk: executorPk,
+            isFollowerProfileOwner: false,
+            followerProfileId: followerProfileId,
+            idsOfProfilesToFollow: _toUint256Array(targetProfileId),
+            followTokenIds: _toUint256Array(followTokenId),
+            datas: _toBytesArray('', '')
+        });
+    }
+
     function testCannotFollowIfAmountOfTokenIdsPassedDiffersFromAmountOfProfilesToFollow() public {
         vm.expectRevert(Errors.ArrayMismatch.selector);
 

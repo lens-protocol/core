@@ -177,32 +177,6 @@ contract FollowNFTTest is BaseTest, ERC721Test {
     }
 
     //////////////////////////////////////////////////////////
-    // Follow - With unwrapped token - Negatives
-    //////////////////////////////////////////////////////////
-
-    function testCannotFollowWithUnwrappedTokenIfExecutorIsNotTheProfileOwnerOrHisApprovedExecutor(
-        address executor
-    ) public {
-        vm.assume(executor != followerProfileOwner);
-        vm.assume(executor != address(0));
-        vm.assume(!hub.isDelegatedExecutorApproved(followerProfileOwner, executor));
-
-        assertTrue(followNFT.isFollowing(alreadyFollowingProfileId));
-        uint256 followTokenId = followNFT.getFollowTokenId(alreadyFollowingProfileId);
-        assertFalse(followNFT.exists(followTokenId));
-
-        vm.prank(address(hub));
-
-        vm.expectRevert(IFollowNFT.DoesNotHavePermissions.selector);
-
-        followNFT.follow({
-            followerProfileId: followerProfileId,
-            executor: executor,
-            followTokenId: followTokenId
-        });
-    }
-
-    //////////////////////////////////////////////////////////
     // Follow - With unwrapped token - Scenarios
     //////////////////////////////////////////////////////////
 
@@ -255,33 +229,6 @@ contract FollowNFTTest is BaseTest, ERC721Test {
         assertEq(assignedTokenId, followTokenId);
         assertEq(followNFT.getFollowTokenId(followerProfileId), followTokenId);
         assertEq(followNFT.getFollowApproved(followTokenId), 0);
-    }
-
-    //////////////////////////////////////////////////////////
-    // Follow - With wrapped token - Negatives
-    //////////////////////////////////////////////////////////
-
-    function testCannotFollowWithWrappedTokenIfExecutorIsNotTheProfileOwnerOrHisApprovedExecutor(
-        address executor
-    ) public {
-        vm.assume(executor != followerProfileOwner);
-        vm.assume(executor != address(0));
-        vm.assume(!hub.isDelegatedExecutorApproved(followerProfileOwner, executor));
-
-        assertTrue(followNFT.isFollowing(alreadyFollowingProfileId));
-        uint256 followTokenId = followNFT.getFollowTokenId(alreadyFollowingProfileId);
-        vm.prank(alreadyFollowingProfileOwner);
-        followNFT.untieAndWrap(followTokenId);
-
-        vm.prank(address(hub));
-
-        vm.expectRevert(IFollowNFT.DoesNotHavePermissions.selector);
-
-        followNFT.follow({
-            followerProfileId: followerProfileId,
-            executor: executor,
-            followTokenId: followTokenId
-        });
     }
 
     //////////////////////////////////////////////////////////
