@@ -323,10 +323,12 @@ contract CommentTest is PublishingTest {
     }
 
     function testCannotCommentIfBlocked() public {
+        uint256 commenterProfileId = _createProfile(profileOwner);
+        mockCommentData.profileId = commenterProfileId;
         vm.prank(profileOwner);
         hub.setBlockStatus(
             mockPostData.profileId,
-            _toUint256Array(newProfileId),
+            _toUint256Array(commenterProfileId),
             _toBoolArray(true)
         );
         vm.expectRevert(Errors.Blocked.selector);
@@ -335,10 +337,12 @@ contract CommentTest is PublishingTest {
     }
 
     function testCannotCommentWithSigIfBlocked() public {
+        uint256 commenterProfileId = _createProfile(profileOwner);
+        mockCommentData.profileId = commenterProfileId;
         vm.prank(profileOwner);
         hub.setBlockStatus(
             mockPostData.profileId,
-            _toUint256Array(newProfileId),
+            _toUint256Array(commenterProfileId),
             _toBoolArray(true)
         );
         vm.expectRevert(Errors.Blocked.selector);
@@ -437,10 +441,12 @@ contract MirrorTest is PublishingTest {
     }
 
     function testCannotMirrorIfBlocked() public {
+        uint256 mirrorerProfileId = _createProfile(profileOwner);
+        mockMirrorData.profileId = mirrorerProfileId;
         vm.prank(profileOwner);
         hub.setBlockStatus(
             mockPostData.profileId,
-            _toUint256Array(newProfileId),
+            _toUint256Array(mirrorerProfileId),
             _toBoolArray(true)
         );
         vm.expectRevert(Errors.Blocked.selector);
@@ -449,10 +455,12 @@ contract MirrorTest is PublishingTest {
     }
 
     function testCannotMirrorWithSigIfBlocked() public {
+        uint256 mirrorerProfileId = _createProfile(profileOwner);
+        mockMirrorData.profileId = mirrorerProfileId;
         vm.prank(profileOwner);
         hub.setBlockStatus(
             mockPostData.profileId,
-            _toUint256Array(newProfileId),
+            _toUint256Array(mirrorerProfileId),
             _toBoolArray(true)
         );
         vm.expectRevert(Errors.Blocked.selector);
