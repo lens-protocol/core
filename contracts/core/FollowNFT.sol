@@ -316,7 +316,8 @@ contract FollowNFT is HubRestricted, LensNFTBase, ERC2981CollectionRoyalties, IF
         if (
             isFollowApproved ||
             followerProfileOwner == followTokenOwner ||
-            executor == followTokenOwner
+            executor == followTokenOwner ||
+            isApprovedForAll(followTokenOwner, executor)
         ) {
             // The executor is allowed to write the follower in that wrapped token.
             if (isFollowApproved) {

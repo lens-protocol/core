@@ -412,59 +412,59 @@ contract FollowNFTTest is BaseTest, ERC721Test {
         assertEq(followNFT.getFollowTokenId(followerProfileId), followTokenId);
     }
 
-    // function testFollowWithWrappedTokenWhenExecutorIsApprovedForAllAndExecutorIsFollowerOwner()
-    //     public
-    // {
-    //     uint256 followTokenId = followNFT.getFollowTokenId(alreadyFollowingProfileId);
+    function testFollowWithWrappedTokenWhenExecutorIsApprovedForAllAndExecutorIsFollowerOwner()
+        public
+    {
+        uint256 followTokenId = followNFT.getFollowTokenId(alreadyFollowingProfileId);
 
-    //     vm.prank(alreadyFollowingProfileOwner);
-    //     followNFT.untieAndWrap(followTokenId);
+        vm.prank(alreadyFollowingProfileOwner);
+        followNFT.untieAndWrap(followTokenId);
 
-    //     vm.prank(alreadyFollowingProfileOwner);
-    //     followNFT.setApprovalForAll(followerProfileOwner, true);
+        vm.prank(alreadyFollowingProfileOwner);
+        followNFT.setApprovalForAll(followerProfileOwner, true);
 
-    //     vm.prank(address(hub));
+        vm.prank(address(hub));
 
-    //     uint256 assignedTokenId = followNFT.follow({
-    //         followerProfileId: followerProfileId,
-    //         executor: followerProfileOwner,
-    //         followTokenId: followTokenId
-    //     });
+        uint256 assignedTokenId = followNFT.follow({
+            followerProfileId: followerProfileId,
+            executor: followerProfileOwner,
+            followTokenId: followTokenId
+        });
 
-    //     assertFalse(followNFT.isFollowing(alreadyFollowingProfileId));
-    //     assertTrue(followNFT.isFollowing(followerProfileId));
-    //     assertEq(assignedTokenId, followTokenId);
-    //     assertEq(followNFT.getFollowTokenId(followerProfileId), followTokenId);
-    // }
+        assertFalse(followNFT.isFollowing(alreadyFollowingProfileId));
+        assertTrue(followNFT.isFollowing(followerProfileId));
+        assertEq(assignedTokenId, followTokenId);
+        assertEq(followNFT.getFollowTokenId(followerProfileId), followTokenId);
+    }
 
-    // function testFollowWithWrappedTokenWhenExecutorIsApprovedForAllAndExecutorIsApprovedDelegatee_Fuzz(
-    //     address executorAsApprovedDelegatee
-    // ) public {
-    //     vm.assume(executorAsApprovedDelegatee != followerProfileOwner);
-    //     vm.assume(executorAsApprovedDelegatee != alreadyFollowingProfileOwner);
-    //     vm.assume(executorAsApprovedDelegatee != address(0));
+    function testFollowWithWrappedTokenWhenExecutorIsApprovedForAllAndExecutorIsApprovedDelegatee_Fuzz(
+        address executorAsApprovedDelegatee
+    ) public {
+        vm.assume(executorAsApprovedDelegatee != followerProfileOwner);
+        vm.assume(executorAsApprovedDelegatee != alreadyFollowingProfileOwner);
+        vm.assume(executorAsApprovedDelegatee != address(0));
 
-    //     uint256 followTokenId = followNFT.getFollowTokenId(alreadyFollowingProfileId);
+        uint256 followTokenId = followNFT.getFollowTokenId(alreadyFollowingProfileId);
 
-    //     vm.prank(alreadyFollowingProfileOwner);
-    //     followNFT.untieAndWrap(followTokenId);
+        vm.prank(alreadyFollowingProfileOwner);
+        followNFT.untieAndWrap(followTokenId);
 
-    //     vm.prank(alreadyFollowingProfileOwner);
-    //     followNFT.setApprovalForAll(executorAsApprovedDelegatee, true);
+        vm.prank(alreadyFollowingProfileOwner);
+        followNFT.setApprovalForAll(executorAsApprovedDelegatee, true);
 
-    //     vm.prank(address(hub));
+        vm.prank(address(hub));
 
-    //     uint256 assignedTokenId = followNFT.follow({
-    //         followerProfileId: followerProfileId,
-    //         executor: executorAsApprovedDelegatee,
-    //         followTokenId: followTokenId
-    //     });
+        uint256 assignedTokenId = followNFT.follow({
+            followerProfileId: followerProfileId,
+            executor: executorAsApprovedDelegatee,
+            followTokenId: followTokenId
+        });
 
-    //     assertFalse(followNFT.isFollowing(alreadyFollowingProfileId));
-    //     assertTrue(followNFT.isFollowing(followerProfileId));
-    //     assertEq(assignedTokenId, followTokenId);
-    //     assertEq(followNFT.getFollowTokenId(followerProfileId), followTokenId);
-    // }
+        assertFalse(followNFT.isFollowing(alreadyFollowingProfileId));
+        assertTrue(followNFT.isFollowing(followerProfileId));
+        assertEq(assignedTokenId, followTokenId);
+        assertEq(followNFT.getFollowTokenId(followerProfileId), followTokenId);
+    }
 
     function testFollowWithWrappedTokenWhenProfileIsApprovedToFollowAndExecutorIsFollowerOwner()
         public
