@@ -167,7 +167,6 @@ library GeneralLib {
             InteractionHelpers.follow({
                 followerProfileId: followerProfileId,
                 executor: msg.sender,
-                followerProfileOwner: GeneralHelpers.ownerOf(followerProfileId),
                 idsOfProfilesToFollow: idsOfProfilesToFollow,
                 followTokenIds: followTokenIds,
                 followModuleDatas: followModuleDatas
@@ -194,7 +193,6 @@ library GeneralLib {
             InteractionHelpers.follow({
                 followerProfileId: vars.followerProfileId,
                 executor: signer,
-                followerProfileOwner: followerProfileOwner,
                 idsOfProfilesToFollow: vars.idsOfProfilesToFollow,
                 followTokenIds: vars.followTokenIds,
                 followModuleDatas: vars.datas
