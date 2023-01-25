@@ -65,29 +65,35 @@ contract FollowNFT is HubRestricted, LensNFTBase, ERC2981CollectionRoyalties, IF
         address followTokenOwner;
         uint256 currentFollowerProfileId;
         if (followTokenId == 0) {
-            followTokenIdAssigned = _followMintingNewToken(followerProfileId, 0);
+            followTokenIdAssigned = _followMintingNewToken({
+                followerProfileId: followerProfileId,
+                followTokenId: 0
+            });
         } else if ((followTokenOwner = _unsafeOwnerOf(followTokenId)) != address(0)) {
-            _followWithWrappedToken(
-                followerProfileId,
-                executor,
-                followTokenId,
-                followerProfileOwner,
-                followTokenOwner
-            );
+            _followWithWrappedToken({
+                followerProfileId: followerProfileId,
+                executor: executor,
+                followTokenId: followTokenId,
+                followerProfileOwner: followerProfileOwner,
+                followTokenOwner: followTokenOwner
+            });
         } else if (
             (currentFollowerProfileId = _followDataByFollowTokenId[followTokenId]
                 .followerProfileId) != 0
         ) {
-            _followWithUnwrappedToken(
-                followerProfileId,
-                executor,
-                followTokenId,
-                currentFollowerProfileId
-            );
+            _followWithUnwrappedToken({
+                followerProfileId: followerProfileId,
+                executor: executor,
+                followTokenId: followTokenId,
+                currentFollowerProfileId: currentFollowerProfileId
+            });
         } else if (
             _followDataByFollowTokenId[followTokenId].profileIdAllowedToRecover == followerProfileId
         ) {
-            _followMintingNewToken(followerProfileId, followTokenId);
+            _followMintingNewToken({
+                followerProfileId: followerProfileId,
+                followTokenId: followTokenId
+            });
         } else {
             revert FollowTokenDoesNotExist();
         }
@@ -294,7 +300,11 @@ contract FollowNFT is HubRestricted, LensNFTBase, ERC2981CollectionRoyalties, IF
         unchecked {
             followTokenIdAssigned = followTokenId == 0 ? ++_lastFollowTokenId : followTokenId;
         }
-        _baseFollow(followerProfileId, followTokenIdAssigned, true);
+        _baseFollow({
+            followerProfileId: followerProfileId,
+            followTokenId: followTokenIdAssigned,
+            isOriginalFollow: true
+        });
         return followTokenIdAssigned;
     }
 
@@ -317,11 +327,12 @@ contract FollowNFT is HubRestricted, LensNFTBase, ERC2981CollectionRoyalties, IF
                 // The `_followApprovalByFollowTokenId` was used, now needs to be cleared.
                 _approveFollow(0, followTokenId);
             }
-            _replaceFollower(
-                _followDataByFollowTokenId[followTokenId].followerProfileId,
-                followerProfileId,
-                followTokenId
-            );
+            _replaceFollower({
+                currentFollowerProfileId: _followDataByFollowTokenId[followTokenId]
+                    .followerProfileId,
+                newFollowerProfileId: followerProfileId,
+                followTokenId: followTokenId
+            });
         } else {
             revert DoesNotHavePermissions();
         }
@@ -337,7 +348,11 @@ contract FollowNFT is HubRestricted, LensNFTBase, ERC2981CollectionRoyalties, IF
             !IERC721Time(HUB).exists(currentFollowerProfileId) ||
             IERC721(HUB).ownerOf(currentFollowerProfileId) == executor
         ) {
-            _replaceFollower(currentFollowerProfileId, followerProfileId, followTokenId);
+            _replaceFollower({
+                currentFollowerProfileId: currentFollowerProfileId,
+                newFollowerProfileId: followerProfileId,
+                followTokenId: followTokenId
+            });
         } else {
             revert DoesNotHavePermissions();
         }
@@ -354,7 +369,11 @@ contract FollowNFT is HubRestricted, LensNFTBase, ERC2981CollectionRoyalties, IF
             ILensHub(HUB).emitUnfollowedEvent(currentFollowerProfileId, _followedProfileId);
         }
         // Perform the follow, setting new follower.
-        _baseFollow(newFollowerProfileId, followTokenId, false);
+        _baseFollow({
+            followerProfileId: newFollowerProfileId,
+            followTokenId: followTokenId,
+            isOriginalFollow: false
+        });
     }
 
     function _baseFollow(

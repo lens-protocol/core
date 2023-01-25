@@ -48,22 +48,25 @@ library InteractionHelpers {
         uint256[] memory followTokenIdsAssigned = new uint256[](idsOfProfilesToFollow.length);
         uint256 i;
         while (i < idsOfProfilesToFollow.length) {
-            _validateProfileExists(idsOfProfilesToFollow[i]);
+            _validateProfileExists({profileId: idsOfProfilesToFollow[i]});
 
-            GeneralHelpers.validateNotBlocked(followerProfileId, idsOfProfilesToFollow[i]);
+            GeneralHelpers.validateNotBlocked({
+                profile: followerProfileId,
+                byProfile: idsOfProfilesToFollow[i]
+            });
 
             if (followerProfileId == idsOfProfilesToFollow[i]) {
                 revert Errors.SelfFollow();
             }
 
-            followTokenIdsAssigned[i] = _follow(
-                followerProfileId,
-                executor,
-                followerProfileOwner,
-                idsOfProfilesToFollow[i],
-                followTokenIds[i],
-                followModuleDatas[i]
-            );
+            followTokenIdsAssigned[i] = _follow({
+                followerProfileId: followerProfileId,
+                executor: executor,
+                followerProfileOwner: followerProfileOwner,
+                idOfProfileToFollow: idsOfProfilesToFollow[i],
+                followTokenId: followTokenIds[i],
+                followModuleData: followModuleDatas[i]
+            });
 
             unchecked {
                 ++i;
@@ -384,12 +387,12 @@ library InteractionHelpers {
             }
         }
 
-        uint256 followTokenIdAssigned = IFollowNFT(followNFT).follow(
-            followerProfileId,
-            executor,
-            followerProfileOwner,
-            followTokenId
-        );
+        uint256 followTokenIdAssigned = IFollowNFT(followNFT).follow({
+            followerProfileId: followerProfileId,
+            executor: executor,
+            followerProfileOwner: followerProfileOwner,
+            followTokenId: followTokenId
+        });
 
         if (followModule != address(0)) {
             IFollowModule(followModule).processFollow(

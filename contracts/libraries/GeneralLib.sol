@@ -164,14 +164,14 @@ library GeneralLib {
     ) external returns (uint256[] memory) {
         GeneralHelpers.validateCallerIsOwnerOrDelegatedExecutor(followerProfileId);
         return
-            InteractionHelpers.follow(
-                followerProfileId,
-                msg.sender,
-                GeneralHelpers.ownerOf(followerProfileId),
-                idsOfProfilesToFollow,
-                followTokenIds,
-                followModuleDatas
-            );
+            InteractionHelpers.follow({
+                followerProfileId: followerProfileId,
+                executor: msg.sender,
+                followerProfileOwner: GeneralHelpers.ownerOf(followerProfileId),
+                idsOfProfilesToFollow: idsOfProfilesToFollow,
+                followTokenIds: followTokenIds,
+                followModuleDatas: followModuleDatas
+            });
     }
 
     /**
@@ -191,14 +191,14 @@ library GeneralLib {
         );
         MetaTxHelpers.baseFollowWithSig(signer, vars);
         return
-            InteractionHelpers.follow(
-                vars.followerProfileId,
-                signer,
-                followerProfileOwner,
-                vars.idsOfProfilesToFollow,
-                vars.followTokenIds,
-                vars.datas
-            );
+            InteractionHelpers.follow({
+                followerProfileId: vars.followerProfileId,
+                executor: signer,
+                followerProfileOwner: followerProfileOwner,
+                idsOfProfilesToFollow: vars.idsOfProfilesToFollow,
+                followTokenIds: vars.followTokenIds,
+                followModuleDatas: vars.datas
+            });
     }
 
     function unfollow(uint256 unfollowerProfileId, uint256[] calldata idsOfProfilesToUnfollow)
