@@ -398,7 +398,7 @@ contract FollowNFTTest is BaseTest, ERC721Test {
         assertEq(followNFT.getFollowTokenId(followerProfileId), followTokenId);
     }
 
-    function testFollowWithWrappedTokenWhenExecutorIsApprovedForAllAndExecutorIsApprovedDelegatee_Fuzz(
+    function testFollowWithWrappedTokenWhenExecutorIsApprovedForAllAndExecutorIsApprovedDelegatee(
         address executorAsApprovedDelegatee
     ) public {
         vm.assume(executorAsApprovedDelegatee != followerProfileOwner);
