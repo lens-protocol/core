@@ -305,7 +305,7 @@ contract FollowTest is BaseTest, AssumptionHelpers {
             targetFollowNFTAddress,
             abi.encodeCall(
                 followNFT.follow,
-                (followerProfileId, followerProfileOwner, followerProfileOwner, MINT_NEW_TOKEN)
+                (followerProfileId, followerProfileOwner, MINT_NEW_TOKEN)
             )
         );
 
@@ -368,7 +368,7 @@ contract FollowTest is BaseTest, AssumptionHelpers {
             targetFollowNFTAddress,
             abi.encodeCall(
                 followNFT.follow,
-                (followerProfileId, approvedDelegatedExecutor, followerProfileOwner, MINT_NEW_TOKEN)
+                (followerProfileId, approvedDelegatedExecutor, MINT_NEW_TOKEN)
             )
         );
 

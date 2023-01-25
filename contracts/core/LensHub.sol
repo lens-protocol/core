@@ -376,7 +376,13 @@ contract LensHub is LensNFTBase, VersionedInitializable, LensMultiState, LensHub
         uint256[] calldata followTokenIds,
         bytes[] calldata datas
     ) external override whenNotPaused returns (uint256[] memory) {
-        return GeneralLib.follow(followerProfileId, idsOfProfilesToFollow, followTokenIds, datas);
+        return
+            GeneralLib.follow({
+                followerProfileId: followerProfileId,
+                idsOfProfilesToFollow: idsOfProfilesToFollow,
+                followTokenIds: followTokenIds,
+                followModuleDatas: datas
+            });
     }
 
     /// @inheritdoc ILensHub

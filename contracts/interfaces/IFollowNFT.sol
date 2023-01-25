@@ -50,7 +50,6 @@ interface IFollowNFT {
      * @param followerProfileId The ID of the profile acting as the follower.
      * @param executor The address executing the operation, which is the signer in case of using meta-transactions or
      * the sender otherwise.
-     * @param followerProfileOwner The address holding the follower profile.
      * @param followTokenId The ID of the follow token to be used for this follow operation. Zero if a new follow token
      * should be minted.
      *
@@ -59,7 +58,6 @@ interface IFollowNFT {
     function follow(
         uint256 followerProfileId,
         address executor,
-        address followerProfileOwner,
         uint256 followTokenId
     ) external returns (uint256);
 

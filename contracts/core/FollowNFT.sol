@@ -55,7 +55,6 @@ contract FollowNFT is HubRestricted, LensNFTBase, ERC2981CollectionRoyalties, IF
     function follow(
         uint256 followerProfileId,
         address executor,
-        address followerProfileOwner,
         uint256 followTokenId
     ) external override onlyHub returns (uint256) {
         if (_followTokenIdByFollowerProfileId[followerProfileId] != 0) {
@@ -65,29 +64,33 @@ contract FollowNFT is HubRestricted, LensNFTBase, ERC2981CollectionRoyalties, IF
         address followTokenOwner;
         uint256 currentFollowerProfileId;
         if (followTokenId == 0) {
-            followTokenIdAssigned = _followMintingNewToken(followerProfileId, 0);
+            followTokenIdAssigned = _followMintingNewToken({
+                followerProfileId: followerProfileId,
+                followTokenId: 0
+            });
         } else if ((followTokenOwner = _unsafeOwnerOf(followTokenId)) != address(0)) {
-            _followWithWrappedToken(
-                followerProfileId,
-                executor,
-                followTokenId,
-                followerProfileOwner,
-                followTokenOwner
-            );
+            _followWithWrappedToken({
+                followerProfileId: followerProfileId,
+                executor: executor,
+                followTokenId: followTokenId,
+                followTokenOwner: followTokenOwner
+            });
         } else if (
             (currentFollowerProfileId = _followDataByFollowTokenId[followTokenId]
                 .followerProfileId) != 0
         ) {
-            _followWithUnwrappedToken(
-                followerProfileId,
-                executor,
-                followTokenId,
-                currentFollowerProfileId
-            );
+            _followWithUnwrappedToken({
+                followerProfileId: followerProfileId,
+                followTokenId: followTokenId,
+                currentFollowerProfileId: currentFollowerProfileId
+            });
         } else if (
             _followDataByFollowTokenId[followTokenId].profileIdAllowedToRecover == followerProfileId
         ) {
-            _followMintingNewToken(followerProfileId, followTokenId);
+            _followMintingNewToken({
+                followerProfileId: followerProfileId,
+                followTokenId: followTokenId
+            });
         } else {
             revert FollowTokenDoesNotExist();
         }
@@ -294,7 +297,11 @@ contract FollowNFT is HubRestricted, LensNFTBase, ERC2981CollectionRoyalties, IF
         unchecked {
             followTokenIdAssigned = followTokenId == 0 ? ++_lastFollowTokenId : followTokenId;
         }
-        _baseFollow(followerProfileId, followTokenIdAssigned, true);
+        _baseFollow({
+            followerProfileId: followerProfileId,
+            followTokenId: followTokenIdAssigned,
+            isOriginalFollow: true
+        });
         return followTokenIdAssigned;
     }
 
@@ -302,10 +309,10 @@ contract FollowNFT is HubRestricted, LensNFTBase, ERC2981CollectionRoyalties, IF
         uint256 followerProfileId,
         address executor,
         uint256 followTokenId,
-        address followerProfileOwner,
         address followTokenOwner
     ) internal {
         bool isFollowApproved = _followApprovalByFollowTokenId[followTokenId] == followerProfileId;
+        address followerProfileOwner = IERC721(HUB).ownerOf(followerProfileId);
         if (
             isFollowApproved ||
             followerProfileOwner == followTokenOwner ||
@@ -317,11 +324,12 @@ contract FollowNFT is HubRestricted, LensNFTBase, ERC2981CollectionRoyalties, IF
                 // The `_followApprovalByFollowTokenId` was used, now needs to be cleared.
                 _approveFollow(0, followTokenId);
             }
-            _replaceFollower(
-                _followDataByFollowTokenId[followTokenId].followerProfileId,
-                followerProfileId,
-                followTokenId
-            );
+            _replaceFollower({
+                currentFollowerProfileId: _followDataByFollowTokenId[followTokenId]
+                    .followerProfileId,
+                newFollowerProfileId: followerProfileId,
+                followTokenId: followTokenId
+            });
         } else {
             revert DoesNotHavePermissions();
         }
@@ -329,15 +337,15 @@ contract FollowNFT is HubRestricted, LensNFTBase, ERC2981CollectionRoyalties, IF
 
     function _followWithUnwrappedToken(
         uint256 followerProfileId,
-        address executor,
         uint256 followTokenId,
         uint256 currentFollowerProfileId
     ) internal {
-        if (
-            !IERC721Time(HUB).exists(currentFollowerProfileId) ||
-            IERC721(HUB).ownerOf(currentFollowerProfileId) == executor
-        ) {
-            _replaceFollower(currentFollowerProfileId, followerProfileId, followTokenId);
+        if (!IERC721Time(HUB).exists(currentFollowerProfileId)) {
+            _replaceFollower({
+                currentFollowerProfileId: currentFollowerProfileId,
+                newFollowerProfileId: followerProfileId,
+                followTokenId: followTokenId
+            });
         } else {
             revert DoesNotHavePermissions();
         }
@@ -354,7 +362,11 @@ contract FollowNFT is HubRestricted, LensNFTBase, ERC2981CollectionRoyalties, IF
             ILensHub(HUB).emitUnfollowedEvent(currentFollowerProfileId, _followedProfileId);
         }
         // Perform the follow, setting new follower.
-        _baseFollow(newFollowerProfileId, followTokenId, false);
+        _baseFollow({
+            followerProfileId: newFollowerProfileId,
+            followTokenId: followTokenId,
+            isOriginalFollow: false
+        });
     }
 
     function _baseFollow(

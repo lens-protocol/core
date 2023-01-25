@@ -71,7 +71,6 @@ contract FollowNFTTest is BaseTest, ERC721Test {
         followNFT.follow({
             followerProfileId: followerProfileId,
             executor: followerProfileOwner,
-            followerProfileOwner: followerProfileOwner,
             followTokenId: MINT_NEW_TOKEN
         });
     }
@@ -83,7 +82,6 @@ contract FollowNFTTest is BaseTest, ERC721Test {
         followNFT.follow({
             followerProfileId: alreadyFollowingProfileId,
             executor: alreadyFollowingProfileOwner,
-            followerProfileOwner: alreadyFollowingProfileOwner,
             followTokenId: MINT_NEW_TOKEN
         });
     }
@@ -101,7 +99,6 @@ contract FollowNFTTest is BaseTest, ERC721Test {
         followNFT.follow({
             followerProfileId: followerProfileId,
             executor: followerProfileOwner,
-            followerProfileOwner: followerProfileOwner,
             followTokenId: unexistentTokenId
         });
     }
@@ -122,7 +119,6 @@ contract FollowNFTTest is BaseTest, ERC721Test {
         uint256 assignedTokenId = followNFT.follow({
             followerProfileId: followerProfileId,
             executor: followerProfileOwner,
-            followerProfileOwner: followerProfileOwner,
             followTokenId: MINT_NEW_TOKEN
         });
 
@@ -135,7 +131,6 @@ contract FollowNFTTest is BaseTest, ERC721Test {
         uint256 assignedTokenId = followNFT.follow({
             followerProfileId: followerProfileId,
             executor: followerProfileOwner,
-            followerProfileOwner: followerProfileOwner,
             followTokenId: MINT_NEW_TOKEN
         });
 
@@ -155,7 +150,6 @@ contract FollowNFTTest is BaseTest, ERC721Test {
         uint256 assignedTokenId = followNFT.follow({
             followerProfileId: followerProfileId,
             executor: followerProfileOwner,
-            followerProfileOwner: followerProfileOwner,
             followTokenId: MINT_NEW_TOKEN
         });
 
@@ -173,7 +167,6 @@ contract FollowNFTTest is BaseTest, ERC721Test {
         uint256 assignedTokenId = followNFT.follow({
             followerProfileId: followerProfileId,
             executor: followerProfileOwner,
-            followerProfileOwner: followerProfileOwner,
             followTokenId: MINT_NEW_TOKEN
         });
 
@@ -186,47 +179,6 @@ contract FollowNFTTest is BaseTest, ERC721Test {
     //////////////////////////////////////////////////////////
     // Follow - With unwrapped token - Scenarios
     //////////////////////////////////////////////////////////
-
-    function testFollowWithUnwrappedTokenWhenExecutorOwnsCurrentAndNewFollowerProfile() public {
-        vm.prank(followerProfileOwner);
-        hub.transferFrom(followerProfileOwner, alreadyFollowingProfileOwner, followerProfileId);
-
-        uint256 followTokenId = followNFT.getFollowTokenId(alreadyFollowingProfileId);
-
-        vm.prank(address(hub));
-
-        uint256 assignedTokenId = followNFT.follow({
-            followerProfileId: followerProfileId,
-            executor: alreadyFollowingProfileOwner,
-            followerProfileOwner: alreadyFollowingProfileOwner,
-            followTokenId: followTokenId
-        });
-
-        assertFalse(followNFT.isFollowing(alreadyFollowingProfileId));
-        assertTrue(followNFT.isFollowing(followerProfileId));
-        assertEq(assignedTokenId, followTokenId);
-        assertEq(followNFT.getFollowTokenId(followerProfileId), followTokenId);
-    }
-
-    function testFollowWithUnwrappedTokenWhenExecutorOwnsCurrentFollowerProfileAndIsApprovedDelegateeOfNewFollowerProfileOwner()
-        public
-    {
-        uint256 followTokenId = followNFT.getFollowTokenId(alreadyFollowingProfileId);
-
-        vm.prank(address(hub));
-
-        uint256 assignedTokenId = followNFT.follow({
-            followerProfileId: followerProfileId,
-            executor: alreadyFollowingProfileOwner,
-            followerProfileOwner: followerProfileOwner,
-            followTokenId: followTokenId
-        });
-
-        assertFalse(followNFT.isFollowing(alreadyFollowingProfileId));
-        assertTrue(followNFT.isFollowing(followerProfileId));
-        assertEq(assignedTokenId, followTokenId);
-        assertEq(followNFT.getFollowTokenId(followerProfileId), followTokenId);
-    }
 
     function testFollowWithUnwrappedTokenWhenCurrentFollowerWasBurnedAndExecutorIsFollowerOwner()
         public
@@ -242,7 +194,6 @@ contract FollowNFTTest is BaseTest, ERC721Test {
         uint256 assignedTokenId = followNFT.follow({
             followerProfileId: followerProfileId,
             executor: followerProfileOwner,
-            followerProfileOwner: followerProfileOwner,
             followTokenId: followTokenId
         });
 
@@ -270,7 +221,6 @@ contract FollowNFTTest is BaseTest, ERC721Test {
         uint256 assignedTokenId = followNFT.follow({
             followerProfileId: followerProfileId,
             executor: executorAsApprovedDelegatee,
-            followerProfileOwner: followerProfileOwner,
             followTokenId: followTokenId
         });
 
@@ -301,7 +251,6 @@ contract FollowNFTTest is BaseTest, ERC721Test {
         uint256 assignedTokenId = followNFT.follow({
             followerProfileId: followerProfileId,
             executor: followerProfileOwner,
-            followerProfileOwner: followerProfileOwner,
             followTokenId: followTokenId
         });
 
@@ -330,7 +279,6 @@ contract FollowNFTTest is BaseTest, ERC721Test {
         uint256 assignedTokenId = followNFT.follow({
             followerProfileId: followerProfileId,
             executor: executorAsApprovedDelegatee,
-            followerProfileOwner: followerProfileOwner,
             followTokenId: followTokenId
         });
 
@@ -363,7 +311,6 @@ contract FollowNFTTest is BaseTest, ERC721Test {
         uint256 assignedTokenId = followNFT.follow({
             followerProfileId: followerProfileId,
             executor: executorAsApprovedDelegatee,
-            followerProfileOwner: followerProfileOwner,
             followTokenId: followTokenId
         });
 
@@ -389,7 +336,6 @@ contract FollowNFTTest is BaseTest, ERC721Test {
         uint256 assignedTokenId = followNFT.follow({
             followerProfileId: followerProfileId,
             executor: followerProfileOwner,
-            followerProfileOwner: followerProfileOwner,
             followTokenId: followTokenId
         });
 
@@ -419,7 +365,6 @@ contract FollowNFTTest is BaseTest, ERC721Test {
         uint256 assignedTokenId = followNFT.follow({
             followerProfileId: followerProfileId,
             executor: executorAsApprovedDelegatee,
-            followerProfileOwner: followerProfileOwner,
             followTokenId: followTokenId
         });
 
@@ -446,7 +391,6 @@ contract FollowNFTTest is BaseTest, ERC721Test {
         uint256 assignedTokenId = followNFT.follow({
             followerProfileId: followerProfileId,
             executor: followerProfileOwner,
-            followerProfileOwner: followerProfileOwner,
             followTokenId: followTokenId
         });
 
@@ -477,7 +421,6 @@ contract FollowNFTTest is BaseTest, ERC721Test {
         uint256 assignedTokenId = followNFT.follow({
             followerProfileId: followerProfileId,
             executor: executorAsApprovedDelegatee,
-            followerProfileOwner: followerProfileOwner,
             followTokenId: followTokenId
         });
 
@@ -512,7 +455,6 @@ contract FollowNFTTest is BaseTest, ERC721Test {
         uint256 assignedTokenId = followNFT.follow({
             followerProfileId: alreadyFollowingProfileId,
             executor: alreadyFollowingProfileOwner,
-            followerProfileOwner: alreadyFollowingProfileOwner,
             followTokenId: followTokenId
         });
 
@@ -795,7 +737,6 @@ contract FollowNFTTest is BaseTest, ERC721Test {
         uint256 assignedTokenId = followNFT.follow({
             followerProfileId: followerProfileId,
             executor: followerProfileOwner,
-            followerProfileOwner: followerProfileOwner,
             followTokenId: MINT_NEW_TOKEN
         });
 
@@ -929,7 +870,6 @@ contract FollowNFTTest is BaseTest, ERC721Test {
         uint256 assignedTokenId = followNFT.follow({
             followerProfileId: followerProfileId,
             executor: followerProfileOwner,
-            followerProfileOwner: followerProfileOwner,
             followTokenId: MINT_NEW_TOKEN
         });
 
