@@ -202,11 +202,11 @@ library GeneralLib {
     function unfollow(uint256 unfollowerProfileId, uint256[] calldata idsOfProfilesToUnfollow)
         external
     {
+        GeneralHelpers.validateCallerIsOwnerOrDelegatedExecutor(unfollowerProfileId);
         return
             InteractionHelpers.unfollow({
                 unfollowerProfileId: unfollowerProfileId,
                 executor: msg.sender,
-                unfollowerProfileOwner: GeneralHelpers.ownerOf(unfollowerProfileId),
                 idsOfProfilesToUnfollow: idsOfProfilesToUnfollow
             });
     }
@@ -219,15 +219,15 @@ library GeneralLib {
      */
     function unfollowWithSig(DataTypes.UnfollowWithSigData calldata vars) external {
         address unfollowerProfileOwner = GeneralHelpers.ownerOf(vars.unfollowerProfileId);
-        address signer = vars.delegatedSigner == address(0)
-            ? unfollowerProfileOwner
-            : vars.delegatedSigner;
+        address signer = GeneralHelpers.getOriginatorOrDelegatedExecutorSigner(
+            unfollowerProfileOwner,
+            vars.delegatedSigner
+        );
         MetaTxHelpers.baseUnfollowWithSig(signer, vars);
         return
             InteractionHelpers.unfollow({
                 unfollowerProfileId: vars.unfollowerProfileId,
                 executor: signer,
-                unfollowerProfileOwner: unfollowerProfileOwner,
                 idsOfProfilesToUnfollow: vars.idsOfProfilesToUnfollow
             });
     }

@@ -442,9 +442,7 @@ contract FollowNFTTest is BaseTest, ERC721Test {
 
         followNFT.unfollow({
             unfollowerProfileId: alreadyFollowingProfileId,
-            executor: alreadyFollowingProfileOwner,
-            isExecutorApproved: false,
-            unfollowerProfileOwner: alreadyFollowingProfileOwner
+            executor: alreadyFollowingProfileOwner
         });
 
         assertFalse(followNFT.isFollowing(alreadyFollowingProfileId));
@@ -479,9 +477,7 @@ contract FollowNFTTest is BaseTest, ERC721Test {
         vm.expectRevert(Errors.NotHub.selector);
         followNFT.unfollow({
             unfollowerProfileId: alreadyFollowingProfileId,
-            executor: alreadyFollowingProfileOwner,
-            isExecutorApproved: false,
-            unfollowerProfileOwner: alreadyFollowingProfileOwner
+            executor: alreadyFollowingProfileOwner
         });
     }
 
@@ -493,48 +489,26 @@ contract FollowNFTTest is BaseTest, ERC721Test {
         vm.expectRevert(IFollowNFT.NotFollowing.selector);
         followNFT.unfollow({
             unfollowerProfileId: followerProfileId,
-            executor: followerProfileOwner,
-            isExecutorApproved: false,
-            unfollowerProfileOwner: followerProfileOwner
+            executor: followerProfileOwner
         });
     }
 
-    function testCannotUnfollowIfTokenIsWrappedAndExecutorIsNotApprovedOrUnfollowerOwnerOrTokenOwnerOrApprovedForAll(
-        address executor
-    ) public {
-        vm.assume(executor != alreadyFollowingProfileOwner);
-        vm.assume(!hub.isDelegatedExecutorApproved(alreadyFollowingProfileOwner, executor));
-        vm.assume(!followNFT.isApprovedForAll(alreadyFollowingProfileOwner, executor));
-
+    function testCannotUnfollowIfTokenIsWrappedAndUnfollowerOwnerOrExecutorDontHoldTheTokenOrApprovedForAll()
+        public
+    {
         uint256 followTokenId = followNFT.getFollowTokenId(alreadyFollowingProfileId);
         vm.prank(alreadyFollowingProfileOwner);
         followNFT.untieAndWrap(followTokenId);
 
-        vm.prank(address(hub));
-
-        vm.expectRevert(IFollowNFT.DoesNotHavePermissions.selector);
-        followNFT.unfollow({
-            unfollowerProfileId: alreadyFollowingProfileId,
-            executor: executor,
-            isExecutorApproved: false,
-            unfollowerProfileOwner: alreadyFollowingProfileOwner
-        });
-    }
-
-    function testCannotUnfollowIfTokenIsUnwrappedAndExecutorIsNotApprovedOrUnfollowerOwner(
-        address executor
-    ) public {
-        vm.assume(executor != alreadyFollowingProfileOwner);
-        vm.assume(!hub.isDelegatedExecutorApproved(alreadyFollowingProfileOwner, executor));
+        vm.prank(alreadyFollowingProfileOwner);
+        followNFT.transferFrom(alreadyFollowingProfileOwner, address(0x123456789), followTokenId);
 
         vm.prank(address(hub));
 
         vm.expectRevert(IFollowNFT.DoesNotHavePermissions.selector);
         followNFT.unfollow({
             unfollowerProfileId: alreadyFollowingProfileId,
-            executor: executor,
-            isExecutorApproved: false,
-            unfollowerProfileOwner: alreadyFollowingProfileOwner
+            executor: alreadyFollowingProfileOwner
         });
     }
 
@@ -551,9 +525,7 @@ contract FollowNFTTest is BaseTest, ERC721Test {
 
         followNFT.unfollow({
             unfollowerProfileId: alreadyFollowingProfileId,
-            executor: alreadyFollowingProfileOwner,
-            isExecutorApproved: false,
-            unfollowerProfileOwner: alreadyFollowingProfileOwner
+            executor: alreadyFollowingProfileOwner
         });
 
         assertFalse(followNFT.isFollowing(alreadyFollowingProfileId));
@@ -575,9 +547,7 @@ contract FollowNFTTest is BaseTest, ERC721Test {
 
         followNFT.unfollow({
             unfollowerProfileId: alreadyFollowingProfileId,
-            executor: executorAsApprovedDelegatee,
-            isExecutorApproved: true,
-            unfollowerProfileOwner: alreadyFollowingProfileOwner
+            executor: executorAsApprovedDelegatee
         });
 
         assertFalse(followNFT.isFollowing(alreadyFollowingProfileId));
@@ -600,9 +570,7 @@ contract FollowNFTTest is BaseTest, ERC721Test {
 
         followNFT.unfollow({
             unfollowerProfileId: alreadyFollowingProfileId,
-            executor: followTokenOwner,
-            isExecutorApproved: false,
-            unfollowerProfileOwner: alreadyFollowingProfileOwner
+            executor: followTokenOwner
         });
 
         assertFalse(followNFT.isFollowing(alreadyFollowingProfileId));
@@ -627,9 +595,7 @@ contract FollowNFTTest is BaseTest, ERC721Test {
 
         followNFT.unfollow({
             unfollowerProfileId: alreadyFollowingProfileId,
-            executor: approvedForAll,
-            isExecutorApproved: false,
-            unfollowerProfileOwner: alreadyFollowingProfileOwner
+            executor: approvedForAll
         });
 
         assertFalse(followNFT.isFollowing(alreadyFollowingProfileId));
@@ -644,9 +610,7 @@ contract FollowNFTTest is BaseTest, ERC721Test {
 
         followNFT.unfollow({
             unfollowerProfileId: alreadyFollowingProfileId,
-            executor: alreadyFollowingProfileOwner,
-            isExecutorApproved: false,
-            unfollowerProfileOwner: alreadyFollowingProfileOwner
+            executor: alreadyFollowingProfileOwner
         });
 
         assertFalse(followNFT.isFollowing(alreadyFollowingProfileId));
@@ -666,9 +630,7 @@ contract FollowNFTTest is BaseTest, ERC721Test {
 
         followNFT.unfollow({
             unfollowerProfileId: alreadyFollowingProfileId,
-            executor: executorAsApprovedDelegatee,
-            isExecutorApproved: true,
-            unfollowerProfileOwner: alreadyFollowingProfileOwner
+            executor: executorAsApprovedDelegatee
         });
 
         assertFalse(followNFT.isFollowing(alreadyFollowingProfileId));
@@ -774,9 +736,7 @@ contract FollowNFTTest is BaseTest, ERC721Test {
         vm.prank(address(hub));
         followNFT.unfollow({
             unfollowerProfileId: alreadyFollowingProfileId,
-            executor: alreadyFollowingProfileOwner,
-            isExecutorApproved: false,
-            unfollowerProfileOwner: alreadyFollowingProfileOwner
+            executor: alreadyFollowingProfileOwner
         });
 
         vm.expectRevert(IFollowNFT.NotFollowing.selector);
@@ -962,9 +922,7 @@ contract FollowNFTTest is BaseTest, ERC721Test {
         vm.prank(address(hub));
         followNFT.unfollow({
             unfollowerProfileId: alreadyFollowingProfileId,
-            executor: alreadyFollowingProfileOwner,
-            isExecutorApproved: false,
-            unfollowerProfileOwner: alreadyFollowingProfileOwner
+            executor: alreadyFollowingProfileOwner
         });
 
         assertFalse(followNFT.isFollowing(alreadyFollowingProfileId));

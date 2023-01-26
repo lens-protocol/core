@@ -69,16 +69,8 @@ interface IFollowNFT {
      * @param unfollowerProfileId The ID of the profile that is perfrorming the unfollow operation.
      * @param executor The address executing the operation, which is the signer in case of using meta-transactions or
      * the sender otherwise.
-     * @param isExecutorApproved A boolean indicading whether the executor is an approved delegated executor of the
-     * unfollower profile's owner.
-     * @param unfollowerProfileOwner The address holding the unfollower profile.
      */
-    function unfollow(
-        uint256 unfollowerProfileId,
-        address executor,
-        bool isExecutorApproved,
-        address unfollowerProfileOwner
-    ) external;
+    function unfollow(uint256 unfollowerProfileId, address executor) external;
 
     /**
      * @notice Approves the given profile to follow with the given wrapped token.
