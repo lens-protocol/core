@@ -117,7 +117,7 @@ contract FollowNFT is HubRestricted, LensNFTBase, ERC2981CollectionRoyalties, IF
         ) {
             revert DoesNotHavePermissions();
         }
-        _unfollow(unfollowerProfileId, followTokenId);
+        _unfollow({unfollower: unfollowerProfileId, followTokenId: followTokenId});
         if (followTokenOwner == address(0)) {
             _followDataByFollowTokenId[followTokenId]
                 .profileIdAllowedToRecover = unfollowerProfileId;

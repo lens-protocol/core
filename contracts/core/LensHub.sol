@@ -401,7 +401,11 @@ contract LensHub is LensNFTBase, VersionedInitializable, LensMultiState, LensHub
         override
         whenNotPaused
     {
-        return GeneralLib.unfollow(unfollowerProfileId, idsOfProfilesToUnfollow);
+        return
+            GeneralLib.unfollow({
+                unfollowerProfileId: unfollowerProfileId,
+                idsOfProfilesToUnfollow: idsOfProfilesToUnfollow
+            });
     }
 
     /// @inheritdoc ILensHub

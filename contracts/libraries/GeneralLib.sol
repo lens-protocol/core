@@ -203,12 +203,12 @@ library GeneralLib {
         external
     {
         return
-            InteractionHelpers.unfollow(
-                unfollowerProfileId,
-                msg.sender,
-                GeneralHelpers.ownerOf(unfollowerProfileId),
-                idsOfProfilesToUnfollow
-            );
+            InteractionHelpers.unfollow({
+                unfollowerProfileId: unfollowerProfileId,
+                executor: msg.sender,
+                unfollowerProfileOwner: GeneralHelpers.ownerOf(unfollowerProfileId),
+                idsOfProfilesToUnfollow: idsOfProfilesToUnfollow
+            });
     }
 
     /**
@@ -224,12 +224,12 @@ library GeneralLib {
             : vars.delegatedSigner;
         MetaTxHelpers.baseUnfollowWithSig(signer, vars);
         return
-            InteractionHelpers.unfollow(
-                vars.unfollowerProfileId,
-                signer,
-                unfollowerProfileOwner,
-                vars.idsOfProfilesToUnfollow
-            );
+            InteractionHelpers.unfollow({
+                unfollowerProfileId: vars.unfollowerProfileId,
+                executor: signer,
+                unfollowerProfileOwner: unfollowerProfileOwner,
+                idsOfProfilesToUnfollow: vars.idsOfProfilesToUnfollow
+            });
     }
 
     function setBlockStatus(

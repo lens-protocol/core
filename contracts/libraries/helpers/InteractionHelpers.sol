@@ -101,12 +101,12 @@ library InteractionHelpers {
                 revert Errors.NotFollowing();
             }
 
-            IFollowNFT(followNFT).unfollow(
-                unfollowerProfileId,
-                executor,
-                isExecutorApproved,
-                unfollowerProfileOwner
-            );
+            IFollowNFT(followNFT).unfollow({
+                unfollowerProfileId: unfollowerProfileId,
+                executor: executor,
+                isExecutorApproved: isExecutorApproved,
+                unfollowerProfileOwner: unfollowerProfileOwner
+            });
 
             emit Events.Unfollowed(unfollowerProfileId, idOfProfileToUnfollow, block.timestamp);
 
