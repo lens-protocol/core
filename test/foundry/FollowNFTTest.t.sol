@@ -17,6 +17,8 @@ contract FollowNFTTest is BaseTest, ERC721Test {
     uint256 alreadyFollowingProfileId;
     address targetFollowNFT;
     uint256 lastAssignedTokenId;
+    address followHolder;
+    address alien;
 
     function setUp() public override {
         super.setUp();
@@ -25,6 +27,9 @@ contract FollowNFTTest is BaseTest, ERC721Test {
         targetProfileId = _createProfile(targetProfileOwner);
         followerProfileOwner = me;
         followerProfileId = _createProfile(followerProfileOwner);
+
+        followHolder = address(0xF0110111401DE2);
+        alien = address(0x123456789);
 
         alreadyFollowingProfileOwner = address(0xF01108);
         alreadyFollowingProfileId = _createProfile(alreadyFollowingProfileOwner);
@@ -501,7 +506,7 @@ contract FollowNFTTest is BaseTest, ERC721Test {
         followNFT.untieAndWrap(followTokenId);
 
         vm.prank(alreadyFollowingProfileOwner);
-        followNFT.transferFrom(alreadyFollowingProfileOwner, address(0x123456789), followTokenId);
+        followNFT.transferFrom(alreadyFollowingProfileOwner, alien, followTokenId);
 
         vm.prank(address(hub));
 
@@ -510,6 +515,20 @@ contract FollowNFTTest is BaseTest, ERC721Test {
             unfollowerProfileId: alreadyFollowingProfileId,
             executor: alreadyFollowingProfileOwner
         });
+    }
+
+    function testCannotRemoveFollowerOnWrappedIfNotHolder() public {
+        uint256 followTokenId = followNFT.getFollowTokenId(alreadyFollowingProfileId);
+        vm.prank(alreadyFollowingProfileOwner);
+        followNFT.untieAndWrap(followTokenId);
+
+        vm.prank(alreadyFollowingProfileOwner);
+        followNFT.transferFrom(alreadyFollowingProfileOwner, followHolder, followTokenId);
+
+        vm.prank(alien);
+
+        vm.expectRevert(IFollowNFT.DoesNotHavePermissions.selector);
+        followNFT.removeFollower({followTokenId: followTokenId});
     }
 
     //////////////////////////////////////////////////////////
@@ -636,6 +655,20 @@ contract FollowNFTTest is BaseTest, ERC721Test {
         assertFalse(followNFT.isFollowing(alreadyFollowingProfileId));
         assertEq(followNFT.getFollowerProfileId(alreadyFollowingProfileId), 0);
         assertEq(followNFT.getProfileIdAllowedToRecover(followTokenId), alreadyFollowingProfileId);
+    }
+
+    function testRemoveFollower() public {
+        uint256 followTokenId = followNFT.getFollowTokenId(alreadyFollowingProfileId);
+        vm.prank(alreadyFollowingProfileOwner);
+        followNFT.untieAndWrap(followTokenId);
+
+        vm.prank(alreadyFollowingProfileOwner);
+        followNFT.transferFrom(alreadyFollowingProfileOwner, followHolder, followTokenId);
+
+        vm.prank(followHolder);
+        followNFT.removeFollower({followTokenId: followTokenId});
+
+        assertFalse(followNFT.isFollowing(alreadyFollowingProfileId));
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
