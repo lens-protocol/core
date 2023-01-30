@@ -570,7 +570,7 @@ contract LensHub is LensNFTBase, VersionedInitializable, LensMultiState, LensHub
 
     /// @inheritdoc ILensHub
     function isBlocked(uint256 profileId, uint256 byProfileId) external view returns (bool) {
-        return _blockStatusByBlockeeProfileIdByProfileId[byProfileId][profileId];
+        return _blockedStatus[byProfileId][profileId];
     }
 
     /// @inheritdoc ILensHub
