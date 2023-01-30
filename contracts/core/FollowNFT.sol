@@ -124,18 +124,13 @@ contract FollowNFT is HubRestricted, LensNFTBase, ERC2981CollectionRoyalties, IF
         }
     }
 
-    // Holder of a followNFT token can clear the follower on their token even without a profile
-    function removeFollower(uint256 followTokenId) external {
+    /// @inheritdoc IFollowNFT
+    function removeFollower(uint256 followTokenId) external override {
         address followTokenOwner = ownerOf(followTokenId);
-        // Follow token must be wrapped
-        if (followTokenOwner != address(0)) {
-            if (followTokenOwner == msg.sender || isApprovedForAll(followTokenOwner, msg.sender)) {
-                _unfollowIfHasFollower(followTokenId);
-            } else {
-                revert DoesNotHavePermissions();
-            }
+        if (followTokenOwner == msg.sender || isApprovedForAll(followTokenOwner, msg.sender)) {
+            _unfollowIfHasFollower(followTokenId);
         } else {
-            revert FollowTokenDoesNotExist();
+            revert DoesNotHavePermissions();
         }
     }
 

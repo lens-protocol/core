@@ -18,7 +18,7 @@ contract FollowNFTTest is BaseTest, ERC721Test {
     address targetFollowNFT;
     uint256 lastAssignedTokenId;
     address followHolder;
-    address alien;
+    address freshUnrelatedAddress;
 
     function setUp() public override {
         super.setUp();
@@ -29,7 +29,7 @@ contract FollowNFTTest is BaseTest, ERC721Test {
         followerProfileId = _createProfile(followerProfileOwner);
 
         followHolder = address(0xF0110111401DE2);
-        alien = address(0x123456789);
+        freshUnrelatedAddress = address(0x123456789);
 
         alreadyFollowingProfileOwner = address(0xF01108);
         alreadyFollowingProfileId = _createProfile(alreadyFollowingProfileOwner);
@@ -506,7 +506,7 @@ contract FollowNFTTest is BaseTest, ERC721Test {
         followNFT.untieAndWrap(followTokenId);
 
         vm.prank(alreadyFollowingProfileOwner);
-        followNFT.transferFrom(alreadyFollowingProfileOwner, alien, followTokenId);
+        followNFT.transferFrom(alreadyFollowingProfileOwner, freshUnrelatedAddress, followTokenId);
 
         vm.prank(address(hub));
 
@@ -525,7 +525,7 @@ contract FollowNFTTest is BaseTest, ERC721Test {
         vm.prank(alreadyFollowingProfileOwner);
         followNFT.transferFrom(alreadyFollowingProfileOwner, followHolder, followTokenId);
 
-        vm.prank(alien);
+        vm.prank(freshUnrelatedAddress);
 
         vm.expectRevert(IFollowNFT.DoesNotHavePermissions.selector);
         followNFT.removeFollower({followTokenId: followTokenId});
