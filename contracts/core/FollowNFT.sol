@@ -60,41 +60,52 @@ contract FollowNFT is HubRestricted, LensNFTBase, ERC2981CollectionRoyalties, IF
         if (_followTokenIdByFollowerProfileId[followerProfileId] != 0) {
             revert AlreadyFollowing();
         }
-        uint256 followTokenIdAssigned = followTokenId;
-        address followTokenOwner;
-        uint256 currentFollowerProfileId;
+
+        // Completely fresh follow:
         if (followTokenId == 0) {
-            followTokenIdAssigned = _followMintingNewToken({
-                followerProfileId: followerProfileId,
-                followTokenId: 0
-            });
-        } else if ((followTokenOwner = _unsafeOwnerOf(followTokenId)) != address(0)) {
+            return _followMintingNewToken({followerProfileId: followerProfileId, followTokenId: 0});
+        }
+
+        address followTokenOwner = _unsafeOwnerOf(followTokenId);
+        // Provided FollowToken is Wrapped:
+        if (followTokenOwner != address(0)) {
             _followWithWrappedToken({
                 followerProfileId: followerProfileId,
                 executor: executor,
                 followTokenId: followTokenId,
                 followTokenOwner: followTokenOwner
             });
-        } else if (
-            (currentFollowerProfileId = _followDataByFollowTokenId[followTokenId]
-                .followerProfileId) != 0
-        ) {
+            return followTokenId;
+        }
+
+        // Provided Follow Token is Unwrapped:
+        uint256 currentFollowerProfileId = _followDataByFollowTokenId[followTokenId]
+            .followerProfileId;
+
+        // FollowToken has a follower assigned already:
+        if (currentFollowerProfileId != 0) {
+            // We can follow only if the current follower profile was burnt
             _followWithUnwrappedToken({
                 followerProfileId: followerProfileId,
                 followTokenId: followTokenId,
                 currentFollowerProfileId: currentFollowerProfileId
             });
-        } else if (
+            return followTokenId;
+        }
+
+        // FollowToken follower slot is empty, lets check if current profile can recover it:
+        if (
             _followDataByFollowTokenId[followTokenId].profileIdAllowedToRecover == followerProfileId
         ) {
             _followMintingNewToken({
                 followerProfileId: followerProfileId,
                 followTokenId: followTokenId
             });
-        } else {
-            revert FollowTokenDoesNotExist();
+            return followTokenId;
         }
-        return followTokenIdAssigned;
+
+        // If all above failed - it's not possible to follow with provided FollowTokenId:
+        revert FollowTokenDoesNotExist();
     }
 
     /// @inheritdoc IFollowNFT
