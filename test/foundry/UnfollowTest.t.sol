@@ -5,6 +5,7 @@ import './base/BaseTest.t.sol';
 import './MetaTxNegatives.t.sol';
 import {Strings} from '@openzeppelin/contracts/utils/Strings.sol';
 import './helpers/AssumptionHelpers.sol';
+import {IFollowNFT} from 'contracts/interfaces/IFollowNFT.sol';
 
 contract UnfollowTest is BaseTest, AssumptionHelpers {
     uint256 constant MINT_NEW_TOKEN = 0;
@@ -111,8 +112,33 @@ contract UnfollowTest is BaseTest, AssumptionHelpers {
 
         _unfollow({
             pk: nonFollowingProfileOwnerPk,
-            isUnfollowerProfileOwner: false,
+            isUnfollowerProfileOwner: true,
             unfollowerProfileId: nonFollowingProfileId,
+            idsOfProfilesToUnfollow: _toUint256Array(targetProfileId)
+        });
+    }
+
+    function testCannotUnfollowIfNotProfileOwnerOrDelegatedExecutor(uint256 executorPk) public {
+        executorPk = bound(
+            executorPk,
+            1,
+            115792089237316195423570985008687907852837564279074904382605163141518161494337 - 1
+        );
+        address executor = vm.addr(executorPk);
+        vm.assume(executor != unfollowerProfileOwner);
+        vm.assume(!hub.isDelegatedExecutorApproved(unfollowerProfileOwner, executor));
+        vm.assume(!followNFT.isApprovedForAll(unfollowerProfileOwner, executor));
+
+        uint256 followTokenId = followNFT.getFollowTokenId(unfollowerProfileId);
+        vm.prank(unfollowerProfileOwner);
+        followNFT.untieAndWrap(followTokenId);
+
+        vm.expectRevert(Errors.ExecutorInvalid.selector);
+
+        _unfollow({
+            pk: executorPk,
+            isUnfollowerProfileOwner: false,
+            unfollowerProfileId: unfollowerProfileId,
             idsOfProfilesToUnfollow: _toUint256Array(targetProfileId)
         });
     }
@@ -127,10 +153,7 @@ contract UnfollowTest is BaseTest, AssumptionHelpers {
 
         vm.expectCall(
             targetFollowNFT,
-            abi.encodeCall(
-                followNFT.unfollow,
-                (unfollowerProfileId, unfollowerProfileOwner, false, unfollowerProfileOwner)
-            )
+            abi.encodeCall(followNFT.unfollow, (unfollowerProfileId, unfollowerProfileOwner))
         );
 
         _unfollow({
@@ -159,10 +182,7 @@ contract UnfollowTest is BaseTest, AssumptionHelpers {
 
         vm.expectCall(
             targetFollowNFT,
-            abi.encodeCall(
-                followNFT.unfollow,
-                (unfollowerProfileId, approvedDelegatedExecutor, true, unfollowerProfileOwner)
-            )
+            abi.encodeCall(followNFT.unfollow, (unfollowerProfileId, approvedDelegatedExecutor))
         );
 
         _unfollow({

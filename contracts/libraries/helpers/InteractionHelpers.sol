@@ -76,13 +76,8 @@ library InteractionHelpers {
     function unfollow(
         uint256 unfollowerProfileId,
         address executor,
-        address unfollowerProfileOwner,
         uint256[] calldata idsOfProfilesToUnfollow
     ) internal {
-        bool isExecutorApproved = GeneralHelpers.isExecutorApproved(
-            unfollowerProfileOwner,
-            executor
-        );
         uint256 i;
         while (i < idsOfProfilesToUnfollow.length) {
             uint256 idOfProfileToUnfollow = idsOfProfilesToUnfollow[i];
@@ -103,9 +98,7 @@ library InteractionHelpers {
 
             IFollowNFT(followNFT).unfollow({
                 unfollowerProfileId: unfollowerProfileId,
-                executor: executor,
-                isExecutorApproved: isExecutorApproved,
-                unfollowerProfileOwner: unfollowerProfileOwner
+                executor: executor
             });
 
             emit Events.Unfollowed(unfollowerProfileId, idOfProfileToUnfollow, block.timestamp);
