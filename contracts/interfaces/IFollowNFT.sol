@@ -73,6 +73,15 @@ interface IFollowNFT {
     function unfollow(uint256 unfollowerProfileId, address executor) external;
 
     /**
+     * @notice Removes the follower from the given follow NFT.
+     *
+     * @dev It can only be called over wrapped tokens, by their owner or an approved-for-all address.
+     *
+     * @param followTokenId The ID of the follow token to remove the follower from.
+     */
+    function removeFollower(uint256 followTokenId) external;
+
+    /**
      * @notice Approves the given profile to follow with the given wrapped token.
      *
      * @dev It approves setting a follower on the given wrapped follow token, which lets the follow token owner to allow
