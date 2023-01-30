@@ -17,11 +17,6 @@ import {LensNFTBase} from './base/LensNFTBase.sol';
 import {MetaTxHelpers} from '../libraries/helpers/MetaTxHelpers.sol';
 import {Strings} from '@openzeppelin/contracts/utils/Strings.sol';
 
-struct Snapshot {
-    uint128 blockNumber;
-    uint128 value;
-}
-
 contract FollowNFT is HubRestricted, LensNFTBase, ERC2981CollectionRoyalties, IFollowNFT {
     using Strings for uint256;
 
@@ -60,41 +55,52 @@ contract FollowNFT is HubRestricted, LensNFTBase, ERC2981CollectionRoyalties, IF
         if (_followTokenIdByFollowerProfileId[followerProfileId] != 0) {
             revert AlreadyFollowing();
         }
-        uint256 followTokenIdAssigned = followTokenId;
-        address followTokenOwner;
-        uint256 currentFollowerProfileId;
+
         if (followTokenId == 0) {
-            followTokenIdAssigned = _followMintingNewToken({
-                followerProfileId: followerProfileId,
-                followTokenId: 0
-            });
-        } else if ((followTokenOwner = _unsafeOwnerOf(followTokenId)) != address(0)) {
+            // Fresh follow.
+            return _followMintingNewToken({followerProfileId: followerProfileId, followTokenId: 0});
+        }
+
+        address followTokenOwner = _unsafeOwnerOf(followTokenId);
+        if (followTokenOwner != address(0)) {
+            // Provided follow token is wrapped.
             _followWithWrappedToken({
                 followerProfileId: followerProfileId,
                 executor: executor,
                 followTokenId: followTokenId,
                 followTokenOwner: followTokenOwner
             });
-        } else if (
-            (currentFollowerProfileId = _followDataByFollowTokenId[followTokenId]
-                .followerProfileId) != 0
-        ) {
+            return followTokenId;
+        }
+
+        uint256 currentFollowerProfileId = _followDataByFollowTokenId[followTokenId]
+            .followerProfileId;
+
+        if (currentFollowerProfileId != 0) {
+            // Provided follow token is unwrapped.
+            // It has a follower profile set already, it can only be used to follow if that profile was burnt.
             _followWithUnwrappedToken({
                 followerProfileId: followerProfileId,
                 followTokenId: followTokenId,
                 currentFollowerProfileId: currentFollowerProfileId
             });
-        } else if (
+            return followTokenId;
+        }
+
+        if (
             _followDataByFollowTokenId[followTokenId].profileIdAllowedToRecover == followerProfileId
         ) {
+            // Provided follow token does not exist anymore, it can only be used if profile attempting to follow is
+            // allowed to recover it.
             _followMintingNewToken({
                 followerProfileId: followerProfileId,
                 followTokenId: followTokenId
             });
-        } else {
-            revert FollowTokenDoesNotExist();
+            return followTokenId;
         }
-        return followTokenIdAssigned;
+
+        // Provided follow token does not exist and is not allowed to be recovered by the profile attempting to follow.
+        revert FollowTokenDoesNotExist();
     }
 
     /// @inheritdoc IFollowNFT
