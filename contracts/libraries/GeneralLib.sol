@@ -202,13 +202,13 @@ library GeneralLib {
     function unfollow(uint256 unfollowerProfileId, uint256[] calldata idsOfProfilesToUnfollow)
         external
     {
+        GeneralHelpers.validateCallerIsOwnerOrDelegatedExecutor(unfollowerProfileId);
         return
-            InteractionHelpers.unfollow(
-                unfollowerProfileId,
-                msg.sender,
-                GeneralHelpers.ownerOf(unfollowerProfileId),
-                idsOfProfilesToUnfollow
-            );
+            InteractionHelpers.unfollow({
+                unfollowerProfileId: unfollowerProfileId,
+                executor: msg.sender,
+                idsOfProfilesToUnfollow: idsOfProfilesToUnfollow
+            });
     }
 
     /**
@@ -219,17 +219,17 @@ library GeneralLib {
      */
     function unfollowWithSig(DataTypes.UnfollowWithSigData calldata vars) external {
         address unfollowerProfileOwner = GeneralHelpers.ownerOf(vars.unfollowerProfileId);
-        address signer = vars.delegatedSigner == address(0)
-            ? unfollowerProfileOwner
-            : vars.delegatedSigner;
+        address signer = GeneralHelpers.getOriginatorOrDelegatedExecutorSigner(
+            unfollowerProfileOwner,
+            vars.delegatedSigner
+        );
         MetaTxHelpers.baseUnfollowWithSig(signer, vars);
         return
-            InteractionHelpers.unfollow(
-                vars.unfollowerProfileId,
-                signer,
-                unfollowerProfileOwner,
-                vars.idsOfProfilesToUnfollow
-            );
+            InteractionHelpers.unfollow({
+                unfollowerProfileId: vars.unfollowerProfileId,
+                executor: signer,
+                idsOfProfilesToUnfollow: vars.idsOfProfilesToUnfollow
+            });
     }
 
     function setBlockStatus(
