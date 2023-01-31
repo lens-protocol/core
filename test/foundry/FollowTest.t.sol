@@ -150,7 +150,7 @@ contract FollowTest is BaseTest {
 
         uint256 followTokenId = followNFT.getFollowTokenId(alreadyFollowingProfileId);
         vm.prank(alreadyFollowingProfileOwner);
-        followNFT.untieAndWrap(followTokenId);
+        followNFT.wrap(followTokenId);
 
         vm.expectRevert(Errors.ExecutorInvalid.selector);
 

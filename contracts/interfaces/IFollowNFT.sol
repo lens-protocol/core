@@ -14,7 +14,7 @@ interface IFollowNFT {
     error AlreadyFollowing();
     error NotFollowing();
     error FollowTokenDoesNotExist();
-    error AlreadyUntiedAndWrapped();
+    error AlreadyWrapped();
     error OnlyWrappedFollowTokens();
     error DoesNotHavePermissions();
 
@@ -94,20 +94,20 @@ interface IFollowNFT {
     function approveFollow(uint256 approvedProfileId, uint256 followTokenId) external;
 
     /**
-     * @notice Unties the follow token from the follower's profile token, and wraps it into the ERC-721 untied follow
-     * tokens collection.
+     * @notice Unties the follow token from the follower's profile one, and wraps it into the ERC-721 untied follow
+     * tokens collection. Untied follow tokens will NOT be automatically transferred with their follower profile.
      *
      * @param followTokenId The ID of the follow token to untie and wrap.
      */
-    function untieAndWrap(uint256 followTokenId) external;
+    function wrap(uint256 followTokenId) external;
 
     /**
      * @notice Unwraps the follow token from the ERC-721 untied follow tokens collection, and ties it to the follower's
-     * profile token.
+     * profile token. Tokens that are tied to the follower profile will be automatically transferred with it.
      *
      * @param followTokenId The ID of the follow token to unwrap and tie to its follower.
      */
-    function unwrapAndTie(uint256 followTokenId) external;
+    function unwrap(uint256 followTokenId) external;
 
     /**
      * @notice Processes logic when the given profile is being blocked. If it was following the targeted profile,

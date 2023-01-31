@@ -150,9 +150,9 @@ contract FollowNFT is HubRestricted, LensNFTBase, ERC2981CollectionRoyalties, IF
     }
 
     /// @inheritdoc IFollowNFT
-    function untieAndWrap(uint256 followTokenId) external override {
+    function wrap(uint256 followTokenId) external override {
         if (_isFollowTokenWrapped(followTokenId)) {
-            revert AlreadyUntiedAndWrapped();
+            revert AlreadyWrapped();
         }
         uint256 followerProfileId = _followDataByFollowTokenId[followTokenId].followerProfileId;
         address wrappedTokenReceiver;
@@ -174,7 +174,7 @@ contract FollowNFT is HubRestricted, LensNFTBase, ERC2981CollectionRoyalties, IF
     }
 
     /// @inheritdoc IFollowNFT
-    function unwrapAndTie(uint256 followTokenId) external override {
+    function unwrap(uint256 followTokenId) external override {
         if (_followDataByFollowTokenId[followTokenId].followerProfileId == 0) {
             revert NotFollowing();
         }
