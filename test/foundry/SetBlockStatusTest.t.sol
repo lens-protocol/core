@@ -3,9 +3,8 @@ pragma solidity ^0.8.13;
 
 import './base/BaseTest.t.sol';
 import './MetaTxNegatives.t.sol';
-import './helpers/AssumptionHelpers.sol';
 
-contract SetBlockStatusTest is BaseTest, AssumptionHelpers {
+contract SetBlockStatusTest is BaseTest {
     address constant PROFILE_OWNER = address(0);
 
     uint256 constant statusSetterProfileOwnerPk = 0x7357;
@@ -76,7 +75,11 @@ contract SetBlockStatusTest is BaseTest, AssumptionHelpers {
     function testCannotSetBlockStatusIfNotOwnerOrApprovedDelegatedExecutorOfSetterProfile(
         uint256 nonOwnerNorDelegatedExecutorPk
     ) public virtual {
-        vm.assume(_isValidPk(nonOwnerNorDelegatedExecutorPk));
+        nonOwnerNorDelegatedExecutorPk = bound(
+            nonOwnerNorDelegatedExecutorPk,
+            1,
+            ISSECP256K1_CURVE_ORDER - 1
+        );
         address nonOwnerNorDelegatedExecutor = vm.addr(nonOwnerNorDelegatedExecutorPk);
         vm.assume(nonOwnerNorDelegatedExecutor != address(0));
         vm.assume(nonOwnerNorDelegatedExecutor != statusSetterProfileOwner);
@@ -377,7 +380,11 @@ contract SetBlockStatusMetaTxTest is SetBlockStatusTest, MetaTxNegatives {
     function testCannotSetBlockStatusIfNotOwnerOrApprovedDelegatedExecutorOfSetterProfile(
         uint256 nonOwnerNorDelegatedExecutorPk
     ) public override {
-        vm.assume(_isValidPk(nonOwnerNorDelegatedExecutorPk));
+        nonOwnerNorDelegatedExecutorPk = bound(
+            nonOwnerNorDelegatedExecutorPk,
+            1,
+            ISSECP256K1_CURVE_ORDER - 1
+        );
         address nonOwnerNorDelegatedExecutor = vm.addr(nonOwnerNorDelegatedExecutorPk);
         vm.assume(nonOwnerNorDelegatedExecutor != address(0));
         vm.assume(nonOwnerNorDelegatedExecutor != statusSetterProfileOwner);

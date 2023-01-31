@@ -4,11 +4,10 @@ pragma solidity ^0.8.13;
 import './base/BaseTest.t.sol';
 import './MetaTxNegatives.t.sol';
 import {Strings} from '@openzeppelin/contracts/utils/Strings.sol';
-import './helpers/AssumptionHelpers.sol';
 import {IFollowNFT} from 'contracts/interfaces/IFollowNFT.sol';
 import '../../contracts/mocks/MockFollowModuleWithRevertFlag.sol';
 
-contract FollowTest is BaseTest, AssumptionHelpers {
+contract FollowTest is BaseTest {
     using Strings for uint256;
 
     uint256 constant MINT_NEW_TOKEN = 0;
@@ -98,7 +97,7 @@ contract FollowTest is BaseTest, AssumptionHelpers {
     function testCannotFollowIfExecutorIsNotTheProfileOwnerOrHisApprovedExecutor(uint256 executorPk)
         public
     {
-        vm.assume(_isValidPk(executorPk));
+        executorPk = bound(executorPk, 1, ISSECP256K1_CURVE_ORDER - 1);
         address executor = vm.addr(executorPk);
         vm.assume(executor != address(0));
         vm.assume(executor != followerProfileOwner);
@@ -119,7 +118,7 @@ contract FollowTest is BaseTest, AssumptionHelpers {
     function testCannotFollowWithUnwrappedTokenIfExecutorIsNotTheProfileOwnerOrHisApprovedExecutor(
         uint256 executorPk
     ) public {
-        vm.assume(_isValidPk(executorPk));
+        executorPk = bound(executorPk, 1, ISSECP256K1_CURVE_ORDER - 1);
         address executor = vm.addr(executorPk);
         vm.assume(executor != address(0));
         vm.assume(executor != followerProfileOwner);
@@ -143,7 +142,7 @@ contract FollowTest is BaseTest, AssumptionHelpers {
     function testCannotFollowWithWrappedTokenIfExecutorIsNotTheProfileOwnerOrHisApprovedExecutor(
         uint256 executorPk
     ) public {
-        vm.assume(_isValidPk(executorPk));
+        executorPk = bound(executorPk, 1, ISSECP256K1_CURVE_ORDER - 1);
         address executor = vm.addr(executorPk);
         vm.assume(executor != address(0));
         vm.assume(executor != followerProfileOwner);
@@ -340,7 +339,11 @@ contract FollowTest is BaseTest, AssumptionHelpers {
     function testFollowAsFollowerApprovedDelegatedExecutor(uint256 approvedDelegatedExecutorPk)
         public
     {
-        vm.assume(_isValidPk(approvedDelegatedExecutorPk));
+        approvedDelegatedExecutorPk = bound(
+            approvedDelegatedExecutorPk,
+            1,
+            ISSECP256K1_CURVE_ORDER - 1
+        );
         address approvedDelegatedExecutor = vm.addr(approvedDelegatedExecutorPk);
         vm.assume(approvedDelegatedExecutor != address(0));
         vm.assume(approvedDelegatedExecutor != followerProfileOwner);
