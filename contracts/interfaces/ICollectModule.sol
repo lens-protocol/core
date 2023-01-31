@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: MIT
 
-pragma solidity 0.8.10;
+pragma solidity 0.8.15;
 
 /**
  * @title ICollectModule
@@ -13,6 +13,7 @@ interface ICollectModule {
      * @notice Initializes data for a given publication being published. This can only be called by the hub.
      *
      * @param profileId The token ID of the profile publishing the publication.
+     * @param executor The owner or an approved delegated executor.
      * @param pubId The associated publication's LensHub publication ID.
      * @param data Arbitrary data __passed from the user!__ to be decoded.
      *
@@ -21,6 +22,7 @@ interface ICollectModule {
      */
     function initializePublicationCollectModule(
         uint256 profileId,
+        address executor,
         uint256 pubId,
         bytes calldata data
     ) external returns (bytes memory);
@@ -29,15 +31,19 @@ interface ICollectModule {
      * @notice Processes a collect action for a given publication, this can only be called by the hub.
      *
      * @param referrerProfileId The LensHub profile token ID of the referrer's profile (only different in case of mirrors).
-     * @param collector The collector address.
-     * @param profileId The token ID of the profile associated with the publication being collected.
+     * @param collectorProfileId The LensHub profile token ID of the collector's profile.
+     * @param collectorProfileOwner The collector address.
+     * @param executor The collector or an approved delegated executor.
+     * @param publisherProfileId The token ID of the profile associated with the publication being collected.
      * @param pubId The LensHub publication ID associated with the publication being collected.
      * @param data Arbitrary data __passed from the collector!__ to be decoded.
      */
     function processCollect(
         uint256 referrerProfileId,
-        address collector,
-        uint256 profileId,
+        uint256 collectorProfileId,
+        address collectorProfileOwner,
+        address executor,
+        uint256 publisherProfileId,
         uint256 pubId,
         bytes calldata data
     ) external;

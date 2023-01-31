@@ -1,4 +1,5 @@
 import '@nomiclabs/hardhat-ethers';
+import hre from 'hardhat';
 import { expect } from 'chai';
 import { keccak256, toUtf8Bytes } from 'ethers/lib/utils';
 import { MAX_UINT256, ZERO_ADDRESS } from '../helpers/constants';
@@ -8,6 +9,7 @@ import {
   getBurnWithSigparts,
   getChainId,
   getPermitForAllParts,
+  getPermitMessageParts,
   getPermitParts,
 } from '../helpers/utils';
 import {
@@ -23,7 +25,16 @@ import {
   user,
   userAddress,
 } from '../__setup.spec';
+import { hardhatArguments } from 'hardhat';
+import {
+  BadMockEIP1271Implementer__factory,
+  MockEIP1271Implementer__factory,
+} from '../../typechain-types';
 
+// TODO: This largely does not actually test the LensNFTBase contract, instead testing the
+// modified versions of the functions found in the LensHub. This should be renamed to base LensHub
+// functionality, and cloned, with the NFT being tested being a Collect/Follow NFT, because they
+// don't override the base functionality. 
 makeSuiteCleanRoom('Lens NFT Base Functionality', function () {
   context('generic', function () {
     it('Domain separator fetched from contract should be accurate', async function () {
@@ -104,7 +115,7 @@ makeSuiteCleanRoom('Lens NFT Base Functionality', function () {
             s,
             deadline: MAX_UINT256,
           })
-        ).to.be.revertedWith(ERRORS.ERC721_QUERY_FOR_NONEXISTENT_TOKEN);
+        ).to.be.revertedWith(ERRORS.SIGNATURE_INVALID);
       });
 
       it('TestWallet should fail to permit with signature deadline mismatch', async function () {
@@ -326,7 +337,7 @@ makeSuiteCleanRoom('Lens NFT Base Functionality', function () {
         );
 
         await expect(lensHub.burnWithSig(0, { v, r, s, deadline: MAX_UINT256 })).to.be.revertedWith(
-          ERRORS.ERC721_QUERY_FOR_NONEXISTENT_TOKEN
+          ERRORS.SIGNATURE_INVALID
         );
       });
 
@@ -395,6 +406,39 @@ makeSuiteCleanRoom('Lens NFT Base Functionality', function () {
           lensHub.burnWithSig(FIRST_PROFILE_ID, { v, r, s, deadline: MAX_UINT256 })
         ).to.be.revertedWith(ERRORS.SIGNATURE_INVALID);
       });
+
+      it('TestWallet should deploy bad EIP1271 implementer, transfer NFT to it, sign message and permit user, permit should fail with invalid sig', async function () {
+        const sigContract = await new BadMockEIP1271Implementer__factory(testWallet).deploy();
+        const nonce = (await lensHub.sigNonces(sigContract.address)).toNumber();
+        await expect(
+          lensHub
+            .connect(testWallet)
+            .transferFrom(testWallet.address, sigContract.address, FIRST_PROFILE_ID)
+        ).to.not.be.reverted;
+
+        const { v, r, s } = await getPermitMessageParts(
+          lensHub.address,
+          LENS_HUB_NFT_NAME,
+          userAddress,
+          FIRST_PROFILE_ID,
+          nonce,
+          MAX_UINT256
+        );
+
+        await expect(
+          lensHub.permit(
+            userAddress,
+            FIRST_PROFILE_ID,
+            {
+              v,
+              r,
+              s,
+              deadline: MAX_UINT256,
+            },
+            { gasLimit: 12450000 }
+          )
+        ).to.be.revertedWith(ERRORS.SIGNATURE_INVALID);
+      });
     });
 
     context('Scenarios', function () {
@@ -409,14 +453,18 @@ makeSuiteCleanRoom('Lens NFT Base Functionality', function () {
           nonce,
           MAX_UINT256
         );
-
         await expect(
-          lensHub.permit(userAddress, FIRST_PROFILE_ID, {
-            v,
-            r,
-            s,
-            deadline: MAX_UINT256,
-          })
+          lensHub.permit(
+            userAddress,
+            FIRST_PROFILE_ID,
+            {
+              v,
+              r,
+              s,
+              deadline: MAX_UINT256,
+            },
+            { gasLimit: 12450000 }
+          )
         ).to.not.be.reverted;
 
         await expect(
@@ -478,6 +526,39 @@ makeSuiteCleanRoom('Lens NFT Base Functionality', function () {
 
         await expect(
           lensHub.connect(user).burnWithSig(FIRST_PROFILE_ID, { v, r, s, deadline: MAX_UINT256 })
+        ).to.not.be.reverted;
+      });
+
+      it('TestWallet should deploy EIP1271 implementer, transfer NFT to it, sign message and permit user, user should transfer NFT, send back NFT and fail to transfer it again', async function () {
+        const sigContract = await new MockEIP1271Implementer__factory(testWallet).deploy();
+        const nonce = (await lensHub.sigNonces(sigContract.address)).toNumber();
+        await expect(
+          lensHub
+            .connect(testWallet)
+            .transferFrom(testWallet.address, sigContract.address, FIRST_PROFILE_ID)
+        ).to.not.be.reverted;
+
+        const { v, r, s } = await getPermitMessageParts(
+          lensHub.address,
+          LENS_HUB_NFT_NAME,
+          userAddress,
+          FIRST_PROFILE_ID,
+          nonce,
+          MAX_UINT256
+        );
+
+        await expect(
+          lensHub.permit(
+            userAddress,
+            FIRST_PROFILE_ID,
+            {
+              v,
+              r,
+              s,
+              deadline: MAX_UINT256,
+            },
+            { gasLimit: 12450000 }
+          )
         ).to.not.be.reverted;
       });
     });

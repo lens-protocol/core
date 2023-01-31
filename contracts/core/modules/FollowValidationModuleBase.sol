@@ -1,8 +1,8 @@
 // SPDX-License-Identifier: MIT
 
-pragma solidity 0.8.10;
+pragma solidity 0.8.15;
 
-import {IFollowModule} from '../../interfaces/IFollowModule.sol';
+import {IFollowModuleLegacy} from '../../interfaces/IFollowModuleLegacy.sol';
 import {ILensHub} from '../../interfaces/ILensHub.sol';
 import {Errors} from '../../libraries/Errors.sol';
 import {Events} from '../../libraries/Events.sol';
@@ -33,7 +33,7 @@ abstract contract FollowValidationModuleBase is ModuleBase {
         address followModule = ILensHub(HUB).getFollowModule(profileId);
         bool isFollowing;
         if (followModule != address(0)) {
-            isFollowing = IFollowModule(followModule).isFollowing(profileId, user, 0);
+            isFollowing = IFollowModuleLegacy(followModule).isFollowing(0, profileId, user, 0);
         } else {
             address followNFT = ILensHub(HUB).getFollowNFT(profileId);
             isFollowing = followNFT != address(0) && IERC721(followNFT).balanceOf(user) != 0;

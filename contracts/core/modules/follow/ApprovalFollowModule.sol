@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: MIT
 
-pragma solidity 0.8.10;
+pragma solidity 0.8.15;
 
 import {IFollowModule} from '../../../interfaces/IFollowModule.sol';
 import {Errors} from '../../../libraries/Errors.sol';
@@ -58,12 +58,11 @@ contract ApprovalFollowModule is FollowValidatorFollowModuleBase {
      *
      * @return bytes An abi encoded bytes parameter, which is the same as the passed data parameter.
      */
-    function initializeFollowModule(uint256 profileId, bytes calldata data)
-        external
-        override
-        onlyHub
-        returns (bytes memory)
-    {
+    function initializeFollowModule(
+        uint256 profileId,
+        address,
+        bytes calldata data
+    ) external override onlyHub returns (bytes memory) {
         address owner = IERC721(HUB).ownerOf(profileId);
 
         if (data.length > 0) {
@@ -84,9 +83,11 @@ contract ApprovalFollowModule is FollowValidatorFollowModuleBase {
      *  1. Validating that the follower has been approved for that profile by the profile owner
      */
     function processFollow(
+        uint256,
         address follower,
+        address,
         uint256 profileId,
-        bytes calldata data
+        bytes calldata
     ) external override onlyHub {
         address owner = IERC721(HUB).ownerOf(profileId);
         if (!_approvedByProfileByOwner[owner][profileId][follower])

@@ -1,13 +1,17 @@
 // SPDX-License-Identifier: MIT
 
-pragma solidity 0.8.10;
+pragma solidity 0.8.15;
 
 import {IReferenceModule} from '../interfaces/IReferenceModule.sol';
 
+/**
+ * @dev This is a simple mock follow module to be used for testing.
+ */
 contract MockReferenceModule is IReferenceModule {
     function initializeReferenceModule(
-        uint256 profileId,
-        uint256 pubId,
+        uint256,
+        address,
+        uint256,
         bytes calldata data
     ) external pure override returns (bytes memory) {
         uint256 number = abi.decode(data, (uint256));
@@ -17,6 +21,7 @@ contract MockReferenceModule is IReferenceModule {
 
     function processComment(
         uint256 profileId,
+        address executor,
         uint256 profileIdPointed,
         uint256 pubIdPointed,
         bytes calldata data
@@ -24,6 +29,7 @@ contract MockReferenceModule is IReferenceModule {
 
     function processMirror(
         uint256 profileId,
+        address executor,
         uint256 profileIdPointed,
         uint256 pubIdPointed,
         bytes calldata data

@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: MIT
 
-pragma solidity 0.8.10;
+pragma solidity 0.8.15;
 
 import {ICollectModule} from '../../../interfaces/ICollectModule.sol';
 import {Errors} from '../../../libraries/Errors.sol';
@@ -61,6 +61,7 @@ contract FeeCollectModule is FeeModuleBase, FollowValidationModuleBase, ICollect
      */
     function initializePublicationCollectModule(
         uint256 profileId,
+        address,
         uint256 pubId,
         bytes calldata data
     ) external override onlyHub returns (bytes memory) {
@@ -94,7 +95,9 @@ contract FeeCollectModule is FeeModuleBase, FollowValidationModuleBase, ICollect
      */
     function processCollect(
         uint256 referrerProfileId,
+        uint256,
         address collector,
+        address executor,
         uint256 profileId,
         uint256 pubId,
         bytes calldata data
@@ -102,9 +105,9 @@ contract FeeCollectModule is FeeModuleBase, FollowValidationModuleBase, ICollect
         if (_dataByPublicationByProfile[profileId][pubId].followerOnly)
             _checkFollowValidity(profileId, collector);
         if (referrerProfileId == profileId) {
-            _processCollect(collector, profileId, pubId, data);
+            _processCollect(executor, profileId, pubId, data);
         } else {
-            _processCollectWithReferral(referrerProfileId, collector, profileId, pubId, data);
+            _processCollectWithReferral(referrerProfileId, executor, profileId, pubId, data);
         }
     }
 
@@ -126,7 +129,7 @@ contract FeeCollectModule is FeeModuleBase, FollowValidationModuleBase, ICollect
     }
 
     function _processCollect(
-        address collector,
+        address executor,
         uint256 profileId,
         uint256 pubId,
         bytes calldata data
@@ -140,14 +143,14 @@ contract FeeCollectModule is FeeModuleBase, FollowValidationModuleBase, ICollect
         uint256 treasuryAmount = (amount * treasuryFee) / BPS_MAX;
         uint256 adjustedAmount = amount - treasuryAmount;
 
-        IERC20(currency).safeTransferFrom(collector, recipient, adjustedAmount);
+        IERC20(currency).safeTransferFrom(executor, recipient, adjustedAmount);
         if (treasuryAmount > 0)
-            IERC20(currency).safeTransferFrom(collector, treasury, treasuryAmount);
+            IERC20(currency).safeTransferFrom(executor, treasury, treasuryAmount);
     }
 
     function _processCollectWithReferral(
         uint256 referrerProfileId,
-        address collector,
+        address executor,
         uint256 profileId,
         uint256 pubId,
         bytes calldata data
@@ -177,12 +180,12 @@ contract FeeCollectModule is FeeModuleBase, FollowValidationModuleBase, ICollect
 
             address referralRecipient = IERC721(HUB).ownerOf(referrerProfileId);
 
-            IERC20(currency).safeTransferFrom(collector, referralRecipient, referralAmount);
+            IERC20(currency).safeTransferFrom(executor, referralRecipient, referralAmount);
         }
         address recipient = _dataByPublicationByProfile[profileId][pubId].recipient;
 
-        IERC20(currency).safeTransferFrom(collector, recipient, adjustedAmount);
+        IERC20(currency).safeTransferFrom(executor, recipient, adjustedAmount);
         if (treasuryAmount > 0)
-            IERC20(currency).safeTransferFrom(collector, treasury, treasuryAmount);
+            IERC20(currency).safeTransferFrom(executor, treasury, treasuryAmount);
     }
 }

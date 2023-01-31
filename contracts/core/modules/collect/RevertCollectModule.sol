@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: MIT
 
-pragma solidity 0.8.10;
+pragma solidity 0.8.15;
 
 import {ICollectModule} from '../../../interfaces/ICollectModule.sol';
 import {Errors} from '../../../libraries/Errors.sol';
@@ -18,9 +18,10 @@ contract RevertCollectModule is ICollectModule {
      * @dev There is nothing needed at initialization.
      */
     function initializePublicationCollectModule(
-        uint256 profileId,
-        uint256 pubId,
-        bytes calldata data
+        uint256,
+        address,
+        uint256,
+        bytes calldata
     ) external pure override returns (bytes memory) {
         return new bytes(0);
     }
@@ -30,11 +31,13 @@ contract RevertCollectModule is ICollectModule {
      *  1. Always reverting
      */
     function processCollect(
-        uint256 referrerProfileId,
-        address collector,
-        uint256 profileId,
-        uint256 pubId,
-        bytes calldata data
+        uint256,
+        uint256,
+        address,
+        address,
+        uint256,
+        uint256,
+        bytes calldata
     ) external pure override {
         revert Errors.CollectNotAllowed();
     }

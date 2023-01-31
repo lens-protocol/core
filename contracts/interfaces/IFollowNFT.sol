@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: MIT
 
-pragma solidity 0.8.10;
+pragma solidity 0.8.15;
 
 import {DataTypes} from '../libraries/DataTypes.sol';
 
@@ -11,60 +11,183 @@ import {DataTypes} from '../libraries/DataTypes.sol';
  * @notice This is the interface for the FollowNFT contract, which is cloned upon the first follow for any profile.
  */
 interface IFollowNFT {
+    error AlreadyFollowing();
+    error NotFollowing();
+    error FollowTokenDoesNotExist();
+    error AlreadyWrapped();
+    error OnlyWrappedFollowTokens();
+    error DoesNotHavePermissions();
+
     /**
-     * @notice Initializes the follow NFT, setting the hub as the privileged minter and storing the associated profile ID.
+     * @notice A struct containing token follow-related data.
      *
-     * @param profileId The token ID of the profile in the hub associated with this followNFT, used for transfer hooks.
+     * @param followerProfileId The ID of the profile using the token to follow.
+     * @param originalFollowTimestamp The timestamp of the first follow performed with the token.
+     * @param followTimestamp The timestamp of the current follow, if a profile is using the token to follow.
+     * @param profileIdAllowedToRecover The ID of the profile allowed to recover the follow ID, if any.
+     */
+    struct FollowData {
+        uint160 followerProfileId;
+        uint48 originalFollowTimestamp;
+        uint48 followTimestamp;
+        uint256 profileIdAllowedToRecover;
+    }
+
+    /**
+     * @notice Initializes the follow NFT.
+     *
+     * @dev Sets the hub as priviliged sender, the targeted profile, and the token royalties.
+     *
+     * @param profileId The ID of the profile targeted by the follow tokens minted by this collection.
      */
     function initialize(uint256 profileId) external;
 
     /**
-     * @notice Mints a follow NFT to the specified address. This can only be called by the hub, and is called
-     * upon follow.
+     * @notice Makes the passed profile to follow the profile targeted in this contract.
      *
-     * @param to The address to mint the NFT to.
+     * @dev This must be only callable by the LensHub contract.
      *
-     * @return uint256 An interger representing the minted token ID.
+     * @param followerProfileId The ID of the profile acting as the follower.
+     * @param executor The address executing the operation, which is the signer in case of using meta-transactions or
+     * the sender otherwise.
+     * @param followTokenId The ID of the follow token to be used for this follow operation. Zero if a new follow token
+     * should be minted.
+     *
+     * @return uint256 The ID of the token used to follow.
      */
-    function mint(address to) external returns (uint256);
+    function follow(
+        uint256 followerProfileId,
+        address executor,
+        uint256 followTokenId
+    ) external returns (uint256);
 
     /**
-     * @notice Delegates the caller's governance power to the given delegatee address.
+     * @notice Makes the passed profile to unfollow the profile targeted in this contract.
      *
-     * @param delegatee The delegatee address to delegate governance power to.
+     * @dev This must be only callable by the LensHub contract.
+     *
+     * @param unfollowerProfileId The ID of the profile that is perfrorming the unfollow operation.
+     * @param executor The address executing the operation, which is the signer in case of using meta-transactions or
+     * the sender otherwise.
      */
-    function delegate(address delegatee) external;
+    function unfollow(uint256 unfollowerProfileId, address executor) external;
 
     /**
-     * @notice Delegates the delegator's governance power via meta-tx to the given delegatee address.
+     * @notice Removes the follower from the given follow NFT.
      *
-     * @param delegator The delegator address, who is the signer.
-     * @param delegatee The delegatee address, who is receiving the governance power delegation.
-     * @param sig The EIP712Signature struct containing the necessary parameters to recover the delegator's signature.
+     * @dev It can only be called over wrapped tokens, by their owner or an approved-for-all address.
+     *
+     * @param followTokenId The ID of the follow token to remove the follower from.
      */
-    function delegateBySig(
-        address delegator,
-        address delegatee,
-        DataTypes.EIP712Signature calldata sig
-    ) external;
+    function removeFollower(uint256 followTokenId) external;
 
     /**
-     * @notice Returns the governance power for a given user at a specified block number.
+     * @notice Approves the given profile to follow with the given wrapped token.
      *
-     * @param user The user to query governance power for.
-     * @param blockNumber The block number to query the user's governance power at.
+     * @dev It approves setting a follower on the given wrapped follow token, which lets the follow token owner to allow
+     * a profile to follow with his token without losing its ownership. This approval is cleared on transfers, as well
+     * as when unwrapping.
      *
-     * @return uint256 The power of the given user at the given block number.
+     * @param approvedProfileId The ID of the profile approved to follow with the given token.
+     * @param followTokenId The ID of the follow token to be approved for the given profile.
      */
-    function getPowerByBlockNumber(address user, uint256 blockNumber) external returns (uint256);
+    function approveFollow(uint256 approvedProfileId, uint256 followTokenId) external;
 
     /**
-     * @notice Returns the total delegated supply at a specified block number. This is the sum of all
-     * current available voting power at a given block.
+     * @notice Unties the follow token from the follower's profile one, and wraps it into the ERC-721 untied follow
+     * tokens collection. Untied follow tokens will NOT be automatically transferred with their follower profile.
      *
-     * @param blockNumber The block number to query the delegated supply at.
-     *
-     * @return uint256 The delegated supply at the given block number.
+     * @param followTokenId The ID of the follow token to untie and wrap.
      */
-    function getDelegatedSupplyByBlockNumber(uint256 blockNumber) external returns (uint256);
+    function wrap(uint256 followTokenId) external;
+
+    /**
+     * @notice Unwraps the follow token from the ERC-721 untied follow tokens collection, and ties it to the follower's
+     * profile token. Tokens that are tied to the follower profile will be automatically transferred with it.
+     *
+     * @param followTokenId The ID of the follow token to unwrap and tie to its follower.
+     */
+    function unwrap(uint256 followTokenId) external;
+
+    /**
+     * @notice Processes logic when the given profile is being blocked. If it was following the targeted profile,
+     * this will make it to unfollow.
+     *
+     * @dev This must be only callable by the LensHub contract.
+     *
+     * @param followerProfileId The ID of the follow token to unwrap and tie.
+     */
+    function processBlock(uint256 followerProfileId) external;
+
+    /**
+     * @notice Gets the ID of the profile following with the given follow token.
+     *
+     * @param followTokenId The ID of the follow token whose follower should be queried.
+     *
+     * @return uint256 The ID of the profile following with the given token, zero if it is not being used to follow.
+     */
+    function getFollowerProfileId(uint256 followTokenId) external view returns (uint256);
+
+    /**
+     * @notice Gets the original follow timestamp of the given follow token.
+     *
+     * @param followTokenId The ID of the follow token whose original follow timestamp should be queried.
+     *
+     * @return uint256 The timestamp of the first follow performed with the token, zero if was not used to follow yet.
+     */
+    function getOriginalFollowTimestamp(uint256 followTokenId) external view returns (uint256);
+
+    /**
+     * @notice Gets the current follow timestamp of the given follow token.
+     *
+     * @param followTokenId The ID of the follow token whose follow timestamp should be queried.
+     *
+     * @return uint256 The timestamp of the current follow of the token, zero if it is not being used to follow.
+     */
+    function getFollowTimestamp(uint256 followTokenId) external view returns (uint256);
+
+    /**
+     * @notice Gets the ID of the profile allowed to recover the given follow token.
+     *
+     * @param followTokenId The ID of the follow token whose allowed profile to recover should be queried.
+     *
+     * @return uint256 The ID of the profile allowed to recover the given follow token, zero if none of them is allowed.
+     */
+    function getProfileIdAllowedToRecover(uint256 followTokenId) external view returns (uint256);
+
+    /**
+     * @notice Gets the follow data of the given follow token.
+     *
+     * @param followTokenId The ID of the follow token whose follow data should be queried.
+     *
+     * @return FollowData The token data associated with the given follow token.
+     */
+    function getFollowData(uint256 followTokenId) external view returns (FollowData memory);
+
+    /**
+     * @notice Tells if the given profile is following the profile targeted in this contract.
+     *
+     * @param followerProfileId The ID of the profile whose following state should be queried.
+     *
+     * @return uint256 The ID of the profile set as follower in the given token, zero if it is not being used to follow.
+     */
+    function isFollowing(uint256 followerProfileId) external view returns (bool);
+
+    /**
+     * @notice Gets the ID of the token being used to follow by the given follower.
+     *
+     * @param followerProfileId The ID of the profile whose follow ID should be queried.
+     *
+     * @return uint256 The ID of the token being used to follow by the given follower, zero if he is not following.
+     */
+    function getFollowTokenId(uint256 followerProfileId) external view returns (uint256);
+
+    /**
+     * @notice Gets the ID of the profile approved to follow with the given token.
+     *
+     * @param followTokenId The ID of the token whose approved to follow should be queried.
+     *
+     * @return uint256 The ID of the profile approved to follow with the given token, zero if none of them is approved.
+     */
+    function getFollowApproved(uint256 followTokenId) external view returns (uint256);
 }

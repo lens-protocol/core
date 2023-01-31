@@ -1,52 +1,39 @@
 // SPDX-License-Identifier: MIT
 
-pragma solidity 0.8.10;
+pragma solidity 0.8.15;
 
-import {IFollowNFT} from '../interfaces/IFollowNFT.sol';
-import {IFollowModule} from '../interfaces/IFollowModule.sol';
-import {ILensHub} from '../interfaces/ILensHub.sol';
+import '../libraries/Constants.sol';
+import {DataTypes} from '../libraries/DataTypes.sol';
+import {ERC2981CollectionRoyalties} from './base/ERC2981CollectionRoyalties.sol';
+import {ERC721Enumerable} from './base/ERC721Enumerable.sol';
 import {Errors} from '../libraries/Errors.sol';
 import {Events} from '../libraries/Events.sol';
-import {DataTypes} from '../libraries/DataTypes.sol';
-import {Constants} from '../libraries/Constants.sol';
+import {HubRestricted} from './base/HubRestricted.sol';
+import {IERC721} from '@openzeppelin/contracts/token/ERC721/IERC721.sol';
+import {IERC721Time} from '../interfaces/IERC721Time.sol';
+import {IFollowNFT} from '../interfaces/IFollowNFT.sol';
+import {ILensHub} from '../interfaces/ILensHub.sol';
 import {LensNFTBase} from './base/LensNFTBase.sol';
+import {MetaTxHelpers} from '../libraries/helpers/MetaTxHelpers.sol';
+import {Strings} from '@openzeppelin/contracts/utils/Strings.sol';
 
-/**
- * @title FollowNFT
- * @author Lens Protocol
- *
- * @notice This contract is the NFT that is minted upon following a given profile. It is cloned upon first follow for a
- * given profile, and includes built-in governance power and delegation mechanisms.
- *
- * NOTE: This contract assumes total NFT supply for this follow NFT will never exceed 2^128 - 1
- */
-contract FollowNFT is LensNFTBase, IFollowNFT {
-    struct Snapshot {
-        uint128 blockNumber;
-        uint128 value;
-    }
+contract FollowNFT is HubRestricted, LensNFTBase, ERC2981CollectionRoyalties, IFollowNFT {
+    using Strings for uint256;
 
-    address public immutable HUB;
-
-    bytes32 internal constant DELEGATE_BY_SIG_TYPEHASH =
-        keccak256(
-            'DelegateBySig(address delegator,address delegatee,uint256 nonce,uint256 deadline)'
-        );
-
-    mapping(address => mapping(uint256 => Snapshot)) internal _snapshots;
-    mapping(address => address) internal _delegates;
-    mapping(address => uint256) internal _snapshotCount;
-    mapping(uint256 => Snapshot) internal _delSupplySnapshots;
-    uint256 internal _delSupplySnapshotCount;
-    uint256 internal _profileId;
-    uint256 internal _tokenIdCounter;
+    uint256[5] ___DEPRECATED_SLOTS; // Deprecated slots, previously used for delegations.
+    uint256 internal _followedProfileId;
+    uint256 internal _lastFollowTokenId;
 
     bool private _initialized;
 
-    // We create the FollowNFT with the pre-computed HUB address before deploying the hub.
-    constructor(address hub) {
-        if (hub == address(0)) revert Errors.InitParamsInvalid();
-        HUB = hub;
+    mapping(uint256 => FollowData) internal _followDataByFollowTokenId;
+    mapping(uint256 => uint256) internal _followTokenIdByFollowerProfileId;
+    mapping(uint256 => uint256) internal _followApprovalByFollowTokenId;
+    uint256 internal _royaltiesInBasisPoints;
+
+    event FollowApproval(uint256 indexed followerProfileId, uint256 indexed followTokenId);
+
+    constructor(address hub) HubRestricted(hub) {
         _initialized = true;
     }
 
@@ -54,244 +41,430 @@ contract FollowNFT is LensNFTBase, IFollowNFT {
     function initialize(uint256 profileId) external override {
         if (_initialized) revert Errors.Initialized();
         _initialized = true;
-        _profileId = profileId;
+        _followedProfileId = profileId;
+        _setRoyalty(1000); // 10% of royalties
         emit Events.FollowNFTInitialized(profileId, block.timestamp);
     }
 
     /// @inheritdoc IFollowNFT
-    function mint(address to) external override returns (uint256) {
-        if (msg.sender != HUB) revert Errors.NotHub();
-        unchecked {
-            uint256 tokenId = ++_tokenIdCounter;
-            _mint(to, tokenId);
-            return tokenId;
+    function follow(
+        uint256 followerProfileId,
+        address executor,
+        uint256 followTokenId
+    ) external override onlyHub returns (uint256) {
+        if (_followTokenIdByFollowerProfileId[followerProfileId] != 0) {
+            revert AlreadyFollowing();
+        }
+
+        if (followTokenId == 0) {
+            // Fresh follow.
+            return _followMintingNewToken(followerProfileId);
+        }
+
+        address followTokenOwner = _unsafeOwnerOf(followTokenId);
+        if (followTokenOwner != address(0)) {
+            // Provided follow token is wrapped.
+            return
+                _followWithWrappedToken({
+                    followerProfileId: followerProfileId,
+                    executor: executor,
+                    followTokenId: followTokenId,
+                    followTokenOwner: followTokenOwner
+                });
+        }
+
+        uint256 currentFollowerProfileId = _followDataByFollowTokenId[followTokenId]
+            .followerProfileId;
+        if (currentFollowerProfileId != 0) {
+            // Provided follow token is unwrapped.
+            // It has a follower profile set already, it can only be used to follow if that profile was burnt.
+            return
+                _followWithUnwrappedTokenFromBurnedProfile({
+                    followerProfileId: followerProfileId,
+                    followTokenId: followTokenId,
+                    currentFollowerProfileId: currentFollowerProfileId
+                });
+        }
+
+        // Provided follow token does not exist anymore, it can only be used if profile attempting to follow is
+        // allowed to recover it.
+        return
+            _followByRecoveringToken({
+                followerProfileId: followerProfileId,
+                followTokenId: followTokenId
+            });
+    }
+
+    /// @inheritdoc IFollowNFT
+    function unfollow(uint256 unfollowerProfileId, address executor) external override onlyHub {
+        uint256 followTokenId = _followTokenIdByFollowerProfileId[unfollowerProfileId];
+        if (followTokenId == 0) {
+            revert NotFollowing();
+        }
+        address followTokenOwner = _unsafeOwnerOf(followTokenId);
+        if (followTokenOwner == address(0)) {
+            // Follow token is unwrapped.
+            // Unfollowing and allowing recovery.
+            _unfollow({unfollower: unfollowerProfileId, followTokenId: followTokenId});
+            _followDataByFollowTokenId[followTokenId]
+                .profileIdAllowedToRecover = unfollowerProfileId;
+        } else {
+            // Follow token is wrapped.
+            address unfollowerProfileOwner = IERC721(HUB).ownerOf(unfollowerProfileId);
+            // Follower profile owner or its approved delegated executor must hold the token or be approved-for-all.
+            if (
+                (followTokenOwner != unfollowerProfileOwner) &&
+                (followTokenOwner != executor) &&
+                !isApprovedForAll(followTokenOwner, executor) &&
+                !isApprovedForAll(followTokenOwner, unfollowerProfileOwner)
+            ) {
+                revert DoesNotHavePermissions();
+            }
+            _unfollow({unfollower: unfollowerProfileId, followTokenId: followTokenId});
         }
     }
 
     /// @inheritdoc IFollowNFT
-    function delegate(address delegatee) external override {
-        _delegate(msg.sender, delegatee);
-    }
-
-    /// @inheritdoc IFollowNFT
-    function delegateBySig(
-        address delegator,
-        address delegatee,
-        DataTypes.EIP712Signature calldata sig
-    ) external override {
-        unchecked {
-            _validateRecoveredAddress(
-                _calculateDigest(
-                    keccak256(
-                        abi.encode(
-                            DELEGATE_BY_SIG_TYPEHASH,
-                            delegator,
-                            delegatee,
-                            sigNonces[delegator]++,
-                            sig.deadline
-                        )
-                    )
-                ),
-                delegator,
-                sig
-            );
+    function removeFollower(uint256 followTokenId) external override {
+        address followTokenOwner = ownerOf(followTokenId);
+        if (followTokenOwner == msg.sender || isApprovedForAll(followTokenOwner, msg.sender)) {
+            _unfollowIfHasFollower(followTokenId);
+        } else {
+            revert DoesNotHavePermissions();
         }
-        _delegate(delegator, delegatee);
     }
 
     /// @inheritdoc IFollowNFT
-    function getPowerByBlockNumber(address user, uint256 blockNumber)
+    function approveFollow(uint256 followerProfileId, uint256 followTokenId) external override {
+        if (!IERC721Time(HUB).exists(followerProfileId)) {
+            revert Errors.TokenDoesNotExist();
+        }
+        address followTokenOwner = _unsafeOwnerOf(followTokenId);
+        if (followTokenOwner == address(0)) {
+            revert OnlyWrappedFollowTokens();
+        }
+        if (followTokenOwner != msg.sender && !isApprovedForAll(followTokenOwner, msg.sender)) {
+            revert DoesNotHavePermissions();
+        }
+        _approveFollow(followerProfileId, followTokenId);
+    }
+
+    /// @inheritdoc IFollowNFT
+    function wrap(uint256 followTokenId) external override {
+        if (_isFollowTokenWrapped(followTokenId)) {
+            revert AlreadyWrapped();
+        }
+        uint256 followerProfileId = _followDataByFollowTokenId[followTokenId].followerProfileId;
+        address wrappedTokenReceiver;
+        if (followerProfileId == 0) {
+            uint256 profileIdAllowedToRecover = _followDataByFollowTokenId[followTokenId]
+                .profileIdAllowedToRecover;
+            if (profileIdAllowedToRecover == 0) {
+                revert FollowTokenDoesNotExist();
+            }
+            wrappedTokenReceiver = IERC721(HUB).ownerOf(profileIdAllowedToRecover);
+            delete _followDataByFollowTokenId[followTokenId].profileIdAllowedToRecover;
+        } else {
+            wrappedTokenReceiver = IERC721(HUB).ownerOf(followerProfileId);
+        }
+        if (msg.sender != wrappedTokenReceiver) {
+            revert DoesNotHavePermissions();
+        }
+        _mint(wrappedTokenReceiver, followTokenId);
+    }
+
+    /// @inheritdoc IFollowNFT
+    function unwrap(uint256 followTokenId) external override {
+        if (_followDataByFollowTokenId[followTokenId].followerProfileId == 0) {
+            revert NotFollowing();
+        }
+        super.burn(followTokenId);
+    }
+
+    /// @inheritdoc IFollowNFT
+    function processBlock(uint256 followerProfileId) external override onlyHub {
+        uint256 followTokenId = _followTokenIdByFollowerProfileId[followerProfileId];
+        if (followTokenId != 0) {
+            if (!_isFollowTokenWrapped(followTokenId)) {
+                // Wrap it first, so the user stops following but does not lose the token when being blocked.
+                _mint(IERC721(HUB).ownerOf(followerProfileId), followTokenId);
+            }
+            _unfollow(followerProfileId, followTokenId);
+            ILensHub(HUB).emitUnfollowedEvent(followerProfileId, _followedProfileId);
+        }
+    }
+
+    /// @inheritdoc IFollowNFT
+    function getFollowerProfileId(uint256 followTokenId) external view override returns (uint256) {
+        return _followDataByFollowTokenId[followTokenId].followerProfileId;
+    }
+
+    /// @inheritdoc IFollowNFT
+    function isFollowing(uint256 followerProfileId) external view override returns (bool) {
+        return _followTokenIdByFollowerProfileId[followerProfileId] != 0;
+    }
+
+    /// @inheritdoc IFollowNFT
+    function getFollowTokenId(uint256 followerProfileId) external view override returns (uint256) {
+        return _followTokenIdByFollowerProfileId[followerProfileId];
+    }
+
+    /// @inheritdoc IFollowNFT
+    function getOriginalFollowTimestamp(uint256 followTokenId)
         external
         view
         override
         returns (uint256)
     {
-        if (blockNumber > block.number) revert Errors.BlockNumberInvalid();
-        uint256 snapshotCount = _snapshotCount[user];
-        if (snapshotCount == 0) return 0; // Returning zero since this means the user never delegated and has no power
-        return _getSnapshotValueByBlockNumber(_snapshots[user], blockNumber, snapshotCount);
+        return _followDataByFollowTokenId[followTokenId].originalFollowTimestamp;
     }
 
     /// @inheritdoc IFollowNFT
-    function getDelegatedSupplyByBlockNumber(uint256 blockNumber)
+    function getFollowTimestamp(uint256 followTokenId) external view override returns (uint256) {
+        return _followDataByFollowTokenId[followTokenId].followTimestamp;
+    }
+
+    /// @inheritdoc IFollowNFT
+    function getProfileIdAllowedToRecover(uint256 followTokenId)
         external
         view
         override
         returns (uint256)
     {
-        if (blockNumber > block.number) revert Errors.BlockNumberInvalid();
-        uint256 snapshotCount = _delSupplySnapshotCount;
-        if (snapshotCount == 0) return 0; // Returning zero since this means a delegation has never occurred
-        return _getSnapshotValueByBlockNumber(_delSupplySnapshots, blockNumber, snapshotCount);
+        return _followDataByFollowTokenId[followTokenId].profileIdAllowedToRecover;
+    }
+
+    /// @inheritdoc IFollowNFT
+    function getFollowData(uint256 followTokenId)
+        external
+        view
+        override
+        returns (FollowData memory)
+    {
+        return _followDataByFollowTokenId[followTokenId];
+    }
+
+    /// @inheritdoc IFollowNFT
+    function getFollowApproved(uint256 followTokenId) external view override returns (uint256) {
+        return _followApprovalByFollowTokenId[followTokenId];
+    }
+
+    function burnWithSig(uint256 followTokenId, DataTypes.EIP712Signature calldata sig)
+        public
+        override
+    {
+        _unfollowIfHasFollower(followTokenId);
+        super.burnWithSig(followTokenId, sig);
+    }
+
+    function burn(uint256 followTokenId) public override {
+        _unfollowIfHasFollower(followTokenId);
+        super.burn(followTokenId);
+    }
+
+    /**
+     * @dev See {IERC165-supportsInterface}.
+     */
+    function supportsInterface(bytes4 interfaceId)
+        public
+        view
+        virtual
+        override(ERC2981CollectionRoyalties, ERC721Enumerable)
+        returns (bool)
+    {
+        return
+            ERC2981CollectionRoyalties.supportsInterface(interfaceId) ||
+            ERC721Enumerable.supportsInterface(interfaceId);
     }
 
     function name() public view override returns (string memory) {
-        string memory handle = ILensHub(HUB).getHandle(_profileId);
-        return string(abi.encodePacked(handle, Constants.FOLLOW_NFT_NAME_SUFFIX));
+        return string(abi.encodePacked(_followedProfileId.toString(), FOLLOW_NFT_NAME_SUFFIX));
     }
 
     function symbol() public view override returns (string memory) {
-        string memory handle = ILensHub(HUB).getHandle(_profileId);
-        bytes4 firstBytes = bytes4(bytes(handle));
-        return string(abi.encodePacked(firstBytes, Constants.FOLLOW_NFT_SYMBOL_SUFFIX));
-    }
-
-    function _getSnapshotValueByBlockNumber(
-        mapping(uint256 => Snapshot) storage _shots,
-        uint256 blockNumber,
-        uint256 snapshotCount
-    ) internal view returns (uint256) {
-        unchecked {
-            uint256 lower = 0;
-            uint256 upper = snapshotCount - 1;
-
-            // First check most recent snapshot
-            if (_shots[upper].blockNumber <= blockNumber) return _shots[upper].value;
-
-            // Next check implicit zero balance
-            if (_shots[lower].blockNumber > blockNumber) return 0;
-
-            while (upper > lower) {
-                uint256 center = upper - (upper - lower) / 2;
-                Snapshot memory snapshot = _shots[center];
-                if (snapshot.blockNumber == blockNumber) {
-                    return snapshot.value;
-                } else if (snapshot.blockNumber < blockNumber) {
-                    lower = center;
-                } else {
-                    upper = center - 1;
-                }
-            }
-            return _shots[lower].value;
-        }
+        return string(abi.encodePacked(_followedProfileId.toString(), FOLLOW_NFT_SYMBOL_SUFFIX));
     }
 
     /**
      * @dev This returns the follow NFT URI fetched from the hub.
      */
-    function tokenURI(uint256 tokenId) public view override returns (string memory) {
-        if (!_exists(tokenId)) revert Errors.TokenDoesNotExist();
-        return ILensHub(HUB).getFollowNFTURI(_profileId);
+    function tokenURI(uint256 followTokenId) public view override returns (string memory) {
+        if (!_exists(followTokenId)) revert Errors.TokenDoesNotExist();
+        return ILensHub(HUB).getFollowNFTURI(_followedProfileId);
+    }
+
+    function _followMintingNewToken(uint256 followerProfileId) internal returns (uint256) {
+        uint256 followTokenIdAssigned;
+        unchecked {
+            followTokenIdAssigned = ++_lastFollowTokenId;
+        }
+        _baseFollow({
+            followerProfileId: followerProfileId,
+            followTokenId: followTokenIdAssigned,
+            isOriginalFollow: true
+        });
+        return followTokenIdAssigned;
+    }
+
+    function _followWithWrappedToken(
+        uint256 followerProfileId,
+        address executor,
+        uint256 followTokenId,
+        address followTokenOwner
+    ) internal returns (uint256) {
+        bool isFollowApproved = _followApprovalByFollowTokenId[followTokenId] == followerProfileId;
+        address followerProfileOwner = IERC721(HUB).ownerOf(followerProfileId);
+        if (
+            !isFollowApproved &&
+            followTokenOwner != followerProfileOwner &&
+            followTokenOwner != executor &&
+            !isApprovedForAll(followTokenOwner, executor) &&
+            !isApprovedForAll(followTokenOwner, followerProfileOwner)
+        ) {
+            revert DoesNotHavePermissions();
+        }
+        // The executor is allowed to write the follower in that wrapped token.
+        if (isFollowApproved) {
+            // The `_followApprovalByFollowTokenId` was used, now needs to be cleared.
+            _approveFollow(0, followTokenId);
+        }
+        _replaceFollower({
+            currentFollowerProfileId: _followDataByFollowTokenId[followTokenId].followerProfileId,
+            newFollowerProfileId: followerProfileId,
+            followTokenId: followTokenId
+        });
+        return followTokenId;
+    }
+
+    function _followWithUnwrappedTokenFromBurnedProfile(
+        uint256 followerProfileId,
+        uint256 followTokenId,
+        uint256 currentFollowerProfileId
+    ) internal returns (uint256) {
+        if (IERC721Time(HUB).exists(currentFollowerProfileId)) {
+            revert DoesNotHavePermissions();
+        }
+        _replaceFollower({
+            currentFollowerProfileId: currentFollowerProfileId,
+            newFollowerProfileId: followerProfileId,
+            followTokenId: followTokenId
+        });
+        return followTokenId;
+    }
+
+    function _followByRecoveringToken(uint256 followerProfileId, uint256 followTokenId)
+        internal
+        returns (uint256)
+    {
+        if (
+            _followDataByFollowTokenId[followTokenId].profileIdAllowedToRecover != followerProfileId
+        ) {
+            revert FollowTokenDoesNotExist();
+        }
+        _baseFollow({
+            followerProfileId: followerProfileId,
+            followTokenId: followTokenId,
+            isOriginalFollow: false
+        });
+        return followTokenId;
+    }
+
+    function _replaceFollower(
+        uint256 currentFollowerProfileId,
+        uint256 newFollowerProfileId,
+        uint256 followTokenId
+    ) internal {
+        if (currentFollowerProfileId != 0) {
+            // As it has a follower, unfollow first, removing current follower.
+            delete _followTokenIdByFollowerProfileId[currentFollowerProfileId];
+            ILensHub(HUB).emitUnfollowedEvent(currentFollowerProfileId, _followedProfileId);
+        }
+        // Perform the follow, setting new follower.
+        _baseFollow({
+            followerProfileId: newFollowerProfileId,
+            followTokenId: followTokenId,
+            isOriginalFollow: false
+        });
+    }
+
+    function _baseFollow(
+        uint256 followerProfileId,
+        uint256 followTokenId,
+        bool isOriginalFollow
+    ) internal {
+        _followTokenIdByFollowerProfileId[followerProfileId] = followTokenId;
+        _followDataByFollowTokenId[followTokenId].followerProfileId = uint160(followerProfileId);
+        _followDataByFollowTokenId[followTokenId].followTimestamp = uint48(block.timestamp);
+        delete _followDataByFollowTokenId[followTokenId].profileIdAllowedToRecover;
+        if (isOriginalFollow) {
+            _followDataByFollowTokenId[followTokenId].originalFollowTimestamp = uint48(
+                block.timestamp
+            );
+        }
+    }
+
+    function _unfollowIfHasFollower(uint256 followTokenId) internal {
+        uint256 followerProfileId = _followDataByFollowTokenId[followTokenId].followerProfileId;
+        if (followerProfileId != 0) {
+            _unfollow(followerProfileId, followTokenId);
+            ILensHub(HUB).emitUnfollowedEvent(followerProfileId, _followedProfileId);
+        }
+    }
+
+    function _unfollow(uint256 unfollower, uint256 followTokenId) internal {
+        delete _followTokenIdByFollowerProfileId[unfollower];
+        delete _followDataByFollowTokenId[followTokenId].followerProfileId;
+        delete _followDataByFollowTokenId[followTokenId].followTimestamp;
+        delete _followDataByFollowTokenId[followTokenId].profileIdAllowedToRecover;
+    }
+
+    function _approveFollow(uint256 approvedProfileId, uint256 followTokenId) internal {
+        _followApprovalByFollowTokenId[followTokenId] = approvedProfileId;
+        emit FollowApproval(approvedProfileId, followTokenId);
     }
 
     /**
-     * @dev Upon transfers, we move the appropriate delegations, and emit the transfer event in the hub.
+     * @dev Upon transfers, we clear follow approvals, and emit the transfer event in the hub.
      */
     function _beforeTokenTransfer(
         address from,
         address to,
-        uint256 tokenId
+        uint256 followTokenId
     ) internal override {
-        address fromDelegatee = _delegates[from];
-        address toDelegatee = _delegates[to];
-        address followModule = ILensHub(HUB).getFollowModule(_profileId);
+        if (from != address(0)) {
+            // It is cleared on unwrappings and transfers, and it can not be set on unwrapped tokens.
+            // As a consequence, there is no need to clear it on wrappings.
+            _approveFollow(0, followTokenId);
+        }
+        super._beforeTokenTransfer(from, to, followTokenId);
+        ILensHub(HUB).emitFollowNFTTransferEvent(_followedProfileId, followTokenId, from, to);
+    }
 
-        _moveDelegate(fromDelegatee, toDelegatee, 1);
+    function _getReceiver(uint256 followTokenId) internal view override returns (address) {
+        return IERC721(HUB).ownerOf(_followedProfileId);
+    }
 
-        super._beforeTokenTransfer(from, to, tokenId);
-        ILensHub(HUB).emitFollowNFTTransferEvent(_profileId, tokenId, from, to);
-        if (followModule != address(0)) {
-            IFollowModule(followModule).followModuleTransferHook(_profileId, from, to, tokenId);
+    function _beforeRoyaltiesSet(uint256 royaltiesInBasisPoints) internal view override {
+        if (IERC721(HUB).ownerOf(_followedProfileId) != msg.sender) {
+            revert Errors.NotProfileOwner();
         }
     }
 
-    function _delegate(address delegator, address delegatee) internal {
-        uint256 delegatorBalance = balanceOf(delegator);
-        address previousDelegate = _delegates[delegator];
-        _delegates[delegator] = delegatee;
-        _moveDelegate(previousDelegate, delegatee, delegatorBalance);
+    function _isFollowTokenWrapped(uint256 followTokenId) internal view returns (bool) {
+        return _exists(followTokenId);
     }
 
-    function _moveDelegate(
-        address from,
-        address to,
-        uint256 amount
-    ) internal {
-        unchecked {
-            bool fromZero = from == address(0);
-            if (!fromZero) {
-                uint256 fromSnapshotCount = _snapshotCount[from];
-
-                // Underflow is impossible since, if from != address(0), then a delegation must have occurred (at least 1 snapshot)
-                uint256 previous = _snapshots[from][fromSnapshotCount - 1].value;
-                uint128 newValue = uint128(previous - amount);
-
-                _writeSnapshot(from, newValue, fromSnapshotCount);
-                emit Events.FollowNFTDelegatedPowerChanged(from, newValue, block.timestamp);
-            }
-
-            if (to != address(0)) {
-                // if from == address(0) then this is an initial delegation (add amount to supply)
-                if (fromZero) {
-                    // It is expected behavior that the `previousDelSupply` underflows upon the first delegation,
-                    // returning the expected value of zero
-                    uint256 delSupplySnapshotCount = _delSupplySnapshotCount;
-                    uint128 previousDelSupply = _delSupplySnapshots[delSupplySnapshotCount - 1]
-                        .value;
-                    uint128 newDelSupply = uint128(previousDelSupply + amount);
-                    _writeSupplySnapshot(newDelSupply, delSupplySnapshotCount);
-                }
-
-                // It is expected behavior that `previous` underflows upon the first delegation to an address,
-                // returning the expected value of zero
-                uint256 toSnapshotCount = _snapshotCount[to];
-                uint128 previous = _snapshots[to][toSnapshotCount - 1].value;
-                uint128 newValue = uint128(previous + amount);
-                _writeSnapshot(to, newValue, toSnapshotCount);
-                emit Events.FollowNFTDelegatedPowerChanged(to, newValue, block.timestamp);
-            } else {
-                // If from != address(0) then this is removing a delegation, otherwise we're dealing with a
-                // non-delegated burn of tokens and don't need to take any action
-                if (!fromZero) {
-                    // Upon removing delegation (from != address(0) && to == address(0)), supply calculations cannot
-                    // underflow because if from != address(0), then a delegation must have previously occurred, so
-                    // the snapshot count must be >= 1 and the previous delegated supply must be >= amount
-                    uint256 delSupplySnapshotCount = _delSupplySnapshotCount;
-                    uint128 previousDelSupply = _delSupplySnapshots[delSupplySnapshotCount - 1]
-                        .value;
-                    uint128 newDelSupply = uint128(previousDelSupply - amount);
-                    _writeSupplySnapshot(newDelSupply, delSupplySnapshotCount);
-                }
-            }
-        }
+    function _followTokenExists(uint256 followTokenId) internal view returns (bool) {
+        return
+            _followDataByFollowTokenId[followTokenId].followerProfileId != 0 ||
+            _isFollowTokenWrapped(followTokenId);
     }
 
-    function _writeSnapshot(
-        address owner,
-        uint128 newValue,
-        uint256 ownerSnapshotCount
-    ) internal {
-        unchecked {
-            uint128 currentBlock = uint128(block.number);
-            mapping(uint256 => Snapshot) storage ownerSnapshots = _snapshots[owner];
-
-            // Doing multiple operations in the same block
-            if (
-                ownerSnapshotCount != 0 &&
-                ownerSnapshots[ownerSnapshotCount - 1].blockNumber == currentBlock
-            ) {
-                ownerSnapshots[ownerSnapshotCount - 1].value = newValue;
-            } else {
-                ownerSnapshots[ownerSnapshotCount] = Snapshot(currentBlock, newValue);
-                _snapshotCount[owner] = ownerSnapshotCount + 1;
-            }
+    function _getRoyaltiesInBasisPointsSlot() internal pure override returns (uint256) {
+        uint256 slot;
+        assembly {
+            slot := _royaltiesInBasisPoints.slot
         }
-    }
-
-    function _writeSupplySnapshot(uint128 newValue, uint256 supplySnapshotCount) internal {
-        unchecked {
-            uint128 currentBlock = uint128(block.number);
-
-            // Doing multiple operations in the same block
-            if (
-                supplySnapshotCount != 0 &&
-                _delSupplySnapshots[supplySnapshotCount - 1].blockNumber == currentBlock
-            ) {
-                _delSupplySnapshots[supplySnapshotCount - 1].value = newValue;
-            } else {
-                _delSupplySnapshots[supplySnapshotCount] = Snapshot(currentBlock, newValue);
-                _delSupplySnapshotCount = supplySnapshotCount + 1;
-            }
-        }
+        return slot;
     }
 }

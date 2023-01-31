@@ -1,4 +1,4 @@
-import { AbiCoder } from '@ethersproject/contracts/node_modules/@ethersproject/abi';
+import { AbiCoder } from 'ethers/lib/utils';
 import { parseEther } from '@ethersproject/units';
 import '@nomiclabs/hardhat-ethers';
 import { expect, use } from 'chai';
@@ -24,7 +24,6 @@ import {
   FollowNFT__factory,
   Helper,
   Helper__factory,
-  InteractionLogic__factory,
   LensHub,
   LensHub__factory,
   LimitedFeeCollectModule,
@@ -38,7 +37,7 @@ import {
   ModuleGlobals,
   ModuleGlobals__factory,
   ProfileTokenURILogic__factory,
-  PublishingLogic__factory,
+  GeneralLib__factory,
   RevertCollectModule,
   RevertCollectModule__factory,
   TimedFeeCollectModule,
@@ -52,6 +51,8 @@ import {
   CollectNFT,
   RevertFollowModule,
   RevertFollowModule__factory,
+  PublishingLib__factory,
+  ProfileLib__factory,
 } from '../typechain-types';
 import { LensHubLibraryAddresses } from '../typechain-types/factories/LensHub__factory';
 import { FAKE_PRIVATEKEY, ZERO_ADDRESS } from './helpers/constants';
@@ -164,12 +165,14 @@ before(async function () {
     treasuryAddress,
     TREASURY_FEE_BPS
   );
-  const publishingLogic = await new PublishingLogic__factory(deployer).deploy();
-  const interactionLogic = await new InteractionLogic__factory(deployer).deploy();
+  const generalLib = await new GeneralLib__factory(deployer).deploy();
+  const profileLib = await new ProfileLib__factory(deployer).deploy();
+  const publishingLib = await new PublishingLib__factory(deployer).deploy();
   const profileTokenURILogic = await new ProfileTokenURILogic__factory(deployer).deploy();
   hubLibs = {
-    'contracts/libraries/PublishingLogic.sol:PublishingLogic': publishingLogic.address,
-    'contracts/libraries/InteractionLogic.sol:InteractionLogic': interactionLogic.address,
+    'contracts/libraries/PublishingLib.sol:PublishingLib': publishingLib.address,
+    'contracts/libraries/ProfileLib.sol:ProfileLib': profileLib.address,
+    'contracts/libraries/GeneralLib.sol:GeneralLib': generalLib.address,
     'contracts/libraries/ProfileTokenURILogic.sol:ProfileTokenURILogic':
       profileTokenURILogic.address,
   };

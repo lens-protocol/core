@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: MIT
 
-pragma solidity 0.8.10;
+pragma solidity 0.8.15;
 
 import {Errors} from '../../../libraries/Errors.sol';
 import {ModuleBase} from '../ModuleBase.sol';
@@ -16,30 +16,27 @@ contract RevertFollowModule is FollowValidatorFollowModuleBase {
     constructor(address hub) ModuleBase(hub) {}
 
     /**
-     * @notice This follow module works on custom profile owner approvals.
-     *
-     * @param profileId The profile ID of the profile to initialize this module for.
-     * @param data The arbitrary data parameter, which in this particular module initialization will be just ignored.
+     * @notice This follow module always reverts.
      *
      * @return bytes Empty bytes.
      */
-    function initializeFollowModule(uint256 profileId, bytes calldata data)
-        external
-        view
-        override
-        onlyHub
-        returns (bytes memory)
-    {
+    function initializeFollowModule(
+        uint256,
+        address,
+        bytes calldata
+    ) external view override onlyHub returns (bytes memory) {
         return new bytes(0);
     }
 
     /**
-     * @dev Processes a follow by rejecting it reverting the transaction.
+     * @dev Processes a follow by rejecting it and reverting the transaction.
      */
     function processFollow(
-        address follower,
-        uint256 profileId,
-        bytes calldata data
+        uint256,
+        address,
+        address,
+        uint256,
+        bytes calldata
     ) external view override onlyHub {
         revert Errors.FollowInvalid();
     }

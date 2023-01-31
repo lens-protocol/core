@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: MIT
 
-pragma solidity 0.8.10;
+pragma solidity 0.8.15;
 
 import {IFollowNFT} from '../interfaces/IFollowNFT.sol';
 
@@ -16,17 +16,5 @@ contract Helper {
      */
     function getBlockNumber() external view returns (uint256) {
         return block.number;
-    }
-
-    /**
-     * @dev This is a helper function to aid in testing same-block delegation in the FollowNFT contract.
-     */
-    function batchDelegate(
-        IFollowNFT nft,
-        address first,
-        address second
-    ) external {
-        nft.delegate(first);
-        nft.delegate(second);
     }
 }

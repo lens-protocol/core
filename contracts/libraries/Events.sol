@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: MIT
 
-pragma solidity 0.8.10;
+pragma solidity 0.8.15;
 
 import {DataTypes} from './DataTypes.sol';
 
@@ -119,7 +119,6 @@ library Events {
      * @param profileId The newly created profile's token ID.
      * @param creator The profile creator, who created the token with the given profile ID.
      * @param to The address receiving the profile with the given profile ID.
-     * @param handle The handle set for the profile.
      * @param imageURI The image uri set for the profile.
      * @param followModule The profile's newly set follow module. This CAN be the zero address.
      * @param followModuleReturnData The data returned from the follow module's initialization. This is abi encoded
@@ -131,7 +130,6 @@ library Events {
         uint256 indexed profileId,
         address indexed creator,
         address indexed to,
-        string handle,
         string imageURI,
         address followModule,
         bytes followModuleReturnData,
@@ -156,6 +154,19 @@ library Events {
      * @param timestamp The current block timestamp.
      */
     event DispatcherSet(uint256 indexed profileId, address indexed dispatcher, uint256 timestamp);
+
+    /**
+     * @dev Emitted when a delegated executor is granted or revoked approval to act on behalf of a given address.
+     *
+     * @param onBehalfOf The address the delegated executor is granted or revoked approval to act on behalf of.
+     * @param executor The address of the delegated executor granted or revoked approval.
+     * @param approved Whether the executor is approved.
+     */
+    event DelegatedExecutorApprovalSet(
+        address indexed onBehalfOf,
+        address indexed executor,
+        bool indexed approved
+    );
 
     /**
      * @dev Emitted when a profile's URI is set.
@@ -302,8 +313,8 @@ library Events {
     /**
      * @dev Emitted upon a successful collect action.
      *
-     * @param collector The address collecting the publication.
-     * @param profileId The token ID of the profile that the collect was initiated towards, useful to differentiate mirrors.
+     * @param collectorProfileId The address collecting the publication.
+     * @param publisherProfileId The token ID of the profile that the collect was initiated towards, useful to differentiate mirrors.
      * @param pubId The publication ID that the collect was initiated towards, useful to differentiate mirrors.
      * @param rootProfileId The profile token ID of the profile whose publication is being collected.
      * @param rootPubId The publication ID of the publication being collected.
@@ -311,8 +322,8 @@ library Events {
      * @param timestamp The current block timestamp.
      */
     event Collected(
-        address indexed collector,
-        uint256 indexed profileId,
+        uint256 indexed collectorProfileId,
+        uint256 indexed publisherProfileId,
         uint256 indexed pubId,
         uint256 rootProfileId,
         uint256 rootPubId,
@@ -321,19 +332,52 @@ library Events {
     );
 
     /**
-     * @dev Emitted upon a successful follow action.
+     * @dev Emitted upon a successful follow operation.
      *
-     * @param follower The address following the given profiles.
-     * @param profileIds The token ID array of the profiles being followed.
-     * @param followModuleDatas The array of data parameters passed to each follow module.
-     * @param timestamp The current block timestamp.
+     * @param followerProfileId The ID of the profile that executed the follow.
+     * @param idOfProfileFollowed The ID of the profile that was followed.
+     * @param followTokenIdAssigned The ID of the follow token assigned to the follower.
+     * @param followModuleData The data to passed to the follow module, if any.
+     * @param timestamp The timestamp of the follow operation.
      */
     event Followed(
-        address indexed follower,
-        uint256[] profileIds,
-        bytes[] followModuleDatas,
+        uint256 indexed followerProfileId,
+        uint256 idOfProfileFollowed,
+        uint256 followTokenIdAssigned,
+        bytes followModuleData,
         uint256 timestamp
     );
+
+    /**
+     * @dev Emitted upon a successful unfollow operation.
+     *
+     * @param unfollowerProfileId The ID of the profile that executed the unfollow.
+     * @param idOfProfileUnfollowed The ID of the profile that was unfollowed.
+     * @param timestamp The timestamp of the unfollow operation.
+     */
+    event Unfollowed(
+        uint256 indexed unfollowerProfileId,
+        uint256 idOfProfileUnfollowed,
+        uint256 timestamp
+    );
+
+    /**
+     * @dev Emitted upon a successful block, through a block status setting operation.
+     *
+     * @param byProfileId The ID of the profile that executed the block status change.
+     * @param idOfProfileBlocked The ID of the profile whose block status have been set to blocked.
+     * @param timestamp The timestamp of the block operation.
+     */
+    event Blocked(uint256 indexed byProfileId, uint256 idOfProfileBlocked, uint256 timestamp);
+
+    /**
+     * @dev Emitted upon a successful unblock, through a block status setting operation.
+     *
+     * @param byProfileId The ID of the profile that executed the block status change.
+     * @param idOfProfileUnblocked The ID of the profile whose block status have been set to unblocked.
+     * @param timestamp The timestamp of the unblock operation.
+     */
+    event Unblocked(uint256 indexed byProfileId, uint256 idOfProfileUnblocked, uint256 timestamp);
 
     /**
      * @dev Emitted via callback when a followNFT is transferred.

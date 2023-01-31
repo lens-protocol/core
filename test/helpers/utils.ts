@@ -12,7 +12,15 @@ import {
 } from '../__setup.spec';
 import { expect } from 'chai';
 import { HARDHAT_CHAINID, MAX_UINT256 } from './constants';
-import { BytesLike, hexlify, keccak256, RLP, toUtf8Bytes } from 'ethers/lib/utils';
+import {
+  BytesLike,
+  concat,
+  hexlify,
+  keccak256,
+  RLP,
+  toUtf8Bytes,
+  _TypedDataEncoder,
+} from 'ethers/lib/utils';
 import { LensHub__factory } from '../../typechain-types';
 import { TransactionReceipt, TransactionResponse } from '@ethersproject/providers';
 import hre, { ethers } from 'hardhat';
@@ -247,6 +255,18 @@ export async function getPermitParts(
   return await getSig(msgParams);
 }
 
+export async function getPermitMessageParts(
+  nft: string,
+  name: string,
+  spender: string,
+  tokenId: BigNumberish,
+  nonce: number,
+  deadline: string
+): Promise<{ v: number; r: string; s: string }> {
+  const msgParams = buildPermitParams(nft, name, spender, tokenId, nonce, deadline);
+  return getMessageSig(msgParams);
+}
+
 export async function getPermitForAllParts(
   nft: string,
   name: string,
@@ -393,6 +413,29 @@ export async function getPostWithSigParts(
   return await getSig(msgParams);
 }
 
+export async function getPostWithSigMessageParts(
+  profileId: BigNumberish,
+  contentURI: string,
+  collectModule: string,
+  collectModuleInitData: Bytes | string,
+  referenceModule: string,
+  referenceModuleInitData: Bytes | string,
+  nonce: number,
+  deadline: string
+): Promise<{ v: number; r: string; s: string }> {
+  const msgParams = buildPostWithSigParams(
+    profileId,
+    contentURI,
+    collectModule,
+    collectModuleInitData,
+    referenceModule,
+    referenceModuleInitData,
+    nonce,
+    deadline
+  );
+  return getMessageSig(msgParams);
+}
+
 export async function getCommentWithSigParts(
   profileId: BigNumberish,
   contentURI: string,
@@ -536,8 +579,12 @@ export async function followReturningTokenIds({
     tokenIds = await lensHub.connect(sender).callStatic.followWithSig(vars);
     await expect(lensHub.connect(sender).followWithSig(vars)).to.not.be.reverted;
   } else {
-    tokenIds = await lensHub.connect(sender).callStatic.follow(vars.profileIds, vars.datas);
-    await expect(lensHub.connect(sender).follow(vars.profileIds, vars.datas)).to.not.be.reverted;
+    tokenIds = await lensHub
+      .connect(sender)
+      .callStatic.follow(await sender.getAddress(), vars.profileIds, vars.datas);
+    await expect(
+      lensHub.connect(sender).follow(await sender.getAddress(), vars.profileIds, vars.datas)
+    ).to.not.be.reverted;
   }
   return tokenIds;
 }
@@ -564,9 +611,12 @@ export async function collectReturningTokenIds({
   } else {
     tokenId = await lensHub
       .connect(sender)
-      .callStatic.collect(vars.profileId, vars.pubId, vars.data);
-    await expect(lensHub.connect(sender).collect(vars.profileId, vars.pubId, vars.data)).to.not.be
-      .reverted;
+      .callStatic.collect(await sender.getAddress(), vars.profileId, vars.pubId, vars.data);
+    await expect(
+      lensHub
+        .connect(sender)
+        .collect(await sender.getAddress(), vars.profileId, vars.pubId, vars.data)
+    ).to.not.be.reverted;
   }
   return tokenId;
 }
@@ -1105,6 +1155,20 @@ async function getSig(msgParams: {
 }): Promise<{ v: number; r: string; s: string }> {
   const sig = await testWallet._signTypedData(msgParams.domain, msgParams.types, msgParams.value);
   return utils.splitSignature(sig);
+}
+
+async function getMessageSig(msgParams: {
+  domain: any;
+  types: any;
+  value: any;
+}): Promise<{ v: number; r: string; s: string }> {
+  const digest = _TypedDataEncoder.hash(msgParams.domain, msgParams.types, msgParams.value);
+  return utils.splitSignature(testWallet._signingKey().signDigest(hashMessage(digest)));
+}
+
+const messagePrefix = '\x19Ethereum Signed Message:\n32';
+function hashMessage(message: string | Bytes): string {
+  return keccak256(concat([toUtf8Bytes(messagePrefix), message]));
 }
 
 function domain(): { name: string; version: string; chainId: number; verifyingContract: string } {

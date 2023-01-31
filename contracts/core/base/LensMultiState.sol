@@ -1,21 +1,23 @@
 // SPDX-License-Identifier: MIT
 
-pragma solidity 0.8.10;
+pragma solidity 0.8.15;
 
 import {Events} from '../../libraries/Events.sol';
 import {DataTypes} from '../../libraries/DataTypes.sol';
 import {Errors} from '../../libraries/Errors.sol';
+import {ILensMultiState} from '../../interfaces/ILensMultiState.sol';
 
 /**
  * @title LensMultiState
  *
- * @notice This is an abstract contract that implements internal LensHub state setting and validation.
+ * @notice This is an abstract contract that implements internal LensHub state validation. Setting
+ * is delegated to the GeneralLib.
  *
  * whenNotPaused: Either publishingPaused or Unpaused.
  * whenPublishingEnabled: When Unpaused only.
  */
-abstract contract LensMultiState {
-    DataTypes.ProtocolState private _state;
+abstract contract LensMultiState is ILensMultiState {
+    DataTypes.ProtocolState private _state; // slot 12
 
     modifier whenNotPaused() {
         _validateNotPaused();
@@ -35,14 +37,8 @@ abstract contract LensMultiState {
      *      1: PublishingPaused
      *      2: Paused
      */
-    function getState() external view returns (DataTypes.ProtocolState) {
+    function getState() external view override returns (DataTypes.ProtocolState) {
         return _state;
-    }
-
-    function _setState(DataTypes.ProtocolState newState) internal {
-        DataTypes.ProtocolState prevState = _state;
-        _state = newState;
-        emit Events.StateSet(msg.sender, prevState, newState, block.timestamp);
     }
 
     function _validatePublishingEnabled() internal view {
