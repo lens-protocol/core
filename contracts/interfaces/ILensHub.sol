@@ -121,8 +121,8 @@ interface ILensHub {
         external;
 
     /**
-     * @notice Sets the metadata URI for the given profile. Must be called either from the profile owner, a delegated
-     * executor, or the profile's dispatcher.
+     * @notice Sets the metadata URI for the given profile. Must be called either from the profile owner or an approved
+     * delegated executor.
      *
      * @param profileId The token ID of the profile to set the metadata URI for.
      * @param metadataURI The metadata URI to set for the given profile.
@@ -158,21 +158,6 @@ interface ILensHub {
      * @param vars A SetFollowModuleWithSigData struct, including the regular parameters and an EIP712Signature struct.
      */
     function setFollowModuleWithSig(DataTypes.SetFollowModuleWithSigData calldata vars) external;
-
-    /**
-     * @notice Sets a profile's dispatcher, giving that dispatcher rights to publish to that profile.
-     *
-     * @param profileId The token ID of the profile of the profile to set the dispatcher for.
-     * @param dispatcher The dispatcher address to set for the given profile ID.
-     */
-    function setDispatcher(uint256 profileId, address dispatcher) external;
-
-    /**
-     * @notice Sets a profile's dispatcher via signature with the specified parameters.
-     *
-     * @param vars A SetDispatcherWithSigData struct, including the regular parameters and an EIP712Signature struct.
-     */
-    function setDispatcherWithSig(DataTypes.SetDispatcherWithSigData calldata vars) external;
 
     /**
      * @notice Sets the approval for a delegated executor to act on behalf of the caller.
@@ -531,15 +516,6 @@ interface ILensHub {
      * @return string The metadata URI associated with the given profile.
      */
     function getProfileMetadataURI(uint256 profileId) external view returns (string memory);
-
-    /**
-     * @notice Returns the dispatcher for a given profile.
-     *
-     * @param profileId The token ID of the profile to query the dispatcher for.
-     *
-     * @return address The dispatcher address associated with the given profile.
-     */
-    function getDispatcher(uint256 profileId) external view returns (address);
 
     /**
      * @notice Returns the publication count for a given profile.

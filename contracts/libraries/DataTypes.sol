@@ -142,20 +142,6 @@ library DataTypes {
     }
 
     /**
-     * @notice A struct containing the parameters required for the `setDispatcherWithSig()` function. Parameters are the same
-     * as the regular `setDispatcher()` function, with an added EIP712Signature. The signer must be the owner.
-     *
-     * @param profileId The token ID of the profile to set the dispatcher for.
-     * @param dispatcher The dispatcher address to set for the profile.
-     * @param sig The EIP712Signature struct containing the profile owner's signature.
-     */
-    struct SetDispatcherWithSigData {
-        uint256 profileId;
-        address dispatcher;
-        EIP712Signature sig;
-    }
-
-    /**
      * @notice A struct containing the parameters required for the `setDelegatedExecutorApprovalWithSig()` function. Parameters
      * are the same as the regular `setDelegatedExecutorApproval()` function. The signer must be the onBehalfOf address.
      *
@@ -467,5 +453,11 @@ library DataTypes {
         uint256[] profileIds;
         bool[] enables;
         EIP712Signature sig;
+    }
+
+    struct DelegatedExecutorConfig {
+        mapping(uint256 => mapping(address => bool)) isApproved; // isApproved[configNumber][executor]
+        uint128 configNumber;
+        uint128 maxConfigNumberUsed;
     }
 }

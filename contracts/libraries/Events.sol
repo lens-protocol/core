@@ -147,15 +147,6 @@ library Events {
     event DefaultProfileSet(address indexed wallet, uint256 indexed profileId, uint256 timestamp);
 
     /**
-     * @dev Emitted when a dispatcher is set for a specific profile.
-     *
-     * @param profileId The token ID of the profile for which the dispatcher is set.
-     * @param dispatcher The dispatcher set for the given profile.
-     * @param timestamp The current block timestamp.
-     */
-    event DispatcherSet(uint256 indexed profileId, address indexed dispatcher, uint256 timestamp);
-
-    /**
      * @dev Emitted when a delegated executor is granted or revoked approval to act on behalf of a given address.
      *
      * @param onBehalfOf The address the delegated executor is granted or revoked approval to act on behalf of.

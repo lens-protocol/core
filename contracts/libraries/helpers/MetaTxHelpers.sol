@@ -143,25 +143,6 @@ library MetaTxHelpers {
         );
     }
 
-    function baseSetDispatcherWithSig(DataTypes.SetDispatcherWithSigData calldata vars) internal {
-        address owner = GeneralHelpers.unsafeOwnerOf(vars.profileId);
-        _validateRecoveredAddress(
-            _calculateDigest(
-                keccak256(
-                    abi.encode(
-                        SET_DISPATCHER_WITH_SIG_TYPEHASH,
-                        vars.profileId,
-                        vars.dispatcher,
-                        _sigNonces(owner),
-                        vars.sig.deadline
-                    )
-                )
-            ),
-            owner,
-            vars.sig
-        );
-    }
-
     function baseSetDelegatedExecutorApprovalWithSig(
         DataTypes.SetDelegatedExecutorApprovalWithSigData calldata vars
     ) internal {

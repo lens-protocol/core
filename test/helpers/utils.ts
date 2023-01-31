@@ -350,16 +350,6 @@ export async function getSetFollowModuleWithSigParts(
   return await getSig(msgParams);
 }
 
-export async function getSetDispatcherWithSigParts(
-  profileId: BigNumberish,
-  dispatcher: string,
-  nonce: number,
-  deadline: string
-): Promise<{ v: number; r: string; s: string }> {
-  const msgParams = buildSetDispatcherWithSigParams(profileId, dispatcher, nonce, deadline);
-  return await getSig(msgParams);
-}
-
 export async function getSetProfileImageURIWithSigParts(
   profileId: BigNumberish,
   imageURI: string,
@@ -832,29 +822,6 @@ const buildSetFollowModuleWithSigParams = (
     profileId: profileId,
     followModule: followModule,
     followModuleInitData: followModuleInitData,
-    nonce: nonce,
-    deadline: deadline,
-  },
-});
-
-const buildSetDispatcherWithSigParams = (
-  profileId: BigNumberish,
-  dispatcher: string,
-  nonce: number,
-  deadline: string
-) => ({
-  types: {
-    SetDispatcherWithSig: [
-      { name: 'profileId', type: 'uint256' },
-      { name: 'dispatcher', type: 'address' },
-      { name: 'nonce', type: 'uint256' },
-      { name: 'deadline', type: 'uint256' },
-    ],
-  },
-  domain: domain(),
-  value: {
-    profileId: profileId,
-    dispatcher: dispatcher,
     nonce: nonce,
     deadline: deadline,
   },

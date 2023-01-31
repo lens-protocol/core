@@ -166,26 +166,6 @@ library GeneralHelpers {
         return owner;
     }
 
-    function validateCallerIsOwnerOrDispatcherOrExecutor(uint256 profileId) internal view {
-        // It's safe to use the `unsafeOwnerOf()` function here because the sender cannot be
-        // the zero address, the dispatcher is cleared on burn and the zero address cannot approve
-        // a delegated executor.
-        address owner = unsafeOwnerOf(profileId);
-        if (msg.sender != owner) {
-            address dispatcher;
-
-            // Load the dispatcher for the given profile.
-            assembly {
-                mstore(0, profileId)
-                mstore(32, DISPATCHER_BY_PROFILE_MAPPING_SLOT)
-                let slot := keccak256(0, 64)
-                dispatcher := sload(slot)
-            }
-            if (msg.sender == dispatcher) return;
-            validateDelegatedExecutor(owner, msg.sender);
-        }
-    }
-
     function validateCallerIsOwnerOrDelegatedExecutor(uint256 profileId) internal view {
         address owner = ownerOf(profileId);
         if (msg.sender != owner) {

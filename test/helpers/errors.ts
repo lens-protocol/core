@@ -34,7 +34,6 @@ export const ERRORS = {
   FOLLOW_NOT_APPROVED: 'FollowNotApproved()',
   ARRAY_MISMATCH: 'ArrayMismatch()',
   CANNOT_COMMENT_ON_SELF: 'CannotCommentOnSelf',
-  NOT_DISPATCHER: 'NotDispatcher()',
 
   // ERC721Time + ERC721Enumerable errors
   ERC721_NOT_OWN: 'ERC721Time_TransferOfTokenThatIsNotOwn()',
@@ -46,7 +45,6 @@ export const ERRORS = {
     "Transaction reverted: function selector was not recognized and there's no fallback function",
   PAUSED: 'Paused()',
   PUBLISHING_PAUSED: 'PublishingPaused()',
-  NO_REASON_ABI_DECODE:
-    "Transaction reverted and Hardhat couldn't infer the reason.",
+  NO_REASON_ABI_DECODE: "Transaction reverted and Hardhat couldn't infer the reason.",
   INVALID_PARAMETER: 'InvalidParameter()',
 };

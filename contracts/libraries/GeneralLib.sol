@@ -22,9 +22,6 @@ import './Constants.sol';
  * @author Lens Protocol
  *
  * @notice This is the library that contains logic to be called by the hub via `delegateCall`.
- *
- * Note: The setDispatcher non-signature function was not migrated as it was more space-efficient
- * to leave it in the hub.
  */
 library GeneralLib {
     /**
@@ -477,6 +474,23 @@ library GeneralLib {
         }
         emit Events.DelegatedExecutorApprovalSet(onBehalfOf, executor, approved);
     }
+
+    // function _setDelegatedExecutorApproval(
+    //     uint256 delegatorProfileId,
+    //     address executor,
+    //     bool approved
+    // ) private {
+    //     // Store the approval in the appropriate slot for the given caller and executor.
+    //     assembly {
+    //         mstore(0, delegatorProfileId)
+    //         mstore(32, DELEGATED_EXECUTOR_APPROVAL_MAPPING_SLOT)
+    //         mstore(32, keccak256(0, 64))
+    //         mstore(0, executor)
+    //         let slot := keccak256(0, 64)
+    //         sstore(slot, approved)
+    //     }
+    //     emit Events.DelegatedExecutorApprovalSet(onBehalfOf, executor, approved);
+    // }
 
     function _validateCallerIsOnBehalfOfOrExecutor(address onBehalfOf) private view {
         if (onBehalfOf != msg.sender)

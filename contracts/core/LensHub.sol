@@ -219,21 +219,6 @@ contract LensHub is LensNFTBase, VersionedInitializable, LensMultiState, LensHub
     }
 
     /// @inheritdoc ILensHub
-    function setDispatcher(uint256 profileId, address dispatcher) external override whenNotPaused {
-        _validateCallerIsProfileOwner(profileId);
-        _setDispatcher(profileId, dispatcher);
-    }
-
-    /// @inheritdoc ILensHub
-    function setDispatcherWithSig(DataTypes.SetDispatcherWithSigData calldata vars)
-        external
-        override
-        whenNotPaused
-    {
-        ProfileLib.setDispatcherWithSig(vars);
-    }
-
-    /// @inheritdoc ILensHub
     function setDelegatedExecutorApproval(address executor, bool approved)
         external
         override
@@ -589,11 +574,6 @@ contract LensHub is LensNFTBase, VersionedInitializable, LensMultiState, LensHub
     }
 
     /// @inheritdoc ILensHub
-    function getDispatcher(uint256 profileId) external view override returns (address) {
-        return _dispatcherByProfile[profileId];
-    }
-
-    /// @inheritdoc ILensHub
     function getPubCount(uint256 profileId) external view override returns (uint256) {
         return _profileById[profileId].pubCount;
     }
@@ -748,20 +728,11 @@ contract LensHub is LensNFTBase, VersionedInitializable, LensMultiState, LensHub
         GeneralLib.setGovernance(newGovernance);
     }
 
-    function _setDispatcher(uint256 profileId, address dispatcher) internal {
-        _dispatcherByProfile[profileId] = dispatcher;
-        emit Events.DispatcherSet(profileId, dispatcher, block.timestamp);
-    }
-
     function _beforeTokenTransfer(
         address from,
         address to,
         uint256 tokenId
     ) internal override whenNotPaused {
-        if (_dispatcherByProfile[tokenId] != address(0)) {
-            _setDispatcher(tokenId, address(0));
-        }
-
         if (_defaultProfileByAddress[from] == tokenId) {
             _defaultProfileByAddress[from] = 0;
         }

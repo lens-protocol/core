@@ -23,7 +23,7 @@ uint256 constant PROFILE_CREATOR_WHITELIST_MAPPING_SLOT = 13;
 uint256 constant FOLLOW_MODULE_WHITELIST_MAPPING_SLOT = 14;
 uint256 constant COLLECT_MODULE_WHITELIST_MAPPING_SLOT = 15;
 uint256 constant REFERENCE_MODULE_WHITELIST_MAPPING_SLOT = 16;
-uint256 constant DISPATCHER_BY_PROFILE_MAPPING_SLOT = 17;
+uint256 constant __DEPRECATED_SLOT__DISPATCHER_BY_PROFILE_MAPPING_SLOT = 17; // Deprecated slot.
 uint256 constant PROFILE_ID_BY_HANDLE_HASH_MAPPING_SLOT = 18;
 uint256 constant PROFILE_BY_ID_MAPPING_SLOT = 19;
 uint256 constant PUB_BY_ID_BY_PROFILE_MAPPING_SLOT = 20;
@@ -87,9 +87,6 @@ bytes32 constant SET_FOLLOW_MODULE_WITH_SIG_TYPEHASH = keccak256(
 );
 bytes32 constant SET_FOLLOW_NFT_URI_WITH_SIG_TYPEHASH = keccak256(
     'SetFollowNFTURIWithSig(uint256 profileId,string followNFTURI,uint256 nonce,uint256 deadline)'
-);
-bytes32 constant SET_DISPATCHER_WITH_SIG_TYPEHASH = keccak256(
-    'SetDispatcherWithSig(uint256 profileId,address dispatcher,uint256 nonce,uint256 deadline)'
 );
 bytes32 constant SET_DELEGATED_EXECUTOR_APPROVAL_WITH_SIG_TYPEHASH = keccak256(
     'SetDelegatedExecutorApprovalWithSig(address executor,bool approved,uint256 nonce,uint256 deadline)'

@@ -22,7 +22,7 @@ library PublishingLib {
      */
     function post(DataTypes.PostData calldata vars) external returns (uint256) {
         uint256 pubId = _preIncrementPubCount(vars.profileId);
-        GeneralHelpers.validateCallerIsOwnerOrDispatcherOrExecutor(vars.profileId);
+        GeneralHelpers.validateCallerIsOwnerOrDelegatedExecutor(vars.profileId);
         _createPost(
             vars.profileId,
             msg.sender,
@@ -73,7 +73,7 @@ library PublishingLib {
      */
     function comment(DataTypes.CommentData calldata vars) external returns (uint256) {
         uint256 pubId = _preIncrementPubCount(vars.profileId);
-        GeneralHelpers.validateCallerIsOwnerOrDispatcherOrExecutor(vars.profileId);
+        GeneralHelpers.validateCallerIsOwnerOrDelegatedExecutor(vars.profileId);
         GeneralHelpers.validateNotBlocked(vars.profileId, vars.profileIdPointed);
         _createComment(vars, pubId); // caller is executor
         return pubId;
@@ -108,7 +108,7 @@ library PublishingLib {
      */
     function mirror(DataTypes.MirrorData calldata vars) external returns (uint256) {
         uint256 pubId = _preIncrementPubCount(vars.profileId);
-        GeneralHelpers.validateCallerIsOwnerOrDispatcherOrExecutor(vars.profileId);
+        GeneralHelpers.validateCallerIsOwnerOrDelegatedExecutor(vars.profileId);
         GeneralHelpers.validateNotBlocked(vars.profileId, vars.profileIdPointed);
         _createMirror(vars, pubId); // caller is executor
         return pubId;
