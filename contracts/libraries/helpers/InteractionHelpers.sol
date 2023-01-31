@@ -144,7 +144,7 @@ library InteractionHelpers {
             }
             setToBlocked = blockStatus[i];
             if (followNFT != address(0) && setToBlocked) {
-                IFollowNFT(followNFT).block(idOfProfileToSetBlockStatus);
+                IFollowNFT(followNFT).processBlock(idOfProfileToSetBlockStatus);
             }
             // Stores the block status.
             // i.e. `_blockedStatus[byProfileId][idOfProfileToSetBlockStatus] = setToBlocked;`

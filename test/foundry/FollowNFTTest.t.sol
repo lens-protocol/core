@@ -896,7 +896,7 @@ contract FollowNFTTest is BaseTest, ERC721Test {
         vm.prank(sender);
 
         vm.expectRevert(Errors.NotHub.selector);
-        followNFT.block(followerProfileId);
+        followNFT.processBlock(followerProfileId);
     }
 
     //////////////////////////////////////////////////////////
@@ -905,10 +905,10 @@ contract FollowNFTTest is BaseTest, ERC721Test {
 
     function testCanBlockSomeoneAlreadyBlocked() public {
         vm.prank(address(hub));
-        followNFT.block(followerProfileId);
+        followNFT.processBlock(followerProfileId);
 
         vm.prank(address(hub));
-        followNFT.block(followerProfileId);
+        followNFT.processBlock(followerProfileId);
     }
 
     function testBlockingFollowerThatWasFollowingWithWrappedTokenMakesHimUnfollowButKeepsTheWrappedToken()
@@ -922,7 +922,7 @@ contract FollowNFTTest is BaseTest, ERC721Test {
         assertTrue(followNFT.isFollowing(alreadyFollowingProfileId));
 
         vm.prank(address(hub));
-        followNFT.block(alreadyFollowingProfileId);
+        followNFT.processBlock(alreadyFollowingProfileId);
 
         assertFalse(followNFT.isFollowing(alreadyFollowingProfileId));
 
@@ -938,7 +938,7 @@ contract FollowNFTTest is BaseTest, ERC721Test {
         assertTrue(followNFT.isFollowing(alreadyFollowingProfileId));
 
         vm.prank(address(hub));
-        followNFT.block(alreadyFollowingProfileId);
+        followNFT.processBlock(alreadyFollowingProfileId);
 
         assertFalse(followNFT.isFollowing(alreadyFollowingProfileId));
         assertEq(followNFT.ownerOf(followTokenId), alreadyFollowingProfileOwner);
@@ -962,7 +962,7 @@ contract FollowNFTTest is BaseTest, ERC721Test {
         assertEq(followNFT.ownerOf(followTokenId), alreadyFollowingProfileOwner);
 
         vm.prank(address(hub));
-        followNFT.block(alreadyFollowingProfileId);
+        followNFT.processBlock(alreadyFollowingProfileId);
 
         assertFalse(followNFT.isFollowing(alreadyFollowingProfileId));
         assertEq(followNFT.ownerOf(followTokenId), alreadyFollowingProfileOwner);
@@ -983,7 +983,7 @@ contract FollowNFTTest is BaseTest, ERC721Test {
         assertEq(followNFT.ownerOf(followTokenId), followerProfileOwner);
 
         vm.prank(address(hub));
-        followNFT.block(followerProfileId);
+        followNFT.processBlock(followerProfileId);
 
         assertTrue(followNFT.isFollowing(alreadyFollowingProfileId));
         assertEq(followNFT.ownerOf(followTokenId), followerProfileOwner);

@@ -110,13 +110,14 @@ interface IFollowNFT {
     function unwrapAndTie(uint256 followTokenId) external;
 
     /**
-     * @notice Blocks the given profile. If it was following the targetted profile, this will make it to unfollow.
+     * @notice Processes logic when the given profile is being blocked. If it was following the targetted profile,
+     * this will make it to unfollow.
      *
      * @dev This must be only callable by the LensHub contract.
      *
      * @param followerProfileId The ID of the follow token to unwrap and tie.
      */
-    function block(uint256 followerProfileId) external;
+    function processBlock(uint256 followerProfileId) external;
 
     /**
      * @notice Gets the ID of the profile following with the given follow token.

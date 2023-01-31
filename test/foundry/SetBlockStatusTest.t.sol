@@ -160,8 +160,11 @@ contract SetBlockStatusTest is BaseTest, AssumptionHelpers {
         vm.expectEmit(true, false, false, true, address(hub));
         emit Events.Blocked(statusSetterProfileId, anotherBlockeeProfileId, block.timestamp);
 
-        vm.expectCall(followNFTAddress, abi.encodeCall(followNFT.block, (blockeeProfileId)));
-        vm.expectCall(followNFTAddress, abi.encodeCall(followNFT.block, (anotherBlockeeProfileId)));
+        vm.expectCall(followNFTAddress, abi.encodeCall(followNFT.processBlock, (blockeeProfileId)));
+        vm.expectCall(
+            followNFTAddress,
+            abi.encodeCall(followNFT.processBlock, (anotherBlockeeProfileId))
+        );
 
         _setBlockStatus({
             pk: statusSetterProfileOwnerPk,
@@ -185,7 +188,7 @@ contract SetBlockStatusTest is BaseTest, AssumptionHelpers {
         vm.expectEmit(true, false, false, true, address(hub));
         emit Events.Unblocked(statusSetterProfileId, anotherBlockeeProfileId, block.timestamp);
 
-        vm.expectCall(followNFTAddress, abi.encodeCall(followNFT.block, (blockeeProfileId)));
+        vm.expectCall(followNFTAddress, abi.encodeCall(followNFT.processBlock, (blockeeProfileId)));
 
         _setBlockStatus({
             pk: statusSetterProfileOwnerPk,
@@ -211,7 +214,7 @@ contract SetBlockStatusTest is BaseTest, AssumptionHelpers {
         vm.expectEmit(true, false, false, true, address(hub));
         emit Events.Blocked(statusSetterProfileId, blockeeProfileId, block.timestamp);
 
-        vm.expectCall(followNFTAddress, abi.encodeCall(followNFT.block, (blockeeProfileId)));
+        vm.expectCall(followNFTAddress, abi.encodeCall(followNFT.processBlock, (blockeeProfileId)));
 
         _setBlockStatus({
             pk: statusSetterProfileOwnerPk,
@@ -229,8 +232,8 @@ contract SetBlockStatusTest is BaseTest, AssumptionHelpers {
         // Creates a fresh profile so it doesn't have a Follow NFT collection deployed yet.
         statusSetterProfileId = _createProfile(statusSetterProfileOwner);
 
-        // As the Follow NFT has not been deployed yet, the address is zero, so if a `followNFT.block(...)` call is
-        // performed to it, this test must revert.
+        // As the Follow NFT has not been deployed yet, the address is zero, so if a `followNFT.processBlock(...)` call
+        // is performed to it, this test must revert.
         assertEq(hub.getFollowNFT(statusSetterProfileId), address(0));
 
         vm.expectEmit(true, false, false, true, address(hub));
