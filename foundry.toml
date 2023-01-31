@@ -10,4 +10,4 @@ fs_permissions = [{ access = "read-write", path = "./"}]
 polygon = "${POLYGON_RPC_URL}"
 
 [fuzz]
-runs = 1000
+runs = 10000
