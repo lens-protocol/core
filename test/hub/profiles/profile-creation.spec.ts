@@ -24,7 +24,7 @@ import {
 makeSuiteCleanRoom('Profile Creation', function () {
   context('Generic', function () {
     context('Negatives', function () {
-      it('User should fail to create a profile with a handle longer than 31 bytes', async function () {
+      it.skip('User should fail to create a profile with a handle longer than 31 bytes', async function () {
         const val = '11111111111111111111111111111111';
         expect(val.length).to.eq(32);
         await expect(
@@ -39,7 +39,7 @@ makeSuiteCleanRoom('Profile Creation', function () {
         ).to.be.revertedWith(ERRORS.INVALID_HANDLE_LENGTH);
       });
 
-      it('User should fail to create a profile with an empty handle (0 length bytes)', async function () {
+      it.skip('User should fail to create a profile with an empty handle (0 length bytes)', async function () {
         await expect(
           lensHub.createProfile({
             to: userAddress,
@@ -52,7 +52,7 @@ makeSuiteCleanRoom('Profile Creation', function () {
         ).to.be.revertedWith(ERRORS.INVALID_HANDLE_LENGTH);
       });
 
-      it('User should fail to create a profile with a handle with a capital letter', async function () {
+      it.skip('User should fail to create a profile with a handle with a capital letter', async function () {
         await expect(
           lensHub.createProfile({
             to: userAddress,
@@ -65,7 +65,7 @@ makeSuiteCleanRoom('Profile Creation', function () {
         ).to.be.revertedWith(ERRORS.HANDLE_CONTAINS_INVALID_CHARACTERS);
       });
 
-      it('User should fail to create a profile with a handle with an invalid character', async function () {
+      it.skip('User should fail to create a profile with a handle with an invalid character', async function () {
         await expect(
           lensHub.createProfile({
             to: userAddress,
@@ -143,7 +143,7 @@ makeSuiteCleanRoom('Profile Creation', function () {
     });
 
     context('Scenarios', function () {
-      it('User should be able to create a profile with a handle, receive an NFT and the handle should resolve to the NFT ID, userTwo should do the same', async function () {
+      it.skip('User should be able to create a profile with a handle, receive an NFT and the handle should resolve to the NFT ID, userTwo should do the same', async function () {
         let timestamp: any;
         let owner: string;
         let totalSupply: BigNumber;
@@ -212,7 +212,7 @@ makeSuiteCleanRoom('Profile Creation', function () {
           await createProfileReturningTokenId({
             vars: {
               to: userAddress,
-              handle: 'token.id_1',
+              // handle: 'token.id_1',
               imageURI: MOCK_PROFILE_URI,
               followModule: ZERO_ADDRESS,
               followModuleInitData: [],
@@ -227,7 +227,7 @@ makeSuiteCleanRoom('Profile Creation', function () {
             sender: userTwo,
             vars: {
               to: userTwoAddress,
-              handle: 'token.id_2',
+              // handle: 'token.id_2',
               imageURI: MOCK_PROFILE_URI,
               followModule: ZERO_ADDRESS,
               followModuleInitData: [],
@@ -241,7 +241,7 @@ makeSuiteCleanRoom('Profile Creation', function () {
           await createProfileReturningTokenId({
             vars: {
               to: userAddress,
-              handle: 'token.id_3',
+              // handle: 'token.id_3',
               imageURI: MOCK_PROFILE_URI,
               followModule: ZERO_ADDRESS,
               followModuleInitData: [],
@@ -255,7 +255,7 @@ makeSuiteCleanRoom('Profile Creation', function () {
         await expect(
           lensHub.createProfile({
             to: userAddress,
-            handle: 'morse--__-_--code',
+            // handle: 'morse--__-_--code',
             imageURI: MOCK_PROFILE_URI,
             followModule: ZERO_ADDRESS,
             followModuleInitData: [],
@@ -264,11 +264,11 @@ makeSuiteCleanRoom('Profile Creation', function () {
         ).to.not.be.reverted;
       });
 
-      it('User should be able to create a profile with a handle 16 bytes long, then fail to create with the same handle, and create again with a different handle', async function () {
+      it.skip('User should be able to create a profile with a handle 16 bytes long, then fail to create with the same handle, and create again with a different handle', async function () {
         await expect(
           lensHub.createProfile({
             to: userAddress,
-            handle: '123456789012345',
+            // handle: '123456789012345',
             imageURI: MOCK_PROFILE_URI,
             followModule: ZERO_ADDRESS,
             followModuleInitData: [],
@@ -278,7 +278,7 @@ makeSuiteCleanRoom('Profile Creation', function () {
         await expect(
           lensHub.createProfile({
             to: userAddress,
-            handle: '123456789012345',
+            // handle: '123456789012345',
             imageURI: MOCK_PROFILE_URI,
             followModule: ZERO_ADDRESS,
             followModuleInitData: [],
@@ -288,7 +288,7 @@ makeSuiteCleanRoom('Profile Creation', function () {
         await expect(
           lensHub.createProfile({
             to: userAddress,
-            handle: 'abcdefghijklmno',
+            // handle: 'abcdefghijklmno',
             imageURI: MOCK_PROFILE_URI,
             followModule: ZERO_ADDRESS,
             followModuleInitData: [],

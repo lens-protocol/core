@@ -110,9 +110,12 @@ contract MultiStateHubTest_Common is BaseTest {
 
 contract MultiStateHubTest_PausedState_Direct is BaseTest {
     uint256 postId;
+    uint256 followerProfileId;
 
     function setUp() public virtual override {
         super.setUp();
+
+        followerProfileId = _createProfile(me);
 
         vm.prank(profileOwner);
         postId = _post(mockPostData);
@@ -162,7 +165,13 @@ contract MultiStateHubTest_PausedState_Direct is BaseTest {
     }
 
     function _mockFollow() internal virtual {
-        _follow({msgSender: me, onBehalfOf: me, profileId: newProfileId, data: ''});
+        _follow({
+            msgSender: me,
+            followerProfileId: followerProfileId,
+            idOfProfileToFollow: newProfileId,
+            followTokenId: 0,
+            data: ''
+        });
     }
 
     // TODO: The following two functions were copy-pasted from CollectingTest.t.sol
@@ -170,8 +179,8 @@ contract MultiStateHubTest_PausedState_Direct is BaseTest {
     function _mockCollect() internal virtual {
         vm.prank(profileOwner);
         _collect(
-            mockCollectData.collector,
-            mockCollectData.profileId,
+            mockCollectData.collectorProfileId,
+            mockCollectData.publisherProfileId,
             mockCollectData.pubId,
             mockCollectData.data
         );
@@ -307,6 +316,11 @@ contract MultiStateHubTest_PausedState_WithSig is
     function setUp() public override(MultiStateHubTest_PausedState_Direct, SigSetup) {
         MultiStateHubTest_PausedState_Direct.setUp();
         SigSetup.setUp();
+        vm.prank(governance);
+        _setState(DataTypes.ProtocolState.Unpaused);
+        followerProfileId = _createProfile(otherSigner);
+        vm.prank(governance);
+        _setState(DataTypes.ProtocolState.Paused);
     }
 
     function _mockSetFollowModule() internal override {
@@ -431,17 +445,20 @@ contract MultiStateHubTest_PausedState_WithSig is
 
     function _mockFollow() internal override {
         bytes32 digest = _getFollowTypedDataHash(
+            followerProfileId,
             _toUint256Array(newProfileId),
+            _toUint256Array(0),
             _toBytesArray(''),
             nonce,
             deadline
         );
 
-        uint256[] memory nftIds = _followWithSig(
-            _buildFollowWithSigData({
+        _followWithSig(
+            DataTypes.FollowWithSigData({
                 delegatedSigner: address(0),
-                follower: otherSigner,
-                profileIds: _toUint256Array(newProfileId),
+                followerProfileId: followerProfileId,
+                idsOfProfilesToFollow: _toUint256Array(newProfileId),
+                followTokenIds: _toUint256Array(0),
                 datas: _toBytesArray(''),
                 sig: _getSigStruct(otherSignerKey, digest, deadline)
             })
@@ -450,7 +467,8 @@ contract MultiStateHubTest_PausedState_WithSig is
 
     function _mockCollect() internal override {
         bytes32 digest = _getCollectTypedDataHash(
-            mockCollectData.profileId,
+            mockCollectData.collectorProfileId,
+            mockCollectData.publisherProfileId,
             mockCollectData.pubId,
             mockCollectData.data,
             nonce,
@@ -526,7 +544,13 @@ contract MultiStateHubTest_PublishingPausedState_Direct is BaseTest {
     }
 
     function _mockFollow() internal virtual {
-        _follow({msgSender: me, onBehalfOf: me, profileId: newProfileId, data: ''});
+        _follow({
+            msgSender: me,
+            followerProfileId: _createProfile(me),
+            idOfProfileToFollow: newProfileId,
+            followTokenId: 0,
+            data: ''
+        });
     }
 
     // TODO: The following two functions were copy-pasted from CollectingTest.t.sol
@@ -534,8 +558,8 @@ contract MultiStateHubTest_PublishingPausedState_Direct is BaseTest {
     function _mockCollect() internal virtual {
         vm.prank(profileOwner);
         _collect(
-            mockCollectData.collector,
-            mockCollectData.profileId,
+            mockCollectData.collectorProfileId,
+            mockCollectData.publisherProfileId,
             mockCollectData.pubId,
             mockCollectData.data
         );
@@ -746,18 +770,22 @@ contract MultiStateHubTest_PublishingPausedState_WithSig is
     }
 
     function _mockFollow() internal override {
+        uint256 followerProfileId = _createProfile(otherSigner);
         bytes32 digest = _getFollowTypedDataHash(
+            followerProfileId,
             _toUint256Array(newProfileId),
+            _toUint256Array(0),
             _toBytesArray(''),
             nonce,
             deadline
         );
 
-        uint256[] memory nftIds = _followWithSig(
-            _buildFollowWithSigData({
+        _followWithSig(
+            DataTypes.FollowWithSigData({
                 delegatedSigner: address(0),
-                follower: otherSigner,
-                profileIds: _toUint256Array(newProfileId),
+                followerProfileId: followerProfileId,
+                idsOfProfilesToFollow: _toUint256Array(newProfileId),
+                followTokenIds: _toUint256Array(0),
                 datas: _toBytesArray(''),
                 sig: _getSigStruct(otherSignerKey, digest, deadline)
             })
@@ -766,7 +794,8 @@ contract MultiStateHubTest_PublishingPausedState_WithSig is
 
     function _mockCollect() internal override {
         bytes32 digest = _getCollectTypedDataHash(
-            mockCollectData.profileId,
+            mockCollectData.collectorProfileId,
+            mockCollectData.publisherProfileId,
             mockCollectData.pubId,
             mockCollectData.data,
             nonce,

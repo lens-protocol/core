@@ -264,7 +264,9 @@ contract BaseTest is TestSetup {
     }
 
     function _getFollowTypedDataHash(
-        uint256[] memory profileIds,
+        uint256 followerProfileId,
+        uint256[] memory idsOfProfilesToFollow,
+        uint256[] memory followTokenIds,
         bytes[] memory datas,
         uint256 nonce,
         uint256 deadline
@@ -281,7 +283,9 @@ contract BaseTest is TestSetup {
         bytes32 structHash = keccak256(
             abi.encode(
                 FOLLOW_WITH_SIG_TYPEHASH,
-                keccak256(abi.encodePacked(profileIds)),
+                followerProfileId,
+                keccak256(abi.encodePacked(idsOfProfilesToFollow)),
+                keccak256(abi.encodePacked(followTokenIds)),
                 keccak256(abi.encodePacked(dataHashes)),
                 nonce,
                 deadline
@@ -291,7 +295,8 @@ contract BaseTest is TestSetup {
     }
 
     function _getCollectTypedDataHash(
-        uint256 profileId,
+        uint256 collectorProfileId,
+        uint256 publisherProfileId,
         uint256 pubId,
         bytes memory data,
         uint256 nonce,
@@ -300,7 +305,8 @@ contract BaseTest is TestSetup {
         bytes32 structHash = keccak256(
             abi.encode(
                 COLLECT_WITH_SIG_TYPEHASH,
-                profileId,
+                collectorProfileId,
+                publisherProfileId,
                 pubId,
                 keccak256(data),
                 nonce,
@@ -342,9 +348,40 @@ contract BaseTest is TestSetup {
         return ret;
     }
 
-    function _toBytesArray(bytes memory n) internal pure returns (bytes[] memory) {
+    function _toUint256Array(uint256 n0, uint256 n1) internal pure returns (uint256[] memory) {
+        uint256[] memory ret = new uint256[](2);
+        ret[0] = n0;
+        ret[1] = n1;
+        return ret;
+    }
+
+    function _toBytesArray(bytes memory b) internal pure returns (bytes[] memory) {
         bytes[] memory ret = new bytes[](1);
-        ret[0] = n;
+        ret[0] = b;
+        return ret;
+    }
+
+    function _toBytesArray(bytes memory b0, bytes memory b1)
+        internal
+        pure
+        returns (bytes[] memory)
+    {
+        bytes[] memory ret = new bytes[](2);
+        ret[0] = b0;
+        ret[1] = b1;
+        return ret;
+    }
+
+    function _toBoolArray(bool b) internal pure returns (bool[] memory) {
+        bool[] memory ret = new bool[](1);
+        ret[0] = b;
+        return ret;
+    }
+
+    function _toBoolArray(bool b0, bool b1) internal pure returns (bool[] memory) {
+        bool[] memory ret = new bool[](2);
+        ret[0] = b0;
+        ret[1] = b1;
         return ret;
     }
 
@@ -372,12 +409,12 @@ contract BaseTest is TestSetup {
     }
 
     function _collect(
-        address onBehalfOf,
-        uint256 profileId,
+        uint256 collectorProfileId,
+        uint256 publisherProfileId,
         uint256 pubId,
         bytes memory data
     ) internal returns (uint256) {
-        return hub.collect(onBehalfOf, profileId, pubId, data);
+        return hub.collect(collectorProfileId, publisherProfileId, pubId, data);
     }
 
     function _postWithSig(DataTypes.PostWithSigData memory postWithSigData)
@@ -410,12 +447,19 @@ contract BaseTest is TestSetup {
 
     function _follow(
         address msgSender,
-        address onBehalfOf,
-        uint256 profileId,
+        uint256 followerProfileId,
+        uint256 idOfProfileToFollow,
+        uint256 followTokenId,
         bytes memory data
     ) internal returns (uint256[] memory) {
         vm.prank(msgSender);
-        return hub.follow(onBehalfOf, _toUint256Array(profileId), _toBytesArray(data));
+        return
+            hub.follow(
+                followerProfileId,
+                _toUint256Array(idOfProfileToFollow),
+                _toUint256Array(followTokenId),
+                _toBytesArray(data)
+            );
     }
 
     function _followWithSig(DataTypes.FollowWithSigData memory vars)

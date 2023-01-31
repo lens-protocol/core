@@ -152,8 +152,16 @@ library GeneralHelpers {
             mstore(0, tokenId)
             mstore(32, TOKEN_DATA_MAPPING_SLOT)
             let slot := keccak256(0, 64)
-            // this weird bit shift is necessary to remove the packing from the variable.
+            // This bit shift is necessary to remove the packing from the variable.
             owner := shr(96, shl(96, sload(slot)))
+        }
+        return owner;
+    }
+
+    function ownerOf(uint256 tokenId) internal view returns (address) {
+        address owner = unsafeOwnerOf(tokenId);
+        if (owner == address(0)) {
+            revert Errors.TokenDoesNotExist();
         }
         return owner;
     }
@@ -178,18 +186,39 @@ library GeneralHelpers {
         }
     }
 
+    function validateCallerIsOwnerOrDelegatedExecutor(uint256 profileId) internal view {
+        address owner = ownerOf(profileId);
+        if (msg.sender != owner) {
+            validateDelegatedExecutor(owner, msg.sender);
+        }
+    }
+
+    function validateAddressIsOwnerOrDelegatedExecutor(
+        address transactionExecutor,
+        address profileOwner
+    ) internal view {
+        if (transactionExecutor != profileOwner) {
+            validateDelegatedExecutor(profileOwner, transactionExecutor);
+        }
+    }
+
     function validateDelegatedExecutor(address onBehalfOf, address executor) internal view {
-        bool invalidExecutor;
+        if (!isExecutorApproved(onBehalfOf, executor)) {
+            revert Errors.ExecutorInvalid();
+        }
+    }
+
+    function isExecutorApproved(address onBehalfOf, address executor) internal view returns (bool) {
+        bool isExecutorApproved;
         assembly {
-            //If the caller is not the owner, check if they are an approved delegated executor.
             mstore(0, onBehalfOf)
             mstore(32, DELEGATED_EXECUTOR_APPROVAL_MAPPING_SLOT)
             mstore(32, keccak256(0, 64))
             mstore(0, executor)
             let slot := keccak256(0, 64)
-            invalidExecutor := iszero(sload(slot))
+            isExecutorApproved := sload(slot)
         }
-        if (invalidExecutor) revert Errors.ExecutorInvalid();
+        return isExecutorApproved;
     }
 
     /**
@@ -205,5 +234,20 @@ library GeneralHelpers {
             return delegatedSigner;
         }
         return originator;
+    }
+
+    function validateNotBlocked(uint256 profile, uint256 byProfile) internal view {
+        bool isBlocked;
+        assembly {
+            mstore(0, byProfile)
+            mstore(32, BLOCK_STATUS_MAPPING_SLOT)
+            let blockStatusByProfileSlot := keccak256(0, 64)
+            mstore(0, profile)
+            mstore(32, blockStatusByProfileSlot)
+            isBlocked := sload(keccak256(0, 64))
+        }
+        if (isBlocked) {
+            revert Errors.Blocked();
+        }
     }
 }

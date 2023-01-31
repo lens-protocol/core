@@ -28,25 +28,25 @@ Scenarios
 Following
 Generic
 Negatives
-[ ] UserTwo should fail to follow a nonexistent profile
-[ ] UserTwo should fail to follow with array mismatch
-[ ] UserTwo should fail to follow a profile that has been burned
-[ ] UserTwo should fail to follow profile with id 0
+[X] UserTwo should fail to follow a nonexistent profile
+[X] UserTwo should fail to follow with array mismatch
+[X] UserTwo should fail to follow a profile that has been burned
+[X] UserTwo should fail to follow profile with id 0
 Scenarios
-[ ] UserTwo should follow profile 1, receive a followNFT with ID 1, followNFT properties should be correct
-[ ] UserTwo should follow profile 1 twice, receiving followNFTs with IDs 1 and 2
-[ ] UserTwo should follow profile 1 3 times in the same call, receive IDs 1,2 and 3
-[ ] Should return the expected token IDs when following profiles
+[X] UserTwo should follow profile 1, receive a followNFT with ID 1, followNFT properties should be correct
+[-] UserTwo should follow profile 1 twice, receiving followNFTs with IDs 1 and 2
+[-] UserTwo should follow profile 1 3 times in the same call, receive IDs 1,2 and 3
+[X] Should return the expected token IDs when following profiles
 Meta-tx
 Negatives
-[ ] TestWallet should fail to follow with sig with signature deadline mismatch
-[ ] TestWallet should fail to follow with sig with invalid deadline
-[ ] TestWallet should fail to follow with sig with invalid nonce
-[ ] TestWallet should fail to follow a nonexistent profile with sig
-[ ] TestWallet should sign attempt to follow with sig, cancel with empty permitForAll, then fail to follow with sig
+[X] TestWallet should fail to follow with sig with signature deadline mismatch
+[X] TestWallet should fail to follow with sig with invalid deadline
+[X] TestWallet should fail to follow with sig with invalid nonce
+[X] TestWallet should fail to follow a nonexistent profile with sig
+[-] TestWallet should sign attempt to follow with sig, cancel with empty permitForAll, then fail to follow with sig
 Scenarios
-[ ] TestWallet should follow profile 1 with sig, receive a follow NFT with ID 1, follow NFT name and symbol should be correct
-[ ] TestWallet should follow profile 1 with sig twice in the same call, receive follow NFTs with IDs 1 and 2
+[X] TestWallet should follow profile 1 with sig, receive a follow NFT with ID 1, follow NFT name and symbol should be correct
+[X] TestWallet should follow profile 1 with sig twice in the same call, receive follow NFTs with IDs 1 and 2
 
 Governance Functions
 Negatives
@@ -314,26 +314,26 @@ Follow NFT
 generic
 Negatives
 [ ] User should follow, and fail to re-initialize the follow NFT
-[ ] User should follow, userTwo should fail to burn user's follow NFT
-[ ] User should follow, then fail to mint a follow NFT directly
-[ ] User should follow, then fail to get the power at a future block
-[ ] user should follow, then fail to get the URI for a token that does not exist
+[-] User should follow, userTwo should fail to burn user's follow NFT
+[-] User should follow, then fail to mint a follow NFT directly
+[-] User should follow, then fail to get the power at a future block
+[-] user should follow, then fail to get the URI for a token that does not exist
 Scenarios
-[ ] User should follow, then burn their follow NFT, governance power is zero before and after
-[ ] User should follow, delegate to themself, governance power should be zero before the last block, and 1 at the current block
-[ ] User and userTwo should follow, governance power should be zero, then users delegate multiple times, governance power should be accurate throughout
-[ ] User and userTwo should follow, delegate to themselves, 10 blocks later user delegates to userTwo, 10 blocks later both delegate to user, governance power should be accurate throughout
-[ ] user and userTwo should follow, user delegates to userTwo twice, governance power should be accurate
-[ ] User and userTwo should follow, then transfer their NFTs to the helper contract, then the helper contract batch delegates to user one, then user two, governance power should be accurate
-[ ] user should follow, then get the URI for their token, URI should be accurate
+[-] User should follow, then burn their follow NFT, governance power is zero before and after
+[-] User should follow, delegate to themself, governance power should be zero before the last block, and 1 at the current block
+[-] User and userTwo should follow, governance power should be zero, then users delegate multiple times, governance power should be accurate throughout
+[-] User and userTwo should follow, delegate to themselves, 10 blocks later user delegates to userTwo, 10 blocks later both delegate to user, governance power should be accurate throughout
+[-] user and userTwo should follow, user delegates to userTwo twice, governance power should be accurate
+[-] User and userTwo should follow, then transfer their NFTs to the helper contract, then the helper contract batch delegates to user one, then user two, governance power should be accurate
+[-] user should follow, then get the URI for their token, URI should be accurate
 meta-tx
 negatives
-[ ] TestWallet should fail to delegate with sig with signature deadline mismatch
-[ ] TestWallet should fail to delegate with sig with invalid deadline
-[ ] TestWallet should fail to delegate with sig with invalid nonce
-[ ] TestWallet should sign attempt to delegate by sig, cancel with empty permitForAll, then fail to delegate by sig
+[-] TestWallet should fail to delegate with sig with signature deadline mismatch
+[-] TestWallet should fail to delegate with sig with invalid deadline
+[-] TestWallet should fail to delegate with sig with invalid nonce
+[-] TestWallet should sign attempt to delegate by sig, cancel with empty permitForAll, then fail to delegate by sig
 Scenarios
-[ ] TestWallet should delegate by sig to user, governance power should be accurate before and after
+[-] TestWallet should delegate by sig to user, governance power should be accurate before and after
 
 Lens NFT Base Functionality
 generic

@@ -322,6 +322,33 @@ contract CommentTest is PublishingTest {
         _publishWithSig({delegatedSigner: address(0), signerPrivKey: profileOwnerKey});
     }
 
+    function testCannotCommentIfBlocked() public {
+        uint256 commenterProfileId = _createProfile(profileOwner);
+        mockCommentData.profileId = commenterProfileId;
+        vm.prank(profileOwner);
+        hub.setBlockStatus(
+            mockPostData.profileId,
+            _toUint256Array(commenterProfileId),
+            _toBoolArray(true)
+        );
+        vm.expectRevert(Errors.Blocked.selector);
+        vm.prank(profileOwner);
+        _publish();
+    }
+
+    function testCannotCommentWithSigIfBlocked() public {
+        uint256 commenterProfileId = _createProfile(profileOwner);
+        mockCommentData.profileId = commenterProfileId;
+        vm.prank(profileOwner);
+        hub.setBlockStatus(
+            mockPostData.profileId,
+            _toUint256Array(commenterProfileId),
+            _toBoolArray(true)
+        );
+        vm.expectRevert(Errors.Blocked.selector);
+        _publishWithSig({delegatedSigner: address(0), signerPrivKey: profileOwnerKey});
+    }
+
     // scenarios
     function testPostWithReferenceModuleAndComment() public {
         mockPostData.referenceModule = address(mockReferenceModule);
@@ -410,6 +437,33 @@ contract MirrorTest is PublishingTest {
         mockMirrorData.pubIdPointed = nonExistentPubId;
 
         vm.expectRevert(Errors.PublicationDoesNotExist.selector);
+        _publishWithSig({delegatedSigner: address(0), signerPrivKey: profileOwnerKey});
+    }
+
+    function testCannotMirrorIfBlocked() public {
+        uint256 mirrorerProfileId = _createProfile(profileOwner);
+        mockMirrorData.profileId = mirrorerProfileId;
+        vm.prank(profileOwner);
+        hub.setBlockStatus(
+            mockPostData.profileId,
+            _toUint256Array(mirrorerProfileId),
+            _toBoolArray(true)
+        );
+        vm.expectRevert(Errors.Blocked.selector);
+        vm.prank(profileOwner);
+        _publish();
+    }
+
+    function testCannotMirrorWithSigIfBlocked() public {
+        uint256 mirrorerProfileId = _createProfile(profileOwner);
+        mockMirrorData.profileId = mirrorerProfileId;
+        vm.prank(profileOwner);
+        hub.setBlockStatus(
+            mockPostData.profileId,
+            _toUint256Array(mirrorerProfileId),
+            _toBoolArray(true)
+        );
+        vm.expectRevert(Errors.Blocked.selector);
         _publishWithSig({delegatedSigner: address(0), signerPrivKey: profileOwnerKey});
     }
 

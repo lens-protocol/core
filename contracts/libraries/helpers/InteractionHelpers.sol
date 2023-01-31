@@ -32,94 +32,162 @@ library InteractionHelpers {
     using Strings for uint256;
 
     function follow(
-        address follower,
+        uint256 followerProfileId,
         address executor,
-        uint256[] calldata profileIds,
+        uint256[] calldata idsOfProfilesToFollow,
+        uint256[] calldata followTokenIds,
         bytes[] calldata followModuleDatas
     ) internal returns (uint256[] memory) {
-        if (profileIds.length != followModuleDatas.length) revert Errors.ArrayMismatch();
-        uint256[] memory tokenIds = new uint256[](profileIds.length);
+        if (
+            idsOfProfilesToFollow.length != followTokenIds.length ||
+            idsOfProfilesToFollow.length != followModuleDatas.length
+        ) {
+            revert Errors.ArrayMismatch();
+        }
+        uint256[] memory followTokenIdsAssigned = new uint256[](idsOfProfilesToFollow.length);
+        uint256 i;
+        while (i < idsOfProfilesToFollow.length) {
+            _validateProfileExists({profileId: idsOfProfilesToFollow[i]});
 
-        for (uint256 i = 0; i < profileIds.length; ) {
-            uint256 profileId = profileIds[i];
-            _validateProfileExists(profileId);
+            GeneralHelpers.validateNotBlocked({
+                profile: followerProfileId,
+                byProfile: idsOfProfilesToFollow[i]
+            });
 
-            uint256 followNFTSlot;
-            address followModule;
+            if (followerProfileId == idsOfProfilesToFollow[i]) {
+                revert Errors.SelfFollow();
+            }
+
+            followTokenIdsAssigned[i] = _follow({
+                followerProfileId: followerProfileId,
+                executor: executor,
+                idOfProfileToFollow: idsOfProfilesToFollow[i],
+                followTokenId: followTokenIds[i],
+                followModuleData: followModuleDatas[i]
+            });
+
+            unchecked {
+                ++i;
+            }
+        }
+        return followTokenIdsAssigned;
+    }
+
+    function unfollow(
+        uint256 unfollowerProfileId,
+        address executor,
+        uint256[] calldata idsOfProfilesToUnfollow
+    ) internal {
+        uint256 i;
+        while (i < idsOfProfilesToUnfollow.length) {
+            uint256 idOfProfileToUnfollow = idsOfProfilesToUnfollow[i];
+            _validateProfileExists(idOfProfileToUnfollow);
+
             address followNFT;
-
-            // Load the follow NFT and follow module for the given profile being followed, and cache
-            // the follow NFT slot.
+            // Load the Follow NFT for the profile being unfollowed.
             assembly {
-                mstore(0, profileId)
+                mstore(0, idOfProfileToUnfollow)
                 mstore(32, PROFILE_BY_ID_MAPPING_SLOT)
-                // The follow NFT offset is 2, the follow module offset is 1,
-                // so we just need to subtract 1 instead of recalculating the slot.
-                followNFTSlot := add(keccak256(0, 64), PROFILE_FOLLOW_NFT_OFFSET)
-                followModule := sload(sub(followNFTSlot, 1))
+                let followNFTSlot := add(keccak256(0, 64), PROFILE_FOLLOW_NFT_OFFSET)
                 followNFT := sload(followNFTSlot)
             }
 
             if (followNFT == address(0)) {
-                followNFT = _deployFollowNFT(profileId);
-
-                // Store the follow NFT in the cached slot.
-                assembly {
-                    sstore(followNFTSlot, followNFT)
-                }
+                revert Errors.NotFollowing();
             }
 
-            tokenIds[i] = IFollowNFT(followNFT).mint(follower);
+            IFollowNFT(followNFT).unfollow({
+                unfollowerProfileId: unfollowerProfileId,
+                executor: executor
+            });
 
-            if (followModule != address(0)) {
-                try
-                    IFollowModule(followModule).processFollow(
-                        0,
-                        follower,
-                        executor,
-                        profileId,
-                        followModuleDatas[i]
-                    )
-                {} catch (bytes memory err) {
-                    assembly {
-                        /// Equivalent to reverting with the returned error selector if
-                        /// the length is not zero.
-                        let length := mload(err)
-                        if iszero(iszero(length)) {
-                            revert(add(err, 32), length)
-                        }
-                    }
-                    if (executor != follower) revert Errors.ExecutorInvalid();
-                    IDeprecatedFollowModule(followModule).processFollow(
-                        follower,
-                        profileId,
-                        followModuleDatas[i]
-                    );
-                }
+            emit Events.Unfollowed(unfollowerProfileId, idOfProfileToUnfollow, block.timestamp);
+
+            unchecked {
+                ++i;
+            }
+        }
+    }
+
+    function setBlockStatus(
+        uint256 byProfileId,
+        uint256[] calldata idsOfProfilesToSetBlockStatus,
+        bool[] calldata blockStatus
+    ) internal {
+        if (idsOfProfilesToSetBlockStatus.length != blockStatus.length) {
+            revert Errors.ArrayMismatch();
+        }
+        uint256 blockStatusByProfileSlot;
+        // Calculates the slot of the block status internal mapping once accessed by `byProfileId`.
+        // i.e. the slot of `_blockedStatus[byProfileId]`
+        assembly {
+            mstore(0, byProfileId)
+            mstore(32, BLOCK_STATUS_MAPPING_SLOT)
+            blockStatusByProfileSlot := keccak256(0, 64)
+        }
+        address followNFT;
+        // Loads the Follow NFT address from storage.
+        // i.e. `followNFT = _profileById[byProfileId].followNFT;`
+        assembly {
+            mstore(0, byProfileId)
+            mstore(32, PROFILE_BY_ID_MAPPING_SLOT)
+            followNFT := sload(add(keccak256(0, 64), PROFILE_FOLLOW_NFT_OFFSET))
+        }
+        uint256 i;
+        uint256 idOfProfileToSetBlockStatus;
+        bool setToBlocked;
+        while (i < idsOfProfilesToSetBlockStatus.length) {
+            idOfProfileToSetBlockStatus = idsOfProfilesToSetBlockStatus[i];
+            _validateProfileExists(idOfProfileToSetBlockStatus);
+            if (byProfileId == idOfProfileToSetBlockStatus) {
+                revert Errors.SelfBlock();
+            }
+            setToBlocked = blockStatus[i];
+            if (followNFT != address(0) && setToBlocked) {
+                IFollowNFT(followNFT).processBlock(idOfProfileToSetBlockStatus);
+            }
+            // Stores the block status.
+            // i.e. `_blockedStatus[byProfileId][idOfProfileToSetBlockStatus] = setToBlocked;`
+            assembly {
+                mstore(0, idOfProfileToSetBlockStatus)
+                mstore(32, blockStatusByProfileSlot)
+                sstore(keccak256(0, 64), setToBlocked)
+            }
+            if (setToBlocked) {
+                emit Events.Blocked(byProfileId, idOfProfileToSetBlockStatus, block.timestamp);
+            } else {
+                emit Events.Unblocked(byProfileId, idOfProfileToSetBlockStatus, block.timestamp);
             }
             unchecked {
                 ++i;
             }
         }
-        emit Events.Followed(follower, profileIds, followModuleDatas, block.timestamp);
-        return tokenIds;
     }
 
     function collect(
-        address collector,
-        address delegatedExecutor,
-        uint256 profileId,
+        uint256 collectorProfileId,
+        address collectorProfileOwner,
+        address transactionExecutor, // TODO: (ex-delegatedExecutor) - revisit the naming later
+        uint256 publisherProfileId,
         uint256 pubId,
         bytes calldata collectModuleData,
         address collectNFTImpl
     ) internal returns (uint256) {
-        uint256 profileIdCached = profileId;
+        uint256 publisherProfileIdCached = publisherProfileId;
         uint256 pubIdCached = pubId;
-        address collectorCached = collector;
-        address delegatedExecutorCached = delegatedExecutor;
+        uint256 collectorProfileIdCached = collectorProfileId;
+        address collectorProfileOwnerCached = collectorProfileOwner;
+        address transactionExecutorCached = transactionExecutor;
+
+        GeneralHelpers.validateAddressIsOwnerOrDelegatedExecutor({
+            transactionExecutor: transactionExecutor,
+            profileOwner: collectorProfileOwner
+        });
+
+        GeneralHelpers.validateNotBlocked(collectorProfileId, publisherProfileId);
 
         (uint256 rootProfileId, uint256 rootPubId, address rootCollectModule) = GeneralHelpers
-            .getPointedIfMirrorWithCollectModule(profileIdCached, pubIdCached);
+            .getPointedIfMirrorWithCollectModule(publisherProfileIdCached, pubIdCached);
 
         // Prevents stack too deep.
         address collectNFT;
@@ -147,39 +215,47 @@ library InteractionHelpers {
             }
         }
 
-        uint256 tokenId = ICollectNFT(collectNFT).mint(collectorCached);
+        uint256 tokenId = ICollectNFT(collectNFT).mint(collectorProfileOwnerCached);
         _processCollect(
-            rootCollectModule,
-            collectModuleData,
-            profileIdCached,
-            pubIdCached,
-            collectorCached,
-            delegatedExecutorCached,
-            rootProfileId,
-            rootPubId
+            ProcessCollectVars({
+                collectModule: rootCollectModule,
+                publisherProfileId: publisherProfileIdCached,
+                collectorProfileId: collectorProfileIdCached,
+                collectorProfileOwner: collectorProfileOwnerCached,
+                transactionExecutor: transactionExecutorCached,
+                rootProfileId: rootProfileId,
+                rootPubId: rootPubId,
+                pubId: pubIdCached
+            }),
+            collectModuleData
         );
 
         return tokenId;
     }
 
-    function _processCollect(
-        address collectModule,
-        bytes calldata collectModuleData,
-        uint256 profileId,
-        uint256 pubId,
-        address collector,
-        address executor,
-        uint256 rootProfileId,
-        uint256 rootPubId
-    ) private {
+    // TODO: Think about how to make this better... (it's needed for stack too deep)
+    struct ProcessCollectVars {
+        address collectModule;
+        uint256 publisherProfileId;
+        uint256 collectorProfileId;
+        address collectorProfileOwner;
+        address transactionExecutor;
+        uint256 rootProfileId;
+        uint256 rootPubId;
+        uint256 pubId;
+    }
+
+    function _processCollect(ProcessCollectVars memory vars, bytes calldata collectModuleData)
+        private
+    {
         try
-            ICollectModule(collectModule).processCollect(
-                profileId,
-                0,
-                collector,
-                executor,
-                rootProfileId,
-                rootPubId,
+            ICollectModule(vars.collectModule).processCollect(
+                vars.publisherProfileId,
+                vars.collectorProfileId,
+                vars.collectorProfileOwner,
+                vars.transactionExecutor,
+                vars.rootProfileId,
+                vars.rootPubId,
                 collectModuleData
             )
         {} catch (bytes memory err) {
@@ -191,42 +267,25 @@ library InteractionHelpers {
                     revert(add(err, 32), length)
                 }
             }
-            if (collector != executor) revert Errors.ExecutorInvalid();
-            IDeprecatedCollectModule(collectModule).processCollect(
-                profileId,
-                collector,
-                rootProfileId,
-                rootPubId,
+            if (vars.collectorProfileOwner != vars.transactionExecutor)
+                revert Errors.ExecutorInvalid();
+            IDeprecatedCollectModule(vars.collectModule).processCollect(
+                vars.publisherProfileId,
+                vars.collectorProfileOwner,
+                vars.rootProfileId,
+                vars.rootPubId,
                 collectModuleData
             );
         }
 
         _emitCollectedEvent(
-            collector,
-            profileId,
-            pubId,
-            rootProfileId,
-            rootPubId,
+            vars.collectorProfileId,
+            vars.publisherProfileId,
+            vars.pubId,
+            vars.rootProfileId,
+            vars.rootPubId,
             collectModuleData
         );
-    }
-
-    /**
-     * @notice Deploys the given profile's Follow NFT contract.
-     *
-     * @param profileId The token ID of the profile which Follow NFT should be deployed.
-     *
-     * @return address The address of the deployed Follow NFT contract.
-     */
-    function _deployFollowNFT(uint256 profileId) private returns (address) {
-        bytes memory functionData = abi.encodeWithSelector(
-            IFollowNFT.initialize.selector,
-            profileId
-        );
-        address followNFT = address(new FollowNFTProxy(functionData));
-        emit Events.FollowNFTDeployed(profileId, followNFT, block.timestamp);
-
-        return followNFT;
     }
 
     /**
@@ -263,30 +322,107 @@ library InteractionHelpers {
      *
      * @dev This is done through this function to prevent stack too deep compilation error.
      *
-     * @param collector The address collecting the publication.
-     * @param profileId The token ID of the profile that the collect was initiated towards, useful to differentiate mirrors.
+     * @param collectorProfileId The owner address of the profile collecting the publication.
+     * @param publisherProfileId The token ID of the profile that the collect was initiated towards, useful to differentiate mirrors.
      * @param pubId The publication ID that the collect was initiated towards, useful to differentiate mirrors.
      * @param rootProfileId The profile token ID of the profile whose publication is being collected.
      * @param rootPubId The publication ID of the publication being collected.
      * @param data The data passed to the collect module.
      */
     function _emitCollectedEvent(
-        address collector,
-        uint256 profileId,
+        uint256 collectorProfileId,
+        uint256 publisherProfileId,
         uint256 pubId,
         uint256 rootProfileId,
         uint256 rootPubId,
         bytes calldata data
     ) private {
         emit Events.Collected(
-            collector,
-            profileId,
+            collectorProfileId,
+            publisherProfileId,
             pubId,
             rootProfileId,
             rootPubId,
             data,
             block.timestamp
         );
+    }
+
+    function _follow(
+        uint256 followerProfileId,
+        address executor,
+        uint256 idOfProfileToFollow,
+        uint256 followTokenId,
+        bytes calldata followModuleData
+    ) internal returns (uint256) {
+        uint256 followNFTSlot;
+        address followModule;
+        address followNFT;
+
+        // Load the follow NFT and follow module for the given profile being followed, and cache
+        // the follow NFT slot.
+        assembly {
+            mstore(0, idOfProfileToFollow)
+            mstore(32, PROFILE_BY_ID_MAPPING_SLOT)
+            // The follow NFT offset is 2, the follow module offset is 1,
+            // so we just need to subtract 1 instead of recalculating the slot.
+            followNFTSlot := add(keccak256(0, 64), PROFILE_FOLLOW_NFT_OFFSET)
+            followModule := sload(sub(followNFTSlot, 1))
+            followNFT := sload(followNFTSlot)
+        }
+
+        if (followNFT == address(0)) {
+            followNFT = _deployFollowNFT(idOfProfileToFollow);
+
+            // Store the follow NFT in the cached slot.
+            assembly {
+                sstore(followNFTSlot, followNFT)
+            }
+        }
+
+        uint256 followTokenIdAssigned = IFollowNFT(followNFT).follow({
+            followerProfileId: followerProfileId,
+            executor: executor,
+            followTokenId: followTokenId
+        });
+
+        if (followModule != address(0)) {
+            IFollowModule(followModule).processFollow(
+                followerProfileId,
+                followTokenId,
+                executor,
+                idOfProfileToFollow,
+                followModuleData
+            );
+        }
+
+        emit Events.Followed(
+            followerProfileId,
+            idOfProfileToFollow,
+            followTokenIdAssigned,
+            followModuleData,
+            block.timestamp
+        );
+
+        return followTokenIdAssigned;
+    }
+
+    /**
+     * @notice Deploys the given profile's Follow NFT contract.
+     *
+     * @param profileId The token ID of the profile which Follow NFT should be deployed.
+     *
+     * @return address The address of the deployed Follow NFT contract.
+     */
+    function _deployFollowNFT(uint256 profileId) private returns (address) {
+        bytes memory functionData = abi.encodeWithSelector(
+            IFollowNFT.initialize.selector,
+            profileId
+        );
+        address followNFT = address(new FollowNFTProxy(functionData));
+        emit Events.FollowNFTDeployed(profileId, followNFT, block.timestamp);
+
+        return followNFT;
     }
 
     function _validateProfileExists(uint256 profileId) private view {

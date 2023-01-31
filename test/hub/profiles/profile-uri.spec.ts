@@ -66,7 +66,7 @@ makeSuiteCleanRoom('Profile URI Functionality', function () {
       });
     });
 
-    context('Scenarios', function () {
+    context.skip('Scenarios', function () {
       it('User should have a custom image tokenURI after setting the profile imageURI', async function () {
         await expect(lensHub.setProfileImageURI(FIRST_PROFILE_ID, MOCK_URI)).to.not.be.reverted;
         const tokenUri = await lensHub.tokenURI(FIRST_PROFILE_ID);
@@ -452,7 +452,7 @@ makeSuiteCleanRoom('Profile URI Functionality', function () {
     });
 
     context('Scenarios', function () {
-      it('TestWallet should set the profile URI with sig', async function () {
+      it.skip('TestWallet should set the profile URI with sig', async function () {
         const nonce = (await lensHub.sigNonces(testWallet.address)).toNumber();
         const { v, r, s } = await getSetProfileImageURIWithSigParts(
           FIRST_PROFILE_ID,

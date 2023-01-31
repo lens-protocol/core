@@ -5,16 +5,16 @@ pragma solidity 0.8.15;
 import {IFollowModule} from '../interfaces/IFollowModule.sol';
 
 /**
- * @dev This is a simple mock follow module to be used for testing.
+ * @dev This is a simple mock follow module to be used for testing revert cases on processFollow.
  */
-contract MockFollowModule is IFollowModule {
+contract MockFollowModuleWithRevertFlag is IFollowModule {
+    error MockFollowModuleReverted();
+
     function initializeFollowModule(
         uint256 profileId,
         address executor,
         bytes calldata data
     ) external pure override returns (bytes memory) {
-        uint256 number = abi.decode(data, (uint256));
-        require(number == 1, 'MockFollowModule: invalid');
         return new bytes(0);
     }
 
@@ -24,5 +24,9 @@ contract MockFollowModule is IFollowModule {
         address executor,
         uint256 profileId,
         bytes calldata data
-    ) external pure override {}
+    ) external pure override {
+        if (abi.decode(data, (bool))) {
+            revert MockFollowModuleReverted();
+        }
+    }
 }

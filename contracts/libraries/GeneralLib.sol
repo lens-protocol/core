@@ -149,19 +149,28 @@ library GeneralLib {
      * @notice Follows the given profiles, executing the necessary logic and module calls before minting the follow
      * NFT(s) to the follower.
      *
-     * @param onBehalfOf The address the follow is being executed for, different from the sender for delegated executors.
-     * @param profileIds The array of profile token IDs to follow.
+     * @param followerProfileId The profile the follow is being executed for.
+     * @param idsOfProfilesToFollow The array of profile token IDs to follow.
+     * @param followTokenIds The array of follow token IDs to use for each follow.
      * @param followModuleDatas The array of follow module data parameters to pass to each profile's follow module.
      *
      * @return uint256[] An array of integers representing the minted follow NFTs token IDs.
      */
     function follow(
-        address onBehalfOf,
-        uint256[] calldata profileIds,
+        uint256 followerProfileId,
+        uint256[] calldata idsOfProfilesToFollow,
+        uint256[] calldata followTokenIds,
         bytes[] calldata followModuleDatas
     ) external returns (uint256[] memory) {
-        _validateCallerIsOnBehalfOfOrExecutor(onBehalfOf);
-        return InteractionHelpers.follow(onBehalfOf, msg.sender, profileIds, followModuleDatas);
+        GeneralHelpers.validateCallerIsOwnerOrDelegatedExecutor(followerProfileId);
+        return
+            InteractionHelpers.follow({
+                followerProfileId: followerProfileId,
+                executor: msg.sender,
+                idsOfProfilesToFollow: idsOfProfilesToFollow,
+                followTokenIds: followTokenIds,
+                followModuleDatas: followModuleDatas
+            });
     }
 
     /**
@@ -174,21 +183,84 @@ library GeneralLib {
         external
         returns (uint256[] memory)
     {
-        address follower = vars.follower;
+        address followerProfileOwner = GeneralHelpers.ownerOf(vars.followerProfileId);
         address signer = GeneralHelpers.getOriginatorOrDelegatedExecutorSigner(
-            follower,
+            followerProfileOwner,
             vars.delegatedSigner
         );
         MetaTxHelpers.baseFollowWithSig(signer, vars);
-        return InteractionHelpers.follow(follower, signer, vars.profileIds, vars.datas);
+        return
+            InteractionHelpers.follow({
+                followerProfileId: vars.followerProfileId,
+                executor: signer,
+                idsOfProfilesToFollow: vars.idsOfProfilesToFollow,
+                followTokenIds: vars.followTokenIds,
+                followModuleDatas: vars.datas
+            });
+    }
+
+    function unfollow(uint256 unfollowerProfileId, uint256[] calldata idsOfProfilesToUnfollow)
+        external
+    {
+        GeneralHelpers.validateCallerIsOwnerOrDelegatedExecutor(unfollowerProfileId);
+        return
+            InteractionHelpers.unfollow({
+                unfollowerProfileId: unfollowerProfileId,
+                executor: msg.sender,
+                idsOfProfilesToUnfollow: idsOfProfilesToUnfollow
+            });
+    }
+
+    /**
+     * @notice Validates parameters and increments the nonce for a given owner using the
+     * `unfollowWithSig()` function.
+     *
+     * @param vars the UnfollowWithSigData struct containing the relevant parameters.
+     */
+    function unfollowWithSig(DataTypes.UnfollowWithSigData calldata vars) external {
+        address unfollowerProfileOwner = GeneralHelpers.ownerOf(vars.unfollowerProfileId);
+        address signer = GeneralHelpers.getOriginatorOrDelegatedExecutorSigner(
+            unfollowerProfileOwner,
+            vars.delegatedSigner
+        );
+        MetaTxHelpers.baseUnfollowWithSig(signer, vars);
+        return
+            InteractionHelpers.unfollow({
+                unfollowerProfileId: vars.unfollowerProfileId,
+                executor: signer,
+                idsOfProfilesToUnfollow: vars.idsOfProfilesToUnfollow
+            });
+    }
+
+    function setBlockStatus(
+        uint256 byProfileId,
+        uint256[] calldata idsOfProfilesToSetBlockStatus,
+        bool[] calldata blockStatus
+    ) external {
+        GeneralHelpers.validateCallerIsOwnerOrDelegatedExecutor(byProfileId);
+        InteractionHelpers.setBlockStatus(byProfileId, idsOfProfilesToSetBlockStatus, blockStatus);
+    }
+
+    function setBlockStatusWithSig(DataTypes.SetBlockStatusWithSigData calldata vars) external {
+        address blockerProfileOwner = GeneralHelpers.ownerOf(vars.byProfileId);
+        address signer = GeneralHelpers.getOriginatorOrDelegatedExecutorSigner(
+            blockerProfileOwner,
+            vars.delegatedSigner
+        );
+        MetaTxHelpers.baseSetBlockStatusWithSig(signer, vars);
+        InteractionHelpers.setBlockStatus(
+            vars.byProfileId,
+            vars.idsOfProfilesToSetBlockStatus,
+            vars.blockStatus
+        );
     }
 
     /**
      * @notice Collects the given publication, executing the necessary logic and module call before minting the
      * collect NFT to the collector.
      *
-     * @param onBehalfOf The address the collect is being executed for, different from the sender for delegated executors.
-     * @param profileId The token ID of the publication being collected's parent profile.
+     * @param collectorProfileId The profile that collect is being executed for.
+     * @param publisherProfileId The token ID of the publisher profile of the collected publication.
      * @param pubId The publication ID of the publication being collected.
      * @param collectModuleData The data to pass to the publication's collect module.
      * @param collectNFTImpl The address of the collect NFT implementation, which has to be passed because it's an immutable in the hub.
@@ -196,22 +268,22 @@ library GeneralLib {
      * @return uint256 An integer representing the minted token ID.
      */
     function collect(
-        address onBehalfOf,
-        uint256 profileId,
+        uint256 collectorProfileId,
+        uint256 publisherProfileId,
         uint256 pubId,
         bytes calldata collectModuleData,
         address collectNFTImpl
     ) external returns (uint256) {
-        _validateCallerIsOnBehalfOfOrExecutor(onBehalfOf);
         return
-            InteractionHelpers.collect(
-                onBehalfOf,
-                msg.sender,
-                profileId,
-                pubId,
-                collectModuleData,
-                collectNFTImpl
-            );
+            InteractionHelpers.collect({
+                collectorProfileId: collectorProfileId,
+                collectorProfileOwner: GeneralHelpers.ownerOf(collectorProfileId),
+                transactionExecutor: msg.sender,
+                publisherProfileId: publisherProfileId,
+                pubId: pubId,
+                collectModuleData: collectModuleData,
+                collectNFTImpl: collectNFTImpl
+            });
     }
 
     /**
@@ -224,21 +296,22 @@ library GeneralLib {
         external
         returns (uint256)
     {
-        address collector = vars.collector;
-        address signer = GeneralHelpers.getOriginatorOrDelegatedExecutorSigner(
-            collector,
+        address collectorProfileOwner = GeneralHelpers.ownerOf(vars.collectorProfileId);
+        address transactionSigner = GeneralHelpers.getOriginatorOrDelegatedExecutorSigner(
+            collectorProfileOwner,
             vars.delegatedSigner
         );
-        MetaTxHelpers.baseCollectWithSig(signer, vars);
+        MetaTxHelpers.baseCollectWithSig(transactionSigner, vars);
         return
-            InteractionHelpers.collect(
-                collector,
-                signer,
-                vars.profileId,
-                vars.pubId,
-                vars.data,
-                collectNFTImpl
-            );
+            InteractionHelpers.collect({
+                collectorProfileId: vars.collectorProfileId,
+                collectorProfileOwner: collectorProfileOwner,
+                transactionExecutor: transactionSigner,
+                publisherProfileId: vars.publisherProfileId,
+                pubId: vars.pubId,
+                collectModuleData: vars.data,
+                collectNFTImpl: collectNFTImpl
+            });
     }
 
     /**

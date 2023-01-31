@@ -13,6 +13,7 @@ import {TransparentUpgradeableProxy} from 'contracts/upgradeability/TransparentU
 import {DataTypes} from 'contracts/libraries/DataTypes.sol';
 import 'contracts/libraries/Constants.sol';
 import {Errors} from 'contracts/libraries/Errors.sol';
+import {Events} from 'contracts/libraries/Events.sol';
 import {GeneralLib} from 'contracts/libraries/GeneralLib.sol';
 import {ProfileTokenURILogic} from 'contracts/libraries/ProfileTokenURILogic.sol';
 import {MockCollectModule} from 'contracts/mocks/MockCollectModule.sol';
@@ -23,13 +24,8 @@ import '../Constants.sol';
 contract TestSetup is Test, ForkManagement {
     using stdJson for string;
 
-    string forkEnv;
-    bool fork;
-    string network;
-    string json;
-    uint256 forkBlockNumber;
+    uint256 newProfileId; // TODO: We should get rid of this everywhere, and create dedicated profiles instead (see Follow tests)
 
-    uint256 newProfileId;
     address deployer;
     address governance;
     address treasury;
@@ -150,7 +146,7 @@ contract TestSetup is Test, ForkManagement {
             json.readAddress(string(abi.encodePacked('.', targetEnv, '.ModuleGlobals')))
         );
 
-        newProfileId = uint256(vm.load(hubProxyAddr, bytes32(uint256(22)))) + 1;
+        newProfileId = _getNextProfileId();
         console.log('newProfileId:', newProfileId);
 
         deployer = address(1);
@@ -272,8 +268,8 @@ contract TestSetup is Test, ForkManagement {
 
         // Precompute basic collect data.
         mockCollectData = DataTypes.CollectData({
-            collector: profileOwner,
-            profileId: newProfileId,
+            collectorProfileId: newProfileId,
+            publisherProfileId: newProfileId,
             pubId: FIRST_PUB_ID,
             data: ''
         });
@@ -286,5 +282,10 @@ contract TestSetup is Test, ForkManagement {
         });
 
         hub.createProfile(mockCreateProfileData);
+    }
+
+    // TODO: Find a better place for such helpers that have access to Hub without rekting inheritance
+    function _getNextProfileId() internal returns (uint256) {
+        return uint256(vm.load(hubProxyAddr, bytes32(uint256(PROFILE_COUNTER_SLOT)))) + 1;
     }
 }

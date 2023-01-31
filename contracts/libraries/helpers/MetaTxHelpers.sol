@@ -324,8 +324,52 @@ library MetaTxHelpers {
                 keccak256(
                     abi.encode(
                         FOLLOW_WITH_SIG_TYPEHASH,
-                        keccak256(abi.encodePacked(vars.profileIds)),
+                        vars.followerProfileId,
+                        keccak256(abi.encodePacked(vars.idsOfProfilesToFollow)),
+                        keccak256(abi.encodePacked(vars.followTokenIds)),
                         keccak256(abi.encodePacked(dataHashes)),
+                        _sigNonces(signer),
+                        vars.sig.deadline
+                    )
+                )
+            ),
+            signer,
+            vars.sig
+        );
+    }
+
+    function baseUnfollowWithSig(address signer, DataTypes.UnfollowWithSigData calldata vars)
+        internal
+    {
+        _validateRecoveredAddress(
+            _calculateDigest(
+                keccak256(
+                    abi.encode(
+                        UNFOLLOW_WITH_SIG_TYPEHASH,
+                        vars.unfollowerProfileId,
+                        keccak256(abi.encodePacked(vars.idsOfProfilesToUnfollow)),
+                        _sigNonces(signer),
+                        vars.sig.deadline
+                    )
+                )
+            ),
+            signer,
+            vars.sig
+        );
+    }
+
+    function baseSetBlockStatusWithSig(
+        address signer,
+        DataTypes.SetBlockStatusWithSigData calldata vars
+    ) internal {
+        _validateRecoveredAddress(
+            _calculateDigest(
+                keccak256(
+                    abi.encode(
+                        SET_BLOCK_STATUS_WITH_SIG_TYPEHASH,
+                        vars.byProfileId,
+                        keccak256(abi.encodePacked(vars.idsOfProfilesToSetBlockStatus)),
+                        keccak256(abi.encodePacked(vars.blockStatus)),
                         _sigNonces(signer),
                         vars.sig.deadline
                     )
@@ -344,7 +388,8 @@ library MetaTxHelpers {
                 keccak256(
                     abi.encode(
                         COLLECT_WITH_SIG_TYPEHASH,
-                        vars.profileId,
+                        vars.collectorProfileId,
+                        vars.publisherProfileId,
                         vars.pubId,
                         keccak256(vars.data),
                         _sigNonces(signer),
@@ -370,9 +415,8 @@ library MetaTxHelpers {
         DataTypes.EIP712Signature calldata sig
     ) internal view {
         if (sig.deadline < block.timestamp) revert Errors.SignatureExpired();
-        address recoveredAddress = expectedAddress;
         // If the expected address is a contract, check the signature there.
-        if (recoveredAddress.code.length != 0) {
+        if (expectedAddress.code.length != 0) {
             bytes memory concatenatedSig = abi.encodePacked(sig.r, sig.s, sig.v);
             if (
                 IEIP1271Implementer(expectedAddress).isValidSignature(digest, concatenatedSig) !=
@@ -381,7 +425,7 @@ library MetaTxHelpers {
                 revert Errors.SignatureInvalid();
             }
         } else {
-            recoveredAddress = ecrecover(digest, sig.v, sig.r, sig.s);
+            address recoveredAddress = ecrecover(digest, sig.v, sig.r, sig.s);
             if (recoveredAddress == address(0) || recoveredAddress != expectedAddress) {
                 revert Errors.SignatureInvalid();
             }

@@ -33,6 +33,7 @@ uint256 constant GOVERNANCE_SLOT = 23;
 uint256 constant EMERGENCY_ADMIN_SLOT = 24;
 uint256 constant DELEGATED_EXECUTOR_APPROVAL_MAPPING_SLOT = 25;
 uint256 constant PROFILE_METADATA_MAPPING_SLOT = 26;
+uint256 constant BLOCK_STATUS_MAPPING_SLOT = 27;
 uint256 constant NAME_SLOT_GT_31 = 0x290decd9548b62a8d60345a988386fc84ba6bc95484008f6362f93160ef3e563;
 
 // We store the polygon chain ID and domain separator as constants to save gas.
@@ -106,10 +107,16 @@ bytes32 constant MIRROR_WITH_SIG_TYPEHASH = keccak256(
     'MirrorWithSig(uint256 profileId,uint256 profileIdPointed,uint256 pubIdPointed,bytes referenceModuleData,address referenceModule,bytes referenceModuleInitData,uint256 nonce,uint256 deadline)'
 );
 bytes32 constant FOLLOW_WITH_SIG_TYPEHASH = keccak256(
-    'FollowWithSig(uint256[] profileIds,bytes[] datas,uint256 nonce,uint256 deadline)'
+    'FollowWithSig(uint256 followerProfileId,uint256[] idsOfProfilesToFollow,uint256[] followTokenIds,bytes[] datas,uint256 nonce,uint256 deadline)'
+);
+bytes32 constant UNFOLLOW_WITH_SIG_TYPEHASH = keccak256(
+    'UnfollowWithSig(uint256 unfollowerProfileId,uint256[] idsOfProfilesToUnfollow,uint256 nonce,uint256 deadline)'
+);
+bytes32 constant SET_BLOCK_STATUS_WITH_SIG_TYPEHASH = keccak256(
+    'SetBlockStatusWithSig(uint256 byProfileId,uint256[] idsOfProfilesToSetBlockStatus,bool[] blockStatus,uint256 nonce,uint256 deadline)'
 );
 bytes32 constant COLLECT_WITH_SIG_TYPEHASH = keccak256(
-    'CollectWithSig(uint256 profileId,uint256 pubId,bytes data,uint256 nonce,uint256 deadline)'
+    'CollectWithSig(uint256 collectorProfileId,uint256 publisherProfileId,uint256 pubId,bytes data,uint256 nonce,uint256 deadline)'
 );
 bytes32 constant SET_PROFILE_METADATA_URI_WITH_SIG_TYPEHASH = keccak256(
     'SetProfileMetadataURIWithSig(uint256 profileId,string metadata,uint256 nonce,uint256 deadline)'
