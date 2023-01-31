@@ -1011,7 +1011,7 @@ contract FollowNFTTest is BaseTest, ERC721Test {
         vm.assume(!followNFT.exists(unexistentFollowTokenId));
         vm.assume(followNFT.getFollowerProfileId(unexistentFollowTokenId) == 0);
 
-        vm.expectRevert(IFollowNFT.FollowTokenDoesNotExist.selector);
+        vm.expectRevert(IFollowNFT.OnlyWrappedFollowTokens.selector);
         followNFT.approveFollow(followerProfileId, unexistentFollowTokenId);
     }
 

@@ -136,31 +136,17 @@ contract FollowNFT is HubRestricted, LensNFTBase, ERC2981CollectionRoyalties, IF
 
     /// @inheritdoc IFollowNFT
     function approveFollow(uint256 followerProfileId, uint256 followTokenId) external override {
-        uint256 currentFollowerProfileId;
-        address followTokenOwner = _unsafeOwnerOf(followTokenId);
         if (!IERC721Time(HUB).exists(followerProfileId)) {
             revert Errors.TokenDoesNotExist();
         }
-        if (followTokenOwner != address(0)) {
-            // Follow token is wrapped, sender must be the follow token's owner or be approved-for-all by him.
-            if (followTokenOwner == msg.sender || isApprovedForAll(followTokenOwner, msg.sender)) {
-                _approveFollow(followerProfileId, followTokenId);
-            } else {
-                revert DoesNotHavePermissions();
-            }
-        } else if (
-            (currentFollowerProfileId = _followDataByFollowTokenId[followTokenId]
-                .followerProfileId) != 0
-        ) {
-            // Follow token is unwrapped, sender must be the current follower profile's owner.
-            if (IERC721(HUB).ownerOf(currentFollowerProfileId) == msg.sender) {
-                _approveFollow(followerProfileId, followTokenId);
-            } else {
-                revert DoesNotHavePermissions();
-            }
-        } else {
-            revert FollowTokenDoesNotExist();
+        address followTokenOwner = _unsafeOwnerOf(followTokenId);
+        if (followTokenOwner == address(0)) {
+            revert OnlyWrappedFollowTokens();
         }
+        if (followTokenOwner != msg.sender && !isApprovedForAll(followTokenOwner, msg.sender)) {
+            revert DoesNotHavePermissions();
+        }
+        _approveFollow(followerProfileId, followTokenId);
     }
 
     /// @inheritdoc IFollowNFT
@@ -425,9 +411,6 @@ contract FollowNFT is HubRestricted, LensNFTBase, ERC2981CollectionRoyalties, IF
     }
 
     function _approveFollow(uint256 approvedProfileId, uint256 followTokenId) internal {
-        if (!_isFollowTokenWrapped(followTokenId)) {
-            revert OnlyWrappedFollowTokens();
-        }
         _followApprovalByFollowTokenId[followTokenId] = approvedProfileId;
         emit FollowApproval(approvedProfileId, followTokenId);
     }
