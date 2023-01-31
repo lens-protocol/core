@@ -386,36 +386,36 @@ deployment validation
 
 Events
 Misc
-[ ] Proxy initialization should emit expected events
+[X] Proxy initialization should emit expected events
 Hub Governance
-[ ] Governance change should emit expected event
-[ ] Emergency admin change should emit expected event
-[ ] Protocol state change by governance should emit expected event
-[ ] Protocol state change by emergency admin should emit expected events
-[ ] Follow module whitelisting functions should emit expected event
-[ ] Reference module whitelisting functions should emit expected event
-[ ] Collect module whitelisting functions should emit expected event
+[X] Governance change should emit expected event
+[X] Emergency admin change should emit expected event
+[X] Protocol state change by governance should emit expected event
+[X] Protocol state change by emergency admin should emit expected events
+[X] Follow module whitelisting functions should emit expected event
+[X] Reference module whitelisting functions should emit expected event
+[X] Collect module whitelisting functions should emit expected event
 Hub Interaction
-[ ] Profile creation for other user should emit the correct events
-[ ] Profile creation should emit the correct events
-[ ] Setting follow module should emit correct events
-[ ] Setting dispatcher should emit correct events
-[ ] Posting should emit the correct events
-[ ] Commenting should emit the correct events
-[ ] Mirroring should emit the correct events
-[ ] Following should emit correct events
-[ ] Collecting should emit correct events
-[ ] Collecting from a mirror should emit correct events
+[X] Profile creation for other user should emit the correct events
+[X] Profile creation should emit the correct events
+[X] Setting follow module should emit correct events
+[X] Setting dispatcher should emit correct events
+[X] Posting should emit the correct events
+[X] Commenting should emit the correct events
+[X] Mirroring should emit the correct events
+[X] Following should emit correct events
+[X] Collecting should emit correct events
+[X] Collecting from a mirror should emit correct events
 Module Globals Governance
-[ ] Governance change should emit expected event
-[ ] Treasury change should emit expected event
-[ ] Treasury fee change should emit expected event
-[ ] Currency whitelisting should emit expected event
+[X] Governance change should emit expected event
+[X] Treasury change should emit expected event
+[X] Treasury fee change should emit expected event
+[X] Currency whitelisting should emit expected event
 
 Misc
 NFT Transfer Emitters
-[ ] User should not be able to call the follow NFT transfer event emitter function
-[ ] User should not be able to call the collect NFT transfer event emitter function
+[X] User should not be able to call the follow NFT transfer event emitter function
+[X] User should not be able to call the collect NFT transfer event emitter function
 Lens Hub Misc
 [ ] UserTwo should fail to burn profile owned by user without being approved
 [ ] User should burn profile owned by user
@@ -454,17 +454,17 @@ Collect Module Misc
 [ ] Should fail to call processCollect directly on a collect module inheriting from the FollowValidationModuleBase contract
 Module Globals
 Negatives
-[ ] User should fail to set the governance address on the module globals
-[ ] User should fail to set the treasury on the module globals
-[ ] User should fail to set the treasury fee on the module globals
+[X] User should fail to set the governance address on the module globals
+[X] User should fail to set the treasury on the module globals
+[X] User should fail to set the treasury fee on the module globals
 Scenarios
-[ ] Governance should set the governance address on the module globals
-[ ] Governance should set the treasury on the module globals
-[ ] Governance should set the treasury fee on the module globals
-[ ] Governance should fail to whitelist the zero address as a currency
-[ ] Governance getter should return expected address
-[ ] Treasury getter should return expected address
-[ ] Treasury fee getter should return the expected fee
+[X] Governance should set the governance address on the module globals
+[X] Governance should set the treasury on the module globals
+[X] Governance should set the treasury fee on the module globals
+[X] Governance should fail to whitelist the zero address as a currency
+[X] Governance getter should return expected address
+[X] Treasury getter should return expected address
+[X] Treasury fee getter should return the expected fee
 UI Data Provider
 [ ] UI Data Provider should return expected values
 LensPeriphery
@@ -492,18 +492,18 @@ Scenarios
 Profile Metadata URI
 Generic
 Negatives
-[ ] User two should fail to set profile metadata URI for a profile that is not theirs while they are not the dispatcher
+[X] User two should fail to set profile metadata URI for a profile that is not theirs while they are not the dispatcher
 Scenarios
-[ ] User should set user two as dispatcher, user two should set profile metadata URI for user one's profile, fetched data should be accurate
-[ ] Setting profile metadata should emit the correct event
-[ ] Setting profile metadata via dispatcher should emit the correct event
+[X] User should set user two as dispatcher, user two should set profile metadata URI for user one's profile, fetched data should be accurate
+[X] Setting profile metadata should emit the correct event
+[X] Setting profile metadata via dispatcher should emit the correct event
 Meta-tx
 Negatives
-[ ] TestWallet should fail to set profile metadata URI with sig with signature deadline mismatch
-[ ] TestWallet should fail to set profile metadata URI with sig with invalid deadline
-[ ] TestWallet should fail to set profile metadata URI with sig with invalid nonce
+[X] TestWallet should fail to set profile metadata URI with sig with signature deadline mismatch
+[X] TestWallet should fail to set profile metadata URI with sig with invalid deadline
+[X] TestWallet should fail to set profile metadata URI with sig with invalid nonce
 Scenarios
-[ ] TestWallet should set profile metadata URI with sig, fetched data should be accurate and correct event should be emitted
+[X] TestWallet should set profile metadata URI with sig, fetched data should be accurate and correct event should be emitted
 
 Mock Profile Creation Proxy
 Negatives
