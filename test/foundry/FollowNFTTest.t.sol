@@ -18,7 +18,6 @@ contract FollowNFTTest is BaseTest, ERC721Test {
     address targetFollowNFT;
     uint256 lastAssignedTokenId;
     address followHolder;
-    address freshUnrelatedAddress;
 
     function setUp() public override {
         super.setUp();
@@ -29,7 +28,6 @@ contract FollowNFTTest is BaseTest, ERC721Test {
         followerProfileId = _createProfile(followerProfileOwner);
 
         followHolder = address(0xF0110111401DE2);
-        freshUnrelatedAddress = address(0x123456789);
 
         alreadyFollowingProfileOwner = address(0xF01108);
         alreadyFollowingProfileId = _createProfile(alreadyFollowingProfileOwner);
@@ -498,15 +496,20 @@ contract FollowNFTTest is BaseTest, ERC721Test {
         });
     }
 
-    function testCannotUnfollowIfTokenIsWrappedAndUnfollowerOwnerOrExecutorDontHoldTheTokenOrApprovedForAll()
-        public
-    {
+    function testCannotUnfollowIfTokenIsWrappedAndUnfollowerOwnerOrExecutorDontHoldTheTokenOrApprovedForAll(
+        address unrelatedAddress
+    ) public {
+        vm.assume(unrelatedAddress != address(0));
+        vm.assume(unrelatedAddress != alreadyFollowingProfileOwner);
+        vm.assume(!hub.isDelegatedExecutorApproved(alreadyFollowingProfileOwner, unrelatedAddress));
+        vm.assume(!followNFT.isApprovedForAll(alreadyFollowingProfileOwner, unrelatedAddress));
+
         uint256 followTokenId = followNFT.getFollowTokenId(alreadyFollowingProfileId);
         vm.prank(alreadyFollowingProfileOwner);
         followNFT.untieAndWrap(followTokenId);
 
         vm.prank(alreadyFollowingProfileOwner);
-        followNFT.transferFrom(alreadyFollowingProfileOwner, freshUnrelatedAddress, followTokenId);
+        followNFT.transferFrom(alreadyFollowingProfileOwner, unrelatedAddress, followTokenId);
 
         vm.prank(address(hub));
 
@@ -517,7 +520,10 @@ contract FollowNFTTest is BaseTest, ERC721Test {
         });
     }
 
-    function testCannotRemoveFollowerOnWrappedIfNotHolder() public {
+    function testCannotRemoveFollowerOnWrappedIfNotHolder(address unrelatedAddress) public {
+        vm.assume(unrelatedAddress != address(0));
+        vm.assume(unrelatedAddress != followHolder);
+
         uint256 followTokenId = followNFT.getFollowTokenId(alreadyFollowingProfileId);
         vm.prank(alreadyFollowingProfileOwner);
         followNFT.untieAndWrap(followTokenId);
@@ -525,7 +531,7 @@ contract FollowNFTTest is BaseTest, ERC721Test {
         vm.prank(alreadyFollowingProfileOwner);
         followNFT.transferFrom(alreadyFollowingProfileOwner, followHolder, followTokenId);
 
-        vm.prank(freshUnrelatedAddress);
+        vm.prank(unrelatedAddress);
 
         vm.expectRevert(IFollowNFT.DoesNotHavePermissions.selector);
         followNFT.removeFollower({followTokenId: followTokenId});
@@ -708,6 +714,55 @@ contract FollowNFTTest is BaseTest, ERC721Test {
         followNFT.untieAndWrap(followTokenId);
     }
 
+    function testCannotUntieAndWrapRecoveringWhenTheProfileAllowedToRecoverDoesNotExistAnymore()
+        public
+    {
+        uint256 followTokenId = followNFT.getFollowTokenId(alreadyFollowingProfileId);
+
+        vm.prank(address(hub));
+        followNFT.unfollow({
+            unfollowerProfileId: alreadyFollowingProfileId,
+            executor: alreadyFollowingProfileOwner
+        });
+
+        assertEq(followNFT.getProfileIdAllowedToRecover(followTokenId), alreadyFollowingProfileId);
+
+        vm.prank(alreadyFollowingProfileOwner);
+        hub.burn(alreadyFollowingProfileId);
+
+        vm.prank(alreadyFollowingProfileOwner);
+        vm.expectRevert(Errors.ERC721Time_OwnerQueryForNonexistantToken.selector);
+        followNFT.untieAndWrap(followTokenId);
+    }
+
+    function testCannotUntieAndWrapRecoveringWhenTheSenderDoesNotOwnTheProfileAllowedToRecover(
+        address unrelatedAddress
+    ) public {
+        vm.assume(unrelatedAddress != address(0));
+        vm.assume(unrelatedAddress != alreadyFollowingProfileOwner);
+
+        uint256 followTokenId = followNFT.getFollowTokenId(alreadyFollowingProfileId);
+
+        vm.prank(address(hub));
+        followNFT.unfollow({
+            unfollowerProfileId: alreadyFollowingProfileId,
+            executor: alreadyFollowingProfileOwner
+        });
+
+        assertEq(followNFT.getProfileIdAllowedToRecover(followTokenId), alreadyFollowingProfileId);
+
+        vm.prank(alreadyFollowingProfileOwner);
+        hub.transferFrom({
+            from: alreadyFollowingProfileOwner,
+            to: unrelatedAddress,
+            tokenId: alreadyFollowingProfileId
+        });
+
+        vm.prank(alreadyFollowingProfileOwner);
+        vm.expectRevert(IFollowNFT.DoesNotHavePermissions.selector);
+        followNFT.untieAndWrap(followTokenId);
+    }
+
     //////////////////////////////////////////////////////////
     // Untie & Wrap - Scenarios
     //////////////////////////////////////////////////////////
@@ -752,6 +807,54 @@ contract FollowNFTTest is BaseTest, ERC721Test {
 
         assertTrue(followNFT.isFollowing(followerProfileId));
         assertEq(followerProfileIdSet, followNFT.getFollowerProfileId(assignedTokenId));
+    }
+
+    function testRecoveringTokenThroughWrappingIt() public {
+        uint256 followTokenId = followNFT.getFollowTokenId(alreadyFollowingProfileId);
+
+        vm.prank(address(hub));
+        followNFT.unfollow({
+            unfollowerProfileId: alreadyFollowingProfileId,
+            executor: alreadyFollowingProfileOwner
+        });
+
+        assertEq(followNFT.getProfileIdAllowedToRecover(followTokenId), alreadyFollowingProfileId);
+
+        vm.prank(alreadyFollowingProfileOwner);
+        followNFT.untieAndWrap(followTokenId);
+
+        assertEq(followNFT.ownerOf(followTokenId), alreadyFollowingProfileOwner);
+        assertEq(followNFT.getProfileIdAllowedToRecover(followTokenId), 0);
+    }
+
+    function testRecoveringTokenThroughWrappingItAfterProfileAllowedToRecoverWasTransferred(
+        address unrelatedAddress
+    ) public {
+        vm.assume(unrelatedAddress != address(0));
+        vm.assume(unrelatedAddress != alreadyFollowingProfileOwner);
+
+        uint256 followTokenId = followNFT.getFollowTokenId(alreadyFollowingProfileId);
+
+        vm.prank(address(hub));
+        followNFT.unfollow({
+            unfollowerProfileId: alreadyFollowingProfileId,
+            executor: alreadyFollowingProfileOwner
+        });
+
+        assertEq(followNFT.getProfileIdAllowedToRecover(followTokenId), alreadyFollowingProfileId);
+
+        vm.prank(alreadyFollowingProfileOwner);
+        hub.transferFrom({
+            from: alreadyFollowingProfileOwner,
+            to: unrelatedAddress,
+            tokenId: alreadyFollowingProfileId
+        });
+
+        vm.prank(unrelatedAddress);
+        followNFT.untieAndWrap(followTokenId);
+
+        assertEq(followNFT.ownerOf(followTokenId), unrelatedAddress);
+        assertEq(followNFT.getProfileIdAllowedToRecover(followTokenId), 0);
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
