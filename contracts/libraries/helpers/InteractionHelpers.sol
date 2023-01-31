@@ -119,7 +119,7 @@ library InteractionHelpers {
         }
         uint256 blockStatusByProfileSlot;
         // Calculates the slot of the block status internal mapping once accessed by `byProfileId`.
-        // i.e. the slot of `_blockStatusByBlockeeProfileIdByProfileId[byProfileId]`
+        // i.e. the slot of `_blockedStatus[byProfileId]`
         assembly {
             mstore(0, byProfileId)
             mstore(32, BLOCK_STATUS_MAPPING_SLOT)
@@ -144,10 +144,10 @@ library InteractionHelpers {
             }
             setToBlocked = blockStatus[i];
             if (followNFT != address(0) && setToBlocked) {
-                IFollowNFT(followNFT).block(idOfProfileToSetBlockStatus);
+                IFollowNFT(followNFT).processBlock(idOfProfileToSetBlockStatus);
             }
             // Stores the block status.
-            // i.e. `_blockStatusByBlockeeProfileIdByProfileId[byProfileId][idOfProfileToSetBlockStatus] = setToBlocked;`
+            // i.e. `_blockedStatus[byProfileId][idOfProfileToSetBlockStatus] = setToBlocked;`
             assembly {
                 mstore(0, idOfProfileToSetBlockStatus)
                 mstore(32, blockStatusByProfileSlot)

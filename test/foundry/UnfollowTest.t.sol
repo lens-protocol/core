@@ -4,10 +4,9 @@ pragma solidity ^0.8.13;
 import './base/BaseTest.t.sol';
 import './MetaTxNegatives.t.sol';
 import {Strings} from '@openzeppelin/contracts/utils/Strings.sol';
-import './helpers/AssumptionHelpers.sol';
 import {IFollowNFT} from 'contracts/interfaces/IFollowNFT.sol';
 
-contract UnfollowTest is BaseTest, AssumptionHelpers {
+contract UnfollowTest is BaseTest {
     uint256 constant MINT_NEW_TOKEN = 0;
     address constant PROFILE_OWNER = address(0);
     address targetProfileOwner = address(0xC0FFEE);
@@ -131,7 +130,7 @@ contract UnfollowTest is BaseTest, AssumptionHelpers {
 
         uint256 followTokenId = followNFT.getFollowTokenId(unfollowerProfileId);
         vm.prank(unfollowerProfileOwner);
-        followNFT.untieAndWrap(followTokenId);
+        followNFT.wrap(followTokenId);
 
         vm.expectRevert(Errors.ExecutorInvalid.selector);
 
@@ -169,7 +168,11 @@ contract UnfollowTest is BaseTest, AssumptionHelpers {
     function testUnfollowAsUnfollowerApprovedDelegatedExecutor(uint256 approvedDelegatedExecutorPk)
         public
     {
-        vm.assume(_isValidPk(approvedDelegatedExecutorPk));
+        approvedDelegatedExecutorPk = bound(
+            approvedDelegatedExecutorPk,
+            1,
+            ISSECP256K1_CURVE_ORDER - 1
+        );
         address approvedDelegatedExecutor = vm.addr(approvedDelegatedExecutorPk);
         vm.assume(approvedDelegatedExecutor != address(0));
         vm.assume(approvedDelegatedExecutor != unfollowerProfileOwner);

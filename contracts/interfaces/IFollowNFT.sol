@@ -14,7 +14,7 @@ interface IFollowNFT {
     error AlreadyFollowing();
     error NotFollowing();
     error FollowTokenDoesNotExist();
-    error AlreadyUntiedAndWrapped();
+    error AlreadyWrapped();
     error OnlyWrappedFollowTokens();
     error DoesNotHavePermissions();
 
@@ -43,7 +43,7 @@ interface IFollowNFT {
     function initialize(uint256 profileId) external;
 
     /**
-     * @notice Makes the passed profile to follow the profile targetted in this contract.
+     * @notice Makes the passed profile to follow the profile targeted in this contract.
      *
      * @dev This must be only callable by the LensHub contract.
      *
@@ -62,7 +62,7 @@ interface IFollowNFT {
     ) external returns (uint256);
 
     /**
-     * @notice Makes the passed profile to unfollow the profile targetted in this contract.
+     * @notice Makes the passed profile to unfollow the profile targeted in this contract.
      *
      * @dev This must be only callable by the LensHub contract.
      *
@@ -94,29 +94,30 @@ interface IFollowNFT {
     function approveFollow(uint256 approvedProfileId, uint256 followTokenId) external;
 
     /**
-     * @notice Unties the follow token from the follower's profile token, and wraps it into the ERC-721 untied follow
-     * tokens collection.
+     * @notice Unties the follow token from the follower's profile one, and wraps it into the ERC-721 untied follow
+     * tokens collection. Untied follow tokens will NOT be automatically transferred with their follower profile.
      *
      * @param followTokenId The ID of the follow token to untie and wrap.
      */
-    function untieAndWrap(uint256 followTokenId) external;
+    function wrap(uint256 followTokenId) external;
 
     /**
      * @notice Unwraps the follow token from the ERC-721 untied follow tokens collection, and ties it to the follower's
-     * profile token.
+     * profile token. Tokens that are tied to the follower profile will be automatically transferred with it.
      *
      * @param followTokenId The ID of the follow token to unwrap and tie to its follower.
      */
-    function unwrapAndTie(uint256 followTokenId) external;
+    function unwrap(uint256 followTokenId) external;
 
     /**
-     * @notice Blocks the given profile. If it was following the targetted profile, this will make it to unfollow.
+     * @notice Processes logic when the given profile is being blocked. If it was following the targeted profile,
+     * this will make it to unfollow.
      *
      * @dev This must be only callable by the LensHub contract.
      *
      * @param followerProfileId The ID of the follow token to unwrap and tie.
      */
-    function block(uint256 followerProfileId) external;
+    function processBlock(uint256 followerProfileId) external;
 
     /**
      * @notice Gets the ID of the profile following with the given follow token.
