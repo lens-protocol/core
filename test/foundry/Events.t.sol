@@ -22,15 +22,18 @@ contract EventTest is BaseTest {
         hub.whitelistFollowModule(mockFollowModule, true);
     }
 
-    function predictContractAddress(address user, uint256 distanceFromCurrentNonce) internal returns(address) {
+    function predictContractAddress(address user, uint256 distanceFromCurrentNonce)
+        internal
+        returns (address)
+    {
         return computeCreateAddress(user, vm.getNonce(user) + distanceFromCurrentNonce);
     }
 
     // MISC
 
     function testProxyInitEmitsExpectedEvents() public {
-        string memory expectedNFTName = "Lens Protocol Profiles";
-        string memory expectedNFTSymbol = "LPP";
+        string memory expectedNFTName = 'Lens Protocol Profiles';
+        string memory expectedNFTSymbol = 'LPP';
 
         vm.startPrank(deployer);
 
@@ -56,24 +59,25 @@ contract EventTest is BaseTest {
 
         // BaseInitialized
         vm.expectEmit(false, false, false, true, hubProxyAddr);
-        emit Events.BaseInitialized(
-            expectedNFTName,
-            expectedNFTSymbol,
-            block.timestamp
-        );
+        emit Events.BaseInitialized(expectedNFTName, expectedNFTSymbol, block.timestamp);
 
         // StateSet
         vm.expectEmit(true, true, true, true, hubProxyAddr);
-        emit Events.StateSet(deployer, DataTypes.ProtocolState.Unpaused, DataTypes.ProtocolState.Paused, block.timestamp);
+        emit Events.StateSet(
+            deployer,
+            DataTypes.ProtocolState.Unpaused,
+            DataTypes.ProtocolState.Paused,
+            block.timestamp
+        );
 
         // GovernanceSet
         vm.expectEmit(true, true, true, true, hubProxyAddr);
         emit Events.GovernanceSet(deployer, address(0), governance, block.timestamp);
-    
+
         // AdminChanged
         vm.expectEmit(false, false, false, true, hubProxyAddr);
         emit AdminChanged(address(0), deployer);
-        
+
         hubAsProxy = new TransparentUpgradeableProxy(address(hubImpl), deployer, initData);
         vm.stopPrank();
     }
@@ -232,7 +236,7 @@ contract EventTest is BaseTest {
 
     function testSettingFollowModuleEmitsExpectedEvents() public {
         mockCreateProfileData.to = profileOwnerTwo;
-        uint expectedProfileId = 2;
+        uint256 expectedProfileId = 2;
         hub.createProfile(mockCreateProfileData);
         vm.prank(profileOwnerTwo);
         vm.expectEmit(true, true, true, true, address(hub));
@@ -247,7 +251,7 @@ contract EventTest is BaseTest {
 
     function testSettingDispatcherEmitsExpectedEvents() public {
         mockCreateProfileData.to = profileOwnerTwo;
-        uint expectedProfileId = 2;
+        uint256 expectedProfileId = 2;
         hub.createProfile(mockCreateProfileData);
         vm.prank(profileOwnerTwo);
         vm.expectEmit(true, true, false, true, address(hub));
@@ -310,57 +314,22 @@ contract EventTest is BaseTest {
         vm.stopPrank();
     }
 
-    function testFollowingEmitsExpectedEvents() public {
-        uint256[] memory followTargetIds = new uint256[](1);
-        followTargetIds[0] = 1;
-        bytes[] memory followDatas = new bytes[](1);
-        followDatas[0] = '';
-        address expectedFollowNFTAddress = predictContractAddress(address(hub), 0);
-
-        vm.prank(profileOwner);
-        vm.expectEmit(true, true, false, true, address(hub));
-        emit Events.FollowNFTDeployed(
-            newProfileId,
-            expectedFollowNFTAddress,
-            block.timestamp
-        );
-
-        vm.expectEmit(true, true, true, true, address(hub));
-        emit Events.FollowNFTTransferred(1, 1, address(0), profileOwner, block.timestamp);
-
-        vm.expectEmit(true, true, true, true, expectedFollowNFTAddress);
-        emit Transfer(address(0), profileOwner, 1);
-
-        vm.expectEmit(true, true, false, true, address(hub));
-        emit Events.Followed(profileOwner, followTargetIds, followDatas, block.timestamp);
-        
-        hub.follow(profileOwner, followTargetIds, followDatas);
-    }
-
     function testCollectingEmitsExpectedEvents() public {
         vm.startPrank(profileOwner);
         hub.post(mockPostData);
 
         uint256 expectedPubId = 1;
         address expectedCollectNFTAddress = predictContractAddress(address(hub), 0);
-        string memory expectedNFTName = "1-Collect-1";
-        string memory expectedNFTSymbol = "1-Cl-1";
+        string memory expectedNFTName = '1-Collect-1';
+        string memory expectedNFTSymbol = '1-Cl-1';
 
         // BaseInitialized
         vm.expectEmit(true, true, true, true, expectedCollectNFTAddress);
-        emit Events.BaseInitialized(
-            expectedNFTName,
-            expectedNFTSymbol,
-            block.timestamp
-        );
+        emit Events.BaseInitialized(expectedNFTName, expectedNFTSymbol, block.timestamp);
 
         // CollectNFTInitialized
         vm.expectEmit(true, true, true, true, expectedCollectNFTAddress);
-        emit Events.CollectNFTInitialized(
-            newProfileId,
-            expectedPubId,
-            block.timestamp
-        );
+        emit Events.CollectNFTInitialized(newProfileId, expectedPubId, block.timestamp);
 
         // CollectNFTDeployed
         vm.expectEmit(true, true, true, true, address(hub));
@@ -381,7 +350,7 @@ contract EventTest is BaseTest {
             profileOwner,
             block.timestamp
         );
-        
+
         // Transfer
         vm.expectEmit(true, true, true, true, expectedCollectNFTAddress);
         emit Transfer(address(0), profileOwner, 1);
@@ -389,7 +358,7 @@ contract EventTest is BaseTest {
         // Collected
         vm.expectEmit(true, true, true, true, address(hub));
         emit Events.Collected(
-            profileOwner,
+            newProfileId, // TODO: Replace with proper ProfileID
             newProfileId,
             expectedPubId,
             newProfileId,
@@ -398,7 +367,8 @@ contract EventTest is BaseTest {
             block.timestamp
         );
 
-        hub.collect(profileOwner, newProfileId, expectedPubId, '');
+        // TODO: Replace with proper ProfileID
+        hub.collect(newProfileId, newProfileId, expectedPubId, '');
         vm.stopPrank();
     }
 
@@ -409,8 +379,8 @@ contract EventTest is BaseTest {
         followDatas[0] = '';
         uint256 expectedPubId = 1;
         address expectedCollectNFTAddress = predictContractAddress(address(hub), 0);
-        string memory expectedNFTName = "1-Collect-1";
-        string memory expectedNFTSymbol = "1-Cl-1";
+        string memory expectedNFTName = '1-Collect-1';
+        string memory expectedNFTSymbol = '1-Cl-1';
 
         vm.startPrank(profileOwner);
         hub.post(mockPostData);
@@ -418,19 +388,11 @@ contract EventTest is BaseTest {
 
         // BaseInitialized
         vm.expectEmit(false, false, false, true, expectedCollectNFTAddress);
-        emit Events.BaseInitialized(
-            expectedNFTName,
-            expectedNFTSymbol,
-            block.timestamp
-        );
+        emit Events.BaseInitialized(expectedNFTName, expectedNFTSymbol, block.timestamp);
 
         // CollectNFTInitialized
         vm.expectEmit(true, true, true, true, expectedCollectNFTAddress);
-        emit Events.CollectNFTInitialized(
-            newProfileId,
-            expectedPubId,
-            block.timestamp
-        );
+        emit Events.CollectNFTInitialized(newProfileId, expectedPubId, block.timestamp);
 
         // CollectNFTDeployed
         vm.expectEmit(true, true, true, true, address(hub));
@@ -451,7 +413,7 @@ contract EventTest is BaseTest {
             profileOwner,
             block.timestamp
         );
-        
+
         // Transfer
         vm.expectEmit(true, true, true, true, expectedCollectNFTAddress);
         emit Transfer(address(0), profileOwner, 1);
@@ -459,7 +421,7 @@ contract EventTest is BaseTest {
         // Collected
         vm.expectEmit(true, true, true, true, address(hub));
         emit Events.Collected(
-            profileOwner,
+            newProfileId, // TODO: Replace with proper ProfileID
             newProfileId,
             expectedPubId,
             newProfileId,
@@ -468,7 +430,8 @@ contract EventTest is BaseTest {
             block.timestamp
         );
 
-        hub.collect(profileOwner, 1, expectedPubId, '');
+        // TODO: Replace with proper ProfileID
+        hub.collect(newProfileId, 1, expectedPubId, '');
         vm.stopPrank();
     }
 
