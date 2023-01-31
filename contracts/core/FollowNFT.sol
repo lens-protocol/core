@@ -152,7 +152,7 @@ contract FollowNFT is HubRestricted, LensNFTBase, ERC2981CollectionRoyalties, IF
             (currentFollowerProfileId = _followDataByFollowTokenId[followTokenId]
                 .followerProfileId) != 0
         ) {
-            // Follow token is unwrapped, sender must be the current follower's owner.
+            // Follow token is unwrapped, sender must be the current follower profile's owner.
             if (IERC721(HUB).ownerOf(currentFollowerProfileId) == msg.sender) {
                 _approveFollow(followerProfileId, followTokenId);
             } else {

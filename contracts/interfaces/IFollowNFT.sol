@@ -43,7 +43,7 @@ interface IFollowNFT {
     function initialize(uint256 profileId) external;
 
     /**
-     * @notice Makes the passed profile to follow the profile targetted in this contract.
+     * @notice Makes the passed profile to follow the profile targeted in this contract.
      *
      * @dev This must be only callable by the LensHub contract.
      *
@@ -62,7 +62,7 @@ interface IFollowNFT {
     ) external returns (uint256);
 
     /**
-     * @notice Makes the passed profile to unfollow the profile targetted in this contract.
+     * @notice Makes the passed profile to unfollow the profile targeted in this contract.
      *
      * @dev This must be only callable by the LensHub contract.
      *
@@ -110,7 +110,7 @@ interface IFollowNFT {
     function unwrapAndTie(uint256 followTokenId) external;
 
     /**
-     * @notice Processes logic when the given profile is being blocked. If it was following the targetted profile,
+     * @notice Processes logic when the given profile is being blocked. If it was following the targeted profile,
      * this will make it to unfollow.
      *
      * @dev This must be only callable by the LensHub contract.
