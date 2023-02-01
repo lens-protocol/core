@@ -242,10 +242,7 @@ contract CollectingTest_WithSig is CollectingTest_Base {
     function testCannotCollectWithSig_WithoutProfile() public {
         mockCollectData.collectorProfileId = _getNextProfileId(); // Non-existent profile
         vm.expectRevert(Errors.TokenDoesNotExist.selector);
-        uint256 nftId = _mockCollectWithSig({
-            delegatedSigner: address(0),
-            signerPrivKey: userWithoutProfilePk
-        });
+        _mockCollectWithSig({delegatedSigner: address(0), signerPrivKey: userWithoutProfilePk});
     }
 
     function testCannotCollectWithSigOnExpiredDeadline() public {
