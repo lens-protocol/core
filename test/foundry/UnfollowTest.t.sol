@@ -14,9 +14,9 @@ contract UnfollowTest is BaseTest {
     uint256 constant nonFollowingProfileOwnerPk = 0x7357;
     address nonFollowingProfileOwner;
     uint256 nonFollowingProfileId;
-    uint256 constant unfollowerProfileOwnerPk = 0xF01108;
-    address unfollowerProfileOwner;
-    uint256 unfollowerProfileId;
+    uint256 constant testUnfollowerProfileOwnerPk = 0xF01108;
+    address testUnfollowerProfileOwner;
+    uint256 testUnfollowerProfileId;
     address targetFollowNFT;
     uint256 followTokenId;
 
@@ -26,11 +26,11 @@ contract UnfollowTest is BaseTest {
         targetProfileId = _createProfile(targetProfileOwner);
         nonFollowingProfileOwner = vm.addr(nonFollowingProfileOwnerPk);
         nonFollowingProfileId = _createProfile(nonFollowingProfileOwner);
-        unfollowerProfileOwner = vm.addr(unfollowerProfileOwnerPk);
-        unfollowerProfileId = _createProfile(unfollowerProfileOwner);
+        testUnfollowerProfileOwner = vm.addr(testUnfollowerProfileOwnerPk);
+        testUnfollowerProfileId = _createProfile(testUnfollowerProfileOwner);
         followTokenId = _follow(
-            unfollowerProfileOwner,
-            unfollowerProfileId,
+            testUnfollowerProfileOwner,
+            testUnfollowerProfileId,
             targetProfileId,
             0,
             ''
@@ -51,23 +51,23 @@ contract UnfollowTest is BaseTest {
         vm.expectRevert(Errors.Paused.selector);
 
         _unfollow({
-            pk: unfollowerProfileOwnerPk,
+            pk: testUnfollowerProfileOwnerPk,
             isUnfollowerProfileOwner: true,
-            unfollowerProfileId: unfollowerProfileId,
+            unfollowerProfileId: testUnfollowerProfileId,
             idsOfProfilesToUnfollow: _toUint256Array(targetProfileId)
         });
     }
 
     function testCannotUnfollowIfUnfollowerProfileDoesNotExist() public {
-        vm.prank(unfollowerProfileOwner);
-        hub.burn(unfollowerProfileId);
+        vm.prank(testUnfollowerProfileOwner);
+        hub.burn(testUnfollowerProfileId);
 
         vm.expectRevert(Errors.TokenDoesNotExist.selector);
 
         _unfollow({
-            pk: unfollowerProfileOwnerPk,
+            pk: testUnfollowerProfileOwnerPk,
             isUnfollowerProfileOwner: true,
-            unfollowerProfileId: unfollowerProfileId,
+            unfollowerProfileId: testUnfollowerProfileId,
             idsOfProfilesToUnfollow: _toUint256Array(targetProfileId)
         });
     }
@@ -77,19 +77,19 @@ contract UnfollowTest is BaseTest {
     {
         vm.assume(!hub.exists(unexistentProfileId));
 
-        assertTrue(hub.isFollowing(unfollowerProfileId, targetProfileId));
+        assertTrue(hub.isFollowing(testUnfollowerProfileId, targetProfileId));
 
         vm.expectRevert(Errors.TokenDoesNotExist.selector);
 
         _unfollow({
-            pk: unfollowerProfileOwnerPk,
+            pk: testUnfollowerProfileOwnerPk,
             isUnfollowerProfileOwner: true,
-            unfollowerProfileId: unfollowerProfileId,
+            unfollowerProfileId: testUnfollowerProfileId,
             idsOfProfilesToUnfollow: _toUint256Array(targetProfileId, unexistentProfileId)
         });
 
         // Asserts that the unfollow operation has been completely reverted after one of the unfollow's failed.
-        assertTrue(hub.isFollowing(unfollowerProfileId, targetProfileId));
+        assertTrue(hub.isFollowing(testUnfollowerProfileId, targetProfileId));
     }
 
     function testCannotUnfollowIfTheProfileHasNeverBeenFollowedBefore() public {
@@ -98,9 +98,9 @@ contract UnfollowTest is BaseTest {
         vm.expectRevert(Errors.NotFollowing.selector);
 
         _unfollow({
-            pk: unfollowerProfileOwnerPk,
+            pk: testUnfollowerProfileOwnerPk,
             isUnfollowerProfileOwner: true,
-            unfollowerProfileId: unfollowerProfileId,
+            unfollowerProfileId: testUnfollowerProfileId,
             idsOfProfilesToUnfollow: _toUint256Array(hasNeverBeenFollowedProfileId)
         });
     }
@@ -123,12 +123,12 @@ contract UnfollowTest is BaseTest {
             115792089237316195423570985008687907852837564279074904382605163141518161494337 - 1
         );
         address executor = vm.addr(executorPk);
-        vm.assume(executor != unfollowerProfileOwner);
-        vm.assume(!hub.isDelegatedExecutorApproved(unfollowerProfileOwner, executor));
-        vm.assume(!followNFT.isApprovedForAll(unfollowerProfileOwner, executor));
+        vm.assume(executor != testUnfollowerProfileOwner);
+        vm.assume(!hub.isDelegatedExecutorApproved(testUnfollowerProfileOwner, executor));
+        vm.assume(!followNFT.isApprovedForAll(testUnfollowerProfileOwner, executor));
 
-        followTokenId = followNFT.getFollowTokenId(unfollowerProfileId);
-        vm.prank(unfollowerProfileOwner);
+        followTokenId = followNFT.getFollowTokenId(testUnfollowerProfileId);
+        vm.prank(testUnfollowerProfileOwner);
         followNFT.wrap(followTokenId);
 
         vm.expectRevert(Errors.ExecutorInvalid.selector);
@@ -136,7 +136,7 @@ contract UnfollowTest is BaseTest {
         _unfollow({
             pk: executorPk,
             isUnfollowerProfileOwner: false,
-            unfollowerProfileId: unfollowerProfileId,
+            unfollowerProfileId: testUnfollowerProfileId,
             idsOfProfilesToUnfollow: _toUint256Array(targetProfileId)
         });
     }
@@ -147,21 +147,24 @@ contract UnfollowTest is BaseTest {
 
     function testUnfollowAsUnfollowerOwner() public {
         vm.expectEmit(true, false, false, true, address(hub));
-        emit Events.Unfollowed(unfollowerProfileId, targetProfileId, block.timestamp);
+        emit Events.Unfollowed(testUnfollowerProfileId, targetProfileId, block.timestamp);
 
         vm.expectCall(
             targetFollowNFT,
-            abi.encodeCall(followNFT.unfollow, (unfollowerProfileId, unfollowerProfileOwner))
+            abi.encodeCall(
+                followNFT.unfollow,
+                (testUnfollowerProfileId, testUnfollowerProfileOwner)
+            )
         );
 
         _unfollow({
-            pk: unfollowerProfileOwnerPk,
+            pk: testUnfollowerProfileOwnerPk,
             isUnfollowerProfileOwner: true,
-            unfollowerProfileId: unfollowerProfileId,
+            unfollowerProfileId: testUnfollowerProfileId,
             idsOfProfilesToUnfollow: _toUint256Array(targetProfileId)
         });
 
-        assertFalse(hub.isFollowing(unfollowerProfileId, targetProfileId));
+        assertFalse(hub.isFollowing(testUnfollowerProfileId, targetProfileId));
     }
 
     function testUnfollowAsUnfollowerApprovedDelegatedExecutor(uint256 approvedDelegatedExecutorPk)
@@ -174,27 +177,27 @@ contract UnfollowTest is BaseTest {
         );
         address approvedDelegatedExecutor = vm.addr(approvedDelegatedExecutorPk);
         vm.assume(approvedDelegatedExecutor != address(0));
-        vm.assume(approvedDelegatedExecutor != unfollowerProfileOwner);
+        vm.assume(approvedDelegatedExecutor != testUnfollowerProfileOwner);
 
-        vm.prank(unfollowerProfileOwner);
+        vm.prank(testUnfollowerProfileOwner);
         hub.setDelegatedExecutorApproval(approvedDelegatedExecutor, true);
 
         vm.expectEmit(true, false, false, true, address(hub));
-        emit Events.Unfollowed(unfollowerProfileId, targetProfileId, block.timestamp);
+        emit Events.Unfollowed(testUnfollowerProfileId, targetProfileId, block.timestamp);
 
         vm.expectCall(
             targetFollowNFT,
-            abi.encodeCall(followNFT.unfollow, (unfollowerProfileId, approvedDelegatedExecutor))
+            abi.encodeCall(followNFT.unfollow, (testUnfollowerProfileId, approvedDelegatedExecutor))
         );
 
         _unfollow({
             pk: approvedDelegatedExecutorPk,
             isUnfollowerProfileOwner: false,
-            unfollowerProfileId: unfollowerProfileId,
+            unfollowerProfileId: testUnfollowerProfileId,
             idsOfProfilesToUnfollow: _toUint256Array(targetProfileId)
         });
 
-        assertFalse(hub.isFollowing(unfollowerProfileId, targetProfileId));
+        assertFalse(hub.isFollowing(testUnfollowerProfileId, targetProfileId));
     }
 
     function _unfollow(
@@ -220,7 +223,7 @@ contract UnfollowMetaTxTest is UnfollowTest, MetaTxNegatives {
         MetaTxNegatives.setUp();
 
         cachedNonceByAddress[nonFollowingProfileOwner] = _getSigNonce(nonFollowingProfileOwner);
-        cachedNonceByAddress[unfollowerProfileOwner] = _getSigNonce(unfollowerProfileOwner);
+        cachedNonceByAddress[testUnfollowerProfileOwner] = _getSigNonce(testUnfollowerProfileOwner);
     }
 
     function _unfollow(
@@ -252,7 +255,7 @@ contract UnfollowMetaTxTest is UnfollowTest, MetaTxNegatives {
             _getSignedData({
                 signerPk: signerPk,
                 delegatedSigner: PROFILE_OWNER,
-                unfollowerProfileId: unfollowerProfileId,
+                unfollowerProfileId: testUnfollowerProfileId,
                 idsOfProfilesToUnfollow: _toUint256Array(targetProfileId),
                 nonce: nonce,
                 deadline: deadline
@@ -261,7 +264,7 @@ contract UnfollowMetaTxTest is UnfollowTest, MetaTxNegatives {
     }
 
     function _getDefaultMetaTxSignerPk() internal virtual override returns (uint256) {
-        return unfollowerProfileOwnerPk;
+        return testUnfollowerProfileOwnerPk;
     }
 
     function _calculateUnfollowWithSigDigest(
