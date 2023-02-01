@@ -17,30 +17,23 @@ contract ForkManagement is Script {
         _;
     }
 
-    function loadJson() internal returns (string memory) {
+    function loadJson() internal {
         string memory root = vm.projectRoot();
         string memory path = string.concat(root, '/addresses.json');
-        string memory json = vm.readFile(path);
-        return json;
+        json = vm.readFile(path);
     }
 
-    function checkNetworkParams(string memory json, string memory targetEnv)
-        internal
-        returns (string memory network, uint256 chainId)
-    {
-        network = json.readString(string.concat('.', targetEnv, '.network'));
-        chainId = json.readUint(string.concat('.', targetEnv, '.chainId'));
+    function checkNetworkParams() internal returns (uint256 chainId) {
+        network = json.readString(string.concat('.', forkEnv, '.network'));
+        chainId = json.readUint(string.concat('.', forkEnv, '.chainId'));
 
-        console.log('\nTarget environment:', targetEnv);
+        console.log('\nTarget environment:', forkEnv);
         console.log('Network:', network);
         if (block.chainid != chainId) revert('Wrong chainId');
         console.log('ChainId:', chainId);
     }
 
-    function getNetwork(string memory json, string memory targetEnv)
-        internal
-        returns (string memory)
-    {
-        return json.readString(string.concat('.', targetEnv, '.network'));
+    function getNetwork() internal returns (string memory) {
+        return json.readString(string.concat('.', forkEnv, '.network'));
     }
 }

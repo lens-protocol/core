@@ -83,7 +83,7 @@ contract SetFollowModuleTest is BaseTest, SignatureHelpers, SigSetup {
         vm.prank(profileOwner);
         hub.setDelegatedExecutorApproval(otherSigner, true);
 
-        address mockFollowModule = address(new MockFollowModule());
+        mockFollowModule = address(new MockFollowModule());
         vm.prank(governance);
         hub.whitelistFollowModule(mockFollowModule, true);
 

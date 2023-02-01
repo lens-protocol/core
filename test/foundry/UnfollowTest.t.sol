@@ -128,7 +128,7 @@ contract UnfollowTest is BaseTest {
         vm.assume(!hub.isDelegatedExecutorApproved(unfollowerProfileOwner, executor));
         vm.assume(!followNFT.isApprovedForAll(unfollowerProfileOwner, executor));
 
-        uint256 followTokenId = followNFT.getFollowTokenId(unfollowerProfileId);
+        followTokenId = followNFT.getFollowTokenId(unfollowerProfileId);
         vm.prank(unfollowerProfileOwner);
         followNFT.wrap(followTokenId);
 

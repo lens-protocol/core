@@ -440,11 +440,15 @@ contract FollowNFT is HubRestricted, LensNFTBase, ERC2981CollectionRoyalties, IF
         ILensHub(HUB).emitFollowNFTTransferEvent(_followedProfileId, followTokenId, from, to);
     }
 
-    function _getReceiver(uint256 followTokenId) internal view override returns (address) {
+    function _getReceiver(
+        uint256 /* followTokenId */
+    ) internal view override returns (address) {
         return IERC721(HUB).ownerOf(_followedProfileId);
     }
 
-    function _beforeRoyaltiesSet(uint256 royaltiesInBasisPoints) internal view override {
+    function _beforeRoyaltiesSet(
+        uint256 /* royaltiesInBasisPoints */
+    ) internal view override {
         if (IERC721(HUB).ownerOf(_followedProfileId) != msg.sender) {
             revert Errors.NotProfileOwner();
         }

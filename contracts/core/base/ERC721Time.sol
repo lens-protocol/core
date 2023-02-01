@@ -49,12 +49,12 @@ abstract contract ERC721Time is Context, ERC165, IERC721Time, IERC721Metadata {
     /**
      * @dev Initializes the ERC721 name and symbol.
      *
-     * @param name The name to set.
-     * @param symbol The symbol to set.
+     * @param name_ The name to set.
+     * @param symbol_ The symbol to set.
      */
-    function __ERC721_Init(string calldata name, string calldata symbol) internal {
-        _name = name;
-        _symbol = symbol;
+    function __ERC721_Init(string calldata name_, string calldata symbol_) internal {
+        _name = name_;
+        _symbol = symbol_;
     }
 
     /**

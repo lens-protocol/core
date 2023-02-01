@@ -209,16 +209,16 @@ library GeneralHelpers {
     }
 
     function isExecutorApproved(address onBehalfOf, address executor) internal view returns (bool) {
-        bool isExecutorApproved;
+        bool _isExecutorApproved;
         assembly {
             mstore(0, onBehalfOf)
             mstore(32, DELEGATED_EXECUTOR_APPROVAL_MAPPING_SLOT)
             mstore(32, keccak256(0, 64))
             mstore(0, executor)
             let slot := keccak256(0, 64)
-            isExecutorApproved := sload(slot)
+            _isExecutorApproved := sload(slot)
         }
-        return isExecutorApproved;
+        return _isExecutorApproved;
     }
 
     /**

@@ -124,7 +124,7 @@ contract FollowTest is BaseTest {
         vm.assume(executor != followerProfileOwner);
         vm.assume(!hub.isDelegatedExecutorApproved(followerProfileOwner, executor));
 
-        uint256 followTokenId = followNFT.getFollowTokenId(alreadyFollowingProfileId);
+        followTokenId = followNFT.getFollowTokenId(alreadyFollowingProfileId);
         assertFalse(followNFT.exists(followTokenId));
 
         vm.expectRevert(Errors.ExecutorInvalid.selector);
@@ -148,7 +148,7 @@ contract FollowTest is BaseTest {
         vm.assume(executor != followerProfileOwner);
         vm.assume(!hub.isDelegatedExecutorApproved(followerProfileOwner, executor));
 
-        uint256 followTokenId = followNFT.getFollowTokenId(alreadyFollowingProfileId);
+        followTokenId = followNFT.getFollowTokenId(alreadyFollowingProfileId);
         vm.prank(alreadyFollowingProfileOwner);
         followNFT.wrap(followTokenId);
 
@@ -487,7 +487,7 @@ contract FollowMetaTxTest is FollowTest, MetaTxNegatives {
         bytes[] memory datas,
         uint256 nonce,
         uint256 deadline
-    ) internal returns (bytes32) {
+    ) internal view returns (bytes32) {
         bytes32[] memory dataHashes = new bytes32[](datas.length);
         for (uint256 i = 0; i < datas.length; ) {
             dataHashes[i] = keccak256(datas[i]);

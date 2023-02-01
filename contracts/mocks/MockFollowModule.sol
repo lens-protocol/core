@@ -9,8 +9,8 @@ import {IFollowModule} from '../interfaces/IFollowModule.sol';
  */
 contract MockFollowModule is IFollowModule {
     function initializeFollowModule(
-        uint256 profileId,
-        address executor,
+        uint256, /* profileId */
+        address, /* executor */
         bytes calldata data
     ) external pure override returns (bytes memory) {
         uint256 number = abi.decode(data, (uint256));
