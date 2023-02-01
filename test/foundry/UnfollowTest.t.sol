@@ -26,7 +26,6 @@ contract UnfollowTest is BaseTest {
         targetProfileId = _createProfile(targetProfileOwner);
         nonFollowingProfileOwner = vm.addr(nonFollowingProfileOwnerPk);
         nonFollowingProfileId = _createProfile(nonFollowingProfileOwner);
-        unfollowerProfileOwnerPk;
         unfollowerProfileOwner = vm.addr(unfollowerProfileOwnerPk);
         unfollowerProfileId = _createProfile(unfollowerProfileOwner);
         followTokenId = _follow(
@@ -204,6 +203,10 @@ contract UnfollowTest is BaseTest {
         uint256 unfollowerProfileId,
         uint256[] memory idsOfProfilesToUnfollow
     ) internal virtual {
+        /* Wen @solc-nowarn unused-param?
+            Silence the compiler warning, but allow calling this with Named Params.
+            This variable isn't used here, but used in withSig case. */
+        isUnfollowerProfileOwner = isUnfollowerProfileOwner;
         vm.prank(vm.addr(pk));
         hub.unfollow(unfollowerProfileId, idsOfProfilesToUnfollow);
     }
@@ -266,7 +269,7 @@ contract UnfollowMetaTxTest is UnfollowTest, MetaTxNegatives {
         uint256[] memory idsOfProfilesToUnfollow,
         uint256 nonce,
         uint256 deadline
-    ) internal returns (bytes32) {
+    ) internal view returns (bytes32) {
         return
             _calculateDigest(
                 keccak256(

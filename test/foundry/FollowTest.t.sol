@@ -14,6 +14,7 @@ contract FollowTest is BaseTest {
 
     address constant PROFILE_OWNER = address(0);
 
+    // TODO: Replace these with Profile structs everywhere
     uint256 constant targetProfileOwnerPk = 0xC0FFEE;
     address targetProfileOwner;
     uint256 targetProfileId;
@@ -411,6 +412,10 @@ contract FollowTest is BaseTest {
         uint256[] memory followTokenIds,
         bytes[] memory datas
     ) internal virtual returns (uint256[] memory) {
+        /* Wen @solc-nowarn unused-param?
+            Silence the compiler warning, but allow calling this with Named Params.
+            This variable isn't used here, but used in withSig case. */
+        isFollowerProfileOwner = isFollowerProfileOwner;
         vm.prank(vm.addr(pk));
         return hub.follow(followerProfileId, idsOfProfilesToFollow, followTokenIds, datas);
     }

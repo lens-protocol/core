@@ -264,6 +264,11 @@ contract SetBlockStatusTest is BaseTest {
         uint256[] memory idsOfProfilesToSetBlockStatus,
         bool[] memory blockStatus
     ) internal virtual {
+        /* Wen @solc-nowarn unused-param?
+            Silence the compiler warning, but allow calling this with Named Params.
+            This variable isn't used here, but used in withSig case. */
+        isStatusSetterProfileOwner = isStatusSetterProfileOwner;
+
         vm.prank(vm.addr(pk));
         hub.setBlockStatus(byProfileId, idsOfProfilesToSetBlockStatus, blockStatus);
     }
@@ -322,7 +327,7 @@ contract SetBlockStatusMetaTxTest is SetBlockStatusTest, MetaTxNegatives {
         );
     }
 
-    function _getDefaultMetaTxSignerPk() internal override returns (uint256) {
+    function _getDefaultMetaTxSignerPk() internal pure override returns (uint256) {
         return blockeeProfileOwnerPk;
     }
 
@@ -332,7 +337,7 @@ contract SetBlockStatusMetaTxTest is SetBlockStatusTest, MetaTxNegatives {
         bool[] memory blockStatus,
         uint256 nonce,
         uint256 deadline
-    ) internal returns (bytes32) {
+    ) internal view returns (bytes32) {
         return
             _calculateDigest(
                 keccak256(
