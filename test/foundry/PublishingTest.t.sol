@@ -373,7 +373,7 @@ contract CommentTest is PublishingTest {
         vm.prank(profileOwner);
         uint256 commentId = _publish();
 
-        DataTypes.PublicationStruct memory pub = _getPub(firstProfileId, commentId);
+        DataTypes.PublicationStruct memory pub = _getPub(newProfileId, commentId);
         mockCommentData.pubIdPointed = postId; // We're expecting a mirror to point at the original post ID
         _verifyPublication(pub, _expectedPubFromInitData(mockCommentData));
     }
@@ -389,7 +389,7 @@ contract CommentTest is PublishingTest {
             signerPrivKey: profileOwnerKey
         });
 
-        DataTypes.PublicationStruct memory pub = _getPub(firstProfileId, commentId);
+        DataTypes.PublicationStruct memory pub = _getPub(newProfileId, commentId);
         mockCommentData.pubIdPointed = postId; // We're expecting a mirror to point at the original post ID
         _verifyPublication(pub, _expectedPubFromInitData(mockCommentData));
     }

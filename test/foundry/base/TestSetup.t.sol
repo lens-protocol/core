@@ -264,6 +264,21 @@ contract TestSetup is Test, ForkManagement {
             referenceModuleData: ''
         });
 
+        // Precompute basic collect data.
+        mockCollectData = DataTypes.CollectData({
+            collectorProfileId: newProfileId,
+            publisherProfileId: newProfileId,
+            pubId: FIRST_PUB_ID,
+            data: ''
+        });
+
+        mockSetDefaultProfileData = DataTypes.SetDefaultProfileWithSigData({
+            delegatedSigner: otherSigner,
+            wallet: profileOwner,
+            profileId: newProfileId,
+            sig: DataTypes.EIP712Signature({v: 0, r: bytes32(0), s: bytes32(0), deadline: 0}) // blank sig
+        });
+
         hub.createProfile(mockCreateProfileData);
     }
 

@@ -300,16 +300,14 @@ contract EventTest is BaseTest {
         vm.startPrank(profileOwner);
         hub.post(mockPostData);
         vm.expectEmit(true, true, false, true, address(hub));
-        emit Events.MirrorCreated(
-            newProfileId,
-            2,
-            newProfileId,
-            1,
-            '',
-            mockMirrorData.referenceModule,
-            '',
-            block.timestamp
-        );
+        emit Events.MirrorCreated({
+            profileId: newProfileId,
+            pubId: 2,
+            profileIdPointed: newProfileId,
+            pubIdPointed: 1,
+            referenceModuleData: '',
+            timestamp: block.timestamp
+        });
         hub.mirror(mockMirrorData);
         vm.stopPrank();
     }

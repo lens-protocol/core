@@ -45,8 +45,11 @@ library GeneralHelpers {
         }
 
         if (collectModule != address(0)) {
+            // We relate on collect module being zero for mirrors (and non-existent publications), so if it is not zero, we know the
+            // publication is not a mirror, so we return the original pubId and profileId.
             return (profileId, pubId);
         } else {
+            // We know the publication is a mirror (or it doesn't exist), so we load the profile ID and publication ID it points to.
             uint256 profileIdPointed;
 
             // Load the pointed profile ID, first in the cached slot.
@@ -56,7 +59,7 @@ library GeneralHelpers {
             }
 
             // We validate existence here as an optimization, so validating in calling
-            // contracts is unnecessary.
+            // contracts is unnecessary. This will also revert if the original publication is not a mirror and does not exist.
             if (profileIdPointed == 0) revert Errors.PublicationDoesNotExist();
 
             uint256 pubIdPointed;

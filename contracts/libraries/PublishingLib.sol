@@ -277,7 +277,7 @@ library PublishingLib {
         _setPublicationPointer(vars.profileId, pubId, rootProfileIdPointed, rootPubIdPointed);
         _setPublicationContentURI(vars.profileId, pubId, vars.contentURI);
 
-        address referenceModule = vars.referenceModule;
+        address referenceModule = vars.referenceModule; // Stack-too-deep workaround.
 
         bytes memory collectModuleReturnData = _initPubCollectModule(
             vars.profileId,
@@ -295,13 +295,14 @@ library PublishingLib {
             vars.referenceModuleInitData
         );
 
-        _processCommentIfNeeded(
-            vars.profileId,
-            msg.sender,
-            rootProfileIdPointed,
-            rootPubIdPointed,
-            vars.referenceModuleData
-        );
+        _processCommentIfNeeded({
+            profileId: vars.profileId,
+            executor: msg.sender,
+            profileIdPointed: rootProfileIdPointed,
+            pubIdPointed: rootPubIdPointed,
+            referrerProfileId: vars.profileId,
+            referenceModuleData: vars.referenceModuleData
+        });
 
         emit Events.CommentCreated(
             vars.profileId,
@@ -355,13 +356,14 @@ library PublishingLib {
             vars.referenceModuleInitData
         );
 
-        _processCommentIfNeeded(
-            vars.profileId,
-            executor,
-            rootProfileIdPointed,
-            rootPubIdPointed,
-            vars.referenceModuleData
-        );
+        _processCommentIfNeeded({
+            profileId: vars.profileId,
+            executor: executor,
+            profileIdPointed: rootProfileIdPointed,
+            pubIdPointed: rootPubIdPointed,
+            referrerProfileId: vars.profileId,
+            referenceModuleData: vars.referenceModuleData
+        });
 
         emit Events.CommentCreated(
             vars.profileId,
@@ -474,18 +476,20 @@ library PublishingLib {
         address executor,
         uint256 profileIdPointed,
         uint256 pubIdPointed,
+        uint256 referrerProfileId,
         bytes calldata referenceModuleData
     ) private {
         address refModule = _getReferenceModule(profileIdPointed, pubIdPointed);
         if (refModule != address(0)) {
             try
-                IReferenceModule(refModule).processComment(
-                    profileId,
-                    executor,
-                    profileIdPointed,
-                    pubIdPointed,
-                    referenceModuleData
-                )
+                IReferenceModule(refModule).processComment({
+                    profileId: profileId,
+                    executor: executor,
+                    profileIdPointed: profileIdPointed,
+                    pubIdPointed: pubIdPointed,
+                    referrerProfileId: referrerProfileId,
+                    data: referenceModuleData
+                })
             {} catch (bytes memory err) {
                 assembly {
                     /// Equivalent to reverting with the returned error selector if

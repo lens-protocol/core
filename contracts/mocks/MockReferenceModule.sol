@@ -24,6 +24,7 @@ contract MockReferenceModule is IReferenceModule {
         address executor,
         uint256 profileIdPointed,
         uint256 pubIdPointed,
+        uint256 referrerProfileId,
         bytes calldata data
     ) external override {}
 
