@@ -100,7 +100,7 @@ abstract contract ERC721Time is Context, ERC165, IERC721Time, IERC721Metadata {
     }
 
     /**
-     * @dev See {IERC721Time-mintTimestampOf}
+     * @dev See {IERC721Time-tokenDataOf}
      */
     function tokenDataOf(uint256 tokenId)
         public
@@ -236,6 +236,19 @@ abstract contract ERC721Time is Context, ERC165, IERC721Time, IERC721Metadata {
         if (!_isApprovedOrOwner(_msgSender(), tokenId))
             revert Errors.ERC721Time_TransferCallerNotOwnerOrApproved();
         _safeTransfer(from, to, tokenId, _data);
+    }
+
+    /**
+     * @notice Returns the owner of the `tokenId` token.
+     *
+     * @dev It is prefixed as `unsafe` as it does not revert when the token does not exist.
+     *
+     * @param tokenId The token which owner is being queried.
+     *
+     * @return address The address owning the given token, zero address if the token does not exist.
+     */
+    function _unsafeOwnerOf(uint256 tokenId) internal view returns (address) {
+        return _tokenData[tokenId].owner;
     }
 
     /**

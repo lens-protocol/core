@@ -1,4 +1,17 @@
+// SPDX-License-Identifier: UNLICENSED
+pragma solidity ^0.8.13;
+
 import '../../../contracts/libraries/DataTypes.sol';
+
+contract SigSetup {
+    uint256 nonce;
+    uint256 deadline;
+
+    function setUp() public virtual {
+        nonce = 0;
+        deadline = type(uint256).max;
+    }
+}
 
 contract SignatureHelpers {
     // Private functions
@@ -126,5 +139,30 @@ contract SignatureHelpers {
                 referenceModuleData: mirrorData.referenceModuleData,
                 sig: sig
             });
+    }
+
+    function _buildCollectWithSigData(
+        address delegatedSigner,
+        DataTypes.CollectData memory collectData,
+        DataTypes.EIP712Signature memory sig
+    ) internal pure returns (DataTypes.CollectWithSigData memory) {
+        return
+            DataTypes.CollectWithSigData({
+                delegatedSigner: delegatedSigner,
+                collectorProfileId: collectData.collectorProfileId,
+                publisherProfileId: collectData.publisherProfileId,
+                pubId: collectData.pubId,
+                data: collectData.data,
+                sig: sig
+            });
+    }
+
+    function _buildSetDefaultProfileWithSigData(
+        address delegatedSigner,
+        address wallet,
+        uint256 profileId,
+        DataTypes.EIP712Signature memory sig
+    ) internal pure returns (DataTypes.SetDefaultProfileWithSigData memory) {
+        return DataTypes.SetDefaultProfileWithSigData(delegatedSigner, wallet, profileId, sig);
     }
 }

@@ -8,3 +8,6 @@ fs_permissions = [{ access = "read-write", path = "./"}]
 
 [rpc_endpoints]
 polygon = "${POLYGON_RPC_URL}"
+
+[fuzz]
+runs = 10000

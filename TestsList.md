@@ -1,111 +1,115 @@
 Collecting
 Generic
 Negatives
-[ ] User two should fail to collect without being a follower
-[ ] User two should follow, then transfer the followNFT and fail to collect
-[ ] User two should fail to collect a nonexistent publication
+// TODO: Move to only follows module test?
+[?] User two should fail to collect without being a follower
+[?] User two should follow, then transfer the followNFT and fail to collect
+[X] User two should fail to collect a nonexistent publication
 Scenarios
-[ ] Collecting should work if the collector is the publication owner even when he is not following himself and follow NFT was not deployed
-[ ] Collecting should work if the collector is the publication owner even when he is not following himself and follow NFT was deployed
+// TODO: Move to only follows module test?
+[?] Collecting should work if the collector is the publication owner even when he is not following himself and follow NFT was not deployed
+[?] Collecting should work if the collector is the publication owner even when he is not following himself and follow NFT was deployed
 [ ] Should return the expected token IDs when collecting publications
 [ ] UserTwo should follow, then collect, receive a collect NFT with the expected properties
-[ ] UserTwo should follow, then mirror, then collect on their mirror, receive a collect NFT with expected properties
+[X] UserTwo should follow, then mirror, then collect on their mirror, receive a collect NFT with expected properties
 [ ] UserTwo should follow, then mirror, mirror their mirror then collect on their latest mirror, receive a collect NFT with expected properties
 Meta-tx
 Negatives
-[ ] TestWallet should fail to collect with sig with signature deadline mismatch
-[ ] TestWallet should fail to collect with sig with invalid deadline
-[ ] TestWallet should fail to collect with sig with invalid nonce
-[ ] TestWallet should fail to collect with sig without being a follower
+[X] TestWallet should fail to collect with sig with signature deadline mismatch
+[X] TestWallet should fail to collect with sig with invalid deadline
+[X] TestWallet should fail to collect with sig with invalid nonce
+[?] TestWallet should fail to collect with sig without being a follower
 [ ] TestWallet should sign attempt to collect with sig, cancel via empty permitForAll, fail to collect with sig
 Scenarios
-[ ] TestWallet should follow, then collect with sig, receive a collect NFT with expected properties
-[ ] TestWallet should follow, mirror, then collect with sig on their mirror
+// TODO: Move to only follows module test?
+[?] TestWallet should follow, then collect with sig, receive a collect NFT with expected properties
+[X] TestWallet should follow, mirror, then collect with sig on their mirror
 
 Following
 Generic
 Negatives
-[ ] UserTwo should fail to follow a nonexistent profile
-[ ] UserTwo should fail to follow with array mismatch
-[ ] UserTwo should fail to follow a profile that has been burned
-[ ] UserTwo should fail to follow profile with id 0
+[X] UserTwo should fail to follow a nonexistent profile
+[X] UserTwo should fail to follow with array mismatch
+[X] UserTwo should fail to follow a profile that has been burned
+[X] UserTwo should fail to follow profile with id 0
 Scenarios
-[ ] UserTwo should follow profile 1, receive a followNFT with ID 1, followNFT properties should be correct
-[ ] UserTwo should follow profile 1 twice, receiving followNFTs with IDs 1 and 2
-[ ] UserTwo should follow profile 1 3 times in the same call, receive IDs 1,2 and 3
-[ ] Should return the expected token IDs when following profiles
+[X] UserTwo should follow profile 1, receive a followNFT with ID 1, followNFT properties should be correct
+[-] UserTwo should follow profile 1 twice, receiving followNFTs with IDs 1 and 2
+[-] UserTwo should follow profile 1 3 times in the same call, receive IDs 1,2 and 3
+[X] Should return the expected token IDs when following profiles
 Meta-tx
 Negatives
-[ ] TestWallet should fail to follow with sig with signature deadline mismatch
-[ ] TestWallet should fail to follow with sig with invalid deadline
-[ ] TestWallet should fail to follow with sig with invalid nonce
-[ ] TestWallet should fail to follow a nonexistent profile with sig
-[ ] TestWallet should sign attempt to follow with sig, cancel with empty permitForAll, then fail to follow with sig
+[X] TestWallet should fail to follow with sig with signature deadline mismatch
+[X] TestWallet should fail to follow with sig with invalid deadline
+[X] TestWallet should fail to follow with sig with invalid nonce
+[X] TestWallet should fail to follow a nonexistent profile with sig
+[-] TestWallet should sign attempt to follow with sig, cancel with empty permitForAll, then fail to follow with sig
 Scenarios
-[ ] TestWallet should follow profile 1 with sig, receive a follow NFT with ID 1, follow NFT name and symbol should be correct
-[ ] TestWallet should follow profile 1 with sig twice in the same call, receive follow NFTs with IDs 1 and 2
+[X] TestWallet should follow profile 1 with sig, receive a follow NFT with ID 1, follow NFT name and symbol should be correct
+[X] TestWallet should follow profile 1 with sig twice in the same call, receive follow NFTs with IDs 1 and 2
 
 Governance Functions
 Negatives
-[ ] User should not be able to call governance functions
+[X] User should not be able to call governance functions
 Scenarios
-[ ] Governance should successfully whitelist and unwhitelist modules
-[ ] Governance should successfully change the governance address
+[X] Governance should successfully whitelist and unwhitelist modules
+[X] Governance should successfully change the governance address
 
 Multi-State Hub
 Common
 Negatives
-[ ] User should fail to set the state on the hub
-[ ] User should fail to set the emergency admin
-[ ] Governance should set user as emergency admin, user should fail to set protocol state to Unpaused
-[ ] Governance should set user as emergency admin, user should fail to set protocol state to PublishingPaused or Paused from Paused
+[X] User should fail to set the state on the hub
+[X] User should fail to set the emergency admin
+[X] Governance should set user as emergency admin, user should fail to set protocol state to Unpaused
+[X] Governance should set user as emergency admin, user should fail to set protocol state to PublishingPaused or Paused from Paused
 Scenarios
-[ ] Governance should set user as emergency admin, user sets protocol state but fails to set emergency admin, governance sets emergency admin to the zero address, user fails to set protocol state
-[ ] Governance should set the protocol state, fetched protocol state should be accurate
-[ ] Governance should set user as emergency admin, user should set protocol state to PublishingPaused, then Paused, then fail to set it to PublishingPaused
+[X] Governance should set user as emergency admin, user sets protocol state but fails to set emergency admin, governance sets emergency admin to the zero address, user fails to set protocol state
+[X] Governance should set the protocol state, fetched protocol state should be accurate
+[X] Governance should set user as emergency admin, user should set protocol state to PublishingPaused, then Paused, then fail to set it to PublishingPaused
 Paused State
 Scenarios
-[ ] User should create a profile, governance should pause the hub, transferring the profile should fail
-[ ] Governance should pause the hub, profile creation should fail, then governance unpauses the hub and profile creation should work
-[ ] Governance should pause the hub, setting follow module should fail, then governance unpauses the hub and setting follow module should work
-[ ] Governance should pause the hub, setting follow module with sig should fail, then governance unpauses the hub and setting follow module with sig should work
-[ ] Governance should pause the hub, setting dispatcher should fail, then governance unpauses the hub and setting dispatcher should work
-[ ] Governance should pause the hub, setting dispatcher with sig should fail, then governance unpauses the hub and setting dispatcher with sig should work
-[ ] Governance should pause the hub, setting profile URI should fail, then governance unpauses the hub and setting profile URI should work
-[ ] Governance should pause the hub, setting profile URI with sig should fail, then governance unpauses the hub and setting profile URI should work
-[ ] Governance should pause the hub, setting follow NFT URI should fail, then governance unpauses the hub and setting follow NFT URI should work
-[ ] Governance should pause the hub, setting follow NFT URI with sig should fail, then governance unpauses the hub and setting follow NFT URI should work
-[ ] Governance should pause the hub, posting should fail, then governance unpauses the hub and posting should work
-[ ] Governance should pause the hub, posting with sig should fail, then governance unpauses the hub and posting with sig should work
-[ ] Governance should pause the hub, commenting should fail, then governance unpauses the hub and commenting should work
-[ ] Governance should pause the hub, commenting with sig should fail, then governance unpauses the hub and commenting with sig should work
-[ ] Governance should pause the hub, mirroring should fail, then governance unpauses the hub and mirroring should work
-[ ] Governance should pause the hub, mirroring with sig should fail, then governance unpauses the hub and mirroring with sig should work
-[ ] Governance should pause the hub, burning should fail, then governance unpauses the hub and burning should work
-[ ] Governance should pause the hub, following should fail, then governance unpauses the hub and following should work
-[ ] Governance should pause the hub, following with sig should fail, then governance unpauses the hub and following with sig should work
-[ ] Governance should pause the hub, collecting should fail, then governance unpauses the hub and collecting should work
-[ ] Governance should pause the hub, collecting with sig should fail, then governance unpauses the hub and collecting with sig should work
+[X] User should create a profile, governance should pause the hub, transferring the profile should fail
+[X] Governance should pause the hub, profile creation should fail, then governance unpauses the hub and profile creation should work
+[X] Governance should pause the hub, setting follow module should fail, then governance unpauses the hub and setting follow module should work
+[X] Governance should pause the hub, setting follow module with sig should fail, then governance unpauses the hub and setting follow module with sig should work
+// Replaced dispatcher with DelegatedExecutor for the following two tests:
+[X] Governance should pause the hub, setting dispatcher should fail, then governance unpauses the hub and setting dispatcher should work
+[X] Governance should pause the hub, setting dispatcher with sig should fail, then governance unpauses the hub and setting dispatcher with sig should work
+[X] Governance should pause the hub, setting profile URI should fail, then governance unpauses the hub and setting profile URI should work
+[X] Governance should pause the hub, setting profile URI with sig should fail, then governance unpauses the hub and setting profile URI should work
+[X] Governance should pause the hub, setting follow NFT URI should fail, then governance unpauses the hub and setting follow NFT URI should work
+[X] Governance should pause the hub, setting follow NFT URI with sig should fail, then governance unpauses the hub and setting follow NFT URI should work
+[X] Governance should pause the hub, posting should fail, then governance unpauses the hub and posting should work
+[X] Governance should pause the hub, posting with sig should fail, then governance unpauses the hub and posting with sig should work
+[X] Governance should pause the hub, commenting should fail, then governance unpauses the hub and commenting should work
+[X] Governance should pause the hub, commenting with sig should fail, then governance unpauses the hub and commenting with sig should work
+[X] Governance should pause the hub, mirroring should fail, then governance unpauses the hub and mirroring should work
+[X] Governance should pause the hub, mirroring with sig should fail, then governance unpauses the hub and mirroring with sig should work
+[X] Governance should pause the hub, burning should fail, then governance unpauses the hub and burning should work
+[X] Governance should pause the hub, following should fail, then governance unpauses the hub and following should work
+[X] Governance should pause the hub, following with sig should fail, then governance unpauses the hub and following with sig should work
+[X] Governance should pause the hub, collecting should fail, then governance unpauses the hub and collecting should work
+[X] Governance should pause the hub, collecting with sig should fail, then governance unpauses the hub and collecting with sig should work
 PublishingPaused State
 Scenarios
-[ ] Governance should pause publishing, profile creation should work
-[ ] Governance should pause publishing, setting follow module should work
-[ ] Governance should pause publishing, setting follow module with sig should work
-[ ] Governance should pause publishing, setting dispatcher should work
-[ ] Governance should pause publishing, setting dispatcher with sig should work
-[ ] Governance should pause publishing, setting profile URI should work
-[ ] Governance should pause publishing, setting profile URI with sig should work
-[ ] Governance should pause publishing, posting should fail, then governance unpauses the hub and posting should work
-[ ] Governance should pause publishing, posting with sig should fail, then governance unpauses the hub and posting with sig should work
-[ ] Governance should pause publishing, commenting should fail, then governance unpauses the hub and commenting should work
-[ ] Governance should pause publishing, commenting with sig should fail, then governance unpauses the hub and commenting with sig should work
-[ ] Governance should pause publishing, mirroring should fail, then governance unpauses the hub and mirroring should work
-[ ] Governance should pause publishing, mirroring with sig should fail, then governance unpauses the hub and mirroring with sig should work
-[ ] Governance should pause publishing, burning should work
-[ ] Governance should pause publishing, following should work
-[ ] Governance should pause publishing, following with sig should work
-[ ] Governance should pause publishing, collecting should work
-[ ] Governance should pause publishing, collecting with sig should work
+[X] Governance should pause publishing, profile creation should work
+[X] Governance should pause publishing, setting follow module should work
+[X] Governance should pause publishing, setting follow module with sig should work
+[X] Governance should pause publishing, setting dispatcher should work
+[X] Governance should pause publishing, setting dispatcher with sig should work
+[X] Governance should pause publishing, setting profile URI should work
+[X] Governance should pause publishing, setting profile URI with sig should work
+[X] Governance should pause publishing, posting should fail, then governance unpauses the hub and posting should work
+[X] Governance should pause publishing, posting with sig should fail, then governance unpauses the hub and posting with sig should work
+[X] Governance should pause publishing, commenting should fail, then governance unpauses the hub and commenting should work
+[X] Governance should pause publishing, commenting with sig should fail, then governance unpauses the hub and commenting with sig should work
+[X] Governance should pause publishing, mirroring should fail, then governance unpauses the hub and mirroring should work
+[X] Governance should pause publishing, mirroring with sig should fail, then governance unpauses the hub and mirroring with sig should work
+[X] Governance should pause publishing, burning should work
+[X] Governance should pause publishing, following should work
+[X] Governance should pause publishing, following with sig should work
+[X] Governance should pause publishing, collecting should work
+[X] Governance should pause publishing, collecting with sig should work
 
 Publishing Comments
 Generic
@@ -186,22 +190,25 @@ Scenarios
 Default profile Functionality
 Generic
 Negatives
-[ ] UserTwo should fail to set the default profile as a profile owned by user 1
+[X] UserTwo should fail to set the default profile as a profile owned by user 1
 Scenarios
-[ ] User should set the default profile
-[ ] User should set the default profile and then be able to unset it
-[ ] User should set the default profile and then be able to change it to another
-[ ] User should set the default profile and then transfer it, their default profile should be unset
+[X] User should set the default profile
+[X] User should set the default profile and then be able to unset it
+[X] User should set the default profile and then be able to change it to another
+[X] User should set the default profile and then transfer it, their default profile should be unset
 Meta-tx
 Negatives
-[ ] TestWallet should fail to set default profile with sig with signature deadline mismatch
-[ ] TestWallet should fail to set default profile with sig with invalid deadline
-[ ] TestWallet should fail to set default profile with sig with invalid nonce
-[ ] TestWallet should sign attempt to set default profile with sig, cancel with empty permitForAll, then fail to set default profile with sig
+[X] TestWallet should fail to set default profile with sig with signature deadline mismatch
+[X] TestWallet should fail to set default profile with sig with invalid deadline
+[X] TestWallet should fail to set default profile with sig with invalid nonce
+
+<!-- Already tested in invalid nonce test above -->
+
+[-] TestWallet should sign attempt to set default profile with sig, cancel with empty permitForAll, then fail to set default profile with sig
 Scenarios
-[ ] TestWallet should set the default profile with sig
-[ ] TestWallet should set the default profile with sig and then be able to unset it
-[ ] TestWallet should set the default profile and then be able to change it to another
+[X] TestWallet should set the default profile with sig
+[X] TestWallet should set the default profile with sig and then be able to unset it
+[X] TestWallet should set the default profile and then be able to change it to another
 
 Dispatcher Functionality
 Generic
@@ -270,20 +277,20 @@ Scenarios
 Setting Follow Module
 Generic
 Negatives
-[ ] UserTwo should fail to set the follow module for the profile owned by User
-[ ] User should fail to set a follow module that is not whitelisted
-[ ] User should fail to set a follow module with invalid follow module data format
+[X] UserTwo should fail to set the follow module for the profile owned by User
+[X] User should fail to set a follow module that is not whitelisted
+[X] User should fail to set a follow module with invalid follow module data format
 Scenarios
-[ ] User should set a whitelisted follow module, fetching the profile follow module should return the correct address, user then sets it to the zero address and fetching returns the zero address
+[X] User should set a whitelisted follow module, fetching the profile follow module should return the correct address, user then sets it to the zero address and fetching returns the zero address
 Meta-tx
 Negatives
-[ ] TestWallet should fail to set a follow module with sig with signature deadline mismatch
-[ ] TestWallet should fail to set a follow module with sig with invalid deadline
-[ ] TestWallet should fail to set a follow module with sig with invalid nonce
-[ ] TestWallet should fail to set a follow module with sig with an unwhitelisted follow module
-[ ] TestWallet should sign attempt to set follow module with sig, then cancel with empty permitForAll, then fail to set follow module with sig
+[X] TestWallet should fail to set a follow module with sig with signature deadline mismatch
+[X] TestWallet should fail to set a follow module with sig with invalid deadline
+[X] TestWallet should fail to set a follow module with sig with invalid nonce
+[X] TestWallet should fail to set a follow module with sig with an unwhitelisted follow module
+[X] TestWallet should sign attempt to set follow module with sig, then cancel with empty permitForAll, then fail to set follow module with sig
 Scenarios
-[ ] TestWallet should set a whitelisted follow module with sig, fetching the profile follow module should return the correct address
+[X] TestWallet should set a whitelisted follow module with sig, fetching the profile follow module should return the correct address
 
 Collect NFT
 Negatives
@@ -307,26 +314,26 @@ Follow NFT
 generic
 Negatives
 [ ] User should follow, and fail to re-initialize the follow NFT
-[ ] User should follow, userTwo should fail to burn user's follow NFT
-[ ] User should follow, then fail to mint a follow NFT directly
-[ ] User should follow, then fail to get the power at a future block
-[ ] user should follow, then fail to get the URI for a token that does not exist
+[-] User should follow, userTwo should fail to burn user's follow NFT
+[-] User should follow, then fail to mint a follow NFT directly
+[-] User should follow, then fail to get the power at a future block
+[-] user should follow, then fail to get the URI for a token that does not exist
 Scenarios
-[ ] User should follow, then burn their follow NFT, governance power is zero before and after
-[ ] User should follow, delegate to themself, governance power should be zero before the last block, and 1 at the current block
-[ ] User and userTwo should follow, governance power should be zero, then users delegate multiple times, governance power should be accurate throughout
-[ ] User and userTwo should follow, delegate to themselves, 10 blocks later user delegates to userTwo, 10 blocks later both delegate to user, governance power should be accurate throughout
-[ ] user and userTwo should follow, user delegates to userTwo twice, governance power should be accurate
-[ ] User and userTwo should follow, then transfer their NFTs to the helper contract, then the helper contract batch delegates to user one, then user two, governance power should be accurate
-[ ] user should follow, then get the URI for their token, URI should be accurate
+[-] User should follow, then burn their follow NFT, governance power is zero before and after
+[-] User should follow, delegate to themself, governance power should be zero before the last block, and 1 at the current block
+[-] User and userTwo should follow, governance power should be zero, then users delegate multiple times, governance power should be accurate throughout
+[-] User and userTwo should follow, delegate to themselves, 10 blocks later user delegates to userTwo, 10 blocks later both delegate to user, governance power should be accurate throughout
+[-] user and userTwo should follow, user delegates to userTwo twice, governance power should be accurate
+[-] User and userTwo should follow, then transfer their NFTs to the helper contract, then the helper contract batch delegates to user one, then user two, governance power should be accurate
+[-] user should follow, then get the URI for their token, URI should be accurate
 meta-tx
 negatives
-[ ] TestWallet should fail to delegate with sig with signature deadline mismatch
-[ ] TestWallet should fail to delegate with sig with invalid deadline
-[ ] TestWallet should fail to delegate with sig with invalid nonce
-[ ] TestWallet should sign attempt to delegate by sig, cancel with empty permitForAll, then fail to delegate by sig
+[-] TestWallet should fail to delegate with sig with signature deadline mismatch
+[-] TestWallet should fail to delegate with sig with invalid deadline
+[-] TestWallet should fail to delegate with sig with invalid nonce
+[-] TestWallet should sign attempt to delegate by sig, cancel with empty permitForAll, then fail to delegate by sig
 Scenarios
-[ ] TestWallet should delegate by sig to user, governance power should be accurate before and after
+[-] TestWallet should delegate by sig to user, governance power should be accurate before and after
 
 Lens NFT Base Functionality
 generic
@@ -379,36 +386,36 @@ deployment validation
 
 Events
 Misc
-[ ] Proxy initialization should emit expected events
+[X] Proxy initialization should emit expected events
 Hub Governance
-[ ] Governance change should emit expected event
-[ ] Emergency admin change should emit expected event
-[ ] Protocol state change by governance should emit expected event
-[ ] Protocol state change by emergency admin should emit expected events
-[ ] Follow module whitelisting functions should emit expected event
-[ ] Reference module whitelisting functions should emit expected event
-[ ] Collect module whitelisting functions should emit expected event
+[X] Governance change should emit expected event
+[X] Emergency admin change should emit expected event
+[X] Protocol state change by governance should emit expected event
+[X] Protocol state change by emergency admin should emit expected events
+[X] Follow module whitelisting functions should emit expected event
+[X] Reference module whitelisting functions should emit expected event
+[X] Collect module whitelisting functions should emit expected event
 Hub Interaction
-[ ] Profile creation for other user should emit the correct events
-[ ] Profile creation should emit the correct events
-[ ] Setting follow module should emit correct events
-[ ] Setting dispatcher should emit correct events
-[ ] Posting should emit the correct events
-[ ] Commenting should emit the correct events
-[ ] Mirroring should emit the correct events
-[ ] Following should emit correct events
-[ ] Collecting should emit correct events
-[ ] Collecting from a mirror should emit correct events
+[X] Profile creation for other user should emit the correct events
+[X] Profile creation should emit the correct events
+[X] Setting follow module should emit correct events
+[X] Setting dispatcher should emit correct events
+[X] Posting should emit the correct events
+[X] Commenting should emit the correct events
+[X] Mirroring should emit the correct events
+[X] Following should emit correct events
+[X] Collecting should emit correct events
+[X] Collecting from a mirror should emit correct events
 Module Globals Governance
-[ ] Governance change should emit expected event
-[ ] Treasury change should emit expected event
-[ ] Treasury fee change should emit expected event
-[ ] Currency whitelisting should emit expected event
+[X] Governance change should emit expected event
+[X] Treasury change should emit expected event
+[X] Treasury fee change should emit expected event
+[X] Currency whitelisting should emit expected event
 
 Misc
 NFT Transfer Emitters
-[ ] User should not be able to call the follow NFT transfer event emitter function
-[ ] User should not be able to call the collect NFT transfer event emitter function
+[X] User should not be able to call the follow NFT transfer event emitter function
+[X] User should not be able to call the collect NFT transfer event emitter function
 Lens Hub Misc
 [ ] UserTwo should fail to burn profile owned by user without being approved
 [ ] User should burn profile owned by user
@@ -447,17 +454,17 @@ Collect Module Misc
 [ ] Should fail to call processCollect directly on a collect module inheriting from the FollowValidationModuleBase contract
 Module Globals
 Negatives
-[ ] User should fail to set the governance address on the module globals
-[ ] User should fail to set the treasury on the module globals
-[ ] User should fail to set the treasury fee on the module globals
+[X] User should fail to set the governance address on the module globals
+[X] User should fail to set the treasury on the module globals
+[X] User should fail to set the treasury fee on the module globals
 Scenarios
-[ ] Governance should set the governance address on the module globals
-[ ] Governance should set the treasury on the module globals
-[ ] Governance should set the treasury fee on the module globals
-[ ] Governance should fail to whitelist the zero address as a currency
-[ ] Governance getter should return expected address
-[ ] Treasury getter should return expected address
-[ ] Treasury fee getter should return the expected fee
+[X] Governance should set the governance address on the module globals
+[X] Governance should set the treasury on the module globals
+[X] Governance should set the treasury fee on the module globals
+[X] Governance should fail to whitelist the zero address as a currency
+[X] Governance getter should return expected address
+[X] Treasury getter should return expected address
+[X] Treasury fee getter should return the expected fee
 UI Data Provider
 [ ] UI Data Provider should return expected values
 LensPeriphery
@@ -485,18 +492,18 @@ Scenarios
 Profile Metadata URI
 Generic
 Negatives
-[ ] User two should fail to set profile metadata URI for a profile that is not theirs while they are not the dispatcher
+[X] User two should fail to set profile metadata URI for a profile that is not theirs while they are not the dispatcher
 Scenarios
-[ ] User should set user two as dispatcher, user two should set profile metadata URI for user one's profile, fetched data should be accurate
-[ ] Setting profile metadata should emit the correct event
-[ ] Setting profile metadata via dispatcher should emit the correct event
+[X] User should set user two as dispatcher, user two should set profile metadata URI for user one's profile, fetched data should be accurate
+[X] Setting profile metadata should emit the correct event
+[X] Setting profile metadata via dispatcher should emit the correct event
 Meta-tx
 Negatives
-[ ] TestWallet should fail to set profile metadata URI with sig with signature deadline mismatch
-[ ] TestWallet should fail to set profile metadata URI with sig with invalid deadline
-[ ] TestWallet should fail to set profile metadata URI with sig with invalid nonce
+[X] TestWallet should fail to set profile metadata URI with sig with signature deadline mismatch
+[X] TestWallet should fail to set profile metadata URI with sig with invalid deadline
+[X] TestWallet should fail to set profile metadata URI with sig with invalid nonce
 Scenarios
-[ ] TestWallet should set profile metadata URI with sig, fetched data should be accurate and correct event should be emitted
+[X] TestWallet should set profile metadata URI with sig, fetched data should be accurate and correct event should be emitted
 
 Mock Profile Creation Proxy
 Negatives

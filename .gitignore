@@ -17,11 +17,12 @@ build/
 /tasks/collect.ts
 /tasks/test-module.ts
 
-/coverage
+/coverage*
 coverage.json
 .coverage_artifacts
 .coverage_cache
 .coverage_contracts
+lcov*
 
 addresses.json
 
@@ -35,3 +36,5 @@ out/
 /broadcast/**/dry-run/
 
 contracts/core/modules/follow/SecretCodeFollowModule.sol
+
+.DS_Store

@@ -93,7 +93,7 @@ contract BaseTest is TestSetup {
         return _calculateDigest(structHash);
     }
 
-    function _getSetFollowNFTURITypedDatahash(
+    function _getSetFollowNFTURITypedDataHash(
         uint256 profileId,
         string memory followNFTURI,
         uint256 nonce,
@@ -107,6 +107,17 @@ contract BaseTest is TestSetup {
                 nonce,
                 deadline
             )
+        );
+        return _calculateDigest(structHash);
+    }
+
+    function _getBurnTypedDataHash(
+        uint256 profileId,
+        uint256 nonce,
+        uint256 deadline
+    ) internal view returns (bytes32) {
+        bytes32 structHash = keccak256(
+            abi.encode(BURN_WITH_SIG_TYPEHASH, profileId, nonce, deadline)
         );
         return _calculateDigest(structHash);
     }
@@ -247,7 +258,9 @@ contract BaseTest is TestSetup {
     }
 
     function _getFollowTypedDataHash(
-        uint256[] memory profileIds,
+        uint256 followerProfileId,
+        uint256[] memory idsOfProfilesToFollow,
+        uint256[] memory followTokenIds,
         bytes[] memory datas,
         uint256 nonce,
         uint256 deadline
@@ -264,7 +277,9 @@ contract BaseTest is TestSetup {
         bytes32 structHash = keccak256(
             abi.encode(
                 FOLLOW_WITH_SIG_TYPEHASH,
-                keccak256(abi.encodePacked(profileIds)),
+                followerProfileId,
+                keccak256(abi.encodePacked(idsOfProfilesToFollow)),
+                keccak256(abi.encodePacked(followTokenIds)),
                 keccak256(abi.encodePacked(dataHashes)),
                 nonce,
                 deadline
@@ -274,7 +289,8 @@ contract BaseTest is TestSetup {
     }
 
     function _getCollectTypedDataHash(
-        uint256 profileId,
+        uint256 collectorProfileId,
+        uint256 publisherProfileId,
         uint256 pubId,
         bytes memory data,
         uint256 nonce,
@@ -283,12 +299,25 @@ contract BaseTest is TestSetup {
         bytes32 structHash = keccak256(
             abi.encode(
                 COLLECT_WITH_SIG_TYPEHASH,
-                profileId,
+                collectorProfileId,
+                publisherProfileId,
                 pubId,
                 keccak256(data),
                 nonce,
                 deadline
             )
+        );
+        return _calculateDigest(structHash);
+    }
+
+    function _getSetDefaulProfileTypedDataHash(
+        address wallet,
+        uint256 profileId,
+        uint256 nonce,
+        uint256 deadline
+    ) internal view returns (bytes32) {
+        bytes32 structHash = keccak256(
+            abi.encode(SET_DEFAULT_PROFILE_WITH_SIG_TYPEHASH, wallet, profileId, nonce, deadline)
         );
         return _calculateDigest(structHash);
     }
@@ -313,10 +342,52 @@ contract BaseTest is TestSetup {
         return ret;
     }
 
-    function _toBytesArray(bytes memory n) internal pure returns (bytes[] memory) {
-        bytes[] memory ret = new bytes[](1);
-        ret[0] = n;
+    function _toUint256Array(uint256 n0, uint256 n1) internal pure returns (uint256[] memory) {
+        uint256[] memory ret = new uint256[](2);
+        ret[0] = n0;
+        ret[1] = n1;
         return ret;
+    }
+
+    function _toBytesArray(bytes memory b) internal pure returns (bytes[] memory) {
+        bytes[] memory ret = new bytes[](1);
+        ret[0] = b;
+        return ret;
+    }
+
+    function _toBytesArray(bytes memory b0, bytes memory b1)
+        internal
+        pure
+        returns (bytes[] memory)
+    {
+        bytes[] memory ret = new bytes[](2);
+        ret[0] = b0;
+        ret[1] = b1;
+        return ret;
+    }
+
+    function _toBoolArray(bool b) internal pure returns (bool[] memory) {
+        bool[] memory ret = new bool[](1);
+        ret[0] = b;
+        return ret;
+    }
+
+    function _toBoolArray(bool b0, bool b1) internal pure returns (bool[] memory) {
+        bool[] memory ret = new bool[](2);
+        ret[0] = b0;
+        ret[1] = b1;
+        return ret;
+    }
+
+    // Private functions
+    function _buildSetDelegatedExecutorApprovalWithSigData(
+        address onBehalfOf,
+        address executor,
+        bool approved,
+        DataTypes.EIP712Signature memory sig
+    ) internal pure returns (DataTypes.SetDelegatedExecutorApprovalWithSigData memory) {
+        return
+            DataTypes.SetDelegatedExecutorApprovalWithSigData(onBehalfOf, executor, approved, sig);
     }
 
     function _post(DataTypes.PostData memory postData) internal returns (uint256) {
@@ -329,6 +400,15 @@ contract BaseTest is TestSetup {
 
     function _mirror(DataTypes.MirrorData memory mirrorData) internal returns (uint256) {
         return hub.mirror(mirrorData);
+    }
+
+    function _collect(
+        uint256 collectorProfileId,
+        uint256 publisherProfileId,
+        uint256 pubId,
+        bytes memory data
+    ) internal returns (uint256) {
+        return hub.collect(collectorProfileId, publisherProfileId, pubId, data);
     }
 
     function _postWithSig(DataTypes.PostWithSigData memory postWithSigData)
@@ -352,8 +432,129 @@ contract BaseTest is TestSetup {
         return hub.mirrorWithSig(mirrorWithSigData);
     }
 
-    function _setDelegatedExecutorApproval(address executor, bool approved) internal {
+    function _collectWithSig(DataTypes.CollectWithSigData memory collectWithSigData)
+        internal
+        returns (uint256)
+    {
+        return hub.collectWithSig(collectWithSigData);
+    }
+
+    function _follow(
+        address msgSender,
+        uint256 followerProfileId,
+        uint256 idOfProfileToFollow,
+        uint256 followTokenId,
+        bytes memory data
+    ) internal returns (uint256[] memory) {
+        vm.prank(msgSender);
+        return
+            hub.follow(
+                followerProfileId,
+                _toUint256Array(idOfProfileToFollow),
+                _toUint256Array(followTokenId),
+                _toBytesArray(data)
+            );
+    }
+
+    function _followWithSig(DataTypes.FollowWithSigData memory vars)
+        internal
+        returns (uint256[] memory)
+    {
+        return hub.followWithSig(vars);
+    }
+
+    function _createProfile(address newProfileOwner) internal returns (uint256) {
+        DataTypes.CreateProfileData memory createProfileData = DataTypes.CreateProfileData({
+            to: newProfileOwner,
+            imageURI: mockCreateProfileData.imageURI,
+            followModule: mockCreateProfileData.followModule,
+            followModuleInitData: mockCreateProfileData.followModuleInitData,
+            followNFTURI: mockCreateProfileData.followNFTURI
+        });
+
+        return hub.createProfile(createProfileData);
+    }
+
+    function _setState(DataTypes.ProtocolState newState) internal {
+        hub.setState(newState);
+    }
+
+    function _getState() internal view returns (DataTypes.ProtocolState) {
+        return hub.getState();
+    }
+
+    function _setEmergencyAdmin(address newEmergencyAdmin) internal {
+        hub.setEmergencyAdmin(newEmergencyAdmin);
+    }
+
+    function _transferProfile(
+        address msgSender,
+        address from,
+        address to,
+        uint256 tokenId
+    ) internal {
+        vm.prank(msgSender);
+        hub.transferFrom(from, to, tokenId);
+    }
+
+    function _setDelegatedExecutorApproval(
+        address msgSender,
+        address executor,
+        bool approved
+    ) internal {
+        vm.prank(msgSender);
         hub.setDelegatedExecutorApproval(executor, approved);
+    }
+
+    function _setFollowModule(
+        address msgSender,
+        uint256 profileId,
+        address followModule,
+        bytes memory followModuleInitData
+    ) internal {
+        vm.prank(msgSender);
+        hub.setFollowModule(profileId, followModule, followModuleInitData);
+    }
+
+    function _setFollowModuleWithSig(DataTypes.SetFollowModuleWithSigData memory vars) internal {
+        hub.setFollowModuleWithSig(vars);
+    }
+
+    function _setProfileImageURI(
+        address msgSender,
+        uint256 profileId,
+        string memory imageURI
+    ) internal {
+        vm.prank(msgSender);
+        hub.setProfileImageURI(profileId, imageURI);
+    }
+
+    function _setProfileImageURIWithSig(DataTypes.SetProfileImageURIWithSigData memory vars)
+        internal
+    {
+        hub.setProfileImageURIWithSig(vars);
+    }
+
+    function _setFollowNFTURI(
+        address msgSender,
+        uint256 profileId,
+        string memory followNFTURI
+    ) internal {
+        vm.prank(msgSender);
+        hub.setFollowNFTURI(profileId, followNFTURI);
+    }
+
+    function _setFollowNFTURIWithSig(DataTypes.SetFollowNFTURIWithSigData memory vars) internal {
+        hub.setFollowNFTURIWithSig(vars);
+    }
+
+    function _burn(address msgSender, uint256 profileId) internal {
+        vm.prank(msgSender);
+        hub.burn(profileId);
+    }
+
+    function _burnWithSig(uint256 profileId, DataTypes.EIP712Signature memory sig) internal {
+        hub.burnWithSig(profileId, sig);
     }
 
     function _getPub(uint256 profileId, uint256 pubId)
@@ -370,5 +571,14 @@ contract BaseTest is TestSetup {
 
     function _getPubCount(uint256 profileId) internal view returns (uint256) {
         return hub.getPubCount(profileId);
+    }
+
+    function _getCollectCount(uint256 profileId, uint256 pubId) internal view returns (uint256) {
+        address collectNft = hub.getCollectNFT(profileId, pubId);
+        if (collectNft == address(0)) {
+            return 0;
+        } else {
+            return CollectNFT(collectNft).totalSupply();
+        }
     }
 }

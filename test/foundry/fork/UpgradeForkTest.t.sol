@@ -65,19 +65,22 @@ contract UpgradeForkTest is BaseTest {
     address mockReferenceModuleAddr;
 
     function setUp() public override {
-        string memory polygonForkUrl = vm.envString('POLYGON_RPC_URL');
-        string memory mumbaiForkUrl = vm.envString('MUMBAI_RPC_URL');
+        if (bytes(forkEnv).length > 0) {
+            // TODO: Consider adding a "FORK" bool env variable to explicitly enable fork testing and not require ENVs for general tests
+            string memory polygonForkUrl = vm.envString('POLYGON_RPC_URL');
+            string memory mumbaiForkUrl = vm.envString('MUMBAI_RPC_URL');
 
-        polygonForkId = vm.createFork(polygonForkUrl);
-        mumbaiForkId = vm.createFork(mumbaiForkUrl);
+            polygonForkId = vm.createFork(polygonForkUrl);
+            mumbaiForkId = vm.createFork(mumbaiForkUrl);
+        }
     }
 
-    function testUpgradePolygon() public {
+    function testUpgradePolygon() public onlyFork {
         vm.selectFork(polygonForkId);
         _fullRun(POLYGON_HUB_PROXY);
     }
 
-    function testUpgradeMumbai() public {
+    function testUpgradeMumbai() public onlyFork {
         vm.selectFork(mumbaiForkId);
         _fullRun(MUMBAI_HUB_PROXY);
     }
@@ -97,7 +100,7 @@ contract UpgradeForkTest is BaseTest {
         _fullPublishSequence(profileId, gov, hub);
 
         // Follow, Collect.
-        _fullFollowCollectSequence(profileId, hub);
+        _fullFollowCollectSequence(profileId, gov, hub);
 
         // Get the profile.
         DataTypes.ProfileStruct memory profileStruct = hub.getProfile(profileId);
@@ -125,7 +128,7 @@ contract UpgradeForkTest is BaseTest {
         _fullPublishSequence(profileId, gov, hub);
 
         // Follow, Collect.
-        _fullFollowCollectSequence(profileId, hub);
+        _fullFollowCollectSequence(profileId, gov, hub);
 
         // Fourth, set new data and ensure getters return the new data (proper slots set).
         vm.prank(gov);
@@ -155,6 +158,15 @@ contract UpgradeForkTest is BaseTest {
 
             vm.prank(gov);
             hub.whitelistFollowModule(mockDeprecatedFollowModule, true);
+
+            // precompute basic profile creaton data.
+            mockCreateProfileData = DataTypes.CreateProfileData({
+                to: me,
+                imageURI: MOCK_URI,
+                followModule: address(0),
+                followModuleInitData: abi.encode(1),
+                followNFTURI: MOCK_URI
+            });
 
             OldCreateProfileData memory oldCreateProfileData = OldCreateProfileData(
                 mockCreateProfileData.to,
@@ -309,20 +321,28 @@ contract UpgradeForkTest is BaseTest {
         }
     }
 
-    function _fullFollowCollectSequence(uint256 profileId, ILensHub hub) private {
+    function _fullFollowCollectSequence(
+        uint256 profileId,
+        address gov,
+        ILensHub hub
+    ) private {
         // First check if the new interface works, if not, use the old interface.
         uint256[] memory profileIds = new uint256[](1);
         profileIds[0] = profileId;
+        uint256[] memory followTokenIds = new uint256[](1);
+        followTokenIds[0] = 0;
         bytes[] memory datas = new bytes[](1);
         datas[0] = '';
 
-        try hub.follow(me, profileIds, datas) {
+        uint256 secondProfileId = _fullCreateProfileSequence(gov, hub);
+
+        try hub.follow(secondProfileId, profileIds, followTokenIds, datas) {
             console2.log(
                 'Follow with modern interface succeeded, continuing with modern interface.'
             );
-            hub.collect(me, profileId, 1, '');
-            hub.collect(me, profileId, 2, '');
-            hub.collect(me, profileId, 3, '');
+            hub.collect(profileId, profileId, 1, '');
+            hub.collect(profileId, profileId, 2, '');
+            hub.collect(profileId, profileId, 3, '');
         } catch {
             console2.log(
                 'Follow with modern interface failed, proceeding with deprecated interface.'
@@ -382,16 +402,16 @@ contract UpgradeForkTest is BaseTest {
         // precompute basic profile creaton data.
         mockCreateProfileData = DataTypes.CreateProfileData({
             to: me,
-            imageURI: mockURI,
+            imageURI: MOCK_URI,
             followModule: address(0),
             followModuleInitData: abi.encode(1),
-            followNFTURI: mockURI
+            followNFTURI: MOCK_URI
         });
 
         // Precompute basic post data.
         mockPostData = DataTypes.PostData({
             profileId: 0,
-            contentURI: mockURI,
+            contentURI: MOCK_URI,
             collectModule: address(0),
             collectModuleInitData: abi.encode(1),
             referenceModule: address(0),
@@ -401,8 +421,8 @@ contract UpgradeForkTest is BaseTest {
         // Precompute basic comment data.
         mockCommentData = DataTypes.CommentData({
             profileId: 0,
-            contentURI: mockURI,
-            profileIdPointed: firstProfileId,
+            contentURI: MOCK_URI,
+            profileIdPointed: newProfileId,
             pubIdPointed: 1,
             referenceModuleData: '',
             collectModule: address(0),
@@ -414,7 +434,7 @@ contract UpgradeForkTest is BaseTest {
         // Precompute basic mirror data.
         mockMirrorData = DataTypes.MirrorData({
             profileId: 0,
-            profileIdPointed: firstProfileId,
+            profileIdPointed: newProfileId,
             pubIdPointed: 1,
             referenceModuleData: ''
         });

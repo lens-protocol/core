@@ -18,18 +18,19 @@ abstract contract LensHubStorage {
     mapping(address => bool) internal _collectModuleWhitelisted; // Slot 15
     mapping(address => bool) internal _referenceModuleWhitelisted; // Slot 16
 
-    mapping(uint256 => address) internal _dispatcherByProfile; // slot 17
-    mapping(bytes32 => uint256) internal _profileIdByHandleHash; // slot 18
-    mapping(uint256 => DataTypes.ProfileStruct) internal _profileById; // slot 19
-    mapping(uint256 => mapping(uint256 => DataTypes.PublicationStruct)) internal _pubByIdByProfile; // slot 20
+    mapping(uint256 => address) internal _dispatcherByProfile; // Slot 17
+    mapping(bytes32 => uint256) internal _profileIdByHandleHash; // Slot 18
+    mapping(uint256 => DataTypes.ProfileStruct) internal _profileById; // Slot 19
+    mapping(uint256 => mapping(uint256 => DataTypes.PublicationStruct)) internal _pubByIdByProfile; // Slot 20
 
-    mapping(address => uint256) internal _defaultProfileByAddress; // slot 21
+    mapping(address => uint256) internal _defaultProfileByAddress; // Slot 21
 
-    uint256 internal _profileCounter; // slot 22
-    address internal _governance; // slot 23
-    address internal _emergencyAdmin; // slot 24
+    uint256 internal _profileCounter; // Slot 22 - this is different to TotalSupply, as TotalSupply is decreased when the Profile is burned
+    address internal _governance; // Slot 23
+    address internal _emergencyAdmin; // Slot 24
 
-    // new storage
-    mapping(address => mapping(address => bool)) internal _delegatedExecutorApproval; // slot 25
-    mapping(uint256 => string) internal _metadataByProfile; // slot 26
+    // Slots introduced by Lens V2 upgrade.
+    mapping(address => mapping(address => bool)) internal _delegatedExecutorApproval; // Slot 25
+    mapping(uint256 => string) internal _metadataByProfile; // Slot 26
+    mapping(uint256 => mapping(uint256 => bool)) internal _blockedStatus; // Slot 27, _blockedStatus[byProfile][profile]
 }

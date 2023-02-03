@@ -112,7 +112,7 @@ interface ILensHub {
     function setDefaultProfile(address onBehalfOf, uint256 profileId) external;
 
     /**
-     * @notice Sets the mapping between wallet and its main profile identity via signature with the specified parameters. The 
+     * @notice Sets the mapping between wallet and its main profile identity via signature with the specified parameters. The
      * signer must either be the profile owner or a delegated executor.
      *
      * @param vars A SetDefaultProfileWithSigData struct, including the regular parameters and an EIP712Signature struct.
@@ -132,10 +132,11 @@ interface ILensHub {
     /**
      * @notice Sets the metadata URI via signature for the given profile with the specified parameters. The signer must
      * either be the profile owner or a delegated executor.
-     * 
+     *
      * @param vars A SetProfileMetadataURIWithSigData struct, including the regular parameters and an EIP712Signature struct.
      */
-    function setProfileMetadataURIWithSig(DataTypes.SetProfileMetadataURIWithSigData calldata vars) external;
+    function setProfileMetadataURIWithSig(DataTypes.SetProfileMetadataURIWithSigData calldata vars)
+        external;
 
     /**
      * @notice Sets the follow module for the given profile. Must be called by the profile owner.
@@ -282,48 +283,94 @@ interface ILensHub {
     function mirrorWithSig(DataTypes.MirrorWithSigData calldata vars) external returns (uint256);
 
     /**
-     * @notice Follows the given profiles, executing each profile's follow module logic (if any) and minting followNFTs to the caller.
+     * @notice Follows the given profiles, executing each profile's follow module logic (if any).
      *
-     * NOTE: Both the `profileIds` and `datas` arrays must be of the same length, regardless if the profiles do not have a follow module set.
+     * @dev Both the `idsOfProfilesToFollow`, `followTokenIds`, and `datas` arrays must be of the same length,
+     * regardless if the profiles do not have a follow module set.
      *
-     * @param onBehalfOf The address the follow is being executed for, different from the sender for delegated executors.
-     * @param profileIds The token ID array of the profiles to follow.
+     * @param followerProfileId The ID of the profile the follows are being executed for.
+     * @param idsOfProfilesToFollow The array of IDs of profiles to follow.
+     * @param followTokenIds The array of follow token IDs to use for each follow.
      * @param datas The arbitrary data array to pass to the follow module for each profile if needed.
      *
-     * @return uint256[] An array of integers representing the minted follow NFTs token IDs.
+     * @return uint256[] An array follow token IDs used for each follow operation.
      */
     function follow(
-        address onBehalfOf,
-        uint256[] calldata profileIds,
+        uint256 followerProfileId,
+        uint256[] calldata idsOfProfilesToFollow,
+        uint256[] calldata followTokenIds,
         bytes[] calldata datas
     ) external returns (uint256[] memory);
 
     /**
-     * @notice Follows a given profile via signature with the specified parameters. The signer must either be the follower
-     * or a delegated executor.
+     * @notice Follows the given profiles via signature with the specified parameters. The signer must either be the
+     * follower or a delegated executor.
      *
-     * @param vars A FollowWithSigData struct containing the regular parameters as well as the signing follower's address
-     * and an EIP712Signature struct.
+     * @param vars A FollowWithSigData struct containing the regular parameters as well as the signing follower's
+     * address and an EIP712Signature struct.
      *
-     * @return uint256[] An array of integers representing the minted follow NFTs token IDs.
+     * @return uint256[] An array follow token IDs used for each follow operation.
      */
     function followWithSig(DataTypes.FollowWithSigData calldata vars)
         external
         returns (uint256[] memory);
 
     /**
+     * @notice Unfollows the given profiles.
+     *
+     * @param unfollowerProfileId The ID of the profile the unfollows are being executed for.
+     * @param idsOfProfilesToUnfollow The array of IDs of profiles to unfollow.
+     */
+    function unfollow(uint256 unfollowerProfileId, uint256[] calldata idsOfProfilesToUnfollow)
+        external;
+
+    /**
+     * @notice Unfollows the given profiles via signature with the specified parameters. The signer must either be the
+     * unfollower or a delegated executor.
+     *
+     * @param vars An UnollowWithSigData struct containing the regular parameters as well as the signing unfollower's
+     * address and an EIP712Signature struct.
+     */
+    function unfollowWithSig(DataTypes.UnfollowWithSigData calldata vars) external;
+
+    /**
+     * @notice Sets the block status for the given profiles. Changing a profile's block status to `true` (i.e. blocked),
+     * when it was following, will make it unfollow.
+     *
+     * @dev Both the `idsOfProfilesToSetBlockStatus` and `blockStatus` arrays must be of the same length.
+     *
+     * @param byProfileId The ID of the profile the block status sets are being executed for.
+     * @param idsOfProfilesToSetBlockStatus The array of IDs of profiles to set block status.
+     * @param blockStatus The array of block status to use for each setting.
+     */
+    function setBlockStatus(
+        uint256 byProfileId,
+        uint256[] calldata idsOfProfilesToSetBlockStatus,
+        bool[] calldata blockStatus
+    ) external;
+
+    /**
+     * @notice Blocks the given profiles via signature with the specified parameters. The signer must either be the
+     * blocker or a delegated executor.
+     *
+     * @param vars An SetBlockStatusWithSigData struct containing the regular parameters as well as the signing
+     * blocker's address and an EIP712Signature struct.
+     */
+    function setBlockStatusWithSig(DataTypes.SetBlockStatusWithSigData calldata vars) external;
+
+    /**
      * @notice Collects a given publication, executing collect module logic and minting a collectNFT to the caller.
      *
-     * @param onBehalfOf The address to collect on behalf of, different to the sender for delegated executors.
-     * @param profileId The token ID of the profile that published the publication to collect.
+     * @param collectorProfileId The ID of the profile the collect is being executed from.
+     * @param publisherProfileId The token ID of the profile that published the publication to collect.
      * @param pubId The publication to collect's publication ID.
      * @param data The arbitrary data to pass to the collect module if needed.
      *
      * @return uint256 An integer representing the minted token ID.
      */
     function collect(
-        address onBehalfOf,
-        uint256 profileId,
+        uint256 collectorProfileId,
+        uint256 publisherProfileId,
         uint256 pubId,
         bytes calldata data
     ) external returns (uint256);
@@ -340,8 +387,8 @@ interface ILensHub {
     function collectWithSig(DataTypes.CollectWithSigData calldata vars) external returns (uint256);
 
     /**
-     * @dev Helper function to emit a detailed followNFT transfer event from the hub, to be consumed by frontends to track
-     * followNFT transfers.
+     * @dev Helper function to emit a detailed followNFT transfer event from the hub, to be consumed by indexers to
+     * track followNFT transfers.
      *
      * @param profileId The token ID of the profile associated with the followNFT being transferred.
      * @param followNFTId The followNFT being transferred's token ID.
@@ -356,8 +403,8 @@ interface ILensHub {
     ) external;
 
     /**
-     * @dev Helper function to emit a detailed collectNFT transfer event from the hub, to be consumed by frontends to track
-     * collectNFT transfers.
+     * @dev Helper function to emit a detailed collectNFT transfer event from the hub, to be consumed by indexers to
+     * track collectNFT transfers.
      *
      * @param profileId The token ID of the profile associated with the collect NFT being transferred.
      * @param pubId The publication ID associated with the collect NFT being transferred.
@@ -373,9 +420,31 @@ interface ILensHub {
         address to
     ) external;
 
+    /**
+     * @dev Helper function to emit an `Unfollowed` event from the hub, to be consumed by indexers to track unfollows.
+     *
+     * @param unfollowerProfileId The ID of the profile that executed the unfollow.
+     * @param idOfProfileUnfollowed The ID of the profile that was unfollowed.
+     */
+    function emitUnfollowedEvent(uint256 unfollowerProfileId, uint256 idOfProfileUnfollowed)
+        external;
+
     /// ************************
     /// *****VIEW FUNCTIONS*****
     /// ************************
+
+    /**
+     * @notice Returns whether  or not `followerProfileId` is following `followedProfileId`.
+     *
+     * @param followerProfileId The ID of the profile whose following state should be queried.
+     * @param followedProfileId The ID of the profile whose followed state should be queried.
+     *
+     * @return bool True if `followerProfileId` is following `followedProfileId`, false otherwise.
+     */
+    function isFollowing(uint256 followerProfileId, uint256 followedProfileId)
+        external
+        view
+        returns (bool);
 
     /**
      * @notice Returns whether or not a profile creator is whitelisted.
@@ -430,7 +499,20 @@ interface ILensHub {
      * @return bool True if the executor is approved as a delegated executor to act on behalf of the wallet,
      * false otherwise.
      */
-    function isDelegatedExecutorApproved(address wallet, address executor) external view returns (bool);
+    function isDelegatedExecutorApproved(address wallet, address executor)
+        external
+        view
+        returns (bool);
+
+    /**
+     * @notice Returns whether `profile` is blocked by `byProfile`.
+     *
+     * @param profileId The ID of the profile whose blocked status should be queried.
+     * @param byProfileId The ID of the profile whose blocker status should be queried.
+     *
+     * @return bool True if `profileId` is blocked by `byProfileId`, false otherwise.
+     */
+    function isBlocked(uint256 profileId, uint256 byProfileId) external view returns (bool);
 
     /**
      * @notice Returns the default profile for a given wallet address

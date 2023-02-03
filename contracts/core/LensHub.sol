@@ -2,6 +2,7 @@
 
 pragma solidity 0.8.15;
 
+import {IFollowNFT} from '../interfaces/IFollowNFT.sol';
 import {ILensNFTBase} from '../interfaces/ILensNFTBase.sol';
 import {ILensHub} from '../interfaces/ILensHub.sol';
 
@@ -370,11 +371,18 @@ contract LensHub is LensNFTBase, VersionedInitializable, LensMultiState, LensHub
 
     /// @inheritdoc ILensHub
     function follow(
-        address onBehalfOf,
-        uint256[] calldata profileIds,
+        uint256 followerProfileId,
+        uint256[] calldata idsOfProfilesToFollow,
+        uint256[] calldata followTokenIds,
         bytes[] calldata datas
     ) external override whenNotPaused returns (uint256[] memory) {
-        return GeneralLib.follow(onBehalfOf, profileIds, datas);
+        return
+            GeneralLib.follow({
+                followerProfileId: followerProfileId,
+                idsOfProfilesToFollow: idsOfProfilesToFollow,
+                followTokenIds: followTokenIds,
+                followModuleDatas: datas
+            });
     }
 
     /// @inheritdoc ILensHub
@@ -388,13 +396,60 @@ contract LensHub is LensNFTBase, VersionedInitializable, LensMultiState, LensHub
     }
 
     /// @inheritdoc ILensHub
+    function unfollow(uint256 unfollowerProfileId, uint256[] calldata idsOfProfilesToUnfollow)
+        external
+        override
+        whenNotPaused
+    {
+        return
+            GeneralLib.unfollow({
+                unfollowerProfileId: unfollowerProfileId,
+                idsOfProfilesToUnfollow: idsOfProfilesToUnfollow
+            });
+    }
+
+    /// @inheritdoc ILensHub
+    function unfollowWithSig(DataTypes.UnfollowWithSigData calldata vars)
+        external
+        override
+        whenNotPaused
+    {
+        return GeneralLib.unfollowWithSig(vars);
+    }
+
+    /// @inheritdoc ILensHub
+    function setBlockStatus(
+        uint256 byProfileId,
+        uint256[] calldata idsOfProfilesToSetBlockStatus,
+        bool[] calldata blockStatus
+    ) external override whenNotPaused {
+        return GeneralLib.setBlockStatus(byProfileId, idsOfProfilesToSetBlockStatus, blockStatus);
+    }
+
+    /// @inheritdoc ILensHub
+    function setBlockStatusWithSig(DataTypes.SetBlockStatusWithSigData calldata vars)
+        external
+        override
+        whenNotPaused
+    {
+        return GeneralLib.setBlockStatusWithSig(vars);
+    }
+
+    /// @inheritdoc ILensHub
     function collect(
-        address onBehalfOf,
-        uint256 profileId,
+        uint256 collectorProfileId,
+        uint256 publisherProfileId, // TODO: Think if we can have better naming
         uint256 pubId,
         bytes calldata data
     ) external override whenNotPaused returns (uint256) {
-        return GeneralLib.collect(onBehalfOf, profileId, pubId, data, COLLECT_NFT_IMPL);
+        return
+            GeneralLib.collect({
+                collectorProfileId: collectorProfileId,
+                publisherProfileId: publisherProfileId,
+                pubId: pubId,
+                collectModuleData: data,
+                collectNFTImpl: COLLECT_NFT_IMPL
+            });
     }
 
     /// @inheritdoc ILensHub
@@ -439,9 +494,30 @@ contract LensHub is LensNFTBase, VersionedInitializable, LensMultiState, LensHub
         );
     }
 
+    /// @inheritdoc ILensHub
+    function emitUnfollowedEvent(uint256 unfollowerProfileId, uint256 idOfProfileUnfollowed)
+        external
+        override
+    {
+        address expectedFollowNFT = _profileById[idOfProfileUnfollowed].followNFT;
+        if (msg.sender != expectedFollowNFT) {
+            revert Errors.CallerNotFollowNFT();
+        }
+        emit Events.Unfollowed(unfollowerProfileId, idOfProfileUnfollowed, block.timestamp);
+    }
+
     /// *********************************
     /// *****EXTERNAL VIEW FUNCTIONS*****
     /// *********************************
+
+    function isFollowing(uint256 followerProfileId, uint256 followedProfileId)
+        external
+        view
+        returns (bool)
+    {
+        address followNFT = _profileById[followedProfileId].followNFT;
+        return followNFT != address(0) && IFollowNFT(followNFT).isFollowing(followerProfileId);
+    }
 
     /// @inheritdoc ILensHub
     function isProfileCreatorWhitelisted(address profileCreator)
@@ -490,6 +566,11 @@ contract LensHub is LensNFTBase, VersionedInitializable, LensMultiState, LensHub
         returns (bool)
     {
         return _delegatedExecutorApproval[wallet][executor];
+    }
+
+    /// @inheritdoc ILensHub
+    function isBlocked(uint256 profileId, uint256 byProfileId) external view returns (bool) {
+        return _blockedStatus[byProfileId][profileId];
     }
 
     /// @inheritdoc ILensHub
@@ -654,7 +735,7 @@ contract LensHub is LensNFTBase, VersionedInitializable, LensMultiState, LensHub
                 tokenId,
                 followNFT == address(0) ? 0 : IERC721Enumerable(followNFT).totalSupply(),
                 ownerOf(tokenId),
-                "Lens Profile",
+                'Lens Profile',
                 _profileById[tokenId].imageURI
             );
     }

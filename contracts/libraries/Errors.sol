@@ -59,6 +59,10 @@ library Errors {
     error NotWhitelisted();
     error InvalidParameter();
     error ExecutorInvalid();
+    error Blocked();
+    error SelfBlock();
+    error NotFollowing();
+    error SelfFollow();
 
     // Module Errors
     error InitParamsInvalid();

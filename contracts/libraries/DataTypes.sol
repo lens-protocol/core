@@ -58,7 +58,7 @@ library DataTypes {
      * @param pubCount The number of publications made to this profile.
      * @param followModule The address of the current follow module in use by this profile, can be empty.
      * @param followNFT The address of the followNFT associated with this profile, can be empty..
-     * @param handleUnused The deprecated handle slot, no longer used. .
+     * @param handleDeprecated The deprecated handle slot, no longer used. .
      * @param imageURI The URI to be used for the profile's image.
      * @param followNFTURI The URI to be used for the follow NFT.
      */
@@ -339,38 +339,93 @@ library DataTypes {
     }
 
     /**
-     * @notice A struct containing the parameters required for the `followWithSig()` function. Parameters are the same
-     * as the regular `follow()` function, with the follower's (signer) address and an EIP712Signature added.
+     * @notice A struct containing the parameters required for the `followWithSig` function. Parameters are the same
+     * as the regular `follow` function, with the signer address and an EIP712Signature added.
      *
-     * @param delegatedSigner The delegated executor signer, must be either zero, defaulting to the follower, or a delegated executor.
-     * @param follower The follower which is the message signer.
-     * @param profileIds The array of token IDs of the profiles to follow.
-     * @param datas The array of arbitrary data to pass to the followModules if needed.
+     * @param delegatedSigner The delegated executor signer, must be either zero, defaulting to the follower,
+     * or a delegated executor.
+     * @param followerProfileId The ID of the profile the follows are being executed for.
+     * @param idsOfProfilesToFollow The array of IDs of profiles to follow.
+     * @param followTokenIds The array of follow token IDs to use for each follow.
+     * @param datas The arbitrary data array to pass to the follow module for each profile if needed.
      * @param sig The EIP712Signature struct containing the follower's signature.
      */
     struct FollowWithSigData {
         address delegatedSigner;
-        address follower;
-        uint256[] profileIds;
+        uint256 followerProfileId;
+        uint256[] idsOfProfilesToFollow;
+        uint256[] followTokenIds;
         bytes[] datas;
         EIP712Signature sig;
+    }
+
+    /**
+     * @notice A struct containing the parameters required for the `unfollowWithSig` function. Parameters are the same
+     * as the regular `unfollow` function, with the signer address and an EIP712Signature added.
+     *
+     * @param delegatedSigner The delegated executor signer, must be either zero, defaulting to the follower,
+     * or a delegated executor.
+     * @param unfollowerProfileId The ID of the profile the unfollows are being executed for.
+     * @param idsOfProfilesToUnfollow The array of IDs of profiles to unfollow.
+     * @param sig The EIP712Signature struct containing the follower's signature.
+     */
+    struct UnfollowWithSigData {
+        address delegatedSigner;
+        uint256 unfollowerProfileId;
+        uint256[] idsOfProfilesToUnfollow;
+        EIP712Signature sig;
+    }
+
+    /**
+     * @notice A struct containing the parameters required for the `setBlockStatusWithSig` function. Parameters are the
+     * same as the regular `setBlockStatus` function, with the signer address and an EIP712Signature added.
+     *
+     * @param delegatedSigner The delegated executor signer, must be either zero, defaulting to the blocker,
+     * or a delegated executor.
+     * @param byProfileId The ID of the profile the block status sets are being executed for.
+     * @param idsOfProfilesToSetBlockStatus The array of IDs of profiles to set block status.
+     * @param blockStatus The array of block status to use for each setting.
+     * @param sig The EIP712Signature struct containing the blocker's signature.
+     */
+    struct SetBlockStatusWithSigData {
+        address delegatedSigner;
+        uint256 byProfileId;
+        uint256[] idsOfProfilesToSetBlockStatus;
+        bool[] blockStatus;
+        EIP712Signature sig;
+    }
+
+    /**
+     * @notice A struct containing the parameters required for the `collect()` function.
+     *
+     * @param collector The address of the collector.
+     * @param profileId The token ID of the profile to that published the content being collected.
+     * @param pubId The ID of the publication being collected.
+     * @param data The data passed to the collect module.
+     */
+    struct CollectData {
+        // TODO: Move this to tests? And the one below
+        uint256 collectorProfileId;
+        uint256 publisherProfileId;
+        uint256 pubId;
+        bytes data;
     }
 
     /**
      * @notice A struct containing the parameters required for the `collectWithSig()` function. Parameters are the same as
      * the regular `collect()` function, with the collector's (signer) address and an EIP712Signature added.
      *
-     * @param delegatedSigner The delegated executor signer, must be either zero, defaulting to the collector, or a delegated executor.
-     * @param collector The collector which is the message signer.
-     * @param profileId The token ID of the profile that published the publication to collect.
+     * @param delegatedSigner The delegated executor signer, must be either zero, defaulting to the collector profile owner, or a delegated executor.
+     * @param collectorProfileId The collector profile.
+     * @param publisherProfileId The token ID of the profile that published the publication to collect.
      * @param pubId The publication to collect's publication ID.
      * @param data The arbitrary data to pass to the collectModule if needed.
      * @param sig The EIP712Signature struct containing the collector's signature.
      */
     struct CollectWithSigData {
         address delegatedSigner;
-        address collector;
-        uint256 profileId;
+        uint256 collectorProfileId;
+        uint256 publisherProfileId;
         uint256 pubId;
         bytes data;
         EIP712Signature sig;

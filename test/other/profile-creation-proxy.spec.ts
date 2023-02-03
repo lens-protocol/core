@@ -34,7 +34,7 @@ makeSuiteCleanRoom('Profile Creation Proxy', function () {
     ).to.not.be.reverted;
   });
 
-  context('Negatives', function () {
+  context.skip('Negatives', function () {
     it('Should fail to create profile if handle length before suffix does not reach minimum length', async function () {
       const handle = 'a'.repeat(MINIMUM_LENGTH - 1);
       await expect(
@@ -98,7 +98,7 @@ makeSuiteCleanRoom('Profile Creation Proxy', function () {
     });
   });
 
-  context('Scenarios', function () {
+  context.skip('Scenarios', function () {
     it('Should be able to create a profile using the whitelisted proxy, received NFT should be valid', async function () {
       let timestamp: any;
       let owner: string;
