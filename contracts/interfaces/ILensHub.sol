@@ -160,21 +160,38 @@ interface ILensHub {
     function setFollowModuleWithSig(DataTypes.SetFollowModuleWithSigData calldata vars) external;
 
     /**
-     * @notice Sets the approval for a delegated executor to act on behalf of the caller.
+     * @notice Changes the delegated executors configuration for the given profile. It allows to set the approvals for
+     * delegated executors in the specified configuration, as well as switching to it.
      *
-     * @param executor The executor to set the approval for.
-     * @param approved The approval to set.
+     * @dev The message sender must be the owner of the delegator profile.
+     *
+     * @param delegatorProfileId The ID of the profile for which the delegated executor is being changed for.
+     * @param configNumber The number of the configuration where the executor approval state is being set. Zero used as
+     * an alias for the current configuration number.
+     * @param executors The array of executors to set the approval for.
+     * @param approvals The array of booleans indicating the corresponding executor new approval status.
+     * @param switchToGivenConfig A boolean indicanting if the configuration will be switched to the one with the given
+     * number. If the configuration number given is zero, this boolean will be ignored as it refers to the current one.
      */
-    function setDelegatedExecutorApproval(address executor, bool approved) external;
+    function changeDelegatedExecutorsConfig(
+        uint256 delegatorProfileId,
+        uint256 configNumber,
+        address[] executors,
+        bool[] approvals,
+        bool switchToGivenConfig
+    ) external;
 
     /**
-     * @notice Sets the approval for a delegated executor to act on behalf of a given signer.
+     * @notice Changes the delegated executors configuration for the given profile. It allows to set the approvals for
+     * delegated executors in the specified configuration, as well as switching to it.
      *
-     * @param vars A SetDelegatedExecutorApprovalWithSigData struct, including the regular parameters and an EIP712Signature
-     * struct.
+     * @dev The signer must be the owner of the delegator profile.
+     *
+     * @param vars A ChangeDelegatedExecutorsConfigWithSigData struct, including the regular parameters and
+     * an EIP712Signature struct.
      */
-    function setDelegatedExecutorApprovalWithSig(
-        DataTypes.SetDelegatedExecutorApprovalWithSigData calldata vars
+    function changeDelegatedExecutorsConfigWithSig(
+        DataTypes.ChangeDelegatedExecutorsConfigWithSigData calldata vars
     ) external;
 
     /**
@@ -475,19 +492,58 @@ interface ILensHub {
     function getGovernance() external view returns (address);
 
     /**
-     * @notice Returns whether the given delegated executor is approved to act on behalf of the given
-     * wallet.
+     * @notice Returns whether the given delegated executor is approved, in the configuration with the given number, to
+     * act on behalf of the given profile.
      *
-     * @param wallet The wallet to check the delegated executor approval for.
+     * @param delegatorProfileId The ID of the profile to check the delegated executor approval for.
+     * @param configNumber The number of the configuration where the executor approval state is being queried.
      * @param executor The executor to query the delegated executor approval for.
      *
-     * @return bool True if the executor is approved as a delegated executor to act on behalf of the wallet,
-     * false otherwise.
+     * @return bool True if the executor is approved as a delegated executor to act on behalf of the wallet in the given
+     * configuration, false otherwise.
      */
-    function isDelegatedExecutorApproved(address wallet, address executor)
+    function isDelegatedExecutorApproved(
+        uint256 delegatorProfileId,
+        uint256 configNumber,
+        address executor
+    ) external view returns (bool);
+
+    // TODO: Should we return one instead of zero in some of the following getters? Trying to help protocol bespoke
+    // integrations. If it is an external function it won't be called from here so it won't mess our internal logic.
+    // For example, imagine a protocol that always want to automatically switch to the previous DE configuration.
+
+    /**
+     * @param delegatorProfileId The ID of the profile from which the delegated executors configuration number is being
+     * queried.
+     *
+     * @return uint256 The current delegated executor configuration number. Zero if none.
+     */
+    function getDelegatedExecutorsConfigNumber(uint256 delegatorProfileId)
         external
         view
-        returns (bool);
+        returns (uint64);
+
+    /**
+     * @param delegatorProfileId The ID of the profile from which the delegated executors previous configuration number
+     * set is being queried.
+     *
+     * @return uint256 The delegated executor configuration number previously set. Zero if none.
+     */
+    function getDelegatedExecutorsPrevConfigNumberSet(uint256 delegatorProfileId)
+        external
+        view
+        returns (uint64);
+
+    /**
+     * @param delegatorProfileId The ID of the profile from which the delegated executors maximum configuration number
+     * set is being queried.
+     *
+     * @return uint256 The delegated executor maximum configuration number set. Zero if none.
+     */
+    function getDelegatedExecutorsMaxConfigNumberSet(uint256 delegatorProfileId)
+        external
+        view
+        returns (uint64);
 
     /**
      * @notice Returns whether `profile` is blocked by `byProfile`.

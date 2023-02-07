@@ -166,6 +166,12 @@ library GeneralHelpers {
         return owner;
     }
 
+    function validateCallerIsProfileOwner(uint256 profileId) internal view {
+        if (msg.sender != ownerOf(profileId)) {
+            revert Errors.NotProfileOwner();
+        }
+    }
+
     function validateCallerIsOwnerOrDelegatedExecutor(uint256 profileId) internal view {
         address owner = ownerOf(profileId);
         if (msg.sender != owner) {
@@ -182,23 +188,34 @@ library GeneralHelpers {
         }
     }
 
-    function validateDelegatedExecutor(address onBehalfOf, address executor) internal view {
-        if (!isExecutorApproved(onBehalfOf, executor)) {
+    function validateDelegatedExecutor(uint256 delegatorProfileId, address executor) internal view {
+        if (!isExecutorApproved(delegatorProfileId, executor)) {
             revert Errors.ExecutorInvalid();
         }
     }
 
-    function isExecutorApproved(address onBehalfOf, address executor) internal view returns (bool) {
-        bool isExecutorApproved;
+    function getDelegatedExecutorsConfig(uint256 delegatorProfileId)
+        internal
+        view
+        returns (DataTypes.DelegatedExecutorsConfig storage)
+    {
+        DataTypes.DelegatedExecutorsConfig storage _delegatedExecutorsConfig;
         assembly {
-            mstore(0, onBehalfOf)
-            mstore(32, DELEGATED_EXECUTOR_APPROVAL_MAPPING_SLOT)
-            mstore(32, keccak256(0, 64))
-            mstore(0, executor)
-            let slot := keccak256(0, 64)
-            isExecutorApproved := sload(slot)
+            mstore(0, delegatorProfileId)
+            mstore(32, DELEGATED_EXECUTOR_CONFIG_MAPPING_SLOT)
+            _delegatedExecutorsConfig.slot := keccak256(0, 64)
         }
-        return isExecutorApproved;
+        return _delegatedExecutorsConfig;
+    }
+
+    function isExecutorApproved(uint256 delegatorProfileId, address executor)
+        internal
+        view
+        returns (bool)
+    {
+        DataTypes.DelegatedExecutorsConfig
+            storage _delegatedExecutorsConfig = getDelegatedExecutorsConfig(delegatorProfileId);
+        return _delegatedExecutorsConfig[_delegatedExecutorsConfig.configNumber][executor];
     }
 
     /**

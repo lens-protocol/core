@@ -10,6 +10,7 @@ import {Events} from '../libraries/Events.sol';
 import {DataTypes} from '../libraries/DataTypes.sol';
 import {Errors} from '../libraries/Errors.sol';
 import {GeneralLib} from '../libraries/GeneralLib.sol';
+import {GeneralHelpers} from '../libraries/helpers/GeneralHelpers.sol';
 import {ProfileLib} from '../libraries/ProfileLib.sol';
 import {PublishingLib} from '../libraries/PublishingLib.sol';
 import {ProfileTokenURILogic} from '../libraries/ProfileTokenURILogic.sol';
@@ -219,19 +220,27 @@ contract LensHub is LensNFTBase, VersionedInitializable, LensMultiState, LensHub
     }
 
     /// @inheritdoc ILensHub
-    function setDelegatedExecutorApproval(address executor, bool approved)
-        external
-        override
-        whenNotPaused
-    {
-        GeneralLib.setDelegatedExecutorApproval(executor, approved);
+    function changeDelegatedExecutorsConfig(
+        uint256 delegatorProfileId,
+        uint256 configNumber,
+        address[] executors,
+        bool[] approvals,
+        bool switchToGivenConfig
+    ) external override whenNotPaused {
+        GeneralLib.changeDelegatedExecutorsConfig(
+            delegatorProfileId,
+            configNumber,
+            executors,
+            approvals,
+            switchToGivenConfig
+        );
     }
 
     /// @inheritdoc ILensHub
-    function setDelegatedExecutorApprovalWithSig(
-        DataTypes.SetDelegatedExecutorApprovalWithSigData calldata vars
+    function changeDelegatedExecutorsConfigWithSig(
+        DataTypes.ChangeDelegatedExecutorsConfigWithSigData calldata vars
     ) external override whenNotPaused {
-        GeneralLib.setDelegatedExecutorApprovalWithSig(vars);
+        GeneralLib.changeDelegatedExecutorsConfigWithSig(vars);
     }
 
     /// @inheritdoc ILensHub
@@ -545,12 +554,47 @@ contract LensHub is LensNFTBase, VersionedInitializable, LensMultiState, LensHub
     }
 
     /// @inheritdoc ILensHub
-    function isDelegatedExecutorApproved(address wallet, address executor)
+    function isDelegatedExecutorApproved(
+        uint256 delegatorProfileId,
+        uint256 configNumber,
+        address executor
+    ) external view returns (bool) {
+        if (configNumber == 0) {
+            // If configuration number passed is zero, the approval is queried from the current configuration.
+            return GeneralHelpers.isExecutorApproved(delegatorProfileId, executor);
+        } else {
+            // Otherwise, the approval is queried from the configuration corresponding to the passed number.
+            GeneralHelpers.getDelegatedExecutorsConfig(delegatorProfileId).isApproved[configNumber][
+                    executor
+                ];
+        }
+    }
+
+    /// @inheritdoc ILensHub
+    function getDelegatedExecutorsConfigNumber(uint256 delegatorProfileId)
         external
         view
-        returns (bool)
+        returns (uint64)
     {
-        return _delegatedExecutorApproval[wallet][executor];
+        return GeneralHelpers.getDelegatedExecutorsConfig(delegatorProfileId).configNumber;
+    }
+
+    /// @inheritdoc ILensHub
+    function getDelegatedExecutorsPrevConfigNumberSet(uint256 delegatorProfileId)
+        external
+        view
+        returns (uint64)
+    {
+        return GeneralHelpers.getDelegatedExecutorsConfig(delegatorProfileId).prevConfigNumberSet;
+    }
+
+    /// @inheritdoc ILensHub
+    function getDelegatedExecutorsMaxConfigNumberSet(uint256 delegatorProfileId)
+        external
+        view
+        returns (uint64)
+    {
+        return GeneralHelpers.getDelegatedExecutorsConfig(delegatorProfileId).maxConfigNumberSet;
     }
 
     /// @inheritdoc ILensHub
@@ -734,14 +778,26 @@ contract LensHub is LensNFTBase, VersionedInitializable, LensMultiState, LensHub
         uint256 tokenId
     ) internal override whenNotPaused {
         if (_defaultProfileByAddress[from] == tokenId) {
+            // If the token being transferred was the default profile of this address, then we clear the default one.
             _defaultProfileByAddress[from] = 0;
+            emit Events.DefaultProfileSet(from, 0, block.timestamp); // TODO: Discuss with backend!
         }
 
-        super._beforeTokenTransfer(from, to, tokenId);
-    }
+        // Switches to a new fresh delegated executors configuration.
+        DataTypes.DelegatedExecutorsConfig storage _delegatedExecutorsConfig = GeneralHelpers
+            .getDelegatedExecutorsConfig({delegatorProfileId: tokenId});
+        _delegatedExecutorsConfig.prevConfigNumberSet = _delegatedExecutorsConfig.configNumber;
+        uint256 newFreshConfigNumber = ++_delegatedExecutorsConfig.maxConfigNumberUsed;
+        _delegatedExecutorsConfig.configNumber = newFreshConfigNumber;
+        emit Events.DelegatedExecutorsConfigChanged({
+            delegatorProfileId: tokenId,
+            configNumber: newFreshConfigNumber,
+            executors: [],
+            approvals: [],
+            configSwitched: true
+        });
 
-    function _validateCallerIsProfileOwner(uint256 profileId) internal view {
-        if (msg.sender != ownerOf(profileId)) revert Errors.NotProfileOwner();
+        super._beforeTokenTransfer(from, to, tokenId);
     }
 
     function _validateCallerIsGovernance() internal view {

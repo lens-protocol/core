@@ -143,24 +143,26 @@ library MetaTxHelpers {
         );
     }
 
-    function baseSetDelegatedExecutorApprovalWithSig(
-        DataTypes.SetDelegatedExecutorApprovalWithSigData calldata vars
+    function baseChangeDelegatedExecutorsConfigWithSig(
+        DataTypes.ChangeDelegatedExecutorsConfigWithSigData calldata vars
     ) internal {
-        address onBehalfOf = vars.onBehalfOf;
+        address delegatorProfileOwner = GeneralHelpers.ownerOf(vars.delegatorProfileId);
         _validateRecoveredAddress(
             _calculateDigest(
                 keccak256(
                     abi.encode(
-                        SET_DELEGATED_EXECUTOR_APPROVAL_WITH_SIG_TYPEHASH,
-                        vars.onBehalfOf,
-                        vars.executor,
-                        vars.approved,
-                        _sigNonces(onBehalfOf),
+                        CHANGE_DELEGATED_EXECUTORS_CONFIG_WITH_SIG_TYPEHASH,
+                        vars.delegatorProfileId,
+                        vars.configNumber,
+                        abi.encodePacked(vars.executors),
+                        abi.encodePacked(vars.approvals),
+                        vars.switchToGivenConfig,
+                        _sigNonces(delegatorProfileOwner),
                         vars.sig.deadline
                     )
                 )
             ),
-            onBehalfOf,
+            delegatorProfileOwner,
             vars.sig
         );
     }

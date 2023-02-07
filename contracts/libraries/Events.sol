@@ -147,16 +147,22 @@ library Events {
     event DefaultProfileSet(address indexed wallet, uint256 indexed profileId, uint256 timestamp);
 
     /**
-     * @dev Emitted when a delegated executor is granted or revoked approval to act on behalf of a given address.
+     * @dev Emitted when a delegated executors configuration is changed.
      *
-     * @param onBehalfOf The address the delegated executor is granted or revoked approval to act on behalf of.
-     * @param executor The address of the delegated executor granted or revoked approval.
-     * @param approved Whether the executor is approved.
+     * @param delegatorProfileId The ID of the profile for which the delegated executor was changed.
+     * @param configNumber The number of the configuration where the executor approval state was set. Zero used as
+     * an alias for the current configuration number.
+     * @param executors The array of executors whose approval was set for.
+     * @param approvals The array of booleans indicating the corresponding executor new approval status.
+     * @param configSwitched A boolean indicanting if the configuration was switched to the one emitted in the
+     * `configNumber` parameter.
      */
-    event DelegatedExecutorApprovalSet(
-        address indexed onBehalfOf,
-        address indexed executor,
-        bool indexed approved
+    event DelegatedExecutorsConfigChanged(
+        uint256 indexed delegatorProfileId,
+        uint256 indexed configNumber,
+        address[] executors,
+        bool[] approvals,
+        bool indexed configSwitched
     );
 
     /**

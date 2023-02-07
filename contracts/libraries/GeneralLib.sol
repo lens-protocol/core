@@ -131,15 +131,34 @@ library GeneralLib {
         _setDefaultProfile(wallet, profileId);
     }
 
-    function setDelegatedExecutorApproval(address executor, bool approved) external {
-        _setDelegatedExecutorApproval(msg.sender, executor, approved);
+    function changeDelegatedExecutorsConfig(
+        uint256 delegatorProfileId,
+        uint256 configNumber,
+        address[] executors,
+        bool[] approvals,
+        bool switchToGivenConfig
+    ) external {
+        GeneralHelpers.validateCallerIsProfileOwner(delegatorProfileId);
+        _changeDelegatedExecutorsConfig(
+            delegatorProfileId,
+            configNumber,
+            executors,
+            approvals,
+            switchToGivenConfig
+        );
     }
 
-    function setDelegatedExecutorApprovalWithSig(
-        DataTypes.SetDelegatedExecutorApprovalWithSigData calldata vars
+    function changeDelegatedExecutorsConfigWithSig(
+        DataTypes.ChangeDelegatedExecutorsConfigWithSigData calldata vars
     ) external {
-        MetaTxHelpers.baseSetDelegatedExecutorApprovalWithSig(vars);
-        _setDelegatedExecutorApproval(vars.onBehalfOf, vars.executor, vars.approved);
+        MetaTxHelpers.baseChangeDelegatedExecutorsConfigWithSig(vars);
+        _changeDelegatedExecutorsConfig(
+            vars.delegatorProfileId,
+            vars.configNumber,
+            vars.executor,
+            vars.approvals,
+            vars.switchToGivenConfig
+        );
     }
 
     /**
@@ -458,39 +477,121 @@ library GeneralLib {
         emit Events.DefaultProfileSet(wallet, profileId, block.timestamp);
     }
 
-    function _setDelegatedExecutorApproval(
-        address onBehalfOf,
-        address executor,
-        bool approved
+    function _changeDelegatedExecutorsConfig(
+        uint256 delegatorProfileId,
+        uint64 configNumber,
+        address[] executors,
+        bool[] approvals,
+        bool switchToGivenConfig
     ) private {
-        // Store the approval in the appropriate slot for the given caller and executor.
-        assembly {
-            mstore(0, onBehalfOf)
-            mstore(32, DELEGATED_EXECUTOR_APPROVAL_MAPPING_SLOT)
-            mstore(32, keccak256(0, 64))
-            mstore(0, executor)
-            let slot := keccak256(0, 64)
-            sstore(slot, approved)
+        DataTypes.DelegatedExecutorsConfig storage _delegatedExecutorsConfig = GeneralHelpers
+            .getDelegatedExecutorsConfig(delegatorProfileId);
+        uint64 configNumberToUse;
+        bool configSwitched;
+        if (configNumber == 0) {
+            (configNumberToUse, configSwitched) = _prepareStorageToApplyChangesUnderCurrentConfig(
+                _delegatedExecutorsConfig,
+                configNumber,
+                switchToGivenConfig
+            );
+        } else {
+            (configNumberToUse, configSwitched) = _prepareStorageToApplyChangesUnderGivenConfig(
+                _delegatedExecutorsConfig,
+                configNumber,
+                switchToGivenConfig
+            );
         }
-        emit Events.DelegatedExecutorApprovalSet(onBehalfOf, executor, approved);
+        uint256 i;
+        while (i < executors.length) {
+            _delegatedExecutorsConfig.isApproved[configNumberToUse][executors[i]] = approvals[i];
+            unchecked {
+                ++i;
+            }
+        }
+        emit Events.DelegatedExecutorsConfigChanged(
+            delegatorProfileId,
+            configNumberToUse,
+            executors,
+            approvals,
+            configSwitched
+        );
     }
 
-    // function _setDelegatedExecutorApproval(
-    //     uint256 delegatorProfileId,
-    //     address executor,
-    //     bool approved
-    // ) private {
-    //     // Store the approval in the appropriate slot for the given caller and executor.
-    //     assembly {
-    //         mstore(0, delegatorProfileId)
-    //         mstore(32, DELEGATED_EXECUTOR_APPROVAL_MAPPING_SLOT)
-    //         mstore(32, keccak256(0, 64))
-    //         mstore(0, executor)
-    //         let slot := keccak256(0, 64)
-    //         sstore(slot, approved)
-    //     }
-    //     emit Events.DelegatedExecutorApprovalSet(onBehalfOf, executor, approved);
-    // }
+    /**
+     * @param _delegatedExecutorsConfig The delegated executor configuration to prepare for changes.
+     * @param configNumber The number of the configuration where the executor approval state is being set. Zero used as
+     * an alias for the current configuration number.
+     * @param switchToGivenConfig A boolean indicanting if the configuration will be switched to the one with the given
+     * number. If the configuration number given is zero, this boolean will be ignored as it refers to the current one.
+     *
+     * @return (uint256, bool) A tuple that represents (uint256 configNumberToUse, bool configSwitched).
+     */
+    function _prepareStorageToApplyChangesUnderCurrentConfig(
+        DataTypes.DelegatedExecutorsConfig storage _delegatedExecutorsConfig,
+        uint64 configNumber,
+        bool switchToGivenConfig
+    ) private returns (uint256, bool) {
+        bool configSwitched;
+        uint64 configNumberToUse = _delegatedExecutorsConfig.configNumber;
+        if (configNumberToUse == 0) {
+            // First time setting the configuration and the user expects them to be applied under current one.
+            // However, there is no configuration number chosen yet, so we default to 1 and switch to it.
+            // This is equivalent to `configNumber = 1` and `switchToGivenConfig = true`.
+            // If the user wants to prepare the configuration 1 but not switch to it, he will need to pass
+            // `configNumber = 1` and `switchToGivenConfig = false`.
+            _delegatedExecutorsConfig.configNumber = FIRST_DELEGATED_EXECUTORS_CONFIG_NUMBER;
+            _delegatedExecutorsConfig.maxConfigNumberUsed = FIRST_DELEGATED_EXECUTORS_CONFIG_NUMBER;
+            configNumberToUse = FIRST_DELEGATED_EXECUTORS_CONFIG_NUMBER;
+            configSwitched = true;
+        }
+        return (configNumberToUse, configSwitched);
+    }
+
+    /**
+     * @param _delegatedExecutorsConfig The delegated executor configuration to prepare for changes.
+     * @param configNumber The number of the configuration where the executor approval state is being set. Zero used as
+     * an alias for the current configuration number.
+     * @param switchToGivenConfig A boolean indicanting if the configuration will be switched to the one with the given
+     * number. If the configuration number given is zero, this boolean will be ignored as it refers to the current one.
+     *
+     * @return (uint256, bool) A tuple that represents (uint256 configNumberToUse, bool configSwitched).
+     */
+    function _prepareStorageToApplyChangesUnderGivenConfig(
+        DataTypes.DelegatedExecutorsConfig storage _delegatedExecutorsConfig,
+        uint64 configNumber,
+        bool switchToGivenConfig
+    ) private returns (uint256, bool) {
+        bool configSwitched;
+        uint64 nextAvailableConfigNumber = _delegatedExecutorsConfig.maxConfigNumberUsed + 1;
+        if (configNumber == nextAvailableConfigNumber) {
+            // The next configuration available is being changed, it must be marked.
+            // Otherwise, on a profile transfer, the next owner can inherit a used/dirty configuration.
+            _delegatedExecutorsConfig.maxConfigNumberUsed = nextAvailableConfigNumber;
+            configSwitched = switchToGivenConfig;
+            if (configSwitched) {
+                // The configuration is being switched, previous and current configuration numbers must be updated.
+                _delegatedExecutorsConfig.prevConfigNumberSet = _delegatedExecutorsConfig
+                    .configNumber;
+                _delegatedExecutorsConfig.configNumber = nextAvailableConfigNumber;
+            }
+        } else if (configNumber > nextAvailableConfigNumber) {
+            revert Errors.InvalidParameter();
+        } else {
+            // The configuration corresponding to the given number is not a fresh/clean one.
+            uint256 currentConfigNumber = _delegatedExecutorsConfig.configNumber;
+            if (configNumber != currentConfigNumber) {
+                // We ensure that `configSwitched` can not be set to `true` if the given configuration matches the one
+                // that is already in use.
+                configSwitched = configSwitched;
+            }
+            if (configSwitched) {
+                // The configuration is being switched, previous and current configuration numbers must be updated.
+                _delegatedExecutorsConfig.prevConfigNumberSet = currentConfigNumber;
+                _delegatedExecutorsConfig.configNumber = configNumber;
+            }
+        }
+        return (configNumber, configSwitched);
+    }
 
     function _validateCallerIsOnBehalfOfOrExecutor(address onBehalfOf) private view {
         if (onBehalfOf != msg.sender)

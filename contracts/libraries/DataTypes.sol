@@ -142,18 +142,25 @@ library DataTypes {
     }
 
     /**
-     * @notice A struct containing the parameters required for the `setDelegatedExecutorApprovalWithSig()` function. Parameters
-     * are the same as the regular `setDelegatedExecutorApproval()` function. The signer must be the onBehalfOf address.
+     * @notice A struct containing the parameters required for the `changeDelegatedExecutorsConfigWithSig()` function.
+     * Parameters are the same as the regular `changeDelegatedExecutorsConfig()` function.
      *
-     * @param onBehalfOf The address the delegated executor is to be granted or revoked approval to act on behalf of.
-     * @param executor The executor to set the approval for.
-     * @param approved Whether the executor is to be approved.
+     * @param delegatorProfileId The ID of the profile for which the delegated executor is being changed for.
+     * @param configNumber The number of the configuration where the executor approval state is being set. Zero used as
+     * an alias for the current configuration number.
+     * @param executors The array of executors to set the approval for.
+     * @param approvals The array of booleans indicating the corresponding executor new approval status.
+     * @param switchToGivenConfig A boolean indicanting if the configuration will be switched to the one with the given
+     * number. If the configuration number given is zero, this boolean will be ignored as it refers to the current one.
+
      * @param sig The EIP712Signature struct containing to the signer setting the approval's signature.
      */
-    struct SetDelegatedExecutorApprovalWithSigData {
-        address onBehalfOf;
-        address executor;
-        bool approved;
+    struct ChangeDelegatedExecutorsConfigWithSigData {
+        uint256 delegatorProfileId;
+        uint256 configNumber;
+        address[] executors;
+        bool[] approvals;
+        bool switchToGivenConfig;
         EIP712Signature sig;
     }
 
@@ -455,9 +462,18 @@ library DataTypes {
         EIP712Signature sig;
     }
 
-    struct DelegatedExecutorConfig {
+    /**
+     * @notice A struct containing delegated-executors-related configuration.
+     *
+     * @param isApproved Tells when an address is approved as delegated executor in the given configuration number.
+     * @param configNumber Current configuration number in use.
+     * @param prevConfigNumberSet Previous configuration number set, before changing to the current one.
+     * @param maxConfigNumberSet Maximum configuration number ever used and, as a consequence, allowed to be set.
+     */
+    struct DelegatedExecutorsConfig {
         mapping(uint256 => mapping(address => bool)) isApproved; // isApproved[configNumber][executor]
-        uint128 configNumber;
-        uint128 maxConfigNumberUsed;
+        uint64 configNumber;
+        uint64 prevConfigNumberSet;
+        uint64 maxConfigNumberSet;
     }
 }
