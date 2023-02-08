@@ -23,7 +23,7 @@ abstract contract LensHubStorage {
     mapping(uint256 => DataTypes.ProfileStruct) internal _profileById; // Slot 19
     mapping(uint256 => mapping(uint256 => DataTypes.PublicationStruct)) internal _pubByIdByProfile; // Slot 20
 
-    mapping(address => uint256) internal _defaultProfileByAddress; // Slot 21
+    mapping(address => uint256) internal _defaultProfileByAddress; // Slot 21, deprecated but needed for V2 migration
 
     uint256 internal _profileCounter; // Slot 22 - this is different to TotalSupply, as TotalSupply is decreased when the Profile is burned
     address internal _governance; // Slot 23

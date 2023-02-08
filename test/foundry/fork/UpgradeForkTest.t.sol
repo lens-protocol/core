@@ -34,10 +34,6 @@ interface IOldHub {
         uint256 pubId,
         bytes calldata data
     ) external;
-
-    function setDefaultProfile(uint256 profileId) external;
-
-    function defaultProfile(address wallet) external view returns (uint256);
 }
 
 contract UpgradeForkTest is BaseTest {
@@ -135,8 +131,6 @@ contract UpgradeForkTest is BaseTest {
         try hub.createProfile(mockCreateProfileData) returns (uint256 retProfileId) {
             profileId = retProfileId;
             console2.log('Profile created with modern follow module.');
-            hub.setDefaultProfile(me, profileId);
-            assertEq(hub.getDefaultProfile(me), profileId);
         } catch {
             console2.log(
                 'Profile creation with modern follow module failed. Attempting with deprecated module.'
@@ -167,8 +161,6 @@ contract UpgradeForkTest is BaseTest {
 
             oldCreateProfileData.followModule = mockDeprecatedFollowModule;
             profileId = IOldHub(address(hub)).createProfile(oldCreateProfileData);
-            IOldHub(address(hub)).setDefaultProfile(profileId);
-            assertEq(IOldHub(address(hub)).defaultProfile(me), profileId);
         }
         return profileId;
     }

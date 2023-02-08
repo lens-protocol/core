@@ -501,7 +501,7 @@ contract FollowNFTTest is BaseTest, ERC721Test {
     ) public {
         vm.assume(unrelatedAddress != address(0));
         vm.assume(unrelatedAddress != alreadyFollowingProfileOwner);
-        vm.assume(!hub.isDelegatedExecutorApproved(alreadyFollowingProfileOwner, unrelatedAddress));
+        vm.assume(!hub.isDelegatedExecutorApproved(alreadyFollowingProfileId, 0, unrelatedAddress));
         vm.assume(!followNFT.isApprovedForAll(alreadyFollowingProfileOwner, unrelatedAddress));
 
         uint256 followTokenId = followNFT.getFollowTokenId(alreadyFollowingProfileId);

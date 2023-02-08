@@ -101,7 +101,7 @@ contract FollowTest is BaseTest {
         address executor = vm.addr(executorPk);
         vm.assume(executor != address(0));
         vm.assume(executor != followerProfileOwner);
-        vm.assume(!hub.isDelegatedExecutorApproved(followerProfileOwner, executor));
+        vm.assume(!hub.isDelegatedExecutorApproved(followerProfileId, 0, executor));
 
         vm.expectRevert(Errors.ExecutorInvalid.selector);
 
@@ -122,7 +122,7 @@ contract FollowTest is BaseTest {
         address executor = vm.addr(executorPk);
         vm.assume(executor != address(0));
         vm.assume(executor != followerProfileOwner);
-        vm.assume(!hub.isDelegatedExecutorApproved(followerProfileOwner, executor));
+        vm.assume(!hub.isDelegatedExecutorApproved(followerProfileId, 0, executor));
 
         uint256 followTokenId = followNFT.getFollowTokenId(alreadyFollowingProfileId);
         assertFalse(followNFT.exists(followTokenId));
@@ -146,7 +146,7 @@ contract FollowTest is BaseTest {
         address executor = vm.addr(executorPk);
         vm.assume(executor != address(0));
         vm.assume(executor != followerProfileOwner);
-        vm.assume(!hub.isDelegatedExecutorApproved(followerProfileOwner, executor));
+        vm.assume(!hub.isDelegatedExecutorApproved(followerProfileId, 0, executor));
 
         uint256 followTokenId = followNFT.getFollowTokenId(alreadyFollowingProfileId);
         vm.prank(alreadyFollowingProfileOwner);
@@ -349,7 +349,13 @@ contract FollowTest is BaseTest {
         vm.assume(approvedDelegatedExecutor != followerProfileOwner);
 
         vm.prank(followerProfileOwner);
-        hub.setDelegatedExecutorApproval(approvedDelegatedExecutor, true);
+        hub.changeDelegatedExecutorsConfig({
+            delegatorProfileId: followerProfileId,
+            configNumber: 0,
+            executors: _toAddressArray(approvedDelegatedExecutor),
+            approvals: _toBoolArray(true),
+            switchToGivenConfig: true
+        });
 
         vm.prank(targetProfileOwner);
         hub.setFollowModule(targetProfileId, followModuleWithRevertFlag, '');

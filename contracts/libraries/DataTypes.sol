@@ -108,22 +108,6 @@ library DataTypes {
     }
 
     /**
-     * @notice A struct containing the parameters required for the `setDefaultProfileWithSig()` function. Parameters are
-     * the same as the regular `setDefaultProfile()` function, with an added EIP712Signature.
-     *
-     * @param delegatedSigner The delegated executor signer, must be either zero, defaulting to the wallet owner, or a delegated executor.
-     * @param wallet The address of the wallet setting the default profile.
-     * @param profileId The token ID of the profile which will be set as default, or zero.
-     * @param sig The EIP712Signature struct containing the profile owner's signature.
-     */
-    struct SetDefaultProfileWithSigData {
-        address delegatedSigner;
-        address wallet;
-        uint256 profileId;
-        EIP712Signature sig;
-    }
-
-    /**
      * @notice A struct containing the parameters required for the `setFollowModuleWithSig()` function. Parameters are
      * the same as the regular `setFollowModule()` function, with an added EIP712Signature.
      *
@@ -157,7 +141,7 @@ library DataTypes {
      */
     struct ChangeDelegatedExecutorsConfigWithSigData {
         uint256 delegatorProfileId;
-        uint256 configNumber;
+        uint64 configNumber;
         address[] executors;
         bool[] approvals;
         bool switchToGivenConfig;

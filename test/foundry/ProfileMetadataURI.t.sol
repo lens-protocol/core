@@ -29,7 +29,13 @@ contract ProfileMetadataURITest is BaseTest {
     function testExecutorSetProfileMetadataURI() public {
         assertEq(hub.getProfileMetadataURI(newProfileId), '');
         vm.prank(profileOwner);
-        hub.setDelegatedExecutorApproval(otherSigner, true);
+        hub.changeDelegatedExecutorsConfig({
+            delegatorProfileId: newProfileId,
+            configNumber: 0,
+            executors: _toAddressArray(otherSigner),
+            approvals: _toBoolArray(true),
+            switchToGivenConfig: true
+        });
 
         _setProfileMetadataURI({
             pk: otherSignerKey,

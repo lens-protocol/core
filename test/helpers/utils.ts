@@ -360,16 +360,6 @@ export async function getSetProfileImageURIWithSigParts(
   return await getSig(msgParams);
 }
 
-export async function getSetDefaultProfileWithSigParts(
-  wallet: string,
-  profileId: BigNumberish,
-  nonce: number,
-  deadline: string
-): Promise<{ v: number; r: string; s: string }> {
-  const msgParams = buildSetDefaultProfileWithSigParams(profileId, wallet, nonce, deadline);
-  return await getSig(msgParams);
-}
-
 export async function getSetFollowNFTURIWithSigParts(
   profileId: BigNumberish,
   followNFTURI: string,
@@ -845,29 +835,6 @@ const buildSetProfileImageURIWithSigParams = (
   value: {
     profileId: profileId,
     imageURI: imageURI,
-    nonce: nonce,
-    deadline: deadline,
-  },
-});
-
-const buildSetDefaultProfileWithSigParams = (
-  profileId: BigNumberish,
-  wallet: string,
-  nonce: number,
-  deadline: string
-) => ({
-  types: {
-    SetDefaultProfileWithSig: [
-      { name: 'wallet', type: 'address' },
-      { name: 'profileId', type: 'uint256' },
-      { name: 'nonce', type: 'uint256' },
-      { name: 'deadline', type: 'uint256' },
-    ],
-  },
-  domain: domain(),
-  value: {
-    wallet: wallet,
-    profileId: profileId,
     nonce: nonce,
     deadline: deadline,
   },

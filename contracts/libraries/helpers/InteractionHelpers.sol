@@ -179,9 +179,9 @@ library InteractionHelpers {
         address collectorProfileOwnerCached = collectorProfileOwner;
         address transactionExecutorCached = transactionExecutor;
 
-        GeneralHelpers.validateAddressIsOwnerOrDelegatedExecutor({
-            transactionExecutor: transactionExecutor,
-            profileOwner: collectorProfileOwner
+        GeneralHelpers.validateAddressIsProfileOwnerOrDelegatedExecutor({
+            expectedOwnerOrDelegatedExecutor: transactionExecutor,
+            profileId: collectorProfileId
         });
 
         GeneralHelpers.validateNotBlocked(collectorProfileId, publisherProfileId);

@@ -166,24 +166,6 @@ contract LensHub is LensNFTBase, VersionedInitializable, LensMultiState, LensHub
     }
 
     /// @inheritdoc ILensHub
-    function setDefaultProfile(address onBehalfOf, uint256 profileId)
-        external
-        override
-        whenNotPaused
-    {
-        GeneralLib.setDefaultProfile(onBehalfOf, profileId);
-    }
-
-    /// @inheritdoc ILensHub
-    function setDefaultProfileWithSig(DataTypes.SetDefaultProfileWithSigData calldata vars)
-        external
-        override
-        whenNotPaused
-    {
-        GeneralLib.setDefaultProfileWithSig(vars);
-    }
-
-    /// @inheritdoc ILensHub
     function setProfileMetadataURI(uint256 profileId, string calldata metadataURI)
         external
         override
@@ -222,9 +204,9 @@ contract LensHub is LensNFTBase, VersionedInitializable, LensMultiState, LensHub
     /// @inheritdoc ILensHub
     function changeDelegatedExecutorsConfig(
         uint256 delegatorProfileId,
-        uint256 configNumber,
-        address[] executors,
-        bool[] approvals,
+        uint64 configNumber,
+        address[] calldata executors,
+        bool[] calldata approvals,
         bool switchToGivenConfig
     ) external override whenNotPaused {
         GeneralLib.changeDelegatedExecutorsConfig(
@@ -556,7 +538,7 @@ contract LensHub is LensNFTBase, VersionedInitializable, LensMultiState, LensHub
     /// @inheritdoc ILensHub
     function isDelegatedExecutorApproved(
         uint256 delegatorProfileId,
-        uint256 configNumber,
+        uint64 configNumber,
         address executor
     ) external view returns (bool) {
         if (configNumber == 0) {
@@ -600,11 +582,6 @@ contract LensHub is LensNFTBase, VersionedInitializable, LensMultiState, LensHub
     /// @inheritdoc ILensHub
     function isBlocked(uint256 profileId, uint256 byProfileId) external view returns (bool) {
         return _blockedStatus[byProfileId][profileId];
-    }
-
-    /// @inheritdoc ILensHub
-    function getDefaultProfile(address wallet) external view override returns (uint256) {
-        return _defaultProfileByAddress[wallet];
     }
 
     /// @inheritdoc ILensHub
@@ -777,23 +754,17 @@ contract LensHub is LensNFTBase, VersionedInitializable, LensMultiState, LensHub
         address to,
         uint256 tokenId
     ) internal override whenNotPaused {
-        if (_defaultProfileByAddress[from] == tokenId) {
-            // If the token being transferred was the default profile of this address, then we clear the default one.
-            _defaultProfileByAddress[from] = 0;
-            emit Events.DefaultProfileSet(from, 0, block.timestamp); // TODO: Discuss with backend!
-        }
-
         // Switches to a new fresh delegated executors configuration.
         DataTypes.DelegatedExecutorsConfig storage _delegatedExecutorsConfig = GeneralHelpers
             .getDelegatedExecutorsConfig({delegatorProfileId: tokenId});
         _delegatedExecutorsConfig.prevConfigNumberSet = _delegatedExecutorsConfig.configNumber;
-        uint256 newFreshConfigNumber = ++_delegatedExecutorsConfig.maxConfigNumberUsed;
+        uint64 newFreshConfigNumber = ++_delegatedExecutorsConfig.maxConfigNumberSet;
         _delegatedExecutorsConfig.configNumber = newFreshConfigNumber;
         emit Events.DelegatedExecutorsConfigChanged({
             delegatorProfileId: tokenId,
             configNumber: newFreshConfigNumber,
-            executors: [],
-            approvals: [],
+            executors: new address[](0),
+            approvals: new bool[](0),
             configSwitched: true
         });
 

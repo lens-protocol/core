@@ -166,30 +166,32 @@ library GeneralHelpers {
         return owner;
     }
 
-    function validateCallerIsProfileOwner(uint256 profileId) internal view {
-        if (msg.sender != ownerOf(profileId)) {
+    function validateAddressIsProfileOwner(address expectedProfileOwner, uint256 profileId)
+        internal
+        view
+    {
+        if (expectedProfileOwner != ownerOf(profileId)) {
             revert Errors.NotProfileOwner();
         }
     }
 
-    function validateCallerIsOwnerOrDelegatedExecutor(uint256 profileId) internal view {
-        address owner = ownerOf(profileId);
-        if (msg.sender != owner) {
-            validateDelegatedExecutor(owner, msg.sender);
-        }
-    }
-
-    function validateAddressIsOwnerOrDelegatedExecutor(
-        address transactionExecutor,
-        address profileOwner
+    function validateAddressIsProfileOwnerOrDelegatedExecutor(
+        address expectedOwnerOrDelegatedExecutor,
+        uint256 profileId
     ) internal view {
-        if (transactionExecutor != profileOwner) {
-            validateDelegatedExecutor(profileOwner, transactionExecutor);
+        if (expectedOwnerOrDelegatedExecutor != ownerOf(profileId)) {
+            validateAddressIsDelegatedExecutor({
+                expectedDelegatedExecutor: expectedOwnerOrDelegatedExecutor,
+                delegatorProfileId: profileId
+            });
         }
     }
 
-    function validateDelegatedExecutor(uint256 delegatorProfileId, address executor) internal view {
-        if (!isExecutorApproved(delegatorProfileId, executor)) {
+    function validateAddressIsDelegatedExecutor(
+        address expectedDelegatedExecutor,
+        uint256 delegatorProfileId
+    ) internal view {
+        if (!isExecutorApproved(delegatorProfileId, expectedDelegatedExecutor)) {
             revert Errors.ExecutorInvalid();
         }
     }
@@ -215,22 +217,27 @@ library GeneralHelpers {
     {
         DataTypes.DelegatedExecutorsConfig
             storage _delegatedExecutorsConfig = getDelegatedExecutorsConfig(delegatorProfileId);
-        return _delegatedExecutorsConfig[_delegatedExecutorsConfig.configNumber][executor];
+        return
+            _delegatedExecutorsConfig.isApproved[_delegatedExecutorsConfig.configNumber][executor];
     }
 
     /**
      * @dev Returns either the profile owner or the delegated signer if valid.
      */
-    function getOriginatorOrDelegatedExecutorSigner(address originator, address delegatedSigner)
+    function getOriginatorOrDelegatedExecutorSigner(uint256 profileId, address delegatedSigner)
         internal
         view
         returns (address)
     {
-        if (delegatedSigner != address(0)) {
-            validateDelegatedExecutor(originator, delegatedSigner);
+        if (delegatedSigner == address(0)) {
+            return ownerOf(profileId);
+        } else {
+            validateAddressIsDelegatedExecutor({
+                expectedDelegatedExecutor: delegatedSigner,
+                delegatorProfileId: profileId
+            });
             return delegatedSigner;
         }
-        return originator;
     }
 
     function validateNotBlocked(uint256 profile, uint256 byProfile) internal view {

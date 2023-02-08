@@ -103,24 +103,6 @@ interface ILensHub {
     function createProfile(DataTypes.CreateProfileData calldata vars) external returns (uint256);
 
     /**
-     * @notice Sets the mapping between wallet and its main profile identity. Must be called either by the wallet or a
-     * delegated executor.
-     *
-     * @param onBehalfOf The address to set the default profile on behalf of.
-     * @param profileId The token ID of the profile to set as the main profile identity.
-     */
-    function setDefaultProfile(address onBehalfOf, uint256 profileId) external;
-
-    /**
-     * @notice Sets the mapping between wallet and its main profile identity via signature with the specified parameters. The
-     * signer must either be the profile owner or a delegated executor.
-     *
-     * @param vars A SetDefaultProfileWithSigData struct, including the regular parameters and an EIP712Signature struct.
-     */
-    function setDefaultProfileWithSig(DataTypes.SetDefaultProfileWithSigData calldata vars)
-        external;
-
-    /**
      * @notice Sets the metadata URI for the given profile. Must be called either from the profile owner or an approved
      * delegated executor.
      *
@@ -175,9 +157,9 @@ interface ILensHub {
      */
     function changeDelegatedExecutorsConfig(
         uint256 delegatorProfileId,
-        uint256 configNumber,
-        address[] executors,
-        bool[] approvals,
+        uint64 configNumber,
+        address[] calldata executors,
+        bool[] calldata approvals,
         bool switchToGivenConfig
     ) external;
 
@@ -504,7 +486,7 @@ interface ILensHub {
      */
     function isDelegatedExecutorApproved(
         uint256 delegatorProfileId,
-        uint256 configNumber,
+        uint64 configNumber,
         address executor
     ) external view returns (bool);
 
@@ -554,15 +536,6 @@ interface ILensHub {
      * @return bool True if `profileId` is blocked by `byProfileId`, false otherwise.
      */
     function isBlocked(uint256 profileId, uint256 byProfileId) external view returns (bool);
-
-    /**
-     * @notice Returns the default profile for a given wallet address
-     *
-     * @param wallet The address to find the default mapping
-     *
-     * @return uint256 The default profile id, which will be 0 if not mapped.
-     */
-    function getDefaultProfile(address wallet) external view returns (uint256);
 
     /**
      * @notice Returns the metadata URI for a given profile

@@ -5,18 +5,6 @@ import './TestSetup.t.sol';
 import '../../../contracts/libraries/DataTypes.sol';
 
 contract BaseTest is TestSetup {
-    function _getSetDefaultProfileTypedDataHash(
-        address wallet,
-        uint256 profileId,
-        uint256 nonce,
-        uint256 deadline
-    ) internal view returns (bytes32) {
-        bytes32 structHash = keccak256(
-            abi.encode(SET_DEFAULT_PROFILE_WITH_SIG_TYPEHASH, wallet, profileId, nonce, deadline)
-        );
-        return _calculateDigest(structHash);
-    }
-
     function _getSetProfileMetadataURITypedDataHash(
         uint256 profileId,
         string memory metadataURI,
@@ -55,19 +43,23 @@ contract BaseTest is TestSetup {
         return _calculateDigest(structHash);
     }
 
-    function _getSetDelegatedExecutorApprovalTypedDataHash(
-        address onBehalfOf,
-        address executor,
-        bool approved,
+    function _getChangeDelegatedExecutorsConfigTypedDataHash(
+        uint256 delegatorProfileId,
+        uint64 configNumber,
+        address[] memory executors,
+        bool[] memory approvals,
+        bool switchToGivenConfig,
         uint256 nonce,
         uint256 deadline
     ) internal view returns (bytes32) {
         bytes32 structHash = keccak256(
             abi.encode(
-                SET_DELEGATED_EXECUTOR_APPROVAL_WITH_SIG_TYPEHASH,
-                onBehalfOf,
-                executor,
-                approved,
+                CHANGE_DELEGATED_EXECUTORS_CONFIG_WITH_SIG_TYPEHASH,
+                delegatorProfileId,
+                configNumber,
+                abi.encodePacked(executors),
+                abi.encodePacked(approvals),
+                switchToGivenConfig,
                 nonce,
                 deadline
             )
@@ -316,18 +308,6 @@ contract BaseTest is TestSetup {
         return _calculateDigest(structHash);
     }
 
-    function _getSetDefaulProfileTypedDataHash(
-        address wallet,
-        uint256 profileId,
-        uint256 nonce,
-        uint256 deadline
-    ) internal view returns (bytes32) {
-        bytes32 structHash = keccak256(
-            abi.encode(SET_DEFAULT_PROFILE_WITH_SIG_TYPEHASH, wallet, profileId, nonce, deadline)
-        );
-        return _calculateDigest(structHash);
-    }
-
     function _calculateDigest(bytes32 structHash) internal view returns (bytes32) {
         bytes32 digest = keccak256(abi.encodePacked('\x19\x01', domainSeparator, structHash));
         return digest;
@@ -385,15 +365,37 @@ contract BaseTest is TestSetup {
         return ret;
     }
 
+    function _toAddressArray(address a) internal pure returns (address[] memory) {
+        address[] memory ret = new address[](1);
+        ret[0] = a;
+        return ret;
+    }
+
+    function _toAddressArray(address a0, address a1) internal pure returns (address[] memory) {
+        address[] memory ret = new address[](2);
+        ret[0] = a0;
+        ret[1] = a1;
+        return ret;
+    }
+
     // Private functions
-    function _buildSetDelegatedExecutorApprovalWithSigData(
-        address onBehalfOf,
-        address executor,
-        bool approved,
+    function _buildChangeDelegatedExecutorsConfigWithSigData(
+        uint256 delegatorProfileId,
+        uint64 configNumber,
+        address[] memory executors,
+        bool[] memory approvals,
+        bool switchToGivenConfig,
         DataTypes.EIP712Signature memory sig
-    ) internal pure returns (DataTypes.SetDelegatedExecutorApprovalWithSigData memory) {
+    ) internal pure returns (DataTypes.ChangeDelegatedExecutorsConfigWithSigData memory) {
         return
-            DataTypes.SetDelegatedExecutorApprovalWithSigData(onBehalfOf, executor, approved, sig);
+            DataTypes.ChangeDelegatedExecutorsConfigWithSigData(
+                delegatorProfileId,
+                configNumber,
+                executors,
+                approvals,
+                switchToGivenConfig,
+                sig
+            );
     }
 
     function _post(DataTypes.PostData memory postData) internal returns (uint256) {
@@ -503,13 +505,20 @@ contract BaseTest is TestSetup {
         hub.transferFrom(from, to, tokenId);
     }
 
-    function _setDelegatedExecutorApproval(
+    function _changeDelegatedExecutorsConfig(
         address msgSender,
+        uint256 profileId,
         address executor,
         bool approved
     ) internal {
         vm.prank(msgSender);
-        hub.setDelegatedExecutorApproval(executor, approved);
+        hub.changeDelegatedExecutorsConfig({
+            delegatorProfileId: profileId,
+            configNumber: 0,
+            executors: _toAddressArray(executor),
+            approvals: _toBoolArray(approved),
+            switchToGivenConfig: true
+        });
     }
 
     function _setFollowModule(

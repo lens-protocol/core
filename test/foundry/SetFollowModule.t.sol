@@ -81,7 +81,13 @@ contract SetFollowModuleTest is BaseTest, SignatureHelpers, SigSetup {
     function testExecutorSetFollowModule() public {
         assertEq(hub.getFollowModule(newProfileId), address(0));
         vm.prank(profileOwner);
-        hub.setDelegatedExecutorApproval(otherSigner, true);
+        hub.changeDelegatedExecutorsConfig({
+            delegatorProfileId: newProfileId,
+            configNumber: 0,
+            executors: _toAddressArray(otherSigner),
+            approvals: _toBoolArray(true),
+            switchToGivenConfig: true
+        });
 
         address mockFollowModule = address(new MockFollowModule());
         vm.prank(governance);
@@ -173,7 +179,7 @@ contract SetFollowModuleTest is BaseTest, SignatureHelpers, SigSetup {
     }
 
     function testExecutorPublishWithSig() public {
-        _setDelegatedExecutorApproval(profileOwner, otherSigner, true);
+        _changeDelegatedExecutorsConfig(profileOwner, newProfileId, otherSigner, true);
 
         assertEq(hub.getFollowModule(newProfileId), address(0));
         _setFollowModulehWithSig({delegatedSigner: otherSigner, signerPrivKey: otherSignerKey});
