@@ -132,9 +132,9 @@ library MetaTxHelpers {
                     abi.encode(
                         CHANGE_DELEGATED_EXECUTORS_CONFIG_WITH_SIG_TYPEHASH,
                         vars.delegatorProfileId,
-                        vars.configNumber,
                         abi.encodePacked(vars.executors),
                         abi.encodePacked(vars.approvals),
+                        vars.configNumber,
                         vars.switchToGivenConfig,
                         _sigNonces(delegatorProfileOwner),
                         vars.sig.deadline

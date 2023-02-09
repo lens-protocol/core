@@ -349,9 +349,9 @@ contract MultiStateHubTest_PausedState_WithSig is
 
         bytes32 digest = _getChangeDelegatedExecutorsConfigTypedDataHash({
             delegatorProfileId: newProfileId,
-            configNumber: 0,
             executors: _toAddressArray(executor),
             approvals: _toBoolArray(true),
+            configNumber: 0,
             switchToGivenConfig: true,
             nonce: nonce,
             deadline: deadline
@@ -359,9 +359,9 @@ contract MultiStateHubTest_PausedState_WithSig is
         hub.changeDelegatedExecutorsConfigWithSig(
             _buildChangeDelegatedExecutorsConfigWithSigData({
                 delegatorProfileId: newProfileId,
-                configNumber: 0,
                 executors: _toAddressArray(executor),
                 approvals: _toBoolArray(true),
+                configNumber: 0,
                 switchToGivenConfig: true,
                 sig: _getSigStruct(profileOwnerKey, digest, deadline)
             })
@@ -678,9 +678,9 @@ contract MultiStateHubTest_PublishingPausedState_WithSig is
 
         bytes32 digest = _getChangeDelegatedExecutorsConfigTypedDataHash({
             delegatorProfileId: newProfileId,
-            configNumber: 0,
             executors: _toAddressArray(executor),
             approvals: _toBoolArray(true),
+            configNumber: 0,
             switchToGivenConfig: true,
             nonce: nonce,
             deadline: deadline
@@ -688,9 +688,9 @@ contract MultiStateHubTest_PublishingPausedState_WithSig is
         hub.changeDelegatedExecutorsConfigWithSig(
             _buildChangeDelegatedExecutorsConfigWithSigData({
                 delegatorProfileId: newProfileId,
-                configNumber: 0,
                 executors: _toAddressArray(executor),
                 approvals: _toBoolArray(true),
+                configNumber: 0,
                 switchToGivenConfig: true,
                 sig: _getSigStruct(profileOwnerKey, digest, deadline)
             })

@@ -148,26 +148,41 @@ interface ILensHub {
      * @dev The message sender must be the owner of the delegator profile.
      *
      * @param delegatorProfileId The ID of the profile to which the delegated executor is being changed for.
-     * @param configNumber The number of the configuration where the executor approval state is being set. Zero used as
-     * an alias for the current configuration number.
      * @param executors The array of executors to set the approval for.
      * @param approvals The array of booleans indicating the corresponding executor new approval status.
-     * @param switchToGivenConfig A boolean indicanting if the configuration will be switched to the one with the given
-     * number. If the configuration number given is zero, this boolean will be ignored as it refers to the current one.
+     * @param configNumber The number of the configuration where the executor approval state is being set.
+     * @param switchToGivenConfig A boolean indicanting if the configuration must be switched to the one with the given
+     * number.
      */
     function changeDelegatedExecutorsConfig(
         uint256 delegatorProfileId,
-        uint64 configNumber,
         address[] calldata executors,
         bool[] calldata approvals,
+        uint64 configNumber,
         bool switchToGivenConfig
+    ) external;
+
+    /**
+     * @notice Changes the delegated executors configuration for the given profile under the current configuration.
+     *
+     * @dev The message sender must be the owner of the delegator profile.
+     *
+     * @param delegatorProfileId The ID of the profile to which the delegated executor is being changed for.
+     * @param executors The array of executors to set the approval for.
+     * @param approvals The array of booleans indicating the corresponding executor new approval status.
+     */
+    function changeDelegatedExecutorsConfig(
+        uint256 delegatorProfileId,
+        address[] calldata executors,
+        bool[] calldata approvals
     ) external;
 
     /**
      * @notice Changes the delegated executors configuration for the given profile. It allows to set the approvals for
      * delegated executors in the specified configuration, as well as switching to it.
      *
-     * @dev The signer must be the owner of the delegator profile.
+     * @dev The signer must be the owner of the delegator profile. The meta-tx function only exists in the flavour where
+     * the `configNumber` and `switchToGivenConfig` params are required to be passed explicitly.
      *
      * @param vars A ChangeDelegatedExecutorsConfigWithSigData struct, including the regular parameters and
      * an EIP712Signature struct.
@@ -478,27 +493,38 @@ interface ILensHub {
      * number, to act on behalf of the given profile.
      *
      * @param delegatorProfileId The ID of the profile to check the delegated executor approval for.
-     * @param configNumber The number of the configuration where the executor approval state is being queried.
      * @param executor The address to query the delegated executor approval for.
+     * @param configNumber The number of the configuration where the executor approval state is being queried.
      *
      * @return bool True if the address is approved as a delegated executor to act on behalf of the profile in the
      * given configuration, false otherwise.
      */
     function isDelegatedExecutorApproved(
         uint256 delegatorProfileId,
-        uint64 configNumber,
-        address executor
+        address executor,
+        uint64 configNumber
     ) external view returns (bool);
 
-    // TODO: Should we return one instead of zero in some of the following getters? Trying to help protocol bespoke
-    // integrations. If it is an external function it won't be called from here so it won't mess our internal logic.
-    // For example, imagine a protocol that always want to automatically switch to the previous DE configuration.
+    /**
+     * @notice Returns whether the given address is approved as delegated executor, in the current configuration, to act
+     * on behalf of the given profile.
+     *
+     * @param delegatorProfileId The ID of the profile to check the delegated executor approval for.
+     * @param executor The address to query the delegated executor approval for.
+     *
+     * @return bool True if the address is approved as a delegated executor to act on behalf of the profile in the
+     * current configuration, false otherwise.
+     */
+    function isDelegatedExecutorApproved(uint256 delegatorProfileId, address executor)
+        external
+        view
+        returns (bool);
 
     /**
      * @param delegatorProfileId The ID of the profile from which the delegated executors configuration number is being
      * queried.
      *
-     * @return uint256 The current delegated executor configuration number. Zero if none.
+     * @return uint256 The current delegated executor configuration number.
      */
     function getDelegatedExecutorsConfigNumber(uint256 delegatorProfileId)
         external
@@ -509,7 +535,8 @@ interface ILensHub {
      * @param delegatorProfileId The ID of the profile from which the delegated executors previous configuration number
      * set is being queried.
      *
-     * @return uint256 The delegated executor configuration number previously set. Zero if none.
+     * @return uint256 The delegated executor configuration number previously set. It will coincide with the current
+     * configuration set if it was never switched from the default one.
      */
     function getDelegatedExecutorsPrevConfigNumber(uint256 delegatorProfileId)
         external
@@ -520,7 +547,7 @@ interface ILensHub {
      * @param delegatorProfileId The ID of the profile from which the delegated executors maximum configuration number
      * set is being queried.
      *
-     * @return uint256 The delegated executor maximum configuration number set. Zero if none.
+     * @return uint256 The delegated executor maximum configuration number set.
      */
     function getDelegatedExecutorsMaxConfigNumberSet(uint256 delegatorProfileId)
         external

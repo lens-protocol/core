@@ -101,7 +101,7 @@ contract FollowTest is BaseTest {
         address executor = vm.addr(executorPk);
         vm.assume(executor != address(0));
         vm.assume(executor != followerProfileOwner);
-        vm.assume(!hub.isDelegatedExecutorApproved(followerProfileId, 0, executor));
+        vm.assume(!hub.isDelegatedExecutorApproved(followerProfileId, executor));
 
         vm.expectRevert(Errors.ExecutorInvalid.selector);
 
@@ -122,7 +122,7 @@ contract FollowTest is BaseTest {
         address executor = vm.addr(executorPk);
         vm.assume(executor != address(0));
         vm.assume(executor != followerProfileOwner);
-        vm.assume(!hub.isDelegatedExecutorApproved(followerProfileId, 0, executor));
+        vm.assume(!hub.isDelegatedExecutorApproved(followerProfileId, executor));
 
         uint256 followTokenId = followNFT.getFollowTokenId(alreadyFollowingProfileId);
         assertFalse(followNFT.exists(followTokenId));
@@ -146,7 +146,7 @@ contract FollowTest is BaseTest {
         address executor = vm.addr(executorPk);
         vm.assume(executor != address(0));
         vm.assume(executor != followerProfileOwner);
-        vm.assume(!hub.isDelegatedExecutorApproved(followerProfileId, 0, executor));
+        vm.assume(!hub.isDelegatedExecutorApproved(followerProfileId, executor));
 
         uint256 followTokenId = followNFT.getFollowTokenId(alreadyFollowingProfileId);
         vm.prank(alreadyFollowingProfileOwner);
@@ -351,10 +351,8 @@ contract FollowTest is BaseTest {
         vm.prank(followerProfileOwner);
         hub.changeDelegatedExecutorsConfig({
             delegatorProfileId: followerProfileId,
-            configNumber: 0,
             executors: _toAddressArray(approvedDelegatedExecutor),
-            approvals: _toBoolArray(true),
-            switchToGivenConfig: true
+            approvals: _toBoolArray(true)
         });
 
         vm.prank(targetProfileOwner);

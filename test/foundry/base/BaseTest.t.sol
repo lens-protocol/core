@@ -56,9 +56,9 @@ contract BaseTest is TestSetup {
             abi.encode(
                 CHANGE_DELEGATED_EXECUTORS_CONFIG_WITH_SIG_TYPEHASH,
                 delegatorProfileId,
-                configNumber,
                 abi.encodePacked(executors),
                 abi.encodePacked(approvals),
+                configNumber,
                 switchToGivenConfig,
                 nonce,
                 deadline
@@ -390,9 +390,9 @@ contract BaseTest is TestSetup {
         return
             DataTypes.ChangeDelegatedExecutorsConfigWithSigData(
                 delegatorProfileId,
-                configNumber,
                 executors,
                 approvals,
+                configNumber,
                 switchToGivenConfig,
                 sig
             );
@@ -514,10 +514,8 @@ contract BaseTest is TestSetup {
         vm.prank(msgSender);
         hub.changeDelegatedExecutorsConfig({
             delegatorProfileId: profileId,
-            configNumber: 0,
             executors: _toAddressArray(executor),
-            approvals: _toBoolArray(approved),
-            switchToGivenConfig: true
+            approvals: _toBoolArray(approved)
         });
     }
 

@@ -204,18 +204,26 @@ contract LensHub is LensNFTBase, VersionedInitializable, LensMultiState, LensHub
     /// @inheritdoc ILensHub
     function changeDelegatedExecutorsConfig(
         uint256 delegatorProfileId,
-        uint64 configNumber,
         address[] calldata executors,
         bool[] calldata approvals,
+        uint64 configNumber,
         bool switchToGivenConfig
     ) external override whenNotPaused {
-        GeneralLib.changeDelegatedExecutorsConfig(
+        GeneralLib.changeGivenDelegatedExecutorsConfig(
             delegatorProfileId,
-            configNumber,
             executors,
             approvals,
+            configNumber,
             switchToGivenConfig
         );
+    }
+
+    function changeDelegatedExecutorsConfig(
+        uint256 delegatorProfileId,
+        address[] calldata executors,
+        bool[] calldata approvals
+    ) external override whenNotPaused {
+        GeneralLib.changeCurrentDelegatedExecutorsConfig(delegatorProfileId, executors, approvals);
     }
 
     /// @inheritdoc ILensHub
@@ -538,18 +546,21 @@ contract LensHub is LensNFTBase, VersionedInitializable, LensMultiState, LensHub
     /// @inheritdoc ILensHub
     function isDelegatedExecutorApproved(
         uint256 delegatorProfileId,
-        uint64 configNumber,
-        address executor
+        address executor,
+        uint64 configNumber
     ) external view returns (bool) {
-        if (configNumber == 0) {
-            // If configuration number passed is zero, the approval is queried from the current configuration.
-            return GeneralHelpers.isExecutorApproved(delegatorProfileId, executor);
-        } else {
-            // Otherwise, the approval is queried from the configuration corresponding to the passed number.
-            GeneralHelpers.getDelegatedExecutorsConfig(delegatorProfileId).isApproved[configNumber][
-                    executor
-                ];
-        }
+        GeneralHelpers.getDelegatedExecutorsConfig(delegatorProfileId).isApproved[configNumber][
+            executor
+        ];
+    }
+
+    /// @inheritdoc ILensHub
+    function isDelegatedExecutorApproved(uint256 delegatorProfileId, address executor)
+        external
+        view
+        returns (bool)
+    {
+        return GeneralHelpers.isExecutorApproved(delegatorProfileId, executor);
     }
 
     /// @inheritdoc ILensHub

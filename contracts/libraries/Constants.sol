@@ -87,7 +87,7 @@ bytes32 constant SET_FOLLOW_NFT_URI_WITH_SIG_TYPEHASH = keccak256(
     'SetFollowNFTURIWithSig(uint256 profileId,string followNFTURI,uint256 nonce,uint256 deadline)'
 );
 bytes32 constant CHANGE_DELEGATED_EXECUTORS_CONFIG_WITH_SIG_TYPEHASH = keccak256(
-    'ChangeDelegatedExecutorsConfigWithSig(uint256 delegatorProfileId,uint64 configNumber,address[] executors,bool[] approvals,bool switchToGivenConfig,uint256 nonce,uint256 deadline)'
+    'ChangeDelegatedExecutorsConfigWithSig(uint256 delegatorProfileId,address[] executors,bool[] approvals,uint64 configNumber,bool switchToGivenConfig,uint256 nonce,uint256 deadline)'
 );
 bytes32 constant SET_PROFILE_IMAGE_URI_WITH_SIG_TYPEHASH = keccak256(
     'SetProfileImageURIWithSig(uint256 profileId,string imageURI,uint256 nonce,uint256 deadline)'

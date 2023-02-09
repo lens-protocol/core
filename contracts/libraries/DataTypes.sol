@@ -127,23 +127,21 @@ library DataTypes {
 
     /**
      * @notice A struct containing the parameters required for the `changeDelegatedExecutorsConfigWithSig()` function.
-     * Parameters are the same as the regular `changeDelegatedExecutorsConfig()` function.
      *
      * @param delegatorProfileId The ID of the profile to which the delegated executor is being changed for.
-     * @param configNumber The number of the configuration where the executor approval state is being set. Zero used as
-     * an alias for the current configuration number.
      * @param executors The array of executors to set the approval for.
      * @param approvals The array of booleans indicating the corresponding executor new approval status.
+     * @param configNumber The number of the configuration where the executor approval state is being set.
      * @param switchToGivenConfig A boolean indicanting if the configuration will be switched to the one with the given
-     * number. If the configuration number given is zero, this boolean will be ignored as it refers to the current one.
+     * number.
 
      * @param sig The EIP712Signature struct containing to the signer setting the approval's signature.
      */
     struct ChangeDelegatedExecutorsConfigWithSigData {
         uint256 delegatorProfileId;
-        uint64 configNumber;
         address[] executors;
         bool[] approvals;
+        uint64 configNumber;
         bool switchToGivenConfig;
         EIP712Signature sig;
     }

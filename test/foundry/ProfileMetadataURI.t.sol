@@ -31,10 +31,8 @@ contract ProfileMetadataURITest is BaseTest {
         vm.prank(profileOwner);
         hub.changeDelegatedExecutorsConfig({
             delegatorProfileId: newProfileId,
-            configNumber: 0,
             executors: _toAddressArray(otherSigner),
-            approvals: _toBoolArray(true),
-            switchToGivenConfig: true
+            approvals: _toBoolArray(true)
         });
 
         _setProfileMetadataURI({

@@ -102,40 +102,49 @@ library GeneralLib {
         emit Events.StateSet(msg.sender, prevState, newState, block.timestamp);
     }
 
-    // NOTE: This does not move to a new configuration if the profile has never set a configuration before.
     function switchToNewFreshDelegatedExecutorsConfig(uint256 profileId) external {
         DataTypes.DelegatedExecutorsConfig storage _delegatedExecutorsConfig = GeneralHelpers
             .getDelegatedExecutorsConfig({delegatorProfileId: profileId});
-        uint64 maxConfigNumberSet = _delegatedExecutorsConfig.maxConfigNumberSet;
-        if (maxConfigNumberSet != 0) {
-            // Switches to a new fresh delegated executors configuration.
-            uint64 newFreshConfigNumber = maxConfigNumberSet + 1;
-            _delegatedExecutorsConfig.prevConfigNumber = _delegatedExecutorsConfig.configNumber;
-            _delegatedExecutorsConfig.configNumber = newFreshConfigNumber;
-            _delegatedExecutorsConfig.maxConfigNumberSet = newFreshConfigNumber;
-            emit Events.DelegatedExecutorsConfigChanged({
-                delegatorProfileId: profileId,
-                configNumber: newFreshConfigNumber,
-                executors: new address[](0),
-                approvals: new bool[](0),
-                configSwitched: true
-            });
-        }
+        _changeDelegatedExecutorsConfig({
+            _delegatedExecutorsConfig: _delegatedExecutorsConfig,
+            delegatorProfileId: profileId,
+            executors: new address[](0),
+            approvals: new bool[](0),
+            configNumber: _delegatedExecutorsConfig.maxConfigNumberSet + 1,
+            switchToGivenConfig: true
+        });
     }
 
-    function changeDelegatedExecutorsConfig(
+    function changeCurrentDelegatedExecutorsConfig(
         uint256 delegatorProfileId,
-        uint64 configNumber,
         address[] calldata executors,
-        bool[] calldata approvals,
-        bool switchToGivenConfig
+        bool[] calldata approvals
     ) external {
-        GeneralHelpers.validateAddressIsProfileOwner(msg.sender, delegatorProfileId);
+        DataTypes.DelegatedExecutorsConfig storage _delegatedExecutorsConfig = GeneralHelpers
+            .getDelegatedExecutorsConfig(delegatorProfileId);
         _changeDelegatedExecutorsConfig(
+            _delegatedExecutorsConfig,
             delegatorProfileId,
-            configNumber,
             executors,
             approvals,
+            _delegatedExecutorsConfig.configNumber,
+            false
+        );
+    }
+
+    function changeGivenDelegatedExecutorsConfig(
+        uint256 delegatorProfileId,
+        address[] calldata executors,
+        bool[] calldata approvals,
+        uint64 configNumber,
+        bool switchToGivenConfig
+    ) external {
+        _changeDelegatedExecutorsConfig(
+            GeneralHelpers.getDelegatedExecutorsConfig(delegatorProfileId),
+            delegatorProfileId,
+            executors,
+            approvals,
+            configNumber,
             switchToGivenConfig
         );
     }
@@ -145,10 +154,11 @@ library GeneralLib {
     ) external {
         MetaTxHelpers.baseChangeDelegatedExecutorsConfigWithSig(vars);
         _changeDelegatedExecutorsConfig(
+            GeneralHelpers.getDelegatedExecutorsConfig(vars.delegatorProfileId),
             vars.delegatorProfileId,
-            vars.configNumber,
             vars.executors,
             vars.approvals,
+            vars.configNumber,
             vars.switchToGivenConfig
         );
     }
@@ -458,30 +468,24 @@ library GeneralLib {
     }
 
     function _changeDelegatedExecutorsConfig(
+        DataTypes.DelegatedExecutorsConfig storage _delegatedExecutorsConfig,
         uint256 delegatorProfileId,
+        address[] memory executors,
+        bool[] memory approvals,
         uint64 configNumber,
-        address[] calldata executors,
-        bool[] calldata approvals,
         bool switchToGivenConfig
     ) private {
         if (executors.length != approvals.length) {
             revert Errors.ArrayMismatch();
         }
-        DataTypes.DelegatedExecutorsConfig storage _delegatedExecutorsConfig = GeneralHelpers
-            .getDelegatedExecutorsConfig(delegatorProfileId);
-        uint64 configNumberToUse;
-        bool configSwitched;
-        if (configNumber == 0) {
-            (configNumberToUse, configSwitched) = _prepareStorageToApplyChangesUnderCurrentConfig(
-                _delegatedExecutorsConfig
-            );
-        } else {
-            (configNumberToUse, configSwitched) = _prepareStorageToApplyChangesUnderGivenConfig(
+        (
+            uint64 configNumberToUse,
+            bool configSwitched
+        ) = _prepareStorageToApplyChangesUnderGivenConfig(
                 _delegatedExecutorsConfig,
                 configNumber,
                 switchToGivenConfig
             );
-        }
         uint256 i;
         while (i < executors.length) {
             _delegatedExecutorsConfig.isApproved[configNumberToUse][executors[i]] = approvals[i];
@@ -500,34 +504,9 @@ library GeneralLib {
 
     /**
      * @param _delegatedExecutorsConfig The delegated executor configuration to prepare for changes.
-     *
-     * @return (uint64, bool) A tuple that represents (uint64 configNumberToUse, bool configSwitched).
-     */
-    function _prepareStorageToApplyChangesUnderCurrentConfig(
-        DataTypes.DelegatedExecutorsConfig storage _delegatedExecutorsConfig
-    ) private returns (uint64, bool) {
-        bool configSwitched;
-        uint64 configNumberToUse = _delegatedExecutorsConfig.configNumber;
-        if (configNumberToUse == 0) {
-            // First time setting the configuration and the user expects them to be applied under current one.
-            // However, there is no configuration number chosen yet, so we default to 1 and switch to it.
-            // This is equivalent to `configNumber = 1` and `switchToGivenConfig = true`.
-            // If the user wants to prepare the configuration 1 but not switch to it, he will need to pass
-            // `configNumber = 1` and `switchToGivenConfig = false`.
-            _delegatedExecutorsConfig.configNumber = FIRST_DELEGATED_EXECUTORS_CONFIG_NUMBER;
-            _delegatedExecutorsConfig.maxConfigNumberSet = FIRST_DELEGATED_EXECUTORS_CONFIG_NUMBER;
-            configNumberToUse = FIRST_DELEGATED_EXECUTORS_CONFIG_NUMBER;
-            configSwitched = true;
-        }
-        return (configNumberToUse, configSwitched);
-    }
-
-    /**
-     * @param _delegatedExecutorsConfig The delegated executor configuration to prepare for changes.
-     * @param configNumber The number of the configuration where the executor approval state is being set. Zero used as
-     * an alias for the current configuration number.
+     * @param configNumber The number of the configuration where the executor approval state is being set.
      * @param switchToGivenConfig A boolean indicanting if the configuration will be switched to the one with the given
-     * number. If the configuration number given is zero, this boolean will be ignored as it refers to the current one.
+     * number.
      *
      * @return (uint64, bool) A tuple that represents (uint64 configNumberToUse, bool configSwitched).
      */
@@ -554,9 +533,8 @@ library GeneralLib {
         } else {
             // The configuration corresponding to the given number is not a fresh/clean one.
             uint64 currentConfigNumber = _delegatedExecutorsConfig.configNumber;
+            // If the given configuration matches the one that is already in use, we keep `configSwitched` as `false`.
             if (configNumber != currentConfigNumber) {
-                // We ensure that `configSwitched` can not be set to `true` if the given configuration matches the one
-                // that is already in use.
                 configSwitched = switchToGivenConfig;
             }
             if (configSwitched) {
