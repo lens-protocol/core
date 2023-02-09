@@ -147,7 +147,7 @@ interface ILensHub {
      *
      * @dev The message sender must be the owner of the delegator profile.
      *
-     * @param delegatorProfileId The ID of the profile for which the delegated executor is being changed for.
+     * @param delegatorProfileId The ID of the profile to which the delegated executor is being changed for.
      * @param configNumber The number of the configuration where the executor approval state is being set. Zero used as
      * an alias for the current configuration number.
      * @param executors The array of executors to set the approval for.
@@ -474,15 +474,15 @@ interface ILensHub {
     function getGovernance() external view returns (address);
 
     /**
-     * @notice Returns whether the given delegated executor is approved, in the configuration with the given number, to
-     * act on behalf of the given profile.
+     * @notice Returns whether the given address is approved as delegated executor, in the configuration with the given
+     * number, to act on behalf of the given profile.
      *
      * @param delegatorProfileId The ID of the profile to check the delegated executor approval for.
      * @param configNumber The number of the configuration where the executor approval state is being queried.
-     * @param executor The executor to query the delegated executor approval for.
+     * @param executor The address to query the delegated executor approval for.
      *
-     * @return bool True if the executor is approved as a delegated executor to act on behalf of the wallet in the given
-     * configuration, false otherwise.
+     * @return bool True if the address is approved as a delegated executor to act on behalf of the profile in the
+     * given configuration, false otherwise.
      */
     function isDelegatedExecutorApproved(
         uint256 delegatorProfileId,
@@ -511,7 +511,7 @@ interface ILensHub {
      *
      * @return uint256 The delegated executor configuration number previously set. Zero if none.
      */
-    function getDelegatedExecutorsPrevConfigNumberSet(uint256 delegatorProfileId)
+    function getDelegatedExecutorsPrevConfigNumber(uint256 delegatorProfileId)
         external
         view
         returns (uint64);

@@ -562,12 +562,12 @@ contract LensHub is LensNFTBase, VersionedInitializable, LensMultiState, LensHub
     }
 
     /// @inheritdoc ILensHub
-    function getDelegatedExecutorsPrevConfigNumberSet(uint256 delegatorProfileId)
+    function getDelegatedExecutorsPrevConfigNumber(uint256 delegatorProfileId)
         external
         view
         returns (uint64)
     {
-        return GeneralHelpers.getDelegatedExecutorsConfig(delegatorProfileId).prevConfigNumberSet;
+        return GeneralHelpers.getDelegatedExecutorsConfig(delegatorProfileId).prevConfigNumber;
     }
 
     /// @inheritdoc ILensHub
@@ -754,20 +754,7 @@ contract LensHub is LensNFTBase, VersionedInitializable, LensMultiState, LensHub
         address to,
         uint256 tokenId
     ) internal override whenNotPaused {
-        // Switches to a new fresh delegated executors configuration.
-        DataTypes.DelegatedExecutorsConfig storage _delegatedExecutorsConfig = GeneralHelpers
-            .getDelegatedExecutorsConfig({delegatorProfileId: tokenId});
-        _delegatedExecutorsConfig.prevConfigNumberSet = _delegatedExecutorsConfig.configNumber;
-        uint64 newFreshConfigNumber = ++_delegatedExecutorsConfig.maxConfigNumberSet;
-        _delegatedExecutorsConfig.configNumber = newFreshConfigNumber;
-        emit Events.DelegatedExecutorsConfigChanged({
-            delegatorProfileId: tokenId,
-            configNumber: newFreshConfigNumber,
-            executors: new address[](0),
-            approvals: new bool[](0),
-            configSwitched: true
-        });
-
+        GeneralLib.switchToNewFreshDelegatedExecutorsConfig(tokenId);
         super._beforeTokenTransfer(from, to, tokenId);
     }
 

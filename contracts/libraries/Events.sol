@@ -141,8 +141,7 @@ library Events {
      * @dev Emitted when a delegated executors configuration is changed.
      *
      * @param delegatorProfileId The ID of the profile for which the delegated executor was changed.
-     * @param configNumber The number of the configuration where the executor approval state was set. Zero used as
-     * an alias for the current configuration number.
+     * @param configNumber The number of the configuration where the executor approval state was set.
      * @param executors The array of executors whose approval was set for.
      * @param approvals The array of booleans indicating the corresponding executor new approval status.
      * @param configSwitched A boolean indicanting if the configuration was switched to the one emitted in the

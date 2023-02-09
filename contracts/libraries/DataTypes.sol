@@ -129,7 +129,7 @@ library DataTypes {
      * @notice A struct containing the parameters required for the `changeDelegatedExecutorsConfigWithSig()` function.
      * Parameters are the same as the regular `changeDelegatedExecutorsConfig()` function.
      *
-     * @param delegatorProfileId The ID of the profile for which the delegated executor is being changed for.
+     * @param delegatorProfileId The ID of the profile to which the delegated executor is being changed for.
      * @param configNumber The number of the configuration where the executor approval state is being set. Zero used as
      * an alias for the current configuration number.
      * @param executors The array of executors to set the approval for.
@@ -447,17 +447,17 @@ library DataTypes {
     }
 
     /**
-     * @notice A struct containing delegated-executors-related configuration.
+     * @notice A struct containing a profile's delegated executors configuration.
      *
      * @param isApproved Tells when an address is approved as delegated executor in the given configuration number.
      * @param configNumber Current configuration number in use.
-     * @param prevConfigNumberSet Previous configuration number set, before changing to the current one.
-     * @param maxConfigNumberSet Maximum configuration number ever used and, as a consequence, allowed to be set.
+     * @param prevConfigNumber Previous configuration number set, before switching to the current one.
+     * @param maxConfigNumberSet Maximum configuration number ever used.
      */
     struct DelegatedExecutorsConfig {
         mapping(uint256 => mapping(address => bool)) isApproved; // isApproved[configNumber][executor]
         uint64 configNumber;
-        uint64 prevConfigNumberSet;
+        uint64 prevConfigNumber;
         uint64 maxConfigNumberSet;
     }
 }

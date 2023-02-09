@@ -102,6 +102,27 @@ library GeneralLib {
         emit Events.StateSet(msg.sender, prevState, newState, block.timestamp);
     }
 
+    // NOTE: This does not move to a new configuration if the profile has never set a configuration before.
+    function switchToNewFreshDelegatedExecutorsConfig(uint256 profileId) external {
+        DataTypes.DelegatedExecutorsConfig storage _delegatedExecutorsConfig = GeneralHelpers
+            .getDelegatedExecutorsConfig({delegatorProfileId: profileId});
+        uint64 maxConfigNumberSet = _delegatedExecutorsConfig.maxConfigNumberSet;
+        if (maxConfigNumberSet != 0) {
+            // Switches to a new fresh delegated executors configuration.
+            uint64 newFreshConfigNumber = maxConfigNumberSet + 1;
+            _delegatedExecutorsConfig.prevConfigNumber = _delegatedExecutorsConfig.configNumber;
+            _delegatedExecutorsConfig.configNumber = newFreshConfigNumber;
+            _delegatedExecutorsConfig.maxConfigNumberSet = newFreshConfigNumber;
+            emit Events.DelegatedExecutorsConfigChanged({
+                delegatorProfileId: profileId,
+                configNumber: newFreshConfigNumber,
+                executors: new address[](0),
+                approvals: new bool[](0),
+                configSwitched: true
+            });
+        }
+    }
+
     function changeDelegatedExecutorsConfig(
         uint256 delegatorProfileId,
         uint64 configNumber,
@@ -443,15 +464,16 @@ library GeneralLib {
         bool[] calldata approvals,
         bool switchToGivenConfig
     ) private {
+        if (executors.length != approvals.length) {
+            revert Errors.ArrayMismatch();
+        }
         DataTypes.DelegatedExecutorsConfig storage _delegatedExecutorsConfig = GeneralHelpers
             .getDelegatedExecutorsConfig(delegatorProfileId);
         uint64 configNumberToUse;
         bool configSwitched;
         if (configNumber == 0) {
             (configNumberToUse, configSwitched) = _prepareStorageToApplyChangesUnderCurrentConfig(
-                _delegatedExecutorsConfig,
-                configNumber,
-                switchToGivenConfig
+                _delegatedExecutorsConfig
             );
         } else {
             (configNumberToUse, configSwitched) = _prepareStorageToApplyChangesUnderGivenConfig(
@@ -478,17 +500,11 @@ library GeneralLib {
 
     /**
      * @param _delegatedExecutorsConfig The delegated executor configuration to prepare for changes.
-     * @param configNumber The number of the configuration where the executor approval state is being set. Zero used as
-     * an alias for the current configuration number.
-     * @param switchToGivenConfig A boolean indicanting if the configuration will be switched to the one with the given
-     * number. If the configuration number given is zero, this boolean will be ignored as it refers to the current one.
      *
      * @return (uint64, bool) A tuple that represents (uint64 configNumberToUse, bool configSwitched).
      */
     function _prepareStorageToApplyChangesUnderCurrentConfig(
-        DataTypes.DelegatedExecutorsConfig storage _delegatedExecutorsConfig,
-        uint64 configNumber,
-        bool switchToGivenConfig
+        DataTypes.DelegatedExecutorsConfig storage _delegatedExecutorsConfig
     ) private returns (uint64, bool) {
         bool configSwitched;
         uint64 configNumberToUse = _delegatedExecutorsConfig.configNumber;
@@ -520,8 +536,11 @@ library GeneralLib {
         uint64 configNumber,
         bool switchToGivenConfig
     ) private returns (uint64, bool) {
-        bool configSwitched;
         uint64 nextAvailableConfigNumber = _delegatedExecutorsConfig.maxConfigNumberSet + 1;
+        if (configNumber > nextAvailableConfigNumber) {
+            revert Errors.InvalidParameter();
+        }
+        bool configSwitched;
         if (configNumber == nextAvailableConfigNumber) {
             // The next configuration available is being changed, it must be marked.
             // Otherwise, on a profile transfer, the next owner can inherit a used/dirty configuration.
@@ -529,23 +548,20 @@ library GeneralLib {
             configSwitched = switchToGivenConfig;
             if (configSwitched) {
                 // The configuration is being switched, previous and current configuration numbers must be updated.
-                _delegatedExecutorsConfig.prevConfigNumberSet = _delegatedExecutorsConfig
-                    .configNumber;
+                _delegatedExecutorsConfig.prevConfigNumber = _delegatedExecutorsConfig.configNumber;
                 _delegatedExecutorsConfig.configNumber = nextAvailableConfigNumber;
             }
-        } else if (configNumber > nextAvailableConfigNumber) {
-            revert Errors.InvalidParameter();
         } else {
             // The configuration corresponding to the given number is not a fresh/clean one.
             uint64 currentConfigNumber = _delegatedExecutorsConfig.configNumber;
             if (configNumber != currentConfigNumber) {
                 // We ensure that `configSwitched` can not be set to `true` if the given configuration matches the one
                 // that is already in use.
-                configSwitched = configSwitched;
+                configSwitched = switchToGivenConfig;
             }
             if (configSwitched) {
                 // The configuration is being switched, previous and current configuration numbers must be updated.
-                _delegatedExecutorsConfig.prevConfigNumberSet = currentConfigNumber;
+                _delegatedExecutorsConfig.prevConfigNumber = currentConfigNumber;
                 _delegatedExecutorsConfig.configNumber = configNumber;
             }
         }
