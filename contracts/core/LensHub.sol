@@ -765,7 +765,10 @@ contract LensHub is LensNFTBase, VersionedInitializable, LensMultiState, LensHub
         address to,
         uint256 tokenId
     ) internal override whenNotPaused {
-        GeneralLib.switchToNewFreshDelegatedExecutorsConfig(tokenId);
+        // Switches to new fresh delegated executors configuration (except on minting, as it already has a fresh setup).
+        if (from != address(0)) {
+            GeneralLib.switchToNewFreshDelegatedExecutorsConfig(tokenId);
+        }
         super._beforeTokenTransfer(from, to, tokenId);
     }
 
