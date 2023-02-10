@@ -549,9 +549,10 @@ contract LensHub is LensNFTBase, VersionedInitializable, LensMultiState, LensHub
         address executor,
         uint64 configNumber
     ) external view returns (bool) {
-        GeneralHelpers.getDelegatedExecutorsConfig(delegatorProfileId).isApproved[configNumber][
-            executor
-        ];
+        return
+            GeneralHelpers.getDelegatedExecutorsConfig(delegatorProfileId).isApproved[configNumber][
+                executor
+            ];
     }
 
     /// @inheritdoc ILensHub
