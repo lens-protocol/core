@@ -11,18 +11,18 @@ contract MockFollowModuleWithRevertFlag is IFollowModule {
     error MockFollowModuleReverted();
 
     function initializeFollowModule(
-        uint256 profileId,
-        address executor,
-        bytes calldata data
+        uint256, /* profileId */
+        address, /* executor */
+        bytes calldata /* data */
     ) external pure override returns (bytes memory) {
         return new bytes(0);
     }
 
     function processFollow(
-        uint256 followerProfileId,
-        uint256 followTokenId,
-        address executor,
-        uint256 profileId,
+        uint256, /* followerProfileId */
+        uint256, /* followTokenId */
+        address, /* executor */
+        uint256, /* profileId */
         bytes calldata data
     ) external pure override {
         if (abi.decode(data, (bool))) {

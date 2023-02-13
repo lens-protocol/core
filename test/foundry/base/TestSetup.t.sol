@@ -77,9 +77,9 @@ contract TestSetup is Test, ForkManagement {
         if (bytes(forkEnv).length > 0) {
             fork = true;
             console.log('\n\n Testing using %s fork', forkEnv);
-            json = loadJson();
+            loadJson();
 
-            network = getNetwork(json, forkEnv);
+            network = getNetwork();
 
             if (isEnvSet('FORK_BLOCK')) {
                 forkBlockNumber = vm.envUint('FORK_BLOCK');
@@ -91,7 +91,7 @@ contract TestSetup is Test, ForkManagement {
                 console.log('Fork Block number:', forkBlockNumber);
             }
 
-            checkNetworkParams(json, forkEnv);
+            checkNetworkParams();
 
             loadBaseAddresses(forkEnv);
         } else {

@@ -14,13 +14,14 @@ contract FollowTest is BaseTest {
 
     address constant PROFILE_OWNER = address(0);
 
+    // TODO: Replace these with Profile structs everywhere
     uint256 constant targetProfileOwnerPk = 0xC0FFEE;
     address targetProfileOwner;
     uint256 targetProfileId;
 
-    uint256 constant followerProfileOwnerPk = 0x7357;
-    address followerProfileOwner;
-    uint256 followerProfileId;
+    uint256 constant testFollowerProfileOwnerPk = 0x7357;
+    address testFollowerProfileOwner;
+    uint256 testFollowerProfileId;
 
     uint256 constant alreadyFollowingProfileOwnerPk = 0xF01108;
     address alreadyFollowingProfileOwner;
@@ -38,8 +39,8 @@ contract FollowTest is BaseTest {
         targetProfileOwner = vm.addr(targetProfileOwnerPk);
         targetProfileId = _createProfile(targetProfileOwner);
 
-        followerProfileOwner = vm.addr(followerProfileOwnerPk);
-        followerProfileId = _createProfile(followerProfileOwner);
+        testFollowerProfileOwner = vm.addr(testFollowerProfileOwnerPk);
+        testFollowerProfileId = _createProfile(testFollowerProfileOwner);
 
         alreadyFollowingProfileOwner = vm.addr(alreadyFollowingProfileOwnerPk);
         alreadyFollowingProfileId = _createProfile(alreadyFollowingProfileOwner);
@@ -69,9 +70,9 @@ contract FollowTest is BaseTest {
         vm.expectRevert(Errors.Paused.selector);
 
         _follow({
-            pk: followerProfileOwnerPk,
+            pk: testFollowerProfileOwnerPk,
             isFollowerProfileOwner: true,
-            followerProfileId: followerProfileId,
+            followerProfileId: testFollowerProfileId,
             idsOfProfilesToFollow: _toUint256Array(targetProfileId),
             followTokenIds: _toUint256Array(MINT_NEW_TOKEN),
             datas: _toBytesArray('')
@@ -80,14 +81,18 @@ contract FollowTest is BaseTest {
 
     function testCannotFollowIfBlocked() public {
         vm.prank(targetProfileOwner);
-        hub.setBlockStatus(targetProfileId, _toUint256Array(followerProfileId), _toBoolArray(true));
+        hub.setBlockStatus(
+            targetProfileId,
+            _toUint256Array(testFollowerProfileId),
+            _toBoolArray(true)
+        );
 
         vm.expectRevert(Errors.Blocked.selector);
 
         _follow({
-            pk: followerProfileOwnerPk,
+            pk: testFollowerProfileOwnerPk,
             isFollowerProfileOwner: true,
-            followerProfileId: followerProfileId,
+            followerProfileId: testFollowerProfileId,
             idsOfProfilesToFollow: _toUint256Array(targetProfileId),
             followTokenIds: _toUint256Array(MINT_NEW_TOKEN),
             datas: _toBytesArray('')
@@ -100,15 +105,15 @@ contract FollowTest is BaseTest {
         executorPk = bound(executorPk, 1, ISSECP256K1_CURVE_ORDER - 1);
         address executor = vm.addr(executorPk);
         vm.assume(executor != address(0));
-        vm.assume(executor != followerProfileOwner);
-        vm.assume(!hub.isDelegatedExecutorApproved(followerProfileId, executor));
+        vm.assume(executor != testFollowerProfileOwner);
+        vm.assume(!hub.isDelegatedExecutorApproved(testFollowerProfileId, executor));
 
         vm.expectRevert(Errors.ExecutorInvalid.selector);
 
         _follow({
             pk: executorPk,
             isFollowerProfileOwner: false,
-            followerProfileId: followerProfileId,
+            followerProfileId: testFollowerProfileId,
             idsOfProfilesToFollow: _toUint256Array(targetProfileId),
             followTokenIds: _toUint256Array(MINT_NEW_TOKEN),
             datas: _toBytesArray('', '')
@@ -121,10 +126,10 @@ contract FollowTest is BaseTest {
         executorPk = bound(executorPk, 1, ISSECP256K1_CURVE_ORDER - 1);
         address executor = vm.addr(executorPk);
         vm.assume(executor != address(0));
-        vm.assume(executor != followerProfileOwner);
-        vm.assume(!hub.isDelegatedExecutorApproved(followerProfileId, executor));
+        vm.assume(executor != testFollowerProfileOwner);
+        vm.assume(!hub.isDelegatedExecutorApproved(testFollowerProfileId, executor));
 
-        uint256 followTokenId = followNFT.getFollowTokenId(alreadyFollowingProfileId);
+        followTokenId = followNFT.getFollowTokenId(alreadyFollowingProfileId);
         assertFalse(followNFT.exists(followTokenId));
 
         vm.expectRevert(Errors.ExecutorInvalid.selector);
@@ -132,7 +137,7 @@ contract FollowTest is BaseTest {
         _follow({
             pk: executorPk,
             isFollowerProfileOwner: false,
-            followerProfileId: followerProfileId,
+            followerProfileId: testFollowerProfileId,
             idsOfProfilesToFollow: _toUint256Array(targetProfileId),
             followTokenIds: _toUint256Array(followTokenId),
             datas: _toBytesArray('', '')
@@ -145,10 +150,10 @@ contract FollowTest is BaseTest {
         executorPk = bound(executorPk, 1, ISSECP256K1_CURVE_ORDER - 1);
         address executor = vm.addr(executorPk);
         vm.assume(executor != address(0));
-        vm.assume(executor != followerProfileOwner);
-        vm.assume(!hub.isDelegatedExecutorApproved(followerProfileId, executor));
+        vm.assume(executor != testFollowerProfileOwner);
+        vm.assume(!hub.isDelegatedExecutorApproved(testFollowerProfileId, executor));
 
-        uint256 followTokenId = followNFT.getFollowTokenId(alreadyFollowingProfileId);
+        followTokenId = followNFT.getFollowTokenId(alreadyFollowingProfileId);
         vm.prank(alreadyFollowingProfileOwner);
         followNFT.wrap(followTokenId);
 
@@ -157,7 +162,7 @@ contract FollowTest is BaseTest {
         _follow({
             pk: executorPk,
             isFollowerProfileOwner: false,
-            followerProfileId: followerProfileId,
+            followerProfileId: testFollowerProfileId,
             idsOfProfilesToFollow: _toUint256Array(targetProfileId),
             followTokenIds: _toUint256Array(followTokenId),
             datas: _toBytesArray('', '')
@@ -168,9 +173,9 @@ contract FollowTest is BaseTest {
         vm.expectRevert(Errors.ArrayMismatch.selector);
 
         _follow({
-            pk: followerProfileOwnerPk,
+            pk: testFollowerProfileOwnerPk,
             isFollowerProfileOwner: true,
-            followerProfileId: followerProfileId,
+            followerProfileId: testFollowerProfileId,
             idsOfProfilesToFollow: _toUint256Array(targetProfileId, alreadyFollowingProfileId),
             followTokenIds: _toUint256Array(MINT_NEW_TOKEN),
             datas: _toBytesArray('', '')
@@ -183,9 +188,9 @@ contract FollowTest is BaseTest {
         vm.expectRevert(Errors.ArrayMismatch.selector);
 
         _follow({
-            pk: followerProfileOwnerPk,
+            pk: testFollowerProfileOwnerPk,
             isFollowerProfileOwner: true,
-            followerProfileId: followerProfileId,
+            followerProfileId: testFollowerProfileId,
             idsOfProfilesToFollow: _toUint256Array(targetProfileId),
             followTokenIds: _toUint256Array(MINT_NEW_TOKEN),
             datas: _toBytesArray('', '')
@@ -193,15 +198,15 @@ contract FollowTest is BaseTest {
     }
 
     function testCannotFollowIfFollowerProfileDoesNotExist() public {
-        vm.prank(followerProfileOwner);
-        hub.burn(followerProfileId);
+        vm.prank(testFollowerProfileOwner);
+        hub.burn(testFollowerProfileId);
 
         vm.expectRevert(Errors.TokenDoesNotExist.selector);
 
         _follow({
-            pk: followerProfileOwnerPk,
+            pk: testFollowerProfileOwnerPk,
             isFollowerProfileOwner: true,
-            followerProfileId: followerProfileId,
+            followerProfileId: testFollowerProfileId,
             idsOfProfilesToFollow: _toUint256Array(targetProfileId),
             followTokenIds: _toUint256Array(MINT_NEW_TOKEN),
             datas: _toBytesArray('')
@@ -212,9 +217,9 @@ contract FollowTest is BaseTest {
         vm.expectRevert(Errors.TokenDoesNotExist.selector);
 
         _follow({
-            pk: followerProfileOwnerPk,
+            pk: testFollowerProfileOwnerPk,
             isFollowerProfileOwner: true,
-            followerProfileId: followerProfileId,
+            followerProfileId: testFollowerProfileId,
             idsOfProfilesToFollow: _toUint256Array(0),
             followTokenIds: _toUint256Array(MINT_NEW_TOKEN),
             datas: _toBytesArray('')
@@ -228,9 +233,9 @@ contract FollowTest is BaseTest {
         vm.expectRevert(Errors.TokenDoesNotExist.selector);
 
         _follow({
-            pk: followerProfileOwnerPk,
+            pk: testFollowerProfileOwnerPk,
             isFollowerProfileOwner: true,
-            followerProfileId: followerProfileId,
+            followerProfileId: testFollowerProfileId,
             idsOfProfilesToFollow: _toUint256Array(targetProfileId),
             followTokenIds: _toUint256Array(MINT_NEW_TOKEN),
             datas: _toBytesArray('')
@@ -259,9 +264,9 @@ contract FollowTest is BaseTest {
         vm.expectRevert(MockFollowModuleWithRevertFlag.MockFollowModuleReverted.selector);
 
         _follow({
-            pk: followerProfileOwnerPk,
+            pk: testFollowerProfileOwnerPk,
             isFollowerProfileOwner: true,
-            followerProfileId: followerProfileId,
+            followerProfileId: testFollowerProfileId,
             idsOfProfilesToFollow: _toUint256Array(targetProfileId),
             followTokenIds: _toUint256Array(MINT_NEW_TOKEN),
             datas: _toBytesArray(abi.encode(revertWhileProcessingFollow))
@@ -293,7 +298,7 @@ contract FollowTest is BaseTest {
 
         vm.expectEmit(true, false, false, true, address(hub));
         emit Events.Followed(
-            followerProfileId,
+            testFollowerProfileId,
             targetProfileId,
             expectedFollowTokenIdAssigned,
             followModuleData,
@@ -304,7 +309,7 @@ contract FollowTest is BaseTest {
             targetFollowNFTAddress,
             abi.encodeCall(
                 followNFT.follow,
-                (followerProfileId, followerProfileOwner, MINT_NEW_TOKEN)
+                (testFollowerProfileId, testFollowerProfileOwner, MINT_NEW_TOKEN)
             )
         );
 
@@ -313,9 +318,9 @@ contract FollowTest is BaseTest {
             abi.encodeCall(
                 IFollowModule.processFollow,
                 (
-                    followerProfileId,
+                    testFollowerProfileId,
                     MINT_NEW_TOKEN,
-                    followerProfileOwner,
+                    testFollowerProfileOwner,
                     targetProfileId,
                     followModuleData
                 )
@@ -323,9 +328,9 @@ contract FollowTest is BaseTest {
         );
 
         uint256[] memory assignedFollowTokenIds = _follow({
-            pk: followerProfileOwnerPk,
+            pk: testFollowerProfileOwnerPk,
             isFollowerProfileOwner: true,
-            followerProfileId: followerProfileId,
+            followerProfileId: testFollowerProfileId,
             idsOfProfilesToFollow: _toUint256Array(targetProfileId),
             followTokenIds: _toUint256Array(MINT_NEW_TOKEN),
             datas: _toBytesArray(followModuleData)
@@ -333,7 +338,7 @@ contract FollowTest is BaseTest {
 
         assertEq(assignedFollowTokenIds.length, 1);
         assertEq(assignedFollowTokenIds[0], expectedFollowTokenIdAssigned);
-        assertTrue(hub.isFollowing(followerProfileId, targetProfileId));
+        assertTrue(hub.isFollowing(testFollowerProfileId, targetProfileId));
     }
 
     function testFollowAsFollowerApprovedDelegatedExecutor(uint256 approvedDelegatedExecutorPk)
@@ -346,11 +351,11 @@ contract FollowTest is BaseTest {
         );
         address approvedDelegatedExecutor = vm.addr(approvedDelegatedExecutorPk);
         vm.assume(approvedDelegatedExecutor != address(0));
-        vm.assume(approvedDelegatedExecutor != followerProfileOwner);
+        vm.assume(approvedDelegatedExecutor != testFollowerProfileOwner);
 
-        vm.prank(followerProfileOwner);
+        vm.prank(testFollowerProfileOwner);
         hub.changeDelegatedExecutorsConfig({
-            delegatorProfileId: followerProfileId,
+            delegatorProfileId: testFollowerProfileId,
             executors: _toAddressArray(approvedDelegatedExecutor),
             approvals: _toBoolArray(true)
         });
@@ -364,7 +369,7 @@ contract FollowTest is BaseTest {
 
         vm.expectEmit(true, false, false, true, address(hub));
         emit Events.Followed(
-            followerProfileId,
+            testFollowerProfileId,
             targetProfileId,
             expectedFollowTokenIdAssigned,
             followModuleData,
@@ -375,7 +380,7 @@ contract FollowTest is BaseTest {
             targetFollowNFTAddress,
             abi.encodeCall(
                 followNFT.follow,
-                (followerProfileId, approvedDelegatedExecutor, MINT_NEW_TOKEN)
+                (testFollowerProfileId, approvedDelegatedExecutor, MINT_NEW_TOKEN)
             )
         );
 
@@ -384,7 +389,7 @@ contract FollowTest is BaseTest {
             abi.encodeCall(
                 IFollowModule.processFollow,
                 (
-                    followerProfileId,
+                    testFollowerProfileId,
                     MINT_NEW_TOKEN,
                     approvedDelegatedExecutor,
                     targetProfileId,
@@ -396,7 +401,7 @@ contract FollowTest is BaseTest {
         uint256[] memory assignedFollowTokenIds = _follow({
             pk: approvedDelegatedExecutorPk,
             isFollowerProfileOwner: false,
-            followerProfileId: followerProfileId,
+            followerProfileId: testFollowerProfileId,
             idsOfProfilesToFollow: _toUint256Array(targetProfileId),
             followTokenIds: _toUint256Array(MINT_NEW_TOKEN),
             datas: _toBytesArray(followModuleData)
@@ -404,7 +409,7 @@ contract FollowTest is BaseTest {
 
         assertEq(assignedFollowTokenIds.length, 1);
         assertEq(assignedFollowTokenIds[0], expectedFollowTokenIdAssigned);
-        assertTrue(hub.isFollowing(followerProfileId, targetProfileId));
+        assertTrue(hub.isFollowing(testFollowerProfileId, targetProfileId));
     }
 
     function _follow(
@@ -415,6 +420,10 @@ contract FollowTest is BaseTest {
         uint256[] memory followTokenIds,
         bytes[] memory datas
     ) internal virtual returns (uint256[] memory) {
+        /* Wen @solc-nowarn unused-param?
+            Silence the compiler warning, but allow calling this with Named Params.
+            This variable isn't used here, but used in withSig case. */
+        isFollowerProfileOwner = isFollowerProfileOwner;
         vm.prank(vm.addr(pk));
         return hub.follow(followerProfileId, idsOfProfilesToFollow, followTokenIds, datas);
     }
@@ -431,7 +440,7 @@ contract FollowMetaTxTest is FollowTest, MetaTxNegatives {
         FollowTest.setUp();
         MetaTxNegatives.setUp();
 
-        cachedNonceByAddress[followerProfileOwner] = _getSigNonce(followerProfileOwner);
+        cachedNonceByAddress[testFollowerProfileOwner] = _getSigNonce(testFollowerProfileOwner);
         cachedNonceByAddress[alreadyFollowingProfileOwner] = _getSigNonce(
             alreadyFollowingProfileOwner
         );
@@ -470,7 +479,7 @@ contract FollowMetaTxTest is FollowTest, MetaTxNegatives {
             _getSignedData({
                 signerPk: signerPk,
                 delegatedSigner: PROFILE_OWNER,
-                followerProfileId: followerProfileId,
+                followerProfileId: testFollowerProfileId,
                 idsOfProfilesToFollow: _toUint256Array(targetProfileId),
                 followTokenIds: _toUint256Array(MINT_NEW_TOKEN),
                 datas: _toBytesArray(''),
@@ -481,7 +490,7 @@ contract FollowMetaTxTest is FollowTest, MetaTxNegatives {
     }
 
     function _getDefaultMetaTxSignerPk() internal virtual override returns (uint256) {
-        return followerProfileOwnerPk;
+        return testFollowerProfileOwnerPk;
     }
 
     function _calculateFollowWithSigDigest(
@@ -491,7 +500,7 @@ contract FollowMetaTxTest is FollowTest, MetaTxNegatives {
         bytes[] memory datas,
         uint256 nonce,
         uint256 deadline
-    ) internal returns (bytes32) {
+    ) internal view returns (bytes32) {
         bytes32[] memory dataHashes = new bytes32[](datas.length);
         for (uint256 i = 0; i < datas.length; ) {
             dataHashes[i] = keccak256(datas[i]);
@@ -548,7 +557,7 @@ contract FollowMetaTxTest is FollowTest, MetaTxNegatives {
     }
 
     function _refreshCachedNonces() internal override {
-        cachedNonceByAddress[followerProfileOwner] = _getSigNonce(followerProfileOwner);
+        cachedNonceByAddress[testFollowerProfileOwner] = _getSigNonce(testFollowerProfileOwner);
         cachedNonceByAddress[alreadyFollowingProfileOwner] = _getSigNonce(
             alreadyFollowingProfileOwner
         );

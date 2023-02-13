@@ -87,7 +87,7 @@ contract SetFollowModuleTest is BaseTest, SignatureHelpers, SigSetup {
             approvals: _toBoolArray(true)
         });
 
-        address mockFollowModule = address(new MockFollowModule());
+        mockFollowModule = address(new MockFollowModule());
         vm.prank(governance);
         hub.whitelistFollowModule(mockFollowModule, true);
 
