@@ -108,22 +108,6 @@ library DataTypes {
     }
 
     /**
-     * @notice A struct containing the parameters required for the `setDefaultProfileWithSig()` function. Parameters are
-     * the same as the regular `setDefaultProfile()` function, with an added EIP712Signature.
-     *
-     * @param delegatedSigner The delegated executor signer, must be either zero, defaulting to the wallet owner, or a delegated executor.
-     * @param wallet The address of the wallet setting the default profile.
-     * @param profileId The token ID of the profile which will be set as default, or zero.
-     * @param sig The EIP712Signature struct containing the profile owner's signature.
-     */
-    struct SetDefaultProfileWithSigData {
-        address delegatedSigner;
-        address wallet;
-        uint256 profileId;
-        EIP712Signature sig;
-    }
-
-    /**
      * @notice A struct containing the parameters required for the `setFollowModuleWithSig()` function. Parameters are
      * the same as the regular `setFollowModule()` function, with an added EIP712Signature.
      *
@@ -142,32 +126,23 @@ library DataTypes {
     }
 
     /**
-     * @notice A struct containing the parameters required for the `setDispatcherWithSig()` function. Parameters are the same
-     * as the regular `setDispatcher()` function, with an added EIP712Signature. The signer must be the owner.
+     * @notice A struct containing the parameters required for the `changeDelegatedExecutorsConfigWithSig()` function.
      *
-     * @param profileId The token ID of the profile to set the dispatcher for.
-     * @param dispatcher The dispatcher address to set for the profile.
-     * @param sig The EIP712Signature struct containing the profile owner's signature.
-     */
-    struct SetDispatcherWithSigData {
-        uint256 profileId;
-        address dispatcher;
-        EIP712Signature sig;
-    }
+     * @param delegatorProfileId The ID of the profile to which the delegated executor is being changed for.
+     * @param executors The array of executors to set the approval for.
+     * @param approvals The array of booleans indicating the corresponding executor new approval status.
+     * @param configNumber The number of the configuration where the executor approval state is being set.
+     * @param switchToGivenConfig A boolean indicanting if the configuration will be switched to the one with the given
+     * number.
 
-    /**
-     * @notice A struct containing the parameters required for the `setDelegatedExecutorApprovalWithSig()` function. Parameters
-     * are the same as the regular `setDelegatedExecutorApproval()` function. The signer must be the onBehalfOf address.
-     *
-     * @param onBehalfOf The address the delegated executor is to be granted or revoked approval to act on behalf of.
-     * @param executor The executor to set the approval for.
-     * @param approved Whether the executor is to be approved.
      * @param sig The EIP712Signature struct containing to the signer setting the approval's signature.
      */
-    struct SetDelegatedExecutorApprovalWithSigData {
-        address onBehalfOf;
-        address executor;
-        bool approved;
+    struct ChangeDelegatedExecutorsConfigWithSigData {
+        uint256 delegatorProfileId;
+        address[] executors;
+        bool[] approvals;
+        uint64 configNumber;
+        bool switchToGivenConfig;
         EIP712Signature sig;
     }
 
@@ -467,5 +442,20 @@ library DataTypes {
         uint256[] profileIds;
         bool[] enables;
         EIP712Signature sig;
+    }
+
+    /**
+     * @notice A struct containing a profile's delegated executors configuration.
+     *
+     * @param isApproved Tells when an address is approved as delegated executor in the given configuration number.
+     * @param configNumber Current configuration number in use.
+     * @param prevConfigNumber Previous configuration number set, before switching to the current one.
+     * @param maxConfigNumberSet Maximum configuration number ever used.
+     */
+    struct DelegatedExecutorsConfig {
+        mapping(uint256 => mapping(address => bool)) isApproved; // isApproved[configNumber][executor]
+        uint64 configNumber;
+        uint64 prevConfigNumber;
+        uint64 maxConfigNumberSet;
     }
 }

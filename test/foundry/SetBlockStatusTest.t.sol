@@ -84,7 +84,7 @@ contract SetBlockStatusTest is BaseTest {
         vm.assume(nonOwnerNorDelegatedExecutor != address(0));
         vm.assume(nonOwnerNorDelegatedExecutor != statusSetterProfileOwner);
         vm.assume(
-            !hub.isDelegatedExecutorApproved(statusSetterProfileOwner, nonOwnerNorDelegatedExecutor)
+            !hub.isDelegatedExecutorApproved(statusSetterProfileId, nonOwnerNorDelegatedExecutor)
         );
 
         vm.expectRevert(Errors.ExecutorInvalid.selector);
@@ -389,7 +389,7 @@ contract SetBlockStatusMetaTxTest is SetBlockStatusTest, MetaTxNegatives {
         vm.assume(nonOwnerNorDelegatedExecutor != address(0));
         vm.assume(nonOwnerNorDelegatedExecutor != statusSetterProfileOwner);
         vm.assume(
-            !hub.isDelegatedExecutorApproved(statusSetterProfileOwner, nonOwnerNorDelegatedExecutor)
+            !hub.isDelegatedExecutorApproved(statusSetterProfileId, nonOwnerNorDelegatedExecutor)
         );
 
         vm.expectRevert(Errors.SignatureInvalid.selector);

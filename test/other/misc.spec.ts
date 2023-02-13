@@ -104,26 +104,12 @@ makeSuiteCleanRoom('Misc', function () {
       expect(await lensHub.getHandle(FIRST_PROFILE_ID)).to.eq(MOCK_PROFILE_HANDLE);
     });
 
-    it('Profile dispatcher getter should return the zero address when no dispatcher is set', async function () {
-      expect(await lensHub.getDispatcher(FIRST_PROFILE_ID)).to.eq(ZERO_ADDRESS);
-    });
-
     it('Profile creator whitelist getter should return expected values', async function () {
       expect(await lensHub.isProfileCreatorWhitelisted(userAddress)).to.eq(true);
       await expect(
         lensHub.connect(governance).whitelistProfileCreator(userAddress, false)
       ).to.not.be.reverted;
       expect(await lensHub.isProfileCreatorWhitelisted(userAddress)).to.eq(false);
-    });
-
-    it('Profile dispatcher getter should return the correct dispatcher address when it is set, then zero after it is transferred', async function () {
-      await expect(lensHub.setDispatcher(FIRST_PROFILE_ID, userTwoAddress)).to.not.be.reverted;
-      expect(await lensHub.getDispatcher(FIRST_PROFILE_ID)).to.eq(userTwoAddress);
-
-      await expect(
-        lensHub.transferFrom(userAddress, userTwoAddress, FIRST_PROFILE_ID)
-      ).to.not.be.reverted;
-      expect(await lensHub.getDispatcher(FIRST_PROFILE_ID)).to.eq(ZERO_ADDRESS);
     });
 
     it.skip('Profile follow NFT getter should return the zero address before the first follow, then the correct address afterwards', async function () {

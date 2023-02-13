@@ -125,7 +125,7 @@ contract UnfollowTest is BaseTest {
         );
         address executor = vm.addr(executorPk);
         vm.assume(executor != unfollowerProfileOwner);
-        vm.assume(!hub.isDelegatedExecutorApproved(unfollowerProfileOwner, executor));
+        vm.assume(!hub.isDelegatedExecutorApproved(unfollowerProfileId, executor));
         vm.assume(!followNFT.isApprovedForAll(unfollowerProfileOwner, executor));
 
         uint256 followTokenId = followNFT.getFollowTokenId(unfollowerProfileId);
@@ -178,7 +178,11 @@ contract UnfollowTest is BaseTest {
         vm.assume(approvedDelegatedExecutor != unfollowerProfileOwner);
 
         vm.prank(unfollowerProfileOwner);
-        hub.setDelegatedExecutorApproval(approvedDelegatedExecutor, true);
+        hub.changeDelegatedExecutorsConfig({
+            delegatorProfileId: unfollowerProfileId,
+            executors: _toAddressArray(approvedDelegatedExecutor),
+            approvals: _toBoolArray(true)
+        });
 
         vm.expectEmit(true, false, false, true, address(hub));
         emit Events.Unfollowed(unfollowerProfileId, targetProfileId, block.timestamp);

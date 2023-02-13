@@ -22,7 +22,7 @@ library PublishingLib {
      */
     function post(DataTypes.PostData calldata vars) external returns (uint256) {
         uint256 pubId = _preIncrementPubCount(vars.profileId);
-        GeneralHelpers.validateCallerIsOwnerOrDispatcherOrExecutor(vars.profileId);
+        GeneralHelpers.validateAddressIsProfileOwnerOrDelegatedExecutor(msg.sender, vars.profileId);
         _createPost(
             vars.profileId,
             msg.sender,
@@ -44,15 +44,14 @@ library PublishingLib {
      * @return uint256 The created publication's pubId.
      */
     function postWithSig(DataTypes.PostWithSigData calldata vars) external returns (uint256) {
-        uint256 profileId = vars.profileId;
         address signer = GeneralHelpers.getOriginatorOrDelegatedExecutorSigner(
-            GeneralHelpers.unsafeOwnerOf(profileId),
+            vars.profileId,
             vars.delegatedSigner
         );
-        uint256 pubId = _preIncrementPubCount(profileId);
+        uint256 pubId = _preIncrementPubCount(vars.profileId);
         MetaTxHelpers.basePostWithSig(signer, vars);
         _createPost(
-            profileId,
+            vars.profileId,
             signer,
             pubId,
             vars.contentURI,
@@ -73,7 +72,7 @@ library PublishingLib {
      */
     function comment(DataTypes.CommentData calldata vars) external returns (uint256) {
         uint256 pubId = _preIncrementPubCount(vars.profileId);
-        GeneralHelpers.validateCallerIsOwnerOrDispatcherOrExecutor(vars.profileId);
+        GeneralHelpers.validateAddressIsProfileOwnerOrDelegatedExecutor(msg.sender, vars.profileId);
         GeneralHelpers.validateNotBlocked(vars.profileId, vars.profileIdPointed);
         _createComment(vars, pubId); // caller is executor
         return pubId;
@@ -87,12 +86,11 @@ library PublishingLib {
      * @return uint256 The created publication's pubId.
      */
     function commentWithSig(DataTypes.CommentWithSigData calldata vars) external returns (uint256) {
-        uint256 profileId = vars.profileId;
         address signer = GeneralHelpers.getOriginatorOrDelegatedExecutorSigner(
-            GeneralHelpers.unsafeOwnerOf(profileId),
+            vars.profileId,
             vars.delegatedSigner
         );
-        uint256 pubId = _preIncrementPubCount(profileId);
+        uint256 pubId = _preIncrementPubCount(vars.profileId);
         GeneralHelpers.validateNotBlocked(vars.profileId, vars.profileIdPointed);
         MetaTxHelpers.baseCommentWithSig(signer, vars);
         _createCommentWithSigStruct(vars, signer, pubId);
@@ -108,7 +106,7 @@ library PublishingLib {
      */
     function mirror(DataTypes.MirrorData calldata vars) external returns (uint256) {
         uint256 pubId = _preIncrementPubCount(vars.profileId);
-        GeneralHelpers.validateCallerIsOwnerOrDispatcherOrExecutor(vars.profileId);
+        GeneralHelpers.validateAddressIsProfileOwnerOrDelegatedExecutor(msg.sender, vars.profileId);
         GeneralHelpers.validateNotBlocked(vars.profileId, vars.profileIdPointed);
         _createMirror(vars, pubId); // caller is executor
         return pubId;
@@ -122,12 +120,11 @@ library PublishingLib {
      * @return uint256 The created publication's pubId.
      */
     function mirrorWithSig(DataTypes.MirrorWithSigData calldata vars) external returns (uint256) {
-        uint256 profileId = vars.profileId;
         address signer = GeneralHelpers.getOriginatorOrDelegatedExecutorSigner(
-            GeneralHelpers.unsafeOwnerOf(profileId),
+            vars.profileId,
             vars.delegatedSigner
         );
-        uint256 pubId = _preIncrementPubCount(profileId);
+        uint256 pubId = _preIncrementPubCount(vars.profileId);
         GeneralHelpers.validateNotBlocked(vars.profileId, vars.profileIdPointed);
         MetaTxHelpers.baseMirrorWithSig(signer, vars);
         _createMirrorWithSigStruct(vars, signer, pubId);

@@ -21,11 +21,6 @@ contract NFTTransferEmittersTest is BaseTest {
 // New Misc
 contract MiscTest is BaseTest {
     // Negatives
-    function testSetDefaultProfileNotExecutorFails() public {
-        vm.expectRevert(Errors.ExecutorInvalid.selector);
-        hub.setDefaultProfile(profileOwner, newProfileId);
-    }
-
     function testSetProfileImageURINotExecutorFails() public {
         vm.expectRevert(Errors.ExecutorInvalid.selector);
         hub.setProfileImageURI(newProfileId, MOCK_URI);
@@ -37,20 +32,14 @@ contract MiscTest is BaseTest {
     }
 
     // Positives
-    function testExecutorSetDefaultProfile() public {
-        assertEq(hub.getDefaultProfile(profileOwner), 0);
-        vm.prank(profileOwner);
-        hub.setDelegatedExecutorApproval(otherSigner, true);
-
-        vm.prank(otherSigner);
-        hub.setDefaultProfile(profileOwner, newProfileId);
-        assertEq(hub.getDefaultProfile(profileOwner), newProfileId);
-    }
-
     function testExecutorSetProfileImageURI() public {
         assertEq(hub.getProfileImageURI(newProfileId), MOCK_URI);
         vm.prank(profileOwner);
-        hub.setDelegatedExecutorApproval(otherSigner, true);
+        hub.changeDelegatedExecutorsConfig({
+            delegatorProfileId: newProfileId,
+            executors: _toAddressArray(otherSigner),
+            approvals: _toBoolArray(true)
+        });
 
         vm.prank(otherSigner);
         hub.setProfileImageURI(newProfileId, 'test');
@@ -60,7 +49,11 @@ contract MiscTest is BaseTest {
     function testExecutorSetFollowNFTURI() public {
         assertEq(hub.getFollowNFTURI(newProfileId), MOCK_URI);
         vm.prank(profileOwner);
-        hub.setDelegatedExecutorApproval(otherSigner, true);
+        hub.changeDelegatedExecutorsConfig({
+            delegatorProfileId: newProfileId,
+            executors: _toAddressArray(otherSigner),
+            approvals: _toBoolArray(true)
+        });
 
         vm.prank(otherSigner);
         hub.setFollowNFTURI(newProfileId, 'test');
@@ -69,48 +62,6 @@ contract MiscTest is BaseTest {
 
     // Meta-tx
     // Negatives
-    function testSetDefaultProfileWithSigInvalidSignerFails() public {
-        uint256 nonce = 0;
-        uint256 deadline = type(uint256).max;
-        bytes32 digest = _getSetDefaultProfileTypedDataHash(
-            profileOwner,
-            newProfileId,
-            nonce,
-            deadline
-        );
-
-        vm.expectRevert(Errors.SignatureInvalid.selector);
-        hub.setDefaultProfileWithSig(
-            DataTypes.SetDefaultProfileWithSigData({
-                delegatedSigner: address(0),
-                wallet: profileOwner,
-                profileId: newProfileId,
-                sig: _getSigStruct(otherSignerKey, digest, deadline)
-            })
-        );
-    }
-
-    function testSetDefaultProfileWithSigNotExecutorFails() public {
-        uint256 nonce = 0;
-        uint256 deadline = type(uint256).max;
-        bytes32 digest = _getSetDefaultProfileTypedDataHash(
-            profileOwner,
-            newProfileId,
-            nonce,
-            deadline
-        );
-
-        vm.expectRevert(Errors.ExecutorInvalid.selector);
-        hub.setDefaultProfileWithSig(
-            DataTypes.SetDefaultProfileWithSigData({
-                delegatedSigner: otherSigner,
-                wallet: profileOwner,
-                profileId: newProfileId,
-                sig: _getSigStruct(otherSignerKey, digest, deadline)
-            })
-        );
-    }
-
     function testSetProfileImageURIWithSigInvalidSignerFails() public {
         uint256 nonce = 0;
         uint256 deadline = type(uint256).max;
@@ -186,53 +137,6 @@ contract MiscTest is BaseTest {
     }
 
     // Postivies
-    function testSetDefaultProfileWithSig() public {
-        uint256 nonce = 0;
-        uint256 deadline = type(uint256).max;
-        bytes32 digest = _getSetDefaultProfileTypedDataHash(
-            profileOwner,
-            newProfileId,
-            nonce,
-            deadline
-        );
-
-        assertEq(hub.getDefaultProfile(profileOwner), 0);
-        hub.setDefaultProfileWithSig(
-            DataTypes.SetDefaultProfileWithSigData({
-                delegatedSigner: address(0),
-                wallet: profileOwner,
-                profileId: newProfileId,
-                sig: _getSigStruct(profileOwnerKey, digest, deadline)
-            })
-        );
-        assertEq(hub.getDefaultProfile(profileOwner), newProfileId);
-    }
-
-    function testExecutorSetDefaultProfileWithSig() public {
-        vm.prank(profileOwner);
-        hub.setDelegatedExecutorApproval(otherSigner, true);
-
-        uint256 nonce = 0;
-        uint256 deadline = type(uint256).max;
-        bytes32 digest = _getSetDefaultProfileTypedDataHash(
-            profileOwner,
-            newProfileId,
-            nonce,
-            deadline
-        );
-
-        assertEq(hub.getDefaultProfile(profileOwner), 0);
-        hub.setDefaultProfileWithSig(
-            DataTypes.SetDefaultProfileWithSigData({
-                delegatedSigner: otherSigner,
-                wallet: profileOwner,
-                profileId: newProfileId,
-                sig: _getSigStruct(otherSignerKey, digest, deadline)
-            })
-        );
-        assertEq(hub.getDefaultProfile(profileOwner), newProfileId);
-    }
-
     function testSetProfileImageURIWithSig() public {
         uint256 nonce = 0;
         uint256 deadline = type(uint256).max;
@@ -252,7 +156,11 @@ contract MiscTest is BaseTest {
 
     function testExecutorSetProfileImageURIWithSig() public {
         vm.prank(profileOwner);
-        hub.setDelegatedExecutorApproval(otherSigner, true);
+        hub.changeDelegatedExecutorsConfig({
+            delegatorProfileId: newProfileId,
+            executors: _toAddressArray(otherSigner),
+            approvals: _toBoolArray(true)
+        });
 
         uint256 nonce = 0;
         uint256 deadline = type(uint256).max;
@@ -289,7 +197,11 @@ contract MiscTest is BaseTest {
 
     function testExecutorSetFollowNFTURIWithSig() public {
         vm.prank(profileOwner);
-        hub.setDelegatedExecutorApproval(otherSigner, true);
+        hub.changeDelegatedExecutorsConfig({
+            delegatorProfileId: newProfileId,
+            executors: _toAddressArray(otherSigner),
+            approvals: _toBoolArray(true)
+        });
 
         uint256 nonce = 0;
         uint256 deadline = type(uint256).max;

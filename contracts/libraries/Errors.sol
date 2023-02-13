@@ -44,7 +44,6 @@ library Errors {
     error ProfileCreatorNotWhitelisted();
     error NotProfileOwner();
     error NotProfileOwnerOrValid(); // deprecated
-    error NotDispatcher();
     error PublicationDoesNotExist();
     error HandleTaken();
     error HandleLengthInvalid();

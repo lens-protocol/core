@@ -129,10 +129,10 @@ contract MultiStateHubTest_PausedState_Direct is BaseTest {
         _setFollowModule(profileOwner, newProfileId, address(0), '');
     }
 
-    function _mockSetDelegatedExecutorApproval() internal virtual {
+    function _mockChangeDelegatedExecutorsConfig() internal virtual {
         address executor = otherSigner;
         bool approved = true;
-        _setDelegatedExecutorApproval(profileOwner, executor, approved);
+        _changeDelegatedExecutorsConfig(profileOwner, newProfileId, executor, approved);
     }
 
     function _mockSetProfileImageURI() internal virtual {
@@ -219,12 +219,12 @@ contract MultiStateHubTest_PausedState_Direct is BaseTest {
 
     function testCannotSetDelegatedExecutorWhilePaused() public {
         vm.expectRevert(Errors.Paused.selector);
-        _mockSetDelegatedExecutorApproval();
+        _mockChangeDelegatedExecutorsConfig();
 
         vm.prank(governance);
         _setState(DataTypes.ProtocolState.Unpaused);
 
-        _mockSetDelegatedExecutorApproval();
+        _mockChangeDelegatedExecutorsConfig();
     }
 
     function testCannotSetProfileImageURIWhilePaused() public {
@@ -344,22 +344,25 @@ contract MultiStateHubTest_PausedState_WithSig is
     }
 
     // Positives
-    function _mockSetDelegatedExecutorApproval() internal override {
-        address onBehalfOf = profileOwner;
+    function _mockChangeDelegatedExecutorsConfig() internal override {
         address executor = otherSigner;
 
-        bytes32 digest = _getSetDelegatedExecutorApprovalTypedDataHash({
-            onBehalfOf: onBehalfOf,
-            executor: executor,
-            approved: true,
+        bytes32 digest = _getChangeDelegatedExecutorsConfigTypedDataHash({
+            delegatorProfileId: newProfileId,
+            executors: _toAddressArray(executor),
+            approvals: _toBoolArray(true),
+            configNumber: 0,
+            switchToGivenConfig: true,
             nonce: nonce,
             deadline: deadline
         });
-        hub.setDelegatedExecutorApprovalWithSig(
-            _buildSetDelegatedExecutorApprovalWithSigData({
-                onBehalfOf: onBehalfOf,
-                executor: executor,
-                approved: true,
+        hub.changeDelegatedExecutorsConfigWithSig(
+            _buildChangeDelegatedExecutorsConfigWithSigData({
+                delegatorProfileId: newProfileId,
+                executors: _toAddressArray(executor),
+                approvals: _toBoolArray(true),
+                configNumber: 0,
+                switchToGivenConfig: true,
                 sig: _getSigStruct(profileOwnerKey, digest, deadline)
             })
         );
@@ -508,10 +511,10 @@ contract MultiStateHubTest_PublishingPausedState_Direct is BaseTest {
         _setFollowModule(profileOwner, newProfileId, address(0), '');
     }
 
-    function _mockSetDelegatedExecutorApproval() internal virtual {
+    function _mockChangeDelegatedExecutorsConfig() internal virtual {
         address executor = otherSigner;
         bool approved = true;
-        _setDelegatedExecutorApproval(profileOwner, executor, approved);
+        _changeDelegatedExecutorsConfig(profileOwner, newProfileId, executor, approved);
     }
 
     function _mockSetProfileImageURI() internal virtual {
@@ -584,7 +587,7 @@ contract MultiStateHubTest_PublishingPausedState_Direct is BaseTest {
     }
 
     function testCanSetDelegatedExecutorWhilePublishingPaused() public {
-        _mockSetDelegatedExecutorApproval();
+        _mockChangeDelegatedExecutorsConfig();
     }
 
     function testCanSetProfileImageURIWhilePublishingPaused() public {
@@ -670,22 +673,25 @@ contract MultiStateHubTest_PublishingPausedState_WithSig is
     }
 
     // Positives
-    function _mockSetDelegatedExecutorApproval() internal override {
-        address onBehalfOf = profileOwner;
+    function _mockChangeDelegatedExecutorsConfig() internal override {
         address executor = otherSigner;
 
-        bytes32 digest = _getSetDelegatedExecutorApprovalTypedDataHash({
-            onBehalfOf: onBehalfOf,
-            executor: executor,
-            approved: true,
+        bytes32 digest = _getChangeDelegatedExecutorsConfigTypedDataHash({
+            delegatorProfileId: newProfileId,
+            executors: _toAddressArray(executor),
+            approvals: _toBoolArray(true),
+            configNumber: 0,
+            switchToGivenConfig: true,
             nonce: nonce,
             deadline: deadline
         });
-        hub.setDelegatedExecutorApprovalWithSig(
-            _buildSetDelegatedExecutorApprovalWithSigData({
-                onBehalfOf: onBehalfOf,
-                executor: executor,
-                approved: true,
+        hub.changeDelegatedExecutorsConfigWithSig(
+            _buildChangeDelegatedExecutorsConfigWithSigData({
+                delegatorProfileId: newProfileId,
+                executors: _toAddressArray(executor),
+                approvals: _toBoolArray(true),
+                configNumber: 0,
+                switchToGivenConfig: true,
                 sig: _getSigStruct(profileOwnerKey, digest, deadline)
             })
         );
