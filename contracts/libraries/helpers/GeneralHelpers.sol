@@ -198,7 +198,7 @@ library GeneralHelpers {
 
     function getDelegatedExecutorsConfig(uint256 delegatorProfileId)
         internal
-        view
+        pure
         returns (DataTypes.DelegatedExecutorsConfig storage)
     {
         DataTypes.DelegatedExecutorsConfig storage _delegatedExecutorsConfig;
