@@ -169,74 +169,78 @@ library GeneralHelpers {
         return owner;
     }
 
-    function validateCallerIsOwnerOrDispatcherOrExecutor(uint256 profileId) internal view {
-        // It's safe to use the `unsafeOwnerOf()` function here because the sender cannot be
-        // the zero address, the dispatcher is cleared on burn and the zero address cannot approve
-        // a delegated executor.
-        address owner = unsafeOwnerOf(profileId);
-        if (msg.sender != owner) {
-            address dispatcher;
-
-            // Load the dispatcher for the given profile.
-            assembly {
-                mstore(0, profileId)
-                mstore(32, DISPATCHER_BY_PROFILE_MAPPING_SLOT)
-                let slot := keccak256(0, 64)
-                dispatcher := sload(slot)
-            }
-            if (msg.sender == dispatcher) return;
-            validateDelegatedExecutor(owner, msg.sender);
+    function validateAddressIsProfileOwner(address expectedProfileOwner, uint256 profileId)
+        internal
+        view
+    {
+        if (expectedProfileOwner != ownerOf(profileId)) {
+            revert Errors.NotProfileOwner();
         }
     }
 
-    function validateCallerIsOwnerOrDelegatedExecutor(uint256 profileId) internal view {
-        address owner = ownerOf(profileId);
-        if (msg.sender != owner) {
-            validateDelegatedExecutor(owner, msg.sender);
-        }
-    }
-
-    function validateAddressIsOwnerOrDelegatedExecutor(
-        address transactionExecutor,
-        address profileOwner
+    function validateAddressIsProfileOwnerOrDelegatedExecutor(
+        address expectedOwnerOrDelegatedExecutor,
+        uint256 profileId
     ) internal view {
-        if (transactionExecutor != profileOwner) {
-            validateDelegatedExecutor(profileOwner, transactionExecutor);
+        if (expectedOwnerOrDelegatedExecutor != ownerOf(profileId)) {
+            validateAddressIsDelegatedExecutor({
+                expectedDelegatedExecutor: expectedOwnerOrDelegatedExecutor,
+                delegatorProfileId: profileId
+            });
         }
     }
 
-    function validateDelegatedExecutor(address onBehalfOf, address executor) internal view {
-        if (!isExecutorApproved(onBehalfOf, executor)) {
+    function validateAddressIsDelegatedExecutor(
+        address expectedDelegatedExecutor,
+        uint256 delegatorProfileId
+    ) internal view {
+        if (!isExecutorApproved(delegatorProfileId, expectedDelegatedExecutor)) {
             revert Errors.ExecutorInvalid();
         }
     }
 
-    function isExecutorApproved(address onBehalfOf, address executor) internal view returns (bool) {
-        bool isExecutorApproved;
+    function getDelegatedExecutorsConfig(uint256 delegatorProfileId)
+        internal
+        pure
+        returns (DataTypes.DelegatedExecutorsConfig storage)
+    {
+        DataTypes.DelegatedExecutorsConfig storage _delegatedExecutorsConfig;
         assembly {
-            mstore(0, onBehalfOf)
-            mstore(32, DELEGATED_EXECUTOR_APPROVAL_MAPPING_SLOT)
-            mstore(32, keccak256(0, 64))
-            mstore(0, executor)
-            let slot := keccak256(0, 64)
-            isExecutorApproved := sload(slot)
+            mstore(0, delegatorProfileId)
+            mstore(32, DELEGATED_EXECUTOR_CONFIG_MAPPING_SLOT)
+            _delegatedExecutorsConfig.slot := keccak256(0, 64)
         }
-        return isExecutorApproved;
+        return _delegatedExecutorsConfig;
+    }
+
+    function isExecutorApproved(uint256 delegatorProfileId, address executor)
+        internal
+        view
+        returns (bool)
+    {
+        DataTypes.DelegatedExecutorsConfig
+            storage _delegatedExecutorsConfig = getDelegatedExecutorsConfig(delegatorProfileId);
+        return
+            _delegatedExecutorsConfig.isApproved[_delegatedExecutorsConfig.configNumber][executor];
     }
 
     /**
      * @dev Returns either the profile owner or the delegated signer if valid.
      */
-    function getOriginatorOrDelegatedExecutorSigner(address originator, address delegatedSigner)
+    function getOriginatorOrDelegatedExecutorSigner(uint256 profileId, address delegatedSigner)
         internal
         view
         returns (address)
     {
-        if (delegatedSigner != address(0)) {
-            validateDelegatedExecutor(originator, delegatedSigner);
+        if (delegatedSigner == address(0)) {
+            return ownerOf(profileId);
+        } else {
+            validateAddressIsDelegatedExecutor({
+                expectedDelegatedExecutor: delegatedSigner,
+                delegatorProfileId: profileId
+            });
             return delegatedSigner;
         }
-        return originator;
     }
 
     function validateNotBlocked(uint256 profile, uint256 byProfile) internal view {

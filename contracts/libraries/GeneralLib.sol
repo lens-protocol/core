@@ -22,9 +22,6 @@ import './Constants.sol';
  * @author Lens Protocol
  *
  * @notice This is the library that contains logic to be called by the hub via `delegateCall`.
- *
- * Note: The setDispatcher non-signature function was not migrated as it was more space-efficient
- * to leave it in the hub.
  */
 library GeneralLib {
     /**
@@ -105,44 +102,67 @@ library GeneralLib {
         emit Events.StateSet(msg.sender, prevState, newState, block.timestamp);
     }
 
-    /**
-     * @notice Sets the default profile for a given wallet.
-     *
-     * @param onBehalfOf The wallet to set the default profile for.
-     * @param profileId The profile ID to set.
-     */
-    function setDefaultProfile(address onBehalfOf, uint256 profileId) external {
-        _validateCallerIsOnBehalfOfOrExecutor(onBehalfOf);
-        _setDefaultProfile(onBehalfOf, profileId);
+    function switchToNewFreshDelegatedExecutorsConfig(uint256 profileId) external {
+        DataTypes.DelegatedExecutorsConfig storage _delegatedExecutorsConfig = GeneralHelpers
+            .getDelegatedExecutorsConfig({delegatorProfileId: profileId});
+        _changeDelegatedExecutorsConfig({
+            _delegatedExecutorsConfig: _delegatedExecutorsConfig,
+            delegatorProfileId: profileId,
+            executors: new address[](0),
+            approvals: new bool[](0),
+            configNumber: _delegatedExecutorsConfig.maxConfigNumberSet + 1,
+            switchToGivenConfig: true
+        });
     }
 
-    /**
-     * @notice Sets the default profile via signature for a given owner.
-     *
-     * @param vars the SetDefaultProfileWithSigData struct containing the relevant parameters.
-     */
-    function setDefaultProfileWithSig(DataTypes.SetDefaultProfileWithSigData calldata vars)
-        external
-    {
-        uint256 profileId = vars.profileId;
-        address wallet = vars.wallet;
-        address signer = GeneralHelpers.getOriginatorOrDelegatedExecutorSigner(
-            wallet,
-            vars.delegatedSigner
-        );
-        MetaTxHelpers.baseSetDefaultProfileWithSig(signer, vars);
-        _setDefaultProfile(wallet, profileId);
-    }
-
-    function setDelegatedExecutorApproval(address executor, bool approved) external {
-        _setDelegatedExecutorApproval(msg.sender, executor, approved);
-    }
-
-    function setDelegatedExecutorApprovalWithSig(
-        DataTypes.SetDelegatedExecutorApprovalWithSigData calldata vars
+    function changeCurrentDelegatedExecutorsConfig(
+        uint256 delegatorProfileId,
+        address[] calldata executors,
+        bool[] calldata approvals
     ) external {
-        MetaTxHelpers.baseSetDelegatedExecutorApprovalWithSig(vars);
-        _setDelegatedExecutorApproval(vars.onBehalfOf, vars.executor, vars.approved);
+        GeneralHelpers.validateAddressIsProfileOwner(msg.sender, delegatorProfileId);
+        DataTypes.DelegatedExecutorsConfig storage _delegatedExecutorsConfig = GeneralHelpers
+            .getDelegatedExecutorsConfig(delegatorProfileId);
+        _changeDelegatedExecutorsConfig(
+            _delegatedExecutorsConfig,
+            delegatorProfileId,
+            executors,
+            approvals,
+            _delegatedExecutorsConfig.configNumber,
+            false
+        );
+    }
+
+    function changeGivenDelegatedExecutorsConfig(
+        uint256 delegatorProfileId,
+        address[] calldata executors,
+        bool[] calldata approvals,
+        uint64 configNumber,
+        bool switchToGivenConfig
+    ) external {
+        GeneralHelpers.validateAddressIsProfileOwner(msg.sender, delegatorProfileId);
+        _changeDelegatedExecutorsConfig(
+            GeneralHelpers.getDelegatedExecutorsConfig(delegatorProfileId),
+            delegatorProfileId,
+            executors,
+            approvals,
+            configNumber,
+            switchToGivenConfig
+        );
+    }
+
+    function changeDelegatedExecutorsConfigWithSig(
+        DataTypes.ChangeDelegatedExecutorsConfigWithSigData calldata vars
+    ) external {
+        MetaTxHelpers.baseChangeDelegatedExecutorsConfigWithSig(vars);
+        _changeDelegatedExecutorsConfig(
+            GeneralHelpers.getDelegatedExecutorsConfig(vars.delegatorProfileId),
+            vars.delegatorProfileId,
+            vars.executors,
+            vars.approvals,
+            vars.configNumber,
+            vars.switchToGivenConfig
+        );
     }
 
     /**
@@ -162,7 +182,10 @@ library GeneralLib {
         uint256[] calldata followTokenIds,
         bytes[] calldata followModuleDatas
     ) external returns (uint256[] memory) {
-        GeneralHelpers.validateCallerIsOwnerOrDelegatedExecutor(followerProfileId);
+        GeneralHelpers.validateAddressIsProfileOwnerOrDelegatedExecutor(
+            msg.sender,
+            followerProfileId
+        );
         return
             InteractionHelpers.follow({
                 followerProfileId: followerProfileId,
@@ -183,9 +206,8 @@ library GeneralLib {
         external
         returns (uint256[] memory)
     {
-        address followerProfileOwner = GeneralHelpers.ownerOf(vars.followerProfileId);
         address signer = GeneralHelpers.getOriginatorOrDelegatedExecutorSigner(
-            followerProfileOwner,
+            vars.followerProfileId,
             vars.delegatedSigner
         );
         MetaTxHelpers.baseFollowWithSig(signer, vars);
@@ -202,7 +224,10 @@ library GeneralLib {
     function unfollow(uint256 unfollowerProfileId, uint256[] calldata idsOfProfilesToUnfollow)
         external
     {
-        GeneralHelpers.validateCallerIsOwnerOrDelegatedExecutor(unfollowerProfileId);
+        GeneralHelpers.validateAddressIsProfileOwnerOrDelegatedExecutor(
+            msg.sender,
+            unfollowerProfileId
+        );
         return
             InteractionHelpers.unfollow({
                 unfollowerProfileId: unfollowerProfileId,
@@ -218,9 +243,8 @@ library GeneralLib {
      * @param vars the UnfollowWithSigData struct containing the relevant parameters.
      */
     function unfollowWithSig(DataTypes.UnfollowWithSigData calldata vars) external {
-        address unfollowerProfileOwner = GeneralHelpers.ownerOf(vars.unfollowerProfileId);
         address signer = GeneralHelpers.getOriginatorOrDelegatedExecutorSigner(
-            unfollowerProfileOwner,
+            vars.unfollowerProfileId,
             vars.delegatedSigner
         );
         MetaTxHelpers.baseUnfollowWithSig(signer, vars);
@@ -237,14 +261,13 @@ library GeneralLib {
         uint256[] calldata idsOfProfilesToSetBlockStatus,
         bool[] calldata blockStatus
     ) external {
-        GeneralHelpers.validateCallerIsOwnerOrDelegatedExecutor(byProfileId);
+        GeneralHelpers.validateAddressIsProfileOwnerOrDelegatedExecutor(msg.sender, byProfileId);
         InteractionHelpers.setBlockStatus(byProfileId, idsOfProfilesToSetBlockStatus, blockStatus);
     }
 
     function setBlockStatusWithSig(DataTypes.SetBlockStatusWithSigData calldata vars) external {
-        address blockerProfileOwner = GeneralHelpers.ownerOf(vars.byProfileId);
         address signer = GeneralHelpers.getOriginatorOrDelegatedExecutorSigner(
-            blockerProfileOwner,
+            vars.byProfileId,
             vars.delegatedSigner
         );
         MetaTxHelpers.baseSetBlockStatusWithSig(signer, vars);
@@ -296,16 +319,15 @@ library GeneralLib {
         external
         returns (uint256)
     {
-        address collectorProfileOwner = GeneralHelpers.ownerOf(vars.collectorProfileId);
         address transactionSigner = GeneralHelpers.getOriginatorOrDelegatedExecutorSigner(
-            collectorProfileOwner,
+            vars.collectorProfileId,
             vars.delegatedSigner
         );
         MetaTxHelpers.baseCollectWithSig(transactionSigner, vars);
         return
             InteractionHelpers.collect({
                 collectorProfileId: vars.collectorProfileId,
-                collectorProfileOwner: collectorProfileOwner,
+                collectorProfileOwner: GeneralHelpers.ownerOf(vars.collectorProfileId),
                 transactionExecutor: transactionSigner,
                 publisherProfileId: vars.publisherProfileId,
                 pubId: vars.pubId,
@@ -447,39 +469,71 @@ library GeneralLib {
         return ptr;
     }
 
-    function _setDefaultProfile(address wallet, uint256 profileId) private {
-        if (profileId != 0 && wallet != GeneralHelpers.unsafeOwnerOf(profileId))
-            revert Errors.NotProfileOwner();
-
-        // Store the default profile in the appropriate slot for the given wallet.
-        assembly {
-            mstore(0, wallet)
-            mstore(32, DEFAULT_PROFILE_MAPPING_SLOT)
-            let slot := keccak256(0, 64)
-            sstore(slot, profileId)
-        }
-        emit Events.DefaultProfileSet(wallet, profileId, block.timestamp);
-    }
-
-    function _setDelegatedExecutorApproval(
-        address onBehalfOf,
-        address executor,
-        bool approved
+    function _changeDelegatedExecutorsConfig(
+        DataTypes.DelegatedExecutorsConfig storage _delegatedExecutorsConfig,
+        uint256 delegatorProfileId,
+        address[] memory executors,
+        bool[] memory approvals,
+        uint64 configNumber,
+        bool switchToGivenConfig
     ) private {
-        // Store the approval in the appropriate slot for the given caller and executor.
-        assembly {
-            mstore(0, onBehalfOf)
-            mstore(32, DELEGATED_EXECUTOR_APPROVAL_MAPPING_SLOT)
-            mstore(32, keccak256(0, 64))
-            mstore(0, executor)
-            let slot := keccak256(0, 64)
-            sstore(slot, approved)
+        if (executors.length != approvals.length) {
+            revert Errors.ArrayMismatch();
         }
-        emit Events.DelegatedExecutorApprovalSet(onBehalfOf, executor, approved);
+        bool configSwitched = _prepareStorageToApplyChangesUnderGivenConfig(
+            _delegatedExecutorsConfig,
+            configNumber,
+            switchToGivenConfig
+        );
+        uint256 i;
+        while (i < executors.length) {
+            _delegatedExecutorsConfig.isApproved[configNumber][executors[i]] = approvals[i];
+            unchecked {
+                ++i;
+            }
+        }
+        emit Events.DelegatedExecutorsConfigChanged(
+            delegatorProfileId,
+            configNumber,
+            executors,
+            approvals,
+            configSwitched
+        );
     }
 
-    function _validateCallerIsOnBehalfOfOrExecutor(address onBehalfOf) private view {
-        if (onBehalfOf != msg.sender)
-            GeneralHelpers.validateDelegatedExecutor(onBehalfOf, msg.sender);
+    function _prepareStorageToApplyChangesUnderGivenConfig(
+        DataTypes.DelegatedExecutorsConfig storage _delegatedExecutorsConfig,
+        uint64 configNumber,
+        bool switchToGivenConfig
+    ) private returns (bool) {
+        uint64 nextAvailableConfigNumber = _delegatedExecutorsConfig.maxConfigNumberSet + 1;
+        if (configNumber > nextAvailableConfigNumber) {
+            revert Errors.InvalidParameter();
+        }
+        bool configSwitched;
+        if (configNumber == nextAvailableConfigNumber) {
+            // The next configuration available is being changed, it must be marked.
+            // Otherwise, on a profile transfer, the next owner can inherit a used/dirty configuration.
+            _delegatedExecutorsConfig.maxConfigNumberSet = nextAvailableConfigNumber;
+            configSwitched = switchToGivenConfig;
+            if (configSwitched) {
+                // The configuration is being switched, previous and current configuration numbers must be updated.
+                _delegatedExecutorsConfig.prevConfigNumber = _delegatedExecutorsConfig.configNumber;
+                _delegatedExecutorsConfig.configNumber = nextAvailableConfigNumber;
+            }
+        } else {
+            // The configuration corresponding to the given number is not a fresh/clean one.
+            uint64 currentConfigNumber = _delegatedExecutorsConfig.configNumber;
+            // If the given configuration matches the one that is already in use, we keep `configSwitched` as `false`.
+            if (configNumber != currentConfigNumber) {
+                configSwitched = switchToGivenConfig;
+            }
+            if (configSwitched) {
+                // The configuration is being switched, previous and current configuration numbers must be updated.
+                _delegatedExecutorsConfig.prevConfigNumber = currentConfigNumber;
+                _delegatedExecutorsConfig.configNumber = configNumber;
+            }
+        }
+        return configSwitched;
     }
 }

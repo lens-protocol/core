@@ -45,15 +45,10 @@ interface IOldHub {
         uint256 pubId,
         bytes calldata data
     ) external;
-
-    function setDefaultProfile(uint256 profileId) external;
-
-    function defaultProfile(address wallet) external view returns (uint256);
 }
 
 contract UpgradeForkTest is BaseTest {
     bytes32 constant ADMIN_SLOT = bytes32(uint256(keccak256('eip1967.proxy.admin')) - 1);
-    address constant MOCK_DISPATCHER_ADDRESS = address(0x4546b);
     address constant POLYGON_HUB_PROXY = 0xDb46d1Dc155634FbC732f92E853b10B288AD5a1d;
     address constant MUMBAI_HUB_PROXY = 0x60Ae865ee4C725cd04353b5AAb364553f56ceF82;
 
@@ -93,7 +88,7 @@ contract UpgradeForkTest is BaseTest {
         // Setup the new deployment and helper memory structs.
         _forkSetup(hubProxyAddr, gov);
 
-        // Create a profile on the old hub, set the default profile and dispatcher.
+        // Create a profile on the old hub, set the default profile.
         uint256 profileId = _fullCreateProfileSequence(gov, hub);
 
         // Post, comment, mirror.
@@ -121,7 +116,7 @@ contract UpgradeForkTest is BaseTest {
         bytes memory postUpgradeEncodedProfile = abi.encode(profileStruct);
         assertEq(postUpgradeEncodedProfile, encodedProfile);
 
-        // Create a profile on the new hub, set the default profile and dispatcher.
+        // Create a profile on the new hub, set the default profile.
         profileId = _fullCreateProfileSequence(gov, hub);
 
         // Post, comment, mirror.
@@ -147,8 +142,6 @@ contract UpgradeForkTest is BaseTest {
         try hub.createProfile(mockCreateProfileData) returns (uint256 retProfileId) {
             profileId = retProfileId;
             console2.log('Profile created with modern follow module.');
-            hub.setDefaultProfile(me, profileId);
-            assertEq(hub.getDefaultProfile(me), profileId);
         } catch {
             console2.log(
                 'Profile creation with modern follow module failed. Attempting with deprecated module.'
@@ -179,11 +172,7 @@ contract UpgradeForkTest is BaseTest {
 
             oldCreateProfileData.followModule = mockDeprecatedFollowModule;
             profileId = IOldHub(address(hub)).createProfile(oldCreateProfileData);
-            IOldHub(address(hub)).setDefaultProfile(profileId);
-            assertEq(IOldHub(address(hub)).defaultProfile(me), profileId);
         }
-        hub.setDispatcher(profileId, MOCK_DISPATCHER_ADDRESS);
-        assertEq(hub.getDispatcher(profileId), MOCK_DISPATCHER_ADDRESS);
         return profileId;
     }
 

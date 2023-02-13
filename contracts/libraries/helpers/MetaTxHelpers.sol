@@ -79,27 +79,6 @@ library MetaTxHelpers {
         emit ApprovalForAll(owner, operator, approved);
     }
 
-    function baseSetDefaultProfileWithSig(
-        address signer,
-        DataTypes.SetDefaultProfileWithSigData calldata vars
-    ) internal {
-        _validateRecoveredAddress(
-            _calculateDigest(
-                keccak256(
-                    abi.encode(
-                        SET_DEFAULT_PROFILE_WITH_SIG_TYPEHASH,
-                        vars.wallet,
-                        vars.profileId,
-                        _sigNonces(signer),
-                        vars.sig.deadline
-                    )
-                )
-            ),
-            signer,
-            vars.sig
-        );
-    }
-
     function baseSetProfileMetadataURIWithSig(
         address signer,
         DataTypes.SetProfileMetadataURIWithSigData calldata vars
@@ -143,43 +122,26 @@ library MetaTxHelpers {
         );
     }
 
-    function baseSetDispatcherWithSig(DataTypes.SetDispatcherWithSigData calldata vars) internal {
-        address owner = GeneralHelpers.unsafeOwnerOf(vars.profileId);
-        _validateRecoveredAddress(
-            _calculateDigest(
-                keccak256(
-                    abi.encode(
-                        SET_DISPATCHER_WITH_SIG_TYPEHASH,
-                        vars.profileId,
-                        vars.dispatcher,
-                        _sigNonces(owner),
-                        vars.sig.deadline
-                    )
-                )
-            ),
-            owner,
-            vars.sig
-        );
-    }
-
-    function baseSetDelegatedExecutorApprovalWithSig(
-        DataTypes.SetDelegatedExecutorApprovalWithSigData calldata vars
+    function baseChangeDelegatedExecutorsConfigWithSig(
+        DataTypes.ChangeDelegatedExecutorsConfigWithSigData calldata vars
     ) internal {
-        address onBehalfOf = vars.onBehalfOf;
+        address delegatorProfileOwner = GeneralHelpers.ownerOf(vars.delegatorProfileId);
         _validateRecoveredAddress(
             _calculateDigest(
                 keccak256(
                     abi.encode(
-                        SET_DELEGATED_EXECUTOR_APPROVAL_WITH_SIG_TYPEHASH,
-                        vars.onBehalfOf,
-                        vars.executor,
-                        vars.approved,
-                        _sigNonces(onBehalfOf),
+                        CHANGE_DELEGATED_EXECUTORS_CONFIG_WITH_SIG_TYPEHASH,
+                        vars.delegatorProfileId,
+                        abi.encodePacked(vars.executors),
+                        abi.encodePacked(vars.approvals),
+                        vars.configNumber,
+                        vars.switchToGivenConfig,
+                        _sigNonces(delegatorProfileOwner),
                         vars.sig.deadline
                     )
                 )
             ),
-            onBehalfOf,
+            delegatorProfileOwner,
             vars.sig
         );
     }
@@ -429,54 +391,6 @@ library MetaTxHelpers {
             }
         }
     }
-
-    // /**
-    //  * @dev Wrapper for ecrecover to reduce code size, used in meta-tx specific functions.
-    //  */
-    // function _validateRecoveredAddressWithExecutor(
-    //     bytes32 digest,
-    //     address expectedAddress,
-    //     DataTypes.EIP712Signature calldata sig
-    // ) internal view {
-    //     if (sig.deadline < block.timestamp) revert Errors.SignatureExpired();
-    //     address recoveredAddress = expectedAddress;
-    //     // If the expected address is a contract, check the signature there.
-    //     if (recoveredAddress.code.length != 0) {
-    //         bytes memory concatenatedSig = abi.encodePacked(sig.r, sig.s, sig.v);
-    //         if (
-    //             IEIP1271Implementer(expectedAddress).isValidSignature(digest, concatenatedSig) !=
-    //             EIP1271_MAGIC_VALUE
-    //         ) revert Errors.SignatureInvalid();
-    //     } else {
-    //         recoveredAddress = ecrecover(digest, sig.v, sig.r, sig.s);
-    //         if (recoveredAddress == address(0)) revert Errors.SignatureInvalid();
-    //         // GeneralHelpers.validateOnBehalfOfOrExecutor(expectedAddress, recoveredAddress);
-    //     }
-    //     // Execution passes fine, since either a DE or the expected address is recovered.
-    // }
-
-    // function _validateRecoveredAddressWithExecutorAndReturn(
-    //     bytes32 digest,
-    //     address expectedAddress,
-    //     DataTypes.EIP712Signature calldata sig
-    // ) internal view returns (address) {
-    //     if (sig.deadline < block.timestamp) revert Errors.SignatureExpired();
-    //     address recoveredAddress = expectedAddress;
-    //     // If the expected address is a contract, check the signature there.
-    //     if (recoveredAddress.code.length != 0) {
-    //         bytes memory concatenatedSig = abi.encodePacked(sig.r, sig.s, sig.v);
-    //         if (
-    //             IEIP1271Implementer(expectedAddress).isValidSignature(digest, concatenatedSig) !=
-    //             EIP1271_MAGIC_VALUE
-    //         ) revert Errors.SignatureInvalid();
-    //     } else {
-    //         recoveredAddress = ecrecover(digest, sig.v, sig.r, sig.s);
-    //         if (recoveredAddress == address(0)) revert Errors.SignatureInvalid();
-    //         // GeneralHelpers.validateOnBehalfOfOrExecutor(expectedAddress, recoveredAddress);
-    //     }
-    //     // Execution passes fine, since either a DE or the expected address is recovered.
-    //     return recoveredAddress;
-    // }
 
     /**
      * @dev Calculates EIP712 DOMAIN_SEPARATOR based on the current contract and chain ID.

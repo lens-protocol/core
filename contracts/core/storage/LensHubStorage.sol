@@ -18,19 +18,21 @@ abstract contract LensHubStorage {
     mapping(address => bool) internal _collectModuleWhitelisted; // Slot 15
     mapping(address => bool) internal _referenceModuleWhitelisted; // Slot 16
 
-    mapping(uint256 => address) internal _dispatcherByProfile; // Slot 17
+    mapping(uint256 => address) internal ___DEPRECATED_SLOT; // Slot 17, deprecated, old _dispatcherByProfile
     mapping(bytes32 => uint256) internal _profileIdByHandleHash; // Slot 18
     mapping(uint256 => DataTypes.ProfileStruct) internal _profileById; // Slot 19
     mapping(uint256 => mapping(uint256 => DataTypes.PublicationStruct)) internal _pubByIdByProfile; // Slot 20
 
-    mapping(address => uint256) internal _defaultProfileByAddress; // Slot 21
+    mapping(address => uint256) internal _defaultProfileByAddress; // Slot 21, deprecated but needed for V2 migration
 
     uint256 internal _profileCounter; // Slot 22 - this is different to TotalSupply, as TotalSupply is decreased when the Profile is burned
     address internal _governance; // Slot 23
     address internal _emergencyAdmin; // Slot 24
 
     // Slots introduced by Lens V2 upgrade.
-    mapping(address => mapping(address => bool)) internal _delegatedExecutorApproval; // Slot 25
+
+    mapping(uint256 => DataTypes.DelegatedExecutorsConfig)
+        internal _delegatedExecutorsConfigByProfileId; // Slot 25
     mapping(uint256 => string) internal _metadataByProfile; // Slot 26
     mapping(uint256 => mapping(uint256 => bool)) internal _blockedStatus; // Slot 27, _blockedStatus[byProfile][profile]
 }

@@ -103,26 +103,8 @@ interface ILensHub {
     function createProfile(DataTypes.CreateProfileData calldata vars) external returns (uint256);
 
     /**
-     * @notice Sets the mapping between wallet and its main profile identity. Must be called either by the wallet or a
+     * @notice Sets the metadata URI for the given profile. Must be called either from the profile owner or an approved
      * delegated executor.
-     *
-     * @param onBehalfOf The address to set the default profile on behalf of.
-     * @param profileId The token ID of the profile to set as the main profile identity.
-     */
-    function setDefaultProfile(address onBehalfOf, uint256 profileId) external;
-
-    /**
-     * @notice Sets the mapping between wallet and its main profile identity via signature with the specified parameters. The
-     * signer must either be the profile owner or a delegated executor.
-     *
-     * @param vars A SetDefaultProfileWithSigData struct, including the regular parameters and an EIP712Signature struct.
-     */
-    function setDefaultProfileWithSig(DataTypes.SetDefaultProfileWithSigData calldata vars)
-        external;
-
-    /**
-     * @notice Sets the metadata URI for the given profile. Must be called either from the profile owner, a delegated
-     * executor, or the profile's dispatcher.
      *
      * @param profileId The token ID of the profile to set the metadata URI for.
      * @param metadataURI The metadata URI to set for the given profile.
@@ -160,36 +142,53 @@ interface ILensHub {
     function setFollowModuleWithSig(DataTypes.SetFollowModuleWithSigData calldata vars) external;
 
     /**
-     * @notice Sets a profile's dispatcher, giving that dispatcher rights to publish to that profile.
+     * @notice Changes the delegated executors configuration for the given profile. It allows to set the approvals for
+     * delegated executors in the specified configuration, as well as switching to it.
      *
-     * @param profileId The token ID of the profile of the profile to set the dispatcher for.
-     * @param dispatcher The dispatcher address to set for the given profile ID.
+     * @dev The message sender must be the owner of the delegator profile.
+     *
+     * @param delegatorProfileId The ID of the profile to which the delegated executor is being changed for.
+     * @param executors The array of executors to set the approval for.
+     * @param approvals The array of booleans indicating the corresponding executor new approval status.
+     * @param configNumber The number of the configuration where the executor approval state is being set.
+     * @param switchToGivenConfig A boolean indicanting if the configuration must be switched to the one with the given
+     * number.
      */
-    function setDispatcher(uint256 profileId, address dispatcher) external;
+    function changeDelegatedExecutorsConfig(
+        uint256 delegatorProfileId,
+        address[] calldata executors,
+        bool[] calldata approvals,
+        uint64 configNumber,
+        bool switchToGivenConfig
+    ) external;
 
     /**
-     * @notice Sets a profile's dispatcher via signature with the specified parameters.
+     * @notice Changes the delegated executors configuration for the given profile under the current configuration.
      *
-     * @param vars A SetDispatcherWithSigData struct, including the regular parameters and an EIP712Signature struct.
+     * @dev The message sender must be the owner of the delegator profile.
+     *
+     * @param delegatorProfileId The ID of the profile to which the delegated executor is being changed for.
+     * @param executors The array of executors to set the approval for.
+     * @param approvals The array of booleans indicating the corresponding executor new approval status.
      */
-    function setDispatcherWithSig(DataTypes.SetDispatcherWithSigData calldata vars) external;
+    function changeDelegatedExecutorsConfig(
+        uint256 delegatorProfileId,
+        address[] calldata executors,
+        bool[] calldata approvals
+    ) external;
 
     /**
-     * @notice Sets the approval for a delegated executor to act on behalf of the caller.
+     * @notice Changes the delegated executors configuration for the given profile. It allows to set the approvals for
+     * delegated executors in the specified configuration, as well as switching to it.
      *
-     * @param executor The executor to set the approval for.
-     * @param approved The approval to set.
-     */
-    function setDelegatedExecutorApproval(address executor, bool approved) external;
-
-    /**
-     * @notice Sets the approval for a delegated executor to act on behalf of a given signer.
+     * @dev The signer must be the owner of the delegator profile. The meta-tx function only exists in the flavour where
+     * the `configNumber` and `switchToGivenConfig` params are required to be passed explicitly.
      *
-     * @param vars A SetDelegatedExecutorApprovalWithSigData struct, including the regular parameters and an EIP712Signature
-     * struct.
+     * @param vars A ChangeDelegatedExecutorsConfigWithSigData struct, including the regular parameters and
+     * an EIP712Signature struct.
      */
-    function setDelegatedExecutorApprovalWithSig(
-        DataTypes.SetDelegatedExecutorApprovalWithSigData calldata vars
+    function changeDelegatedExecutorsConfigWithSig(
+        DataTypes.ChangeDelegatedExecutorsConfigWithSigData calldata vars
     ) external;
 
     /**
@@ -490,19 +489,70 @@ interface ILensHub {
     function getGovernance() external view returns (address);
 
     /**
-     * @notice Returns whether the given delegated executor is approved to act on behalf of the given
-     * wallet.
+     * @notice Returns whether the given address is approved as delegated executor, in the configuration with the given
+     * number, to act on behalf of the given profile.
      *
-     * @param wallet The wallet to check the delegated executor approval for.
-     * @param executor The executor to query the delegated executor approval for.
+     * @param delegatorProfileId The ID of the profile to check the delegated executor approval for.
+     * @param executor The address to query the delegated executor approval for.
+     * @param configNumber The number of the configuration where the executor approval state is being queried.
      *
-     * @return bool True if the executor is approved as a delegated executor to act on behalf of the wallet,
-     * false otherwise.
+     * @return bool True if the address is approved as a delegated executor to act on behalf of the profile in the
+     * given configuration, false otherwise.
      */
-    function isDelegatedExecutorApproved(address wallet, address executor)
+    function isDelegatedExecutorApproved(
+        uint256 delegatorProfileId,
+        address executor,
+        uint64 configNumber
+    ) external view returns (bool);
+
+    /**
+     * @notice Returns whether the given address is approved as delegated executor, in the current configuration, to act
+     * on behalf of the given profile.
+     *
+     * @param delegatorProfileId The ID of the profile to check the delegated executor approval for.
+     * @param executor The address to query the delegated executor approval for.
+     *
+     * @return bool True if the address is approved as a delegated executor to act on behalf of the profile in the
+     * current configuration, false otherwise.
+     */
+    function isDelegatedExecutorApproved(uint256 delegatorProfileId, address executor)
         external
         view
         returns (bool);
+
+    /**
+     * @param delegatorProfileId The ID of the profile from which the delegated executors configuration number is being
+     * queried.
+     *
+     * @return uint256 The current delegated executor configuration number.
+     */
+    function getDelegatedExecutorsConfigNumber(uint256 delegatorProfileId)
+        external
+        view
+        returns (uint64);
+
+    /**
+     * @param delegatorProfileId The ID of the profile from which the delegated executors previous configuration number
+     * set is being queried.
+     *
+     * @return uint256 The delegated executor configuration number previously set. It will coincide with the current
+     * configuration set if it was never switched from the default one.
+     */
+    function getDelegatedExecutorsPrevConfigNumber(uint256 delegatorProfileId)
+        external
+        view
+        returns (uint64);
+
+    /**
+     * @param delegatorProfileId The ID of the profile from which the delegated executors maximum configuration number
+     * set is being queried.
+     *
+     * @return uint256 The delegated executor maximum configuration number set.
+     */
+    function getDelegatedExecutorsMaxConfigNumberSet(uint256 delegatorProfileId)
+        external
+        view
+        returns (uint64);
 
     /**
      * @notice Returns whether `profile` is blocked by `byProfile`.
@@ -515,15 +565,6 @@ interface ILensHub {
     function isBlocked(uint256 profileId, uint256 byProfileId) external view returns (bool);
 
     /**
-     * @notice Returns the default profile for a given wallet address
-     *
-     * @param wallet The address to find the default mapping
-     *
-     * @return uint256 The default profile id, which will be 0 if not mapped.
-     */
-    function getDefaultProfile(address wallet) external view returns (uint256);
-
-    /**
      * @notice Returns the metadata URI for a given profile
      *
      * @param profileId The token ID of the profile to query the metadata URI for.
@@ -531,15 +572,6 @@ interface ILensHub {
      * @return string The metadata URI associated with the given profile.
      */
     function getProfileMetadataURI(uint256 profileId) external view returns (string memory);
-
-    /**
-     * @notice Returns the dispatcher for a given profile.
-     *
-     * @param profileId The token ID of the profile to query the dispatcher for.
-     *
-     * @return address The dispatcher address associated with the given profile.
-     */
-    function getDispatcher(uint256 profileId) external view returns (address);
 
     /**
      * @notice Returns the publication count for a given profile.
