@@ -249,16 +249,6 @@ contract EventTest is BaseTest {
         hub.setFollowModule(expectedProfileId, address(mockFollowModule), abi.encode(1));
     }
 
-    function testSettingDispatcherEmitsExpectedEvents() public {
-        mockCreateProfileData.to = profileOwnerTwo;
-        uint256 expectedProfileId = 2;
-        hub.createProfile(mockCreateProfileData);
-        vm.prank(profileOwnerTwo);
-        vm.expectEmit(true, true, false, true, address(hub));
-        emit Events.DispatcherSet(expectedProfileId, me, block.timestamp);
-        hub.setDispatcher(expectedProfileId, me);
-    }
-
     function testPostingEmitsExpectedEvents() public {
         vm.prank(profileOwner);
         vm.expectEmit(true, true, false, true, address(hub));

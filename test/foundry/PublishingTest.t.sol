@@ -168,7 +168,7 @@ abstract contract PublishingTest is BaseTest, SignatureHelpers, PublishingHelper
     }
 
     function testExecutorPublish() public {
-        _setDelegatedExecutorApproval(profileOwner, otherSigner, true);
+        _changeDelegatedExecutorsConfig(profileOwner, newProfileId, otherSigner, true);
 
         uint256 expectedPubId = _getPubCount(newProfileId) + 1;
 
@@ -181,7 +181,7 @@ abstract contract PublishingTest is BaseTest, SignatureHelpers, PublishingHelper
     }
 
     function testExecutorPublishWithSig() public {
-        _setDelegatedExecutorApproval(profileOwner, otherSigner, true);
+        _changeDelegatedExecutorsConfig(profileOwner, newProfileId, otherSigner, true);
 
         uint256 expectedPubId = _getPubCount(newProfileId) + 1;
         uint256 pubId = _publishWithSig({

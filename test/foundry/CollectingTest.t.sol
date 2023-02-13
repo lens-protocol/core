@@ -175,7 +175,12 @@ contract CollectingTest_Generic is CollectingTest_Base {
         uint256 startNftId = _checkCollectNFTBefore();
 
         // delegate power to executor
-        _setDelegatedExecutorApproval(collectorProfileOwner, otherSigner, true);
+        _changeDelegatedExecutorsConfig(
+            collectorProfileOwner,
+            collectorProfileId,
+            otherSigner,
+            true
+        );
 
         // collect from executor
         vm.startPrank(otherSigner);
@@ -191,7 +196,12 @@ contract CollectingTest_Generic is CollectingTest_Base {
         // mirror, then delegate power to executor
         vm.prank(profileOwner);
         hub.mirror(mockMirrorData);
-        _setDelegatedExecutorApproval(collectorProfileOwner, otherSigner, true);
+        _changeDelegatedExecutorsConfig(
+            collectorProfileOwner,
+            collectorProfileId,
+            otherSigner,
+            true
+        );
 
         // collect from executor
         vm.startPrank(otherSigner);
@@ -314,7 +324,12 @@ contract CollectingTest_WithSig is CollectingTest_Base {
         uint256 startNftId = _checkCollectNFTBefore();
 
         // delegate power to executor
-        _setDelegatedExecutorApproval(collectorProfileOwner, otherSigner, true);
+        _changeDelegatedExecutorsConfig(
+            collectorProfileOwner,
+            collectorProfileId,
+            otherSigner,
+            true
+        );
 
         // collect from executor
         uint256 nftId = _mockCollectWithSig({
@@ -331,7 +346,12 @@ contract CollectingTest_WithSig is CollectingTest_Base {
         // mirror, then delegate power to executor
         vm.prank(profileOwner);
         hub.mirror(mockMirrorData);
-        _setDelegatedExecutorApproval(collectorProfileOwner, otherSigner, true);
+        _changeDelegatedExecutorsConfig(
+            collectorProfileOwner,
+            collectorProfileId,
+            otherSigner,
+            true
+        );
 
         // collect from executor
         uint256 nftId = _mockCollectWithSig({

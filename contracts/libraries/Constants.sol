@@ -6,6 +6,7 @@ string constant FOLLOW_NFT_NAME_SUFFIX = '-Follower';
 string constant FOLLOW_NFT_SYMBOL_SUFFIX = '-Fl';
 string constant COLLECT_NFT_NAME_INFIX = '-Collect-';
 string constant COLLECT_NFT_SYMBOL_INFIX = '-Cl-';
+uint64 constant FIRST_DELEGATED_EXECUTORS_CONFIG_NUMBER = 1;
 uint8 constant MAX_HANDLE_LENGTH = 31;
 uint16 constant MAX_PROFILE_IMAGE_URI_LENGTH = 6000;
 
@@ -23,15 +24,15 @@ uint256 constant PROFILE_CREATOR_WHITELIST_MAPPING_SLOT = 13;
 uint256 constant FOLLOW_MODULE_WHITELIST_MAPPING_SLOT = 14;
 uint256 constant COLLECT_MODULE_WHITELIST_MAPPING_SLOT = 15;
 uint256 constant REFERENCE_MODULE_WHITELIST_MAPPING_SLOT = 16;
-uint256 constant DISPATCHER_BY_PROFILE_MAPPING_SLOT = 17;
+uint256 constant __DEPRECATED_SLOT__DISPATCHER_BY_PROFILE_MAPPING_SLOT = 17; // Deprecated slot.
 uint256 constant PROFILE_ID_BY_HANDLE_HASH_MAPPING_SLOT = 18;
 uint256 constant PROFILE_BY_ID_MAPPING_SLOT = 19;
 uint256 constant PUB_BY_ID_BY_PROFILE_MAPPING_SLOT = 20;
-uint256 constant DEFAULT_PROFILE_MAPPING_SLOT = 21;
+uint256 constant DEFAULT_PROFILE_MAPPING_SLOT = 21; // Deprecated slot, but still needed for V2 migration.
 uint256 constant PROFILE_COUNTER_SLOT = 22;
 uint256 constant GOVERNANCE_SLOT = 23;
 uint256 constant EMERGENCY_ADMIN_SLOT = 24;
-uint256 constant DELEGATED_EXECUTOR_APPROVAL_MAPPING_SLOT = 25;
+uint256 constant DELEGATED_EXECUTOR_CONFIG_MAPPING_SLOT = 25;
 uint256 constant PROFILE_METADATA_MAPPING_SLOT = 26;
 uint256 constant BLOCK_STATUS_MAPPING_SLOT = 27;
 uint256 constant NAME_SLOT_GT_31 = 0x290decd9548b62a8d60345a988386fc84ba6bc95484008f6362f93160ef3e563;
@@ -79,20 +80,14 @@ bytes32 constant BURN_WITH_SIG_TYPEHASH = keccak256(
 bytes32 constant EIP712_DOMAIN_TYPEHASH = keccak256(
     'EIP712Domain(string name,string version,uint256 chainId,address verifyingContract)'
 );
-bytes32 constant SET_DEFAULT_PROFILE_WITH_SIG_TYPEHASH = keccak256(
-    'SetDefaultProfileWithSig(address wallet,uint256 profileId,uint256 nonce,uint256 deadline)'
-);
 bytes32 constant SET_FOLLOW_MODULE_WITH_SIG_TYPEHASH = keccak256(
     'SetFollowModuleWithSig(uint256 profileId,address followModule,bytes followModuleInitData,uint256 nonce,uint256 deadline)'
 );
 bytes32 constant SET_FOLLOW_NFT_URI_WITH_SIG_TYPEHASH = keccak256(
     'SetFollowNFTURIWithSig(uint256 profileId,string followNFTURI,uint256 nonce,uint256 deadline)'
 );
-bytes32 constant SET_DISPATCHER_WITH_SIG_TYPEHASH = keccak256(
-    'SetDispatcherWithSig(uint256 profileId,address dispatcher,uint256 nonce,uint256 deadline)'
-);
-bytes32 constant SET_DELEGATED_EXECUTOR_APPROVAL_WITH_SIG_TYPEHASH = keccak256(
-    'SetDelegatedExecutorApprovalWithSig(address executor,bool approved,uint256 nonce,uint256 deadline)'
+bytes32 constant CHANGE_DELEGATED_EXECUTORS_CONFIG_WITH_SIG_TYPEHASH = keccak256(
+    'ChangeDelegatedExecutorsConfigWithSig(uint256 delegatorProfileId,address[] executors,bool[] approvals,uint64 configNumber,bool switchToGivenConfig,uint256 nonce,uint256 deadline)'
 );
 bytes32 constant SET_PROFILE_IMAGE_URI_WITH_SIG_TYPEHASH = keccak256(
     'SetProfileImageURIWithSig(uint256 profileId,string imageURI,uint256 nonce,uint256 deadline)'

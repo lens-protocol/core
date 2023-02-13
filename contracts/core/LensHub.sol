@@ -10,6 +10,7 @@ import {Events} from '../libraries/Events.sol';
 import {DataTypes} from '../libraries/DataTypes.sol';
 import {Errors} from '../libraries/Errors.sol';
 import {GeneralLib} from '../libraries/GeneralLib.sol';
+import {GeneralHelpers} from '../libraries/helpers/GeneralHelpers.sol';
 import {ProfileLib} from '../libraries/ProfileLib.sol';
 import {PublishingLib} from '../libraries/PublishingLib.sol';
 import {ProfileTokenURILogic} from '../libraries/ProfileTokenURILogic.sol';
@@ -165,24 +166,6 @@ contract LensHub is LensNFTBase, VersionedInitializable, LensMultiState, LensHub
     }
 
     /// @inheritdoc ILensHub
-    function setDefaultProfile(address onBehalfOf, uint256 profileId)
-        external
-        override
-        whenNotPaused
-    {
-        GeneralLib.setDefaultProfile(onBehalfOf, profileId);
-    }
-
-    /// @inheritdoc ILensHub
-    function setDefaultProfileWithSig(DataTypes.SetDefaultProfileWithSigData calldata vars)
-        external
-        override
-        whenNotPaused
-    {
-        GeneralLib.setDefaultProfileWithSig(vars);
-    }
-
-    /// @inheritdoc ILensHub
     function setProfileMetadataURI(uint256 profileId, string calldata metadataURI)
         external
         override
@@ -219,34 +202,35 @@ contract LensHub is LensNFTBase, VersionedInitializable, LensMultiState, LensHub
     }
 
     /// @inheritdoc ILensHub
-    function setDispatcher(uint256 profileId, address dispatcher) external override whenNotPaused {
-        _validateCallerIsProfileOwner(profileId);
-        _setDispatcher(profileId, dispatcher);
-    }
-
-    /// @inheritdoc ILensHub
-    function setDispatcherWithSig(DataTypes.SetDispatcherWithSigData calldata vars)
-        external
-        override
-        whenNotPaused
-    {
-        ProfileLib.setDispatcherWithSig(vars);
-    }
-
-    /// @inheritdoc ILensHub
-    function setDelegatedExecutorApproval(address executor, bool approved)
-        external
-        override
-        whenNotPaused
-    {
-        GeneralLib.setDelegatedExecutorApproval(executor, approved);
-    }
-
-    /// @inheritdoc ILensHub
-    function setDelegatedExecutorApprovalWithSig(
-        DataTypes.SetDelegatedExecutorApprovalWithSigData calldata vars
+    function changeDelegatedExecutorsConfig(
+        uint256 delegatorProfileId,
+        address[] calldata executors,
+        bool[] calldata approvals,
+        uint64 configNumber,
+        bool switchToGivenConfig
     ) external override whenNotPaused {
-        GeneralLib.setDelegatedExecutorApprovalWithSig(vars);
+        GeneralLib.changeGivenDelegatedExecutorsConfig(
+            delegatorProfileId,
+            executors,
+            approvals,
+            configNumber,
+            switchToGivenConfig
+        );
+    }
+
+    function changeDelegatedExecutorsConfig(
+        uint256 delegatorProfileId,
+        address[] calldata executors,
+        bool[] calldata approvals
+    ) external override whenNotPaused {
+        GeneralLib.changeCurrentDelegatedExecutorsConfig(delegatorProfileId, executors, approvals);
+    }
+
+    /// @inheritdoc ILensHub
+    function changeDelegatedExecutorsConfigWithSig(
+        DataTypes.ChangeDelegatedExecutorsConfigWithSigData calldata vars
+    ) external override whenNotPaused {
+        GeneralLib.changeDelegatedExecutorsConfigWithSig(vars);
     }
 
     /// @inheritdoc ILensHub
@@ -560,22 +544,56 @@ contract LensHub is LensNFTBase, VersionedInitializable, LensMultiState, LensHub
     }
 
     /// @inheritdoc ILensHub
-    function isDelegatedExecutorApproved(address wallet, address executor)
+    function isDelegatedExecutorApproved(
+        uint256 delegatorProfileId,
+        address executor,
+        uint64 configNumber
+    ) external view returns (bool) {
+        return
+            GeneralHelpers.getDelegatedExecutorsConfig(delegatorProfileId).isApproved[configNumber][
+                executor
+            ];
+    }
+
+    /// @inheritdoc ILensHub
+    function isDelegatedExecutorApproved(uint256 delegatorProfileId, address executor)
         external
         view
         returns (bool)
     {
-        return _delegatedExecutorApproval[wallet][executor];
+        return GeneralHelpers.isExecutorApproved(delegatorProfileId, executor);
+    }
+
+    /// @inheritdoc ILensHub
+    function getDelegatedExecutorsConfigNumber(uint256 delegatorProfileId)
+        external
+        view
+        returns (uint64)
+    {
+        return GeneralHelpers.getDelegatedExecutorsConfig(delegatorProfileId).configNumber;
+    }
+
+    /// @inheritdoc ILensHub
+    function getDelegatedExecutorsPrevConfigNumber(uint256 delegatorProfileId)
+        external
+        view
+        returns (uint64)
+    {
+        return GeneralHelpers.getDelegatedExecutorsConfig(delegatorProfileId).prevConfigNumber;
+    }
+
+    /// @inheritdoc ILensHub
+    function getDelegatedExecutorsMaxConfigNumberSet(uint256 delegatorProfileId)
+        external
+        view
+        returns (uint64)
+    {
+        return GeneralHelpers.getDelegatedExecutorsConfig(delegatorProfileId).maxConfigNumberSet;
     }
 
     /// @inheritdoc ILensHub
     function isBlocked(uint256 profileId, uint256 byProfileId) external view returns (bool) {
         return _blockedStatus[byProfileId][profileId];
-    }
-
-    /// @inheritdoc ILensHub
-    function getDefaultProfile(address wallet) external view override returns (uint256) {
-        return _defaultProfileByAddress[wallet];
     }
 
     /// @inheritdoc ILensHub
@@ -586,11 +604,6 @@ contract LensHub is LensNFTBase, VersionedInitializable, LensMultiState, LensHub
         returns (string memory)
     {
         return _metadataByProfile[profileId];
-    }
-
-    /// @inheritdoc ILensHub
-    function getDispatcher(uint256 profileId) external view override returns (address) {
-        return _dispatcherByProfile[profileId];
     }
 
     /// @inheritdoc ILensHub
@@ -748,29 +761,16 @@ contract LensHub is LensNFTBase, VersionedInitializable, LensMultiState, LensHub
         GeneralLib.setGovernance(newGovernance);
     }
 
-    function _setDispatcher(uint256 profileId, address dispatcher) internal {
-        _dispatcherByProfile[profileId] = dispatcher;
-        emit Events.DispatcherSet(profileId, dispatcher, block.timestamp);
-    }
-
     function _beforeTokenTransfer(
         address from,
         address to,
         uint256 tokenId
     ) internal override whenNotPaused {
-        if (_dispatcherByProfile[tokenId] != address(0)) {
-            _setDispatcher(tokenId, address(0));
+        // Switches to new fresh delegated executors configuration (except on minting, as it already has a fresh setup).
+        if (from != address(0)) {
+            GeneralLib.switchToNewFreshDelegatedExecutorsConfig(tokenId);
         }
-
-        if (_defaultProfileByAddress[from] == tokenId) {
-            _defaultProfileByAddress[from] = 0;
-        }
-
         super._beforeTokenTransfer(from, to, tokenId);
-    }
-
-    function _validateCallerIsProfileOwner(uint256 profileId) internal view {
-        if (msg.sender != ownerOf(profileId)) revert Errors.NotProfileOwner();
     }
 
     function _validateCallerIsGovernance() internal view {

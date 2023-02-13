@@ -202,27 +202,6 @@ makeSuiteCleanRoom('Profile URI Functionality', function () {
         expect(svgAfterFollow).to.eq(expectedSvg);
       });
 
-      it('User should set user two as a dispatcher on their profile, user two should set the profile URI', async function () {
-        await expect(lensHub.setDispatcher(FIRST_PROFILE_ID, userTwoAddress)).to.not.be.reverted;
-        await expect(
-          lensHub.connect(userTwo).setProfileImageURI(FIRST_PROFILE_ID, MOCK_URI)
-        ).to.not.be.reverted;
-        const tokenUri = await lensHub.tokenURI(FIRST_PROFILE_ID);
-        const metadata = await getMetadataFromBase64TokenUri(tokenUri);
-        expect(metadata.name).to.eq(`@${MOCK_PROFILE_HANDLE}`);
-        expect(metadata.description).to.eq(`@${MOCK_PROFILE_HANDLE} - Lens profile`);
-        const expectedAttributes = [
-          { trait_type: 'id', value: `#${FIRST_PROFILE_ID.toString()}` },
-          { trait_type: 'followers', value: '0' },
-          { trait_type: 'owner', value: userAddress.toLowerCase() },
-          { trait_type: 'handle', value: `@${MOCK_PROFILE_HANDLE}` },
-        ];
-        expect(metadata.attributes).to.eql(expectedAttributes);
-        const actualSvg = await getDecodedSvgImage(metadata);
-        const expectedSvg = loadTestResourceAsUtf8String('profile-token-uri-images/mock.svg');
-        expect(actualSvg).to.eq(expectedSvg);
-      });
-
       it('User should follow profile 1, user should change the follow NFT URI, URI is accurate before and after the change', async function () {
         await expect(lensHub.follow(userAddress, [FIRST_PROFILE_ID], [[]])).to.not.be.reverted;
         const followNFTAddress = await lensHub.getFollowNFT(FIRST_PROFILE_ID);

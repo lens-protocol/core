@@ -106,7 +106,7 @@ contract FollowTest is BaseTest {
         address executor = vm.addr(executorPk);
         vm.assume(executor != address(0));
         vm.assume(executor != testFollowerProfileOwner);
-        vm.assume(!hub.isDelegatedExecutorApproved(testFollowerProfileOwner, executor));
+        vm.assume(!hub.isDelegatedExecutorApproved(testFollowerProfileId, executor));
 
         vm.expectRevert(Errors.ExecutorInvalid.selector);
 
@@ -127,7 +127,7 @@ contract FollowTest is BaseTest {
         address executor = vm.addr(executorPk);
         vm.assume(executor != address(0));
         vm.assume(executor != testFollowerProfileOwner);
-        vm.assume(!hub.isDelegatedExecutorApproved(testFollowerProfileOwner, executor));
+        vm.assume(!hub.isDelegatedExecutorApproved(testFollowerProfileId, executor));
 
         followTokenId = followNFT.getFollowTokenId(alreadyFollowingProfileId);
         assertFalse(followNFT.exists(followTokenId));
@@ -151,7 +151,7 @@ contract FollowTest is BaseTest {
         address executor = vm.addr(executorPk);
         vm.assume(executor != address(0));
         vm.assume(executor != testFollowerProfileOwner);
-        vm.assume(!hub.isDelegatedExecutorApproved(testFollowerProfileOwner, executor));
+        vm.assume(!hub.isDelegatedExecutorApproved(testFollowerProfileId, executor));
 
         followTokenId = followNFT.getFollowTokenId(alreadyFollowingProfileId);
         vm.prank(alreadyFollowingProfileOwner);
@@ -354,7 +354,11 @@ contract FollowTest is BaseTest {
         vm.assume(approvedDelegatedExecutor != testFollowerProfileOwner);
 
         vm.prank(testFollowerProfileOwner);
-        hub.setDelegatedExecutorApproval(approvedDelegatedExecutor, true);
+        hub.changeDelegatedExecutorsConfig({
+            delegatorProfileId: testFollowerProfileId,
+            executors: _toAddressArray(approvedDelegatedExecutor),
+            approvals: _toBoolArray(true)
+        });
 
         vm.prank(targetProfileOwner);
         hub.setFollowModule(targetProfileId, followModuleWithRevertFlag, '');

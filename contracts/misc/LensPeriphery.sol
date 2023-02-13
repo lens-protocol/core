@@ -97,16 +97,6 @@ contract LensPeriphery {
         emit Events.FollowsToggled(follower, profileIds, enables, block.timestamp);
     }
 
-    function _validateCallerIsProfileOwnerOrDispatcher(uint256 profileId) internal view {
-        if (
-            msg.sender == IERC721Time(address(HUB)).ownerOf(profileId) ||
-            msg.sender == HUB.getDispatcher(profileId)
-        ) {
-            return;
-        }
-        revert Errors.NotProfileOwnerOrValid();
-    }
-
     /**
      * @dev Wrapper for ecrecover to reduce code size, used in meta-tx specific functions.
      *
