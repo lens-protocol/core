@@ -297,7 +297,9 @@ library PublishingLib {
             executor: msg.sender,
             profileIdPointed: rootProfileIdPointed,
             pubIdPointed: rootPubIdPointed,
-            referrerProfileId: vars.profileId,
+            referrerProfileId: vars.profileIdPointed == rootProfileIdPointed
+                ? 0
+                : vars.profileIdPointed,
             referenceModuleData: vars.referenceModuleData
         });
 
@@ -358,7 +360,9 @@ library PublishingLib {
             executor: executor,
             profileIdPointed: rootProfileIdPointed,
             pubIdPointed: rootPubIdPointed,
-            referrerProfileId: vars.profileId,
+            referrerProfileId: vars.profileIdPointed == rootProfileIdPointed
+                ? 0
+                : vars.profileIdPointed,
             referenceModuleData: vars.referenceModuleData
         });
 
