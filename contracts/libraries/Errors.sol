@@ -54,7 +54,6 @@ library Errors {
     error CallerNotCollectNFT();
     error BlockNumberInvalid();
     error ArrayMismatch();
-    error CannotCommentOnSelf();
     error NotWhitelisted();
     error InvalidParameter();
     error ExecutorInvalid();

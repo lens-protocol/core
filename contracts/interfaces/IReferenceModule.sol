@@ -12,9 +12,9 @@ interface IReferenceModule {
     // function getModuleVersion() external view returns (uint256);
 
     // function processModuleChange(
-        // uint256 profileId,
-        // uint256 pubId,
-        // bytes calldata data
+    // uint256 profileId,
+    // uint256 pubId,
+    // bytes calldata data
     // ) external;
 
     /**
@@ -42,6 +42,8 @@ interface IReferenceModule {
      * @param executor The commenter or an approved delegated executor.
      * @param profileIdPointed The profile ID of the profile associated the publication being referenced.
      * @param pubIdPointed The publication ID of the publication being referenced.
+     * @param referrerProfileId The ID of the profile authoring the mirror if the comment was done through it, zero if
+     the comment was performed directly through the original publication.
      * @param data Arbitrary data __passed from the commenter!__ to be decoded.
      */
     function processComment(
@@ -49,6 +51,7 @@ interface IReferenceModule {
         address executor,
         uint256 profileIdPointed,
         uint256 pubIdPointed,
+        uint256 referrerProfileId,
         bytes calldata data
     ) external;
 

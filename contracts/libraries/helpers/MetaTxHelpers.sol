@@ -247,8 +247,6 @@ library MetaTxHelpers {
                         vars.profileIdPointed,
                         vars.pubIdPointed,
                         keccak256(vars.referenceModuleData),
-                        vars.referenceModule,
-                        keccak256(vars.referenceModuleInitData),
                         _sigNonces(signer),
                         vars.sig.deadline
                     )

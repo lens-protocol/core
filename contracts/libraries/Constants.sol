@@ -99,7 +99,7 @@ bytes32 constant COMMENT_WITH_SIG_TYPEHASH = keccak256(
     'CommentWithSig(uint256 profileId,string contentURI,uint256 profileIdPointed,uint256 pubIdPointed,bytes referenceModuleData,address collectModule,bytes collectModuleInitData,address referenceModule,bytes referenceModuleInitData,uint256 nonce,uint256 deadline)'
 );
 bytes32 constant MIRROR_WITH_SIG_TYPEHASH = keccak256(
-    'MirrorWithSig(uint256 profileId,uint256 profileIdPointed,uint256 pubIdPointed,bytes referenceModuleData,address referenceModule,bytes referenceModuleInitData,uint256 nonce,uint256 deadline)'
+    'MirrorWithSig(uint256 profileId,uint256 profileIdPointed,uint256 pubIdPointed,bytes referenceModuleData,uint256 nonce,uint256 deadline)'
 );
 bytes32 constant FOLLOW_WITH_SIG_TYPEHASH = keccak256(
     'FollowWithSig(uint256 followerProfileId,uint256[] idsOfProfilesToFollow,uint256[] followTokenIds,bytes[] datas,uint256 nonce,uint256 deadline)'

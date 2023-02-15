@@ -260,9 +260,7 @@ contract TestSetup is Test, ForkManagement {
             profileId: newProfileId,
             profileIdPointed: newProfileId,
             pubIdPointed: FIRST_PUB_ID,
-            referenceModuleData: '',
-            referenceModule: address(0),
-            referenceModuleInitData: ''
+            referenceModuleData: ''
         });
 
         // Precompute basic collect data.

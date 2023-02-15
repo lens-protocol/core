@@ -253,9 +253,6 @@ library Events {
      * @param profileIdPointed The profile token ID that this mirror points to.
      * @param pubIdPointed The publication ID that this mirror points to.
      * @param referenceModuleData The data passed to the reference module.
-     * @param referenceModule The reference module set for this publication.
-     * @param referenceModuleReturnData The data returned from the reference module at initialization. This is abi
-     * encoded and totally depends on the reference module chosen.
      * @param timestamp The current block timestamp.
      */
     event MirrorCreated(
@@ -264,8 +261,6 @@ library Events {
         uint256 profileIdPointed,
         uint256 pubIdPointed,
         bytes referenceModuleData,
-        address referenceModule,
-        bytes referenceModuleReturnData,
         uint256 timestamp
     );
 

@@ -39,6 +39,7 @@ contract FollowerOnlyReferenceModule is FollowValidationModuleBase, IReferenceMo
         address,
         uint256 profileIdPointed,
         uint256,
+        uint256,
         bytes calldata
     ) external view override {
         address commentCreator = IERC721(HUB).ownerOf(profileId);

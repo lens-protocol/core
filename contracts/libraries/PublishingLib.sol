@@ -268,15 +268,13 @@ library PublishingLib {
      * @param pubId The publication ID to associate with this publication.
      */
     function _createComment(DataTypes.CommentData calldata vars, uint256 pubId) private {
-        uint256 pubCountPointed = _getPubCount(vars.profileIdPointed);
-        if (pubCountPointed < vars.pubIdPointed || vars.pubIdPointed == 0)
-            revert Errors.PublicationDoesNotExist();
+        (uint256 rootProfileIdPointed, uint256 rootPubIdPointed) = GeneralHelpers
+            .getPointedIfMirror(vars.profileIdPointed, vars.pubIdPointed);
 
-        if (vars.profileId == vars.profileIdPointed && vars.pubIdPointed == pubId)
-            revert Errors.CannotCommentOnSelf();
-
-        _setPublicationPointer(vars.profileId, pubId, vars.profileIdPointed, vars.pubIdPointed);
+        _setPublicationPointer(vars.profileId, pubId, rootProfileIdPointed, rootPubIdPointed);
         _setPublicationContentURI(vars.profileId, pubId, vars.contentURI);
+
+        address referenceModule = vars.referenceModule; // Stack-too-deep workaround.
 
         bytes memory collectModuleReturnData = _initPubCollectModule(
             vars.profileId,
@@ -290,28 +288,31 @@ library PublishingLib {
             vars.profileId,
             msg.sender,
             pubId,
-            vars.referenceModule,
+            referenceModule,
             vars.referenceModuleInitData
         );
 
-        _processCommentIfNeeded(
-            vars.profileId,
-            msg.sender,
-            vars.profileIdPointed,
-            vars.pubIdPointed,
-            vars.referenceModuleData
-        );
+        _processCommentIfNeeded({
+            profileId: vars.profileId,
+            executor: msg.sender,
+            profileIdPointed: rootProfileIdPointed,
+            pubIdPointed: rootPubIdPointed,
+            referrerProfileId: vars.profileIdPointed == rootProfileIdPointed
+                ? 0
+                : vars.profileIdPointed,
+            referenceModuleData: vars.referenceModuleData
+        });
 
         emit Events.CommentCreated(
             vars.profileId,
             pubId,
             vars.contentURI,
-            vars.profileIdPointed,
-            vars.pubIdPointed,
+            rootProfileIdPointed,
+            rootPubIdPointed,
             vars.referenceModuleData,
             vars.collectModule,
             collectModuleReturnData,
-            vars.referenceModule,
+            referenceModule,
             referenceModuleReturnData,
             block.timestamp
         );
@@ -329,24 +330,20 @@ library PublishingLib {
         address executor,
         uint256 pubId
     ) private {
-        // Prevents stack too deep.
-        {
-            uint256 pubCountPointed = _getPubCount(vars.profileIdPointed);
-            if (pubCountPointed < vars.pubIdPointed || vars.pubIdPointed == 0)
-                revert Errors.PublicationDoesNotExist();
-        }
+        (uint256 rootProfileIdPointed, uint256 rootPubIdPointed) = GeneralHelpers
+            .getPointedIfMirror(vars.profileIdPointed, vars.pubIdPointed);
 
-        if (vars.profileId == vars.profileIdPointed && vars.pubIdPointed == pubId)
-            revert Errors.CannotCommentOnSelf();
-
-        _setPublicationPointer(vars.profileId, pubId, vars.profileIdPointed, vars.pubIdPointed);
+        _setPublicationPointer(vars.profileId, pubId, rootProfileIdPointed, rootPubIdPointed);
         _setPublicationContentURI(vars.profileId, pubId, vars.contentURI);
+
+        address referenceModule = vars.referenceModule;
+        address collectModule = vars.collectModule;
 
         bytes memory collectModuleReturnData = _initPubCollectModule(
             vars.profileId,
             executor,
             pubId,
-            vars.collectModule,
+            collectModule,
             vars.collectModuleInitData
         );
 
@@ -354,28 +351,31 @@ library PublishingLib {
             vars.profileId,
             executor,
             pubId,
-            vars.referenceModule,
+            referenceModule,
             vars.referenceModuleInitData
         );
 
-        _processCommentIfNeeded(
-            vars.profileId,
-            executor,
-            vars.profileIdPointed,
-            vars.pubIdPointed,
-            vars.referenceModuleData
-        );
+        _processCommentIfNeeded({
+            profileId: vars.profileId,
+            executor: executor,
+            profileIdPointed: rootProfileIdPointed,
+            pubIdPointed: rootPubIdPointed,
+            referrerProfileId: vars.profileIdPointed == rootProfileIdPointed
+                ? 0
+                : vars.profileIdPointed,
+            referenceModuleData: vars.referenceModuleData
+        });
 
         emit Events.CommentCreated(
             vars.profileId,
             pubId,
             vars.contentURI,
-            vars.profileIdPointed,
-            vars.pubIdPointed,
+            rootProfileIdPointed,
+            rootPubIdPointed,
             vars.referenceModuleData,
-            vars.collectModule,
+            collectModule,
             collectModuleReturnData,
-            vars.referenceModule,
+            referenceModule,
             referenceModuleReturnData,
             block.timestamp
         );
@@ -393,14 +393,6 @@ library PublishingLib {
 
         _setPublicationPointer(vars.profileId, pubId, rootProfileIdPointed, rootPubIdPointed);
 
-        bytes memory referenceModuleReturnData = _initPubReferenceModule(
-            vars.profileId,
-            msg.sender,
-            pubId,
-            vars.referenceModule,
-            vars.referenceModuleInitData
-        );
-
         _processMirrorIfNeeded(
             vars.profileId,
             msg.sender,
@@ -415,8 +407,6 @@ library PublishingLib {
             rootProfileIdPointed,
             rootPubIdPointed,
             vars.referenceModuleData,
-            vars.referenceModule,
-            referenceModuleReturnData,
             block.timestamp
         );
     }
@@ -438,14 +428,6 @@ library PublishingLib {
 
         _setPublicationPointer(vars.profileId, pubId, rootProfileIdPointed, rootPubIdPointed);
 
-        bytes memory referenceModuleReturnData = _initPubReferenceModule(
-            vars.profileId,
-            executor,
-            pubId,
-            vars.referenceModule,
-            vars.referenceModuleInitData
-        );
-
         _processMirrorIfNeeded(
             vars.profileId,
             executor,
@@ -460,8 +442,6 @@ library PublishingLib {
             rootProfileIdPointed,
             rootPubIdPointed,
             vars.referenceModuleData,
-            vars.referenceModule,
-            referenceModuleReturnData,
             block.timestamp
         );
     }
@@ -497,18 +477,20 @@ library PublishingLib {
         address executor,
         uint256 profileIdPointed,
         uint256 pubIdPointed,
+        uint256 referrerProfileId,
         bytes calldata referenceModuleData
     ) private {
         address refModule = _getReferenceModule(profileIdPointed, pubIdPointed);
         if (refModule != address(0)) {
             try
-                IReferenceModule(refModule).processComment(
-                    profileId,
-                    executor,
-                    profileIdPointed,
-                    pubIdPointed,
-                    referenceModuleData
-                )
+                IReferenceModule(refModule).processComment({
+                    profileId: profileId,
+                    executor: executor,
+                    profileIdPointed: profileIdPointed,
+                    pubIdPointed: pubIdPointed,
+                    referrerProfileId: referrerProfileId,
+                    data: referenceModuleData
+                })
             {} catch (bytes memory err) {
                 assembly {
                     /// Equivalent to reverting with the returned error selector if

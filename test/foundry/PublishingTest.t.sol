@@ -52,7 +52,7 @@ abstract contract PublishingTest is BaseTest, SignatureHelpers, PublishingHelper
         _publish();
     }
 
-    function testCannotPublishNotWhitelistedReferenceModule() public {
+    function testCannotPublishNotWhitelistedReferenceModule() public virtual {
         mockPostData.referenceModule = address(0xC0FFEE);
         replicateInitData();
         vm.prank(profileOwner);
@@ -67,7 +67,7 @@ abstract contract PublishingTest is BaseTest, SignatureHelpers, PublishingHelper
         _publishWithSig({delegatedSigner: address(0), signerPrivKey: profileOwnerKey});
     }
 
-    function testCannotPublishWithSigNotWhitelistedReferenceModule() public {
+    function testCannotPublishWithSigNotWhitelistedReferenceModule() public virtual {
         mockPostData.referenceModule = address(0xC0FFEE);
         replicateInitData();
         vm.expectRevert(Errors.ReferenceModuleNotWhitelisted.selector);
@@ -308,7 +308,7 @@ contract CommentTest is PublishingTest {
         mockCommentData.pubIdPointed = nextPubId;
 
         vm.prank(profileOwner);
-        vm.expectRevert(Errors.CannotCommentOnSelf.selector);
+        vm.expectRevert(Errors.PublicationDoesNotExist.selector);
         _publish();
     }
 
@@ -318,7 +318,7 @@ contract CommentTest is PublishingTest {
         replicateInitData();
         mockCommentData.pubIdPointed = nextPubId;
 
-        vm.expectRevert(Errors.CannotCommentOnSelf.selector);
+        vm.expectRevert(Errors.PublicationDoesNotExist.selector);
         _publishWithSig({delegatedSigner: address(0), signerPrivKey: profileOwnerKey});
     }
 
@@ -363,6 +363,36 @@ contract CommentTest is PublishingTest {
         DataTypes.PublicationStruct memory pub = _getPub(newProfileId, commentPubId);
         _verifyPublication(pub, _expectedPubFromInitData());
     }
+
+    function testCommentOnMirrorShouldPointToOriginalPost() public {
+        mockMirrorData.pubIdPointed = postId;
+        vm.prank(profileOwner);
+        uint256 mirrorId = _mirror(mockMirrorData);
+
+        mockCommentData.pubIdPointed = mirrorId;
+        vm.prank(profileOwner);
+        uint256 commentId = _publish();
+
+        DataTypes.PublicationStruct memory pub = _getPub(newProfileId, commentId);
+        mockCommentData.pubIdPointed = postId; // We're expecting a mirror to point at the original post ID
+        _verifyPublication(pub, _expectedPubFromInitData(mockCommentData));
+    }
+
+    function testCommentWithSigOnMirrorShouldPointToOriginalPost() public {
+        mockMirrorData.pubIdPointed = postId;
+        vm.prank(profileOwner);
+        uint256 mirrorId = _mirror(mockMirrorData);
+
+        mockCommentData.pubIdPointed = mirrorId;
+        uint256 commentId = _publishWithSig({
+            delegatedSigner: address(0),
+            signerPrivKey: profileOwnerKey
+        });
+
+        DataTypes.PublicationStruct memory pub = _getPub(newProfileId, commentId);
+        mockCommentData.pubIdPointed = postId; // We're expecting a mirror to point at the original post ID
+        _verifyPublication(pub, _expectedPubFromInitData(mockCommentData));
+    }
 }
 
 contract MirrorTest is PublishingTest {
@@ -370,8 +400,6 @@ contract MirrorTest is PublishingTest {
 
     function replicateInitData() internal override {
         mockMirrorData.profileId = mockPostData.profileId;
-        mockMirrorData.referenceModule = mockPostData.referenceModule;
-        mockMirrorData.referenceModuleInitData = mockPostData.referenceModuleInitData;
     }
 
     function _publish() internal override returns (uint256) {
@@ -416,6 +444,10 @@ contract MirrorTest is PublishingTest {
     function testCannotPublishNotWhitelistedCollectModule() public override {}
 
     function testCannotPublishWithSigNotWhitelistedCollectModule() public override {}
+
+    function testCannotPublishNotWhitelistedReferenceModule() public override {}
+
+    function testCannotPublishWithSigNotWhitelistedReferenceModule() public override {}
 
     // negatives
 

@@ -24,8 +24,19 @@ struct OldCreateProfileData {
     string followNFTURI;
 }
 
+struct OldMirrorData {
+    uint256 profileId;
+    uint256 profileIdPointed;
+    uint256 pubIdPointed;
+    bytes referenceModuleData;
+    address referenceModule;
+    bytes referenceModuleInitData;
+}
+
 interface IOldHub {
     function createProfile(OldCreateProfileData memory vars) external returns (uint256);
+
+    function mirror(OldMirrorData memory vars) external returns (uint256);
 
     function follow(uint256[] calldata profileIds, bytes[] calldata datas) external;
 
@@ -196,7 +207,6 @@ contract UpgradeForkTest is BaseTest {
 
             mockCommentData.collectModule = mockCollectModuleAddr;
             mockCommentData.referenceModule = mockReferenceModuleAddr;
-            mockMirrorData.referenceModule = mockReferenceModuleAddr;
 
             // Validate post.
             assertEq(postId, 1);
@@ -230,7 +240,7 @@ contract UpgradeForkTest is BaseTest {
             assertEq(pub.profileIdPointed, mockMirrorData.profileIdPointed);
             assertEq(pub.pubIdPointed, mockMirrorData.pubIdPointed);
             assertEq(pub.contentURI, '');
-            assertEq(pub.referenceModule, mockMirrorData.referenceModule);
+            assertEq(pub.referenceModule, address(0));
             assertEq(pub.collectModule, address(0));
             assertEq(pub.collectNFT, address(0));
         } catch {
@@ -277,8 +287,16 @@ contract UpgradeForkTest is BaseTest {
             assertEq(pub.collectNFT, address(0));
 
             // Mirror.
-            mockMirrorData.referenceModule = mockDeprecatedReferenceModule;
-            uint256 mirrorId = hub.mirror(mockMirrorData);
+            OldMirrorData memory oldMirrorData = OldMirrorData({
+                profileId: mockMirrorData.profileId,
+                profileIdPointed: mockMirrorData.profileIdPointed,
+                pubIdPointed: mockMirrorData.pubIdPointed,
+                referenceModuleData: mockMirrorData.referenceModuleData,
+                referenceModule: mockDeprecatedReferenceModule,
+                referenceModuleInitData: mockCommentData.referenceModuleInitData
+            });
+
+            uint256 mirrorId = IOldHub(address(hub)).mirror(oldMirrorData);
 
             // Validate mirror.
             assertEq(mirrorId, 3);
@@ -286,7 +304,7 @@ contract UpgradeForkTest is BaseTest {
             assertEq(pub.profileIdPointed, mockMirrorData.profileIdPointed);
             assertEq(pub.pubIdPointed, mockMirrorData.pubIdPointed);
             assertEq(pub.contentURI, '');
-            assertEq(pub.referenceModule, mockMirrorData.referenceModule);
+            assertEq(pub.referenceModule, mockDeprecatedReferenceModule);
             assertEq(pub.collectModule, address(0));
             assertEq(pub.collectNFT, address(0));
         }
@@ -407,9 +425,7 @@ contract UpgradeForkTest is BaseTest {
             profileId: 0,
             profileIdPointed: newProfileId,
             pubIdPointed: 1,
-            referenceModuleData: '',
-            referenceModule: address(0),
-            referenceModuleInitData: abi.encode(1)
+            referenceModuleData: ''
         });
     }
 }
