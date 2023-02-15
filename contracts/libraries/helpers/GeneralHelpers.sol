@@ -49,7 +49,8 @@ library GeneralHelpers {
             // is not zero, the publication is not a mirror, thus we return the original pubId and profileId.
             return (profileId, pubId);
         } else {
-            // We know the publication is a mirror (or it doesn't exist), so we load the profile ID and publication ID it points to.
+            // The publication is either a mirror or a non-existent one. We determine that by checking the pointed
+            // profile and publication IDs.
             uint256 profileIdPointed;
 
             // Load the pointed profile ID, first in the cached slot.
