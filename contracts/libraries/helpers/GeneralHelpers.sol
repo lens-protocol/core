@@ -45,8 +45,8 @@ library GeneralHelpers {
         }
 
         if (collectModule != address(0)) {
-            // We relate on collect module being zero for mirrors (and non-existent publications), so if it is not zero, we know the
-            // publication is not a mirror, so we return the original pubId and profileId.
+            // We rely on the collect module being zero for classifying mirrors or non-existent publications so, if it
+            // is not zero, the publication is not a mirror, thus we return the original pubId and profileId.
             return (profileId, pubId);
         } else {
             // We know the publication is a mirror (or it doesn't exist), so we load the profile ID and publication ID it points to.
