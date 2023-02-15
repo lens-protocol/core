@@ -33,7 +33,6 @@ export const ERRORS = {
   MODULE_DATA_MISMATCH: 'ModuleDataMismatch()',
   FOLLOW_NOT_APPROVED: 'FollowNotApproved()',
   ARRAY_MISMATCH: 'ArrayMismatch()',
-  NOT_DISPATCHER: 'NotDispatcher()',
 
   // ERC721Time + ERC721Enumerable errors
   ERC721_NOT_OWN: 'ERC721Time_TransferOfTokenThatIsNotOwn()',
