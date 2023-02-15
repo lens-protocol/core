@@ -60,7 +60,9 @@ library GeneralHelpers {
             }
 
             // We validate existence here as an optimization, so validating in calling
-            // contracts is unnecessary. This will also revert if the original publication is not a mirror and does not exist.
+            // contracts is unnecessary.
+            // If the pointed profile ID is zero, given that we expect a mirror to have profileIdPointed, then the publication
+            // does not exist.
             if (profileIdPointed == 0) revert Errors.PublicationDoesNotExist();
 
             uint256 pubIdPointed;
