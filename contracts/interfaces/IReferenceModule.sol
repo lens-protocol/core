@@ -42,7 +42,8 @@ interface IReferenceModule {
      * @param executor The commenter or an approved delegated executor.
      * @param profileIdPointed The profile ID of the profile associated the publication being referenced.
      * @param pubIdPointed The publication ID of the publication being referenced.
-     * @param referrerProfileId The profile ID of the profile that referred the commenter via mirror.
+     * @param referrerProfileId The ID of the profile authoring the mirror if the comment was done through it, zero if
+     the comment was performed directly through the original publication.
      * @param data Arbitrary data __passed from the commenter!__ to be decoded.
      */
     function processComment(
