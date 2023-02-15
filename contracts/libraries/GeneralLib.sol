@@ -278,32 +278,24 @@ library GeneralLib {
         );
     }
 
-    /**
-     * @notice Collects the given publication, executing the necessary logic and module call before minting the
-     * collect NFT to the collector.
-     *
-     * @param collectorProfileId The profile that collect is being executed for.
-     * @param publisherProfileId The token ID of the publisher profile of the collected publication.
-     * @param pubId The publication ID of the publication being collected.
-     * @param collectModuleData The data to pass to the publication's collect module.
-     * @param collectNFTImpl The address of the collect NFT implementation, which has to be passed because it's an immutable in the hub.
-     *
-     * @return uint256 An integer representing the minted token ID.
-     */
     function collect(
+        uint256 collectedPubAuthorProfileId,
+        uint256 collectedPubId,
         uint256 collectorProfileId,
-        uint256 publisherProfileId,
-        uint256 pubId,
+        uint256 referrerProfileId,
+        uint256 referrerPubId,
         bytes calldata collectModuleData,
         address collectNFTImpl
     ) external returns (uint256) {
         return
             InteractionHelpers.collect({
+                collectedPubAuthorProfileId: collectedPubAuthorProfileId,
+                collectedPubId: collectedPubId,
                 collectorProfileId: collectorProfileId,
                 collectorProfileOwner: GeneralHelpers.ownerOf(collectorProfileId),
                 transactionExecutor: msg.sender,
-                publisherProfileId: publisherProfileId,
-                pubId: pubId,
+                referrerProfileId: referrerProfileId,
+                referrerPubId: referrerPubId,
                 collectModuleData: collectModuleData,
                 collectNFTImpl: collectNFTImpl
             });
@@ -409,7 +401,7 @@ library GeneralLib {
     }
 
     function getContentURI(uint256 profileId, uint256 pubId) external view returns (string memory) {
-        (uint256 rootProfileId, uint256 rootPubId) = GeneralHelpers.getPointedIfMirror(
+        (uint256 rootProfileId, uint256 rootPubId, ) = GeneralHelpers.getPointedIfMirror(
             profileId,
             pubId
         );

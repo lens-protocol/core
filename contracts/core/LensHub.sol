@@ -421,16 +421,20 @@ contract LensHub is LensNFTBase, VersionedInitializable, LensMultiState, LensHub
 
     /// @inheritdoc ILensHub
     function collect(
+        uint256 collectedPubAuthorProfileId,
+        uint256 collectedPubId,
         uint256 collectorProfileId,
-        uint256 publisherProfileId, // TODO: Think if we can have better naming
-        uint256 pubId,
+        uint256 referrerProfileId,
+        uint256 referrerPubId,
         bytes calldata data
     ) external override whenNotPaused returns (uint256) {
         return
             GeneralLib.collect({
+                collectedPubAuthorProfileId: collectedPubAuthorProfileId,
+                collectedPubId: collectedPubId,
                 collectorProfileId: collectorProfileId,
-                publisherProfileId: publisherProfileId,
-                pubId: pubId,
+                referrerProfileId: referrerProfileId,
+                referrerPubId: referrerPubId,
                 collectModuleData: data,
                 collectNFTImpl: COLLECT_NFT_IMPL
             });
@@ -704,21 +708,13 @@ contract LensHub is LensNFTBase, VersionedInitializable, LensMultiState, LensHub
     }
 
     /// @inheritdoc ILensHub
-    function getPubType(uint256 profileId, uint256 pubId)
+    function getPublicationType(uint256 profileId, uint256 pubId)
         external
         view
         override
-        returns (DataTypes.PubType)
+        returns (DataTypes.PublicationType)
     {
-        if (pubId == 0 || _profileById[profileId].pubCount < pubId) {
-            return DataTypes.PubType.Nonexistent;
-        } else if (_pubByIdByProfile[profileId][pubId].collectModule == address(0)) {
-            return DataTypes.PubType.Mirror;
-        } else if (_pubByIdByProfile[profileId][pubId].profileIdPointed == 0) {
-            return DataTypes.PubType.Post;
-        } else {
-            return DataTypes.PubType.Comment;
-        }
+        return GeneralHelpers.getPublicationType(profileId, pubId);
     }
 
     /// @inheritdoc ILensHub

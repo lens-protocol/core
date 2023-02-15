@@ -30,11 +30,12 @@ library DataTypes {
      * @param Mirror A mirror, having a pointer to another publication, but no URI or collect module.
      * @param Nonexistent An indicator showing the queried publication does not exist.
      */
-    enum PubType {
+    enum PublicationType {
+        Nonexistent,
         Post,
         Comment,
         Mirror,
-        Nonexistent
+        Quote
     }
 
     /**
@@ -71,16 +72,6 @@ library DataTypes {
         string followNFTURI; // offset 5
     }
 
-    /**
-     * @notice A struct containing data associated with each new publication.
-     *
-     * @param profileIdPointed The profile token ID this publication points to, for mirrors and comments.
-     * @param pubIdPointed The publication ID this publication points to, for mirrors and comments.
-     * @param contentURI The URI associated with this publication.
-     * @param referenceModule The address of the current reference module in use by this profile, can be empty.
-     * @param collectModule The address of the collect module associated with this publication, this exists for all publication.
-     * @param collectNFT The address of the collectNFT associated with this publication, if any.
-     */
     struct PublicationStruct {
         uint256 profileIdPointed;
         uint256 pubIdPointed;
@@ -88,6 +79,10 @@ library DataTypes {
         address referenceModule;
         address collectModule;
         address collectNFT;
+        // ----------------
+        PublicationType pubType;
+        uint256 rootProfileId;
+        uint256 rootPubId;
     }
 
     /**

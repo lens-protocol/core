@@ -268,7 +268,7 @@ library PublishingLib {
      * @param pubId The publication ID to associate with this publication.
      */
     function _createComment(DataTypes.CommentData calldata vars, uint256 pubId) private {
-        (uint256 rootProfileIdPointed, uint256 rootPubIdPointed) = GeneralHelpers
+        (uint256 rootProfileIdPointed, uint256 rootPubIdPointed, ) = GeneralHelpers
             .getPointedIfMirror(vars.profileIdPointed, vars.pubIdPointed);
 
         _setPublicationPointer(vars.profileId, pubId, rootProfileIdPointed, rootPubIdPointed);
@@ -330,7 +330,7 @@ library PublishingLib {
         address executor,
         uint256 pubId
     ) private {
-        (uint256 rootProfileIdPointed, uint256 rootPubIdPointed) = GeneralHelpers
+        (uint256 rootProfileIdPointed, uint256 rootPubIdPointed, ) = GeneralHelpers
             .getPointedIfMirror(vars.profileIdPointed, vars.pubIdPointed);
 
         _setPublicationPointer(vars.profileId, pubId, rootProfileIdPointed, rootPubIdPointed);
@@ -388,7 +388,7 @@ library PublishingLib {
      * @param pubId The publication ID to associate with this publication.
      */
     function _createMirror(DataTypes.MirrorData calldata vars, uint256 pubId) private {
-        (uint256 rootProfileIdPointed, uint256 rootPubIdPointed) = GeneralHelpers
+        (uint256 rootProfileIdPointed, uint256 rootPubIdPointed, ) = GeneralHelpers
             .getPointedIfMirror(vars.profileIdPointed, vars.pubIdPointed);
 
         _setPublicationPointer(vars.profileId, pubId, rootProfileIdPointed, rootPubIdPointed);
@@ -423,7 +423,7 @@ library PublishingLib {
         address executor,
         uint256 pubId
     ) private {
-        (uint256 rootProfileIdPointed, uint256 rootPubIdPointed) = GeneralHelpers
+        (uint256 rootProfileIdPointed, uint256 rootPubIdPointed, ) = GeneralHelpers
             .getPointedIfMirror(vars.profileIdPointed, vars.pubIdPointed);
 
         _setPublicationPointer(vars.profileId, pubId, rootProfileIdPointed, rootPubIdPointed);

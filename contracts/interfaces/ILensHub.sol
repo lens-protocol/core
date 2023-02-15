@@ -694,15 +694,10 @@ interface ILensHub {
         view
         returns (DataTypes.PublicationStruct memory);
 
-    /**
-     * @notice Returns the publication type associated with a given publication.
-     *
-     * @param profileId The token ID of the profile that published the publication to query.
-     * @param pubId The publication ID of the publication to query.
-     *
-     * @return PubType The publication type, as a member of an enum (either "post," "comment" or "mirror").
-     */
-    function getPubType(uint256 profileId, uint256 pubId) external view returns (DataTypes.PubType);
+    function getPublicationType(uint256 profileId, uint256 pubId)
+        external
+        view
+        returns (DataTypes.PublicationType);
 
     /**
      * @notice Returns the follow NFT implementation address.
