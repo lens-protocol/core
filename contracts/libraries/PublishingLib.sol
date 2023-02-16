@@ -206,7 +206,12 @@ library PublishingLib {
         address referenceModule,
         bytes calldata referenceModuleInitData
     ) private {
-        GeneralHelpers.getPublicationStruct(profileId, pubId).contentURI = contentURI;
+        DataTypes.PublicationStruct storage _publication = GeneralHelpers.getPublicationStruct(
+            profileId,
+            pubId
+        );
+        _publication.contentURI = contentURI;
+        _publication.pubType = DataTypes.PublicationType.Post;
 
         bytes memory collectModuleReturnData = _initPubCollectModule(
             profileId,
@@ -265,6 +270,19 @@ library PublishingLib {
             _publication.profileIdPointed = profileIdPointed;
             _publication.pubIdPointed = pubIdPointed;
             _publication.contentURI = commentData.contentURI;
+            _publication.pubType = DataTypes.PublicationType.Comment;
+
+            DataTypes.PublicationStruct storage _publicationPointed = GeneralHelpers
+                .getPublicationStruct(profileIdPointed, pubIdPointed);
+            if (_publicationPointed.pubType == DataTypes.PublicationType.Post) {
+                // TODO: || _publicationPointed.pubType == DataTypes.PublicationType.Quote) {
+                _publication.rootProfileId = profileIdPointed;
+                _publication.rootPubId = pubIdPointed;
+            } else {
+                // The publication pointed is a comment.
+                _publication.rootProfileId = _publicationPointed.rootProfileId;
+                _publication.rootPubId = _publicationPointed.rootPubId;
+            }
         }
 
         {
@@ -341,6 +359,7 @@ library PublishingLib {
         );
         _publication.profileIdPointed = profileIdPointed;
         _publication.pubIdPointed = pubIdPointed;
+        _publication.pubType = DataTypes.PublicationType.Mirror;
 
         _processMirrorIfNeeded(
             mirrorData.profileId,
