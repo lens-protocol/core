@@ -386,18 +386,22 @@ library DataTypes {
      * the regular `collect()` function, with the collector's (signer) address and an EIP712Signature added.
      *
      * @param delegatedSigner The delegated executor signer, must be either zero, defaulting to the collector profile owner, or a delegated executor.
+     * @param publicationCollectedProfileId The token ID of the profile that published the publication to collect.
+     * @param publicationCollectedId The publication to collect's publication ID.
      * @param collectorProfileId The collector profile.
-     * @param publisherProfileId The token ID of the profile that published the publication to collect.
-     * @param pubId The publication to collect's publication ID.
-     * @param data The arbitrary data to pass to the collectModule if needed.
+     * @param passedReferrerProfileId TODO
+     * @param passedReferrerPubId TODO
+     * @param collectModuleData The arbitrary data to pass to the collectModule if needed.
      * @param sig The EIP712Signature struct containing the collector's signature.
      */
     struct CollectWithSigData {
         address delegatedSigner;
+        uint256 publicationCollectedProfileId;
+        uint256 publicationCollectedId;
         uint256 collectorProfileId;
-        uint256 publisherProfileId;
-        uint256 pubId;
-        bytes data;
+        uint256 passedReferrerProfileId;
+        uint256 passedReferrerPubId;
+        bytes collectModuleData;
         EIP712Signature sig;
     }
 

@@ -5,6 +5,7 @@ pragma solidity 0.8.15;
 import {ICollectModule} from '../../../interfaces/ICollectModule.sol';
 import {ModuleBase} from '../ModuleBase.sol';
 import {FollowValidationModuleBase} from '../FollowValidationModuleBase.sol';
+import {DataTypes} from 'contracts/libraries/DataTypes.sol';
 
 /**
  * @title FreeCollectModule
@@ -24,8 +25,8 @@ contract FreeCollectModule is FollowValidationModuleBase, ICollectModule {
      */
     function initializePublicationCollectModule(
         uint256 profileId,
-        address,
         uint256 pubId,
+        address,
         bytes calldata data
     ) external override onlyHub returns (bytes memory) {
         bool followerOnly = abi.decode(data, (bool));
@@ -38,15 +39,20 @@ contract FreeCollectModule is FollowValidationModuleBase, ICollectModule {
      *  1. Ensuring the collector is a follower, if needed
      */
     function processCollect(
+        uint256 publicationCollectedProfileId,
+        uint256 publicationCollectedId,
         uint256,
-        uint256,
-        address collector,
+        address collectorProfileOwner,
         address,
-        uint256 profileId,
-        uint256 pubId,
+        uint256,
+        uint256,
+        DataTypes.PublicationType,
         bytes calldata
     ) external view override {
-        if (_followerOnlyByPublicationByProfile[profileId][pubId])
-            _checkFollowValidity(profileId, collector);
+        if (
+            _followerOnlyByPublicationByProfile[publicationCollectedProfileId][
+                publicationCollectedId
+            ]
+        ) _checkFollowValidity(publicationCollectedProfileId, collectorProfileOwner);
     }
 }

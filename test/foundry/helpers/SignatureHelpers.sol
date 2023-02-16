@@ -149,10 +149,12 @@ contract SignatureHelpers {
         return
             DataTypes.CollectWithSigData({
                 delegatedSigner: delegatedSigner,
+                publicationCollectedProfileId: collectData.publisherProfileId,
+                publicationCollectedId: collectData.pubId,
                 collectorProfileId: collectData.collectorProfileId,
-                publisherProfileId: collectData.publisherProfileId,
-                pubId: collectData.pubId,
-                data: collectData.data,
+                passedReferrerProfileId: 0,
+                passedReferrerPubId: 0,
+                collectModuleData: collectData.data,
                 sig: sig
             });
     }

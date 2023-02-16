@@ -200,7 +200,7 @@ library GeneralHelpers {
 
     function getPublicationStruct(uint256 profileId, uint256 pubId)
         internal
-        view
+        pure
         returns (DataTypes.PublicationStruct storage)
     {
         DataTypes.PublicationStruct storage _publication;
@@ -211,5 +211,6 @@ library GeneralHelpers {
             mstore(0, pubId)
             _publication.slot := keccak256(0, 64)
         }
+        return _publication;
     }
 }

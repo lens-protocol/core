@@ -3,6 +3,7 @@
 pragma solidity 0.8.15;
 
 import {ICollectModule} from '../interfaces/ICollectModule.sol';
+import {DataTypes} from 'contracts/libraries/DataTypes.sol';
 
 /**
  * @title FreeCollectModule
@@ -18,8 +19,8 @@ contract MockCollectModule is ICollectModule {
      */
     function initializePublicationCollectModule(
         uint256,
-        address,
         uint256,
+        address,
         bytes calldata data
     ) external pure override returns (bytes memory) {
         uint256 number = abi.decode(data, (uint256));
@@ -32,12 +33,14 @@ contract MockCollectModule is ICollectModule {
      *  1. Ensuring the collector is a follower, if needed
      */
     function processCollect(
-        uint256,
-        uint256,
-        address collector,
-        address,
-        uint256 profileId,
-        uint256 pubId,
-        bytes calldata
+        uint256 publicationCollectedProfileId,
+        uint256 publicationCollectedId,
+        uint256 collectorProfileId,
+        address collectorProfileOwner,
+        address executor,
+        uint256 referrerProfileId,
+        uint256 referrerPubId,
+        DataTypes.PublicationType referrerPubType,
+        bytes calldata data
     ) external view override {}
 }

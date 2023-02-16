@@ -165,83 +165,75 @@ library InteractionHelpers {
     }
 
     function collect(
-        uint256 collectedPubAuthorProfileId,
-        uint256 collectedPubId,
+        uint256 publicationCollectedProfileId,
+        uint256 publicationCollectedId,
         uint256 collectorProfileId,
         address collectorProfileOwner,
         address transactionExecutor,
         uint256 passedReferrerProfileId,
         uint256 passedReferrerPubId,
-        bytes calldata collectModuleData,
-        address collectNFTImpl
+        address collectNFTImpl,
+        bytes calldata collectModuleData
     ) internal returns (uint256) {
-        uint256 collectedPubAuthorProfileIdCached = collectedPubAuthorProfileId;
-        uint256 collectedPubIdCached = collectedPubId;
+        uint256 publicationCollectedProfileIdCached = publicationCollectedProfileId;
+        uint256 publicationCollectedIdCached = publicationCollectedId;
         uint256 collectorProfileIdCached = collectorProfileId;
         address collectorProfileOwnerCached = collectorProfileOwner;
         address transactionExecutorCached = transactionExecutor;
+        uint256 passedReferrerProfileIdCached = passedReferrerProfileId;
+        uint256 passedReferrerPubIdCached = passedReferrerPubId;
+        address collectNFTImplCached = collectNFTImpl;
 
         GeneralHelpers.validateAddressIsProfileOwnerOrDelegatedExecutor({
-            expectedOwnerOrDelegatedExecutor: transactionExecutor,
-            profileId: collectorProfileId
+            expectedOwnerOrDelegatedExecutor: transactionExecutorCached,
+            profileId: collectorProfileIdCached
         });
 
         GeneralHelpers.validateNotBlocked({
-            profile: collectorProfileId,
-            byProfile: collectedPubAuthorProfileId
+            profile: collectorProfileIdCached,
+            byProfile: publicationCollectedProfileIdCached
         });
 
-        (
-            uint256 pointedProfileId,
-            uint256 pointedPubId,
-            address pointedPubCollectModule
-        ) = GeneralHelpers.getPointedIfMirror(
-                collectedPubAuthorProfileIdCached,
-                collectedPubIdCached
-            );
-
-        DataTypes.PublicationType passedReferrerPubType = _validateReferrerAndGetItsPubType(
-            passedReferrerProfileId,
-            passedReferrerPubId,
-            collectedPubAuthorProfileIdCached,
-            collectedPubIdCached,
-            pointedProfileId,
-            pointedPubId
-        );
-
-        // Prevents stack too deep.
-        address collectNFT;
+        address collectModule;
+        DataTypes.PublicationType passedReferrerPubType;
+        uint256 tokenId;
         {
-            uint256 collectNFTSlot;
-            // Loads the collect NFT for the publication being collected, and caches the collect NFT slot.
-            assembly {
-                mstore(0, pointedProfileId)
-                mstore(32, PUB_BY_ID_BY_PROFILE_MAPPING_SLOT)
-                mstore(32, keccak256(0, 64))
-                mstore(0, pointedPubId)
-                collectNFTSlot := add(keccak256(0, 64), PUBLICATION_COLLECT_NFT_OFFSET)
-                collectNFT := sload(collectNFTSlot)
+            DataTypes.PublicationStruct storage _collectedPublication = GeneralHelpers
+                .getPublicationStruct(
+                    publicationCollectedProfileIdCached,
+                    publicationCollectedIdCached
+                );
+            collectModule = _collectedPublication.collectModule;
+            if (collectModule == address(0)) {
+                // Doesn't have collectModule, thus it cannot be a collected (a mirror or non-existent).
+                revert Errors.CollectNotAllowed();
             }
-
-            if (collectNFT == address(0)) {
-                collectNFT = _deployCollectNFT(pointedProfileId, pointedPubId, collectNFTImpl);
-                assembly {
-                    sstore(collectNFTSlot, collectNFT)
-                }
-            }
+            passedReferrerPubType = _validateReferrerAndGetReferrersPubType(
+                passedReferrerProfileIdCached,
+                passedReferrerPubIdCached,
+                publicationCollectedProfileIdCached,
+                publicationCollectedIdCached
+            );
+            address collectNFT = _getOrDeployCollectNFT(
+                _collectedPublication,
+                publicationCollectedProfileIdCached,
+                publicationCollectedIdCached,
+                collectNFTImplCached
+            );
+            tokenId = ICollectNFT(collectNFT).mint(collectorProfileOwnerCached);
         }
 
-        uint256 tokenId = ICollectNFT(collectNFT).mint(collectorProfileOwnerCached);
         _processCollect(
-            ProcessCollectVars({
-                collectModule: pointedPubCollectModule,
-                publisherProfileId: collectedPubAuthorProfileIdCached,
+            ProcessCollectParams({
+                publicationCollectedProfileId: publicationCollectedProfileIdCached,
+                publicationCollectedId: publicationCollectedIdCached,
                 collectorProfileId: collectorProfileIdCached,
                 collectorProfileOwner: collectorProfileOwnerCached,
                 transactionExecutor: transactionExecutorCached,
-                pointedProfileId: pointedProfileId,
-                pointedPubId: pointedPubId,
-                pubId: collectedPubIdCached
+                referrerProfileId: passedReferrerProfileIdCached,
+                referrerPubId: passedReferrerPubIdCached,
+                referrerPubType: passedReferrerPubType,
+                collectModule: collectModule
             }),
             collectModuleData
         );
@@ -249,113 +241,115 @@ library InteractionHelpers {
         return tokenId;
     }
 
-    function _validateReferrerAndGetItsPubType(
-        uint256 passedReferrerProfileId,
-        uint256 passedReferrerPubId,
-        uint256 collectedPubAuthorProfileId,
-        uint256 collectedPubId,
-        uint256 pointedProfileId,
-        uint256 pointedPubId
-    ) private returns (DataTypes.PublicationType) {
-        if (collectedPubAuthorProfileId == pointedProfileId && collectedPubId == pointedPubId) {
-            // The publication being collected is not a mirror.
-            return
-                _validateReferrerWhenCollectedPubIsNotAMirrorAndGetReferrerPubType(
-                    passedReferrerProfileId,
-                    passedReferrerPubId,
-                    collectedPubAuthorProfileId,
-                    collectedPubId
-                );
-        } else {
-            // The publication initially collected is a mirror, so the actually being collected is the pointed one.
-            _validateReferrerWhenCollectedPubIsAMirror({
-                passedReferrerProfileId: passedReferrerProfileId,
-                passedReferrerPubId: passedReferrerPubId,
-                mirrorPubAuthorProfileId: collectedPubAuthorProfileId,
-                mirrorPubId: collectedPubId
-            });
-            return DataTypes.PublicationType.Mirror;
+    function _getOrDeployCollectNFT(
+        DataTypes.PublicationStruct storage _collectedPublication,
+        uint256 publicationCollectedProfileId,
+        uint256 publicationCollectedId,
+        address collectNFTImpl
+    ) private returns (address) {
+        address collectNFT = _collectedPublication.collectNFT;
+        if (collectNFT == address(0)) {
+            collectNFT = _deployCollectNFT(
+                publicationCollectedProfileId,
+                publicationCollectedId,
+                collectNFTImpl
+            );
+            _collectedPublication.collectNFT = collectNFT;
         }
+        return collectNFT;
     }
 
-    function _validateReferrerWhenCollectedPubIsAMirror(
+    function _validateReferrerAndGetReferrersPubType(
         uint256 passedReferrerProfileId,
         uint256 passedReferrerPubId,
-        uint256 mirrorPubAuthorProfileId,
-        uint256 mirrorPubId
-    ) private {
+        uint256 publicationCollectedProfileId,
+        uint256 publicationCollectedId
+    ) private view returns (DataTypes.PublicationType) {
         if (
-            passedReferrerProfileId != mirrorPubAuthorProfileId ||
-            passedReferrerPubId != mirrorPubId
+            // Cannot pass itself as a referrer.
+            passedReferrerProfileId == publicationCollectedProfileId &&
+            passedReferrerPubId == publicationCollectedId
         ) {
-            // The mirror itself needs to be passed as referrer publication.
             revert Errors.InvalidParameter();
         }
-    }
 
-    function _validateReferrerWhenCollectedPubIsNotAMirrorAndGetReferrerPubType(
-        uint256 passedReferrerProfileId,
-        uint256 passedReferrerPubId,
-        uint256 collectedPubAuthorProfileId,
-        uint256 collectedPubId
-    ) private returns (DataTypes.PublicationType) {
         if (passedReferrerProfileId == 0 && passedReferrerPubId == 0) {
             // The collector did not pass a referrer.
             return DataTypes.PublicationType.Nonexistent;
         }
+
         DataTypes.PublicationType passedReferrerPubType = GeneralHelpers.getPublicationType(
             passedReferrerProfileId,
             passedReferrerPubId
         );
-        if (passedReferrerPubType == DataTypes.PublicationType.Nonexistent) {
-            revert Errors.PublicationDoesNotExist();
-        } else if (passedReferrerPubType == DataTypes.PublicationType.Mirror) {
-            // We already know that the collected publication is not a mirror, thus the passed referrer publication can
-            // not be a mirror neither.
-            revert Errors.InvalidParameter();
+
+        if (passedReferrerPubType == DataTypes.PublicationType.Mirror) {
+            _validateReferrerAsMirror(
+                passedReferrerProfileId,
+                passedReferrerPubId,
+                publicationCollectedProfileId,
+                publicationCollectedId
+            );
         } else if (passedReferrerPubType == DataTypes.PublicationType.Comment) {
             _validateReferrerAsComment(
                 passedReferrerProfileId,
                 passedReferrerPubId,
-                collectedPubAuthorProfileId,
-                collectedPubId
+                publicationCollectedProfileId,
+                publicationCollectedId
             );
-        } else if (passedReferrerPubType == DataTypes.PublicationType.Post) {
-            // Referrarls only supported for mirrors, comments and quotes only.
+        } else {
+            // Referrarls are only supported for mirrors, comments and quotes.
             revert Errors.InvalidParameter();
         }
+
         return passedReferrerPubType;
+    }
+
+    function _validateReferrerAsMirror(
+        uint256 passedReferrerProfileId,
+        uint256 passedReferrerPubId,
+        uint256 publicationCollectedProfileId,
+        uint256 publicationCollectedId
+    ) private view {
+        DataTypes.PublicationStruct storage _passedReferrerMirror = GeneralHelpers
+            .getPublicationStruct(passedReferrerProfileId, passedReferrerPubId);
+        if (
+            _passedReferrerMirror.profileIdPointed != publicationCollectedProfileId ||
+            _passedReferrerMirror.pubIdPointed != publicationCollectedId
+        ) {
+            revert Errors.InvalidParameter();
+        }
     }
 
     function _validateReferrerAsComment(
         uint256 passedReferrerProfileId,
         uint256 passedReferrerPubId,
-        uint256 collectedPubAuthorProfileId,
-        uint256 collectedPubId
-    ) private {
-        DataTypes.PublicationStruct storage _passedReferrerPublication = GeneralHelpers
+        uint256 publicationCollectedProfileId,
+        uint256 publicationCollectedId
+    ) private view {
+        DataTypes.PublicationStruct storage _passedReferrerComment = GeneralHelpers
             .getPublicationStruct(passedReferrerProfileId, passedReferrerPubId);
         DataTypes.PublicationType collectedPublicationType = GeneralHelpers.getPublicationType(
-            collectedPubAuthorProfileId,
-            collectedPubId
+            publicationCollectedProfileId,
+            publicationCollectedId
         );
         // At this stage, we already know that the collected publication can not be a mirror or a non-existent one.
         if (collectedPublicationType == DataTypes.PublicationType.Post) {
             // The passed referrer comment must have the collected post as root post.
             if (
-                _passedReferrerPublication.rootProfileId != collectedPubAuthorProfileId ||
-                _passedReferrerPublication.rootPubId != collectedPubId
+                _passedReferrerComment.rootProfileId != publicationCollectedProfileId ||
+                _passedReferrerComment.rootPubId != publicationCollectedId
             ) {
                 revert Errors.InvalidParameter();
             }
         } else {
             // collectedPublicationType == DataTypes.PublicationType.Comment
             DataTypes.PublicationStruct storage _collectedPublication = GeneralHelpers
-                .getPublicationStruct(collectedPubAuthorProfileId, collectedPubId);
+                .getPublicationStruct(publicationCollectedProfileId, publicationCollectedId);
             // The passed referrer comment and the collected comment must share the same root post.
             if (
-                _passedReferrerPublication.rootProfileId != _collectedPublication.rootProfileId ||
-                _passedReferrerPublication.rootPubId != _collectedPublication.rootPubId
+                _passedReferrerComment.rootProfileId != _collectedPublication.rootProfileId ||
+                _passedReferrerComment.rootPubId != _collectedPublication.rootPubId
             ) {
                 revert Errors.InvalidParameter();
             }
@@ -363,30 +357,33 @@ library InteractionHelpers {
     }
 
     // TODO: Think about how to make this better... (it's needed for stack too deep)
-    struct ProcessCollectVars {
-        address collectModule;
-        uint256 publisherProfileId;
+    struct ProcessCollectParams {
+        uint256 publicationCollectedProfileId;
+        uint256 publicationCollectedId;
         uint256 collectorProfileId;
         address collectorProfileOwner;
         address transactionExecutor;
-        uint256 pointedProfileId;
-        uint256 pointedPubId;
-        uint256 pubId;
+        uint256 referrerProfileId;
+        uint256 referrerPubId;
+        DataTypes.PublicationType referrerPubType;
+        address collectModule;
     }
 
-    function _processCollect(ProcessCollectVars memory vars, bytes calldata collectModuleData)
+    function _processCollect(ProcessCollectParams memory params, bytes calldata collectModuleData)
         private
     {
         try
-            ICollectModule(vars.collectModule).processCollect(
-                vars.publisherProfileId,
-                vars.collectorProfileId,
-                vars.collectorProfileOwner,
-                vars.transactionExecutor,
-                vars.pointedProfileId,
-                vars.pointedPubId,
-                collectModuleData
-            )
+            ICollectModule(params.collectModule).processCollect({
+                publicationCollectedProfileId: params.publicationCollectedProfileId,
+                publicationCollectedId: params.publicationCollectedId,
+                collectorProfileId: params.collectorProfileId,
+                collectorProfileOwner: params.collectorProfileOwner,
+                executor: params.transactionExecutor,
+                referrerProfileId: params.referrerProfileId,
+                referrerPubId: params.referrerPubId,
+                referrerPubType: params.referrerPubType,
+                data: collectModuleData
+            })
         {} catch (bytes memory err) {
             assembly {
                 /// Equivalent to reverting with the returned error selector if
@@ -396,25 +393,26 @@ library InteractionHelpers {
                     revert(add(err, 32), length)
                 }
             }
-            if (vars.collectorProfileOwner != vars.transactionExecutor)
+            if (params.collectorProfileOwner != params.transactionExecutor)
                 revert Errors.ExecutorInvalid();
-            IDeprecatedCollectModule(vars.collectModule).processCollect(
-                vars.publisherProfileId,
-                vars.collectorProfileOwner,
-                vars.pointedProfileId,
-                vars.pointedPubId,
+            IDeprecatedCollectModule(params.collectModule).processCollect(
+                params.publicationCollectedProfileId,
+                params.collectorProfileOwner,
+                params.referrerProfileId,
+                params.referrerPubId,
                 collectModuleData
             );
         }
 
-        _emitCollectedEvent(
-            vars.collectorProfileId,
-            vars.publisherProfileId,
-            vars.pubId,
-            vars.pointedProfileId,
-            vars.pointedPubId,
-            collectModuleData
-        );
+        emit Events.Collected({
+            publicationCollectedProfileId: params.publicationCollectedProfileId,
+            publicationCollectedId: params.publicationCollectedId,
+            collectorProfileId: params.collectorProfileId,
+            referrerProfileId: params.referrerProfileId,
+            referrerPubId: params.referrerPubId,
+            collectModuleData: collectModuleData,
+            timestamp: block.timestamp
+        });
     }
 
     /**
@@ -446,36 +444,37 @@ library InteractionHelpers {
         return collectNFT;
     }
 
-    /**
-     * @notice Emits the `Collected` event that signals that a successful collect action has occurred.
-     *
-     * @dev This is done through this function to prevent stack too deep compilation error.
-     *
-     * @param collectorProfileId The owner address of the profile collecting the publication.
-     * @param publisherProfileId The token ID of the profile that the collect was initiated towards, useful to differentiate mirrors.
-     * @param pubId The publication ID that the collect was initiated towards, useful to differentiate mirrors.
-     * @param rootProfileId The profile token ID of the profile whose publication is being collected.
-     * @param rootPubId The publication ID of the publication being collected.
-     * @param data The data passed to the collect module.
-     */
-    function _emitCollectedEvent(
-        uint256 collectorProfileId,
-        uint256 publisherProfileId,
-        uint256 pubId,
-        uint256 rootProfileId,
-        uint256 rootPubId,
-        bytes calldata data
-    ) private {
-        emit Events.Collected(
-            collectorProfileId,
-            publisherProfileId,
-            pubId,
-            rootProfileId,
-            rootPubId,
-            data,
-            block.timestamp
-        );
-    }
+    // /**
+    //  * @notice Emits the `Collected` event that signals that a successful collect action has occurred.
+    //  *
+    //  * @dev This is done through this function to prevent stack too deep compilation error.
+    //  *
+    //  * @param collectorProfileId The owner address of the profile collecting the publication.
+    //  * @param publisherProfileId The token ID of the profile that the collect was initiated towards, useful to differentiate mirrors.
+    //  * @param pubId The publication ID that the collect was initiated towards, useful to differentiate mirrors.
+    //  * @param rootProfileId The profile token ID of the profile whose publication is being collected.
+    //  * @param rootPubId The publication ID of the publication being collected.
+    //  * @param data The data passed to the collect module.
+    //  */
+    // function _emitCollectedEvent(
+    //     uint256 publicationCollectedProfileId,
+    //     uint256 publicationCollectedId,
+    //     uint256 collectorProfileId,
+    //     uint256 referrerProfileId,
+    //     uint256 referrerPubId,
+    //     bytes calldata collectModuleData,
+    //     uint256 timestamp
+    // ) private {
+    //     emit Events.Collected(
+    //     publicationCollectedProfileId: publisherProfileId,
+    //     publicationCollectedId: pubId,
+    //     collectorProfileId: collectorProfileId,
+    //     referrerProfileId: ,
+    //     referrerPubId: ,
+    //     collectModuleData: data,
+    //     timestamp: block.timestamp,
+    //     );
+    // }
 
     function _follow(
         uint256 followerProfileId,

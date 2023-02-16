@@ -29,7 +29,10 @@ contract PublishingHelpers is Test {
                 contentURI: postData.contentURI,
                 referenceModule: postData.referenceModule,
                 collectModule: postData.collectModule,
-                collectNFT: address(0)
+                collectNFT: address(0),
+                pubType: DataTypes.PublicationType.Post,
+                rootProfileId: 0,
+                rootPubId: 0
             });
     }
 
@@ -45,7 +48,10 @@ contract PublishingHelpers is Test {
                 contentURI: commentData.contentURI,
                 referenceModule: commentData.referenceModule,
                 collectModule: commentData.collectModule,
-                collectNFT: address(0)
+                collectNFT: address(0),
+                pubType: DataTypes.PublicationType.Comment,
+                rootProfileId: commentData.profileIdPointed,
+                rootPubId: commentData.pubIdPointed
             });
     }
 
@@ -61,7 +67,10 @@ contract PublishingHelpers is Test {
                 contentURI: '',
                 referenceModule: address(0),
                 collectModule: address(0),
-                collectNFT: address(0)
+                collectNFT: address(0),
+                pubType: DataTypes.PublicationType.Mirror,
+                rootProfileId: mirrorData.profileIdPointed,
+                rootPubId: mirrorData.pubIdPointed
             });
     }
 }

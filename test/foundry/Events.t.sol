@@ -356,7 +356,14 @@ contract EventTest is BaseTest {
         );
 
         // TODO: Replace with proper ProfileID
-        hub.collect(newProfileId, newProfileId, expectedPubId, '');
+        hub.collect({
+            publicationCollectedProfileId: newProfileId,
+            publicationCollectedId: expectedPubId,
+            collectorProfileId: newProfileId,
+            passedReferrerProfileId: 0,
+            passedReferrerPubId: 0,
+            data: ''
+        });
         vm.stopPrank();
     }
 
@@ -419,7 +426,14 @@ contract EventTest is BaseTest {
         );
 
         // TODO: Replace with proper ProfileID
-        hub.collect(newProfileId, 1, expectedPubId, '');
+        hub.collect({
+            publicationCollectedProfileId: 1,
+            publicationCollectedId: expectedPubId,
+            collectorProfileId: newProfileId,
+            passedReferrerProfileId: 0,
+            passedReferrerPubId: 0,
+            data: ''
+        });
         vm.stopPrank();
     }
 

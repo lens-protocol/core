@@ -10,6 +10,7 @@ import {FollowValidationModuleBase} from '../FollowValidationModuleBase.sol';
 import {IERC20} from '@openzeppelin/contracts/token/ERC20/IERC20.sol';
 import {SafeERC20} from '@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol';
 import {IERC721} from '@openzeppelin/contracts/token/ERC721/IERC721.sol';
+import {DataTypes} from 'contracts/libraries/DataTypes.sol';
 
 /**
  * @notice A struct containing the necessary data to execute collect actions on a publication.
@@ -71,8 +72,8 @@ contract LimitedTimedFeeCollectModule is FeeModuleBase, FollowValidationModuleBa
      */
     function initializePublicationCollectModule(
         uint256 profileId,
-        address,
         uint256 pubId,
+        address,
         bytes calldata data
     ) external override onlyHub returns (bytes memory) {
         unchecked {
@@ -123,30 +124,50 @@ contract LimitedTimedFeeCollectModule is FeeModuleBase, FollowValidationModuleBa
      *  4. Charging a fee
      */
     function processCollect(
+        uint256 publicationCollectedProfileId,
+        uint256 publicationCollectedId,
+        uint256,
+        address collectorProfileOwner,
+        address executor,
         uint256 referrerProfileId,
         uint256,
-        address collector,
-        address executor,
-        uint256 profileId,
-        uint256 pubId,
+        DataTypes.PublicationType,
         bytes calldata data
     ) external override onlyHub {
-        if (_dataByPublicationByProfile[profileId][pubId].followerOnly)
-            _checkFollowValidity(profileId, collector);
-        uint256 endTimestamp = _dataByPublicationByProfile[profileId][pubId].endTimestamp;
+        if (
+            _dataByPublicationByProfile[publicationCollectedProfileId][publicationCollectedId]
+                .followerOnly
+        ) _checkFollowValidity(publicationCollectedProfileId, collectorProfileOwner);
+        uint256 endTimestamp = _dataByPublicationByProfile[publicationCollectedProfileId][
+            publicationCollectedId
+        ].endTimestamp;
         if (block.timestamp > endTimestamp) revert Errors.CollectExpired();
 
         if (
-            _dataByPublicationByProfile[profileId][pubId].currentCollects >=
-            _dataByPublicationByProfile[profileId][pubId].collectLimit
+            _dataByPublicationByProfile[publicationCollectedProfileId][publicationCollectedId]
+                .currentCollects >=
+            _dataByPublicationByProfile[publicationCollectedProfileId][publicationCollectedId]
+                .collectLimit
         ) {
             revert Errors.MintLimitExceeded();
         } else {
-            ++_dataByPublicationByProfile[profileId][pubId].currentCollects;
-            if (referrerProfileId == profileId) {
-                _processCollect(executor, profileId, pubId, data);
+            ++_dataByPublicationByProfile[publicationCollectedProfileId][publicationCollectedId]
+                .currentCollects;
+            if (referrerProfileId == publicationCollectedProfileId) {
+                _processCollect(
+                    executor,
+                    publicationCollectedProfileId,
+                    publicationCollectedId,
+                    data
+                );
             } else {
-                _processCollectWithReferral(referrerProfileId, executor, profileId, pubId, data);
+                _processCollectWithReferral(
+                    referrerProfileId,
+                    executor,
+                    publicationCollectedProfileId,
+                    publicationCollectedId,
+                    data
+                );
             }
         }
     }

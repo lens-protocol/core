@@ -357,20 +357,13 @@ interface ILensHub {
      */
     function setBlockStatusWithSig(DataTypes.SetBlockStatusWithSigData calldata vars) external;
 
-    /**
-     * @notice Collects a given publication, executing collect module logic and minting a collectNFT to the caller.
-     *
-     * @param collectorProfileId The ID of the profile the collect is being executed from.
-     * @param publisherProfileId The token ID of the profile that published the publication to collect.
-     * @param pubId The publication to collect's publication ID.
-     * @param data The arbitrary data to pass to the collect module if needed.
-     *
-     * @return uint256 An integer representing the minted token ID.
-     */
+    // TODO: Write natspec
     function collect(
+        uint256 publicationCollectedProfileId,
+        uint256 publicationCollectedId,
         uint256 collectorProfileId,
-        uint256 publisherProfileId,
-        uint256 pubId,
+        uint256 passedReferrerProfileId,
+        uint256 passedReferrerPubId,
         bytes calldata data
     ) external returns (uint256);
 

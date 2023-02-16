@@ -419,22 +419,22 @@ contract LensHub is LensNFTBase, VersionedInitializable, LensMultiState, LensHub
         return GeneralLib.setBlockStatusWithSig(vars);
     }
 
-    /// @inheritdoc ILensHub
+    /// TODO: Inherit natspec
     function collect(
-        uint256 collectedPubAuthorProfileId,
-        uint256 collectedPubId,
+        uint256 publicationCollectedProfileId,
+        uint256 publicationCollectedId,
         uint256 collectorProfileId,
-        uint256 referrerProfileId,
-        uint256 referrerPubId,
+        uint256 passedReferrerProfileId,
+        uint256 passedReferrerPubId,
         bytes calldata data
     ) external override whenNotPaused returns (uint256) {
         return
             GeneralLib.collect({
-                collectedPubAuthorProfileId: collectedPubAuthorProfileId,
-                collectedPubId: collectedPubId,
+                publicationCollectedProfileId: publicationCollectedProfileId,
+                publicationCollectedId: publicationCollectedId,
                 collectorProfileId: collectorProfileId,
-                referrerProfileId: referrerProfileId,
-                referrerPubId: referrerPubId,
+                passedReferrerProfileId: passedReferrerProfileId,
+                passedReferrerPubId: passedReferrerPubId,
                 collectModuleData: data,
                 collectNFTImpl: COLLECT_NFT_IMPL
             });

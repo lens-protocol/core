@@ -410,7 +410,15 @@ contract BaseTest is TestSetup {
         uint256 pubId,
         bytes memory data
     ) internal returns (uint256) {
-        return hub.collect(collectorProfileId, publisherProfileId, pubId, data);
+        return
+            hub.collect({
+                publicationCollectedProfileId: publisherProfileId,
+                publicationCollectedId: pubId,
+                collectorProfileId: collectorProfileId,
+                passedReferrerProfileId: 0,
+                passedReferrerPubId: 0,
+                data: data
+            });
     }
 
     function _postWithSig(DataTypes.PostWithSigData memory postWithSigData)

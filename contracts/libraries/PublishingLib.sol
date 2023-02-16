@@ -571,8 +571,8 @@ library PublishingLib {
         return
             ICollectModule(collectModule).initializePublicationCollectModule(
                 profileId,
-                executor,
                 pubId,
+                executor,
                 collectModuleInitData
             );
     }

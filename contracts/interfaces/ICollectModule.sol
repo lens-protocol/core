@@ -2,7 +2,7 @@
 
 pragma solidity 0.8.15;
 
-import {DataTypes} from '../libraries/DataTypes.sol';
+import {DataTypes} from 'contracts/libraries/DataTypes.sol';
 
 /**
  * @title ICollectModule
@@ -32,8 +32,8 @@ interface ICollectModule {
     /**
      * @notice Processes a collect action for a given publication, this can only be called by the hub.
      *
-     * @param collectedPubAuthorProfileId The token ID of the profile associated with the publication being collected.
-     * @param collectedPubId The LensHub publication ID associated with the publication being collected.
+     * @param publicationCollectedProfileId The token ID of the profile associated with the publication being collected.
+     * @param publicationCollectedId The LensHub publication ID associated with the publication being collected.
      * @param collectorProfileId The LensHub profile token ID of the collector's profile.
      * @param collectorProfileOwner The collector address.
      * @param executor The collector or an approved delegated executor.
@@ -43,8 +43,8 @@ interface ICollectModule {
      * @param data Arbitrary data __passed from the collector!__ to be decoded.
      */
     function processCollect(
-        uint256 collectedPubAuthorProfileId,
-        uint256 collectedPubId,
+        uint256 publicationCollectedProfileId,
+        uint256 publicationCollectedId,
         uint256 collectorProfileId,
         address collectorProfileOwner,
         address executor,

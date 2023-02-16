@@ -349,9 +349,9 @@ library MetaTxHelpers {
                     abi.encode(
                         COLLECT_WITH_SIG_TYPEHASH,
                         vars.collectorProfileId,
-                        vars.publisherProfileId,
-                        vars.pubId,
-                        keccak256(vars.data),
+                        vars.publicationCollectedProfileId,
+                        vars.publicationCollectedId,
+                        keccak256(vars.collectModuleData),
                         _sigNonces(signer),
                         vars.sig.deadline
                     )

@@ -295,20 +295,20 @@ library Events {
     /**
      * @dev Emitted upon a successful collect action.
      *
+     * @param publicationCollectedProfileId The profile token ID of the profile whose publication is being collected.
+     * @param publicationCollectedId The publication ID of the publication being collected.
      * @param collectorProfileId The address collecting the publication.
-     * @param publisherProfileId The token ID of the profile that the collect was initiated towards, useful to differentiate mirrors.
-     * @param pubId The publication ID that the collect was initiated towards, useful to differentiate mirrors.
-     * @param rootProfileId The profile token ID of the profile whose publication is being collected.
-     * @param rootPubId The publication ID of the publication being collected.
+     * @param referrerProfileId TODO
+     * @param referrerPubId TODO
      * @param collectModuleData The data passed to the collect module.
      * @param timestamp The current block timestamp.
      */
     event Collected(
-        uint256 indexed collectorProfileId,
-        uint256 indexed publisherProfileId,
-        uint256 indexed pubId,
-        uint256 rootProfileId,
-        uint256 rootPubId,
+        uint256 publicationCollectedProfileId,
+        uint256 publicationCollectedId,
+        uint256 collectorProfileId,
+        uint256 referrerProfileId,
+        uint256 referrerPubId,
         bytes collectModuleData,
         uint256 timestamp
     );
