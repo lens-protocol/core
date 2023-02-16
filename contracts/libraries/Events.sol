@@ -265,6 +265,37 @@ library Events {
     );
 
     /**
+     * @dev Emitted when a "quote" is published.
+     *
+     * @param profileId The profile's token ID.
+     * @param pubId The new publication's ID.
+     * @param contentURI The URI mapped to this new publication.
+     * @param profileIdPointed The profile token ID which author is being quoted.
+     * @param pubIdPointed The publication ID that is being quoted.
+     * @param referenceModuleData The data passed to the reference module.
+     * @param collectModule The collect module mapped to this new publication. This CANNOT be the zero address.
+     * @param collectModuleReturnData The data returned from the collect module's initialization for this given
+     * publication. This is abi encoded and totally depends on the collect module chosen.
+     * @param referenceModule The reference module set for this publication.
+     * @param referenceModuleReturnData The data returned from the reference module at initialization. This is abi
+     * encoded and totally depends on the reference module chosen.
+     * @param timestamp The current block timestamp.
+     */
+    event QuoteCreated(
+        uint256 indexed profileId,
+        uint256 indexed pubId,
+        string contentURI,
+        uint256 profileIdPointed,
+        uint256 pubIdPointed,
+        bytes referenceModuleData,
+        address collectModule,
+        bytes collectModuleReturnData,
+        address referenceModule,
+        bytes referenceModuleReturnData,
+        uint256 timestamp
+    );
+
+    /**
      * @dev Emitted when a followNFT clone is deployed using a lazy deployment pattern.
      *
      * @param profileId The token ID of the profile to which this followNFT is associated.

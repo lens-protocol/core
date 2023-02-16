@@ -329,6 +329,26 @@ contract LensHub is LensNFTBase, VersionedInitializable, LensMultiState, LensHub
         return PublishingLib.mirrorWithSig(vars);
     }
 
+    /// @inheritdoc ILensHub
+    function quote(DataTypes.QuoteParams calldata quoteParams)
+        external
+        override
+        whenPublishingEnabled
+        returns (uint256)
+    {
+        return PublishingLib.quote({quoteParams: quoteParams, transactionExecutor: msg.sender});
+    }
+
+    /// @inheritdoc ILensHub
+    function quoteWithSig(
+        DataTypes.QuoteParams calldata quoteParams,
+        address signer,
+        EIP712Signature calldata signature
+    ) external override whenPublishingEnabled returns (uint256) {
+        MetaTxHelpers.validateQuoteSignature(signer, quoteParams);
+        return PublishingLib.quote({quoteParams: quoteParams, transactionExecutor: signer});
+    }
+
     /**
      * @notice Burns a profile, this maintains the profile data struct.
      */

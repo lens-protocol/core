@@ -25,10 +25,11 @@ library DataTypes {
     /**
      * @notice An enum specifically used in a helper function to easily retrieve the publication type for integrations.
      *
-     * @param Post A standard post, having a URI, a collect module but no pointer to another publication.
-     * @param Comment A comment, having a URI, a collect module and a pointer to another publication.
-     * @param Mirror A mirror, having a pointer to another publication, but no URI or collect module.
      * @param Nonexistent An indicator showing the queried publication does not exist.
+     * @param Post A standard post, having an URI, a collect module but no pointer to another publication.
+     * @param Comment A comment, having an URI, a collect module and a pointer to another publication.
+     * @param Mirror A mirror, having a pointer to another publication, but no URI or collect module.
+     * @param Quote A quote, having an URI, a collect module and a pointer to another publication.
      */
     enum PublicationType {
         Nonexistent,
@@ -269,6 +270,31 @@ library DataTypes {
         address referenceModule;
         bytes referenceModuleInitData;
         EIP712Signature sig;
+    }
+
+    /**
+     * @notice A struct containing the parameters required for the `quote()` function.
+     *
+     * @param profileId The token ID of the profile to publish to.
+     * @param contentURI The URI to set for this new publication.
+     * @param profileIdPointed The profile token ID of the publication author that is quoted.
+     * @param pubIdPointed The publication ID that is quoted.
+     * @param referenceModuleData The data passed to the reference module.
+     * @param collectModule The collect module to set for this new publication.
+     * @param collectModuleInitData The data to pass to the collect module's initialization.
+     * @param referenceModule The reference module to set for the given publication, must be whitelisted.
+     * @param referenceModuleInitData The data to be passed to the reference module for initialization.
+     */
+    struct QuotePamars {
+        uint256 profileId;
+        string contentURI;
+        uint256 profileIdPointed;
+        uint256 pubIdPointed;
+        bytes referenceModuleData;
+        address collectModule;
+        bytes collectModuleInitData;
+        address referenceModule;
+        bytes referenceModuleInitData;
     }
 
     /**

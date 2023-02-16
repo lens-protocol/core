@@ -118,7 +118,7 @@ library PublishingLib {
                     referenceModule: commentWithSigData.referenceModule,
                     referenceModuleInitData: commentWithSigData.referenceModuleInitData
                 }),
-                transactionExecutor: msg.sender
+                transactionExecutor: signer
             });
     }
 
@@ -168,6 +168,102 @@ library PublishingLib {
                 }),
                 transactionExecutor: mirrorWithSigData.delegatedSigner
             });
+    }
+
+    /**
+     * @notice Publishes a quote publication to a given profile via signature.
+     *
+     * @param quoteParams the QuoteParams struct.
+     *
+     * @return uint256 The created publication's pubId.
+     */
+    function quote(DataTypes.QuoteParams calldata quoteParams, address transactionExecutor)
+        external
+        returns (uint256)
+    {
+        // TODO: Start of shared code to abstract with the comment(...)
+        GeneralHelpers.validateAddressIsProfileOwnerOrDelegatedExecutor(
+            transactionExecutor,
+            quoteParams.profileId
+        );
+        GeneralHelpers.validateNotBlocked(quoteParams.profileId, quoteParams.profileIdPointed);
+        uint256 pubIdAssigned = ++GeneralHelpers.getProfileStruct(quoteParams.profileId).pubCount;
+
+        (uint256 profileIdPointed, uint256 pubIdPointed, ) = GeneralHelpers.getPointedIfMirror(
+            quoteParams.profileIdPointed,
+            quoteParams.pubIdPointed
+        );
+
+        {
+            DataTypes.PublicationStruct storage _publication;
+            _publication = GeneralHelpers.getPublicationStruct(
+                quoteParams.profileId,
+                pubIdAssigned
+            );
+            _publication.profileIdPointed = profileIdPointed;
+            _publication.pubIdPointed = pubIdPointed;
+            _publication.contentURI = quoteParams.contentURI;
+            _publication.pubType = DataTypes.PublicationType.Quote;
+
+            DataTypes.PublicationStruct storage _publicationPointed = GeneralHelpers
+                .getPublicationStruct(profileIdPointed, pubIdPointed);
+            if (_publicationPointed.pubType == DataTypes.PublicationType.Post) {
+                _publication.rootProfileId = profileIdPointed;
+                _publication.rootPubId = pubIdPointed;
+            } else {
+                // The publication pointed is a comment or a quote.
+                _publication.rootProfileId = _publicationPointed.rootProfileId;
+                _publication.rootPubId = _publicationPointed.rootPubId;
+            }
+        }
+
+        {
+            address referenceModule = quoteParams.referenceModule; // Stack-too-deep workaround.
+
+            bytes memory collectModuleReturnData = _initPubCollectModule(
+                quoteParams.profileId,
+                transactionExecutor,
+                pubIdAssigned,
+                quoteParams.collectModule,
+                quoteParams.collectModuleInitData
+            );
+
+            bytes memory referenceModuleReturnData = _initPubReferenceModule(
+                quoteParams.profileId,
+                transactionExecutor,
+                pubIdAssigned,
+                referenceModule,
+                quoteParams.referenceModuleInitData
+            );
+
+            // TODO: End of shared code to abstract with the comment(...)
+            // Start of specific functionality...
+
+            _processQuoteIfNeeded({ // TODO: How about old publications? Maybe we do processComment!
+                profileId: quoteParams.profileId,
+                executor: transactionExecutor,
+                profileIdPointed: profileIdPointed,
+                pubIdPointed: pubIdPointed,
+                referrerProfileId: quoteParams.profileIdPointed,
+                referenceModuleData: quoteParams.referenceModuleData
+            });
+
+            emit Events.QuoteCreated(
+                quoteParams.profileId,
+                pubIdAssigned,
+                quoteParams.contentURI,
+                profileIdPointed,
+                pubIdPointed,
+                quoteParams.referenceModuleData,
+                quoteParams.collectModule,
+                collectModuleReturnData,
+                referenceModule,
+                referenceModuleReturnData,
+                block.timestamp
+            );
+        }
+
+        return pubIdAssigned;
     }
 
     function _setPublicationPointer(
@@ -275,11 +371,10 @@ library PublishingLib {
             DataTypes.PublicationStruct storage _publicationPointed = GeneralHelpers
                 .getPublicationStruct(profileIdPointed, pubIdPointed);
             if (_publicationPointed.pubType == DataTypes.PublicationType.Post) {
-                // TODO: || _publicationPointed.pubType == DataTypes.PublicationType.Quote) {
                 _publication.rootProfileId = profileIdPointed;
                 _publication.rootPubId = pubIdPointed;
             } else {
-                // The publication pointed is a comment.
+                // The publication pointed is a comment or quote.
                 _publication.rootProfileId = _publicationPointed.rootProfileId;
                 _publication.rootPubId = _publicationPointed.rootPubId;
             }
@@ -309,9 +404,7 @@ library PublishingLib {
                 executor: transactionExecutor,
                 profileIdPointed: profileIdPointed,
                 pubIdPointed: pubIdPointed,
-                referrerProfileId: commentData.profileIdPointed == profileIdPointed
-                    ? 0
-                    : commentData.profileIdPointed,
+                referrerProfileId: commentData.profileIdPointed,
                 referenceModuleData: commentData.referenceModuleData
             });
 
@@ -395,6 +488,49 @@ library PublishingLib {
         if (refModule != address(0)) {
             try
                 IReferenceModule(refModule).processComment({
+                    profileId: profileId,
+                    executor: executor,
+                    profileIdPointed: profileIdPointed,
+                    pubIdPointed: pubIdPointed,
+                    referrerProfileId: referrerProfileId,
+                    data: referenceModuleData
+                })
+            {} catch (bytes memory err) {
+                assembly {
+                    /// Equivalent to reverting with the returned error selector if
+                    /// the length is not zero.
+                    let length := mload(err)
+                    if iszero(iszero(length)) {
+                        revert(add(err, 32), length)
+                    }
+                }
+                if (executor != GeneralHelpers.unsafeOwnerOf(profileId)) {
+                    revert Errors.ExecutorInvalid();
+                }
+                IDeprecatedReferenceModule(refModule).processComment(
+                    profileId,
+                    profileIdPointed,
+                    pubIdPointed,
+                    referenceModuleData
+                );
+            }
+        }
+    }
+
+    function _processQuoteIfNeeded(
+        uint256 profileId,
+        address executor,
+        uint256 profileIdPointed,
+        uint256 pubIdPointed,
+        uint256 referrerProfileId,
+        bytes memory referenceModuleData
+    ) private {
+        address refModule = GeneralHelpers
+            .getPublicationStruct(profileIdPointed, pubIdPointed)
+            .referenceModule;
+        if (refModule != address(0)) {
+            try
+                IReferenceModule(refModule).processQuote({
                     profileId: profileId,
                     executor: executor,
                     profileIdPointed: profileIdPointed,

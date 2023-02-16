@@ -237,6 +237,35 @@ library MetaTxHelpers {
         );
     }
 
+    function validateQuoteWithSig(
+        address signer, // TODO: put a signer inside sig struct
+        DataTypes.QuoteParams calldata quoteParams,
+        EIP712Signature calldata sig
+    ) internal {
+        _validateRecoveredAddress(
+            _calculateDigest(
+                keccak256(
+                    abi.encode(
+                        COMMENT_WITH_SIG_TYPEHASH,
+                        vars.profileId,
+                        keccak256(bytes(vars.contentURI)),
+                        vars.profileIdPointed,
+                        vars.pubIdPointed,
+                        keccak256(vars.referenceModuleData),
+                        vars.collectModule,
+                        keccak256(vars.collectModuleInitData),
+                        vars.referenceModule,
+                        keccak256(vars.referenceModuleInitData),
+                        _sigNonces(signer),
+                        sig.deadline
+                    )
+                )
+            ),
+            signer,
+            sig
+        );
+    }
+
     function baseMirrorWithSig(address signer, DataTypes.MirrorWithSigData calldata vars) internal {
         _validateRecoveredAddress(
             _calculateDigest(
