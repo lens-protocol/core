@@ -79,7 +79,7 @@ library DataTypes {
         address referenceModule;
         address collectModule;
         address collectNFT;
-        // ----------------
+        // Added in Lens V2, so these will be zero for old publications:
         PublicationType pubType;
         uint256 rootProfileId;
         uint256 rootPubId;

@@ -115,6 +115,22 @@ library GeneralHelpers {
         }
     }
 
+    function validateCollectModuleWhitelisted(address collectModule) internal view {
+        _validateModuleWhitelisted({
+            whitelistMappingSlot: COLLECT_MODULE_WHITELIST_MAPPING_SLOT,
+            moduleAddress: collectModule,
+            errorSelector: Errors.CollectModuleNotWhitelisted.selector
+        });
+    }
+
+    function validateReferenceModuleWhitelisted(address referenceModule) internal view {
+        _validateModuleWhitelisted({
+            whitelistMappingSlot: REFERENCE_MODULE_WHITELIST_MAPPING_SLOT,
+            moduleAddress: referenceModule,
+            errorSelector: Errors.ReferenceModuleNotWhitelisted.selector
+        });
+    }
+
     function getDelegatedExecutorsConfig(uint256 delegatorProfileId)
         internal
         pure
@@ -212,5 +228,38 @@ library GeneralHelpers {
             _publication.slot := keccak256(0, 64)
         }
         return _publication;
+    }
+
+    function getProfileStruct(uint256 profileId)
+        internal
+        pure
+        returns (DataTypes.ProfileStruct storage)
+    {
+        DataTypes.ProfileStruct storage _profile;
+        assembly {
+            mstore(0, profileId)
+            mstore(32, PROFILE_BY_ID_MAPPING_SLOT)
+            _profile.slot := keccak256(0, 64)
+        }
+        return _profile;
+    }
+
+    function _validateModuleWhitelisted(
+        uint256 whitelistMappingSlot,
+        address moduleAddress,
+        bytes4 errorSelector
+    ) private view {
+        bool isModuleWhitelisted;
+        assembly {
+            mstore(0, moduleAddress)
+            mstore(32, whitelistMappingSlot)
+            isModuleWhitelisted := sload(keccak256(0, 64))
+        }
+        if (!isModuleWhitelisted) {
+            assembly {
+                mstore(0, errorSelector)
+                revert(0, 4)
+            }
+        }
     }
 }
