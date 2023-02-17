@@ -329,30 +329,36 @@ contract UpgradeForkTest is BaseTest {
             console2.log(
                 'Follow with modern interface succeeded, continuing with modern interface.'
             );
-            hub.collect({
-                publicationCollectedProfileId: profileId,
-                publicationCollectedId: 1,
-                collectorProfileId: profileId,
-                referrerProfileId: 0,
-                referrerPubId: 0,
-                data: ''
-            });
-            hub.collect({
-                publicationCollectedProfileId: profileId,
-                publicationCollectedId: 2,
-                collectorProfileId: profileId,
-                referrerProfileId: 0,
-                referrerPubId: 0,
-                data: ''
-            });
-            hub.collect({
-                publicationCollectedProfileId: profileId,
-                publicationCollectedId: 3,
-                collectorProfileId: profileId,
-                referrerProfileId: 0,
-                referrerPubId: 0,
-                data: ''
-            });
+            hub.collect(
+                DataTypes.CollectParams({
+                    publicationCollectedProfileId: profileId,
+                    publicationCollectedId: 1,
+                    collectorProfileId: profileId,
+                    referrerProfileId: 0,
+                    referrerPubId: 0,
+                    collectModuleData: ''
+                })
+            );
+            hub.collect(
+                DataTypes.CollectParams({
+                    publicationCollectedProfileId: profileId,
+                    publicationCollectedId: 2,
+                    collectorProfileId: profileId,
+                    referrerProfileId: 0,
+                    referrerPubId: 0,
+                    collectModuleData: ''
+                })
+            );
+            hub.collect(
+                DataTypes.CollectParams({
+                    publicationCollectedProfileId: profileId,
+                    publicationCollectedId: 3,
+                    collectorProfileId: profileId,
+                    referrerProfileId: 0,
+                    referrerPubId: 0,
+                    collectModuleData: ''
+                })
+            );
         } catch {
             console2.log(
                 'Follow with modern interface failed, proceeding with deprecated interface.'
@@ -434,6 +440,8 @@ contract UpgradeForkTest is BaseTest {
             contentURI: MOCK_URI,
             pointedProfileId: newProfileId,
             pointedPubId: 1,
+            referrerProfileId: 0,
+            referrerPubId: 0,
             referenceModuleData: '',
             collectModule: address(0),
             collectModuleInitData: abi.encode(1),
@@ -446,6 +454,8 @@ contract UpgradeForkTest is BaseTest {
             profileId: 0,
             pointedProfileId: newProfileId,
             pointedPubId: 1,
+            referrerProfileId: 0,
+            referrerPubId: 0,
             referenceModuleData: ''
         });
     }

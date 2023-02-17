@@ -60,7 +60,7 @@ contract TestSetup is Test, ForkManagement {
     DataTypes.PostParams mockPostParams;
     DataTypes.CommentParams mockCommentParams;
     DataTypes.MirrorParams mockMirrorParams;
-    DataTypes.CollectData mockCollectData;
+    DataTypes.CollectParams mockCollectParams;
 
     function isEnvSet(string memory key) internal returns (bool) {
         try vm.envString(key) {
@@ -248,6 +248,8 @@ contract TestSetup is Test, ForkManagement {
             contentURI: MOCK_URI,
             pointedProfileId: newProfileId,
             pointedPubId: FIRST_PUB_ID,
+            referrerProfileId: 0,
+            referrerPubId: 0,
             referenceModuleData: '',
             collectModule: address(mockCollectModule),
             collectModuleInitData: abi.encode(1),
@@ -260,15 +262,19 @@ contract TestSetup is Test, ForkManagement {
             profileId: newProfileId,
             pointedProfileId: newProfileId,
             pointedPubId: FIRST_PUB_ID,
+            referrerProfileId: 0,
+            referrerPubId: 0,
             referenceModuleData: ''
         });
 
         // Precompute basic collect data.
-        mockCollectData = DataTypes.CollectData({
+        mockCollectParams = DataTypes.CollectParams({
+            publicationCollectedProfileId: newProfileId,
+            publicationCollectedId: FIRST_PUB_ID,
             collectorProfileId: newProfileId,
-            publisherProfileId: newProfileId,
-            pubId: FIRST_PUB_ID,
-            data: ''
+            referrerProfileId: 0,
+            referrerPubId: 0,
+            collectModuleData: ''
         });
 
         hub.createProfile(mockCreateProfileData);

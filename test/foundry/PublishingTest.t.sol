@@ -5,7 +5,7 @@ import './base/BaseTest.t.sol';
 import './helpers/SignatureHelpers.sol';
 import {PublishingHelpers} from './helpers/PublishingHelpers.sol';
 
-abstract contract PublishingTest is BaseTest, SignatureHelpers, PublishingHelpers, SigSetup {
+abstract contract PublishingTest is BaseTest, PublishingHelpers, SigSetup {
     function replicateInitData() internal virtual {
         // Default implementation does nothing.
     }
@@ -210,11 +210,8 @@ contract PostTest is PublishingTest {
 
         return
             _postWithSig(
-                _buildPostWithSigData(
-                    delegatedSigner,
-                    mockPostParams,
-                    _getSigStruct(signerPrivKey, digest, sigDeadline)
-                )
+                mockPostParams,
+                _getSigStruct(delegatedSigner, signerPrivKey, digest, sigDeadline)
             );
     }
 
@@ -255,11 +252,8 @@ contract CommentTest is PublishingTest {
 
         return
             _commentWithSig(
-                _buildCommentWithSigData(
-                    delegatedSigner,
-                    mockCommentParams,
-                    _getSigStruct(signerPrivKey, digest, sigDeadline)
-                )
+                mockCommentParams,
+                _getSigStruct(delegatedSigner, signerPrivKey, digest, sigDeadline)
             );
     }
 
@@ -416,11 +410,8 @@ contract MirrorTest is PublishingTest {
 
         return
             _mirrorWithSig(
-                _buildMirrorWithSigData(
-                    delegatedSigner,
-                    mockMirrorParams,
-                    _getSigStruct(signerPrivKey, digest, sigDeadline)
-                )
+                mockMirrorParams,
+                _getSigStruct(delegatedSigner, signerPrivKey, digest, sigDeadline)
             );
     }
 

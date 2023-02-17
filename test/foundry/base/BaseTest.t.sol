@@ -281,20 +281,19 @@ contract BaseTest is TestSetup {
     }
 
     function _getCollectTypedDataHash(
-        uint256 collectorProfileId,
-        uint256 publisherProfileId,
-        uint256 pubId,
-        bytes memory data,
+        DataTypes.CollectParams memory collectParams,
         uint256 nonce,
         uint256 deadline
     ) internal view returns (bytes32) {
         bytes32 structHash = keccak256(
             abi.encode(
                 COLLECT_WITH_SIG_TYPEHASH,
-                collectorProfileId,
-                publisherProfileId,
-                pubId,
-                keccak256(data),
+                collectParams.publicationCollectedProfileId,
+                collectParams.publicationCollectedId,
+                collectParams.collectorProfileId,
+                collectParams.referrerProfileId,
+                collectParams.referrerPubId,
+                keccak256(collectParams.collectModuleData),
                 nonce,
                 deadline
             )
@@ -313,7 +312,17 @@ contract BaseTest is TestSetup {
         uint256 deadline
     ) internal returns (DataTypes.EIP712Signature memory) {
         (uint8 v, bytes32 r, bytes32 s) = vm.sign(pKey, digest);
-        return DataTypes.EIP712Signature(v, r, s, deadline);
+        return DataTypes.EIP712Signature(address(0), v, r, s, deadline);
+    }
+
+    function _getSigStruct(
+        address signer,
+        uint256 pKey,
+        bytes32 digest,
+        uint256 deadline
+    ) internal returns (DataTypes.EIP712Signature memory) {
+        (uint8 v, bytes32 r, bytes32 s) = vm.sign(pKey, digest);
+        return DataTypes.EIP712Signature(signer, v, r, s, deadline);
     }
 
     function _toUint256Array(uint256 n) internal pure returns (uint256[] memory) {
@@ -411,42 +420,44 @@ contract BaseTest is TestSetup {
         bytes memory data
     ) internal returns (uint256) {
         return
-            hub.collect({
-                publicationCollectedProfileId: publisherProfileId,
-                publicationCollectedId: pubId,
-                collectorProfileId: collectorProfileId,
-                referrerProfileId: 0,
-                referrerPubId: 0,
-                data: data
-            });
+            hub.collect(
+                DataTypes.CollectParams({
+                    publicationCollectedProfileId: publisherProfileId,
+                    publicationCollectedId: pubId,
+                    collectorProfileId: collectorProfileId,
+                    referrerProfileId: 0,
+                    referrerPubId: 0,
+                    collectModuleData: data
+                })
+            );
     }
 
-    function _postWithSig(DataTypes.PostWithSigData memory postWithSigData)
-        internal
-        returns (uint256)
-    {
-        return hub.postWithSig(postWithSigData);
+    function _postWithSig(
+        DataTypes.PostParams memory postParams,
+        DataTypes.EIP712Signature memory sig
+    ) internal returns (uint256) {
+        return hub.postWithSig(postParams, sig);
     }
 
-    function _commentWithSig(DataTypes.CommentWithSigData memory commentWithSigData)
-        internal
-        returns (uint256)
-    {
-        return hub.commentWithSig(commentWithSigData);
+    function _commentWithSig(
+        DataTypes.CommentParams memory commentParams,
+        DataTypes.EIP712Signature memory sig
+    ) internal returns (uint256) {
+        return hub.commentWithSig(commentParams, sig);
     }
 
-    function _mirrorWithSig(DataTypes.MirrorWithSigData memory mirrorWithSigData)
-        internal
-        returns (uint256)
-    {
-        return hub.mirrorWithSig(mirrorWithSigData);
+    function _mirrorWithSig(
+        DataTypes.MirrorParams memory mirrorParams,
+        DataTypes.EIP712Signature memory sig
+    ) internal returns (uint256) {
+        return hub.mirrorWithSig(mirrorParams, sig);
     }
 
-    function _collectWithSig(DataTypes.CollectWithSigData memory collectWithSigData)
-        internal
-        returns (uint256)
-    {
-        return hub.collectWithSig(collectWithSigData);
+    function _collectWithSig(
+        DataTypes.CollectParams memory collectParams,
+        DataTypes.EIP712Signature memory sig
+    ) internal returns (uint256) {
+        return hub.collectWithSig(collectParams, sig);
     }
 
     function _follow(

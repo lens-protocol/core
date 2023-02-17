@@ -356,14 +356,16 @@ contract EventTest is BaseTest {
         );
 
         // TODO: Replace with proper ProfileID
-        hub.collect({
-            publicationCollectedProfileId: newProfileId,
-            publicationCollectedId: expectedPubId,
-            collectorProfileId: newProfileId,
-            referrerProfileId: 0,
-            referrerPubId: 0,
-            data: ''
-        });
+        hub.collect(
+            DataTypes.CollectParams({
+                publicationCollectedProfileId: newProfileId,
+                publicationCollectedId: expectedPubId,
+                collectorProfileId: newProfileId,
+                referrerProfileId: 0,
+                referrerPubId: 0,
+                collectModuleData: ''
+            })
+        );
         vm.stopPrank();
     }
 
@@ -426,14 +428,16 @@ contract EventTest is BaseTest {
         );
 
         // TODO: Replace with proper ProfileID
-        hub.collect({
-            publicationCollectedProfileId: 1,
-            publicationCollectedId: expectedPubId,
-            collectorProfileId: newProfileId,
-            referrerProfileId: 0,
-            referrerPubId: 0,
-            data: ''
-        });
+        hub.collect(
+            DataTypes.CollectParams({
+                publicationCollectedProfileId: 1,
+                publicationCollectedId: expectedPubId,
+                collectorProfileId: newProfileId,
+                referrerProfileId: 0,
+                referrerPubId: 0,
+                collectModuleData: ''
+            })
+        );
         vm.stopPrank();
     }
 

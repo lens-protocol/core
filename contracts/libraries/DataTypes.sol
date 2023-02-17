@@ -359,22 +359,6 @@ library DataTypes {
     /**
      * @notice A struct containing the parameters required for the `collect()` function.
      *
-     * @param collector The address of the collector.
-     * @param profileId The token ID of the profile to that published the content being collected.
-     * @param pubId The ID of the publication being collected.
-     * @param data The data passed to the collect module.
-     */
-    struct CollectData {
-        // TODO: Move this to tests? And the one below
-        uint256 collectorProfileId;
-        uint256 publisherProfileId;
-        uint256 pubId;
-        bytes data;
-    }
-
-    /**
-     * @notice A struct containing the parameters required for the `collect()` function.
-     *
      * @param publicationCollectedProfileId The token ID of the profile that published the publication to collect.
      * @param publicationCollectedId The publication to collect's publication ID.
      * @param collectorProfileId The collector profile.

@@ -179,10 +179,10 @@ contract MultiStateHubTest_PausedState_Direct is BaseTest {
     function _mockCollect() internal virtual {
         vm.prank(profileOwner);
         _collect(
-            mockCollectData.collectorProfileId,
-            mockCollectData.publisherProfileId,
-            mockCollectData.pubId,
-            mockCollectData.data
+            mockCollectParams.collectorProfileId,
+            mockCollectParams.publicationCollectedProfileId,
+            mockCollectParams.publicationCollectedId,
+            mockCollectParams.collectModuleData
         );
     }
 
@@ -308,11 +308,7 @@ contract MultiStateHubTest_PausedState_Direct is BaseTest {
     }
 }
 
-contract MultiStateHubTest_PausedState_WithSig is
-    MultiStateHubTest_PausedState_Direct,
-    SignatureHelpers,
-    SigSetup
-{
+contract MultiStateHubTest_PausedState_WithSig is MultiStateHubTest_PausedState_Direct, SigSetup {
     function setUp() public override(MultiStateHubTest_PausedState_Direct, SigSetup) {
         MultiStateHubTest_PausedState_Direct.setUp();
         SigSetup.setUp();
@@ -402,13 +398,7 @@ contract MultiStateHubTest_PausedState_WithSig is
     function _mockPost() internal override {
         bytes32 digest = _getPostTypedDataHash(mockPostParams, nonce, deadline);
 
-        _postWithSig(
-            _buildPostWithSigData({
-                delegatedSigner: address(0),
-                postParams: mockPostParams,
-                sig: _getSigStruct(profileOwnerKey, digest, deadline)
-            })
-        );
+        _postWithSig(mockPostParams, _getSigStruct(address(0), profileOwnerKey, digest, deadline));
     }
 
     function _mockComment() internal override {
@@ -416,11 +406,8 @@ contract MultiStateHubTest_PausedState_WithSig is
         bytes32 digest = _getCommentTypedDataHash(mockCommentParams, nonce, deadline);
 
         _commentWithSig(
-            _buildCommentWithSigData({
-                delegatedSigner: address(0),
-                commentParams: mockCommentParams,
-                sig: _getSigStruct(profileOwnerKey, digest, deadline)
-            })
+            mockCommentParams,
+            _getSigStruct(address(0), profileOwnerKey, digest, deadline)
         );
     }
 
@@ -429,11 +416,8 @@ contract MultiStateHubTest_PausedState_WithSig is
         bytes32 digest = _getMirrorTypedDataHash(mockMirrorParams, nonce, deadline);
 
         _mirrorWithSig(
-            _buildMirrorWithSigData({
-                delegatedSigner: address(0),
-                mirrorParams: mockMirrorParams,
-                sig: _getSigStruct(profileOwnerKey, digest, deadline)
-            })
+            mockMirrorParams,
+            _getSigStruct(address(0), profileOwnerKey, digest, deadline)
         );
     }
 
@@ -469,21 +453,11 @@ contract MultiStateHubTest_PausedState_WithSig is
     }
 
     function _mockCollect() internal override {
-        bytes32 digest = _getCollectTypedDataHash(
-            mockCollectData.collectorProfileId,
-            mockCollectData.publisherProfileId,
-            mockCollectData.pubId,
-            mockCollectData.data,
-            nonce,
-            deadline
-        );
+        bytes32 digest = _getCollectTypedDataHash(mockCollectParams, nonce, deadline);
 
         _collectWithSig(
-            _buildCollectWithSigData({
-                delegatedSigner: address(0),
-                collectData: mockCollectData,
-                sig: _getSigStruct(profileOwnerKey, digest, deadline)
-            })
+            mockCollectParams,
+            _getSigStruct(address(0), profileOwnerKey, digest, deadline)
         );
     }
 
@@ -561,10 +535,10 @@ contract MultiStateHubTest_PublishingPausedState_Direct is BaseTest {
     function _mockCollect() internal virtual {
         vm.prank(profileOwner);
         _collect(
-            mockCollectData.collectorProfileId,
-            mockCollectData.publisherProfileId,
-            mockCollectData.pubId,
-            mockCollectData.data
+            mockCollectParams.collectorProfileId,
+            mockCollectParams.publicationCollectedProfileId,
+            mockCollectParams.publicationCollectedId,
+            mockCollectParams.collectModuleData
         );
     }
 
@@ -643,7 +617,6 @@ contract MultiStateHubTest_PublishingPausedState_Direct is BaseTest {
 
 contract MultiStateHubTest_PublishingPausedState_WithSig is
     MultiStateHubTest_PublishingPausedState_Direct,
-    SignatureHelpers,
     SigSetup
 {
     // TODO: Consider refactoring this contract somehow cause it's all just pure copy-paste of the PausedState_WithSig
@@ -731,13 +704,7 @@ contract MultiStateHubTest_PublishingPausedState_WithSig is
     function _mockPost() internal override {
         bytes32 digest = _getPostTypedDataHash(mockPostParams, nonce, deadline);
 
-        _postWithSig(
-            _buildPostWithSigData({
-                delegatedSigner: address(0),
-                postParams: mockPostParams,
-                sig: _getSigStruct(profileOwnerKey, digest, deadline)
-            })
-        );
+        _postWithSig(mockPostParams, _getSigStruct(address(0), profileOwnerKey, digest, deadline));
     }
 
     function _mockComment() internal override {
@@ -745,11 +712,8 @@ contract MultiStateHubTest_PublishingPausedState_WithSig is
         bytes32 digest = _getCommentTypedDataHash(mockCommentParams, nonce, deadline);
 
         _commentWithSig(
-            _buildCommentWithSigData({
-                delegatedSigner: address(0),
-                commentParams: mockCommentParams,
-                sig: _getSigStruct(profileOwnerKey, digest, deadline)
-            })
+            mockCommentParams,
+            _getSigStruct(address(0), profileOwnerKey, digest, deadline)
         );
     }
 
@@ -758,11 +722,8 @@ contract MultiStateHubTest_PublishingPausedState_WithSig is
         bytes32 digest = _getMirrorTypedDataHash(mockMirrorParams, nonce, deadline);
 
         _mirrorWithSig(
-            _buildMirrorWithSigData({
-                delegatedSigner: address(0),
-                mirrorParams: mockMirrorParams,
-                sig: _getSigStruct(profileOwnerKey, digest, deadline)
-            })
+            mockMirrorParams,
+            _getSigStruct(address(0), profileOwnerKey, digest, deadline)
         );
     }
 
@@ -799,21 +760,11 @@ contract MultiStateHubTest_PublishingPausedState_WithSig is
     }
 
     function _mockCollect() internal override {
-        bytes32 digest = _getCollectTypedDataHash(
-            mockCollectData.collectorProfileId,
-            mockCollectData.publisherProfileId,
-            mockCollectData.pubId,
-            mockCollectData.data,
-            nonce,
-            deadline
-        );
+        bytes32 digest = _getCollectTypedDataHash(mockCollectParams, nonce, deadline);
 
         _collectWithSig(
-            _buildCollectWithSigData({
-                delegatedSigner: address(0),
-                collectData: mockCollectData,
-                sig: _getSigStruct(profileOwnerKey, digest, deadline)
-            })
+            mockCollectParams,
+            _getSigStruct(address(0), profileOwnerKey, digest, deadline)
         );
     }
 

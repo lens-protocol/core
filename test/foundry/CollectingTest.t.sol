@@ -7,7 +7,7 @@ import './helpers/CollectingHelpers.sol';
 
 // TODO add check for _initialize() called for fork tests - check name and symbol set
 
-contract CollectingTest_Base is BaseTest, SignatureHelpers, CollectingHelpers, SigSetup {
+contract CollectingTest_Base is BaseTest, CollectingHelpers, SigSetup {
     uint256 constant collectorProfileOwnerPk = 0xC011EEC7012;
     address collectorProfileOwner;
     uint256 collectorProfileId;
@@ -18,10 +18,10 @@ contract CollectingTest_Base is BaseTest, SignatureHelpers, CollectingHelpers, S
     function _mockCollect() internal virtual returns (uint256) {
         return
             _collect(
-                mockCollectData.collectorProfileId,
-                mockCollectData.publisherProfileId,
-                mockCollectData.pubId,
-                mockCollectData.data
+                mockCollectParams.collectorProfileId,
+                mockCollectParams.publicationCollectedProfileId,
+                mockCollectParams.publicationCollectedId,
+                mockCollectParams.collectModuleData
             );
     }
 
@@ -30,22 +30,12 @@ contract CollectingTest_Base is BaseTest, SignatureHelpers, CollectingHelpers, S
         virtual
         returns (uint256)
     {
-        bytes32 digest = _getCollectTypedDataHash(
-            mockCollectData.collectorProfileId,
-            mockCollectData.publisherProfileId,
-            mockCollectData.pubId,
-            mockCollectData.data,
-            nonce,
-            deadline
-        );
+        bytes32 digest = _getCollectTypedDataHash(mockCollectParams, nonce, deadline);
 
         return
             _collectWithSig(
-                _buildCollectWithSigData(
-                    delegatedSigner,
-                    mockCollectData,
-                    _getSigStruct(signerPrivKey, digest, deadline)
-                )
+                mockCollectParams,
+                _getSigStruct(delegatedSigner, signerPrivKey, digest, deadline)
             );
     }
 
@@ -61,7 +51,7 @@ contract CollectingTest_Base is BaseTest, SignatureHelpers, CollectingHelpers, S
 
         userWithoutProfile = vm.addr(userWithoutProfilePk);
 
-        mockCollectData.collectorProfileId = collectorProfileId;
+        mockCollectParams.collectorProfileId = collectorProfileId;
     }
 }
 
@@ -80,10 +70,13 @@ contract CollectingTest_Generic is CollectingTest_Base {
     }
 
     function testCannotCollectIfNonexistantPub() public {
-        mockCollectData.pubId = 2;
+        mockCollectParams.publicationCollectedId = 2;
         // Check that the publication doesn't exist.
         assertEq(
-            _getPub(mockCollectData.publisherProfileId, mockCollectData.pubId).pointedProfileId,
+            _getPub(
+                mockCollectParams.publicationCollectedProfileId,
+                mockCollectParams.publicationCollectedId
+            ).pointedProfileId,
             0
         );
 
@@ -94,10 +87,13 @@ contract CollectingTest_Generic is CollectingTest_Base {
     }
 
     function testCannotCollectIfZeroPub() public {
-        mockCollectData.pubId = 0;
+        mockCollectParams.publicationCollectedId = 0;
         // Check that the publication doesn't exist.
         assertEq(
-            _getPub(mockCollectData.publisherProfileId, mockCollectData.pubId).pointedProfileId,
+            _getPub(
+                mockCollectParams.publicationCollectedProfileId,
+                mockCollectParams.publicationCollectedId
+            ).pointedProfileId,
             0
         );
 
@@ -108,7 +104,7 @@ contract CollectingTest_Generic is CollectingTest_Base {
     }
 
     function testCannotCollect_WithoutProfile() public {
-        mockCollectData.collectorProfileId = _getNextProfileId(); // Non-existent profile
+        mockCollectParams.collectorProfileId = _getNextProfileId(); // Non-existent profile
         vm.startPrank(userWithoutProfile);
         vm.expectRevert(Errors.TokenDoesNotExist.selector);
         _mockCollect();
@@ -162,7 +158,7 @@ contract CollectingTest_Generic is CollectingTest_Base {
         assertEq(newPubId, startMirrorId + 2);
 
         // We're expecting a mirror to point at the original post ID
-        mockCollectData.pubId = startMirrorId;
+        mockCollectParams.publicationCollectedId = startMirrorId;
         vm.stopPrank();
 
         vm.prank(collectorProfileOwner);
@@ -226,10 +222,13 @@ contract CollectingTest_WithSig is CollectingTest_Base {
     }
 
     function testCannotCollectWithSigIfNonexistantPub() public {
-        mockCollectData.pubId = 2;
+        mockCollectParams.publicationCollectedId = 2;
         // Check that the publication doesn't exist.
         assertEq(
-            _getPub(mockCollectData.publisherProfileId, mockCollectData.pubId).pointedProfileId,
+            _getPub(
+                mockCollectParams.publicationCollectedProfileId,
+                mockCollectParams.publicationCollectedId
+            ).pointedProfileId,
             0
         );
 
@@ -238,10 +237,13 @@ contract CollectingTest_WithSig is CollectingTest_Base {
     }
 
     function testCannotCollectWithSigIfZeroPub() public {
-        mockCollectData.pubId = 0;
+        mockCollectParams.publicationCollectedId = 0;
         // Check that the publication doesn't exist.
         assertEq(
-            _getPub(mockCollectData.publisherProfileId, mockCollectData.pubId).pointedProfileId,
+            _getPub(
+                mockCollectParams.publicationCollectedProfileId,
+                mockCollectParams.publicationCollectedId
+            ).pointedProfileId,
             0
         );
 
@@ -250,7 +252,7 @@ contract CollectingTest_WithSig is CollectingTest_Base {
     }
 
     function testCannotCollectWithSig_WithoutProfile() public {
-        mockCollectData.collectorProfileId = _getNextProfileId(); // Non-existent profile
+        mockCollectParams.collectorProfileId = _getNextProfileId(); // Non-existent profile
         vm.expectRevert(Errors.TokenDoesNotExist.selector);
         _mockCollectWithSig({delegatedSigner: address(0), signerPrivKey: userWithoutProfilePk});
     }
@@ -270,7 +272,10 @@ contract CollectingTest_WithSig is CollectingTest_Base {
     function testCannotCollectIfNonceWasIncrementedWithAnotherAction() public {
         assertEq(_getSigNonce(collectorProfileOwner), nonce, 'Wrong nonce before posting');
 
-        uint256 expectedCollectId = _getCollectCount(collectorProfileId, mockCollectData.pubId) + 1;
+        uint256 expectedCollectId = _getCollectCount(
+            collectorProfileId,
+            mockCollectParams.publicationCollectedId
+        ) + 1;
 
         uint256 nftId = _mockCollectWithSig({
             delegatedSigner: address(0),
