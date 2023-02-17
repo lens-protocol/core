@@ -47,6 +47,23 @@ contract FollowerOnlyReferenceModule is FollowValidationModuleBase, IReferenceMo
     }
 
     /**
+     * @notice Validates that the quoting profile's owner is a follower.
+     *
+     * NOTE: We don't need to care what the pointed publication is in this context.
+     */
+    function processQuote(
+        uint256 profileId,
+        address,
+        uint256 profileIdPointed,
+        uint256,
+        uint256,
+        bytes calldata
+    ) external view override {
+        address quoteCreator = IERC721(HUB).ownerOf(profileId);
+        _checkFollowValidity(profileIdPointed, quoteCreator);
+    }
+
+    /**
      * @notice Validates that the mirroring profile's owner is a follower.
      *
      * NOTE: We don't need to care what the pointed publication is in this context.

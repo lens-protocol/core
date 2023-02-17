@@ -28,6 +28,15 @@ contract MockReferenceModule is IReferenceModule {
         bytes calldata data
     ) external override {}
 
+    function processQuote(
+        uint256 profileId,
+        address executor,
+        uint256 profileIdPointed,
+        uint256 pubIdPointed,
+        uint256 referrerProfileId,
+        bytes calldata data
+    ) external override {}
+
     function processMirror(
         uint256 profileId,
         address executor,

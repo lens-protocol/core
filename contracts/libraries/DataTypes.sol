@@ -285,7 +285,7 @@ library DataTypes {
      * @param referenceModule The reference module to set for the given publication, must be whitelisted.
      * @param referenceModuleInitData The data to be passed to the reference module for initialization.
      */
-    struct QuotePamars {
+    struct QuoteParams {
         uint256 profileId;
         string contentURI;
         uint256 profileIdPointed;

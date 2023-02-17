@@ -21,6 +21,7 @@ import {LensMultiState} from './base/LensMultiState.sol';
 import {LensHubStorage} from './storage/LensHubStorage.sol';
 import {VersionedInitializable} from '../upgradeability/VersionedInitializable.sol';
 import {IERC721Enumerable} from '@openzeppelin/contracts/token/ERC721/extensions/IERC721Enumerable.sol';
+import {MetaTxHelpers} from 'contracts/libraries/helpers/MetaTxHelpers.sol';
 
 /**
  * @title LensHub
@@ -343,9 +344,9 @@ contract LensHub is LensNFTBase, VersionedInitializable, LensMultiState, LensHub
     function quoteWithSig(
         DataTypes.QuoteParams calldata quoteParams,
         address signer,
-        EIP712Signature calldata signature
+        DataTypes.EIP712Signature calldata signature
     ) external override whenPublishingEnabled returns (uint256) {
-        MetaTxHelpers.validateQuoteSignature(signer, quoteParams);
+        MetaTxHelpers.validateQuoteSignature(signer, quoteParams, signature);
         return PublishingLib.quote({quoteParams: quoteParams, transactionExecutor: signer});
     }
 

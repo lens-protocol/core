@@ -282,6 +282,31 @@ interface ILensHub {
     function mirrorWithSig(DataTypes.MirrorWithSigData calldata vars) external returns (uint256);
 
     /**
+     * @notice Publishes a quote to a given profile, must be called by the profile owner.
+     *
+     * @param quoteParams A QuoteParams struct containing the needed parameters.
+     *
+     * @return uint256 An integer representing the quote's publication ID.
+     */
+    function quote(DataTypes.QuoteParams calldata quoteParams) external returns (uint256);
+
+    /**
+     * @notice Publishes a quote to a given profile via signature with the specified parameters. The signer must
+     * either be the profile owner or a delegated executor.
+     *
+     * @param quoteParams A QuoteParams struct containing the needed parameters.
+     * @param signer The address of the signer.
+     * @param signature The signature of the quote.
+     *
+     * @return uint256 An integer representing the quote's publication ID.
+     */
+    function quoteWithSig(
+        DataTypes.QuoteParams calldata quoteParams,
+        address signer,
+        DataTypes.EIP712Signature calldata signature
+    ) external returns (uint256);
+
+    /**
      * @notice Follows the given profiles, executing each profile's follow module logic (if any).
      *
      * @dev Both the `idsOfProfilesToFollow`, `followTokenIds`, and `datas` arrays must be of the same length,
