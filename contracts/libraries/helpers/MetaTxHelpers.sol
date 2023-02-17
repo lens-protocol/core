@@ -436,6 +436,7 @@ library MetaTxHelpers {
         }
     }
 
+    // TODO: Remove this duplicate when we refactor all functions to use signer inside the sig
     /**
      * @dev Wrapper for ecrecover to reduce code size, used in meta-tx specific functions.
      */
