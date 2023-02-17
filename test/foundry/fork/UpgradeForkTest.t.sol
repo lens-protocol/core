@@ -24,10 +24,10 @@ struct OldCreateProfileData {
     string followNFTURI;
 }
 
-struct OldMirrorData {
+struct OldMirrorParams {
     uint256 profileId;
-    uint256 profileIdPointed;
-    uint256 pubIdPointed;
+    uint256 pointedProfileId;
+    uint256 pointedPubId;
     bytes referenceModuleData;
     address referenceModule;
     bytes referenceModuleInitData;
@@ -36,7 +36,7 @@ struct OldMirrorData {
 interface IOldHub {
     function createProfile(OldCreateProfileData memory vars) external returns (uint256);
 
-    function mirror(OldMirrorData memory vars) external returns (uint256);
+    function mirror(OldMirrorParams memory vars) external returns (uint256);
 
     function follow(uint256[] calldata profileIds, bytes[] calldata datas) external;
 
@@ -185,60 +185,60 @@ contract UpgradeForkTest is BaseTest {
 
         // Set the proper initial params, these must be redundantly reset as they may have been set
         // to different values in memory.
-        mockPostData.profileId = profileId;
-        mockPostData.collectModule = mockCollectModuleAddr;
-        mockPostData.referenceModule = mockReferenceModuleAddr;
+        mockPostParams.profileId = profileId;
+        mockPostParams.collectModule = mockCollectModuleAddr;
+        mockPostParams.referenceModule = mockReferenceModuleAddr;
 
-        mockCommentData.profileId = profileId;
-        mockCommentData.profileIdPointed = profileId;
+        mockCommentParams.profileId = profileId;
+        mockCommentParams.pointedProfileId = profileId;
 
-        mockMirrorData.profileId = profileId;
-        mockMirrorData.profileIdPointed = profileId;
+        mockMirrorParams.profileId = profileId;
+        mockMirrorParams.pointedProfileId = profileId;
 
         // Set the modern reference module, the modern collect module is already set by default.
-        mockPostData.referenceModule = mockReferenceModuleAddr;
+        mockPostParams.referenceModule = mockReferenceModuleAddr;
 
-        try hub.post(mockPostData) returns (uint256 retPubId) {
+        try hub.post(mockPostParams) returns (uint256 retPubId) {
             console2.log(
                 'Post published with modern collect and reference module, continuing with modern modules.'
             );
             uint256 postId = retPubId;
             assertEq(postId, 1);
 
-            mockCommentData.collectModule = mockCollectModuleAddr;
-            mockCommentData.referenceModule = mockReferenceModuleAddr;
+            mockCommentParams.collectModule = mockCollectModuleAddr;
+            mockCommentParams.referenceModule = mockReferenceModuleAddr;
 
             // Validate post.
             assertEq(postId, 1);
             DataTypes.PublicationStruct memory pub = hub.getPub(profileId, postId);
-            assertEq(pub.profileIdPointed, 0);
-            assertEq(pub.pubIdPointed, 0);
-            assertEq(pub.contentURI, mockPostData.contentURI);
-            assertEq(pub.referenceModule, mockPostData.referenceModule);
-            assertEq(pub.collectModule, mockPostData.collectModule);
+            assertEq(pub.pointedProfileId, 0);
+            assertEq(pub.pointedPubId, 0);
+            assertEq(pub.contentURI, mockPostParams.contentURI);
+            assertEq(pub.referenceModule, mockPostParams.referenceModule);
+            assertEq(pub.collectModule, mockPostParams.collectModule);
             assertEq(pub.collectNFT, address(0));
 
             // Comment.
-            uint256 commentId = hub.comment(mockCommentData);
+            uint256 commentId = hub.comment(mockCommentParams);
 
             // Validate comment.
             assertEq(commentId, 2);
             pub = hub.getPub(profileId, commentId);
-            assertEq(pub.profileIdPointed, mockCommentData.profileIdPointed);
-            assertEq(pub.pubIdPointed, mockCommentData.pubIdPointed);
-            assertEq(pub.contentURI, mockCommentData.contentURI);
-            assertEq(pub.referenceModule, mockCommentData.referenceModule);
-            assertEq(pub.collectModule, mockCommentData.collectModule);
+            assertEq(pub.pointedProfileId, mockCommentParams.pointedProfileId);
+            assertEq(pub.pointedPubId, mockCommentParams.pointedPubId);
+            assertEq(pub.contentURI, mockCommentParams.contentURI);
+            assertEq(pub.referenceModule, mockCommentParams.referenceModule);
+            assertEq(pub.collectModule, mockCommentParams.collectModule);
             assertEq(pub.collectNFT, address(0));
 
             // Mirror.
-            uint256 mirrorId = hub.mirror(mockMirrorData);
+            uint256 mirrorId = hub.mirror(mockMirrorParams);
 
             // Validate mirror.
             assertEq(mirrorId, 3);
             pub = hub.getPub(profileId, mirrorId);
-            assertEq(pub.profileIdPointed, mockMirrorData.profileIdPointed);
-            assertEq(pub.pubIdPointed, mockMirrorData.pubIdPointed);
+            assertEq(pub.pointedProfileId, mockMirrorParams.pointedProfileId);
+            assertEq(pub.pointedPubId, mockMirrorParams.pointedPubId);
             assertEq(pub.contentURI, '');
             assertEq(pub.referenceModule, address(0));
             assertEq(pub.collectModule, address(0));
@@ -257,52 +257,52 @@ contract UpgradeForkTest is BaseTest {
             vm.stopPrank();
 
             // Post.
-            mockPostData.collectModule = mockDeprecatedCollectModule;
-            mockPostData.referenceModule = mockDeprecatedReferenceModule;
-            uint256 postId = hub.post(mockPostData);
+            mockPostParams.collectModule = mockDeprecatedCollectModule;
+            mockPostParams.referenceModule = mockDeprecatedReferenceModule;
+            uint256 postId = hub.post(mockPostParams);
 
             // Validate post.
             assertEq(postId, 1);
             DataTypes.PublicationStruct memory pub = hub.getPub(profileId, postId);
-            assertEq(pub.profileIdPointed, 0);
-            assertEq(pub.pubIdPointed, 0);
-            assertEq(pub.contentURI, mockPostData.contentURI);
-            assertEq(pub.referenceModule, mockPostData.referenceModule);
-            assertEq(pub.collectModule, mockPostData.collectModule);
+            assertEq(pub.pointedProfileId, 0);
+            assertEq(pub.pointedPubId, 0);
+            assertEq(pub.contentURI, mockPostParams.contentURI);
+            assertEq(pub.referenceModule, mockPostParams.referenceModule);
+            assertEq(pub.collectModule, mockPostParams.collectModule);
             assertEq(pub.collectNFT, address(0));
 
             // Comment.
-            mockCommentData.collectModule = mockDeprecatedCollectModule;
-            mockCommentData.referenceModule = mockDeprecatedReferenceModule;
-            uint256 commentId = hub.comment(mockCommentData);
+            mockCommentParams.collectModule = mockDeprecatedCollectModule;
+            mockCommentParams.referenceModule = mockDeprecatedReferenceModule;
+            uint256 commentId = hub.comment(mockCommentParams);
 
             // Validate comment.
             assertEq(commentId, 2);
             pub = hub.getPub(profileId, commentId);
-            assertEq(pub.profileIdPointed, mockCommentData.profileIdPointed);
-            assertEq(pub.pubIdPointed, mockCommentData.pubIdPointed);
-            assertEq(pub.contentURI, mockCommentData.contentURI);
-            assertEq(pub.referenceModule, mockCommentData.referenceModule);
-            assertEq(pub.collectModule, mockCommentData.collectModule);
+            assertEq(pub.pointedProfileId, mockCommentParams.pointedProfileId);
+            assertEq(pub.pointedPubId, mockCommentParams.pointedPubId);
+            assertEq(pub.contentURI, mockCommentParams.contentURI);
+            assertEq(pub.referenceModule, mockCommentParams.referenceModule);
+            assertEq(pub.collectModule, mockCommentParams.collectModule);
             assertEq(pub.collectNFT, address(0));
 
             // Mirror.
-            OldMirrorData memory oldMirrorData = OldMirrorData({
-                profileId: mockMirrorData.profileId,
-                profileIdPointed: mockMirrorData.profileIdPointed,
-                pubIdPointed: mockMirrorData.pubIdPointed,
-                referenceModuleData: mockMirrorData.referenceModuleData,
+            OldMirrorParams memory oldMirrorParams = OldMirrorParams({
+                profileId: mockMirrorParams.profileId,
+                pointedProfileId: mockMirrorParams.pointedProfileId,
+                pointedPubId: mockMirrorParams.pointedPubId,
+                referenceModuleData: mockMirrorParams.referenceModuleData,
                 referenceModule: mockDeprecatedReferenceModule,
-                referenceModuleInitData: mockCommentData.referenceModuleInitData
+                referenceModuleInitData: mockCommentParams.referenceModuleInitData
             });
 
-            uint256 mirrorId = IOldHub(address(hub)).mirror(oldMirrorData);
+            uint256 mirrorId = IOldHub(address(hub)).mirror(oldMirrorParams);
 
             // Validate mirror.
             assertEq(mirrorId, 3);
             pub = hub.getPub(profileId, mirrorId);
-            assertEq(pub.profileIdPointed, mockMirrorData.profileIdPointed);
-            assertEq(pub.pubIdPointed, mockMirrorData.pubIdPointed);
+            assertEq(pub.pointedProfileId, mockMirrorParams.pointedProfileId);
+            assertEq(pub.pointedPubId, mockMirrorParams.pointedPubId);
             assertEq(pub.contentURI, '');
             assertEq(pub.referenceModule, mockDeprecatedReferenceModule);
             assertEq(pub.collectModule, address(0));
@@ -333,24 +333,24 @@ contract UpgradeForkTest is BaseTest {
                 publicationCollectedProfileId: profileId,
                 publicationCollectedId: 1,
                 collectorProfileId: profileId,
-                passedReferrerProfileId: 0,
-                passedReferrerPubId: 0,
+                referrerProfileId: 0,
+                referrerPubId: 0,
                 data: ''
             });
             hub.collect({
                 publicationCollectedProfileId: profileId,
                 publicationCollectedId: 2,
                 collectorProfileId: profileId,
-                passedReferrerProfileId: 0,
-                passedReferrerPubId: 0,
+                referrerProfileId: 0,
+                referrerPubId: 0,
                 data: ''
             });
             hub.collect({
                 publicationCollectedProfileId: profileId,
                 publicationCollectedId: 3,
                 collectorProfileId: profileId,
-                passedReferrerProfileId: 0,
-                passedReferrerPubId: 0,
+                referrerProfileId: 0,
+                referrerPubId: 0,
                 data: ''
             });
         } catch {
@@ -419,7 +419,7 @@ contract UpgradeForkTest is BaseTest {
         });
 
         // Precompute basic post data.
-        mockPostData = DataTypes.PostData({
+        mockPostParams = DataTypes.PostParams({
             profileId: 0,
             contentURI: MOCK_URI,
             collectModule: address(0),
@@ -429,11 +429,11 @@ contract UpgradeForkTest is BaseTest {
         });
 
         // Precompute basic comment data.
-        mockCommentData = DataTypes.CommentData({
+        mockCommentParams = DataTypes.CommentParams({
             profileId: 0,
             contentURI: MOCK_URI,
-            profileIdPointed: newProfileId,
-            pubIdPointed: 1,
+            pointedProfileId: newProfileId,
+            pointedPubId: 1,
             referenceModuleData: '',
             collectModule: address(0),
             collectModuleInitData: abi.encode(1),
@@ -442,10 +442,10 @@ contract UpgradeForkTest is BaseTest {
         });
 
         // Precompute basic mirror data.
-        mockMirrorData = DataTypes.MirrorData({
+        mockMirrorParams = DataTypes.MirrorParams({
             profileId: 0,
-            profileIdPointed: newProfileId,
-            pubIdPointed: 1,
+            pointedProfileId: newProfileId,
+            pointedPubId: 1,
             referenceModuleData: ''
         });
     }

@@ -14,7 +14,10 @@ import {IERC721} from '@openzeppelin/contracts/token/ERC721/IERC721.sol';
  * @notice A simple reference module that validates that comments or mirrors originate from a profile owned
  * by a follower.
  */
-contract DeprecatedFollowerOnlyReferenceModule is FollowValidationModuleBase, IDeprecatedReferenceModule {
+contract DeprecatedFollowerOnlyReferenceModule is
+    FollowValidationModuleBase,
+    IDeprecatedReferenceModule
+{
     constructor(address hub) ModuleBase(hub) {}
 
     /**
@@ -35,12 +38,12 @@ contract DeprecatedFollowerOnlyReferenceModule is FollowValidationModuleBase, ID
      */
     function processComment(
         uint256 profileId,
-        uint256 profileIdPointed,
+        uint256 pointedProfileId,
         uint256,
         bytes calldata
     ) external view override {
         address commentCreator = IERC721(HUB).ownerOf(profileId);
-        _checkFollowValidity(profileIdPointed, commentCreator);
+        _checkFollowValidity(pointedProfileId, commentCreator);
     }
 
     /**
@@ -50,11 +53,11 @@ contract DeprecatedFollowerOnlyReferenceModule is FollowValidationModuleBase, ID
      */
     function processMirror(
         uint256 profileId,
-        uint256 profileIdPointed,
+        uint256 pointedProfileId,
         uint256,
         bytes calldata
     ) external view override {
         address mirrorCreator = IERC721(HUB).ownerOf(profileId);
-        _checkFollowValidity(profileIdPointed, mirrorCreator);
+        _checkFollowValidity(pointedProfileId, mirrorCreator);
     }
 }

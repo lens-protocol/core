@@ -29,14 +29,14 @@ interface IDeprecatedReferenceModule {
      * @notice Processes a comment action referencing a given publication. This can only be called by the hub.
      *
      * @param profileId The token ID of the profile associated with the publication being published.
-     * @param profileIdPointed The profile ID of the profile associated the publication being referenced.
-     * @param pubIdPointed The publication ID of the publication being referenced.
+     * @param pointedProfileId The profile ID of the profile associated the publication being referenced.
+     * @param pointedPubId The publication ID of the publication being referenced.
      * @param data Arbitrary data __passed from the commenter!__ to be decoded.
      */
     function processComment(
         uint256 profileId,
-        uint256 profileIdPointed,
-        uint256 pubIdPointed,
+        uint256 pointedProfileId,
+        uint256 pointedPubId,
         bytes calldata data
     ) external;
 
@@ -44,14 +44,14 @@ interface IDeprecatedReferenceModule {
      * @notice Processes a mirror action referencing a given publication. This can only be called by the hub.
      *
      * @param profileId The token ID of the profile associated with the publication being published.
-     * @param profileIdPointed The profile ID of the profile associated the publication being referenced.
-     * @param pubIdPointed The publication ID of the publication being referenced.
+     * @param pointedProfileId The profile ID of the profile associated the publication being referenced.
+     * @param pointedPubId The publication ID of the publication being referenced.
      * @param data Arbitrary data __passed from the mirrorer!__ to be decoded.
      */
     function processMirror(
         uint256 profileId,
-        uint256 profileIdPointed,
-        uint256 pubIdPointed,
+        uint256 pointedProfileId,
+        uint256 pointedPubId,
         bytes calldata data
     ) external;
 }

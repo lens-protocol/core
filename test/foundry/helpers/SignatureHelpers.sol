@@ -40,18 +40,18 @@ contract SignatureHelpers {
 
     function _buildPostWithSigData(
         address delegatedSigner,
-        DataTypes.PostData memory postData,
+        DataTypes.PostParams memory postParams,
         DataTypes.EIP712Signature memory sig
     ) internal pure returns (DataTypes.PostWithSigData memory) {
         return
             _buildPostWithSigData(
                 delegatedSigner,
-                postData.profileId,
-                postData.contentURI,
-                postData.collectModule,
-                postData.collectModuleInitData,
-                postData.referenceModule,
-                postData.referenceModuleInitData,
+                postParams.profileId,
+                postParams.contentURI,
+                postParams.collectModule,
+                postParams.collectModuleInitData,
+                postParams.referenceModule,
+                postParams.referenceModuleInitData,
                 sig
             );
     }
@@ -60,8 +60,8 @@ contract SignatureHelpers {
         address delegatedSigner,
         uint256 profileId,
         string memory contentURI,
-        uint256 profileIdPointed,
-        uint256 pubIdPointed,
+        uint256 pointedProfileId,
+        uint256 pointedPubId,
         bytes memory referenceModuleData,
         address collectModule,
         bytes memory collectModuleInitData,
@@ -74,8 +74,8 @@ contract SignatureHelpers {
                 delegatedSigner,
                 profileId,
                 contentURI,
-                profileIdPointed,
-                pubIdPointed,
+                pointedProfileId,
+                pointedPubId,
                 referenceModuleData,
                 collectModule,
                 collectModuleInitData,
@@ -87,21 +87,21 @@ contract SignatureHelpers {
 
     function _buildCommentWithSigData(
         address delegatedSigner,
-        DataTypes.CommentData memory commentData,
+        DataTypes.CommentParams memory commentParams,
         DataTypes.EIP712Signature memory sig
     ) internal pure returns (DataTypes.CommentWithSigData memory) {
         return
             _buildCommentWithSigData({
                 delegatedSigner: delegatedSigner,
-                profileId: commentData.profileId,
-                contentURI: commentData.contentURI,
-                profileIdPointed: commentData.profileIdPointed,
-                pubIdPointed: commentData.pubIdPointed,
-                referenceModuleData: commentData.referenceModuleData,
-                collectModule: commentData.collectModule,
-                collectModuleInitData: commentData.collectModuleInitData,
-                referenceModule: commentData.referenceModule,
-                referenceModuleInitData: commentData.referenceModuleInitData,
+                profileId: commentParams.profileId,
+                contentURI: commentParams.contentURI,
+                pointedProfileId: commentParams.pointedProfileId,
+                pointedPubId: commentParams.pointedPubId,
+                referenceModuleData: commentParams.referenceModuleData,
+                collectModule: commentParams.collectModule,
+                collectModuleInitData: commentParams.collectModuleInitData,
+                referenceModule: commentParams.referenceModule,
+                referenceModuleInitData: commentParams.referenceModuleInitData,
                 sig: sig
             });
     }
@@ -109,8 +109,8 @@ contract SignatureHelpers {
     function _buildMirrorWithSigData(
         address delegatedSigner,
         uint256 profileId,
-        uint256 profileIdPointed,
-        uint256 pubIdPointed,
+        uint256 pointedProfileId,
+        uint256 pointedPubId,
         bytes memory referenceModuleData,
         DataTypes.EIP712Signature memory sig
     ) internal pure returns (DataTypes.MirrorWithSigData memory) {
@@ -118,8 +118,8 @@ contract SignatureHelpers {
             DataTypes.MirrorWithSigData(
                 delegatedSigner,
                 profileId,
-                profileIdPointed,
-                pubIdPointed,
+                pointedProfileId,
+                pointedPubId,
                 referenceModuleData,
                 sig
             );
@@ -127,16 +127,16 @@ contract SignatureHelpers {
 
     function _buildMirrorWithSigData(
         address delegatedSigner,
-        DataTypes.MirrorData memory mirrorData,
+        DataTypes.MirrorParams memory mirrorParams,
         DataTypes.EIP712Signature memory sig
     ) internal pure returns (DataTypes.MirrorWithSigData memory) {
         return
             _buildMirrorWithSigData({
                 delegatedSigner: delegatedSigner,
-                profileId: mirrorData.profileId,
-                profileIdPointed: mirrorData.profileIdPointed,
-                pubIdPointed: mirrorData.pubIdPointed,
-                referenceModuleData: mirrorData.referenceModuleData,
+                profileId: mirrorParams.profileId,
+                pointedProfileId: mirrorParams.pointedProfileId,
+                pointedPubId: mirrorParams.pointedPubId,
+                referenceModuleData: mirrorParams.referenceModuleData,
                 sig: sig
             });
     }
@@ -152,8 +152,8 @@ contract SignatureHelpers {
                 publicationCollectedProfileId: collectData.publisherProfileId,
                 publicationCollectedId: collectData.pubId,
                 collectorProfileId: collectData.collectorProfileId,
-                passedReferrerProfileId: 0,
-                passedReferrerPubId: 0,
+                referrerProfileId: 0,
+                referrerPubId: 0,
                 collectModuleData: collectData.data,
                 sig: sig
             });

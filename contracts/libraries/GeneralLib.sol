@@ -279,55 +279,11 @@ library GeneralLib {
     }
 
     function collect(
-        uint256 publicationCollectedProfileId,
-        uint256 publicationCollectedId,
-        uint256 collectorProfileId,
-        uint256 passedReferrerProfileId,
-        uint256 passedReferrerPubId,
-        bytes calldata collectModuleData,
+        DataTypes.CollectParams calldata collectParams,
+        address transactionExecutor,
         address collectNFTImpl
     ) external returns (uint256) {
-        return
-            InteractionHelpers.collect({
-                publicationCollectedProfileId: publicationCollectedProfileId,
-                publicationCollectedId: publicationCollectedId,
-                collectorProfileId: collectorProfileId,
-                collectorProfileOwner: GeneralHelpers.ownerOf(collectorProfileId),
-                transactionExecutor: msg.sender,
-                passedReferrerProfileId: passedReferrerProfileId,
-                passedReferrerPubId: passedReferrerPubId,
-                collectNFTImpl: collectNFTImpl,
-                collectModuleData: collectModuleData
-            });
-    }
-
-    /**
-     * @notice Validates parameters and increments the nonce for a given owner using the
-     * `collectWithSig()` function.
-     *
-     * @param vars the CollectWithSigData struct containing the relevant parameters.
-     */
-    function collectWithSig(DataTypes.CollectWithSigData calldata vars, address collectNFTImpl)
-        external
-        returns (uint256)
-    {
-        address transactionSigner = GeneralHelpers.getOriginatorOrDelegatedExecutorSigner(
-            vars.collectorProfileId,
-            vars.delegatedSigner
-        );
-        MetaTxHelpers.baseCollectWithSig(transactionSigner, vars);
-        return
-            InteractionHelpers.collect({
-                publicationCollectedProfileId: vars.publicationCollectedProfileId,
-                publicationCollectedId: vars.publicationCollectedId,
-                collectorProfileId: vars.collectorProfileId,
-                collectorProfileOwner: GeneralHelpers.ownerOf(vars.collectorProfileId),
-                transactionExecutor: transactionSigner,
-                passedReferrerProfileId: vars.passedReferrerProfileId,
-                passedReferrerPubId: vars.passedReferrerPubId,
-                collectNFTImpl: collectNFTImpl,
-                collectModuleData: vars.collectModuleData
-            });
+        return InteractionHelpers.collect(collectParams, transactionExecutor, collectNFTImpl);
     }
 
     /**

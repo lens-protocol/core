@@ -54,7 +54,7 @@ contract CollectingTest_Base is BaseTest, SignatureHelpers, CollectingHelpers, S
         SigSetup.setUp();
 
         vm.prank(profileOwner);
-        hub.post(mockPostData);
+        hub.post(mockPostParams);
 
         collectorProfileOwner = vm.addr(collectorProfileOwnerPk);
         collectorProfileId = _createProfile(collectorProfileOwner);
@@ -83,7 +83,7 @@ contract CollectingTest_Generic is CollectingTest_Base {
         mockCollectData.pubId = 2;
         // Check that the publication doesn't exist.
         assertEq(
-            _getPub(mockCollectData.publisherProfileId, mockCollectData.pubId).profileIdPointed,
+            _getPub(mockCollectData.publisherProfileId, mockCollectData.pubId).pointedProfileId,
             0
         );
 
@@ -97,7 +97,7 @@ contract CollectingTest_Generic is CollectingTest_Base {
         mockCollectData.pubId = 0;
         // Check that the publication doesn't exist.
         assertEq(
-            _getPub(mockCollectData.publisherProfileId, mockCollectData.pubId).profileIdPointed,
+            _getPub(mockCollectData.publisherProfileId, mockCollectData.pubId).pointedProfileId,
             0
         );
 
@@ -139,7 +139,7 @@ contract CollectingTest_Generic is CollectingTest_Base {
         uint256 startNftId = _checkCollectNFTBefore();
 
         vm.prank(profileOwner);
-        hub.mirror(mockMirrorData);
+        hub.mirror(mockMirrorParams);
 
         vm.prank(collectorProfileOwner);
         uint256 nftId = _mockCollect();
@@ -149,16 +149,16 @@ contract CollectingTest_Generic is CollectingTest_Base {
 
     function testCollectMirrorOfMirrorPointsToOriginalPost() public {
         uint256 startNftId = _checkCollectNFTBefore();
-        uint256 startMirrorId = mockMirrorData.pubIdPointed;
+        uint256 startMirrorId = mockMirrorParams.pointedPubId;
 
         // mirror once
         vm.startPrank(profileOwner);
-        uint256 newPubId = hub.mirror(mockMirrorData);
+        uint256 newPubId = hub.mirror(mockMirrorParams);
         assertEq(newPubId, startMirrorId + 1);
 
         // mirror again
-        mockMirrorData.pubIdPointed = newPubId;
-        newPubId = hub.mirror(mockMirrorData);
+        mockMirrorParams.pointedPubId = newPubId;
+        newPubId = hub.mirror(mockMirrorParams);
         assertEq(newPubId, startMirrorId + 2);
 
         // We're expecting a mirror to point at the original post ID
@@ -195,7 +195,7 @@ contract CollectingTest_Generic is CollectingTest_Base {
 
         // mirror, then delegate power to executor
         vm.prank(profileOwner);
-        hub.mirror(mockMirrorData);
+        hub.mirror(mockMirrorParams);
         _changeDelegatedExecutorsConfig(
             collectorProfileOwner,
             collectorProfileId,
@@ -229,7 +229,7 @@ contract CollectingTest_WithSig is CollectingTest_Base {
         mockCollectData.pubId = 2;
         // Check that the publication doesn't exist.
         assertEq(
-            _getPub(mockCollectData.publisherProfileId, mockCollectData.pubId).profileIdPointed,
+            _getPub(mockCollectData.publisherProfileId, mockCollectData.pubId).pointedProfileId,
             0
         );
 
@@ -241,7 +241,7 @@ contract CollectingTest_WithSig is CollectingTest_Base {
         mockCollectData.pubId = 0;
         // Check that the publication doesn't exist.
         assertEq(
-            _getPub(mockCollectData.publisherProfileId, mockCollectData.pubId).profileIdPointed,
+            _getPub(mockCollectData.publisherProfileId, mockCollectData.pubId).pointedProfileId,
             0
         );
 
@@ -310,7 +310,7 @@ contract CollectingTest_WithSig is CollectingTest_Base {
         uint256 startNftId = _checkCollectNFTBefore();
 
         vm.prank(profileOwner);
-        hub.mirror(mockMirrorData);
+        hub.mirror(mockMirrorParams);
 
         uint256 nftId = _mockCollectWithSig({
             delegatedSigner: address(0),
@@ -345,7 +345,7 @@ contract CollectingTest_WithSig is CollectingTest_Base {
 
         // mirror, then delegate power to executor
         vm.prank(profileOwner);
-        hub.mirror(mockMirrorData);
+        hub.mirror(mockMirrorParams);
         _changeDelegatedExecutorsConfig(
             collectorProfileOwner,
             collectorProfileId,

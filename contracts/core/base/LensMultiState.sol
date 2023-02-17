@@ -6,6 +6,7 @@ import {Events} from '../../libraries/Events.sol';
 import {DataTypes} from '../../libraries/DataTypes.sol';
 import {Errors} from '../../libraries/Errors.sol';
 import {ILensMultiState} from '../../interfaces/ILensMultiState.sol';
+import {GeneralHelpers} from '../../libraries/helpers/GeneralHelpers.sol';
 
 /**
  * @title LensMultiState
@@ -26,6 +27,27 @@ abstract contract LensMultiState is ILensMultiState {
 
     modifier whenPublishingEnabled() {
         _validatePublishingEnabled();
+        _;
+    }
+
+    modifier onlyProfileOwnerOrDelegatedExecutor(
+        address expectedOwnerOrDelegatedExecutor,
+        uint256 profileId
+    ) {
+        GeneralHelpers.validateAddressIsProfileOwnerOrDelegatedExecutor(
+            expectedOwnerOrDelegatedExecutor,
+            profileId
+        );
+        _;
+    }
+
+    modifier whenNotBlocked(uint256 profile, uint256 byProfile) {
+        GeneralHelpers.validateNotBlocked(profile, byProfile);
+        _;
+    }
+
+    modifier onlyValidPointedPub(uint256 profileId, uint256 pubId) {
+        GeneralHelpers.validatePointedPub(profileId, pubId);
         _;
     }
 

@@ -270,64 +270,107 @@ contract LensHub is LensNFTBase, VersionedInitializable, LensMultiState, LensHub
         ProfileLib.setFollowNFTURIWithSig(vars);
     }
 
+    /// *********************************
+    /// ****** PUBLISHING FUNCTIONS *****
+    /// *********************************
+
     /// @inheritdoc ILensHub
-    function post(DataTypes.PostData calldata vars)
+    function post(DataTypes.PostParams calldata postParams)
         external
         override
         whenPublishingEnabled
+        onlyProfileOwnerOrDelegatedExecutor(msg.sender, postParams.profileId)
         returns (uint256)
     {
-        return PublishingLib.post(vars);
+        return PublishingLib.post({postParams: postParams, transactionExecutor: msg.sender});
     }
 
     /// @inheritdoc ILensHub
-    function postWithSig(DataTypes.PostWithSigData calldata vars)
+    function postWithSig(
+        DataTypes.PostParams calldata postParams,
+        DataTypes.EIP712Signature calldata signature
+    )
         external
         override
         whenPublishingEnabled
+        onlyProfileOwnerOrDelegatedExecutor(signature.signer, postParams.profileId)
         returns (uint256)
     {
-        return PublishingLib.postWithSig(vars);
+        MetaTxHelpers.validateCommentSignature(signature, postParams);
+        return
+            PublishingLib.postWithSig({
+                postParams: postParams,
+                transactionExecutor: signature.signer
+            });
     }
 
     /// @inheritdoc ILensHub
-    function comment(DataTypes.CommentData calldata vars)
+    function comment(DataTypes.CommentParams calldata commentParams)
         external
         override
         whenPublishingEnabled
+        onlyProfileOwnerOrDelegatedExecutor(msg.sender, commentParams.profileId)
+        onlyValidPointedPub(commentParams.pointedProfileId, commentParams.pointedPubId)
+        whenNotBlocked(commentParams.profileId, commentParams.pointedProfileId)
         returns (uint256)
     {
-        return PublishingLib.comment(vars);
+        return
+            PublishingLib.comment({commentParams: commentParams, transactionExecutor: msg.sender});
     }
 
     /// @inheritdoc ILensHub
-    function commentWithSig(DataTypes.CommentWithSigData calldata vars)
+    function commentWithSig(
+        DataTypes.CommentParams calldata commentParams,
+        DataTypes.EIP712Signature calldata signature
+    )
         external
         override
         whenPublishingEnabled
+        onlyProfileOwnerOrDelegatedExecutor(signature.signer, commentParams.profileId)
+        onlyValidPointedPub(commentParams.pointedProfileId, commentParams.pointedPubId)
+        whenNotBlocked(commentParams.profileId, commentParams.pointedProfileId)
         returns (uint256)
     {
-        return PublishingLib.commentWithSig(vars);
+        MetaTxHelpers.validateCommentSignature(signature, commentParams);
+        return
+            PublishingLib.comment({
+                commentParams: commentParams,
+                transactionExecutor: signature.signer
+            });
     }
 
     /// @inheritdoc ILensHub
-    function mirror(DataTypes.MirrorData calldata vars)
+    function mirror(DataTypes.MirrorParams calldata mirrorParams)
         external
         override
         whenPublishingEnabled
+        onlyProfileOwnerOrDelegatedExecutor(msg.sender, mirrorParams.profileId)
+        onlyValidPointedPub(mirrorParams.pointedProfileId, mirrorParams.pointedPubId)
+        whenNotBlocked(mirrorParams.profileId, mirrorParams.pointedProfileId)
         returns (uint256)
     {
-        return PublishingLib.mirror(vars);
+        return PublishingLib.mirror({mirrorParams: mirrorParams, transactionExecutor: msg.sender});
     }
 
     /// @inheritdoc ILensHub
-    function mirrorWithSig(DataTypes.MirrorWithSigData calldata vars)
+    function mirrorWithSig(
+        DataTypes.MirrorParams calldata mirrorParams,
+        DataTypes.EIP712Signature calldata signature
+    )
         external
         override
         whenPublishingEnabled
+        onlyProfileOwnerOrDelegatedExecutor(signature.signer, mirrorParams.profileId)
+        onlyValidPointedPub(mirrorParams.pointedProfileId, mirrorParams.pointedPubId)
+        whenNotBlocked(mirrorParams.profileId, mirrorParams.pointedProfileId)
         returns (uint256)
     {
-        return PublishingLib.mirrorWithSig(vars);
+        MetaTxHelpers.validateMirrorSignature(signature, mirrorParams);
+        return
+            PublishingLib.mirror({
+                mirrorParams: mirrorParams,
+                transactionExecutor: signature.signer
+            });
     }
 
     /// @inheritdoc ILensHub
@@ -335,6 +378,9 @@ contract LensHub is LensNFTBase, VersionedInitializable, LensMultiState, LensHub
         external
         override
         whenPublishingEnabled
+        onlyProfileOwnerOrDelegatedExecutor(msg.sender, quoteParams.profileId)
+        onlyValidPointedPub(quoteParams.pointedProfileId, quoteParams.pointedPubId)
+        whenNotBlocked(quoteParams.profileId, quoteParams.pointedProfileId)
         returns (uint256)
     {
         return PublishingLib.quote({quoteParams: quoteParams, transactionExecutor: msg.sender});
@@ -343,11 +389,19 @@ contract LensHub is LensNFTBase, VersionedInitializable, LensMultiState, LensHub
     /// @inheritdoc ILensHub
     function quoteWithSig(
         DataTypes.QuoteParams calldata quoteParams,
-        address signer,
         DataTypes.EIP712Signature calldata signature
-    ) external override whenPublishingEnabled returns (uint256) {
-        MetaTxHelpers.validateQuoteSignature(signer, quoteParams, signature);
-        return PublishingLib.quote({quoteParams: quoteParams, transactionExecutor: signer});
+    )
+        external
+        override
+        whenPublishingEnabled
+        onlyProfileOwnerOrDelegatedExecutor(signature.signer, quoteParams.profileId)
+        onlyValidPointedPub(quoteParams.pointedProfileId, quoteParams.pointedPubId)
+        whenNotBlocked(quoteParams.profileId, quoteParams.pointedProfileId)
+        returns (uint256)
+    {
+        MetaTxHelpers.validateQuoteSignature(signature, quoteParams);
+        return
+            PublishingLib.quote({quoteParams: quoteParams, transactionExecutor: signature.signer});
     }
 
     /**
@@ -441,34 +495,37 @@ contract LensHub is LensNFTBase, VersionedInitializable, LensMultiState, LensHub
     }
 
     /// TODO: Inherit natspec
-    function collect(
-        uint256 publicationCollectedProfileId,
-        uint256 publicationCollectedId,
-        uint256 collectorProfileId,
-        uint256 passedReferrerProfileId,
-        uint256 passedReferrerPubId,
-        bytes calldata data
-    ) external override whenNotPaused returns (uint256) {
-        return
-            GeneralLib.collect({
-                publicationCollectedProfileId: publicationCollectedProfileId,
-                publicationCollectedId: publicationCollectedId,
-                collectorProfileId: collectorProfileId,
-                passedReferrerProfileId: passedReferrerProfileId,
-                passedReferrerPubId: passedReferrerPubId,
-                collectModuleData: data,
-                collectNFTImpl: COLLECT_NFT_IMPL
-            });
-    }
-
-    /// @inheritdoc ILensHub
-    function collectWithSig(DataTypes.CollectWithSigData calldata vars)
+    function collect(DataTypes.CollectParams calldata collectParams)
         external
         override
         whenNotPaused
+        onlyProfileOwnerOrDelegatedExecutor(msg.sender, collectParams.collectorProfileId)
+        whenNotBlocked(
+            collectParams.collectorProfileId,
+            collectParams.publicationCollectedProfileId
+        )
         returns (uint256)
     {
-        return GeneralLib.collectWithSig(vars, COLLECT_NFT_IMPL);
+        return GeneralLib.collect(collectParams, msg.sender, COLLECT_NFT_IMPL); // TODO: Think how we can not pass this
+    }
+
+    /// @inheritdoc ILensHub
+    function collectWithSig(
+        DataTypes.CollectParams calldata collectParams,
+        DataTypes.EIP712Signature calldata signature
+    )
+        external
+        override
+        whenNotPaused
+        onlyProfileOwnerOrDelegatedExecutor(signature.signer, collectParams.collectorProfileId)
+        whenNotBlocked(
+            collectParams.collectorProfileId,
+            collectParams.publicationCollectedProfileId
+        )
+        returns (uint256)
+    {
+        MetaTxHelpers.validateCollectSignature(signature, collectParams);
+        return GeneralLib.collect(collectParams, signature.signer);
     }
 
     /// @inheritdoc ILensHub
@@ -693,9 +750,9 @@ contract LensHub is LensNFTBase, VersionedInitializable, LensMultiState, LensHub
         override
         returns (uint256, uint256)
     {
-        uint256 profileIdPointed = _pubByIdByProfile[profileId][pubId].profileIdPointed;
-        uint256 pubIdPointed = _pubByIdByProfile[profileId][pubId].pubIdPointed;
-        return (profileIdPointed, pubIdPointed);
+        uint256 pointedProfileId = _pubByIdByProfile[profileId][pubId].pointedProfileId;
+        uint256 pointedPubId = _pubByIdByProfile[profileId][pubId].pointedPubId;
+        return (pointedProfileId, pointedPubId);
     }
 
     /// @inheritdoc ILensHub

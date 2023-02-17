@@ -188,59 +188,64 @@ library MetaTxHelpers {
         );
     }
 
-    function basePostWithSig(address signer, DataTypes.PostWithSigData calldata vars) internal {
+    function validatePostSignature(
+        DataTypes.EIP712Signature calldata sig,
+        DataTypes.PostParams calldata postParams
+    ) internal {
         _validateRecoveredAddress(
             _calculateDigest(
                 keccak256(
                     abi.encode(
                         POST_WITH_SIG_TYPEHASH,
-                        vars.profileId,
-                        keccak256(bytes(vars.contentURI)),
-                        vars.collectModule,
-                        keccak256(vars.collectModuleInitData),
-                        vars.referenceModule,
-                        keccak256(vars.referenceModuleInitData),
-                        _sigNonces(signer),
-                        vars.sig.deadline
+                        postParams.profileId,
+                        keccak256(bytes(postParams.contentURI)),
+                        postParams.collectModule,
+                        keccak256(postParams.collectModuleInitData),
+                        postParams.referenceModule,
+                        keccak256(postParams.referenceModuleInitData),
+                        _sigNonces(sig.signer),
+                        sig.deadline
                     )
                 )
             ),
-            signer,
-            vars.sig
+            sig.signer,
+            sig
         );
     }
 
-    function baseCommentWithSig(address signer, DataTypes.CommentWithSigData calldata vars)
-        internal
-    {
+    function validateCommentSignature(
+        DataTypes.EIP712Signature calldata sig,
+        DataTypes.CommentParams calldata commentParams
+    ) internal {
         _validateRecoveredAddress(
             _calculateDigest(
                 keccak256(
                     abi.encode(
                         COMMENT_WITH_SIG_TYPEHASH,
-                        vars.profileId,
-                        keccak256(bytes(vars.contentURI)),
-                        vars.profileIdPointed,
-                        vars.pubIdPointed,
-                        keccak256(vars.referenceModuleData),
-                        vars.collectModule,
-                        keccak256(vars.collectModuleInitData),
-                        vars.referenceModule,
-                        keccak256(vars.referenceModuleInitData),
-                        _sigNonces(signer),
-                        vars.sig.deadline
+                        commentParams.profileId,
+                        keccak256(bytes(commentParams.contentURI)),
+                        commentParams.pointedProfileId,
+                        commentParams.pointedPubId,
+                        commentParams.referrerProfileId,
+                        commentParams.referrerPubId,
+                        keccak256(commentParams.referenceModuleData),
+                        commentParams.collectModule,
+                        keccak256(commentParams.collectModuleInitData),
+                        commentParams.referenceModule,
+                        keccak256(commentParams.referenceModuleInitData),
+                        _sigNonces(sig.signer),
+                        commentParams.sig.deadline
                     )
                 )
             ),
-            signer,
-            vars.sig
+            sig.signer,
+            commentParams.sig
         );
     }
 
     function validateQuoteSignature(
-        address signer, // TODO: put a signer inside sig struct
-        DataTypes.QuoteParams calldata quoteParams,
-        DataTypes.EIP712Signature calldata sig
+        DataTypes.EIP712Signature calldata sig,
+        DataTypes.QuoteParams calldata quoteParams
     ) internal {
         _validateRecoveredAddress(
             _calculateDigest(
@@ -249,40 +254,47 @@ library MetaTxHelpers {
                         COMMENT_WITH_SIG_TYPEHASH,
                         quoteParams.profileId,
                         keccak256(bytes(quoteParams.contentURI)),
-                        quoteParams.profileIdPointed,
-                        quoteParams.pubIdPointed,
+                        quoteParams.pointedProfileId,
+                        quoteParams.pointedPubId,
                         keccak256(quoteParams.referenceModuleData),
+                        quoteParams.referrerProfileId,
+                        quoteParams.referrerPubId,
                         quoteParams.collectModule,
                         keccak256(quoteParams.collectModuleInitData),
                         quoteParams.referenceModule,
                         keccak256(quoteParams.referenceModuleInitData),
-                        _sigNonces(signer),
+                        _sigNonces(sig.signer),
                         sig.deadline
                     )
                 )
             ),
-            signer,
+            sig.signer,
             sig
         );
     }
 
-    function baseMirrorWithSig(address signer, DataTypes.MirrorWithSigData calldata vars) internal {
+    function validateMirrorSignature(
+        DataTypes.EIP712Signature calldata sig,
+        DataTypes.MirrorParams calldata mirrorParams
+    ) internal {
         _validateRecoveredAddress(
             _calculateDigest(
                 keccak256(
                     abi.encode(
                         MIRROR_WITH_SIG_TYPEHASH,
-                        vars.profileId,
-                        vars.profileIdPointed,
-                        vars.pubIdPointed,
-                        keccak256(vars.referenceModuleData),
-                        _sigNonces(signer),
-                        vars.sig.deadline
+                        mirrorParams.profileId,
+                        mirrorParams.pointedProfileId,
+                        mirrorParams.pointedPubId,
+                        mirrorParams.referrerProfileId,
+                        mirrorParams.referrerPubId,
+                        keccak256(mirrorParams.referenceModuleData),
+                        _sigNonces(sig.signer),
+                        sig.deadline
                     )
                 )
             ),
-            signer,
-            vars.sig
+            sig.signer,
+            sig
         );
     }
 
@@ -369,25 +381,28 @@ library MetaTxHelpers {
         );
     }
 
-    function baseCollectWithSig(address signer, DataTypes.CollectWithSigData calldata vars)
-        internal
-    {
+    function validateCollectSignature(
+        DataTypes.EIP712Signature calldata sig,
+        DataTypes.CollectParams calldata collectParams
+    ) internal {
         _validateRecoveredAddress(
             _calculateDigest(
                 keccak256(
                     abi.encode(
                         COLLECT_WITH_SIG_TYPEHASH,
-                        vars.collectorProfileId,
-                        vars.publicationCollectedProfileId,
-                        vars.publicationCollectedId,
-                        keccak256(vars.collectModuleData),
-                        _sigNonces(signer),
-                        vars.sig.deadline
+                        collectParams.publicationCollectedProfileId,
+                        collectParams.publicationCollectedId,
+                        collectParams.collectorProfileId,
+                        collectParams.referrerProfileId,
+                        collectParams.referrerPubId,
+                        keccak256(collectParams.collectModuleData),
+                        _sigNonces(sig.signer),
+                        sig.deadline
                     )
                 )
             ),
-            signer,
-            vars.sig
+            sig.signer,
+            sig
         );
     }
 

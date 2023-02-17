@@ -57,9 +57,9 @@ contract TestSetup is Test, ForkManagement {
 
     DataTypes.CreateProfileData mockCreateProfileData;
 
-    DataTypes.PostData mockPostData;
-    DataTypes.CommentData mockCommentData;
-    DataTypes.MirrorData mockMirrorData;
+    DataTypes.PostParams mockPostParams;
+    DataTypes.CommentParams mockCommentParams;
+    DataTypes.MirrorParams mockMirrorParams;
     DataTypes.CollectData mockCollectData;
 
     function isEnvSet(string memory key) internal returns (bool) {
@@ -233,7 +233,7 @@ contract TestSetup is Test, ForkManagement {
         });
 
         // Precompute basic post data.
-        mockPostData = DataTypes.PostData({
+        mockPostParams = DataTypes.PostParams({
             profileId: newProfileId,
             contentURI: MOCK_URI,
             collectModule: address(mockCollectModule),
@@ -243,11 +243,11 @@ contract TestSetup is Test, ForkManagement {
         });
 
         // Precompute basic comment data.
-        mockCommentData = DataTypes.CommentData({
+        mockCommentParams = DataTypes.CommentParams({
             profileId: newProfileId,
             contentURI: MOCK_URI,
-            profileIdPointed: newProfileId,
-            pubIdPointed: FIRST_PUB_ID,
+            pointedProfileId: newProfileId,
+            pointedPubId: FIRST_PUB_ID,
             referenceModuleData: '',
             collectModule: address(mockCollectModule),
             collectModuleInitData: abi.encode(1),
@@ -256,10 +256,10 @@ contract TestSetup is Test, ForkManagement {
         });
 
         // Precompute basic mirror data.
-        mockMirrorData = DataTypes.MirrorData({
+        mockMirrorParams = DataTypes.MirrorParams({
             profileId: newProfileId,
-            profileIdPointed: newProfileId,
-            pubIdPointed: FIRST_PUB_ID,
+            pointedProfileId: newProfileId,
+            pointedPubId: FIRST_PUB_ID,
             referenceModuleData: ''
         });
 

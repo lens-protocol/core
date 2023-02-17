@@ -28,13 +28,13 @@ import { readFileSync } from 'fs';
 import { join } from 'path';
 import {
   CollectWithSigDataStruct,
-  CommentDataStruct,
+  CommentParamsStruct,
   CommentWithSigDataStruct,
   CreateProfileDataStruct,
   FollowWithSigDataStruct,
-  MirrorDataStruct,
+  MirrorParamsStruct,
   MirrorWithSigDataStruct,
-  PostDataStruct,
+  PostParamsStruct,
   PostWithSigDataStruct,
 } from '../../typechain-types/LensHub';
 
@@ -419,8 +419,8 @@ export async function getPostWithSigMessageParts(
 export async function getCommentWithSigParts(
   profileId: BigNumberish,
   contentURI: string,
-  profileIdPointed: BigNumberish,
-  pubIdPointed: string,
+  pointedProfileId: BigNumberish,
+  pointedPubId: string,
   referenceModuleData: Bytes | string,
   collectModule: string,
   collectModuleInitData: Bytes | string,
@@ -432,8 +432,8 @@ export async function getCommentWithSigParts(
   const msgParams = buildCommentWithSigParams(
     profileId,
     contentURI,
-    profileIdPointed,
-    pubIdPointed,
+    pointedProfileId,
+    pointedPubId,
     referenceModuleData,
     collectModule,
     collectModuleInitData,
@@ -447,8 +447,8 @@ export async function getCommentWithSigParts(
 
 export async function getMirrorWithSigParts(
   profileId: BigNumberish,
-  profileIdPointed: BigNumberish,
-  pubIdPointed: string,
+  pointedProfileId: BigNumberish,
+  pointedPubId: string,
   referenceModuleData: Bytes | string,
   referenceModule: string,
   referenceModuleInitData: Bytes | string,
@@ -457,8 +457,8 @@ export async function getMirrorWithSigParts(
 ): Promise<{ v: number; r: string; s: string }> {
   const msgParams = buildMirrorWithSigParams(
     profileId,
-    profileIdPointed,
-    pubIdPointed,
+    pointedProfileId,
+    pointedPubId,
     referenceModuleData,
     referenceModule,
     referenceModuleInitData,
@@ -603,7 +603,7 @@ export async function collectReturningTokenIds({
 
 export interface CommentReturningTokenIdStruct {
   sender?: Signer;
-  vars: CommentDataStruct | CommentWithSigDataStruct;
+  vars: CommentParamsStruct | CommentWithSigDataStruct;
 }
 
 export async function commentReturningTokenId({
@@ -623,7 +623,7 @@ export async function commentReturningTokenId({
 
 export interface MirrorReturningTokenIdStruct {
   sender?: Signer;
-  vars: MirrorDataStruct | MirrorWithSigDataStruct;
+  vars: MirrorParamsStruct | MirrorWithSigDataStruct;
 }
 
 export async function mirrorReturningTokenId({
@@ -643,7 +643,7 @@ export async function mirrorReturningTokenId({
 
 export interface PostReturningTokenIdStruct {
   sender?: Signer;
-  vars: PostDataStruct | PostWithSigDataStruct;
+  vars: PostParamsStruct | PostWithSigDataStruct;
 }
 
 export async function postReturningTokenId({
@@ -901,8 +901,8 @@ const buildPostWithSigParams = (
 const buildCommentWithSigParams = (
   profileId: BigNumberish,
   contentURI: string,
-  profileIdPointed: BigNumberish,
-  pubIdPointed: string,
+  pointedProfileId: BigNumberish,
+  pointedPubId: string,
   referenceModuleData: Bytes | string,
   collectModule: string,
   collectModuleInitData: Bytes | string,
@@ -915,8 +915,8 @@ const buildCommentWithSigParams = (
     CommentWithSig: [
       { name: 'profileId', type: 'uint256' },
       { name: 'contentURI', type: 'string' },
-      { name: 'profileIdPointed', type: 'uint256' },
-      { name: 'pubIdPointed', type: 'uint256' },
+      { name: 'pointedProfileId', type: 'uint256' },
+      { name: 'pointedPubId', type: 'uint256' },
       { name: 'referenceModuleData', type: 'bytes' },
       { name: 'collectModule', type: 'address' },
       { name: 'collectModuleInitData', type: 'bytes' },
@@ -930,8 +930,8 @@ const buildCommentWithSigParams = (
   value: {
     profileId: profileId,
     contentURI: contentURI,
-    profileIdPointed: profileIdPointed,
-    pubIdPointed: pubIdPointed,
+    pointedProfileId: pointedProfileId,
+    pointedPubId: pointedPubId,
     referenceModuleData: referenceModuleData,
     collectModule: collectModule,
     collectModuleInitData: collectModuleInitData,
@@ -944,8 +944,8 @@ const buildCommentWithSigParams = (
 
 const buildMirrorWithSigParams = (
   profileId: BigNumberish,
-  profileIdPointed: BigNumberish,
-  pubIdPointed: string,
+  pointedProfileId: BigNumberish,
+  pointedPubId: string,
   referenceModuleData: Bytes | string,
   referenceModule: string,
   referenceModuleInitData: Bytes | string,
@@ -955,8 +955,8 @@ const buildMirrorWithSigParams = (
   types: {
     MirrorWithSig: [
       { name: 'profileId', type: 'uint256' },
-      { name: 'profileIdPointed', type: 'uint256' },
-      { name: 'pubIdPointed', type: 'uint256' },
+      { name: 'pointedProfileId', type: 'uint256' },
+      { name: 'pointedPubId', type: 'uint256' },
       { name: 'referenceModuleData', type: 'bytes' },
       { name: 'referenceModule', type: 'address' },
       { name: 'referenceModuleInitData', type: 'bytes' },
@@ -967,8 +967,8 @@ const buildMirrorWithSigParams = (
   domain: domain(),
   value: {
     profileId: profileId,
-    profileIdPointed: profileIdPointed,
-    pubIdPointed: pubIdPointed,
+    pointedProfileId: pointedProfileId,
+    pointedPubId: pointedPubId,
     referenceModuleData: referenceModuleData,
     referenceModule: referenceModule,
     referenceModuleInitData: referenceModuleInitData,

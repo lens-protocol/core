@@ -220,8 +220,8 @@ library Events {
      * @param profileId The profile's token ID.
      * @param pubId The new publication's ID.
      * @param contentURI The URI mapped to this new publication.
-     * @param profileIdPointed The profile token ID that this comment points to.
-     * @param pubIdPointed The publication ID that this comment points to.
+     * @param pointedProfileId The profile token ID that this comment points to.
+     * @param pointedPubId The publication ID that this comment points to.
      * @param referenceModuleData The data passed to the reference module.
      * @param collectModule The collect module mapped to this new publication. This CANNOT be the zero address.
      * @param collectModuleReturnData The data returned from the collect module's initialization for this given
@@ -235,8 +235,8 @@ library Events {
         uint256 indexed profileId,
         uint256 indexed pubId,
         string contentURI,
-        uint256 profileIdPointed,
-        uint256 pubIdPointed,
+        uint256 pointedProfileId,
+        uint256 pointedPubId,
         bytes referenceModuleData,
         address collectModule,
         bytes collectModuleReturnData,
@@ -250,16 +250,16 @@ library Events {
      *
      * @param profileId The profile's token ID.
      * @param pubId The new publication's ID.
-     * @param profileIdPointed The profile token ID that this mirror points to.
-     * @param pubIdPointed The publication ID that this mirror points to.
+     * @param pointedProfileId The profile token ID that this mirror points to.
+     * @param pointedPubId The publication ID that this mirror points to.
      * @param referenceModuleData The data passed to the reference module.
      * @param timestamp The current block timestamp.
      */
     event MirrorCreated(
         uint256 indexed profileId,
         uint256 indexed pubId,
-        uint256 profileIdPointed,
-        uint256 pubIdPointed,
+        uint256 pointedProfileId,
+        uint256 pointedPubId,
         bytes referenceModuleData,
         uint256 timestamp
     );
@@ -270,8 +270,8 @@ library Events {
      * @param profileId The profile's token ID.
      * @param pubId The new publication's ID.
      * @param contentURI The URI mapped to this new publication.
-     * @param profileIdPointed The profile token ID which author is being quoted.
-     * @param pubIdPointed The publication ID that is being quoted.
+     * @param pointedProfileId The profile token ID which author is being quoted.
+     * @param pointedPubId The publication ID that is being quoted.
      * @param referenceModuleData The data passed to the reference module.
      * @param collectModule The collect module mapped to this new publication. This CANNOT be the zero address.
      * @param collectModuleReturnData The data returned from the collect module's initialization for this given
@@ -285,8 +285,8 @@ library Events {
         uint256 indexed profileId,
         uint256 indexed pubId,
         string contentURI,
-        uint256 profileIdPointed,
-        uint256 pubIdPointed,
+        uint256 pointedProfileId,
+        uint256 pointedPubId,
         bytes referenceModuleData,
         address collectModule,
         bytes collectModuleReturnData,

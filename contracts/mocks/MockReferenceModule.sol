@@ -22,8 +22,8 @@ contract MockReferenceModule is IReferenceModule {
     function processComment(
         uint256 profileId,
         address executor,
-        uint256 profileIdPointed,
-        uint256 pubIdPointed,
+        uint256 pointedProfileId,
+        uint256 pointedPubId,
         uint256 referrerProfileId,
         bytes calldata data
     ) external override {}
@@ -31,8 +31,8 @@ contract MockReferenceModule is IReferenceModule {
     function processQuote(
         uint256 profileId,
         address executor,
-        uint256 profileIdPointed,
-        uint256 pubIdPointed,
+        uint256 pointedProfileId,
+        uint256 pointedPubId,
         uint256 referrerProfileId,
         bytes calldata data
     ) external override {}
@@ -40,8 +40,8 @@ contract MockReferenceModule is IReferenceModule {
     function processMirror(
         uint256 profileId,
         address executor,
-        uint256 profileIdPointed,
-        uint256 pubIdPointed,
+        uint256 pointedProfileId,
+        uint256 pointedPubId,
         bytes calldata data
     ) external override {}
 }
