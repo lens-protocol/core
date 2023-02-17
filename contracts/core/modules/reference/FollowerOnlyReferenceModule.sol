@@ -6,6 +6,7 @@ import {IReferenceModule} from '../../../interfaces/IReferenceModule.sol';
 import {ModuleBase} from '../ModuleBase.sol';
 import {FollowValidationModuleBase} from '../FollowValidationModuleBase.sol';
 import {IERC721} from '@openzeppelin/contracts/token/ERC721/IERC721.sol';
+import {DataTypes} from 'contracts/libraries/DataTypes.sol';
 
 /**
  * @title FollowerOnlyReferenceModule
@@ -40,6 +41,8 @@ contract FollowerOnlyReferenceModule is FollowValidationModuleBase, IReferenceMo
         uint256 pointedProfileId,
         uint256,
         uint256,
+        uint256,
+        DataTypes.PublicationType,
         bytes calldata
     ) external view override {
         address commentCreator = IERC721(HUB).ownerOf(profileId);
@@ -57,6 +60,8 @@ contract FollowerOnlyReferenceModule is FollowValidationModuleBase, IReferenceMo
         uint256 pointedProfileId,
         uint256,
         uint256,
+        uint256,
+        DataTypes.PublicationType,
         bytes calldata
     ) external view override {
         address quoteCreator = IERC721(HUB).ownerOf(profileId);
@@ -73,6 +78,9 @@ contract FollowerOnlyReferenceModule is FollowValidationModuleBase, IReferenceMo
         address,
         uint256 pointedProfileId,
         uint256,
+        uint256,
+        uint256,
+        DataTypes.PublicationType,
         bytes calldata
     ) external view override {
         address mirrorCreator = IERC721(HUB).ownerOf(profileId);

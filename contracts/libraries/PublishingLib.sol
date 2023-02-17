@@ -77,29 +77,44 @@ library PublishingLib {
         (
             uint256 pubIdAssigned,
             bytes memory collectModuleReturnData,
-            bytes memory referenceModuleReturnData
+            bytes memory referenceModuleReturnData,
+            DataTypes.PublicationType referrerPubType
         ) = _createReferencePublication(
-                DataTypes.ReferencePubParams(_copyToReferencePubParams(commentParams)),
-                transactionExecutor
+                _copyToReferencePubParams(commentParams),
+                transactionExecutor,
+                DataTypes.PublicationType.Comment
             );
 
-        _processCommentIfNeeded(commentParams, transactionExecutor);
+        _processCommentIfNeeded(commentParams, transactionExecutor, referrerPubType);
 
-        emit Events.CommentCreated({
-            profileId: commentParams.profileId,
-            pubId: pubIdAssigned,
-            contentURI: commentParams.contentURI,
-            pointedProfileId: commentParams.pointedProfileId,
-            pointedPubId: commentParams.pointedPubId,
-            referenceModuleData: commentParams.referenceModuleData,
-            collectModule: commentParams.collectModule,
-            collectModuleReturnData: collectModuleReturnData,
-            referenceModule: commentParams.referenceModule,
-            referenceModuleReturnData: referenceModuleReturnData,
-            timestamp: block.timestamp
-        });
-
+        _emitCommentEvent(
+            commentParams,
+            pubIdAssigned,
+            collectModuleReturnData,
+            referenceModuleReturnData
+        );
         return pubIdAssigned;
+    }
+
+    function _emitCommentEvent(
+        DataTypes.CommentParams calldata commentParams,
+        uint256 pubIdAssigned,
+        bytes memory collectModuleReturnData,
+        bytes memory referenceModuleReturnData
+    ) private {
+        emit Events.CommentCreated(
+            commentParams.profileId,
+            pubIdAssigned,
+            commentParams.contentURI,
+            commentParams.pointedProfileId,
+            commentParams.pointedPubId,
+            commentParams.referenceModuleData,
+            commentParams.collectModule,
+            collectModuleReturnData,
+            commentParams.referenceModule,
+            referenceModuleReturnData,
+            block.timestamp
+        );
     }
 
     /**
@@ -117,8 +132,8 @@ library PublishingLib {
             .validateReferrerAndGetReferrerPubType(
                 mirrorParams.referrerProfileId,
                 mirrorParams.referrerPubId,
-                mirrorParams.publicationCollectedProfileId,
-                mirrorParams.publicationCollectedId
+                mirrorParams.pointedProfileId,
+                mirrorParams.pointedPubId
             );
 
         uint256 pubIdAssigned = ++GeneralHelpers.getProfileStruct(mirrorParams.profileId).pubCount;
@@ -131,13 +146,7 @@ library PublishingLib {
         _publication.pointedPubId = mirrorParams.pointedPubId;
         _publication.pubType = DataTypes.PublicationType.Mirror;
 
-        _processMirrorIfNeeded(
-            mirrorParams.profileId,
-            transactionExecutor,
-            mirrorParams.pointedProfileId,
-            mirrorParams.pointedPubId,
-            mirrorParams.referenceModuleData
-        );
+        _processMirrorIfNeeded(mirrorParams, transactionExecutor, referrerPubType);
 
         emit Events.MirrorCreated(
             mirrorParams.profileId,
@@ -165,21 +174,32 @@ library PublishingLib {
         (
             uint256 pubIdAssigned,
             bytes memory collectModuleReturnData,
-            bytes memory referenceModuleReturnData
+            bytes memory referenceModuleReturnData,
+            DataTypes.PublicationType referrerPubType
         ) = _createReferencePublication(
                 _copyToReferencePubParams(quoteParams),
-                transactionExecutor
+                transactionExecutor,
+                DataTypes.PublicationType.Quote
             );
 
-        _processQuoteIfNeeded({ // TODO: How about old publications? Maybe we do processComment!
-            profileId: quoteParams.profileId,
-            transactionExecutor: transactionExecutor,
-            pointedProfileId: quoteParams.pointedProfileId, // We already have the correct pointed passed
-            pointedPubId: quoteParams.pointedPubId,
-            referrerProfileId: quoteParams.referrerProfileId, // TODO: But we don't have a referrer yet in params
-            referenceModuleData: quoteParams.referenceModuleData
-        });
+        _processQuoteIfNeeded(quoteParams, transactionExecutor, referrerPubType);
 
+        _emitQuoteEvent(
+            quoteParams,
+            pubIdAssigned,
+            collectModuleReturnData,
+            referenceModuleReturnData
+        );
+
+        return pubIdAssigned;
+    }
+
+    function _emitQuoteEvent(
+        DataTypes.QuoteParams calldata quoteParams,
+        uint256 pubIdAssigned,
+        bytes memory collectModuleReturnData,
+        bytes memory referenceModuleReturnData
+    ) private {
         emit Events.QuoteCreated(
             quoteParams.profileId,
             pubIdAssigned,
@@ -193,13 +213,12 @@ library PublishingLib {
             referenceModuleReturnData,
             block.timestamp
         );
-
-        return pubIdAssigned;
     }
 
     function _copyToReferencePubParams(DataTypes.QuoteParams calldata quoteParams)
         private
-        returns (DataTypes.ReferencePubParams calldata)
+        pure
+        returns (DataTypes.ReferencePubParams memory)
     {
         return
             DataTypes.ReferencePubParams({
@@ -207,6 +226,8 @@ library PublishingLib {
                 contentURI: quoteParams.contentURI,
                 pointedProfileId: quoteParams.pointedProfileId,
                 pointedPubId: quoteParams.pointedPubId,
+                referrerProfileId: quoteParams.referrerProfileId,
+                referrerPubId: quoteParams.referrerPubId,
                 referenceModuleData: quoteParams.referenceModuleData,
                 collectModule: quoteParams.collectModule,
                 collectModuleInitData: quoteParams.collectModuleInitData,
@@ -217,7 +238,8 @@ library PublishingLib {
 
     function _copyToReferencePubParams(DataTypes.CommentParams calldata commentParams)
         private
-        returns (DataTypes.ReferencePubParams calldata)
+        pure
+        returns (DataTypes.ReferencePubParams memory)
     {
         return
             DataTypes.ReferencePubParams({
@@ -225,6 +247,8 @@ library PublishingLib {
                 contentURI: commentParams.contentURI,
                 pointedProfileId: commentParams.pointedProfileId,
                 pointedPubId: commentParams.pointedPubId,
+                referrerProfileId: commentParams.referrerProfileId,
+                referrerPubId: commentParams.referrerPubId,
                 referenceModuleData: commentParams.referenceModuleData,
                 collectModule: commentParams.collectModule,
                 collectModuleInitData: commentParams.collectModuleInitData,
@@ -235,13 +259,15 @@ library PublishingLib {
 
     function _createReferencePublication(
         DataTypes.ReferencePubParams memory referencePubParams,
-        address transactionExecutor
+        address transactionExecutor,
+        DataTypes.PublicationType referencePubType
     )
         private
         returns (
             uint256,
             bytes memory,
-            bytes memory
+            bytes memory,
+            DataTypes.PublicationType
         )
     {
         DataTypes.PublicationType referrerPubType = GeneralHelpers
@@ -252,7 +278,10 @@ library PublishingLib {
                 referencePubParams.pointedPubId
             );
 
-        uint256 pubIdAssigned = _fillReferencePublicationStorage(referencePubParams);
+        uint256 pubIdAssigned = _fillReferencePublicationStorage(
+            referencePubParams,
+            referencePubType
+        );
 
         bytes memory collectModuleReturnData = _initPubCollectModule(
             referencePubParams.profileId,
@@ -270,11 +299,12 @@ library PublishingLib {
             referencePubParams.referenceModuleInitData
         );
 
-        return (pubIdAssigned, collectModuleReturnData, referenceModuleReturnData);
+        return (pubIdAssigned, collectModuleReturnData, referenceModuleReturnData, referrerPubType);
     }
 
     function _fillReferencePublicationStorage(
-        DataTypes.ReferencePubParams memory referencePubParams
+        DataTypes.ReferencePubParams memory referencePubParams,
+        DataTypes.PublicationType referencePubType
     ) private returns (uint256) {
         uint256 pubIdAssigned = ++GeneralHelpers
             .getProfileStruct(referencePubParams.profileId)
@@ -287,7 +317,7 @@ library PublishingLib {
         _referencePub.pointedProfileId = referencePubParams.pointedProfileId;
         _referencePub.pointedPubId = referencePubParams.pointedPubId;
         _referencePub.contentURI = referencePubParams.contentURI;
-        _referencePub.pubType = referencePubParams.pubType;
+        _referencePub.pubType = referencePubType;
         DataTypes.PublicationStruct storage _pubPointed = GeneralHelpers.getPublicationStruct(
             referencePubParams.pointedProfileId,
             referencePubParams.pointedPubId
@@ -305,7 +335,8 @@ library PublishingLib {
 
     function _processCommentIfNeeded(
         DataTypes.CommentParams calldata commentParams,
-        address transactionExecutor
+        address transactionExecutor,
+        DataTypes.PublicationType referrerPubType
     ) private {
         address refModule = GeneralHelpers
             .getPublicationStruct(commentParams.pointedProfileId, commentParams.pointedPubId)
@@ -319,7 +350,7 @@ library PublishingLib {
                     pointedPubId: commentParams.pointedPubId,
                     referrerProfileId: commentParams.referrerProfileId,
                     referrerPubId: commentParams.referrerPubId,
-                    referrerPubType: commentParams.referrerPubType,
+                    referrerPubType: referrerPubType,
                     data: commentParams.referenceModuleData
                 })
             {} catch (bytes memory err) {
@@ -332,6 +363,7 @@ library PublishingLib {
                     }
                 }
                 if (transactionExecutor != GeneralHelpers.unsafeOwnerOf(commentParams.profileId)) {
+                    // TODO: WTF is this?
                     revert Errors.ExecutorInvalid();
                 }
                 IDeprecatedReferenceModule(refModule).processComment(
@@ -345,25 +377,24 @@ library PublishingLib {
     }
 
     function _processQuoteIfNeeded(
-        uint256 profileId,
+        DataTypes.QuoteParams calldata quoteParams,
         address transactionExecutor,
-        uint256 pointedProfileId,
-        uint256 pointedPubId,
-        uint256 referrerProfileId,
-        bytes memory referenceModuleData
+        DataTypes.PublicationType referrerPubType
     ) private {
         address refModule = GeneralHelpers
-            .getPublicationStruct(pointedProfileId, pointedPubId)
+            .getPublicationStruct(quoteParams.pointedProfileId, quoteParams.pointedPubId)
             .referenceModule;
         if (refModule != address(0)) {
             try
                 IReferenceModule(refModule).processQuote({
-                    profileId: profileId,
+                    profileId: quoteParams.profileId,
                     executor: transactionExecutor,
-                    pointedProfileId: pointedProfileId,
-                    pointedPubId: pointedPubId,
-                    referrerProfileId: referrerProfileId,
-                    data: referenceModuleData
+                    pointedProfileId: quoteParams.pointedProfileId,
+                    pointedPubId: quoteParams.pointedPubId,
+                    referrerProfileId: quoteParams.referrerProfileId,
+                    referrerPubId: quoteParams.referrerPubId,
+                    referrerPubType: referrerPubType,
+                    data: quoteParams.referenceModuleData
                 })
             {} catch (bytes memory err) {
                 assembly {
@@ -374,37 +405,39 @@ library PublishingLib {
                         revert(add(err, 32), length)
                     }
                 }
-                if (transactionExecutor != GeneralHelpers.unsafeOwnerOf(profileId)) {
+                if (transactionExecutor != GeneralHelpers.unsafeOwnerOf(quoteParams.profileId)) {
+                    // TODO: WTF is this?
                     revert Errors.ExecutorInvalid();
                 }
                 IDeprecatedReferenceModule(refModule).processComment(
-                    profileId,
-                    pointedProfileId,
-                    pointedPubId,
-                    referenceModuleData
+                    quoteParams.profileId,
+                    quoteParams.pointedProfileId,
+                    quoteParams.pointedPubId,
+                    quoteParams.referenceModuleData
                 );
             }
         }
     }
 
     function _processMirrorIfNeeded(
-        uint256 profileId,
+        DataTypes.MirrorParams calldata mirrorParams,
         address transactionExecutor,
-        uint256 pointedProfileId,
-        uint256 pointedPubId,
-        bytes memory referenceModuleData
+        DataTypes.PublicationType referrerPubType
     ) private {
         address refModule = GeneralHelpers
-            .getPublicationStruct(pointedProfileId, pointedPubId)
+            .getPublicationStruct(mirrorParams.pointedProfileId, mirrorParams.pointedPubId)
             .referenceModule;
         if (refModule != address(0)) {
             try
                 IReferenceModule(refModule).processMirror(
-                    profileId,
+                    mirrorParams.profileId,
                     transactionExecutor,
-                    pointedProfileId,
-                    pointedPubId,
-                    referenceModuleData
+                    mirrorParams.pointedProfileId,
+                    mirrorParams.pointedPubId,
+                    mirrorParams.referrerProfileId,
+                    mirrorParams.referrerPubId,
+                    referrerPubType,
+                    mirrorParams.referenceModuleData
                 )
             {} catch (bytes memory err) {
                 assembly {
@@ -415,14 +448,15 @@ library PublishingLib {
                         revert(add(err, 32), length)
                     }
                 }
-                if (transactionExecutor != GeneralHelpers.unsafeOwnerOf(profileId)) {
+                if (transactionExecutor != GeneralHelpers.unsafeOwnerOf(mirrorParams.profileId)) {
+                    // TODO: WTF is this?
                     revert Errors.ExecutorInvalid();
                 }
                 IDeprecatedReferenceModule(refModule).processMirror(
-                    profileId,
-                    pointedProfileId,
-                    pointedPubId,
-                    referenceModuleData
+                    mirrorParams.profileId,
+                    mirrorParams.pointedProfileId,
+                    mirrorParams.pointedPubId,
+                    mirrorParams.referenceModuleData
                 );
             }
         }

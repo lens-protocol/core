@@ -296,12 +296,8 @@ contract LensHub is LensNFTBase, VersionedInitializable, LensMultiState, LensHub
         onlyProfileOwnerOrDelegatedExecutor(signature.signer, postParams.profileId)
         returns (uint256)
     {
-        MetaTxHelpers.validateCommentSignature(signature, postParams);
-        return
-            PublishingLib.postWithSig({
-                postParams: postParams,
-                transactionExecutor: signature.signer
-            });
+        MetaTxHelpers.validatePostSignature(signature, postParams);
+        return PublishingLib.post({postParams: postParams, transactionExecutor: signature.signer});
     }
 
     /// @inheritdoc ILensHub
@@ -525,7 +521,7 @@ contract LensHub is LensNFTBase, VersionedInitializable, LensMultiState, LensHub
         returns (uint256)
     {
         MetaTxHelpers.validateCollectSignature(signature, collectParams);
-        return GeneralLib.collect(collectParams, signature.signer);
+        return GeneralLib.collect(collectParams, signature.signer, COLLECT_NFT_IMPL);
     }
 
     /// @inheritdoc ILensHub

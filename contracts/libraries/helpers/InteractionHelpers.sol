@@ -231,7 +231,7 @@ library InteractionHelpers {
     function _processCollect(
         DataTypes.CollectParams calldata collectParams,
         address transactionExecutor,
-        uint256 collectorProfileOwner,
+        address collectorProfileOwner,
         DataTypes.PublicationType referrerPubType,
         address collectModule
     ) private {

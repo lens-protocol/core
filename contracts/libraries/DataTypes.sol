@@ -202,6 +202,8 @@ library DataTypes {
      * @param contentURI The URI to set for this new publication.
      * @param pointedProfileId The profile token ID to point the comment to.
      * @param pointedPubId The publication ID to point the comment to.
+     * @param referrerProfileId The profile token ID of the publication that referred to the publication being commented on/quoted.
+     * @param referrerPubId The ID of the publication that referred to the publication being commented on/quoted.
      * @param referenceModuleData The data passed to the reference module.
      * @param collectModule The collect module to set for this new publication.
      * @param collectModuleInitData The data to pass to the collect module's initialization.
@@ -229,6 +231,8 @@ library DataTypes {
      * @param contentURI The URI to set for this new publication.
      * @param pointedProfileId The profile token ID of the publication author that is quoted.
      * @param pointedPubId The publication ID that is quoted.
+     * @param referrerProfileId The profile token ID of the publication that referred to the publication being commented on/quoted.
+     * @param referrerPubId The ID of the publication that referred to the publication being commented on/quoted.
      * @param referenceModuleData The data passed to the reference module.
      * @param collectModule The collect module to set for this new publication.
      * @param collectModuleInitData The data to pass to the collect module's initialization.
@@ -254,8 +258,10 @@ library DataTypes {
      *
      * @param profileId The token ID of the profile to publish to.
      * @param contentURI The URI to set for this new publication.
-     * @param pointedProfileId The profile token ID of the publication author that is quoted.
-     * @param pointedPubId The publication ID that is quoted.
+     * @param pointedProfileId The profile token ID of the publication author that is commented on/quoted.
+     * @param pointedPubId The publication ID that is commented on/quoted.
+     * @param referrerProfileId The profile token ID of the publication that referred to the publication being commented on/quoted.
+     * @param referrerPubId The ID of the publication that referred to the publication being commented on/quoted.
      * @param referenceModuleData The data passed to the reference module.
      * @param collectModule The collect module to set for this new publication.
      * @param collectModuleInitData The data to pass to the collect module's initialization.
@@ -267,9 +273,9 @@ library DataTypes {
         string contentURI;
         uint256 pointedProfileId;
         uint256 pointedPubId;
-        bytes referenceModuleData;
         uint256 referrerProfileId;
         uint256 referrerPubId;
+        bytes referenceModuleData;
         address collectModule;
         bytes collectModuleInitData;
         address referenceModule;

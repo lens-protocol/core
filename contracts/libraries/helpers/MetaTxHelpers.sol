@@ -217,6 +217,8 @@ library MetaTxHelpers {
         DataTypes.EIP712Signature calldata sig,
         DataTypes.CommentParams calldata commentParams
     ) internal {
+        uint256 nonce = _sigNonces(sig.signer);
+        uint256 deadline = sig.deadline;
         _validateRecoveredAddress(
             _calculateDigest(
                 keccak256(
@@ -233,13 +235,12 @@ library MetaTxHelpers {
                         keccak256(commentParams.collectModuleInitData),
                         commentParams.referenceModule,
                         keccak256(commentParams.referenceModuleInitData),
-                        _sigNonces(sig.signer),
-                        commentParams.sig.deadline
+                        nonce,
+                        deadline
                     )
                 )
             ),
-            sig.signer,
-            commentParams.sig
+            sig
         );
     }
 
@@ -247,6 +248,8 @@ library MetaTxHelpers {
         DataTypes.EIP712Signature calldata sig,
         DataTypes.QuoteParams calldata quoteParams
     ) internal {
+        uint256 nonce = _sigNonces(sig.signer);
+        uint256 deadline = sig.deadline;
         _validateRecoveredAddress(
             _calculateDigest(
                 keccak256(
@@ -263,12 +266,11 @@ library MetaTxHelpers {
                         keccak256(quoteParams.collectModuleInitData),
                         quoteParams.referenceModule,
                         keccak256(quoteParams.referenceModuleInitData),
-                        _sigNonces(sig.signer),
-                        sig.deadline
+                        nonce,
+                        deadline
                     )
                 )
             ),
-            sig.signer,
             sig
         );
     }
@@ -401,7 +403,6 @@ library MetaTxHelpers {
                     )
                 )
             ),
-            sig.signer,
             sig
         );
     }
@@ -413,24 +414,49 @@ library MetaTxHelpers {
     /**
      * @dev Wrapper for ecrecover to reduce code size, used in meta-tx specific functions.
      */
-    function _validateRecoveredAddress(
-        bytes32 digest,
-        address expectedAddress,
-        DataTypes.EIP712Signature calldata sig
-    ) internal view {
+    function _validateRecoveredAddress(bytes32 digest, DataTypes.EIP712Signature calldata sig)
+        internal
+        view
+    {
         if (sig.deadline < block.timestamp) revert Errors.SignatureExpired();
         // If the expected address is a contract, check the signature there.
-        if (expectedAddress.code.length != 0) {
+        if (sig.signer.code.length != 0) {
             bytes memory concatenatedSig = abi.encodePacked(sig.r, sig.s, sig.v);
             if (
-                IEIP1271Implementer(expectedAddress).isValidSignature(digest, concatenatedSig) !=
+                IEIP1271Implementer(sig.signer).isValidSignature(digest, concatenatedSig) !=
                 EIP1271_MAGIC_VALUE
             ) {
                 revert Errors.SignatureInvalid();
             }
         } else {
             address recoveredAddress = ecrecover(digest, sig.v, sig.r, sig.s);
-            if (recoveredAddress == address(0) || recoveredAddress != expectedAddress) {
+            if (recoveredAddress == address(0) || recoveredAddress != sig.signer) {
+                revert Errors.SignatureInvalid();
+            }
+        }
+    }
+
+    /**
+     * @dev Wrapper for ecrecover to reduce code size, used in meta-tx specific functions.
+     */
+    function _validateRecoveredAddress(
+        bytes32 digest,
+        address signer,
+        DataTypes.EIP712Signature calldata sig
+    ) internal view {
+        if (sig.deadline < block.timestamp) revert Errors.SignatureExpired();
+        // If the expected address is a contract, check the signature there.
+        if (signer.code.length != 0) {
+            bytes memory concatenatedSig = abi.encodePacked(sig.r, sig.s, sig.v);
+            if (
+                IEIP1271Implementer(signer).isValidSignature(digest, concatenatedSig) !=
+                EIP1271_MAGIC_VALUE
+            ) {
+                revert Errors.SignatureInvalid();
+            }
+        } else {
+            address recoveredAddress = ecrecover(digest, sig.v, sig.r, sig.s);
+            if (recoveredAddress == address(0) || recoveredAddress != signer) {
                 revert Errors.SignatureInvalid();
             }
         }
