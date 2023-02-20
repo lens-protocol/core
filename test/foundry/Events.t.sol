@@ -345,15 +345,15 @@ contract EventTest is BaseTest {
 
         // Collected
         vm.expectEmit(true, true, true, true, address(hub));
-        emit Events.Collected(
-            newProfileId, // TODO: Replace with proper ProfileID
-            newProfileId,
-            expectedPubId,
-            newProfileId,
-            expectedPubId,
-            '',
-            block.timestamp
-        );
+        emit Events.Collected({
+            publicationCollectedProfileId: newProfileId, // TODO: Replace with proper ProfileID
+            publicationCollectedId: expectedPubId,
+            collectorProfileId: newProfileId,
+            referrerProfileId: 0,
+            referrerPubId: 0,
+            collectModuleData: '',
+            timestamp: block.timestamp
+        });
 
         // TODO: Replace with proper ProfileID
         hub.collect(
@@ -374,14 +374,13 @@ contract EventTest is BaseTest {
         followTargetIds[0] = 1;
         bytes[] memory followDatas = new bytes[](1);
         followDatas[0] = '';
-        uint256 expectedPubId = 1;
         address expectedCollectNFTAddress = predictContractAddress(address(hub), 0);
         string memory expectedNFTName = '1-Collect-1';
         string memory expectedNFTSymbol = '1-Cl-1';
 
         vm.startPrank(profileOwner);
-        hub.post(mockPostParams);
-        hub.mirror(mockMirrorParams);
+        uint256 postId = hub.post(mockPostParams);
+        uint256 mirrorId = hub.mirror(mockMirrorParams);
 
         // BaseInitialized
         vm.expectEmit(false, false, false, true, expectedCollectNFTAddress);
@@ -389,13 +388,13 @@ contract EventTest is BaseTest {
 
         // CollectNFTInitialized
         vm.expectEmit(true, true, true, true, expectedCollectNFTAddress);
-        emit Events.CollectNFTInitialized(newProfileId, expectedPubId, block.timestamp);
+        emit Events.CollectNFTInitialized(newProfileId, postId, block.timestamp);
 
         // CollectNFTDeployed
         vm.expectEmit(true, true, true, true, address(hub));
         emit Events.CollectNFTDeployed(
             newProfileId,
-            expectedPubId,
+            postId,
             expectedCollectNFTAddress,
             block.timestamp
         );
@@ -404,7 +403,7 @@ contract EventTest is BaseTest {
         vm.expectEmit(true, true, true, true, address(hub));
         emit Events.CollectNFTTransferred(
             newProfileId,
-            expectedPubId,
+            postId,
             1, // collect nft id
             address(0),
             profileOwner,
@@ -417,24 +416,24 @@ contract EventTest is BaseTest {
 
         // Collected
         vm.expectEmit(true, true, true, true, address(hub));
-        emit Events.Collected(
-            newProfileId, // TODO: Replace with proper ProfileID
-            newProfileId,
-            expectedPubId,
-            newProfileId,
-            expectedPubId,
-            '',
-            block.timestamp
-        );
+        emit Events.Collected({
+            publicationCollectedProfileId: newProfileId, // TODO: Replace with proper ProfileID
+            publicationCollectedId: postId,
+            collectorProfileId: newProfileId,
+            referrerProfileId: newProfileId,
+            referrerPubId: mirrorId,
+            collectModuleData: '',
+            timestamp: block.timestamp
+        });
 
         // TODO: Replace with proper ProfileID
         hub.collect(
             DataTypes.CollectParams({
-                publicationCollectedProfileId: 1,
-                publicationCollectedId: expectedPubId,
+                publicationCollectedProfileId: newProfileId,
+                publicationCollectedId: postId,
                 collectorProfileId: newProfileId,
-                referrerProfileId: 0,
-                referrerPubId: 0,
+                referrerProfileId: newProfileId,
+                referrerPubId: mirrorId,
                 collectModuleData: ''
             })
         );

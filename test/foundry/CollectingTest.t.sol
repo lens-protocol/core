@@ -81,7 +81,7 @@ contract CollectingTest_Generic is CollectingTest_Base {
         );
 
         vm.startPrank(collectorProfileOwner);
-        vm.expectRevert(Errors.PublicationDoesNotExist.selector);
+        vm.expectRevert(Errors.CollectNotAllowed.selector);
         _mockCollect();
         vm.stopPrank();
     }
@@ -98,7 +98,7 @@ contract CollectingTest_Generic is CollectingTest_Base {
         );
 
         vm.startPrank(collectorProfileOwner);
-        vm.expectRevert(Errors.PublicationDoesNotExist.selector);
+        vm.expectRevert(Errors.CollectNotAllowed.selector);
         _mockCollect();
         vm.stopPrank();
     }
@@ -119,6 +119,21 @@ contract CollectingTest_Generic is CollectingTest_Base {
         _mockCollect();
     }
 
+    function testCannotCollectMirror() public {
+        _checkCollectNFTBefore();
+
+        // Mirror once
+        vm.prank(profileOwner);
+        uint256 mirrorPubId = hub.mirror(mockMirrorParams);
+
+        // Collecting the mirror
+        mockCollectParams.publicationCollectedId = mirrorPubId;
+
+        vm.prank(collectorProfileOwner);
+        vm.expectRevert(Errors.CollectNotAllowed.selector);
+        _mockCollect();
+    }
+
     // SCENARIOS
 
     function testCollect() public {
@@ -136,30 +151,6 @@ contract CollectingTest_Generic is CollectingTest_Base {
 
         vm.prank(profileOwner);
         hub.mirror(mockMirrorParams);
-
-        vm.prank(collectorProfileOwner);
-        uint256 nftId = _mockCollect();
-
-        _checkCollectNFTAfter(nftId, startNftId + 1);
-    }
-
-    function testCollectMirrorOfMirrorPointsToOriginalPost() public {
-        uint256 startNftId = _checkCollectNFTBefore();
-        uint256 startMirrorId = mockMirrorParams.pointedPubId;
-
-        // mirror once
-        vm.startPrank(profileOwner);
-        uint256 newPubId = hub.mirror(mockMirrorParams);
-        assertEq(newPubId, startMirrorId + 1);
-
-        // mirror again
-        mockMirrorParams.pointedPubId = newPubId;
-        newPubId = hub.mirror(mockMirrorParams);
-        assertEq(newPubId, startMirrorId + 2);
-
-        // We're expecting a mirror to point at the original post ID
-        mockCollectParams.publicationCollectedId = startMirrorId;
-        vm.stopPrank();
 
         vm.prank(collectorProfileOwner);
         uint256 nftId = _mockCollect();
