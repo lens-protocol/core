@@ -2,7 +2,7 @@
 pragma solidity 0.8.15;
 
 import {IEIP1271Implementer} from 'contracts/interfaces/IEIP1271Implementer.sol';
-import {DataTypes} from 'contracts/libraries/constants/DataTypes.sol';
+import {Types} from 'contracts/libraries/constants/Types.sol';
 import {Errors} from 'contracts/libraries/constants/Errors.sol';
 import {GeneralHelpers} from 'contracts/libraries/GeneralHelpers.sol';
 import {Typehash} from 'contracts/libraries/constants/Typehash.sol';
@@ -43,7 +43,7 @@ library MetaTxLib {
     address constant LENS_HUB_ADDRESS = 0xDb46d1Dc155634FbC732f92E853b10B288AD5a1d;
 
     function validateSetProfileMetadataURISignature(
-        DataTypes.EIP712Signature calldata signature,
+        Types.EIP712Signature calldata signature,
         uint256 profileId,
         string calldata metadataURI
     ) internal {
@@ -64,7 +64,7 @@ library MetaTxLib {
     }
 
     function validateSetFollowModuleSignature(
-        DataTypes.EIP712Signature calldata signature,
+        Types.EIP712Signature calldata signature,
         uint256 profileId,
         address followModule,
         bytes calldata followModuleInitData
@@ -87,7 +87,7 @@ library MetaTxLib {
     }
 
     function validateChangeDelegatedExecutorsConfigSignature(
-        DataTypes.EIP712Signature calldata signature,
+        Types.EIP712Signature calldata signature,
         uint256 delegatorProfileId,
         address[] calldata executors,
         bool[] calldata approvals,
@@ -116,7 +116,7 @@ library MetaTxLib {
     }
 
     function validateSetProfileImageURISignature(
-        DataTypes.EIP712Signature calldata signature,
+        Types.EIP712Signature calldata signature,
         uint256 profileId,
         string calldata imageURI
     ) internal {
@@ -137,7 +137,7 @@ library MetaTxLib {
     }
 
     function validateSetFollowNFTURISignature(
-        DataTypes.EIP712Signature calldata signature,
+        Types.EIP712Signature calldata signature,
         uint256 profileId,
         string calldata followNFTURI
     ) internal {
@@ -158,8 +158,8 @@ library MetaTxLib {
     }
 
     function validatePostSignature(
-        DataTypes.EIP712Signature calldata signature,
-        DataTypes.PostParams calldata postParams
+        Types.EIP712Signature calldata signature,
+        Types.PostParams calldata postParams
     ) internal {
         _validateRecoveredAddress(
             _calculateDigest(
@@ -182,8 +182,8 @@ library MetaTxLib {
     }
 
     function validateCommentSignature(
-        DataTypes.EIP712Signature calldata signature,
-        DataTypes.CommentParams calldata commentParams
+        Types.EIP712Signature calldata signature,
+        Types.CommentParams calldata commentParams
     ) internal {
         uint256 nonce = _sigNonces(signature.signer);
         uint256 deadline = signature.deadline;
@@ -213,8 +213,8 @@ library MetaTxLib {
     }
 
     function validateQuoteSignature(
-        DataTypes.EIP712Signature calldata signature,
-        DataTypes.QuoteParams calldata quoteParams
+        Types.EIP712Signature calldata signature,
+        Types.QuoteParams calldata quoteParams
     ) internal {
         uint256 nonce = _sigNonces(signature.signer);
         uint256 deadline = signature.deadline;
@@ -244,8 +244,8 @@ library MetaTxLib {
     }
 
     function validateMirrorSignature(
-        DataTypes.EIP712Signature calldata signature,
-        DataTypes.MirrorParams calldata mirrorParams
+        Types.EIP712Signature calldata signature,
+        Types.MirrorParams calldata mirrorParams
     ) internal {
         _validateRecoveredAddress(
             _calculateDigest(
@@ -267,7 +267,7 @@ library MetaTxLib {
         );
     }
 
-    function validateBurnSignature(DataTypes.EIP712Signature calldata signature, uint256 tokenId)
+    function validateBurnSignature(Types.EIP712Signature calldata signature, uint256 tokenId)
         internal
     {
         _validateRecoveredAddress(
@@ -286,7 +286,7 @@ library MetaTxLib {
     }
 
     function validateFollowSignature(
-        DataTypes.EIP712Signature calldata signature,
+        Types.EIP712Signature calldata signature,
         uint256 followerProfileId,
         uint256[] calldata idsOfProfilesToFollow,
         uint256[] calldata followTokenIds,
@@ -322,7 +322,7 @@ library MetaTxLib {
     }
 
     function validateUnfollowSignature(
-        DataTypes.EIP712Signature calldata signature,
+        Types.EIP712Signature calldata signature,
         uint256 unfollowerProfileId,
         uint256[] calldata idsOfProfilesToUnfollow
     ) internal {
@@ -343,7 +343,7 @@ library MetaTxLib {
     }
 
     function validateSetBlockStatusSignature(
-        DataTypes.EIP712Signature calldata signature,
+        Types.EIP712Signature calldata signature,
         uint256 byProfileId,
         uint256[] calldata idsOfProfilesToSetBlockStatus,
         bool[] calldata blockStatus
@@ -366,8 +366,8 @@ library MetaTxLib {
     }
 
     function validateCollectSignature(
-        DataTypes.EIP712Signature calldata signature,
-        DataTypes.CollectParams calldata collectParams
+        Types.EIP712Signature calldata signature,
+        Types.CollectParams calldata collectParams
     ) internal {
         _validateRecoveredAddress(
             _calculateDigest(
@@ -390,7 +390,7 @@ library MetaTxLib {
     }
 
     function validatePermitSignature(
-        DataTypes.EIP712Signature calldata signature,
+        Types.EIP712Signature calldata signature,
         address spender,
         uint256 tokenId
     ) internal {
@@ -417,7 +417,7 @@ library MetaTxLib {
     /**
      * @dev Wrapper for ecrecover to reduce code size, used in meta-tx specific functions.
      */
-    function _validateRecoveredAddress(bytes32 digest, DataTypes.EIP712Signature calldata signature)
+    function _validateRecoveredAddress(bytes32 digest, Types.EIP712Signature calldata signature)
         internal
         view
     {

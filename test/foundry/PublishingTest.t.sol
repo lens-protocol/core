@@ -31,7 +31,7 @@ abstract contract PublishingTest is BaseTest, PublishingHelpers, SigSetup {
         internal
         view
         virtual
-        returns (DataTypes.PublicationStruct memory);
+        returns (Types.PublicationStruct memory);
 
     function setUp() public virtual override(SigSetup, TestSetup) {
         TestSetup.setUp();
@@ -134,7 +134,7 @@ abstract contract PublishingTest is BaseTest, PublishingHelpers, SigSetup {
 
         assertEq(pubId, expectedPubId);
 
-        DataTypes.PublicationStruct memory pub = _getPub(newProfileId, pubId);
+        Types.PublicationStruct memory pub = _getPub(newProfileId, pubId);
         _verifyPublication(pub, _expectedPubFromInitData());
     }
 
@@ -153,7 +153,7 @@ abstract contract PublishingTest is BaseTest, PublishingHelpers, SigSetup {
 
         assertEq(pubId, expectedPubId);
 
-        DataTypes.PublicationStruct memory pub = _getPub(newProfileId, pubId);
+        Types.PublicationStruct memory pub = _getPub(newProfileId, pubId);
         _verifyPublication(pub, _expectedPubFromInitData());
     }
 
@@ -166,7 +166,7 @@ abstract contract PublishingTest is BaseTest, PublishingHelpers, SigSetup {
         });
         assertEq(pubId, expectedPubId);
 
-        DataTypes.PublicationStruct memory pub = _getPub(newProfileId, pubId);
+        Types.PublicationStruct memory pub = _getPub(newProfileId, pubId);
         _verifyPublication(pub, _expectedPubFromInitData());
     }
 
@@ -179,7 +179,7 @@ abstract contract PublishingTest is BaseTest, PublishingHelpers, SigSetup {
         uint256 pubId = _publish();
         assertEq(pubId, expectedPubId);
 
-        DataTypes.PublicationStruct memory pub = _getPub(newProfileId, pubId);
+        Types.PublicationStruct memory pub = _getPub(newProfileId, pubId);
         _verifyPublication(pub, _expectedPubFromInitData());
     }
 
@@ -193,7 +193,7 @@ abstract contract PublishingTest is BaseTest, PublishingHelpers, SigSetup {
         });
         assertEq(pubId, expectedPubId);
 
-        DataTypes.PublicationStruct memory pub = _getPub(newProfileId, pubId);
+        Types.PublicationStruct memory pub = _getPub(newProfileId, pubId);
         _verifyPublication(pub, _expectedPubFromInitData());
     }
 }
@@ -223,7 +223,7 @@ contract PostTest is PublishingTest {
         view
         virtual
         override
-        returns (DataTypes.PublicationStruct memory)
+        returns (Types.PublicationStruct memory)
     {
         return _expectedPubFromInitData(mockPostParams);
     }
@@ -264,7 +264,7 @@ contract CommentTest is PublishingTest {
         internal
         view
         override
-        returns (DataTypes.PublicationStruct memory)
+        returns (Types.PublicationStruct memory)
     {
         return _expectedPubFromInitData(mockCommentParams);
     }
@@ -357,7 +357,7 @@ contract CommentTest is PublishingTest {
         vm.prank(profileOwner);
         uint256 commentPubId = _publish();
 
-        DataTypes.PublicationStruct memory pub = _getPub(newProfileId, commentPubId);
+        Types.PublicationStruct memory pub = _getPub(newProfileId, commentPubId);
         _verifyPublication(pub, _expectedPubFromInitData());
     }
 
@@ -413,7 +413,7 @@ contract MirrorTest is PublishingTest {
         internal
         view
         override
-        returns (DataTypes.PublicationStruct memory)
+        returns (Types.PublicationStruct memory)
     {
         return _expectedPubFromInitData(mockMirrorParams);
     }

@@ -4,7 +4,7 @@ pragma solidity 0.8.15;
 
 import {GeneralHelpers} from './GeneralHelpers.sol';
 import {MetaTxLib} from './MetaTxLib.sol';
-import {DataTypes} from './constants/DataTypes.sol';
+import {Types} from './constants/Types.sol';
 import {Errors} from './constants/Errors.sol';
 import {Events} from './constants/Events.sol';
 import {IFollowModule} from '../interfaces/IFollowModule.sol';
@@ -23,7 +23,7 @@ library ProfileLib {
      *      followNFTURI: The URI to set for the follow NFT.
      * @param profileId The profile ID to associate with this profile NFT (token ID).
      */
-    function createProfile(DataTypes.CreateProfileData calldata vars, uint256 profileId) external {
+    function createProfile(Types.CreateProfileData calldata vars, uint256 profileId) external {
         _validateProfileCreatorWhitelisted();
 
         if (bytes(vars.imageURI).length > MAX_PROFILE_IMAGE_URI_LENGTH)

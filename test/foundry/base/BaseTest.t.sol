@@ -2,7 +2,7 @@
 pragma solidity ^0.8.13;
 
 import './TestSetup.t.sol';
-import 'contracts/libraries/constants/DataTypes.sol';
+import 'contracts/libraries/constants/Types.sol';
 import {Typehash} from 'contracts/libraries/constants/Typehash.sol';
 
 contract BaseTest is TestSetup {
@@ -140,7 +140,7 @@ contract BaseTest is TestSetup {
     }
 
     function _getPostTypedDataHash(
-        DataTypes.PostParams memory postParams,
+        Types.PostParams memory postParams,
         uint256 nonce,
         uint256 deadline
     ) internal view returns (bytes32) {
@@ -194,7 +194,7 @@ contract BaseTest is TestSetup {
     }
 
     function _getCommentTypedDataHash(
-        DataTypes.CommentParams memory commentParams,
+        Types.CommentParams memory commentParams,
         uint256 nonce,
         uint256 deadline
     ) internal view returns (bytes32) {
@@ -243,7 +243,7 @@ contract BaseTest is TestSetup {
     }
 
     function _getMirrorTypedDataHash(
-        DataTypes.MirrorParams memory mirrorParams,
+        Types.MirrorParams memory mirrorParams,
         uint256 nonce,
         uint256 deadline
     ) internal view returns (bytes32) {
@@ -292,7 +292,7 @@ contract BaseTest is TestSetup {
     }
 
     function _getCollectTypedDataHash(
-        DataTypes.CollectParams memory collectParams,
+        Types.CollectParams memory collectParams,
         uint256 nonce,
         uint256 deadline
     ) internal view returns (bytes32) {
@@ -321,9 +321,9 @@ contract BaseTest is TestSetup {
         uint256 pKey,
         bytes32 digest,
         uint256 deadline
-    ) internal returns (DataTypes.EIP712Signature memory) {
+    ) internal returns (Types.EIP712Signature memory) {
         (uint8 v, bytes32 r, bytes32 s) = vm.sign(pKey, digest);
-        return DataTypes.EIP712Signature(vm.addr(pKey), v, r, s, deadline);
+        return Types.EIP712Signature(vm.addr(pKey), v, r, s, deadline);
     }
 
     function _getSigStruct(
@@ -331,9 +331,9 @@ contract BaseTest is TestSetup {
         uint256 pKey,
         bytes32 digest,
         uint256 deadline
-    ) internal returns (DataTypes.EIP712Signature memory) {
+    ) internal returns (Types.EIP712Signature memory) {
         (uint8 v, bytes32 r, bytes32 s) = vm.sign(pKey, digest);
-        return DataTypes.EIP712Signature(signer, v, r, s, deadline);
+        return Types.EIP712Signature(signer, v, r, s, deadline);
     }
 
     function _toUint256Array(uint256 n) internal pure returns (uint256[] memory) {
@@ -399,10 +399,10 @@ contract BaseTest is TestSetup {
         address[] memory executors,
         bool[] memory approvals,
         bool switchToGivenConfig,
-        DataTypes.EIP712Signature memory signature
-    ) internal pure returns (DataTypes.ChangeDelegatedExecutorsConfigWithSigData memory) {
+        Types.EIP712Signature memory signature
+    ) internal pure returns (Types.ChangeDelegatedExecutorsConfigWithSigData memory) {
         return
-            DataTypes.ChangeDelegatedExecutorsConfigWithSigData(
+            Types.ChangeDelegatedExecutorsConfigWithSigData(
                 delegatorProfileId,
                 executors,
                 approvals,
@@ -412,15 +412,15 @@ contract BaseTest is TestSetup {
             );
     }
 
-    function _post(DataTypes.PostParams memory postParams) internal returns (uint256) {
+    function _post(Types.PostParams memory postParams) internal returns (uint256) {
         return hub.post(postParams);
     }
 
-    function _comment(DataTypes.CommentParams memory commentParams) internal returns (uint256) {
+    function _comment(Types.CommentParams memory commentParams) internal returns (uint256) {
         return hub.comment(commentParams);
     }
 
-    function _mirror(DataTypes.MirrorParams memory mirrorParams) internal returns (uint256) {
+    function _mirror(Types.MirrorParams memory mirrorParams) internal returns (uint256) {
         return hub.mirror(mirrorParams);
     }
 
@@ -432,7 +432,7 @@ contract BaseTest is TestSetup {
     ) internal returns (uint256) {
         return
             hub.collect(
-                DataTypes.CollectParams({
+                Types.CollectParams({
                     publicationCollectedProfileId: publisherProfileId,
                     publicationCollectedId: pubId,
                     collectorProfileId: collectorProfileId,
@@ -444,29 +444,29 @@ contract BaseTest is TestSetup {
     }
 
     function _postWithSig(
-        DataTypes.PostParams memory postParams,
-        DataTypes.EIP712Signature memory signature
+        Types.PostParams memory postParams,
+        Types.EIP712Signature memory signature
     ) internal returns (uint256) {
         return hub.postWithSig(postParams, signature);
     }
 
     function _commentWithSig(
-        DataTypes.CommentParams memory commentParams,
-        DataTypes.EIP712Signature memory signature
+        Types.CommentParams memory commentParams,
+        Types.EIP712Signature memory signature
     ) internal returns (uint256) {
         return hub.commentWithSig(commentParams, signature);
     }
 
     function _mirrorWithSig(
-        DataTypes.MirrorParams memory mirrorParams,
-        DataTypes.EIP712Signature memory signature
+        Types.MirrorParams memory mirrorParams,
+        Types.EIP712Signature memory signature
     ) internal returns (uint256) {
         return hub.mirrorWithSig(mirrorParams, signature);
     }
 
     function _collectWithSig(
-        DataTypes.CollectParams memory collectParams,
-        DataTypes.EIP712Signature memory signature
+        Types.CollectParams memory collectParams,
+        Types.EIP712Signature memory signature
     ) internal returns (uint256) {
         return hub.collectWithSig(collectParams, signature);
     }
@@ -493,7 +493,7 @@ contract BaseTest is TestSetup {
         uint256 idOfProfileToFollow,
         uint256 followTokenId,
         bytes memory data,
-        DataTypes.EIP712Signature memory signature
+        Types.EIP712Signature memory signature
     ) internal returns (uint256[] memory) {
         return
             hub.followWithSig(
@@ -506,7 +506,7 @@ contract BaseTest is TestSetup {
     }
 
     function _createProfile(address newProfileOwner) internal returns (uint256) {
-        DataTypes.CreateProfileData memory createProfileData = DataTypes.CreateProfileData({
+        Types.CreateProfileData memory createProfileData = Types.CreateProfileData({
             to: newProfileOwner,
             imageURI: mockCreateProfileData.imageURI,
             followModule: mockCreateProfileData.followModule,
@@ -517,11 +517,11 @@ contract BaseTest is TestSetup {
         return hub.createProfile(createProfileData);
     }
 
-    function _setState(DataTypes.ProtocolState newState) internal {
+    function _setState(Types.ProtocolState newState) internal {
         hub.setState(newState);
     }
 
-    function _getState() internal view returns (DataTypes.ProtocolState) {
+    function _getState() internal view returns (Types.ProtocolState) {
         return hub.getState();
     }
 
@@ -567,7 +567,7 @@ contract BaseTest is TestSetup {
         uint256 profileId,
         address followModule,
         bytes memory followModuleInitData,
-        DataTypes.EIP712Signature memory signature
+        Types.EIP712Signature memory signature
     ) internal {
         hub.setFollowModuleWithSig(profileId, followModule, followModuleInitData, signature);
     }
@@ -584,7 +584,7 @@ contract BaseTest is TestSetup {
     function _setProfileImageURIWithSig(
         uint256 profileId,
         string memory imageURI,
-        DataTypes.EIP712Signature memory signature
+        Types.EIP712Signature memory signature
     ) internal {
         hub.setProfileImageURIWithSig(profileId, imageURI, signature);
     }
@@ -601,7 +601,7 @@ contract BaseTest is TestSetup {
     function _setFollowNFTURIWithSig(
         uint256 profileId,
         string memory followNFTURI,
-        DataTypes.EIP712Signature memory signature
+        Types.EIP712Signature memory signature
     ) internal {
         hub.setFollowNFTURIWithSig(profileId, followNFTURI, signature);
     }
@@ -611,14 +611,14 @@ contract BaseTest is TestSetup {
         hub.burn(profileId);
     }
 
-    function _burnWithSig(uint256 profileId, DataTypes.EIP712Signature memory signature) internal {
+    function _burnWithSig(uint256 profileId, Types.EIP712Signature memory signature) internal {
         hub.burnWithSig(profileId, signature);
     }
 
     function _getPub(uint256 profileId, uint256 pubId)
         internal
         view
-        returns (DataTypes.PublicationStruct memory)
+        returns (Types.PublicationStruct memory)
     {
         return hub.getPub(profileId, pubId);
     }

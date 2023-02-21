@@ -5,7 +5,7 @@ pragma solidity 0.8.15;
 import {GeneralHelpers} from './GeneralHelpers.sol';
 import {MetaTxLib} from './MetaTxLib.sol';
 import {InteractionHelpers} from './InteractionHelpers.sol';
-import {DataTypes} from './constants/DataTypes.sol';
+import {Types} from './constants/Types.sol';
 import {Errors} from './constants/Errors.sol';
 import {Events} from './constants/Events.sol';
 import {IFollowModule} from '../interfaces/IFollowModule.sol';
@@ -63,8 +63,8 @@ library GeneralLib {
      *
      * @param newState The new protocol state to set.
      */
-    function initState(DataTypes.ProtocolState newState) external {
-        DataTypes.ProtocolState prevState;
+    function initState(Types.ProtocolState newState) external {
+        Types.ProtocolState prevState;
         assembly {
             prevState := sload(PROTOCOL_STATE_SLOT)
             sstore(PROTOCOL_STATE_SLOT, newState)
@@ -79,10 +79,10 @@ library GeneralLib {
      *
      * @param newState The new protocol state to set.
      */
-    function setState(DataTypes.ProtocolState newState) external {
+    function setState(Types.ProtocolState newState) external {
         address emergencyAdmin;
         address governance;
-        DataTypes.ProtocolState prevState;
+        Types.ProtocolState prevState;
 
         // Load the emergency admin, governance and protocol state, then store the new protocol
         // state via assembly.
@@ -103,7 +103,7 @@ library GeneralLib {
     }
 
     function switchToNewFreshDelegatedExecutorsConfig(uint256 profileId) external {
-        DataTypes.DelegatedExecutorsConfig storage _delegatedExecutorsConfig = GeneralHelpers
+        Types.DelegatedExecutorsConfig storage _delegatedExecutorsConfig = GeneralHelpers
             .getDelegatedExecutorsConfig({delegatorProfileId: profileId});
         _changeDelegatedExecutorsConfig({
             _delegatedExecutorsConfig: _delegatedExecutorsConfig,
@@ -120,7 +120,7 @@ library GeneralLib {
         address[] calldata executors,
         bool[] calldata approvals
     ) external {
-        DataTypes.DelegatedExecutorsConfig storage _delegatedExecutorsConfig = GeneralHelpers
+        Types.DelegatedExecutorsConfig storage _delegatedExecutorsConfig = GeneralHelpers
             .getDelegatedExecutorsConfig(delegatorProfileId);
         _changeDelegatedExecutorsConfig(
             _delegatedExecutorsConfig,
@@ -199,7 +199,7 @@ library GeneralLib {
     }
 
     function collect(
-        DataTypes.CollectParams calldata collectParams,
+        Types.CollectParams calldata collectParams,
         address transactionExecutor,
         address collectNFTImpl
     ) external returns (uint256) {
@@ -268,7 +268,7 @@ library GeneralLib {
     }
 
     function _changeDelegatedExecutorsConfig(
-        DataTypes.DelegatedExecutorsConfig storage _delegatedExecutorsConfig,
+        Types.DelegatedExecutorsConfig storage _delegatedExecutorsConfig,
         uint256 delegatorProfileId,
         address[] memory executors,
         bool[] memory approvals,
@@ -300,7 +300,7 @@ library GeneralLib {
     }
 
     function _prepareStorageToApplyChangesUnderGivenConfig(
-        DataTypes.DelegatedExecutorsConfig storage _delegatedExecutorsConfig,
+        Types.DelegatedExecutorsConfig storage _delegatedExecutorsConfig,
         uint64 configNumber,
         bool switchToGivenConfig
     ) private returns (bool) {

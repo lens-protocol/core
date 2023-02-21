@@ -3,7 +3,7 @@
 pragma solidity 0.8.15;
 
 import {ICollectModule} from '../interfaces/ICollectModule.sol';
-import {DataTypes} from 'contracts/libraries/constants/DataTypes.sol';
+import {Types} from 'contracts/libraries/constants/Types.sol';
 
 /**
  * @title FreeCollectModule
@@ -40,7 +40,7 @@ contract MockCollectModule is ICollectModule {
         address executor,
         uint256 referrerProfileId,
         uint256 referrerPubId,
-        DataTypes.PublicationType referrerPubType,
+        Types.PublicationType referrerPubType,
         bytes calldata data
     ) external view override {}
 }

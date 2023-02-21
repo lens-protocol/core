@@ -65,8 +65,8 @@ contract EventTest is BaseTest {
         vm.expectEmit(true, true, true, true, hubProxyAddr);
         emit Events.StateSet(
             deployer,
-            DataTypes.ProtocolState.Unpaused,
-            DataTypes.ProtocolState.Paused,
+            Types.ProtocolState.Unpaused,
+            Types.ProtocolState.Paused,
             block.timestamp
         );
 
@@ -103,31 +103,31 @@ contract EventTest is BaseTest {
         vm.expectEmit(true, true, true, true, address(hub));
         emit Events.StateSet(
             governance,
-            DataTypes.ProtocolState.Unpaused,
-            DataTypes.ProtocolState.Paused,
+            Types.ProtocolState.Unpaused,
+            Types.ProtocolState.Paused,
             block.timestamp
         );
-        hub.setState(DataTypes.ProtocolState.Paused);
+        hub.setState(Types.ProtocolState.Paused);
 
         vm.prank(governance);
         vm.expectEmit(true, true, true, true, address(hub));
         emit Events.StateSet(
             governance,
-            DataTypes.ProtocolState.Paused,
-            DataTypes.ProtocolState.PublishingPaused,
+            Types.ProtocolState.Paused,
+            Types.ProtocolState.PublishingPaused,
             block.timestamp
         );
-        hub.setState(DataTypes.ProtocolState.PublishingPaused);
+        hub.setState(Types.ProtocolState.PublishingPaused);
 
         vm.prank(governance);
         vm.expectEmit(true, true, true, true, address(hub));
         emit Events.StateSet(
             governance,
-            DataTypes.ProtocolState.PublishingPaused,
-            DataTypes.ProtocolState.Unpaused,
+            Types.ProtocolState.PublishingPaused,
+            Types.ProtocolState.Unpaused,
             block.timestamp
         );
-        hub.setState(DataTypes.ProtocolState.Unpaused);
+        hub.setState(Types.ProtocolState.Unpaused);
     }
 
     function testProtocolStateChangeByEmergencyAdminEmitsExpectedEvents() public {
@@ -138,21 +138,21 @@ contract EventTest is BaseTest {
         vm.expectEmit(true, true, true, true, address(hub));
         emit Events.StateSet(
             profileOwner,
-            DataTypes.ProtocolState.Unpaused,
-            DataTypes.ProtocolState.PublishingPaused,
+            Types.ProtocolState.Unpaused,
+            Types.ProtocolState.PublishingPaused,
             block.timestamp
         );
-        hub.setState(DataTypes.ProtocolState.PublishingPaused);
+        hub.setState(Types.ProtocolState.PublishingPaused);
 
         vm.prank(profileOwner);
         vm.expectEmit(true, true, true, true, address(hub));
         emit Events.StateSet(
             profileOwner,
-            DataTypes.ProtocolState.PublishingPaused,
-            DataTypes.ProtocolState.Paused,
+            Types.ProtocolState.PublishingPaused,
+            Types.ProtocolState.Paused,
             block.timestamp
         );
-        hub.setState(DataTypes.ProtocolState.Paused);
+        hub.setState(Types.ProtocolState.Paused);
     }
 
     function testFollowModuleWhitelistEmitsExpectedEvents() public {
@@ -357,7 +357,7 @@ contract EventTest is BaseTest {
 
         // TODO: Replace with proper ProfileID
         hub.collect(
-            DataTypes.CollectParams({
+            Types.CollectParams({
                 publicationCollectedProfileId: newProfileId,
                 publicationCollectedId: expectedPubId,
                 collectorProfileId: newProfileId,
@@ -428,7 +428,7 @@ contract EventTest is BaseTest {
 
         // TODO: Replace with proper ProfileID
         hub.collect(
-            DataTypes.CollectParams({
+            Types.CollectParams({
                 publicationCollectedProfileId: newProfileId,
                 publicationCollectedId: postId,
                 collectorProfileId: newProfileId,

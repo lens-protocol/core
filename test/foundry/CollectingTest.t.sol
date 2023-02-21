@@ -34,7 +34,7 @@ contract CollectingTest is BaseTest, CollectingHelpers, SigSetup {
     function _collect(
         uint256, /* metaTxSignerPk */
         address transactionExecutor,
-        DataTypes.CollectParams memory collectParams
+        Types.CollectParams memory collectParams
     ) internal virtual returns (uint256) {
         vm.prank(transactionExecutor);
         return hub.collect(collectParams);
@@ -179,7 +179,7 @@ contract CollectingTestMetaTx is CollectingTest, MetaTxNegatives {
     function _collect(
         uint256 metaTxSignerPk,
         address transactionExecutor,
-        DataTypes.CollectParams memory collectParams
+        Types.CollectParams memory collectParams
     ) internal override returns (uint256) {
         address signer = vm.addr(metaTxSignerPk);
         uint256 deadline = type(uint256).max;

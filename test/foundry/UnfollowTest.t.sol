@@ -47,7 +47,7 @@ contract UnfollowTest is BaseTest {
 
     function testCannotUnfollowIfPaused() public {
         vm.prank(governance);
-        hub.setState(DataTypes.ProtocolState.Paused);
+        hub.setState(Types.ProtocolState.Paused);
 
         vm.expectRevert(Errors.Paused.selector);
 

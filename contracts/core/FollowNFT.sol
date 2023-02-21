@@ -3,7 +3,7 @@
 pragma solidity 0.8.15;
 
 import '../libraries/Constants.sol';
-import {DataTypes} from '../libraries/constants/DataTypes.sol';
+import {Types} from '../libraries/constants/Types.sol';
 import {ERC2981CollectionRoyalties} from './base/ERC2981CollectionRoyalties.sol';
 import {ERC721Enumerable} from './base/ERC721Enumerable.sol';
 import {Errors} from '../libraries/constants/Errors.sol';
@@ -249,7 +249,7 @@ contract FollowNFT is HubRestricted, LensNFTBase, ERC2981CollectionRoyalties, IF
         return _followApprovalByFollowTokenId[followTokenId];
     }
 
-    function burnWithSig(uint256 followTokenId, DataTypes.EIP712Signature calldata signature)
+    function burnWithSig(uint256 followTokenId, Types.EIP712Signature calldata signature)
         public
         override
     {

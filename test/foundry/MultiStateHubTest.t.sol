@@ -8,13 +8,13 @@ contract MultiStateHubTest_Common is BaseTest {
     // Negatives
     function testCannotSetStateAsRegularUser() public {
         vm.expectRevert(Errors.NotGovernanceOrEmergencyAdmin.selector);
-        _setState(DataTypes.ProtocolState.Paused);
+        _setState(Types.ProtocolState.Paused);
 
         vm.expectRevert(Errors.NotGovernanceOrEmergencyAdmin.selector);
-        _setState(DataTypes.ProtocolState.PublishingPaused);
+        _setState(Types.ProtocolState.PublishingPaused);
 
         vm.expectRevert(Errors.NotGovernanceOrEmergencyAdmin.selector);
-        _setState(DataTypes.ProtocolState.Unpaused);
+        _setState(Types.ProtocolState.Unpaused);
     }
 
     function testCannotSetEmergencyAdminAsRegularUser() public {
@@ -27,20 +27,20 @@ contract MultiStateHubTest_Common is BaseTest {
         _setEmergencyAdmin(address(this));
 
         vm.expectRevert(Errors.EmergencyAdminCanOnlyPauseFurther.selector);
-        _setState(DataTypes.ProtocolState.Unpaused);
+        _setState(Types.ProtocolState.Unpaused);
     }
 
     function testCannotSetLowerStateAsEmergencyAdmin() public {
         vm.prank(governance);
         _setEmergencyAdmin(address(this));
 
-        _setState(DataTypes.ProtocolState.Paused);
+        _setState(Types.ProtocolState.Paused);
 
         vm.expectRevert(Errors.EmergencyAdminCanOnlyPauseFurther.selector);
-        _setState(DataTypes.ProtocolState.PublishingPaused);
+        _setState(Types.ProtocolState.PublishingPaused);
 
         vm.expectRevert(Errors.EmergencyAdminCanOnlyPauseFurther.selector);
-        _setState(DataTypes.ProtocolState.Paused);
+        _setState(Types.ProtocolState.Paused);
     }
 
     function testCannotSetEmergencyAdminAsEmergencyAdmin() public {
@@ -56,16 +56,16 @@ contract MultiStateHubTest_Common is BaseTest {
         vm.prank(governance);
         _setEmergencyAdmin(address(this));
 
-        DataTypes.ProtocolState[2] memory states = [
-            DataTypes.ProtocolState.PublishingPaused,
-            DataTypes.ProtocolState.Paused
+        Types.ProtocolState[2] memory states = [
+            Types.ProtocolState.PublishingPaused,
+            Types.ProtocolState.Paused
         ];
 
         for (uint256 i = 0; i < states.length; i++) {
-            DataTypes.ProtocolState newState = states[i];
-            DataTypes.ProtocolState prevState = _getState();
+            Types.ProtocolState newState = states[i];
+            Types.ProtocolState prevState = _getState();
             _setState(newState);
-            DataTypes.ProtocolState curState = _getState();
+            Types.ProtocolState curState = _getState();
             assertTrue(newState == curState);
             assertTrue(curState != prevState);
         }
@@ -74,20 +74,20 @@ contract MultiStateHubTest_Common is BaseTest {
     function testSetProtocolStateAsGovernance() public {
         vm.startPrank(governance);
 
-        DataTypes.ProtocolState[6] memory states = [
-            DataTypes.ProtocolState.PublishingPaused,
-            DataTypes.ProtocolState.Paused,
-            DataTypes.ProtocolState.Unpaused,
-            DataTypes.ProtocolState.Paused,
-            DataTypes.ProtocolState.PublishingPaused,
-            DataTypes.ProtocolState.Unpaused
+        Types.ProtocolState[6] memory states = [
+            Types.ProtocolState.PublishingPaused,
+            Types.ProtocolState.Paused,
+            Types.ProtocolState.Unpaused,
+            Types.ProtocolState.Paused,
+            Types.ProtocolState.PublishingPaused,
+            Types.ProtocolState.Unpaused
         ];
 
         for (uint256 i = 0; i < states.length; i++) {
-            DataTypes.ProtocolState newState = states[i];
-            DataTypes.ProtocolState prevState = _getState();
+            Types.ProtocolState newState = states[i];
+            Types.ProtocolState prevState = _getState();
             _setState(newState);
-            DataTypes.ProtocolState curState = _getState();
+            Types.ProtocolState curState = _getState();
             assertTrue(newState == curState);
             assertTrue(curState != prevState);
         }
@@ -98,13 +98,13 @@ contract MultiStateHubTest_Common is BaseTest {
         vm.prank(governance);
         _setEmergencyAdmin(address(this));
 
-        _setState(DataTypes.ProtocolState.PublishingPaused);
+        _setState(Types.ProtocolState.PublishingPaused);
 
         vm.prank(governance);
         _setEmergencyAdmin(address(0));
 
         vm.expectRevert(Errors.NotGovernanceOrEmergencyAdmin.selector);
-        _setState(DataTypes.ProtocolState.Paused);
+        _setState(Types.ProtocolState.Paused);
     }
 }
 
@@ -121,7 +121,7 @@ contract MultiStateHubTest_PausedState_Direct is BaseTest {
         postId = _post(mockPostParams);
 
         vm.prank(governance);
-        _setState(DataTypes.ProtocolState.Paused);
+        _setState(Types.ProtocolState.Paused);
     }
 
     // TODO: Consider extracting these mock actions functions somewhere because they're used in several places
@@ -202,7 +202,7 @@ contract MultiStateHubTest_PausedState_Direct is BaseTest {
         _createProfile(address(this));
 
         vm.prank(governance);
-        _setState(DataTypes.ProtocolState.Unpaused);
+        _setState(Types.ProtocolState.Unpaused);
 
         _createProfile(address(this));
     }
@@ -212,7 +212,7 @@ contract MultiStateHubTest_PausedState_Direct is BaseTest {
         _mockSetFollowModule();
 
         vm.prank(governance);
-        _setState(DataTypes.ProtocolState.Unpaused);
+        _setState(Types.ProtocolState.Unpaused);
 
         _mockSetFollowModule();
     }
@@ -222,7 +222,7 @@ contract MultiStateHubTest_PausedState_Direct is BaseTest {
         _mockChangeDelegatedExecutorsConfig();
 
         vm.prank(governance);
-        _setState(DataTypes.ProtocolState.Unpaused);
+        _setState(Types.ProtocolState.Unpaused);
 
         _mockChangeDelegatedExecutorsConfig();
     }
@@ -232,7 +232,7 @@ contract MultiStateHubTest_PausedState_Direct is BaseTest {
         _mockSetProfileImageURI();
 
         vm.prank(governance);
-        _setState(DataTypes.ProtocolState.Unpaused);
+        _setState(Types.ProtocolState.Unpaused);
 
         _mockSetProfileImageURI();
     }
@@ -242,7 +242,7 @@ contract MultiStateHubTest_PausedState_Direct is BaseTest {
         _mockSetFollowNFTURI();
 
         vm.prank(governance);
-        _setState(DataTypes.ProtocolState.Unpaused);
+        _setState(Types.ProtocolState.Unpaused);
 
         _mockSetFollowNFTURI();
     }
@@ -252,7 +252,7 @@ contract MultiStateHubTest_PausedState_Direct is BaseTest {
         _mockPost();
 
         vm.prank(governance);
-        _setState(DataTypes.ProtocolState.Unpaused);
+        _setState(Types.ProtocolState.Unpaused);
 
         _mockPost();
     }
@@ -262,7 +262,7 @@ contract MultiStateHubTest_PausedState_Direct is BaseTest {
         _mockComment();
 
         vm.prank(governance);
-        _setState(DataTypes.ProtocolState.Unpaused);
+        _setState(Types.ProtocolState.Unpaused);
 
         _mockComment();
     }
@@ -272,7 +272,7 @@ contract MultiStateHubTest_PausedState_Direct is BaseTest {
         _mockMirror();
 
         vm.prank(governance);
-        _setState(DataTypes.ProtocolState.Unpaused);
+        _setState(Types.ProtocolState.Unpaused);
 
         _mockMirror();
     }
@@ -282,7 +282,7 @@ contract MultiStateHubTest_PausedState_Direct is BaseTest {
         _mockBurn();
 
         vm.prank(governance);
-        _setState(DataTypes.ProtocolState.Unpaused);
+        _setState(Types.ProtocolState.Unpaused);
 
         _mockBurn();
     }
@@ -292,7 +292,7 @@ contract MultiStateHubTest_PausedState_Direct is BaseTest {
         _mockFollow();
 
         vm.prank(governance);
-        _setState(DataTypes.ProtocolState.Unpaused);
+        _setState(Types.ProtocolState.Unpaused);
 
         _mockFollow();
     }
@@ -302,7 +302,7 @@ contract MultiStateHubTest_PausedState_Direct is BaseTest {
         _mockCollect();
 
         vm.prank(governance);
-        _setState(DataTypes.ProtocolState.Unpaused);
+        _setState(Types.ProtocolState.Unpaused);
 
         _mockCollect();
     }
@@ -313,10 +313,10 @@ contract MultiStateHubTest_PausedState_WithSig is MultiStateHubTest_PausedState_
         MultiStateHubTest_PausedState_Direct.setUp();
         SigSetup.setUp();
         vm.prank(governance);
-        _setState(DataTypes.ProtocolState.Unpaused);
+        _setState(Types.ProtocolState.Unpaused);
         followerProfileId = _createProfile(otherSigner);
         vm.prank(governance);
-        _setState(DataTypes.ProtocolState.Paused);
+        _setState(Types.ProtocolState.Paused);
     }
 
     function _mockSetFollowModule() internal override {
@@ -466,7 +466,7 @@ contract MultiStateHubTest_PublishingPausedState_Direct is BaseTest {
         postId = _post(mockPostParams);
 
         vm.prank(governance);
-        _setState(DataTypes.ProtocolState.PublishingPaused);
+        _setState(Types.ProtocolState.PublishingPaused);
     }
 
     // TODO: Consider extracting these mock actions functions somewhere because they're used in several places
@@ -578,7 +578,7 @@ contract MultiStateHubTest_PublishingPausedState_Direct is BaseTest {
         _mockPost();
 
         vm.prank(governance);
-        _setState(DataTypes.ProtocolState.Unpaused);
+        _setState(Types.ProtocolState.Unpaused);
 
         _mockPost();
     }
@@ -588,7 +588,7 @@ contract MultiStateHubTest_PublishingPausedState_Direct is BaseTest {
         _mockComment();
 
         vm.prank(governance);
-        _setState(DataTypes.ProtocolState.Unpaused);
+        _setState(Types.ProtocolState.Unpaused);
 
         _mockComment();
     }
@@ -598,7 +598,7 @@ contract MultiStateHubTest_PublishingPausedState_Direct is BaseTest {
         _mockMirror();
 
         vm.prank(governance);
-        _setState(DataTypes.ProtocolState.Unpaused);
+        _setState(Types.ProtocolState.Unpaused);
 
         _mockMirror();
     }

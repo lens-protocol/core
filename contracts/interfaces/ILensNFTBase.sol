@@ -2,7 +2,7 @@
 
 pragma solidity 0.8.15;
 
-import {DataTypes} from '../libraries/constants/DataTypes.sol';
+import {Types} from '../libraries/constants/Types.sol';
 
 /**
  * @title ILensNFTBase
@@ -25,7 +25,7 @@ interface ILensNFTBase {
     function permit(
         address spender,
         uint256 tokenId,
-        DataTypes.EIP712Signature calldata signature
+        Types.EIP712Signature calldata signature
     ) external;
 
     /**
@@ -43,7 +43,7 @@ interface ILensNFTBase {
      * @param tokenId The token ID of the token to burn.
      * @param signature The EIP712 signature struct.
      */
-    function burnWithSig(uint256 tokenId, DataTypes.EIP712Signature calldata signature) external;
+    function burnWithSig(uint256 tokenId, Types.EIP712Signature calldata signature) external;
 
     /**
      * @notice Returns the domain separator for this NFT contract.

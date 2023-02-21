@@ -1,7 +1,7 @@
 pragma solidity 0.8.15;
 
-import {DataTypes} from '../libraries/constants/DataTypes.sol';
+import {Types} from '../libraries/constants/Types.sol';
 
 interface ILensMultiState {
-    function getState() external view returns (DataTypes.ProtocolState);
+    function getState() external view returns (Types.ProtocolState);
 }

@@ -99,7 +99,7 @@ contract UpgradeForkTest is BaseTest {
         _fullFollowCollectSequence(profileId, gov, hub);
 
         // Get the profile.
-        DataTypes.ProfileStruct memory profileStruct = hub.getProfile(profileId);
+        Types.ProfileStruct memory profileStruct = hub.getProfile(profileId);
         bytes memory encodedProfile = abi.encode(profileStruct);
 
         // Upgrade the hub.
@@ -154,7 +154,7 @@ contract UpgradeForkTest is BaseTest {
             hub.whitelistFollowModule(mockDeprecatedFollowModule, true);
 
             // precompute basic profile creaton data.
-            mockCreateProfileData = DataTypes.CreateProfileData({
+            mockCreateProfileData = Types.CreateProfileData({
                 to: me,
                 imageURI: MOCK_URI,
                 followModule: address(0),
@@ -211,7 +211,7 @@ contract UpgradeForkTest is BaseTest {
 
             // Validate post.
             assertEq(postId, 1);
-            DataTypes.PublicationStruct memory pub = hub.getPub(profileId, postId);
+            Types.PublicationStruct memory pub = hub.getPub(profileId, postId);
             assertEq(pub.pointedProfileId, 0);
             assertEq(pub.pointedPubId, 0);
             assertEq(pub.contentURI, mockPostParams.contentURI);
@@ -264,7 +264,7 @@ contract UpgradeForkTest is BaseTest {
 
             // Validate post.
             assertEq(postId, 1);
-            DataTypes.PublicationStruct memory pub = hub.getPub(profileId, postId);
+            Types.PublicationStruct memory pub = hub.getPub(profileId, postId);
             assertEq(pub.pointedProfileId, 0);
             assertEq(pub.pointedPubId, 0);
             assertEq(pub.contentURI, mockPostParams.contentURI);
@@ -331,7 +331,7 @@ contract UpgradeForkTest is BaseTest {
                 'Follow with modern interface succeeded, continuing with modern interface.'
             );
             hub.collect(
-                DataTypes.CollectParams({
+                Types.CollectParams({
                     publicationCollectedProfileId: profileId,
                     publicationCollectedId: 1,
                     collectorProfileId: profileId,
@@ -341,7 +341,7 @@ contract UpgradeForkTest is BaseTest {
                 })
             );
             hub.collect(
-                DataTypes.CollectParams({
+                Types.CollectParams({
                     publicationCollectedProfileId: profileId,
                     publicationCollectedId: 2,
                     collectorProfileId: profileId,
@@ -351,7 +351,7 @@ contract UpgradeForkTest is BaseTest {
                 })
             );
             hub.collect(
-                DataTypes.CollectParams({
+                Types.CollectParams({
                     publicationCollectedProfileId: profileId,
                     publicationCollectedId: 3,
                     collectorProfileId: profileId,
@@ -417,7 +417,7 @@ contract UpgradeForkTest is BaseTest {
         // NOTE: Structs are invalid as-is. Handle and modules must be set on the fly.
 
         // precompute basic profile creaton data.
-        mockCreateProfileData = DataTypes.CreateProfileData({
+        mockCreateProfileData = Types.CreateProfileData({
             to: me,
             imageURI: MOCK_URI,
             followModule: address(0),
@@ -426,7 +426,7 @@ contract UpgradeForkTest is BaseTest {
         });
 
         // Precompute basic post data.
-        mockPostParams = DataTypes.PostParams({
+        mockPostParams = Types.PostParams({
             profileId: 0,
             contentURI: MOCK_URI,
             collectModule: address(0),
@@ -436,7 +436,7 @@ contract UpgradeForkTest is BaseTest {
         });
 
         // Precompute basic comment data.
-        mockCommentParams = DataTypes.CommentParams({
+        mockCommentParams = Types.CommentParams({
             profileId: 0,
             contentURI: MOCK_URI,
             pointedProfileId: newProfileId,
@@ -451,7 +451,7 @@ contract UpgradeForkTest is BaseTest {
         });
 
         // Precompute basic mirror data.
-        mockMirrorParams = DataTypes.MirrorParams({
+        mockMirrorParams = Types.MirrorParams({
             profileId: 0,
             pointedProfileId: newProfileId,
             pointedPubId: 1,

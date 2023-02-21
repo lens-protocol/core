@@ -3,7 +3,7 @@
 pragma solidity 0.8.15;
 
 import {ILensHub} from '../interfaces/ILensHub.sol';
-import {DataTypes} from '../libraries/constants/DataTypes.sol';
+import {Types} from '../libraries/constants/Types.sol';
 
 /**
  * @dev This struct contains both a `ProfileStruct` and a `PublicationStruct`.
@@ -12,8 +12,8 @@ import {DataTypes} from '../libraries/constants/DataTypes.sol';
  * @param publicationStruct A standard publicationStruct.
  */
 struct LatestData {
-    DataTypes.ProfileStruct profileStruct;
-    DataTypes.PublicationStruct publicationStruct;
+    Types.ProfileStruct profileStruct;
+    Types.PublicationStruct publicationStruct;
 }
 
 /**
@@ -38,7 +38,7 @@ contract UIDataProvider {
      * @return LensData A struct containing the `ProfileStruct` and the `PublicationStruct` queried.
      */
     function getLatestDataByProfile(uint256 profileId) external view returns (LatestData memory) {
-        DataTypes.ProfileStruct memory profileStruct = HUB.getProfile(profileId);
+        Types.ProfileStruct memory profileStruct = HUB.getProfile(profileId);
         uint256 pubCount = profileStruct.pubCount;
         return LatestData(profileStruct, HUB.getPub(profileId, pubCount));
     }

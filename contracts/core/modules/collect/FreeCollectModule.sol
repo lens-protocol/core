@@ -5,7 +5,7 @@ pragma solidity 0.8.15;
 import {ICollectModule} from '../../../interfaces/ICollectModule.sol';
 import {ModuleBase} from '../ModuleBase.sol';
 import {FollowValidationModuleBase} from '../FollowValidationModuleBase.sol';
-import {DataTypes} from 'contracts/libraries/constants/DataTypes.sol';
+import {Types} from 'contracts/libraries/constants/Types.sol';
 
 /**
  * @title FreeCollectModule
@@ -46,7 +46,7 @@ contract FreeCollectModule is FollowValidationModuleBase, ICollectModule {
         address,
         uint256,
         uint256,
-        DataTypes.PublicationType,
+        Types.PublicationType,
         bytes calldata
     ) external view override {
         if (

@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity ^0.8.13;
 
-import '../../../contracts/libraries/constants/DataTypes.sol';
+import '../../../contracts/libraries/constants/Types.sol';
 
 contract SigSetup {
     uint256 nonce;

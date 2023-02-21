@@ -2,7 +2,7 @@
 
 pragma solidity 0.8.15;
 
-import {DataTypes} from 'contracts/libraries/constants/DataTypes.sol';
+import {Types} from 'contracts/libraries/constants/Types.sol';
 
 library Events {
     /**
@@ -24,8 +24,8 @@ library Events {
      */
     event StateSet(
         address indexed caller,
-        DataTypes.ProtocolState indexed prevState,
-        DataTypes.ProtocolState indexed newState,
+        Types.ProtocolState indexed prevState,
+        Types.ProtocolState indexed newState,
         uint256 timestamp
     );
 

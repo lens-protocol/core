@@ -10,7 +10,7 @@ import {FollowValidationModuleBase} from '../FollowValidationModuleBase.sol';
 import {IERC20} from '@openzeppelin/contracts/token/ERC20/IERC20.sol';
 import {SafeERC20} from '@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol';
 import {IERC721} from '@openzeppelin/contracts/token/ERC721/IERC721.sol';
-import {DataTypes} from 'contracts/libraries/constants/DataTypes.sol';
+import {Types} from 'contracts/libraries/constants/Types.sol';
 
 /**
  * @notice A struct containing the necessary data to execute collect actions on a publication.
@@ -131,7 +131,7 @@ contract LimitedTimedFeeCollectModule is FeeModuleBase, FollowValidationModuleBa
         address executor,
         uint256 referrerProfileId,
         uint256,
-        DataTypes.PublicationType,
+        Types.PublicationType,
         bytes calldata data
     ) external override onlyHub {
         if (

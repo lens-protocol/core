@@ -2,7 +2,7 @@
 
 pragma solidity 0.8.15;
 
-import {DataTypes} from '../libraries/constants/DataTypes.sol';
+import {Types} from '../libraries/constants/Types.sol';
 
 /**
  * @title ILensHub
@@ -52,7 +52,7 @@ interface ILensHub {
      *
      * @param newState The state to set, as a member of the ProtocolState enum.
      */
-    function setState(DataTypes.ProtocolState newState) external;
+    function setState(Types.ProtocolState newState) external;
 
     /**
      * @notice Adds or removes a profile creator from the whitelist. This function can only be called by the current
@@ -100,7 +100,7 @@ interface ILensHub {
      *      followModule: The follow module to use, can be the zero address.
      *      followModuleInitData: The follow module initialization data, if any.
      */
-    function createProfile(DataTypes.CreateProfileData calldata vars) external returns (uint256);
+    function createProfile(Types.CreateProfileData calldata vars) external returns (uint256);
 
     /**
      * @notice Sets the metadata URI for the given profile. Must be called either from the profile owner or an approved
@@ -122,7 +122,7 @@ interface ILensHub {
     function setProfileMetadataURIWithSig(
         uint256 profileId,
         string calldata metadataURI,
-        DataTypes.EIP712Signature calldata signature
+        Types.EIP712Signature calldata signature
     ) external;
 
     /**
@@ -151,7 +151,7 @@ interface ILensHub {
         uint256 profileId,
         address followModule,
         bytes calldata followModuleInitData,
-        DataTypes.EIP712Signature calldata signature
+        Types.EIP712Signature calldata signature
     ) external;
 
     /**
@@ -211,7 +211,7 @@ interface ILensHub {
         bool[] calldata approvals,
         uint64 configNumber,
         bool switchToGivenConfig,
-        DataTypes.EIP712Signature calldata signature
+        Types.EIP712Signature calldata signature
     ) external;
 
     /**
@@ -233,7 +233,7 @@ interface ILensHub {
     function setProfileImageURIWithSig(
         uint256 profileId,
         string calldata imageURI,
-        DataTypes.EIP712Signature calldata signature
+        Types.EIP712Signature calldata signature
     ) external;
 
     /**
@@ -255,7 +255,7 @@ interface ILensHub {
     function setFollowNFTURIWithSig(
         uint256 profileId,
         string calldata followNFTURI,
-        DataTypes.EIP712Signature calldata signature
+        Types.EIP712Signature calldata signature
     ) external;
 
     /**
@@ -265,7 +265,7 @@ interface ILensHub {
      *
      * @return uint256 An integer representing the post's publication ID.
      */
-    function post(DataTypes.PostParams calldata postParams) external returns (uint256);
+    function post(Types.PostParams calldata postParams) external returns (uint256);
 
     /**
      * @notice Publishes a post to a given profile via signature with the specified parameters. The signer must
@@ -277,8 +277,8 @@ interface ILensHub {
      * @return uint256 An integer representing the post's publication ID.
      */
     function postWithSig(
-        DataTypes.PostParams calldata postParams,
-        DataTypes.EIP712Signature calldata signature
+        Types.PostParams calldata postParams,
+        Types.EIP712Signature calldata signature
     ) external returns (uint256);
 
     /**
@@ -288,7 +288,7 @@ interface ILensHub {
      *
      * @return uint256 An integer representing the comment's publication ID.
      */
-    function comment(DataTypes.CommentParams calldata commentParams) external returns (uint256);
+    function comment(Types.CommentParams calldata commentParams) external returns (uint256);
 
     /**
      * @notice Publishes a comment to a given profile via signature with the specified parameters. The signer must
@@ -300,8 +300,8 @@ interface ILensHub {
      * @return uint256 An integer representing the comment's publication ID.
      */
     function commentWithSig(
-        DataTypes.CommentParams calldata commentParams,
-        DataTypes.EIP712Signature calldata signature
+        Types.CommentParams calldata commentParams,
+        Types.EIP712Signature calldata signature
     ) external returns (uint256);
 
     /**
@@ -311,7 +311,7 @@ interface ILensHub {
      *
      * @return uint256 An integer representing the mirror's publication ID.
      */
-    function mirror(DataTypes.MirrorParams calldata mirrorParams) external returns (uint256);
+    function mirror(Types.MirrorParams calldata mirrorParams) external returns (uint256);
 
     /**
      * @notice Publishes a mirror to a given profile via signature with the specified parameters. The signer must
@@ -323,8 +323,8 @@ interface ILensHub {
      * @return uint256 An integer representing the mirror's publication ID.
      */
     function mirrorWithSig(
-        DataTypes.MirrorParams calldata mirrorParams,
-        DataTypes.EIP712Signature calldata signature
+        Types.MirrorParams calldata mirrorParams,
+        Types.EIP712Signature calldata signature
     ) external returns (uint256);
 
     /**
@@ -334,7 +334,7 @@ interface ILensHub {
      *
      * @return uint256 An integer representing the quote's publication ID.
      */
-    function quote(DataTypes.QuoteParams calldata quoteParams) external returns (uint256);
+    function quote(Types.QuoteParams calldata quoteParams) external returns (uint256);
 
     /**
      * @notice Publishes a quote to a given profile via signature with the specified parameters. The signer must
@@ -346,8 +346,8 @@ interface ILensHub {
      * @return uint256 An integer representing the quote's publication ID.
      */
     function quoteWithSig(
-        DataTypes.QuoteParams calldata quoteParams,
-        DataTypes.EIP712Signature calldata signature
+        Types.QuoteParams calldata quoteParams,
+        Types.EIP712Signature calldata signature
     ) external returns (uint256);
 
     /**
@@ -387,7 +387,7 @@ interface ILensHub {
         uint256[] calldata idsOfProfilesToFollow,
         uint256[] calldata followTokenIds,
         bytes[] calldata datas,
-        DataTypes.EIP712Signature calldata signature
+        Types.EIP712Signature calldata signature
     ) external returns (uint256[] memory);
 
     /**
@@ -410,7 +410,7 @@ interface ILensHub {
     function unfollowWithSig(
         uint256 unfollowerProfileId,
         uint256[] calldata idsOfProfilesToUnfollow,
-        DataTypes.EIP712Signature calldata signature
+        Types.EIP712Signature calldata signature
     ) external;
 
     /**
@@ -444,7 +444,7 @@ interface ILensHub {
         uint256 byProfileId,
         uint256[] calldata idsOfProfilesToSetBlockStatus,
         bool[] calldata blockStatus,
-        DataTypes.EIP712Signature calldata signature
+        Types.EIP712Signature calldata signature
     ) external;
 
     /**
@@ -455,7 +455,7 @@ interface ILensHub {
      *
      * @return uint256 An integer representing the minted token ID.
      */
-    function collect(DataTypes.CollectParams calldata collectParams) external returns (uint256);
+    function collect(Types.CollectParams calldata collectParams) external returns (uint256);
 
     /**
      * @notice Collects a given publication via signature with the specified parameters. The signer must either be the collector
@@ -467,8 +467,8 @@ interface ILensHub {
      * @return uint256 An integer representing the minted token ID.
      */
     function collectWithSig(
-        DataTypes.CollectParams calldata collectParams,
-        DataTypes.EIP712Signature calldata signature
+        Types.CollectParams calldata collectParams,
+        Types.EIP712Signature calldata signature
     ) external returns (uint256);
 
     /**
@@ -765,7 +765,7 @@ interface ILensHub {
      *
      * @return ProfileStruct The profile struct of the given profile.
      */
-    function getProfile(uint256 profileId) external view returns (DataTypes.ProfileStruct memory);
+    function getProfile(uint256 profileId) external view returns (Types.ProfileStruct memory);
 
     /**
      * @notice Returns the full publication struct for a given publication.
@@ -778,12 +778,12 @@ interface ILensHub {
     function getPub(uint256 profileId, uint256 pubId)
         external
         view
-        returns (DataTypes.PublicationStruct memory);
+        returns (Types.PublicationStruct memory);
 
     function getPublicationType(uint256 profileId, uint256 pubId)
         external
         view
-        returns (DataTypes.PublicationType);
+        returns (Types.PublicationType);
 
     /**
      * @notice Returns the follow NFT implementation address.

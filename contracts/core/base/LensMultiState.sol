@@ -3,7 +3,7 @@
 pragma solidity 0.8.15;
 
 import {Events} from '../../libraries/constants/Events.sol';
-import {DataTypes} from '../../libraries/constants/DataTypes.sol';
+import {Types} from '../../libraries/constants/Types.sol';
 import {Errors} from '../../libraries/constants/Errors.sol';
 import {ILensMultiState} from '../../interfaces/ILensMultiState.sol';
 import {GeneralHelpers} from '../../libraries/GeneralHelpers.sol';
@@ -18,7 +18,7 @@ import {GeneralHelpers} from '../../libraries/GeneralHelpers.sol';
  * whenPublishingEnabled: When Unpaused only.
  */
 abstract contract LensMultiState is ILensMultiState {
-    DataTypes.ProtocolState private _state; // slot 12
+    Types.ProtocolState private _state; // slot 12
 
     modifier whenNotPaused() {
         _validateNotPaused();
@@ -64,17 +64,17 @@ abstract contract LensMultiState is ILensMultiState {
      *      1: PublishingPaused
      *      2: Paused
      */
-    function getState() external view override returns (DataTypes.ProtocolState) {
+    function getState() external view override returns (Types.ProtocolState) {
         return _state;
     }
 
     function _validatePublishingEnabled() internal view {
-        if (_state != DataTypes.ProtocolState.Unpaused) {
+        if (_state != Types.ProtocolState.Unpaused) {
             revert Errors.PublishingPaused();
         }
     }
 
     function _validateNotPaused() internal view {
-        if (_state == DataTypes.ProtocolState.Paused) revert Errors.Paused();
+        if (_state == Types.ProtocolState.Paused) revert Errors.Paused();
     }
 }

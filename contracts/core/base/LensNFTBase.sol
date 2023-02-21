@@ -4,7 +4,7 @@ pragma solidity 0.8.15;
 
 import {ILensNFTBase} from 'contracts/interfaces/ILensNFTBase.sol';
 import {Errors} from 'contracts/libraries/constants/Errors.sol';
-import {DataTypes} from 'contracts/libraries/constants/DataTypes.sol';
+import {Types} from 'contracts/libraries/constants/Types.sol';
 import {Events} from 'contracts/libraries/constants/Events.sol';
 import {MetaTxLib} from 'contracts/libraries/MetaTxLib.sol';
 import {ERC721Time} from './ERC721Time.sol';
@@ -41,7 +41,7 @@ abstract contract LensNFTBase is ERC721Enumerable, ILensNFTBase {
     function permit(
         address spender,
         uint256 tokenId,
-        DataTypes.EIP712Signature calldata signature
+        Types.EIP712Signature calldata signature
     ) external virtual override {
         if (spender == address(0)) {
             revert Errors.ZeroSpender();
@@ -65,7 +65,7 @@ abstract contract LensNFTBase is ERC721Enumerable, ILensNFTBase {
     }
 
     /// @inheritdoc ILensNFTBase
-    function burnWithSig(uint256 tokenId, DataTypes.EIP712Signature calldata signature)
+    function burnWithSig(uint256 tokenId, Types.EIP712Signature calldata signature)
         public
         virtual
         override

@@ -45,7 +45,7 @@ contract SetBlockStatusTest is BaseTest {
     //////////////////////////////////////////////////////////
     function testCannotSetBlockStatusIfPaused() public {
         vm.prank(governance);
-        hub.setState(DataTypes.ProtocolState.Paused);
+        hub.setState(Types.ProtocolState.Paused);
 
         vm.expectRevert(Errors.Paused.selector);
 
@@ -356,9 +356,9 @@ contract SetBlockStatusMetaTxTest is SetBlockStatusTest, MetaTxNegatives {
         bool[] memory blockStatus,
         uint256 nonce,
         uint256 deadline
-    ) internal returns (DataTypes.SetBlockStatusWithSigData memory) {
+    ) internal returns (Types.SetBlockStatusWithSigData memory) {
         return
-            DataTypes.SetBlockStatusWithSigData({
+            Types.SetBlockStatusWithSigData({
                 delegatedSigner: delegatedSigner,
                 byProfileId: byProfileId,
                 idsOfProfilesToSetBlockStatus: idsOfProfilesToSetBlockStatus,

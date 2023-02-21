@@ -10,7 +10,7 @@ import {FollowNFT} from 'contracts/core/FollowNFT.sol';
 import {CollectNFT} from 'contracts/core/CollectNFT.sol';
 import {ModuleGlobals} from 'contracts/core/modules/ModuleGlobals.sol';
 import {TransparentUpgradeableProxy} from 'contracts/upgradeability/TransparentUpgradeableProxy.sol';
-import {DataTypes} from 'contracts/libraries/constants/DataTypes.sol';
+import {Types} from 'contracts/libraries/constants/Types.sol';
 import 'contracts/libraries/Constants.sol';
 import {Errors} from 'contracts/libraries/constants/Errors.sol';
 import {Events} from 'contracts/libraries/constants/Events.sol';
@@ -57,12 +57,12 @@ contract TestSetup is Test, ForkManagement {
     MockReferenceModule mockReferenceModule;
     ModuleGlobals moduleGlobals;
 
-    DataTypes.CreateProfileData mockCreateProfileData;
+    Types.CreateProfileData mockCreateProfileData;
 
-    DataTypes.PostParams mockPostParams;
-    DataTypes.CommentParams mockCommentParams;
-    DataTypes.MirrorParams mockMirrorParams;
-    DataTypes.CollectParams mockCollectParams;
+    Types.PostParams mockPostParams;
+    Types.CommentParams mockCommentParams;
+    Types.MirrorParams mockMirrorParams;
+    Types.CollectParams mockCollectParams;
 
     function isEnvSet(string memory key) internal returns (bool) {
         try vm.envString(key) {
@@ -102,8 +102,8 @@ contract TestSetup is Test, ForkManagement {
         ///////////////////////////////////////// Start governance actions.
         vm.startPrank(governance);
 
-        if (hub.getState() != DataTypes.ProtocolState.Unpaused)
-            hub.setState(DataTypes.ProtocolState.Unpaused);
+        if (hub.getState() != Types.ProtocolState.Unpaused)
+            hub.setState(Types.ProtocolState.Unpaused);
 
         // Whitelist the test contract as a profile creator
         hub.whitelistProfileCreator(me, true);
@@ -226,7 +226,7 @@ contract TestSetup is Test, ForkManagement {
         );
 
         // precompute basic profile creaton data.
-        mockCreateProfileData = DataTypes.CreateProfileData({
+        mockCreateProfileData = Types.CreateProfileData({
             to: profileOwner,
             imageURI: MOCK_URI,
             followModule: address(0),
@@ -235,7 +235,7 @@ contract TestSetup is Test, ForkManagement {
         });
 
         // Precompute basic post data.
-        mockPostParams = DataTypes.PostParams({
+        mockPostParams = Types.PostParams({
             profileId: newProfileId,
             contentURI: MOCK_URI,
             collectModule: address(mockCollectModule),
@@ -245,7 +245,7 @@ contract TestSetup is Test, ForkManagement {
         });
 
         // Precompute basic comment data.
-        mockCommentParams = DataTypes.CommentParams({
+        mockCommentParams = Types.CommentParams({
             profileId: newProfileId,
             contentURI: MOCK_URI,
             pointedProfileId: newProfileId,
@@ -260,7 +260,7 @@ contract TestSetup is Test, ForkManagement {
         });
 
         // Precompute basic mirror data.
-        mockMirrorParams = DataTypes.MirrorParams({
+        mockMirrorParams = Types.MirrorParams({
             profileId: newProfileId,
             pointedProfileId: newProfileId,
             pointedPubId: FIRST_PUB_ID,
@@ -270,7 +270,7 @@ contract TestSetup is Test, ForkManagement {
         });
 
         // Precompute basic collect data.
-        mockCollectParams = DataTypes.CollectParams({
+        mockCollectParams = Types.CollectParams({
             publicationCollectedProfileId: newProfileId,
             publicationCollectedId: FIRST_PUB_ID,
             collectorProfileId: newProfileId,

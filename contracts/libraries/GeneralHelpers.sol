@@ -2,7 +2,7 @@
 
 pragma solidity 0.8.15;
 
-import {DataTypes} from 'contracts/libraries/constants/DataTypes.sol';
+import {Types} from 'contracts/libraries/constants/Types.sol';
 import {Errors} from 'contracts/libraries/constants/Errors.sol';
 
 import 'contracts/libraries/Constants.sol';
@@ -33,7 +33,7 @@ library GeneralHelpers {
             address
         )
     {
-        DataTypes.PublicationStruct storage _publication = getPublicationStruct(profileId, pubId);
+        Types.PublicationStruct storage _publication = getPublicationStruct(profileId, pubId);
         address collectModule = _publication.collectModule;
         if (collectModule != address(0)) {
             // We rely on the collect module being zero for classifying mirrors or non-existent publications so, if it
@@ -60,10 +60,10 @@ library GeneralHelpers {
 
     function validatePointedPub(uint256 profileId, uint256 pubId) internal view {
         // If it is pointing to itself it will fail because it will return non-existent type.
-        DataTypes.PublicationType pointedPubType = getPublicationType(profileId, pubId);
+        Types.PublicationType pointedPubType = getPublicationType(profileId, pubId);
         if (
-            pointedPubType == DataTypes.PublicationType.Nonexistent ||
-            pointedPubType == DataTypes.PublicationType.Mirror
+            pointedPubType == Types.PublicationType.Nonexistent ||
+            pointedPubType == Types.PublicationType.Mirror
         ) {
             revert Errors.InvalidPointedPub();
         }
@@ -145,9 +145,9 @@ library GeneralHelpers {
     function getDelegatedExecutorsConfig(uint256 delegatorProfileId)
         internal
         pure
-        returns (DataTypes.DelegatedExecutorsConfig storage)
+        returns (Types.DelegatedExecutorsConfig storage)
     {
-        DataTypes.DelegatedExecutorsConfig storage _delegatedExecutorsConfig;
+        Types.DelegatedExecutorsConfig storage _delegatedExecutorsConfig;
         assembly {
             mstore(0, delegatorProfileId)
             mstore(32, DELEGATED_EXECUTOR_CONFIG_MAPPING_SLOT)
@@ -161,7 +161,7 @@ library GeneralHelpers {
         view
         returns (bool)
     {
-        DataTypes.DelegatedExecutorsConfig
+        Types.DelegatedExecutorsConfig
             storage _delegatedExecutorsConfig = getDelegatedExecutorsConfig(delegatorProfileId);
         return
             _delegatedExecutorsConfig.isApproved[_delegatedExecutorsConfig.configNumber][executor];
@@ -185,22 +185,22 @@ library GeneralHelpers {
     function getPublicationType(uint256 profileId, uint256 pubId)
         internal
         view
-        returns (DataTypes.PublicationType)
+        returns (Types.PublicationType)
     {
-        DataTypes.PublicationStruct storage _publication = getPublicationStruct(profileId, pubId);
-        DataTypes.PublicationType pubType = _publication.pubType;
+        Types.PublicationStruct storage _publication = getPublicationStruct(profileId, pubId);
+        Types.PublicationType pubType = _publication.pubType;
         if (uint8(pubType) == 0) {
             // If publication type is 0, we check using the legacy rules.
             if (_publication.pointedProfileId != 0) {
                 // It is pointing to a publication, so it can be either a comment or a mirror, depending on if it has a
                 // collect module or not.
                 if (_publication.collectModule == address(0)) {
-                    return DataTypes.PublicationType.Mirror;
+                    return Types.PublicationType.Mirror;
                 } else {
-                    return DataTypes.PublicationType.Comment;
+                    return Types.PublicationType.Comment;
                 }
             } else if (_publication.collectModule != address(0)) {
-                return DataTypes.PublicationType.Post;
+                return Types.PublicationType.Post;
             }
         }
         return pubType;
@@ -209,9 +209,9 @@ library GeneralHelpers {
     function getPublicationStruct(uint256 profileId, uint256 pubId)
         internal
         pure
-        returns (DataTypes.PublicationStruct storage)
+        returns (Types.PublicationStruct storage)
     {
-        DataTypes.PublicationStruct storage _publication;
+        Types.PublicationStruct storage _publication;
         assembly {
             mstore(0, profileId)
             mstore(32, PUB_BY_ID_BY_PROFILE_MAPPING_SLOT)
@@ -225,9 +225,9 @@ library GeneralHelpers {
     function getProfileStruct(uint256 profileId)
         internal
         pure
-        returns (DataTypes.ProfileStruct storage)
+        returns (Types.ProfileStruct storage)
     {
-        DataTypes.ProfileStruct storage _profile;
+        Types.ProfileStruct storage _profile;
         assembly {
             mstore(0, profileId)
             mstore(32, PROFILE_BY_ID_MAPPING_SLOT)
@@ -241,10 +241,10 @@ library GeneralHelpers {
         uint256 referrerPubId,
         uint256 profileId,
         uint256 pubId
-    ) internal view returns (DataTypes.PublicationType) {
+    ) internal view returns (Types.PublicationType) {
         if (referrerProfileId == 0 && referrerPubId == 0) {
             // No referrer was passed.
-            return DataTypes.PublicationType.Nonexistent;
+            return Types.PublicationType.Nonexistent;
         }
 
         if (
@@ -254,16 +254,16 @@ library GeneralHelpers {
             revert Errors.InvalidReferrer();
         }
 
-        DataTypes.PublicationType referrerPubType = GeneralHelpers.getPublicationType(
+        Types.PublicationType referrerPubType = GeneralHelpers.getPublicationType(
             referrerProfileId,
             referrerPubId
         );
 
-        if (referrerPubType == DataTypes.PublicationType.Mirror) {
+        if (referrerPubType == Types.PublicationType.Mirror) {
             _validateReferrerAsMirror(referrerProfileId, referrerPubId, profileId, pubId);
         } else if (
-            referrerPubType == DataTypes.PublicationType.Comment ||
-            referrerPubType == DataTypes.PublicationType.Quote
+            referrerPubType == Types.PublicationType.Comment ||
+            referrerPubType == Types.PublicationType.Quote
         ) {
             _validateReferrerAsCommentOrQuote(referrerProfileId, referrerPubId, profileId, pubId);
         } else {
@@ -280,7 +280,7 @@ library GeneralHelpers {
         uint256 profileId,
         uint256 pubId
     ) private view {
-        DataTypes.PublicationStruct storage _referrerMirror = GeneralHelpers.getPublicationStruct(
+        Types.PublicationStruct storage _referrerMirror = GeneralHelpers.getPublicationStruct(
             referrerProfileId,
             referrerPubId
         );
@@ -306,23 +306,23 @@ library GeneralHelpers {
         uint256 profileId,
         uint256 pubId
     ) private view {
-        DataTypes.PublicationStruct storage _referrerPub = GeneralHelpers.getPublicationStruct(
+        Types.PublicationStruct storage _referrerPub = GeneralHelpers.getPublicationStruct(
             referrerProfileId,
             referrerPubId
         );
-        DataTypes.PublicationType typeOfPubPointedByReferrer = GeneralHelpers.getPublicationType(
+        Types.PublicationType typeOfPubPointedByReferrer = GeneralHelpers.getPublicationType(
             profileId,
             pubId
         );
         // We already know that the publication being collected/referenced is not a mirror nor a non-existent one.
-        if (typeOfPubPointedByReferrer == DataTypes.PublicationType.Post) {
+        if (typeOfPubPointedByReferrer == Types.PublicationType.Post) {
             // If the publication collected/referenced is a post, the referrer comment/quote must have it as root.
             if (_referrerPub.rootProfileId != profileId || _referrerPub.rootPubId != pubId) {
                 revert Errors.InvalidReferrer();
             }
         } else {
             // The publication collected/referenced is a comment or a quote.
-            DataTypes.PublicationStruct storage _pubPointedByReferrer = GeneralHelpers
+            Types.PublicationStruct storage _pubPointedByReferrer = GeneralHelpers
                 .getPublicationStruct(profileId, pubId);
             // The referrer publication and the collected/referenced publication must share the same root.
             if (

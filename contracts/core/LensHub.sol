@@ -7,7 +7,7 @@ import {ILensNFTBase} from '../interfaces/ILensNFTBase.sol';
 import {ILensHub} from '../interfaces/ILensHub.sol';
 
 import {Events} from '../libraries/constants/Events.sol';
-import {DataTypes} from '../libraries/constants/DataTypes.sol';
+import {Types} from '../libraries/constants/Types.sol';
 import {Errors} from '../libraries/constants/Errors.sol';
 import {GeneralLib} from '../libraries/GeneralLib.sol';
 import {GeneralHelpers} from '../libraries/GeneralHelpers.sol';
@@ -70,7 +70,7 @@ contract LensHub is LensNFTBase, VersionedInitializable, LensMultiState, LensHub
         address newGovernance
     ) external override initializer {
         super._initialize(name, symbol);
-        GeneralLib.initState(DataTypes.ProtocolState.Paused);
+        GeneralLib.initState(Types.ProtocolState.Paused);
         GeneralLib.setGovernance(newGovernance);
     }
 
@@ -89,7 +89,7 @@ contract LensHub is LensNFTBase, VersionedInitializable, LensMultiState, LensHub
     }
 
     /// @inheritdoc ILensHub
-    function setState(DataTypes.ProtocolState newState) external override {
+    function setState(Types.ProtocolState newState) external override {
         GeneralLib.setState(newState);
     }
 
@@ -134,7 +134,7 @@ contract LensHub is LensNFTBase, VersionedInitializable, LensMultiState, LensHub
     ///////////////////////////////////////////
 
     /// @inheritdoc ILensHub
-    function createProfile(DataTypes.CreateProfileData calldata vars)
+    function createProfile(Types.CreateProfileData calldata vars)
         external
         override
         whenNotPaused
@@ -162,7 +162,7 @@ contract LensHub is LensNFTBase, VersionedInitializable, LensMultiState, LensHub
     function setProfileMetadataURIWithSig(
         uint256 profileId,
         string calldata metadataURI,
-        DataTypes.EIP712Signature calldata signature
+        Types.EIP712Signature calldata signature
     )
         external
         override
@@ -187,7 +187,7 @@ contract LensHub is LensNFTBase, VersionedInitializable, LensMultiState, LensHub
         uint256 profileId,
         address followModule,
         bytes calldata followModuleInitData,
-        DataTypes.EIP712Signature calldata signature
+        Types.EIP712Signature calldata signature
     )
         external
         override
@@ -235,7 +235,7 @@ contract LensHub is LensNFTBase, VersionedInitializable, LensMultiState, LensHub
         bool[] calldata approvals,
         uint64 configNumber,
         bool switchToGivenConfig,
-        DataTypes.EIP712Signature calldata signature
+        Types.EIP712Signature calldata signature
     ) external override whenNotPaused onlyProfileOwner(signature.signer, delegatorProfileId) {
         MetaTxLib.validateChangeDelegatedExecutorsConfigSignature(
             signature,
@@ -268,7 +268,7 @@ contract LensHub is LensNFTBase, VersionedInitializable, LensMultiState, LensHub
     function setProfileImageURIWithSig(
         uint256 profileId,
         string calldata imageURI,
-        DataTypes.EIP712Signature calldata signature
+        Types.EIP712Signature calldata signature
     )
         external
         override
@@ -293,7 +293,7 @@ contract LensHub is LensNFTBase, VersionedInitializable, LensMultiState, LensHub
     function setFollowNFTURIWithSig(
         uint256 profileId,
         string calldata followNFTURI,
-        DataTypes.EIP712Signature calldata signature
+        Types.EIP712Signature calldata signature
     )
         external
         override
@@ -309,7 +309,7 @@ contract LensHub is LensNFTBase, VersionedInitializable, LensMultiState, LensHub
     ////////////////////////////////////////
 
     /// @inheritdoc ILensHub
-    function post(DataTypes.PostParams calldata postParams)
+    function post(Types.PostParams calldata postParams)
         external
         override
         whenPublishingEnabled
@@ -321,8 +321,8 @@ contract LensHub is LensNFTBase, VersionedInitializable, LensMultiState, LensHub
 
     /// @inheritdoc ILensHub
     function postWithSig(
-        DataTypes.PostParams calldata postParams,
-        DataTypes.EIP712Signature calldata signature
+        Types.PostParams calldata postParams,
+        Types.EIP712Signature calldata signature
     )
         external
         override
@@ -335,7 +335,7 @@ contract LensHub is LensNFTBase, VersionedInitializable, LensMultiState, LensHub
     }
 
     /// @inheritdoc ILensHub
-    function comment(DataTypes.CommentParams calldata commentParams)
+    function comment(Types.CommentParams calldata commentParams)
         external
         override
         whenPublishingEnabled
@@ -350,8 +350,8 @@ contract LensHub is LensNFTBase, VersionedInitializable, LensMultiState, LensHub
 
     /// @inheritdoc ILensHub
     function commentWithSig(
-        DataTypes.CommentParams calldata commentParams,
-        DataTypes.EIP712Signature calldata signature
+        Types.CommentParams calldata commentParams,
+        Types.EIP712Signature calldata signature
     )
         external
         override
@@ -370,7 +370,7 @@ contract LensHub is LensNFTBase, VersionedInitializable, LensMultiState, LensHub
     }
 
     /// @inheritdoc ILensHub
-    function mirror(DataTypes.MirrorParams calldata mirrorParams)
+    function mirror(Types.MirrorParams calldata mirrorParams)
         external
         override
         whenPublishingEnabled
@@ -384,8 +384,8 @@ contract LensHub is LensNFTBase, VersionedInitializable, LensMultiState, LensHub
 
     /// @inheritdoc ILensHub
     function mirrorWithSig(
-        DataTypes.MirrorParams calldata mirrorParams,
-        DataTypes.EIP712Signature calldata signature
+        Types.MirrorParams calldata mirrorParams,
+        Types.EIP712Signature calldata signature
     )
         external
         override
@@ -404,7 +404,7 @@ contract LensHub is LensNFTBase, VersionedInitializable, LensMultiState, LensHub
     }
 
     /// @inheritdoc ILensHub
-    function quote(DataTypes.QuoteParams calldata quoteParams)
+    function quote(Types.QuoteParams calldata quoteParams)
         external
         override
         whenPublishingEnabled
@@ -418,8 +418,8 @@ contract LensHub is LensNFTBase, VersionedInitializable, LensMultiState, LensHub
 
     /// @inheritdoc ILensHub
     function quoteWithSig(
-        DataTypes.QuoteParams calldata quoteParams,
-        DataTypes.EIP712Signature calldata signature
+        Types.QuoteParams calldata quoteParams,
+        Types.EIP712Signature calldata signature
     )
         external
         override
@@ -449,7 +449,7 @@ contract LensHub is LensNFTBase, VersionedInitializable, LensMultiState, LensHub
     /**
      * @notice Burns a profile with a signature, this maintains the profile data struct.
      */
-    function burnWithSig(uint256 tokenId, DataTypes.EIP712Signature calldata signature)
+    function burnWithSig(uint256 tokenId, Types.EIP712Signature calldata signature)
         public
         override
         whenNotPaused
@@ -492,7 +492,7 @@ contract LensHub is LensNFTBase, VersionedInitializable, LensMultiState, LensHub
         uint256[] calldata idsOfProfilesToFollow,
         uint256[] calldata followTokenIds,
         bytes[] calldata datas,
-        DataTypes.EIP712Signature calldata signature
+        Types.EIP712Signature calldata signature
     )
         external
         override
@@ -536,7 +536,7 @@ contract LensHub is LensNFTBase, VersionedInitializable, LensMultiState, LensHub
     function unfollowWithSig(
         uint256 unfollowerProfileId,
         uint256[] calldata idsOfProfilesToUnfollow,
-        DataTypes.EIP712Signature calldata signature
+        Types.EIP712Signature calldata signature
     )
         external
         override
@@ -571,7 +571,7 @@ contract LensHub is LensNFTBase, VersionedInitializable, LensMultiState, LensHub
         uint256 byProfileId,
         uint256[] calldata idsOfProfilesToSetBlockStatus,
         bool[] calldata blockStatus,
-        DataTypes.EIP712Signature calldata signature
+        Types.EIP712Signature calldata signature
     )
         external
         override
@@ -588,7 +588,7 @@ contract LensHub is LensNFTBase, VersionedInitializable, LensMultiState, LensHub
     }
 
     /// TODO: Inherit natspec
-    function collect(DataTypes.CollectParams calldata collectParams)
+    function collect(Types.CollectParams calldata collectParams)
         external
         override
         whenNotPaused
@@ -604,8 +604,8 @@ contract LensHub is LensNFTBase, VersionedInitializable, LensMultiState, LensHub
 
     /// @inheritdoc ILensHub
     function collectWithSig(
-        DataTypes.CollectParams calldata collectParams,
-        DataTypes.EIP712Signature calldata signature
+        Types.CollectParams calldata collectParams,
+        Types.EIP712Signature calldata signature
     )
         external
         override
@@ -863,7 +863,7 @@ contract LensHub is LensNFTBase, VersionedInitializable, LensMultiState, LensHub
         external
         view
         override
-        returns (DataTypes.ProfileStruct memory)
+        returns (Types.ProfileStruct memory)
     {
         return _profileById[profileId];
     }
@@ -873,7 +873,7 @@ contract LensHub is LensNFTBase, VersionedInitializable, LensMultiState, LensHub
         external
         view
         override
-        returns (DataTypes.PublicationStruct memory)
+        returns (Types.PublicationStruct memory)
     {
         return _pubByIdByProfile[profileId][pubId];
     }
@@ -883,7 +883,7 @@ contract LensHub is LensNFTBase, VersionedInitializable, LensMultiState, LensHub
         external
         view
         override
-        returns (DataTypes.PublicationType)
+        returns (Types.PublicationType)
     {
         return GeneralHelpers.getPublicationType(profileId, pubId);
     }

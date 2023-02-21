@@ -4,7 +4,7 @@ pragma solidity 0.8.15;
 
 import {FollowNFTProxy} from 'contracts/upgradeability/FollowNFTProxy.sol';
 import {GeneralHelpers} from 'contracts/libraries/GeneralHelpers.sol';
-import {DataTypes} from 'contracts/libraries/constants/DataTypes.sol';
+import {Types} from 'contracts/libraries/constants/Types.sol';
 import {Errors} from 'contracts/libraries/constants/Errors.sol';
 import {Events} from 'contracts/libraries/constants/Events.sol';
 import {IFollowNFT} from 'contracts/interfaces/IFollowNFT.sol';
@@ -165,16 +165,16 @@ library InteractionHelpers {
     }
 
     function collect(
-        DataTypes.CollectParams calldata collectParams,
+        Types.CollectParams calldata collectParams,
         address transactionExecutor,
         address collectNFTImpl
     ) internal returns (uint256) {
         address collectModule;
-        DataTypes.PublicationType referrerPubType;
+        Types.PublicationType referrerPubType;
         uint256 tokenId;
         address collectorProfileOwner = GeneralHelpers.ownerOf(collectParams.collectorProfileId);
         {
-            DataTypes.PublicationStruct storage _collectedPublication = GeneralHelpers
+            Types.PublicationStruct storage _collectedPublication = GeneralHelpers
                 .getPublicationStruct(
                     collectParams.publicationCollectedProfileId,
                     collectParams.publicationCollectedId
@@ -211,7 +211,7 @@ library InteractionHelpers {
     }
 
     function _getOrDeployCollectNFT(
-        DataTypes.PublicationStruct storage _collectedPublication,
+        Types.PublicationStruct storage _collectedPublication,
         uint256 publicationCollectedProfileId,
         uint256 publicationCollectedId,
         address collectNFTImpl
@@ -229,10 +229,10 @@ library InteractionHelpers {
     }
 
     function _processCollect(
-        DataTypes.CollectParams calldata collectParams,
+        Types.CollectParams calldata collectParams,
         address transactionExecutor,
         address collectorProfileOwner,
-        DataTypes.PublicationType referrerPubType,
+        Types.PublicationType referrerPubType,
         address collectModule
     ) private {
         try
