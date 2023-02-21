@@ -31,8 +31,7 @@ abstract contract LensHubStorage {
 
     // Slots introduced by Lens V2 upgrade.
 
-    mapping(uint256 => Types.DelegatedExecutorsConfig)
-        internal _delegatedExecutorsConfigByProfileId; // Slot 25
+    mapping(uint256 => Types.DelegatedExecutorsConfig) internal _delegatedExecutorsConfigByProfileId; // Slot 25
     mapping(uint256 => string) internal _metadataByProfile; // Slot 26
     mapping(uint256 => mapping(uint256 => bool)) internal _blockedStatus; // Slot 27, _blockedStatus[byProfile][profile]
 }

@@ -157,10 +157,9 @@ library MetaTxLib {
         );
     }
 
-    function validatePostSignature(
-        Types.EIP712Signature calldata signature,
-        Types.PostParams calldata postParams
-    ) internal {
+    function validatePostSignature(Types.EIP712Signature calldata signature, Types.PostParams calldata postParams)
+        internal
+    {
         _validateRecoveredAddress(
             _calculateDigest(
                 keccak256(
@@ -212,10 +211,9 @@ library MetaTxLib {
         );
     }
 
-    function validateQuoteSignature(
-        Types.EIP712Signature calldata signature,
-        Types.QuoteParams calldata quoteParams
-    ) internal {
+    function validateQuoteSignature(Types.EIP712Signature calldata signature, Types.QuoteParams calldata quoteParams)
+        internal
+    {
         uint256 nonce = _sigNonces(signature.signer);
         uint256 deadline = signature.deadline;
         _validateRecoveredAddress(
@@ -243,10 +241,9 @@ library MetaTxLib {
         );
     }
 
-    function validateMirrorSignature(
-        Types.EIP712Signature calldata signature,
-        Types.MirrorParams calldata mirrorParams
-    ) internal {
+    function validateMirrorSignature(Types.EIP712Signature calldata signature, Types.MirrorParams calldata mirrorParams)
+        internal
+    {
         _validateRecoveredAddress(
             _calculateDigest(
                 keccak256(
@@ -267,19 +264,10 @@ library MetaTxLib {
         );
     }
 
-    function validateBurnSignature(Types.EIP712Signature calldata signature, uint256 tokenId)
-        internal
-    {
+    function validateBurnSignature(Types.EIP712Signature calldata signature, uint256 tokenId) internal {
         _validateRecoveredAddress(
             _calculateDigest(
-                keccak256(
-                    abi.encode(
-                        Typehash.BURN,
-                        tokenId,
-                        _sigNonces(signature.signer),
-                        signature.deadline
-                    )
-                )
+                keccak256(abi.encode(Typehash.BURN, tokenId, _sigNonces(signature.signer), signature.deadline))
             ),
             signature
         );
@@ -397,13 +385,7 @@ library MetaTxLib {
         _validateRecoveredAddress(
             _calculateDigest(
                 keccak256(
-                    abi.encode(
-                        Typehash.PERMIT,
-                        spender,
-                        tokenId,
-                        _sigNonces(signature.signer),
-                        signature.deadline
-                    )
+                    abi.encode(Typehash.PERMIT, spender, tokenId, _sigNonces(signature.signer), signature.deadline)
                 )
             ),
             signature
@@ -417,17 +399,13 @@ library MetaTxLib {
     /**
      * @dev Wrapper for ecrecover to reduce code size, used in meta-tx specific functions.
      */
-    function _validateRecoveredAddress(bytes32 digest, Types.EIP712Signature calldata signature)
-        internal
-        view
-    {
+    function _validateRecoveredAddress(bytes32 digest, Types.EIP712Signature calldata signature) internal view {
         if (signature.deadline < block.timestamp) revert Errors.SignatureExpired();
         // If the expected address is a contract, check the signature there.
         if (signature.signer.code.length != 0) {
             bytes memory concatenatedSig = abi.encodePacked(signature.r, signature.s, signature.v);
             if (
-                IEIP1271Implementer(signature.signer).isValidSignature(digest, concatenatedSig) !=
-                EIP1271_MAGIC_VALUE
+                IEIP1271Implementer(signature.signer).isValidSignature(digest, concatenatedSig) != EIP1271_MAGIC_VALUE
             ) {
                 revert Errors.SignatureInvalid();
             }
@@ -468,9 +446,7 @@ library MetaTxLib {
     function _calculateDigest(bytes32 hashedMessage) private view returns (bytes32) {
         bytes32 digest;
         unchecked {
-            digest = keccak256(
-                abi.encodePacked('\x19\x01', _calculateDomainSeparator(), hashedMessage)
-            );
+            digest = keccak256(abi.encodePacked('\x19\x01', _calculateDomainSeparator(), hashedMessage));
         }
         return digest;
     }

@@ -29,13 +29,7 @@ contract UnfollowTest is BaseTest {
         nonFollowingProfileId = _createProfile(nonFollowingProfileOwner);
         testUnfollowerProfileOwner = vm.addr(testUnfollowerProfileOwnerPk);
         testUnfollowerProfileId = _createProfile(testUnfollowerProfileOwner);
-        followTokenId = _follow(
-            testUnfollowerProfileOwner,
-            testUnfollowerProfileId,
-            targetProfileId,
-            0,
-            ''
-        )[0];
+        followTokenId = _follow(testUnfollowerProfileOwner, testUnfollowerProfileId, targetProfileId, 0, '')[0];
 
         targetFollowNFT = hub.getFollowNFT(targetProfileId);
         followNFT = FollowNFT(targetFollowNFT);
@@ -71,9 +65,7 @@ contract UnfollowTest is BaseTest {
         });
     }
 
-    function testCannotUnfollowIfSomeOfTheProfilesToUnfollowDoNotExist(uint256 unexistentProfileId)
-        public
-    {
+    function testCannotUnfollowIfSomeOfTheProfilesToUnfollowDoNotExist(uint256 unexistentProfileId) public {
         vm.assume(!hub.exists(unexistentProfileId));
 
         assertTrue(hub.isFollowing(testUnfollowerProfileId, targetProfileId));
@@ -146,10 +138,7 @@ contract UnfollowTest is BaseTest {
 
         vm.expectCall(
             targetFollowNFT,
-            abi.encodeCall(
-                followNFT.unfollow,
-                (testUnfollowerProfileId, testUnfollowerProfileOwner)
-            )
+            abi.encodeCall(followNFT.unfollow, (testUnfollowerProfileId, testUnfollowerProfileOwner))
         );
 
         _unfollow({
@@ -161,14 +150,8 @@ contract UnfollowTest is BaseTest {
         assertFalse(hub.isFollowing(testUnfollowerProfileId, targetProfileId));
     }
 
-    function testUnfollowAsUnfollowerApprovedDelegatedExecutor(uint256 approvedDelegatedExecutorPk)
-        public
-    {
-        approvedDelegatedExecutorPk = bound(
-            approvedDelegatedExecutorPk,
-            1,
-            ISSECP256K1_CURVE_ORDER - 1
-        );
+    function testUnfollowAsUnfollowerApprovedDelegatedExecutor(uint256 approvedDelegatedExecutorPk) public {
+        approvedDelegatedExecutorPk = bound(approvedDelegatedExecutorPk, 1, ISSECP256K1_CURVE_ORDER - 1);
         address approvedDelegatedExecutor = vm.addr(approvedDelegatedExecutorPk);
         vm.assume(approvedDelegatedExecutor != address(0));
         vm.assume(approvedDelegatedExecutor != testUnfollowerProfileOwner);

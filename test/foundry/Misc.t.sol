@@ -65,12 +65,7 @@ contract MiscTest is BaseTest {
     function testSetProfileImageURIWithSigInvalidSignerFails() public {
         uint256 nonce = 0;
         uint256 deadline = type(uint256).max;
-        bytes32 digest = _getSetProfileImageURITypedDataHash(
-            newProfileId,
-            MOCK_URI,
-            nonce,
-            deadline
-        );
+        bytes32 digest = _getSetProfileImageURITypedDataHash(newProfileId, MOCK_URI, nonce, deadline);
 
         vm.expectRevert(Errors.SignatureInvalid.selector);
         hub.setProfileImageURIWithSig({
@@ -83,12 +78,7 @@ contract MiscTest is BaseTest {
     function testSetProfileImageURIWithSigNotExecutorFails() public {
         uint256 nonce = 0;
         uint256 deadline = type(uint256).max;
-        bytes32 digest = _getSetProfileImageURITypedDataHash(
-            newProfileId,
-            MOCK_URI,
-            nonce,
-            deadline
-        );
+        bytes32 digest = _getSetProfileImageURITypedDataHash(newProfileId, MOCK_URI, nonce, deadline);
 
         vm.expectRevert(Errors.ExecutorInvalid.selector);
         hub.setProfileImageURIWithSig({

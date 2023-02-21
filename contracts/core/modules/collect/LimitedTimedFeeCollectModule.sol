@@ -50,8 +50,7 @@ contract LimitedTimedFeeCollectModule is FeeModuleBase, FollowValidationModuleBa
 
     uint24 internal constant ONE_DAY = 24 hours;
 
-    mapping(uint256 => mapping(uint256 => ProfilePublicationData))
-        internal _dataByPublicationByProfile;
+    mapping(uint256 => mapping(uint256 => ProfilePublicationData)) internal _dataByPublicationByProfile;
 
     constructor(address hub, address moduleGlobals) FeeModuleBase(moduleGlobals) ModuleBase(hub) {}
 
@@ -103,16 +102,7 @@ contract LimitedTimedFeeCollectModule is FeeModuleBase, FollowValidationModuleBa
             _dataByPublicationByProfile[profileId][pubId].followerOnly = followerOnly;
             _dataByPublicationByProfile[profileId][pubId].endTimestamp = endTimestamp;
 
-            return
-                abi.encode(
-                    collectLimit,
-                    amount,
-                    currency,
-                    recipient,
-                    referralFee,
-                    followerOnly,
-                    endTimestamp
-                );
+            return abi.encode(collectLimit, amount, currency, recipient, referralFee, followerOnly, endTimestamp);
         }
     }
 
@@ -134,32 +124,21 @@ contract LimitedTimedFeeCollectModule is FeeModuleBase, FollowValidationModuleBa
         Types.PublicationType,
         bytes calldata data
     ) external override onlyHub {
-        if (
-            _dataByPublicationByProfile[publicationCollectedProfileId][publicationCollectedId]
-                .followerOnly
-        ) _checkFollowValidity(publicationCollectedProfileId, collectorProfileOwner);
-        uint256 endTimestamp = _dataByPublicationByProfile[publicationCollectedProfileId][
-            publicationCollectedId
-        ].endTimestamp;
+        if (_dataByPublicationByProfile[publicationCollectedProfileId][publicationCollectedId].followerOnly)
+            _checkFollowValidity(publicationCollectedProfileId, collectorProfileOwner);
+        uint256 endTimestamp = _dataByPublicationByProfile[publicationCollectedProfileId][publicationCollectedId]
+            .endTimestamp;
         if (block.timestamp > endTimestamp) revert Errors.CollectExpired();
 
         if (
-            _dataByPublicationByProfile[publicationCollectedProfileId][publicationCollectedId]
-                .currentCollects >=
-            _dataByPublicationByProfile[publicationCollectedProfileId][publicationCollectedId]
-                .collectLimit
+            _dataByPublicationByProfile[publicationCollectedProfileId][publicationCollectedId].currentCollects >=
+            _dataByPublicationByProfile[publicationCollectedProfileId][publicationCollectedId].collectLimit
         ) {
             revert Errors.MintLimitExceeded();
         } else {
-            ++_dataByPublicationByProfile[publicationCollectedProfileId][publicationCollectedId]
-                .currentCollects;
+            ++_dataByPublicationByProfile[publicationCollectedProfileId][publicationCollectedId].currentCollects;
             if (referrerProfileId == publicationCollectedProfileId) {
-                _processCollect(
-                    executor,
-                    publicationCollectedProfileId,
-                    publicationCollectedId,
-                    data
-                );
+                _processCollect(executor, publicationCollectedProfileId, publicationCollectedId, data);
             } else {
                 _processCollectWithReferral(
                     referrerProfileId,
@@ -205,8 +184,7 @@ contract LimitedTimedFeeCollectModule is FeeModuleBase, FollowValidationModuleBa
         uint256 adjustedAmount = amount - treasuryAmount;
 
         IERC20(currency).safeTransferFrom(executor, recipient, adjustedAmount);
-        if (treasuryAmount > 0)
-            IERC20(currency).safeTransferFrom(executor, treasury, treasuryAmount);
+        if (treasuryAmount > 0) IERC20(currency).safeTransferFrom(executor, treasury, treasuryAmount);
     }
 
     function _processCollectWithReferral(
@@ -246,7 +224,6 @@ contract LimitedTimedFeeCollectModule is FeeModuleBase, FollowValidationModuleBa
         address recipient = _dataByPublicationByProfile[profileId][pubId].recipient;
 
         IERC20(currency).safeTransferFrom(executor, recipient, adjustedAmount);
-        if (treasuryAmount > 0)
-            IERC20(currency).safeTransferFrom(executor, treasury, treasuryAmount);
+        if (treasuryAmount > 0) IERC20(currency).safeTransferFrom(executor, treasury, treasuryAmount);
     }
 }

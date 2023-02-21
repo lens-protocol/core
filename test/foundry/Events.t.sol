@@ -22,10 +22,7 @@ contract EventTest is BaseTest {
         hub.whitelistFollowModule(mockFollowModule, true);
     }
 
-    function predictContractAddress(address user, uint256 distanceFromCurrentNonce)
-        internal
-        returns (address)
-    {
+    function predictContractAddress(address user, uint256 distanceFromCurrentNonce) internal returns (address) {
         return computeCreateAddress(user, vm.getNonce(user) + distanceFromCurrentNonce);
     }
 
@@ -47,10 +44,7 @@ contract EventTest is BaseTest {
         collectNFT = new CollectNFT(hubProxyAddr);
 
         // Deploy and initialize proxy.
-        bytes memory initData = abi.encodeCall(
-            hubImpl.initialize,
-            (expectedNFTName, expectedNFTSymbol, governance)
-        );
+        bytes memory initData = abi.encodeCall(hubImpl.initialize, (expectedNFTName, expectedNFTSymbol, governance));
 
         // Event tests
         // Upgraded
@@ -63,12 +57,7 @@ contract EventTest is BaseTest {
 
         // StateSet
         vm.expectEmit(true, true, true, true, hubProxyAddr);
-        emit Events.StateSet(
-            deployer,
-            Types.ProtocolState.Unpaused,
-            Types.ProtocolState.Paused,
-            block.timestamp
-        );
+        emit Events.StateSet(deployer, Types.ProtocolState.Unpaused, Types.ProtocolState.Paused, block.timestamp);
 
         // GovernanceSet
         vm.expectEmit(true, true, true, true, hubProxyAddr);
@@ -101,12 +90,7 @@ contract EventTest is BaseTest {
     function testProtocolStateChangeByGovEmitsExpectedEvents() public {
         vm.prank(governance);
         vm.expectEmit(true, true, true, true, address(hub));
-        emit Events.StateSet(
-            governance,
-            Types.ProtocolState.Unpaused,
-            Types.ProtocolState.Paused,
-            block.timestamp
-        );
+        emit Events.StateSet(governance, Types.ProtocolState.Unpaused, Types.ProtocolState.Paused, block.timestamp);
         hub.setState(Types.ProtocolState.Paused);
 
         vm.prank(governance);
@@ -240,12 +224,7 @@ contract EventTest is BaseTest {
         hub.createProfile(mockCreateProfileData);
         vm.prank(profileOwnerTwo);
         vm.expectEmit(true, true, true, true, address(hub));
-        emit Events.FollowModuleSet(
-            expectedProfileId,
-            address(mockFollowModule),
-            '',
-            block.timestamp
-        );
+        emit Events.FollowModuleSet(expectedProfileId, address(mockFollowModule), '', block.timestamp);
         hub.setFollowModule(expectedProfileId, address(mockFollowModule), abi.encode(1));
     }
 
@@ -321,12 +300,7 @@ contract EventTest is BaseTest {
 
         // CollectNFTDeployed
         vm.expectEmit(true, true, true, true, address(hub));
-        emit Events.CollectNFTDeployed(
-            newProfileId,
-            expectedPubId,
-            expectedCollectNFTAddress,
-            block.timestamp
-        );
+        emit Events.CollectNFTDeployed(newProfileId, expectedPubId, expectedCollectNFTAddress, block.timestamp);
 
         // CollectNFTTransferred
         vm.expectEmit(true, true, true, true, address(hub));
@@ -392,12 +366,7 @@ contract EventTest is BaseTest {
 
         // CollectNFTDeployed
         vm.expectEmit(true, true, true, true, address(hub));
-        emit Events.CollectNFTDeployed(
-            newProfileId,
-            postId,
-            expectedCollectNFTAddress,
-            block.timestamp
-        );
+        emit Events.CollectNFTDeployed(newProfileId, postId, expectedCollectNFTAddress, block.timestamp);
 
         // CollectNFTTransferred
         vm.expectEmit(true, true, true, true, address(hub));

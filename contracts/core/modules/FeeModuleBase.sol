@@ -38,7 +38,6 @@ abstract contract FeeModuleBase {
         uint256 amount
     ) internal pure {
         (address decodedCurrency, uint256 decodedAmount) = abi.decode(data, (address, uint256));
-        if (decodedAmount != amount || decodedCurrency != currency)
-            revert Errors.ModuleDataMismatch();
+        if (decodedAmount != amount || decodedCurrency != currency) revert Errors.ModuleDataMismatch();
     }
 }

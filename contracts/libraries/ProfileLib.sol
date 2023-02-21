@@ -26,8 +26,7 @@ library ProfileLib {
     function createProfile(Types.CreateProfileData calldata vars, uint256 profileId) external {
         _validateProfileCreatorWhitelisted();
 
-        if (bytes(vars.imageURI).length > MAX_PROFILE_IMAGE_URI_LENGTH)
-            revert Errors.ProfileImageURILengthInvalid();
+        if (bytes(vars.imageURI).length > MAX_PROFILE_IMAGE_URI_LENGTH) revert Errors.ProfileImageURILengthInvalid();
 
         _setProfileString(profileId, PROFILE_IMAGE_URI_OFFSET, vars.imageURI);
         _setProfileString(profileId, PROFILE_FOLLOW_NFT_URI_OFFSET, vars.followNFTURI);
@@ -208,18 +207,8 @@ library ProfileLib {
         // Initialize the follow module if it is non-zero.
         bytes memory followModuleReturnData;
         if (followModule != address(0))
-            followModuleReturnData = _initFollowModule(
-                profileId,
-                executor,
-                followModule,
-                followModuleInitData
-            );
-        emit Events.FollowModuleSet(
-            profileId,
-            followModule,
-            followModuleReturnData,
-            block.timestamp
-        );
+            followModuleReturnData = _initFollowModule(profileId, executor, followModule, followModuleInitData);
+        emit Events.FollowModuleSet(profileId, followModule, followModuleReturnData, block.timestamp);
     }
 
     function _initFollowModule(
@@ -229,17 +218,11 @@ library ProfileLib {
         bytes memory followModuleInitData
     ) private returns (bytes memory) {
         _validateFollowModuleWhitelisted(followModule);
-        return
-            IFollowModule(followModule).initializeFollowModule(
-                profileId,
-                executor,
-                followModuleInitData
-            );
+        return IFollowModule(followModule).initializeFollowModule(profileId, executor, followModuleInitData);
     }
 
     function _setProfileImageURI(uint256 profileId, string calldata imageURI) private {
-        if (bytes(imageURI).length > MAX_PROFILE_IMAGE_URI_LENGTH)
-            revert Errors.ProfileImageURILengthInvalid();
+        if (bytes(imageURI).length > MAX_PROFILE_IMAGE_URI_LENGTH) revert Errors.ProfileImageURILengthInvalid();
         _setProfileString(profileId, PROFILE_IMAGE_URI_OFFSET, imageURI);
         emit Events.ProfileImageURISet(profileId, imageURI, block.timestamp);
     }

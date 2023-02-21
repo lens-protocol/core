@@ -107,11 +107,7 @@ contract TransparentUpgradeableProxy is ERC1967Proxy {
      *
      * NOTE: Only the admin can call this function. See {ProxyAdmin-upgradeAndCall}.
      */
-    function upgradeToAndCall(address newImplementation, bytes calldata data)
-        external
-        payable
-        ifAdmin
-    {
+    function upgradeToAndCall(address newImplementation, bytes calldata data) external payable ifAdmin {
         _upgradeToAndCall(newImplementation, data, true);
     }
 
@@ -126,10 +122,7 @@ contract TransparentUpgradeableProxy is ERC1967Proxy {
      * @dev Makes sure the admin cannot access the fallback function. See {Proxy-_beforeFallback}.
      */
     function _beforeFallback() internal virtual override {
-        require(
-            msg.sender != _getAdmin(),
-            'TransparentUpgradeableProxy: admin cannot fallback to proxy target'
-        );
+        require(msg.sender != _getAdmin(), 'TransparentUpgradeableProxy: admin cannot fallback to proxy target');
         super._beforeFallback();
     }
 }

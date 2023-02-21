@@ -13,13 +13,7 @@ contract BaseTest is TestSetup {
         uint256 deadline
     ) internal view returns (bytes32) {
         bytes32 structHash = keccak256(
-            abi.encode(
-                Typehash.SET_PROFILE_METADATA_URI,
-                profileId,
-                keccak256(bytes(metadataURI)),
-                nonce,
-                deadline
-            )
+            abi.encode(Typehash.SET_PROFILE_METADATA_URI, profileId, keccak256(bytes(metadataURI)), nonce, deadline)
         );
         return _calculateDigest(structHash);
     }
@@ -75,13 +69,7 @@ contract BaseTest is TestSetup {
         uint256 deadline
     ) internal view returns (bytes32) {
         bytes32 structHash = keccak256(
-            abi.encode(
-                Typehash.SET_PROFILE_IMAGE_URI,
-                profileId,
-                keccak256(bytes(imageURI)),
-                nonce,
-                deadline
-            )
+            abi.encode(Typehash.SET_PROFILE_IMAGE_URI, profileId, keccak256(bytes(imageURI)), nonce, deadline)
         );
         return _calculateDigest(structHash);
     }
@@ -93,13 +81,7 @@ contract BaseTest is TestSetup {
         uint256 deadline
     ) internal view returns (bytes32) {
         bytes32 structHash = keccak256(
-            abi.encode(
-                Typehash.SET_FOLLOW_NFT_URI,
-                profileId,
-                keccak256(bytes(followNFTURI)),
-                nonce,
-                deadline
-            )
+            abi.encode(Typehash.SET_FOLLOW_NFT_URI, profileId, keccak256(bytes(followNFTURI)), nonce, deadline)
         );
         return _calculateDigest(structHash);
     }
@@ -355,11 +337,7 @@ contract BaseTest is TestSetup {
         return ret;
     }
 
-    function _toBytesArray(bytes memory b0, bytes memory b1)
-        internal
-        pure
-        returns (bytes[] memory)
-    {
+    function _toBytesArray(bytes memory b0, bytes memory b1) internal pure returns (bytes[] memory) {
         bytes[] memory ret = new bytes[](2);
         ret[0] = b0;
         ret[1] = b1;
@@ -443,31 +421,31 @@ contract BaseTest is TestSetup {
             );
     }
 
-    function _postWithSig(
-        Types.PostParams memory postParams,
-        Types.EIP712Signature memory signature
-    ) internal returns (uint256) {
+    function _postWithSig(Types.PostParams memory postParams, Types.EIP712Signature memory signature)
+        internal
+        returns (uint256)
+    {
         return hub.postWithSig(postParams, signature);
     }
 
-    function _commentWithSig(
-        Types.CommentParams memory commentParams,
-        Types.EIP712Signature memory signature
-    ) internal returns (uint256) {
+    function _commentWithSig(Types.CommentParams memory commentParams, Types.EIP712Signature memory signature)
+        internal
+        returns (uint256)
+    {
         return hub.commentWithSig(commentParams, signature);
     }
 
-    function _mirrorWithSig(
-        Types.MirrorParams memory mirrorParams,
-        Types.EIP712Signature memory signature
-    ) internal returns (uint256) {
+    function _mirrorWithSig(Types.MirrorParams memory mirrorParams, Types.EIP712Signature memory signature)
+        internal
+        returns (uint256)
+    {
         return hub.mirrorWithSig(mirrorParams, signature);
     }
 
-    function _collectWithSig(
-        Types.CollectParams memory collectParams,
-        Types.EIP712Signature memory signature
-    ) internal returns (uint256) {
+    function _collectWithSig(Types.CollectParams memory collectParams, Types.EIP712Signature memory signature)
+        internal
+        returns (uint256)
+    {
         return hub.collectWithSig(collectParams, signature);
     }
 
@@ -615,11 +593,7 @@ contract BaseTest is TestSetup {
         hub.burnWithSig(profileId, signature);
     }
 
-    function _getPub(uint256 profileId, uint256 pubId)
-        internal
-        view
-        returns (Types.PublicationStruct memory)
-    {
+    function _getPub(uint256 profileId, uint256 pubId) internal view returns (Types.PublicationStruct memory) {
         return hub.getPub(profileId, pubId);
     }
 

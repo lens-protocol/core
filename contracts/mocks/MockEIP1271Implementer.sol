@@ -17,12 +17,7 @@ contract MockEIP1271Implementer is IEIP1271Implementer {
         OWNER = msg.sender;
     }
 
-    function isValidSignature(bytes32 _hash, bytes memory _signature)
-        external
-        view
-        override
-        returns (bytes4)
-    {
+    function isValidSignature(bytes32 _hash, bytes memory _signature) external view override returns (bytes4) {
         require(_signature.length == 65, 'Invalid signature length');
         bytes32 r;
         bytes32 s;
@@ -35,12 +30,7 @@ contract MockEIP1271Implementer is IEIP1271Implementer {
         }
 
         // (bytes32 r, bytes32 s, uint8 v) = abi.decode(_signature, (bytes32, bytes32, uint8));
-        address signer = ecrecover(
-            keccak256(abi.encodePacked('\x19Ethereum Signed Message:\n32', _hash)),
-            v,
-            r,
-            s
-        );
+        address signer = ecrecover(keccak256(abi.encodePacked('\x19Ethereum Signed Message:\n32', _hash)), v, r, s);
         require(signer != address(0), 'Invalid recovery');
         return signer == OWNER ? MAGIC_VALUE : bytes4(0xFFFFFFFF);
     }

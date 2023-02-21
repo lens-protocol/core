@@ -102,8 +102,7 @@ contract TestSetup is Test, ForkManagement {
         ///////////////////////////////////////// Start governance actions.
         vm.startPrank(governance);
 
-        if (hub.getState() != Types.ProtocolState.Unpaused)
-            hub.setState(Types.ProtocolState.Unpaused);
+        if (hub.getState() != Types.ProtocolState.Unpaused) hub.setState(Types.ProtocolState.Unpaused);
 
         // Whitelist the test contract as a profile creator
         hub.whitelistProfileCreator(me, true);
@@ -119,9 +118,7 @@ contract TestSetup is Test, ForkManagement {
     }
 
     function loadBaseAddresses(string memory targetEnv) internal virtual {
-        bytes32 PROXY_IMPLEMENTATION_STORAGE_SLOT = bytes32(
-            uint256(keccak256('eip1967.proxy.implementation')) - 1
-        );
+        bytes32 PROXY_IMPLEMENTATION_STORAGE_SLOT = bytes32(uint256(keccak256('eip1967.proxy.implementation')) - 1);
 
         console.log('targetEnv:', targetEnv);
 
@@ -135,17 +132,13 @@ contract TestSetup is Test, ForkManagement {
         address followNFTAddr = hub.getFollowNFTImpl();
         address collectNFTAddr = hub.getCollectNFTImpl();
 
-        address hubImplAddr = address(
-            uint160(uint256(vm.load(hubProxyAddr, PROXY_IMPLEMENTATION_STORAGE_SLOT)))
-        );
+        address hubImplAddr = address(uint160(uint256(vm.load(hubProxyAddr, PROXY_IMPLEMENTATION_STORAGE_SLOT))));
         console.log('Found hubImplAddr:', hubImplAddr);
         hubImpl = LensHub(hubImplAddr);
         followNFT = FollowNFT(followNFTAddr);
         collectNFT = CollectNFT(collectNFTAddr);
         hubAsProxy = TransparentUpgradeableProxy(payable(address(hub)));
-        moduleGlobals = ModuleGlobals(
-            json.readAddress(string(abi.encodePacked('.', targetEnv, '.ModuleGlobals')))
-        );
+        moduleGlobals = ModuleGlobals(json.readAddress(string(abi.encodePacked('.', targetEnv, '.ModuleGlobals'))));
 
         newProfileId = _getNextProfileId();
         console.log('newProfileId:', newProfileId);
@@ -180,10 +173,7 @@ contract TestSetup is Test, ForkManagement {
         collectNFT = new CollectNFT(hubProxyAddr);
 
         // Deploy and initialize proxy.
-        bytes memory initData = abi.encodeCall(
-            hubImpl.initialize,
-            ('Lens Protocol Profiles', 'LPP', governance)
-        );
+        bytes memory initData = abi.encodeCall(hubImpl.initialize, ('Lens Protocol Profiles', 'LPP', governance));
         hubAsProxy = new TransparentUpgradeableProxy(address(hubImpl), deployer, initData);
 
         // Cast proxy to LensHub interface.

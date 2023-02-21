@@ -55,10 +55,7 @@ contract FeeFollowModule is FeeModuleBase, FollowValidatorFollowModuleBase {
         address,
         bytes calldata data
     ) external override onlyHub returns (bytes memory) {
-        (uint256 amount, address currency, address recipient) = abi.decode(
-            data,
-            (uint256, address, address)
-        );
+        (uint256 amount, address currency, address recipient) = abi.decode(data, (uint256, address, address));
         if (!_currencyWhitelisted(currency) || recipient == address(0) || amount == 0)
             revert Errors.InitParamsInvalid();
 
@@ -89,8 +86,7 @@ contract FeeFollowModule is FeeModuleBase, FollowValidatorFollowModuleBase {
         uint256 adjustedAmount = amount - treasuryAmount;
 
         IERC20(currency).safeTransferFrom(executor, recipient, adjustedAmount);
-        if (treasuryAmount > 0)
-            IERC20(currency).safeTransferFrom(executor, treasury, treasuryAmount);
+        if (treasuryAmount > 0) IERC20(currency).safeTransferFrom(executor, treasury, treasuryAmount);
     }
 
     /**

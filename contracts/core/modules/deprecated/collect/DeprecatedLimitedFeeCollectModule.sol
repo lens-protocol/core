@@ -41,15 +41,10 @@ struct ProfilePublicationData {
  *
  * This module works by allowing limited collects for a publication indefinitely.
  */
-contract DeprecatedLimitedFeeCollectModule is
-    FeeModuleBase,
-    FollowValidationModuleBase,
-    IDeprecatedCollectModule
-{
+contract DeprecatedLimitedFeeCollectModule is FeeModuleBase, FollowValidationModuleBase, IDeprecatedCollectModule {
     using SafeERC20 for IERC20;
 
-    mapping(uint256 => mapping(uint256 => ProfilePublicationData))
-        internal _dataByPublicationByProfile;
+    mapping(uint256 => mapping(uint256 => ProfilePublicationData)) internal _dataByPublicationByProfile;
 
     constructor(address hub, address moduleGlobals) FeeModuleBase(moduleGlobals) ModuleBase(hub) {}
 
@@ -112,8 +107,7 @@ contract DeprecatedLimitedFeeCollectModule is
         uint256 pubId,
         bytes calldata data
     ) external override onlyHub {
-        if (_dataByPublicationByProfile[profileId][pubId].followerOnly)
-            _checkFollowValidity(profileId, collector);
+        if (_dataByPublicationByProfile[profileId][pubId].followerOnly) _checkFollowValidity(profileId, collector);
         if (
             _dataByPublicationByProfile[profileId][pubId].currentCollects >=
             _dataByPublicationByProfile[profileId][pubId].collectLimit
@@ -162,8 +156,7 @@ contract DeprecatedLimitedFeeCollectModule is
         uint256 adjustedAmount = amount - treasuryAmount;
 
         IERC20(currency).safeTransferFrom(collector, recipient, adjustedAmount);
-        if (treasuryAmount > 0)
-            IERC20(currency).safeTransferFrom(collector, treasury, treasuryAmount);
+        if (treasuryAmount > 0) IERC20(currency).safeTransferFrom(collector, treasury, treasuryAmount);
     }
 
     function _processCollectWithReferral(
@@ -203,7 +196,6 @@ contract DeprecatedLimitedFeeCollectModule is
         address recipient = _dataByPublicationByProfile[profileId][pubId].recipient;
 
         IERC20(currency).safeTransferFrom(collector, recipient, adjustedAmount);
-        if (treasuryAmount > 0)
-            IERC20(currency).safeTransferFrom(collector, treasury, treasuryAmount);
+        if (treasuryAmount > 0) IERC20(currency).safeTransferFrom(collector, treasury, treasuryAmount);
     }
 }

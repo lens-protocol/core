@@ -20,13 +20,7 @@ contract DeprecatedRevertFollowModule is DeprecatedFollowValidatorFollowModuleBa
      *
      * @return bytes Empty bytes.
      */
-    function initializeFollowModule(uint256, bytes calldata)
-        external
-        view
-        override
-        onlyHub
-        returns (bytes memory)
-    {
+    function initializeFollowModule(uint256, bytes calldata) external view override onlyHub returns (bytes memory) {
         return new bytes(0);
     }
 

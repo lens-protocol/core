@@ -26,10 +26,7 @@ contract CollectingHelpers is TestSetup {
 
     function _checkCollectNFTAfter(uint256 nftId, uint256 expectedNftId) internal {
         _collectNftAfter = CollectNFT(
-            hub.getCollectNFT(
-                mockCollectParams.publicationCollectedProfileId,
-                mockCollectParams.publicationCollectedId
-            )
+            hub.getCollectNFT(mockCollectParams.publicationCollectedProfileId, mockCollectParams.publicationCollectedId)
         );
 
         (uint256 profileId, uint256 pubId) = _collectNftAfter.getSourcePublicationPointer();

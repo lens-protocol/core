@@ -74,17 +74,11 @@ contract SetBlockStatusTest is BaseTest {
     function testCannotSetBlockStatusIfNotOwnerOrApprovedDelegatedExecutorOfSetterProfile(
         uint256 nonOwnerNorDelegatedExecutorPk
     ) public {
-        nonOwnerNorDelegatedExecutorPk = bound(
-            nonOwnerNorDelegatedExecutorPk,
-            1,
-            ISSECP256K1_CURVE_ORDER - 1
-        );
+        nonOwnerNorDelegatedExecutorPk = bound(nonOwnerNorDelegatedExecutorPk, 1, ISSECP256K1_CURVE_ORDER - 1);
         address nonOwnerNorDelegatedExecutor = vm.addr(nonOwnerNorDelegatedExecutorPk);
         vm.assume(nonOwnerNorDelegatedExecutor != address(0));
         vm.assume(nonOwnerNorDelegatedExecutor != statusSetterProfileOwner);
-        vm.assume(
-            !hub.isDelegatedExecutorApproved(statusSetterProfileId, nonOwnerNorDelegatedExecutor)
-        );
+        vm.assume(!hub.isDelegatedExecutorApproved(statusSetterProfileId, nonOwnerNorDelegatedExecutor));
 
         vm.expectRevert(Errors.ExecutorInvalid.selector);
 
@@ -111,10 +105,7 @@ contract SetBlockStatusTest is BaseTest {
         _setBlockStatus({
             pk: statusSetterProfileOwnerPk,
             byProfileId: statusSetterProfileId,
-            idsOfProfilesToSetBlockStatus: _toUint256Array(
-                blockeeProfileId,
-                anotherBlockeeProfileId
-            ),
+            idsOfProfilesToSetBlockStatus: _toUint256Array(blockeeProfileId, anotherBlockeeProfileId),
             blockStatus: _toBoolArray(true)
         });
     }
@@ -158,18 +149,12 @@ contract SetBlockStatusTest is BaseTest {
         emit Events.Blocked(statusSetterProfileId, anotherBlockeeProfileId, block.timestamp);
 
         vm.expectCall(followNFTAddress, abi.encodeCall(followNFT.processBlock, (blockeeProfileId)));
-        vm.expectCall(
-            followNFTAddress,
-            abi.encodeCall(followNFT.processBlock, (anotherBlockeeProfileId))
-        );
+        vm.expectCall(followNFTAddress, abi.encodeCall(followNFT.processBlock, (anotherBlockeeProfileId)));
 
         _setBlockStatus({
             pk: statusSetterProfileOwnerPk,
             byProfileId: statusSetterProfileId,
-            idsOfProfilesToSetBlockStatus: _toUint256Array(
-                blockeeProfileId,
-                anotherBlockeeProfileId
-            ),
+            idsOfProfilesToSetBlockStatus: _toUint256Array(blockeeProfileId, anotherBlockeeProfileId),
             blockStatus: _toBoolArray(true, true)
         });
 
@@ -189,10 +174,7 @@ contract SetBlockStatusTest is BaseTest {
         _setBlockStatus({
             pk: statusSetterProfileOwnerPk,
             byProfileId: statusSetterProfileId,
-            idsOfProfilesToSetBlockStatus: _toUint256Array(
-                blockeeProfileId,
-                anotherBlockeeProfileId
-            ),
+            idsOfProfilesToSetBlockStatus: _toUint256Array(blockeeProfileId, anotherBlockeeProfileId),
             blockStatus: _toBoolArray(true, false)
         });
 

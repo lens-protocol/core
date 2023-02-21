@@ -73,8 +73,7 @@ contract FollowNFT is HubRestricted, LensNFTBase, ERC2981CollectionRoyalties, IF
                 });
         }
 
-        uint256 currentFollowerProfileId = _followDataByFollowTokenId[followTokenId]
-            .followerProfileId;
+        uint256 currentFollowerProfileId = _followDataByFollowTokenId[followTokenId].followerProfileId;
         if (currentFollowerProfileId != 0) {
             // Provided follow token is unwrapped.
             // It has a follower profile set already, it can only be used to follow if that profile was burnt.
@@ -88,11 +87,7 @@ contract FollowNFT is HubRestricted, LensNFTBase, ERC2981CollectionRoyalties, IF
 
         // Provided follow token does not exist anymore, it can only be used if profile attempting to follow is
         // allowed to recover it.
-        return
-            _followByRecoveringToken({
-                followerProfileId: followerProfileId,
-                followTokenId: followTokenId
-            });
+        return _followByRecoveringToken({followerProfileId: followerProfileId, followTokenId: followTokenId});
     }
 
     /// @inheritdoc IFollowNFT
@@ -106,8 +101,7 @@ contract FollowNFT is HubRestricted, LensNFTBase, ERC2981CollectionRoyalties, IF
             // Follow token is unwrapped.
             // Unfollowing and allowing recovery.
             _unfollow({unfollower: unfollowerProfileId, followTokenId: followTokenId});
-            _followDataByFollowTokenId[followTokenId]
-                .profileIdAllowedToRecover = unfollowerProfileId;
+            _followDataByFollowTokenId[followTokenId].profileIdAllowedToRecover = unfollowerProfileId;
         } else {
             // Follow token is wrapped.
             address unfollowerProfileOwner = IERC721(HUB).ownerOf(unfollowerProfileId);
@@ -157,8 +151,7 @@ contract FollowNFT is HubRestricted, LensNFTBase, ERC2981CollectionRoyalties, IF
         uint256 followerProfileId = _followDataByFollowTokenId[followTokenId].followerProfileId;
         address wrappedTokenReceiver;
         if (followerProfileId == 0) {
-            uint256 profileIdAllowedToRecover = _followDataByFollowTokenId[followTokenId]
-                .profileIdAllowedToRecover;
+            uint256 profileIdAllowedToRecover = _followDataByFollowTokenId[followTokenId].profileIdAllowedToRecover;
             if (profileIdAllowedToRecover == 0) {
                 revert FollowTokenDoesNotExist();
             }
@@ -210,12 +203,7 @@ contract FollowNFT is HubRestricted, LensNFTBase, ERC2981CollectionRoyalties, IF
     }
 
     /// @inheritdoc IFollowNFT
-    function getOriginalFollowTimestamp(uint256 followTokenId)
-        external
-        view
-        override
-        returns (uint256)
-    {
+    function getOriginalFollowTimestamp(uint256 followTokenId) external view override returns (uint256) {
         return _followDataByFollowTokenId[followTokenId].originalFollowTimestamp;
     }
 
@@ -225,22 +213,12 @@ contract FollowNFT is HubRestricted, LensNFTBase, ERC2981CollectionRoyalties, IF
     }
 
     /// @inheritdoc IFollowNFT
-    function getProfileIdAllowedToRecover(uint256 followTokenId)
-        external
-        view
-        override
-        returns (uint256)
-    {
+    function getProfileIdAllowedToRecover(uint256 followTokenId) external view override returns (uint256) {
         return _followDataByFollowTokenId[followTokenId].profileIdAllowedToRecover;
     }
 
     /// @inheritdoc IFollowNFT
-    function getFollowData(uint256 followTokenId)
-        external
-        view
-        override
-        returns (FollowData memory)
-    {
+    function getFollowData(uint256 followTokenId) external view override returns (FollowData memory) {
         return _followDataByFollowTokenId[followTokenId];
     }
 
@@ -249,10 +227,7 @@ contract FollowNFT is HubRestricted, LensNFTBase, ERC2981CollectionRoyalties, IF
         return _followApprovalByFollowTokenId[followTokenId];
     }
 
-    function burnWithSig(uint256 followTokenId, Types.EIP712Signature calldata signature)
-        public
-        override
-    {
+    function burnWithSig(uint256 followTokenId, Types.EIP712Signature calldata signature) public override {
         _unfollowIfHasFollower(followTokenId);
         super.burnWithSig(followTokenId, signature);
     }
@@ -352,20 +327,11 @@ contract FollowNFT is HubRestricted, LensNFTBase, ERC2981CollectionRoyalties, IF
         return followTokenId;
     }
 
-    function _followByRecoveringToken(uint256 followerProfileId, uint256 followTokenId)
-        internal
-        returns (uint256)
-    {
-        if (
-            _followDataByFollowTokenId[followTokenId].profileIdAllowedToRecover != followerProfileId
-        ) {
+    function _followByRecoveringToken(uint256 followerProfileId, uint256 followTokenId) internal returns (uint256) {
+        if (_followDataByFollowTokenId[followTokenId].profileIdAllowedToRecover != followerProfileId) {
             revert FollowTokenDoesNotExist();
         }
-        _baseFollow({
-            followerProfileId: followerProfileId,
-            followTokenId: followTokenId,
-            isOriginalFollow: false
-        });
+        _baseFollow({followerProfileId: followerProfileId, followTokenId: followTokenId, isOriginalFollow: false});
         return followTokenId;
     }
 
@@ -380,11 +346,7 @@ contract FollowNFT is HubRestricted, LensNFTBase, ERC2981CollectionRoyalties, IF
             ILensHub(HUB).emitUnfollowedEvent(currentFollowerProfileId, _followedProfileId);
         }
         // Perform the follow, setting new follower.
-        _baseFollow({
-            followerProfileId: newFollowerProfileId,
-            followTokenId: followTokenId,
-            isOriginalFollow: false
-        });
+        _baseFollow({followerProfileId: newFollowerProfileId, followTokenId: followTokenId, isOriginalFollow: false});
     }
 
     function _baseFollow(
@@ -397,9 +359,7 @@ contract FollowNFT is HubRestricted, LensNFTBase, ERC2981CollectionRoyalties, IF
         _followDataByFollowTokenId[followTokenId].followTimestamp = uint48(block.timestamp);
         delete _followDataByFollowTokenId[followTokenId].profileIdAllowedToRecover;
         if (isOriginalFollow) {
-            _followDataByFollowTokenId[followTokenId].originalFollowTimestamp = uint48(
-                block.timestamp
-            );
+            _followDataByFollowTokenId[followTokenId].originalFollowTimestamp = uint48(block.timestamp);
         }
     }
 
@@ -459,9 +419,7 @@ contract FollowNFT is HubRestricted, LensNFTBase, ERC2981CollectionRoyalties, IF
     }
 
     function _followTokenExists(uint256 followTokenId) internal view returns (bool) {
-        return
-            _followDataByFollowTokenId[followTokenId].followerProfileId != 0 ||
-            _isFollowTokenWrapped(followTokenId);
+        return _followDataByFollowTokenId[followTokenId].followerProfileId != 0 || _isFollowTokenWrapped(followTokenId);
     }
 
     function _getRoyaltiesInBasisPointsSlot() internal pure override returns (uint256) {

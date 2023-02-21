@@ -17,10 +17,7 @@ interface IDeprecatedFollowModule {
      *
      * @return bytes The encoded data to emit in the hub.
      */
-    function initializeFollowModule(
-        uint256 profileId,
-        bytes calldata data
-    ) external returns (bytes memory);
+    function initializeFollowModule(uint256 profileId, bytes calldata data) external returns (bytes memory);
 
     /**
      * @notice Processes a given follow, this can only be called from the LensHub contract.

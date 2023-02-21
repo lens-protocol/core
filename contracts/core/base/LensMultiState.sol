@@ -30,14 +30,8 @@ abstract contract LensMultiState is ILensMultiState {
         _;
     }
 
-    modifier onlyProfileOwnerOrDelegatedExecutor(
-        address expectedOwnerOrDelegatedExecutor,
-        uint256 profileId
-    ) {
-        GeneralHelpers.validateAddressIsProfileOwnerOrDelegatedExecutor(
-            expectedOwnerOrDelegatedExecutor,
-            profileId
-        );
+    modifier onlyProfileOwnerOrDelegatedExecutor(address expectedOwnerOrDelegatedExecutor, uint256 profileId) {
+        GeneralHelpers.validateAddressIsProfileOwnerOrDelegatedExecutor(expectedOwnerOrDelegatedExecutor, profileId);
         _;
     }
 

@@ -65,11 +65,7 @@ abstract contract LensNFTBase is ERC721Enumerable, ILensNFTBase {
     }
 
     /// @inheritdoc ILensNFTBase
-    function burnWithSig(uint256 tokenId, Types.EIP712Signature calldata signature)
-        public
-        virtual
-        override
-    {
+    function burnWithSig(uint256 tokenId, Types.EIP712Signature calldata signature) public virtual override {
         if (_isApprovedOrOwner(signature.signer, tokenId)) {
             revert Errors.NotOwnerOrApproved();
         }

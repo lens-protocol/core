@@ -62,11 +62,7 @@ contract ModuleGlobalsTest is BaseTest {
 
         address governanceAfter = moduleGlobals.getGovernance();
 
-        assertEq(
-            governanceAfter,
-            newGovernance,
-            "ModuleGlobals Governance didn't change to newGovernance"
-        );
+        assertEq(governanceAfter, newGovernance, "ModuleGlobals Governance didn't change to newGovernance");
         assertFalse(governanceBefore == governanceAfter, "ModuleGlobals Governance didn't change");
     }
 
@@ -93,44 +89,25 @@ contract ModuleGlobalsTest is BaseTest {
 
         uint16 treasuryFeeAfter = moduleGlobals.getTreasuryFee();
 
-        assertEq(
-            treasuryFeeAfter,
-            newTreasuryFee,
-            "ModuleGlobals TreasuryFee didn't change to newTreasuryFee"
-        );
-        assertFalse(
-            treasuryFeeBefore == treasuryFeeAfter,
-            "ModuleGlobals TreasuryFee didn't change"
-        );
+        assertEq(treasuryFeeAfter, newTreasuryFee, "ModuleGlobals TreasuryFee didn't change to newTreasuryFee");
+        assertFalse(treasuryFeeBefore == treasuryFeeAfter, "ModuleGlobals TreasuryFee didn't change");
     }
 
     function testGetGovernance() public {
         vm.prank(governance);
         moduleGlobals.setGovernance(address(42));
-        assertEq(
-            moduleGlobals.getGovernance(),
-            address(42),
-            'ModuleGlobals Governance does not match set value'
-        );
+        assertEq(moduleGlobals.getGovernance(), address(42), 'ModuleGlobals Governance does not match set value');
     }
 
     function testGetTreasury() public {
         vm.prank(governance);
         moduleGlobals.setTreasury(address(42));
-        assertEq(
-            moduleGlobals.getTreasury(),
-            address(42),
-            'ModuleGlobals Treasury does not match set value'
-        );
+        assertEq(moduleGlobals.getTreasury(), address(42), 'ModuleGlobals Treasury does not match set value');
     }
 
     function testGetTreasuryFee() public {
         vm.prank(governance);
         moduleGlobals.setTreasuryFee(42);
-        assertEq(
-            moduleGlobals.getTreasuryFee(),
-            42,
-            'ModuleGlobals TreasuryFee does not match set value'
-        );
+        assertEq(moduleGlobals.getTreasuryFee(), 42, 'ModuleGlobals TreasuryFee does not match set value');
     }
 }

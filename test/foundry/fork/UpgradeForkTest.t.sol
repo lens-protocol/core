@@ -103,9 +103,7 @@ contract UpgradeForkTest is BaseTest {
         bytes memory encodedProfile = abi.encode(profileStruct);
 
         // Upgrade the hub.
-        TransparentUpgradeableProxy oldHubAsProxy = TransparentUpgradeableProxy(
-            payable(hubProxyAddr)
-        );
+        TransparentUpgradeableProxy oldHubAsProxy = TransparentUpgradeableProxy(payable(hubProxyAddr));
         vm.prank(proxyAdmin);
         oldHubAsProxy.upgradeTo(address(hubImpl));
 
@@ -144,9 +142,7 @@ contract UpgradeForkTest is BaseTest {
             profileId = retProfileId;
             console2.log('Profile created with modern follow module.');
         } catch {
-            console2.log(
-                'Profile creation with modern follow module failed. Attempting with deprecated module.'
-            );
+            console2.log('Profile creation with modern follow module failed. Attempting with deprecated module.');
 
             address mockDeprecatedFollowModule = address(new MockDeprecatedFollowModule());
 
@@ -200,9 +196,7 @@ contract UpgradeForkTest is BaseTest {
         mockPostParams.referenceModule = mockReferenceModuleAddr;
 
         try hub.post(mockPostParams) returns (uint256 retPubId) {
-            console2.log(
-                'Post published with modern collect and reference module, continuing with modern modules.'
-            );
+            console2.log('Post published with modern collect and reference module, continuing with modern modules.');
             uint256 postId = retPubId;
             assertEq(postId, 1);
 
@@ -245,9 +239,7 @@ contract UpgradeForkTest is BaseTest {
             assertEq(pub.collectModule, address(0));
             assertEq(pub.collectNFT, address(0));
         } catch {
-            console2.log(
-                'Post with modern collect and reference module failed, Attempting with deprecated modules'
-            );
+            console2.log('Post with modern collect and reference module failed, Attempting with deprecated modules');
 
             address mockDeprecatedCollectModule = address(new MockDeprecatedCollectModule());
             address mockDeprecatedReferenceModule = address(new MockDeprecatedReferenceModule());
@@ -327,9 +319,7 @@ contract UpgradeForkTest is BaseTest {
         uint256 secondProfileId = _fullCreateProfileSequence(gov, hub);
 
         try hub.follow(secondProfileId, profileIds, followTokenIds, datas) {
-            console2.log(
-                'Follow with modern interface succeeded, continuing with modern interface.'
-            );
+            console2.log('Follow with modern interface succeeded, continuing with modern interface.');
             hub.collect(
                 Types.CollectParams({
                     publicationCollectedProfileId: profileId,
@@ -361,9 +351,7 @@ contract UpgradeForkTest is BaseTest {
                 })
             );
         } catch {
-            console2.log(
-                'Follow with modern interface failed, proceeding with deprecated interface.'
-            );
+            console2.log('Follow with modern interface failed, proceeding with deprecated interface.');
             IOldHub(address(hub)).follow(profileIds, datas);
             IOldHub(address(hub)).collect(profileId, 1, '');
             IOldHub(address(hub)).collect(profileId, 2, '');

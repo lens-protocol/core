@@ -17,10 +17,7 @@ contract SetFollowModuleTest is BaseTest, SigSetup {
         hub.whitelistFollowModule(mockFollowModule, true);
     }
 
-    function _setFollowModulehWithSig(address delegatedSigner, uint256 signerPrivKey)
-        internal
-        virtual
-    {
+    function _setFollowModulehWithSig(address delegatedSigner, uint256 signerPrivKey) internal virtual {
         _setFollowModulehWithSig(delegatedSigner, signerPrivKey, deadline, deadline);
     }
 
@@ -97,13 +94,7 @@ contract SetFollowModuleTest is BaseTest, SigSetup {
     // Negatives
     function testCannotSetFollowModuleNotWhitelistedWithSig() public {
         vm.expectRevert(Errors.FollowModuleNotWhitelisted.selector);
-        bytes32 digest = _getSetFollowModuleTypedDataHash(
-            newProfileId,
-            address(1),
-            '',
-            nonce,
-            deadline
-        );
+        bytes32 digest = _getSetFollowModuleTypedDataHash(newProfileId, address(1), '', nonce, deadline);
 
         hub.setFollowModuleWithSig({
             profileId: newProfileId,

@@ -50,8 +50,7 @@ contract TimedFeeCollectModule is FeeModuleBase, FollowValidationModuleBase, ICo
 
     uint24 internal constant ONE_DAY = 24 hours;
 
-    mapping(uint256 => mapping(uint256 => ProfilePublicationData))
-        internal _dataByPublicationByProfile;
+    mapping(uint256 => mapping(uint256 => ProfilePublicationData)) internal _dataByPublicationByProfile;
 
     constructor(address hub, address moduleGlobals) FeeModuleBase(moduleGlobals) ModuleBase(hub) {}
 
@@ -78,19 +77,12 @@ contract TimedFeeCollectModule is FeeModuleBase, FollowValidationModuleBase, ICo
         unchecked {
             uint40 endTimestamp = uint40(block.timestamp) + ONE_DAY;
 
-            (
-                uint256 amount,
-                address currency,
-                address recipient,
-                uint16 referralFee,
-                bool followerOnly
-            ) = abi.decode(data, (uint256, address, address, uint16, bool));
-            if (
-                !_currencyWhitelisted(currency) ||
-                recipient == address(0) ||
-                referralFee > BPS_MAX ||
-                amount == 0
-            ) revert Errors.InitParamsInvalid();
+            (uint256 amount, address currency, address recipient, uint16 referralFee, bool followerOnly) = abi.decode(
+                data,
+                (uint256, address, address, uint16, bool)
+            );
+            if (!_currencyWhitelisted(currency) || recipient == address(0) || referralFee > BPS_MAX || amount == 0)
+                revert Errors.InitParamsInvalid();
 
             _dataByPublicationByProfile[profileId][pubId].amount = amount;
             _dataByPublicationByProfile[profileId][pubId].currency = currency;
@@ -120,13 +112,10 @@ contract TimedFeeCollectModule is FeeModuleBase, FollowValidationModuleBase, ICo
         Types.PublicationType,
         bytes calldata data
     ) external override onlyHub {
-        if (
-            _dataByPublicationByProfile[publicationCollectedProfileId][publicationCollectedId]
-                .followerOnly
-        ) _checkFollowValidity(publicationCollectedProfileId, collectorProfileOwner);
-        uint256 endTimestamp = _dataByPublicationByProfile[publicationCollectedProfileId][
-            publicationCollectedId
-        ].endTimestamp;
+        if (_dataByPublicationByProfile[publicationCollectedProfileId][publicationCollectedId].followerOnly)
+            _checkFollowValidity(publicationCollectedProfileId, collectorProfileOwner);
+        uint256 endTimestamp = _dataByPublicationByProfile[publicationCollectedProfileId][publicationCollectedId]
+            .endTimestamp;
         if (block.timestamp > endTimestamp) revert Errors.CollectExpired();
 
         if (referrerProfileId == publicationCollectedProfileId) {
@@ -175,8 +164,7 @@ contract TimedFeeCollectModule is FeeModuleBase, FollowValidationModuleBase, ICo
         uint256 adjustedAmount = amount - treasuryAmount;
 
         IERC20(currency).safeTransferFrom(executor, recipient, adjustedAmount);
-        if (treasuryAmount > 0)
-            IERC20(currency).safeTransferFrom(executor, treasury, treasuryAmount);
+        if (treasuryAmount > 0) IERC20(currency).safeTransferFrom(executor, treasury, treasuryAmount);
     }
 
     function _processCollectWithReferral(
@@ -216,7 +204,6 @@ contract TimedFeeCollectModule is FeeModuleBase, FollowValidationModuleBase, ICo
         address recipient = _dataByPublicationByProfile[profileId][pubId].recipient;
 
         IERC20(currency).safeTransferFrom(executor, recipient, adjustedAmount);
-        if (treasuryAmount > 0)
-            IERC20(currency).safeTransferFrom(executor, treasury, treasuryAmount);
+        if (treasuryAmount > 0) IERC20(currency).safeTransferFrom(executor, treasury, treasuryAmount);
     }
 }

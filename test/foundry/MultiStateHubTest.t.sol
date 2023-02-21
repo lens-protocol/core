@@ -56,10 +56,7 @@ contract MultiStateHubTest_Common is BaseTest {
         vm.prank(governance);
         _setEmergencyAdmin(address(this));
 
-        Types.ProtocolState[2] memory states = [
-            Types.ProtocolState.PublishingPaused,
-            Types.ProtocolState.Paused
-        ];
+        Types.ProtocolState[2] memory states = [Types.ProtocolState.PublishingPaused, Types.ProtocolState.Paused];
 
         for (uint256 i = 0; i < states.length; i++) {
             Types.ProtocolState newState = states[i];
@@ -189,12 +186,7 @@ contract MultiStateHubTest_PausedState_Direct is BaseTest {
     // Negatives
     function testCannotTransferProfileWhilePaused() public virtual {
         vm.expectRevert(Errors.Paused.selector);
-        _transferProfile({
-            msgSender: profileOwner,
-            from: profileOwner,
-            to: address(111),
-            tokenId: newProfileId
-        });
+        _transferProfile({msgSender: profileOwner, from: profileOwner, to: address(111), tokenId: newProfileId});
     }
 
     function testCannotCreateProfileWhilePaused() public virtual {
@@ -320,13 +312,7 @@ contract MultiStateHubTest_PausedState_WithSig is MultiStateHubTest_PausedState_
     }
 
     function _mockSetFollowModule() internal override {
-        bytes32 digest = _getSetFollowModuleTypedDataHash(
-            newProfileId,
-            address(0),
-            '',
-            nonce,
-            deadline
-        );
+        bytes32 digest = _getSetFollowModuleTypedDataHash(newProfileId, address(0), '', nonce, deadline);
 
         _setFollowModuleWithSig({
             profileId: newProfileId,
@@ -360,12 +346,7 @@ contract MultiStateHubTest_PausedState_WithSig is MultiStateHubTest_PausedState_
     }
 
     function _mockSetProfileImageURI() internal override {
-        bytes32 digest = _getSetProfileImageURITypedDataHash(
-            newProfileId,
-            MOCK_URI,
-            nonce,
-            deadline
-        );
+        bytes32 digest = _getSetProfileImageURITypedDataHash(newProfileId, MOCK_URI, nonce, deadline);
 
         _setProfileImageURIWithSig({
             profileId: newProfileId,
@@ -387,30 +368,21 @@ contract MultiStateHubTest_PausedState_WithSig is MultiStateHubTest_PausedState_
     function _mockPost() internal override {
         bytes32 digest = _getPostTypedDataHash(mockPostParams, nonce, deadline);
 
-        _postWithSig(
-            mockPostParams,
-            _getSigStruct(profileOwner, profileOwnerKey, digest, deadline)
-        );
+        _postWithSig(mockPostParams, _getSigStruct(profileOwner, profileOwnerKey, digest, deadline));
     }
 
     function _mockComment() internal override {
         mockCommentParams.pointedPubId = postId;
         bytes32 digest = _getCommentTypedDataHash(mockCommentParams, nonce, deadline);
 
-        _commentWithSig(
-            mockCommentParams,
-            _getSigStruct(profileOwner, profileOwnerKey, digest, deadline)
-        );
+        _commentWithSig(mockCommentParams, _getSigStruct(profileOwner, profileOwnerKey, digest, deadline));
     }
 
     function _mockMirror() internal override {
         mockMirrorParams.pointedPubId = postId;
         bytes32 digest = _getMirrorTypedDataHash(mockMirrorParams, nonce, deadline);
 
-        _mirrorWithSig(
-            mockMirrorParams,
-            _getSigStruct(profileOwner, profileOwnerKey, digest, deadline)
-        );
+        _mirrorWithSig(mockMirrorParams, _getSigStruct(profileOwner, profileOwnerKey, digest, deadline));
     }
 
     function _mockBurn() internal override {
@@ -444,10 +416,7 @@ contract MultiStateHubTest_PausedState_WithSig is MultiStateHubTest_PausedState_
     function _mockCollect() internal override {
         bytes32 digest = _getCollectTypedDataHash(mockCollectParams, nonce, deadline);
 
-        _collectWithSig(
-            mockCollectParams,
-            _getSigStruct(profileOwner, profileOwnerKey, digest, deadline)
-        );
+        _collectWithSig(mockCollectParams, _getSigStruct(profileOwner, profileOwnerKey, digest, deadline));
     }
 
     // Methods that cannot be called with signature
@@ -533,12 +502,7 @@ contract MultiStateHubTest_PublishingPausedState_Direct is BaseTest {
 
     // Negatives
     function testCanTransferProfileWhilePublishingPaused() public virtual {
-        _transferProfile({
-            msgSender: profileOwner,
-            from: profileOwner,
-            to: address(111),
-            tokenId: newProfileId
-        });
+        _transferProfile({msgSender: profileOwner, from: profileOwner, to: address(111), tokenId: newProfileId});
     }
 
     function testCanCreateProfileWhilePublishingPaused() public virtual {
@@ -604,10 +568,7 @@ contract MultiStateHubTest_PublishingPausedState_Direct is BaseTest {
     }
 }
 
-contract MultiStateHubTest_PublishingPausedState_WithSig is
-    MultiStateHubTest_PublishingPausedState_Direct,
-    SigSetup
-{
+contract MultiStateHubTest_PublishingPausedState_WithSig is MultiStateHubTest_PublishingPausedState_Direct, SigSetup {
     // TODO: Consider refactoring this contract somehow cause it's all just pure copy-paste of the PausedState_WithSig
     function setUp() public override(MultiStateHubTest_PublishingPausedState_Direct, SigSetup) {
         MultiStateHubTest_PublishingPausedState_Direct.setUp();
@@ -615,13 +576,7 @@ contract MultiStateHubTest_PublishingPausedState_WithSig is
     }
 
     function _mockSetFollowModule() internal override {
-        bytes32 digest = _getSetFollowModuleTypedDataHash(
-            newProfileId,
-            address(0),
-            '',
-            nonce,
-            deadline
-        );
+        bytes32 digest = _getSetFollowModuleTypedDataHash(newProfileId, address(0), '', nonce, deadline);
 
         _setFollowModuleWithSig({
             profileId: newProfileId,
@@ -655,12 +610,7 @@ contract MultiStateHubTest_PublishingPausedState_WithSig is
     }
 
     function _mockSetProfileImageURI() internal override {
-        bytes32 digest = _getSetProfileImageURITypedDataHash(
-            newProfileId,
-            MOCK_URI,
-            nonce,
-            deadline
-        );
+        bytes32 digest = _getSetProfileImageURITypedDataHash(newProfileId, MOCK_URI, nonce, deadline);
 
         _setProfileImageURIWithSig({
             profileId: newProfileId,
@@ -682,30 +632,21 @@ contract MultiStateHubTest_PublishingPausedState_WithSig is
     function _mockPost() internal override {
         bytes32 digest = _getPostTypedDataHash(mockPostParams, nonce, deadline);
 
-        _postWithSig(
-            mockPostParams,
-            _getSigStruct(profileOwner, profileOwnerKey, digest, deadline)
-        );
+        _postWithSig(mockPostParams, _getSigStruct(profileOwner, profileOwnerKey, digest, deadline));
     }
 
     function _mockComment() internal override {
         mockCommentParams.pointedPubId = postId;
         bytes32 digest = _getCommentTypedDataHash(mockCommentParams, nonce, deadline);
 
-        _commentWithSig(
-            mockCommentParams,
-            _getSigStruct(profileOwner, profileOwnerKey, digest, deadline)
-        );
+        _commentWithSig(mockCommentParams, _getSigStruct(profileOwner, profileOwnerKey, digest, deadline));
     }
 
     function _mockMirror() internal override {
         mockMirrorParams.pointedPubId = postId;
         bytes32 digest = _getMirrorTypedDataHash(mockMirrorParams, nonce, deadline);
 
-        _mirrorWithSig(
-            mockMirrorParams,
-            _getSigStruct(profileOwner, profileOwnerKey, digest, deadline)
-        );
+        _mirrorWithSig(mockMirrorParams, _getSigStruct(profileOwner, profileOwnerKey, digest, deadline));
     }
 
     function _mockBurn() internal override {
@@ -740,10 +681,7 @@ contract MultiStateHubTest_PublishingPausedState_WithSig is
     function _mockCollect() internal override {
         bytes32 digest = _getCollectTypedDataHash(mockCollectParams, nonce, deadline);
 
-        _collectWithSig(
-            mockCollectParams,
-            _getSigStruct(profileOwner, profileOwnerKey, digest, deadline)
-        );
+        _collectWithSig(mockCollectParams, _getSigStruct(profileOwner, profileOwnerKey, digest, deadline));
     }
 
     // Methods that cannot be called with signature

@@ -44,17 +44,12 @@ struct ProfilePublicationData {
  *
  * This module works by allowing limited collects for a publication within the allotted time with a given fee.
  */
-contract DeprecatedLimitedTimedFeeCollectModule is
-    FeeModuleBase,
-    FollowValidationModuleBase,
-    IDeprecatedCollectModule
-{
+contract DeprecatedLimitedTimedFeeCollectModule is FeeModuleBase, FollowValidationModuleBase, IDeprecatedCollectModule {
     using SafeERC20 for IERC20;
 
     uint24 internal constant ONE_DAY = 24 hours;
 
-    mapping(uint256 => mapping(uint256 => ProfilePublicationData))
-        internal _dataByPublicationByProfile;
+    mapping(uint256 => mapping(uint256 => ProfilePublicationData)) internal _dataByPublicationByProfile;
 
     constructor(address hub, address moduleGlobals) FeeModuleBase(moduleGlobals) ModuleBase(hub) {}
 
@@ -105,16 +100,7 @@ contract DeprecatedLimitedTimedFeeCollectModule is
             _dataByPublicationByProfile[profileId][pubId].followerOnly = followerOnly;
             _dataByPublicationByProfile[profileId][pubId].endTimestamp = endTimestamp;
 
-            return
-                abi.encode(
-                    collectLimit,
-                    amount,
-                    currency,
-                    recipient,
-                    referralFee,
-                    followerOnly,
-                    endTimestamp
-                );
+            return abi.encode(collectLimit, amount, currency, recipient, referralFee, followerOnly, endTimestamp);
         }
     }
 
@@ -132,8 +118,7 @@ contract DeprecatedLimitedTimedFeeCollectModule is
         uint256 pubId,
         bytes calldata data
     ) external override onlyHub {
-        if (_dataByPublicationByProfile[profileId][pubId].followerOnly)
-            _checkFollowValidity(profileId, collector);
+        if (_dataByPublicationByProfile[profileId][pubId].followerOnly) _checkFollowValidity(profileId, collector);
         uint256 endTimestamp = _dataByPublicationByProfile[profileId][pubId].endTimestamp;
         if (block.timestamp > endTimestamp) revert Errors.CollectExpired();
 
@@ -185,8 +170,7 @@ contract DeprecatedLimitedTimedFeeCollectModule is
         uint256 adjustedAmount = amount - treasuryAmount;
 
         IERC20(currency).safeTransferFrom(collector, recipient, adjustedAmount);
-        if (treasuryAmount > 0)
-            IERC20(currency).safeTransferFrom(collector, treasury, treasuryAmount);
+        if (treasuryAmount > 0) IERC20(currency).safeTransferFrom(collector, treasury, treasuryAmount);
     }
 
     function _processCollectWithReferral(
@@ -226,7 +210,6 @@ contract DeprecatedLimitedTimedFeeCollectModule is
         address recipient = _dataByPublicationByProfile[profileId][pubId].recipient;
 
         IERC20(currency).safeTransferFrom(collector, recipient, adjustedAmount);
-        if (treasuryAmount > 0)
-            IERC20(currency).safeTransferFrom(collector, treasury, treasuryAmount);
+        if (treasuryAmount > 0) IERC20(currency).safeTransferFrom(collector, treasury, treasuryAmount);
     }
 }

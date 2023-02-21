@@ -5,10 +5,9 @@ import 'forge-std/Test.sol';
 import 'contracts/libraries/constants/Types.sol';
 
 contract PublishingHelpers is Test {
-    function _verifyPublication(
-        Types.PublicationStruct memory pub,
-        Types.PublicationStruct memory expectedPub
-    ) internal {
+    function _verifyPublication(Types.PublicationStruct memory pub, Types.PublicationStruct memory expectedPub)
+        internal
+    {
         assertEq(pub.pointedProfileId, expectedPub.pointedProfileId, 'Unexpected pointedProfileId');
         assertEq(pub.pointedPubId, expectedPub.pointedPubId, 'Unexpected pointedPubId');
         assertEq(pub.contentURI, expectedPub.contentURI, 'Unexpected contentURI');

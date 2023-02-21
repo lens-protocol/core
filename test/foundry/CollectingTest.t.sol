@@ -52,10 +52,8 @@ contract CollectingTest is BaseTest, CollectingHelpers, SigSetup {
         mockCollectParams.publicationCollectedId = 2;
         // Check that the publication doesn't exist.
         assertEq(
-            _getPub(
-                mockCollectParams.publicationCollectedProfileId,
-                mockCollectParams.publicationCollectedId
-            ).pointedProfileId,
+            _getPub(mockCollectParams.publicationCollectedProfileId, mockCollectParams.publicationCollectedId)
+                .pointedProfileId,
             0
         );
 
@@ -68,10 +66,8 @@ contract CollectingTest is BaseTest, CollectingHelpers, SigSetup {
         mockCollectParams.publicationCollectedId = 0;
         // Check that the publication doesn't exist.
         assertEq(
-            _getPub(
-                mockCollectParams.publicationCollectedProfileId,
-                mockCollectParams.publicationCollectedId
-            ).pointedProfileId,
+            _getPub(mockCollectParams.publicationCollectedProfileId, mockCollectParams.publicationCollectedId)
+                .pointedProfileId,
             0
         );
 
@@ -133,12 +129,7 @@ contract CollectingTest is BaseTest, CollectingHelpers, SigSetup {
         uint256 startNftId = _checkCollectNFTBefore();
 
         // delegate power to executor
-        _changeDelegatedExecutorsConfig(
-            collectorProfileOwner,
-            collectorProfileId,
-            otherSigner,
-            true
-        );
+        _changeDelegatedExecutorsConfig(collectorProfileOwner, collectorProfileId, otherSigner, true);
 
         // collect from executor
         uint256 nftId = _collect(otherSignerKey, otherSigner, mockCollectParams);
@@ -152,12 +143,7 @@ contract CollectingTest is BaseTest, CollectingHelpers, SigSetup {
         // mirror, then delegate power to executor
         vm.prank(profileOwner);
         hub.mirror(mockMirrorParams);
-        _changeDelegatedExecutorsConfig(
-            collectorProfileOwner,
-            collectorProfileId,
-            otherSigner,
-            true
-        );
+        _changeDelegatedExecutorsConfig(collectorProfileOwner, collectorProfileId, otherSigner, true);
 
         // collect from executor
         uint256 nftId = _collect(otherSignerKey, otherSigner, mockCollectParams);
@@ -183,16 +169,8 @@ contract CollectingTestMetaTx is CollectingTest, MetaTxNegatives {
     ) internal override returns (uint256) {
         address signer = vm.addr(metaTxSignerPk);
         uint256 deadline = type(uint256).max;
-        bytes32 digest = _getCollectTypedDataHash(
-            collectParams,
-            cachedNonceByAddress[signer],
-            deadline
-        );
-        return
-            hub.collectWithSig(
-                collectParams,
-                _getSigStruct(transactionExecutor, metaTxSignerPk, digest, deadline)
-            );
+        bytes32 digest = _getCollectTypedDataHash(collectParams, cachedNonceByAddress[signer], deadline);
+        return hub.collectWithSig(collectParams, _getSigStruct(transactionExecutor, metaTxSignerPk, digest, deadline));
     }
 
     function _executeMetaTx(

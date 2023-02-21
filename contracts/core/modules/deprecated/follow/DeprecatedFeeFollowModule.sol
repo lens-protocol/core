@@ -55,10 +55,7 @@ contract DeprecatedFeeFollowModule is FeeModuleBase, DeprecatedFollowValidatorFo
         onlyHub
         returns (bytes memory)
     {
-        (uint256 amount, address currency, address recipient) = abi.decode(
-            data,
-            (uint256, address, address)
-        );
+        (uint256 amount, address currency, address recipient) = abi.decode(data, (uint256, address, address));
         if (!_currencyWhitelisted(currency) || recipient == address(0) || amount == 0)
             revert Errors.InitParamsInvalid();
 
@@ -87,8 +84,7 @@ contract DeprecatedFeeFollowModule is FeeModuleBase, DeprecatedFollowValidatorFo
         uint256 adjustedAmount = amount - treasuryAmount;
 
         IERC20(currency).safeTransferFrom(follower, recipient, adjustedAmount);
-        if (treasuryAmount > 0)
-            IERC20(currency).safeTransferFrom(follower, treasury, treasuryAmount);
+        if (treasuryAmount > 0) IERC20(currency).safeTransferFrom(follower, treasury, treasuryAmount);
     }
 
     /**

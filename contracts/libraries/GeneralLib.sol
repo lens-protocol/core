@@ -49,12 +49,7 @@ library GeneralLib {
             prevEmergencyAdmin := sload(EMERGENCY_ADMIN_SLOT)
             sstore(EMERGENCY_ADMIN_SLOT, newEmergencyAdmin)
         }
-        emit Events.EmergencyAdminSet(
-            msg.sender,
-            prevEmergencyAdmin,
-            newEmergencyAdmin,
-            block.timestamp
-        );
+        emit Events.EmergencyAdminSet(msg.sender, prevEmergencyAdmin, newEmergencyAdmin, block.timestamp);
     }
 
     /**
@@ -103,8 +98,9 @@ library GeneralLib {
     }
 
     function switchToNewFreshDelegatedExecutorsConfig(uint256 profileId) external {
-        Types.DelegatedExecutorsConfig storage _delegatedExecutorsConfig = GeneralHelpers
-            .getDelegatedExecutorsConfig({delegatorProfileId: profileId});
+        Types.DelegatedExecutorsConfig storage _delegatedExecutorsConfig = GeneralHelpers.getDelegatedExecutorsConfig({
+            delegatorProfileId: profileId
+        });
         _changeDelegatedExecutorsConfig({
             _delegatedExecutorsConfig: _delegatedExecutorsConfig,
             delegatorProfileId: profileId,
@@ -120,8 +116,9 @@ library GeneralLib {
         address[] calldata executors,
         bool[] calldata approvals
     ) external {
-        Types.DelegatedExecutorsConfig storage _delegatedExecutorsConfig = GeneralHelpers
-            .getDelegatedExecutorsConfig(delegatorProfileId);
+        Types.DelegatedExecutorsConfig storage _delegatedExecutorsConfig = GeneralHelpers.getDelegatedExecutorsConfig(
+            delegatorProfileId
+        );
         _changeDelegatedExecutorsConfig(
             _delegatedExecutorsConfig,
             delegatorProfileId,
@@ -207,10 +204,7 @@ library GeneralLib {
     }
 
     function getContentURI(uint256 profileId, uint256 pubId) external view returns (string memory) {
-        (uint256 rootProfileId, uint256 rootPubId, ) = GeneralHelpers.getPointedIfMirror(
-            profileId,
-            pubId
-        );
+        (uint256 rootProfileId, uint256 rootPubId, ) = GeneralHelpers.getPointedIfMirror(profileId, pubId);
         string memory ptr;
         assembly {
             // Load the free memory pointer, where we'll return the value

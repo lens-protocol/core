@@ -17,8 +17,7 @@ import {IERC721} from '@openzeppelin/contracts/token/ERC721/IERC721.sol';
  */
 contract ApprovalFollowModule is FollowValidatorFollowModuleBase {
     // We use a triple nested mapping so that, on profile transfer, the previous approved address list is invalid;
-    mapping(address => mapping(uint256 => mapping(address => bool)))
-        internal _approvedByProfileByOwner;
+    mapping(address => mapping(uint256 => mapping(address => bool))) internal _approvedByProfileByOwner;
 
     constructor(address hub) ModuleBase(hub) {}
 
@@ -90,8 +89,7 @@ contract ApprovalFollowModule is FollowValidatorFollowModuleBase {
         bytes calldata
     ) external override onlyHub {
         address owner = IERC721(HUB).ownerOf(profileId);
-        if (!_approvedByProfileByOwner[owner][profileId][follower])
-            revert Errors.FollowNotApproved();
+        if (!_approvedByProfileByOwner[owner][profileId][follower]) revert Errors.FollowNotApproved();
         _approvedByProfileByOwner[owner][profileId][follower] = false; // prevents repeat follows
     }
 

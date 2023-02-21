@@ -49,10 +49,7 @@ library InteractionHelpers {
         while (i < idsOfProfilesToFollow.length) {
             _validateProfileExists({profileId: idsOfProfilesToFollow[i]});
 
-            GeneralHelpers.validateNotBlocked({
-                profile: followerProfileId,
-                byProfile: idsOfProfilesToFollow[i]
-            });
+            GeneralHelpers.validateNotBlocked({profile: followerProfileId, byProfile: idsOfProfilesToFollow[i]});
 
             if (followerProfileId == idsOfProfilesToFollow[i]) {
                 revert Errors.SelfFollow();
@@ -96,10 +93,7 @@ library InteractionHelpers {
                 revert Errors.NotFollowing();
             }
 
-            IFollowNFT(followNFT).unfollow({
-                unfollowerProfileId: unfollowerProfileId,
-                executor: executor
-            });
+            IFollowNFT(followNFT).unfollow({unfollowerProfileId: unfollowerProfileId, executor: executor});
 
             emit Events.Unfollowed(unfollowerProfileId, idOfProfileToUnfollow, block.timestamp);
 
@@ -174,11 +168,10 @@ library InteractionHelpers {
         uint256 tokenId;
         address collectorProfileOwner = GeneralHelpers.ownerOf(collectParams.collectorProfileId);
         {
-            Types.PublicationStruct storage _collectedPublication = GeneralHelpers
-                .getPublicationStruct(
-                    collectParams.publicationCollectedProfileId,
-                    collectParams.publicationCollectedId
-                );
+            Types.PublicationStruct storage _collectedPublication = GeneralHelpers.getPublicationStruct(
+                collectParams.publicationCollectedProfileId,
+                collectParams.publicationCollectedId
+            );
             collectModule = _collectedPublication.collectModule;
             if (collectModule == address(0)) {
                 // Doesn't have collectModule, thus it cannot be a collected (a mirror or non-existent).
@@ -218,11 +211,7 @@ library InteractionHelpers {
     ) private returns (address) {
         address collectNFT = _collectedPublication.collectNFT;
         if (collectNFT == address(0)) {
-            collectNFT = _deployCollectNFT(
-                publicationCollectedProfileId,
-                publicationCollectedId,
-                collectNFTImpl
-            );
+            collectNFT = _deployCollectNFT(publicationCollectedProfileId, publicationCollectedId, collectNFTImpl);
             _collectedPublication.collectNFT = collectNFT;
         }
         return collectNFT;
@@ -405,10 +394,7 @@ library InteractionHelpers {
      * @return address The address of the deployed Follow NFT contract.
      */
     function _deployFollowNFT(uint256 profileId) private returns (address) {
-        bytes memory functionData = abi.encodeWithSelector(
-            IFollowNFT.initialize.selector,
-            profileId
-        );
+        bytes memory functionData = abi.encodeWithSelector(IFollowNFT.initialize.selector, profileId);
         address followNFT = address(new FollowNFTProxy(functionData));
         emit Events.FollowNFTDeployed(profileId, followNFT, block.timestamp);
 
@@ -416,7 +402,6 @@ library InteractionHelpers {
     }
 
     function _validateProfileExists(uint256 profileId) private view {
-        if (GeneralHelpers.unsafeOwnerOf(profileId) == address(0))
-            revert Errors.TokenDoesNotExist();
+        if (GeneralHelpers.unsafeOwnerOf(profileId) == address(0)) revert Errors.TokenDoesNotExist();
     }
 }

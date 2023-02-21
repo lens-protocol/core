@@ -45,8 +45,7 @@ struct ProfilePublicationData {
 contract LimitedFeeCollectModule is FeeModuleBase, FollowValidationModuleBase, ICollectModule {
     using SafeERC20 for IERC20;
 
-    mapping(uint256 => mapping(uint256 => ProfilePublicationData))
-        internal _dataByPublicationByProfile;
+    mapping(uint256 => mapping(uint256 => ProfilePublicationData)) internal _dataByPublicationByProfile;
 
     constructor(address hub, address moduleGlobals) FeeModuleBase(moduleGlobals) ModuleBase(hub) {}
 
@@ -114,29 +113,19 @@ contract LimitedFeeCollectModule is FeeModuleBase, FollowValidationModuleBase, I
         Types.PublicationType,
         bytes calldata data
     ) external override onlyHub {
+        if (_dataByPublicationByProfile[publicationCollectedProfileId][publicationCollectedId].followerOnly)
+            _checkFollowValidity(publicationCollectedProfileId, collectorProfileOwner);
         if (
-            _dataByPublicationByProfile[publicationCollectedProfileId][publicationCollectedId]
-                .followerOnly
-        ) _checkFollowValidity(publicationCollectedProfileId, collectorProfileOwner);
-        if (
-            _dataByPublicationByProfile[publicationCollectedProfileId][publicationCollectedId]
-                .currentCollects ==
-            _dataByPublicationByProfile[publicationCollectedProfileId][publicationCollectedId]
-                .collectLimit
+            _dataByPublicationByProfile[publicationCollectedProfileId][publicationCollectedId].currentCollects ==
+            _dataByPublicationByProfile[publicationCollectedProfileId][publicationCollectedId].collectLimit
         ) {
             revert Errors.MintLimitExceeded();
         } else {
             unchecked {
-                ++_dataByPublicationByProfile[publicationCollectedProfileId][publicationCollectedId]
-                    .currentCollects;
+                ++_dataByPublicationByProfile[publicationCollectedProfileId][publicationCollectedId].currentCollects;
             }
             if (referrerProfileId == publicationCollectedProfileId) {
-                _processCollect(
-                    executor,
-                    publicationCollectedProfileId,
-                    publicationCollectedId,
-                    data
-                );
+                _processCollect(executor, publicationCollectedProfileId, publicationCollectedId, data);
             } else {
                 _processCollectWithReferral(
                     referrerProfileId,
@@ -182,8 +171,7 @@ contract LimitedFeeCollectModule is FeeModuleBase, FollowValidationModuleBase, I
         uint256 adjustedAmount = amount - treasuryAmount;
 
         IERC20(currency).safeTransferFrom(executor, recipient, adjustedAmount);
-        if (treasuryAmount > 0)
-            IERC20(currency).safeTransferFrom(executor, treasury, treasuryAmount);
+        if (treasuryAmount > 0) IERC20(currency).safeTransferFrom(executor, treasury, treasuryAmount);
     }
 
     function _processCollectWithReferral(
@@ -223,7 +211,6 @@ contract LimitedFeeCollectModule is FeeModuleBase, FollowValidationModuleBase, I
         address recipient = _dataByPublicationByProfile[profileId][pubId].recipient;
 
         IERC20(currency).safeTransferFrom(executor, recipient, adjustedAmount);
-        if (treasuryAmount > 0)
-            IERC20(currency).safeTransferFrom(executor, treasury, treasuryAmount);
+        if (treasuryAmount > 0) IERC20(currency).safeTransferFrom(executor, treasury, treasuryAmount);
     }
 }

@@ -36,11 +36,7 @@ abstract contract ERC2981CollectionRoyalties is IERC2981 {
      * @return A tuple with the address who should receive the royalties and the royalty
      * payment amount for the given sale price.
      */
-    function royaltyInfo(uint256 tokenId, uint256 salePrice)
-        external
-        view
-        returns (address, uint256)
-    {
+    function royaltyInfo(uint256 tokenId, uint256 salePrice) external view returns (address, uint256) {
         return (_getReceiver(tokenId), _getRoyaltyAmount(tokenId, salePrice));
     }
 

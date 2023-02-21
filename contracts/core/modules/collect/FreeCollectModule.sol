@@ -49,10 +49,7 @@ contract FreeCollectModule is FollowValidationModuleBase, ICollectModule {
         Types.PublicationType,
         bytes calldata
     ) external view override {
-        if (
-            _followerOnlyByPublicationByProfile[publicationCollectedProfileId][
-                publicationCollectedId
-            ]
-        ) _checkFollowValidity(publicationCollectedProfileId, collectorProfileOwner);
+        if (_followerOnlyByPublicationByProfile[publicationCollectedProfileId][publicationCollectedId])
+            _checkFollowValidity(publicationCollectedProfileId, collectorProfileOwner);
     }
 }

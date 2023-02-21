@@ -94,11 +94,7 @@ contract LensHub is LensNFTBase, VersionedInitializable, LensMultiState, LensHub
     }
 
     ///@inheritdoc ILensHub
-    function whitelistProfileCreator(address profileCreator, bool whitelist)
-        external
-        override
-        onlyGov
-    {
+    function whitelistProfileCreator(address profileCreator, bool whitelist) external override onlyGov {
         _profileCreatorWhitelisted[profileCreator] = whitelist;
         emit Events.ProfileCreatorWhitelisted(profileCreator, whitelist, block.timestamp);
     }
@@ -110,21 +106,13 @@ contract LensHub is LensNFTBase, VersionedInitializable, LensMultiState, LensHub
     }
 
     /// @inheritdoc ILensHub
-    function whitelistReferenceModule(address referenceModule, bool whitelist)
-        external
-        override
-        onlyGov
-    {
+    function whitelistReferenceModule(address referenceModule, bool whitelist) external override onlyGov {
         _referenceModuleWhitelisted[referenceModule] = whitelist;
         emit Events.ReferenceModuleWhitelisted(referenceModule, whitelist, block.timestamp);
     }
 
     /// @inheritdoc ILensHub
-    function whitelistCollectModule(address collectModule, bool whitelist)
-        external
-        override
-        onlyGov
-    {
+    function whitelistCollectModule(address collectModule, bool whitelist) external override onlyGov {
         _collectModuleWhitelisted[collectModule] = whitelist;
         emit Events.CollectModuleWhitelisted(collectModule, whitelist, block.timestamp);
     }
@@ -134,12 +122,7 @@ contract LensHub is LensNFTBase, VersionedInitializable, LensMultiState, LensHub
     ///////////////////////////////////////////
 
     /// @inheritdoc ILensHub
-    function createProfile(Types.CreateProfileData calldata vars)
-        external
-        override
-        whenNotPaused
-        returns (uint256)
-    {
+    function createProfile(Types.CreateProfileData calldata vars) external override whenNotPaused returns (uint256) {
         unchecked {
             uint256 profileId = ++_profileCounter;
             _mint(vars.to, profileId);
@@ -163,12 +146,7 @@ contract LensHub is LensNFTBase, VersionedInitializable, LensMultiState, LensHub
         uint256 profileId,
         string calldata metadataURI,
         Types.EIP712Signature calldata signature
-    )
-        external
-        override
-        whenNotPaused
-        onlyProfileOwnerOrDelegatedExecutor(signature.signer, profileId)
-    {
+    ) external override whenNotPaused onlyProfileOwnerOrDelegatedExecutor(signature.signer, profileId) {
         MetaTxLib.validateSetProfileMetadataURISignature(signature, profileId, metadataURI);
         ProfileLib.setProfileMetadataURI(profileId, metadataURI);
     }
@@ -188,18 +166,8 @@ contract LensHub is LensNFTBase, VersionedInitializable, LensMultiState, LensHub
         address followModule,
         bytes calldata followModuleInitData,
         Types.EIP712Signature calldata signature
-    )
-        external
-        override
-        whenNotPaused
-        onlyProfileOwnerOrDelegatedExecutor(signature.signer, profileId)
-    {
-        MetaTxLib.validateSetFollowModuleSignature(
-            signature,
-            profileId,
-            followModule,
-            followModuleInitData
-        );
+    ) external override whenNotPaused onlyProfileOwnerOrDelegatedExecutor(signature.signer, profileId) {
+        MetaTxLib.validateSetFollowModuleSignature(signature, profileId, followModule, followModuleInitData);
         ProfileLib.setFollowModule(profileId, followModule, followModuleInitData);
     }
 
@@ -269,12 +237,7 @@ contract LensHub is LensNFTBase, VersionedInitializable, LensMultiState, LensHub
         uint256 profileId,
         string calldata imageURI,
         Types.EIP712Signature calldata signature
-    )
-        external
-        override
-        whenNotPaused
-        onlyProfileOwnerOrDelegatedExecutor(signature.signer, profileId)
-    {
+    ) external override whenNotPaused onlyProfileOwnerOrDelegatedExecutor(signature.signer, profileId) {
         MetaTxLib.validateSetProfileImageURISignature(signature, profileId, imageURI);
         ProfileLib.setProfileImageURI(profileId, imageURI);
     }
@@ -294,12 +257,7 @@ contract LensHub is LensNFTBase, VersionedInitializable, LensMultiState, LensHub
         uint256 profileId,
         string calldata followNFTURI,
         Types.EIP712Signature calldata signature
-    )
-        external
-        override
-        whenNotPaused
-        onlyProfileOwnerOrDelegatedExecutor(signature.signer, profileId)
-    {
+    ) external override whenNotPaused onlyProfileOwnerOrDelegatedExecutor(signature.signer, profileId) {
         MetaTxLib.validateSetFollowNFTURISignature(signature, profileId, followNFTURI);
         ProfileLib.setFollowNFTURI(profileId, followNFTURI);
     }
@@ -320,10 +278,7 @@ contract LensHub is LensNFTBase, VersionedInitializable, LensMultiState, LensHub
     }
 
     /// @inheritdoc ILensHub
-    function postWithSig(
-        Types.PostParams calldata postParams,
-        Types.EIP712Signature calldata signature
-    )
+    function postWithSig(Types.PostParams calldata postParams, Types.EIP712Signature calldata signature)
         external
         override
         whenPublishingEnabled
@@ -344,15 +299,11 @@ contract LensHub is LensNFTBase, VersionedInitializable, LensMultiState, LensHub
         whenNotBlocked(commentParams.profileId, commentParams.pointedProfileId)
         returns (uint256)
     {
-        return
-            PublishingLib.comment({commentParams: commentParams, transactionExecutor: msg.sender});
+        return PublishingLib.comment({commentParams: commentParams, transactionExecutor: msg.sender});
     }
 
     /// @inheritdoc ILensHub
-    function commentWithSig(
-        Types.CommentParams calldata commentParams,
-        Types.EIP712Signature calldata signature
-    )
+    function commentWithSig(Types.CommentParams calldata commentParams, Types.EIP712Signature calldata signature)
         external
         override
         whenPublishingEnabled
@@ -362,11 +313,7 @@ contract LensHub is LensNFTBase, VersionedInitializable, LensMultiState, LensHub
         returns (uint256)
     {
         MetaTxLib.validateCommentSignature(signature, commentParams);
-        return
-            PublishingLib.comment({
-                commentParams: commentParams,
-                transactionExecutor: signature.signer
-            });
+        return PublishingLib.comment({commentParams: commentParams, transactionExecutor: signature.signer});
     }
 
     /// @inheritdoc ILensHub
@@ -383,10 +330,7 @@ contract LensHub is LensNFTBase, VersionedInitializable, LensMultiState, LensHub
     }
 
     /// @inheritdoc ILensHub
-    function mirrorWithSig(
-        Types.MirrorParams calldata mirrorParams,
-        Types.EIP712Signature calldata signature
-    )
+    function mirrorWithSig(Types.MirrorParams calldata mirrorParams, Types.EIP712Signature calldata signature)
         external
         override
         whenPublishingEnabled
@@ -396,11 +340,7 @@ contract LensHub is LensNFTBase, VersionedInitializable, LensMultiState, LensHub
         returns (uint256)
     {
         MetaTxLib.validateMirrorSignature(signature, mirrorParams);
-        return
-            PublishingLib.mirror({
-                mirrorParams: mirrorParams,
-                transactionExecutor: signature.signer
-            });
+        return PublishingLib.mirror({mirrorParams: mirrorParams, transactionExecutor: signature.signer});
     }
 
     /// @inheritdoc ILensHub
@@ -417,10 +357,7 @@ contract LensHub is LensNFTBase, VersionedInitializable, LensMultiState, LensHub
     }
 
     /// @inheritdoc ILensHub
-    function quoteWithSig(
-        Types.QuoteParams calldata quoteParams,
-        Types.EIP712Signature calldata signature
-    )
+    function quoteWithSig(Types.QuoteParams calldata quoteParams, Types.EIP712Signature calldata signature)
         external
         override
         whenPublishingEnabled
@@ -430,19 +367,13 @@ contract LensHub is LensNFTBase, VersionedInitializable, LensMultiState, LensHub
         returns (uint256)
     {
         MetaTxLib.validateQuoteSignature(signature, quoteParams);
-        return
-            PublishingLib.quote({quoteParams: quoteParams, transactionExecutor: signature.signer});
+        return PublishingLib.quote({quoteParams: quoteParams, transactionExecutor: signature.signer});
     }
 
     /**
      * @notice Burns a profile, this maintains the profile data struct.
      */
-    function burn(uint256 tokenId)
-        public
-        override
-        whenNotPaused
-        onlyProfileOwner(msg.sender, tokenId)
-    {
+    function burn(uint256 tokenId) public override whenNotPaused onlyProfileOwner(msg.sender, tokenId) {
         _burn(tokenId);
     }
 
@@ -500,13 +431,7 @@ contract LensHub is LensNFTBase, VersionedInitializable, LensMultiState, LensHub
         onlyProfileOwnerOrDelegatedExecutor(signature.signer, followerProfileId)
         returns (uint256[] memory)
     {
-        MetaTxLib.validateFollowSignature(
-            signature,
-            followerProfileId,
-            idsOfProfilesToFollow,
-            followTokenIds,
-            datas
-        );
+        MetaTxLib.validateFollowSignature(signature, followerProfileId, idsOfProfilesToFollow, followTokenIds, datas);
         return
             GeneralLib.follow({
                 followerProfileId: followerProfileId,
@@ -537,17 +462,8 @@ contract LensHub is LensNFTBase, VersionedInitializable, LensMultiState, LensHub
         uint256 unfollowerProfileId,
         uint256[] calldata idsOfProfilesToUnfollow,
         Types.EIP712Signature calldata signature
-    )
-        external
-        override
-        whenNotPaused
-        onlyProfileOwnerOrDelegatedExecutor(signature.signer, unfollowerProfileId)
-    {
-        MetaTxLib.validateUnfollowSignature(
-            signature,
-            unfollowerProfileId,
-            idsOfProfilesToUnfollow
-        );
+    ) external override whenNotPaused onlyProfileOwnerOrDelegatedExecutor(signature.signer, unfollowerProfileId) {
+        MetaTxLib.validateUnfollowSignature(signature, unfollowerProfileId, idsOfProfilesToUnfollow);
 
         return
             GeneralLib.unfollow({
@@ -572,18 +488,8 @@ contract LensHub is LensNFTBase, VersionedInitializable, LensMultiState, LensHub
         uint256[] calldata idsOfProfilesToSetBlockStatus,
         bool[] calldata blockStatus,
         Types.EIP712Signature calldata signature
-    )
-        external
-        override
-        whenNotPaused
-        onlyProfileOwnerOrDelegatedExecutor(signature.signer, byProfileId)
-    {
-        MetaTxLib.validateSetBlockStatusSignature(
-            signature,
-            byProfileId,
-            idsOfProfilesToSetBlockStatus,
-            blockStatus
-        );
+    ) external override whenNotPaused onlyProfileOwnerOrDelegatedExecutor(signature.signer, byProfileId) {
+        MetaTxLib.validateSetBlockStatusSignature(signature, byProfileId, idsOfProfilesToSetBlockStatus, blockStatus);
         return GeneralLib.setBlockStatus(byProfileId, idsOfProfilesToSetBlockStatus, blockStatus);
     }
 
@@ -593,28 +499,19 @@ contract LensHub is LensNFTBase, VersionedInitializable, LensMultiState, LensHub
         override
         whenNotPaused
         onlyProfileOwnerOrDelegatedExecutor(msg.sender, collectParams.collectorProfileId)
-        whenNotBlocked(
-            collectParams.collectorProfileId,
-            collectParams.publicationCollectedProfileId
-        )
+        whenNotBlocked(collectParams.collectorProfileId, collectParams.publicationCollectedProfileId)
         returns (uint256)
     {
         return GeneralLib.collect(collectParams, msg.sender, COLLECT_NFT_IMPL); // TODO: Think how we can not pass this
     }
 
     /// @inheritdoc ILensHub
-    function collectWithSig(
-        Types.CollectParams calldata collectParams,
-        Types.EIP712Signature calldata signature
-    )
+    function collectWithSig(Types.CollectParams calldata collectParams, Types.EIP712Signature calldata signature)
         external
         override
         whenNotPaused
         onlyProfileOwnerOrDelegatedExecutor(signature.signer, collectParams.collectorProfileId)
-        whenNotBlocked(
-            collectParams.collectorProfileId,
-            collectParams.publicationCollectedProfileId
-        )
+        whenNotBlocked(collectParams.collectorProfileId, collectParams.publicationCollectedProfileId)
         returns (uint256)
     {
         MetaTxLib.validateCollectSignature(signature, collectParams);
@@ -643,21 +540,11 @@ contract LensHub is LensNFTBase, VersionedInitializable, LensMultiState, LensHub
     ) external override {
         address expectedCollectNFT = _pubByIdByProfile[profileId][pubId].collectNFT;
         if (msg.sender != expectedCollectNFT) revert Errors.CallerNotCollectNFT();
-        emit Events.CollectNFTTransferred(
-            profileId,
-            pubId,
-            collectNFTId,
-            from,
-            to,
-            block.timestamp
-        );
+        emit Events.CollectNFTTransferred(profileId, pubId, collectNFTId, from, to, block.timestamp);
     }
 
     /// @inheritdoc ILensHub
-    function emitUnfollowedEvent(uint256 unfollowerProfileId, uint256 idOfProfileUnfollowed)
-        external
-        override
-    {
+    function emitUnfollowedEvent(uint256 unfollowerProfileId, uint256 idOfProfileUnfollowed) external override {
         address expectedFollowNFT = _profileById[idOfProfileUnfollowed].followNFT;
         if (msg.sender != expectedFollowNFT) {
             revert Errors.CallerNotFollowNFT();
@@ -669,22 +556,13 @@ contract LensHub is LensNFTBase, VersionedInitializable, LensMultiState, LensHub
     ///        EXTERNAL VIEW FUNCTIONS      ///
     ///////////////////////////////////////////
 
-    function isFollowing(uint256 followerProfileId, uint256 followedProfileId)
-        external
-        view
-        returns (bool)
-    {
+    function isFollowing(uint256 followerProfileId, uint256 followedProfileId) external view returns (bool) {
         address followNFT = _profileById[followedProfileId].followNFT;
         return followNFT != address(0) && IFollowNFT(followNFT).isFollowing(followerProfileId);
     }
 
     /// @inheritdoc ILensHub
-    function isProfileCreatorWhitelisted(address profileCreator)
-        external
-        view
-        override
-        returns (bool)
-    {
+    function isProfileCreatorWhitelisted(address profileCreator) external view override returns (bool) {
         return _profileCreatorWhitelisted[profileCreator];
     }
 
@@ -694,22 +572,12 @@ contract LensHub is LensNFTBase, VersionedInitializable, LensMultiState, LensHub
     }
 
     /// @inheritdoc ILensHub
-    function isReferenceModuleWhitelisted(address referenceModule)
-        external
-        view
-        override
-        returns (bool)
-    {
+    function isReferenceModuleWhitelisted(address referenceModule) external view override returns (bool) {
         return _referenceModuleWhitelisted[referenceModule];
     }
 
     /// @inheritdoc ILensHub
-    function isCollectModuleWhitelisted(address collectModule)
-        external
-        view
-        override
-        returns (bool)
-    {
+    function isCollectModuleWhitelisted(address collectModule) external view override returns (bool) {
         return _collectModuleWhitelisted[collectModule];
     }
 
@@ -724,45 +592,26 @@ contract LensHub is LensNFTBase, VersionedInitializable, LensMultiState, LensHub
         address executor,
         uint64 configNumber
     ) external view returns (bool) {
-        return
-            GeneralHelpers.getDelegatedExecutorsConfig(delegatorProfileId).isApproved[configNumber][
-                executor
-            ];
+        return GeneralHelpers.getDelegatedExecutorsConfig(delegatorProfileId).isApproved[configNumber][executor];
     }
 
     /// @inheritdoc ILensHub
-    function isDelegatedExecutorApproved(uint256 delegatorProfileId, address executor)
-        external
-        view
-        returns (bool)
-    {
+    function isDelegatedExecutorApproved(uint256 delegatorProfileId, address executor) external view returns (bool) {
         return GeneralHelpers.isExecutorApproved(delegatorProfileId, executor);
     }
 
     /// @inheritdoc ILensHub
-    function getDelegatedExecutorsConfigNumber(uint256 delegatorProfileId)
-        external
-        view
-        returns (uint64)
-    {
+    function getDelegatedExecutorsConfigNumber(uint256 delegatorProfileId) external view returns (uint64) {
         return GeneralHelpers.getDelegatedExecutorsConfig(delegatorProfileId).configNumber;
     }
 
     /// @inheritdoc ILensHub
-    function getDelegatedExecutorsPrevConfigNumber(uint256 delegatorProfileId)
-        external
-        view
-        returns (uint64)
-    {
+    function getDelegatedExecutorsPrevConfigNumber(uint256 delegatorProfileId) external view returns (uint64) {
         return GeneralHelpers.getDelegatedExecutorsConfig(delegatorProfileId).prevConfigNumber;
     }
 
     /// @inheritdoc ILensHub
-    function getDelegatedExecutorsMaxConfigNumberSet(uint256 delegatorProfileId)
-        external
-        view
-        returns (uint64)
-    {
+    function getDelegatedExecutorsMaxConfigNumberSet(uint256 delegatorProfileId) external view returns (uint64) {
         return GeneralHelpers.getDelegatedExecutorsConfig(delegatorProfileId).maxConfigNumberSet;
     }
 
@@ -772,12 +621,7 @@ contract LensHub is LensNFTBase, VersionedInitializable, LensMultiState, LensHub
     }
 
     /// @inheritdoc ILensHub
-    function getProfileMetadataURI(uint256 profileId)
-        external
-        view
-        override
-        returns (string memory)
-    {
+    function getProfileMetadataURI(uint256 profileId) external view override returns (string memory) {
         return _metadataByProfile[profileId];
     }
 
@@ -802,12 +646,7 @@ contract LensHub is LensNFTBase, VersionedInitializable, LensMultiState, LensHub
     }
 
     /// @inheritdoc ILensHub
-    function getCollectNFT(uint256 profileId, uint256 pubId)
-        external
-        view
-        override
-        returns (address)
-    {
+    function getCollectNFT(uint256 profileId, uint256 pubId) external view override returns (address) {
         return _pubByIdByProfile[profileId][pubId].collectNFT;
     }
 
@@ -817,64 +656,34 @@ contract LensHub is LensNFTBase, VersionedInitializable, LensMultiState, LensHub
     }
 
     /// @inheritdoc ILensHub
-    function getCollectModule(uint256 profileId, uint256 pubId)
-        external
-        view
-        override
-        returns (address)
-    {
+    function getCollectModule(uint256 profileId, uint256 pubId) external view override returns (address) {
         return _pubByIdByProfile[profileId][pubId].collectModule;
     }
 
     /// @inheritdoc ILensHub
-    function getReferenceModule(uint256 profileId, uint256 pubId)
-        external
-        view
-        override
-        returns (address)
-    {
+    function getReferenceModule(uint256 profileId, uint256 pubId) external view override returns (address) {
         return _pubByIdByProfile[profileId][pubId].referenceModule;
     }
 
     /// @inheritdoc ILensHub
-    function getPubPointer(uint256 profileId, uint256 pubId)
-        external
-        view
-        override
-        returns (uint256, uint256)
-    {
+    function getPubPointer(uint256 profileId, uint256 pubId) external view override returns (uint256, uint256) {
         uint256 pointedProfileId = _pubByIdByProfile[profileId][pubId].pointedProfileId;
         uint256 pointedPubId = _pubByIdByProfile[profileId][pubId].pointedPubId;
         return (pointedProfileId, pointedPubId);
     }
 
     /// @inheritdoc ILensHub
-    function getContentURI(uint256 profileId, uint256 pubId)
-        external
-        view
-        override
-        returns (string memory)
-    {
+    function getContentURI(uint256 profileId, uint256 pubId) external view override returns (string memory) {
         return GeneralLib.getContentURI(profileId, pubId);
     }
 
     /// @inheritdoc ILensHub
-    function getProfile(uint256 profileId)
-        external
-        view
-        override
-        returns (Types.ProfileStruct memory)
-    {
+    function getProfile(uint256 profileId) external view override returns (Types.ProfileStruct memory) {
         return _profileById[profileId];
     }
 
     /// @inheritdoc ILensHub
-    function getPub(uint256 profileId, uint256 pubId)
-        external
-        view
-        override
-        returns (Types.PublicationStruct memory)
-    {
+    function getPub(uint256 profileId, uint256 pubId) external view override returns (Types.PublicationStruct memory) {
         return _pubByIdByProfile[profileId][pubId];
     }
 

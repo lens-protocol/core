@@ -43,7 +43,6 @@ contract DeprecatedFreeCollectModule is FollowValidationModuleBase, IDeprecatedC
         uint256 pubId,
         bytes calldata
     ) external view override {
-        if (_followerOnlyByPublicationByProfile[profileId][pubId])
-            _checkFollowValidity(profileId, collector);
+        if (_followerOnlyByPublicationByProfile[profileId][pubId]) _checkFollowValidity(profileId, collector);
     }
 }

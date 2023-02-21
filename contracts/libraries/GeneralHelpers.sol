@@ -50,21 +50,14 @@ library GeneralHelpers {
                 revert Errors.PublicationDoesNotExist();
             }
             uint256 pointedPubId = _publication.pointedPubId;
-            return (
-                pointedProfileId,
-                pointedPubId,
-                getPublicationStruct(pointedProfileId, pointedPubId).collectModule
-            );
+            return (pointedProfileId, pointedPubId, getPublicationStruct(pointedProfileId, pointedPubId).collectModule);
         }
     }
 
     function validatePointedPub(uint256 profileId, uint256 pubId) internal view {
         // If it is pointing to itself it will fail because it will return non-existent type.
         Types.PublicationType pointedPubType = getPublicationType(profileId, pubId);
-        if (
-            pointedPubType == Types.PublicationType.Nonexistent ||
-            pointedPubType == Types.PublicationType.Mirror
-        ) {
+        if (pointedPubType == Types.PublicationType.Nonexistent || pointedPubType == Types.PublicationType.Mirror) {
             revert Errors.InvalidPointedPub();
         }
     }
@@ -96,10 +89,7 @@ library GeneralHelpers {
         return owner;
     }
 
-    function validateAddressIsProfileOwner(address expectedProfileOwner, uint256 profileId)
-        internal
-        view
-    {
+    function validateAddressIsProfileOwner(address expectedProfileOwner, uint256 profileId) internal view {
         if (expectedProfileOwner != ownerOf(profileId)) {
             revert Errors.NotProfileOwner();
         }
@@ -117,10 +107,10 @@ library GeneralHelpers {
         }
     }
 
-    function validateAddressIsDelegatedExecutor(
-        address expectedDelegatedExecutor,
-        uint256 delegatorProfileId
-    ) internal view {
+    function validateAddressIsDelegatedExecutor(address expectedDelegatedExecutor, uint256 delegatorProfileId)
+        internal
+        view
+    {
         if (!isExecutorApproved(delegatorProfileId, expectedDelegatedExecutor)) {
             revert Errors.ExecutorInvalid();
         }
@@ -156,15 +146,11 @@ library GeneralHelpers {
         return _delegatedExecutorsConfig;
     }
 
-    function isExecutorApproved(uint256 delegatorProfileId, address executor)
-        internal
-        view
-        returns (bool)
-    {
-        Types.DelegatedExecutorsConfig
-            storage _delegatedExecutorsConfig = getDelegatedExecutorsConfig(delegatorProfileId);
-        return
-            _delegatedExecutorsConfig.isApproved[_delegatedExecutorsConfig.configNumber][executor];
+    function isExecutorApproved(uint256 delegatorProfileId, address executor) internal view returns (bool) {
+        Types.DelegatedExecutorsConfig storage _delegatedExecutorsConfig = getDelegatedExecutorsConfig(
+            delegatorProfileId
+        );
+        return _delegatedExecutorsConfig.isApproved[_delegatedExecutorsConfig.configNumber][executor];
     }
 
     function validateNotBlocked(uint256 profile, uint256 byProfile) internal view {
@@ -182,11 +168,7 @@ library GeneralHelpers {
         }
     }
 
-    function getPublicationType(uint256 profileId, uint256 pubId)
-        internal
-        view
-        returns (Types.PublicationType)
-    {
+    function getPublicationType(uint256 profileId, uint256 pubId) internal view returns (Types.PublicationType) {
         Types.PublicationStruct storage _publication = getPublicationStruct(profileId, pubId);
         Types.PublicationType pubType = _publication.pubType;
         if (uint8(pubType) == 0) {
@@ -222,11 +204,7 @@ library GeneralHelpers {
         return _publication;
     }
 
-    function getProfileStruct(uint256 profileId)
-        internal
-        pure
-        returns (Types.ProfileStruct storage)
-    {
+    function getProfileStruct(uint256 profileId) internal pure returns (Types.ProfileStruct storage) {
         Types.ProfileStruct storage _profile;
         assembly {
             mstore(0, profileId)
@@ -254,17 +232,11 @@ library GeneralHelpers {
             revert Errors.InvalidReferrer();
         }
 
-        Types.PublicationType referrerPubType = GeneralHelpers.getPublicationType(
-            referrerProfileId,
-            referrerPubId
-        );
+        Types.PublicationType referrerPubType = GeneralHelpers.getPublicationType(referrerProfileId, referrerPubId);
 
         if (referrerPubType == Types.PublicationType.Mirror) {
             _validateReferrerAsMirror(referrerProfileId, referrerPubId, profileId, pubId);
-        } else if (
-            referrerPubType == Types.PublicationType.Comment ||
-            referrerPubType == Types.PublicationType.Quote
-        ) {
+        } else if (referrerPubType == Types.PublicationType.Comment || referrerPubType == Types.PublicationType.Quote) {
             _validateReferrerAsCommentOrQuote(referrerProfileId, referrerPubId, profileId, pubId);
         } else {
             // Referrarls are only supported for mirrors, comments and quotes, not for posts.
@@ -310,10 +282,7 @@ library GeneralHelpers {
             referrerProfileId,
             referrerPubId
         );
-        Types.PublicationType typeOfPubPointedByReferrer = GeneralHelpers.getPublicationType(
-            profileId,
-            pubId
-        );
+        Types.PublicationType typeOfPubPointedByReferrer = GeneralHelpers.getPublicationType(profileId, pubId);
         // We already know that the publication being collected/referenced is not a mirror nor a non-existent one.
         if (typeOfPubPointedByReferrer == Types.PublicationType.Post) {
             // If the publication collected/referenced is a post, the referrer comment/quote must have it as root.
@@ -322,8 +291,10 @@ library GeneralHelpers {
             }
         } else {
             // The publication collected/referenced is a comment or a quote.
-            Types.PublicationStruct storage _pubPointedByReferrer = GeneralHelpers
-                .getPublicationStruct(profileId, pubId);
+            Types.PublicationStruct storage _pubPointedByReferrer = GeneralHelpers.getPublicationStruct(
+                profileId,
+                pubId
+            );
             // The referrer publication and the collected/referenced publication must share the same root.
             if (
                 _referrerPub.rootProfileId != _pubPointedByReferrer.rootProfileId ||

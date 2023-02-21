@@ -116,11 +116,6 @@ contract ModuleGlobals is IModuleGlobals {
         if (currency == address(0)) revert Errors.InitParamsInvalid();
         bool prevWhitelisted = _currencyWhitelisted[currency];
         _currencyWhitelisted[currency] = toWhitelist;
-        emit Events.ModuleGlobalsCurrencyWhitelisted(
-            currency,
-            prevWhitelisted,
-            toWhitelist,
-            block.timestamp
-        );
+        emit Events.ModuleGlobalsCurrencyWhitelisted(currency, prevWhitelisted, toWhitelist, block.timestamp);
     }
 }
