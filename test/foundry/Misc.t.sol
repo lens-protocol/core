@@ -35,7 +35,7 @@ contract MiscTest is BaseTest {
     function testExecutorSetProfileImageURI() public {
         assertEq(hub.getProfileImageURI(newProfileId), MOCK_URI);
         vm.prank(profileOwner);
-        hub.changeDelegatedExecutorsConfig({
+        hub.changeCurrentDelegatedExecutorsConfig({
             delegatorProfileId: newProfileId,
             executors: _toAddressArray(otherSigner),
             approvals: _toBoolArray(true)
@@ -49,7 +49,7 @@ contract MiscTest is BaseTest {
     function testExecutorSetFollowNFTURI() public {
         assertEq(hub.getFollowNFTURI(newProfileId), MOCK_URI);
         vm.prank(profileOwner);
-        hub.changeDelegatedExecutorsConfig({
+        hub.changeCurrentDelegatedExecutorsConfig({
             delegatorProfileId: newProfileId,
             executors: _toAddressArray(otherSigner),
             approvals: _toBoolArray(true)
@@ -145,7 +145,7 @@ contract MiscTest is BaseTest {
 
     function testExecutorSetProfileImageURIWithSig() public {
         vm.prank(profileOwner);
-        hub.changeDelegatedExecutorsConfig({
+        hub.changeCurrentDelegatedExecutorsConfig({
             delegatorProfileId: newProfileId,
             executors: _toAddressArray(otherSigner),
             approvals: _toBoolArray(true)
@@ -180,7 +180,7 @@ contract MiscTest is BaseTest {
 
     function testExecutorSetFollowNFTURIWithSig() public {
         vm.prank(profileOwner);
-        hub.changeDelegatedExecutorsConfig({
+        hub.changeCurrentDelegatedExecutorsConfig({
             delegatorProfileId: newProfileId,
             executors: _toAddressArray(otherSigner),
             approvals: _toBoolArray(true)

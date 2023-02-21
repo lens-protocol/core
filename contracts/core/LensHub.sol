@@ -238,7 +238,7 @@ contract LensHub is LensNFTBase, VersionedInitializable, LensMultiState, LensHub
         );
     }
 
-    function changeDelegatedExecutorsConfig(
+    function changeCurrentDelegatedExecutorsConfig(
         uint256 delegatorProfileId,
         address[] calldata executors,
         bool[] calldata approvals

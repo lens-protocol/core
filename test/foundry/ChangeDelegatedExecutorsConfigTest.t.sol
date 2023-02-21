@@ -183,7 +183,7 @@ contract ChangeDelegatedExecutorsConfigTest_CurrentConfig is BaseTest {
         bool /* switchToGivenConfig */
     ) internal virtual {
         vm.prank(vm.addr(pk));
-        hub.changeDelegatedExecutorsConfig(delegatorProfileId, executors, approvals);
+        hub.changeCurrentDelegatedExecutorsConfig(delegatorProfileId, executors, approvals);
     }
 }
 

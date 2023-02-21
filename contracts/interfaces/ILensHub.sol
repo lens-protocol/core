@@ -184,7 +184,7 @@ interface ILensHub {
      * @param executors The array of executors to set the approval for.
      * @param approvals The array of booleans indicating the corresponding executor new approval status.
      */
-    function changeDelegatedExecutorsConfig(
+    function changeCurrentDelegatedExecutorsConfig(
         uint256 delegatorProfileId,
         address[] calldata executors,
         bool[] calldata approvals

@@ -173,7 +173,7 @@ contract UnfollowTest is BaseTest {
         vm.assume(approvedDelegatedExecutor != testUnfollowerProfileOwner);
 
         vm.prank(testUnfollowerProfileOwner);
-        hub.changeDelegatedExecutorsConfig({
+        hub.changeCurrentDelegatedExecutorsConfig({
             delegatorProfileId: testUnfollowerProfileId,
             executors: _toAddressArray(approvedDelegatedExecutor),
             approvals: _toBoolArray(true)

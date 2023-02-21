@@ -354,7 +354,7 @@ contract FollowTest is BaseTest {
         vm.assume(approvedDelegatedExecutor != testFollowerProfileOwner);
 
         vm.prank(testFollowerProfileOwner);
-        hub.changeDelegatedExecutorsConfig({
+        hub.changeCurrentDelegatedExecutorsConfig({
             delegatorProfileId: testFollowerProfileId,
             executors: _toAddressArray(approvedDelegatedExecutor),
             approvals: _toBoolArray(true)
