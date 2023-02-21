@@ -324,7 +324,7 @@ contract BaseTest is TestSetup {
         uint256 deadline
     ) internal returns (DataTypes.EIP712Signature memory) {
         (uint8 v, bytes32 r, bytes32 s) = vm.sign(pKey, digest);
-        return DataTypes.EIP712Signature(address(0), v, r, s, deadline);
+        return DataTypes.EIP712Signature(vm.addr(pKey), v, r, s, deadline);
     }
 
     function _getSigStruct(
