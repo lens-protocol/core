@@ -511,51 +511,23 @@ contract ChangeDelegatedExecutorsConfigTest_MetaTx is
         bool switchToGivenConfig
     ) internal override {
         address signerAddress = vm.addr(pk);
-        hub.changeDelegatedExecutorsConfigWithSig(
-            _getSignedData({
-                signerPk: pk,
-                delegatorProfileId: delegatorProfileId,
-                executors: executors,
-                approvals: approvals,
-                configNumber: configNumber,
-                switchToGivenConfig: switchToGivenConfig,
-                nonce: cachedNonceByAddress[signerAddress],
-                deadline: type(uint256).max
-            })
+        bytes32 digest = _calculateChangeDelegatedExecutorsConfigWithSigDigest(
+            delegatorProfileId,
+            executors,
+            approvals,
+            configNumber,
+            switchToGivenConfig,
+            cachedNonceByAddress[signerAddress],
+            type(uint256).max
         );
-    }
-
-    function _getSignedData(
-        uint256 signerPk,
-        uint256 delegatorProfileId,
-        address[] memory executors,
-        bool[] memory approvals,
-        uint64 configNumber,
-        bool switchToGivenConfig,
-        uint256 nonce,
-        uint256 deadline
-    ) private returns (DataTypes.ChangeDelegatedExecutorsConfigWithSigData memory) {
-        return
-            DataTypes.ChangeDelegatedExecutorsConfigWithSigData({
-                delegatorProfileId: delegatorProfileId,
-                executors: executors,
-                approvals: approvals,
-                configNumber: configNumber,
-                switchToGivenConfig: switchToGivenConfig,
-                sig: _getSigStruct({
-                    pKey: signerPk,
-                    digest: _calculateChangeDelegatedExecutorsConfigWithSigDigest(
-                        delegatorProfileId,
-                        executors,
-                        approvals,
-                        configNumber,
-                        switchToGivenConfig,
-                        nonce,
-                        deadline
-                    ),
-                    deadline: deadline
-                })
-            });
+        hub.changeDelegatedExecutorsConfigWithSig({
+            delegatorProfileId: delegatorProfileId,
+            executors: executors,
+            approvals: approvals,
+            configNumber: configNumber,
+            switchToGivenConfig: switchToGivenConfig,
+            signature: _getSigStruct({pKey: pk, digest: digest, deadline: type(uint256).max})
+        });
     }
 
     function _calculateChangeDelegatedExecutorsConfigWithSigDigest(
@@ -589,18 +561,23 @@ contract ChangeDelegatedExecutorsConfigTest_MetaTx is
         uint256 nonce,
         uint256 deadline
     ) internal override {
-        hub.changeDelegatedExecutorsConfigWithSig(
-            _getSignedData({
-                signerPk: signerPk,
-                delegatorProfileId: testDelegatorProfileId,
-                executors: _toAddressArray(address(0xC0FFEE)),
-                approvals: _toBoolArray(true),
-                configNumber: 0,
-                switchToGivenConfig: false,
-                nonce: nonce,
-                deadline: deadline
-            })
+        bytes32 digest = _calculateChangeDelegatedExecutorsConfigWithSigDigest(
+            testDelegatorProfileId,
+            _toAddressArray(address(0xC0FFEE)),
+            _toBoolArray(true),
+            0,
+            false,
+            nonce,
+            deadline
         );
+        hub.changeDelegatedExecutorsConfigWithSig({
+            delegatorProfileId: testDelegatorProfileId,
+            executors: _toAddressArray(address(0xC0FFEE)),
+            approvals: _toBoolArray(true),
+            configNumber: 0,
+            switchToGivenConfig: false,
+            signature: _getSigStruct({pKey: signerPk, digest: digest, deadline: deadline})
+        });
     }
 
     function _getDefaultMetaTxSignerPk() internal pure override returns (uint256) {

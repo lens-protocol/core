@@ -76,24 +76,7 @@ library ProfileLib {
 
      */
     function setProfileImageURI(uint256 profileId, string calldata imageURI) external {
-        GeneralHelpers.validateAddressIsProfileOwnerOrDelegatedExecutor(msg.sender, profileId);
         _setProfileImageURI(profileId, imageURI);
-    }
-
-    /**
-     * @notice Sets the profile image URI via signature for a given profile.
-     *
-     * @param vars the SetProfileImageURIWithSigData struct containing the relevant parameters.
-     */
-    function setProfileImageURIWithSig(DataTypes.SetProfileImageURIWithSigData calldata vars)
-        external
-    {
-        address signer = GeneralHelpers.getOriginatorOrDelegatedExecutorSigner(
-            vars.profileId,
-            vars.delegatedSigner
-        );
-        MetaTxHelpers.baseSetProfileImageURIWithSig(signer, vars);
-        _setProfileImageURI(vars.profileId, vars.imageURI);
     }
 
     /**
@@ -103,22 +86,7 @@ library ProfileLib {
      * @param followNFTURI The follow NFT URI to set.
      */
     function setFollowNFTURI(uint256 profileId, string calldata followNFTURI) external {
-        GeneralHelpers.validateAddressIsProfileOwnerOrDelegatedExecutor(msg.sender, profileId);
         _setFollowNFTURI(profileId, followNFTURI);
-    }
-
-    /**
-     * @notice Sets the follow NFT URI via signature for a given profile.
-     *
-     * @param vars the SetFollowNFTURIWithSigData struct containing the relevant parameters.
-     */
-    function setFollowNFTURIWithSig(DataTypes.SetFollowNFTURIWithSigData calldata vars) external {
-        address signer = GeneralHelpers.getOriginatorOrDelegatedExecutorSigner(
-            vars.profileId,
-            vars.delegatedSigner
-        );
-        MetaTxHelpers.baseSetFollowNFTURIWithSig(signer, vars);
-        _setFollowNFTURI(vars.profileId, vars.followNFTURI);
     }
 
     /**
@@ -133,38 +101,11 @@ library ProfileLib {
         address followModule,
         bytes calldata followModuleInitData
     ) external {
-        GeneralHelpers.validateAddressIsProfileOwnerOrDelegatedExecutor(msg.sender, profileId);
         _setFollowModule(profileId, msg.sender, followModule, followModuleInitData);
     }
 
-    /**
-     * @notice sets the follow module via signature for a given profile.
-     *
-     * @param vars the SetFollowModuleWithSigData struct containing the relevant parameters.
-     */
-    function setFollowModuleWithSig(DataTypes.SetFollowModuleWithSigData calldata vars) external {
-        address signer = GeneralHelpers.getOriginatorOrDelegatedExecutorSigner(
-            vars.profileId,
-            vars.delegatedSigner
-        );
-        MetaTxHelpers.baseSetFollowModuleWithSig(signer, vars);
-        _setFollowModule(vars.profileId, signer, vars.followModule, vars.followModuleInitData);
-    }
-
     function setProfileMetadataURI(uint256 profileId, string calldata metadataURI) external {
-        GeneralHelpers.validateAddressIsProfileOwnerOrDelegatedExecutor(msg.sender, profileId);
         _setProfileMetadataURI(profileId, metadataURI);
-    }
-
-    function setProfileMetadataURIWithSig(DataTypes.SetProfileMetadataURIWithSigData calldata vars)
-        external
-    {
-        address signer = GeneralHelpers.getOriginatorOrDelegatedExecutorSigner(
-            vars.profileId,
-            vars.delegatedSigner
-        );
-        MetaTxHelpers.baseSetProfileMetadataURIWithSig(signer, vars);
-        _setProfileMetadataURI(vars.profileId, vars.metadataURI);
     }
 
     function _setProfileString(

@@ -448,7 +448,7 @@ contract FollowMetaTxTest is FollowTest, MetaTxNegatives {
 
     function _follow(
         uint256 pk,
-        bool isFollowerProfileOwner,
+        bool, // isFollowerProfileOwner,
         uint256 followerProfileId,
         uint256[] memory idsOfProfilesToFollow,
         uint256[] memory followTokenIds,
@@ -456,18 +456,24 @@ contract FollowMetaTxTest is FollowTest, MetaTxNegatives {
     ) internal override returns (uint256[] memory) {
         address signer = vm.addr(pk);
         return
-            hub.followWithSig(
-                _getSignedData({
-                    signerPk: pk,
-                    delegatedSigner: isFollowerProfileOwner ? PROFILE_OWNER : signer,
-                    followerProfileId: followerProfileId,
-                    idsOfProfilesToFollow: idsOfProfilesToFollow,
-                    followTokenIds: followTokenIds,
-                    datas: datas,
-                    nonce: cachedNonceByAddress[signer],
+            hub.followWithSig({
+                followerProfileId: followerProfileId,
+                idsOfProfilesToFollow: idsOfProfilesToFollow,
+                followTokenIds: followTokenIds,
+                datas: datas,
+                signature: _getSigStruct({
+                    pKey: pk,
+                    digest: _calculateFollowWithSigDigest(
+                        followerProfileId,
+                        idsOfProfilesToFollow,
+                        followTokenIds,
+                        datas,
+                        cachedNonceByAddress[signer],
+                        type(uint256).max
+                    ),
                     deadline: type(uint256).max
                 })
-            );
+            });
     }
 
     function _executeMetaTx(
@@ -475,18 +481,24 @@ contract FollowMetaTxTest is FollowTest, MetaTxNegatives {
         uint256 nonce,
         uint256 deadline
     ) internal virtual override {
-        hub.followWithSig(
-            _getSignedData({
-                signerPk: signerPk,
-                delegatedSigner: PROFILE_OWNER,
-                followerProfileId: testFollowerProfileId,
-                idsOfProfilesToFollow: _toUint256Array(targetProfileId),
-                followTokenIds: _toUint256Array(MINT_NEW_TOKEN),
-                datas: _toBytesArray(''),
-                nonce: nonce,
+        hub.followWithSig({
+            followerProfileId: testFollowerProfileId,
+            idsOfProfilesToFollow: _toUint256Array(targetProfileId),
+            followTokenIds: _toUint256Array(MINT_NEW_TOKEN),
+            datas: _toBytesArray(''),
+            signature: _getSigStruct({
+                pKey: signerPk,
+                digest: _calculateFollowWithSigDigest(
+                    testFollowerProfileId,
+                    _toUint256Array(targetProfileId),
+                    _toUint256Array(MINT_NEW_TOKEN),
+                    _toBytesArray(''),
+                    nonce,
+                    deadline
+                ),
                 deadline: deadline
             })
-        );
+        });
     }
 
     function _getDefaultMetaTxSignerPk() internal virtual override returns (uint256) {
@@ -522,38 +534,6 @@ contract FollowMetaTxTest is FollowTest, MetaTxNegatives {
                     )
                 )
             );
-    }
-
-    function _getSignedData(
-        uint256 signerPk,
-        address delegatedSigner,
-        uint256 followerProfileId,
-        uint256[] memory idsOfProfilesToFollow,
-        uint256[] memory followTokenIds,
-        bytes[] memory datas,
-        uint256 nonce,
-        uint256 deadline
-    ) internal returns (DataTypes.FollowWithSigData memory) {
-        return
-            DataTypes.FollowWithSigData({
-                delegatedSigner: delegatedSigner,
-                followerProfileId: followerProfileId,
-                idsOfProfilesToFollow: idsOfProfilesToFollow,
-                followTokenIds: followTokenIds,
-                datas: datas,
-                sig: _getSigStruct({
-                    pKey: signerPk,
-                    digest: _calculateFollowWithSigDigest(
-                        followerProfileId,
-                        idsOfProfilesToFollow,
-                        followTokenIds,
-                        datas,
-                        nonce,
-                        deadline
-                    ),
-                    deadline: deadline
-                })
-            });
     }
 
     function _refreshCachedNonces() internal override {

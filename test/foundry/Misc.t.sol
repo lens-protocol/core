@@ -73,14 +73,11 @@ contract MiscTest is BaseTest {
         );
 
         vm.expectRevert(Errors.SignatureInvalid.selector);
-        hub.setProfileImageURIWithSig(
-            DataTypes.SetProfileImageURIWithSigData({
-                delegatedSigner: address(0),
-                profileId: newProfileId,
-                imageURI: MOCK_URI,
-                sig: _getSigStruct(otherSignerKey, digest, deadline)
-            })
-        );
+        hub.setProfileImageURIWithSig({
+            profileId: newProfileId,
+            imageURI: MOCK_URI,
+            signature: _getSigStruct(address(0), otherSignerKey, digest, deadline)
+        });
     }
 
     function testSetProfileImageURIWithSigNotExecutorFails() public {
@@ -94,14 +91,11 @@ contract MiscTest is BaseTest {
         );
 
         vm.expectRevert(Errors.ExecutorInvalid.selector);
-        hub.setProfileImageURIWithSig(
-            DataTypes.SetProfileImageURIWithSigData({
-                delegatedSigner: otherSigner,
-                profileId: newProfileId,
-                imageURI: MOCK_URI,
-                sig: _getSigStruct(otherSignerKey, digest, deadline)
-            })
-        );
+        hub.setProfileImageURIWithSig({
+            profileId: newProfileId,
+            imageURI: MOCK_URI,
+            signature: _getSigStruct(otherSigner, otherSignerKey, digest, deadline)
+        });
     }
 
     function testSetFollowNFTURIWithSigInvalidSignerFails() public {
@@ -110,14 +104,11 @@ contract MiscTest is BaseTest {
         bytes32 digest = _getSetFollowNFTURITypedDataHash(newProfileId, MOCK_URI, nonce, deadline);
 
         vm.expectRevert(Errors.SignatureInvalid.selector);
-        hub.setFollowNFTURIWithSig(
-            DataTypes.SetFollowNFTURIWithSigData({
-                delegatedSigner: address(0),
-                profileId: newProfileId,
-                followNFTURI: MOCK_URI,
-                sig: _getSigStruct(otherSignerKey, digest, deadline)
-            })
-        );
+        hub.setFollowNFTURIWithSig({
+            profileId: newProfileId,
+            followNFTURI: MOCK_URI,
+            signature: _getSigStruct(address(0), otherSignerKey, digest, deadline)
+        });
     }
 
     function testSetFollowNFTURIWithSigNotExecutorFails() public {
@@ -126,14 +117,11 @@ contract MiscTest is BaseTest {
         bytes32 digest = _getSetFollowNFTURITypedDataHash(newProfileId, MOCK_URI, nonce, deadline);
 
         vm.expectRevert(Errors.ExecutorInvalid.selector);
-        hub.setFollowNFTURIWithSig(
-            DataTypes.SetFollowNFTURIWithSigData({
-                delegatedSigner: otherSigner,
-                profileId: newProfileId,
-                followNFTURI: MOCK_URI,
-                sig: _getSigStruct(otherSignerKey, digest, deadline)
-            })
-        );
+        hub.setFollowNFTURIWithSig({
+            profileId: newProfileId,
+            followNFTURI: MOCK_URI,
+            signature: _getSigStruct(otherSigner, otherSignerKey, digest, deadline)
+        });
     }
 
     // Postivies
@@ -143,14 +131,11 @@ contract MiscTest is BaseTest {
         bytes32 digest = _getSetProfileImageURITypedDataHash(newProfileId, 'test', nonce, deadline);
 
         assertEq(hub.getProfileImageURI(newProfileId), MOCK_URI);
-        hub.setProfileImageURIWithSig(
-            DataTypes.SetProfileImageURIWithSigData({
-                delegatedSigner: address(0),
-                profileId: newProfileId,
-                imageURI: 'test',
-                sig: _getSigStruct(profileOwnerKey, digest, deadline)
-            })
-        );
+        hub.setProfileImageURIWithSig({
+            profileId: newProfileId,
+            imageURI: 'test',
+            signature: _getSigStruct(address(0), profileOwnerKey, digest, deadline)
+        });
         assertEq(hub.getProfileImageURI(newProfileId), 'test');
     }
 
@@ -167,14 +152,11 @@ contract MiscTest is BaseTest {
         bytes32 digest = _getSetProfileImageURITypedDataHash(newProfileId, 'test', nonce, deadline);
 
         assertEq(hub.getProfileImageURI(newProfileId), MOCK_URI);
-        hub.setProfileImageURIWithSig(
-            DataTypes.SetProfileImageURIWithSigData({
-                delegatedSigner: otherSigner,
-                profileId: newProfileId,
-                imageURI: 'test',
-                sig: _getSigStruct(otherSignerKey, digest, deadline)
-            })
-        );
+        hub.setProfileImageURIWithSig({
+            profileId: newProfileId,
+            imageURI: 'test',
+            signature: _getSigStruct(otherSigner, otherSignerKey, digest, deadline)
+        });
         assertEq(hub.getProfileImageURI(newProfileId), 'test');
     }
 
@@ -184,14 +166,11 @@ contract MiscTest is BaseTest {
         bytes32 digest = _getSetFollowNFTURITypedDataHash(newProfileId, 'test', nonce, deadline);
 
         assertEq(hub.getFollowNFTURI(newProfileId), MOCK_URI);
-        hub.setFollowNFTURIWithSig(
-            DataTypes.SetFollowNFTURIWithSigData({
-                delegatedSigner: address(0),
-                profileId: newProfileId,
-                followNFTURI: 'test',
-                sig: _getSigStruct(profileOwnerKey, digest, deadline)
-            })
-        );
+        hub.setFollowNFTURIWithSig({
+            profileId: newProfileId,
+            followNFTURI: 'test',
+            signature: _getSigStruct(address(0), profileOwnerKey, digest, deadline)
+        });
         assertEq(hub.getFollowNFTURI(newProfileId), 'test');
     }
 
@@ -208,14 +187,11 @@ contract MiscTest is BaseTest {
         bytes32 digest = _getSetFollowNFTURITypedDataHash(newProfileId, 'test', nonce, deadline);
 
         assertEq(hub.getFollowNFTURI(newProfileId), MOCK_URI);
-        hub.setFollowNFTURIWithSig(
-            DataTypes.SetFollowNFTURIWithSigData({
-                delegatedSigner: otherSigner,
-                profileId: newProfileId,
-                followNFTURI: 'test',
-                sig: _getSigStruct(otherSignerKey, digest, deadline)
-            })
-        );
+        hub.setFollowNFTURIWithSig({
+            profileId: newProfileId,
+            followNFTURI: 'test',
+            signature: _getSigStruct(otherSigner, otherSignerKey, digest, deadline)
+        });
         assertEq(hub.getFollowNFTURI(newProfileId), 'test');
     }
 }

@@ -41,6 +41,11 @@ abstract contract LensMultiState is ILensMultiState {
         _;
     }
 
+    modifier onlyProfileOwner(address expectedOwner, uint256 profileId) {
+        GeneralHelpers.validateAddressIsProfileOwner(expectedOwner, profileId);
+        _;
+    }
+
     modifier whenNotBlocked(uint256 profile, uint256 byProfile) {
         GeneralHelpers.validateNotBlocked(profile, byProfile);
         _;

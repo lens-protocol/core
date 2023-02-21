@@ -38,15 +38,12 @@ contract SetFollowModuleTest is BaseTest, SigSetup {
             digestDeadline
         );
 
-        hub.setFollowModuleWithSig(
-            DataTypes.SetFollowModuleWithSigData({
-                delegatedSigner: delegatedSigner,
-                profileId: newProfileId,
-                followModule: mockFollowModule,
-                followModuleInitData: abi.encode(1),
-                sig: _getSigStruct(signerPrivKey, digest, sigDeadline)
-            })
-        );
+        hub.setFollowModuleWithSig({
+            profileId: newProfileId,
+            followModule: mockFollowModule,
+            followModuleInitData: abi.encode(1),
+            signature: _getSigStruct(delegatedSigner, signerPrivKey, digest, sigDeadline)
+        });
     }
 
     // Negatives
@@ -108,15 +105,12 @@ contract SetFollowModuleTest is BaseTest, SigSetup {
             deadline
         );
 
-        hub.setFollowModuleWithSig(
-            DataTypes.SetFollowModuleWithSigData({
-                delegatedSigner: address(0),
-                profileId: newProfileId,
-                followModule: address(1),
-                followModuleInitData: '',
-                sig: _getSigStruct(profileOwnerKey, digest, deadline)
-            })
-        );
+        hub.setFollowModuleWithSig({
+            profileId: newProfileId,
+            followModule: address(1),
+            followModuleInitData: '',
+            signature: _getSigStruct(address(0), profileOwnerKey, digest, deadline)
+        });
     }
 
     function testCannotPublishWithSigInvalidSigner() public {

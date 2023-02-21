@@ -232,22 +232,26 @@ contract UnfollowMetaTxTest is UnfollowTest, MetaTxNegatives {
 
     function _unfollow(
         uint256 pk,
-        bool isUnfollowerProfileOwner,
+        bool, // isUnfollowerProfileOwner,
         uint256 unfollowerProfileId,
         uint256[] memory idsOfProfilesToUnfollow
     ) internal virtual override {
         address signer = vm.addr(pk);
         uint256 nonce = cachedNonceByAddress[signer];
-        hub.unfollowWithSig(
-            _getSignedData({
-                signerPk: pk,
-                delegatedSigner: isUnfollowerProfileOwner ? PROFILE_OWNER : signer,
-                unfollowerProfileId: unfollowerProfileId,
-                idsOfProfilesToUnfollow: idsOfProfilesToUnfollow,
-                nonce: nonce,
+        hub.unfollowWithSig({
+            unfollowerProfileId: unfollowerProfileId,
+            idsOfProfilesToUnfollow: idsOfProfilesToUnfollow,
+            signature: _getSigStruct({
+                pKey: pk,
+                digest: _calculateUnfollowWithSigDigest(
+                    unfollowerProfileId,
+                    idsOfProfilesToUnfollow,
+                    nonce,
+                    type(uint256).max
+                ),
                 deadline: type(uint256).max
             })
-        );
+        });
     }
 
     function _executeMetaTx(
@@ -255,16 +259,20 @@ contract UnfollowMetaTxTest is UnfollowTest, MetaTxNegatives {
         uint256 nonce,
         uint256 deadline
     ) internal virtual override {
-        hub.unfollowWithSig(
-            _getSignedData({
-                signerPk: signerPk,
-                delegatedSigner: PROFILE_OWNER,
-                unfollowerProfileId: testUnfollowerProfileId,
-                idsOfProfilesToUnfollow: _toUint256Array(targetProfileId),
-                nonce: nonce,
+        hub.unfollowWithSig({
+            unfollowerProfileId: testUnfollowerProfileId,
+            idsOfProfilesToUnfollow: _toUint256Array(targetProfileId),
+            signature: _getSigStruct({
+                pKey: signerPk,
+                digest: _calculateUnfollowWithSigDigest(
+                    testUnfollowerProfileId,
+                    _toUint256Array(targetProfileId),
+                    nonce,
+                    deadline
+                ),
                 deadline: deadline
             })
-        );
+        });
     }
 
     function _getDefaultMetaTxSignerPk() internal virtual override returns (uint256) {
@@ -289,31 +297,5 @@ contract UnfollowMetaTxTest is UnfollowTest, MetaTxNegatives {
                     )
                 )
             );
-    }
-
-    function _getSignedData(
-        uint256 signerPk,
-        address delegatedSigner,
-        uint256 unfollowerProfileId,
-        uint256[] memory idsOfProfilesToUnfollow,
-        uint256 nonce,
-        uint256 deadline
-    ) internal returns (DataTypes.UnfollowWithSigData memory) {
-        return
-            DataTypes.UnfollowWithSigData({
-                delegatedSigner: delegatedSigner,
-                unfollowerProfileId: unfollowerProfileId,
-                idsOfProfilesToUnfollow: idsOfProfilesToUnfollow,
-                sig: _getSigStruct({
-                    pKey: signerPk,
-                    digest: _calculateUnfollowWithSigDigest(
-                        unfollowerProfileId,
-                        idsOfProfilesToUnfollow,
-                        nonce,
-                        deadline
-                    ),
-                    deadline: deadline
-                })
-            });
     }
 }

@@ -295,18 +295,27 @@ contract SetBlockStatusMetaTxTest is SetBlockStatusTest, MetaTxNegatives {
         uint256[] memory idsOfProfilesToSetBlockStatus,
         bool[] memory blockStatus
     ) internal override {
+        /* Wen @solc-nowarn unused-param?
+            Silence the compiler warning, but allow calling this with Named Params.
+            This variable isn't used here, but used in withSig case. */
+        isStatusSetterProfileOwner = isStatusSetterProfileOwner;
         address signer = vm.addr(pk);
-        hub.setBlockStatusWithSig(
-            _getSignedData({
-                signerPk: pk,
-                delegatedSigner: isStatusSetterProfileOwner ? PROFILE_OWNER : signer,
-                byProfileId: byProfileId,
-                idsOfProfilesToSetBlockStatus: idsOfProfilesToSetBlockStatus,
-                blockStatus: blockStatus,
-                nonce: cachedNonceByAddress[signer],
+        hub.setBlockStatusWithSig({
+            byProfileId: byProfileId,
+            idsOfProfilesToSetBlockStatus: idsOfProfilesToSetBlockStatus,
+            blockStatus: blockStatus,
+            signature: _getSigStruct({
+                pKey: pk,
+                digest: _calculateSetBlockStatusWithSigDigest({
+                    byProfileId: statusSetterProfileId,
+                    idsOfProfilesToSetBlockStatus: _toUint256Array(blockeeProfileId),
+                    blockStatus: _toBoolArray(true),
+                    nonce: cachedNonceByAddress[signer],
+                    deadline: type(uint256).max
+                }),
                 deadline: type(uint256).max
             })
-        );
+        });
     }
 
     function _executeMetaTx(
@@ -314,17 +323,22 @@ contract SetBlockStatusMetaTxTest is SetBlockStatusTest, MetaTxNegatives {
         uint256 nonce,
         uint256 deadline
     ) internal override {
-        hub.setBlockStatusWithSig(
-            _getSignedData({
-                signerPk: signerPk,
-                delegatedSigner: PROFILE_OWNER,
-                byProfileId: statusSetterProfileId,
-                idsOfProfilesToSetBlockStatus: _toUint256Array(blockeeProfileId),
-                blockStatus: _toBoolArray(true),
-                nonce: nonce,
+        hub.setBlockStatusWithSig({
+            byProfileId: statusSetterProfileId,
+            idsOfProfilesToSetBlockStatus: _toUint256Array(blockeeProfileId),
+            blockStatus: _toBoolArray(true),
+            signature: _getSigStruct({
+                pKey: signerPk,
+                digest: _calculateSetBlockStatusWithSigDigest({
+                    byProfileId: statusSetterProfileId,
+                    idsOfProfilesToSetBlockStatus: _toUint256Array(blockeeProfileId),
+                    blockStatus: _toBoolArray(true),
+                    nonce: nonce,
+                    deadline: deadline
+                }),
                 deadline: deadline
             })
-        );
+        });
     }
 
     function _getDefaultMetaTxSignerPk() internal pure override returns (uint256) {

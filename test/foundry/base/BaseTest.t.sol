@@ -477,11 +477,21 @@ contract BaseTest is TestSetup {
             );
     }
 
-    function _followWithSig(DataTypes.FollowWithSigData memory vars)
-        internal
-        returns (uint256[] memory)
-    {
-        return hub.followWithSig(vars);
+    function _followWithSig(
+        uint256 followerProfileId,
+        uint256 idOfProfileToFollow,
+        uint256 followTokenId,
+        bytes memory data,
+        DataTypes.EIP712Signature memory sig
+    ) internal returns (uint256[] memory) {
+        return
+            hub.followWithSig(
+                followerProfileId,
+                _toUint256Array(idOfProfileToFollow),
+                _toUint256Array(followTokenId),
+                _toBytesArray(data),
+                sig
+            );
     }
 
     function _createProfile(address newProfileOwner) internal returns (uint256) {
@@ -542,8 +552,13 @@ contract BaseTest is TestSetup {
         hub.setFollowModule(profileId, followModule, followModuleInitData);
     }
 
-    function _setFollowModuleWithSig(DataTypes.SetFollowModuleWithSigData memory vars) internal {
-        hub.setFollowModuleWithSig(vars);
+    function _setFollowModuleWithSig(
+        uint256 profileId,
+        address followModule,
+        bytes memory followModuleInitData,
+        DataTypes.EIP712Signature memory sig
+    ) internal {
+        hub.setFollowModuleWithSig(profileId, followModule, followModuleInitData, sig);
     }
 
     function _setProfileImageURI(
@@ -555,10 +570,12 @@ contract BaseTest is TestSetup {
         hub.setProfileImageURI(profileId, imageURI);
     }
 
-    function _setProfileImageURIWithSig(DataTypes.SetProfileImageURIWithSigData memory vars)
-        internal
-    {
-        hub.setProfileImageURIWithSig(vars);
+    function _setProfileImageURIWithSig(
+        uint256 profileId,
+        string memory imageURI,
+        DataTypes.EIP712Signature memory sig
+    ) internal {
+        hub.setProfileImageURIWithSig(profileId, imageURI, sig);
     }
 
     function _setFollowNFTURI(
@@ -570,8 +587,12 @@ contract BaseTest is TestSetup {
         hub.setFollowNFTURI(profileId, followNFTURI);
     }
 
-    function _setFollowNFTURIWithSig(DataTypes.SetFollowNFTURIWithSigData memory vars) internal {
-        hub.setFollowNFTURIWithSig(vars);
+    function _setFollowNFTURIWithSig(
+        uint256 profileId,
+        string memory followNFTURI,
+        DataTypes.EIP712Signature memory sig
+    ) internal {
+        hub.setFollowNFTURIWithSig(profileId, followNFTURI, sig);
     }
 
     function _burn(address msgSender, uint256 profileId) internal {
