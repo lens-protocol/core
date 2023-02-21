@@ -120,7 +120,6 @@ library GeneralLib {
         address[] calldata executors,
         bool[] calldata approvals
     ) external {
-        GeneralHelpers.validateAddressIsProfileOwner(msg.sender, delegatorProfileId);
         DataTypes.DelegatedExecutorsConfig storage _delegatedExecutorsConfig = GeneralHelpers
             .getDelegatedExecutorsConfig(delegatorProfileId);
         _changeDelegatedExecutorsConfig(
@@ -140,7 +139,6 @@ library GeneralLib {
         uint64 configNumber,
         bool switchToGivenConfig
     ) external {
-        GeneralHelpers.validateAddressIsProfileOwner(msg.sender, delegatorProfileId);
         _changeDelegatedExecutorsConfig(
             GeneralHelpers.getDelegatedExecutorsConfig(delegatorProfileId),
             delegatorProfileId,
@@ -148,20 +146,6 @@ library GeneralLib {
             approvals,
             configNumber,
             switchToGivenConfig
-        );
-    }
-
-    function changeDelegatedExecutorsConfigWithSig(
-        DataTypes.ChangeDelegatedExecutorsConfigWithSigData calldata vars
-    ) external {
-        MetaTxHelpers.baseChangeDelegatedExecutorsConfigWithSig(vars);
-        _changeDelegatedExecutorsConfig(
-            GeneralHelpers.getDelegatedExecutorsConfig(vars.delegatorProfileId),
-            vars.delegatorProfileId,
-            vars.executors,
-            vars.approvals,
-            vars.configNumber,
-            vars.switchToGivenConfig
         );
     }
 
@@ -180,79 +164,29 @@ library GeneralLib {
         uint256 followerProfileId,
         uint256[] calldata idsOfProfilesToFollow,
         uint256[] calldata followTokenIds,
-        bytes[] calldata followModuleDatas
+        bytes[] calldata followModuleDatas,
+        address transactionExecutor
     ) external returns (uint256[] memory) {
-        GeneralHelpers.validateAddressIsProfileOwnerOrDelegatedExecutor(
-            msg.sender,
-            followerProfileId
-        );
         return
             InteractionHelpers.follow({
                 followerProfileId: followerProfileId,
-                executor: msg.sender,
+                executor: transactionExecutor, // TODO: Why do we still need to know the executor there?
                 idsOfProfilesToFollow: idsOfProfilesToFollow,
                 followTokenIds: followTokenIds,
                 followModuleDatas: followModuleDatas
             });
     }
 
-    /**
-     * @notice Validates parameters and increments the nonce for a given owner using the
-     * `followWithSig()` function.
-     *
-     * @param vars the FollowWithSigData struct containing the relevant parameters.
-     */
-    function followWithSig(DataTypes.FollowWithSigData calldata vars)
-        external
-        returns (uint256[] memory)
-    {
-        address signer = GeneralHelpers.getOriginatorOrDelegatedExecutorSigner(
-            vars.followerProfileId,
-            vars.delegatedSigner
-        );
-        MetaTxHelpers.baseFollowWithSig(signer, vars);
-        return
-            InteractionHelpers.follow({
-                followerProfileId: vars.followerProfileId,
-                executor: signer,
-                idsOfProfilesToFollow: vars.idsOfProfilesToFollow,
-                followTokenIds: vars.followTokenIds,
-                followModuleDatas: vars.datas
-            });
-    }
-
-    function unfollow(uint256 unfollowerProfileId, uint256[] calldata idsOfProfilesToUnfollow)
-        external
-    {
-        GeneralHelpers.validateAddressIsProfileOwnerOrDelegatedExecutor(
-            msg.sender,
-            unfollowerProfileId
-        );
+    function unfollow(
+        uint256 unfollowerProfileId,
+        uint256[] calldata idsOfProfilesToUnfollow,
+        address transactionExecutor
+    ) external {
         return
             InteractionHelpers.unfollow({
                 unfollowerProfileId: unfollowerProfileId,
-                executor: msg.sender,
+                executor: transactionExecutor, // TODO: Why do we still need to know the executor there?
                 idsOfProfilesToUnfollow: idsOfProfilesToUnfollow
-            });
-    }
-
-    /**
-     * @notice Validates parameters and increments the nonce for a given owner using the
-     * `unfollowWithSig()` function.
-     *
-     * @param vars the UnfollowWithSigData struct containing the relevant parameters.
-     */
-    function unfollowWithSig(DataTypes.UnfollowWithSigData calldata vars) external {
-        address signer = GeneralHelpers.getOriginatorOrDelegatedExecutorSigner(
-            vars.unfollowerProfileId,
-            vars.delegatedSigner
-        );
-        MetaTxHelpers.baseUnfollowWithSig(signer, vars);
-        return
-            InteractionHelpers.unfollow({
-                unfollowerProfileId: vars.unfollowerProfileId,
-                executor: signer,
-                idsOfProfilesToUnfollow: vars.idsOfProfilesToUnfollow
             });
     }
 
@@ -261,21 +195,7 @@ library GeneralLib {
         uint256[] calldata idsOfProfilesToSetBlockStatus,
         bool[] calldata blockStatus
     ) external {
-        GeneralHelpers.validateAddressIsProfileOwnerOrDelegatedExecutor(msg.sender, byProfileId);
         InteractionHelpers.setBlockStatus(byProfileId, idsOfProfilesToSetBlockStatus, blockStatus);
-    }
-
-    function setBlockStatusWithSig(DataTypes.SetBlockStatusWithSigData calldata vars) external {
-        address signer = GeneralHelpers.getOriginatorOrDelegatedExecutorSigner(
-            vars.byProfileId,
-            vars.delegatedSigner
-        );
-        MetaTxHelpers.baseSetBlockStatusWithSig(signer, vars);
-        InteractionHelpers.setBlockStatus(
-            vars.byProfileId,
-            vars.idsOfProfilesToSetBlockStatus,
-            vars.blockStatus
-        );
     }
 
     function collect(
@@ -336,17 +256,6 @@ library GeneralLib {
             let slot := keccak256(0, 64)
             sstore(slot, approved)
         }
-    }
-
-    /**
-     * @notice Validates parameters and increments the nonce for a given owner using the
-     * `burnWithSig()` function.
-     *
-     * @param tokenId The token ID to burn.
-     * @param sig the EIP712Signature struct containing the token owner's signature.
-     */
-    function baseBurnWithSig(uint256 tokenId, DataTypes.EIP712Signature calldata sig) external {
-        MetaTxHelpers.baseBurnWithSig(tokenId, sig);
     }
 
     /**

@@ -109,14 +109,11 @@ contract ProfileMetadataURITest_MetaTx is ProfileMetadataURITest, MetaTxNegative
             deadline
         );
 
-        hub.setProfileMetadataURIWithSig(
-            DataTypes.SetProfileMetadataURIWithSigData({
-                delegatedSigner: signer == profileOwner ? address(0) : signer,
-                profileId: newProfileId,
-                metadataURI: MOCK_URI,
-                sig: _getSigStruct(pk, digest, deadline)
-            })
-        );
+        hub.setProfileMetadataURIWithSig({
+            profileId: newProfileId,
+            metadataURI: MOCK_URI,
+            signature: _getSigStruct(signer, pk, digest, deadline)
+        });
     }
 
     function _executeMetaTx(
@@ -131,14 +128,16 @@ contract ProfileMetadataURITest_MetaTx is ProfileMetadataURITest, MetaTxNegative
             deadline
         );
 
-        hub.setProfileMetadataURIWithSig(
-            DataTypes.SetProfileMetadataURIWithSigData({
-                delegatedSigner: address(0),
-                profileId: newProfileId,
-                metadataURI: MOCK_URI,
-                sig: _getSigStruct(signerPk, digest, deadline)
-            })
-        );
+        hub.setProfileMetadataURIWithSig({
+            profileId: newProfileId,
+            metadataURI: MOCK_URI,
+            signature: _getSigStruct(
+                vm.addr(_getDefaultMetaTxSignerPk()),
+                signerPk,
+                digest,
+                deadline
+            )
+        });
     }
 
     function _getDefaultMetaTxSignerPk() internal virtual override returns (uint256) {

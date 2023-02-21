@@ -52,7 +52,6 @@ contract UnfollowTest is BaseTest {
 
         _unfollow({
             pk: testUnfollowerProfileOwnerPk,
-            isUnfollowerProfileOwner: true,
             unfollowerProfileId: testUnfollowerProfileId,
             idsOfProfilesToUnfollow: _toUint256Array(targetProfileId)
         });
@@ -66,7 +65,6 @@ contract UnfollowTest is BaseTest {
 
         _unfollow({
             pk: testUnfollowerProfileOwnerPk,
-            isUnfollowerProfileOwner: true,
             unfollowerProfileId: testUnfollowerProfileId,
             idsOfProfilesToUnfollow: _toUint256Array(targetProfileId)
         });
@@ -83,7 +81,6 @@ contract UnfollowTest is BaseTest {
 
         _unfollow({
             pk: testUnfollowerProfileOwnerPk,
-            isUnfollowerProfileOwner: true,
             unfollowerProfileId: testUnfollowerProfileId,
             idsOfProfilesToUnfollow: _toUint256Array(targetProfileId, unexistentProfileId)
         });
@@ -99,7 +96,6 @@ contract UnfollowTest is BaseTest {
 
         _unfollow({
             pk: testUnfollowerProfileOwnerPk,
-            isUnfollowerProfileOwner: true,
             unfollowerProfileId: testUnfollowerProfileId,
             idsOfProfilesToUnfollow: _toUint256Array(hasNeverBeenFollowedProfileId)
         });
@@ -110,7 +106,6 @@ contract UnfollowTest is BaseTest {
 
         _unfollow({
             pk: nonFollowingProfileOwnerPk,
-            isUnfollowerProfileOwner: true,
             unfollowerProfileId: nonFollowingProfileId,
             idsOfProfilesToUnfollow: _toUint256Array(targetProfileId)
         });
@@ -135,7 +130,6 @@ contract UnfollowTest is BaseTest {
 
         _unfollow({
             pk: executorPk,
-            isUnfollowerProfileOwner: false,
             unfollowerProfileId: testUnfollowerProfileId,
             idsOfProfilesToUnfollow: _toUint256Array(targetProfileId)
         });
@@ -159,7 +153,6 @@ contract UnfollowTest is BaseTest {
 
         _unfollow({
             pk: testUnfollowerProfileOwnerPk,
-            isUnfollowerProfileOwner: true,
             unfollowerProfileId: testUnfollowerProfileId,
             idsOfProfilesToUnfollow: _toUint256Array(targetProfileId)
         });
@@ -196,7 +189,6 @@ contract UnfollowTest is BaseTest {
 
         _unfollow({
             pk: approvedDelegatedExecutorPk,
-            isUnfollowerProfileOwner: false,
             unfollowerProfileId: testUnfollowerProfileId,
             idsOfProfilesToUnfollow: _toUint256Array(targetProfileId)
         });
@@ -206,14 +198,9 @@ contract UnfollowTest is BaseTest {
 
     function _unfollow(
         uint256 pk,
-        bool isUnfollowerProfileOwner,
         uint256 unfollowerProfileId,
         uint256[] memory idsOfProfilesToUnfollow
     ) internal virtual {
-        /* Wen @solc-nowarn unused-param?
-            Silence the compiler warning, but allow calling this with Named Params.
-            This variable isn't used here, but used in withSig case. */
-        isUnfollowerProfileOwner = isUnfollowerProfileOwner;
         vm.prank(vm.addr(pk));
         hub.unfollow(unfollowerProfileId, idsOfProfilesToUnfollow);
     }
@@ -232,22 +219,25 @@ contract UnfollowMetaTxTest is UnfollowTest, MetaTxNegatives {
 
     function _unfollow(
         uint256 pk,
-        bool isUnfollowerProfileOwner,
         uint256 unfollowerProfileId,
         uint256[] memory idsOfProfilesToUnfollow
     ) internal virtual override {
         address signer = vm.addr(pk);
         uint256 nonce = cachedNonceByAddress[signer];
-        hub.unfollowWithSig(
-            _getSignedData({
-                signerPk: pk,
-                delegatedSigner: isUnfollowerProfileOwner ? PROFILE_OWNER : signer,
-                unfollowerProfileId: unfollowerProfileId,
-                idsOfProfilesToUnfollow: idsOfProfilesToUnfollow,
-                nonce: nonce,
+        hub.unfollowWithSig({
+            unfollowerProfileId: unfollowerProfileId,
+            idsOfProfilesToUnfollow: idsOfProfilesToUnfollow,
+            signature: _getSigStruct({
+                pKey: pk,
+                digest: _calculateUnfollowWithSigDigest(
+                    unfollowerProfileId,
+                    idsOfProfilesToUnfollow,
+                    nonce,
+                    type(uint256).max
+                ),
                 deadline: type(uint256).max
             })
-        );
+        });
     }
 
     function _executeMetaTx(
@@ -255,16 +245,21 @@ contract UnfollowMetaTxTest is UnfollowTest, MetaTxNegatives {
         uint256 nonce,
         uint256 deadline
     ) internal virtual override {
-        hub.unfollowWithSig(
-            _getSignedData({
-                signerPk: signerPk,
-                delegatedSigner: PROFILE_OWNER,
-                unfollowerProfileId: testUnfollowerProfileId,
-                idsOfProfilesToUnfollow: _toUint256Array(targetProfileId),
-                nonce: nonce,
+        hub.unfollowWithSig({
+            unfollowerProfileId: testUnfollowerProfileId,
+            idsOfProfilesToUnfollow: _toUint256Array(targetProfileId),
+            signature: _getSigStruct({
+                signer: vm.addr(_getDefaultMetaTxSignerPk()),
+                pKey: signerPk,
+                digest: _calculateUnfollowWithSigDigest(
+                    testUnfollowerProfileId,
+                    _toUint256Array(targetProfileId),
+                    nonce,
+                    deadline
+                ),
                 deadline: deadline
             })
-        );
+        });
     }
 
     function _getDefaultMetaTxSignerPk() internal virtual override returns (uint256) {
@@ -281,7 +276,7 @@ contract UnfollowMetaTxTest is UnfollowTest, MetaTxNegatives {
             _calculateDigest(
                 keccak256(
                     abi.encode(
-                        UNFOLLOW_WITH_SIG_TYPEHASH,
+                        UNFOLLOW_TYPEHASH,
                         unfollowerProfileId,
                         keccak256(abi.encodePacked(idsOfProfilesToUnfollow)),
                         nonce,
@@ -289,31 +284,5 @@ contract UnfollowMetaTxTest is UnfollowTest, MetaTxNegatives {
                     )
                 )
             );
-    }
-
-    function _getSignedData(
-        uint256 signerPk,
-        address delegatedSigner,
-        uint256 unfollowerProfileId,
-        uint256[] memory idsOfProfilesToUnfollow,
-        uint256 nonce,
-        uint256 deadline
-    ) internal returns (DataTypes.UnfollowWithSigData memory) {
-        return
-            DataTypes.UnfollowWithSigData({
-                delegatedSigner: delegatedSigner,
-                unfollowerProfileId: unfollowerProfileId,
-                idsOfProfilesToUnfollow: idsOfProfilesToUnfollow,
-                sig: _getSigStruct({
-                    pKey: signerPk,
-                    digest: _calculateUnfollowWithSigDigest(
-                        unfollowerProfileId,
-                        idsOfProfilesToUnfollow,
-                        nonce,
-                        deadline
-                    ),
-                    deadline: deadline
-                })
-            });
     }
 }

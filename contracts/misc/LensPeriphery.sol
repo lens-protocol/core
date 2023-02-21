@@ -23,7 +23,7 @@ contract LensPeriphery {
         keccak256(
             'EIP712Domain(string name,string version,uint256 chainId,address verifyingContract)'
         );
-    bytes32 internal constant TOGGLE_FOLLOW_WITH_SIG_TYPEHASH =
+    bytes32 internal constant TOGGLE_FOLLOW_TYPEHASH =
         keccak256(
             'ToggleFollowWithSig(uint256[] profileIds,bool[] enables,uint256 nonce,uint256 deadline)'
         );
@@ -62,7 +62,7 @@ contract LensPeriphery {
                 _calculateDigest(
                     keccak256(
                         abi.encode(
-                            TOGGLE_FOLLOW_WITH_SIG_TYPEHASH,
+                            TOGGLE_FOLLOW_TYPEHASH,
                             keccak256(abi.encodePacked(vars.profileIds)),
                             keccak256(abi.encodePacked(vars.enables)),
                             sigNonces[vars.follower]++,

@@ -115,10 +115,15 @@ interface ILensHub {
      * @notice Sets the metadata URI via signature for the given profile with the specified parameters. The signer must
      * either be the profile owner or a delegated executor.
      *
-     * @param vars A SetProfileMetadataURIWithSigData struct, including the regular parameters and an EIP712Signature struct.
+     * @param profileId The token ID of the profile to set the metadata URI for.
+     * @param metadataURI The metadata URI to set for the given profile.
+     * @param signature The signature for the post.
      */
-    function setProfileMetadataURIWithSig(DataTypes.SetProfileMetadataURIWithSigData calldata vars)
-        external;
+    function setProfileMetadataURIWithSig(
+        uint256 profileId,
+        string calldata metadataURI,
+        DataTypes.EIP712Signature calldata signature
+    ) external;
 
     /**
      * @notice Sets the follow module for the given profile. Must be called by the profile owner.
@@ -137,9 +142,17 @@ interface ILensHub {
      * @notice Sets the follow module via signature for the given profile with the specified parameters. The signer must
      * either be the profile owner or a delegated executor.
      *
-     * @param vars A SetFollowModuleWithSigData struct, including the regular parameters and an EIP712Signature struct.
+     * @param profileId The token ID of the profile to set the follow module for.
+     * @param followModule The follow module to set for the given profile, must be whitelisted.
+     * @param followModuleInitData The data to be passed to the follow module for initialization.
+     * @param signature The signature for the post.
      */
-    function setFollowModuleWithSig(DataTypes.SetFollowModuleWithSigData calldata vars) external;
+    function setFollowModuleWithSig(
+        uint256 profileId,
+        address followModule,
+        bytes calldata followModuleInitData,
+        DataTypes.EIP712Signature calldata signature
+    ) external;
 
     /**
      * @notice Changes the delegated executors configuration for the given profile. It allows to set the approvals for
@@ -184,11 +197,21 @@ interface ILensHub {
      * @dev The signer must be the owner of the delegator profile. The meta-tx function only exists in the flavour where
      * the `configNumber` and `switchToGivenConfig` params are required to be passed explicitly.
      *
-     * @param vars A ChangeDelegatedExecutorsConfigWithSigData struct, including the regular parameters and
-     * an EIP712Signature struct.
+     * @param delegatorProfileId The ID of the profile to which the delegated executor is being changed for.
+     * @param executors The array of executors to set the approval for.
+     * @param approvals The array of booleans indicating the corresponding executor new approval status.
+     * @param configNumber The number of the configuration where the executor approval state is being set.
+     * @param switchToGivenConfig A boolean indicanting if the configuration must be switched to the one with the given
+     * number.
+     * @param signature The signature for the post.
      */
     function changeDelegatedExecutorsConfigWithSig(
-        DataTypes.ChangeDelegatedExecutorsConfigWithSigData calldata vars
+        uint256 delegatorProfileId,
+        address[] calldata executors,
+        bool[] calldata approvals,
+        uint64 configNumber,
+        bool switchToGivenConfig,
+        DataTypes.EIP712Signature calldata signature
     ) external;
 
     /**
@@ -203,10 +226,15 @@ interface ILensHub {
      * @notice Sets the image URI via signature for the given profile with the specified parameters. The signer must
      * either be the profile owner or a delegated executor.
      *
-     * @param vars A SetProfileImageURIWithSigData struct, including the regular parameters and an EIP712Signature struct.
+     * @param profileId The token ID of the profile of the profile to set the URI for.
+     * @param imageURI The URI to set for the given profile.
+     * @param signature The signature for the post.
      */
-    function setProfileImageURIWithSig(DataTypes.SetProfileImageURIWithSigData calldata vars)
-        external;
+    function setProfileImageURIWithSig(
+        uint256 profileId,
+        string calldata imageURI,
+        DataTypes.EIP712Signature calldata signature
+    ) external;
 
     /**
      * @notice Sets a followNFT URI for a given profile's follow NFT.
@@ -220,9 +248,15 @@ interface ILensHub {
      * @notice Sets a followNFT URI via signature for the given profile with the specified parameters. The signer must
      * either be the profile owner or a delegated executor.
      *
-     * @param vars A SetFollowNFTURIWithSigData struct, including the regular parameters and an EIP712Signature struct.
+     * @param profileId The token ID of the profile for which to set the followNFT URI.
+     * @param followNFTURI The follow NFT URI to set.
+     * @param signature The signature for the post.
      */
-    function setFollowNFTURIWithSig(DataTypes.SetFollowNFTURIWithSigData calldata vars) external;
+    function setFollowNFTURIWithSig(
+        uint256 profileId,
+        string calldata followNFTURI,
+        DataTypes.EIP712Signature calldata signature
+    ) external;
 
     /**
      * @notice Publishes a post to a given profile, must be called by the profile owner.
@@ -340,14 +374,21 @@ interface ILensHub {
      * @notice Follows the given profiles via signature with the specified parameters. The signer must either be the
      * follower or a delegated executor.
      *
-     * @param vars A FollowWithSigData struct containing the regular parameters as well as the signing follower's
-     * address and an EIP712Signature struct.
+     * @param followerProfileId The ID of the profile the follows are being executed for.
+     * @param idsOfProfilesToFollow The array of IDs of profiles to follow.
+     * @param followTokenIds The array of follow token IDs to use for each follow.
+     * @param datas The arbitrary data array to pass to the follow module for each profile if needed.
+     * @param signature The signature for the post.
      *
      * @return uint256[] An array follow token IDs used for each follow operation.
      */
-    function followWithSig(DataTypes.FollowWithSigData calldata vars)
-        external
-        returns (uint256[] memory);
+    function followWithSig(
+        uint256 followerProfileId,
+        uint256[] calldata idsOfProfilesToFollow,
+        uint256[] calldata followTokenIds,
+        bytes[] calldata datas,
+        DataTypes.EIP712Signature calldata signature
+    ) external returns (uint256[] memory);
 
     /**
      * @notice Unfollows the given profiles.
@@ -362,10 +403,15 @@ interface ILensHub {
      * @notice Unfollows the given profiles via signature with the specified parameters. The signer must either be the
      * unfollower or a delegated executor.
      *
-     * @param vars An UnollowWithSigData struct containing the regular parameters as well as the signing unfollower's
-     * address and an EIP712Signature struct.
+     * @param unfollowerProfileId The ID of the profile the unfollows are being executed for.
+     * @param idsOfProfilesToUnfollow The array of IDs of profiles to unfollow.
+     * @param signature The signature for the post.
      */
-    function unfollowWithSig(DataTypes.UnfollowWithSigData calldata vars) external;
+    function unfollowWithSig(
+        uint256 unfollowerProfileId,
+        uint256[] calldata idsOfProfilesToUnfollow,
+        DataTypes.EIP712Signature calldata signature
+    ) external;
 
     /**
      * @notice Sets the block status for the given profiles. Changing a profile's block status to `true` (i.e. blocked),
@@ -387,10 +433,19 @@ interface ILensHub {
      * @notice Blocks the given profiles via signature with the specified parameters. The signer must either be the
      * blocker or a delegated executor.
      *
-     * @param vars An SetBlockStatusWithSigData struct containing the regular parameters as well as the signing
-     * blocker's address and an EIP712Signature struct.
+     * @dev Both the `idsOfProfilesToSetBlockStatus` and `blockStatus` arrays must be of the same length.
+     *
+     * @param byProfileId The ID of the profile the block status sets are being executed for.
+     * @param idsOfProfilesToSetBlockStatus The array of IDs of profiles to set block status.
+     * @param blockStatus The array of block status to use for each setting.
+     * @param signature The signature for the post.
      */
-    function setBlockStatusWithSig(DataTypes.SetBlockStatusWithSigData calldata vars) external;
+    function setBlockStatusWithSig(
+        uint256 byProfileId,
+        uint256[] calldata idsOfProfilesToSetBlockStatus,
+        bool[] calldata blockStatus,
+        DataTypes.EIP712Signature calldata signature
+    ) external;
 
     /**
      * @notice Collects a given publication via signature with the specified parameters. The caller must either be the collector

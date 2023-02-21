@@ -79,112 +79,123 @@ library MetaTxHelpers {
         emit ApprovalForAll(owner, operator, approved);
     }
 
-    function baseSetProfileMetadataURIWithSig(
-        address signer,
-        DataTypes.SetProfileMetadataURIWithSigData calldata vars
+    function validateSetProfileMetadataURISignature(
+        DataTypes.EIP712Signature calldata signature,
+        uint256 profileId,
+        string calldata metadataURI
     ) internal {
         _validateRecoveredAddress(
             _calculateDigest(
                 keccak256(
                     abi.encode(
-                        SET_PROFILE_METADATA_URI_WITH_SIG_TYPEHASH,
-                        vars.profileId,
-                        keccak256(bytes(vars.metadataURI)),
-                        _sigNonces(signer),
-                        vars.sig.deadline
+                        SET_PROFILE_METADATA_URI_TYPEHASH,
+                        profileId,
+                        keccak256(bytes(metadataURI)),
+                        _sigNonces(signature.signer),
+                        signature.deadline
                     )
                 )
             ),
-            signer,
-            vars.sig
+            signature.signer,
+            signature
         );
     }
 
-    function baseSetFollowModuleWithSig(
-        address signer,
-        DataTypes.SetFollowModuleWithSigData calldata vars
+    function validateSetFollowModuleSignature(
+        DataTypes.EIP712Signature calldata signature,
+        uint256 profileId,
+        address followModule,
+        bytes calldata followModuleInitData
     ) internal {
         _validateRecoveredAddress(
             _calculateDigest(
                 keccak256(
                     abi.encode(
-                        SET_FOLLOW_MODULE_WITH_SIG_TYPEHASH,
-                        vars.profileId,
-                        vars.followModule,
-                        keccak256(vars.followModuleInitData),
-                        _sigNonces(signer),
-                        vars.sig.deadline
+                        SET_FOLLOW_MODULE_TYPEHASH,
+                        profileId,
+                        followModule,
+                        keccak256(followModuleInitData),
+                        _sigNonces(signature.signer),
+                        signature.deadline
                     )
                 )
             ),
-            signer,
-            vars.sig
+            signature.signer,
+            signature
         );
     }
 
-    function baseChangeDelegatedExecutorsConfigWithSig(
-        DataTypes.ChangeDelegatedExecutorsConfigWithSigData calldata vars
+    function validateChangeDelegatedExecutorsConfigSignature(
+        DataTypes.EIP712Signature calldata signature,
+        uint256 delegatorProfileId,
+        address[] calldata executors,
+        bool[] calldata approvals,
+        uint64 configNumber,
+        bool switchToGivenConfig
     ) internal {
-        address delegatorProfileOwner = GeneralHelpers.ownerOf(vars.delegatorProfileId);
+        uint256 nonce = _sigNonces(signature.signer);
+        uint256 deadline = signature.deadline;
         _validateRecoveredAddress(
             _calculateDigest(
                 keccak256(
                     abi.encode(
-                        CHANGE_DELEGATED_EXECUTORS_CONFIG_WITH_SIG_TYPEHASH,
-                        vars.delegatorProfileId,
-                        abi.encodePacked(vars.executors),
-                        abi.encodePacked(vars.approvals),
-                        vars.configNumber,
-                        vars.switchToGivenConfig,
-                        _sigNonces(delegatorProfileOwner),
-                        vars.sig.deadline
+                        CHANGE_DELEGATED_EXECUTORS_CONFIG_TYPEHASH,
+                        delegatorProfileId,
+                        abi.encodePacked(executors),
+                        abi.encodePacked(approvals),
+                        configNumber,
+                        switchToGivenConfig,
+                        nonce,
+                        deadline
                     )
                 )
             ),
-            delegatorProfileOwner,
-            vars.sig
+            signature.signer,
+            signature
         );
     }
 
-    function baseSetProfileImageURIWithSig(
-        address signer,
-        DataTypes.SetProfileImageURIWithSigData calldata vars
+    function validateSetProfileImageURISignature(
+        DataTypes.EIP712Signature calldata signature,
+        uint256 profileId,
+        string calldata imageURI
     ) internal {
         _validateRecoveredAddress(
             _calculateDigest(
                 keccak256(
                     abi.encode(
-                        SET_PROFILE_IMAGE_URI_WITH_SIG_TYPEHASH,
-                        vars.profileId,
-                        keccak256(bytes(vars.imageURI)),
-                        _sigNonces(signer),
-                        vars.sig.deadline
+                        SET_PROFILE_IMAGE_URI_TYPEHASH,
+                        profileId,
+                        keccak256(bytes(imageURI)),
+                        _sigNonces(signature.signer),
+                        signature.deadline
                     )
                 )
             ),
-            signer,
-            vars.sig
+            signature.signer,
+            signature
         );
     }
 
-    function baseSetFollowNFTURIWithSig(
-        address signer,
-        DataTypes.SetFollowNFTURIWithSigData calldata vars
+    function validateSetFollowNFTURISignature(
+        DataTypes.EIP712Signature calldata signature,
+        uint256 profileId,
+        string calldata followNFTURI
     ) internal {
         _validateRecoveredAddress(
             _calculateDigest(
                 keccak256(
                     abi.encode(
-                        SET_FOLLOW_NFT_URI_WITH_SIG_TYPEHASH,
-                        vars.profileId,
-                        keccak256(bytes(vars.followNFTURI)),
-                        _sigNonces(signer),
-                        vars.sig.deadline
+                        SET_FOLLOW_NFT_URI_TYPEHASH,
+                        profileId,
+                        keccak256(bytes(followNFTURI)),
+                        _sigNonces(signature.signer),
+                        signature.deadline
                     )
                 )
             ),
-            signer,
-            vars.sig
+            signature.signer,
+            signature
         );
     }
 
@@ -196,7 +207,7 @@ library MetaTxHelpers {
             _calculateDigest(
                 keccak256(
                     abi.encode(
-                        POST_WITH_SIG_TYPEHASH,
+                        POST_TYPEHASH,
                         postParams.profileId,
                         keccak256(bytes(postParams.contentURI)),
                         postParams.collectModule,
@@ -223,7 +234,7 @@ library MetaTxHelpers {
             _calculateDigest(
                 keccak256(
                     abi.encode(
-                        COMMENT_WITH_SIG_TYPEHASH,
+                        COMMENT_TYPEHASH,
                         commentParams.profileId,
                         keccak256(bytes(commentParams.contentURI)),
                         commentParams.pointedProfileId,
@@ -254,7 +265,7 @@ library MetaTxHelpers {
             _calculateDigest(
                 keccak256(
                     abi.encode(
-                        COMMENT_WITH_SIG_TYPEHASH,
+                        COMMENT_TYPEHASH,
                         quoteParams.profileId,
                         keccak256(bytes(quoteParams.contentURI)),
                         quoteParams.pointedProfileId,
@@ -283,7 +294,7 @@ library MetaTxHelpers {
             _calculateDigest(
                 keccak256(
                     abi.encode(
-                        MIRROR_WITH_SIG_TYPEHASH,
+                        MIRROR_TYPEHASH,
                         mirrorParams.profileId,
                         mirrorParams.pointedProfileId,
                         mirrorParams.pointedPubId,
@@ -300,86 +311,105 @@ library MetaTxHelpers {
         );
     }
 
-    function baseBurnWithSig(uint256 tokenId, DataTypes.EIP712Signature calldata sig) internal {
-        address owner = GeneralHelpers.unsafeOwnerOf(tokenId);
-        _validateRecoveredAddress(
-            _calculateDigest(
-                keccak256(
-                    abi.encode(BURN_WITH_SIG_TYPEHASH, tokenId, _sigNonces(owner), sig.deadline)
-                )
-            ),
-            owner,
-            sig
-        );
-    }
-
-    function baseFollowWithSig(address signer, DataTypes.FollowWithSigData calldata vars) internal {
-        uint256 dataLength = vars.datas.length;
-        bytes32[] memory dataHashes = new bytes32[](dataLength);
-        for (uint256 i = 0; i < dataLength; ) {
-            dataHashes[i] = keccak256(vars.datas[i]);
-            unchecked {
-                ++i;
-            }
-        }
-        _validateRecoveredAddress(
-            _calculateDigest(
-                keccak256(
-                    abi.encode(
-                        FOLLOW_WITH_SIG_TYPEHASH,
-                        vars.followerProfileId,
-                        keccak256(abi.encodePacked(vars.idsOfProfilesToFollow)),
-                        keccak256(abi.encodePacked(vars.followTokenIds)),
-                        keccak256(abi.encodePacked(dataHashes)),
-                        _sigNonces(signer),
-                        vars.sig.deadline
-                    )
-                )
-            ),
-            signer,
-            vars.sig
-        );
-    }
-
-    function baseUnfollowWithSig(address signer, DataTypes.UnfollowWithSigData calldata vars)
+    function validateBurnSignature(DataTypes.EIP712Signature calldata signature, uint256 tokenId)
         internal
     {
         _validateRecoveredAddress(
             _calculateDigest(
                 keccak256(
                     abi.encode(
-                        UNFOLLOW_WITH_SIG_TYPEHASH,
-                        vars.unfollowerProfileId,
-                        keccak256(abi.encodePacked(vars.idsOfProfilesToUnfollow)),
-                        _sigNonces(signer),
-                        vars.sig.deadline
+                        BURN_TYPEHASH,
+                        tokenId,
+                        _sigNonces(signature.signer),
+                        signature.deadline
                     )
                 )
             ),
-            signer,
-            vars.sig
+            signature.signer,
+            signature
         );
     }
 
-    function baseSetBlockStatusWithSig(
-        address signer,
-        DataTypes.SetBlockStatusWithSigData calldata vars
+    function validateFollowSignature(
+        DataTypes.EIP712Signature calldata signature,
+        uint256 followerProfileId,
+        uint256[] calldata idsOfProfilesToFollow,
+        uint256[] calldata followTokenIds,
+        bytes[] calldata datas
+    ) internal {
+        uint256 dataLength = datas.length;
+        bytes32[] memory dataHashes = new bytes32[](dataLength);
+        for (uint256 i = 0; i < dataLength; ) {
+            dataHashes[i] = keccak256(datas[i]);
+            unchecked {
+                ++i;
+            }
+        }
+        uint256 nonce = _sigNonces(signature.signer);
+        uint256 deadline = signature.deadline;
+
+        _validateRecoveredAddress(
+            _calculateDigest(
+                keccak256(
+                    abi.encode(
+                        FOLLOW_TYPEHASH,
+                        followerProfileId,
+                        keccak256(abi.encodePacked(idsOfProfilesToFollow)),
+                        keccak256(abi.encodePacked(followTokenIds)),
+                        keccak256(abi.encodePacked(dataHashes)),
+                        nonce,
+                        deadline
+                    )
+                )
+            ),
+            signature.signer,
+            signature
+        );
+    }
+
+    function validateUnfollowSignature(
+        DataTypes.EIP712Signature calldata signature,
+        uint256 unfollowerProfileId,
+        uint256[] calldata idsOfProfilesToUnfollow
     ) internal {
         _validateRecoveredAddress(
             _calculateDigest(
                 keccak256(
                     abi.encode(
-                        SET_BLOCK_STATUS_WITH_SIG_TYPEHASH,
-                        vars.byProfileId,
-                        keccak256(abi.encodePacked(vars.idsOfProfilesToSetBlockStatus)),
-                        keccak256(abi.encodePacked(vars.blockStatus)),
-                        _sigNonces(signer),
-                        vars.sig.deadline
+                        UNFOLLOW_TYPEHASH,
+                        unfollowerProfileId,
+                        keccak256(abi.encodePacked(idsOfProfilesToUnfollow)),
+                        _sigNonces(signature.signer),
+                        signature.deadline
                     )
                 )
             ),
-            signer,
-            vars.sig
+            signature.signer,
+            signature
+        );
+    }
+
+    function validateSetBlockStatusSignature(
+        DataTypes.EIP712Signature calldata signature,
+        uint256 byProfileId,
+        uint256[] calldata idsOfProfilesToSetBlockStatus,
+        bool[] calldata blockStatus
+    ) internal {
+        _validateRecoveredAddress(
+            _calculateDigest(
+                keccak256(
+                    abi.encode(
+                        SET_BLOCK_STATUS_TYPEHASH,
+                        byProfileId,
+                        keccak256(abi.encodePacked(idsOfProfilesToSetBlockStatus)),
+                        keccak256(abi.encodePacked(blockStatus)),
+                        _sigNonces(signature.signer),
+                        signature.deadline
+                    )
+                )
+            ),
+            signature.signer,
+            signature
         );
     }
 
@@ -391,7 +421,7 @@ library MetaTxHelpers {
             _calculateDigest(
                 keccak256(
                     abi.encode(
-                        COLLECT_WITH_SIG_TYPEHASH,
+                        COLLECT_TYPEHASH,
                         collectParams.publicationCollectedProfileId,
                         collectParams.publicationCollectedId,
                         collectParams.collectorProfileId,

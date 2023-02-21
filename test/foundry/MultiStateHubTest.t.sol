@@ -328,15 +328,12 @@ contract MultiStateHubTest_PausedState_WithSig is MultiStateHubTest_PausedState_
             deadline
         );
 
-        _setFollowModuleWithSig(
-            DataTypes.SetFollowModuleWithSigData({
-                delegatedSigner: address(0),
-                profileId: newProfileId,
-                followModule: address(0),
-                followModuleInitData: '',
-                sig: _getSigStruct(profileOwnerKey, digest, deadline)
-            })
-        );
+        _setFollowModuleWithSig({
+            profileId: newProfileId,
+            followModule: address(0),
+            followModuleInitData: '',
+            sig: _getSigStruct(profileOwner, profileOwnerKey, digest, deadline)
+        });
     }
 
     // Positives
@@ -352,16 +349,14 @@ contract MultiStateHubTest_PausedState_WithSig is MultiStateHubTest_PausedState_
             nonce: nonce,
             deadline: deadline
         });
-        hub.changeDelegatedExecutorsConfigWithSig(
-            _buildChangeDelegatedExecutorsConfigWithSigData({
-                delegatorProfileId: newProfileId,
-                executors: _toAddressArray(executor),
-                approvals: _toBoolArray(true),
-                configNumber: 0,
-                switchToGivenConfig: true,
-                sig: _getSigStruct(profileOwnerKey, digest, deadline)
-            })
-        );
+        hub.changeDelegatedExecutorsConfigWithSig({
+            delegatorProfileId: newProfileId,
+            executors: _toAddressArray(executor),
+            approvals: _toBoolArray(true),
+            configNumber: 0,
+            switchToGivenConfig: true,
+            signature: _getSigStruct(profileOwner, profileOwnerKey, digest, deadline)
+        });
     }
 
     function _mockSetProfileImageURI() internal override {
@@ -372,27 +367,21 @@ contract MultiStateHubTest_PausedState_WithSig is MultiStateHubTest_PausedState_
             deadline
         );
 
-        _setProfileImageURIWithSig(
-            DataTypes.SetProfileImageURIWithSigData({
-                delegatedSigner: address(0),
-                profileId: newProfileId,
-                imageURI: MOCK_URI,
-                sig: _getSigStruct(profileOwnerKey, digest, deadline)
-            })
-        );
+        _setProfileImageURIWithSig({
+            profileId: newProfileId,
+            imageURI: MOCK_URI,
+            sig: _getSigStruct(profileOwner, profileOwnerKey, digest, deadline)
+        });
     }
 
     function _mockSetFollowNFTURI() internal override {
         bytes32 digest = _getSetFollowNFTURITypedDataHash(newProfileId, MOCK_URI, nonce, deadline);
 
-        _setFollowNFTURIWithSig(
-            DataTypes.SetFollowNFTURIWithSigData({
-                delegatedSigner: address(0),
-                profileId: newProfileId,
-                followNFTURI: MOCK_URI,
-                sig: _getSigStruct(profileOwnerKey, digest, deadline)
-            })
-        );
+        _setFollowNFTURIWithSig({
+            profileId: newProfileId,
+            followNFTURI: MOCK_URI,
+            sig: _getSigStruct(profileOwner, profileOwnerKey, digest, deadline)
+        });
     }
 
     function _mockPost() internal override {
@@ -429,7 +418,7 @@ contract MultiStateHubTest_PausedState_WithSig is MultiStateHubTest_PausedState_
 
         _burnWithSig({
             profileId: newProfileId,
-            sig: _getSigStruct(profileOwnerKey, digest, deadline)
+            sig: _getSigStruct(profileOwner, profileOwnerKey, digest, deadline)
         });
     }
 
@@ -443,16 +432,13 @@ contract MultiStateHubTest_PausedState_WithSig is MultiStateHubTest_PausedState_
             deadline
         );
 
-        _followWithSig(
-            DataTypes.FollowWithSigData({
-                delegatedSigner: address(0),
-                followerProfileId: followerProfileId,
-                idsOfProfilesToFollow: _toUint256Array(newProfileId),
-                followTokenIds: _toUint256Array(0),
-                datas: _toBytesArray(''),
-                sig: _getSigStruct(otherSignerKey, digest, deadline)
-            })
-        );
+        _followWithSig({
+            followerProfileId: followerProfileId,
+            idOfProfileToFollow: newProfileId,
+            followTokenId: 0,
+            data: '',
+            sig: _getSigStruct(otherSigner, otherSignerKey, digest, deadline)
+        });
     }
 
     function _mockCollect() internal override {
@@ -637,15 +623,12 @@ contract MultiStateHubTest_PublishingPausedState_WithSig is
             deadline
         );
 
-        _setFollowModuleWithSig(
-            DataTypes.SetFollowModuleWithSigData({
-                delegatedSigner: address(0),
-                profileId: newProfileId,
-                followModule: address(0),
-                followModuleInitData: '',
-                sig: _getSigStruct(profileOwnerKey, digest, deadline)
-            })
-        );
+        _setFollowModuleWithSig({
+            profileId: newProfileId,
+            followModule: address(0),
+            followModuleInitData: '',
+            sig: _getSigStruct(profileOwner, profileOwnerKey, digest, deadline)
+        });
     }
 
     // Positives
@@ -661,16 +644,14 @@ contract MultiStateHubTest_PublishingPausedState_WithSig is
             nonce: nonce,
             deadline: deadline
         });
-        hub.changeDelegatedExecutorsConfigWithSig(
-            _buildChangeDelegatedExecutorsConfigWithSigData({
-                delegatorProfileId: newProfileId,
-                executors: _toAddressArray(executor),
-                approvals: _toBoolArray(true),
-                configNumber: 0,
-                switchToGivenConfig: true,
-                sig: _getSigStruct(profileOwnerKey, digest, deadline)
-            })
-        );
+        hub.changeDelegatedExecutorsConfigWithSig({
+            delegatorProfileId: newProfileId,
+            executors: _toAddressArray(executor),
+            approvals: _toBoolArray(true),
+            configNumber: 0,
+            switchToGivenConfig: true,
+            signature: _getSigStruct(profileOwner, profileOwnerKey, digest, deadline)
+        });
     }
 
     function _mockSetProfileImageURI() internal override {
@@ -681,27 +662,21 @@ contract MultiStateHubTest_PublishingPausedState_WithSig is
             deadline
         );
 
-        _setProfileImageURIWithSig(
-            DataTypes.SetProfileImageURIWithSigData({
-                delegatedSigner: address(0),
-                profileId: newProfileId,
-                imageURI: MOCK_URI,
-                sig: _getSigStruct(profileOwnerKey, digest, deadline)
-            })
-        );
+        _setProfileImageURIWithSig({
+            profileId: newProfileId,
+            imageURI: MOCK_URI,
+            sig: _getSigStruct(profileOwner, profileOwnerKey, digest, deadline)
+        });
     }
 
     function _mockSetFollowNFTURI() internal override {
         bytes32 digest = _getSetFollowNFTURITypedDataHash(newProfileId, MOCK_URI, nonce, deadline);
 
-        _setFollowNFTURIWithSig(
-            DataTypes.SetFollowNFTURIWithSigData({
-                delegatedSigner: address(0),
-                profileId: newProfileId,
-                followNFTURI: MOCK_URI,
-                sig: _getSigStruct(profileOwnerKey, digest, deadline)
-            })
-        );
+        _setFollowNFTURIWithSig({
+            profileId: newProfileId,
+            followNFTURI: MOCK_URI,
+            sig: _getSigStruct(profileOwner, profileOwnerKey, digest, deadline)
+        });
     }
 
     function _mockPost() internal override {
@@ -738,7 +713,7 @@ contract MultiStateHubTest_PublishingPausedState_WithSig is
 
         _burnWithSig({
             profileId: newProfileId,
-            sig: _getSigStruct(profileOwnerKey, digest, deadline)
+            sig: _getSigStruct(profileOwner, profileOwnerKey, digest, deadline)
         });
     }
 
@@ -753,16 +728,13 @@ contract MultiStateHubTest_PublishingPausedState_WithSig is
             deadline
         );
 
-        _followWithSig(
-            DataTypes.FollowWithSigData({
-                delegatedSigner: address(0),
-                followerProfileId: followerProfileId,
-                idsOfProfilesToFollow: _toUint256Array(newProfileId),
-                followTokenIds: _toUint256Array(0),
-                datas: _toBytesArray(''),
-                sig: _getSigStruct(otherSignerKey, digest, deadline)
-            })
-        );
+        _followWithSig({
+            followerProfileId: followerProfileId,
+            idOfProfileToFollow: newProfileId,
+            followTokenId: 0,
+            data: '',
+            sig: _getSigStruct(otherSigner, otherSignerKey, digest, deadline)
+        });
     }
 
     function _mockCollect() internal override {

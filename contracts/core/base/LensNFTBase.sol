@@ -27,7 +27,7 @@ abstract contract LensNFTBase is ERC721Enumerable, ILensNFTBase {
         keccak256(
             'PermitForAll(address owner,address operator,bool approved,uint256 nonce,uint256 deadline)'
         );
-    bytes32 internal constant BURN_WITH_SIG_TYPEHASH =
+    bytes32 internal constant BURN_TYPEHASH =
         keccak256('BurnWithSig(uint256 tokenId,uint256 nonce,uint256 deadline)');
     bytes32 internal constant EIP712_DOMAIN_TYPEHASH =
         keccak256(
@@ -129,14 +129,7 @@ abstract contract LensNFTBase is ERC721Enumerable, ILensNFTBase {
         unchecked {
             MetaTxHelpers._validateRecoveredAddress(
                 _calculateDigest(
-                    keccak256(
-                        abi.encode(
-                            BURN_WITH_SIG_TYPEHASH,
-                            tokenId,
-                            sigNonces[owner]++,
-                            sig.deadline
-                        )
-                    )
+                    keccak256(abi.encode(BURN_TYPEHASH, tokenId, sigNonces[owner]++, sig.deadline))
                 ),
                 owner,
                 sig
