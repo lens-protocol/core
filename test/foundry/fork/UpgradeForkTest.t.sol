@@ -5,7 +5,7 @@ pragma solidity ^0.8.13;
 import '@openzeppelin/contracts/token/ERC721/extensions/IERC721Enumerable.sol';
 import '@openzeppelin/contracts/token/ERC721/IERC721.sol';
 import 'forge-std/console2.sol';
-import '../base/BaseTest.t.sol';
+import 'test/foundry/base/BaseTest.t.sol';
 import 'contracts/mocks/MockReferenceModule.sol';
 import 'contracts/mocks/MockDeprecatedReferenceModule.sol';
 import 'contracts/mocks/MockCollectModule.sol';
@@ -16,7 +16,7 @@ import 'contracts/interfaces/IERC721Time.sol';
 import 'contracts/interfaces/ILensMultiState.sol';
 import {Typehash} from 'contracts/libraries/constants/Typehash.sol';
 
-struct OldCreateProfileData {
+struct OldCreateProfileParams {
     address to;
     string handle;
     string imageURI;
@@ -35,9 +35,9 @@ struct OldMirrorParams {
 }
 
 interface IOldHub {
-    function createProfile(OldCreateProfileData memory vars) external returns (uint256);
+    function createProfile(OldCreateProfileParams memory createProfileParams) external returns (uint256);
 
-    function mirror(OldMirrorParams memory vars) external returns (uint256);
+    function mirror(OldMirrorParams memory createProfileParams) external returns (uint256);
 
     function follow(uint256[] calldata profileIds, bytes[] calldata datas) external;
 
@@ -99,8 +99,8 @@ contract UpgradeForkTest is BaseTest {
         _fullFollowCollectSequence(profileId, gov, hub);
 
         // Get the profile.
-        Types.ProfileStruct memory profileStruct = hub.getProfile(profileId);
-        bytes memory encodedProfile = abi.encode(profileStruct);
+        Types.Profile memory Profile = hub.getProfile(profileId);
+        bytes memory encodedProfile = abi.encode(Profile);
 
         // Upgrade the hub.
         TransparentUpgradeableProxy oldHubAsProxy = TransparentUpgradeableProxy(payable(hubProxyAddr));
@@ -111,8 +111,8 @@ contract UpgradeForkTest is BaseTest {
         assertEq(hub.getGovernance(), gov);
 
         // Ensure profile is the same.
-        profileStruct = hub.getProfile(profileId);
-        bytes memory postUpgradeEncodedProfile = abi.encode(profileStruct);
+        Profile = hub.getProfile(profileId);
+        bytes memory postUpgradeEncodedProfile = abi.encode(Profile);
         assertEq(postUpgradeEncodedProfile, encodedProfile);
 
         // Create a profile on the new hub, set the default profile.
@@ -134,11 +134,11 @@ contract UpgradeForkTest is BaseTest {
         // In order to make this test suite evergreen, we must try setting a modern follow module since we don't know
         // which version of the hub we're working with, if this fails, then we should use a deprecated one.
 
-        // mockCreateProfileData.handle = vm.toString(IERC721Enumerable(address(hub)).totalSupply());
-        mockCreateProfileData.followModule = mockFollowModuleAddr;
+        // mockCreateProfileParams.handle = vm.toString(IERC721Enumerable(address(hub)).totalSupply());
+        mockCreateProfileParams.followModule = mockFollowModuleAddr;
 
         uint256 profileId;
-        try hub.createProfile(mockCreateProfileData) returns (uint256 retProfileId) {
+        try hub.createProfile(mockCreateProfileParams) returns (uint256 retProfileId) {
             profileId = retProfileId;
             console2.log('Profile created with modern follow module.');
         } catch {
@@ -150,7 +150,7 @@ contract UpgradeForkTest is BaseTest {
             hub.whitelistFollowModule(mockDeprecatedFollowModule, true);
 
             // precompute basic profile creaton data.
-            mockCreateProfileData = Types.CreateProfileData({
+            mockCreateProfileParams = Types.CreateProfileParams({
                 to: me,
                 imageURI: MOCK_URI,
                 followModule: address(0),
@@ -158,17 +158,17 @@ contract UpgradeForkTest is BaseTest {
                 followNFTURI: MOCK_URI
             });
 
-            OldCreateProfileData memory oldCreateProfileData = OldCreateProfileData(
-                mockCreateProfileData.to,
+            OldCreateProfileParams memory oldCreateProfileParams = OldCreateProfileParams(
+                mockCreateProfileParams.to,
                 vm.toString((IERC721Enumerable(address(hub)).totalSupply())),
-                mockCreateProfileData.imageURI,
+                mockCreateProfileParams.imageURI,
                 mockDeprecatedFollowModule,
-                mockCreateProfileData.followModuleInitData,
-                mockCreateProfileData.followNFTURI
+                mockCreateProfileParams.followModuleInitData,
+                mockCreateProfileParams.followNFTURI
             );
 
-            oldCreateProfileData.followModule = mockDeprecatedFollowModule;
-            profileId = IOldHub(address(hub)).createProfile(oldCreateProfileData);
+            oldCreateProfileParams.followModule = mockDeprecatedFollowModule;
+            profileId = IOldHub(address(hub)).createProfile(oldCreateProfileParams);
         }
         return profileId;
     }
@@ -205,7 +205,7 @@ contract UpgradeForkTest is BaseTest {
 
             // Validate post.
             assertEq(postId, 1);
-            Types.PublicationStruct memory pub = hub.getPub(profileId, postId);
+            Types.Publication memory pub = hub.getPub(profileId, postId);
             assertEq(pub.pointedProfileId, 0);
             assertEq(pub.pointedPubId, 0);
             assertEq(pub.contentURI, mockPostParams.contentURI);
@@ -256,7 +256,7 @@ contract UpgradeForkTest is BaseTest {
 
             // Validate post.
             assertEq(postId, 1);
-            Types.PublicationStruct memory pub = hub.getPub(profileId, postId);
+            Types.Publication memory pub = hub.getPub(profileId, postId);
             assertEq(pub.pointedProfileId, 0);
             assertEq(pub.pointedPubId, 0);
             assertEq(pub.contentURI, mockPostParams.contentURI);
@@ -405,7 +405,7 @@ contract UpgradeForkTest is BaseTest {
         // NOTE: Structs are invalid as-is. Handle and modules must be set on the fly.
 
         // precompute basic profile creaton data.
-        mockCreateProfileData = Types.CreateProfileData({
+        mockCreateProfileParams = Types.CreateProfileParams({
             to: me,
             imageURI: MOCK_URI,
             followModule: address(0),

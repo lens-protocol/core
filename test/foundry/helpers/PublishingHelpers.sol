@@ -5,9 +5,7 @@ import 'forge-std/Test.sol';
 import 'contracts/libraries/constants/Types.sol';
 
 contract PublishingHelpers is Test {
-    function _verifyPublication(Types.PublicationStruct memory pub, Types.PublicationStruct memory expectedPub)
-        internal
-    {
+    function _verifyPublication(Types.Publication memory pub, Types.Publication memory expectedPub) internal {
         assertEq(pub.pointedProfileId, expectedPub.pointedProfileId, 'Unexpected pointedProfileId');
         assertEq(pub.pointedPubId, expectedPub.pointedPubId, 'Unexpected pointedPubId');
         assertEq(pub.contentURI, expectedPub.contentURI, 'Unexpected contentURI');
@@ -19,10 +17,10 @@ contract PublishingHelpers is Test {
     function _expectedPubFromInitData(Types.PostParams memory postParams)
         internal
         pure
-        returns (Types.PublicationStruct memory)
+        returns (Types.Publication memory)
     {
         return
-            Types.PublicationStruct({
+            Types.Publication({
                 pointedProfileId: 0,
                 pointedPubId: 0,
                 contentURI: postParams.contentURI,
@@ -38,10 +36,10 @@ contract PublishingHelpers is Test {
     function _expectedPubFromInitData(Types.CommentParams memory commentParams)
         internal
         pure
-        returns (Types.PublicationStruct memory)
+        returns (Types.Publication memory)
     {
         return
-            Types.PublicationStruct({
+            Types.Publication({
                 pointedProfileId: commentParams.pointedProfileId,
                 pointedPubId: commentParams.pointedPubId,
                 contentURI: commentParams.contentURI,
@@ -57,10 +55,10 @@ contract PublishingHelpers is Test {
     function _expectedPubFromInitData(Types.MirrorParams memory mirrorParams)
         internal
         pure
-        returns (Types.PublicationStruct memory)
+        returns (Types.Publication memory)
     {
         return
-            Types.PublicationStruct({
+            Types.Publication({
                 pointedProfileId: mirrorParams.pointedProfileId,
                 pointedPubId: mirrorParams.pointedPubId,
                 contentURI: '',

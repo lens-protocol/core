@@ -2,7 +2,7 @@
 
 pragma solidity 0.8.15;
 
-import {Types} from '../libraries/constants/Types.sol';
+import {Types} from 'contracts/libraries/constants/Types.sol';
 
 /**
  * @title ILensHub
@@ -94,13 +94,13 @@ interface ILensHub {
      * @notice Creates a profile with the specified parameters, minting a profile NFT to the given recipient. This
      * function must be called by a whitelisted profile creator.
      *
-     * @param vars A CreateProfileData struct containing the following params:
+     * @param createProfileParams A CreateProfileParams struct containing the following params:
      *      to: The address receiving the profile.
      *      imageURI: The URI to set for the profile image.
      *      followModule: The follow module to use, can be the zero address.
      *      followModuleInitData: The follow module initialization data, if any.
      */
-    function createProfile(Types.CreateProfileData calldata vars) external returns (uint256);
+    function createProfile(Types.CreateProfileParams calldata createProfileParams) external returns (uint256);
 
     /**
      * @notice Sets the metadata URI for the given profile. Must be called either from the profile owner or an approved
@@ -738,9 +738,9 @@ interface ILensHub {
      *
      * @param profileId The token ID of the profile to query.
      *
-     * @return ProfileStruct The profile struct of the given profile.
+     * @return Profile The profile struct of the given profile.
      */
-    function getProfile(uint256 profileId) external view returns (Types.ProfileStruct memory);
+    function getProfile(uint256 profileId) external view returns (Types.Profile memory);
 
     /**
      * @notice Returns the full publication struct for a given publication.
@@ -748,9 +748,9 @@ interface ILensHub {
      * @param profileId The token ID of the profile that published the publication to query.
      * @param pubId The publication ID of the publication to query.
      *
-     * @return PublicationStruct The publication struct associated with the queried publication.
+     * @return Publication The publication struct associated with the queried publication.
      */
-    function getPub(uint256 profileId, uint256 pubId) external view returns (Types.PublicationStruct memory);
+    function getPub(uint256 profileId, uint256 pubId) external view returns (Types.Publication memory);
 
     function getPublicationType(uint256 profileId, uint256 pubId) external view returns (Types.PublicationType);
 

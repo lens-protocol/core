@@ -2,15 +2,15 @@
 
 pragma solidity 0.8.15;
 
-import {Errors} from '../../libraries/constants/Errors.sol';
-import {Events} from '../../libraries/constants/Events.sol';
+import {Errors} from 'contracts/libraries/constants/Errors.sol';
+import {Events} from 'contracts/libraries/constants/Events.sol';
 
 /**
  * @title HubRestricted
  * @author Lens Protocol
  *
  * @notice This abstract contract adds a public `HUB` immutable field, validations when setting it, as well
- * as an `onlyHub` modifier, to inherit from contracts that have functions restricted to be only called by the Lens hub.
+ * as an `onlyHub` modifier, to inherit from 'contracts that have functions restricted to be only called by the Lens hub.
  */
 abstract contract HubRestricted {
     address public immutable HUB;

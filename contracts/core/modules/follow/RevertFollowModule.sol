@@ -2,9 +2,9 @@
 
 pragma solidity 0.8.15;
 
-import {Errors} from '../../../libraries/constants/Errors.sol';
-import {ModuleBase} from '../ModuleBase.sol';
-import {FollowValidatorFollowModuleBase} from './FollowValidatorFollowModuleBase.sol';
+import {Errors} from 'contracts/libraries/constants/Errors.sol';
+import {ModuleBase} from 'contracts/core/modules/ModuleBase.sol';
+import {FollowValidatorFollowModuleBase} from 'contracts/core/modules/follow/FollowValidatorFollowModuleBase.sol';
 
 /**
  * @title RevertFollowModule

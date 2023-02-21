@@ -66,7 +66,7 @@ library Types {
      * @param imageURI The URI to be used for the profile's image.
      * @param followNFTURI The URI to be used for the follow NFT.
      */
-    struct ProfileStruct {
+    struct Profile {
         uint256 pubCount; // offset 0
         address followModule; // offset 1
         address followNFT; // offset 2
@@ -75,7 +75,7 @@ library Types {
         string followNFTURI; // offset 5
     }
 
-    struct PublicationStruct {
+    struct Publication {
         uint256 pointedProfileId;
         uint256 pointedPubId;
         string contentURI;
@@ -97,83 +97,12 @@ library Types {
      * @param followModuleInitData The follow module initialization data, if any.
      * @param followNFTURI The URI to use for the follow NFT.
      */
-    struct CreateProfileData {
+    struct CreateProfileParams {
         address to;
         string imageURI;
         address followModule;
         bytes followModuleInitData;
         string followNFTURI;
-    }
-
-    /**
-     * @notice A struct containing the parameters required for the `setFollowModuleWithSig()` function. Parameters are
-     * the same as the regular `setFollowModule()` function, with an added EIP712Signature.
-     *
-     * @param delegatedSigner The delegated executor signer, must be either zero, defaulting to the profile owner, or a delegated executor.
-     * @param profileId The token ID of the profile to change the followModule for.
-     * @param followModule The followModule to set for the given profile, must be whitelisted.
-     * @param followModuleInitData The data to be passed to the followModule for initialization.
-     * @param signature The EIP712Signature struct containing the profile owner's signature.
-     */
-    struct SetFollowModuleWithSigData {
-        address delegatedSigner;
-        uint256 profileId;
-        address followModule;
-        bytes followModuleInitData;
-        EIP712Signature signature;
-    }
-
-    /**
-     * @notice A struct containing the parameters required for the `changeDelegatedExecutorsConfigWithSig()` function.
-     *
-     * @param delegatorProfileId The ID of the profile to which the delegated executor is being changed for.
-     * @param executors The array of executors to set the approval for.
-     * @param approvals The array of booleans indicating the corresponding executor new approval status.
-     * @param configNumber The number of the configuration where the executor approval state is being set.
-     * @param switchToGivenConfig A boolean indicanting if the configuration will be switched to the one with the given
-     * number.
-
-     * @param signature The EIP712Signature struct containing to the signer setting the approval's signature.
-     */
-    struct ChangeDelegatedExecutorsConfigWithSigData {
-        uint256 delegatorProfileId;
-        address[] executors;
-        bool[] approvals;
-        uint64 configNumber;
-        bool switchToGivenConfig;
-        EIP712Signature signature;
-    }
-
-    /**
-     * @notice A struct containing the parameters required for the `setProfileImageURIWithSig()` function. Parameters are the same
-     * as the regular `setProfileImageURI()` function, with an added EIP712Signature.
-     *
-     * @param delegatedSigner The delegated executor signer, must be either zero, defaulting to the profile owner, or a delegated executor.
-     * @param profileId The token ID of the profile to set the URI for.
-     * @param imageURI The URI to set for the given profile image.
-     * @param signature The EIP712Signature struct containing the profile owner's signature.
-     */
-    struct SetProfileImageURIWithSigData {
-        address delegatedSigner;
-        uint256 profileId;
-        string imageURI;
-        EIP712Signature signature;
-    }
-
-    /**
-     * @notice A struct containing the parameters required for the `setFollowNFTURIWithSig()` function. Parameters are the same
-     * as the regular `setFollowNFTURI()` function, with an added EIP712Signature.
-     *
-     * @param delegatedSigner The delegated executor signer, must be either zero, defaulting to the profile owner, or a delegated executor.
-     * @param profileId The token ID of the profile for which to set the followNFT URI.
-     * @param followNFTURI The follow NFT URI to set.
-     * @param signature The EIP712Signature struct containing the followNFT's associated profile owner's signature.
-     */
-    struct SetFollowNFTURIWithSigData {
-        address delegatedSigner;
-        uint256 profileId;
-        string followNFTURI;
-        EIP712Signature signature;
     }
 
     /**
@@ -300,63 +229,6 @@ library Types {
     }
 
     /**
-     * @notice A struct containing the parameters required for the `followWithSig` function. Parameters are the same
-     * as the regular `follow` function, with the signer address and an EIP712Signature added.
-     *
-     * @param delegatedSigner The delegated executor signer, must be either zero, defaulting to the follower,
-     * or a delegated executor.
-     * @param followerProfileId The ID of the profile the follows are being executed for.
-     * @param idsOfProfilesToFollow The array of IDs of profiles to follow.
-     * @param followTokenIds The array of follow token IDs to use for each follow.
-     * @param datas The arbitrary data array to pass to the follow module for each profile if needed.
-     * @param signature The EIP712Signature struct containing the follower's signature.
-     */
-    struct FollowWithSigData {
-        address delegatedSigner;
-        uint256 followerProfileId;
-        uint256[] idsOfProfilesToFollow;
-        uint256[] followTokenIds;
-        bytes[] datas;
-        EIP712Signature signature;
-    }
-
-    /**
-     * @notice A struct containing the parameters required for the `unfollowWithSig` function. Parameters are the same
-     * as the regular `unfollow` function, with the signer address and an EIP712Signature added.
-     *
-     * @param delegatedSigner The delegated executor signer, must be either zero, defaulting to the follower,
-     * or a delegated executor.
-     * @param unfollowerProfileId The ID of the profile the unfollows are being executed for.
-     * @param idsOfProfilesToUnfollow The array of IDs of profiles to unfollow.
-     * @param signature The EIP712Signature struct containing the follower's signature.
-     */
-    struct UnfollowWithSigData {
-        address delegatedSigner;
-        uint256 unfollowerProfileId;
-        uint256[] idsOfProfilesToUnfollow;
-        EIP712Signature signature;
-    }
-
-    /**
-     * @notice A struct containing the parameters required for the `setBlockStatusWithSig` function. Parameters are the
-     * same as the regular `setBlockStatus` function, with the signer address and an EIP712Signature added.
-     *
-     * @param delegatedSigner The delegated executor signer, must be either zero, defaulting to the blocker,
-     * or a delegated executor.
-     * @param byProfileId The ID of the profile the block status sets are being executed for.
-     * @param idsOfProfilesToSetBlockStatus The array of IDs of profiles to set block status.
-     * @param blockStatus The array of block status to use for each setting.
-     * @param signature The EIP712Signature struct containing the blocker's signature.
-     */
-    struct SetBlockStatusWithSigData {
-        address delegatedSigner;
-        uint256 byProfileId;
-        uint256[] idsOfProfilesToSetBlockStatus;
-        bool[] blockStatus;
-        EIP712Signature signature;
-    }
-
-    /**
      * @notice A struct containing the parameters required for the `collect()` function.
      *
      * @param publicationCollectedProfileId The token ID of the profile that published the publication to collect.
@@ -373,38 +245,6 @@ library Types {
         uint256 referrerProfileId;
         uint256 referrerPubId;
         bytes collectModuleData;
-    }
-
-    /**
-     * @notice A struct containing the parameters required for the `setProfileMetadataWithSig()` function.
-     *
-     * @param delegatedSigner The delegated executor signer, must be either zero, defaulting to the profile owner, or a delegated executor.
-     * @param profileId The profile ID for which to set the metadata.
-     * @param metadataURI The metadata string to set for the profile and user.
-     * @param signature The EIP712Signature struct containing the user's signature.
-     */
-    struct SetProfileMetadataURIWithSigData {
-        address delegatedSigner;
-        uint256 profileId;
-        string metadataURI;
-        EIP712Signature signature;
-    }
-
-    /**
-     * @notice A struct containing the parameters required for the `toggleFollowWithSig()` function.
-     *
-     * @note This does not include a delegatedSigner parameter as it is marked for deprecation.
-     *
-     * @param follower The follower which is the message signer.
-     * @param profileIds The token ID array of the profiles.
-     * @param enables The array of booleans to enable/disable follows.
-     * @param signature The EIP712Signature struct containing the follower's signature.
-     */
-    struct ToggleFollowWithSigData {
-        address follower;
-        uint256[] profileIds;
-        bool[] enables;
-        EIP712Signature signature;
     }
 
     /**

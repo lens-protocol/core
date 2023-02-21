@@ -2,20 +2,20 @@
 
 pragma solidity 0.8.15;
 
-import {GeneralHelpers} from './GeneralHelpers.sol';
-import {MetaTxLib} from './MetaTxLib.sol';
-import {Types} from './constants/Types.sol';
-import {Errors} from './constants/Errors.sol';
-import {Events} from './constants/Events.sol';
-import {IFollowModule} from '../interfaces/IFollowModule.sol';
-import './Constants.sol';
+import {GeneralHelpers} from 'contracts/libraries/GeneralHelpers.sol';
+import {MetaTxLib} from 'contracts/libraries/MetaTxLib.sol';
+import {Types} from 'contracts/libraries/constants/Types.sol';
+import {Errors} from 'contracts/libraries/constants/Errors.sol';
+import {Events} from 'contracts/libraries/constants/Events.sol';
+import {IFollowModule} from 'contracts/interfaces/IFollowModule.sol';
+import 'contracts/libraries/Constants.sol';
 
 library ProfileLib {
     /**
      * @notice Creates a profile with the given parameters to the given address. Minting happens
      * in the hub.
      *
-     * @param vars The CreateProfileData struct containing the following parameters:
+     * @param createProfileParams The CreateProfileParams struct containing the following parameters:
      *      to: The address receiving the profile.
      *      imageURI: The URI to set for the profile image.
      *      followModule: The follow module to use, can be the zero address.
@@ -23,18 +23,19 @@ library ProfileLib {
      *      followNFTURI: The URI to set for the follow NFT.
      * @param profileId The profile ID to associate with this profile NFT (token ID).
      */
-    function createProfile(Types.CreateProfileData calldata vars, uint256 profileId) external {
+    function createProfile(Types.CreateProfileParams calldata createProfileParams, uint256 profileId) external {
         _validateProfileCreatorWhitelisted();
 
-        if (bytes(vars.imageURI).length > MAX_PROFILE_IMAGE_URI_LENGTH) revert Errors.ProfileImageURILengthInvalid();
+        if (bytes(createProfileParams.imageURI).length > MAX_PROFILE_IMAGE_URI_LENGTH)
+            revert Errors.ProfileImageURILengthInvalid();
 
-        _setProfileString(profileId, PROFILE_IMAGE_URI_OFFSET, vars.imageURI);
-        _setProfileString(profileId, PROFILE_FOLLOW_NFT_URI_OFFSET, vars.followNFTURI);
+        _setProfileString(profileId, PROFILE_IMAGE_URI_OFFSET, createProfileParams.imageURI);
+        _setProfileString(profileId, PROFILE_FOLLOW_NFT_URI_OFFSET, createProfileParams.followNFTURI);
 
         bytes memory followModuleReturnData;
-        if (vars.followModule != address(0)) {
+        if (createProfileParams.followModule != address(0)) {
             // Load the follow module to be used in the next assembly block.
-            address followModule = vars.followModule;
+            address followModule = createProfileParams.followModule;
 
             // Store the follow module for the new profile. We opt not to use the
             // _setFollowModule() private function to avoid unnecessary checks.
@@ -50,19 +51,19 @@ library ProfileLib {
             // Initialize the follow module.
             followModuleReturnData = _initFollowModule(
                 profileId,
-                vars.to,
-                vars.followModule,
-                vars.followModuleInitData
+                createProfileParams.to,
+                createProfileParams.followModule,
+                createProfileParams.followModuleInitData
             );
         }
         emit Events.ProfileCreated(
             profileId,
             msg.sender,
-            vars.to,
-            vars.imageURI,
-            vars.followModule,
+            createProfileParams.to,
+            createProfileParams.imageURI,
+            createProfileParams.followModule,
             followModuleReturnData,
-            vars.followNFTURI,
+            createProfileParams.followNFTURI,
             block.timestamp
         );
     }

@@ -2,9 +2,9 @@
 
 pragma solidity 0.8.15;
 
-import {ICollectModule} from '../../../interfaces/ICollectModule.sol';
-import {ModuleBase} from '../ModuleBase.sol';
-import {FollowValidationModuleBase} from '../FollowValidationModuleBase.sol';
+import {ICollectModule} from 'contracts/interfaces/ICollectModule.sol';
+import {ModuleBase} from 'contracts/core/modules/ModuleBase.sol';
+import {FollowValidationModuleBase} from 'contracts/core/modules/FollowValidationModuleBase.sol';
 import {Types} from 'contracts/libraries/constants/Types.sol';
 
 /**

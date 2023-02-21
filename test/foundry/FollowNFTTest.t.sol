@@ -1,8 +1,8 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity ^0.8.13;
 
-import './base/BaseTest.t.sol';
-import './ERC721Test.t.sol';
+import 'test/foundry/base/BaseTest.t.sol';
+import 'test/foundry/ERC721Test.t.sol';
 import {IERC721} from '@openzeppelin/contracts/token/ERC721/IERC721.sol';
 import {IFollowNFT} from 'contracts/interfaces/IFollowNFT.sol';
 import {FollowNFT} from 'contracts/core/FollowNFT.sol';

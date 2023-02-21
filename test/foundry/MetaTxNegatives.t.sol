@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity ^0.8.13;
 
-import './base/BaseTest.t.sol';
+import 'test/foundry/base/BaseTest.t.sol';
 import {Typehash} from 'contracts/libraries/constants/Typehash.sol';
 
 abstract contract MetaTxNegatives is BaseTest {

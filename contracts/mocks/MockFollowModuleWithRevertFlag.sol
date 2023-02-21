@@ -2,7 +2,7 @@
 
 pragma solidity 0.8.15;
 
-import {IFollowModule} from '../interfaces/IFollowModule.sol';
+import {IFollowModule} from 'contracts/interfaces/IFollowModule.sol';
 
 /**
  * @dev This is a simple mock follow module to be used for testing revert cases on processFollow.

@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity ^0.8.13;
 
-import './../FollowNFTTest.t.sol';
+import 'test/foundry/FollowNFTTest.t.sol';
 
 contract FollowNFTInitialConditionsTest is FollowNFTTest {
     function testFirstFollowTokenHasIdOne() public {

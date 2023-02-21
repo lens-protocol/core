@@ -2,9 +2,9 @@
 
 pragma solidity 0.8.15;
 
-import {ILensHub} from '../interfaces/ILensHub.sol';
-import {Types} from '../libraries/constants/Types.sol';
-import {Errors} from '../libraries/constants/Errors.sol';
+import {ILensHub} from 'contracts/interfaces/ILensHub.sol';
+import {Types} from 'contracts/libraries/constants/Types.sol';
+import {Errors} from 'contracts/libraries/constants/Errors.sol';
 import {Ownable} from '@openzeppelin/contracts/access/Ownable.sol';
 
 /**
@@ -22,7 +22,7 @@ contract ProfileCreationProxy is Ownable {
         LENS_HUB = hub;
     }
 
-    function proxyCreateProfile(Types.CreateProfileData memory vars) external onlyOwner {
-        LENS_HUB.createProfile(vars);
+    function proxyCreateProfile(Types.CreateProfileParams memory createProfileParams) external onlyOwner {
+        LENS_HUB.createProfile(createProfileParams);
     }
 }

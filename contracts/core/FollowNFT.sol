@@ -2,19 +2,19 @@
 
 pragma solidity 0.8.15;
 
-import '../libraries/Constants.sol';
-import {Types} from '../libraries/constants/Types.sol';
-import {ERC2981CollectionRoyalties} from './base/ERC2981CollectionRoyalties.sol';
-import {ERC721Enumerable} from './base/ERC721Enumerable.sol';
-import {Errors} from '../libraries/constants/Errors.sol';
-import {Events} from '../libraries/constants/Events.sol';
-import {HubRestricted} from './base/HubRestricted.sol';
+import 'contracts/libraries/Constants.sol';
+import {Types} from 'contracts/libraries/constants/Types.sol';
+import {ERC2981CollectionRoyalties} from 'contracts/core/base/ERC2981CollectionRoyalties.sol';
+import {ERC721Enumerable} from 'contracts/core/base/ERC721Enumerable.sol';
+import {Errors} from 'contracts/libraries/constants/Errors.sol';
+import {Events} from 'contracts/libraries/constants/Events.sol';
+import {HubRestricted} from 'contracts/core/base/HubRestricted.sol';
 import {IERC721} from '@openzeppelin/contracts/token/ERC721/IERC721.sol';
-import {IERC721Time} from '../interfaces/IERC721Time.sol';
-import {IFollowNFT} from '../interfaces/IFollowNFT.sol';
-import {ILensHub} from '../interfaces/ILensHub.sol';
-import {LensNFTBase} from './base/LensNFTBase.sol';
-import {MetaTxLib} from '../libraries/MetaTxLib.sol';
+import {IERC721Time} from 'contracts/interfaces/IERC721Time.sol';
+import {IFollowNFT} from 'contracts/interfaces/IFollowNFT.sol';
+import {ILensHub} from 'contracts/interfaces/ILensHub.sol';
+import {LensNFTBase} from 'contracts/core/base/LensNFTBase.sol';
+import {MetaTxLib} from 'contracts/libraries/MetaTxLib.sol';
 import {Strings} from '@openzeppelin/contracts/utils/Strings.sol';
 
 contract FollowNFT is HubRestricted, LensNFTBase, ERC2981CollectionRoyalties, IFollowNFT {

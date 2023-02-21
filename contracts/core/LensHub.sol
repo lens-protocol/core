@@ -2,26 +2,25 @@
 
 pragma solidity 0.8.15;
 
-import {IFollowNFT} from '../interfaces/IFollowNFT.sol';
-import {ILensNFTBase} from '../interfaces/ILensNFTBase.sol';
-import {ILensHub} from '../interfaces/ILensHub.sol';
-
-import {Events} from '../libraries/constants/Events.sol';
-import {Types} from '../libraries/constants/Types.sol';
-import {Errors} from '../libraries/constants/Errors.sol';
-import {GeneralLib} from '../libraries/GeneralLib.sol';
-import {GeneralHelpers} from '../libraries/GeneralHelpers.sol';
-import {ProfileLib} from '../libraries/ProfileLib.sol';
-import {PublishingLib} from '../libraries/PublishingLib.sol';
-import {ProfileTokenURILogic} from '../libraries/ProfileTokenURILogic.sol';
-import '../libraries/Constants.sol';
-
-import {LensNFTBase} from './base/LensNFTBase.sol';
-import {LensMultiState} from './base/LensMultiState.sol';
-import {LensHubStorage} from './storage/LensHubStorage.sol';
-import {VersionedInitializable} from '../upgradeability/VersionedInitializable.sol';
+import {IFollowNFT} from 'contracts/interfaces/IFollowNFT.sol';
+import {ILensNFTBase} from 'contracts/interfaces/ILensNFTBase.sol';
+import {ILensHub} from 'contracts/interfaces/ILensHub.sol';
+import {Events} from 'contracts/libraries/constants/Events.sol';
+import {Types} from 'contracts/libraries/constants/Types.sol';
+import {Errors} from 'contracts/libraries/constants/Errors.sol';
+import {GeneralLib} from 'contracts/libraries/GeneralLib.sol';
+import {GeneralHelpers} from 'contracts/libraries/GeneralHelpers.sol';
+import {ProfileLib} from 'contracts/libraries/ProfileLib.sol';
+import {PublishingLib} from 'contracts/libraries/PublishingLib.sol';
+import {ProfileTokenURILogic} from 'contracts/libraries/ProfileTokenURILogic.sol';
+import {LensNFTBase} from 'contracts/core/base/LensNFTBase.sol';
+import {LensMultiState} from 'contracts/core/base/LensMultiState.sol';
+import {LensHubStorage} from 'contracts/core/storage/LensHubStorage.sol';
+import {VersionedInitializable} from 'contracts/upgradeability/VersionedInitializable.sol';
 import {IERC721Enumerable} from '@openzeppelin/contracts/token/ERC721/extensions/IERC721Enumerable.sol';
 import {MetaTxLib} from 'contracts/libraries/MetaTxLib.sol';
+import 'contracts/libraries/Constants.sol';
+import 'contracts/libraries/LensHubStorageLib.sol';
 
 /**
  * @title LensHub
@@ -122,11 +121,16 @@ contract LensHub is LensNFTBase, VersionedInitializable, LensMultiState, LensHub
     ///////////////////////////////////////////
 
     /// @inheritdoc ILensHub
-    function createProfile(Types.CreateProfileData calldata vars) external override whenNotPaused returns (uint256) {
+    function createProfile(Types.CreateProfileParams calldata createProfileParams)
+        external
+        override
+        whenNotPaused
+        returns (uint256)
+    {
         unchecked {
             uint256 profileId = ++_profileCounter;
-            _mint(vars.to, profileId);
-            ProfileLib.createProfile(vars, profileId);
+            _mint(createProfileParams.to, profileId);
+            ProfileLib.createProfile(createProfileParams, profileId);
             return profileId;
         }
     }
@@ -592,7 +596,7 @@ contract LensHub is LensNFTBase, VersionedInitializable, LensMultiState, LensHub
         address executor,
         uint64 configNumber
     ) external view returns (bool) {
-        return GeneralHelpers.getDelegatedExecutorsConfig(delegatorProfileId).isApproved[configNumber][executor];
+        return LensHubStorageLib.getDelegatedExecutorsConfig(delegatorProfileId).isApproved[configNumber][executor];
     }
 
     /// @inheritdoc ILensHub
@@ -602,17 +606,17 @@ contract LensHub is LensNFTBase, VersionedInitializable, LensMultiState, LensHub
 
     /// @inheritdoc ILensHub
     function getDelegatedExecutorsConfigNumber(uint256 delegatorProfileId) external view returns (uint64) {
-        return GeneralHelpers.getDelegatedExecutorsConfig(delegatorProfileId).configNumber;
+        return LensHubStorageLib.getDelegatedExecutorsConfig(delegatorProfileId).configNumber;
     }
 
     /// @inheritdoc ILensHub
     function getDelegatedExecutorsPrevConfigNumber(uint256 delegatorProfileId) external view returns (uint64) {
-        return GeneralHelpers.getDelegatedExecutorsConfig(delegatorProfileId).prevConfigNumber;
+        return LensHubStorageLib.getDelegatedExecutorsConfig(delegatorProfileId).prevConfigNumber;
     }
 
     /// @inheritdoc ILensHub
     function getDelegatedExecutorsMaxConfigNumberSet(uint256 delegatorProfileId) external view returns (uint64) {
-        return GeneralHelpers.getDelegatedExecutorsConfig(delegatorProfileId).maxConfigNumberSet;
+        return LensHubStorageLib.getDelegatedExecutorsConfig(delegatorProfileId).maxConfigNumberSet;
     }
 
     /// @inheritdoc ILensHub
@@ -678,12 +682,12 @@ contract LensHub is LensNFTBase, VersionedInitializable, LensMultiState, LensHub
     }
 
     /// @inheritdoc ILensHub
-    function getProfile(uint256 profileId) external view override returns (Types.ProfileStruct memory) {
+    function getProfile(uint256 profileId) external view override returns (Types.Profile memory) {
         return _profileById[profileId];
     }
 
     /// @inheritdoc ILensHub
-    function getPub(uint256 profileId, uint256 pubId) external view override returns (Types.PublicationStruct memory) {
+    function getPub(uint256 profileId, uint256 pubId) external view override returns (Types.Publication memory) {
         return _pubByIdByProfile[profileId][pubId];
     }
 

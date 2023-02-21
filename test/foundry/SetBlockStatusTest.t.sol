@@ -1,8 +1,8 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity ^0.8.13;
 
-import './base/BaseTest.t.sol';
-import './MetaTxNegatives.t.sol';
+import 'test/foundry/base/BaseTest.t.sol';
+import 'test/foundry/MetaTxNegatives.t.sol';
 import {Typehash} from 'contracts/libraries/constants/Typehash.sol';
 
 contract SetBlockStatusTest is BaseTest {
@@ -328,34 +328,5 @@ contract SetBlockStatusMetaTxTest is SetBlockStatusTest, MetaTxNegatives {
                     )
                 )
             );
-    }
-
-    function _getSignedData(
-        uint256 signerPk,
-        address delegatedSigner,
-        uint256 byProfileId,
-        uint256[] memory idsOfProfilesToSetBlockStatus,
-        bool[] memory blockStatus,
-        uint256 nonce,
-        uint256 deadline
-    ) internal returns (Types.SetBlockStatusWithSigData memory) {
-        return
-            Types.SetBlockStatusWithSigData({
-                delegatedSigner: delegatedSigner,
-                byProfileId: byProfileId,
-                idsOfProfilesToSetBlockStatus: idsOfProfilesToSetBlockStatus,
-                blockStatus: blockStatus,
-                signature: _getSigStruct({
-                    pKey: signerPk,
-                    digest: _calculateSetBlockStatusWithSigDigest(
-                        byProfileId,
-                        idsOfProfilesToSetBlockStatus,
-                        blockStatus,
-                        nonce,
-                        deadline
-                    ),
-                    deadline: deadline
-                })
-            });
     }
 }

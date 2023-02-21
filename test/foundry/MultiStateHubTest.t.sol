@@ -1,8 +1,8 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity ^0.8.13;
 
-import './base/BaseTest.t.sol';
-import './helpers/SignatureHelpers.sol';
+import 'test/foundry/base/BaseTest.t.sol';
+import 'test/foundry/helpers/SignatureHelpers.sol';
 
 contract MultiStateHubTest_Common is BaseTest {
     // Negatives

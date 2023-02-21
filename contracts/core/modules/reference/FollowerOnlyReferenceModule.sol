@@ -2,9 +2,9 @@
 
 pragma solidity 0.8.15;
 
-import {IReferenceModule} from '../../../interfaces/IReferenceModule.sol';
-import {ModuleBase} from '../ModuleBase.sol';
-import {FollowValidationModuleBase} from '../FollowValidationModuleBase.sol';
+import {IReferenceModule} from 'contracts/interfaces/IReferenceModule.sol';
+import {ModuleBase} from 'contracts/core/modules/ModuleBase.sol';
+import {FollowValidationModuleBase} from 'contracts/core/modules/FollowValidationModuleBase.sol';
 import {IERC721} from '@openzeppelin/contracts/token/ERC721/IERC721.sol';
 import {Types} from 'contracts/libraries/constants/Types.sol';
 

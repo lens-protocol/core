@@ -2,10 +2,10 @@
 
 pragma solidity 0.8.15;
 
-import {IFollowModule} from '../../../interfaces/IFollowModule.sol';
-import {Errors} from '../../../libraries/constants/Errors.sol';
-import {ModuleBase} from '../ModuleBase.sol';
-import {FollowValidatorFollowModuleBase} from './FollowValidatorFollowModuleBase.sol';
+import {IFollowModule} from 'contracts/interfaces/IFollowModule.sol';
+import {Errors} from 'contracts/libraries/constants/Errors.sol';
+import {ModuleBase} from 'contracts/core/modules/ModuleBase.sol';
+import {FollowValidatorFollowModuleBase} from 'contracts/core/modules/follow/FollowValidatorFollowModuleBase.sol';
 import {IERC721} from '@openzeppelin/contracts/token/ERC721/IERC721.sol';
 
 /**

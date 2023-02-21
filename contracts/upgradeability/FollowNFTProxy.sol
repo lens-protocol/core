@@ -2,7 +2,7 @@
 
 pragma solidity 0.8.15;
 
-import {ILensHub} from '../interfaces/ILensHub.sol';
+import {ILensHub} from 'contracts/interfaces/ILensHub.sol';
 import {Proxy} from '@openzeppelin/contracts/proxy/Proxy.sol';
 import {Address} from '@openzeppelin/contracts/utils/Address.sol';
 

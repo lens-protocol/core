@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity ^0.8.13;
 
-import './TestSetup.t.sol';
+import 'test/foundry/base/TestSetup.t.sol';
 import 'contracts/libraries/constants/Types.sol';
 import {Typehash} from 'contracts/libraries/constants/Typehash.sol';
 
@@ -370,25 +370,7 @@ contract BaseTest is TestSetup {
         return ret;
     }
 
-    // Private functions
-    function _buildChangeDelegatedExecutorsConfigWithSigData(
-        uint256 delegatorProfileId,
-        uint64 configNumber,
-        address[] memory executors,
-        bool[] memory approvals,
-        bool switchToGivenConfig,
-        Types.EIP712Signature memory signature
-    ) internal pure returns (Types.ChangeDelegatedExecutorsConfigWithSigData memory) {
-        return
-            Types.ChangeDelegatedExecutorsConfigWithSigData(
-                delegatorProfileId,
-                executors,
-                approvals,
-                configNumber,
-                switchToGivenConfig,
-                signature
-            );
-    }
+    // Internal functions
 
     function _post(Types.PostParams memory postParams) internal returns (uint256) {
         return hub.post(postParams);
@@ -484,15 +466,15 @@ contract BaseTest is TestSetup {
     }
 
     function _createProfile(address newProfileOwner) internal returns (uint256) {
-        Types.CreateProfileData memory createProfileData = Types.CreateProfileData({
+        Types.CreateProfileParams memory CreateProfileParams = Types.CreateProfileParams({
             to: newProfileOwner,
-            imageURI: mockCreateProfileData.imageURI,
-            followModule: mockCreateProfileData.followModule,
-            followModuleInitData: mockCreateProfileData.followModuleInitData,
-            followNFTURI: mockCreateProfileData.followNFTURI
+            imageURI: mockCreateProfileParams.imageURI,
+            followModule: mockCreateProfileParams.followModule,
+            followModuleInitData: mockCreateProfileParams.followModuleInitData,
+            followNFTURI: mockCreateProfileParams.followNFTURI
         });
 
-        return hub.createProfile(createProfileData);
+        return hub.createProfile(CreateProfileParams);
     }
 
     function _setState(Types.ProtocolState newState) internal {
@@ -593,7 +575,7 @@ contract BaseTest is TestSetup {
         hub.burnWithSig(profileId, signature);
     }
 
-    function _getPub(uint256 profileId, uint256 pubId) internal view returns (Types.PublicationStruct memory) {
+    function _getPub(uint256 profileId, uint256 pubId) internal view returns (Types.Publication memory) {
         return hub.getPub(profileId, pubId);
     }
 

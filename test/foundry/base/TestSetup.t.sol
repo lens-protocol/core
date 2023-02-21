@@ -18,8 +18,8 @@ import {GeneralLib} from 'contracts/libraries/GeneralLib.sol';
 import {ProfileTokenURILogic} from 'contracts/libraries/ProfileTokenURILogic.sol';
 import {MockCollectModule} from 'contracts/mocks/MockCollectModule.sol';
 import {MockReferenceModule} from 'contracts/mocks/MockReferenceModule.sol';
-import '../helpers/ForkManagement.sol';
-import '../Constants.sol';
+import 'test/foundry/helpers/ForkManagement.sol';
+import 'test/foundry/Constants.sol';
 import {Typehash} from 'contracts/libraries/constants/Typehash.sol';
 import {MetaTxLib} from 'contracts/libraries/MetaTxLib.sol';
 
@@ -57,7 +57,7 @@ contract TestSetup is Test, ForkManagement {
     MockReferenceModule mockReferenceModule;
     ModuleGlobals moduleGlobals;
 
-    Types.CreateProfileData mockCreateProfileData;
+    Types.CreateProfileParams mockCreateProfileParams;
 
     Types.PostParams mockPostParams;
     Types.CommentParams mockCommentParams;
@@ -216,7 +216,7 @@ contract TestSetup is Test, ForkManagement {
         );
 
         // precompute basic profile creaton data.
-        mockCreateProfileData = Types.CreateProfileData({
+        mockCreateProfileParams = Types.CreateProfileParams({
             to: profileOwner,
             imageURI: MOCK_URI,
             followModule: address(0),
@@ -269,7 +269,7 @@ contract TestSetup is Test, ForkManagement {
             collectModuleData: ''
         });
 
-        hub.createProfile(mockCreateProfileData);
+        hub.createProfile(mockCreateProfileParams);
     }
 
     // TODO: Find a better place for such helpers that have access to Hub without rekting inheritance

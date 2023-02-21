@@ -2,20 +2,21 @@
 
 pragma solidity 0.8.15;
 
-import {GeneralHelpers} from './GeneralHelpers.sol';
-import {MetaTxLib} from './MetaTxLib.sol';
-import {InteractionHelpers} from './InteractionHelpers.sol';
-import {Types} from './constants/Types.sol';
-import {Errors} from './constants/Errors.sol';
-import {Events} from './constants/Events.sol';
-import {IFollowModule} from '../interfaces/IFollowModule.sol';
-import {ICollectModule} from '../interfaces/ICollectModule.sol';
-import {IReferenceModule} from '../interfaces/IReferenceModule.sol';
-import {IDeprecatedFollowModule} from '../interfaces/IDeprecatedFollowModule.sol';
-import {IDeprecatedCollectModule} from '../interfaces/IDeprecatedCollectModule.sol';
-import {IDeprecatedReferenceModule} from '../interfaces/IDeprecatedReferenceModule.sol';
+import {GeneralHelpers} from 'contracts/libraries/GeneralHelpers.sol';
+import {MetaTxLib} from 'contracts/libraries/MetaTxLib.sol';
+import {InteractionHelpers} from 'contracts/libraries/InteractionHelpers.sol';
+import {Types} from 'contracts/libraries/constants/Types.sol';
+import {Errors} from 'contracts/libraries/constants/Errors.sol';
+import {Events} from 'contracts/libraries/constants/Events.sol';
+import {IFollowModule} from 'contracts/interfaces/IFollowModule.sol';
+import {ICollectModule} from 'contracts/interfaces/ICollectModule.sol';
+import {IReferenceModule} from 'contracts/interfaces/IReferenceModule.sol';
+import {IDeprecatedFollowModule} from 'contracts/interfaces/IDeprecatedFollowModule.sol';
+import {IDeprecatedCollectModule} from 'contracts/interfaces/IDeprecatedCollectModule.sol';
+import {IDeprecatedReferenceModule} from 'contracts/interfaces/IDeprecatedReferenceModule.sol';
 
-import './Constants.sol';
+import 'contracts/libraries/Constants.sol';
+import 'contracts/libraries/LensHubStorageLib.sol';
 
 /**
  * @title GeneralLib
@@ -98,9 +99,8 @@ library GeneralLib {
     }
 
     function switchToNewFreshDelegatedExecutorsConfig(uint256 profileId) external {
-        Types.DelegatedExecutorsConfig storage _delegatedExecutorsConfig = GeneralHelpers.getDelegatedExecutorsConfig({
-            delegatorProfileId: profileId
-        });
+        Types.DelegatedExecutorsConfig storage _delegatedExecutorsConfig = LensHubStorageLib
+            .getDelegatedExecutorsConfig({delegatorProfileId: profileId});
         _changeDelegatedExecutorsConfig({
             _delegatedExecutorsConfig: _delegatedExecutorsConfig,
             delegatorProfileId: profileId,
@@ -116,9 +116,8 @@ library GeneralLib {
         address[] calldata executors,
         bool[] calldata approvals
     ) external {
-        Types.DelegatedExecutorsConfig storage _delegatedExecutorsConfig = GeneralHelpers.getDelegatedExecutorsConfig(
-            delegatorProfileId
-        );
+        Types.DelegatedExecutorsConfig storage _delegatedExecutorsConfig = LensHubStorageLib
+            .getDelegatedExecutorsConfig(delegatorProfileId);
         _changeDelegatedExecutorsConfig(
             _delegatedExecutorsConfig,
             delegatorProfileId,
@@ -137,7 +136,7 @@ library GeneralLib {
         bool switchToGivenConfig
     ) external {
         _changeDelegatedExecutorsConfig(
-            GeneralHelpers.getDelegatedExecutorsConfig(delegatorProfileId),
+            LensHubStorageLib.getDelegatedExecutorsConfig(delegatorProfileId),
             delegatorProfileId,
             executors,
             approvals,

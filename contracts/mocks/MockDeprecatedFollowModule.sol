@@ -2,7 +2,7 @@
 
 pragma solidity 0.8.15;
 
-import {IDeprecatedFollowModule} from '../interfaces/IDeprecatedFollowModule.sol';
+import {IDeprecatedFollowModule} from 'contracts/interfaces/IDeprecatedFollowModule.sol';
 
 /**
  * @dev This is a simple mock follow module to be used for testing.

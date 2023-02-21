@@ -2,7 +2,7 @@
 
 pragma solidity 0.8.15;
 
-import {IEIP1271Implementer} from '../interfaces/IEIP1271Implementer.sol';
+import {IEIP1271Implementer} from 'contracts/interfaces/IEIP1271Implementer.sol';
 
 /**
  * @dev This is a mock contract that validates an EIP1271 signature against its deployer.

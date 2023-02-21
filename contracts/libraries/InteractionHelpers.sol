@@ -19,6 +19,7 @@ import {Clones} from '@openzeppelin/contracts/proxy/Clones.sol';
 import {Strings} from '@openzeppelin/contracts/utils/Strings.sol';
 
 import 'contracts/libraries/Constants.sol';
+import 'contracts/libraries/LensHubStorageLib.sol';
 
 /**
  * @title InteractionHelpers
@@ -168,7 +169,7 @@ library InteractionHelpers {
         uint256 tokenId;
         address collectorProfileOwner = GeneralHelpers.ownerOf(collectParams.collectorProfileId);
         {
-            Types.PublicationStruct storage _collectedPublication = GeneralHelpers.getPublicationStruct(
+            Types.Publication storage _collectedPublication = LensHubStorageLib.getPublication(
                 collectParams.publicationCollectedProfileId,
                 collectParams.publicationCollectedId
             );
@@ -204,7 +205,7 @@ library InteractionHelpers {
     }
 
     function _getOrDeployCollectNFT(
-        Types.PublicationStruct storage _collectedPublication,
+        Types.Publication storage _collectedPublication,
         uint256 publicationCollectedProfileId,
         uint256 publicationCollectedId,
         address collectNFTImpl

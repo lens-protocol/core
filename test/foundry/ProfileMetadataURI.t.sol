@@ -1,8 +1,8 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity ^0.8.13;
 
-import './base/BaseTest.t.sol';
-import './MetaTxNegatives.t.sol';
+import 'test/foundry/base/BaseTest.t.sol';
+import 'test/foundry/MetaTxNegatives.t.sol';
 import {Events} from 'contracts/libraries/constants/Events.sol';
 
 contract ProfileMetadataURITest is BaseTest {

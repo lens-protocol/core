@@ -2,11 +2,11 @@
 
 pragma solidity 0.8.15;
 
-import {Events} from '../../libraries/constants/Events.sol';
-import {Types} from '../../libraries/constants/Types.sol';
-import {Errors} from '../../libraries/constants/Errors.sol';
-import {ILensMultiState} from '../../interfaces/ILensMultiState.sol';
-import {GeneralHelpers} from '../../libraries/GeneralHelpers.sol';
+import {Events} from 'contracts/libraries/constants/Events.sol';
+import {Types} from 'contracts/libraries/constants/Types.sol';
+import {Errors} from 'contracts/libraries/constants/Errors.sol';
+import {ILensMultiState} from 'contracts/interfaces/ILensMultiState.sol';
+import {GeneralHelpers} from 'contracts/libraries/GeneralHelpers.sol';
 
 /**
  * @title LensMultiState

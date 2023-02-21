@@ -2,9 +2,9 @@
 
 pragma solidity 0.8.15;
 
-import {IDeprecatedCollectModule} from '../../../../interfaces/IDeprecatedCollectModule.sol';
-import {ModuleBase} from '../../ModuleBase.sol';
-import {FollowValidationModuleBase} from '../../FollowValidationModuleBase.sol';
+import {IDeprecatedCollectModule} from 'contracts/interfaces/IDeprecatedCollectModule.sol';
+import {ModuleBase} from 'contracts/core/modules/ModuleBase.sol';
+import {FollowValidationModuleBase} from 'contracts/core/modules/FollowValidationModuleBase.sol';
 
 /**
  * @title FreeCollectModule

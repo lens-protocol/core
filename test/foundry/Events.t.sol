@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity ^0.8.13;
 
-import './base/BaseTest.t.sol';
+import 'test/foundry/base/BaseTest.t.sol';
 
 import {Events} from 'contracts/libraries/constants/Events.sol';
 import {MockFollowModule} from 'contracts/mocks/MockFollowModule.sol';
@@ -179,7 +179,7 @@ contract EventTest is BaseTest {
 
     function testProfileCreationEmitsExpectedEvents() public {
         uint256 expectedTokenId = 2;
-        mockCreateProfileData.to = profileOwnerTwo;
+        mockCreateProfileParams.to = profileOwnerTwo;
         vm.prank(governance);
         hub.whitelistProfileCreator(profileOwnerTwo, true);
         vm.prank(profileOwnerTwo);
@@ -190,18 +190,18 @@ contract EventTest is BaseTest {
             expectedTokenId,
             profileOwnerTwo,
             profileOwnerTwo,
-            mockCreateProfileData.imageURI,
-            mockCreateProfileData.followModule,
+            mockCreateProfileParams.imageURI,
+            mockCreateProfileParams.followModule,
             '',
-            mockCreateProfileData.followNFTURI,
+            mockCreateProfileParams.followNFTURI,
             block.timestamp
         );
-        hub.createProfile(mockCreateProfileData);
+        hub.createProfile(mockCreateProfileParams);
     }
 
     function testProfileCreationForOtherUserEmitsExpectedEvents() public {
         uint256 expectedTokenId = 2;
-        mockCreateProfileData.to = profileOwnerTwo;
+        mockCreateProfileParams.to = profileOwnerTwo;
         vm.expectEmit(true, true, true, true, address(hub));
         emit Transfer(address(0), profileOwnerTwo, expectedTokenId);
         vm.expectEmit(true, true, true, true, address(hub));
@@ -209,19 +209,19 @@ contract EventTest is BaseTest {
             expectedTokenId,
             me,
             profileOwnerTwo,
-            mockCreateProfileData.imageURI,
-            mockCreateProfileData.followModule,
+            mockCreateProfileParams.imageURI,
+            mockCreateProfileParams.followModule,
             '',
-            mockCreateProfileData.followNFTURI,
+            mockCreateProfileParams.followNFTURI,
             block.timestamp
         );
-        hub.createProfile(mockCreateProfileData);
+        hub.createProfile(mockCreateProfileParams);
     }
 
     function testSettingFollowModuleEmitsExpectedEvents() public {
-        mockCreateProfileData.to = profileOwnerTwo;
+        mockCreateProfileParams.to = profileOwnerTwo;
         uint256 expectedProfileId = 2;
-        hub.createProfile(mockCreateProfileData);
+        hub.createProfile(mockCreateProfileParams);
         vm.prank(profileOwnerTwo);
         vm.expectEmit(true, true, true, true, address(hub));
         emit Events.FollowModuleSet(expectedProfileId, address(mockFollowModule), '', block.timestamp);
