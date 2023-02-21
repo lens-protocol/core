@@ -167,25 +167,6 @@ library GeneralHelpers {
             _delegatedExecutorsConfig.isApproved[_delegatedExecutorsConfig.configNumber][executor];
     }
 
-    /**
-     * @dev Returns either the profile owner or the delegated signer if valid.
-     */
-    function getOriginatorOrDelegatedExecutorSigner(uint256 profileId, address delegatedSigner)
-        internal
-        view
-        returns (address)
-    {
-        if (delegatedSigner == address(0)) {
-            return ownerOf(profileId);
-        } else {
-            validateAddressIsDelegatedExecutor({
-                expectedDelegatedExecutor: delegatedSigner,
-                delegatorProfileId: profileId
-            });
-            return delegatedSigner;
-        }
-    }
-
     function validateNotBlocked(uint256 profile, uint256 byProfile) internal view {
         bool isBlocked;
         assembly {
