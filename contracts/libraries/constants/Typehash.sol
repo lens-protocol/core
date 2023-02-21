@@ -2,7 +2,7 @@
 
 pragma solidity 0.8.15;
 
-library TypehashConstants {
+library Typehash {
     
     bytes32 constant BURN = keccak256('Burn(uint256 tokenId,uint256 nonce,uint256 deadline)');
 

@@ -5,7 +5,7 @@ import './base/BaseTest.t.sol';
 import './MetaTxNegatives.t.sol';
 import {Strings} from '@openzeppelin/contracts/utils/Strings.sol';
 import {IFollowNFT} from 'contracts/interfaces/IFollowNFT.sol';
-import {TypehashConstants} from 'contracts/libraries/constants/TypehashConstants.sol';
+import {Typehash} from 'contracts/libraries/constants/Typehash.sol';
 
 contract UnfollowTest is BaseTest {
     uint256 constant MINT_NEW_TOKEN = 0;
@@ -277,7 +277,7 @@ contract UnfollowMetaTxTest is UnfollowTest, MetaTxNegatives {
             _calculateDigest(
                 keccak256(
                     abi.encode(
-                        TypehashConstants.UNFOLLOW,
+                        Typehash.UNFOLLOW,
                         unfollowerProfileId,
                         keccak256(abi.encodePacked(idsOfProfilesToUnfollow)),
                         nonce,

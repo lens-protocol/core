@@ -6,7 +6,7 @@ import './MetaTxNegatives.t.sol';
 import {Strings} from '@openzeppelin/contracts/utils/Strings.sol';
 import {IFollowNFT} from 'contracts/interfaces/IFollowNFT.sol';
 import 'contracts/mocks/MockFollowModuleWithRevertFlag.sol';
-import {TypehashConstants} from 'contracts/libraries/constants/TypehashConstants.sol';
+import {Typehash} from 'contracts/libraries/constants/Typehash.sol';
 
 contract FollowTest is BaseTest {
     using Strings for uint256;
@@ -526,7 +526,7 @@ contract FollowMetaTxTest is FollowTest, MetaTxNegatives {
             _calculateDigest(
                 keccak256(
                     abi.encode(
-                        TypehashConstants.FOLLOW,
+                        Typehash.FOLLOW,
                         followerProfileId,
                         keccak256(abi.encodePacked(idsOfProfilesToFollow)),
                         keccak256(abi.encodePacked(followTokenIds)),

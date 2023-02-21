@@ -3,7 +3,7 @@
 pragma solidity 0.8.15;
 
 import {Events} from '../../libraries/constants/Events.sol';
-import {DataTypes} from '../../libraries/DataTypes.sol';
+import {DataTypes} from '../../libraries/constants/DataTypes.sol';
 import {Errors} from '../../libraries/constants/Errors.sol';
 import {ILensMultiState} from '../../interfaces/ILensMultiState.sol';
 import {GeneralHelpers} from '../../libraries/GeneralHelpers.sol';

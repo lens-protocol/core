@@ -2,8 +2,8 @@
 pragma solidity ^0.8.13;
 
 import './TestSetup.t.sol';
-import 'contracts/libraries/DataTypes.sol';
-import {TypehashConstants} from 'contracts/libraries/constants/TypehashConstants.sol';
+import 'contracts/libraries/constants/DataTypes.sol';
+import {Typehash} from 'contracts/libraries/constants/Typehash.sol';
 
 contract BaseTest is TestSetup {
     function _getSetProfileMetadataURITypedDataHash(
@@ -14,7 +14,7 @@ contract BaseTest is TestSetup {
     ) internal view returns (bytes32) {
         bytes32 structHash = keccak256(
             abi.encode(
-                TypehashConstants.SET_PROFILE_METADATA_URI,
+                Typehash.SET_PROFILE_METADATA_URI,
                 profileId,
                 keccak256(bytes(metadataURI)),
                 nonce,
@@ -33,7 +33,7 @@ contract BaseTest is TestSetup {
     ) internal view returns (bytes32) {
         bytes32 structHash = keccak256(
             abi.encode(
-                TypehashConstants.SET_FOLLOW_MODULE,
+                Typehash.SET_FOLLOW_MODULE,
                 profileId,
                 followModule,
                 keccak256(followModuleInitData),
@@ -55,7 +55,7 @@ contract BaseTest is TestSetup {
     ) internal view returns (bytes32) {
         bytes32 structHash = keccak256(
             abi.encode(
-                TypehashConstants.CHANGE_DELEGATED_EXECUTORS_CONFIG,
+                Typehash.CHANGE_DELEGATED_EXECUTORS_CONFIG,
                 delegatorProfileId,
                 abi.encodePacked(executors),
                 abi.encodePacked(approvals),
@@ -76,7 +76,7 @@ contract BaseTest is TestSetup {
     ) internal view returns (bytes32) {
         bytes32 structHash = keccak256(
             abi.encode(
-                TypehashConstants.SET_PROFILE_IMAGE_URI,
+                Typehash.SET_PROFILE_IMAGE_URI,
                 profileId,
                 keccak256(bytes(imageURI)),
                 nonce,
@@ -94,7 +94,7 @@ contract BaseTest is TestSetup {
     ) internal view returns (bytes32) {
         bytes32 structHash = keccak256(
             abi.encode(
-                TypehashConstants.SET_FOLLOW_NFT_URI,
+                Typehash.SET_FOLLOW_NFT_URI,
                 profileId,
                 keccak256(bytes(followNFTURI)),
                 nonce,
@@ -109,9 +109,7 @@ contract BaseTest is TestSetup {
         uint256 nonce,
         uint256 deadline
     ) internal view returns (bytes32) {
-        bytes32 structHash = keccak256(
-            abi.encode(TypehashConstants.BURN, profileId, nonce, deadline)
-        );
+        bytes32 structHash = keccak256(abi.encode(Typehash.BURN, profileId, nonce, deadline));
         return _calculateDigest(structHash);
     }
 
@@ -127,7 +125,7 @@ contract BaseTest is TestSetup {
     ) internal view returns (bytes32) {
         bytes32 structHash = keccak256(
             abi.encode(
-                TypehashConstants.POST,
+                Typehash.POST,
                 profileId,
                 keccak256(bytes(contentURI)),
                 collectModule,
@@ -176,7 +174,7 @@ contract BaseTest is TestSetup {
     ) internal view returns (bytes32) {
         bytes32 structHash = keccak256(
             abi.encode(
-                TypehashConstants.COMMENT,
+                Typehash.COMMENT,
                 profileId,
                 keccak256(bytes(contentURI)),
                 pointedProfileId,
@@ -230,7 +228,7 @@ contract BaseTest is TestSetup {
     ) internal view returns (bytes32) {
         bytes32 structHash = keccak256(
             abi.encode(
-                TypehashConstants.MIRROR,
+                Typehash.MIRROR,
                 profileId,
                 pointedProfileId,
                 pointedPubId,
@@ -281,7 +279,7 @@ contract BaseTest is TestSetup {
 
         bytes32 structHash = keccak256(
             abi.encode(
-                TypehashConstants.FOLLOW,
+                Typehash.FOLLOW,
                 followerProfileId,
                 keccak256(abi.encodePacked(idsOfProfilesToFollow)),
                 keccak256(abi.encodePacked(followTokenIds)),
@@ -300,7 +298,7 @@ contract BaseTest is TestSetup {
     ) internal view returns (bytes32) {
         bytes32 structHash = keccak256(
             abi.encode(
-                TypehashConstants.COLLECT,
+                Typehash.COLLECT,
                 collectParams.publicationCollectedProfileId,
                 collectParams.publicationCollectedId,
                 collectParams.collectorProfileId,

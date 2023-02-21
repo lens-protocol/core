@@ -14,7 +14,7 @@ import 'contracts/mocks/MockFollowModule.sol';
 import 'contracts/mocks/MockDeprecatedFollowModule.sol';
 import 'contracts/interfaces/IERC721Time.sol';
 import 'contracts/interfaces/ILensMultiState.sol';
-import {TypehashConstants} from 'contracts/libraries/constants/TypehashConstants.sol';
+import {Typehash} from 'contracts/libraries/constants/Typehash.sol';
 
 struct OldCreateProfileData {
     address to;
@@ -406,9 +406,9 @@ contract UpgradeForkTest is BaseTest {
         // Compute the domain separator.
         domainSeparator = keccak256(
             abi.encode(
-                TypehashConstants.EIP712_DOMAIN,
+                Typehash.EIP712_DOMAIN,
                 keccak256('Lens Protocol Profiles'),
-                MetaTxHelpers.EIP712_REVISION_HASH,
+                MetaTxLib.EIP712_REVISION_HASH,
                 block.chainid,
                 hubProxyAddr
             )

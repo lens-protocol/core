@@ -3,8 +3,8 @@
 pragma solidity 0.8.15;
 
 import {GeneralHelpers} from './GeneralHelpers.sol';
-import {MetaTxHelpers} from './MetaTxHelpers.sol';
-import {DataTypes} from './DataTypes.sol';
+import {MetaTxLib} from './MetaTxLib.sol';
+import {DataTypes} from './constants/DataTypes.sol';
 import {Events} from './constants/Events.sol';
 import {Errors} from './constants/Errors.sol';
 import {ICollectModule} from '../interfaces/ICollectModule.sol';

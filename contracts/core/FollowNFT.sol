@@ -3,7 +3,7 @@
 pragma solidity 0.8.15;
 
 import '../libraries/Constants.sol';
-import {DataTypes} from '../libraries/DataTypes.sol';
+import {DataTypes} from '../libraries/constants/DataTypes.sol';
 import {ERC2981CollectionRoyalties} from './base/ERC2981CollectionRoyalties.sol';
 import {ERC721Enumerable} from './base/ERC721Enumerable.sol';
 import {Errors} from '../libraries/constants/Errors.sol';
@@ -14,7 +14,7 @@ import {IERC721Time} from '../interfaces/IERC721Time.sol';
 import {IFollowNFT} from '../interfaces/IFollowNFT.sol';
 import {ILensHub} from '../interfaces/ILensHub.sol';
 import {LensNFTBase} from './base/LensNFTBase.sol';
-import {MetaTxHelpers} from '../libraries/MetaTxHelpers.sol';
+import {MetaTxLib} from '../libraries/MetaTxLib.sol';
 import {Strings} from '@openzeppelin/contracts/utils/Strings.sol';
 
 contract FollowNFT is HubRestricted, LensNFTBase, ERC2981CollectionRoyalties, IFollowNFT {

@@ -2,7 +2,7 @@
 pragma solidity ^0.8.13;
 
 import 'forge-std/Test.sol';
-import 'contracts/libraries/DataTypes.sol';
+import 'contracts/libraries/constants/DataTypes.sol';
 
 contract PublishingHelpers is Test {
     function _verifyPublication(

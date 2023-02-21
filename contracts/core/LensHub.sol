@@ -7,7 +7,7 @@ import {ILensNFTBase} from '../interfaces/ILensNFTBase.sol';
 import {ILensHub} from '../interfaces/ILensHub.sol';
 
 import {Events} from '../libraries/constants/Events.sol';
-import {DataTypes} from '../libraries/DataTypes.sol';
+import {DataTypes} from '../libraries/constants/DataTypes.sol';
 import {Errors} from '../libraries/constants/Errors.sol';
 import {GeneralLib} from '../libraries/GeneralLib.sol';
 import {GeneralHelpers} from '../libraries/GeneralHelpers.sol';
@@ -21,7 +21,7 @@ import {LensMultiState} from './base/LensMultiState.sol';
 import {LensHubStorage} from './storage/LensHubStorage.sol';
 import {VersionedInitializable} from '../upgradeability/VersionedInitializable.sol';
 import {IERC721Enumerable} from '@openzeppelin/contracts/token/ERC721/extensions/IERC721Enumerable.sol';
-import {MetaTxHelpers} from 'contracts/libraries/MetaTxHelpers.sol';
+import {MetaTxLib} from 'contracts/libraries/MetaTxLib.sol';
 
 /**
  * @title LensHub
@@ -169,7 +169,7 @@ contract LensHub is LensNFTBase, VersionedInitializable, LensMultiState, LensHub
         whenNotPaused
         onlyProfileOwnerOrDelegatedExecutor(signature.signer, profileId)
     {
-        MetaTxHelpers.validateSetProfileMetadataURISignature(signature, profileId, metadataURI);
+        MetaTxLib.validateSetProfileMetadataURISignature(signature, profileId, metadataURI);
         ProfileLib.setProfileMetadataURI(profileId, metadataURI);
     }
 
@@ -194,7 +194,7 @@ contract LensHub is LensNFTBase, VersionedInitializable, LensMultiState, LensHub
         whenNotPaused
         onlyProfileOwnerOrDelegatedExecutor(signature.signer, profileId)
     {
-        MetaTxHelpers.validateSetFollowModuleSignature(
+        MetaTxLib.validateSetFollowModuleSignature(
             signature,
             profileId,
             followModule,
@@ -237,7 +237,7 @@ contract LensHub is LensNFTBase, VersionedInitializable, LensMultiState, LensHub
         bool switchToGivenConfig,
         DataTypes.EIP712Signature calldata signature
     ) external override whenNotPaused onlyProfileOwner(signature.signer, delegatorProfileId) {
-        MetaTxHelpers.validateChangeDelegatedExecutorsConfigSignature(
+        MetaTxLib.validateChangeDelegatedExecutorsConfigSignature(
             signature,
             delegatorProfileId,
             executors,
@@ -275,7 +275,7 @@ contract LensHub is LensNFTBase, VersionedInitializable, LensMultiState, LensHub
         whenNotPaused
         onlyProfileOwnerOrDelegatedExecutor(signature.signer, profileId)
     {
-        MetaTxHelpers.validateSetProfileImageURISignature(signature, profileId, imageURI);
+        MetaTxLib.validateSetProfileImageURISignature(signature, profileId, imageURI);
         ProfileLib.setProfileImageURI(profileId, imageURI);
     }
 
@@ -300,7 +300,7 @@ contract LensHub is LensNFTBase, VersionedInitializable, LensMultiState, LensHub
         whenNotPaused
         onlyProfileOwnerOrDelegatedExecutor(signature.signer, profileId)
     {
-        MetaTxHelpers.validateSetFollowNFTURISignature(signature, profileId, followNFTURI);
+        MetaTxLib.validateSetFollowNFTURISignature(signature, profileId, followNFTURI);
         ProfileLib.setFollowNFTURI(profileId, followNFTURI);
     }
 
@@ -330,7 +330,7 @@ contract LensHub is LensNFTBase, VersionedInitializable, LensMultiState, LensHub
         onlyProfileOwnerOrDelegatedExecutor(signature.signer, postParams.profileId)
         returns (uint256)
     {
-        MetaTxHelpers.validatePostSignature(signature, postParams);
+        MetaTxLib.validatePostSignature(signature, postParams);
         return PublishingLib.post({postParams: postParams, transactionExecutor: signature.signer});
     }
 
@@ -361,7 +361,7 @@ contract LensHub is LensNFTBase, VersionedInitializable, LensMultiState, LensHub
         whenNotBlocked(commentParams.profileId, commentParams.pointedProfileId)
         returns (uint256)
     {
-        MetaTxHelpers.validateCommentSignature(signature, commentParams);
+        MetaTxLib.validateCommentSignature(signature, commentParams);
         return
             PublishingLib.comment({
                 commentParams: commentParams,
@@ -395,7 +395,7 @@ contract LensHub is LensNFTBase, VersionedInitializable, LensMultiState, LensHub
         whenNotBlocked(mirrorParams.profileId, mirrorParams.pointedProfileId)
         returns (uint256)
     {
-        MetaTxHelpers.validateMirrorSignature(signature, mirrorParams);
+        MetaTxLib.validateMirrorSignature(signature, mirrorParams);
         return
             PublishingLib.mirror({
                 mirrorParams: mirrorParams,
@@ -429,7 +429,7 @@ contract LensHub is LensNFTBase, VersionedInitializable, LensMultiState, LensHub
         whenNotBlocked(quoteParams.profileId, quoteParams.pointedProfileId)
         returns (uint256)
     {
-        MetaTxHelpers.validateQuoteSignature(signature, quoteParams);
+        MetaTxLib.validateQuoteSignature(signature, quoteParams);
         return
             PublishingLib.quote({quoteParams: quoteParams, transactionExecutor: signature.signer});
     }
@@ -455,7 +455,7 @@ contract LensHub is LensNFTBase, VersionedInitializable, LensMultiState, LensHub
         whenNotPaused
         onlyProfileOwner(signature.signer, tokenId)
     {
-        MetaTxHelpers.validateBurnSignature(signature, tokenId);
+        MetaTxLib.validateBurnSignature(signature, tokenId);
         _burn(tokenId);
     }
 
@@ -500,7 +500,7 @@ contract LensHub is LensNFTBase, VersionedInitializable, LensMultiState, LensHub
         onlyProfileOwnerOrDelegatedExecutor(signature.signer, followerProfileId)
         returns (uint256[] memory)
     {
-        MetaTxHelpers.validateFollowSignature(
+        MetaTxLib.validateFollowSignature(
             signature,
             followerProfileId,
             idsOfProfilesToFollow,
@@ -543,7 +543,7 @@ contract LensHub is LensNFTBase, VersionedInitializable, LensMultiState, LensHub
         whenNotPaused
         onlyProfileOwnerOrDelegatedExecutor(signature.signer, unfollowerProfileId)
     {
-        MetaTxHelpers.validateUnfollowSignature(
+        MetaTxLib.validateUnfollowSignature(
             signature,
             unfollowerProfileId,
             idsOfProfilesToUnfollow
@@ -578,7 +578,7 @@ contract LensHub is LensNFTBase, VersionedInitializable, LensMultiState, LensHub
         whenNotPaused
         onlyProfileOwnerOrDelegatedExecutor(signature.signer, byProfileId)
     {
-        MetaTxHelpers.validateSetBlockStatusSignature(
+        MetaTxLib.validateSetBlockStatusSignature(
             signature,
             byProfileId,
             idsOfProfilesToSetBlockStatus,
@@ -617,7 +617,7 @@ contract LensHub is LensNFTBase, VersionedInitializable, LensMultiState, LensHub
         )
         returns (uint256)
     {
-        MetaTxHelpers.validateCollectSignature(signature, collectParams);
+        MetaTxLib.validateCollectSignature(signature, collectParams);
         return GeneralLib.collect(collectParams, signature.signer, COLLECT_NFT_IMPL);
     }
 
@@ -902,7 +902,7 @@ contract LensHub is LensNFTBase, VersionedInitializable, LensMultiState, LensHub
      * @dev Overrides the LensNFTBase function to compute the domain separator in the GeneralLib.
      */
     function getDomainSeparator() external view override returns (bytes32) {
-        return MetaTxHelpers.getDomainSeparator();
+        return MetaTxLib.getDomainSeparator();
     }
 
     /**

@@ -4,9 +4,9 @@ pragma solidity 0.8.15;
 
 import {ILensNFTBase} from 'contracts/interfaces/ILensNFTBase.sol';
 import {Errors} from 'contracts/libraries/constants/Errors.sol';
-import {DataTypes} from 'contracts/libraries/DataTypes.sol';
+import {DataTypes} from 'contracts/libraries/constants/DataTypes.sol';
 import {Events} from 'contracts/libraries/constants/Events.sol';
-import {MetaTxHelpers} from 'contracts/libraries/MetaTxHelpers.sol';
+import {MetaTxLib} from 'contracts/libraries/MetaTxLib.sol';
 import {ERC721Time} from './ERC721Time.sol';
 import {ERC721Enumerable} from 'contracts/core/base/ERC721Enumerable.sol';
 
@@ -49,13 +49,13 @@ abstract contract LensNFTBase is ERC721Enumerable, ILensNFTBase {
         if (signature.signer != ownerOf(tokenId)) {
             revert Errors.NotProfileOwner();
         }
-        MetaTxHelpers.validatePermitSignature(signature, spender, tokenId);
+        MetaTxLib.validatePermitSignature(signature, spender, tokenId);
         _approve(spender, tokenId);
     }
 
     /// @inheritdoc ILensNFTBase
     function getDomainSeparator() external view virtual override returns (bytes32) {
-        return MetaTxHelpers.getDomainSeparator();
+        return MetaTxLib.getDomainSeparator();
     }
 
     /// @inheritdoc ILensNFTBase
@@ -73,7 +73,7 @@ abstract contract LensNFTBase is ERC721Enumerable, ILensNFTBase {
         if (_isApprovedOrOwner(signature.signer, tokenId)) {
             revert Errors.NotOwnerOrApproved();
         }
-        MetaTxHelpers.validateBurnSignature(signature, tokenId);
+        MetaTxLib.validateBurnSignature(signature, tokenId);
         _burn(tokenId);
     }
 }

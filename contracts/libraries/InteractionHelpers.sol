@@ -4,7 +4,7 @@ pragma solidity 0.8.15;
 
 import {FollowNFTProxy} from 'contracts/upgradeability/FollowNFTProxy.sol';
 import {GeneralHelpers} from 'contracts/libraries/GeneralHelpers.sol';
-import {DataTypes} from 'contracts/libraries/DataTypes.sol';
+import {DataTypes} from 'contracts/libraries/constants/DataTypes.sol';
 import {Errors} from 'contracts/libraries/constants/Errors.sol';
 import {Events} from 'contracts/libraries/constants/Events.sol';
 import {IFollowNFT} from 'contracts/interfaces/IFollowNFT.sol';

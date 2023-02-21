@@ -3,7 +3,7 @@ pragma solidity ^0.8.13;
 
 import '../base/TestSetup.t.sol';
 import 'forge-std/Test.sol';
-import 'contracts/libraries/DataTypes.sol';
+import 'contracts/libraries/constants/DataTypes.sol';
 
 contract CollectingHelpers is TestSetup {
     CollectNFT _collectNftAfter;

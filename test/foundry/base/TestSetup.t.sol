@@ -10,7 +10,7 @@ import {FollowNFT} from 'contracts/core/FollowNFT.sol';
 import {CollectNFT} from 'contracts/core/CollectNFT.sol';
 import {ModuleGlobals} from 'contracts/core/modules/ModuleGlobals.sol';
 import {TransparentUpgradeableProxy} from 'contracts/upgradeability/TransparentUpgradeableProxy.sol';
-import {DataTypes} from 'contracts/libraries/DataTypes.sol';
+import {DataTypes} from 'contracts/libraries/constants/DataTypes.sol';
 import 'contracts/libraries/Constants.sol';
 import {Errors} from 'contracts/libraries/constants/Errors.sol';
 import {Events} from 'contracts/libraries/constants/Events.sol';
@@ -20,8 +20,8 @@ import {MockCollectModule} from 'contracts/mocks/MockCollectModule.sol';
 import {MockReferenceModule} from 'contracts/mocks/MockReferenceModule.sol';
 import '../helpers/ForkManagement.sol';
 import '../Constants.sol';
-import {TypehashConstants} from 'contracts/libraries/constants/TypehashConstants.sol';
-import {MetaTxHelpers} from 'contracts/libraries/MetaTxHelpers.sol';
+import {Typehash} from 'contracts/libraries/constants/Typehash.sol';
+import {MetaTxLib} from 'contracts/libraries/MetaTxLib.sol';
 
 contract TestSetup is Test, ForkManagement {
     using stdJson for string;
@@ -217,9 +217,9 @@ contract TestSetup is Test, ForkManagement {
         // Compute the domain separator.
         domainSeparator = keccak256(
             abi.encode(
-                TypehashConstants.EIP712_DOMAIN,
+                Typehash.EIP712_DOMAIN,
                 keccak256('Lens Protocol Profiles'),
-                MetaTxHelpers.EIP712_REVISION_HASH,
+                MetaTxLib.EIP712_REVISION_HASH,
                 block.chainid,
                 hubProxyAddr
             )

@@ -3,7 +3,7 @@
 pragma solidity 0.8.15;
 
 import {IReferenceModule} from '../interfaces/IReferenceModule.sol';
-import {DataTypes} from 'contracts/libraries/DataTypes.sol';
+import {DataTypes} from 'contracts/libraries/constants/DataTypes.sol';
 
 /**
  * @dev This is a simple mock follow module to be used for testing.

@@ -2,15 +2,14 @@
 pragma solidity 0.8.15;
 
 import {IEIP1271Implementer} from 'contracts/interfaces/IEIP1271Implementer.sol';
-import {DataTypes} from 'contracts/libraries/DataTypes.sol';
+import {DataTypes} from 'contracts/libraries/constants/DataTypes.sol';
 import {Errors} from 'contracts/libraries/constants/Errors.sol';
-import {DataTypes} from 'contracts/libraries/DataTypes.sol';
 import {GeneralHelpers} from 'contracts/libraries/GeneralHelpers.sol';
-import {TypehashConstants} from 'contracts/libraries/constants/TypehashConstants.sol';
+import {Typehash} from 'contracts/libraries/constants/Typehash.sol';
 import 'contracts/libraries/Constants.sol';
 
 /**
- * @title MetaTxHelpers
+ * @title MetaTxLib
  * @author Lens Protocol
  *
  * @notice This is the library used by the GeneralLib that contains the logic for signature
@@ -22,7 +21,7 @@ import 'contracts/libraries/Constants.sol';
  * @dev The functions are internal, so they are inlined into the GeneralLib. User nonces
  * are incremented from this library as well.
  */
-library MetaTxHelpers {
+library MetaTxLib {
     bytes32 constant EIP712_REVISION_HASH = keccak256('2');
 
     /**
@@ -31,7 +30,7 @@ library MetaTxHelpers {
      * keccak256(
      *     abi.encode(
      *         keccak256('EIP712Domain(string name,string version,uint256 chainId,address verifyingContract)'),
-     *         keccak256('Lens Protocol Profiles') // Contract Name
+     *         keccak256('Lens Protocol Profiles'), // Contract Name
      *         keccak256('2'), // Revision Hash
      *         137, // Polygon Chain ID
      *         address(0xDb46d1Dc155634FbC732f92E853b10B288AD5a1d) // Verifying Contract Address - LensHub Address
@@ -39,9 +38,9 @@ library MetaTxHelpers {
      * );
      */
     bytes32 constant LENS_HUB_CACHED_POLYGON_DOMAIN_SEPARATOR =
-        0x78e10b2874b1a1d4436464e65903d3bdc28b68f8d023df2e47b65f8caa45c4bb;
+        0xbf9544cf7d7a0338fc4f071be35409a61e51e9caef559305410ad74e16a05f2d; // TODO: Test this on a fork
 
-    address constant LENS_HUB_ADDRESS = 0xDb46d1Dc155634FbC732f92E853b10B288AD5a1d; // TODO: Check later
+    address constant LENS_HUB_ADDRESS = 0xDb46d1Dc155634FbC732f92E853b10B288AD5a1d;
 
     function validateSetProfileMetadataURISignature(
         DataTypes.EIP712Signature calldata signature,
@@ -52,7 +51,7 @@ library MetaTxHelpers {
             _calculateDigest(
                 keccak256(
                     abi.encode(
-                        TypehashConstants.SET_PROFILE_METADATA_URI,
+                        Typehash.SET_PROFILE_METADATA_URI,
                         profileId,
                         keccak256(bytes(metadataURI)),
                         _sigNonces(signature.signer),
@@ -74,7 +73,7 @@ library MetaTxHelpers {
             _calculateDigest(
                 keccak256(
                     abi.encode(
-                        TypehashConstants.SET_FOLLOW_MODULE,
+                        Typehash.SET_FOLLOW_MODULE,
                         profileId,
                         followModule,
                         keccak256(followModuleInitData),
@@ -101,7 +100,7 @@ library MetaTxHelpers {
             _calculateDigest(
                 keccak256(
                     abi.encode(
-                        TypehashConstants.CHANGE_DELEGATED_EXECUTORS_CONFIG,
+                        Typehash.CHANGE_DELEGATED_EXECUTORS_CONFIG,
                         delegatorProfileId,
                         abi.encodePacked(executors),
                         abi.encodePacked(approvals),
@@ -125,7 +124,7 @@ library MetaTxHelpers {
             _calculateDigest(
                 keccak256(
                     abi.encode(
-                        TypehashConstants.SET_PROFILE_IMAGE_URI,
+                        Typehash.SET_PROFILE_IMAGE_URI,
                         profileId,
                         keccak256(bytes(imageURI)),
                         _sigNonces(signature.signer),
@@ -146,7 +145,7 @@ library MetaTxHelpers {
             _calculateDigest(
                 keccak256(
                     abi.encode(
-                        TypehashConstants.SET_FOLLOW_NFT_URI,
+                        Typehash.SET_FOLLOW_NFT_URI,
                         profileId,
                         keccak256(bytes(followNFTURI)),
                         _sigNonces(signature.signer),
@@ -166,7 +165,7 @@ library MetaTxHelpers {
             _calculateDigest(
                 keccak256(
                     abi.encode(
-                        TypehashConstants.POST,
+                        Typehash.POST,
                         postParams.profileId,
                         keccak256(bytes(postParams.contentURI)),
                         postParams.collectModule,
@@ -192,7 +191,7 @@ library MetaTxHelpers {
             _calculateDigest(
                 keccak256(
                     abi.encode(
-                        TypehashConstants.COMMENT,
+                        Typehash.COMMENT,
                         commentParams.profileId,
                         keccak256(bytes(commentParams.contentURI)),
                         commentParams.pointedProfileId,
@@ -223,7 +222,7 @@ library MetaTxHelpers {
             _calculateDigest(
                 keccak256(
                     abi.encode(
-                        TypehashConstants.COMMENT,
+                        Typehash.COMMENT,
                         quoteParams.profileId,
                         keccak256(bytes(quoteParams.contentURI)),
                         quoteParams.pointedProfileId,
@@ -252,7 +251,7 @@ library MetaTxHelpers {
             _calculateDigest(
                 keccak256(
                     abi.encode(
-                        TypehashConstants.MIRROR,
+                        Typehash.MIRROR,
                         mirrorParams.profileId,
                         mirrorParams.pointedProfileId,
                         mirrorParams.pointedPubId,
@@ -275,7 +274,7 @@ library MetaTxHelpers {
             _calculateDigest(
                 keccak256(
                     abi.encode(
-                        TypehashConstants.BURN,
+                        Typehash.BURN,
                         tokenId,
                         _sigNonces(signature.signer),
                         signature.deadline
@@ -308,7 +307,7 @@ library MetaTxHelpers {
             _calculateDigest(
                 keccak256(
                     abi.encode(
-                        TypehashConstants.FOLLOW,
+                        Typehash.FOLLOW,
                         followerProfileId,
                         keccak256(abi.encodePacked(idsOfProfilesToFollow)),
                         keccak256(abi.encodePacked(followTokenIds)),
@@ -331,7 +330,7 @@ library MetaTxHelpers {
             _calculateDigest(
                 keccak256(
                     abi.encode(
-                        TypehashConstants.UNFOLLOW,
+                        Typehash.UNFOLLOW,
                         unfollowerProfileId,
                         keccak256(abi.encodePacked(idsOfProfilesToUnfollow)),
                         _sigNonces(signature.signer),
@@ -353,7 +352,7 @@ library MetaTxHelpers {
             _calculateDigest(
                 keccak256(
                     abi.encode(
-                        TypehashConstants.SET_BLOCK_STATUS,
+                        Typehash.SET_BLOCK_STATUS,
                         byProfileId,
                         keccak256(abi.encodePacked(idsOfProfilesToSetBlockStatus)),
                         keccak256(abi.encodePacked(blockStatus)),
@@ -374,7 +373,7 @@ library MetaTxHelpers {
             _calculateDigest(
                 keccak256(
                     abi.encode(
-                        TypehashConstants.COLLECT,
+                        Typehash.COLLECT,
                         collectParams.publicationCollectedProfileId,
                         collectParams.publicationCollectedId,
                         collectParams.collectorProfileId,
@@ -399,7 +398,7 @@ library MetaTxHelpers {
             _calculateDigest(
                 keccak256(
                     abi.encode(
-                        TypehashConstants.PERMIT,
+                        Typehash.PERMIT,
                         spender,
                         tokenId,
                         _sigNonces(signature.signer),
@@ -450,7 +449,7 @@ library MetaTxHelpers {
         return
             keccak256(
                 abi.encode(
-                    TypehashConstants.EIP712_DOMAIN,
+                    Typehash.EIP712_DOMAIN,
                     keccak256(_nameBytes()),
                     EIP712_REVISION_HASH,
                     block.chainid,

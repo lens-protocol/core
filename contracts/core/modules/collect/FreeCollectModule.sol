@@ -5,7 +5,7 @@ pragma solidity 0.8.15;
 import {ICollectModule} from '../../../interfaces/ICollectModule.sol';
 import {ModuleBase} from '../ModuleBase.sol';
 import {FollowValidationModuleBase} from '../FollowValidationModuleBase.sol';
-import {DataTypes} from 'contracts/libraries/DataTypes.sol';
+import {DataTypes} from 'contracts/libraries/constants/DataTypes.sol';
 
 /**
  * @title FreeCollectModule

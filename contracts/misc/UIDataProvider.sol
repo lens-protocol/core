@@ -3,7 +3,7 @@
 pragma solidity 0.8.15;
 
 import {ILensHub} from '../interfaces/ILensHub.sol';
-import {DataTypes} from '../libraries/DataTypes.sol';
+import {DataTypes} from '../libraries/constants/DataTypes.sol';
 
 /**
  * @dev This struct contains both a `ProfileStruct` and a `PublicationStruct`.
