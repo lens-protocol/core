@@ -107,7 +107,7 @@ contract MiscTest is BaseTest {
         hub.setFollowNFTURIWithSig({
             profileId: newProfileId,
             followNFTURI: MOCK_URI,
-            signature: _getSigStruct(address(0), otherSignerKey, digest, deadline)
+            signature: _getSigStruct(otherSigner, otherSignerKey, digest, deadline)
         });
     }
 
@@ -134,7 +134,7 @@ contract MiscTest is BaseTest {
         hub.setProfileImageURIWithSig({
             profileId: newProfileId,
             imageURI: 'test',
-            signature: _getSigStruct(address(0), profileOwnerKey, digest, deadline)
+            signature: _getSigStruct(profileOwner, profileOwnerKey, digest, deadline)
         });
         assertEq(hub.getProfileImageURI(newProfileId), 'test');
     }
@@ -169,7 +169,7 @@ contract MiscTest is BaseTest {
         hub.setFollowNFTURIWithSig({
             profileId: newProfileId,
             followNFTURI: 'test',
-            signature: _getSigStruct(address(0), profileOwnerKey, digest, deadline)
+            signature: _getSigStruct(profileOwner, profileOwnerKey, digest, deadline)
         });
         assertEq(hub.getFollowNFTURI(newProfileId), 'test');
     }
