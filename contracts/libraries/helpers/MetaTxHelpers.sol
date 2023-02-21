@@ -88,7 +88,7 @@ library MetaTxHelpers {
             _calculateDigest(
                 keccak256(
                     abi.encode(
-                        SET_PROFILE_METADATA_URI_WITH_SIG_TYPEHASH,
+                        SET_PROFILE_METADATA_URI_TYPEHASH,
                         profileId,
                         keccak256(bytes(metadataURI)),
                         _sigNonces(signature.signer),
@@ -111,7 +111,7 @@ library MetaTxHelpers {
             _calculateDigest(
                 keccak256(
                     abi.encode(
-                        SET_FOLLOW_MODULE_WITH_SIG_TYPEHASH,
+                        SET_FOLLOW_MODULE_TYPEHASH,
                         profileId,
                         followModule,
                         keccak256(followModuleInitData),
@@ -139,7 +139,7 @@ library MetaTxHelpers {
             _calculateDigest(
                 keccak256(
                     abi.encode(
-                        CHANGE_DELEGATED_EXECUTORS_CONFIG_WITH_SIG_TYPEHASH,
+                        CHANGE_DELEGATED_EXECUTORS_CONFIG_TYPEHASH,
                         delegatorProfileId,
                         abi.encodePacked(executors),
                         abi.encodePacked(approvals),
@@ -164,7 +164,7 @@ library MetaTxHelpers {
             _calculateDigest(
                 keccak256(
                     abi.encode(
-                        SET_PROFILE_IMAGE_URI_WITH_SIG_TYPEHASH,
+                        SET_PROFILE_IMAGE_URI_TYPEHASH,
                         profileId,
                         keccak256(bytes(imageURI)),
                         _sigNonces(signature.signer),
@@ -186,7 +186,7 @@ library MetaTxHelpers {
             _calculateDigest(
                 keccak256(
                     abi.encode(
-                        SET_FOLLOW_NFT_URI_WITH_SIG_TYPEHASH,
+                        SET_FOLLOW_NFT_URI_TYPEHASH,
                         profileId,
                         keccak256(bytes(followNFTURI)),
                         _sigNonces(signature.signer),
@@ -207,7 +207,7 @@ library MetaTxHelpers {
             _calculateDigest(
                 keccak256(
                     abi.encode(
-                        POST_WITH_SIG_TYPEHASH,
+                        POST_TYPEHASH,
                         postParams.profileId,
                         keccak256(bytes(postParams.contentURI)),
                         postParams.collectModule,
@@ -234,7 +234,7 @@ library MetaTxHelpers {
             _calculateDigest(
                 keccak256(
                     abi.encode(
-                        COMMENT_WITH_SIG_TYPEHASH,
+                        COMMENT_TYPEHASH,
                         commentParams.profileId,
                         keccak256(bytes(commentParams.contentURI)),
                         commentParams.pointedProfileId,
@@ -265,7 +265,7 @@ library MetaTxHelpers {
             _calculateDigest(
                 keccak256(
                     abi.encode(
-                        COMMENT_WITH_SIG_TYPEHASH,
+                        COMMENT_TYPEHASH,
                         quoteParams.profileId,
                         keccak256(bytes(quoteParams.contentURI)),
                         quoteParams.pointedProfileId,
@@ -294,7 +294,7 @@ library MetaTxHelpers {
             _calculateDigest(
                 keccak256(
                     abi.encode(
-                        MIRROR_WITH_SIG_TYPEHASH,
+                        MIRROR_TYPEHASH,
                         mirrorParams.profileId,
                         mirrorParams.pointedProfileId,
                         mirrorParams.pointedPubId,
@@ -318,7 +318,7 @@ library MetaTxHelpers {
             _calculateDigest(
                 keccak256(
                     abi.encode(
-                        BURN_WITH_SIG_TYPEHASH,
+                        BURN_TYPEHASH,
                         tokenId,
                         _sigNonces(signature.signer),
                         signature.deadline
@@ -352,7 +352,7 @@ library MetaTxHelpers {
             _calculateDigest(
                 keccak256(
                     abi.encode(
-                        FOLLOW_WITH_SIG_TYPEHASH,
+                        FOLLOW_TYPEHASH,
                         followerProfileId,
                         keccak256(abi.encodePacked(idsOfProfilesToFollow)),
                         keccak256(abi.encodePacked(followTokenIds)),
@@ -376,7 +376,7 @@ library MetaTxHelpers {
             _calculateDigest(
                 keccak256(
                     abi.encode(
-                        UNFOLLOW_WITH_SIG_TYPEHASH,
+                        UNFOLLOW_TYPEHASH,
                         unfollowerProfileId,
                         keccak256(abi.encodePacked(idsOfProfilesToUnfollow)),
                         _sigNonces(signature.signer),
@@ -399,7 +399,7 @@ library MetaTxHelpers {
             _calculateDigest(
                 keccak256(
                     abi.encode(
-                        SET_BLOCK_STATUS_WITH_SIG_TYPEHASH,
+                        SET_BLOCK_STATUS_TYPEHASH,
                         byProfileId,
                         keccak256(abi.encodePacked(idsOfProfilesToSetBlockStatus)),
                         keccak256(abi.encodePacked(blockStatus)),
@@ -421,7 +421,7 @@ library MetaTxHelpers {
             _calculateDigest(
                 keccak256(
                     abi.encode(
-                        COLLECT_WITH_SIG_TYPEHASH,
+                        COLLECT_TYPEHASH,
                         collectParams.publicationCollectedProfileId,
                         collectParams.publicationCollectedId,
                         collectParams.collectorProfileId,

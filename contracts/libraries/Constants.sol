@@ -74,50 +74,48 @@ bytes32 constant PERMIT_TYPEHASH = keccak256(
 bytes32 constant PERMIT_FOR_ALL_TYPEHASH = keccak256(
     'PermitForAll(address owner,address operator,bool approved,uint256 nonce,uint256 deadline)'
 );
-bytes32 constant BURN_WITH_SIG_TYPEHASH = keccak256(
-    'BurnWithSig(uint256 tokenId,uint256 nonce,uint256 deadline)'
-);
+bytes32 constant BURN_TYPEHASH = keccak256('Burn(uint256 tokenId,uint256 nonce,uint256 deadline)');
 bytes32 constant EIP712_DOMAIN_TYPEHASH = keccak256(
     'EIP712Domain(string name,string version,uint256 chainId,address verifyingContract)'
 );
-bytes32 constant SET_FOLLOW_MODULE_WITH_SIG_TYPEHASH = keccak256(
-    'SetFollowModuleWithSig(uint256 profileId,address followModule,bytes followModuleInitData,uint256 nonce,uint256 deadline)'
+bytes32 constant SET_FOLLOW_MODULE_TYPEHASH = keccak256(
+    'SetFollowModule(uint256 profileId,address followModule,bytes followModuleInitData,uint256 nonce,uint256 deadline)'
 );
-bytes32 constant SET_FOLLOW_NFT_URI_WITH_SIG_TYPEHASH = keccak256(
-    'SetFollowNFTURIWithSig(uint256 profileId,string followNFTURI,uint256 nonce,uint256 deadline)'
+bytes32 constant SET_FOLLOW_NFT_URI_TYPEHASH = keccak256(
+    'SetFollowNFTURI(uint256 profileId,string followNFTURI,uint256 nonce,uint256 deadline)'
 );
-bytes32 constant CHANGE_DELEGATED_EXECUTORS_CONFIG_WITH_SIG_TYPEHASH = keccak256(
-    'ChangeDelegatedExecutorsConfigWithSig(uint256 delegatorProfileId,address[] executors,bool[] approvals,uint64 configNumber,bool switchToGivenConfig,uint256 nonce,uint256 deadline)'
+bytes32 constant CHANGE_DELEGATED_EXECUTORS_CONFIG_TYPEHASH = keccak256(
+    'ChangeDelegatedExecutorsConfig(uint256 delegatorProfileId,address[] executors,bool[] approvals,uint64 configNumber,bool switchToGivenConfig,uint256 nonce,uint256 deadline)'
 );
-bytes32 constant SET_PROFILE_IMAGE_URI_WITH_SIG_TYPEHASH = keccak256(
-    'SetProfileImageURIWithSig(uint256 profileId,string imageURI,uint256 nonce,uint256 deadline)'
+bytes32 constant SET_PROFILE_IMAGE_URI_TYPEHASH = keccak256(
+    'SetProfileImageURI(uint256 profileId,string imageURI,uint256 nonce,uint256 deadline)'
 );
-bytes32 constant POST_WITH_SIG_TYPEHASH = keccak256(
-    'PostWithSig(uint256 profileId,string contentURI,address collectModule,bytes collectModuleInitData,address referenceModule,bytes referenceModuleInitData,uint256 nonce,uint256 deadline)'
+bytes32 constant POST_TYPEHASH = keccak256(
+    'Post(uint256 profileId,string contentURI,address collectModule,bytes collectModuleInitData,address referenceModule,bytes referenceModuleInitData,uint256 nonce,uint256 deadline)'
 );
-bytes32 constant COMMENT_WITH_SIG_TYPEHASH = keccak256(
-    'CommentWithSig(uint256 profileId,string contentURI,uint256 pointedProfileId,uint256 pointedPubId,uint256 referrerProfileId,uint256 referrerPubId,bytes referenceModuleData,address collectModule,bytes collectModuleInitData,address referenceModule,bytes referenceModuleInitData,uint256 nonce,uint256 deadline)'
+bytes32 constant COMMENT_TYPEHASH = keccak256(
+    'Comment(uint256 profileId,string contentURI,uint256 pointedProfileId,uint256 pointedPubId,uint256 referrerProfileId,uint256 referrerPubId,bytes referenceModuleData,address collectModule,bytes collectModuleInitData,address referenceModule,bytes referenceModuleInitData,uint256 nonce,uint256 deadline)'
 );
-bytes32 constant MIRROR_WITH_SIG_TYPEHASH = keccak256(
-    'MirrorWithSig(uint256 profileId,uint256 pointedProfileId,uint256 pointedPubId,uint256 referrerProfileId,uint256 referrerPubId,bytes referenceModuleData,uint256 nonce,uint256 deadline)'
+bytes32 constant MIRROR_TYPEHASH = keccak256(
+    'Mirror(uint256 profileId,uint256 pointedProfileId,uint256 pointedPubId,uint256 referrerProfileId,uint256 referrerPubId,bytes referenceModuleData,uint256 nonce,uint256 deadline)'
 );
-bytes32 constant QUOTE_WITH_SIG_TYPEHASH = keccak256(
-    'QuoteWithSig(uint256 profileId,string contentURI,uint256 pointedProfileId,uint256 pointedPubId,uint256 referrerProfileId,uint256 referrerPubId,bytes referenceModuleData,address collectModule,bytes collectModuleInitData,address referenceModule,bytes referenceModuleInitData,uint256 nonce,uint256 deadline)'
+bytes32 constant QUOTE_TYPEHASH = keccak256(
+    'Quote(uint256 profileId,string contentURI,uint256 pointedProfileId,uint256 pointedPubId,uint256 referrerProfileId,uint256 referrerPubId,bytes referenceModuleData,address collectModule,bytes collectModuleInitData,address referenceModule,bytes referenceModuleInitData,uint256 nonce,uint256 deadline)'
 );
-bytes32 constant FOLLOW_WITH_SIG_TYPEHASH = keccak256(
-    'FollowWithSig(uint256 followerProfileId,uint256[] idsOfProfilesToFollow,uint256[] followTokenIds,bytes[] datas,uint256 nonce,uint256 deadline)'
+bytes32 constant FOLLOW_TYPEHASH = keccak256(
+    'Follow(uint256 followerProfileId,uint256[] idsOfProfilesToFollow,uint256[] followTokenIds,bytes[] datas,uint256 nonce,uint256 deadline)'
 );
-bytes32 constant UNFOLLOW_WITH_SIG_TYPEHASH = keccak256(
-    'UnfollowWithSig(uint256 unfollowerProfileId,uint256[] idsOfProfilesToUnfollow,uint256 nonce,uint256 deadline)'
+bytes32 constant UNFOLLOW_TYPEHASH = keccak256(
+    'Unfollow(uint256 unfollowerProfileId,uint256[] idsOfProfilesToUnfollow,uint256 nonce,uint256 deadline)'
 );
-bytes32 constant SET_BLOCK_STATUS_WITH_SIG_TYPEHASH = keccak256(
-    'SetBlockStatusWithSig(uint256 byProfileId,uint256[] idsOfProfilesToSetBlockStatus,bool[] blockStatus,uint256 nonce,uint256 deadline)'
+bytes32 constant SET_BLOCK_STATUS_TYPEHASH = keccak256(
+    'SetBlockStatus(uint256 byProfileId,uint256[] idsOfProfilesToSetBlockStatus,bool[] blockStatus,uint256 nonce,uint256 deadline)'
 );
-bytes32 constant COLLECT_WITH_SIG_TYPEHASH = keccak256(
-    'CollectWithSig(uint256 publicationCollectedProfileId,uint256 publicationCollectedId,uint256 collectorProfileId,uint256 referrerProfileId,uint256 referrerPubId,bytes collectModuleData,uint256 nonce,uint256 deadline)'
+bytes32 constant COLLECT_TYPEHASH = keccak256(
+    'Collect(uint256 publicationCollectedProfileId,uint256 publicationCollectedId,uint256 collectorProfileId,uint256 referrerProfileId,uint256 referrerPubId,bytes collectModuleData,uint256 nonce,uint256 deadline)'
 );
-bytes32 constant SET_PROFILE_METADATA_URI_WITH_SIG_TYPEHASH = keccak256(
-    'SetProfileMetadataURIWithSig(uint256 profileId,string metadata,uint256 nonce,uint256 deadline)'
+bytes32 constant SET_PROFILE_METADATA_URI_TYPEHASH = keccak256(
+    'SetProfileMetadataURI(uint256 profileId,string metadata,uint256 nonce,uint256 deadline)'
 );
 
 bytes4 constant EIP1271_MAGIC_VALUE = 0x1626ba7e;
