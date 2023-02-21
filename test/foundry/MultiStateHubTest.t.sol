@@ -387,7 +387,10 @@ contract MultiStateHubTest_PausedState_WithSig is MultiStateHubTest_PausedState_
     function _mockPost() internal override {
         bytes32 digest = _getPostTypedDataHash(mockPostParams, nonce, deadline);
 
-        _postWithSig(mockPostParams, _getSigStruct(address(0), profileOwnerKey, digest, deadline));
+        _postWithSig(
+            mockPostParams,
+            _getSigStruct(profileOwner, profileOwnerKey, digest, deadline)
+        );
     }
 
     function _mockComment() internal override {
@@ -396,7 +399,7 @@ contract MultiStateHubTest_PausedState_WithSig is MultiStateHubTest_PausedState_
 
         _commentWithSig(
             mockCommentParams,
-            _getSigStruct(address(0), profileOwnerKey, digest, deadline)
+            _getSigStruct(profileOwner, profileOwnerKey, digest, deadline)
         );
     }
 
@@ -406,7 +409,7 @@ contract MultiStateHubTest_PausedState_WithSig is MultiStateHubTest_PausedState_
 
         _mirrorWithSig(
             mockMirrorParams,
-            _getSigStruct(address(0), profileOwnerKey, digest, deadline)
+            _getSigStruct(profileOwner, profileOwnerKey, digest, deadline)
         );
     }
 
@@ -443,7 +446,7 @@ contract MultiStateHubTest_PausedState_WithSig is MultiStateHubTest_PausedState_
 
         _collectWithSig(
             mockCollectParams,
-            _getSigStruct(address(0), profileOwnerKey, digest, deadline)
+            _getSigStruct(profileOwner, profileOwnerKey, digest, deadline)
         );
     }
 
@@ -679,7 +682,10 @@ contract MultiStateHubTest_PublishingPausedState_WithSig is
     function _mockPost() internal override {
         bytes32 digest = _getPostTypedDataHash(mockPostParams, nonce, deadline);
 
-        _postWithSig(mockPostParams, _getSigStruct(address(0), profileOwnerKey, digest, deadline));
+        _postWithSig(
+            mockPostParams,
+            _getSigStruct(profileOwner, profileOwnerKey, digest, deadline)
+        );
     }
 
     function _mockComment() internal override {
@@ -688,7 +694,7 @@ contract MultiStateHubTest_PublishingPausedState_WithSig is
 
         _commentWithSig(
             mockCommentParams,
-            _getSigStruct(address(0), profileOwnerKey, digest, deadline)
+            _getSigStruct(profileOwner, profileOwnerKey, digest, deadline)
         );
     }
 
@@ -698,7 +704,7 @@ contract MultiStateHubTest_PublishingPausedState_WithSig is
 
         _mirrorWithSig(
             mockMirrorParams,
-            _getSigStruct(address(0), profileOwnerKey, digest, deadline)
+            _getSigStruct(profileOwner, profileOwnerKey, digest, deadline)
         );
     }
 
@@ -736,7 +742,7 @@ contract MultiStateHubTest_PublishingPausedState_WithSig is
 
         _collectWithSig(
             mockCollectParams,
-            _getSigStruct(address(0), profileOwnerKey, digest, deadline)
+            _getSigStruct(profileOwner, profileOwnerKey, digest, deadline)
         );
     }
 
