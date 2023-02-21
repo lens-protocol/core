@@ -3,6 +3,7 @@
 pragma solidity 0.8.15;
 
 import {IReferenceModule} from '../interfaces/IReferenceModule.sol';
+import {DataTypes} from 'contracts/libraries/DataTypes.sol';
 
 /**
  * @dev This is a simple mock follow module to be used for testing.
@@ -22,17 +23,33 @@ contract MockReferenceModule is IReferenceModule {
     function processComment(
         uint256 profileId,
         address executor,
-        uint256 profileIdPointed,
-        uint256 pubIdPointed,
+        uint256 pointedProfileId,
+        uint256 pointedPubId,
         uint256 referrerProfileId,
+        uint256 referrerPubId,
+        DataTypes.PublicationType referrerPubType,
+        bytes calldata data
+    ) external override {}
+
+    function processQuote(
+        uint256 profileId,
+        address executor,
+        uint256 pointedProfileId,
+        uint256 pointedPubId,
+        uint256 referrerProfileId,
+        uint256 referrerPubId,
+        DataTypes.PublicationType referrerPubType,
         bytes calldata data
     ) external override {}
 
     function processMirror(
         uint256 profileId,
         address executor,
-        uint256 profileIdPointed,
-        uint256 pubIdPointed,
+        uint256 pointedProfileId,
+        uint256 pointedPubId,
+        uint256 referrerProfileId,
+        uint256 referrerPubId,
+        DataTypes.PublicationType referrerPubType,
         bytes calldata data
     ) external override {}
 }

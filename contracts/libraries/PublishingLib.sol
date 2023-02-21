@@ -16,480 +16,342 @@ library PublishingLib {
     /**
      * @notice Publishes a post to a given profile.
      *
-     * @param vars The PostData struct.
+     * @param postParams The PostParams struct.
      *
      * @return uint256 The created publication's pubId.
      */
-    function post(DataTypes.PostData calldata vars) external returns (uint256) {
-        uint256 pubId = _preIncrementPubCount(vars.profileId);
-        GeneralHelpers.validateAddressIsProfileOwnerOrDelegatedExecutor(msg.sender, vars.profileId);
-        _createPost(
-            vars.profileId,
-            msg.sender,
-            pubId,
-            vars.contentURI,
-            vars.collectModule,
-            vars.collectModuleInitData,
-            vars.referenceModule,
-            vars.referenceModuleInitData
-        );
-        return pubId;
-    }
+    function post(DataTypes.PostParams calldata postParams, address transactionExecutor)
+        external
+        returns (uint256)
+    {
+        uint256 pubIdAssigned = ++GeneralHelpers.getProfileStruct(postParams.profileId).pubCount;
 
-    /**
-     * @notice Publishes a post to a given profile via signature.
-     *
-     * @param vars the PostWithSigData struct.
-     *
-     * @return uint256 The created publication's pubId.
-     */
-    function postWithSig(DataTypes.PostWithSigData calldata vars) external returns (uint256) {
-        address signer = GeneralHelpers.getOriginatorOrDelegatedExecutorSigner(
-            vars.profileId,
-            vars.delegatedSigner
+        DataTypes.PublicationStruct storage _post = GeneralHelpers.getPublicationStruct(
+            postParams.profileId,
+            pubIdAssigned
         );
-        uint256 pubId = _preIncrementPubCount(vars.profileId);
-        MetaTxHelpers.basePostWithSig(signer, vars);
-        _createPost(
-            vars.profileId,
-            signer,
-            pubId,
-            vars.contentURI,
-            vars.collectModule,
-            vars.collectModuleInitData,
-            vars.referenceModule,
-            vars.referenceModuleInitData
-        );
-        return pubId;
-    }
+        _post.contentURI = postParams.contentURI;
+        _post.pubType = DataTypes.PublicationType.Post;
 
-    /**
-     * @notice Publishes a comment to a given profile via signature.
-     *
-     * @param vars the CommentData struct.
-     *
-     * @return uint256 The created publication's pubId.
-     */
-    function comment(DataTypes.CommentData calldata vars) external returns (uint256) {
-        uint256 pubId = _preIncrementPubCount(vars.profileId);
-        GeneralHelpers.validateAddressIsProfileOwnerOrDelegatedExecutor(msg.sender, vars.profileId);
-        GeneralHelpers.validateNotBlocked(vars.profileId, vars.profileIdPointed);
-        _createComment(vars, pubId); // caller is executor
-        return pubId;
+        bytes memory collectModuleReturnData = _initPubCollectModule(
+            postParams.profileId,
+            transactionExecutor,
+            pubIdAssigned,
+            postParams.collectModule,
+            postParams.collectModuleInitData
+        );
+
+        bytes memory referenceModuleReturnData = _initPubReferenceModule(
+            postParams.profileId,
+            transactionExecutor,
+            pubIdAssigned,
+            postParams.referenceModule,
+            postParams.referenceModuleInitData
+        );
+
+        emit Events.PostCreated(
+            postParams.profileId,
+            pubIdAssigned,
+            postParams.contentURI,
+            postParams.collectModule,
+            collectModuleReturnData,
+            postParams.referenceModule,
+            referenceModuleReturnData,
+            block.timestamp
+        );
+
+        return pubIdAssigned;
     }
 
     /**
      * @notice Publishes a comment to a given profile via signature.
      *
-     * @param vars the CommentWithSigData struct.
+     * @param commentParams the CommentParams struct.
      *
      * @return uint256 The created publication's pubId.
      */
-    function commentWithSig(DataTypes.CommentWithSigData calldata vars) external returns (uint256) {
-        address signer = GeneralHelpers.getOriginatorOrDelegatedExecutorSigner(
-            vars.profileId,
-            vars.delegatedSigner
+    function comment(DataTypes.CommentParams calldata commentParams, address transactionExecutor)
+        external
+        returns (uint256)
+    {
+        (
+            uint256 pubIdAssigned,
+            bytes memory collectModuleReturnData,
+            bytes memory referenceModuleReturnData,
+            DataTypes.PublicationType referrerPubType
+        ) = _createReferencePublication(
+                _copyToReferencePubParams(commentParams),
+                transactionExecutor,
+                DataTypes.PublicationType.Comment
+            );
+
+        _processCommentIfNeeded(commentParams, transactionExecutor, referrerPubType);
+
+        _emitCommentEvent(
+            commentParams,
+            pubIdAssigned,
+            collectModuleReturnData,
+            referenceModuleReturnData
         );
-        uint256 pubId = _preIncrementPubCount(vars.profileId);
-        GeneralHelpers.validateNotBlocked(vars.profileId, vars.profileIdPointed);
-        MetaTxHelpers.baseCommentWithSig(signer, vars);
-        _createCommentWithSigStruct(vars, signer, pubId);
-        return pubId;
+        return pubIdAssigned;
+    }
+
+    function _emitCommentEvent(
+        DataTypes.CommentParams calldata commentParams,
+        uint256 pubIdAssigned,
+        bytes memory collectModuleReturnData,
+        bytes memory referenceModuleReturnData
+    ) private {
+        emit Events.CommentCreated(
+            commentParams.profileId,
+            pubIdAssigned,
+            commentParams.contentURI,
+            commentParams.pointedProfileId,
+            commentParams.pointedPubId,
+            commentParams.referenceModuleData,
+            commentParams.collectModule,
+            collectModuleReturnData,
+            commentParams.referenceModule,
+            referenceModuleReturnData,
+            block.timestamp
+        );
     }
 
     /**
      * @notice Publishes a mirror to a given profile.
      *
-     * @param vars the MirrorData struct.
+     * @param mirrorParams the MirrorParams struct.
      *
      * @return uint256 The created publication's pubId.
      */
-    function mirror(DataTypes.MirrorData calldata vars) external returns (uint256) {
-        uint256 pubId = _preIncrementPubCount(vars.profileId);
-        GeneralHelpers.validateAddressIsProfileOwnerOrDelegatedExecutor(msg.sender, vars.profileId);
-        GeneralHelpers.validateNotBlocked(vars.profileId, vars.profileIdPointed);
-        _createMirror(vars, pubId); // caller is executor
-        return pubId;
+    function mirror(DataTypes.MirrorParams calldata mirrorParams, address transactionExecutor)
+        external
+        returns (uint256)
+    {
+        DataTypes.PublicationType referrerPubType = GeneralHelpers
+            .validateReferrerAndGetReferrerPubType(
+                mirrorParams.referrerProfileId,
+                mirrorParams.referrerPubId,
+                mirrorParams.pointedProfileId,
+                mirrorParams.pointedPubId
+            );
+
+        uint256 pubIdAssigned = ++GeneralHelpers.getProfileStruct(mirrorParams.profileId).pubCount;
+
+        DataTypes.PublicationStruct storage _publication = GeneralHelpers.getPublicationStruct(
+            mirrorParams.profileId,
+            pubIdAssigned
+        );
+        _publication.pointedProfileId = mirrorParams.pointedProfileId;
+        _publication.pointedPubId = mirrorParams.pointedPubId;
+        _publication.pubType = DataTypes.PublicationType.Mirror;
+
+        _processMirrorIfNeeded(mirrorParams, transactionExecutor, referrerPubType);
+
+        emit Events.MirrorCreated(
+            mirrorParams.profileId,
+            pubIdAssigned,
+            mirrorParams.pointedProfileId,
+            mirrorParams.pointedPubId,
+            mirrorParams.referenceModuleData,
+            block.timestamp
+        );
+
+        return pubIdAssigned;
     }
 
     /**
-     * @notice Publishes a mirror to a given profile via signature.
+     * @notice Publishes a quote publication to a given profile via signature.
      *
-     * @param vars the MirrorWithSigData struct.
+     * @param quoteParams the QuoteParams struct.
      *
      * @return uint256 The created publication's pubId.
      */
-    function mirrorWithSig(DataTypes.MirrorWithSigData calldata vars) external returns (uint256) {
-        address signer = GeneralHelpers.getOriginatorOrDelegatedExecutorSigner(
-            vars.profileId,
-            vars.delegatedSigner
-        );
-        uint256 pubId = _preIncrementPubCount(vars.profileId);
-        GeneralHelpers.validateNotBlocked(vars.profileId, vars.profileIdPointed);
-        MetaTxHelpers.baseMirrorWithSig(signer, vars);
-        _createMirrorWithSigStruct(vars, signer, pubId);
-        return pubId;
-    }
+    function quote(DataTypes.QuoteParams calldata quoteParams, address transactionExecutor)
+        external
+        returns (uint256)
+    {
+        (
+            uint256 pubIdAssigned,
+            bytes memory collectModuleReturnData,
+            bytes memory referenceModuleReturnData,
+            DataTypes.PublicationType referrerPubType
+        ) = _createReferencePublication(
+                _copyToReferencePubParams(quoteParams),
+                transactionExecutor,
+                DataTypes.PublicationType.Quote
+            );
 
-    function _preIncrementPubCount(uint256 profileId) private returns (uint256) {
-        uint256 pubCount;
-        // Load the previous publication count for the given profile and increment it in storage.
-        assembly {
-            mstore(0, profileId)
-            mstore(32, PROFILE_BY_ID_MAPPING_SLOT)
-            // pubCount is at offset 0, so we don't need to add any offset.
-            let slot := keccak256(0, 64)
-            pubCount := add(sload(slot), 1)
-            sstore(slot, pubCount)
-        }
-        return pubCount;
-    }
+        _processQuoteIfNeeded(quoteParams, transactionExecutor, referrerPubType);
 
-    function _setPublicationPointer(
-        uint256 profileId,
-        uint256 pubId,
-        uint256 profileIdPointed,
-        uint256 pubIdPointed
-    ) private {
-        // Store the pointed profile ID and pointed pub ID in the appropriate slots for
-        // a given publication.
-        assembly {
-            mstore(0, profileId)
-            mstore(32, PUB_BY_ID_BY_PROFILE_MAPPING_SLOT)
-            mstore(32, keccak256(0, 64))
-            mstore(0, pubId)
-            // profile ID pointed is at offset 0, so we don't need to add any offset.
-            let slot := keccak256(0, 64)
-            sstore(slot, profileIdPointed)
-            slot := add(slot, PUBLICATION_PUB_ID_POINTED_OFFSET)
-            sstore(slot, pubIdPointed)
-        }
-    }
-
-    function _setPublicationContentURI(
-        uint256 profileId,
-        uint256 pubId,
-        string calldata value
-    ) private {
-        assembly {
-            let length := value.length
-            let cdOffset := value.offset
-            mstore(0, profileId)
-            mstore(32, PUB_BY_ID_BY_PROFILE_MAPPING_SLOT)
-            mstore(32, keccak256(0, 64))
-            mstore(0, pubId)
-            let slot := add(keccak256(0, 64), PUBLICATION_CONTENT_URI_OFFSET)
-
-            // If the length is greater than 31, storage rules are different.
-            switch gt(length, 31)
-            case 1 {
-                // The length is > 31, so we need to store the actual string in a new slot,
-                // equivalent to keccak256(startSlot), and store length*2+1 in startSlot.
-                sstore(slot, add(shl(1, length), 1))
-
-                // Calculate the amount of storage slots we need to store the full string.
-                // This is equivalent to (string.length + 31)/32.
-                let totalStorageSlots := shr(5, add(length, 31))
-
-                // Compute the slot where the actual string will begin, which is the keccak256
-                // hash of the slot where we stored the modified length.
-                mstore(0, slot)
-                slot := keccak256(0, 32)
-
-                // Write the actual string to storage starting at the computed slot.
-                // prettier-ignore
-                for { let i := 0 } lt(i, totalStorageSlots) { i := add(i, 1) } {
-                    sstore(add(slot, i), calldataload(add(cdOffset, mul(32, i))))
-                }
-            }
-            default {
-                // The length is <= 31 so store the string and the length*2 in the same slot.
-                sstore(slot, or(calldataload(cdOffset), shl(1, length)))
-            }
-        }
-    }
-
-    /**
-     * @notice Creates a post publication mapped to the given profile.
-     *
-     * @param profileId The profile ID to associate this publication to.
-     * @param executor The executor, which is either the owner or an approved delegated executor.
-     * @param pubId The publication ID to associate with this publication.
-     * @param contentURI The URI to set for this publication.
-     * @param collectModule The collect module to set for this publication.
-     * @param collectModuleInitData The data to pass to the collect module for publication initialization.
-     * @param referenceModule The reference module to set for this publication, if any.
-     * @param referenceModuleInitData The data to pass to the reference module for publication initialization.
-     */
-    function _createPost(
-        uint256 profileId,
-        address executor,
-        uint256 pubId,
-        string calldata contentURI,
-        address collectModule,
-        bytes calldata collectModuleInitData,
-        address referenceModule,
-        bytes calldata referenceModuleInitData
-    ) private {
-        _setPublicationContentURI(profileId, pubId, contentURI);
-
-        bytes memory collectModuleReturnData = _initPubCollectModule(
-            profileId,
-            executor,
-            pubId,
-            collectModule,
-            collectModuleInitData
-        );
-
-        bytes memory referenceModuleReturnData = _initPubReferenceModule(
-            profileId,
-            executor,
-            pubId,
-            referenceModule,
-            referenceModuleInitData
-        );
-
-        emit Events.PostCreated(
-            profileId,
-            pubId,
-            contentURI,
-            collectModule,
+        _emitQuoteEvent(
+            quoteParams,
+            pubIdAssigned,
             collectModuleReturnData,
-            referenceModule,
+            referenceModuleReturnData
+        );
+
+        return pubIdAssigned;
+    }
+
+    function _emitQuoteEvent(
+        DataTypes.QuoteParams calldata quoteParams,
+        uint256 pubIdAssigned,
+        bytes memory collectModuleReturnData,
+        bytes memory referenceModuleReturnData
+    ) private {
+        emit Events.QuoteCreated(
+            quoteParams.profileId,
+            pubIdAssigned,
+            quoteParams.contentURI,
+            quoteParams.pointedProfileId,
+            quoteParams.pointedPubId,
+            quoteParams.referenceModuleData,
+            quoteParams.collectModule,
+            collectModuleReturnData,
+            quoteParams.referenceModule,
             referenceModuleReturnData,
             block.timestamp
         );
     }
 
-    /**
-     * @notice Creates a comment publication mapped to the given profile.
-     *
-     * @param vars The CommentData struct to use to create the comment.
-     * @param pubId The publication ID to associate with this publication.
-     */
-    function _createComment(DataTypes.CommentData calldata vars, uint256 pubId) private {
-        (uint256 rootProfileIdPointed, uint256 rootPubIdPointed) = GeneralHelpers
-            .getPointedIfMirror(vars.profileIdPointed, vars.pubIdPointed);
+    function _copyToReferencePubParams(DataTypes.QuoteParams calldata quoteParams)
+        private
+        pure
+        returns (DataTypes.ReferencePubParams memory)
+    {
+        return
+            DataTypes.ReferencePubParams({
+                profileId: quoteParams.profileId,
+                contentURI: quoteParams.contentURI,
+                pointedProfileId: quoteParams.pointedProfileId,
+                pointedPubId: quoteParams.pointedPubId,
+                referrerProfileId: quoteParams.referrerProfileId,
+                referrerPubId: quoteParams.referrerPubId,
+                referenceModuleData: quoteParams.referenceModuleData,
+                collectModule: quoteParams.collectModule,
+                collectModuleInitData: quoteParams.collectModuleInitData,
+                referenceModule: quoteParams.referenceModule,
+                referenceModuleInitData: quoteParams.referenceModuleInitData
+            });
+    }
 
-        _setPublicationPointer(vars.profileId, pubId, rootProfileIdPointed, rootPubIdPointed);
-        _setPublicationContentURI(vars.profileId, pubId, vars.contentURI);
+    function _copyToReferencePubParams(DataTypes.CommentParams calldata commentParams)
+        private
+        pure
+        returns (DataTypes.ReferencePubParams memory)
+    {
+        return
+            DataTypes.ReferencePubParams({
+                profileId: commentParams.profileId,
+                contentURI: commentParams.contentURI,
+                pointedProfileId: commentParams.pointedProfileId,
+                pointedPubId: commentParams.pointedPubId,
+                referrerProfileId: commentParams.referrerProfileId,
+                referrerPubId: commentParams.referrerPubId,
+                referenceModuleData: commentParams.referenceModuleData,
+                collectModule: commentParams.collectModule,
+                collectModuleInitData: commentParams.collectModuleInitData,
+                referenceModule: commentParams.referenceModule,
+                referenceModuleInitData: commentParams.referenceModuleInitData
+            });
+    }
 
-        address referenceModule = vars.referenceModule; // Stack-too-deep workaround.
+    function _createReferencePublication(
+        DataTypes.ReferencePubParams memory referencePubParams,
+        address transactionExecutor,
+        DataTypes.PublicationType referencePubType
+    )
+        private
+        returns (
+            uint256,
+            bytes memory,
+            bytes memory,
+            DataTypes.PublicationType
+        )
+    {
+        DataTypes.PublicationType referrerPubType = GeneralHelpers
+            .validateReferrerAndGetReferrerPubType(
+                referencePubParams.referrerProfileId,
+                referencePubParams.referrerPubId,
+                referencePubParams.pointedProfileId,
+                referencePubParams.pointedPubId
+            );
+
+        uint256 pubIdAssigned = _fillReferencePublicationStorage(
+            referencePubParams,
+            referencePubType
+        );
 
         bytes memory collectModuleReturnData = _initPubCollectModule(
-            vars.profileId,
-            msg.sender,
-            pubId,
-            vars.collectModule,
-            vars.collectModuleInitData
+            referencePubParams.profileId,
+            transactionExecutor,
+            pubIdAssigned,
+            referencePubParams.collectModule,
+            referencePubParams.collectModuleInitData
         );
 
         bytes memory referenceModuleReturnData = _initPubReferenceModule(
-            vars.profileId,
-            msg.sender,
-            pubId,
-            referenceModule,
-            vars.referenceModuleInitData
+            referencePubParams.profileId,
+            transactionExecutor,
+            pubIdAssigned,
+            referencePubParams.referenceModule,
+            referencePubParams.referenceModuleInitData
         );
 
-        _processCommentIfNeeded({
-            profileId: vars.profileId,
-            executor: msg.sender,
-            profileIdPointed: rootProfileIdPointed,
-            pubIdPointed: rootPubIdPointed,
-            referrerProfileId: vars.profileIdPointed == rootProfileIdPointed
-                ? 0
-                : vars.profileIdPointed,
-            referenceModuleData: vars.referenceModuleData
-        });
-
-        emit Events.CommentCreated(
-            vars.profileId,
-            pubId,
-            vars.contentURI,
-            rootProfileIdPointed,
-            rootPubIdPointed,
-            vars.referenceModuleData,
-            vars.collectModule,
-            collectModuleReturnData,
-            referenceModule,
-            referenceModuleReturnData,
-            block.timestamp
-        );
+        return (pubIdAssigned, collectModuleReturnData, referenceModuleReturnData, referrerPubType);
     }
 
-    /**
-     * @notice Creates a comment publication mapped to the given profile with a sig struct.
-     *
-     * @param vars The CommentWithSigData struct to use to create the comment.
-     * @param executor The publisher or an approved delegated executor.
-     * @param pubId The publication ID to associate with this publication.
-     */
-    function _createCommentWithSigStruct(
-        DataTypes.CommentWithSigData calldata vars,
-        address executor,
-        uint256 pubId
-    ) private {
-        (uint256 rootProfileIdPointed, uint256 rootPubIdPointed) = GeneralHelpers
-            .getPointedIfMirror(vars.profileIdPointed, vars.pubIdPointed);
-
-        _setPublicationPointer(vars.profileId, pubId, rootProfileIdPointed, rootPubIdPointed);
-        _setPublicationContentURI(vars.profileId, pubId, vars.contentURI);
-
-        address referenceModule = vars.referenceModule;
-        address collectModule = vars.collectModule;
-
-        bytes memory collectModuleReturnData = _initPubCollectModule(
-            vars.profileId,
-            executor,
-            pubId,
-            collectModule,
-            vars.collectModuleInitData
+    function _fillReferencePublicationStorage(
+        DataTypes.ReferencePubParams memory referencePubParams,
+        DataTypes.PublicationType referencePubType
+    ) private returns (uint256) {
+        uint256 pubIdAssigned = ++GeneralHelpers
+            .getProfileStruct(referencePubParams.profileId)
+            .pubCount;
+        DataTypes.PublicationStruct storage _referencePub;
+        _referencePub = GeneralHelpers.getPublicationStruct(
+            referencePubParams.profileId,
+            pubIdAssigned
         );
-
-        bytes memory referenceModuleReturnData = _initPubReferenceModule(
-            vars.profileId,
-            executor,
-            pubId,
-            referenceModule,
-            vars.referenceModuleInitData
+        _referencePub.pointedProfileId = referencePubParams.pointedProfileId;
+        _referencePub.pointedPubId = referencePubParams.pointedPubId;
+        _referencePub.contentURI = referencePubParams.contentURI;
+        _referencePub.pubType = referencePubType;
+        DataTypes.PublicationStruct storage _pubPointed = GeneralHelpers.getPublicationStruct(
+            referencePubParams.pointedProfileId,
+            referencePubParams.pointedPubId
         );
-
-        _processCommentIfNeeded({
-            profileId: vars.profileId,
-            executor: executor,
-            profileIdPointed: rootProfileIdPointed,
-            pubIdPointed: rootPubIdPointed,
-            referrerProfileId: vars.profileIdPointed == rootProfileIdPointed
-                ? 0
-                : vars.profileIdPointed,
-            referenceModuleData: vars.referenceModuleData
-        });
-
-        emit Events.CommentCreated(
-            vars.profileId,
-            pubId,
-            vars.contentURI,
-            rootProfileIdPointed,
-            rootPubIdPointed,
-            vars.referenceModuleData,
-            collectModule,
-            collectModuleReturnData,
-            referenceModule,
-            referenceModuleReturnData,
-            block.timestamp
-        );
-    }
-
-    /**
-     * @notice Creates a mirror publication mapped to the given profile.
-     *
-     * @param vars The MirrorData struct to use to create the mirror.
-     * @param pubId The publication ID to associate with this publication.
-     */
-    function _createMirror(DataTypes.MirrorData calldata vars, uint256 pubId) private {
-        (uint256 rootProfileIdPointed, uint256 rootPubIdPointed) = GeneralHelpers
-            .getPointedIfMirror(vars.profileIdPointed, vars.pubIdPointed);
-
-        _setPublicationPointer(vars.profileId, pubId, rootProfileIdPointed, rootPubIdPointed);
-
-        _processMirrorIfNeeded(
-            vars.profileId,
-            msg.sender,
-            rootProfileIdPointed,
-            rootPubIdPointed,
-            vars.referenceModuleData
-        );
-
-        emit Events.MirrorCreated(
-            vars.profileId,
-            pubId,
-            rootProfileIdPointed,
-            rootPubIdPointed,
-            vars.referenceModuleData,
-            block.timestamp
-        );
-    }
-
-    /**
-     * @notice Creates a mirror publication mapped to the given profile using a sig struct.
-     *
-     * @param vars The MirrorWithSigData struct to use to create the mirror.
-     * @param executor The publisher or an approved delegated executor.
-     * @param pubId The publication ID to associate with this publication.
-     */
-    function _createMirrorWithSigStruct(
-        DataTypes.MirrorWithSigData calldata vars,
-        address executor,
-        uint256 pubId
-    ) private {
-        (uint256 rootProfileIdPointed, uint256 rootPubIdPointed) = GeneralHelpers
-            .getPointedIfMirror(vars.profileIdPointed, vars.pubIdPointed);
-
-        _setPublicationPointer(vars.profileId, pubId, rootProfileIdPointed, rootPubIdPointed);
-
-        _processMirrorIfNeeded(
-            vars.profileId,
-            executor,
-            rootProfileIdPointed,
-            rootPubIdPointed,
-            vars.referenceModuleData
-        );
-
-        emit Events.MirrorCreated(
-            vars.profileId,
-            pubId,
-            rootProfileIdPointed,
-            rootPubIdPointed,
-            vars.referenceModuleData,
-            block.timestamp
-        );
-    }
-
-    function _validateCollectModuleWhitelisted(address collectModule) private view {
-        bool whitelisted;
-
-        // Load whether the given collect module is whitelisted.
-        assembly {
-            mstore(0, collectModule)
-            mstore(32, COLLECT_MODULE_WHITELIST_MAPPING_SLOT)
-            let slot := keccak256(0, 64)
-            whitelisted := sload(slot)
+        if (_pubPointed.pubType == DataTypes.PublicationType.Post) {
+            _referencePub.rootProfileId = referencePubParams.pointedProfileId;
+            _referencePub.rootPubId = referencePubParams.pointedPubId;
+        } else {
+            // The publication pointed is either a comment or a quote.
+            _referencePub.rootProfileId = _pubPointed.rootProfileId;
+            _referencePub.rootPubId = _pubPointed.rootPubId;
         }
-        if (!whitelisted) revert Errors.CollectModuleNotWhitelisted();
-    }
-
-    function _validateReferenceModuleWhitelisted(address referenceModule) private view {
-        bool whitelisted;
-
-        // Load whether the given reference module is whitelisted.
-        assembly {
-            mstore(0, referenceModule)
-            mstore(32, REFERENCE_MODULE_WHITELIST_MAPPING_SLOT)
-            let slot := keccak256(0, 64)
-            whitelisted := sload(slot)
-        }
-        if (!whitelisted) revert Errors.ReferenceModuleNotWhitelisted();
+        return pubIdAssigned;
     }
 
     function _processCommentIfNeeded(
-        uint256 profileId,
-        address executor,
-        uint256 profileIdPointed,
-        uint256 pubIdPointed,
-        uint256 referrerProfileId,
-        bytes calldata referenceModuleData
+        DataTypes.CommentParams calldata commentParams,
+        address transactionExecutor,
+        DataTypes.PublicationType referrerPubType
     ) private {
-        address refModule = _getReferenceModule(profileIdPointed, pubIdPointed);
+        address refModule = GeneralHelpers
+            .getPublicationStruct(commentParams.pointedProfileId, commentParams.pointedPubId)
+            .referenceModule;
         if (refModule != address(0)) {
             try
                 IReferenceModule(refModule).processComment({
-                    profileId: profileId,
-                    executor: executor,
-                    profileIdPointed: profileIdPointed,
-                    pubIdPointed: pubIdPointed,
-                    referrerProfileId: referrerProfileId,
-                    data: referenceModuleData
+                    profileId: commentParams.profileId,
+                    executor: transactionExecutor,
+                    pointedProfileId: commentParams.pointedProfileId,
+                    pointedPubId: commentParams.pointedPubId,
+                    referrerProfileId: commentParams.referrerProfileId,
+                    referrerPubId: commentParams.referrerPubId,
+                    referrerPubType: referrerPubType,
+                    data: commentParams.referenceModuleData
                 })
             {} catch (bytes memory err) {
                 assembly {
@@ -500,34 +362,82 @@ library PublishingLib {
                         revert(add(err, 32), length)
                     }
                 }
-                if (executor != GeneralHelpers.unsafeOwnerOf(profileId))
+                if (transactionExecutor != GeneralHelpers.unsafeOwnerOf(commentParams.profileId)) {
+                    // TODO: WTF is this?
                     revert Errors.ExecutorInvalid();
+                }
                 IDeprecatedReferenceModule(refModule).processComment(
-                    profileId,
-                    profileIdPointed,
-                    pubIdPointed,
-                    referenceModuleData
+                    commentParams.profileId,
+                    commentParams.pointedProfileId,
+                    commentParams.pointedPubId,
+                    commentParams.referenceModuleData
+                );
+            }
+        }
+    }
+
+    function _processQuoteIfNeeded(
+        DataTypes.QuoteParams calldata quoteParams,
+        address transactionExecutor,
+        DataTypes.PublicationType referrerPubType
+    ) private {
+        address refModule = GeneralHelpers
+            .getPublicationStruct(quoteParams.pointedProfileId, quoteParams.pointedPubId)
+            .referenceModule;
+        if (refModule != address(0)) {
+            try
+                IReferenceModule(refModule).processQuote({
+                    profileId: quoteParams.profileId,
+                    executor: transactionExecutor,
+                    pointedProfileId: quoteParams.pointedProfileId,
+                    pointedPubId: quoteParams.pointedPubId,
+                    referrerProfileId: quoteParams.referrerProfileId,
+                    referrerPubId: quoteParams.referrerPubId,
+                    referrerPubType: referrerPubType,
+                    data: quoteParams.referenceModuleData
+                })
+            {} catch (bytes memory err) {
+                assembly {
+                    /// Equivalent to reverting with the returned error selector if
+                    /// the length is not zero.
+                    let length := mload(err)
+                    if iszero(iszero(length)) {
+                        revert(add(err, 32), length)
+                    }
+                }
+                if (transactionExecutor != GeneralHelpers.unsafeOwnerOf(quoteParams.profileId)) {
+                    // TODO: WTF is this?
+                    revert Errors.ExecutorInvalid();
+                }
+                IDeprecatedReferenceModule(refModule).processComment(
+                    quoteParams.profileId,
+                    quoteParams.pointedProfileId,
+                    quoteParams.pointedPubId,
+                    quoteParams.referenceModuleData
                 );
             }
         }
     }
 
     function _processMirrorIfNeeded(
-        uint256 profileId,
-        address executor,
-        uint256 profileIdPointed,
-        uint256 pubIdPointed,
-        bytes calldata referenceModuleData
+        DataTypes.MirrorParams calldata mirrorParams,
+        address transactionExecutor,
+        DataTypes.PublicationType referrerPubType
     ) private {
-        address refModule = _getReferenceModule(profileIdPointed, pubIdPointed);
+        address refModule = GeneralHelpers
+            .getPublicationStruct(mirrorParams.pointedProfileId, mirrorParams.pointedPubId)
+            .referenceModule;
         if (refModule != address(0)) {
             try
                 IReferenceModule(refModule).processMirror(
-                    profileId,
-                    executor,
-                    profileIdPointed,
-                    pubIdPointed,
-                    referenceModuleData
+                    mirrorParams.profileId,
+                    transactionExecutor,
+                    mirrorParams.pointedProfileId,
+                    mirrorParams.pointedPubId,
+                    mirrorParams.referrerProfileId,
+                    mirrorParams.referrerPubId,
+                    referrerPubType,
+                    mirrorParams.referenceModuleData
                 )
             {} catch (bytes memory err) {
                 assembly {
@@ -538,13 +448,15 @@ library PublishingLib {
                         revert(add(err, 32), length)
                     }
                 }
-                if (executor != GeneralHelpers.unsafeOwnerOf(profileId))
+                if (transactionExecutor != GeneralHelpers.unsafeOwnerOf(mirrorParams.profileId)) {
+                    // TODO: WTF is this?
                     revert Errors.ExecutorInvalid();
+                }
                 IDeprecatedReferenceModule(refModule).processMirror(
-                    profileId,
-                    profileIdPointed,
-                    pubIdPointed,
-                    referenceModuleData
+                    mirrorParams.profileId,
+                    mirrorParams.pointedProfileId,
+                    mirrorParams.pointedPubId,
+                    mirrorParams.referenceModuleData
                 );
             }
         }
@@ -552,85 +464,38 @@ library PublishingLib {
 
     function _initPubCollectModule(
         uint256 profileId,
-        address executor,
+        address transactionExecutor,
         uint256 pubId,
         address collectModule,
         bytes memory collectModuleInitData
     ) private returns (bytes memory) {
-        _validateCollectModuleWhitelisted(collectModule);
-
-        // Store the collect module in the appropriate slot for the given publication.
-        assembly {
-            mstore(0, profileId)
-            mstore(32, PUB_BY_ID_BY_PROFILE_MAPPING_SLOT)
-            mstore(32, keccak256(0, 64))
-            mstore(0, pubId)
-            let slot := add(keccak256(0, 64), PUBLICATION_COLLECT_MODULE_OFFSET)
-            sstore(slot, collectModule)
-        }
+        GeneralHelpers.validateCollectModuleWhitelisted(collectModule);
+        GeneralHelpers.getPublicationStruct(profileId, pubId).collectModule = collectModule;
         return
             ICollectModule(collectModule).initializePublicationCollectModule(
                 profileId,
-                executor,
                 pubId,
+                transactionExecutor,
                 collectModuleInitData
             );
     }
 
     function _initPubReferenceModule(
         uint256 profileId,
-        address executor,
+        address transactionExecutor,
         uint256 pubId,
         address referenceModule,
         bytes memory referenceModuleInitData
     ) private returns (bytes memory) {
         if (referenceModule == address(0)) return new bytes(0);
-        _validateReferenceModuleWhitelisted(referenceModule);
-
-        // Store the reference module in the appropriate slot for the given publication.
-        assembly {
-            mstore(0, profileId)
-            mstore(32, PUB_BY_ID_BY_PROFILE_MAPPING_SLOT)
-            mstore(32, keccak256(0, 64))
-            mstore(0, pubId)
-            let slot := add(keccak256(0, 64), PUBLICATION_REFERENCE_MODULE_OFFSET)
-            sstore(slot, referenceModule)
-        }
+        GeneralHelpers.validateReferenceModuleWhitelisted(referenceModule);
+        GeneralHelpers.getPublicationStruct(profileId, pubId).referenceModule = referenceModule;
         return
             IReferenceModule(referenceModule).initializeReferenceModule(
                 profileId,
-                executor,
+                transactionExecutor,
                 pubId,
                 referenceModuleInitData
             );
-    }
-
-    function _getPubCount(uint256 profileId) private view returns (uint256) {
-        uint256 pubCount;
-
-        // Load the publication count for the given profile.
-        assembly {
-            mstore(0, profileId)
-            mstore(32, PROFILE_BY_ID_MAPPING_SLOT)
-            // pubCount is at offset 0, so we don't need to add any offset.
-            let slot := keccak256(0, 64)
-            pubCount := sload(slot)
-        }
-        return pubCount;
-    }
-
-    function _getReferenceModule(uint256 profileId, uint256 pubId) private view returns (address) {
-        address referenceModule;
-
-        // Load the reference module for the given publication.
-        assembly {
-            mstore(0, profileId)
-            mstore(32, PUB_BY_ID_BY_PROFILE_MAPPING_SLOT)
-            mstore(32, keccak256(0, 64))
-            mstore(0, pubId)
-            let slot := add(keccak256(0, 64), PUBLICATION_REFERENCE_MODULE_OFFSET)
-            referenceModule := sload(slot)
-        }
-        return referenceModule;
     }
 }

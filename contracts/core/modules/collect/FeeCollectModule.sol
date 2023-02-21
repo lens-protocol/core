@@ -2,14 +2,15 @@
 
 pragma solidity 0.8.15;
 
-import {ICollectModule} from '../../../interfaces/ICollectModule.sol';
-import {Errors} from '../../../libraries/Errors.sol';
+import {ICollectModule} from 'contracts/interfaces/ICollectModule.sol';
+import {Errors} from 'contracts/libraries/Errors.sol';
 import {FeeModuleBase} from '../FeeModuleBase.sol';
 import {ModuleBase} from '../ModuleBase.sol';
 import {FollowValidationModuleBase} from '../FollowValidationModuleBase.sol';
 import {IERC20} from '@openzeppelin/contracts/token/ERC20/IERC20.sol';
 import {SafeERC20} from '@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol';
 import {IERC721} from '@openzeppelin/contracts/token/ERC721/IERC721.sol';
+import {DataTypes} from 'contracts/libraries/DataTypes.sol';
 
 /**
  * @notice A struct containing the necessary data to execute collect actions on a publication.
@@ -61,8 +62,8 @@ contract FeeCollectModule is FeeModuleBase, FollowValidationModuleBase, ICollect
      */
     function initializePublicationCollectModule(
         uint256 profileId,
-        address,
         uint256 pubId,
+        address,
         bytes calldata data
     ) external override onlyHub returns (bytes memory) {
         (
@@ -94,20 +95,30 @@ contract FeeCollectModule is FeeModuleBase, FollowValidationModuleBase, ICollect
      *  2. Charging a fee
      */
     function processCollect(
+        uint256 publicationCollectedProfileId,
+        uint256 publicationCollectedId,
+        uint256,
+        address collectorProfileOwner,
+        address executor,
         uint256 referrerProfileId,
         uint256,
-        address collector,
-        address executor,
-        uint256 profileId,
-        uint256 pubId,
+        DataTypes.PublicationType,
         bytes calldata data
     ) external virtual override onlyHub {
-        if (_dataByPublicationByProfile[profileId][pubId].followerOnly)
-            _checkFollowValidity(profileId, collector);
-        if (referrerProfileId == profileId) {
-            _processCollect(executor, profileId, pubId, data);
+        if (
+            _dataByPublicationByProfile[publicationCollectedProfileId][publicationCollectedId]
+                .followerOnly
+        ) _checkFollowValidity(publicationCollectedProfileId, collectorProfileOwner);
+        if (referrerProfileId == publicationCollectedProfileId) {
+            _processCollect(executor, publicationCollectedProfileId, publicationCollectedId, data);
         } else {
-            _processCollectWithReferral(referrerProfileId, executor, profileId, pubId, data);
+            _processCollectWithReferral(
+                referrerProfileId,
+                executor,
+                publicationCollectedProfileId,
+                publicationCollectedId,
+                data
+            );
         }
     }
 

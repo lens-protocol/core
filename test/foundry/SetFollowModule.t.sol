@@ -6,7 +6,7 @@ import '../../contracts/mocks/MockFollowModule.sol';
 import './helpers/SignatureHelpers.sol';
 
 // TODO: Refactor out all `hub.` calls (if we decide to go this route)
-contract SetFollowModuleTest is BaseTest, SignatureHelpers, SigSetup {
+contract SetFollowModuleTest is BaseTest, SigSetup {
     address mockFollowModule;
 
     function setUp() public virtual override(SigSetup, TestSetup) {

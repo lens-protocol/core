@@ -61,6 +61,8 @@ library Errors {
     error SelfBlock();
     error NotFollowing();
     error SelfFollow();
+    error InvalidReferrer();
+    error InvalidPointedPub();
 
     // Module Errors
     error InitParamsInvalid();

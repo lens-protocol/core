@@ -4,6 +4,7 @@ pragma solidity 0.8.15;
 
 import {ICollectModule} from '../../../interfaces/ICollectModule.sol';
 import {Errors} from '../../../libraries/Errors.sol';
+import {DataTypes} from 'contracts/libraries/DataTypes.sol';
 
 /**
  * @title RevertCollectModule
@@ -19,8 +20,8 @@ contract RevertCollectModule is ICollectModule {
      */
     function initializePublicationCollectModule(
         uint256,
-        address,
         uint256,
+        address,
         bytes calldata
     ) external pure override returns (bytes memory) {
         return new bytes(0);
@@ -33,10 +34,12 @@ contract RevertCollectModule is ICollectModule {
     function processCollect(
         uint256,
         uint256,
+        uint256,
         address,
         address,
         uint256,
         uint256,
+        DataTypes.PublicationType,
         bytes calldata
     ) external pure override {
         revert Errors.CollectNotAllowed();

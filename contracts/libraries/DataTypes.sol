@@ -25,27 +25,31 @@ library DataTypes {
     /**
      * @notice An enum specifically used in a helper function to easily retrieve the publication type for integrations.
      *
-     * @param Post A standard post, having a URI, a collect module but no pointer to another publication.
-     * @param Comment A comment, having a URI, a collect module and a pointer to another publication.
-     * @param Mirror A mirror, having a pointer to another publication, but no URI or collect module.
      * @param Nonexistent An indicator showing the queried publication does not exist.
+     * @param Post A standard post, having an URI, a collect module but no pointer to another publication.
+     * @param Comment A comment, having an URI, a collect module and a pointer to another publication.
+     * @param Mirror A mirror, having a pointer to another publication, but no URI or collect module.
+     * @param Quote A quote, having an URI, a collect module and a pointer to another publication.
      */
-    enum PubType {
+    enum PublicationType {
+        Nonexistent,
         Post,
         Comment,
         Mirror,
-        Nonexistent
+        Quote
     }
 
     /**
      * @notice A struct containing the necessary information to reconstruct an EIP-712 typed data signature.
      *
+     * @param signer The address of the signer.
      * @param v The signature's recovery parameter.
      * @param r The signature's r parameter.
      * @param s The signature's s parameter
      * @param deadline The signature's deadline
      */
     struct EIP712Signature {
+        address signer;
         uint8 v;
         bytes32 r;
         bytes32 s;
@@ -71,23 +75,17 @@ library DataTypes {
         string followNFTURI; // offset 5
     }
 
-    /**
-     * @notice A struct containing data associated with each new publication.
-     *
-     * @param profileIdPointed The profile token ID this publication points to, for mirrors and comments.
-     * @param pubIdPointed The publication ID this publication points to, for mirrors and comments.
-     * @param contentURI The URI associated with this publication.
-     * @param referenceModule The address of the current reference module in use by this profile, can be empty.
-     * @param collectModule The address of the collect module associated with this publication, this exists for all publication.
-     * @param collectNFT The address of the collectNFT associated with this publication, if any.
-     */
     struct PublicationStruct {
-        uint256 profileIdPointed;
-        uint256 pubIdPointed;
+        uint256 pointedProfileId;
+        uint256 pointedPubId;
         string contentURI;
         address referenceModule;
         address collectModule;
         address collectNFT;
+        // Added in Lens V2, so these will be zero for old publications:
+        PublicationType pubType;
+        uint256 rootProfileId;
+        uint256 rootPubId;
     }
 
     /**
@@ -188,37 +186,13 @@ library DataTypes {
      * @param referenceModule The reference module to set for the given publication, must be whitelisted.
      * @param referenceModuleInitData The data to be passed to the reference module for initialization.
      */
-    struct PostData {
+    struct PostParams {
         uint256 profileId;
         string contentURI;
         address collectModule;
         bytes collectModuleInitData;
         address referenceModule;
         bytes referenceModuleInitData;
-    }
-
-    /**
-     * @notice A struct containing the parameters required for the `postWithSig()` function. Parameters are the same as
-     * the regular `post()` function, with an added EIP712Signature.
-     *
-     * @param delegatedSigner The delegated executor signer, must be either zero, defaulting to the profile owner, or a delegated executor.
-     * @param profileId The token ID of the profile to publish to.
-     * @param contentURI The URI to set for this new publication.
-     * @param collectModule The collectModule to set for this new publication.
-     * @param collectModuleInitData The data to pass to the collectModule's initialization.
-     * @param referenceModule The reference module to set for the given publication, must be whitelisted.
-     * @param referenceModuleInitData The data to be passed to the reference module for initialization.
-     * @param sig The EIP712Signature struct containing the profile owner's signature.
-     */
-    struct PostWithSigData {
-        address delegatedSigner;
-        uint256 profileId;
-        string contentURI;
-        address collectModule;
-        bytes collectModuleInitData;
-        address referenceModule;
-        bytes referenceModuleInitData;
-        EIP712Signature sig;
     }
 
     /**
@@ -226,19 +200,23 @@ library DataTypes {
      *
      * @param profileId The token ID of the profile to publish to.
      * @param contentURI The URI to set for this new publication.
-     * @param profileIdPointed The profile token ID to point the comment to.
-     * @param pubIdPointed The publication ID to point the comment to.
+     * @param pointedProfileId The profile token ID to point the comment to.
+     * @param pointedPubId The publication ID to point the comment to.
+     * @param referrerProfileId The profile token ID of the publication that referred to the publication being commented on/quoted.
+     * @param referrerPubId The ID of the publication that referred to the publication being commented on/quoted.
      * @param referenceModuleData The data passed to the reference module.
      * @param collectModule The collect module to set for this new publication.
      * @param collectModuleInitData The data to pass to the collect module's initialization.
      * @param referenceModule The reference module to set for the given publication, must be whitelisted.
      * @param referenceModuleInitData The data to be passed to the reference module for initialization.
      */
-    struct CommentData {
+    struct CommentParams {
         uint256 profileId;
         string contentURI;
-        uint256 profileIdPointed;
-        uint256 pubIdPointed;
+        uint256 pointedProfileId;
+        uint256 pointedPubId;
+        uint256 referrerProfileId;
+        uint256 referrerPubId;
         bytes referenceModuleData;
         address collectModule;
         bytes collectModuleInitData;
@@ -247,70 +225,78 @@ library DataTypes {
     }
 
     /**
-     * @notice A struct containing the parameters required for the `commentWithSig()` function. Parameters are the same as
-     * the regular `comment()` function, with an added EIP712Signature.
+     * @notice A struct containing the parameters required for the `quote()` function.
      *
-     * @param delegatedSigner The delegated executor signer, must be either zero, defaulting to the profile owner, or a delegated executor.
      * @param profileId The token ID of the profile to publish to.
      * @param contentURI The URI to set for this new publication.
-     * @param profileIdPointed The profile token ID to point the comment to.
-     * @param pubIdPointed The publication ID to point the comment to.
+     * @param pointedProfileId The profile token ID of the publication author that is quoted.
+     * @param pointedPubId The publication ID that is quoted.
+     * @param referrerProfileId The profile token ID of the publication that referred to the publication being commented on/quoted.
+     * @param referrerPubId The ID of the publication that referred to the publication being commented on/quoted.
      * @param referenceModuleData The data passed to the reference module.
-     * @param collectModule The collectModule to set for this new publication.
-     * @param collectModuleInitData The data to pass to the collectModule's initialization.
+     * @param collectModule The collect module to set for this new publication.
+     * @param collectModuleInitData The data to pass to the collect module's initialization.
      * @param referenceModule The reference module to set for the given publication, must be whitelisted.
      * @param referenceModuleInitData The data to be passed to the reference module for initialization.
-     * @param sig The EIP712Signature struct containing the profile owner's signature.
      */
-    struct CommentWithSigData {
-        address delegatedSigner;
+    struct QuoteParams {
         uint256 profileId;
         string contentURI;
-        uint256 profileIdPointed;
-        uint256 pubIdPointed;
+        uint256 pointedProfileId;
+        uint256 pointedPubId;
+        uint256 referrerProfileId;
+        uint256 referrerPubId;
         bytes referenceModuleData;
         address collectModule;
         bytes collectModuleInitData;
         address referenceModule;
         bytes referenceModuleInitData;
-        EIP712Signature sig;
+    }
+
+    /**
+     * @notice A struct containing the parameters required for the `comment()` or `quote()` internal functions.
+     *
+     * @param profileId The token ID of the profile to publish to.
+     * @param contentURI The URI to set for this new publication.
+     * @param pointedProfileId The profile token ID of the publication author that is commented on/quoted.
+     * @param pointedPubId The publication ID that is commented on/quoted.
+     * @param referrerProfileId The profile token ID of the publication that referred to the publication being commented on/quoted.
+     * @param referrerPubId The ID of the publication that referred to the publication being commented on/quoted.
+     * @param referenceModuleData The data passed to the reference module.
+     * @param collectModule The collect module to set for this new publication.
+     * @param collectModuleInitData The data to pass to the collect module's initialization.
+     * @param referenceModule The reference module to set for the given publication, must be whitelisted.
+     * @param referenceModuleInitData The data to be passed to the reference module for initialization.
+     */
+    struct ReferencePubParams {
+        uint256 profileId;
+        string contentURI;
+        uint256 pointedProfileId;
+        uint256 pointedPubId;
+        uint256 referrerProfileId;
+        uint256 referrerPubId;
+        bytes referenceModuleData;
+        address collectModule;
+        bytes collectModuleInitData;
+        address referenceModule;
+        bytes referenceModuleInitData;
     }
 
     /**
      * @notice A struct containing the parameters required for the `mirror()` function.
      *
      * @param profileId The token ID of the profile to publish to.
-     * @param profileIdPointed The profile token ID to point the mirror to.
-     * @param pubIdPointed The publication ID to point the mirror to.
+     * @param pointedProfileId The profile token ID to point the mirror to.
+     * @param pointedPubId The publication ID to point the mirror to.
      * @param referenceModuleData The data passed to the reference module.
      */
-    struct MirrorData {
+    struct MirrorParams {
         uint256 profileId;
-        uint256 profileIdPointed;
-        uint256 pubIdPointed;
+        uint256 pointedProfileId;
+        uint256 pointedPubId;
+        uint256 referrerProfileId;
+        uint256 referrerPubId;
         bytes referenceModuleData;
-    }
-
-    /**
-     * @notice A struct containing the parameters required for the `mirrorWithSig()` function. Parameters are the same as
-     * the regular `mirror()` function, with an added EIP712Signature.
-     *
-     * @param delegatedSigner The delegated executor signer, must be either zero, defaulting to the profile owner, or a delegated executor.
-     * @param profileId The token ID of the profile to publish to.
-     * @param profileIdPointed The profile token ID to point the mirror to.
-     * @param pubIdPointed The publication ID to point the mirror to.
-     * @param referenceModuleData The data passed to the reference module.
-     * @param referenceModule The reference module to set for the given publication, must be whitelisted.
-     * @param referenceModuleInitData The data to be passed to the reference module for initialization.
-     * @param sig The EIP712Signature struct containing the profile owner's signature.
-     */
-    struct MirrorWithSigData {
-        address delegatedSigner;
-        uint256 profileId;
-        uint256 profileIdPointed;
-        uint256 pubIdPointed;
-        bytes referenceModuleData;
-        EIP712Signature sig;
     }
 
     /**
@@ -373,37 +359,20 @@ library DataTypes {
     /**
      * @notice A struct containing the parameters required for the `collect()` function.
      *
-     * @param collector The address of the collector.
-     * @param profileId The token ID of the profile to that published the content being collected.
-     * @param pubId The ID of the publication being collected.
-     * @param data The data passed to the collect module.
-     */
-    struct CollectData {
-        // TODO: Move this to tests? And the one below
-        uint256 collectorProfileId;
-        uint256 publisherProfileId;
-        uint256 pubId;
-        bytes data;
-    }
-
-    /**
-     * @notice A struct containing the parameters required for the `collectWithSig()` function. Parameters are the same as
-     * the regular `collect()` function, with the collector's (signer) address and an EIP712Signature added.
-     *
-     * @param delegatedSigner The delegated executor signer, must be either zero, defaulting to the collector profile owner, or a delegated executor.
+     * @param publicationCollectedProfileId The token ID of the profile that published the publication to collect.
+     * @param publicationCollectedId The publication to collect's publication ID.
      * @param collectorProfileId The collector profile.
-     * @param publisherProfileId The token ID of the profile that published the publication to collect.
-     * @param pubId The publication to collect's publication ID.
-     * @param data The arbitrary data to pass to the collectModule if needed.
-     * @param sig The EIP712Signature struct containing the collector's signature.
+     * @param referrerProfileId TODO
+     * @param referrerPubId TODO
+     * @param collectModuleData The arbitrary data to pass to the collectModule if needed.
      */
-    struct CollectWithSigData {
-        address delegatedSigner;
+    struct CollectParams {
+        uint256 publicationCollectedProfileId;
+        uint256 publicationCollectedId;
         uint256 collectorProfileId;
-        uint256 publisherProfileId;
-        uint256 pubId;
-        bytes data;
-        EIP712Signature sig;
+        uint256 referrerProfileId;
+        uint256 referrerPubId;
+        bytes collectModuleData;
     }
 
     /**

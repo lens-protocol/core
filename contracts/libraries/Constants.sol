@@ -59,7 +59,7 @@ uint256 constant PROFILE_IMAGE_URI_OFFSET = 4;
 uint256 constant PROFILE_FOLLOW_NFT_URI_OFFSET = 5;
 
 // Publication struct offsets
-// uint256 profileIdPointed;    // offset 0
+// uint256 pointedProfileId;    // offset 0
 uint256 constant PUBLICATION_PUB_ID_POINTED_OFFSET = 1;
 uint256 constant PUBLICATION_CONTENT_URI_OFFSET = 2; // offset 2
 uint256 constant PUBLICATION_REFERENCE_MODULE_OFFSET = 3; // offset 3
@@ -96,10 +96,13 @@ bytes32 constant POST_WITH_SIG_TYPEHASH = keccak256(
     'PostWithSig(uint256 profileId,string contentURI,address collectModule,bytes collectModuleInitData,address referenceModule,bytes referenceModuleInitData,uint256 nonce,uint256 deadline)'
 );
 bytes32 constant COMMENT_WITH_SIG_TYPEHASH = keccak256(
-    'CommentWithSig(uint256 profileId,string contentURI,uint256 profileIdPointed,uint256 pubIdPointed,bytes referenceModuleData,address collectModule,bytes collectModuleInitData,address referenceModule,bytes referenceModuleInitData,uint256 nonce,uint256 deadline)'
+    'CommentWithSig(uint256 profileId,string contentURI,uint256 pointedProfileId,uint256 pointedPubId,uint256 referrerProfileId,uint256 referrerPubId,bytes referenceModuleData,address collectModule,bytes collectModuleInitData,address referenceModule,bytes referenceModuleInitData,uint256 nonce,uint256 deadline)'
 );
 bytes32 constant MIRROR_WITH_SIG_TYPEHASH = keccak256(
-    'MirrorWithSig(uint256 profileId,uint256 profileIdPointed,uint256 pubIdPointed,bytes referenceModuleData,uint256 nonce,uint256 deadline)'
+    'MirrorWithSig(uint256 profileId,uint256 pointedProfileId,uint256 pointedPubId,uint256 referrerProfileId,uint256 referrerPubId,bytes referenceModuleData,uint256 nonce,uint256 deadline)'
+);
+bytes32 constant QUOTE_WITH_SIG_TYPEHASH = keccak256(
+    'QuoteWithSig(uint256 profileId,string contentURI,uint256 pointedProfileId,uint256 pointedPubId,uint256 referrerProfileId,uint256 referrerPubId,bytes referenceModuleData,address collectModule,bytes collectModuleInitData,address referenceModule,bytes referenceModuleInitData,uint256 nonce,uint256 deadline)'
 );
 bytes32 constant FOLLOW_WITH_SIG_TYPEHASH = keccak256(
     'FollowWithSig(uint256 followerProfileId,uint256[] idsOfProfilesToFollow,uint256[] followTokenIds,bytes[] datas,uint256 nonce,uint256 deadline)'
@@ -111,7 +114,7 @@ bytes32 constant SET_BLOCK_STATUS_WITH_SIG_TYPEHASH = keccak256(
     'SetBlockStatusWithSig(uint256 byProfileId,uint256[] idsOfProfilesToSetBlockStatus,bool[] blockStatus,uint256 nonce,uint256 deadline)'
 );
 bytes32 constant COLLECT_WITH_SIG_TYPEHASH = keccak256(
-    'CollectWithSig(uint256 collectorProfileId,uint256 publisherProfileId,uint256 pubId,bytes data,uint256 nonce,uint256 deadline)'
+    'CollectWithSig(uint256 publicationCollectedProfileId,uint256 publicationCollectedId,uint256 collectorProfileId,uint256 referrerProfileId,uint256 referrerPubId,bytes collectModuleData,uint256 nonce,uint256 deadline)'
 );
 bytes32 constant SET_PROFILE_METADATA_URI_WITH_SIG_TYPEHASH = keccak256(
     'SetProfileMetadataURIWithSig(uint256 profileId,string metadata,uint256 nonce,uint256 deadline)'

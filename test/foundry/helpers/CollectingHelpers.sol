@@ -12,8 +12,8 @@ contract CollectingHelpers is TestSetup {
         // collect NFT doesn't exist yet
 
         address collectNftAddress = hub.getCollectNFT(
-            mockCollectData.publisherProfileId,
-            mockCollectData.pubId
+            mockCollectParams.publicationCollectedProfileId,
+            mockCollectParams.publicationCollectedId
         );
 
         // returns nft ID or 0 if no collect nft yet
@@ -26,17 +26,20 @@ contract CollectingHelpers is TestSetup {
 
     function _checkCollectNFTAfter(uint256 nftId, uint256 expectedNftId) internal {
         _collectNftAfter = CollectNFT(
-            hub.getCollectNFT(mockCollectData.publisherProfileId, mockCollectData.pubId)
+            hub.getCollectNFT(
+                mockCollectParams.publicationCollectedProfileId,
+                mockCollectParams.publicationCollectedId
+            )
         );
 
         (uint256 profileId, uint256 pubId) = _collectNftAfter.getSourcePublicationPointer();
-        assertEq(profileId, mockCollectData.publisherProfileId);
-        assertEq(pubId, mockCollectData.pubId);
+        assertEq(profileId, mockCollectParams.publicationCollectedProfileId);
+        assertEq(pubId, mockCollectParams.publicationCollectedId);
 
         assertEq(nftId, expectedNftId);
         assertEq(
-            _collectNftAfter.ownerOf(mockCollectData.pubId),
-            hub.ownerOf(mockCollectData.collectorProfileId)
+            _collectNftAfter.ownerOf(mockCollectParams.publicationCollectedId),
+            hub.ownerOf(mockCollectParams.collectorProfileId)
         );
         assertEq(_collectNftAfter.name(), _expectedName());
         assertEq(_collectNftAfter.symbol(), _expectedSymbol());
@@ -46,9 +49,9 @@ contract CollectingHelpers is TestSetup {
         return
             string(
                 abi.encodePacked(
-                    vm.toString(mockCollectData.publisherProfileId),
+                    vm.toString(mockCollectParams.publicationCollectedProfileId),
                     COLLECT_NFT_NAME_INFIX,
-                    vm.toString(mockCollectData.pubId)
+                    vm.toString(mockCollectParams.publicationCollectedId)
                 )
             );
     }
@@ -57,9 +60,9 @@ contract CollectingHelpers is TestSetup {
         return
             string(
                 abi.encodePacked(
-                    vm.toString(mockCollectData.publisherProfileId),
+                    vm.toString(mockCollectParams.publicationCollectedProfileId),
                     COLLECT_NFT_SYMBOL_INFIX,
-                    vm.toString(mockCollectData.pubId)
+                    vm.toString(mockCollectParams.publicationCollectedId)
                 )
             );
     }

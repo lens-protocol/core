@@ -20,15 +20,15 @@ contract MockDeprecatedReferenceModule is IDeprecatedReferenceModule {
 
     function processComment(
         uint256 profileId,
-        uint256 profileIdPointed,
-        uint256 pubIdPointed,
+        uint256 pointedProfileId,
+        uint256 pointedPubId,
         bytes calldata data
     ) external override {}
 
     function processMirror(
         uint256 profileId,
-        uint256 profileIdPointed,
-        uint256 pubIdPointed,
+        uint256 pointedProfileId,
+        uint256 pointedPubId,
         bytes calldata data
     ) external override {}
 }

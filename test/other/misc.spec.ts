@@ -260,8 +260,8 @@ makeSuiteCleanRoom('Misc', function () {
         lensHub.comment({
           profileId: FIRST_PROFILE_ID,
           contentURI: MOCK_URI,
-          profileIdPointed: FIRST_PROFILE_ID,
-          pubIdPointed: 1,
+          pointedProfileId: FIRST_PROFILE_ID,
+          pointedPubId: 1,
           referenceModuleData: [],
           collectModule: freeCollectModule.address,
           collectModuleInitData: abiCoder.encode(['bool'], [true]),
@@ -294,8 +294,8 @@ makeSuiteCleanRoom('Misc', function () {
       await expect(
         lensHub.mirror({
           profileId: FIRST_PROFILE_ID,
-          profileIdPointed: FIRST_PROFILE_ID,
-          pubIdPointed: 1,
+          pointedProfileId: FIRST_PROFILE_ID,
+          pointedPubId: 1,
           referenceModuleData: [],
           referenceModule: ZERO_ADDRESS,
           referenceModuleInitData: [],
@@ -346,8 +346,8 @@ makeSuiteCleanRoom('Misc', function () {
         lensHub.comment({
           profileId: FIRST_PROFILE_ID,
           contentURI: OTHER_MOCK_URI,
-          profileIdPointed: FIRST_PROFILE_ID,
-          pubIdPointed: 1,
+          pointedProfileId: FIRST_PROFILE_ID,
+          pointedPubId: 1,
           referenceModuleData: [],
           collectModule: freeCollectModule.address,
           collectModuleInitData: abiCoder.encode(['bool'], [true]),
@@ -378,8 +378,8 @@ makeSuiteCleanRoom('Misc', function () {
       await expect(
         lensHub.mirror({
           profileId: FIRST_PROFILE_ID,
-          profileIdPointed: FIRST_PROFILE_ID,
-          pubIdPointed: 1,
+          pointedProfileId: FIRST_PROFILE_ID,
+          pointedPubId: 1,
           referenceModuleData: [],
           referenceModule: ZERO_ADDRESS,
           referenceModuleInitData: [],
@@ -426,8 +426,8 @@ makeSuiteCleanRoom('Misc', function () {
       await expect(
         lensHub.mirror({
           profileId: FIRST_PROFILE_ID,
-          profileIdPointed: FIRST_PROFILE_ID,
-          pubIdPointed: 1,
+          pointedProfileId: FIRST_PROFILE_ID,
+          pointedPubId: 1,
           referenceModuleData: [],
           referenceModule: ZERO_ADDRESS,
           referenceModuleInitData: [],
@@ -438,8 +438,8 @@ makeSuiteCleanRoom('Misc', function () {
         lensHub.comment({
           profileId: FIRST_PROFILE_ID,
           contentURI: OTHER_MOCK_URI,
-          profileIdPointed: FIRST_PROFILE_ID,
-          pubIdPointed: 2,
+          pointedProfileId: FIRST_PROFILE_ID,
+          pointedPubId: 2,
           referenceModuleData: [],
           collectModule: freeCollectModule.address,
           collectModuleInitData: abiCoder.encode(['bool'], [true]),
@@ -470,8 +470,8 @@ makeSuiteCleanRoom('Misc', function () {
       await expect(
         lensHub.mirror({
           profileId: FIRST_PROFILE_ID,
-          profileIdPointed: FIRST_PROFILE_ID,
-          pubIdPointed: 1,
+          pointedProfileId: FIRST_PROFILE_ID,
+          pointedPubId: 1,
           referenceModuleData: [],
           referenceModule: ZERO_ADDRESS,
           referenceModuleInitData: [],
@@ -501,8 +501,8 @@ makeSuiteCleanRoom('Misc', function () {
         lensHub.comment({
           profileId: FIRST_PROFILE_ID,
           contentURI: OTHER_MOCK_URI,
-          profileIdPointed: FIRST_PROFILE_ID,
-          pubIdPointed: 1,
+          pointedProfileId: FIRST_PROFILE_ID,
+          pointedPubId: 1,
           referenceModuleData: [],
           collectModule: freeCollectModule.address,
           collectModuleInitData: abiCoder.encode(['bool'], [true]),
@@ -514,8 +514,8 @@ makeSuiteCleanRoom('Misc', function () {
       await expect(
         lensHub.mirror({
           profileId: FIRST_PROFILE_ID,
-          profileIdPointed: FIRST_PROFILE_ID,
-          pubIdPointed: 1,
+          pointedProfileId: FIRST_PROFILE_ID,
+          pointedPubId: 1,
           referenceModuleData: [],
           referenceModule: ZERO_ADDRESS,
           referenceModuleInitData: [],
@@ -735,8 +735,8 @@ makeSuiteCleanRoom('Misc', function () {
       expect(profileByProfileIdStruct.imageURI).to.eq(MOCK_PROFILE_URI);
       expect(profileByProfileIdStruct.followNFTURI).to.eq(MOCK_FOLLOW_NFT_URI);
 
-      expect(pubByProfileIdStruct.profileIdPointed).to.eq(0);
-      expect(pubByProfileIdStruct.pubIdPointed).to.eq(0);
+      expect(pubByProfileIdStruct.pointedProfileId).to.eq(0);
+      expect(pubByProfileIdStruct.pointedPubId).to.eq(0);
       expect(pubByProfileIdStruct.contentURI).to.eq(secondURI);
       expect(pubByProfileIdStruct.referenceModule).to.eq(ZERO_ADDRESS);
       expect(pubByProfileIdStruct.collectModule).to.eq(freeCollectModule.address);
@@ -754,8 +754,8 @@ makeSuiteCleanRoom('Misc', function () {
       expect(profileByHandleStruct.imageURI).to.eq(MOCK_PROFILE_URI);
       expect(profileByHandleStruct.followNFTURI).to.eq(MOCK_FOLLOW_NFT_URI);
 
-      expect(pubByHandleStruct.profileIdPointed).to.eq(0);
-      expect(pubByHandleStruct.pubIdPointed).to.eq(0);
+      expect(pubByHandleStruct.pointedProfileId).to.eq(0);
+      expect(pubByHandleStruct.pointedPubId).to.eq(0);
       expect(pubByHandleStruct.contentURI).to.eq(secondURI);
       expect(pubByHandleStruct.referenceModule).to.eq(ZERO_ADDRESS);
       expect(pubByHandleStruct.collectModule).to.eq(freeCollectModule.address);

@@ -255,56 +255,56 @@ contract EventTest is BaseTest {
         emit Events.PostCreated(
             newProfileId,
             1,
-            mockPostData.contentURI,
-            mockPostData.collectModule,
+            mockPostParams.contentURI,
+            mockPostParams.collectModule,
             '',
-            mockPostData.referenceModule,
+            mockPostParams.referenceModule,
             '',
             block.timestamp
         );
-        hub.post(mockPostData);
+        hub.post(mockPostParams);
     }
 
     function testCommentingEmitsExpectedEvents() public {
         vm.startPrank(profileOwner);
-        hub.post(mockPostData);
+        hub.post(mockPostParams);
         vm.expectEmit(true, true, false, true, address(hub));
         emit Events.CommentCreated(
             newProfileId,
             2,
-            mockCommentData.contentURI,
+            mockCommentParams.contentURI,
             newProfileId,
             1,
             '',
-            mockCommentData.collectModule,
+            mockCommentParams.collectModule,
             '',
-            mockCommentData.referenceModule,
+            mockCommentParams.referenceModule,
             '',
             block.timestamp
         );
-        hub.comment(mockCommentData);
+        hub.comment(mockCommentParams);
         vm.stopPrank();
     }
 
     function testMirroringEmitsExpectedEvents() public {
         vm.startPrank(profileOwner);
-        hub.post(mockPostData);
+        hub.post(mockPostParams);
         vm.expectEmit(true, true, false, true, address(hub));
         emit Events.MirrorCreated({
             profileId: newProfileId,
             pubId: 2,
-            profileIdPointed: newProfileId,
-            pubIdPointed: 1,
+            pointedProfileId: newProfileId,
+            pointedPubId: 1,
             referenceModuleData: '',
             timestamp: block.timestamp
         });
-        hub.mirror(mockMirrorData);
+        hub.mirror(mockMirrorParams);
         vm.stopPrank();
     }
 
     function testCollectingEmitsExpectedEvents() public {
         vm.startPrank(profileOwner);
-        hub.post(mockPostData);
+        hub.post(mockPostParams);
 
         uint256 expectedPubId = 1;
         address expectedCollectNFTAddress = predictContractAddress(address(hub), 0);
@@ -345,18 +345,27 @@ contract EventTest is BaseTest {
 
         // Collected
         vm.expectEmit(true, true, true, true, address(hub));
-        emit Events.Collected(
-            newProfileId, // TODO: Replace with proper ProfileID
-            newProfileId,
-            expectedPubId,
-            newProfileId,
-            expectedPubId,
-            '',
-            block.timestamp
-        );
+        emit Events.Collected({
+            publicationCollectedProfileId: newProfileId, // TODO: Replace with proper ProfileID
+            publicationCollectedId: expectedPubId,
+            collectorProfileId: newProfileId,
+            referrerProfileId: 0,
+            referrerPubId: 0,
+            collectModuleData: '',
+            timestamp: block.timestamp
+        });
 
         // TODO: Replace with proper ProfileID
-        hub.collect(newProfileId, newProfileId, expectedPubId, '');
+        hub.collect(
+            DataTypes.CollectParams({
+                publicationCollectedProfileId: newProfileId,
+                publicationCollectedId: expectedPubId,
+                collectorProfileId: newProfileId,
+                referrerProfileId: 0,
+                referrerPubId: 0,
+                collectModuleData: ''
+            })
+        );
         vm.stopPrank();
     }
 
@@ -365,14 +374,13 @@ contract EventTest is BaseTest {
         followTargetIds[0] = 1;
         bytes[] memory followDatas = new bytes[](1);
         followDatas[0] = '';
-        uint256 expectedPubId = 1;
         address expectedCollectNFTAddress = predictContractAddress(address(hub), 0);
         string memory expectedNFTName = '1-Collect-1';
         string memory expectedNFTSymbol = '1-Cl-1';
 
         vm.startPrank(profileOwner);
-        hub.post(mockPostData);
-        hub.mirror(mockMirrorData);
+        uint256 postId = hub.post(mockPostParams);
+        uint256 mirrorId = hub.mirror(mockMirrorParams);
 
         // BaseInitialized
         vm.expectEmit(false, false, false, true, expectedCollectNFTAddress);
@@ -380,13 +388,13 @@ contract EventTest is BaseTest {
 
         // CollectNFTInitialized
         vm.expectEmit(true, true, true, true, expectedCollectNFTAddress);
-        emit Events.CollectNFTInitialized(newProfileId, expectedPubId, block.timestamp);
+        emit Events.CollectNFTInitialized(newProfileId, postId, block.timestamp);
 
         // CollectNFTDeployed
         vm.expectEmit(true, true, true, true, address(hub));
         emit Events.CollectNFTDeployed(
             newProfileId,
-            expectedPubId,
+            postId,
             expectedCollectNFTAddress,
             block.timestamp
         );
@@ -395,7 +403,7 @@ contract EventTest is BaseTest {
         vm.expectEmit(true, true, true, true, address(hub));
         emit Events.CollectNFTTransferred(
             newProfileId,
-            expectedPubId,
+            postId,
             1, // collect nft id
             address(0),
             profileOwner,
@@ -408,18 +416,27 @@ contract EventTest is BaseTest {
 
         // Collected
         vm.expectEmit(true, true, true, true, address(hub));
-        emit Events.Collected(
-            newProfileId, // TODO: Replace with proper ProfileID
-            newProfileId,
-            expectedPubId,
-            newProfileId,
-            expectedPubId,
-            '',
-            block.timestamp
-        );
+        emit Events.Collected({
+            publicationCollectedProfileId: newProfileId, // TODO: Replace with proper ProfileID
+            publicationCollectedId: postId,
+            collectorProfileId: newProfileId,
+            referrerProfileId: newProfileId,
+            referrerPubId: mirrorId,
+            collectModuleData: '',
+            timestamp: block.timestamp
+        });
 
         // TODO: Replace with proper ProfileID
-        hub.collect(newProfileId, 1, expectedPubId, '');
+        hub.collect(
+            DataTypes.CollectParams({
+                publicationCollectedProfileId: newProfileId,
+                publicationCollectedId: postId,
+                collectorProfileId: newProfileId,
+                referrerProfileId: newProfileId,
+                referrerPubId: mirrorId,
+                collectModuleData: ''
+            })
+        );
         vm.stopPrank();
     }
 

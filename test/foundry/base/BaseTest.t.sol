@@ -141,18 +141,18 @@ contract BaseTest is TestSetup {
     }
 
     function _getPostTypedDataHash(
-        DataTypes.PostData memory postData,
+        DataTypes.PostParams memory postParams,
         uint256 nonce,
         uint256 deadline
     ) internal view returns (bytes32) {
         return
             _getPostTypedDataHash({
-                profileId: postData.profileId,
-                contentURI: postData.contentURI,
-                collectModule: postData.collectModule,
-                collectModuleInitData: postData.collectModuleInitData,
-                referenceModule: postData.referenceModule,
-                referenceModuleInitData: postData.referenceModuleInitData,
+                profileId: postParams.profileId,
+                contentURI: postParams.contentURI,
+                collectModule: postParams.collectModule,
+                collectModuleInitData: postParams.collectModuleInitData,
+                referenceModule: postParams.referenceModule,
+                referenceModuleInitData: postParams.referenceModuleInitData,
                 nonce: nonce,
                 deadline: deadline
             });
@@ -161,8 +161,10 @@ contract BaseTest is TestSetup {
     function _getCommentTypedDataHash(
         uint256 profileId,
         string memory contentURI,
-        uint256 profileIdPointed,
-        uint256 pubIdPointed,
+        uint256 pointedProfileId,
+        uint256 pointedPubId,
+        uint256 referrerProfileId,
+        uint256 referrerPubId,
         bytes memory referenceModuleData,
         address collectModule,
         bytes memory collectModuleInitData,
@@ -176,8 +178,10 @@ contract BaseTest is TestSetup {
                 COMMENT_WITH_SIG_TYPEHASH,
                 profileId,
                 keccak256(bytes(contentURI)),
-                profileIdPointed,
-                pubIdPointed,
+                pointedProfileId,
+                pointedPubId,
+                referrerProfileId,
+                referrerPubId,
                 keccak256(referenceModuleData),
                 collectModule,
                 keccak256(collectModuleInitData),
@@ -191,21 +195,23 @@ contract BaseTest is TestSetup {
     }
 
     function _getCommentTypedDataHash(
-        DataTypes.CommentData memory commentData,
+        DataTypes.CommentParams memory commentParams,
         uint256 nonce,
         uint256 deadline
     ) internal view returns (bytes32) {
         return
             _getCommentTypedDataHash({
-                profileId: commentData.profileId,
-                contentURI: commentData.contentURI,
-                profileIdPointed: commentData.profileIdPointed,
-                pubIdPointed: commentData.pubIdPointed,
-                referenceModuleData: commentData.referenceModuleData,
-                collectModule: commentData.collectModule,
-                collectModuleInitData: commentData.collectModuleInitData,
-                referenceModule: commentData.referenceModule,
-                referenceModuleInitData: commentData.referenceModuleInitData,
+                profileId: commentParams.profileId,
+                contentURI: commentParams.contentURI,
+                pointedProfileId: commentParams.pointedProfileId,
+                pointedPubId: commentParams.pointedPubId,
+                referrerProfileId: 0,
+                referrerPubId: 0,
+                referenceModuleData: commentParams.referenceModuleData,
+                collectModule: commentParams.collectModule,
+                collectModuleInitData: commentParams.collectModuleInitData,
+                referenceModule: commentParams.referenceModule,
+                referenceModuleInitData: commentParams.referenceModuleInitData,
                 nonce: nonce,
                 deadline: deadline
             });
@@ -213,8 +219,10 @@ contract BaseTest is TestSetup {
 
     function _getMirrorTypedDataHash(
         uint256 profileId,
-        uint256 profileIdPointed,
-        uint256 pubIdPointed,
+        uint256 pointedProfileId,
+        uint256 pointedPubId,
+        uint256 referrerProfileId,
+        uint256 referrerPubId,
         bytes memory referenceModuleData,
         uint256 nonce,
         uint256 deadline
@@ -223,8 +231,10 @@ contract BaseTest is TestSetup {
             abi.encode(
                 MIRROR_WITH_SIG_TYPEHASH,
                 profileId,
-                profileIdPointed,
-                pubIdPointed,
+                pointedProfileId,
+                pointedPubId,
+                referrerProfileId,
+                referrerPubId,
                 keccak256(referenceModuleData),
                 nonce,
                 deadline
@@ -234,16 +244,18 @@ contract BaseTest is TestSetup {
     }
 
     function _getMirrorTypedDataHash(
-        DataTypes.MirrorData memory mirrorData,
+        DataTypes.MirrorParams memory mirrorParams,
         uint256 nonce,
         uint256 deadline
     ) internal view returns (bytes32) {
         return
             _getMirrorTypedDataHash({
-                profileId: mirrorData.profileId,
-                profileIdPointed: mirrorData.profileIdPointed,
-                pubIdPointed: mirrorData.pubIdPointed,
-                referenceModuleData: mirrorData.referenceModuleData,
+                profileId: mirrorParams.profileId,
+                pointedProfileId: mirrorParams.pointedProfileId,
+                pointedPubId: mirrorParams.pointedPubId,
+                referrerProfileId: 0,
+                referrerPubId: 0,
+                referenceModuleData: mirrorParams.referenceModuleData,
                 nonce: nonce,
                 deadline: deadline
             });
@@ -281,20 +293,19 @@ contract BaseTest is TestSetup {
     }
 
     function _getCollectTypedDataHash(
-        uint256 collectorProfileId,
-        uint256 publisherProfileId,
-        uint256 pubId,
-        bytes memory data,
+        DataTypes.CollectParams memory collectParams,
         uint256 nonce,
         uint256 deadline
     ) internal view returns (bytes32) {
         bytes32 structHash = keccak256(
             abi.encode(
                 COLLECT_WITH_SIG_TYPEHASH,
-                collectorProfileId,
-                publisherProfileId,
-                pubId,
-                keccak256(data),
+                collectParams.publicationCollectedProfileId,
+                collectParams.publicationCollectedId,
+                collectParams.collectorProfileId,
+                collectParams.referrerProfileId,
+                collectParams.referrerPubId,
+                keccak256(collectParams.collectModuleData),
                 nonce,
                 deadline
             )
@@ -313,7 +324,17 @@ contract BaseTest is TestSetup {
         uint256 deadline
     ) internal returns (DataTypes.EIP712Signature memory) {
         (uint8 v, bytes32 r, bytes32 s) = vm.sign(pKey, digest);
-        return DataTypes.EIP712Signature(v, r, s, deadline);
+        return DataTypes.EIP712Signature(address(0), v, r, s, deadline);
+    }
+
+    function _getSigStruct(
+        address signer,
+        uint256 pKey,
+        bytes32 digest,
+        uint256 deadline
+    ) internal returns (DataTypes.EIP712Signature memory) {
+        (uint8 v, bytes32 r, bytes32 s) = vm.sign(pKey, digest);
+        return DataTypes.EIP712Signature(signer, v, r, s, deadline);
     }
 
     function _toUint256Array(uint256 n) internal pure returns (uint256[] memory) {
@@ -392,16 +413,16 @@ contract BaseTest is TestSetup {
             );
     }
 
-    function _post(DataTypes.PostData memory postData) internal returns (uint256) {
-        return hub.post(postData);
+    function _post(DataTypes.PostParams memory postParams) internal returns (uint256) {
+        return hub.post(postParams);
     }
 
-    function _comment(DataTypes.CommentData memory commentData) internal returns (uint256) {
-        return hub.comment(commentData);
+    function _comment(DataTypes.CommentParams memory commentParams) internal returns (uint256) {
+        return hub.comment(commentParams);
     }
 
-    function _mirror(DataTypes.MirrorData memory mirrorData) internal returns (uint256) {
-        return hub.mirror(mirrorData);
+    function _mirror(DataTypes.MirrorParams memory mirrorParams) internal returns (uint256) {
+        return hub.mirror(mirrorParams);
     }
 
     function _collect(
@@ -410,35 +431,45 @@ contract BaseTest is TestSetup {
         uint256 pubId,
         bytes memory data
     ) internal returns (uint256) {
-        return hub.collect(collectorProfileId, publisherProfileId, pubId, data);
+        return
+            hub.collect(
+                DataTypes.CollectParams({
+                    publicationCollectedProfileId: publisherProfileId,
+                    publicationCollectedId: pubId,
+                    collectorProfileId: collectorProfileId,
+                    referrerProfileId: 0,
+                    referrerPubId: 0,
+                    collectModuleData: data
+                })
+            );
     }
 
-    function _postWithSig(DataTypes.PostWithSigData memory postWithSigData)
-        internal
-        returns (uint256)
-    {
-        return hub.postWithSig(postWithSigData);
+    function _postWithSig(
+        DataTypes.PostParams memory postParams,
+        DataTypes.EIP712Signature memory sig
+    ) internal returns (uint256) {
+        return hub.postWithSig(postParams, sig);
     }
 
-    function _commentWithSig(DataTypes.CommentWithSigData memory commentWithSigData)
-        internal
-        returns (uint256)
-    {
-        return hub.commentWithSig(commentWithSigData);
+    function _commentWithSig(
+        DataTypes.CommentParams memory commentParams,
+        DataTypes.EIP712Signature memory sig
+    ) internal returns (uint256) {
+        return hub.commentWithSig(commentParams, sig);
     }
 
-    function _mirrorWithSig(DataTypes.MirrorWithSigData memory mirrorWithSigData)
-        internal
-        returns (uint256)
-    {
-        return hub.mirrorWithSig(mirrorWithSigData);
+    function _mirrorWithSig(
+        DataTypes.MirrorParams memory mirrorParams,
+        DataTypes.EIP712Signature memory sig
+    ) internal returns (uint256) {
+        return hub.mirrorWithSig(mirrorParams, sig);
     }
 
-    function _collectWithSig(DataTypes.CollectWithSigData memory collectWithSigData)
-        internal
-        returns (uint256)
-    {
-        return hub.collectWithSig(collectWithSigData);
+    function _collectWithSig(
+        DataTypes.CollectParams memory collectParams,
+        DataTypes.EIP712Signature memory sig
+    ) internal returns (uint256) {
+        return hub.collectWithSig(collectParams, sig);
     }
 
     function _follow(

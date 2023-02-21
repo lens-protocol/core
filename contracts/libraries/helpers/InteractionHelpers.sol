@@ -165,99 +165,88 @@ library InteractionHelpers {
     }
 
     function collect(
-        uint256 collectorProfileId,
-        address collectorProfileOwner,
-        address transactionExecutor, // TODO: (ex-delegatedExecutor) - revisit the naming later
-        uint256 publisherProfileId,
-        uint256 pubId,
-        bytes calldata collectModuleData,
+        DataTypes.CollectParams calldata collectParams,
+        address transactionExecutor,
         address collectNFTImpl
     ) internal returns (uint256) {
-        uint256 publisherProfileIdCached = publisherProfileId;
-        uint256 pubIdCached = pubId;
-        uint256 collectorProfileIdCached = collectorProfileId;
-        address collectorProfileOwnerCached = collectorProfileOwner;
-        address transactionExecutorCached = transactionExecutor;
-
-        GeneralHelpers.validateAddressIsProfileOwnerOrDelegatedExecutor({
-            expectedOwnerOrDelegatedExecutor: transactionExecutor,
-            profileId: collectorProfileId
-        });
-
-        GeneralHelpers.validateNotBlocked(collectorProfileId, publisherProfileId);
-
-        (uint256 rootProfileId, uint256 rootPubId, address rootCollectModule) = GeneralHelpers
-            .getPointedIfMirrorWithCollectModule(publisherProfileIdCached, pubIdCached);
-
-        // Prevents stack too deep.
-        address collectNFT;
+        address collectModule;
+        DataTypes.PublicationType referrerPubType;
+        uint256 tokenId;
+        address collectorProfileOwner = GeneralHelpers.ownerOf(collectParams.collectorProfileId);
         {
-            uint256 collectNFTSlot;
-
-            // Load the collect NFT and for the given publication being collected, and cache the
-            // collect NFT slot.
-            assembly {
-                mstore(0, rootProfileId)
-                mstore(32, PUB_BY_ID_BY_PROFILE_MAPPING_SLOT)
-                mstore(32, keccak256(0, 64))
-                mstore(0, rootPubId)
-                collectNFTSlot := add(keccak256(0, 64), PUBLICATION_COLLECT_NFT_OFFSET)
-                collectNFT := sload(collectNFTSlot)
+            DataTypes.PublicationStruct storage _collectedPublication = GeneralHelpers
+                .getPublicationStruct(
+                    collectParams.publicationCollectedProfileId,
+                    collectParams.publicationCollectedId
+                );
+            collectModule = _collectedPublication.collectModule;
+            if (collectModule == address(0)) {
+                // Doesn't have collectModule, thus it cannot be a collected (a mirror or non-existent).
+                revert Errors.CollectNotAllowed();
             }
-
-            if (collectNFT == address(0)) {
-                collectNFT = _deployCollectNFT(rootProfileId, rootPubId, collectNFTImpl);
-
-                // Store the collect NFT in the cached slot.
-                assembly {
-                    sstore(collectNFTSlot, collectNFT)
-                }
-            }
+            referrerPubType = GeneralHelpers.validateReferrerAndGetReferrerPubType(
+                collectParams.referrerProfileId,
+                collectParams.referrerPubId,
+                collectParams.publicationCollectedProfileId,
+                collectParams.publicationCollectedId
+            );
+            address collectNFT = _getOrDeployCollectNFT(
+                _collectedPublication,
+                collectParams.publicationCollectedProfileId,
+                collectParams.publicationCollectedId,
+                collectNFTImpl
+            );
+            tokenId = ICollectNFT(collectNFT).mint(collectorProfileOwner);
         }
 
-        uint256 tokenId = ICollectNFT(collectNFT).mint(collectorProfileOwnerCached);
-        _processCollect(
-            ProcessCollectVars({
-                collectModule: rootCollectModule,
-                publisherProfileId: publisherProfileIdCached,
-                collectorProfileId: collectorProfileIdCached,
-                collectorProfileOwner: collectorProfileOwnerCached,
-                transactionExecutor: transactionExecutorCached,
-                rootProfileId: rootProfileId,
-                rootPubId: rootPubId,
-                pubId: pubIdCached
-            }),
-            collectModuleData
-        );
+        _processCollect({
+            collectParams: collectParams,
+            transactionExecutor: transactionExecutor,
+            collectorProfileOwner: collectorProfileOwner,
+            referrerPubType: referrerPubType,
+            collectModule: collectModule
+        });
 
         return tokenId;
     }
 
-    // TODO: Think about how to make this better... (it's needed for stack too deep)
-    struct ProcessCollectVars {
-        address collectModule;
-        uint256 publisherProfileId;
-        uint256 collectorProfileId;
-        address collectorProfileOwner;
-        address transactionExecutor;
-        uint256 rootProfileId;
-        uint256 rootPubId;
-        uint256 pubId;
+    function _getOrDeployCollectNFT(
+        DataTypes.PublicationStruct storage _collectedPublication,
+        uint256 publicationCollectedProfileId,
+        uint256 publicationCollectedId,
+        address collectNFTImpl
+    ) private returns (address) {
+        address collectNFT = _collectedPublication.collectNFT;
+        if (collectNFT == address(0)) {
+            collectNFT = _deployCollectNFT(
+                publicationCollectedProfileId,
+                publicationCollectedId,
+                collectNFTImpl
+            );
+            _collectedPublication.collectNFT = collectNFT;
+        }
+        return collectNFT;
     }
 
-    function _processCollect(ProcessCollectVars memory vars, bytes calldata collectModuleData)
-        private
-    {
+    function _processCollect(
+        DataTypes.CollectParams calldata collectParams,
+        address transactionExecutor,
+        address collectorProfileOwner,
+        DataTypes.PublicationType referrerPubType,
+        address collectModule
+    ) private {
         try
-            ICollectModule(vars.collectModule).processCollect(
-                vars.publisherProfileId,
-                vars.collectorProfileId,
-                vars.collectorProfileOwner,
-                vars.transactionExecutor,
-                vars.rootProfileId,
-                vars.rootPubId,
-                collectModuleData
-            )
+            ICollectModule(collectModule).processCollect({
+                publicationCollectedProfileId: collectParams.publicationCollectedProfileId,
+                publicationCollectedId: collectParams.publicationCollectedId,
+                collectorProfileId: collectParams.collectorProfileId,
+                collectorProfileOwner: collectorProfileOwner,
+                executor: transactionExecutor,
+                referrerProfileId: collectParams.referrerProfileId,
+                referrerPubId: collectParams.referrerPubId,
+                referrerPubType: referrerPubType,
+                data: collectParams.collectModuleData
+            })
         {} catch (bytes memory err) {
             assembly {
                 /// Equivalent to reverting with the returned error selector if
@@ -267,25 +256,25 @@ library InteractionHelpers {
                     revert(add(err, 32), length)
                 }
             }
-            if (vars.collectorProfileOwner != vars.transactionExecutor)
-                revert Errors.ExecutorInvalid();
-            IDeprecatedCollectModule(vars.collectModule).processCollect(
-                vars.publisherProfileId,
-                vars.collectorProfileOwner,
-                vars.rootProfileId,
-                vars.rootPubId,
-                collectModuleData
+            if (collectorProfileOwner != transactionExecutor) revert Errors.ExecutorInvalid();
+            IDeprecatedCollectModule(collectModule).processCollect(
+                collectParams.publicationCollectedProfileId,
+                collectorProfileOwner,
+                collectParams.referrerProfileId,
+                collectParams.referrerPubId,
+                collectParams.collectModuleData
             );
         }
 
-        _emitCollectedEvent(
-            vars.collectorProfileId,
-            vars.publisherProfileId,
-            vars.pubId,
-            vars.rootProfileId,
-            vars.rootPubId,
-            collectModuleData
-        );
+        emit Events.Collected({
+            publicationCollectedProfileId: collectParams.publicationCollectedProfileId,
+            publicationCollectedId: collectParams.publicationCollectedId,
+            collectorProfileId: collectParams.collectorProfileId,
+            referrerProfileId: collectParams.referrerProfileId,
+            referrerPubId: collectParams.referrerPubId,
+            collectModuleData: collectParams.collectModuleData,
+            timestamp: block.timestamp
+        });
     }
 
     /**
@@ -317,36 +306,37 @@ library InteractionHelpers {
         return collectNFT;
     }
 
-    /**
-     * @notice Emits the `Collected` event that signals that a successful collect action has occurred.
-     *
-     * @dev This is done through this function to prevent stack too deep compilation error.
-     *
-     * @param collectorProfileId The owner address of the profile collecting the publication.
-     * @param publisherProfileId The token ID of the profile that the collect was initiated towards, useful to differentiate mirrors.
-     * @param pubId The publication ID that the collect was initiated towards, useful to differentiate mirrors.
-     * @param rootProfileId The profile token ID of the profile whose publication is being collected.
-     * @param rootPubId The publication ID of the publication being collected.
-     * @param data The data passed to the collect module.
-     */
-    function _emitCollectedEvent(
-        uint256 collectorProfileId,
-        uint256 publisherProfileId,
-        uint256 pubId,
-        uint256 rootProfileId,
-        uint256 rootPubId,
-        bytes calldata data
-    ) private {
-        emit Events.Collected(
-            collectorProfileId,
-            publisherProfileId,
-            pubId,
-            rootProfileId,
-            rootPubId,
-            data,
-            block.timestamp
-        );
-    }
+    // /**
+    //  * @notice Emits the `Collected` event that signals that a successful collect action has occurred.
+    //  *
+    //  * @dev This is done through this function to prevent stack too deep compilation error.
+    //  *
+    //  * @param collectorProfileId The owner address of the profile collecting the publication.
+    //  * @param publisherProfileId The token ID of the profile that the collect was initiated towards, useful to differentiate mirrors.
+    //  * @param pubId The publication ID that the collect was initiated towards, useful to differentiate mirrors.
+    //  * @param rootProfileId The profile token ID of the profile whose publication is being collected.
+    //  * @param rootPubId The publication ID of the publication being collected.
+    //  * @param data The data passed to the collect module.
+    //  */
+    // function _emitCollectedEvent(
+    //     uint256 publicationCollectedProfileId,
+    //     uint256 publicationCollectedId,
+    //     uint256 collectorProfileId,
+    //     uint256 referrerProfileId,
+    //     uint256 referrerPubId,
+    //     bytes calldata collectModuleData,
+    //     uint256 timestamp
+    // ) private {
+    //     emit Events.Collected(
+    //     publicationCollectedProfileId: publisherProfileId,
+    //     publicationCollectedId: pubId,
+    //     collectorProfileId: collectorProfileId,
+    //     referrerProfileId: ,
+    //     referrerPubId: ,
+    //     collectModuleData: data,
+    //     timestamp: block.timestamp,
+    //     );
+    // }
 
     function _follow(
         uint256 followerProfileId,

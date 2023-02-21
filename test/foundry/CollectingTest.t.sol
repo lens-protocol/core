@@ -4,10 +4,11 @@ pragma solidity ^0.8.13;
 import './base/BaseTest.t.sol';
 import './helpers/SignatureHelpers.sol';
 import './helpers/CollectingHelpers.sol';
+import './MetaTxNegatives.t.sol';
 
 // TODO add check for _initialize() called for fork tests - check name and symbol set
 
-contract CollectingTest_Base is BaseTest, SignatureHelpers, CollectingHelpers, SigSetup {
+contract CollectingTest is BaseTest, CollectingHelpers, SigSetup {
     uint256 constant collectorProfileOwnerPk = 0xC011EEC7012;
     address collectorProfileOwner;
     uint256 collectorProfileId;
@@ -15,59 +16,28 @@ contract CollectingTest_Base is BaseTest, SignatureHelpers, CollectingHelpers, S
     uint256 constant userWithoutProfilePk = 0x105312;
     address userWithoutProfile;
 
-    function _mockCollect() internal virtual returns (uint256) {
-        return
-            _collect(
-                mockCollectData.collectorProfileId,
-                mockCollectData.publisherProfileId,
-                mockCollectData.pubId,
-                mockCollectData.data
-            );
-    }
-
-    function _mockCollectWithSig(address delegatedSigner, uint256 signerPrivKey)
-        internal
-        virtual
-        returns (uint256)
-    {
-        bytes32 digest = _getCollectTypedDataHash(
-            mockCollectData.collectorProfileId,
-            mockCollectData.publisherProfileId,
-            mockCollectData.pubId,
-            mockCollectData.data,
-            nonce,
-            deadline
-        );
-
-        return
-            _collectWithSig(
-                _buildCollectWithSigData(
-                    delegatedSigner,
-                    mockCollectData,
-                    _getSigStruct(signerPrivKey, digest, deadline)
-                )
-            );
-    }
-
     function setUp() public virtual override(SigSetup, TestSetup) {
         TestSetup.setUp();
         SigSetup.setUp();
 
         vm.prank(profileOwner);
-        hub.post(mockPostData);
+        hub.post(mockPostParams);
 
         collectorProfileOwner = vm.addr(collectorProfileOwnerPk);
         collectorProfileId = _createProfile(collectorProfileOwner);
 
         userWithoutProfile = vm.addr(userWithoutProfilePk);
 
-        mockCollectData.collectorProfileId = collectorProfileId;
+        mockCollectParams.collectorProfileId = collectorProfileId;
     }
-}
 
-contract CollectingTest_Generic is CollectingTest_Base {
-    function setUp() public override {
-        CollectingTest_Base.setUp();
+    function _collect(
+        uint256, /* metaTxSignerPk */
+        address transactionExecutor,
+        DataTypes.CollectParams memory collectParams
+    ) internal virtual returns (uint256) {
+        vm.prank(transactionExecutor);
+        return hub.collect(collectParams);
     }
 
     // NEGATIVES
@@ -75,43 +45,45 @@ contract CollectingTest_Generic is CollectingTest_Base {
     // Also acts like a test for cannot collect specifying another (non-owned) profile as a parameter
     function testCannotCollectIfNotExecutor() public {
         vm.expectRevert(Errors.ExecutorInvalid.selector);
-        vm.startPrank(otherSigner);
-        _mockCollect();
+        _collect(collectorProfileOwnerPk, otherSigner, mockCollectParams);
     }
 
     function testCannotCollectIfNonexistantPub() public {
-        mockCollectData.pubId = 2;
+        mockCollectParams.publicationCollectedId = 2;
         // Check that the publication doesn't exist.
         assertEq(
-            _getPub(mockCollectData.publisherProfileId, mockCollectData.pubId).profileIdPointed,
+            _getPub(
+                mockCollectParams.publicationCollectedProfileId,
+                mockCollectParams.publicationCollectedId
+            ).pointedProfileId,
             0
         );
 
-        vm.startPrank(collectorProfileOwner);
-        vm.expectRevert(Errors.PublicationDoesNotExist.selector);
-        _mockCollect();
+        vm.expectRevert(Errors.CollectNotAllowed.selector);
+        _collect(collectorProfileOwnerPk, collectorProfileOwner, mockCollectParams);
         vm.stopPrank();
     }
 
     function testCannotCollectIfZeroPub() public {
-        mockCollectData.pubId = 0;
+        mockCollectParams.publicationCollectedId = 0;
         // Check that the publication doesn't exist.
         assertEq(
-            _getPub(mockCollectData.publisherProfileId, mockCollectData.pubId).profileIdPointed,
+            _getPub(
+                mockCollectParams.publicationCollectedProfileId,
+                mockCollectParams.publicationCollectedId
+            ).pointedProfileId,
             0
         );
 
-        vm.startPrank(collectorProfileOwner);
-        vm.expectRevert(Errors.PublicationDoesNotExist.selector);
-        _mockCollect();
+        vm.expectRevert(Errors.CollectNotAllowed.selector);
+        _collect(collectorProfileOwnerPk, collectorProfileOwner, mockCollectParams);
         vm.stopPrank();
     }
 
     function testCannotCollect_WithoutProfile() public {
-        mockCollectData.collectorProfileId = _getNextProfileId(); // Non-existent profile
-        vm.startPrank(userWithoutProfile);
+        mockCollectParams.collectorProfileId = _getNextProfileId(); // Non-existent profile
         vm.expectRevert(Errors.TokenDoesNotExist.selector);
-        _mockCollect();
+        _collect(userWithoutProfilePk, userWithoutProfile, mockCollectParams);
         vm.stopPrank();
     }
 
@@ -119,8 +91,21 @@ contract CollectingTest_Generic is CollectingTest_Base {
         vm.prank(profileOwner);
         hub.setBlockStatus(newProfileId, _toUint256Array(collectorProfileId), _toBoolArray(true));
         vm.expectRevert(Errors.Blocked.selector);
-        vm.startPrank(collectorProfileOwner);
-        _mockCollect();
+        _collect(collectorProfileOwnerPk, collectorProfileOwner, mockCollectParams);
+    }
+
+    function testCannotCollectMirror() public {
+        _checkCollectNFTBefore();
+
+        // Mirror once
+        vm.prank(profileOwner);
+        uint256 mirrorPubId = hub.mirror(mockMirrorParams);
+
+        // Collecting the mirror
+        mockCollectParams.publicationCollectedId = mirrorPubId;
+
+        vm.expectRevert(Errors.CollectNotAllowed.selector);
+        _collect(collectorProfileOwnerPk, collectorProfileOwner, mockCollectParams);
     }
 
     // SCENARIOS
@@ -128,9 +113,7 @@ contract CollectingTest_Generic is CollectingTest_Base {
     function testCollect() public {
         uint256 startNftId = _checkCollectNFTBefore();
 
-        vm.startPrank(collectorProfileOwner);
-        uint256 nftId = _mockCollect();
-        vm.stopPrank();
+        uint256 nftId = _collect(collectorProfileOwnerPk, collectorProfileOwner, mockCollectParams);
 
         _checkCollectNFTAfter(nftId, startNftId + 1);
     }
@@ -139,34 +122,9 @@ contract CollectingTest_Generic is CollectingTest_Base {
         uint256 startNftId = _checkCollectNFTBefore();
 
         vm.prank(profileOwner);
-        hub.mirror(mockMirrorData);
+        hub.mirror(mockMirrorParams);
 
-        vm.prank(collectorProfileOwner);
-        uint256 nftId = _mockCollect();
-
-        _checkCollectNFTAfter(nftId, startNftId + 1);
-    }
-
-    function testCollectMirrorOfMirrorPointsToOriginalPost() public {
-        uint256 startNftId = _checkCollectNFTBefore();
-        uint256 startMirrorId = mockMirrorData.pubIdPointed;
-
-        // mirror once
-        vm.startPrank(profileOwner);
-        uint256 newPubId = hub.mirror(mockMirrorData);
-        assertEq(newPubId, startMirrorId + 1);
-
-        // mirror again
-        mockMirrorData.pubIdPointed = newPubId;
-        newPubId = hub.mirror(mockMirrorData);
-        assertEq(newPubId, startMirrorId + 2);
-
-        // We're expecting a mirror to point at the original post ID
-        mockCollectData.pubId = startMirrorId;
-        vm.stopPrank();
-
-        vm.prank(collectorProfileOwner);
-        uint256 nftId = _mockCollect();
+        uint256 nftId = _collect(collectorProfileOwnerPk, collectorProfileOwner, mockCollectParams);
 
         _checkCollectNFTAfter(nftId, startNftId + 1);
     }
@@ -183,9 +141,7 @@ contract CollectingTest_Generic is CollectingTest_Base {
         );
 
         // collect from executor
-        vm.startPrank(otherSigner);
-        uint256 nftId = _mockCollect();
-        vm.stopPrank();
+        uint256 nftId = _collect(otherSignerKey, otherSigner, mockCollectParams);
 
         _checkCollectNFTAfter(nftId, startNftId + 1);
     }
@@ -195,7 +151,7 @@ contract CollectingTest_Generic is CollectingTest_Base {
 
         // mirror, then delegate power to executor
         vm.prank(profileOwner);
-        hub.mirror(mockMirrorData);
+        hub.mirror(mockMirrorParams);
         _changeDelegatedExecutorsConfig(
             collectorProfileOwner,
             collectorProfileId,
@@ -204,161 +160,58 @@ contract CollectingTest_Generic is CollectingTest_Base {
         );
 
         // collect from executor
-        vm.startPrank(otherSigner);
-        uint256 nftId = _mockCollect();
-        vm.stopPrank();
+        uint256 nftId = _collect(otherSignerKey, otherSigner, mockCollectParams);
 
         _checkCollectNFTAfter(nftId, startNftId + 1);
     }
 }
 
-contract CollectingTest_WithSig is CollectingTest_Base {
-    function setUp() public override {
-        CollectingTest_Base.setUp();
+contract CollectingTestMetaTx is CollectingTest, MetaTxNegatives {
+    mapping(address => uint256) cachedNonceByAddress;
+
+    function setUp() public override(CollectingTest, MetaTxNegatives) {
+        CollectingTest.setUp();
+        MetaTxNegatives.setUp();
+
+        cachedNonceByAddress[collectorProfileOwner] = _getSigNonce(collectorProfileOwner);
     }
 
-    // NEGATIVES
-
-    // Also acts like a test for cannot collect specifying another (non-owned) profile as a parameter
-    function testCannotCollectWithSigIfNotExecutor() public {
-        vm.expectRevert(Errors.ExecutorInvalid.selector);
-        _mockCollectWithSig({delegatedSigner: otherSigner, signerPrivKey: otherSignerKey});
-    }
-
-    function testCannotCollectWithSigIfNonexistantPub() public {
-        mockCollectData.pubId = 2;
-        // Check that the publication doesn't exist.
-        assertEq(
-            _getPub(mockCollectData.publisherProfileId, mockCollectData.pubId).profileIdPointed,
-            0
+    function _collect(
+        uint256 metaTxSignerPk,
+        address transactionExecutor,
+        DataTypes.CollectParams memory collectParams
+    ) internal override returns (uint256) {
+        address signer = vm.addr(metaTxSignerPk);
+        uint256 deadline = type(uint256).max;
+        bytes32 digest = _getCollectTypedDataHash(
+            collectParams,
+            cachedNonceByAddress[signer],
+            deadline
         );
-
-        vm.expectRevert(Errors.PublicationDoesNotExist.selector);
-        _mockCollectWithSig({delegatedSigner: address(0), signerPrivKey: collectorProfileOwnerPk});
+        return
+            hub.collectWithSig(
+                collectParams,
+                _getSigStruct(transactionExecutor, metaTxSignerPk, digest, deadline)
+            );
     }
 
-    function testCannotCollectWithSigIfZeroPub() public {
-        mockCollectData.pubId = 0;
-        // Check that the publication doesn't exist.
-        assertEq(
-            _getPub(mockCollectData.publisherProfileId, mockCollectData.pubId).profileIdPointed,
-            0
+    function _executeMetaTx(
+        uint256 signerPk,
+        uint256 nonce,
+        uint256 deadline
+    ) internal override {
+        _collectWithSig(
+            mockCollectParams,
+            _getSigStruct(
+                collectorProfileOwner,
+                signerPk,
+                _getCollectTypedDataHash(mockCollectParams, nonce, deadline),
+                deadline
+            )
         );
-
-        vm.expectRevert(Errors.PublicationDoesNotExist.selector);
-        _mockCollectWithSig({delegatedSigner: address(0), signerPrivKey: collectorProfileOwnerPk});
     }
 
-    function testCannotCollectWithSig_WithoutProfile() public {
-        mockCollectData.collectorProfileId = _getNextProfileId(); // Non-existent profile
-        vm.expectRevert(Errors.TokenDoesNotExist.selector);
-        _mockCollectWithSig({delegatedSigner: address(0), signerPrivKey: userWithoutProfilePk});
-    }
-
-    function testCannotCollectWithSigOnExpiredDeadline() public {
-        deadline = block.timestamp - 1;
-        vm.expectRevert(Errors.SignatureExpired.selector);
-        _mockCollectWithSig({delegatedSigner: address(0), signerPrivKey: collectorProfileOwnerPk});
-    }
-
-    function testCannotCollectWithSigOnInvalidNonce() public {
-        nonce = 5;
-        vm.expectRevert(Errors.SignatureInvalid.selector);
-        _mockCollectWithSig({delegatedSigner: address(0), signerPrivKey: collectorProfileOwnerPk});
-    }
-
-    function testCannotCollectIfNonceWasIncrementedWithAnotherAction() public {
-        assertEq(_getSigNonce(collectorProfileOwner), nonce, 'Wrong nonce before posting');
-
-        uint256 expectedCollectId = _getCollectCount(collectorProfileId, mockCollectData.pubId) + 1;
-
-        uint256 nftId = _mockCollectWithSig({
-            delegatedSigner: address(0),
-            signerPrivKey: collectorProfileOwnerPk
-        });
-
-        assertEq(nftId, expectedCollectId, 'Wrong collectId');
-
-        assertTrue(_getSigNonce(collectorProfileOwner) != nonce, 'Wrong nonce after collecting');
-
-        vm.expectRevert(Errors.SignatureInvalid.selector);
-        _mockCollectWithSig({delegatedSigner: address(0), signerPrivKey: collectorProfileOwnerPk});
-    }
-
-    function testCannotCollectWithSigIfBlocked() public {
-        vm.prank(profileOwner);
-        hub.setBlockStatus(newProfileId, _toUint256Array(collectorProfileId), _toBoolArray(true));
-        vm.expectRevert(Errors.Blocked.selector);
-        vm.startPrank(collectorProfileOwner);
-        _mockCollectWithSig({delegatedSigner: address(0), signerPrivKey: collectorProfileOwnerPk});
-    }
-
-    // SCENARIOS
-
-    function testCollectWithSig() public {
-        uint256 startNftId = _checkCollectNFTBefore();
-
-        uint256 nftId = _mockCollectWithSig({
-            delegatedSigner: address(0),
-            signerPrivKey: collectorProfileOwnerPk
-        });
-
-        _checkCollectNFTAfter(nftId, startNftId + 1);
-    }
-
-    function testCollectWithSigMirror() public {
-        uint256 startNftId = _checkCollectNFTBefore();
-
-        vm.prank(profileOwner);
-        hub.mirror(mockMirrorData);
-
-        uint256 nftId = _mockCollectWithSig({
-            delegatedSigner: address(0),
-            signerPrivKey: collectorProfileOwnerPk
-        });
-
-        _checkCollectNFTAfter(nftId, startNftId + 1);
-    }
-
-    function testExecutorCollectWithSig() public {
-        uint256 startNftId = _checkCollectNFTBefore();
-
-        // delegate power to executor
-        _changeDelegatedExecutorsConfig(
-            collectorProfileOwner,
-            collectorProfileId,
-            otherSigner,
-            true
-        );
-
-        // collect from executor
-        uint256 nftId = _mockCollectWithSig({
-            delegatedSigner: otherSigner,
-            signerPrivKey: otherSignerKey
-        });
-
-        _checkCollectNFTAfter(nftId, startNftId + 1);
-    }
-
-    function testExecutorCollectWithSigMirror() public {
-        uint256 startNftId = _checkCollectNFTBefore();
-
-        // mirror, then delegate power to executor
-        vm.prank(profileOwner);
-        hub.mirror(mockMirrorData);
-        _changeDelegatedExecutorsConfig(
-            collectorProfileOwner,
-            collectorProfileId,
-            otherSigner,
-            true
-        );
-
-        // collect from executor
-        uint256 nftId = _mockCollectWithSig({
-            delegatedSigner: otherSigner,
-            signerPrivKey: otherSignerKey
-        });
-
-        _checkCollectNFTAfter(nftId, startNftId + 1);
+    function _getDefaultMetaTxSignerPk() internal pure override returns (uint256) {
+        return collectorProfileOwnerPk;
     }
 }

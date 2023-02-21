@@ -227,59 +227,94 @@ interface ILensHub {
     /**
      * @notice Publishes a post to a given profile, must be called by the profile owner.
      *
-     * @param vars A PostData struct containing the needed parameters.
+     * @param postParams A PostParams struct containing the needed parameters.
      *
      * @return uint256 An integer representing the post's publication ID.
      */
-    function post(DataTypes.PostData calldata vars) external returns (uint256);
+    function post(DataTypes.PostParams calldata postParams) external returns (uint256);
 
     /**
      * @notice Publishes a post to a given profile via signature with the specified parameters. The signer must
      * either be the profile owner or a delegated executor.
      *
-     * @param vars A PostWithSigData struct containing the regular parameters and an EIP712Signature struct.
+     * @param postParams A PostParams struct containing the needed parameters.
+     * @param signature The signature for the post.
      *
      * @return uint256 An integer representing the post's publication ID.
      */
-    function postWithSig(DataTypes.PostWithSigData calldata vars) external returns (uint256);
+    function postWithSig(
+        DataTypes.PostParams calldata postParams,
+        DataTypes.EIP712Signature calldata signature
+    ) external returns (uint256);
 
     /**
      * @notice Publishes a comment to a given profile, must be called by the profile owner.
      *
-     * @param vars A CommentData struct containing the needed parameters.
+     * @param commentParams A CommentParams struct containing the needed parameters.
      *
      * @return uint256 An integer representing the comment's publication ID.
      */
-    function comment(DataTypes.CommentData calldata vars) external returns (uint256);
+    function comment(DataTypes.CommentParams calldata commentParams) external returns (uint256);
 
     /**
      * @notice Publishes a comment to a given profile via signature with the specified parameters. The signer must
      * either be the profile owner or a delegated executor.
      *
-     * @param vars A CommentWithSigData struct containing the regular parameters and an EIP712Signature struct.
+     * @param commentParams A CommentWithSigData struct containing the regular parameters and an EIP712Signature struct.
+     * @param signature The signature for the comment.
      *
      * @return uint256 An integer representing the comment's publication ID.
      */
-    function commentWithSig(DataTypes.CommentWithSigData calldata vars) external returns (uint256);
+    function commentWithSig(
+        DataTypes.CommentParams calldata commentParams,
+        DataTypes.EIP712Signature calldata signature
+    ) external returns (uint256);
 
     /**
      * @notice Publishes a mirror to a given profile, must be called by the profile owner.
      *
-     * @param vars A MirrorData struct containing the necessary parameters.
+     * @param mirrorParams A MirrorParams struct containing the necessary parameters.
      *
      * @return uint256 An integer representing the mirror's publication ID.
      */
-    function mirror(DataTypes.MirrorData calldata vars) external returns (uint256);
+    function mirror(DataTypes.MirrorParams calldata mirrorParams) external returns (uint256);
 
     /**
      * @notice Publishes a mirror to a given profile via signature with the specified parameters. The signer must
      * either be the profile owner or a delegated executor.
      *
-     * @param vars A MirrorWithSigData struct containing the regular parameters and an EIP712Signature struct.
+     * @param mirrorParams A MirrorWithSigData struct containing the regular parameters and an EIP712Signature struct.
+     * @param signature The signature for the mirror.
      *
      * @return uint256 An integer representing the mirror's publication ID.
      */
-    function mirrorWithSig(DataTypes.MirrorWithSigData calldata vars) external returns (uint256);
+    function mirrorWithSig(
+        DataTypes.MirrorParams calldata mirrorParams,
+        DataTypes.EIP712Signature calldata signature
+    ) external returns (uint256);
+
+    /**
+     * @notice Publishes a quote to a given profile, must be called by the profile owner.
+     *
+     * @param quoteParams A QuoteParams struct containing the needed parameters.
+     *
+     * @return uint256 An integer representing the quote's publication ID.
+     */
+    function quote(DataTypes.QuoteParams calldata quoteParams) external returns (uint256);
+
+    /**
+     * @notice Publishes a quote to a given profile via signature with the specified parameters. The signer must
+     * either be the profile owner or a delegated executor.
+     *
+     * @param quoteParams A QuoteParams struct containing the needed parameters.
+     * @param signature The signature for the quote.
+     *
+     * @return uint256 An integer representing the quote's publication ID.
+     */
+    function quoteWithSig(
+        DataTypes.QuoteParams calldata quoteParams,
+        DataTypes.EIP712Signature calldata signature
+    ) external returns (uint256);
 
     /**
      * @notice Follows the given profiles, executing each profile's follow module logic (if any).
@@ -358,32 +393,28 @@ interface ILensHub {
     function setBlockStatusWithSig(DataTypes.SetBlockStatusWithSigData calldata vars) external;
 
     /**
-     * @notice Collects a given publication, executing collect module logic and minting a collectNFT to the caller.
+     * @notice Collects a given publication via signature with the specified parameters. The caller must either be the collector
+     * or a delegated executor.
      *
-     * @param collectorProfileId The ID of the profile the collect is being executed from.
-     * @param publisherProfileId The token ID of the profile that published the publication to collect.
-     * @param pubId The publication to collect's publication ID.
-     * @param data The arbitrary data to pass to the collect module if needed.
+     * @param collectParams A CollectParams struct containing the parameters.
      *
      * @return uint256 An integer representing the minted token ID.
      */
-    function collect(
-        uint256 collectorProfileId,
-        uint256 publisherProfileId,
-        uint256 pubId,
-        bytes calldata data
-    ) external returns (uint256);
+    function collect(DataTypes.CollectParams calldata collectParams) external returns (uint256);
 
     /**
      * @notice Collects a given publication via signature with the specified parameters. The signer must either be the collector
      * or a delegated executor.
      *
-     * @param vars A CollectWithSigData struct containing the regular parameters as well as the collector's address and
-     * an EIP712Signature struct.
+     * @param collectParams A CollectParams struct containing the parameters.
+     * @param signature The signature for the collect.
      *
      * @return uint256 An integer representing the minted token ID.
      */
-    function collectWithSig(DataTypes.CollectWithSigData calldata vars) external returns (uint256);
+    function collectWithSig(
+        DataTypes.CollectParams calldata collectParams,
+        DataTypes.EIP712Signature calldata signature
+    ) external returns (uint256);
 
     /**
      * @dev Helper function to emit a detailed followNFT transfer event from the hub, to be consumed by indexers to
@@ -694,15 +725,10 @@ interface ILensHub {
         view
         returns (DataTypes.PublicationStruct memory);
 
-    /**
-     * @notice Returns the publication type associated with a given publication.
-     *
-     * @param profileId The token ID of the profile that published the publication to query.
-     * @param pubId The publication ID of the publication to query.
-     *
-     * @return PubType The publication type, as a member of an enum (either "post," "comment" or "mirror").
-     */
-    function getPubType(uint256 profileId, uint256 pubId) external view returns (DataTypes.PubType);
+    function getPublicationType(uint256 profileId, uint256 pubId)
+        external
+        view
+        returns (DataTypes.PublicationType);
 
     /**
      * @notice Returns the follow NFT implementation address.
