@@ -257,6 +257,7 @@ contract LensHub is LensNFTBase, VersionedInitializable, LensMultiState, LensHub
     ) external override whenNotPaused onlyProfileOwner(signature.signer, delegatorProfileId) {
         MetaTxHelpers.validateChangeDelegatedExecutorsConfigSignature(
             signature,
+            delegatorProfileId,
             executors,
             approvals,
             configNumber,
@@ -454,8 +455,12 @@ contract LensHub is LensNFTBase, VersionedInitializable, LensMultiState, LensHub
     /**
      * @notice Burns a profile, this maintains the profile data struct.
      */
-    function burn(uint256 tokenId) public override whenNotPaused {
-        if (!_isApprovedOrOwner(msg.sender, tokenId)) revert Errors.NotOwnerOrApproved();
+    function burn(uint256 tokenId)
+        public
+        override
+        whenNotPaused
+        onlyProfileOwner(msg.sender, tokenId)
+    {
         _burn(tokenId);
     }
 
@@ -466,9 +471,9 @@ contract LensHub is LensNFTBase, VersionedInitializable, LensMultiState, LensHub
         public
         override
         whenNotPaused
+        onlyProfileOwner(signature.signer, tokenId)
     {
         MetaTxHelpers.validateBurnSignature(signature, tokenId);
-        if (!_isApprovedOrOwner(msg.sender, tokenId)) revert Errors.NotOwnerOrApproved(); // TODO: Look at this
         _burn(tokenId);
     }
 

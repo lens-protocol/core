@@ -127,6 +127,7 @@ library MetaTxHelpers {
 
     function validateChangeDelegatedExecutorsConfigSignature(
         DataTypes.EIP712Signature calldata signature,
+        uint256 delegatorProfileId,
         address[] calldata executors,
         bool[] calldata approvals,
         uint64 configNumber,
@@ -139,7 +140,7 @@ library MetaTxHelpers {
                 keccak256(
                     abi.encode(
                         CHANGE_DELEGATED_EXECUTORS_CONFIG_WITH_SIG_TYPEHASH,
-                        signature.signer,
+                        delegatorProfileId,
                         abi.encodePacked(executors),
                         abi.encodePacked(approvals),
                         configNumber,
