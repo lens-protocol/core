@@ -5,7 +5,7 @@ pragma solidity 0.8.15;
 import {ICollectModule} from '../../../interfaces/ICollectModule.sol';
 import {IFollowModule} from '../../../interfaces/IFollowModule.sol';
 import {ILensHub} from '../../../interfaces/ILensHub.sol';
-import {Errors} from '../../../libraries/Errors.sol';
+import {Errors} from '../../../libraries/constants/Errors.sol';
 import {FeeModuleBase} from '../FeeModuleBase.sol';
 import {ModuleBase} from '../ModuleBase.sol';
 import {FollowValidationModuleBase} from '../FollowValidationModuleBase.sol';

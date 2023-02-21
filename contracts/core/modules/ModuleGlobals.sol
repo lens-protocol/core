@@ -2,8 +2,8 @@
 
 pragma solidity 0.8.15;
 
-import {Errors} from '../../libraries/Errors.sol';
-import {Events} from '../../libraries/Events.sol';
+import {Errors} from '../../libraries/constants/Errors.sol';
+import {Events} from '../../libraries/constants/Events.sol';
 import {IModuleGlobals} from '../../interfaces/IModuleGlobals.sol';
 
 /**

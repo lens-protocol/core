@@ -2,7 +2,7 @@
 
 pragma solidity ^0.8.0;
 
-import {Errors} from '../../libraries/Errors.sol';
+import {Errors} from '../../libraries/constants/Errors.sol';
 import {ERC721Time} from './ERC721Time.sol';
 import {IERC721Enumerable} from '@openzeppelin/contracts/token/ERC721/extensions/IERC721Enumerable.sol';
 import {IERC165} from '@openzeppelin/contracts/interfaces/IERC165.sol';

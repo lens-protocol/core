@@ -4,8 +4,8 @@ pragma solidity 0.8.15;
 
 import {IFollowModuleLegacy} from '../../interfaces/IFollowModuleLegacy.sol';
 import {ILensHub} from '../../interfaces/ILensHub.sol';
-import {Errors} from '../../libraries/Errors.sol';
-import {Events} from '../../libraries/Events.sol';
+import {Errors} from '../../libraries/constants/Errors.sol';
+import {Events} from '../../libraries/constants/Events.sol';
 import {ModuleBase} from './ModuleBase.sol';
 import {IERC721} from '@openzeppelin/contracts/token/ERC721/IERC721.sol';
 

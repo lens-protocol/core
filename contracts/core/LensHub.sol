@@ -6,11 +6,11 @@ import {IFollowNFT} from '../interfaces/IFollowNFT.sol';
 import {ILensNFTBase} from '../interfaces/ILensNFTBase.sol';
 import {ILensHub} from '../interfaces/ILensHub.sol';
 
-import {Events} from '../libraries/Events.sol';
+import {Events} from '../libraries/constants/Events.sol';
 import {DataTypes} from '../libraries/DataTypes.sol';
-import {Errors} from '../libraries/Errors.sol';
+import {Errors} from '../libraries/constants/Errors.sol';
 import {GeneralLib} from '../libraries/GeneralLib.sol';
-import {GeneralHelpers} from '../libraries/helpers/GeneralHelpers.sol';
+import {GeneralHelpers} from '../libraries/GeneralHelpers.sol';
 import {ProfileLib} from '../libraries/ProfileLib.sol';
 import {PublishingLib} from '../libraries/PublishingLib.sol';
 import {ProfileTokenURILogic} from '../libraries/ProfileTokenURILogic.sol';
@@ -21,7 +21,7 @@ import {LensMultiState} from './base/LensMultiState.sol';
 import {LensHubStorage} from './storage/LensHubStorage.sol';
 import {VersionedInitializable} from '../upgradeability/VersionedInitializable.sol';
 import {IERC721Enumerable} from '@openzeppelin/contracts/token/ERC721/extensions/IERC721Enumerable.sol';
-import {MetaTxHelpers} from 'contracts/libraries/helpers/MetaTxHelpers.sol';
+import {MetaTxHelpers} from 'contracts/libraries/MetaTxHelpers.sol';
 
 /**
  * @title LensHub

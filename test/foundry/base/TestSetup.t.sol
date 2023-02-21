@@ -12,8 +12,8 @@ import {ModuleGlobals} from 'contracts/core/modules/ModuleGlobals.sol';
 import {TransparentUpgradeableProxy} from 'contracts/upgradeability/TransparentUpgradeableProxy.sol';
 import {DataTypes} from 'contracts/libraries/DataTypes.sol';
 import 'contracts/libraries/Constants.sol';
-import {Errors} from 'contracts/libraries/Errors.sol';
-import {Events} from 'contracts/libraries/Events.sol';
+import {Errors} from 'contracts/libraries/constants/Errors.sol';
+import {Events} from 'contracts/libraries/constants/Events.sol';
 import {GeneralLib} from 'contracts/libraries/GeneralLib.sol';
 import {ProfileTokenURILogic} from 'contracts/libraries/ProfileTokenURILogic.sol';
 import {MockCollectModule} from 'contracts/mocks/MockCollectModule.sol';
@@ -21,7 +21,7 @@ import {MockReferenceModule} from 'contracts/mocks/MockReferenceModule.sol';
 import '../helpers/ForkManagement.sol';
 import '../Constants.sol';
 import {TypehashConstants} from 'contracts/libraries/constants/TypehashConstants.sol';
-import {MetaTxHelpers} from 'contracts/libraries/helpers/MetaTxHelpers.sol';
+import {MetaTxHelpers} from 'contracts/libraries/MetaTxHelpers.sol';
 
 contract TestSetup is Test, ForkManagement {
     using stdJson for string;

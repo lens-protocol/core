@@ -3,9 +3,9 @@ pragma solidity 0.8.15;
 
 import {IEIP1271Implementer} from 'contracts/interfaces/IEIP1271Implementer.sol';
 import {DataTypes} from 'contracts/libraries/DataTypes.sol';
-import {Errors} from 'contracts/libraries/Errors.sol';
+import {Errors} from 'contracts/libraries/constants/Errors.sol';
 import {DataTypes} from 'contracts/libraries/DataTypes.sol';
-import {GeneralHelpers} from 'contracts/libraries/helpers/GeneralHelpers.sol';
+import {GeneralHelpers} from 'contracts/libraries/GeneralHelpers.sol';
 import {TypehashConstants} from 'contracts/libraries/constants/TypehashConstants.sol';
 import 'contracts/libraries/Constants.sol';
 

@@ -4,7 +4,7 @@ pragma solidity 0.8.15;
 
 import {IDeprecatedFollowModule} from '../../../../interfaces/IDeprecatedFollowModule.sol';
 import {ILensHub} from '../../../../interfaces/ILensHub.sol';
-import {Errors} from '../../../../libraries/Errors.sol';
+import {Errors} from '../../../../libraries/constants/Errors.sol';
 import {ModuleBase} from '../../ModuleBase.sol';
 import {IERC721} from '@openzeppelin/contracts/token/ERC721/IERC721.sol';
 

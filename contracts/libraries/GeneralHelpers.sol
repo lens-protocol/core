@@ -2,10 +2,10 @@
 
 pragma solidity 0.8.15;
 
-import {DataTypes} from '../DataTypes.sol';
-import {Errors} from '../Errors.sol';
+import {DataTypes} from 'contracts/libraries/DataTypes.sol';
+import {Errors} from 'contracts/libraries/constants/Errors.sol';
 
-import '../Constants.sol';
+import 'contracts/libraries/Constants.sol';
 
 /**
  * @title Helpers

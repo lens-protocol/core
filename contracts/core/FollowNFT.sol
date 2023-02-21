@@ -6,15 +6,15 @@ import '../libraries/Constants.sol';
 import {DataTypes} from '../libraries/DataTypes.sol';
 import {ERC2981CollectionRoyalties} from './base/ERC2981CollectionRoyalties.sol';
 import {ERC721Enumerable} from './base/ERC721Enumerable.sol';
-import {Errors} from '../libraries/Errors.sol';
-import {Events} from '../libraries/Events.sol';
+import {Errors} from '../libraries/constants/Errors.sol';
+import {Events} from '../libraries/constants/Events.sol';
 import {HubRestricted} from './base/HubRestricted.sol';
 import {IERC721} from '@openzeppelin/contracts/token/ERC721/IERC721.sol';
 import {IERC721Time} from '../interfaces/IERC721Time.sol';
 import {IFollowNFT} from '../interfaces/IFollowNFT.sol';
 import {ILensHub} from '../interfaces/ILensHub.sol';
 import {LensNFTBase} from './base/LensNFTBase.sol';
-import {MetaTxHelpers} from '../libraries/helpers/MetaTxHelpers.sol';
+import {MetaTxHelpers} from '../libraries/MetaTxHelpers.sol';
 import {Strings} from '@openzeppelin/contracts/utils/Strings.sol';
 
 contract FollowNFT is HubRestricted, LensNFTBase, ERC2981CollectionRoyalties, IFollowNFT {

@@ -2,11 +2,11 @@
 
 pragma solidity 0.8.15;
 
-import {GeneralHelpers} from './helpers/GeneralHelpers.sol';
-import {MetaTxHelpers} from './helpers/MetaTxHelpers.sol';
+import {GeneralHelpers} from './GeneralHelpers.sol';
+import {MetaTxHelpers} from './MetaTxHelpers.sol';
 import {DataTypes} from './DataTypes.sol';
-import {Events} from './Events.sol';
-import {Errors} from './Errors.sol';
+import {Events} from './constants/Events.sol';
+import {Errors} from './constants/Errors.sol';
 import {ICollectModule} from '../interfaces/ICollectModule.sol';
 import {IReferenceModule} from '../interfaces/IReferenceModule.sol';
 import {IDeprecatedReferenceModule} from '../interfaces/IDeprecatedReferenceModule.sol';

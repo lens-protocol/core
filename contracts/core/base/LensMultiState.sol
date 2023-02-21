@@ -2,11 +2,11 @@
 
 pragma solidity 0.8.15;
 
-import {Events} from '../../libraries/Events.sol';
+import {Events} from '../../libraries/constants/Events.sol';
 import {DataTypes} from '../../libraries/DataTypes.sol';
-import {Errors} from '../../libraries/Errors.sol';
+import {Errors} from '../../libraries/constants/Errors.sol';
 import {ILensMultiState} from '../../interfaces/ILensMultiState.sol';
-import {GeneralHelpers} from '../../libraries/helpers/GeneralHelpers.sol';
+import {GeneralHelpers} from '../../libraries/GeneralHelpers.sol';
 
 /**
  * @title LensMultiState

@@ -3,7 +3,7 @@ pragma solidity ^0.8.13;
 
 import './base/BaseTest.t.sol';
 import './MetaTxNegatives.t.sol';
-import {Events} from 'contracts/libraries/Events.sol';
+import {Events} from 'contracts/libraries/constants/Events.sol';
 
 contract ProfileMetadataURITest is BaseTest {
     function _setProfileMetadataURI(

@@ -3,7 +3,7 @@
 pragma solidity 0.8.15;
 
 import {IDeprecatedCollectModule} from '../../../../interfaces/IDeprecatedCollectModule.sol';
-import {Errors} from '../../../../libraries/Errors.sol';
+import {Errors} from '../../../../libraries/constants/Errors.sol';
 import {FeeModuleBase} from '../../FeeModuleBase.sol';
 import {ModuleBase} from '../../ModuleBase.sol';
 import {FollowValidationModuleBase} from '../../FollowValidationModuleBase.sol';
@@ -44,7 +44,11 @@ struct ProfilePublicationData {
  *
  * This module works by allowing limited collects for a publication within the allotted time with a given fee.
  */
-contract DeprecatedLimitedTimedFeeCollectModule is FeeModuleBase, FollowValidationModuleBase, IDeprecatedCollectModule {
+contract DeprecatedLimitedTimedFeeCollectModule is
+    FeeModuleBase,
+    FollowValidationModuleBase,
+    IDeprecatedCollectModule
+{
     using SafeERC20 for IERC20;
 
     uint24 internal constant ONE_DAY = 24 hours;

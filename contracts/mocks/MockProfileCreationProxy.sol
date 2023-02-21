@@ -4,7 +4,7 @@ pragma solidity 0.8.15;
 
 import {ILensHub} from '../interfaces/ILensHub.sol';
 import {DataTypes} from '../libraries/DataTypes.sol';
-import {Errors} from '../libraries/Errors.sol';
+import {Errors} from '../libraries/constants/Errors.sol';
 
 /**
  * @title MockProfileCreationProxy

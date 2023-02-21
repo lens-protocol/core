@@ -3,10 +3,10 @@
 pragma solidity 0.8.15;
 
 import {ILensNFTBase} from 'contracts/interfaces/ILensNFTBase.sol';
-import {Errors} from 'contracts/libraries/Errors.sol';
+import {Errors} from 'contracts/libraries/constants/Errors.sol';
 import {DataTypes} from 'contracts/libraries/DataTypes.sol';
-import {Events} from 'contracts/libraries/Events.sol';
-import {MetaTxHelpers} from 'contracts/libraries/helpers/MetaTxHelpers.sol';
+import {Events} from 'contracts/libraries/constants/Events.sol';
+import {MetaTxHelpers} from 'contracts/libraries/MetaTxHelpers.sol';
 import {ERC721Time} from './ERC721Time.sol';
 import {ERC721Enumerable} from 'contracts/core/base/ERC721Enumerable.sol';
 

@@ -2,23 +2,23 @@
 
 pragma solidity 0.8.15;
 
-import {FollowNFTProxy} from '../../upgradeability/FollowNFTProxy.sol';
-import {GeneralHelpers} from './GeneralHelpers.sol';
-import {DataTypes} from '../DataTypes.sol';
-import {Errors} from '../Errors.sol';
-import {Events} from '../Events.sol';
-import {IFollowNFT} from '../../interfaces/IFollowNFT.sol';
-import {ICollectNFT} from '../../interfaces/ICollectNFT.sol';
-import {IFollowModule} from '../../interfaces/IFollowModule.sol';
-import {ICollectModule} from '../../interfaces/ICollectModule.sol';
-import {IReferenceModule} from '../../interfaces/IReferenceModule.sol';
-import {IDeprecatedFollowModule} from '../../interfaces/IDeprecatedFollowModule.sol';
-import {IDeprecatedCollectModule} from '../../interfaces/IDeprecatedCollectModule.sol';
-import {IDeprecatedReferenceModule} from '../../interfaces/IDeprecatedReferenceModule.sol';
+import {FollowNFTProxy} from 'contracts/upgradeability/FollowNFTProxy.sol';
+import {GeneralHelpers} from 'contracts/libraries/GeneralHelpers.sol';
+import {DataTypes} from 'contracts/libraries/DataTypes.sol';
+import {Errors} from 'contracts/libraries/constants/Errors.sol';
+import {Events} from 'contracts/libraries/constants/Events.sol';
+import {IFollowNFT} from 'contracts/interfaces/IFollowNFT.sol';
+import {ICollectNFT} from 'contracts/interfaces/ICollectNFT.sol';
+import {IFollowModule} from 'contracts/interfaces/IFollowModule.sol';
+import {ICollectModule} from 'contracts/interfaces/ICollectModule.sol';
+import {IReferenceModule} from 'contracts/interfaces/IReferenceModule.sol';
+import {IDeprecatedFollowModule} from 'contracts/interfaces/IDeprecatedFollowModule.sol';
+import {IDeprecatedCollectModule} from 'contracts/interfaces/IDeprecatedCollectModule.sol';
+import {IDeprecatedReferenceModule} from 'contracts/interfaces/IDeprecatedReferenceModule.sol';
 import {Clones} from '@openzeppelin/contracts/proxy/Clones.sol';
 import {Strings} from '@openzeppelin/contracts/utils/Strings.sol';
 
-import '../Constants.sol';
+import 'contracts/libraries/Constants.sol';
 
 /**
  * @title InteractionHelpers

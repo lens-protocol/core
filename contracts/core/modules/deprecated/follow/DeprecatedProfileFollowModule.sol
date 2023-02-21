@@ -2,7 +2,7 @@
 
 pragma solidity 0.8.15;
 
-import {Errors} from '../../../../libraries/Errors.sol';
+import {Errors} from '../../../../libraries/constants/Errors.sol';
 import {ModuleBase} from '../../ModuleBase.sol';
 import {DeprecatedFollowValidatorFollowModuleBase} from './DeprecatedFollowValidatorFollowModuleBase.sol';
 import {IERC721} from '@openzeppelin/contracts/token/ERC721/IERC721.sol';
