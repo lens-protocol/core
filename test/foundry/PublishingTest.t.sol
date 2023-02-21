@@ -138,6 +138,9 @@ abstract contract PublishingTest is BaseTest, PublishingHelpers, SigSetup {
         _verifyPublication(pub, _expectedPubFromInitData());
     }
 
+    // TODO: Can publish without a collect module
+    // TODO: Can publish without a reference module
+
     function testPublishWithAWhitelistedReferenceModule() public {
         mockPostParams.referenceModule = address(mockReferenceModule);
         mockPostParams.referenceModuleInitData = abi.encode(1);

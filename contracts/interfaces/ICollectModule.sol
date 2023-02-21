@@ -53,10 +53,4 @@ interface ICollectModule {
         DataTypes.PublicationType referrerPubType,
         bytes calldata data
     ) external;
-
-    // struct Publication {
-    //     uint256 profileId,
-    //     uint256 pubId,
-    //     DataTypes.PublicationType pubType
-    // }
 }

@@ -469,6 +469,9 @@ library PublishingLib {
         address collectModule,
         bytes memory collectModuleInitData
     ) private returns (bytes memory) {
+        if (collectModule == address(0)) {
+            return new bytes(0);
+        }
         GeneralHelpers.validateCollectModuleWhitelisted(collectModule);
         GeneralHelpers.getPublicationStruct(profileId, pubId).collectModule = collectModule;
         return
@@ -487,7 +490,9 @@ library PublishingLib {
         address referenceModule,
         bytes memory referenceModuleInitData
     ) private returns (bytes memory) {
-        if (referenceModule == address(0)) return new bytes(0);
+        if (referenceModule == address(0)) {
+            return new bytes(0);
+        }
         GeneralHelpers.validateReferenceModuleWhitelisted(referenceModule);
         GeneralHelpers.getPublicationStruct(profileId, pubId).referenceModule = referenceModule;
         return
