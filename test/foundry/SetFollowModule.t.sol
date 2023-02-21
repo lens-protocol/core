@@ -109,25 +109,28 @@ contract SetFollowModuleTest is BaseTest, SigSetup {
             profileId: newProfileId,
             followModule: address(1),
             followModuleInitData: '',
-            signature: _getSigStruct(address(0), profileOwnerKey, digest, deadline)
+            signature: _getSigStruct(profileOwner, profileOwnerKey, digest, deadline)
         });
     }
 
     function testCannotPublishWithSigInvalidSigner() public {
+        address delegatedSigner = profileOwner;
+        uint256 signerPrivKey = otherSignerKey;
+        assertTrue(vm.addr(signerPrivKey) != delegatedSigner);
         vm.expectRevert(Errors.SignatureInvalid.selector);
-        _setFollowModulehWithSig({delegatedSigner: address(0), signerPrivKey: otherSignerKey});
+        _setFollowModulehWithSig(delegatedSigner, signerPrivKey);
     }
 
     function testCannotPublishWithSigInvalidNonce() public {
-        nonce = _getSigNonce(otherSigner) + 1;
+        nonce = _getSigNonce(profileOwner) + 1;
         vm.expectRevert(Errors.SignatureInvalid.selector);
-        _setFollowModulehWithSig({delegatedSigner: address(0), signerPrivKey: otherSignerKey});
+        _setFollowModulehWithSig({delegatedSigner: profileOwner, signerPrivKey: profileOwnerKey});
     }
 
     function testCannotPublishWithSigInvalidDeadline() public {
         vm.expectRevert(Errors.SignatureInvalid.selector);
         _setFollowModulehWithSig({
-            delegatedSigner: address(0),
+            delegatedSigner: profileOwner,
             signerPrivKey: profileOwnerKey,
             digestDeadline: type(uint256).max,
             sigDeadline: block.timestamp + 10
@@ -137,12 +140,12 @@ contract SetFollowModuleTest is BaseTest, SigSetup {
     function testCannotPublishIfNonceWasIncrementedWithAnotherAction() public {
         assertEq(_getSigNonce(profileOwner), nonce, 'Wrong nonce before posting');
 
-        _setFollowModulehWithSig({delegatedSigner: address(0), signerPrivKey: profileOwnerKey});
+        _setFollowModulehWithSig({delegatedSigner: profileOwner, signerPrivKey: profileOwnerKey});
 
         assertTrue(_getSigNonce(profileOwner) != nonce, 'Wrong nonce after posting');
 
         vm.expectRevert(Errors.SignatureInvalid.selector);
-        _setFollowModulehWithSig({delegatedSigner: address(0), signerPrivKey: profileOwnerKey});
+        _setFollowModulehWithSig({delegatedSigner: profileOwner, signerPrivKey: profileOwnerKey});
     }
 
     function testCannotPublishWithSigExpiredDeadline() public {
@@ -150,7 +153,7 @@ contract SetFollowModuleTest is BaseTest, SigSetup {
         vm.warp(20);
 
         vm.expectRevert(Errors.SignatureExpired.selector);
-        _setFollowModulehWithSig({delegatedSigner: address(0), signerPrivKey: otherSignerKey});
+        _setFollowModulehWithSig({delegatedSigner: profileOwner, signerPrivKey: profileOwnerKey});
     }
 
     function testCannotPublishWithSigNotExecutor() public {
@@ -166,7 +169,7 @@ contract SetFollowModuleTest is BaseTest, SigSetup {
     // Postivies
     function testPublishWithSig() public {
         assertEq(hub.getFollowModule(newProfileId), address(0));
-        _setFollowModulehWithSig({delegatedSigner: address(0), signerPrivKey: profileOwnerKey});
+        _setFollowModulehWithSig({delegatedSigner: profileOwner, signerPrivKey: profileOwnerKey});
         assertEq(hub.getFollowModule(newProfileId), mockFollowModule);
     }
 

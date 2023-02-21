@@ -487,6 +487,7 @@ contract FollowMetaTxTest is FollowTest, MetaTxNegatives {
             followTokenIds: _toUint256Array(MINT_NEW_TOKEN),
             datas: _toBytesArray(''),
             signature: _getSigStruct({
+                signer: vm.addr(_getDefaultMetaTxSignerPk()),
                 pKey: signerPk,
                 digest: _calculateFollowWithSigDigest(
                     testFollowerProfileId,
@@ -524,7 +525,7 @@ contract FollowMetaTxTest is FollowTest, MetaTxNegatives {
             _calculateDigest(
                 keccak256(
                     abi.encode(
-                        FOLLOW_WITH_SIG_TYPEHASH,
+                        FOLLOW_TYPEHASH,
                         followerProfileId,
                         keccak256(abi.encodePacked(idsOfProfilesToFollow)),
                         keccak256(abi.encodePacked(followTokenIds)),

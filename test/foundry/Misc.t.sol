@@ -76,7 +76,7 @@ contract MiscTest is BaseTest {
         hub.setProfileImageURIWithSig({
             profileId: newProfileId,
             imageURI: MOCK_URI,
-            signature: _getSigStruct(address(0), otherSignerKey, digest, deadline)
+            signature: _getSigStruct(profileOwner, otherSignerKey, digest, deadline)
         });
     }
 
@@ -103,11 +103,15 @@ contract MiscTest is BaseTest {
         uint256 deadline = type(uint256).max;
         bytes32 digest = _getSetFollowNFTURITypedDataHash(newProfileId, MOCK_URI, nonce, deadline);
 
+        address delegatedSigner = profileOwner;
+        uint256 signerPrivKey = otherSignerKey;
+        assertTrue(vm.addr(signerPrivKey) != delegatedSigner);
+
         vm.expectRevert(Errors.SignatureInvalid.selector);
         hub.setFollowNFTURIWithSig({
             profileId: newProfileId,
             followNFTURI: MOCK_URI,
-            signature: _getSigStruct(otherSigner, otherSignerKey, digest, deadline)
+            signature: _getSigStruct(delegatedSigner, signerPrivKey, digest, deadline)
         });
     }
 
@@ -120,7 +124,7 @@ contract MiscTest is BaseTest {
         hub.setFollowNFTURIWithSig({
             profileId: newProfileId,
             followNFTURI: MOCK_URI,
-            signature: _getSigStruct(otherSigner, otherSignerKey, digest, deadline)
+            signature: _getSigStruct(otherSignerKey, digest, deadline)
         });
     }
 

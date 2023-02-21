@@ -112,12 +112,7 @@ contract ProfileMetadataURITest_MetaTx is ProfileMetadataURITest, MetaTxNegative
         hub.setProfileMetadataURIWithSig({
             profileId: newProfileId,
             metadataURI: MOCK_URI,
-            signature: _getSigStruct(
-                signer == profileOwner ? address(0) : signer,
-                pk,
-                digest,
-                deadline
-            )
+            signature: _getSigStruct(signer, pk, digest, deadline)
         });
     }
 
@@ -136,7 +131,12 @@ contract ProfileMetadataURITest_MetaTx is ProfileMetadataURITest, MetaTxNegative
         hub.setProfileMetadataURIWithSig({
             profileId: newProfileId,
             metadataURI: MOCK_URI,
-            signature: _getSigStruct(address(0), signerPk, digest, deadline)
+            signature: _getSigStruct(
+                vm.addr(_getDefaultMetaTxSignerPk()),
+                signerPk,
+                digest,
+                deadline
+            )
         });
     }
 

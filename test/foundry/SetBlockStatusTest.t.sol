@@ -50,14 +50,13 @@ contract SetBlockStatusTest is BaseTest {
 
         _setBlockStatus({
             pk: statusSetterProfileOwnerPk,
-            isStatusSetterProfileOwner: true,
             byProfileId: statusSetterProfileId,
             idsOfProfilesToSetBlockStatus: _toUint256Array(blockeeProfileId),
             blockStatus: _toBoolArray(true)
         });
     }
 
-    function testCannotSetBlockStatusIfSetterProfileDoesNotExist() public virtual {
+    function testCannotSetBlockStatusIfSetterProfileDoesNotExist() public {
         vm.prank(statusSetterProfileOwner);
         hub.burn(statusSetterProfileId);
 
@@ -65,7 +64,6 @@ contract SetBlockStatusTest is BaseTest {
 
         _setBlockStatus({
             pk: statusSetterProfileOwnerPk,
-            isStatusSetterProfileOwner: true,
             byProfileId: statusSetterProfileId,
             idsOfProfilesToSetBlockStatus: _toUint256Array(blockeeProfileId),
             blockStatus: _toBoolArray(true)
@@ -74,7 +72,7 @@ contract SetBlockStatusTest is BaseTest {
 
     function testCannotSetBlockStatusIfNotOwnerOrApprovedDelegatedExecutorOfSetterProfile(
         uint256 nonOwnerNorDelegatedExecutorPk
-    ) public virtual {
+    ) public {
         nonOwnerNorDelegatedExecutorPk = bound(
             nonOwnerNorDelegatedExecutorPk,
             1,
@@ -91,7 +89,6 @@ contract SetBlockStatusTest is BaseTest {
 
         _setBlockStatus({
             pk: nonOwnerNorDelegatedExecutorPk,
-            isStatusSetterProfileOwner: true,
             byProfileId: statusSetterProfileId,
             idsOfProfilesToSetBlockStatus: _toUint256Array(blockeeProfileId),
             blockStatus: _toBoolArray(true)
@@ -101,19 +98,17 @@ contract SetBlockStatusTest is BaseTest {
 
         _setBlockStatus({
             pk: nonOwnerNorDelegatedExecutorPk,
-            isStatusSetterProfileOwner: false,
             byProfileId: statusSetterProfileId,
             idsOfProfilesToSetBlockStatus: _toUint256Array(blockeeProfileId),
             blockStatus: _toBoolArray(true)
         });
     }
 
-    function testCannotSetBlockStatusIfProfilesAndStatusArrayLengthMismatches() public virtual {
+    function testCannotSetBlockStatusIfProfilesAndStatusArrayLengthMismatches() public {
         vm.expectRevert(Errors.ArrayMismatch.selector);
 
         _setBlockStatus({
             pk: statusSetterProfileOwnerPk,
-            isStatusSetterProfileOwner: true,
             byProfileId: statusSetterProfileId,
             idsOfProfilesToSetBlockStatus: _toUint256Array(
                 blockeeProfileId,
@@ -123,7 +118,7 @@ contract SetBlockStatusTest is BaseTest {
         });
     }
 
-    function testCannotSetBlockStatusIfBlockeeProfileDoesNotExist() public virtual {
+    function testCannotSetBlockStatusIfBlockeeProfileDoesNotExist() public {
         vm.prank(blockeeProfileOwner);
         hub.burn(blockeeProfileId);
 
@@ -131,19 +126,17 @@ contract SetBlockStatusTest is BaseTest {
 
         _setBlockStatus({
             pk: statusSetterProfileOwnerPk,
-            isStatusSetterProfileOwner: true,
             byProfileId: statusSetterProfileId,
             idsOfProfilesToSetBlockStatus: _toUint256Array(blockeeProfileId),
             blockStatus: _toBoolArray(true)
         });
     }
 
-    function testCannotBlockItself() public virtual {
+    function testCannotBlockItself() public {
         vm.expectRevert(Errors.SelfBlock.selector);
 
         _setBlockStatus({
             pk: statusSetterProfileOwnerPk,
-            isStatusSetterProfileOwner: true,
             byProfileId: statusSetterProfileId,
             idsOfProfilesToSetBlockStatus: _toUint256Array(statusSetterProfileId),
             blockStatus: _toBoolArray(true)
@@ -171,7 +164,6 @@ contract SetBlockStatusTest is BaseTest {
 
         _setBlockStatus({
             pk: statusSetterProfileOwnerPk,
-            isStatusSetterProfileOwner: true,
             byProfileId: statusSetterProfileId,
             idsOfProfilesToSetBlockStatus: _toUint256Array(
                 blockeeProfileId,
@@ -195,7 +187,6 @@ contract SetBlockStatusTest is BaseTest {
 
         _setBlockStatus({
             pk: statusSetterProfileOwnerPk,
-            isStatusSetterProfileOwner: true,
             byProfileId: statusSetterProfileId,
             idsOfProfilesToSetBlockStatus: _toUint256Array(
                 blockeeProfileId,
@@ -221,7 +212,6 @@ contract SetBlockStatusTest is BaseTest {
 
         _setBlockStatus({
             pk: statusSetterProfileOwnerPk,
-            isStatusSetterProfileOwner: true,
             byProfileId: statusSetterProfileId,
             idsOfProfilesToSetBlockStatus: _toUint256Array(blockeeProfileId),
             blockStatus: _toBoolArray(true)
@@ -244,7 +234,6 @@ contract SetBlockStatusTest is BaseTest {
 
         _setBlockStatus({
             pk: statusSetterProfileOwnerPk,
-            isStatusSetterProfileOwner: true,
             byProfileId: statusSetterProfileId,
             idsOfProfilesToSetBlockStatus: _toUint256Array(blockeeProfileId),
             blockStatus: _toBoolArray(true)
@@ -259,16 +248,10 @@ contract SetBlockStatusTest is BaseTest {
 
     function _setBlockStatus(
         uint256 pk,
-        bool isStatusSetterProfileOwner,
         uint256 byProfileId,
         uint256[] memory idsOfProfilesToSetBlockStatus,
         bool[] memory blockStatus
     ) internal virtual {
-        /* Wen @solc-nowarn unused-param?
-            Silence the compiler warning, but allow calling this with Named Params.
-            This variable isn't used here, but used in withSig case. */
-        isStatusSetterProfileOwner = isStatusSetterProfileOwner;
-
         vm.prank(vm.addr(pk));
         hub.setBlockStatus(byProfileId, idsOfProfilesToSetBlockStatus, blockStatus);
     }
@@ -290,26 +273,22 @@ contract SetBlockStatusMetaTxTest is SetBlockStatusTest, MetaTxNegatives {
 
     function _setBlockStatus(
         uint256 pk,
-        bool isStatusSetterProfileOwner,
         uint256 byProfileId,
         uint256[] memory idsOfProfilesToSetBlockStatus,
         bool[] memory blockStatus
     ) internal override {
-        /* Wen @solc-nowarn unused-param?
-            Silence the compiler warning, but allow calling this with Named Params.
-            This variable isn't used here, but used in withSig case. */
-        isStatusSetterProfileOwner = isStatusSetterProfileOwner;
         address signer = vm.addr(pk);
         hub.setBlockStatusWithSig({
             byProfileId: byProfileId,
             idsOfProfilesToSetBlockStatus: idsOfProfilesToSetBlockStatus,
             blockStatus: blockStatus,
             signature: _getSigStruct({
+                signer: signer,
                 pKey: pk,
                 digest: _calculateSetBlockStatusWithSigDigest({
-                    byProfileId: statusSetterProfileId,
-                    idsOfProfilesToSetBlockStatus: _toUint256Array(blockeeProfileId),
-                    blockStatus: _toBoolArray(true),
+                    byProfileId: byProfileId,
+                    idsOfProfilesToSetBlockStatus: idsOfProfilesToSetBlockStatus,
+                    blockStatus: blockStatus,
                     nonce: cachedNonceByAddress[signer],
                     deadline: type(uint256).max
                 }),
@@ -328,6 +307,7 @@ contract SetBlockStatusMetaTxTest is SetBlockStatusTest, MetaTxNegatives {
             idsOfProfilesToSetBlockStatus: _toUint256Array(blockeeProfileId),
             blockStatus: _toBoolArray(true),
             signature: _getSigStruct({
+                signer: vm.addr(_getDefaultMetaTxSignerPk()),
                 pKey: signerPk,
                 digest: _calculateSetBlockStatusWithSigDigest({
                     byProfileId: statusSetterProfileId,
@@ -342,7 +322,7 @@ contract SetBlockStatusMetaTxTest is SetBlockStatusTest, MetaTxNegatives {
     }
 
     function _getDefaultMetaTxSignerPk() internal pure override returns (uint256) {
-        return blockeeProfileOwnerPk;
+        return statusSetterProfileOwnerPk;
     }
 
     function _calculateSetBlockStatusWithSigDigest(
@@ -356,7 +336,7 @@ contract SetBlockStatusMetaTxTest is SetBlockStatusTest, MetaTxNegatives {
             _calculateDigest(
                 keccak256(
                     abi.encode(
-                        SET_BLOCK_STATUS_WITH_SIG_TYPEHASH,
+                        SET_BLOCK_STATUS_TYPEHASH,
                         byProfileId,
                         keccak256(abi.encodePacked(idsOfProfilesToSetBlockStatus)),
                         keccak256(abi.encodePacked(blockStatus)),
@@ -394,41 +374,5 @@ contract SetBlockStatusMetaTxTest is SetBlockStatusTest, MetaTxNegatives {
                     deadline: deadline
                 })
             });
-    }
-
-    function testCannotSetBlockStatusIfNotOwnerOrApprovedDelegatedExecutorOfSetterProfile(
-        uint256 nonOwnerNorDelegatedExecutorPk
-    ) public override {
-        nonOwnerNorDelegatedExecutorPk = bound(
-            nonOwnerNorDelegatedExecutorPk,
-            1,
-            ISSECP256K1_CURVE_ORDER - 1
-        );
-        address nonOwnerNorDelegatedExecutor = vm.addr(nonOwnerNorDelegatedExecutorPk);
-        vm.assume(nonOwnerNorDelegatedExecutor != address(0));
-        vm.assume(nonOwnerNorDelegatedExecutor != statusSetterProfileOwner);
-        vm.assume(
-            !hub.isDelegatedExecutorApproved(statusSetterProfileId, nonOwnerNorDelegatedExecutor)
-        );
-
-        vm.expectRevert(Errors.SignatureInvalid.selector);
-
-        _setBlockStatus({
-            pk: nonOwnerNorDelegatedExecutorPk,
-            isStatusSetterProfileOwner: true,
-            byProfileId: statusSetterProfileId,
-            idsOfProfilesToSetBlockStatus: _toUint256Array(blockeeProfileId),
-            blockStatus: _toBoolArray(true)
-        });
-
-        vm.expectRevert(Errors.ExecutorInvalid.selector);
-
-        _setBlockStatus({
-            pk: nonOwnerNorDelegatedExecutorPk,
-            isStatusSetterProfileOwner: false,
-            byProfileId: statusSetterProfileId,
-            idsOfProfilesToSetBlockStatus: _toUint256Array(blockeeProfileId),
-            blockStatus: _toBoolArray(true)
-        });
     }
 }

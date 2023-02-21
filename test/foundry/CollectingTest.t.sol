@@ -203,7 +203,7 @@ contract CollectingTestMetaTx is CollectingTest, MetaTxNegatives {
         _collectWithSig(
             mockCollectParams,
             _getSigStruct(
-                collectorProfileOwner,
+                vm.addr(_getDefaultMetaTxSignerPk()),
                 signerPk,
                 _getCollectTypedDataHash(mockCollectParams, nonce, deadline),
                 deadline

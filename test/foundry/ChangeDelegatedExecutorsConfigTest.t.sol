@@ -59,7 +59,7 @@ contract ChangeDelegatedExecutorsConfigTest_CurrentConfig is BaseTest {
         uint256 nonOwnerPk,
         address executor,
         bool approval
-    ) public virtual {
+    ) public {
         nonOwnerPk = bound(nonOwnerPk, 1, ISSECP256K1_CURVE_ORDER - 1);
         vm.assume(nonOwnerPk != testDelegatorProfileOwnerPk);
 
@@ -476,26 +476,6 @@ contract ChangeDelegatedExecutorsConfigTest_MetaTx is
         cachedNonceByAddress[testDelegatorProfileOwner] = _getSigNonce(testDelegatorProfileOwner);
     }
 
-    function testCannotChangeDelegatedExecutorsConfig_IfCallerIsNotProfileOwner(
-        uint256 nonOwnerPk,
-        address executor,
-        bool approval
-    ) public override {
-        nonOwnerPk = bound(nonOwnerPk, 1, ISSECP256K1_CURVE_ORDER - 1);
-        vm.assume(nonOwnerPk != testDelegatorProfileOwnerPk);
-
-        vm.expectRevert(Errors.SignatureInvalid.selector);
-
-        _changeDelegatedExecutorsConfig(
-            nonOwnerPk,
-            testDelegatorProfileId,
-            _toAddressArray(executor),
-            _toBoolArray(approval),
-            0,
-            false
-        );
-    }
-
     //////////////////////////////////////////////////////////////////////
 
     function _refreshCachedNonce(address signer) internal override {
@@ -543,7 +523,7 @@ contract ChangeDelegatedExecutorsConfigTest_MetaTx is
             _calculateDigest(
                 keccak256(
                     abi.encode(
-                        CHANGE_DELEGATED_EXECUTORS_CONFIG_WITH_SIG_TYPEHASH,
+                        CHANGE_DELEGATED_EXECUTORS_CONFIG_TYPEHASH,
                         delegatorProfileId,
                         abi.encodePacked(executors),
                         abi.encodePacked(approvals),
@@ -576,7 +556,12 @@ contract ChangeDelegatedExecutorsConfigTest_MetaTx is
             approvals: _toBoolArray(true),
             configNumber: 0,
             switchToGivenConfig: false,
-            signature: _getSigStruct({pKey: signerPk, digest: digest, deadline: deadline})
+            signature: _getSigStruct({
+                signer: vm.addr(_getDefaultMetaTxSignerPk()),
+                pKey: signerPk,
+                digest: digest,
+                deadline: deadline
+            })
         });
     }
 

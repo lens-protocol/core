@@ -13,7 +13,7 @@ contract BaseTest is TestSetup {
     ) internal view returns (bytes32) {
         bytes32 structHash = keccak256(
             abi.encode(
-                SET_PROFILE_METADATA_URI_WITH_SIG_TYPEHASH,
+                SET_PROFILE_METADATA_URI_TYPEHASH,
                 profileId,
                 keccak256(bytes(metadataURI)),
                 nonce,
@@ -32,7 +32,7 @@ contract BaseTest is TestSetup {
     ) internal view returns (bytes32) {
         bytes32 structHash = keccak256(
             abi.encode(
-                SET_FOLLOW_MODULE_WITH_SIG_TYPEHASH,
+                SET_FOLLOW_MODULE_TYPEHASH,
                 profileId,
                 followModule,
                 keccak256(followModuleInitData),
@@ -54,7 +54,7 @@ contract BaseTest is TestSetup {
     ) internal view returns (bytes32) {
         bytes32 structHash = keccak256(
             abi.encode(
-                CHANGE_DELEGATED_EXECUTORS_CONFIG_WITH_SIG_TYPEHASH,
+                CHANGE_DELEGATED_EXECUTORS_CONFIG_TYPEHASH,
                 delegatorProfileId,
                 abi.encodePacked(executors),
                 abi.encodePacked(approvals),
@@ -75,7 +75,7 @@ contract BaseTest is TestSetup {
     ) internal view returns (bytes32) {
         bytes32 structHash = keccak256(
             abi.encode(
-                SET_PROFILE_IMAGE_URI_WITH_SIG_TYPEHASH,
+                SET_PROFILE_IMAGE_URI_TYPEHASH,
                 profileId,
                 keccak256(bytes(imageURI)),
                 nonce,
@@ -93,7 +93,7 @@ contract BaseTest is TestSetup {
     ) internal view returns (bytes32) {
         bytes32 structHash = keccak256(
             abi.encode(
-                SET_FOLLOW_NFT_URI_WITH_SIG_TYPEHASH,
+                SET_FOLLOW_NFT_URI_TYPEHASH,
                 profileId,
                 keccak256(bytes(followNFTURI)),
                 nonce,
@@ -108,9 +108,7 @@ contract BaseTest is TestSetup {
         uint256 nonce,
         uint256 deadline
     ) internal view returns (bytes32) {
-        bytes32 structHash = keccak256(
-            abi.encode(BURN_WITH_SIG_TYPEHASH, profileId, nonce, deadline)
-        );
+        bytes32 structHash = keccak256(abi.encode(BURN_TYPEHASH, profileId, nonce, deadline));
         return _calculateDigest(structHash);
     }
 
@@ -126,7 +124,7 @@ contract BaseTest is TestSetup {
     ) internal view returns (bytes32) {
         bytes32 structHash = keccak256(
             abi.encode(
-                POST_WITH_SIG_TYPEHASH,
+                POST_TYPEHASH,
                 profileId,
                 keccak256(bytes(contentURI)),
                 collectModule,
@@ -175,7 +173,7 @@ contract BaseTest is TestSetup {
     ) internal view returns (bytes32) {
         bytes32 structHash = keccak256(
             abi.encode(
-                COMMENT_WITH_SIG_TYPEHASH,
+                COMMENT_TYPEHASH,
                 profileId,
                 keccak256(bytes(contentURI)),
                 pointedProfileId,
@@ -229,7 +227,7 @@ contract BaseTest is TestSetup {
     ) internal view returns (bytes32) {
         bytes32 structHash = keccak256(
             abi.encode(
-                MIRROR_WITH_SIG_TYPEHASH,
+                MIRROR_TYPEHASH,
                 profileId,
                 pointedProfileId,
                 pointedPubId,
@@ -280,7 +278,7 @@ contract BaseTest is TestSetup {
 
         bytes32 structHash = keccak256(
             abi.encode(
-                FOLLOW_WITH_SIG_TYPEHASH,
+                FOLLOW_TYPEHASH,
                 followerProfileId,
                 keccak256(abi.encodePacked(idsOfProfilesToFollow)),
                 keccak256(abi.encodePacked(followTokenIds)),
@@ -299,7 +297,7 @@ contract BaseTest is TestSetup {
     ) internal view returns (bytes32) {
         bytes32 structHash = keccak256(
             abi.encode(
-                COLLECT_WITH_SIG_TYPEHASH,
+                COLLECT_TYPEHASH,
                 collectParams.publicationCollectedProfileId,
                 collectParams.publicationCollectedId,
                 collectParams.collectorProfileId,
