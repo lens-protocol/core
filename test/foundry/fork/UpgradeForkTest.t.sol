@@ -6,14 +6,15 @@ import '@openzeppelin/contracts/token/ERC721/extensions/IERC721Enumerable.sol';
 import '@openzeppelin/contracts/token/ERC721/IERC721.sol';
 import 'forge-std/console2.sol';
 import '../base/BaseTest.t.sol';
-import '../../../contracts/mocks/MockReferenceModule.sol';
-import '../../../contracts/mocks/MockDeprecatedReferenceModule.sol';
-import '../../../contracts/mocks/MockCollectModule.sol';
-import '../../../contracts/mocks/MockDeprecatedCollectModule.sol';
-import '../../../contracts/mocks/MockFollowModule.sol';
-import '../../../contracts/mocks/MockDeprecatedFollowModule.sol';
-import '../../../contracts/interfaces/IERC721Time.sol';
-import '../../../contracts/interfaces/ILensMultiState.sol';
+import 'contracts/mocks/MockReferenceModule.sol';
+import 'contracts/mocks/MockDeprecatedReferenceModule.sol';
+import 'contracts/mocks/MockCollectModule.sol';
+import 'contracts/mocks/MockDeprecatedCollectModule.sol';
+import 'contracts/mocks/MockFollowModule.sol';
+import 'contracts/mocks/MockDeprecatedFollowModule.sol';
+import 'contracts/interfaces/IERC721Time.sol';
+import 'contracts/interfaces/ILensMultiState.sol';
+import {TypehashConstants} from 'contracts/libraries/constants/TypehashConstants.sol';
 
 struct OldCreateProfileData {
     address to;
@@ -405,9 +406,9 @@ contract UpgradeForkTest is BaseTest {
         // Compute the domain separator.
         domainSeparator = keccak256(
             abi.encode(
-                EIP712_DOMAIN_TYPEHASH,
+                TypehashConstants.EIP712_DOMAIN,
                 keccak256('Lens Protocol Profiles'),
-                EIP712_REVISION_HASH,
+                MetaTxHelpers.EIP712_REVISION_HASH,
                 block.chainid,
                 hubProxyAddr
             )

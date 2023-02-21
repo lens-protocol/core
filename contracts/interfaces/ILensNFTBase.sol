@@ -20,28 +20,12 @@ interface ILensNFTBase {
      *
      * @param spender The NFT spender.
      * @param tokenId The NFT token ID to approve.
-     * @param sig The EIP712 signature struct.
+     * @param signature The EIP712 signature struct.
      */
     function permit(
         address spender,
         uint256 tokenId,
-        DataTypes.EIP712Signature calldata sig
-    ) external;
-
-    /**
-     * @notice Implementation of an EIP-712 permit-style function for ERC-721 operator approvals. Allows
-     * an operator address to control all NFTs a given owner owns.
-     *
-     * @param owner The owner to set operator approvals for.
-     * @param operator The operator to approve.
-     * @param approved Whether to approve or revoke approval from the operator.
-     * @param sig The EIP712 signature struct.
-     */
-    function permitForAll(
-        address owner,
-        address operator,
-        bool approved,
-        DataTypes.EIP712Signature calldata sig
+        DataTypes.EIP712Signature calldata signature
     ) external;
 
     /**
@@ -57,9 +41,9 @@ interface ILensNFTBase {
      * a token on behalf of the owner with a signature.
      *
      * @param tokenId The token ID of the token to burn.
-     * @param sig The EIP712 signature struct.
+     * @param signature The EIP712 signature struct.
      */
-    function burnWithSig(uint256 tokenId, DataTypes.EIP712Signature calldata sig) external;
+    function burnWithSig(uint256 tokenId, DataTypes.EIP712Signature calldata signature) external;
 
     /**
      * @notice Returns the domain separator for this NFT contract.

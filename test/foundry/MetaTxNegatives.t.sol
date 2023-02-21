@@ -2,6 +2,7 @@
 pragma solidity ^0.8.13;
 
 import './base/BaseTest.t.sol';
+import {TypehashConstants} from 'contracts/libraries/constants/TypehashConstants.sol';
 
 abstract contract MetaTxNegatives is BaseTest {
     uint256 private constant NO_DEADLINE = type(uint256).max;
@@ -83,7 +84,7 @@ abstract contract MetaTxNegatives is BaseTest {
     {
         domainSeparator = keccak256(
             abi.encode(
-                EIP712_DOMAIN_TYPEHASH,
+                TypehashConstants.EIP712_DOMAIN,
                 keccak256(_getDomainName()),
                 keccak256('69696969696969696969696969969696'),
                 block.chainid,
@@ -101,7 +102,7 @@ abstract contract MetaTxNegatives is BaseTest {
     function testCannotExecuteMetaTxWhenSignatureDomainWasGeneratedWithWrongChainId() public {
         domainSeparator = keccak256(
             abi.encode(
-                EIP712_DOMAIN_TYPEHASH,
+                TypehashConstants.EIP712_DOMAIN,
                 keccak256(_getDomainName()),
                 keccak256(_getRevisionNumber()),
                 type(uint256).max,
@@ -121,7 +122,7 @@ abstract contract MetaTxNegatives is BaseTest {
     {
         domainSeparator = keccak256(
             abi.encode(
-                EIP712_DOMAIN_TYPEHASH,
+                TypehashConstants.EIP712_DOMAIN,
                 keccak256(_getDomainName()),
                 keccak256(_getRevisionNumber()),
                 block.chainid,
@@ -139,7 +140,7 @@ abstract contract MetaTxNegatives is BaseTest {
     function testCannotExecuteMetaTxWhenSignatureDomainWasGeneratedWithWrongName() public {
         domainSeparator = keccak256(
             abi.encode(
-                EIP712_DOMAIN_TYPEHASH,
+                TypehashConstants.EIP712_DOMAIN,
                 keccak256('This should be an invalid name :)'),
                 keccak256(_getRevisionNumber()),
                 block.chainid,
@@ -158,7 +159,7 @@ abstract contract MetaTxNegatives is BaseTest {
         return
             keccak256(
                 abi.encode(
-                    EIP712_DOMAIN_TYPEHASH,
+                    TypehashConstants.EIP712_DOMAIN,
                     keccak256(_getDomainName()),
                     keccak256(_getRevisionNumber()),
                     block.chainid,

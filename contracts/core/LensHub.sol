@@ -36,6 +36,7 @@ import {MetaTxHelpers} from 'contracts/libraries/helpers/MetaTxHelpers.sol';
  *      2. Almost every event in the protocol emits the current block timestamp, reducing the need to fetch it manually.
  */
 contract LensHub is LensNFTBase, VersionedInitializable, LensMultiState, LensHubStorage, ILensHub {
+    // Constant for upgradeability purposes, see VersionedInitializable. Do not confuse with EIP-712 revision number.
     uint256 internal constant REVISION = 1;
 
     address internal immutable FOLLOW_NFT_IMPL;
@@ -70,16 +71,16 @@ contract LensHub is LensNFTBase, VersionedInitializable, LensMultiState, LensHub
     ) external override initializer {
         super._initialize(name, symbol);
         GeneralLib.initState(DataTypes.ProtocolState.Paused);
-        _setGovernance(newGovernance);
+        GeneralLib.setGovernance(newGovernance);
     }
 
-    /// ***********************
-    /// *****GOV FUNCTIONS*****
-    /// ***********************
+    /////////////////////////////////
+    ///        GOV FUNCTIONS      ///
+    /////////////////////////////////
 
     /// @inheritdoc ILensHub
     function setGovernance(address newGovernance) external override onlyGov {
-        _setGovernance(newGovernance);
+        GeneralLib.setGovernance(newGovernance);
     }
 
     /// @inheritdoc ILensHub
@@ -128,28 +129,9 @@ contract LensHub is LensNFTBase, VersionedInitializable, LensMultiState, LensHub
         emit Events.CollectModuleWhitelisted(collectModule, whitelist, block.timestamp);
     }
 
-    /// *********************************
-    /// *****PROFILE OWNER FUNCTIONS*****
-    /// *********************************
-
-    /// @inheritdoc ILensNFTBase
-    function permit(
-        address spender,
-        uint256 tokenId,
-        DataTypes.EIP712Signature calldata sig
-    ) external override {
-        GeneralLib.permit(spender, tokenId, sig);
-    }
-
-    /// @inheritdoc ILensNFTBase
-    function permitForAll(
-        address owner,
-        address operator,
-        bool approved,
-        DataTypes.EIP712Signature calldata sig
-    ) external override {
-        GeneralLib.permitForAll(owner, operator, approved, sig);
-    }
+    ///////////////////////////////////////////
+    ///        PROFILE OWNER FUNCTIONS      ///
+    ///////////////////////////////////////////
 
     /// @inheritdoc ILensHub
     function createProfile(DataTypes.CreateProfileData calldata vars)
@@ -322,9 +304,9 @@ contract LensHub is LensNFTBase, VersionedInitializable, LensMultiState, LensHub
         ProfileLib.setFollowNFTURI(profileId, followNFTURI);
     }
 
-    /// *********************************
-    /// ****** PUBLISHING FUNCTIONS *****
-    /// *********************************
+    ////////////////////////////////////////
+    ///        PUBLISHING FUNCTIONS      ///
+    ////////////////////////////////////////
 
     /// @inheritdoc ILensHub
     function post(DataTypes.PostParams calldata postParams)
@@ -477,9 +459,9 @@ contract LensHub is LensNFTBase, VersionedInitializable, LensMultiState, LensHub
         _burn(tokenId);
     }
 
-    /// ***************************************
-    /// *****PROFILE INTERACTION FUNCTIONS*****
-    /// ***************************************
+    /////////////////////////////////////////////////
+    ///        PROFILE INTERACTION FUNCTIONS      ///
+    /////////////////////////////////////////////////
 
     /// @inheritdoc ILensHub
     function follow(
@@ -683,9 +665,9 @@ contract LensHub is LensNFTBase, VersionedInitializable, LensMultiState, LensHub
         emit Events.Unfollowed(unfollowerProfileId, idOfProfileUnfollowed, block.timestamp);
     }
 
-    /// *********************************
-    /// *****EXTERNAL VIEW FUNCTIONS*****
-    /// *********************************
+    ///////////////////////////////////////////
+    ///        EXTERNAL VIEW FUNCTIONS      ///
+    ///////////////////////////////////////////
 
     function isFollowing(uint256 followerProfileId, uint256 followedProfileId)
         external
@@ -920,7 +902,7 @@ contract LensHub is LensNFTBase, VersionedInitializable, LensMultiState, LensHub
      * @dev Overrides the LensNFTBase function to compute the domain separator in the GeneralLib.
      */
     function getDomainSeparator() external view override returns (bytes32) {
-        return GeneralLib.getDomainSeparator();
+        return MetaTxHelpers.getDomainSeparator();
     }
 
     /**
@@ -938,13 +920,9 @@ contract LensHub is LensNFTBase, VersionedInitializable, LensMultiState, LensHub
             );
     }
 
-    /// ****************************
-    /// *****INTERNAL FUNCTIONS*****
-    /// ****************************
-
-    function _setGovernance(address newGovernance) internal {
-        GeneralLib.setGovernance(newGovernance);
-    }
+    //////////////////////////////////////
+    ///        INTERNAL FUNCTIONS      ///
+    //////////////////////////////////////
 
     function _beforeTokenTransfer(
         address from,

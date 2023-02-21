@@ -1,12 +1,13 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.15;
 
-import {IEIP1271Implementer} from '../../interfaces/IEIP1271Implementer.sol';
-import {DataTypes} from '../DataTypes.sol';
-import {Errors} from '../Errors.sol';
-import {DataTypes} from '../DataTypes.sol';
-import {GeneralHelpers} from './GeneralHelpers.sol';
-import '../Constants.sol';
+import {IEIP1271Implementer} from 'contracts/interfaces/IEIP1271Implementer.sol';
+import {DataTypes} from 'contracts/libraries/DataTypes.sol';
+import {Errors} from 'contracts/libraries/Errors.sol';
+import {DataTypes} from 'contracts/libraries/DataTypes.sol';
+import {GeneralHelpers} from 'contracts/libraries/helpers/GeneralHelpers.sol';
+import {TypehashConstants} from 'contracts/libraries/constants/TypehashConstants.sol';
+import 'contracts/libraries/Constants.sol';
 
 /**
  * @title MetaTxHelpers
@@ -22,62 +23,25 @@ import '../Constants.sol';
  * are incremented from this library as well.
  */
 library MetaTxHelpers {
-    /// Permit and PermitForAll emit these ERC721 events here an optimization.
-    event Approval(address indexed owner, address indexed approved, uint256 indexed tokenId);
-    event ApprovalForAll(address indexed owner, address indexed operator, bool approved);
+    bytes32 constant EIP712_REVISION_HASH = keccak256('2');
 
     /**
-     * @notice Validates parameters and increments the nonce for a given owner using the `permit()`
-     * function.
+     * @dev We store the domain separator and LensHub Proxy address as constants to save gas.
      *
-     * @param spender The spender to approve.
-     * @param tokenId The token ID to approve the spender for.
-     * @param sig the EIP712Signature struct containing the token owner's signature.
+     * keccak256(
+     *     abi.encode(
+     *         keccak256('EIP712Domain(string name,string version,uint256 chainId,address verifyingContract)'),
+     *         keccak256('Lens Protocol Profiles') // Contract Name
+     *         keccak256('2'), // Revision Hash
+     *         137, // Polygon Chain ID
+     *         address(0xDb46d1Dc155634FbC732f92E853b10B288AD5a1d) // Verifying Contract Address - LensHub Address
+     *     )
+     * );
      */
-    function basePermit(
-        address spender,
-        uint256 tokenId,
-        DataTypes.EIP712Signature calldata sig
-    ) internal {
-        if (spender == address(0)) revert Errors.ZeroSpender();
-        address owner = GeneralHelpers.unsafeOwnerOf(tokenId);
-        _validateRecoveredAddress(
-            _calculateDigest(
-                keccak256(
-                    abi.encode(PERMIT_TYPEHASH, spender, tokenId, _sigNonces(owner), sig.deadline)
-                )
-            ),
-            owner,
-            sig
-        );
-        emit Approval(owner, spender, tokenId);
-    }
+    bytes32 constant LENS_HUB_CACHED_POLYGON_DOMAIN_SEPARATOR =
+        0x78e10b2874b1a1d4436464e65903d3bdc28b68f8d023df2e47b65f8caa45c4bb;
 
-    function basePermitForAll(
-        address owner,
-        address operator,
-        bool approved,
-        DataTypes.EIP712Signature calldata sig
-    ) internal {
-        if (operator == address(0)) revert Errors.ZeroSpender();
-        _validateRecoveredAddress(
-            _calculateDigest(
-                keccak256(
-                    abi.encode(
-                        PERMIT_FOR_ALL_TYPEHASH,
-                        owner,
-                        operator,
-                        approved,
-                        _sigNonces(owner),
-                        sig.deadline
-                    )
-                )
-            ),
-            owner,
-            sig
-        );
-        emit ApprovalForAll(owner, operator, approved);
-    }
+    address constant LENS_HUB_ADDRESS = 0xDb46d1Dc155634FbC732f92E853b10B288AD5a1d; // TODO: Check later
 
     function validateSetProfileMetadataURISignature(
         DataTypes.EIP712Signature calldata signature,
@@ -88,7 +52,7 @@ library MetaTxHelpers {
             _calculateDigest(
                 keccak256(
                     abi.encode(
-                        SET_PROFILE_METADATA_URI_TYPEHASH,
+                        TypehashConstants.SET_PROFILE_METADATA_URI,
                         profileId,
                         keccak256(bytes(metadataURI)),
                         _sigNonces(signature.signer),
@@ -96,7 +60,6 @@ library MetaTxHelpers {
                     )
                 )
             ),
-            signature.signer,
             signature
         );
     }
@@ -111,7 +74,7 @@ library MetaTxHelpers {
             _calculateDigest(
                 keccak256(
                     abi.encode(
-                        SET_FOLLOW_MODULE_TYPEHASH,
+                        TypehashConstants.SET_FOLLOW_MODULE,
                         profileId,
                         followModule,
                         keccak256(followModuleInitData),
@@ -120,7 +83,6 @@ library MetaTxHelpers {
                     )
                 )
             ),
-            signature.signer,
             signature
         );
     }
@@ -139,7 +101,7 @@ library MetaTxHelpers {
             _calculateDigest(
                 keccak256(
                     abi.encode(
-                        CHANGE_DELEGATED_EXECUTORS_CONFIG_TYPEHASH,
+                        TypehashConstants.CHANGE_DELEGATED_EXECUTORS_CONFIG,
                         delegatorProfileId,
                         abi.encodePacked(executors),
                         abi.encodePacked(approvals),
@@ -150,7 +112,6 @@ library MetaTxHelpers {
                     )
                 )
             ),
-            signature.signer,
             signature
         );
     }
@@ -164,7 +125,7 @@ library MetaTxHelpers {
             _calculateDigest(
                 keccak256(
                     abi.encode(
-                        SET_PROFILE_IMAGE_URI_TYPEHASH,
+                        TypehashConstants.SET_PROFILE_IMAGE_URI,
                         profileId,
                         keccak256(bytes(imageURI)),
                         _sigNonces(signature.signer),
@@ -172,7 +133,6 @@ library MetaTxHelpers {
                     )
                 )
             ),
-            signature.signer,
             signature
         );
     }
@@ -186,7 +146,7 @@ library MetaTxHelpers {
             _calculateDigest(
                 keccak256(
                     abi.encode(
-                        SET_FOLLOW_NFT_URI_TYPEHASH,
+                        TypehashConstants.SET_FOLLOW_NFT_URI,
                         profileId,
                         keccak256(bytes(followNFTURI)),
                         _sigNonces(signature.signer),
@@ -194,47 +154,45 @@ library MetaTxHelpers {
                     )
                 )
             ),
-            signature.signer,
             signature
         );
     }
 
     function validatePostSignature(
-        DataTypes.EIP712Signature calldata sig,
+        DataTypes.EIP712Signature calldata signature,
         DataTypes.PostParams calldata postParams
     ) internal {
         _validateRecoveredAddress(
             _calculateDigest(
                 keccak256(
                     abi.encode(
-                        POST_TYPEHASH,
+                        TypehashConstants.POST,
                         postParams.profileId,
                         keccak256(bytes(postParams.contentURI)),
                         postParams.collectModule,
                         keccak256(postParams.collectModuleInitData),
                         postParams.referenceModule,
                         keccak256(postParams.referenceModuleInitData),
-                        _sigNonces(sig.signer),
-                        sig.deadline
+                        _sigNonces(signature.signer),
+                        signature.deadline
                     )
                 )
             ),
-            sig.signer,
-            sig
+            signature
         );
     }
 
     function validateCommentSignature(
-        DataTypes.EIP712Signature calldata sig,
+        DataTypes.EIP712Signature calldata signature,
         DataTypes.CommentParams calldata commentParams
     ) internal {
-        uint256 nonce = _sigNonces(sig.signer);
-        uint256 deadline = sig.deadline;
+        uint256 nonce = _sigNonces(signature.signer);
+        uint256 deadline = signature.deadline;
         _validateRecoveredAddress(
             _calculateDigest(
                 keccak256(
                     abi.encode(
-                        COMMENT_TYPEHASH,
+                        TypehashConstants.COMMENT,
                         commentParams.profileId,
                         keccak256(bytes(commentParams.contentURI)),
                         commentParams.pointedProfileId,
@@ -251,21 +209,21 @@ library MetaTxHelpers {
                     )
                 )
             ),
-            sig
+            signature
         );
     }
 
     function validateQuoteSignature(
-        DataTypes.EIP712Signature calldata sig,
+        DataTypes.EIP712Signature calldata signature,
         DataTypes.QuoteParams calldata quoteParams
     ) internal {
-        uint256 nonce = _sigNonces(sig.signer);
-        uint256 deadline = sig.deadline;
+        uint256 nonce = _sigNonces(signature.signer);
+        uint256 deadline = signature.deadline;
         _validateRecoveredAddress(
             _calculateDigest(
                 keccak256(
                     abi.encode(
-                        COMMENT_TYPEHASH,
+                        TypehashConstants.COMMENT,
                         quoteParams.profileId,
                         keccak256(bytes(quoteParams.contentURI)),
                         quoteParams.pointedProfileId,
@@ -282,32 +240,31 @@ library MetaTxHelpers {
                     )
                 )
             ),
-            sig
+            signature
         );
     }
 
     function validateMirrorSignature(
-        DataTypes.EIP712Signature calldata sig,
+        DataTypes.EIP712Signature calldata signature,
         DataTypes.MirrorParams calldata mirrorParams
     ) internal {
         _validateRecoveredAddress(
             _calculateDigest(
                 keccak256(
                     abi.encode(
-                        MIRROR_TYPEHASH,
+                        TypehashConstants.MIRROR,
                         mirrorParams.profileId,
                         mirrorParams.pointedProfileId,
                         mirrorParams.pointedPubId,
                         mirrorParams.referrerProfileId,
                         mirrorParams.referrerPubId,
                         keccak256(mirrorParams.referenceModuleData),
-                        _sigNonces(sig.signer),
-                        sig.deadline
+                        _sigNonces(signature.signer),
+                        signature.deadline
                     )
                 )
             ),
-            sig.signer,
-            sig
+            signature
         );
     }
 
@@ -318,14 +275,13 @@ library MetaTxHelpers {
             _calculateDigest(
                 keccak256(
                     abi.encode(
-                        BURN_TYPEHASH,
+                        TypehashConstants.BURN,
                         tokenId,
                         _sigNonces(signature.signer),
                         signature.deadline
                     )
                 )
             ),
-            signature.signer,
             signature
         );
     }
@@ -352,7 +308,7 @@ library MetaTxHelpers {
             _calculateDigest(
                 keccak256(
                     abi.encode(
-                        FOLLOW_TYPEHASH,
+                        TypehashConstants.FOLLOW,
                         followerProfileId,
                         keccak256(abi.encodePacked(idsOfProfilesToFollow)),
                         keccak256(abi.encodePacked(followTokenIds)),
@@ -362,7 +318,6 @@ library MetaTxHelpers {
                     )
                 )
             ),
-            signature.signer,
             signature
         );
     }
@@ -376,7 +331,7 @@ library MetaTxHelpers {
             _calculateDigest(
                 keccak256(
                     abi.encode(
-                        UNFOLLOW_TYPEHASH,
+                        TypehashConstants.UNFOLLOW,
                         unfollowerProfileId,
                         keccak256(abi.encodePacked(idsOfProfilesToUnfollow)),
                         _sigNonces(signature.signer),
@@ -384,7 +339,6 @@ library MetaTxHelpers {
                     )
                 )
             ),
-            signature.signer,
             signature
         );
     }
@@ -399,7 +353,7 @@ library MetaTxHelpers {
             _calculateDigest(
                 keccak256(
                     abi.encode(
-                        SET_BLOCK_STATUS_TYPEHASH,
+                        TypehashConstants.SET_BLOCK_STATUS,
                         byProfileId,
                         keccak256(abi.encodePacked(idsOfProfilesToSetBlockStatus)),
                         keccak256(abi.encodePacked(blockStatus)),
@@ -408,32 +362,52 @@ library MetaTxHelpers {
                     )
                 )
             ),
-            signature.signer,
             signature
         );
     }
 
     function validateCollectSignature(
-        DataTypes.EIP712Signature calldata sig,
+        DataTypes.EIP712Signature calldata signature,
         DataTypes.CollectParams calldata collectParams
     ) internal {
         _validateRecoveredAddress(
             _calculateDigest(
                 keccak256(
                     abi.encode(
-                        COLLECT_TYPEHASH,
+                        TypehashConstants.COLLECT,
                         collectParams.publicationCollectedProfileId,
                         collectParams.publicationCollectedId,
                         collectParams.collectorProfileId,
                         collectParams.referrerProfileId,
                         collectParams.referrerPubId,
                         keccak256(collectParams.collectModuleData),
-                        _sigNonces(sig.signer),
-                        sig.deadline
+                        _sigNonces(signature.signer),
+                        signature.deadline
                     )
                 )
             ),
-            sig
+            signature
+        );
+    }
+
+    function validatePermitSignature(
+        DataTypes.EIP712Signature calldata signature,
+        address spender,
+        uint256 tokenId
+    ) internal {
+        _validateRecoveredAddress(
+            _calculateDigest(
+                keccak256(
+                    abi.encode(
+                        TypehashConstants.PERMIT,
+                        spender,
+                        tokenId,
+                        _sigNonces(signature.signer),
+                        signature.deadline
+                    )
+                )
+            ),
+            signature
         );
     }
 
@@ -444,50 +418,23 @@ library MetaTxHelpers {
     /**
      * @dev Wrapper for ecrecover to reduce code size, used in meta-tx specific functions.
      */
-    function _validateRecoveredAddress(bytes32 digest, DataTypes.EIP712Signature calldata sig)
+    function _validateRecoveredAddress(bytes32 digest, DataTypes.EIP712Signature calldata signature)
         internal
         view
     {
-        if (sig.deadline < block.timestamp) revert Errors.SignatureExpired();
+        if (signature.deadline < block.timestamp) revert Errors.SignatureExpired();
         // If the expected address is a contract, check the signature there.
-        if (sig.signer.code.length != 0) {
-            bytes memory concatenatedSig = abi.encodePacked(sig.r, sig.s, sig.v);
+        if (signature.signer.code.length != 0) {
+            bytes memory concatenatedSig = abi.encodePacked(signature.r, signature.s, signature.v);
             if (
-                IEIP1271Implementer(sig.signer).isValidSignature(digest, concatenatedSig) !=
+                IEIP1271Implementer(signature.signer).isValidSignature(digest, concatenatedSig) !=
                 EIP1271_MAGIC_VALUE
             ) {
                 revert Errors.SignatureInvalid();
             }
         } else {
-            address recoveredAddress = ecrecover(digest, sig.v, sig.r, sig.s);
-            if (recoveredAddress == address(0) || recoveredAddress != sig.signer) {
-                revert Errors.SignatureInvalid();
-            }
-        }
-    }
-
-    // TODO: Remove this duplicate when we refactor all functions to use signer inside the sig
-    /**
-     * @dev Wrapper for ecrecover to reduce code size, used in meta-tx specific functions.
-     */
-    function _validateRecoveredAddress(
-        bytes32 digest,
-        address signer,
-        DataTypes.EIP712Signature calldata sig
-    ) internal view {
-        if (sig.deadline < block.timestamp) revert Errors.SignatureExpired();
-        // If the expected address is a contract, check the signature there.
-        if (signer.code.length != 0) {
-            bytes memory concatenatedSig = abi.encodePacked(sig.r, sig.s, sig.v);
-            if (
-                IEIP1271Implementer(signer).isValidSignature(digest, concatenatedSig) !=
-                EIP1271_MAGIC_VALUE
-            ) {
-                revert Errors.SignatureInvalid();
-            }
-        } else {
-            address recoveredAddress = ecrecover(digest, sig.v, sig.r, sig.s);
-            if (recoveredAddress == address(0) || recoveredAddress != signer) {
+            address recoveredAddress = ecrecover(digest, signature.v, signature.r, signature.s);
+            if (recoveredAddress == address(0) || recoveredAddress != signature.signer) {
                 revert Errors.SignatureInvalid();
             }
         }
@@ -497,15 +444,13 @@ library MetaTxHelpers {
      * @dev Calculates EIP712 DOMAIN_SEPARATOR based on the current contract and chain ID.
      */
     function _calculateDomainSeparator() private view returns (bytes32) {
-        if (block.chainid == POLYGON_CHAIN_ID) {
-            // Note that this only works on the canonical Polygon mainnet deployment, and should the
-            // name change, a contract upgrade would be necessary.
-            return POLYGON_DOMAIN_SEPARATOR;
+        if (address(this) == LENS_HUB_ADDRESS) {
+            return LENS_HUB_CACHED_POLYGON_DOMAIN_SEPARATOR;
         }
         return
             keccak256(
                 abi.encode(
-                    EIP712_DOMAIN_TYPEHASH,
+                    TypehashConstants.EIP712_DOMAIN,
                     keccak256(_nameBytes()),
                     EIP712_REVISION_HASH,
                     block.chainid,

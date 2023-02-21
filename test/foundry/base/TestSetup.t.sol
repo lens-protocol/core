@@ -20,6 +20,8 @@ import {MockCollectModule} from 'contracts/mocks/MockCollectModule.sol';
 import {MockReferenceModule} from 'contracts/mocks/MockReferenceModule.sol';
 import '../helpers/ForkManagement.sol';
 import '../Constants.sol';
+import {TypehashConstants} from 'contracts/libraries/constants/TypehashConstants.sol';
+import {MetaTxHelpers} from 'contracts/libraries/helpers/MetaTxHelpers.sol';
 
 contract TestSetup is Test, ForkManagement {
     using stdJson for string;
@@ -215,9 +217,9 @@ contract TestSetup is Test, ForkManagement {
         // Compute the domain separator.
         domainSeparator = keccak256(
             abi.encode(
-                EIP712_DOMAIN_TYPEHASH,
+                TypehashConstants.EIP712_DOMAIN,
                 keccak256('Lens Protocol Profiles'),
-                EIP712_REVISION_HASH,
+                MetaTxHelpers.EIP712_REVISION_HASH,
                 block.chainid,
                 hubProxyAddr
             )

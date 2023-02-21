@@ -3,6 +3,7 @@ pragma solidity ^0.8.13;
 
 import './base/BaseTest.t.sol';
 import './MetaTxNegatives.t.sol';
+import {TypehashConstants} from 'contracts/libraries/constants/TypehashConstants.sol';
 
 contract ChangeDelegatedExecutorsConfigTest_CurrentConfig is BaseTest {
     uint256 constant testDelegatorProfileOwnerPk = 0xDE1E6A708;
@@ -523,7 +524,7 @@ contract ChangeDelegatedExecutorsConfigTest_MetaTx is
             _calculateDigest(
                 keccak256(
                     abi.encode(
-                        CHANGE_DELEGATED_EXECUTORS_CONFIG_TYPEHASH,
+                        TypehashConstants.CHANGE_DELEGATED_EXECUTORS_CONFIG,
                         delegatorProfileId,
                         abi.encodePacked(executors),
                         abi.encodePacked(approvals),

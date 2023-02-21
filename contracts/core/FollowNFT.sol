@@ -249,12 +249,12 @@ contract FollowNFT is HubRestricted, LensNFTBase, ERC2981CollectionRoyalties, IF
         return _followApprovalByFollowTokenId[followTokenId];
     }
 
-    function burnWithSig(uint256 followTokenId, DataTypes.EIP712Signature calldata sig)
+    function burnWithSig(uint256 followTokenId, DataTypes.EIP712Signature calldata signature)
         public
         override
     {
         _unfollowIfHasFollower(followTokenId);
-        super.burnWithSig(followTokenId, sig);
+        super.burnWithSig(followTokenId, signature);
     }
 
     function burn(uint256 followTokenId) public override {

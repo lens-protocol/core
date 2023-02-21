@@ -332,7 +332,7 @@ contract MultiStateHubTest_PausedState_WithSig is MultiStateHubTest_PausedState_
             profileId: newProfileId,
             followModule: address(0),
             followModuleInitData: '',
-            sig: _getSigStruct(profileOwner, profileOwnerKey, digest, deadline)
+            signature: _getSigStruct(profileOwner, profileOwnerKey, digest, deadline)
         });
     }
 
@@ -370,7 +370,7 @@ contract MultiStateHubTest_PausedState_WithSig is MultiStateHubTest_PausedState_
         _setProfileImageURIWithSig({
             profileId: newProfileId,
             imageURI: MOCK_URI,
-            sig: _getSigStruct(profileOwner, profileOwnerKey, digest, deadline)
+            signature: _getSigStruct(profileOwner, profileOwnerKey, digest, deadline)
         });
     }
 
@@ -380,7 +380,7 @@ contract MultiStateHubTest_PausedState_WithSig is MultiStateHubTest_PausedState_
         _setFollowNFTURIWithSig({
             profileId: newProfileId,
             followNFTURI: MOCK_URI,
-            sig: _getSigStruct(profileOwner, profileOwnerKey, digest, deadline)
+            signature: _getSigStruct(profileOwner, profileOwnerKey, digest, deadline)
         });
     }
 
@@ -418,7 +418,7 @@ contract MultiStateHubTest_PausedState_WithSig is MultiStateHubTest_PausedState_
 
         _burnWithSig({
             profileId: newProfileId,
-            sig: _getSigStruct(profileOwner, profileOwnerKey, digest, deadline)
+            signature: _getSigStruct(profileOwner, profileOwnerKey, digest, deadline)
         });
     }
 
@@ -437,7 +437,7 @@ contract MultiStateHubTest_PausedState_WithSig is MultiStateHubTest_PausedState_
             idOfProfileToFollow: newProfileId,
             followTokenId: 0,
             data: '',
-            sig: _getSigStruct(otherSigner, otherSignerKey, digest, deadline)
+            signature: _getSigStruct(otherSigner, otherSignerKey, digest, deadline)
         });
     }
 
@@ -450,7 +450,7 @@ contract MultiStateHubTest_PausedState_WithSig is MultiStateHubTest_PausedState_
         );
     }
 
-    // Methods that cannot be called with sig
+    // Methods that cannot be called with signature
     function testCannotTransferProfileWhilePaused() public override {}
 
     function testCannotCreateProfileWhilePaused() public override {}
@@ -627,7 +627,7 @@ contract MultiStateHubTest_PublishingPausedState_WithSig is
             profileId: newProfileId,
             followModule: address(0),
             followModuleInitData: '',
-            sig: _getSigStruct(profileOwner, profileOwnerKey, digest, deadline)
+            signature: _getSigStruct(profileOwner, profileOwnerKey, digest, deadline)
         });
     }
 
@@ -665,7 +665,7 @@ contract MultiStateHubTest_PublishingPausedState_WithSig is
         _setProfileImageURIWithSig({
             profileId: newProfileId,
             imageURI: MOCK_URI,
-            sig: _getSigStruct(profileOwner, profileOwnerKey, digest, deadline)
+            signature: _getSigStruct(profileOwner, profileOwnerKey, digest, deadline)
         });
     }
 
@@ -675,7 +675,7 @@ contract MultiStateHubTest_PublishingPausedState_WithSig is
         _setFollowNFTURIWithSig({
             profileId: newProfileId,
             followNFTURI: MOCK_URI,
-            sig: _getSigStruct(profileOwner, profileOwnerKey, digest, deadline)
+            signature: _getSigStruct(profileOwner, profileOwnerKey, digest, deadline)
         });
     }
 
@@ -713,7 +713,7 @@ contract MultiStateHubTest_PublishingPausedState_WithSig is
 
         _burnWithSig({
             profileId: newProfileId,
-            sig: _getSigStruct(profileOwner, profileOwnerKey, digest, deadline)
+            signature: _getSigStruct(profileOwner, profileOwnerKey, digest, deadline)
         });
     }
 
@@ -733,7 +733,7 @@ contract MultiStateHubTest_PublishingPausedState_WithSig is
             idOfProfileToFollow: newProfileId,
             followTokenId: 0,
             data: '',
-            sig: _getSigStruct(otherSigner, otherSignerKey, digest, deadline)
+            signature: _getSigStruct(otherSigner, otherSignerKey, digest, deadline)
         });
     }
 
@@ -746,7 +746,7 @@ contract MultiStateHubTest_PublishingPausedState_WithSig is
         );
     }
 
-    // Methods that cannot be called with sig
+    // Methods that cannot be called with signature
     function testCanTransferProfileWhilePublishingPaused() public override {}
 
     function testCanCreateProfileWhilePublishingPaused() public override {}

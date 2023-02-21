@@ -3,6 +3,7 @@ pragma solidity ^0.8.13;
 
 import './base/BaseTest.t.sol';
 import './MetaTxNegatives.t.sol';
+import {TypehashConstants} from 'contracts/libraries/constants/TypehashConstants.sol';
 
 contract SetBlockStatusTest is BaseTest {
     address constant PROFILE_OWNER = address(0);
@@ -336,7 +337,7 @@ contract SetBlockStatusMetaTxTest is SetBlockStatusTest, MetaTxNegatives {
             _calculateDigest(
                 keccak256(
                     abi.encode(
-                        SET_BLOCK_STATUS_TYPEHASH,
+                        TypehashConstants.SET_BLOCK_STATUS,
                         byProfileId,
                         keccak256(abi.encodePacked(idsOfProfilesToSetBlockStatus)),
                         keccak256(abi.encodePacked(blockStatus)),
@@ -362,7 +363,7 @@ contract SetBlockStatusMetaTxTest is SetBlockStatusTest, MetaTxNegatives {
                 byProfileId: byProfileId,
                 idsOfProfilesToSetBlockStatus: idsOfProfilesToSetBlockStatus,
                 blockStatus: blockStatus,
-                sig: _getSigStruct({
+                signature: _getSigStruct({
                     pKey: signerPk,
                     digest: _calculateSetBlockStatusWithSigDigest(
                         byProfileId,

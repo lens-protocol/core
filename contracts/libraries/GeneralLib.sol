@@ -206,67 +206,6 @@ library GeneralLib {
         return InteractionHelpers.collect(collectParams, transactionExecutor, collectNFTImpl);
     }
 
-    /**
-     * @notice Approves an address to spend a token using via signature.
-     *
-     * @param spender The spender to approve.
-     * @param tokenId The token ID to approve the spender for.
-     * @param sig the EIP712Signature struct containing the token owner's signature.
-     */
-    function permit(
-        address spender,
-        uint256 tokenId,
-        DataTypes.EIP712Signature calldata sig
-    ) external {
-        // The `Approved()` event is emitted from `basePermit()`.
-        MetaTxHelpers.basePermit(spender, tokenId, sig);
-
-        // Store the approved address in the token's approval mapping slot.
-        assembly {
-            mstore(0, tokenId)
-            mstore(32, TOKEN_APPROVAL_MAPPING_SLOT)
-            let slot := keccak256(0, 64)
-            sstore(slot, spender)
-        }
-    }
-
-    /**
-     * @notice Approves a user to operate on all of an owner's tokens via signature.
-     *
-     * @param owner The owner to approve the operator for, this is the signer.
-     * @param operator The operator to approve for the owner.
-     * @param approved Whether or not the operator should be approved.
-     * @param sig the EIP712Signature struct containing the token owner's signature.
-     */
-    function permitForAll(
-        address owner,
-        address operator,
-        bool approved,
-        DataTypes.EIP712Signature calldata sig
-    ) external {
-        // The `ApprovedForAll()` event is emitted from `basePermitForAll()`.
-        MetaTxHelpers.basePermitForAll(owner, operator, approved, sig);
-
-        // Store whether the operator is approved in the appropriate mapping slot.
-        assembly {
-            mstore(0, owner)
-            mstore(32, OPERATOR_APPROVAL_MAPPING_SLOT)
-            mstore(32, keccak256(0, 64))
-            mstore(0, operator)
-            let slot := keccak256(0, 64)
-            sstore(slot, approved)
-        }
-    }
-
-    /**
-     * @notice Returns the domain separator.
-     *
-     * @return bytes32 The domain separator.
-     */
-    function getDomainSeparator() external view returns (bytes32) {
-        return MetaTxHelpers.getDomainSeparator();
-    }
-
     function getContentURI(uint256 profileId, uint256 pubId) external view returns (string memory) {
         (uint256 rootProfileId, uint256 rootPubId, ) = GeneralHelpers.getPointedIfMirror(
             profileId,
