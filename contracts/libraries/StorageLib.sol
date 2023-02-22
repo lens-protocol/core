@@ -8,7 +8,7 @@ import {IERC721Time} from 'contracts/interfaces/IERC721Time.sol';
 
 import 'contracts/libraries/Constants.sol';
 
-library LensHubStorageLib {
+library StorageLib {
     function getPublication(uint256 profileId, uint256 pubId) internal pure returns (Types.Publication storage) {
         Types.Publication storage _publication;
         assembly {
@@ -55,13 +55,32 @@ library LensHubStorageLib {
         return tokenData;
     }
 
-    // function getBlockStatus(uint256 profile, uint256 byProfile) internal pure returns (Types.BlockStatus storage) {
-    //     Types.BlockStatus storage _blockStatus;
-    //     assembly {
-    //         mstore(0, byProfile)
-    //         mstore(32, BLOCK_STATUS_MAPPING_SLOT)
-    //         _blockStatus.slot := keccak256(0, 64)
-    //     }
-    //     return _blockStatus[profileId];
-    // }
+    function getBlockedStatusMapping(uint256 blockerProfileId)
+        internal
+        pure
+        returns (mapping(uint256 => bool) storage _blockedStatus)
+    {
+        // NOTE: Currently Solidity does not allow to define mapping storage fields, so we use the named return instead.
+        assembly {
+            mstore(0, blockerProfileId)
+            mstore(32, BLOCK_STATUS_MAPPING_SLOT)
+            _blockedStatus.slot := keccak256(0, 64)
+        }
+    }
+
+    function getNoncesMapping() internal pure returns (mapping(address => uint256) storage _nonces) {
+        // NOTE: Currently Solidity does not allow to define mapping storage fields, so we use the named return instead.
+        assembly {
+            _nonces.slot := SIG_NONCES_MAPPING_SLOT
+        }
+    }
+
+    // Used for all `ERC721Time` inherited contracts.
+    function getName() internal pure returns (string storage) {
+        string storage _name;
+        assembly {
+            _name.slot := NAME_SLOT
+        }
+        return _name;
+    }
 }

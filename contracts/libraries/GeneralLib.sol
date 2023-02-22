@@ -16,7 +16,7 @@ import {IDeprecatedCollectModule} from 'contracts/interfaces/IDeprecatedCollectM
 import {IDeprecatedReferenceModule} from 'contracts/interfaces/IDeprecatedReferenceModule.sol';
 
 import 'contracts/libraries/Constants.sol';
-import 'contracts/libraries/LensHubStorageLib.sol';
+import 'contracts/libraries/StorageLib.sol';
 
 /**
  * @title GeneralLib
@@ -99,8 +99,9 @@ library GeneralLib {
     }
 
     function switchToNewFreshDelegatedExecutorsConfig(uint256 profileId) external {
-        Types.DelegatedExecutorsConfig storage _delegatedExecutorsConfig = LensHubStorageLib
-            .getDelegatedExecutorsConfig({delegatorProfileId: profileId});
+        Types.DelegatedExecutorsConfig storage _delegatedExecutorsConfig = StorageLib.getDelegatedExecutorsConfig({
+            delegatorProfileId: profileId
+        });
         _changeDelegatedExecutorsConfig({
             _delegatedExecutorsConfig: _delegatedExecutorsConfig,
             delegatorProfileId: profileId,
@@ -116,8 +117,9 @@ library GeneralLib {
         address[] calldata executors,
         bool[] calldata approvals
     ) external {
-        Types.DelegatedExecutorsConfig storage _delegatedExecutorsConfig = LensHubStorageLib
-            .getDelegatedExecutorsConfig(delegatorProfileId);
+        Types.DelegatedExecutorsConfig storage _delegatedExecutorsConfig = StorageLib.getDelegatedExecutorsConfig(
+            delegatorProfileId
+        );
         _changeDelegatedExecutorsConfig(
             _delegatedExecutorsConfig,
             delegatorProfileId,
@@ -136,7 +138,7 @@ library GeneralLib {
         bool switchToGivenConfig
     ) external {
         _changeDelegatedExecutorsConfig(
-            LensHubStorageLib.getDelegatedExecutorsConfig(delegatorProfileId),
+            StorageLib.getDelegatedExecutorsConfig(delegatorProfileId),
             delegatorProfileId,
             executors,
             approvals,
@@ -204,60 +206,7 @@ library GeneralLib {
 
     function getContentURI(uint256 profileId, uint256 pubId) external view returns (string memory) {
         (uint256 rootProfileId, uint256 rootPubId, ) = GeneralHelpers.getPointedIfMirror(profileId, pubId);
-        string memory ptr;
-        assembly {
-            // Load the free memory pointer, where we'll return the value
-            ptr := mload(64)
-
-            // Load the slot, which either contains the content URI + 2*length if length < 32 or
-            // 2*length+1 if length >= 32, and the actual string starts at slot keccak256(slot)
-            mstore(0, rootProfileId)
-            mstore(32, PUB_BY_ID_BY_PROFILE_MAPPING_SLOT)
-            mstore(32, keccak256(0, 64))
-            mstore(0, rootPubId)
-
-            let slot := add(keccak256(0, 64), PUBLICATION_CONTENT_URI_OFFSET)
-
-            let slotLoad := sload(slot)
-            let size
-            // Determine if the length > 32 by checking the lowest order bit, meaning the string
-            // itself is stored at keccak256(slot)
-            switch and(slotLoad, 1)
-            case 0 {
-                // The content URI is in the same slot
-                // Determine the size by dividing the last byte's value by 2
-                size := shr(1, and(slotLoad, 255))
-
-                // Store the size in the first slot
-                mstore(ptr, size)
-
-                // Store the actual string in the second slot (without the size)
-                mstore(add(ptr, 32), and(slotLoad, not(255)))
-            }
-            case 1 {
-                // The content URI is not in the same slot
-                // Determine the size by dividing the value in the whole slot minus 1 by 2
-                size := shr(1, sub(slotLoad, 1))
-
-                // Store the size in the first slot
-                mstore(ptr, size)
-
-                // Compute the total memory slots we need, this is (size + 31) / 32
-                let totalMemorySlots := shr(5, add(size, 31))
-
-                mstore(0, slot)
-                let uriSlot := keccak256(0, 32)
-
-                // Iterate through the words in memory and store the string word by word
-                // prettier-ignore
-                for { let i := 0 } lt(i, totalMemorySlots) { i := add(i, 1) } {
-                    mstore(add(add(ptr, 32), mul(32, i)), sload(add(uriSlot, i)))
-                }
-            }
-            // Store the new memory pointer in the free memory pointer slot
-            mstore(64, add(add(ptr, 32), size))
-        }
-        return ptr;
+        return StorageLib.getPublication(rootProfileId, rootPubId).contentURI;
     }
 
     function _changeDelegatedExecutorsConfig(

@@ -6,7 +6,7 @@ import {Types} from 'contracts/libraries/constants/Types.sol';
 import {Errors} from 'contracts/libraries/constants/Errors.sol';
 
 import 'contracts/libraries/Constants.sol';
-import 'contracts/libraries/LensHubStorageLib.sol';
+import 'contracts/libraries/StorageLib.sol';
 
 /**
  * @title Helpers
@@ -34,7 +34,7 @@ library GeneralHelpers {
             address
         )
     {
-        Types.Publication storage _publication = LensHubStorageLib.getPublication(profileId, pubId);
+        Types.Publication storage _publication = StorageLib.getPublication(profileId, pubId);
         address collectModule = _publication.collectModule;
         if (collectModule != address(0)) {
             // We rely on the collect module being zero for classifying mirrors or non-existent publications so, if it
@@ -54,7 +54,7 @@ library GeneralHelpers {
             return (
                 pointedProfileId,
                 pointedPubId,
-                LensHubStorageLib.getPublication(pointedProfileId, pointedPubId).collectModule
+                StorageLib.getPublication(pointedProfileId, pointedPubId).collectModule
             );
         }
     }
@@ -75,7 +75,7 @@ library GeneralHelpers {
      * which is already checked for the zero address.
      */
     function unsafeOwnerOf(uint256 tokenId) internal view returns (address) {
-        return LensHubStorageLib.getTokenData(tokenId).owner;
+        return StorageLib.getTokenData(tokenId).owner;
     }
 
     function ownerOf(uint256 tokenId) internal view returns (address) {
@@ -130,28 +130,20 @@ library GeneralHelpers {
     }
 
     function isExecutorApproved(uint256 delegatorProfileId, address executor) internal view returns (bool) {
-        Types.DelegatedExecutorsConfig storage _delegatedExecutorsConfig = LensHubStorageLib
-            .getDelegatedExecutorsConfig(delegatorProfileId);
+        Types.DelegatedExecutorsConfig storage _delegatedExecutorsConfig = StorageLib.getDelegatedExecutorsConfig(
+            delegatorProfileId
+        );
         return _delegatedExecutorsConfig.isApproved[_delegatedExecutorsConfig.configNumber][executor];
     }
 
     function validateNotBlocked(uint256 profile, uint256 byProfile) internal view {
-        bool isBlocked;
-        assembly {
-            mstore(0, byProfile)
-            mstore(32, BLOCK_STATUS_MAPPING_SLOT)
-            let blockStatusByProfileSlot := keccak256(0, 64)
-            mstore(0, profile)
-            mstore(32, blockStatusByProfileSlot)
-            isBlocked := sload(keccak256(0, 64))
-        }
-        if (isBlocked) {
+        if (StorageLib.getBlockedStatusMapping(byProfile)[profile]) {
             revert Errors.Blocked();
         }
     }
 
     function getPublicationType(uint256 profileId, uint256 pubId) internal view returns (Types.PublicationType) {
-        Types.Publication storage _publication = LensHubStorageLib.getPublication(profileId, pubId);
+        Types.Publication storage _publication = StorageLib.getPublication(profileId, pubId);
         Types.PublicationType pubType = _publication.pubType;
         if (uint8(pubType) == 0) {
             // If publication type is 0, we check using the legacy rules.
@@ -208,7 +200,7 @@ library GeneralHelpers {
         uint256 profileId,
         uint256 pubId
     ) private view {
-        Types.Publication storage _referrerMirror = LensHubStorageLib.getPublication(referrerProfileId, referrerPubId);
+        Types.Publication storage _referrerMirror = StorageLib.getPublication(referrerProfileId, referrerPubId);
         if (
             // A mirror can only be a referrer of a publication if it is pointing to it.
             _referrerMirror.pointedProfileId != profileId || _referrerMirror.pointedPubId != pubId
@@ -231,7 +223,7 @@ library GeneralHelpers {
         uint256 profileId,
         uint256 pubId
     ) private view {
-        Types.Publication storage _referrerPub = LensHubStorageLib.getPublication(referrerProfileId, referrerPubId);
+        Types.Publication storage _referrerPub = StorageLib.getPublication(referrerProfileId, referrerPubId);
         Types.PublicationType typeOfPubPointedByReferrer = GeneralHelpers.getPublicationType(profileId, pubId);
         // We already know that the publication being collected/referenced is not a mirror nor a non-existent one.
         if (typeOfPubPointedByReferrer == Types.PublicationType.Post) {
@@ -241,7 +233,7 @@ library GeneralHelpers {
             }
         } else {
             // The publication collected/referenced is a comment or a quote.
-            Types.Publication storage _pubPointedByReferrer = LensHubStorageLib.getPublication(profileId, pubId);
+            Types.Publication storage _pubPointedByReferrer = StorageLib.getPublication(profileId, pubId);
             // The referrer publication and the collected/referenced publication must share the same root.
             if (
                 _referrerPub.rootProfileId != _pubPointedByReferrer.rootProfileId ||

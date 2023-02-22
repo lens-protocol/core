@@ -19,7 +19,7 @@ import {Clones} from '@openzeppelin/contracts/proxy/Clones.sol';
 import {Strings} from '@openzeppelin/contracts/utils/Strings.sol';
 
 import 'contracts/libraries/Constants.sol';
-import 'contracts/libraries/LensHubStorageLib.sol';
+import 'contracts/libraries/StorageLib.sol';
 
 /**
  * @title InteractionHelpers
@@ -169,7 +169,7 @@ library InteractionHelpers {
         uint256 tokenId;
         address collectorProfileOwner = GeneralHelpers.ownerOf(collectParams.collectorProfileId);
         {
-            Types.Publication storage _collectedPublication = LensHubStorageLib.getPublication(
+            Types.Publication storage _collectedPublication = StorageLib.getPublication(
                 collectParams.publicationCollectedProfileId,
                 collectParams.publicationCollectedId
             );
@@ -295,38 +295,6 @@ library InteractionHelpers {
 
         return collectNFT;
     }
-
-    // /**
-    //  * @notice Emits the `Collected` event that signals that a successful collect action has occurred.
-    //  *
-    //  * @dev This is done through this function to prevent stack too deep compilation error.
-    //  *
-    //  * @param collectorProfileId The owner address of the profile collecting the publication.
-    //  * @param publisherProfileId The token ID of the profile that the collect was initiated towards, useful to differentiate mirrors.
-    //  * @param pubId The publication ID that the collect was initiated towards, useful to differentiate mirrors.
-    //  * @param rootProfileId The profile token ID of the profile whose publication is being collected.
-    //  * @param rootPubId The publication ID of the publication being collected.
-    //  * @param data The data passed to the collect module.
-    //  */
-    // function _emitCollectedEvent(
-    //     uint256 publicationCollectedProfileId,
-    //     uint256 publicationCollectedId,
-    //     uint256 collectorProfileId,
-    //     uint256 referrerProfileId,
-    //     uint256 referrerPubId,
-    //     bytes calldata collectModuleData,
-    //     uint256 timestamp
-    // ) private {
-    //     emit Events.Collected(
-    //     publicationCollectedProfileId: publisherProfileId,
-    //     publicationCollectedId: pubId,
-    //     collectorProfileId: collectorProfileId,
-    //     referrerProfileId: ,
-    //     referrerPubId: ,
-    //     collectModuleData: data,
-    //     timestamp: block.timestamp,
-    //     );
-    // }
 
     function _follow(
         uint256 followerProfileId,

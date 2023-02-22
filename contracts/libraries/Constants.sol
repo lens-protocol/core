@@ -9,10 +9,6 @@ string constant COLLECT_NFT_SYMBOL_INFIX = '-Cl-';
 uint8 constant MAX_HANDLE_LENGTH = 31;
 uint16 constant MAX_PROFILE_IMAGE_URI_LENGTH = 6000;
 
-// We store constants equal to the storage slots here to later access via inline
-// assembly without needing to pass storage pointers. The NAME_SLOT_GT_31 slot
-// is equivalent to keccak256(NAME_SLOT) and is where the name string is stored
-// if the length is greater than 31 bytes.
 uint256 constant NAME_SLOT = 0;
 uint256 constant TOKEN_DATA_MAPPING_SLOT = 2;
 uint256 constant TOKEN_APPROVAL_MAPPING_SLOT = 4;
@@ -34,7 +30,6 @@ uint256 constant EMERGENCY_ADMIN_SLOT = 24;
 uint256 constant DELEGATED_EXECUTOR_CONFIG_MAPPING_SLOT = 25;
 uint256 constant PROFILE_METADATA_MAPPING_SLOT = 26;
 uint256 constant BLOCK_STATUS_MAPPING_SLOT = 27;
-uint256 constant NAME_SLOT_GT_31 = 0x290decd9548b62a8d60345a988386fc84ba6bc95484008f6362f93160ef3e563;
 
 // Profile struct offsets
 // uint256 pubCount;       // offset 0

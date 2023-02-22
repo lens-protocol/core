@@ -12,7 +12,7 @@ import {IReferenceModule} from 'contracts/interfaces/IReferenceModule.sol';
 import {IDeprecatedReferenceModule} from 'contracts/interfaces/IDeprecatedReferenceModule.sol';
 
 import 'contracts/libraries/Constants.sol';
-import {LensHubStorageLib} from 'contracts/libraries/LensHubStorageLib.sol';
+import {StorageLib} from 'contracts/libraries/StorageLib.sol';
 
 library PublishingLib {
     /**
@@ -23,9 +23,9 @@ library PublishingLib {
      * @return uint256 The created publication's pubId.
      */
     function post(Types.PostParams calldata postParams, address transactionExecutor) external returns (uint256) {
-        uint256 pubIdAssigned = ++LensHubStorageLib.getProfile(postParams.profileId).pubCount;
+        uint256 pubIdAssigned = ++StorageLib.getProfile(postParams.profileId).pubCount;
 
-        Types.Publication storage _post = LensHubStorageLib.getPublication(postParams.profileId, pubIdAssigned);
+        Types.Publication storage _post = StorageLib.getPublication(postParams.profileId, pubIdAssigned);
         _post.contentURI = postParams.contentURI;
         _post.pubType = Types.PublicationType.Post;
 
@@ -123,12 +123,9 @@ library PublishingLib {
             mirrorParams.pointedPubId
         );
 
-        uint256 pubIdAssigned = ++LensHubStorageLib.getProfile(mirrorParams.profileId).pubCount;
+        uint256 pubIdAssigned = ++StorageLib.getProfile(mirrorParams.profileId).pubCount;
 
-        Types.Publication storage _publication = LensHubStorageLib.getPublication(
-            mirrorParams.profileId,
-            pubIdAssigned
-        );
+        Types.Publication storage _publication = StorageLib.getPublication(mirrorParams.profileId, pubIdAssigned);
         _publication.pointedProfileId = mirrorParams.pointedProfileId;
         _publication.pointedPubId = mirrorParams.pointedPubId;
         _publication.pubType = Types.PublicationType.Mirror;
@@ -281,14 +278,14 @@ library PublishingLib {
         Types.ReferencePubParams memory referencePubParams,
         Types.PublicationType referencePubType
     ) private returns (uint256) {
-        uint256 pubIdAssigned = ++LensHubStorageLib.getProfile(referencePubParams.profileId).pubCount;
+        uint256 pubIdAssigned = ++StorageLib.getProfile(referencePubParams.profileId).pubCount;
         Types.Publication storage _referencePub;
-        _referencePub = LensHubStorageLib.getPublication(referencePubParams.profileId, pubIdAssigned);
+        _referencePub = StorageLib.getPublication(referencePubParams.profileId, pubIdAssigned);
         _referencePub.pointedProfileId = referencePubParams.pointedProfileId;
         _referencePub.pointedPubId = referencePubParams.pointedPubId;
         _referencePub.contentURI = referencePubParams.contentURI;
         _referencePub.pubType = referencePubType;
-        Types.Publication storage _pubPointed = LensHubStorageLib.getPublication(
+        Types.Publication storage _pubPointed = StorageLib.getPublication(
             referencePubParams.pointedProfileId,
             referencePubParams.pointedPubId
         );
@@ -308,7 +305,7 @@ library PublishingLib {
         address transactionExecutor,
         Types.PublicationType referrerPubType
     ) private {
-        address refModule = LensHubStorageLib
+        address refModule = StorageLib
             .getPublication(commentParams.pointedProfileId, commentParams.pointedPubId)
             .referenceModule;
         if (refModule != address(0)) {
@@ -351,7 +348,7 @@ library PublishingLib {
         address transactionExecutor,
         Types.PublicationType referrerPubType
     ) private {
-        address refModule = LensHubStorageLib
+        address refModule = StorageLib
             .getPublication(quoteParams.pointedProfileId, quoteParams.pointedPubId)
             .referenceModule;
         if (refModule != address(0)) {
@@ -394,7 +391,7 @@ library PublishingLib {
         address transactionExecutor,
         Types.PublicationType referrerPubType
     ) private {
-        address refModule = LensHubStorageLib
+        address refModule = StorageLib
             .getPublication(mirrorParams.pointedProfileId, mirrorParams.pointedPubId)
             .referenceModule;
         if (refModule != address(0)) {
@@ -443,7 +440,7 @@ library PublishingLib {
             return new bytes(0);
         }
         GeneralHelpers.validateCollectModuleWhitelisted(collectModule);
-        LensHubStorageLib.getPublication(profileId, pubId).collectModule = collectModule;
+        StorageLib.getPublication(profileId, pubId).collectModule = collectModule;
         return
             ICollectModule(collectModule).initializePublicationCollectModule(
                 profileId,
@@ -464,7 +461,7 @@ library PublishingLib {
             return new bytes(0);
         }
         GeneralHelpers.validateReferenceModuleWhitelisted(referenceModule);
-        LensHubStorageLib.getPublication(profileId, pubId).referenceModule = referenceModule;
+        StorageLib.getPublication(profileId, pubId).referenceModule = referenceModule;
         return
             IReferenceModule(referenceModule).initializeReferenceModule(
                 profileId,

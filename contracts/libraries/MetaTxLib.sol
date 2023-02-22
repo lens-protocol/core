@@ -7,6 +7,7 @@ import {Errors} from 'contracts/libraries/constants/Errors.sol';
 import {GeneralHelpers} from 'contracts/libraries/GeneralHelpers.sol';
 import {Typehash} from 'contracts/libraries/constants/Typehash.sol';
 import 'contracts/libraries/Constants.sol';
+import 'contracts/libraries/StorageLib.sol';
 
 /**
  * @title MetaTxLib
@@ -54,7 +55,7 @@ library MetaTxLib {
                         Typehash.SET_PROFILE_METADATA_URI,
                         profileId,
                         keccak256(bytes(metadataURI)),
-                        _sigNonces(signature.signer),
+                        _getAndIncrementNonce(signature.signer),
                         signature.deadline
                     )
                 )
@@ -77,7 +78,7 @@ library MetaTxLib {
                         profileId,
                         followModule,
                         keccak256(followModuleInitData),
-                        _sigNonces(signature.signer),
+                        _getAndIncrementNonce(signature.signer),
                         signature.deadline
                     )
                 )
@@ -94,7 +95,7 @@ library MetaTxLib {
         uint64 configNumber,
         bool switchToGivenConfig
     ) internal {
-        uint256 nonce = _sigNonces(signature.signer);
+        uint256 nonce = _getAndIncrementNonce(signature.signer);
         uint256 deadline = signature.deadline;
         _validateRecoveredAddress(
             _calculateDigest(
@@ -127,7 +128,7 @@ library MetaTxLib {
                         Typehash.SET_PROFILE_IMAGE_URI,
                         profileId,
                         keccak256(bytes(imageURI)),
-                        _sigNonces(signature.signer),
+                        _getAndIncrementNonce(signature.signer),
                         signature.deadline
                     )
                 )
@@ -148,7 +149,7 @@ library MetaTxLib {
                         Typehash.SET_FOLLOW_NFT_URI,
                         profileId,
                         keccak256(bytes(followNFTURI)),
-                        _sigNonces(signature.signer),
+                        _getAndIncrementNonce(signature.signer),
                         signature.deadline
                     )
                 )
@@ -171,7 +172,7 @@ library MetaTxLib {
                         keccak256(postParams.collectModuleInitData),
                         postParams.referenceModule,
                         keccak256(postParams.referenceModuleInitData),
-                        _sigNonces(signature.signer),
+                        _getAndIncrementNonce(signature.signer),
                         signature.deadline
                     )
                 )
@@ -184,7 +185,7 @@ library MetaTxLib {
         Types.EIP712Signature calldata signature,
         Types.CommentParams calldata commentParams
     ) internal {
-        uint256 nonce = _sigNonces(signature.signer);
+        uint256 nonce = _getAndIncrementNonce(signature.signer);
         uint256 deadline = signature.deadline;
         _validateRecoveredAddress(
             _calculateDigest(
@@ -214,7 +215,7 @@ library MetaTxLib {
     function validateQuoteSignature(Types.EIP712Signature calldata signature, Types.QuoteParams calldata quoteParams)
         internal
     {
-        uint256 nonce = _sigNonces(signature.signer);
+        uint256 nonce = _getAndIncrementNonce(signature.signer);
         uint256 deadline = signature.deadline;
         _validateRecoveredAddress(
             _calculateDigest(
@@ -255,7 +256,7 @@ library MetaTxLib {
                         mirrorParams.referrerProfileId,
                         mirrorParams.referrerPubId,
                         keccak256(mirrorParams.referenceModuleData),
-                        _sigNonces(signature.signer),
+                        _getAndIncrementNonce(signature.signer),
                         signature.deadline
                     )
                 )
@@ -267,7 +268,9 @@ library MetaTxLib {
     function validateBurnSignature(Types.EIP712Signature calldata signature, uint256 tokenId) internal {
         _validateRecoveredAddress(
             _calculateDigest(
-                keccak256(abi.encode(Typehash.BURN, tokenId, _sigNonces(signature.signer), signature.deadline))
+                keccak256(
+                    abi.encode(Typehash.BURN, tokenId, _getAndIncrementNonce(signature.signer), signature.deadline)
+                )
             ),
             signature
         );
@@ -288,7 +291,7 @@ library MetaTxLib {
                 ++i;
             }
         }
-        uint256 nonce = _sigNonces(signature.signer);
+        uint256 nonce = _getAndIncrementNonce(signature.signer);
         uint256 deadline = signature.deadline;
 
         _validateRecoveredAddress(
@@ -321,7 +324,7 @@ library MetaTxLib {
                         Typehash.UNFOLLOW,
                         unfollowerProfileId,
                         keccak256(abi.encodePacked(idsOfProfilesToUnfollow)),
-                        _sigNonces(signature.signer),
+                        _getAndIncrementNonce(signature.signer),
                         signature.deadline
                     )
                 )
@@ -344,7 +347,7 @@ library MetaTxLib {
                         byProfileId,
                         keccak256(abi.encodePacked(idsOfProfilesToSetBlockStatus)),
                         keccak256(abi.encodePacked(blockStatus)),
-                        _sigNonces(signature.signer),
+                        _getAndIncrementNonce(signature.signer),
                         signature.deadline
                     )
                 )
@@ -368,7 +371,7 @@ library MetaTxLib {
                         collectParams.referrerProfileId,
                         collectParams.referrerPubId,
                         keccak256(collectParams.collectModuleData),
-                        _sigNonces(signature.signer),
+                        _getAndIncrementNonce(signature.signer),
                         signature.deadline
                     )
                 )
@@ -385,15 +388,33 @@ library MetaTxLib {
         _validateRecoveredAddress(
             _calculateDigest(
                 keccak256(
-                    abi.encode(Typehash.PERMIT, spender, tokenId, _sigNonces(signature.signer), signature.deadline)
+                    abi.encode(
+                        Typehash.PERMIT,
+                        spender,
+                        tokenId,
+                        _getAndIncrementNonce(signature.signer),
+                        signature.deadline
+                    )
                 )
             ),
             signature
         );
     }
 
-    function getDomainSeparator() internal view returns (bytes32) {
-        return _calculateDomainSeparator();
+    function calculateDomainSeparator() internal view returns (bytes32) {
+        if (address(this) == LENS_HUB_ADDRESS) {
+            return LENS_HUB_CACHED_POLYGON_DOMAIN_SEPARATOR;
+        }
+        return
+            keccak256(
+                abi.encode(
+                    Typehash.EIP712_DOMAIN,
+                    keccak256(bytes(StorageLib.getName())),
+                    EIP712_REVISION_HASH,
+                    block.chainid,
+                    address(this)
+                )
+            );
     }
 
     /**
@@ -418,25 +439,6 @@ library MetaTxLib {
     }
 
     /**
-     * @dev Calculates EIP712 DOMAIN_SEPARATOR based on the current contract and chain ID.
-     */
-    function _calculateDomainSeparator() private view returns (bytes32) {
-        if (address(this) == LENS_HUB_ADDRESS) {
-            return LENS_HUB_CACHED_POLYGON_DOMAIN_SEPARATOR;
-        }
-        return
-            keccak256(
-                abi.encode(
-                    Typehash.EIP712_DOMAIN,
-                    keccak256(_nameBytes()),
-                    EIP712_REVISION_HASH,
-                    block.chainid,
-                    address(this)
-                )
-            );
-    }
-
-    /**
      * @dev Calculates EIP712 digest based on the current DOMAIN_SEPARATOR.
      *
      * @param hashedMessage The message hash from which the digest should be calculated.
@@ -444,11 +446,7 @@ library MetaTxLib {
      * @return bytes32 A 32-byte output representing the EIP712 digest.
      */
     function _calculateDigest(bytes32 hashedMessage) private view returns (bytes32) {
-        bytes32 digest;
-        unchecked {
-            digest = keccak256(abi.encodePacked('\x19\x01', _calculateDomainSeparator(), hashedMessage));
-        }
-        return digest;
+        return keccak256(abi.encodePacked('\x19\x01', calculateDomainSeparator(), hashedMessage));
     }
 
     /**
@@ -458,68 +456,9 @@ library MetaTxLib {
      *
      * @return uint256 The signing nonce for the given user prior to being incremented.
      */
-    function _sigNonces(address user) private returns (uint256) {
-        uint256 previousValue;
-        assembly {
-            mstore(0, user)
-            mstore(32, SIG_NONCES_MAPPING_SLOT)
-            let slot := keccak256(0, 64)
-            previousValue := sload(slot)
-            sstore(slot, add(previousValue, 1))
+    function _getAndIncrementNonce(address user) private returns (uint256) {
+        unchecked {
+            return StorageLib.getNoncesMapping()[user]++;
         }
-        return previousValue;
-    }
-
-    /**
-     * @dev Reads the name storage slot and returns the value as a bytes variable.
-     *
-     * @return bytes The contract's name.
-     */
-    function _nameBytes() private view returns (bytes memory) {
-        bytes memory ptr;
-        assembly {
-            // Load the free memory pointer, where we'll return the value
-            ptr := mload(64)
-
-            // Load the slot, which either contains the name + 2*length if length < 32 or
-            // 2*length+1 if length >= 32, and the actual string starts at slot keccak256(NAME_SLOT)
-            let slotLoad := sload(NAME_SLOT)
-
-            let size
-            // Determine if the length > 32 by checking the lowest order bit, meaning the string
-            // itself is stored at keccak256(NAME_SLOT)
-            switch and(slotLoad, 1)
-            case 0 {
-                // The name is in the same slot
-                // Determine the size by dividing the last byte's value by 2
-                size := shr(1, and(slotLoad, 255))
-
-                // Store the size in the first slot
-                mstore(ptr, size)
-
-                // Store the actual string in the second slot (without the size)
-                mstore(add(ptr, 32), and(slotLoad, not(255)))
-            }
-            case 1 {
-                // The name is not in the same slot
-                // Determine the size by dividing the value in the whole slot minus 1 by 2
-                size := shr(1, sub(slotLoad, 1))
-
-                // Store the size in the first slot
-                mstore(ptr, size)
-
-                // Compute the total memory slots we need, this is (size + 31) / 32
-                let totalMemorySlots := shr(5, add(size, 31))
-
-                // Iterate through the words in memory and store the string word by word
-                // prettier-ignore
-                for { let i := 0 } lt(i, totalMemorySlots) { i := add(i, 1) } {
-                    mstore(add(add(ptr, 32), mul(32, i)), sload(add(NAME_SLOT_GT_31, i)))
-                }
-            }
-            // Store the new memory pointer in the free memory pointer slot
-            mstore(64, add(add(ptr, 32), size))
-        }
-        return ptr;
     }
 }

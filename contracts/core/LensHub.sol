@@ -20,7 +20,7 @@ import {VersionedInitializable} from 'contracts/upgradeability/VersionedInitiali
 import {IERC721Enumerable} from '@openzeppelin/contracts/token/ERC721/extensions/IERC721Enumerable.sol';
 import {MetaTxLib} from 'contracts/libraries/MetaTxLib.sol';
 import 'contracts/libraries/Constants.sol';
-import 'contracts/libraries/LensHubStorageLib.sol';
+import 'contracts/libraries/StorageLib.sol';
 
 /**
  * @title LensHub
@@ -78,7 +78,7 @@ contract LensHub is LensNFTBase, VersionedInitializable, LensMultiState, LensHub
     /////////////////////////////////
 
     /// @inheritdoc ILensHub
-    function setGovernance(address newGovernance) external override onlyGov {
+    function setGovernance(address newGovernance) external onlyGov {
         GeneralLib.setGovernance(newGovernance);
     }
 
@@ -596,7 +596,7 @@ contract LensHub is LensNFTBase, VersionedInitializable, LensMultiState, LensHub
         address executor,
         uint64 configNumber
     ) external view returns (bool) {
-        return LensHubStorageLib.getDelegatedExecutorsConfig(delegatorProfileId).isApproved[configNumber][executor];
+        return StorageLib.getDelegatedExecutorsConfig(delegatorProfileId).isApproved[configNumber][executor];
     }
 
     /// @inheritdoc ILensHub
@@ -606,17 +606,17 @@ contract LensHub is LensNFTBase, VersionedInitializable, LensMultiState, LensHub
 
     /// @inheritdoc ILensHub
     function getDelegatedExecutorsConfigNumber(uint256 delegatorProfileId) external view returns (uint64) {
-        return LensHubStorageLib.getDelegatedExecutorsConfig(delegatorProfileId).configNumber;
+        return StorageLib.getDelegatedExecutorsConfig(delegatorProfileId).configNumber;
     }
 
     /// @inheritdoc ILensHub
     function getDelegatedExecutorsPrevConfigNumber(uint256 delegatorProfileId) external view returns (uint64) {
-        return LensHubStorageLib.getDelegatedExecutorsConfig(delegatorProfileId).prevConfigNumber;
+        return StorageLib.getDelegatedExecutorsConfig(delegatorProfileId).prevConfigNumber;
     }
 
     /// @inheritdoc ILensHub
     function getDelegatedExecutorsMaxConfigNumberSet(uint256 delegatorProfileId) external view returns (uint64) {
-        return LensHubStorageLib.getDelegatedExecutorsConfig(delegatorProfileId).maxConfigNumberSet;
+        return StorageLib.getDelegatedExecutorsConfig(delegatorProfileId).maxConfigNumberSet;
     }
 
     /// @inheritdoc ILensHub
@@ -715,7 +715,7 @@ contract LensHub is LensNFTBase, VersionedInitializable, LensMultiState, LensHub
      * @dev Overrides the LensNFTBase function to compute the domain separator in the GeneralLib.
      */
     function getDomainSeparator() external view override returns (bytes32) {
-        return MetaTxLib.getDomainSeparator();
+        return MetaTxLib.calculateDomainSeparator();
     }
 
     /**
