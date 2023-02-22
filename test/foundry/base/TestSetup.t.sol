@@ -11,17 +11,16 @@ import {CollectNFT} from 'contracts/core/CollectNFT.sol';
 import {ModuleGlobals} from 'contracts/core/modules/ModuleGlobals.sol';
 import {TransparentUpgradeableProxy} from 'contracts/upgradeability/TransparentUpgradeableProxy.sol';
 import {Types} from 'contracts/libraries/constants/Types.sol';
-import 'contracts/libraries/Constants.sol';
 import {Errors} from 'contracts/libraries/constants/Errors.sol';
 import {Events} from 'contracts/libraries/constants/Events.sol';
-import {GeneralLib} from 'contracts/libraries/GeneralLib.sol';
-import {ProfileTokenURILogic} from 'contracts/libraries/ProfileTokenURILogic.sol';
+import {ProfileTokenURILib} from 'contracts/libraries/ProfileTokenURILib.sol';
 import {MockCollectModule} from 'contracts/mocks/MockCollectModule.sol';
 import {MockReferenceModule} from 'contracts/mocks/MockReferenceModule.sol';
 import 'test/foundry/helpers/ForkManagement.sol';
 import 'test/foundry/Constants.sol';
 import {Typehash} from 'contracts/libraries/constants/Typehash.sol';
 import {MetaTxLib} from 'contracts/libraries/MetaTxLib.sol';
+import {StorageLib} from 'contracts/libraries/StorageLib.sol';
 
 contract TestSetup is Test, ForkManagement {
     using stdJson for string;
@@ -274,6 +273,6 @@ contract TestSetup is Test, ForkManagement {
 
     // TODO: Find a better place for such helpers that have access to Hub without rekting inheritance
     function _getNextProfileId() internal returns (uint256) {
-        return uint256(vm.load(hubProxyAddr, bytes32(uint256(PROFILE_COUNTER_SLOT)))) + 1;
+        return uint256(vm.load(hubProxyAddr, bytes32(uint256(StorageLib.PROFILE_COUNTER_SLOT)))) + 1;
     }
 }

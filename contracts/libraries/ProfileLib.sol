@@ -2,15 +2,17 @@
 
 pragma solidity 0.8.15;
 
-import {GeneralHelpers} from 'contracts/libraries/GeneralHelpers.sol';
-import {MetaTxLib} from 'contracts/libraries/MetaTxLib.sol';
+import {ValidationLib} from 'contracts/libraries/ValidationLib.sol';
 import {Types} from 'contracts/libraries/constants/Types.sol';
 import {Errors} from 'contracts/libraries/constants/Errors.sol';
 import {Events} from 'contracts/libraries/constants/Events.sol';
+import {StorageLib} from 'contracts/libraries/StorageLib.sol';
 import {IFollowModule} from 'contracts/interfaces/IFollowModule.sol';
-import 'contracts/libraries/Constants.sol';
+import {IFollowNFT} from 'contracts/interfaces/IFollowNFT.sol';
 
 library ProfileLib {
+    uint16 constant MAX_PROFILE_IMAGE_URI_LENGTH = 6000;
+
     /**
      * @notice Creates a profile with the given parameters to the given address. Minting happens
      * in the hub.
@@ -24,30 +26,24 @@ library ProfileLib {
      * @param profileId The profile ID to associate with this profile NFT (token ID).
      */
     function createProfile(Types.CreateProfileParams calldata createProfileParams, uint256 profileId) external {
-        _validateProfileCreatorWhitelisted();
+        ValidationLib.validateProfileCreatorWhitelisted(msg.sender);
 
-        if (bytes(createProfileParams.imageURI).length > MAX_PROFILE_IMAGE_URI_LENGTH)
+        if (bytes(createProfileParams.imageURI).length > MAX_PROFILE_IMAGE_URI_LENGTH) {
             revert Errors.ProfileImageURILengthInvalid();
+        }
 
-        _setProfileString(profileId, PROFILE_IMAGE_URI_OFFSET, createProfileParams.imageURI);
-        _setProfileString(profileId, PROFILE_FOLLOW_NFT_URI_OFFSET, createProfileParams.followNFTURI);
+        Types.Profile storage _profile = StorageLib.getProfile(profileId);
+        _profile.imageURI = createProfileParams.imageURI;
+        _profile.followNFTURI = createProfileParams.followNFTURI;
 
         bytes memory followModuleReturnData;
         if (createProfileParams.followModule != address(0)) {
             // Load the follow module to be used in the next assembly block.
             address followModule = createProfileParams.followModule;
 
-            // Store the follow module for the new profile. We opt not to use the
-            // _setFollowModule() private function to avoid unnecessary checks.
-            assembly {
-                mstore(0, profileId)
-                mstore(32, PROFILE_BY_ID_MAPPING_SLOT)
-                let slot := add(keccak256(0, 64), PROFILE_FOLLOW_MODULE_OFFSET)
-                sstore(slot, followModule)
-            }
+            StorageLib.getProfile(profileId).followModule = followModule;
 
-            // @note We don't need to check for deprecated modules here because deprecated modules
-            // are no longer whitelisted.
+            // We don't need to check for deprecated modules here because deprecated ones are no longer whitelisted.
             // Initialize the follow module.
             followModuleReturnData = _initFollowModule(
                 profileId,
@@ -101,115 +97,17 @@ library ProfileLib {
         address followModule,
         bytes calldata followModuleInitData
     ) external {
-        _setFollowModule(profileId, msg.sender, followModule, followModuleInitData);
+        StorageLib.getProfile(profileId).followModule = followModule;
+        bytes memory followModuleReturnData;
+        if (followModule != address(0)) {
+            followModuleReturnData = _initFollowModule(profileId, msg.sender, followModule, followModuleInitData);
+        }
+        emit Events.FollowModuleSet(profileId, followModule, followModuleReturnData, block.timestamp);
     }
 
     function setProfileMetadataURI(uint256 profileId, string calldata metadataURI) external {
-        _setProfileMetadataURI(profileId, metadataURI);
-    }
-
-    function _setProfileString(
-        uint256 profileId,
-        uint256 profileOffset,
-        string calldata value
-    ) private {
-        assembly {
-            let length := value.length
-            let cdOffset := value.offset
-            mstore(0, profileId)
-            mstore(32, PROFILE_BY_ID_MAPPING_SLOT)
-            let slot := add(keccak256(0, 64), profileOffset)
-
-            // If the length is greater than 31, storage rules are different.
-            switch gt(length, 31)
-            case 1 {
-                // The length is > 31, so we need to store the actual string in a new slot,
-                // equivalent to keccak256(startSlot), and store length*2+1 in startSlot.
-                sstore(slot, add(shl(1, length), 1))
-
-                // Calculate the amount of storage slots we need to store the full string.
-                // This is equivalent to (string.length + 31)/32.
-                let totalStorageSlots := shr(5, add(length, 31))
-
-                // Compute the slot where the actual string will begin, which is the keccak256
-                // hash of the slot where we stored the modified length.
-                mstore(0, slot)
-                slot := keccak256(0, 32)
-
-                // Write the actual string to storage starting at the computed slot.
-                // prettier-ignore
-                for { let i := 0 } lt(i, totalStorageSlots) { i := add(i, 1) } {
-                    sstore(add(slot, i), calldataload(add(cdOffset, mul(32, i))))
-                }
-            }
-            default {
-                // The length is <= 31 so store the string and the length*2 in the same slot.
-                sstore(slot, or(calldataload(cdOffset), shl(1, length)))
-            }
-        }
-    }
-
-    function _setProfileMetadataURI(uint256 profileId, string calldata metadataURI) private {
-        assembly {
-            let length := metadataURI.length
-            let cdOffset := metadataURI.offset
-            mstore(0, profileId)
-            mstore(32, PROFILE_METADATA_MAPPING_SLOT)
-            let slot := keccak256(0, 64)
-
-            // If the length is greater than 31, storage rules are different.
-            switch gt(length, 31)
-            case 1 {
-                // The length is > 31, so we need to store the actual string in a new slot,
-                // equivalent to keccak256(startSlot), and store length*2+1 in startSlot.
-                sstore(slot, add(shl(1, length), 1))
-
-                // Calculate the amount of storage slots we need to store the full string.
-                // This is equivalent to (string.length + 31)/32.
-                let totalStorageSlots := shr(5, add(length, 31))
-
-                // Compute the slot where the actual string will begin, which is the keccak256
-                // hash of the slot where we stored the modified length.
-                mstore(0, slot)
-                slot := keccak256(0, 32)
-
-                // Write the actual string to storage starting at the computed slot.
-                // prettier-ignore
-                for { let i := 0 } lt(i, totalStorageSlots) { i := add(i, 1) } {
-                    sstore(add(slot, i), calldataload(add(cdOffset, mul(32, i))))
-                }
-            }
-            default {
-                // The length is <= 31 so store the string and the length*2 in the same slot.
-                sstore(slot, or(calldataload(cdOffset), shl(1, length)))
-            }
-        }
+        StorageLib.getProfile(profileId).metadataURI = metadataURI;
         emit Events.ProfileMetadataSet(profileId, metadataURI, block.timestamp);
-    }
-
-    function _setFollowModule(
-        uint256 profileId,
-        address executor,
-        address followModule,
-        bytes calldata followModuleInitData
-    ) private {
-        // Store the follow module in the appropriate slot for the given profile ID, but
-        // only if it is not the same as the previous follow module.
-        assembly {
-            mstore(0, profileId)
-            mstore(32, PROFILE_BY_ID_MAPPING_SLOT)
-            let slot := add(keccak256(0, 64), PROFILE_FOLLOW_MODULE_OFFSET)
-            let currentFollowModule := sload(slot)
-            if iszero(eq(followModule, currentFollowModule)) {
-                sstore(slot, followModule)
-            }
-        }
-
-        // Initialize the follow module if it is non-zero.
-        bytes memory followModuleReturnData;
-        if (followModule != address(0))
-            followModuleReturnData = _initFollowModule(profileId, executor, followModule, followModuleInitData);
-        emit Events.FollowModuleSet(profileId, followModule, followModuleReturnData, block.timestamp);
     }
 
     function _initFollowModule(
@@ -218,44 +116,179 @@ library ProfileLib {
         address followModule,
         bytes memory followModuleInitData
     ) private returns (bytes memory) {
-        _validateFollowModuleWhitelisted(followModule);
+        ValidationLib.validateFollowModuleWhitelisted(followModule);
         return IFollowModule(followModule).initializeFollowModule(profileId, executor, followModuleInitData);
     }
 
     function _setProfileImageURI(uint256 profileId, string calldata imageURI) private {
-        if (bytes(imageURI).length > MAX_PROFILE_IMAGE_URI_LENGTH) revert Errors.ProfileImageURILengthInvalid();
-        _setProfileString(profileId, PROFILE_IMAGE_URI_OFFSET, imageURI);
+        if (bytes(imageURI).length > MAX_PROFILE_IMAGE_URI_LENGTH) {
+            revert Errors.ProfileImageURILengthInvalid();
+        }
+        StorageLib.getProfile(profileId).imageURI = imageURI;
         emit Events.ProfileImageURISet(profileId, imageURI, block.timestamp);
     }
 
     function _setFollowNFTURI(uint256 profileId, string calldata followNFTURI) private {
-        _setProfileString(profileId, PROFILE_FOLLOW_NFT_URI_OFFSET, followNFTURI);
+        StorageLib.getProfile(profileId).followNFTURI = followNFTURI;
         emit Events.FollowNFTURISet(profileId, followNFTURI, block.timestamp);
     }
 
-    function _validateFollowModuleWhitelisted(address followModule) private view {
-        bool whitelist;
-
-        // Load whether the given follow module is whitelisted.
-        assembly {
-            mstore(0, followModule)
-            mstore(32, FOLLOW_MODULE_WHITELIST_MAPPING_SLOT)
-            let slot := keccak256(0, 64)
-            whitelist := sload(slot)
+    function setBlockStatus(
+        uint256 byProfileId,
+        uint256[] calldata idsOfProfilesToSetBlockStatus,
+        bool[] calldata blockStatus
+    ) internal {
+        if (idsOfProfilesToSetBlockStatus.length != blockStatus.length) {
+            revert Errors.ArrayMismatch();
         }
-        if (!whitelist) revert Errors.FollowModuleNotWhitelisted();
+        address followNFT = StorageLib.getProfile(byProfileId).followNFT;
+        uint256 i;
+        uint256 idOfProfileToSetBlockStatus;
+        bool blockedStatus;
+        mapping(uint256 => bool) storage _blockedStatus = StorageLib.blockedStatus(byProfileId);
+        while (i < idsOfProfilesToSetBlockStatus.length) {
+            idOfProfileToSetBlockStatus = idsOfProfilesToSetBlockStatus[i];
+            ValidationLib.validateProfileExists(idOfProfileToSetBlockStatus);
+            if (byProfileId == idOfProfileToSetBlockStatus) {
+                revert Errors.SelfBlock();
+            }
+            blockedStatus = blockStatus[i];
+            if (followNFT != address(0) && blockedStatus) {
+                IFollowNFT(followNFT).processBlock(idOfProfileToSetBlockStatus);
+            }
+            _blockedStatus[idOfProfileToSetBlockStatus] = blockedStatus;
+            if (blockedStatus) {
+                emit Events.Blocked(byProfileId, idOfProfileToSetBlockStatus, block.timestamp);
+            } else {
+                emit Events.Unblocked(byProfileId, idOfProfileToSetBlockStatus, block.timestamp);
+            }
+            unchecked {
+                ++i;
+            }
+        }
     }
 
-    function _validateProfileCreatorWhitelisted() private view {
-        bool whitelisted;
+    function switchToNewFreshDelegatedExecutorsConfig(uint256 profileId) external {
+        Types.DelegatedExecutorsConfig storage _delegatedExecutorsConfig = StorageLib.getDelegatedExecutorsConfig({
+            delegatorProfileId: profileId
+        });
+        _changeDelegatedExecutorsConfig({
+            _delegatedExecutorsConfig: _delegatedExecutorsConfig,
+            delegatorProfileId: profileId,
+            executors: new address[](0),
+            approvals: new bool[](0),
+            configNumber: _delegatedExecutorsConfig.maxConfigNumberSet + 1,
+            switchToGivenConfig: true
+        });
+    }
 
-        // Load whether the caller is whitelisted as a profile creator.
-        assembly {
-            mstore(0, caller())
-            mstore(32, PROFILE_CREATOR_WHITELIST_MAPPING_SLOT)
-            let slot := keccak256(0, 64)
-            whitelisted := sload(slot)
+    function changeCurrentDelegatedExecutorsConfig(
+        uint256 delegatorProfileId,
+        address[] calldata executors,
+        bool[] calldata approvals
+    ) external {
+        Types.DelegatedExecutorsConfig storage _delegatedExecutorsConfig = StorageLib.getDelegatedExecutorsConfig(
+            delegatorProfileId
+        );
+        _changeDelegatedExecutorsConfig(
+            _delegatedExecutorsConfig,
+            delegatorProfileId,
+            executors,
+            approvals,
+            _delegatedExecutorsConfig.configNumber,
+            false
+        );
+    }
+
+    function changeGivenDelegatedExecutorsConfig(
+        uint256 delegatorProfileId,
+        address[] calldata executors,
+        bool[] calldata approvals,
+        uint64 configNumber,
+        bool switchToGivenConfig
+    ) external {
+        _changeDelegatedExecutorsConfig(
+            StorageLib.getDelegatedExecutorsConfig(delegatorProfileId),
+            delegatorProfileId,
+            executors,
+            approvals,
+            configNumber,
+            switchToGivenConfig
+        );
+    }
+
+    function isExecutorApproved(uint256 delegatorProfileId, address executor) internal view returns (bool) {
+        Types.DelegatedExecutorsConfig storage _delegatedExecutorsConfig = StorageLib.getDelegatedExecutorsConfig(
+            delegatorProfileId
+        );
+        return _delegatedExecutorsConfig.isApproved[_delegatedExecutorsConfig.configNumber][executor];
+    }
+
+    function _changeDelegatedExecutorsConfig(
+        Types.DelegatedExecutorsConfig storage _delegatedExecutorsConfig,
+        uint256 delegatorProfileId,
+        address[] memory executors,
+        bool[] memory approvals,
+        uint64 configNumber,
+        bool switchToGivenConfig
+    ) private {
+        if (executors.length != approvals.length) {
+            revert Errors.ArrayMismatch();
         }
-        if (!whitelisted) revert Errors.ProfileCreatorNotWhitelisted();
+        bool configSwitched = _prepareStorageToApplyChangesUnderGivenConfig(
+            _delegatedExecutorsConfig,
+            configNumber,
+            switchToGivenConfig
+        );
+        uint256 i;
+        while (i < executors.length) {
+            _delegatedExecutorsConfig.isApproved[configNumber][executors[i]] = approvals[i];
+            unchecked {
+                ++i;
+            }
+        }
+        emit Events.DelegatedExecutorsConfigChanged(
+            delegatorProfileId,
+            configNumber,
+            executors,
+            approvals,
+            configSwitched
+        );
+    }
+
+    function _prepareStorageToApplyChangesUnderGivenConfig(
+        Types.DelegatedExecutorsConfig storage _delegatedExecutorsConfig,
+        uint64 configNumber,
+        bool switchToGivenConfig
+    ) private returns (bool) {
+        uint64 nextAvailableConfigNumber = _delegatedExecutorsConfig.maxConfigNumberSet + 1;
+        if (configNumber > nextAvailableConfigNumber) {
+            revert Errors.InvalidParameter();
+        }
+        bool configSwitched;
+        if (configNumber == nextAvailableConfigNumber) {
+            // The next configuration available is being changed, it must be marked.
+            // Otherwise, on a profile transfer, the next owner can inherit a used/dirty configuration.
+            _delegatedExecutorsConfig.maxConfigNumberSet = nextAvailableConfigNumber;
+            configSwitched = switchToGivenConfig;
+            if (configSwitched) {
+                // The configuration is being switched, previous and current configuration numbers must be updated.
+                _delegatedExecutorsConfig.prevConfigNumber = _delegatedExecutorsConfig.configNumber;
+                _delegatedExecutorsConfig.configNumber = nextAvailableConfigNumber;
+            }
+        } else {
+            // The configuration corresponding to the given number is not a fresh/clean one.
+            uint64 currentConfigNumber = _delegatedExecutorsConfig.configNumber;
+            // If the given configuration matches the one that is already in use, we keep `configSwitched` as `false`.
+            if (configNumber != currentConfigNumber) {
+                configSwitched = switchToGivenConfig;
+            }
+            if (configSwitched) {
+                // The configuration is being switched, previous and current configuration numbers must be updated.
+                _delegatedExecutorsConfig.prevConfigNumber = currentConfigNumber;
+                _delegatedExecutorsConfig.configNumber = configNumber;
+            }
+        }
+        return configSwitched;
     }
 }

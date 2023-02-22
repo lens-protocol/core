@@ -2,7 +2,6 @@
 
 pragma solidity 0.8.15;
 
-import 'contracts/libraries/Constants.sol';
 import {Types} from 'contracts/libraries/constants/Types.sol';
 import {ERC2981CollectionRoyalties} from 'contracts/core/base/ERC2981CollectionRoyalties.sol';
 import {ERC721Enumerable} from 'contracts/core/base/ERC721Enumerable.sol';
@@ -19,6 +18,9 @@ import {Strings} from '@openzeppelin/contracts/utils/Strings.sol';
 
 contract FollowNFT is HubRestricted, LensNFTBase, ERC2981CollectionRoyalties, IFollowNFT {
     using Strings for uint256;
+
+    string constant FOLLOW_NFT_NAME_SUFFIX = '-Follower';
+    string constant FOLLOW_NFT_SYMBOL_SUFFIX = '-Fl';
 
     uint256[5] ___DEPRECATED_SLOTS; // Deprecated slots, previously used for delegations.
     uint256 internal _followedProfileId;

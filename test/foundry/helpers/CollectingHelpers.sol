@@ -6,6 +6,9 @@ import 'forge-std/Test.sol';
 import 'contracts/libraries/constants/Types.sol';
 
 contract CollectingHelpers is TestSetup {
+    string constant COLLECT_NFT_NAME_INFIX = '-Collect-';
+    string constant COLLECT_NFT_SYMBOL_INFIX = '-Cl-';
+
     CollectNFT _collectNftAfter;
 
     function _checkCollectNFTBefore() internal view returns (uint256) {

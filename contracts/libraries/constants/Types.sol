@@ -73,6 +73,7 @@ library Types {
         string handleDeprecated; // offset 3
         string imageURI; // offset 4
         string followNFTURI; // offset 5
+        string metadataURI; // offset 6
     }
 
     struct Publication {

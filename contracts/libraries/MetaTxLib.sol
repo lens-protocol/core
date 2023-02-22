@@ -4,26 +4,22 @@ pragma solidity 0.8.15;
 import {IEIP1271Implementer} from 'contracts/interfaces/IEIP1271Implementer.sol';
 import {Types} from 'contracts/libraries/constants/Types.sol';
 import {Errors} from 'contracts/libraries/constants/Errors.sol';
-import {GeneralHelpers} from 'contracts/libraries/GeneralHelpers.sol';
+import {ValidationLib} from 'contracts/libraries/ValidationLib.sol';
 import {Typehash} from 'contracts/libraries/constants/Typehash.sol';
-import 'contracts/libraries/Constants.sol';
-import 'contracts/libraries/StorageLib.sol';
+import {StorageLib} from 'contracts/libraries/StorageLib.sol';
 
 /**
  * @title MetaTxLib
  * @author Lens Protocol
  *
- * @notice This is the library used by the GeneralLib that contains the logic for signature
- * validation.
- *
  * NOTE: the baseFunctions in this contract operate under the assumption that the passed signer is already validated
  * to either be the originator or one of their delegated executors.
  *
- * @dev The functions are internal, so they are inlined into the GeneralLib. User nonces
- * are incremented from this library as well.
+ * @dev User nonces are incremented from this library as well.
  */
 library MetaTxLib {
     bytes32 constant EIP712_REVISION_HASH = keccak256('2');
+    bytes4 constant EIP1271_MAGIC_VALUE = 0x1626ba7e;
 
     /**
      * @dev We store the domain separator and LensHub Proxy address as constants to save gas.
@@ -458,7 +454,7 @@ library MetaTxLib {
      */
     function _getAndIncrementNonce(address user) private returns (uint256) {
         unchecked {
-            return StorageLib.getNoncesMapping()[user]++;
+            return StorageLib.nonces()[user]++;
         }
     }
 }

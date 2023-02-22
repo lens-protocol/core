@@ -2,7 +2,7 @@
 
 pragma solidity 0.8.15;
 
-import {GeneralHelpers} from 'contracts/libraries/GeneralHelpers.sol';
+import {ValidationLib} from 'contracts/libraries/ValidationLib.sol';
 import {MetaTxLib} from 'contracts/libraries/MetaTxLib.sol';
 import {Types} from 'contracts/libraries/constants/Types.sol';
 import {Events} from 'contracts/libraries/constants/Events.sol';
@@ -10,11 +10,9 @@ import {Errors} from 'contracts/libraries/constants/Errors.sol';
 import {ICollectModule} from 'contracts/interfaces/ICollectModule.sol';
 import {IReferenceModule} from 'contracts/interfaces/IReferenceModule.sol';
 import {IDeprecatedReferenceModule} from 'contracts/interfaces/IDeprecatedReferenceModule.sol';
-
-import 'contracts/libraries/Constants.sol';
 import {StorageLib} from 'contracts/libraries/StorageLib.sol';
 
-library PublishingLib {
+library PublicationLib {
     /**
      * @notice Publishes a post to a given profile.
      *
@@ -76,7 +74,7 @@ library PublishingLib {
             bytes memory referenceModuleReturnData,
             Types.PublicationType referrerPubType
         ) = _createReferencePublication(
-                _copyToReferencePubParams(commentParams),
+                _asReferencePubParams(commentParams),
                 transactionExecutor,
                 Types.PublicationType.Comment
             );
@@ -116,7 +114,7 @@ library PublishingLib {
      * @return uint256 The created publication's pubId.
      */
     function mirror(Types.MirrorParams calldata mirrorParams, address transactionExecutor) external returns (uint256) {
-        Types.PublicationType referrerPubType = GeneralHelpers.validateReferrerAndGetReferrerPubType(
+        Types.PublicationType referrerPubType = ValidationLib.validateReferrerAndGetReferrerPubType(
             mirrorParams.referrerProfileId,
             mirrorParams.referrerPubId,
             mirrorParams.pointedProfileId,
@@ -158,7 +156,7 @@ library PublishingLib {
             bytes memory referenceModuleReturnData,
             Types.PublicationType referrerPubType
         ) = _createReferencePublication(
-                _copyToReferencePubParams(quoteParams),
+                _asReferencePubParams(quoteParams),
                 transactionExecutor,
                 Types.PublicationType.Quote
             );
@@ -191,7 +189,7 @@ library PublishingLib {
         );
     }
 
-    function _copyToReferencePubParams(Types.QuoteParams calldata quoteParams)
+    function _asReferencePubParams(Types.QuoteParams calldata quoteParams)
         private
         pure
         returns (Types.ReferencePubParams memory)
@@ -212,7 +210,7 @@ library PublishingLib {
             });
     }
 
-    function _copyToReferencePubParams(Types.CommentParams calldata commentParams)
+    function _asReferencePubParams(Types.CommentParams calldata commentParams)
         private
         pure
         returns (Types.ReferencePubParams memory)
@@ -246,7 +244,7 @@ library PublishingLib {
             Types.PublicationType
         )
     {
-        Types.PublicationType referrerPubType = GeneralHelpers.validateReferrerAndGetReferrerPubType(
+        Types.PublicationType referrerPubType = ValidationLib.validateReferrerAndGetReferrerPubType(
             referencePubParams.referrerProfileId,
             referencePubParams.referrerPubId,
             referencePubParams.pointedProfileId,
@@ -329,7 +327,7 @@ library PublishingLib {
                         revert(add(err, 32), length)
                     }
                 }
-                if (transactionExecutor != GeneralHelpers.unsafeOwnerOf(commentParams.profileId)) {
+                if (transactionExecutor != StorageLib.unsafeOwnerOf(commentParams.profileId)) {
                     // TODO: WTF is this?
                     revert Errors.ExecutorInvalid();
                 }
@@ -372,7 +370,7 @@ library PublishingLib {
                         revert(add(err, 32), length)
                     }
                 }
-                if (transactionExecutor != GeneralHelpers.unsafeOwnerOf(quoteParams.profileId)) {
+                if (transactionExecutor != StorageLib.unsafeOwnerOf(quoteParams.profileId)) {
                     // TODO: WTF is this?
                     revert Errors.ExecutorInvalid();
                 }
@@ -415,7 +413,7 @@ library PublishingLib {
                         revert(add(err, 32), length)
                     }
                 }
-                if (transactionExecutor != GeneralHelpers.unsafeOwnerOf(mirrorParams.profileId)) {
+                if (transactionExecutor != StorageLib.unsafeOwnerOf(mirrorParams.profileId)) {
                     // TODO: WTF is this?
                     revert Errors.ExecutorInvalid();
                 }
@@ -439,7 +437,7 @@ library PublishingLib {
         if (collectModule == address(0)) {
             return new bytes(0);
         }
-        GeneralHelpers.validateCollectModuleWhitelisted(collectModule);
+        ValidationLib.validateCollectModuleWhitelisted(collectModule);
         StorageLib.getPublication(profileId, pubId).collectModule = collectModule;
         return
             ICollectModule(collectModule).initializePublicationCollectModule(
@@ -460,7 +458,7 @@ library PublishingLib {
         if (referenceModule == address(0)) {
             return new bytes(0);
         }
-        GeneralHelpers.validateReferenceModuleWhitelisted(referenceModule);
+        ValidationLib.validateReferenceModuleWhitelisted(referenceModule);
         StorageLib.getPublication(profileId, pubId).referenceModule = referenceModule;
         return
             IReferenceModule(referenceModule).initializeReferenceModule(

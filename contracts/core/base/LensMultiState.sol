@@ -6,13 +6,12 @@ import {Events} from 'contracts/libraries/constants/Events.sol';
 import {Types} from 'contracts/libraries/constants/Types.sol';
 import {Errors} from 'contracts/libraries/constants/Errors.sol';
 import {ILensMultiState} from 'contracts/interfaces/ILensMultiState.sol';
-import {GeneralHelpers} from 'contracts/libraries/GeneralHelpers.sol';
+import {ValidationLib} from 'contracts/libraries/ValidationLib.sol';
 
 /**
  * @title LensMultiState
  *
- * @notice This is an abstract contract that implements internal LensHub state validation. Setting
- * is delegated to the GeneralLib.
+ * @notice This is an abstract contract that implements internal LensHub state validation.
  *
  * whenNotPaused: Either publishingPaused or Unpaused.
  * whenPublishingEnabled: When Unpaused only.
@@ -31,22 +30,22 @@ abstract contract LensMultiState is ILensMultiState {
     }
 
     modifier onlyProfileOwnerOrDelegatedExecutor(address expectedOwnerOrDelegatedExecutor, uint256 profileId) {
-        GeneralHelpers.validateAddressIsProfileOwnerOrDelegatedExecutor(expectedOwnerOrDelegatedExecutor, profileId);
+        ValidationLib.validateAddressIsProfileOwnerOrDelegatedExecutor(expectedOwnerOrDelegatedExecutor, profileId);
         _;
     }
 
     modifier onlyProfileOwner(address expectedOwner, uint256 profileId) {
-        GeneralHelpers.validateAddressIsProfileOwner(expectedOwner, profileId);
+        ValidationLib.validateAddressIsProfileOwner(expectedOwner, profileId);
         _;
     }
 
     modifier whenNotBlocked(uint256 profile, uint256 byProfile) {
-        GeneralHelpers.validateNotBlocked(profile, byProfile);
+        ValidationLib.validateNotBlocked(profile, byProfile);
         _;
     }
 
     modifier onlyValidPointedPub(uint256 profileId, uint256 pubId) {
-        GeneralHelpers.validatePointedPub(profileId, pubId);
+        ValidationLib.validatePointedPub(profileId, pubId);
         _;
     }
 
