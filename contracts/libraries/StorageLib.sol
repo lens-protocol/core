@@ -43,41 +43,6 @@ library StorageLib {
         }
     }
 
-    function getPublicationType(uint256 profileId, uint256 pubId) internal view returns (Types.PublicationType) {
-        Types.Publication storage _publication = getPublication(profileId, pubId);
-        Types.PublicationType pubType = _publication.pubType;
-        if (uint8(pubType) == 0) {
-            // If publication type is 0, we check using the legacy rules.
-            if (_publication.pointedProfileId != 0) {
-                // It is pointing to a publication, so it can be either a comment or a mirror, depending on if it has a
-                // collect module or not.
-                if (_publication.collectModule == address(0)) {
-                    return Types.PublicationType.Mirror;
-                } else {
-                    return Types.PublicationType.Comment;
-                }
-            } else if (_publication.collectModule != address(0)) {
-                return Types.PublicationType.Post;
-            }
-        }
-        return pubType;
-    }
-
-    function getContentURI(uint256 profileId, uint256 pubId) internal view returns (string memory) {
-        Types.Publication storage _publication = getPublication(profileId, pubId);
-        Types.PublicationType pubType = _publication.pubType;
-        if (pubType == Types.PublicationType.Nonexistent) {
-            pubType = getPublicationType(profileId, pubId);
-        }
-        if (pubType == Types.PublicationType.Mirror) {
-            uint256 rootProfileId = _publication.pointedProfileId;
-            uint256 rootPubId = _publication.pointedPubId;
-            return getPublication(rootProfileId, rootPubId).contentURI;
-        } else {
-            return getPublication(profileId, pubId).contentURI;
-        }
-    }
-
     function getProfile(uint256 profileId) internal pure returns (Types.Profile storage _profile) {
         assembly {
             mstore(0, profileId)
@@ -205,10 +170,5 @@ library StorageLib {
         assembly {
             sstore(PROTOCOL_STATE_SLOT, newState)
         }
-    }
-
-    // TODO: Try to get rid of this function.
-    function unsafeOwnerOf(uint256 tokenId) internal view returns (address) {
-        return getTokenData(tokenId).owner;
     }
 }

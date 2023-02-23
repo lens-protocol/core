@@ -168,6 +168,41 @@ library PublicationLib {
         return pubIdAssigned;
     }
 
+    function getPublicationType(uint256 profileId, uint256 pubId) internal view returns (Types.PublicationType) {
+        Types.Publication storage _publication = StorageLib.getPublication(profileId, pubId);
+        Types.PublicationType pubType = _publication.pubType;
+        if (uint8(pubType) == 0) {
+            // If publication type is 0, we check using the legacy rules.
+            if (_publication.pointedProfileId != 0) {
+                // It is pointing to a publication, so it can be either a comment or a mirror, depending on if it has a
+                // collect module or not.
+                if (_publication.collectModule == address(0)) {
+                    return Types.PublicationType.Mirror;
+                } else {
+                    return Types.PublicationType.Comment;
+                }
+            } else if (_publication.collectModule != address(0)) {
+                return Types.PublicationType.Post;
+            }
+        }
+        return pubType;
+    }
+
+    function getContentURI(uint256 profileId, uint256 pubId) internal view returns (string memory) {
+        Types.Publication storage _publication = StorageLib.getPublication(profileId, pubId);
+        Types.PublicationType pubType = _publication.pubType;
+        if (pubType == Types.PublicationType.Nonexistent) {
+            pubType = getPublicationType(profileId, pubId);
+        }
+        if (pubType == Types.PublicationType.Mirror) {
+            uint256 rootProfileId = _publication.pointedProfileId;
+            uint256 rootPubId = _publication.pointedPubId;
+            return StorageLib.getPublication(rootProfileId, rootPubId).contentURI;
+        } else {
+            return StorageLib.getPublication(profileId, pubId).contentURI;
+        }
+    }
+
     function _emitQuoteEvent(
         Types.QuoteParams calldata quoteParams,
         uint256 pubIdAssigned,
@@ -327,7 +362,7 @@ library PublicationLib {
                         revert(add(err, 32), length)
                     }
                 }
-                if (transactionExecutor != StorageLib.unsafeOwnerOf(commentParams.profileId)) {
+                if (transactionExecutor != StorageLib.getTokenData(commentParams.profileId).owner) {
                     // TODO: WTF is this?
                     revert Errors.ExecutorInvalid();
                 }
@@ -370,7 +405,7 @@ library PublicationLib {
                         revert(add(err, 32), length)
                     }
                 }
-                if (transactionExecutor != StorageLib.unsafeOwnerOf(quoteParams.profileId)) {
+                if (transactionExecutor != StorageLib.getTokenData(quoteParams.profileId).owner) {
                     // TODO: WTF is this?
                     revert Errors.ExecutorInvalid();
                 }
@@ -413,7 +448,7 @@ library PublicationLib {
                         revert(add(err, 32), length)
                     }
                 }
-                if (transactionExecutor != StorageLib.unsafeOwnerOf(mirrorParams.profileId)) {
+                if (transactionExecutor != StorageLib.getTokenData(mirrorParams.profileId).owner) {
                     // TODO: WTF is this?
                     revert Errors.ExecutorInvalid();
                 }

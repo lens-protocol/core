@@ -694,7 +694,7 @@ contract LensHub is LensNFTBase, VersionedInitializable, LensMultiState, LensHub
     /// @inheritdoc ILensHub
     function getContentURI(uint256 profileId, uint256 pubId) external view override returns (string memory) {
         // This function is used by the Collect NFTs' tokenURI function.
-        return StorageLib.getContentURI(profileId, pubId);
+        return PublicationLib.getContentURI(profileId, pubId);
     }
 
     /// @inheritdoc ILensHub
@@ -714,7 +714,7 @@ contract LensHub is LensNFTBase, VersionedInitializable, LensMultiState, LensHub
         override
         returns (Types.PublicationType)
     {
-        return StorageLib.getPublicationType(profileId, pubId);
+        return PublicationLib.getPublicationType(profileId, pubId);
     }
 
     /// @inheritdoc ILensHub

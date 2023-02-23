@@ -28,6 +28,7 @@ contract FollowNFT is HubRestricted, LensNFTBase, ERC2981CollectionRoyalties, IF
 
     bool private _initialized;
 
+    // Introduced in v2
     mapping(uint256 => FollowData) internal _followDataByFollowTokenId;
     mapping(uint256 => uint256) internal _followTokenIdByFollowerProfileId;
     mapping(uint256 => uint256) internal _followApprovalByFollowTokenId;

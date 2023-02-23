@@ -13,6 +13,14 @@ import {IFollowNFT} from 'contracts/interfaces/IFollowNFT.sol';
 library ProfileLib {
     uint16 constant MAX_PROFILE_IMAGE_URI_LENGTH = 6000;
 
+    function ownerOf(uint256 profileId) internal view returns (address) {
+        address profileOwner = StorageLib.getTokenData(profileId).owner;
+        if (profileOwner == address(0)) {
+            revert Errors.TokenDoesNotExist();
+        }
+        return profileOwner;
+    }
+
     /**
      * @notice Creates a profile with the given parameters to the given address. Minting happens
      * in the hub.

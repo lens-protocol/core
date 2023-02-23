@@ -6,6 +6,7 @@ import {Types} from 'contracts/libraries/constants/Types.sol';
 import {Errors} from 'contracts/libraries/constants/Errors.sol';
 import {StorageLib} from 'contracts/libraries/StorageLib.sol';
 import {ProfileLib} from 'contracts/libraries/ProfileLib.sol';
+import {PublicationLib} from 'contracts/libraries/PublicationLib.sol';
 
 /**
  * @title ValidationLib
@@ -14,14 +15,14 @@ import {ProfileLib} from 'contracts/libraries/ProfileLib.sol';
 library ValidationLib {
     function validatePointedPub(uint256 profileId, uint256 pubId) internal view {
         // If it is pointing to itself it will fail because it will return non-existent type.
-        Types.PublicationType pointedPubType = StorageLib.getPublicationType(profileId, pubId);
+        Types.PublicationType pointedPubType = PublicationLib.getPublicationType(profileId, pubId);
         if (pointedPubType == Types.PublicationType.Nonexistent || pointedPubType == Types.PublicationType.Mirror) {
             revert Errors.InvalidPointedPub();
         }
     }
 
     function validateAddressIsProfileOwner(address expectedProfileOwner, uint256 profileId) internal view {
-        if (expectedProfileOwner != StorageLib.unsafeOwnerOf(profileId)) {
+        if (expectedProfileOwner != ProfileLib.ownerOf(profileId)) {
             revert Errors.NotProfileOwner();
         }
     }
@@ -30,7 +31,7 @@ library ValidationLib {
         address expectedOwnerOrDelegatedExecutor,
         uint256 profileId
     ) internal view {
-        if (expectedOwnerOrDelegatedExecutor != StorageLib.unsafeOwnerOf(profileId)) {
+        if (expectedOwnerOrDelegatedExecutor != ProfileLib.ownerOf(profileId)) {
             validateAddressIsDelegatedExecutor({
                 expectedDelegatedExecutor: expectedOwnerOrDelegatedExecutor,
                 delegatorProfileId: profileId
@@ -78,7 +79,7 @@ library ValidationLib {
     }
 
     function validateProfileExists(uint256 profileId) internal view {
-        if (StorageLib.unsafeOwnerOf(profileId) == address(0)) {
+        if (StorageLib.getTokenData(profileId).owner == address(0)) {
             revert Errors.TokenDoesNotExist();
         }
     }
@@ -101,7 +102,7 @@ library ValidationLib {
             revert Errors.InvalidReferrer();
         }
 
-        Types.PublicationType referrerPubType = StorageLib.getPublicationType(referrerProfileId, referrerPubId);
+        Types.PublicationType referrerPubType = PublicationLib.getPublicationType(referrerProfileId, referrerPubId);
 
         if (referrerPubType == Types.PublicationType.Mirror) {
             _validateReferrerAsMirror(referrerProfileId, referrerPubId, profileId, pubId);
@@ -145,7 +146,7 @@ library ValidationLib {
         uint256 pubId
     ) private view {
         Types.Publication storage _referrerPub = StorageLib.getPublication(referrerProfileId, referrerPubId);
-        Types.PublicationType typeOfPubPointedByReferrer = StorageLib.getPublicationType(profileId, pubId);
+        Types.PublicationType typeOfPubPointedByReferrer = PublicationLib.getPublicationType(profileId, pubId);
         // We already know that the publication being collected/referenced is not a mirror nor a non-existent one.
         if (typeOfPubPointedByReferrer == Types.PublicationType.Post) {
             // If the publication collected/referenced is a post, the referrer comment/quote must have it as root.
