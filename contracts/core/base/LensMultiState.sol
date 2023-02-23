@@ -2,23 +2,22 @@
 
 pragma solidity 0.8.15;
 
-import {Events} from '../../libraries/Events.sol';
-import {DataTypes} from '../../libraries/DataTypes.sol';
-import {Errors} from '../../libraries/Errors.sol';
-import {ILensMultiState} from '../../interfaces/ILensMultiState.sol';
-import {GeneralHelpers} from '../../libraries/helpers/GeneralHelpers.sol';
+import {Events} from 'contracts/libraries/constants/Events.sol';
+import {Types} from 'contracts/libraries/constants/Types.sol';
+import {Errors} from 'contracts/libraries/constants/Errors.sol';
+import {ILensMultiState} from 'contracts/interfaces/ILensMultiState.sol';
+import {ValidationLib} from 'contracts/libraries/ValidationLib.sol';
 
 /**
  * @title LensMultiState
  *
- * @notice This is an abstract contract that implements internal LensHub state validation. Setting
- * is delegated to the GeneralLib.
+ * @notice This is an abstract contract that implements internal LensHub state validation.
  *
  * whenNotPaused: Either publishingPaused or Unpaused.
  * whenPublishingEnabled: When Unpaused only.
  */
 abstract contract LensMultiState is ILensMultiState {
-    DataTypes.ProtocolState private _state; // slot 12
+    Types.ProtocolState private _state; // slot 12
 
     modifier whenNotPaused() {
         _validateNotPaused();
@@ -30,29 +29,23 @@ abstract contract LensMultiState is ILensMultiState {
         _;
     }
 
-    modifier onlyProfileOwnerOrDelegatedExecutor(
-        address expectedOwnerOrDelegatedExecutor,
-        uint256 profileId
-    ) {
-        GeneralHelpers.validateAddressIsProfileOwnerOrDelegatedExecutor(
-            expectedOwnerOrDelegatedExecutor,
-            profileId
-        );
+    modifier onlyProfileOwnerOrDelegatedExecutor(address expectedOwnerOrDelegatedExecutor, uint256 profileId) {
+        ValidationLib.validateAddressIsProfileOwnerOrDelegatedExecutor(expectedOwnerOrDelegatedExecutor, profileId);
         _;
     }
 
     modifier onlyProfileOwner(address expectedOwner, uint256 profileId) {
-        GeneralHelpers.validateAddressIsProfileOwner(expectedOwner, profileId);
+        ValidationLib.validateAddressIsProfileOwner(expectedOwner, profileId);
         _;
     }
 
     modifier whenNotBlocked(uint256 profile, uint256 byProfile) {
-        GeneralHelpers.validateNotBlocked(profile, byProfile);
+        ValidationLib.validateNotBlocked(profile, byProfile);
         _;
     }
 
     modifier onlyValidPointedPub(uint256 profileId, uint256 pubId) {
-        GeneralHelpers.validatePointedPub(profileId, pubId);
+        ValidationLib.validatePointedPub(profileId, pubId);
         _;
     }
 
@@ -64,17 +57,17 @@ abstract contract LensMultiState is ILensMultiState {
      *      1: PublishingPaused
      *      2: Paused
      */
-    function getState() external view override returns (DataTypes.ProtocolState) {
+    function getState() external view override returns (Types.ProtocolState) {
         return _state;
     }
 
     function _validatePublishingEnabled() internal view {
-        if (_state != DataTypes.ProtocolState.Unpaused) {
+        if (_state != Types.ProtocolState.Unpaused) {
             revert Errors.PublishingPaused();
         }
     }
 
     function _validateNotPaused() internal view {
-        if (_state == DataTypes.ProtocolState.Paused) revert Errors.Paused();
+        if (_state == Types.ProtocolState.Paused) revert Errors.Paused();
     }
 }

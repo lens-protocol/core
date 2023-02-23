@@ -2,9 +2,9 @@
 
 pragma solidity 0.8.15;
 
-import {ILensHub} from '../interfaces/ILensHub.sol';
-import {DataTypes} from '../libraries/DataTypes.sol';
-import {Errors} from '../libraries/Errors.sol';
+import {ILensHub} from 'contracts/interfaces/ILensHub.sol';
+import {Types} from 'contracts/libraries/constants/Types.sol';
+import {Errors} from 'contracts/libraries/constants/Errors.sol';
 
 /**
  * @title MockProfileCreationProxy
@@ -19,7 +19,7 @@ contract MockProfileCreationProxy {
         LENS_HUB = hub;
     }
 
-    function proxyCreateProfile(DataTypes.CreateProfileData memory vars) external {
-        LENS_HUB.createProfile(vars);
+    function proxyCreateProfile(Types.CreateProfileParams memory createProfileParams) external {
+        LENS_HUB.createProfile(createProfileParams);
     }
 }

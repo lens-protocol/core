@@ -5,7 +5,7 @@ pragma solidity 0.8.15;
 import '@openzeppelin/contracts/utils/Base64.sol';
 import '@openzeppelin/contracts/utils/Strings.sol';
 
-library ProfileTokenURILogic {
+library ProfileTokenURILib {
     uint8 internal constant DEFAULT_FONT_SIZE = 24;
     uint8 internal constant MAX_HANDLE_LENGTH_WITH_DEFAULT_FONT_SIZE = 17;
 

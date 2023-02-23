@@ -1,8 +1,8 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.15;
 
-import {DataTypes} from '../libraries/DataTypes.sol';
-import {LensHubStorage} from '../core/storage/LensHubStorage.sol';
+import {Types} from 'contracts/libraries/constants/Types.sol';
+import {LensHubStorage} from 'contracts/core/storage/LensHubStorage.sol';
 
 /**
  * @dev This is a simple mock LensHub storage contract to be used for testing.

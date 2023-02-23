@@ -2,16 +2,13 @@
 
 pragma solidity 0.8.15;
 
-import {IDeprecatedFollowModule} from '../interfaces/IDeprecatedFollowModule.sol';
+import {IDeprecatedFollowModule} from 'contracts/interfaces/IDeprecatedFollowModule.sol';
 
 /**
  * @dev This is a simple mock follow module to be used for testing.
  */
 contract MockDeprecatedFollowModule is IDeprecatedFollowModule {
-    function initializeFollowModule(
-        uint256,
-        bytes calldata data
-    ) external pure override returns (bytes memory) {
+    function initializeFollowModule(uint256, bytes calldata data) external pure override returns (bytes memory) {
         uint256 number = abi.decode(data, (uint256));
         require(number == 1, 'MockFollowModule: invalid');
         return new bytes(0);

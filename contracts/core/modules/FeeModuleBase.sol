@@ -2,9 +2,9 @@
 
 pragma solidity 0.8.15;
 
-import {Errors} from '../../libraries/Errors.sol';
-import {Events} from '../../libraries/Events.sol';
-import {IModuleGlobals} from '../../interfaces/IModuleGlobals.sol';
+import {Errors} from 'contracts/libraries/constants/Errors.sol';
+import {Events} from 'contracts/libraries/constants/Events.sol';
+import {IModuleGlobals} from 'contracts/interfaces/IModuleGlobals.sol';
 
 /**
  * @title FeeModuleBase
@@ -38,7 +38,6 @@ abstract contract FeeModuleBase {
         uint256 amount
     ) internal pure {
         (address decodedCurrency, uint256 decodedAmount) = abi.decode(data, (address, uint256));
-        if (decodedAmount != amount || decodedCurrency != currency)
-            revert Errors.ModuleDataMismatch();
+        if (decodedAmount != amount || decodedCurrency != currency) revert Errors.ModuleDataMismatch();
     }
 }

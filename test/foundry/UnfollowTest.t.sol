@@ -1,10 +1,11 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity ^0.8.13;
 
-import './base/BaseTest.t.sol';
-import './MetaTxNegatives.t.sol';
+import 'test/foundry/base/BaseTest.t.sol';
+import 'test/foundry/MetaTxNegatives.t.sol';
 import {Strings} from '@openzeppelin/contracts/utils/Strings.sol';
 import {IFollowNFT} from 'contracts/interfaces/IFollowNFT.sol';
+import {Typehash} from 'contracts/libraries/constants/Typehash.sol';
 
 contract UnfollowTest is BaseTest {
     uint256 constant MINT_NEW_TOKEN = 0;
@@ -28,13 +29,7 @@ contract UnfollowTest is BaseTest {
         nonFollowingProfileId = _createProfile(nonFollowingProfileOwner);
         testUnfollowerProfileOwner = vm.addr(testUnfollowerProfileOwnerPk);
         testUnfollowerProfileId = _createProfile(testUnfollowerProfileOwner);
-        followTokenId = _follow(
-            testUnfollowerProfileOwner,
-            testUnfollowerProfileId,
-            targetProfileId,
-            0,
-            ''
-        )[0];
+        followTokenId = _follow(testUnfollowerProfileOwner, testUnfollowerProfileId, targetProfileId, 0, '')[0];
 
         targetFollowNFT = hub.getFollowNFT(targetProfileId);
         followNFT = FollowNFT(targetFollowNFT);
@@ -46,7 +41,7 @@ contract UnfollowTest is BaseTest {
 
     function testCannotUnfollowIfPaused() public {
         vm.prank(governance);
-        hub.setState(DataTypes.ProtocolState.Paused);
+        hub.setState(Types.ProtocolState.Paused);
 
         vm.expectRevert(Errors.Paused.selector);
 
@@ -70,9 +65,7 @@ contract UnfollowTest is BaseTest {
         });
     }
 
-    function testCannotUnfollowIfSomeOfTheProfilesToUnfollowDoNotExist(uint256 unexistentProfileId)
-        public
-    {
+    function testCannotUnfollowIfSomeOfTheProfilesToUnfollowDoNotExist(uint256 unexistentProfileId) public {
         vm.assume(!hub.exists(unexistentProfileId));
 
         assertTrue(hub.isFollowing(testUnfollowerProfileId, targetProfileId));
@@ -145,10 +138,7 @@ contract UnfollowTest is BaseTest {
 
         vm.expectCall(
             targetFollowNFT,
-            abi.encodeCall(
-                followNFT.unfollow,
-                (testUnfollowerProfileId, testUnfollowerProfileOwner)
-            )
+            abi.encodeCall(followNFT.unfollow, (testUnfollowerProfileId, testUnfollowerProfileOwner))
         );
 
         _unfollow({
@@ -160,20 +150,14 @@ contract UnfollowTest is BaseTest {
         assertFalse(hub.isFollowing(testUnfollowerProfileId, targetProfileId));
     }
 
-    function testUnfollowAsUnfollowerApprovedDelegatedExecutor(uint256 approvedDelegatedExecutorPk)
-        public
-    {
-        approvedDelegatedExecutorPk = bound(
-            approvedDelegatedExecutorPk,
-            1,
-            ISSECP256K1_CURVE_ORDER - 1
-        );
+    function testUnfollowAsUnfollowerApprovedDelegatedExecutor(uint256 approvedDelegatedExecutorPk) public {
+        approvedDelegatedExecutorPk = bound(approvedDelegatedExecutorPk, 1, ISSECP256K1_CURVE_ORDER - 1);
         address approvedDelegatedExecutor = vm.addr(approvedDelegatedExecutorPk);
         vm.assume(approvedDelegatedExecutor != address(0));
         vm.assume(approvedDelegatedExecutor != testUnfollowerProfileOwner);
 
         vm.prank(testUnfollowerProfileOwner);
-        hub.changeDelegatedExecutorsConfig({
+        hub.changeCurrentDelegatedExecutorsConfig({
             delegatorProfileId: testUnfollowerProfileId,
             executors: _toAddressArray(approvedDelegatedExecutor),
             approvals: _toBoolArray(true)
@@ -276,7 +260,7 @@ contract UnfollowMetaTxTest is UnfollowTest, MetaTxNegatives {
             _calculateDigest(
                 keccak256(
                     abi.encode(
-                        UNFOLLOW_TYPEHASH,
+                        Typehash.UNFOLLOW,
                         unfollowerProfileId,
                         keccak256(abi.encodePacked(idsOfProfilesToUnfollow)),
                         nonce,

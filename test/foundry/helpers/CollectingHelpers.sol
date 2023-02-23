@@ -1,11 +1,14 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity ^0.8.13;
 
-import '../base/TestSetup.t.sol';
+import 'test/foundry/base/TestSetup.t.sol';
 import 'forge-std/Test.sol';
-import 'contracts/libraries/DataTypes.sol';
+import 'contracts/libraries/constants/Types.sol';
 
 contract CollectingHelpers is TestSetup {
+    string constant COLLECT_NFT_NAME_INFIX = '-Collect-';
+    string constant COLLECT_NFT_SYMBOL_INFIX = '-Cl-';
+
     CollectNFT _collectNftAfter;
 
     function _checkCollectNFTBefore() internal view returns (uint256) {
@@ -26,10 +29,7 @@ contract CollectingHelpers is TestSetup {
 
     function _checkCollectNFTAfter(uint256 nftId, uint256 expectedNftId) internal {
         _collectNftAfter = CollectNFT(
-            hub.getCollectNFT(
-                mockCollectParams.publicationCollectedProfileId,
-                mockCollectParams.publicationCollectedId
-            )
+            hub.getCollectNFT(mockCollectParams.publicationCollectedProfileId, mockCollectParams.publicationCollectedId)
         );
 
         (uint256 profileId, uint256 pubId) = _collectNftAfter.getSourcePublicationPointer();

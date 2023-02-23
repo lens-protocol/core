@@ -2,13 +2,13 @@
 
 pragma solidity 0.8.15;
 
-import {ILensNFTBase} from '../../interfaces/ILensNFTBase.sol';
-import {Errors} from '../../libraries/Errors.sol';
-import {DataTypes} from '../../libraries/DataTypes.sol';
-import {Events} from '../../libraries/Events.sol';
-import {MetaTxHelpers} from '../../libraries/helpers/MetaTxHelpers.sol';
-import {ERC721Time} from './ERC721Time.sol';
-import {ERC721Enumerable} from './ERC721Enumerable.sol';
+import {ILensNFTBase} from 'contracts/interfaces/ILensNFTBase.sol';
+import {Errors} from 'contracts/libraries/constants/Errors.sol';
+import {Types} from 'contracts/libraries/constants/Types.sol';
+import {Events} from 'contracts/libraries/constants/Events.sol';
+import {MetaTxLib} from 'contracts/libraries/MetaTxLib.sol';
+import {ERC721Time} from 'contracts/core/base/ERC721Time.sol';
+import {ERC721Enumerable} from 'contracts/core/base/ERC721Enumerable.sol';
 
 /**
  * @title LensNFTBase
@@ -20,20 +20,6 @@ import {ERC721Enumerable} from './ERC721Enumerable.sol';
  * constructor with an initializer.
  */
 abstract contract LensNFTBase is ERC721Enumerable, ILensNFTBase {
-    bytes32 internal constant EIP712_REVISION_HASH = keccak256('1');
-    bytes32 internal constant PERMIT_TYPEHASH =
-        keccak256('Permit(address spender,uint256 tokenId,uint256 nonce,uint256 deadline)');
-    bytes32 internal constant PERMIT_FOR_ALL_TYPEHASH =
-        keccak256(
-            'PermitForAll(address owner,address operator,bool approved,uint256 nonce,uint256 deadline)'
-        );
-    bytes32 internal constant BURN_TYPEHASH =
-        keccak256('BurnWithSig(uint256 tokenId,uint256 nonce,uint256 deadline)');
-    bytes32 internal constant EIP712_DOMAIN_TYPEHASH =
-        keccak256(
-            'EIP712Domain(string name,string version,uint256 chainId,address verifyingContract)'
-        );
-
     mapping(address => uint256) public sigNonces;
 
     /**
@@ -55,62 +41,21 @@ abstract contract LensNFTBase is ERC721Enumerable, ILensNFTBase {
     function permit(
         address spender,
         uint256 tokenId,
-        DataTypes.EIP712Signature calldata sig
+        Types.EIP712Signature calldata signature
     ) external virtual override {
-        if (spender == address(0)) revert Errors.ZeroSpender();
-        address owner = ownerOf(tokenId);
-        unchecked {
-            MetaTxHelpers._validateRecoveredAddress(
-                _calculateDigest(
-                    keccak256(
-                        abi.encode(
-                            PERMIT_TYPEHASH,
-                            spender,
-                            tokenId,
-                            sigNonces[owner]++,
-                            sig.deadline
-                        )
-                    )
-                ),
-                owner,
-                sig
-            );
+        if (spender == address(0)) {
+            revert Errors.ZeroSpender();
         }
+        if (signature.signer != ownerOf(tokenId)) {
+            revert Errors.NotProfileOwner();
+        }
+        MetaTxLib.validatePermitSignature(signature, spender, tokenId);
         _approve(spender, tokenId);
     }
 
     /// @inheritdoc ILensNFTBase
-    function permitForAll(
-        address owner,
-        address operator,
-        bool approved,
-        DataTypes.EIP712Signature calldata sig
-    ) external virtual override {
-        if (operator == address(0)) revert Errors.ZeroSpender();
-        unchecked {
-            MetaTxHelpers._validateRecoveredAddress(
-                _calculateDigest(
-                    keccak256(
-                        abi.encode(
-                            PERMIT_FOR_ALL_TYPEHASH,
-                            owner,
-                            operator,
-                            approved,
-                            sigNonces[owner]++,
-                            sig.deadline
-                        )
-                    )
-                ),
-                owner,
-                sig
-            );
-        }
-        _setOperatorApproval(owner, operator, approved);
-    }
-
-    /// @inheritdoc ILensNFTBase
     function getDomainSeparator() external view virtual override returns (bytes32) {
-        return _calculateDomainSeparator();
+        return MetaTxLib.calculateDomainSeparator();
     }
 
     /// @inheritdoc ILensNFTBase
@@ -120,54 +65,11 @@ abstract contract LensNFTBase is ERC721Enumerable, ILensNFTBase {
     }
 
     /// @inheritdoc ILensNFTBase
-    function burnWithSig(uint256 tokenId, DataTypes.EIP712Signature calldata sig)
-        public
-        virtual
-        override
-    {
-        address owner = ownerOf(tokenId);
-        unchecked {
-            MetaTxHelpers._validateRecoveredAddress(
-                _calculateDigest(
-                    keccak256(abi.encode(BURN_TYPEHASH, tokenId, sigNonces[owner]++, sig.deadline))
-                ),
-                owner,
-                sig
-            );
+    function burnWithSig(uint256 tokenId, Types.EIP712Signature calldata signature) public virtual override {
+        if (_isApprovedOrOwner(signature.signer, tokenId)) {
+            revert Errors.NotOwnerOrApproved();
         }
+        MetaTxLib.validateBurnSignature(signature, tokenId);
         _burn(tokenId);
-    }
-
-    /**
-     * @dev Calculates EIP712 DOMAIN_SEPARATOR based on the current contract and chain ID.
-     */
-    function _calculateDomainSeparator() internal view returns (bytes32) {
-        return
-            keccak256(
-                abi.encode(
-                    EIP712_DOMAIN_TYPEHASH,
-                    keccak256(bytes(name())),
-                    EIP712_REVISION_HASH,
-                    block.chainid,
-                    address(this)
-                )
-            );
-    }
-
-    /**
-     * @dev Calculates EIP712 digest based on the current DOMAIN_SEPARATOR.
-     *
-     * @param hashedMessage The message hash from which the digest should be calculated.
-     *
-     * @return bytes32 A 32-byte output representing the EIP712 digest.
-     */
-    function _calculateDigest(bytes32 hashedMessage) internal view returns (bytes32) {
-        bytes32 digest;
-        unchecked {
-            digest = keccak256(
-                abi.encodePacked('\x19\x01', _calculateDomainSeparator(), hashedMessage)
-            );
-        }
-        return digest;
     }
 }

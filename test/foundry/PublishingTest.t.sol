@@ -1,9 +1,9 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity ^0.8.13;
 
-import './base/BaseTest.t.sol';
-import './helpers/SignatureHelpers.sol';
-import {PublishingHelpers} from './helpers/PublishingHelpers.sol';
+import 'test/foundry/base/BaseTest.t.sol';
+import 'test/foundry/helpers/SignatureHelpers.sol';
+import {PublishingHelpers} from 'test/foundry/helpers/PublishingHelpers.sol';
 
 abstract contract PublishingTest is BaseTest, PublishingHelpers, SigSetup {
     function replicateInitData() internal virtual {
@@ -19,19 +19,11 @@ abstract contract PublishingTest is BaseTest, PublishingHelpers, SigSetup {
         uint256 sigDeadline
     ) internal virtual returns (uint256);
 
-    function _publishWithSig(address delegatedSigner, uint256 signerPrivKey)
-        internal
-        virtual
-        returns (uint256)
-    {
+    function _publishWithSig(address delegatedSigner, uint256 signerPrivKey) internal virtual returns (uint256) {
         return _publishWithSig(delegatedSigner, signerPrivKey, deadline, deadline);
     }
 
-    function _expectedPubFromInitData()
-        internal
-        view
-        virtual
-        returns (DataTypes.PublicationStruct memory);
+    function _expectedPubFromInitData() internal view virtual returns (Types.Publication memory);
 
     function setUp() public virtual override(SigSetup, TestSetup) {
         TestSetup.setUp();
@@ -100,10 +92,7 @@ abstract contract PublishingTest is BaseTest, PublishingHelpers, SigSetup {
 
         uint256 expectedPubId = _getPubCount(newProfileId) + 1;
 
-        uint256 pubId = _publishWithSig({
-            delegatedSigner: profileOwner,
-            signerPrivKey: profileOwnerKey
-        });
+        uint256 pubId = _publishWithSig({delegatedSigner: profileOwner, signerPrivKey: profileOwnerKey});
         assertEq(pubId, expectedPubId, 'Wrong pubId');
 
         assertTrue(_getSigNonce(profileOwner) != nonce, 'Wrong nonce after posting');
@@ -134,9 +123,12 @@ abstract contract PublishingTest is BaseTest, PublishingHelpers, SigSetup {
 
         assertEq(pubId, expectedPubId);
 
-        DataTypes.PublicationStruct memory pub = _getPub(newProfileId, pubId);
+        Types.Publication memory pub = _getPub(newProfileId, pubId);
         _verifyPublication(pub, _expectedPubFromInitData());
     }
+
+    // TODO: Can publish without a collect module
+    // TODO: Can publish without a reference module
 
     function testPublishWithAWhitelistedReferenceModule() public {
         mockPostParams.referenceModule = address(mockReferenceModule);
@@ -150,20 +142,17 @@ abstract contract PublishingTest is BaseTest, PublishingHelpers, SigSetup {
 
         assertEq(pubId, expectedPubId);
 
-        DataTypes.PublicationStruct memory pub = _getPub(newProfileId, pubId);
+        Types.Publication memory pub = _getPub(newProfileId, pubId);
         _verifyPublication(pub, _expectedPubFromInitData());
     }
 
     function testPublishWithSig() public {
         uint256 expectedPubId = _getPubCount(newProfileId) + 1;
 
-        uint256 pubId = _publishWithSig({
-            delegatedSigner: profileOwner,
-            signerPrivKey: profileOwnerKey
-        });
+        uint256 pubId = _publishWithSig({delegatedSigner: profileOwner, signerPrivKey: profileOwnerKey});
         assertEq(pubId, expectedPubId);
 
-        DataTypes.PublicationStruct memory pub = _getPub(newProfileId, pubId);
+        Types.Publication memory pub = _getPub(newProfileId, pubId);
         _verifyPublication(pub, _expectedPubFromInitData());
     }
 
@@ -176,7 +165,7 @@ abstract contract PublishingTest is BaseTest, PublishingHelpers, SigSetup {
         uint256 pubId = _publish();
         assertEq(pubId, expectedPubId);
 
-        DataTypes.PublicationStruct memory pub = _getPub(newProfileId, pubId);
+        Types.Publication memory pub = _getPub(newProfileId, pubId);
         _verifyPublication(pub, _expectedPubFromInitData());
     }
 
@@ -184,13 +173,10 @@ abstract contract PublishingTest is BaseTest, PublishingHelpers, SigSetup {
         _changeDelegatedExecutorsConfig(profileOwner, newProfileId, otherSigner, true);
 
         uint256 expectedPubId = _getPubCount(newProfileId) + 1;
-        uint256 pubId = _publishWithSig({
-            delegatedSigner: otherSigner,
-            signerPrivKey: otherSignerKey
-        });
+        uint256 pubId = _publishWithSig({delegatedSigner: otherSigner, signerPrivKey: otherSignerKey});
         assertEq(pubId, expectedPubId);
 
-        DataTypes.PublicationStruct memory pub = _getPub(newProfileId, pubId);
+        Types.Publication memory pub = _getPub(newProfileId, pubId);
         _verifyPublication(pub, _expectedPubFromInitData());
     }
 }
@@ -208,20 +194,10 @@ contract PostTest is PublishingTest {
     ) internal virtual override returns (uint256) {
         bytes32 digest = _getPostTypedDataHash(mockPostParams, nonce, digestDeadline);
 
-        return
-            _postWithSig(
-                mockPostParams,
-                _getSigStruct(delegatedSigner, signerPrivKey, digest, sigDeadline)
-            );
+        return _postWithSig(mockPostParams, _getSigStruct(delegatedSigner, signerPrivKey, digest, sigDeadline));
     }
 
-    function _expectedPubFromInitData()
-        internal
-        view
-        virtual
-        override
-        returns (DataTypes.PublicationStruct memory)
-    {
+    function _expectedPubFromInitData() internal view virtual override returns (Types.Publication memory) {
         return _expectedPubFromInitData(mockPostParams);
     }
 }
@@ -250,19 +226,10 @@ contract CommentTest is PublishingTest {
     ) internal override returns (uint256) {
         bytes32 digest = _getCommentTypedDataHash(mockCommentParams, nonce, digestDeadline);
 
-        return
-            _commentWithSig(
-                mockCommentParams,
-                _getSigStruct(delegatedSigner, signerPrivKey, digest, sigDeadline)
-            );
+        return _commentWithSig(mockCommentParams, _getSigStruct(delegatedSigner, signerPrivKey, digest, sigDeadline));
     }
 
-    function _expectedPubFromInitData()
-        internal
-        view
-        override
-        returns (DataTypes.PublicationStruct memory)
-    {
+    function _expectedPubFromInitData() internal view override returns (Types.Publication memory) {
         return _expectedPubFromInitData(mockCommentParams);
     }
 
@@ -320,11 +287,7 @@ contract CommentTest is PublishingTest {
         uint256 commenterProfileId = _createProfile(profileOwner);
         mockCommentParams.profileId = commenterProfileId;
         vm.prank(profileOwner);
-        hub.setBlockStatus(
-            mockPostParams.profileId,
-            _toUint256Array(commenterProfileId),
-            _toBoolArray(true)
-        );
+        hub.setBlockStatus(mockPostParams.profileId, _toUint256Array(commenterProfileId), _toBoolArray(true));
         vm.expectRevert(Errors.Blocked.selector);
         vm.prank(profileOwner);
         _publish();
@@ -334,11 +297,7 @@ contract CommentTest is PublishingTest {
         uint256 commenterProfileId = _createProfile(profileOwner);
         mockCommentParams.profileId = commenterProfileId;
         vm.prank(profileOwner);
-        hub.setBlockStatus(
-            mockPostParams.profileId,
-            _toUint256Array(commenterProfileId),
-            _toBoolArray(true)
-        );
+        hub.setBlockStatus(mockPostParams.profileId, _toUint256Array(commenterProfileId), _toBoolArray(true));
         vm.expectRevert(Errors.Blocked.selector);
         _publishWithSig({delegatedSigner: profileOwner, signerPrivKey: profileOwnerKey});
     }
@@ -354,7 +313,7 @@ contract CommentTest is PublishingTest {
         vm.prank(profileOwner);
         uint256 commentPubId = _publish();
 
-        DataTypes.PublicationStruct memory pub = _getPub(newProfileId, commentPubId);
+        Types.Publication memory pub = _getPub(newProfileId, commentPubId);
         _verifyPublication(pub, _expectedPubFromInitData());
     }
 
@@ -399,19 +358,10 @@ contract MirrorTest is PublishingTest {
     ) internal override returns (uint256) {
         bytes32 digest = _getMirrorTypedDataHash(mockMirrorParams, nonce, digestDeadline);
 
-        return
-            _mirrorWithSig(
-                mockMirrorParams,
-                _getSigStruct(delegatedSigner, signerPrivKey, digest, sigDeadline)
-            );
+        return _mirrorWithSig(mockMirrorParams, _getSigStruct(delegatedSigner, signerPrivKey, digest, sigDeadline));
     }
 
-    function _expectedPubFromInitData()
-        internal
-        view
-        override
-        returns (DataTypes.PublicationStruct memory)
-    {
+    function _expectedPubFromInitData() internal view override returns (Types.Publication memory) {
         return _expectedPubFromInitData(mockMirrorParams);
     }
 
@@ -458,11 +408,7 @@ contract MirrorTest is PublishingTest {
         uint256 mirrorerProfileId = _createProfile(profileOwner);
         mockMirrorParams.profileId = mirrorerProfileId;
         vm.prank(profileOwner);
-        hub.setBlockStatus(
-            mockPostParams.profileId,
-            _toUint256Array(mirrorerProfileId),
-            _toBoolArray(true)
-        );
+        hub.setBlockStatus(mockPostParams.profileId, _toUint256Array(mirrorerProfileId), _toBoolArray(true));
         vm.expectRevert(Errors.Blocked.selector);
         vm.prank(profileOwner);
         _publish();
@@ -472,11 +418,7 @@ contract MirrorTest is PublishingTest {
         uint256 mirrorerProfileId = _createProfile(profileOwner);
         mockMirrorParams.profileId = mirrorerProfileId;
         vm.prank(profileOwner);
-        hub.setBlockStatus(
-            mockPostParams.profileId,
-            _toUint256Array(mirrorerProfileId),
-            _toBoolArray(true)
-        );
+        hub.setBlockStatus(mockPostParams.profileId, _toUint256Array(mirrorerProfileId), _toBoolArray(true));
         vm.expectRevert(Errors.Blocked.selector);
         _publishWithSig({delegatedSigner: profileOwner, signerPrivKey: profileOwnerKey});
     }

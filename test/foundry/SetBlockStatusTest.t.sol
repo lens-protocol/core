@@ -1,8 +1,9 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity ^0.8.13;
 
-import './base/BaseTest.t.sol';
-import './MetaTxNegatives.t.sol';
+import 'test/foundry/base/BaseTest.t.sol';
+import 'test/foundry/MetaTxNegatives.t.sol';
+import {Typehash} from 'contracts/libraries/constants/Typehash.sol';
 
 contract SetBlockStatusTest is BaseTest {
     address constant PROFILE_OWNER = address(0);
@@ -44,7 +45,7 @@ contract SetBlockStatusTest is BaseTest {
     //////////////////////////////////////////////////////////
     function testCannotSetBlockStatusIfPaused() public {
         vm.prank(governance);
-        hub.setState(DataTypes.ProtocolState.Paused);
+        hub.setState(Types.ProtocolState.Paused);
 
         vm.expectRevert(Errors.Paused.selector);
 
@@ -73,17 +74,11 @@ contract SetBlockStatusTest is BaseTest {
     function testCannotSetBlockStatusIfNotOwnerOrApprovedDelegatedExecutorOfSetterProfile(
         uint256 nonOwnerNorDelegatedExecutorPk
     ) public {
-        nonOwnerNorDelegatedExecutorPk = bound(
-            nonOwnerNorDelegatedExecutorPk,
-            1,
-            ISSECP256K1_CURVE_ORDER - 1
-        );
+        nonOwnerNorDelegatedExecutorPk = bound(nonOwnerNorDelegatedExecutorPk, 1, ISSECP256K1_CURVE_ORDER - 1);
         address nonOwnerNorDelegatedExecutor = vm.addr(nonOwnerNorDelegatedExecutorPk);
         vm.assume(nonOwnerNorDelegatedExecutor != address(0));
         vm.assume(nonOwnerNorDelegatedExecutor != statusSetterProfileOwner);
-        vm.assume(
-            !hub.isDelegatedExecutorApproved(statusSetterProfileId, nonOwnerNorDelegatedExecutor)
-        );
+        vm.assume(!hub.isDelegatedExecutorApproved(statusSetterProfileId, nonOwnerNorDelegatedExecutor));
 
         vm.expectRevert(Errors.ExecutorInvalid.selector);
 
@@ -110,10 +105,7 @@ contract SetBlockStatusTest is BaseTest {
         _setBlockStatus({
             pk: statusSetterProfileOwnerPk,
             byProfileId: statusSetterProfileId,
-            idsOfProfilesToSetBlockStatus: _toUint256Array(
-                blockeeProfileId,
-                anotherBlockeeProfileId
-            ),
+            idsOfProfilesToSetBlockStatus: _toUint256Array(blockeeProfileId, anotherBlockeeProfileId),
             blockStatus: _toBoolArray(true)
         });
     }
@@ -157,18 +149,12 @@ contract SetBlockStatusTest is BaseTest {
         emit Events.Blocked(statusSetterProfileId, anotherBlockeeProfileId, block.timestamp);
 
         vm.expectCall(followNFTAddress, abi.encodeCall(followNFT.processBlock, (blockeeProfileId)));
-        vm.expectCall(
-            followNFTAddress,
-            abi.encodeCall(followNFT.processBlock, (anotherBlockeeProfileId))
-        );
+        vm.expectCall(followNFTAddress, abi.encodeCall(followNFT.processBlock, (anotherBlockeeProfileId)));
 
         _setBlockStatus({
             pk: statusSetterProfileOwnerPk,
             byProfileId: statusSetterProfileId,
-            idsOfProfilesToSetBlockStatus: _toUint256Array(
-                blockeeProfileId,
-                anotherBlockeeProfileId
-            ),
+            idsOfProfilesToSetBlockStatus: _toUint256Array(blockeeProfileId, anotherBlockeeProfileId),
             blockStatus: _toBoolArray(true, true)
         });
 
@@ -188,10 +174,7 @@ contract SetBlockStatusTest is BaseTest {
         _setBlockStatus({
             pk: statusSetterProfileOwnerPk,
             byProfileId: statusSetterProfileId,
-            idsOfProfilesToSetBlockStatus: _toUint256Array(
-                blockeeProfileId,
-                anotherBlockeeProfileId
-            ),
+            idsOfProfilesToSetBlockStatus: _toUint256Array(blockeeProfileId, anotherBlockeeProfileId),
             blockStatus: _toBoolArray(true, false)
         });
 
@@ -336,7 +319,7 @@ contract SetBlockStatusMetaTxTest is SetBlockStatusTest, MetaTxNegatives {
             _calculateDigest(
                 keccak256(
                     abi.encode(
-                        SET_BLOCK_STATUS_TYPEHASH,
+                        Typehash.SET_BLOCK_STATUS,
                         byProfileId,
                         keccak256(abi.encodePacked(idsOfProfilesToSetBlockStatus)),
                         keccak256(abi.encodePacked(blockStatus)),
@@ -345,34 +328,5 @@ contract SetBlockStatusMetaTxTest is SetBlockStatusTest, MetaTxNegatives {
                     )
                 )
             );
-    }
-
-    function _getSignedData(
-        uint256 signerPk,
-        address delegatedSigner,
-        uint256 byProfileId,
-        uint256[] memory idsOfProfilesToSetBlockStatus,
-        bool[] memory blockStatus,
-        uint256 nonce,
-        uint256 deadline
-    ) internal returns (DataTypes.SetBlockStatusWithSigData memory) {
-        return
-            DataTypes.SetBlockStatusWithSigData({
-                delegatedSigner: delegatedSigner,
-                byProfileId: byProfileId,
-                idsOfProfilesToSetBlockStatus: idsOfProfilesToSetBlockStatus,
-                blockStatus: blockStatus,
-                sig: _getSigStruct({
-                    pKey: signerPk,
-                    digest: _calculateSetBlockStatusWithSigDigest(
-                        byProfileId,
-                        idsOfProfilesToSetBlockStatus,
-                        blockStatus,
-                        nonce,
-                        deadline
-                    ),
-                    deadline: deadline
-                })
-            });
     }
 }

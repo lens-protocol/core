@@ -2,8 +2,8 @@
 
 pragma solidity ^0.8.0;
 
-import {Errors} from '../../libraries/Errors.sol';
-import {ERC721Time} from './ERC721Time.sol';
+import {Errors} from 'contracts/libraries/constants/Errors.sol';
+import {ERC721Time} from 'contracts/core/base/ERC721Time.sol';
 import {IERC721Enumerable} from '@openzeppelin/contracts/token/ERC721/extensions/IERC721Enumerable.sol';
 import {IERC165} from '@openzeppelin/contracts/interfaces/IERC165.sol';
 
@@ -30,30 +30,15 @@ abstract contract ERC721Enumerable is ERC721Time, IERC721Enumerable {
     /**
      * @dev See {IERC165-supportsInterface}.
      */
-    function supportsInterface(bytes4 interfaceId)
-        public
-        view
-        virtual
-        override(IERC165, ERC721Time)
-        returns (bool)
-    {
-        return
-            interfaceId == type(IERC721Enumerable).interfaceId ||
-            super.supportsInterface(interfaceId);
+    function supportsInterface(bytes4 interfaceId) public view virtual override(IERC165, ERC721Time) returns (bool) {
+        return interfaceId == type(IERC721Enumerable).interfaceId || super.supportsInterface(interfaceId);
     }
 
     /**
      * @dev See {IERC721Enumerable-tokenOfOwnerByIndex}.
      */
-    function tokenOfOwnerByIndex(address owner, uint256 index)
-        public
-        view
-        virtual
-        override
-        returns (uint256)
-    {
-        if (index >= ERC721Time.balanceOf(owner))
-            revert Errors.ERC721Enumerable_OwnerIndexOutOfBounds();
+    function tokenOfOwnerByIndex(address owner, uint256 index) public view virtual override returns (uint256) {
+        if (index >= ERC721Time.balanceOf(owner)) revert Errors.ERC721Enumerable_OwnerIndexOutOfBounds();
         return _ownedTokens[owner][index];
     }
 
@@ -70,8 +55,7 @@ abstract contract ERC721Enumerable is ERC721Time, IERC721Enumerable {
      * @dev See {IERC721Enumerable-tokenByIndex}.
      */
     function tokenByIndex(uint256 index) public view virtual override returns (uint256) {
-        if (index >= ERC721Enumerable.totalSupply())
-            revert Errors.ERC721Enumerable_GlobalIndexOutOfBounds();
+        if (index >= ERC721Enumerable.totalSupply()) revert Errors.ERC721Enumerable_GlobalIndexOutOfBounds();
         return _allTokens[index];
     }
 

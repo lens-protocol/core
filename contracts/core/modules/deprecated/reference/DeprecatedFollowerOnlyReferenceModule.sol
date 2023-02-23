@@ -2,9 +2,9 @@
 
 pragma solidity 0.8.15;
 
-import {IDeprecatedReferenceModule} from '../../../../interfaces/IDeprecatedReferenceModule.sol';
-import {ModuleBase} from '../../ModuleBase.sol';
-import {FollowValidationModuleBase} from '../../FollowValidationModuleBase.sol';
+import {IDeprecatedReferenceModule} from 'contracts/interfaces/IDeprecatedReferenceModule.sol';
+import {ModuleBase} from 'contracts/core/modules/ModuleBase.sol';
+import {FollowValidationModuleBase} from 'contracts/core/modules/FollowValidationModuleBase.sol';
 import {IERC721} from '@openzeppelin/contracts/token/ERC721/IERC721.sol';
 
 /**
@@ -14,10 +14,7 @@ import {IERC721} from '@openzeppelin/contracts/token/ERC721/IERC721.sol';
  * @notice A simple reference module that validates that comments or mirrors originate from a profile owned
  * by a follower.
  */
-contract DeprecatedFollowerOnlyReferenceModule is
-    FollowValidationModuleBase,
-    IDeprecatedReferenceModule
-{
+contract DeprecatedFollowerOnlyReferenceModule is FollowValidationModuleBase, IDeprecatedReferenceModule {
     constructor(address hub) ModuleBase(hub) {}
 
     /**

@@ -2,7 +2,7 @@
 
 pragma solidity 0.8.15;
 
-import {IFollowNFT} from '../interfaces/IFollowNFT.sol';
+import {IFollowNFT} from 'contracts/interfaces/IFollowNFT.sol';
 
 /**
  * @dev This is a helper contract used for internal testing.

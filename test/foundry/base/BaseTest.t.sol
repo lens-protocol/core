@@ -1,8 +1,9 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity ^0.8.13;
 
-import './TestSetup.t.sol';
-import '../../../contracts/libraries/DataTypes.sol';
+import 'test/foundry/base/TestSetup.t.sol';
+import 'contracts/libraries/constants/Types.sol';
+import {Typehash} from 'contracts/libraries/constants/Typehash.sol';
 
 contract BaseTest is TestSetup {
     function _getSetProfileMetadataURITypedDataHash(
@@ -12,13 +13,7 @@ contract BaseTest is TestSetup {
         uint256 deadline
     ) internal view returns (bytes32) {
         bytes32 structHash = keccak256(
-            abi.encode(
-                SET_PROFILE_METADATA_URI_TYPEHASH,
-                profileId,
-                keccak256(bytes(metadataURI)),
-                nonce,
-                deadline
-            )
+            abi.encode(Typehash.SET_PROFILE_METADATA_URI, profileId, keccak256(bytes(metadataURI)), nonce, deadline)
         );
         return _calculateDigest(structHash);
     }
@@ -32,7 +27,7 @@ contract BaseTest is TestSetup {
     ) internal view returns (bytes32) {
         bytes32 structHash = keccak256(
             abi.encode(
-                SET_FOLLOW_MODULE_TYPEHASH,
+                Typehash.SET_FOLLOW_MODULE,
                 profileId,
                 followModule,
                 keccak256(followModuleInitData),
@@ -54,7 +49,7 @@ contract BaseTest is TestSetup {
     ) internal view returns (bytes32) {
         bytes32 structHash = keccak256(
             abi.encode(
-                CHANGE_DELEGATED_EXECUTORS_CONFIG_TYPEHASH,
+                Typehash.CHANGE_DELEGATED_EXECUTORS_CONFIG,
                 delegatorProfileId,
                 abi.encodePacked(executors),
                 abi.encodePacked(approvals),
@@ -74,13 +69,7 @@ contract BaseTest is TestSetup {
         uint256 deadline
     ) internal view returns (bytes32) {
         bytes32 structHash = keccak256(
-            abi.encode(
-                SET_PROFILE_IMAGE_URI_TYPEHASH,
-                profileId,
-                keccak256(bytes(imageURI)),
-                nonce,
-                deadline
-            )
+            abi.encode(Typehash.SET_PROFILE_IMAGE_URI, profileId, keccak256(bytes(imageURI)), nonce, deadline)
         );
         return _calculateDigest(structHash);
     }
@@ -92,13 +81,7 @@ contract BaseTest is TestSetup {
         uint256 deadline
     ) internal view returns (bytes32) {
         bytes32 structHash = keccak256(
-            abi.encode(
-                SET_FOLLOW_NFT_URI_TYPEHASH,
-                profileId,
-                keccak256(bytes(followNFTURI)),
-                nonce,
-                deadline
-            )
+            abi.encode(Typehash.SET_FOLLOW_NFT_URI, profileId, keccak256(bytes(followNFTURI)), nonce, deadline)
         );
         return _calculateDigest(structHash);
     }
@@ -108,7 +91,7 @@ contract BaseTest is TestSetup {
         uint256 nonce,
         uint256 deadline
     ) internal view returns (bytes32) {
-        bytes32 structHash = keccak256(abi.encode(BURN_TYPEHASH, profileId, nonce, deadline));
+        bytes32 structHash = keccak256(abi.encode(Typehash.BURN, profileId, nonce, deadline));
         return _calculateDigest(structHash);
     }
 
@@ -124,7 +107,7 @@ contract BaseTest is TestSetup {
     ) internal view returns (bytes32) {
         bytes32 structHash = keccak256(
             abi.encode(
-                POST_TYPEHASH,
+                Typehash.POST,
                 profileId,
                 keccak256(bytes(contentURI)),
                 collectModule,
@@ -139,7 +122,7 @@ contract BaseTest is TestSetup {
     }
 
     function _getPostTypedDataHash(
-        DataTypes.PostParams memory postParams,
+        Types.PostParams memory postParams,
         uint256 nonce,
         uint256 deadline
     ) internal view returns (bytes32) {
@@ -173,7 +156,7 @@ contract BaseTest is TestSetup {
     ) internal view returns (bytes32) {
         bytes32 structHash = keccak256(
             abi.encode(
-                COMMENT_TYPEHASH,
+                Typehash.COMMENT,
                 profileId,
                 keccak256(bytes(contentURI)),
                 pointedProfileId,
@@ -193,7 +176,7 @@ contract BaseTest is TestSetup {
     }
 
     function _getCommentTypedDataHash(
-        DataTypes.CommentParams memory commentParams,
+        Types.CommentParams memory commentParams,
         uint256 nonce,
         uint256 deadline
     ) internal view returns (bytes32) {
@@ -227,7 +210,7 @@ contract BaseTest is TestSetup {
     ) internal view returns (bytes32) {
         bytes32 structHash = keccak256(
             abi.encode(
-                MIRROR_TYPEHASH,
+                Typehash.MIRROR,
                 profileId,
                 pointedProfileId,
                 pointedPubId,
@@ -242,7 +225,7 @@ contract BaseTest is TestSetup {
     }
 
     function _getMirrorTypedDataHash(
-        DataTypes.MirrorParams memory mirrorParams,
+        Types.MirrorParams memory mirrorParams,
         uint256 nonce,
         uint256 deadline
     ) internal view returns (bytes32) {
@@ -278,7 +261,7 @@ contract BaseTest is TestSetup {
 
         bytes32 structHash = keccak256(
             abi.encode(
-                FOLLOW_TYPEHASH,
+                Typehash.FOLLOW,
                 followerProfileId,
                 keccak256(abi.encodePacked(idsOfProfilesToFollow)),
                 keccak256(abi.encodePacked(followTokenIds)),
@@ -291,13 +274,13 @@ contract BaseTest is TestSetup {
     }
 
     function _getCollectTypedDataHash(
-        DataTypes.CollectParams memory collectParams,
+        Types.CollectParams memory collectParams,
         uint256 nonce,
         uint256 deadline
     ) internal view returns (bytes32) {
         bytes32 structHash = keccak256(
             abi.encode(
-                COLLECT_TYPEHASH,
+                Typehash.COLLECT,
                 collectParams.publicationCollectedProfileId,
                 collectParams.publicationCollectedId,
                 collectParams.collectorProfileId,
@@ -320,9 +303,9 @@ contract BaseTest is TestSetup {
         uint256 pKey,
         bytes32 digest,
         uint256 deadline
-    ) internal returns (DataTypes.EIP712Signature memory) {
+    ) internal returns (Types.EIP712Signature memory) {
         (uint8 v, bytes32 r, bytes32 s) = vm.sign(pKey, digest);
-        return DataTypes.EIP712Signature(vm.addr(pKey), v, r, s, deadline);
+        return Types.EIP712Signature(vm.addr(pKey), v, r, s, deadline);
     }
 
     function _getSigStruct(
@@ -330,9 +313,9 @@ contract BaseTest is TestSetup {
         uint256 pKey,
         bytes32 digest,
         uint256 deadline
-    ) internal returns (DataTypes.EIP712Signature memory) {
+    ) internal returns (Types.EIP712Signature memory) {
         (uint8 v, bytes32 r, bytes32 s) = vm.sign(pKey, digest);
-        return DataTypes.EIP712Signature(signer, v, r, s, deadline);
+        return Types.EIP712Signature(signer, v, r, s, deadline);
     }
 
     function _toUint256Array(uint256 n) internal pure returns (uint256[] memory) {
@@ -354,11 +337,7 @@ contract BaseTest is TestSetup {
         return ret;
     }
 
-    function _toBytesArray(bytes memory b0, bytes memory b1)
-        internal
-        pure
-        returns (bytes[] memory)
-    {
+    function _toBytesArray(bytes memory b0, bytes memory b1) internal pure returns (bytes[] memory) {
         bytes[] memory ret = new bytes[](2);
         ret[0] = b0;
         ret[1] = b1;
@@ -391,35 +370,17 @@ contract BaseTest is TestSetup {
         return ret;
     }
 
-    // Private functions
-    function _buildChangeDelegatedExecutorsConfigWithSigData(
-        uint256 delegatorProfileId,
-        uint64 configNumber,
-        address[] memory executors,
-        bool[] memory approvals,
-        bool switchToGivenConfig,
-        DataTypes.EIP712Signature memory sig
-    ) internal pure returns (DataTypes.ChangeDelegatedExecutorsConfigWithSigData memory) {
-        return
-            DataTypes.ChangeDelegatedExecutorsConfigWithSigData(
-                delegatorProfileId,
-                executors,
-                approvals,
-                configNumber,
-                switchToGivenConfig,
-                sig
-            );
-    }
+    // Internal functions
 
-    function _post(DataTypes.PostParams memory postParams) internal returns (uint256) {
+    function _post(Types.PostParams memory postParams) internal returns (uint256) {
         return hub.post(postParams);
     }
 
-    function _comment(DataTypes.CommentParams memory commentParams) internal returns (uint256) {
+    function _comment(Types.CommentParams memory commentParams) internal returns (uint256) {
         return hub.comment(commentParams);
     }
 
-    function _mirror(DataTypes.MirrorParams memory mirrorParams) internal returns (uint256) {
+    function _mirror(Types.MirrorParams memory mirrorParams) internal returns (uint256) {
         return hub.mirror(mirrorParams);
     }
 
@@ -431,7 +392,7 @@ contract BaseTest is TestSetup {
     ) internal returns (uint256) {
         return
             hub.collect(
-                DataTypes.CollectParams({
+                Types.CollectParams({
                     publicationCollectedProfileId: publisherProfileId,
                     publicationCollectedId: pubId,
                     collectorProfileId: collectorProfileId,
@@ -442,32 +403,32 @@ contract BaseTest is TestSetup {
             );
     }
 
-    function _postWithSig(
-        DataTypes.PostParams memory postParams,
-        DataTypes.EIP712Signature memory sig
-    ) internal returns (uint256) {
-        return hub.postWithSig(postParams, sig);
+    function _postWithSig(Types.PostParams memory postParams, Types.EIP712Signature memory signature)
+        internal
+        returns (uint256)
+    {
+        return hub.postWithSig(postParams, signature);
     }
 
-    function _commentWithSig(
-        DataTypes.CommentParams memory commentParams,
-        DataTypes.EIP712Signature memory sig
-    ) internal returns (uint256) {
-        return hub.commentWithSig(commentParams, sig);
+    function _commentWithSig(Types.CommentParams memory commentParams, Types.EIP712Signature memory signature)
+        internal
+        returns (uint256)
+    {
+        return hub.commentWithSig(commentParams, signature);
     }
 
-    function _mirrorWithSig(
-        DataTypes.MirrorParams memory mirrorParams,
-        DataTypes.EIP712Signature memory sig
-    ) internal returns (uint256) {
-        return hub.mirrorWithSig(mirrorParams, sig);
+    function _mirrorWithSig(Types.MirrorParams memory mirrorParams, Types.EIP712Signature memory signature)
+        internal
+        returns (uint256)
+    {
+        return hub.mirrorWithSig(mirrorParams, signature);
     }
 
-    function _collectWithSig(
-        DataTypes.CollectParams memory collectParams,
-        DataTypes.EIP712Signature memory sig
-    ) internal returns (uint256) {
-        return hub.collectWithSig(collectParams, sig);
+    function _collectWithSig(Types.CollectParams memory collectParams, Types.EIP712Signature memory signature)
+        internal
+        returns (uint256)
+    {
+        return hub.collectWithSig(collectParams, signature);
     }
 
     function _follow(
@@ -492,7 +453,7 @@ contract BaseTest is TestSetup {
         uint256 idOfProfileToFollow,
         uint256 followTokenId,
         bytes memory data,
-        DataTypes.EIP712Signature memory sig
+        Types.EIP712Signature memory signature
     ) internal returns (uint256[] memory) {
         return
             hub.followWithSig(
@@ -500,27 +461,27 @@ contract BaseTest is TestSetup {
                 _toUint256Array(idOfProfileToFollow),
                 _toUint256Array(followTokenId),
                 _toBytesArray(data),
-                sig
+                signature
             );
     }
 
     function _createProfile(address newProfileOwner) internal returns (uint256) {
-        DataTypes.CreateProfileData memory createProfileData = DataTypes.CreateProfileData({
+        Types.CreateProfileParams memory CreateProfileParams = Types.CreateProfileParams({
             to: newProfileOwner,
-            imageURI: mockCreateProfileData.imageURI,
-            followModule: mockCreateProfileData.followModule,
-            followModuleInitData: mockCreateProfileData.followModuleInitData,
-            followNFTURI: mockCreateProfileData.followNFTURI
+            imageURI: mockCreateProfileParams.imageURI,
+            followModule: mockCreateProfileParams.followModule,
+            followModuleInitData: mockCreateProfileParams.followModuleInitData,
+            followNFTURI: mockCreateProfileParams.followNFTURI
         });
 
-        return hub.createProfile(createProfileData);
+        return hub.createProfile(CreateProfileParams);
     }
 
-    function _setState(DataTypes.ProtocolState newState) internal {
+    function _setState(Types.ProtocolState newState) internal {
         hub.setState(newState);
     }
 
-    function _getState() internal view returns (DataTypes.ProtocolState) {
+    function _getState() internal view returns (Types.ProtocolState) {
         return hub.getState();
     }
 
@@ -545,7 +506,7 @@ contract BaseTest is TestSetup {
         bool approved
     ) internal {
         vm.prank(msgSender);
-        hub.changeDelegatedExecutorsConfig({
+        hub.changeCurrentDelegatedExecutorsConfig({
             delegatorProfileId: profileId,
             executors: _toAddressArray(executor),
             approvals: _toBoolArray(approved)
@@ -566,9 +527,9 @@ contract BaseTest is TestSetup {
         uint256 profileId,
         address followModule,
         bytes memory followModuleInitData,
-        DataTypes.EIP712Signature memory sig
+        Types.EIP712Signature memory signature
     ) internal {
-        hub.setFollowModuleWithSig(profileId, followModule, followModuleInitData, sig);
+        hub.setFollowModuleWithSig(profileId, followModule, followModuleInitData, signature);
     }
 
     function _setProfileImageURI(
@@ -583,9 +544,9 @@ contract BaseTest is TestSetup {
     function _setProfileImageURIWithSig(
         uint256 profileId,
         string memory imageURI,
-        DataTypes.EIP712Signature memory sig
+        Types.EIP712Signature memory signature
     ) internal {
-        hub.setProfileImageURIWithSig(profileId, imageURI, sig);
+        hub.setProfileImageURIWithSig(profileId, imageURI, signature);
     }
 
     function _setFollowNFTURI(
@@ -600,9 +561,9 @@ contract BaseTest is TestSetup {
     function _setFollowNFTURIWithSig(
         uint256 profileId,
         string memory followNFTURI,
-        DataTypes.EIP712Signature memory sig
+        Types.EIP712Signature memory signature
     ) internal {
-        hub.setFollowNFTURIWithSig(profileId, followNFTURI, sig);
+        hub.setFollowNFTURIWithSig(profileId, followNFTURI, signature);
     }
 
     function _burn(address msgSender, uint256 profileId) internal {
@@ -610,15 +571,11 @@ contract BaseTest is TestSetup {
         hub.burn(profileId);
     }
 
-    function _burnWithSig(uint256 profileId, DataTypes.EIP712Signature memory sig) internal {
-        hub.burnWithSig(profileId, sig);
+    function _burnWithSig(uint256 profileId, Types.EIP712Signature memory signature) internal {
+        hub.burnWithSig(profileId, signature);
     }
 
-    function _getPub(uint256 profileId, uint256 pubId)
-        internal
-        view
-        returns (DataTypes.PublicationStruct memory)
-    {
+    function _getPub(uint256 profileId, uint256 pubId) internal view returns (Types.Publication memory) {
         return hub.getPub(profileId, pubId);
     }
 

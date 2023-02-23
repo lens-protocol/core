@@ -5,17 +5,18 @@ pragma solidity ^0.8.13;
 import '@openzeppelin/contracts/token/ERC721/extensions/IERC721Enumerable.sol';
 import '@openzeppelin/contracts/token/ERC721/IERC721.sol';
 import 'forge-std/console2.sol';
-import '../base/BaseTest.t.sol';
-import '../../../contracts/mocks/MockReferenceModule.sol';
-import '../../../contracts/mocks/MockDeprecatedReferenceModule.sol';
-import '../../../contracts/mocks/MockCollectModule.sol';
-import '../../../contracts/mocks/MockDeprecatedCollectModule.sol';
-import '../../../contracts/mocks/MockFollowModule.sol';
-import '../../../contracts/mocks/MockDeprecatedFollowModule.sol';
-import '../../../contracts/interfaces/IERC721Time.sol';
-import '../../../contracts/interfaces/ILensMultiState.sol';
+import 'test/foundry/base/BaseTest.t.sol';
+import 'contracts/mocks/MockReferenceModule.sol';
+import 'contracts/mocks/MockDeprecatedReferenceModule.sol';
+import 'contracts/mocks/MockCollectModule.sol';
+import 'contracts/mocks/MockDeprecatedCollectModule.sol';
+import 'contracts/mocks/MockFollowModule.sol';
+import 'contracts/mocks/MockDeprecatedFollowModule.sol';
+import 'contracts/interfaces/IERC721Time.sol';
+import 'contracts/interfaces/ILensMultiState.sol';
+import {Typehash} from 'contracts/libraries/constants/Typehash.sol';
 
-struct OldCreateProfileData {
+struct OldCreateProfileParams {
     address to;
     string handle;
     string imageURI;
@@ -34,9 +35,9 @@ struct OldMirrorParams {
 }
 
 interface IOldHub {
-    function createProfile(OldCreateProfileData memory vars) external returns (uint256);
+    function createProfile(OldCreateProfileParams memory createProfileParams) external returns (uint256);
 
-    function mirror(OldMirrorParams memory vars) external returns (uint256);
+    function mirror(OldMirrorParams memory createProfileParams) external returns (uint256);
 
     function follow(uint256[] calldata profileIds, bytes[] calldata datas) external;
 
@@ -98,13 +99,11 @@ contract UpgradeForkTest is BaseTest {
         _fullFollowCollectSequence(profileId, gov, hub);
 
         // Get the profile.
-        DataTypes.ProfileStruct memory profileStruct = hub.getProfile(profileId);
-        bytes memory encodedProfile = abi.encode(profileStruct);
+        Types.Profile memory Profile = hub.getProfile(profileId);
+        bytes memory encodedProfile = abi.encode(Profile);
 
         // Upgrade the hub.
-        TransparentUpgradeableProxy oldHubAsProxy = TransparentUpgradeableProxy(
-            payable(hubProxyAddr)
-        );
+        TransparentUpgradeableProxy oldHubAsProxy = TransparentUpgradeableProxy(payable(hubProxyAddr));
         vm.prank(proxyAdmin);
         oldHubAsProxy.upgradeTo(address(hubImpl));
 
@@ -112,8 +111,8 @@ contract UpgradeForkTest is BaseTest {
         assertEq(hub.getGovernance(), gov);
 
         // Ensure profile is the same.
-        profileStruct = hub.getProfile(profileId);
-        bytes memory postUpgradeEncodedProfile = abi.encode(profileStruct);
+        Profile = hub.getProfile(profileId);
+        bytes memory postUpgradeEncodedProfile = abi.encode(Profile);
         assertEq(postUpgradeEncodedProfile, encodedProfile);
 
         // Create a profile on the new hub, set the default profile.
@@ -135,17 +134,15 @@ contract UpgradeForkTest is BaseTest {
         // In order to make this test suite evergreen, we must try setting a modern follow module since we don't know
         // which version of the hub we're working with, if this fails, then we should use a deprecated one.
 
-        // mockCreateProfileData.handle = vm.toString(IERC721Enumerable(address(hub)).totalSupply());
-        mockCreateProfileData.followModule = mockFollowModuleAddr;
+        // mockCreateProfileParams.handle = vm.toString(IERC721Enumerable(address(hub)).totalSupply());
+        mockCreateProfileParams.followModule = mockFollowModuleAddr;
 
         uint256 profileId;
-        try hub.createProfile(mockCreateProfileData) returns (uint256 retProfileId) {
+        try hub.createProfile(mockCreateProfileParams) returns (uint256 retProfileId) {
             profileId = retProfileId;
             console2.log('Profile created with modern follow module.');
         } catch {
-            console2.log(
-                'Profile creation with modern follow module failed. Attempting with deprecated module.'
-            );
+            console2.log('Profile creation with modern follow module failed. Attempting with deprecated module.');
 
             address mockDeprecatedFollowModule = address(new MockDeprecatedFollowModule());
 
@@ -153,7 +150,7 @@ contract UpgradeForkTest is BaseTest {
             hub.whitelistFollowModule(mockDeprecatedFollowModule, true);
 
             // precompute basic profile creaton data.
-            mockCreateProfileData = DataTypes.CreateProfileData({
+            mockCreateProfileParams = Types.CreateProfileParams({
                 to: me,
                 imageURI: MOCK_URI,
                 followModule: address(0),
@@ -161,17 +158,17 @@ contract UpgradeForkTest is BaseTest {
                 followNFTURI: MOCK_URI
             });
 
-            OldCreateProfileData memory oldCreateProfileData = OldCreateProfileData(
-                mockCreateProfileData.to,
+            OldCreateProfileParams memory oldCreateProfileParams = OldCreateProfileParams(
+                mockCreateProfileParams.to,
                 vm.toString((IERC721Enumerable(address(hub)).totalSupply())),
-                mockCreateProfileData.imageURI,
+                mockCreateProfileParams.imageURI,
                 mockDeprecatedFollowModule,
-                mockCreateProfileData.followModuleInitData,
-                mockCreateProfileData.followNFTURI
+                mockCreateProfileParams.followModuleInitData,
+                mockCreateProfileParams.followNFTURI
             );
 
-            oldCreateProfileData.followModule = mockDeprecatedFollowModule;
-            profileId = IOldHub(address(hub)).createProfile(oldCreateProfileData);
+            oldCreateProfileParams.followModule = mockDeprecatedFollowModule;
+            profileId = IOldHub(address(hub)).createProfile(oldCreateProfileParams);
         }
         return profileId;
     }
@@ -199,9 +196,7 @@ contract UpgradeForkTest is BaseTest {
         mockPostParams.referenceModule = mockReferenceModuleAddr;
 
         try hub.post(mockPostParams) returns (uint256 retPubId) {
-            console2.log(
-                'Post published with modern collect and reference module, continuing with modern modules.'
-            );
+            console2.log('Post published with modern collect and reference module, continuing with modern modules.');
             uint256 postId = retPubId;
             assertEq(postId, 1);
 
@@ -210,7 +205,7 @@ contract UpgradeForkTest is BaseTest {
 
             // Validate post.
             assertEq(postId, 1);
-            DataTypes.PublicationStruct memory pub = hub.getPub(profileId, postId);
+            Types.Publication memory pub = hub.getPub(profileId, postId);
             assertEq(pub.pointedProfileId, 0);
             assertEq(pub.pointedPubId, 0);
             assertEq(pub.contentURI, mockPostParams.contentURI);
@@ -244,9 +239,7 @@ contract UpgradeForkTest is BaseTest {
             assertEq(pub.collectModule, address(0));
             assertEq(pub.collectNFT, address(0));
         } catch {
-            console2.log(
-                'Post with modern collect and reference module failed, Attempting with deprecated modules'
-            );
+            console2.log('Post with modern collect and reference module failed, Attempting with deprecated modules');
 
             address mockDeprecatedCollectModule = address(new MockDeprecatedCollectModule());
             address mockDeprecatedReferenceModule = address(new MockDeprecatedReferenceModule());
@@ -263,7 +256,7 @@ contract UpgradeForkTest is BaseTest {
 
             // Validate post.
             assertEq(postId, 1);
-            DataTypes.PublicationStruct memory pub = hub.getPub(profileId, postId);
+            Types.Publication memory pub = hub.getPub(profileId, postId);
             assertEq(pub.pointedProfileId, 0);
             assertEq(pub.pointedPubId, 0);
             assertEq(pub.contentURI, mockPostParams.contentURI);
@@ -326,11 +319,9 @@ contract UpgradeForkTest is BaseTest {
         uint256 secondProfileId = _fullCreateProfileSequence(gov, hub);
 
         try hub.follow(secondProfileId, profileIds, followTokenIds, datas) {
-            console2.log(
-                'Follow with modern interface succeeded, continuing with modern interface.'
-            );
+            console2.log('Follow with modern interface succeeded, continuing with modern interface.');
             hub.collect(
-                DataTypes.CollectParams({
+                Types.CollectParams({
                     publicationCollectedProfileId: profileId,
                     publicationCollectedId: 1,
                     collectorProfileId: profileId,
@@ -340,7 +331,7 @@ contract UpgradeForkTest is BaseTest {
                 })
             );
             hub.collect(
-                DataTypes.CollectParams({
+                Types.CollectParams({
                     publicationCollectedProfileId: profileId,
                     publicationCollectedId: 2,
                     collectorProfileId: profileId,
@@ -350,7 +341,7 @@ contract UpgradeForkTest is BaseTest {
                 })
             );
             hub.collect(
-                DataTypes.CollectParams({
+                Types.CollectParams({
                     publicationCollectedProfileId: profileId,
                     publicationCollectedId: 3,
                     collectorProfileId: profileId,
@@ -360,9 +351,7 @@ contract UpgradeForkTest is BaseTest {
                 })
             );
         } catch {
-            console2.log(
-                'Follow with modern interface failed, proceeding with deprecated interface.'
-            );
+            console2.log('Follow with modern interface failed, proceeding with deprecated interface.');
             IOldHub(address(hub)).follow(profileIds, datas);
             IOldHub(address(hub)).collect(profileId, 1, '');
             IOldHub(address(hub)).collect(profileId, 2, '');
@@ -405,9 +394,9 @@ contract UpgradeForkTest is BaseTest {
         // Compute the domain separator.
         domainSeparator = keccak256(
             abi.encode(
-                EIP712_DOMAIN_TYPEHASH,
+                Typehash.EIP712_DOMAIN,
                 keccak256('Lens Protocol Profiles'),
-                EIP712_REVISION_HASH,
+                MetaTxLib.EIP712_REVISION_HASH,
                 block.chainid,
                 hubProxyAddr
             )
@@ -416,7 +405,7 @@ contract UpgradeForkTest is BaseTest {
         // NOTE: Structs are invalid as-is. Handle and modules must be set on the fly.
 
         // precompute basic profile creaton data.
-        mockCreateProfileData = DataTypes.CreateProfileData({
+        mockCreateProfileParams = Types.CreateProfileParams({
             to: me,
             imageURI: MOCK_URI,
             followModule: address(0),
@@ -425,7 +414,7 @@ contract UpgradeForkTest is BaseTest {
         });
 
         // Precompute basic post data.
-        mockPostParams = DataTypes.PostParams({
+        mockPostParams = Types.PostParams({
             profileId: 0,
             contentURI: MOCK_URI,
             collectModule: address(0),
@@ -435,7 +424,7 @@ contract UpgradeForkTest is BaseTest {
         });
 
         // Precompute basic comment data.
-        mockCommentParams = DataTypes.CommentParams({
+        mockCommentParams = Types.CommentParams({
             profileId: 0,
             contentURI: MOCK_URI,
             pointedProfileId: newProfileId,
@@ -450,7 +439,7 @@ contract UpgradeForkTest is BaseTest {
         });
 
         // Precompute basic mirror data.
-        mockMirrorParams = DataTypes.MirrorParams({
+        mockMirrorParams = Types.MirrorParams({
             profileId: 0,
             pointedProfileId: newProfileId,
             pointedPubId: 1,

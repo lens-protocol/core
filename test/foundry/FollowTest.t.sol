@@ -1,11 +1,12 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity ^0.8.13;
 
-import './base/BaseTest.t.sol';
-import './MetaTxNegatives.t.sol';
+import 'test/foundry/base/BaseTest.t.sol';
+import 'test/foundry/MetaTxNegatives.t.sol';
 import {Strings} from '@openzeppelin/contracts/utils/Strings.sol';
 import {IFollowNFT} from 'contracts/interfaces/IFollowNFT.sol';
-import '../../contracts/mocks/MockFollowModuleWithRevertFlag.sol';
+import 'contracts/mocks/MockFollowModuleWithRevertFlag.sol';
+import {Typehash} from 'contracts/libraries/constants/Typehash.sol';
 
 contract FollowTest is BaseTest {
     using Strings for uint256;
@@ -45,13 +46,7 @@ contract FollowTest is BaseTest {
         alreadyFollowingProfileOwner = vm.addr(alreadyFollowingProfileOwnerPk);
         alreadyFollowingProfileId = _createProfile(alreadyFollowingProfileOwner);
 
-        followTokenId = _follow(
-            alreadyFollowingProfileOwner,
-            alreadyFollowingProfileId,
-            targetProfileId,
-            0,
-            ''
-        )[0];
+        followTokenId = _follow(alreadyFollowingProfileOwner, alreadyFollowingProfileId, targetProfileId, 0, '')[0];
 
         targetFollowNFTAddress = hub.getFollowNFT(targetProfileId);
         followNFT = FollowNFT(targetFollowNFTAddress);
@@ -65,7 +60,7 @@ contract FollowTest is BaseTest {
 
     function testCannotFollowIfPaused() public {
         vm.prank(governance);
-        hub.setState(DataTypes.ProtocolState.Paused);
+        hub.setState(Types.ProtocolState.Paused);
 
         vm.expectRevert(Errors.Paused.selector);
 
@@ -81,11 +76,7 @@ contract FollowTest is BaseTest {
 
     function testCannotFollowIfBlocked() public {
         vm.prank(targetProfileOwner);
-        hub.setBlockStatus(
-            targetProfileId,
-            _toUint256Array(testFollowerProfileId),
-            _toBoolArray(true)
-        );
+        hub.setBlockStatus(targetProfileId, _toUint256Array(testFollowerProfileId), _toBoolArray(true));
 
         vm.expectRevert(Errors.Blocked.selector);
 
@@ -99,9 +90,7 @@ contract FollowTest is BaseTest {
         });
     }
 
-    function testCannotFollowIfExecutorIsNotTheProfileOwnerOrHisApprovedExecutor(uint256 executorPk)
-        public
-    {
+    function testCannotFollowIfExecutorIsNotTheProfileOwnerOrHisApprovedExecutor(uint256 executorPk) public {
         executorPk = bound(executorPk, 1, ISSECP256K1_CURVE_ORDER - 1);
         address executor = vm.addr(executorPk);
         vm.assume(executor != address(0));
@@ -120,9 +109,9 @@ contract FollowTest is BaseTest {
         });
     }
 
-    function testCannotFollowWithUnwrappedTokenIfExecutorIsNotTheProfileOwnerOrHisApprovedExecutor(
-        uint256 executorPk
-    ) public {
+    function testCannotFollowWithUnwrappedTokenIfExecutorIsNotTheProfileOwnerOrHisApprovedExecutor(uint256 executorPk)
+        public
+    {
         executorPk = bound(executorPk, 1, ISSECP256K1_CURVE_ORDER - 1);
         address executor = vm.addr(executorPk);
         vm.assume(executor != address(0));
@@ -144,9 +133,9 @@ contract FollowTest is BaseTest {
         });
     }
 
-    function testCannotFollowWithWrappedTokenIfExecutorIsNotTheProfileOwnerOrHisApprovedExecutor(
-        uint256 executorPk
-    ) public {
+    function testCannotFollowWithWrappedTokenIfExecutorIsNotTheProfileOwnerOrHisApprovedExecutor(uint256 executorPk)
+        public
+    {
         executorPk = bound(executorPk, 1, ISSECP256K1_CURVE_ORDER - 1);
         address executor = vm.addr(executorPk);
         vm.assume(executor != address(0));
@@ -182,9 +171,7 @@ contract FollowTest is BaseTest {
         });
     }
 
-    function testCannotFollowIfAmountOfDataForFollowModulePassedDiffersFromAmountOfProfilesToFollow()
-        public
-    {
+    function testCannotFollowIfAmountOfDataForFollowModulePassedDiffersFromAmountOfProfilesToFollow() public {
         vm.expectRevert(Errors.ArrayMismatch.selector);
 
         _follow({
@@ -307,23 +294,14 @@ contract FollowTest is BaseTest {
 
         vm.expectCall(
             targetFollowNFTAddress,
-            abi.encodeCall(
-                followNFT.follow,
-                (testFollowerProfileId, testFollowerProfileOwner, MINT_NEW_TOKEN)
-            )
+            abi.encodeCall(followNFT.follow, (testFollowerProfileId, testFollowerProfileOwner, MINT_NEW_TOKEN))
         );
 
         vm.expectCall(
             followModuleWithRevertFlag,
             abi.encodeCall(
                 IFollowModule.processFollow,
-                (
-                    testFollowerProfileId,
-                    MINT_NEW_TOKEN,
-                    testFollowerProfileOwner,
-                    targetProfileId,
-                    followModuleData
-                )
+                (testFollowerProfileId, MINT_NEW_TOKEN, testFollowerProfileOwner, targetProfileId, followModuleData)
             )
         );
 
@@ -341,20 +319,14 @@ contract FollowTest is BaseTest {
         assertTrue(hub.isFollowing(testFollowerProfileId, targetProfileId));
     }
 
-    function testFollowAsFollowerApprovedDelegatedExecutor(uint256 approvedDelegatedExecutorPk)
-        public
-    {
-        approvedDelegatedExecutorPk = bound(
-            approvedDelegatedExecutorPk,
-            1,
-            ISSECP256K1_CURVE_ORDER - 1
-        );
+    function testFollowAsFollowerApprovedDelegatedExecutor(uint256 approvedDelegatedExecutorPk) public {
+        approvedDelegatedExecutorPk = bound(approvedDelegatedExecutorPk, 1, ISSECP256K1_CURVE_ORDER - 1);
         address approvedDelegatedExecutor = vm.addr(approvedDelegatedExecutorPk);
         vm.assume(approvedDelegatedExecutor != address(0));
         vm.assume(approvedDelegatedExecutor != testFollowerProfileOwner);
 
         vm.prank(testFollowerProfileOwner);
-        hub.changeDelegatedExecutorsConfig({
+        hub.changeCurrentDelegatedExecutorsConfig({
             delegatorProfileId: testFollowerProfileId,
             executors: _toAddressArray(approvedDelegatedExecutor),
             approvals: _toBoolArray(true)
@@ -378,23 +350,14 @@ contract FollowTest is BaseTest {
 
         vm.expectCall(
             targetFollowNFTAddress,
-            abi.encodeCall(
-                followNFT.follow,
-                (testFollowerProfileId, approvedDelegatedExecutor, MINT_NEW_TOKEN)
-            )
+            abi.encodeCall(followNFT.follow, (testFollowerProfileId, approvedDelegatedExecutor, MINT_NEW_TOKEN))
         );
 
         vm.expectCall(
             followModuleWithRevertFlag,
             abi.encodeCall(
                 IFollowModule.processFollow,
-                (
-                    testFollowerProfileId,
-                    MINT_NEW_TOKEN,
-                    approvedDelegatedExecutor,
-                    targetProfileId,
-                    followModuleData
-                )
+                (testFollowerProfileId, MINT_NEW_TOKEN, approvedDelegatedExecutor, targetProfileId, followModuleData)
             )
         );
 
@@ -441,9 +404,7 @@ contract FollowMetaTxTest is FollowTest, MetaTxNegatives {
         MetaTxNegatives.setUp();
 
         cachedNonceByAddress[testFollowerProfileOwner] = _getSigNonce(testFollowerProfileOwner);
-        cachedNonceByAddress[alreadyFollowingProfileOwner] = _getSigNonce(
-            alreadyFollowingProfileOwner
-        );
+        cachedNonceByAddress[alreadyFollowingProfileOwner] = _getSigNonce(alreadyFollowingProfileOwner);
     }
 
     function _follow(
@@ -525,7 +486,7 @@ contract FollowMetaTxTest is FollowTest, MetaTxNegatives {
             _calculateDigest(
                 keccak256(
                     abi.encode(
-                        FOLLOW_TYPEHASH,
+                        Typehash.FOLLOW,
                         followerProfileId,
                         keccak256(abi.encodePacked(idsOfProfilesToFollow)),
                         keccak256(abi.encodePacked(followTokenIds)),
@@ -539,8 +500,6 @@ contract FollowMetaTxTest is FollowTest, MetaTxNegatives {
 
     function _refreshCachedNonces() internal override {
         cachedNonceByAddress[testFollowerProfileOwner] = _getSigNonce(testFollowerProfileOwner);
-        cachedNonceByAddress[alreadyFollowingProfileOwner] = _getSigNonce(
-            alreadyFollowingProfileOwner
-        );
+        cachedNonceByAddress[alreadyFollowingProfileOwner] = _getSigNonce(alreadyFollowingProfileOwner);
     }
 }

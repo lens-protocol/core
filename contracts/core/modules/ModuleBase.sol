@@ -2,9 +2,9 @@
 
 pragma solidity 0.8.15;
 
-import {Errors} from '../../libraries/Errors.sol';
-import {Events} from '../../libraries/Events.sol';
-import {HubRestricted} from '../base/HubRestricted.sol';
+import {Errors} from 'contracts/libraries/constants/Errors.sol';
+import {Events} from 'contracts/libraries/constants/Events.sol';
+import {HubRestricted} from 'contracts/core/base/HubRestricted.sol';
 
 /**
  * @title ModuleBase

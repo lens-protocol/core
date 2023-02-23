@@ -2,9 +2,9 @@
 
 pragma solidity 0.8.15;
 
-import {Errors} from '../../../../libraries/Errors.sol';
-import {ModuleBase} from '../../ModuleBase.sol';
-import {DeprecatedFollowValidatorFollowModuleBase} from './DeprecatedFollowValidatorFollowModuleBase.sol';
+import {Errors} from 'contracts/libraries/constants/Errors.sol';
+import {ModuleBase} from 'contracts/core/modules/ModuleBase.sol';
+import {DeprecatedFollowValidatorFollowModuleBase} from 'contracts/core/modules/deprecated/follow/DeprecatedFollowValidatorFollowModuleBase.sol';
 import {IERC721} from '@openzeppelin/contracts/token/ERC721/IERC721.sol';
 
 /**
@@ -26,13 +26,7 @@ contract DeprecatedProfileFollowModule is DeprecatedFollowValidatorFollowModuleB
      *
      * @return bytes Empty bytes.
      */
-    function initializeFollowModule(uint256, bytes calldata)
-        external
-        view
-        override
-        onlyHub
-        returns (bytes memory)
-    {
+    function initializeFollowModule(uint256, bytes calldata) external view override onlyHub returns (bytes memory) {
         return new bytes(0);
     }
 

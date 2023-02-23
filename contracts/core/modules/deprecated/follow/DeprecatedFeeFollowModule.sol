@@ -2,11 +2,11 @@
 
 pragma solidity 0.8.15;
 
-import {ILensHub} from '../../../../interfaces/ILensHub.sol';
-import {Errors} from '../../../../libraries/Errors.sol';
-import {FeeModuleBase} from '../../FeeModuleBase.sol';
-import {ModuleBase} from '../../ModuleBase.sol';
-import {DeprecatedFollowValidatorFollowModuleBase} from './DeprecatedFollowValidatorFollowModuleBase.sol';
+import {ILensHub} from 'contracts/interfaces/ILensHub.sol';
+import {Errors} from 'contracts/libraries/constants/Errors.sol';
+import {FeeModuleBase} from 'contracts/core/modules/FeeModuleBase.sol';
+import {ModuleBase} from 'contracts/core/modules/ModuleBase.sol';
+import {DeprecatedFollowValidatorFollowModuleBase} from 'contracts/core/modules/deprecated/follow/DeprecatedFollowValidatorFollowModuleBase.sol';
 import {IERC20} from '@openzeppelin/contracts/token/ERC20/IERC20.sol';
 import {SafeERC20} from '@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol';
 import {IERC721} from '@openzeppelin/contracts/token/ERC721/IERC721.sol';
@@ -55,10 +55,7 @@ contract DeprecatedFeeFollowModule is FeeModuleBase, DeprecatedFollowValidatorFo
         onlyHub
         returns (bytes memory)
     {
-        (uint256 amount, address currency, address recipient) = abi.decode(
-            data,
-            (uint256, address, address)
-        );
+        (uint256 amount, address currency, address recipient) = abi.decode(data, (uint256, address, address));
         if (!_currencyWhitelisted(currency) || recipient == address(0) || amount == 0)
             revert Errors.InitParamsInvalid();
 
@@ -87,8 +84,7 @@ contract DeprecatedFeeFollowModule is FeeModuleBase, DeprecatedFollowValidatorFo
         uint256 adjustedAmount = amount - treasuryAmount;
 
         IERC20(currency).safeTransferFrom(follower, recipient, adjustedAmount);
-        if (treasuryAmount > 0)
-            IERC20(currency).safeTransferFrom(follower, treasury, treasuryAmount);
+        if (treasuryAmount > 0) IERC20(currency).safeTransferFrom(follower, treasury, treasuryAmount);
     }
 
     /**

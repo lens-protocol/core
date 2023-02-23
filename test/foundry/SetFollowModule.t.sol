@@ -1,9 +1,9 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity ^0.8.13;
 
-import './base/BaseTest.t.sol';
-import '../../contracts/mocks/MockFollowModule.sol';
-import './helpers/SignatureHelpers.sol';
+import 'test/foundry/base/BaseTest.t.sol';
+import 'contracts/mocks/MockFollowModule.sol';
+import 'test/foundry/helpers/SignatureHelpers.sol';
 
 // TODO: Refactor out all `hub.` calls (if we decide to go this route)
 contract SetFollowModuleTest is BaseTest, SigSetup {
@@ -17,10 +17,7 @@ contract SetFollowModuleTest is BaseTest, SigSetup {
         hub.whitelistFollowModule(mockFollowModule, true);
     }
 
-    function _setFollowModulehWithSig(address delegatedSigner, uint256 signerPrivKey)
-        internal
-        virtual
-    {
+    function _setFollowModulehWithSig(address delegatedSigner, uint256 signerPrivKey) internal virtual {
         _setFollowModulehWithSig(delegatedSigner, signerPrivKey, deadline, deadline);
     }
 
@@ -78,7 +75,7 @@ contract SetFollowModuleTest is BaseTest, SigSetup {
     function testExecutorSetFollowModule() public {
         assertEq(hub.getFollowModule(newProfileId), address(0));
         vm.prank(profileOwner);
-        hub.changeDelegatedExecutorsConfig({
+        hub.changeCurrentDelegatedExecutorsConfig({
             delegatorProfileId: newProfileId,
             executors: _toAddressArray(otherSigner),
             approvals: _toBoolArray(true)
@@ -97,13 +94,7 @@ contract SetFollowModuleTest is BaseTest, SigSetup {
     // Negatives
     function testCannotSetFollowModuleNotWhitelistedWithSig() public {
         vm.expectRevert(Errors.FollowModuleNotWhitelisted.selector);
-        bytes32 digest = _getSetFollowModuleTypedDataHash(
-            newProfileId,
-            address(1),
-            '',
-            nonce,
-            deadline
-        );
+        bytes32 digest = _getSetFollowModuleTypedDataHash(newProfileId, address(1), '', nonce, deadline);
 
         hub.setFollowModuleWithSig({
             profileId: newProfileId,

@@ -2,18 +2,18 @@
 
 pragma solidity 0.8.15;
 
-import {ILensHub} from '../interfaces/ILensHub.sol';
-import {DataTypes} from '../libraries/DataTypes.sol';
+import {ILensHub} from 'contracts/interfaces/ILensHub.sol';
+import {Types} from 'contracts/libraries/constants/Types.sol';
 
 /**
- * @dev This struct contains both a `ProfileStruct` and a `PublicationStruct`.
+ * @dev This struct contains both a `Profile` and a `Publication`.
  *
- * @param profileStruct A standard profile struct.
- * @param publicationStruct A standard publicationStruct.
+ * @param Profile A standard profile struct.
+ * @param Publication A standard Publication.
  */
 struct LatestData {
-    DataTypes.ProfileStruct profileStruct;
-    DataTypes.PublicationStruct publicationStruct;
+    Types.Profile Profile;
+    Types.Publication Publication;
 }
 
 /**
@@ -35,11 +35,11 @@ contract UIDataProvider {
      *
      * @param profileId The profile ID to query.
      *
-     * @return LensData A struct containing the `ProfileStruct` and the `PublicationStruct` queried.
+     * @return LensData A struct containing the `Profile` and the `Publication` queried.
      */
     function getLatestDataByProfile(uint256 profileId) external view returns (LatestData memory) {
-        DataTypes.ProfileStruct memory profileStruct = HUB.getProfile(profileId);
-        uint256 pubCount = profileStruct.pubCount;
-        return LatestData(profileStruct, HUB.getPub(profileId, pubCount));
+        Types.Profile memory Profile = HUB.getProfile(profileId);
+        uint256 pubCount = Profile.pubCount;
+        return LatestData(Profile, HUB.getPub(profileId, pubCount));
     }
 }

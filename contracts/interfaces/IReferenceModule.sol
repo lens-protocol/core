@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 
 pragma solidity 0.8.15;
-import {DataTypes} from 'contracts/libraries/DataTypes.sol';
+import {Types} from 'contracts/libraries/constants/Types.sol';
 
 /**
  * @title IReferenceModule
@@ -46,7 +46,7 @@ interface IReferenceModule {
         uint256 pointedPubId,
         uint256 referrerProfileId,
         uint256 referrerPubId,
-        DataTypes.PublicationType referrerPubType,
+        Types.PublicationType referrerPubType,
         bytes calldata data
     ) external;
 
@@ -68,7 +68,7 @@ interface IReferenceModule {
         uint256 pointedPubId,
         uint256 referrerProfileId,
         uint256 referrerPubId,
-        DataTypes.PublicationType referrerPubType,
+        Types.PublicationType referrerPubType,
         bytes calldata data
     ) external;
 
@@ -88,7 +88,7 @@ interface IReferenceModule {
         uint256 pointedPubId,
         uint256 referrerProfileId,
         uint256 referrerPubId,
-        DataTypes.PublicationType referrerPubType,
+        Types.PublicationType referrerPubType,
         bytes calldata data
     ) external;
 }

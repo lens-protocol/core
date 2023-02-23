@@ -2,14 +2,14 @@
 
 pragma solidity 0.8.15;
 
-import {ERC2981CollectionRoyalties} from './base/ERC2981CollectionRoyalties.sol';
-import {ERC721Enumerable} from './base/ERC721Enumerable.sol';
-import {Errors} from '../libraries/Errors.sol';
-import {Events} from '../libraries/Events.sol';
-import {ICollectNFT} from '../interfaces/ICollectNFT.sol';
+import {ERC2981CollectionRoyalties} from 'contracts/core/base/ERC2981CollectionRoyalties.sol';
+import {ERC721Enumerable} from 'contracts/core/base/ERC721Enumerable.sol';
+import {Errors} from 'contracts/libraries/constants/Errors.sol';
+import {Events} from 'contracts/libraries/constants/Events.sol';
+import {ICollectNFT} from 'contracts/interfaces/ICollectNFT.sol';
 import {IERC721} from '@openzeppelin/contracts/token/ERC721/IERC721.sol';
-import {ILensHub} from '../interfaces/ILensHub.sol';
-import {LensNFTBase} from './base/LensNFTBase.sol';
+import {ILensHub} from 'contracts/interfaces/ILensHub.sol';
+import {LensNFTBase} from 'contracts/core/base/LensNFTBase.sol';
 
 /**
  * @title CollectNFT

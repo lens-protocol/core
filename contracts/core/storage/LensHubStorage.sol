@@ -2,7 +2,7 @@
 
 pragma solidity 0.8.15;
 
-import {DataTypes} from '../../libraries/DataTypes.sol';
+import {Types} from 'contracts/libraries/constants/Types.sol';
 
 /**
  * @title LensHubStorage
@@ -20,8 +20,8 @@ abstract contract LensHubStorage {
 
     mapping(uint256 => address) internal ___DEPRECATED_SLOT; // Slot 17, deprecated, old _dispatcherByProfile
     mapping(bytes32 => uint256) internal _profileIdByHandleHash; // Slot 18
-    mapping(uint256 => DataTypes.ProfileStruct) internal _profileById; // Slot 19
-    mapping(uint256 => mapping(uint256 => DataTypes.PublicationStruct)) internal _pubByIdByProfile; // Slot 20
+    mapping(uint256 => Types.Profile) internal _profileById; // Slot 19
+    mapping(uint256 => mapping(uint256 => Types.Publication)) internal _pubByIdByProfile; // Slot 20
 
     mapping(address => uint256) internal _defaultProfileByAddress; // Slot 21, deprecated but needed for V2 migration
 
@@ -31,8 +31,6 @@ abstract contract LensHubStorage {
 
     // Slots introduced by Lens V2 upgrade.
 
-    mapping(uint256 => DataTypes.DelegatedExecutorsConfig)
-        internal _delegatedExecutorsConfigByProfileId; // Slot 25
-    mapping(uint256 => string) internal _metadataByProfile; // Slot 26
-    mapping(uint256 => mapping(uint256 => bool)) internal _blockedStatus; // Slot 27, _blockedStatus[byProfile][profile]
+    mapping(uint256 => Types.DelegatedExecutorsConfig) internal _delegatedExecutorsConfigByProfileId; // Slot 25
+    mapping(uint256 => mapping(uint256 => bool)) internal _blockedStatus; // Slot 26, _blockedStatus[byProfile][profile]
 }

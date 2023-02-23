@@ -2,17 +2,17 @@
 
 pragma solidity 0.8.15;
 
-import {ICollectModule} from '../../../interfaces/ICollectModule.sol';
-import {IFollowModule} from '../../../interfaces/IFollowModule.sol';
-import {ILensHub} from '../../../interfaces/ILensHub.sol';
-import {Errors} from '../../../libraries/Errors.sol';
-import {FeeModuleBase} from '../FeeModuleBase.sol';
-import {ModuleBase} from '../ModuleBase.sol';
-import {FollowValidationModuleBase} from '../FollowValidationModuleBase.sol';
+import {ICollectModule} from 'contracts/interfaces/ICollectModule.sol';
+import {IFollowModule} from 'contracts/interfaces/IFollowModule.sol';
+import {ILensHub} from 'contracts/interfaces/ILensHub.sol';
+import {Errors} from 'contracts/libraries/constants/Errors.sol';
+import {FeeModuleBase} from 'contracts/core/modules/FeeModuleBase.sol';
+import {ModuleBase} from 'contracts/core/modules/ModuleBase.sol';
+import {FollowValidationModuleBase} from 'contracts/core/modules/FollowValidationModuleBase.sol';
 import {IERC20} from '@openzeppelin/contracts/token/ERC20/IERC20.sol';
 import {SafeERC20} from '@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol';
 import {IERC721} from '@openzeppelin/contracts/token/ERC721/IERC721.sol';
-import {DataTypes} from 'contracts/libraries/DataTypes.sol';
+import {Types} from 'contracts/libraries/constants/Types.sol';
 
 /**
  * @notice A struct containing the necessary data to execute collect actions on a publication.
@@ -50,8 +50,7 @@ contract TimedFeeCollectModule is FeeModuleBase, FollowValidationModuleBase, ICo
 
     uint24 internal constant ONE_DAY = 24 hours;
 
-    mapping(uint256 => mapping(uint256 => ProfilePublicationData))
-        internal _dataByPublicationByProfile;
+    mapping(uint256 => mapping(uint256 => ProfilePublicationData)) internal _dataByPublicationByProfile;
 
     constructor(address hub, address moduleGlobals) FeeModuleBase(moduleGlobals) ModuleBase(hub) {}
 
@@ -78,19 +77,12 @@ contract TimedFeeCollectModule is FeeModuleBase, FollowValidationModuleBase, ICo
         unchecked {
             uint40 endTimestamp = uint40(block.timestamp) + ONE_DAY;
 
-            (
-                uint256 amount,
-                address currency,
-                address recipient,
-                uint16 referralFee,
-                bool followerOnly
-            ) = abi.decode(data, (uint256, address, address, uint16, bool));
-            if (
-                !_currencyWhitelisted(currency) ||
-                recipient == address(0) ||
-                referralFee > BPS_MAX ||
-                amount == 0
-            ) revert Errors.InitParamsInvalid();
+            (uint256 amount, address currency, address recipient, uint16 referralFee, bool followerOnly) = abi.decode(
+                data,
+                (uint256, address, address, uint16, bool)
+            );
+            if (!_currencyWhitelisted(currency) || recipient == address(0) || referralFee > BPS_MAX || amount == 0)
+                revert Errors.InitParamsInvalid();
 
             _dataByPublicationByProfile[profileId][pubId].amount = amount;
             _dataByPublicationByProfile[profileId][pubId].currency = currency;
@@ -117,16 +109,13 @@ contract TimedFeeCollectModule is FeeModuleBase, FollowValidationModuleBase, ICo
         address executor,
         uint256 referrerProfileId,
         uint256,
-        DataTypes.PublicationType,
+        Types.PublicationType,
         bytes calldata data
     ) external override onlyHub {
-        if (
-            _dataByPublicationByProfile[publicationCollectedProfileId][publicationCollectedId]
-                .followerOnly
-        ) _checkFollowValidity(publicationCollectedProfileId, collectorProfileOwner);
-        uint256 endTimestamp = _dataByPublicationByProfile[publicationCollectedProfileId][
-            publicationCollectedId
-        ].endTimestamp;
+        if (_dataByPublicationByProfile[publicationCollectedProfileId][publicationCollectedId].followerOnly)
+            _checkFollowValidity(publicationCollectedProfileId, collectorProfileOwner);
+        uint256 endTimestamp = _dataByPublicationByProfile[publicationCollectedProfileId][publicationCollectedId]
+            .endTimestamp;
         if (block.timestamp > endTimestamp) revert Errors.CollectExpired();
 
         if (referrerProfileId == publicationCollectedProfileId) {
@@ -175,8 +164,7 @@ contract TimedFeeCollectModule is FeeModuleBase, FollowValidationModuleBase, ICo
         uint256 adjustedAmount = amount - treasuryAmount;
 
         IERC20(currency).safeTransferFrom(executor, recipient, adjustedAmount);
-        if (treasuryAmount > 0)
-            IERC20(currency).safeTransferFrom(executor, treasury, treasuryAmount);
+        if (treasuryAmount > 0) IERC20(currency).safeTransferFrom(executor, treasury, treasuryAmount);
     }
 
     function _processCollectWithReferral(
@@ -216,7 +204,6 @@ contract TimedFeeCollectModule is FeeModuleBase, FollowValidationModuleBase, ICo
         address recipient = _dataByPublicationByProfile[profileId][pubId].recipient;
 
         IERC20(currency).safeTransferFrom(executor, recipient, adjustedAmount);
-        if (treasuryAmount > 0)
-            IERC20(currency).safeTransferFrom(executor, treasury, treasuryAmount);
+        if (treasuryAmount > 0) IERC20(currency).safeTransferFrom(executor, treasury, treasuryAmount);
     }
 }

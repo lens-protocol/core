@@ -2,11 +2,11 @@
 
 pragma solidity 0.8.15;
 
-import {IDeprecatedCollectModule} from '../../../../interfaces/IDeprecatedCollectModule.sol';
-import {Errors} from '../../../../libraries/Errors.sol';
-import {FeeModuleBase} from '../../FeeModuleBase.sol';
-import {ModuleBase} from '../../ModuleBase.sol';
-import {FollowValidationModuleBase} from '../../FollowValidationModuleBase.sol';
+import {IDeprecatedCollectModule} from 'contracts/interfaces/IDeprecatedCollectModule.sol';
+import {Errors} from 'contracts/libraries/constants/Errors.sol';
+import {FeeModuleBase} from 'contracts/core/modules/FeeModuleBase.sol';
+import {ModuleBase} from 'contracts/core/modules/ModuleBase.sol';
+import {FollowValidationModuleBase} from 'contracts/core/modules/FollowValidationModuleBase.sol';
 import {IERC20} from '@openzeppelin/contracts/token/ERC20/IERC20.sol';
 import {SafeERC20} from '@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol';
 import {IERC721} from '@openzeppelin/contracts/token/ERC721/IERC721.sol';
@@ -44,8 +44,7 @@ struct ProfilePublicationData {
 contract DeprecatedLimitedFeeCollectModule is FeeModuleBase, FollowValidationModuleBase, IDeprecatedCollectModule {
     using SafeERC20 for IERC20;
 
-    mapping(uint256 => mapping(uint256 => ProfilePublicationData))
-        internal _dataByPublicationByProfile;
+    mapping(uint256 => mapping(uint256 => ProfilePublicationData)) internal _dataByPublicationByProfile;
 
     constructor(address hub, address moduleGlobals) FeeModuleBase(moduleGlobals) ModuleBase(hub) {}
 
@@ -108,8 +107,7 @@ contract DeprecatedLimitedFeeCollectModule is FeeModuleBase, FollowValidationMod
         uint256 pubId,
         bytes calldata data
     ) external override onlyHub {
-        if (_dataByPublicationByProfile[profileId][pubId].followerOnly)
-            _checkFollowValidity(profileId, collector);
+        if (_dataByPublicationByProfile[profileId][pubId].followerOnly) _checkFollowValidity(profileId, collector);
         if (
             _dataByPublicationByProfile[profileId][pubId].currentCollects >=
             _dataByPublicationByProfile[profileId][pubId].collectLimit
@@ -158,8 +156,7 @@ contract DeprecatedLimitedFeeCollectModule is FeeModuleBase, FollowValidationMod
         uint256 adjustedAmount = amount - treasuryAmount;
 
         IERC20(currency).safeTransferFrom(collector, recipient, adjustedAmount);
-        if (treasuryAmount > 0)
-            IERC20(currency).safeTransferFrom(collector, treasury, treasuryAmount);
+        if (treasuryAmount > 0) IERC20(currency).safeTransferFrom(collector, treasury, treasuryAmount);
     }
 
     function _processCollectWithReferral(
@@ -199,7 +196,6 @@ contract DeprecatedLimitedFeeCollectModule is FeeModuleBase, FollowValidationMod
         address recipient = _dataByPublicationByProfile[profileId][pubId].recipient;
 
         IERC20(currency).safeTransferFrom(collector, recipient, adjustedAmount);
-        if (treasuryAmount > 0)
-            IERC20(currency).safeTransferFrom(collector, treasury, treasuryAmount);
+        if (treasuryAmount > 0) IERC20(currency).safeTransferFrom(collector, treasury, treasuryAmount);
     }
 }

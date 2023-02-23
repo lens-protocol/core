@@ -1,7 +1,8 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity ^0.8.13;
 
-import './base/BaseTest.t.sol';
+import 'test/foundry/base/BaseTest.t.sol';
+import {Typehash} from 'contracts/libraries/constants/Typehash.sol';
 
 abstract contract MetaTxNegatives is BaseTest {
     uint256 private constant NO_DEADLINE = type(uint256).max;
@@ -71,19 +72,13 @@ abstract contract MetaTxNegatives is BaseTest {
     function testCannotExecuteMetaTxWhenSignatureSignerIsInvalid() public {
         domainSeparator = _getValidDomainSeparator();
         vm.expectRevert(Errors.SignatureInvalid.selector);
-        _executeMetaTx({
-            signerPk: 1234569696969,
-            nonce: _defaultMetaTxSignerNonce,
-            deadline: NO_DEADLINE
-        });
+        _executeMetaTx({signerPk: 1234569696969, nonce: _defaultMetaTxSignerNonce, deadline: NO_DEADLINE});
     }
 
-    function testCannotExecuteMetaTxWhenSignatureDomainWasGeneratedWithWrongRevisionNumber()
-        public
-    {
+    function testCannotExecuteMetaTxWhenSignatureDomainWasGeneratedWithWrongRevisionNumber() public {
         domainSeparator = keccak256(
             abi.encode(
-                EIP712_DOMAIN_TYPEHASH,
+                Typehash.EIP712_DOMAIN,
                 keccak256(_getDomainName()),
                 keccak256('69696969696969696969696969969696'),
                 block.chainid,
@@ -91,17 +86,13 @@ abstract contract MetaTxNegatives is BaseTest {
             )
         );
         vm.expectRevert(Errors.SignatureInvalid.selector);
-        _executeMetaTx({
-            signerPk: _defaultMetaTxSignerPk,
-            nonce: _defaultMetaTxSignerNonce,
-            deadline: NO_DEADLINE
-        });
+        _executeMetaTx({signerPk: _defaultMetaTxSignerPk, nonce: _defaultMetaTxSignerNonce, deadline: NO_DEADLINE});
     }
 
     function testCannotExecuteMetaTxWhenSignatureDomainWasGeneratedWithWrongChainId() public {
         domainSeparator = keccak256(
             abi.encode(
-                EIP712_DOMAIN_TYPEHASH,
+                Typehash.EIP712_DOMAIN,
                 keccak256(_getDomainName()),
                 keccak256(_getRevisionNumber()),
                 type(uint256).max,
@@ -109,19 +100,13 @@ abstract contract MetaTxNegatives is BaseTest {
             )
         );
         vm.expectRevert(Errors.SignatureInvalid.selector);
-        _executeMetaTx({
-            signerPk: _defaultMetaTxSignerPk,
-            nonce: _defaultMetaTxSignerNonce,
-            deadline: NO_DEADLINE
-        });
+        _executeMetaTx({signerPk: _defaultMetaTxSignerPk, nonce: _defaultMetaTxSignerNonce, deadline: NO_DEADLINE});
     }
 
-    function testCannotExecuteMetaTxWhenSignatureDomainWasGeneratedWithWrongVerifyingContract()
-        public
-    {
+    function testCannotExecuteMetaTxWhenSignatureDomainWasGeneratedWithWrongVerifyingContract() public {
         domainSeparator = keccak256(
             abi.encode(
-                EIP712_DOMAIN_TYPEHASH,
+                Typehash.EIP712_DOMAIN,
                 keccak256(_getDomainName()),
                 keccak256(_getRevisionNumber()),
                 block.chainid,
@@ -129,17 +114,13 @@ abstract contract MetaTxNegatives is BaseTest {
             )
         );
         vm.expectRevert(Errors.SignatureInvalid.selector);
-        _executeMetaTx({
-            signerPk: _defaultMetaTxSignerPk,
-            nonce: _defaultMetaTxSignerNonce,
-            deadline: NO_DEADLINE
-        });
+        _executeMetaTx({signerPk: _defaultMetaTxSignerPk, nonce: _defaultMetaTxSignerNonce, deadline: NO_DEADLINE});
     }
 
     function testCannotExecuteMetaTxWhenSignatureDomainWasGeneratedWithWrongName() public {
         domainSeparator = keccak256(
             abi.encode(
-                EIP712_DOMAIN_TYPEHASH,
+                Typehash.EIP712_DOMAIN,
                 keccak256('This should be an invalid name :)'),
                 keccak256(_getRevisionNumber()),
                 block.chainid,
@@ -147,18 +128,14 @@ abstract contract MetaTxNegatives is BaseTest {
             )
         );
         vm.expectRevert(Errors.SignatureInvalid.selector);
-        _executeMetaTx({
-            signerPk: _defaultMetaTxSignerPk,
-            nonce: _defaultMetaTxSignerNonce,
-            deadline: NO_DEADLINE
-        });
+        _executeMetaTx({signerPk: _defaultMetaTxSignerPk, nonce: _defaultMetaTxSignerNonce, deadline: NO_DEADLINE});
     }
 
     function _getValidDomainSeparator() internal virtual returns (bytes32) {
         return
             keccak256(
                 abi.encode(
-                    EIP712_DOMAIN_TYPEHASH,
+                    Typehash.EIP712_DOMAIN,
                     keccak256(_getDomainName()),
                     keccak256(_getRevisionNumber()),
                     block.chainid,

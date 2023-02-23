@@ -1,8 +1,9 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity ^0.8.13;
 
-import './base/BaseTest.t.sol';
-import './MetaTxNegatives.t.sol';
+import 'test/foundry/base/BaseTest.t.sol';
+import 'test/foundry/MetaTxNegatives.t.sol';
+import {Typehash} from 'contracts/libraries/constants/Typehash.sol';
 
 contract ChangeDelegatedExecutorsConfigTest_CurrentConfig is BaseTest {
     uint256 constant testDelegatorProfileOwnerPk = 0xDE1E6A708;
@@ -22,13 +23,10 @@ contract ChangeDelegatedExecutorsConfigTest_CurrentConfig is BaseTest {
     // changeDelegatedExecutorsConfig - Current config - Negatives
     //////////////////////////////////////////////////////////////////////
 
-    function testCannotChangeDelegatedExecutorsConfig_WhenProtocolIsPaused(
-        address executor,
-        bool approval
-    ) public {
+    function testCannotChangeDelegatedExecutorsConfig_WhenProtocolIsPaused(address executor, bool approval) public {
         vm.prank(governance);
 
-        hub.setState(DataTypes.ProtocolState.Paused);
+        hub.setState(Types.ProtocolState.Paused);
 
         vm.expectRevert(Errors.Paused.selector);
 
@@ -94,10 +92,9 @@ contract ChangeDelegatedExecutorsConfigTest_CurrentConfig is BaseTest {
     // changeDelegatedExecutorsConfig - Current config - Scenarios
     //////////////////////////////////////////////////////////////////////
 
-    function testDelegatedExecutorsConfigIsClearedAfterBeingTransferred(
-        address newProfileOwner,
-        address executor
-    ) public {
+    function testDelegatedExecutorsConfigIsClearedAfterBeingTransferred(address newProfileOwner, address executor)
+        public
+    {
         vm.assume(newProfileOwner != address(0));
         vm.assume(newProfileOwner != testDelegatorProfileOwner);
 
@@ -108,9 +105,7 @@ contract ChangeDelegatedExecutorsConfigTest_CurrentConfig is BaseTest {
             _toBoolArray(true)
         );
 
-        uint64 maxConfigSetBeforeTranster = hub.getDelegatedExecutorsMaxConfigNumberSet(
-            testDelegatorProfileId
-        );
+        uint64 maxConfigSetBeforeTranster = hub.getDelegatedExecutorsMaxConfigNumberSet(testDelegatorProfileId);
 
         vm.prank(testDelegatorProfileOwner);
         hub.transferFrom(testDelegatorProfileOwner, newProfileOwner, testDelegatorProfileId);
@@ -121,10 +116,7 @@ contract ChangeDelegatedExecutorsConfigTest_CurrentConfig is BaseTest {
             expectedMaxConfigSetAfterTransfer,
             hub.getDelegatedExecutorsMaxConfigNumberSet(testDelegatorProfileId)
         );
-        assertEq(
-            expectedMaxConfigSetAfterTransfer,
-            hub.getDelegatedExecutorsConfigNumber(testDelegatorProfileId)
-        );
+        assertEq(expectedMaxConfigSetAfterTransfer, hub.getDelegatedExecutorsConfigNumber(testDelegatorProfileId));
 
         assertFalse(hub.isDelegatedExecutorApproved(testDelegatorProfileId, executor));
     }
@@ -164,14 +156,7 @@ contract ChangeDelegatedExecutorsConfigTest_CurrentConfig is BaseTest {
         address[] memory executors,
         bool[] memory approvals
     ) private {
-        _changeDelegatedExecutorsConfig(
-            pk,
-            delegatorProfileId,
-            executors,
-            approvals,
-            initConfigNumber,
-            false
-        );
+        _changeDelegatedExecutorsConfig(pk, delegatorProfileId, executors, approvals, initConfigNumber, false);
     }
 
     function _changeDelegatedExecutorsConfig(
@@ -183,13 +168,11 @@ contract ChangeDelegatedExecutorsConfigTest_CurrentConfig is BaseTest {
         bool /* switchToGivenConfig */
     ) internal virtual {
         vm.prank(vm.addr(pk));
-        hub.changeDelegatedExecutorsConfig(delegatorProfileId, executors, approvals);
+        hub.changeCurrentDelegatedExecutorsConfig(delegatorProfileId, executors, approvals);
     }
 }
 
-contract ChangeDelegatedExecutorsConfigTest_GivenConfig is
-    ChangeDelegatedExecutorsConfigTest_CurrentConfig
-{
+contract ChangeDelegatedExecutorsConfigTest_GivenConfig is ChangeDelegatedExecutorsConfigTest_CurrentConfig {
     //////////////////////////////////////////////////////////////////////
     // changeDelegatedExecutorsConfig - Given config - Negatives
     //////////////////////////////////////////////////////////////////////
@@ -199,13 +182,9 @@ contract ChangeDelegatedExecutorsConfigTest_GivenConfig is
         address executor,
         bool approval
     ) public {
-        uint64 maxAvailableConfigNumber = hub.getDelegatedExecutorsMaxConfigNumberSet(
-            testDelegatorProfileId
-        ) + 1;
+        uint64 maxAvailableConfigNumber = hub.getDelegatedExecutorsMaxConfigNumberSet(testDelegatorProfileId) + 1;
         uint64 fistInvalidConfigNumber = maxAvailableConfigNumber + 1;
-        invalidConfigNumber = uint64(
-            bound(invalidConfigNumber, fistInvalidConfigNumber, type(uint64).max)
-        );
+        invalidConfigNumber = uint64(bound(invalidConfigNumber, fistInvalidConfigNumber, type(uint64).max));
 
         vm.expectRevert(Errors.InvalidParameter.selector);
 
@@ -223,13 +202,9 @@ contract ChangeDelegatedExecutorsConfigTest_GivenConfig is
     // changeDelegatedExecutorsConfig - Given config - Scenarios
     //////////////////////////////////////////////////////////////////////
 
-    function testChangeMaxAvailableDelegatedExecutorsConfigWithoutSwitchingToIt(address executor)
-        public
-    {
+    function testChangeMaxAvailableDelegatedExecutorsConfigWithoutSwitchingToIt(address executor) public {
         uint64 configNumberBefore = hub.getDelegatedExecutorsConfigNumber(testDelegatorProfileId);
-        uint64 maxConfigNumberBefore = hub.getDelegatedExecutorsMaxConfigNumberSet(
-            testDelegatorProfileId
-        );
+        uint64 maxConfigNumberBefore = hub.getDelegatedExecutorsMaxConfigNumberSet(testDelegatorProfileId);
         uint64 maxAvailableConfigNumber = maxConfigNumberBefore + 1;
 
         vm.expectEmit(true, true, true, true, address(hub));
@@ -250,26 +225,15 @@ contract ChangeDelegatedExecutorsConfigTest_GivenConfig is
             switchToGivenConfig: false
         });
 
-        assertEq(
-            maxAvailableConfigNumber,
-            hub.getDelegatedExecutorsMaxConfigNumberSet(testDelegatorProfileId)
-        );
+        assertEq(maxAvailableConfigNumber, hub.getDelegatedExecutorsMaxConfigNumberSet(testDelegatorProfileId));
         assertEq(configNumberBefore, hub.getDelegatedExecutorsConfigNumber(testDelegatorProfileId));
 
-        assertTrue(
-            hub.isDelegatedExecutorApproved(
-                testDelegatorProfileId,
-                executor,
-                maxAvailableConfigNumber
-            )
-        );
+        assertTrue(hub.isDelegatedExecutorApproved(testDelegatorProfileId, executor, maxAvailableConfigNumber));
         assertFalse(hub.isDelegatedExecutorApproved(testDelegatorProfileId, executor));
     }
 
     function testChangeMaxAvailableDelegatedExecutorsConfigSwitchingToIt(address executor) public {
-        uint64 maxConfigNumberBefore = hub.getDelegatedExecutorsMaxConfigNumberSet(
-            testDelegatorProfileId
-        );
+        uint64 maxConfigNumberBefore = hub.getDelegatedExecutorsMaxConfigNumberSet(testDelegatorProfileId);
         uint64 maxAvailableConfigNumber = maxConfigNumberBefore + 1;
 
         vm.expectEmit(true, true, true, true, address(hub));
@@ -290,29 +254,15 @@ contract ChangeDelegatedExecutorsConfigTest_GivenConfig is
             switchToGivenConfig: true
         });
 
-        assertEq(
-            maxAvailableConfigNumber,
-            hub.getDelegatedExecutorsMaxConfigNumberSet(testDelegatorProfileId)
-        );
-        assertEq(
-            maxAvailableConfigNumber,
-            hub.getDelegatedExecutorsConfigNumber(testDelegatorProfileId)
-        );
+        assertEq(maxAvailableConfigNumber, hub.getDelegatedExecutorsMaxConfigNumberSet(testDelegatorProfileId));
+        assertEq(maxAvailableConfigNumber, hub.getDelegatedExecutorsConfigNumber(testDelegatorProfileId));
 
-        assertTrue(
-            hub.isDelegatedExecutorApproved(
-                testDelegatorProfileId,
-                executor,
-                maxAvailableConfigNumber
-            )
-        );
+        assertTrue(hub.isDelegatedExecutorApproved(testDelegatorProfileId, executor, maxAvailableConfigNumber));
         assertTrue(hub.isDelegatedExecutorApproved(testDelegatorProfileId, executor));
     }
 
     function testChangeToPreviousConfiguration() public {
-        uint64 firstConfigNumberSet = hub.getDelegatedExecutorsMaxConfigNumberSet(
-            testDelegatorProfileId
-        ) + 1;
+        uint64 firstConfigNumberSet = hub.getDelegatedExecutorsMaxConfigNumberSet(testDelegatorProfileId) + 1;
         _changeDelegatedExecutorsConfig({
             pk: testDelegatorProfileOwnerPk,
             delegatorProfileId: testDelegatorProfileId,
@@ -404,20 +354,11 @@ contract ChangeDelegatedExecutorsConfigTest_GivenConfig is
         assertFalse(hub.isDelegatedExecutorApproved(testDelegatorProfileId, address(3)));
         assertFalse(hub.isDelegatedExecutorApproved(testDelegatorProfileId, address(4)));
 
-        assertEq(
-            fourthConfigNumberSet,
-            hub.getDelegatedExecutorsMaxConfigNumberSet(testDelegatorProfileId)
-        );
-        assertEq(
-            secondConfigNumberSet,
-            hub.getDelegatedExecutorsConfigNumber(testDelegatorProfileId)
-        );
+        assertEq(fourthConfigNumberSet, hub.getDelegatedExecutorsMaxConfigNumberSet(testDelegatorProfileId));
+        assertEq(secondConfigNumberSet, hub.getDelegatedExecutorsConfigNumber(testDelegatorProfileId));
     }
 
-    function testEmitsConfigSwitchedAsFalseWhenPassingCurrentConfigNumber(
-        address executor,
-        bool approval
-    ) public {
+    function testEmitsConfigSwitchedAsFalseWhenPassingCurrentConfigNumber(address executor, bool approval) public {
         uint64 currentConfigNumber = hub.getDelegatedExecutorsConfigNumber(testDelegatorProfileId);
 
         vm.expectEmit(true, true, true, true, address(hub));
@@ -450,26 +391,14 @@ contract ChangeDelegatedExecutorsConfigTest_GivenConfig is
         bool switchToGivenConfig
     ) internal virtual override {
         vm.prank(vm.addr(pk));
-        hub.changeDelegatedExecutorsConfig(
-            delegatorProfileId,
-            executors,
-            approvals,
-            configNumber,
-            switchToGivenConfig
-        );
+        hub.changeDelegatedExecutorsConfig(delegatorProfileId, executors, approvals, configNumber, switchToGivenConfig);
     }
 }
 
-contract ChangeDelegatedExecutorsConfigTest_MetaTx is
-    ChangeDelegatedExecutorsConfigTest_GivenConfig,
-    MetaTxNegatives
-{
+contract ChangeDelegatedExecutorsConfigTest_MetaTx is ChangeDelegatedExecutorsConfigTest_GivenConfig, MetaTxNegatives {
     mapping(address => uint256) cachedNonceByAddress;
 
-    function setUp()
-        public
-        override(ChangeDelegatedExecutorsConfigTest_CurrentConfig, MetaTxNegatives)
-    {
+    function setUp() public override(ChangeDelegatedExecutorsConfigTest_CurrentConfig, MetaTxNegatives) {
         ChangeDelegatedExecutorsConfigTest_CurrentConfig.setUp();
         MetaTxNegatives.setUp();
 
@@ -523,7 +452,7 @@ contract ChangeDelegatedExecutorsConfigTest_MetaTx is
             _calculateDigest(
                 keccak256(
                     abi.encode(
-                        CHANGE_DELEGATED_EXECUTORS_CONFIG_TYPEHASH,
+                        Typehash.CHANGE_DELEGATED_EXECUTORS_CONFIG,
                         delegatorProfileId,
                         abi.encodePacked(executors),
                         abi.encodePacked(approvals),

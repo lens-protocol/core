@@ -2,7 +2,7 @@
 
 pragma solidity 0.8.15;
 
-import {IDeprecatedCollectModule} from '../interfaces/IDeprecatedCollectModule.sol';
+import {IDeprecatedCollectModule} from 'contracts/interfaces/IDeprecatedCollectModule.sol';
 
 /**
  * @title FreeCollectModule

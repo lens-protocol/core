@@ -2,9 +2,9 @@
 
 pragma solidity 0.8.15;
 
-import {Errors} from '../../libraries/Errors.sol';
-import {Events} from '../../libraries/Events.sol';
-import {IModuleGlobals} from '../../interfaces/IModuleGlobals.sol';
+import {Errors} from 'contracts/libraries/constants/Errors.sol';
+import {Events} from 'contracts/libraries/constants/Events.sol';
+import {IModuleGlobals} from 'contracts/interfaces/IModuleGlobals.sol';
 
 /**
  * @title ModuleGlobals
@@ -116,11 +116,6 @@ contract ModuleGlobals is IModuleGlobals {
         if (currency == address(0)) revert Errors.InitParamsInvalid();
         bool prevWhitelisted = _currencyWhitelisted[currency];
         _currencyWhitelisted[currency] = toWhitelist;
-        emit Events.ModuleGlobalsCurrencyWhitelisted(
-            currency,
-            prevWhitelisted,
-            toWhitelist,
-            block.timestamp
-        );
+        emit Events.ModuleGlobalsCurrencyWhitelisted(currency, prevWhitelisted, toWhitelist, block.timestamp);
     }
 }

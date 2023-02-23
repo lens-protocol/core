@@ -2,8 +2,8 @@
 
 pragma solidity ^0.8.0;
 
-import {Errors} from '../../libraries/Errors.sol';
-import {IERC721Time} from '../../interfaces/IERC721Time.sol';
+import {Errors} from 'contracts/libraries/constants/Errors.sol';
+import {IERC721Time} from 'contracts/interfaces/IERC721Time.sol';
 import {IERC721Receiver} from '@openzeppelin/contracts/token/ERC721/IERC721Receiver.sol';
 import {IERC721Metadata} from '@openzeppelin/contracts/token/ERC721/extensions/IERC721Metadata.sol';
 import {Address} from '@openzeppelin/contracts/utils/Address.sol';
@@ -60,13 +60,7 @@ abstract contract ERC721Time is Context, ERC165, IERC721Time, IERC721Metadata {
     /**
      * @dev See {IERC165-supportsInterface}.
      */
-    function supportsInterface(bytes4 interfaceId)
-        public
-        view
-        virtual
-        override(ERC165, IERC165)
-        returns (bool)
-    {
+    function supportsInterface(bytes4 interfaceId) public view virtual override(ERC165, IERC165) returns (bool) {
         return
             interfaceId == type(IERC721).interfaceId ||
             interfaceId == type(IERC721Metadata).interfaceId ||
@@ -102,13 +96,7 @@ abstract contract ERC721Time is Context, ERC165, IERC721Time, IERC721Metadata {
     /**
      * @dev See {IERC721Time-tokenDataOf}
      */
-    function tokenDataOf(uint256 tokenId)
-        public
-        view
-        virtual
-        override
-        returns (IERC721Time.TokenData memory)
-    {
+    function tokenDataOf(uint256 tokenId) public view virtual override returns (IERC721Time.TokenData memory) {
         if (!_exists(tokenId)) revert Errors.ERC721Time_TokenDataQueryForNonexistantToken();
         return _tokenData[tokenId];
     }
@@ -141,8 +129,7 @@ abstract contract ERC721Time is Context, ERC165, IERC721Time, IERC721Metadata {
         if (!_exists(tokenId)) revert Errors.ERC721Time_URIQueryForNonexistantToken();
 
         string memory baseURI = _baseURI();
-        return
-            bytes(baseURI).length > 0 ? string(abi.encodePacked(baseURI, tokenId.toString())) : '';
+        return bytes(baseURI).length > 0 ? string(abi.encodePacked(baseURI, tokenId.toString())) : '';
     }
 
     /**
@@ -188,13 +175,7 @@ abstract contract ERC721Time is Context, ERC165, IERC721Time, IERC721Metadata {
     /**
      * @dev See {IERC721-isApprovedForAll}.
      */
-    function isApprovedForAll(address owner, address operator)
-        public
-        view
-        virtual
-        override
-        returns (bool)
-    {
+    function isApprovedForAll(address owner, address operator) public view virtual override returns (bool) {
         return _operatorApprovals[owner][operator];
     }
 
@@ -207,8 +188,7 @@ abstract contract ERC721Time is Context, ERC165, IERC721Time, IERC721Metadata {
         uint256 tokenId
     ) public virtual override {
         //solhint-disable-next-line max-line-length
-        if (!_isApprovedOrOwner(_msgSender(), tokenId))
-            revert Errors.ERC721Time_TransferCallerNotOwnerOrApproved();
+        if (!_isApprovedOrOwner(_msgSender(), tokenId)) revert Errors.ERC721Time_TransferCallerNotOwnerOrApproved();
 
         _transfer(from, to, tokenId);
     }
@@ -233,8 +213,7 @@ abstract contract ERC721Time is Context, ERC165, IERC721Time, IERC721Metadata {
         uint256 tokenId,
         bytes memory _data
     ) public virtual override {
-        if (!_isApprovedOrOwner(_msgSender(), tokenId))
-            revert Errors.ERC721Time_TransferCallerNotOwnerOrApproved();
+        if (!_isApprovedOrOwner(_msgSender(), tokenId)) revert Errors.ERC721Time_TransferCallerNotOwnerOrApproved();
         _safeTransfer(from, to, tokenId, _data);
     }
 
@@ -299,17 +278,10 @@ abstract contract ERC721Time is Context, ERC165, IERC721Time, IERC721Metadata {
      *
      * - `tokenId` must exist.
      */
-    function _isApprovedOrOwner(address spender, uint256 tokenId)
-        internal
-        view
-        virtual
-        returns (bool)
-    {
+    function _isApprovedOrOwner(address spender, uint256 tokenId) internal view virtual returns (bool) {
         if (!_exists(tokenId)) revert Errors.ERC721Time_OperatorQueryForNonexistantToken();
         address owner = ERC721Time.ownerOf(tokenId);
-        return (spender == owner ||
-            getApproved(tokenId) == spender ||
-            isApprovedForAll(owner, spender));
+        return (spender == owner || getApproved(tokenId) == spender || isApprovedForAll(owner, spender));
     }
 
     /**
@@ -409,8 +381,7 @@ abstract contract ERC721Time is Context, ERC165, IERC721Time, IERC721Metadata {
         address to,
         uint256 tokenId
     ) internal virtual {
-        if (ERC721Time.ownerOf(tokenId) != from)
-            revert Errors.ERC721Time_TransferOfTokenThatIsNotOwn();
+        if (ERC721Time.ownerOf(tokenId) != from) revert Errors.ERC721Time_TransferOfTokenThatIsNotOwn();
         if (to == address(0)) revert Errors.ERC721Time_TransferToZeroAddress();
 
         _beforeTokenTransfer(from, to, tokenId);
@@ -469,9 +440,7 @@ abstract contract ERC721Time is Context, ERC165, IERC721Time, IERC721Metadata {
         bytes memory _data
     ) private returns (bool) {
         if (to.isContract()) {
-            try IERC721Receiver(to).onERC721Received(_msgSender(), from, tokenId, _data) returns (
-                bytes4 retval
-            ) {
+            try IERC721Receiver(to).onERC721Received(_msgSender(), from, tokenId, _data) returns (bytes4 retval) {
                 return retval == IERC721Receiver.onERC721Received.selector;
             } catch (bytes memory reason) {
                 if (reason.length == 0) {

@@ -4,9 +4,9 @@ pragma solidity ^0.8.13;
 import 'forge-std/Script.sol';
 import 'forge-std/console2.sol';
 
-import '../contracts/core/LensHub.sol';
-import '../contracts/core/FollowNFT.sol';
-import '../contracts/core/CollectNFT.sol';
+import 'contracts/core/LensHub.sol';
+import 'contracts/core/FollowNFT.sol';
+import 'contracts/core/CollectNFT.sol';
 
 /**
  * This script will deploy the current repository implementations, using the given environment
@@ -30,9 +30,9 @@ contract DeployUpgradeScript is Script {
         address followNFT = address(new FollowNFT(hubProxyAddr));
         address collectNFT = address(new CollectNFT(hubProxyAddr));
 
-        vm.writeFile("addrs", "");
-        vm.writeLine("addrs", string(abi.encodePacked("hubImpl: ", vm.toString(hubImpl))));
-        vm.writeLine("addrs", string(abi.encodePacked("followNFT: ", vm.toString(followNFT))));
-        vm.writeLine("addrs", string(abi.encodePacked("collectNFT: ", vm.toString(collectNFT))));
+        vm.writeFile('addrs', '');
+        vm.writeLine('addrs', string(abi.encodePacked('hubImpl: ', vm.toString(hubImpl))));
+        vm.writeLine('addrs', string(abi.encodePacked('followNFT: ', vm.toString(followNFT))));
+        vm.writeLine('addrs', string(abi.encodePacked('collectNFT: ', vm.toString(collectNFT))));
     }
 }

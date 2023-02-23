@@ -1,8 +1,8 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity ^0.8.13;
 
-import './base/BaseTest.t.sol';
-import './ERC721Test.t.sol';
+import 'test/foundry/base/BaseTest.t.sol';
+import 'test/foundry/ERC721Test.t.sol';
 
 contract ProfileNFTTest is BaseTest, ERC721Test {
     function _mintERC721(address to) internal virtual override returns (uint256) {

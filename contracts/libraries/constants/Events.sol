@@ -2,7 +2,7 @@
 
 pragma solidity 0.8.15;
 
-import {DataTypes} from './DataTypes.sol';
+import {Types} from 'contracts/libraries/constants/Types.sol';
 
 library Events {
     /**
@@ -24,8 +24,8 @@ library Events {
      */
     event StateSet(
         address indexed caller,
-        DataTypes.ProtocolState indexed prevState,
-        DataTypes.ProtocolState indexed newState,
+        Types.ProtocolState indexed prevState,
+        Types.ProtocolState indexed newState,
         uint256 timestamp
     );
 
@@ -68,11 +68,7 @@ library Events {
      * @param whitelisted Whether or not the profile creator is being added to the whitelist.
      * @param timestamp The current block timestamp.
      */
-    event ProfileCreatorWhitelisted(
-        address indexed profileCreator,
-        bool indexed whitelisted,
-        uint256 timestamp
-    );
+    event ProfileCreatorWhitelisted(address indexed profileCreator, bool indexed whitelisted, uint256 timestamp);
 
     /**
      * @dev Emitted when a follow module is added to or removed from the whitelist.
@@ -81,11 +77,7 @@ library Events {
      * @param whitelisted Whether or not the follow module is being added to the whitelist.
      * @param timestamp The current block timestamp.
      */
-    event FollowModuleWhitelisted(
-        address indexed followModule,
-        bool indexed whitelisted,
-        uint256 timestamp
-    );
+    event FollowModuleWhitelisted(address indexed followModule, bool indexed whitelisted, uint256 timestamp);
 
     /**
      * @dev Emitted when a reference module is added to or removed from the whitelist.
@@ -94,11 +86,7 @@ library Events {
      * @param whitelisted Whether or not the reference module is being added to the whitelist.
      * @param timestamp The current block timestamp.
      */
-    event ReferenceModuleWhitelisted(
-        address indexed referenceModule,
-        bool indexed whitelisted,
-        uint256 timestamp
-    );
+    event ReferenceModuleWhitelisted(address indexed referenceModule, bool indexed whitelisted, uint256 timestamp);
 
     /**
      * @dev Emitted when a collect module is added to or removed from the whitelist.
@@ -107,11 +95,7 @@ library Events {
      * @param whitelisted Whether or not the collect module is being added to the whitelist.
      * @param timestamp The current block timestamp.
      */
-    event CollectModuleWhitelisted(
-        address indexed collectModule,
-        bool indexed whitelisted,
-        uint256 timestamp
-    );
+    event CollectModuleWhitelisted(address indexed collectModule, bool indexed whitelisted, uint256 timestamp);
 
     /**
      * @dev Emitted when a profile is created.
@@ -302,11 +286,7 @@ library Events {
      * @param followNFT The address of the newly deployed followNFT clone.
      * @param timestamp The current block timestamp.
      */
-    event FollowNFTDeployed(
-        uint256 indexed profileId,
-        address indexed followNFT,
-        uint256 timestamp
-    );
+    event FollowNFTDeployed(uint256 indexed profileId, address indexed followNFT, uint256 timestamp);
 
     /**
      * @dev Emitted when a collectNFT clone is deployed using a lazy deployment pattern.
@@ -368,11 +348,7 @@ library Events {
      * @param idOfProfileUnfollowed The ID of the profile that was unfollowed.
      * @param timestamp The timestamp of the unfollow operation.
      */
-    event Unfollowed(
-        uint256 indexed unfollowerProfileId,
-        uint256 idOfProfileUnfollowed,
-        uint256 timestamp
-    );
+    event Unfollowed(uint256 indexed unfollowerProfileId, uint256 idOfProfileUnfollowed, uint256 timestamp);
 
     /**
      * @dev Emitted upon a successful block, through a block status setting operation.
@@ -445,11 +421,7 @@ library Events {
      * @param newPower The new governance power mapped to the delegate.
      * @param timestamp The current block timestamp.
      */
-    event FollowNFTDelegatedPowerChanged(
-        address indexed delegate,
-        uint256 indexed newPower,
-        uint256 timestamp
-    );
+    event FollowNFTDelegatedPowerChanged(address indexed delegate, uint256 indexed newPower, uint256 timestamp);
 
     /**
      * @dev Emitted when a newly deployed collect NFT is initialized.
@@ -458,11 +430,7 @@ library Events {
      * @param pubId The publication ID connected to the publication mapped to this collect NFT.
      * @param timestamp The current block timestamp.
      */
-    event CollectNFTInitialized(
-        uint256 indexed profileId,
-        uint256 indexed pubId,
-        uint256 timestamp
-    );
+    event CollectNFTInitialized(uint256 indexed profileId, uint256 indexed pubId, uint256 timestamp);
 
     // Module-Specific
 
@@ -473,11 +441,7 @@ library Events {
      * @param newGovernance The new governance address set.
      * @param timestamp The current block timestamp.
      */
-    event ModuleGlobalsGovernanceSet(
-        address indexed prevGovernance,
-        address indexed newGovernance,
-        uint256 timestamp
-    );
+    event ModuleGlobalsGovernanceSet(address indexed prevGovernance, address indexed newGovernance, uint256 timestamp);
 
     /**
      * @notice Emitted when the ModuleGlobals treasury address is set.
@@ -486,11 +450,7 @@ library Events {
      * @param newTreasury The new treasury address set.
      * @param timestamp The current block timestamp.
      */
-    event ModuleGlobalsTreasurySet(
-        address indexed prevTreasury,
-        address indexed newTreasury,
-        uint256 timestamp
-    );
+    event ModuleGlobalsTreasurySet(address indexed prevTreasury, address indexed newTreasury, uint256 timestamp);
 
     /**
      * @notice Emitted when the ModuleGlobals treasury fee is set.
@@ -499,11 +459,7 @@ library Events {
      * @param newTreasuryFee The new treasury fee in BPS.
      * @param timestamp The current block timestamp.
      */
-    event ModuleGlobalsTreasuryFeeSet(
-        uint16 indexed prevTreasuryFee,
-        uint16 indexed newTreasuryFee,
-        uint256 timestamp
-    );
+    event ModuleGlobalsTreasuryFeeSet(uint16 indexed prevTreasuryFee, uint16 indexed newTreasuryFee, uint256 timestamp);
 
     /**
      * @notice Emitted when a currency is added to or removed from the ModuleGlobals whitelist.
@@ -551,21 +507,6 @@ library Events {
         uint256 indexed profileId,
         address[] addresses,
         bool[] approved,
-        uint256 timestamp
-    );
-
-    /**
-     * @dev Emitted when the user wants to enable or disable follows in the `LensPeriphery`.
-     *
-     * @param owner The profile owner who executed the toggle.
-     * @param profileIds The array of token IDs of the profiles each followNFT is associated with.
-     * @param enabled The array of whether each FollowNFT's follow is enabled/disabled.
-     * @param timestamp The current block timestamp.
-     */
-    event FollowsToggled(
-        address indexed owner,
-        uint256[] profileIds,
-        bool[] enabled,
         uint256 timestamp
     );
 

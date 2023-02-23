@@ -2,7 +2,7 @@
 
 pragma solidity 0.8.15;
 
-import {DataTypes} from '../libraries/DataTypes.sol';
+import {Types} from 'contracts/libraries/constants/Types.sol';
 
 /**
  * @title ILensHub
@@ -52,7 +52,7 @@ interface ILensHub {
      *
      * @param newState The state to set, as a member of the ProtocolState enum.
      */
-    function setState(DataTypes.ProtocolState newState) external;
+    function setState(Types.ProtocolState newState) external;
 
     /**
      * @notice Adds or removes a profile creator from the whitelist. This function can only be called by the current
@@ -94,13 +94,13 @@ interface ILensHub {
      * @notice Creates a profile with the specified parameters, minting a profile NFT to the given recipient. This
      * function must be called by a whitelisted profile creator.
      *
-     * @param vars A CreateProfileData struct containing the following params:
+     * @param createProfileParams A CreateProfileParams struct containing the following params:
      *      to: The address receiving the profile.
      *      imageURI: The URI to set for the profile image.
      *      followModule: The follow module to use, can be the zero address.
      *      followModuleInitData: The follow module initialization data, if any.
      */
-    function createProfile(DataTypes.CreateProfileData calldata vars) external returns (uint256);
+    function createProfile(Types.CreateProfileParams calldata createProfileParams) external returns (uint256);
 
     /**
      * @notice Sets the metadata URI for the given profile. Must be called either from the profile owner or an approved
@@ -122,7 +122,7 @@ interface ILensHub {
     function setProfileMetadataURIWithSig(
         uint256 profileId,
         string calldata metadataURI,
-        DataTypes.EIP712Signature calldata signature
+        Types.EIP712Signature calldata signature
     ) external;
 
     /**
@@ -151,7 +151,7 @@ interface ILensHub {
         uint256 profileId,
         address followModule,
         bytes calldata followModuleInitData,
-        DataTypes.EIP712Signature calldata signature
+        Types.EIP712Signature calldata signature
     ) external;
 
     /**
@@ -184,7 +184,7 @@ interface ILensHub {
      * @param executors The array of executors to set the approval for.
      * @param approvals The array of booleans indicating the corresponding executor new approval status.
      */
-    function changeDelegatedExecutorsConfig(
+    function changeCurrentDelegatedExecutorsConfig(
         uint256 delegatorProfileId,
         address[] calldata executors,
         bool[] calldata approvals
@@ -211,7 +211,7 @@ interface ILensHub {
         bool[] calldata approvals,
         uint64 configNumber,
         bool switchToGivenConfig,
-        DataTypes.EIP712Signature calldata signature
+        Types.EIP712Signature calldata signature
     ) external;
 
     /**
@@ -233,7 +233,7 @@ interface ILensHub {
     function setProfileImageURIWithSig(
         uint256 profileId,
         string calldata imageURI,
-        DataTypes.EIP712Signature calldata signature
+        Types.EIP712Signature calldata signature
     ) external;
 
     /**
@@ -255,7 +255,7 @@ interface ILensHub {
     function setFollowNFTURIWithSig(
         uint256 profileId,
         string calldata followNFTURI,
-        DataTypes.EIP712Signature calldata signature
+        Types.EIP712Signature calldata signature
     ) external;
 
     /**
@@ -265,7 +265,7 @@ interface ILensHub {
      *
      * @return uint256 An integer representing the post's publication ID.
      */
-    function post(DataTypes.PostParams calldata postParams) external returns (uint256);
+    function post(Types.PostParams calldata postParams) external returns (uint256);
 
     /**
      * @notice Publishes a post to a given profile via signature with the specified parameters. The signer must
@@ -276,10 +276,9 @@ interface ILensHub {
      *
      * @return uint256 An integer representing the post's publication ID.
      */
-    function postWithSig(
-        DataTypes.PostParams calldata postParams,
-        DataTypes.EIP712Signature calldata signature
-    ) external returns (uint256);
+    function postWithSig(Types.PostParams calldata postParams, Types.EIP712Signature calldata signature)
+        external
+        returns (uint256);
 
     /**
      * @notice Publishes a comment to a given profile, must be called by the profile owner.
@@ -288,7 +287,7 @@ interface ILensHub {
      *
      * @return uint256 An integer representing the comment's publication ID.
      */
-    function comment(DataTypes.CommentParams calldata commentParams) external returns (uint256);
+    function comment(Types.CommentParams calldata commentParams) external returns (uint256);
 
     /**
      * @notice Publishes a comment to a given profile via signature with the specified parameters. The signer must
@@ -299,10 +298,9 @@ interface ILensHub {
      *
      * @return uint256 An integer representing the comment's publication ID.
      */
-    function commentWithSig(
-        DataTypes.CommentParams calldata commentParams,
-        DataTypes.EIP712Signature calldata signature
-    ) external returns (uint256);
+    function commentWithSig(Types.CommentParams calldata commentParams, Types.EIP712Signature calldata signature)
+        external
+        returns (uint256);
 
     /**
      * @notice Publishes a mirror to a given profile, must be called by the profile owner.
@@ -311,7 +309,7 @@ interface ILensHub {
      *
      * @return uint256 An integer representing the mirror's publication ID.
      */
-    function mirror(DataTypes.MirrorParams calldata mirrorParams) external returns (uint256);
+    function mirror(Types.MirrorParams calldata mirrorParams) external returns (uint256);
 
     /**
      * @notice Publishes a mirror to a given profile via signature with the specified parameters. The signer must
@@ -322,10 +320,9 @@ interface ILensHub {
      *
      * @return uint256 An integer representing the mirror's publication ID.
      */
-    function mirrorWithSig(
-        DataTypes.MirrorParams calldata mirrorParams,
-        DataTypes.EIP712Signature calldata signature
-    ) external returns (uint256);
+    function mirrorWithSig(Types.MirrorParams calldata mirrorParams, Types.EIP712Signature calldata signature)
+        external
+        returns (uint256);
 
     /**
      * @notice Publishes a quote to a given profile, must be called by the profile owner.
@@ -334,7 +331,7 @@ interface ILensHub {
      *
      * @return uint256 An integer representing the quote's publication ID.
      */
-    function quote(DataTypes.QuoteParams calldata quoteParams) external returns (uint256);
+    function quote(Types.QuoteParams calldata quoteParams) external returns (uint256);
 
     /**
      * @notice Publishes a quote to a given profile via signature with the specified parameters. The signer must
@@ -345,10 +342,9 @@ interface ILensHub {
      *
      * @return uint256 An integer representing the quote's publication ID.
      */
-    function quoteWithSig(
-        DataTypes.QuoteParams calldata quoteParams,
-        DataTypes.EIP712Signature calldata signature
-    ) external returns (uint256);
+    function quoteWithSig(Types.QuoteParams calldata quoteParams, Types.EIP712Signature calldata signature)
+        external
+        returns (uint256);
 
     /**
      * @notice Follows the given profiles, executing each profile's follow module logic (if any).
@@ -387,7 +383,7 @@ interface ILensHub {
         uint256[] calldata idsOfProfilesToFollow,
         uint256[] calldata followTokenIds,
         bytes[] calldata datas,
-        DataTypes.EIP712Signature calldata signature
+        Types.EIP712Signature calldata signature
     ) external returns (uint256[] memory);
 
     /**
@@ -396,8 +392,7 @@ interface ILensHub {
      * @param unfollowerProfileId The ID of the profile the unfollows are being executed for.
      * @param idsOfProfilesToUnfollow The array of IDs of profiles to unfollow.
      */
-    function unfollow(uint256 unfollowerProfileId, uint256[] calldata idsOfProfilesToUnfollow)
-        external;
+    function unfollow(uint256 unfollowerProfileId, uint256[] calldata idsOfProfilesToUnfollow) external;
 
     /**
      * @notice Unfollows the given profiles via signature with the specified parameters. The signer must either be the
@@ -410,7 +405,7 @@ interface ILensHub {
     function unfollowWithSig(
         uint256 unfollowerProfileId,
         uint256[] calldata idsOfProfilesToUnfollow,
-        DataTypes.EIP712Signature calldata signature
+        Types.EIP712Signature calldata signature
     ) external;
 
     /**
@@ -444,7 +439,7 @@ interface ILensHub {
         uint256 byProfileId,
         uint256[] calldata idsOfProfilesToSetBlockStatus,
         bool[] calldata blockStatus,
-        DataTypes.EIP712Signature calldata signature
+        Types.EIP712Signature calldata signature
     ) external;
 
     /**
@@ -455,7 +450,7 @@ interface ILensHub {
      *
      * @return uint256 An integer representing the minted token ID.
      */
-    function collect(DataTypes.CollectParams calldata collectParams) external returns (uint256);
+    function collect(Types.CollectParams calldata collectParams) external returns (uint256);
 
     /**
      * @notice Collects a given publication via signature with the specified parameters. The signer must either be the collector
@@ -466,10 +461,9 @@ interface ILensHub {
      *
      * @return uint256 An integer representing the minted token ID.
      */
-    function collectWithSig(
-        DataTypes.CollectParams calldata collectParams,
-        DataTypes.EIP712Signature calldata signature
-    ) external returns (uint256);
+    function collectWithSig(Types.CollectParams calldata collectParams, Types.EIP712Signature calldata signature)
+        external
+        returns (uint256);
 
     /**
      * @dev Helper function to emit a detailed followNFT transfer event from the hub, to be consumed by indexers to
@@ -511,8 +505,7 @@ interface ILensHub {
      * @param unfollowerProfileId The ID of the profile that executed the unfollow.
      * @param idOfProfileUnfollowed The ID of the profile that was unfollowed.
      */
-    function emitUnfollowedEvent(uint256 unfollowerProfileId, uint256 idOfProfileUnfollowed)
-        external;
+    function emitUnfollowedEvent(uint256 unfollowerProfileId, uint256 idOfProfileUnfollowed) external;
 
     /// ************************
     /// *****VIEW FUNCTIONS*****
@@ -526,10 +519,7 @@ interface ILensHub {
      *
      * @return bool True if `followerProfileId` is following `followedProfileId`, false otherwise.
      */
-    function isFollowing(uint256 followerProfileId, uint256 followedProfileId)
-        external
-        view
-        returns (bool);
+    function isFollowing(uint256 followerProfileId, uint256 followedProfileId) external view returns (bool);
 
     /**
      * @notice Returns whether or not a profile creator is whitelisted.
@@ -601,10 +591,7 @@ interface ILensHub {
      * @return bool True if the address is approved as a delegated executor to act on behalf of the profile in the
      * current configuration, false otherwise.
      */
-    function isDelegatedExecutorApproved(uint256 delegatorProfileId, address executor)
-        external
-        view
-        returns (bool);
+    function isDelegatedExecutorApproved(uint256 delegatorProfileId, address executor) external view returns (bool);
 
     /**
      * @param delegatorProfileId The ID of the profile from which the delegated executors configuration number is being
@@ -612,10 +599,7 @@ interface ILensHub {
      *
      * @return uint256 The current delegated executor configuration number.
      */
-    function getDelegatedExecutorsConfigNumber(uint256 delegatorProfileId)
-        external
-        view
-        returns (uint64);
+    function getDelegatedExecutorsConfigNumber(uint256 delegatorProfileId) external view returns (uint64);
 
     /**
      * @param delegatorProfileId The ID of the profile from which the delegated executors previous configuration number
@@ -624,10 +608,7 @@ interface ILensHub {
      * @return uint256 The delegated executor configuration number previously set. It will coincide with the current
      * configuration set if it was never switched from the default one.
      */
-    function getDelegatedExecutorsPrevConfigNumber(uint256 delegatorProfileId)
-        external
-        view
-        returns (uint64);
+    function getDelegatedExecutorsPrevConfigNumber(uint256 delegatorProfileId) external view returns (uint64);
 
     /**
      * @param delegatorProfileId The ID of the profile from which the delegated executors maximum configuration number
@@ -635,10 +616,7 @@ interface ILensHub {
      *
      * @return uint256 The delegated executor maximum configuration number set.
      */
-    function getDelegatedExecutorsMaxConfigNumberSet(uint256 delegatorProfileId)
-        external
-        view
-        returns (uint64);
+    function getDelegatedExecutorsMaxConfigNumberSet(uint256 delegatorProfileId) external view returns (uint64);
 
     /**
      * @notice Returns whether `profile` is blocked by `byProfile`.
@@ -743,10 +721,7 @@ interface ILensHub {
      * @return tuple First, the profile ID of the profile the current publication is pointing to, second, the
      * publication ID of the publication the current publication is pointing to.
      */
-    function getPubPointer(uint256 profileId, uint256 pubId)
-        external
-        view
-        returns (uint256, uint256);
+    function getPubPointer(uint256 profileId, uint256 pubId) external view returns (uint256, uint256);
 
     /**
      * @notice Returns the URI associated with a given publication.
@@ -763,9 +738,9 @@ interface ILensHub {
      *
      * @param profileId The token ID of the profile to query.
      *
-     * @return ProfileStruct The profile struct of the given profile.
+     * @return Profile The profile struct of the given profile.
      */
-    function getProfile(uint256 profileId) external view returns (DataTypes.ProfileStruct memory);
+    function getProfile(uint256 profileId) external view returns (Types.Profile memory);
 
     /**
      * @notice Returns the full publication struct for a given publication.
@@ -773,17 +748,11 @@ interface ILensHub {
      * @param profileId The token ID of the profile that published the publication to query.
      * @param pubId The publication ID of the publication to query.
      *
-     * @return PublicationStruct The publication struct associated with the queried publication.
+     * @return Publication The publication struct associated with the queried publication.
      */
-    function getPub(uint256 profileId, uint256 pubId)
-        external
-        view
-        returns (DataTypes.PublicationStruct memory);
+    function getPub(uint256 profileId, uint256 pubId) external view returns (Types.Publication memory);
 
-    function getPublicationType(uint256 profileId, uint256 pubId)
-        external
-        view
-        returns (DataTypes.PublicationType);
+    function getPublicationType(uint256 profileId, uint256 pubId) external view returns (Types.PublicationType);
 
     /**
      * @notice Returns the follow NFT implementation address.

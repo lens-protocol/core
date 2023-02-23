@@ -2,11 +2,11 @@
 
 pragma solidity 0.8.15;
 
-import {IFollowModule} from '../../../interfaces/IFollowModule.sol';
-import {Errors} from '../../../libraries/Errors.sol';
-import {Events} from '../../../libraries/Events.sol';
-import {ModuleBase} from '../ModuleBase.sol';
-import {FollowValidatorFollowModuleBase} from './FollowValidatorFollowModuleBase.sol';
+import {IFollowModule} from 'contracts/interfaces/IFollowModule.sol';
+import {Errors} from 'contracts/libraries/constants/Errors.sol';
+import {Events} from 'contracts/libraries/constants/Events.sol';
+import {ModuleBase} from 'contracts/core/modules/ModuleBase.sol';
+import {FollowValidatorFollowModuleBase} from 'contracts/core/modules/follow/FollowValidatorFollowModuleBase.sol';
 import {IERC721} from '@openzeppelin/contracts/token/ERC721/IERC721.sol';
 
 /**
@@ -17,8 +17,7 @@ import {IERC721} from '@openzeppelin/contracts/token/ERC721/IERC721.sol';
  */
 contract ApprovalFollowModule is FollowValidatorFollowModuleBase {
     // We use a triple nested mapping so that, on profile transfer, the previous approved address list is invalid;
-    mapping(address => mapping(uint256 => mapping(address => bool)))
-        internal _approvedByProfileByOwner;
+    mapping(address => mapping(uint256 => mapping(address => bool))) internal _approvedByProfileByOwner;
 
     constructor(address hub) ModuleBase(hub) {}
 
@@ -90,8 +89,7 @@ contract ApprovalFollowModule is FollowValidatorFollowModuleBase {
         bytes calldata
     ) external override onlyHub {
         address owner = IERC721(HUB).ownerOf(profileId);
-        if (!_approvedByProfileByOwner[owner][profileId][follower])
-            revert Errors.FollowNotApproved();
+        if (!_approvedByProfileByOwner[owner][profileId][follower]) revert Errors.FollowNotApproved();
         _approvedByProfileByOwner[owner][profileId][follower] = false; // prevents repeat follows
     }
 

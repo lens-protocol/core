@@ -2,9 +2,9 @@
 
 pragma solidity 0.8.15;
 
-import {IDeprecatedCollectModule} from '../../../../interfaces/IDeprecatedCollectModule.sol';
-import {ModuleBase} from '../../ModuleBase.sol';
-import {FollowValidationModuleBase} from '../../FollowValidationModuleBase.sol';
+import {IDeprecatedCollectModule} from 'contracts/interfaces/IDeprecatedCollectModule.sol';
+import {ModuleBase} from 'contracts/core/modules/ModuleBase.sol';
+import {FollowValidationModuleBase} from 'contracts/core/modules/FollowValidationModuleBase.sol';
 
 /**
  * @title FreeCollectModule
@@ -43,7 +43,6 @@ contract DeprecatedFreeCollectModule is FollowValidationModuleBase, IDeprecatedC
         uint256 pubId,
         bytes calldata
     ) external view override {
-        if (_followerOnlyByPublicationByProfile[profileId][pubId])
-            _checkFollowValidity(profileId, collector);
+        if (_followerOnlyByPublicationByProfile[profileId][pubId]) _checkFollowValidity(profileId, collector);
     }
 }

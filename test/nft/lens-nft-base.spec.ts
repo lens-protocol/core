@@ -34,7 +34,7 @@ import {
 // TODO: This largely does not actually test the LensNFTBase contract, instead testing the
 // modified versions of the functions found in the LensHub. This should be renamed to base LensHub
 // functionality, and cloned, with the NFT being tested being a Collect/Follow NFT, because they
-// don't override the base functionality. 
+// don't override the base functionality.
 makeSuiteCleanRoom('Lens NFT Base Functionality', function () {
   context('generic', function () {
     it('Domain separator fetched from contract should be accurate', async function () {

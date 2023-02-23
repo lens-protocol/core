@@ -1,8 +1,8 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity ^0.8.13;
 
-import './base/BaseTest.t.sol';
-import '../../contracts/mocks/MockFollowModule.sol';
+import 'test/foundry/base/BaseTest.t.sol';
+import 'contracts/mocks/MockFollowModule.sol';
 
 // Original Misc
 contract NFTTransferEmittersTest is BaseTest {
@@ -35,7 +35,7 @@ contract MiscTest is BaseTest {
     function testExecutorSetProfileImageURI() public {
         assertEq(hub.getProfileImageURI(newProfileId), MOCK_URI);
         vm.prank(profileOwner);
-        hub.changeDelegatedExecutorsConfig({
+        hub.changeCurrentDelegatedExecutorsConfig({
             delegatorProfileId: newProfileId,
             executors: _toAddressArray(otherSigner),
             approvals: _toBoolArray(true)
@@ -49,7 +49,7 @@ contract MiscTest is BaseTest {
     function testExecutorSetFollowNFTURI() public {
         assertEq(hub.getFollowNFTURI(newProfileId), MOCK_URI);
         vm.prank(profileOwner);
-        hub.changeDelegatedExecutorsConfig({
+        hub.changeCurrentDelegatedExecutorsConfig({
             delegatorProfileId: newProfileId,
             executors: _toAddressArray(otherSigner),
             approvals: _toBoolArray(true)
@@ -65,12 +65,7 @@ contract MiscTest is BaseTest {
     function testSetProfileImageURIWithSigInvalidSignerFails() public {
         uint256 nonce = 0;
         uint256 deadline = type(uint256).max;
-        bytes32 digest = _getSetProfileImageURITypedDataHash(
-            newProfileId,
-            MOCK_URI,
-            nonce,
-            deadline
-        );
+        bytes32 digest = _getSetProfileImageURITypedDataHash(newProfileId, MOCK_URI, nonce, deadline);
 
         vm.expectRevert(Errors.SignatureInvalid.selector);
         hub.setProfileImageURIWithSig({
@@ -83,12 +78,7 @@ contract MiscTest is BaseTest {
     function testSetProfileImageURIWithSigNotExecutorFails() public {
         uint256 nonce = 0;
         uint256 deadline = type(uint256).max;
-        bytes32 digest = _getSetProfileImageURITypedDataHash(
-            newProfileId,
-            MOCK_URI,
-            nonce,
-            deadline
-        );
+        bytes32 digest = _getSetProfileImageURITypedDataHash(newProfileId, MOCK_URI, nonce, deadline);
 
         vm.expectRevert(Errors.ExecutorInvalid.selector);
         hub.setProfileImageURIWithSig({
@@ -145,7 +135,7 @@ contract MiscTest is BaseTest {
 
     function testExecutorSetProfileImageURIWithSig() public {
         vm.prank(profileOwner);
-        hub.changeDelegatedExecutorsConfig({
+        hub.changeCurrentDelegatedExecutorsConfig({
             delegatorProfileId: newProfileId,
             executors: _toAddressArray(otherSigner),
             approvals: _toBoolArray(true)
@@ -180,7 +170,7 @@ contract MiscTest is BaseTest {
 
     function testExecutorSetFollowNFTURIWithSig() public {
         vm.prank(profileOwner);
-        hub.changeDelegatedExecutorsConfig({
+        hub.changeCurrentDelegatedExecutorsConfig({
             delegatorProfileId: newProfileId,
             executors: _toAddressArray(otherSigner),
             approvals: _toBoolArray(true)

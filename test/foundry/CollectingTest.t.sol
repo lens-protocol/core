@@ -1,10 +1,10 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity ^0.8.13;
 
-import './base/BaseTest.t.sol';
-import './helpers/SignatureHelpers.sol';
-import './helpers/CollectingHelpers.sol';
-import './MetaTxNegatives.t.sol';
+import 'test/foundry/base/BaseTest.t.sol';
+import 'test/foundry/helpers/SignatureHelpers.sol';
+import 'test/foundry/helpers/CollectingHelpers.sol';
+import 'test/foundry/MetaTxNegatives.t.sol';
 
 // TODO add check for _initialize() called for fork tests - check name and symbol set
 
@@ -34,7 +34,7 @@ contract CollectingTest is BaseTest, CollectingHelpers, SigSetup {
     function _collect(
         uint256, /* metaTxSignerPk */
         address transactionExecutor,
-        DataTypes.CollectParams memory collectParams
+        Types.CollectParams memory collectParams
     ) internal virtual returns (uint256) {
         vm.prank(transactionExecutor);
         return hub.collect(collectParams);
@@ -52,10 +52,8 @@ contract CollectingTest is BaseTest, CollectingHelpers, SigSetup {
         mockCollectParams.publicationCollectedId = 2;
         // Check that the publication doesn't exist.
         assertEq(
-            _getPub(
-                mockCollectParams.publicationCollectedProfileId,
-                mockCollectParams.publicationCollectedId
-            ).pointedProfileId,
+            _getPub(mockCollectParams.publicationCollectedProfileId, mockCollectParams.publicationCollectedId)
+                .pointedProfileId,
             0
         );
 
@@ -68,10 +66,8 @@ contract CollectingTest is BaseTest, CollectingHelpers, SigSetup {
         mockCollectParams.publicationCollectedId = 0;
         // Check that the publication doesn't exist.
         assertEq(
-            _getPub(
-                mockCollectParams.publicationCollectedProfileId,
-                mockCollectParams.publicationCollectedId
-            ).pointedProfileId,
+            _getPub(mockCollectParams.publicationCollectedProfileId, mockCollectParams.publicationCollectedId)
+                .pointedProfileId,
             0
         );
 
@@ -133,12 +129,7 @@ contract CollectingTest is BaseTest, CollectingHelpers, SigSetup {
         uint256 startNftId = _checkCollectNFTBefore();
 
         // delegate power to executor
-        _changeDelegatedExecutorsConfig(
-            collectorProfileOwner,
-            collectorProfileId,
-            otherSigner,
-            true
-        );
+        _changeDelegatedExecutorsConfig(collectorProfileOwner, collectorProfileId, otherSigner, true);
 
         // collect from executor
         uint256 nftId = _collect(otherSignerKey, otherSigner, mockCollectParams);
@@ -152,12 +143,7 @@ contract CollectingTest is BaseTest, CollectingHelpers, SigSetup {
         // mirror, then delegate power to executor
         vm.prank(profileOwner);
         hub.mirror(mockMirrorParams);
-        _changeDelegatedExecutorsConfig(
-            collectorProfileOwner,
-            collectorProfileId,
-            otherSigner,
-            true
-        );
+        _changeDelegatedExecutorsConfig(collectorProfileOwner, collectorProfileId, otherSigner, true);
 
         // collect from executor
         uint256 nftId = _collect(otherSignerKey, otherSigner, mockCollectParams);
@@ -179,20 +165,12 @@ contract CollectingTestMetaTx is CollectingTest, MetaTxNegatives {
     function _collect(
         uint256 metaTxSignerPk,
         address transactionExecutor,
-        DataTypes.CollectParams memory collectParams
+        Types.CollectParams memory collectParams
     ) internal override returns (uint256) {
         address signer = vm.addr(metaTxSignerPk);
         uint256 deadline = type(uint256).max;
-        bytes32 digest = _getCollectTypedDataHash(
-            collectParams,
-            cachedNonceByAddress[signer],
-            deadline
-        );
-        return
-            hub.collectWithSig(
-                collectParams,
-                _getSigStruct(transactionExecutor, metaTxSignerPk, digest, deadline)
-            );
+        bytes32 digest = _getCollectTypedDataHash(collectParams, cachedNonceByAddress[signer], deadline);
+        return hub.collectWithSig(collectParams, _getSigStruct(transactionExecutor, metaTxSignerPk, digest, deadline));
     }
 
     function _executeMetaTx(

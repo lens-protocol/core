@@ -10,16 +10,17 @@ import {FollowNFT} from 'contracts/core/FollowNFT.sol';
 import {CollectNFT} from 'contracts/core/CollectNFT.sol';
 import {ModuleGlobals} from 'contracts/core/modules/ModuleGlobals.sol';
 import {TransparentUpgradeableProxy} from 'contracts/upgradeability/TransparentUpgradeableProxy.sol';
-import {DataTypes} from 'contracts/libraries/DataTypes.sol';
-import 'contracts/libraries/Constants.sol';
-import {Errors} from 'contracts/libraries/Errors.sol';
-import {Events} from 'contracts/libraries/Events.sol';
-import {GeneralLib} from 'contracts/libraries/GeneralLib.sol';
-import {ProfileTokenURILogic} from 'contracts/libraries/ProfileTokenURILogic.sol';
+import {Types} from 'contracts/libraries/constants/Types.sol';
+import {Errors} from 'contracts/libraries/constants/Errors.sol';
+import {Events} from 'contracts/libraries/constants/Events.sol';
+import {ProfileTokenURILib} from 'contracts/libraries/ProfileTokenURILib.sol';
 import {MockCollectModule} from 'contracts/mocks/MockCollectModule.sol';
 import {MockReferenceModule} from 'contracts/mocks/MockReferenceModule.sol';
-import '../helpers/ForkManagement.sol';
-import '../Constants.sol';
+import 'test/foundry/helpers/ForkManagement.sol';
+import 'test/foundry/Constants.sol';
+import {Typehash} from 'contracts/libraries/constants/Typehash.sol';
+import {MetaTxLib} from 'contracts/libraries/MetaTxLib.sol';
+import {StorageLib} from 'contracts/libraries/StorageLib.sol';
 
 contract TestSetup is Test, ForkManagement {
     using stdJson for string;
@@ -55,12 +56,12 @@ contract TestSetup is Test, ForkManagement {
     MockReferenceModule mockReferenceModule;
     ModuleGlobals moduleGlobals;
 
-    DataTypes.CreateProfileData mockCreateProfileData;
+    Types.CreateProfileParams mockCreateProfileParams;
 
-    DataTypes.PostParams mockPostParams;
-    DataTypes.CommentParams mockCommentParams;
-    DataTypes.MirrorParams mockMirrorParams;
-    DataTypes.CollectParams mockCollectParams;
+    Types.PostParams mockPostParams;
+    Types.CommentParams mockCommentParams;
+    Types.MirrorParams mockMirrorParams;
+    Types.CollectParams mockCollectParams;
 
     function isEnvSet(string memory key) internal returns (bool) {
         try vm.envString(key) {
@@ -100,8 +101,7 @@ contract TestSetup is Test, ForkManagement {
         ///////////////////////////////////////// Start governance actions.
         vm.startPrank(governance);
 
-        if (hub.getState() != DataTypes.ProtocolState.Unpaused)
-            hub.setState(DataTypes.ProtocolState.Unpaused);
+        if (hub.getState() != Types.ProtocolState.Unpaused) hub.setState(Types.ProtocolState.Unpaused);
 
         // Whitelist the test contract as a profile creator
         hub.whitelistProfileCreator(me, true);
@@ -117,9 +117,7 @@ contract TestSetup is Test, ForkManagement {
     }
 
     function loadBaseAddresses(string memory targetEnv) internal virtual {
-        bytes32 PROXY_IMPLEMENTATION_STORAGE_SLOT = bytes32(
-            uint256(keccak256('eip1967.proxy.implementation')) - 1
-        );
+        bytes32 PROXY_IMPLEMENTATION_STORAGE_SLOT = bytes32(uint256(keccak256('eip1967.proxy.implementation')) - 1);
 
         console.log('targetEnv:', targetEnv);
 
@@ -133,17 +131,13 @@ contract TestSetup is Test, ForkManagement {
         address followNFTAddr = hub.getFollowNFTImpl();
         address collectNFTAddr = hub.getCollectNFTImpl();
 
-        address hubImplAddr = address(
-            uint160(uint256(vm.load(hubProxyAddr, PROXY_IMPLEMENTATION_STORAGE_SLOT)))
-        );
+        address hubImplAddr = address(uint160(uint256(vm.load(hubProxyAddr, PROXY_IMPLEMENTATION_STORAGE_SLOT))));
         console.log('Found hubImplAddr:', hubImplAddr);
         hubImpl = LensHub(hubImplAddr);
         followNFT = FollowNFT(followNFTAddr);
         collectNFT = CollectNFT(collectNFTAddr);
         hubAsProxy = TransparentUpgradeableProxy(payable(address(hub)));
-        moduleGlobals = ModuleGlobals(
-            json.readAddress(string(abi.encodePacked('.', targetEnv, '.ModuleGlobals')))
-        );
+        moduleGlobals = ModuleGlobals(json.readAddress(string(abi.encodePacked('.', targetEnv, '.ModuleGlobals'))));
 
         newProfileId = _getNextProfileId();
         console.log('newProfileId:', newProfileId);
@@ -178,10 +172,7 @@ contract TestSetup is Test, ForkManagement {
         collectNFT = new CollectNFT(hubProxyAddr);
 
         // Deploy and initialize proxy.
-        bytes memory initData = abi.encodeCall(
-            hubImpl.initialize,
-            ('Lens Protocol Profiles', 'LPP', governance)
-        );
+        bytes memory initData = abi.encodeCall(hubImpl.initialize, ('Lens Protocol Profiles', 'LPP', governance));
         hubAsProxy = new TransparentUpgradeableProxy(address(hubImpl), deployer, initData);
 
         // Cast proxy to LensHub interface.
@@ -215,16 +206,16 @@ contract TestSetup is Test, ForkManagement {
         // Compute the domain separator.
         domainSeparator = keccak256(
             abi.encode(
-                EIP712_DOMAIN_TYPEHASH,
+                Typehash.EIP712_DOMAIN,
                 keccak256('Lens Protocol Profiles'),
-                EIP712_REVISION_HASH,
+                MetaTxLib.EIP712_REVISION_HASH,
                 block.chainid,
                 hubProxyAddr
             )
         );
 
         // precompute basic profile creaton data.
-        mockCreateProfileData = DataTypes.CreateProfileData({
+        mockCreateProfileParams = Types.CreateProfileParams({
             to: profileOwner,
             imageURI: MOCK_URI,
             followModule: address(0),
@@ -233,7 +224,7 @@ contract TestSetup is Test, ForkManagement {
         });
 
         // Precompute basic post data.
-        mockPostParams = DataTypes.PostParams({
+        mockPostParams = Types.PostParams({
             profileId: newProfileId,
             contentURI: MOCK_URI,
             collectModule: address(mockCollectModule),
@@ -243,7 +234,7 @@ contract TestSetup is Test, ForkManagement {
         });
 
         // Precompute basic comment data.
-        mockCommentParams = DataTypes.CommentParams({
+        mockCommentParams = Types.CommentParams({
             profileId: newProfileId,
             contentURI: MOCK_URI,
             pointedProfileId: newProfileId,
@@ -258,7 +249,7 @@ contract TestSetup is Test, ForkManagement {
         });
 
         // Precompute basic mirror data.
-        mockMirrorParams = DataTypes.MirrorParams({
+        mockMirrorParams = Types.MirrorParams({
             profileId: newProfileId,
             pointedProfileId: newProfileId,
             pointedPubId: FIRST_PUB_ID,
@@ -268,7 +259,7 @@ contract TestSetup is Test, ForkManagement {
         });
 
         // Precompute basic collect data.
-        mockCollectParams = DataTypes.CollectParams({
+        mockCollectParams = Types.CollectParams({
             publicationCollectedProfileId: newProfileId,
             publicationCollectedId: FIRST_PUB_ID,
             collectorProfileId: newProfileId,
@@ -277,11 +268,11 @@ contract TestSetup is Test, ForkManagement {
             collectModuleData: ''
         });
 
-        hub.createProfile(mockCreateProfileData);
+        hub.createProfile(mockCreateProfileParams);
     }
 
     // TODO: Find a better place for such helpers that have access to Hub without rekting inheritance
     function _getNextProfileId() internal returns (uint256) {
-        return uint256(vm.load(hubProxyAddr, bytes32(uint256(PROFILE_COUNTER_SLOT)))) + 1;
+        return uint256(vm.load(hubProxyAddr, bytes32(uint256(StorageLib.PROFILE_COUNTER_SLOT)))) + 1;
     }
 }

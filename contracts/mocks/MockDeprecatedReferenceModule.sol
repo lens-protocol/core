@@ -2,7 +2,7 @@
 
 pragma solidity 0.8.15;
 
-import {IDeprecatedReferenceModule} from '../interfaces/IDeprecatedReferenceModule.sol';
+import {IDeprecatedReferenceModule} from 'contracts/interfaces/IDeprecatedReferenceModule.sol';
 
 /**
  * @dev This is a simple mock follow module to be used for testing.

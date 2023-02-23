@@ -1,9 +1,9 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity ^0.8.13;
 
-import './base/BaseTest.t.sol';
-import './MetaTxNegatives.t.sol';
-import {Events} from 'contracts/libraries/Events.sol';
+import 'test/foundry/base/BaseTest.t.sol';
+import 'test/foundry/MetaTxNegatives.t.sol';
+import {Events} from 'contracts/libraries/constants/Events.sol';
 
 contract ProfileMetadataURITest is BaseTest {
     function _setProfileMetadataURI(
@@ -18,50 +18,34 @@ contract ProfileMetadataURITest is BaseTest {
     // Negatives
     function testCannotSetProfileMetadataURINotExecutor() public {
         vm.expectRevert(Errors.ExecutorInvalid.selector);
-        _setProfileMetadataURI({
-            pk: alienSignerKey,
-            profileId: newProfileId,
-            metadataURI: MOCK_URI
-        });
+        _setProfileMetadataURI({pk: alienSignerKey, profileId: newProfileId, metadataURI: MOCK_URI});
     }
 
     // Positives
     function testExecutorSetProfileMetadataURI() public {
         assertEq(hub.getProfileMetadataURI(newProfileId), '');
         vm.prank(profileOwner);
-        hub.changeDelegatedExecutorsConfig({
+        hub.changeCurrentDelegatedExecutorsConfig({
             delegatorProfileId: newProfileId,
             executors: _toAddressArray(otherSigner),
             approvals: _toBoolArray(true)
         });
 
-        _setProfileMetadataURI({
-            pk: otherSignerKey,
-            profileId: newProfileId,
-            metadataURI: MOCK_URI
-        });
+        _setProfileMetadataURI({pk: otherSignerKey, profileId: newProfileId, metadataURI: MOCK_URI});
         assertEq(hub.getProfileMetadataURI(newProfileId), MOCK_URI);
     }
 
     function testSetProfileMetadataURI() public {
         assertEq(hub.getProfileMetadataURI(newProfileId), '');
 
-        _setProfileMetadataURI({
-            pk: profileOwnerKey,
-            profileId: newProfileId,
-            metadataURI: MOCK_URI
-        });
+        _setProfileMetadataURI({pk: profileOwnerKey, profileId: newProfileId, metadataURI: MOCK_URI});
         assertEq(hub.getProfileMetadataURI(newProfileId), MOCK_URI);
     }
 
     // Events
     function expectProfileMetadataSetEvent() public {
         vm.expectEmit(true, true, true, true, address(hub));
-        emit Events.ProfileMetadataSet({
-            profileId: newProfileId,
-            metadata: MOCK_URI,
-            timestamp: block.timestamp
-        });
+        emit Events.ProfileMetadataSet({profileId: newProfileId, metadata: MOCK_URI, timestamp: block.timestamp});
     }
 
     function testSetProfileMetadataURI_EmitsProperEvent() public {
@@ -102,12 +86,7 @@ contract ProfileMetadataURITest_MetaTx is ProfileMetadataURITest, MetaTxNegative
         uint256 nonce = cachedNonceByAddress[signer];
         uint256 deadline = type(uint256).max;
 
-        bytes32 digest = _getSetProfileMetadataURITypedDataHash(
-            newProfileId,
-            MOCK_URI,
-            nonce,
-            deadline
-        );
+        bytes32 digest = _getSetProfileMetadataURITypedDataHash(newProfileId, MOCK_URI, nonce, deadline);
 
         hub.setProfileMetadataURIWithSig({
             profileId: newProfileId,
@@ -121,22 +100,12 @@ contract ProfileMetadataURITest_MetaTx is ProfileMetadataURITest, MetaTxNegative
         uint256 nonce,
         uint256 deadline
     ) internal virtual override {
-        bytes32 digest = _getSetProfileMetadataURITypedDataHash(
-            newProfileId,
-            MOCK_URI,
-            nonce,
-            deadline
-        );
+        bytes32 digest = _getSetProfileMetadataURITypedDataHash(newProfileId, MOCK_URI, nonce, deadline);
 
         hub.setProfileMetadataURIWithSig({
             profileId: newProfileId,
             metadataURI: MOCK_URI,
-            signature: _getSigStruct(
-                vm.addr(_getDefaultMetaTxSignerPk()),
-                signerPk,
-                digest,
-                deadline
-            )
+            signature: _getSigStruct(vm.addr(_getDefaultMetaTxSignerPk()), signerPk, digest, deadline)
         });
     }
 

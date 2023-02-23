@@ -2,15 +2,15 @@
 
 pragma solidity 0.8.15;
 
-import {ICollectModule} from '../../../interfaces/ICollectModule.sol';
-import {Errors} from '../../../libraries/Errors.sol';
-import {FeeModuleBase} from '../FeeModuleBase.sol';
-import {ModuleBase} from '../ModuleBase.sol';
-import {FollowValidationModuleBase} from '../FollowValidationModuleBase.sol';
+import {ICollectModule} from 'contracts/interfaces/ICollectModule.sol';
+import {Errors} from 'contracts/libraries/constants/Errors.sol';
+import {FeeModuleBase} from 'contracts/core/modules/FeeModuleBase.sol';
+import {ModuleBase} from 'contracts/core/modules/ModuleBase.sol';
+import {FollowValidationModuleBase} from 'contracts/core/modules/FollowValidationModuleBase.sol';
 import {IERC20} from '@openzeppelin/contracts/token/ERC20/IERC20.sol';
 import {SafeERC20} from '@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol';
 import {IERC721} from '@openzeppelin/contracts/token/ERC721/IERC721.sol';
-import {DataTypes} from 'contracts/libraries/DataTypes.sol';
+import {Types} from 'contracts/libraries/constants/Types.sol';
 
 /**
  * @notice A struct containing the necessary data to execute collect actions on a publication.
@@ -45,8 +45,7 @@ struct ProfilePublicationData {
 contract LimitedFeeCollectModule is FeeModuleBase, FollowValidationModuleBase, ICollectModule {
     using SafeERC20 for IERC20;
 
-    mapping(uint256 => mapping(uint256 => ProfilePublicationData))
-        internal _dataByPublicationByProfile;
+    mapping(uint256 => mapping(uint256 => ProfilePublicationData)) internal _dataByPublicationByProfile;
 
     constructor(address hub, address moduleGlobals) FeeModuleBase(moduleGlobals) ModuleBase(hub) {}
 
@@ -111,32 +110,22 @@ contract LimitedFeeCollectModule is FeeModuleBase, FollowValidationModuleBase, I
         address executor,
         uint256 referrerProfileId,
         uint256,
-        DataTypes.PublicationType,
+        Types.PublicationType,
         bytes calldata data
     ) external override onlyHub {
+        if (_dataByPublicationByProfile[publicationCollectedProfileId][publicationCollectedId].followerOnly)
+            _checkFollowValidity(publicationCollectedProfileId, collectorProfileOwner);
         if (
-            _dataByPublicationByProfile[publicationCollectedProfileId][publicationCollectedId]
-                .followerOnly
-        ) _checkFollowValidity(publicationCollectedProfileId, collectorProfileOwner);
-        if (
-            _dataByPublicationByProfile[publicationCollectedProfileId][publicationCollectedId]
-                .currentCollects ==
-            _dataByPublicationByProfile[publicationCollectedProfileId][publicationCollectedId]
-                .collectLimit
+            _dataByPublicationByProfile[publicationCollectedProfileId][publicationCollectedId].currentCollects ==
+            _dataByPublicationByProfile[publicationCollectedProfileId][publicationCollectedId].collectLimit
         ) {
             revert Errors.MintLimitExceeded();
         } else {
             unchecked {
-                ++_dataByPublicationByProfile[publicationCollectedProfileId][publicationCollectedId]
-                    .currentCollects;
+                ++_dataByPublicationByProfile[publicationCollectedProfileId][publicationCollectedId].currentCollects;
             }
             if (referrerProfileId == publicationCollectedProfileId) {
-                _processCollect(
-                    executor,
-                    publicationCollectedProfileId,
-                    publicationCollectedId,
-                    data
-                );
+                _processCollect(executor, publicationCollectedProfileId, publicationCollectedId, data);
             } else {
                 _processCollectWithReferral(
                     referrerProfileId,
@@ -182,8 +171,7 @@ contract LimitedFeeCollectModule is FeeModuleBase, FollowValidationModuleBase, I
         uint256 adjustedAmount = amount - treasuryAmount;
 
         IERC20(currency).safeTransferFrom(executor, recipient, adjustedAmount);
-        if (treasuryAmount > 0)
-            IERC20(currency).safeTransferFrom(executor, treasury, treasuryAmount);
+        if (treasuryAmount > 0) IERC20(currency).safeTransferFrom(executor, treasury, treasuryAmount);
     }
 
     function _processCollectWithReferral(
@@ -223,7 +211,6 @@ contract LimitedFeeCollectModule is FeeModuleBase, FollowValidationModuleBase, I
         address recipient = _dataByPublicationByProfile[profileId][pubId].recipient;
 
         IERC20(currency).safeTransferFrom(executor, recipient, adjustedAmount);
-        if (treasuryAmount > 0)
-            IERC20(currency).safeTransferFrom(executor, treasury, treasuryAmount);
+        if (treasuryAmount > 0) IERC20(currency).safeTransferFrom(executor, treasury, treasuryAmount);
     }
 }
