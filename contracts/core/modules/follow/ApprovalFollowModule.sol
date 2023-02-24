@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: MIT
 
-pragma solidity 0.8.15;
+pragma solidity ^0.8.15;
 
 import {IFollowModule} from 'contracts/interfaces/IFollowModule.sol';
 import {Errors} from 'contracts/libraries/constants/Errors.sol';

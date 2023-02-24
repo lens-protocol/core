@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: MIT
 
-pragma solidity 0.8.15;
+pragma solidity ^0.8.15;
 
 import {IDeprecatedCollectModule} from 'contracts/interfaces/IDeprecatedCollectModule.sol';
 import {ModuleBase} from 'contracts/core/modules/ModuleBase.sol';
