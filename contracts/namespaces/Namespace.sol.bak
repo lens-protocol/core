@@ -4,19 +4,13 @@ pragma solidity ^0.8.19;
 
 import {IERC721} from '@openzeppelin/contracts/token/ERC721/IERC721.sol';
 
-// TODO: Move to a Types
-struct Handle {
-    address namespace;
-    uint256 handleId;
-}
-
-struct Profile {
-    address lensHub;
-    uint256 profileId;
+struct Token {
+    address collection;
+    uint96 _gap;
+    uint256 id;
 }
 
 // TODO: Move to a Errors file
-
 library Errors {
     error NotHandleOwner();
     error NotProfileOwner();
@@ -25,8 +19,8 @@ library Errors {
 
 // TODO: Move to a Events file
 library Events {
-    event HandleLinked(Handle handle, Profile profile);
-    event HandleUnlinked(Handle handle, Profile profile);
+    event HandleLinked(uint256 handleId, Token token);
+    event HandleUnlinked(uint256 handleId, Token token);
 }
 
 // TODO: Make upgradeable?
@@ -36,18 +30,18 @@ contract NamespaceRegistry {
 
     /// 1to1 mapping for now, can be replaced to support multiple handles per profile if using mappings
     /// NOTE: Using bytes32 _handleHash(Handle) and _profileHash(Profile) as keys because solidity doesn't support structs as keys.
-    mapping (bytes32 handle => Profile profile) handleToProfile;
-    mapping (bytes32 profile => Handle handle) profileToHandle;
+    mapping (uint256 handleId => Token token) handleToToken;
+    mapping (bytes32 token => uint256 handleId) profileToHandle;
 
-    modifier onlyHandleOwner(Handle memory handle, address transactionExecutor) {
-        if (IERC721(handle.namespace).ownerOf(handle.handleId) != transactionExecutor) {
+    modifier onlyHandleOwner(uint256 handleId, address transactionExecutor) {
+        if (IERC721(handle.namespaceCollection).ownerOf(handle.handleId) != transactionExecutor) {
             revert Errors.NotHandleOwner();
         }
         _;
     }
 
     modifier onlyProfileOwner(Profile memory profile, address transactionExecutor) {
-        if (IERC721(profile.lensHub).ownerOf(profile.profileId) != transactionExecutor) {
+        if (IERC721(profile.profileCollection).ownerOf(profile.profileId) != transactionExecutor) {
             revert Errors.NotProfileOwner();
         }
         _;
@@ -123,3 +117,37 @@ contract NamespaceRegistry {
         return keccak256(abi.encodePacked(profile.lensHub, profile.profileId));
     }
 }
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+[Upgradeable Beacon] =>  [Beacon Implementation]
+
+        ^
+        |
+
+[Lens namespace collection - aka .lens handle collection - Proxy] // Storage 1 
+
+    [Lens namespace collection - aka .lens handle collection - Proxy] // Storage 2
+
+        [Lens namespace collection - aka .lens handle collection - Proxy] // Storage 3
+
+
+---------------------------------------------
+
+  [Beacon] // Storage
+
+        |
+        V
+
+[Generic namespace collection impl]
+
+-----
+
+[TransparentProxy] // Storage
+        |
+        v
+[Lens namespace collection - aka .lens handle collection - Implementation]
+
+
+===============
