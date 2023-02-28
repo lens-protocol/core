@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: MIT
 
-pragma solidity 0.8.15;
+pragma solidity ^0.8.15;
 
 import {ERC2981CollectionRoyalties} from 'contracts/core/base/ERC2981CollectionRoyalties.sol';
 import {ERC721Enumerable} from 'contracts/core/base/ERC721Enumerable.sol';
