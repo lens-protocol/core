@@ -9,7 +9,7 @@ import {Errors} from 'contracts/libraries/constants/Errors.sol';
 import {Events} from 'contracts/libraries/constants/Events.sol';
 import {StorageLib} from 'contracts/libraries/StorageLib.sol';
 import {IFollowNFT} from 'contracts/interfaces/IFollowNFT.sol';
-import {FollowNFTProxy} from 'contracts/upgradeability/FollowNFTProxy.sol';
+import {FollowNFTProxy} from 'contracts/base/upgradeability/FollowNFTProxy.sol';
 
 library FollowLib {
     function follow(

@@ -15,7 +15,7 @@ import {ProfileTokenURILib} from 'contracts/libraries/ProfileTokenURILib.sol';
 import {LensNFTBase} from 'contracts/base/LensNFTBase.sol';
 import {LensMultiState} from 'contracts/base/LensMultiState.sol';
 import {LensHubStorage} from 'contracts/base/LensHubStorage.sol';
-import {VersionedInitializable} from 'contracts/upgradeability/VersionedInitializable.sol';
+import {VersionedInitializable} from 'contracts/base/upgradeability/VersionedInitializable.sol';
 import {IERC721Enumerable} from '@openzeppelin/contracts/token/ERC721/extensions/IERC721Enumerable.sol';
 import {MetaTxLib} from 'contracts/libraries/MetaTxLib.sol';
 import {GovernanceLib} from 'contracts/libraries/GovernanceLib.sol';
