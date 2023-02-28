@@ -477,22 +477,6 @@ library Events {
     );
 
     /**
-     * @notice Emitted when a module inheriting from the `FeeModuleBase` is constructed.
-     *
-     * @param moduleGlobals The ModuleGlobals contract address used.
-     * @param timestamp The current block timestamp.
-     */
-    event FeeModuleBaseConstructed(address indexed moduleGlobals, uint256 timestamp);
-
-    /**
-     * @notice Emitted when a module inheriting from the `ModuleBase` is constructed.
-     *
-     * @param hub The LensHub contract address used.
-     * @param timestamp The current block timestamp.
-     */
-    event ModuleBaseConstructed(address indexed hub, uint256 timestamp);
-
-    /**
      * @notice Emitted when one or multiple addresses are approved (or disapproved) for following in
      * the `ApprovalFollowModule`.
      *
