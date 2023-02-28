@@ -3,13 +3,12 @@
 pragma solidity ^0.8.15;
 
 import {ERC2981CollectionRoyalties} from 'contracts/base/ERC2981CollectionRoyalties.sol';
-import {ERC721Enumerable} from 'contracts/base/ERC721Enumerable.sol';
 import {Errors} from 'contracts/libraries/constants/Errors.sol';
 import {Events} from 'contracts/libraries/constants/Events.sol';
 import {ICollectNFT} from 'contracts/interfaces/ICollectNFT.sol';
 import {IERC721} from '@openzeppelin/contracts/token/ERC721/IERC721.sol';
 import {ILensHub} from 'contracts/interfaces/ILensHub.sol';
-import {LensNFTBase} from 'contracts/base/LensNFTBase.sol';
+import {LensBaseERC721} from 'contracts/base/LensBaseERC721.sol';
 
 /**
  * @title CollectNFT
@@ -18,7 +17,7 @@ import {LensNFTBase} from 'contracts/base/LensNFTBase.sol';
  * @notice This is the NFT contract that is minted upon collecting a given publication. It is cloned upon
  * the first collect for a given publication, and the token URI points to the original publication's contentURI.
  */
-contract CollectNFT is LensNFTBase, ERC2981CollectionRoyalties, ICollectNFT {
+contract CollectNFT is LensBaseERC721, ERC2981CollectionRoyalties, ICollectNFT {
     address public immutable HUB;
 
     uint256 internal _profileId;
@@ -78,10 +77,9 @@ contract CollectNFT is LensNFTBase, ERC2981CollectionRoyalties, ICollectNFT {
      */
     function supportsInterface(
         bytes4 interfaceId
-    ) public view virtual override(ERC2981CollectionRoyalties, ERC721Enumerable) returns (bool) {
+    ) public view virtual override(ERC2981CollectionRoyalties, LensBaseERC721) returns (bool) {
         return
-            ERC2981CollectionRoyalties.supportsInterface(interfaceId) ||
-            ERC721Enumerable.supportsInterface(interfaceId);
+            ERC2981CollectionRoyalties.supportsInterface(interfaceId) || LensBaseERC721.supportsInterface(interfaceId);
     }
 
     function _getReceiver(uint256 /* tokenId */) internal view override returns (address) {

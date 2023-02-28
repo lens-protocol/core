@@ -4,7 +4,6 @@ pragma solidity ^0.8.15;
 
 import {Types} from 'contracts/libraries/constants/Types.sol';
 import {Errors} from 'contracts/libraries/constants/Errors.sol';
-import {IERC721Time} from 'contracts/interfaces/IERC721Time.sol';
 
 library StorageLib {
     uint256 constant NAME_SLOT = 0;
@@ -29,11 +28,10 @@ library StorageLib {
     uint256 constant DELEGATED_EXECUTOR_CONFIG_MAPPING_SLOT = 25;
     uint256 constant BLOCKED_STATUS_MAPPING_SLOT = 26;
 
-    function getPublication(uint256 profileId, uint256 pubId)
-        internal
-        pure
-        returns (Types.Publication storage _publication)
-    {
+    function getPublication(
+        uint256 profileId,
+        uint256 pubId
+    ) internal pure returns (Types.Publication storage _publication) {
         assembly {
             mstore(0, profileId)
             mstore(32, PUB_BY_ID_BY_PROFILE_MAPPING_SLOT)
@@ -51,11 +49,9 @@ library StorageLib {
         }
     }
 
-    function getDelegatedExecutorsConfig(uint256 delegatorProfileId)
-        internal
-        pure
-        returns (Types.DelegatedExecutorsConfig storage _delegatedExecutorsConfig)
-    {
+    function getDelegatedExecutorsConfig(
+        uint256 delegatorProfileId
+    ) internal pure returns (Types.DelegatedExecutorsConfig storage _delegatedExecutorsConfig) {
         assembly {
             mstore(0, delegatorProfileId)
             mstore(32, DELEGATED_EXECUTOR_CONFIG_MAPPING_SLOT)
@@ -63,7 +59,7 @@ library StorageLib {
         }
     }
 
-    function getTokenData(uint256 tokenId) internal pure returns (IERC721Time.TokenData storage _tokenData) {
+    function getTokenData(uint256 tokenId) internal pure returns (Types.TokenData storage _tokenData) {
         assembly {
             mstore(0, tokenId)
             mstore(32, TOKEN_DATA_MAPPING_SLOT)
@@ -71,11 +67,9 @@ library StorageLib {
         }
     }
 
-    function blockedStatus(uint256 blockerProfileId)
-        internal
-        pure
-        returns (mapping(uint256 => bool) storage _blockedStatus)
-    {
+    function blockedStatus(
+        uint256 blockerProfileId
+    ) internal pure returns (mapping(uint256 => bool) storage _blockedStatus) {
         assembly {
             mstore(0, blockerProfileId)
             mstore(32, BLOCKED_STATUS_MAPPING_SLOT)

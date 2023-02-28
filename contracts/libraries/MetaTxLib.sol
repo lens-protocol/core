@@ -18,7 +18,8 @@ import {StorageLib} from 'contracts/libraries/StorageLib.sol';
  * @dev User nonces are incremented from this library as well.
  */
 library MetaTxLib {
-    bytes32 constant EIP712_REVISION_HASH = keccak256('2');
+    string constant EIP712_DOMAIN_VERSION = '2';
+    bytes32 constant EIP712_DOMAIN_VERSION_HASH = keccak256(bytes(EIP712_DOMAIN_VERSION));
     bytes4 constant EIP1271_MAGIC_VALUE = 0x1626ba7e;
 
     /**
@@ -28,7 +29,7 @@ library MetaTxLib {
      *     abi.encode(
      *         keccak256('EIP712Domain(string name,string version,uint256 chainId,address verifyingContract)'),
      *         keccak256('Lens Protocol Profiles'), // Contract Name
-     *         keccak256('2'), // Revision Hash
+     *         keccak256('2'), // Version Hash
      *         137, // Polygon Chain ID
      *         address(0xDb46d1Dc155634FbC732f92E853b10B288AD5a1d) // Verifying Contract Address - LensHub Address
      *     )
@@ -154,9 +155,10 @@ library MetaTxLib {
         );
     }
 
-    function validatePostSignature(Types.EIP712Signature calldata signature, Types.PostParams calldata postParams)
-        internal
-    {
+    function validatePostSignature(
+        Types.EIP712Signature calldata signature,
+        Types.PostParams calldata postParams
+    ) internal {
         _validateRecoveredAddress(
             _calculateDigest(
                 keccak256(
@@ -208,9 +210,10 @@ library MetaTxLib {
         );
     }
 
-    function validateQuoteSignature(Types.EIP712Signature calldata signature, Types.QuoteParams calldata quoteParams)
-        internal
-    {
+    function validateQuoteSignature(
+        Types.EIP712Signature calldata signature,
+        Types.QuoteParams calldata quoteParams
+    ) internal {
         uint256 nonce = _getAndIncrementNonce(signature.signer);
         uint256 deadline = signature.deadline;
         _validateRecoveredAddress(
@@ -238,9 +241,10 @@ library MetaTxLib {
         );
     }
 
-    function validateMirrorSignature(Types.EIP712Signature calldata signature, Types.MirrorParams calldata mirrorParams)
-        internal
-    {
+    function validateMirrorSignature(
+        Types.EIP712Signature calldata signature,
+        Types.MirrorParams calldata mirrorParams
+    ) internal {
         _validateRecoveredAddress(
             _calculateDigest(
                 keccak256(
@@ -406,7 +410,7 @@ library MetaTxLib {
                 abi.encode(
                     Typehash.EIP712_DOMAIN,
                     keccak256(bytes(StorageLib.getName())),
-                    EIP712_REVISION_HASH,
+                    EIP712_DOMAIN_VERSION_HASH,
                     block.chainid,
                     address(this)
                 )

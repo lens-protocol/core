@@ -3,7 +3,6 @@
 pragma solidity ^0.8.15;
 
 import {IFollowNFT} from 'contracts/interfaces/IFollowNFT.sol';
-import {ILensNFTBase} from 'contracts/interfaces/ILensNFTBase.sol';
 import {ILensHub} from 'contracts/interfaces/ILensHub.sol';
 import {Events} from 'contracts/libraries/constants/Events.sol';
 import {Types} from 'contracts/libraries/constants/Types.sol';
@@ -12,7 +11,7 @@ import {ValidationLib} from 'contracts/libraries/ValidationLib.sol';
 import {ProfileLib} from 'contracts/libraries/ProfileLib.sol';
 import {PublicationLib} from 'contracts/libraries/PublicationLib.sol';
 import {ProfileTokenURILib} from 'contracts/libraries/ProfileTokenURILib.sol';
-import {LensNFTBase} from 'contracts/base/LensNFTBase.sol';
+import {LensBaseERC721} from 'contracts/base/LensBaseERC721.sol';
 import {LensMultiState} from 'contracts/base/LensMultiState.sol';
 import {LensHubStorage} from 'contracts/base/LensHubStorage.sol';
 import {VersionedInitializable} from 'contracts/base/upgradeability/VersionedInitializable.sol';
@@ -35,8 +34,8 @@ import {CollectLib} from 'contracts/libraries/CollectLib.sol';
  *      1. Both Follow & Collect NFTs invoke an LensHub callback on transfer with the sole purpose of emitting an event.
  *      2. Almost every event in the protocol emits the current block timestamp, reducing the need to fetch it manually.
  */
-contract LensHub is LensNFTBase, VersionedInitializable, LensMultiState, LensHubStorage, ILensHub {
-    // Constant for upgradeability purposes, see VersionedInitializable. Do not confuse with EIP-712 revision number.
+contract LensHub is LensBaseERC721, VersionedInitializable, LensMultiState, LensHubStorage, ILensHub {
+    // Constant for upgradeability purposes, see VersionedInitializable. Do not confuse with EIP-712 version number.
     uint256 internal constant REVISION = 1;
 
     address internal immutable FOLLOW_NFT_IMPL;
@@ -397,17 +396,6 @@ contract LensHub is LensNFTBase, VersionedInitializable, LensMultiState, LensHub
         _burn(tokenId);
     }
 
-    /**
-     * @notice Burns a profile with a signature, this maintains the profile data struct.
-     */
-    function burnWithSig(
-        uint256 tokenId,
-        Types.EIP712Signature calldata signature
-    ) public override whenNotPaused onlyProfileOwner(signature.signer, tokenId) {
-        MetaTxLib.validateBurnSignature(signature, tokenId);
-        _burn(tokenId);
-    }
-
     /////////////////////////////////////////////////
     ///        PROFILE INTERACTION FUNCTIONS      ///
     /////////////////////////////////////////////////
@@ -735,13 +723,6 @@ contract LensHub is LensNFTBase, VersionedInitializable, LensMultiState, LensHub
     /// @inheritdoc ILensHub
     function getCollectNFTImpl() external view override returns (address) {
         return COLLECT_NFT_IMPL;
-    }
-
-    /**
-     * @dev Overrides the LensNFTBase function to compute the domain separator.
-     */
-    function getDomainSeparator() external view override returns (bytes32) {
-        return MetaTxLib.calculateDomainSeparator();
     }
 
     /**

@@ -6,6 +6,7 @@ import 'test/foundry/ERC721Test.t.sol';
 import {IERC721} from '@openzeppelin/contracts/token/ERC721/IERC721.sol';
 import {IFollowNFT} from 'contracts/interfaces/IFollowNFT.sol';
 import {FollowNFT} from 'contracts/FollowNFT.sol';
+import {Types} from 'contracts/libraries/constants/Types.sol';
 
 contract FollowNFTTest is BaseTest, ERC721Test {
     uint256 constant MINT_NEW_TOKEN = 0;
@@ -152,7 +153,7 @@ contract FollowNFTTest is BaseTest, ERC721Test {
             followTokenId: MINT_NEW_TOKEN
         });
 
-        IFollowNFT.FollowData memory followData = followNFT.getFollowData(assignedTokenId);
+        Types.FollowData memory followData = followNFT.getFollowData(assignedTokenId);
 
         assertEq(followData.followerProfileId, followerProfileId);
         assertEq(followData.originalFollowTimestamp, block.timestamp);
