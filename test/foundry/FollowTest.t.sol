@@ -5,7 +5,7 @@ import 'test/foundry/base/BaseTest.t.sol';
 import 'test/foundry/MetaTxNegatives.t.sol';
 import {Strings} from '@openzeppelin/contracts/utils/Strings.sol';
 import {IFollowNFT} from 'contracts/interfaces/IFollowNFT.sol';
-import 'contracts/mocks/MockFollowModuleWithRevertFlag.sol';
+import 'test/mocks/MockFollowModuleWithRevertFlag.sol';
 import {Typehash} from 'contracts/libraries/constants/Typehash.sol';
 
 contract FollowTest is BaseTest {
@@ -109,9 +109,9 @@ contract FollowTest is BaseTest {
         });
     }
 
-    function testCannotFollowWithUnwrappedTokenIfExecutorIsNotTheProfileOwnerOrHisApprovedExecutor(uint256 executorPk)
-        public
-    {
+    function testCannotFollowWithUnwrappedTokenIfExecutorIsNotTheProfileOwnerOrHisApprovedExecutor(
+        uint256 executorPk
+    ) public {
         executorPk = bound(executorPk, 1, ISSECP256K1_CURVE_ORDER - 1);
         address executor = vm.addr(executorPk);
         vm.assume(executor != address(0));
@@ -133,9 +133,9 @@ contract FollowTest is BaseTest {
         });
     }
 
-    function testCannotFollowWithWrappedTokenIfExecutorIsNotTheProfileOwnerOrHisApprovedExecutor(uint256 executorPk)
-        public
-    {
+    function testCannotFollowWithWrappedTokenIfExecutorIsNotTheProfileOwnerOrHisApprovedExecutor(
+        uint256 executorPk
+    ) public {
         executorPk = bound(executorPk, 1, ISSECP256K1_CURVE_ORDER - 1);
         address executor = vm.addr(executorPk);
         vm.assume(executor != address(0));
@@ -437,11 +437,7 @@ contract FollowMetaTxTest is FollowTest, MetaTxNegatives {
             });
     }
 
-    function _executeMetaTx(
-        uint256 signerPk,
-        uint256 nonce,
-        uint256 deadline
-    ) internal virtual override {
+    function _executeMetaTx(uint256 signerPk, uint256 nonce, uint256 deadline) internal virtual override {
         hub.followWithSig({
             followerProfileId: testFollowerProfileId,
             idsOfProfilesToFollow: _toUint256Array(targetProfileId),

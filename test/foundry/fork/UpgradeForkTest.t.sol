@@ -6,12 +6,12 @@ import '@openzeppelin/contracts/token/ERC721/extensions/IERC721Enumerable.sol';
 import '@openzeppelin/contracts/token/ERC721/IERC721.sol';
 import 'forge-std/console2.sol';
 import 'test/foundry/base/BaseTest.t.sol';
-import 'contracts/mocks/MockReferenceModule.sol';
-import 'contracts/mocks/MockDeprecatedReferenceModule.sol';
-import 'contracts/mocks/MockCollectModule.sol';
-import 'contracts/mocks/MockDeprecatedCollectModule.sol';
-import 'contracts/mocks/MockFollowModule.sol';
-import 'contracts/mocks/MockDeprecatedFollowModule.sol';
+import 'test/mocks/MockReferenceModule.sol';
+import 'test/mocks/MockDeprecatedReferenceModule.sol';
+import 'test/mocks/MockCollectModule.sol';
+import 'test/mocks/MockDeprecatedCollectModule.sol';
+import 'test/mocks/MockFollowModule.sol';
+import 'test/mocks/MockDeprecatedFollowModule.sol';
 import 'contracts/interfaces/IERC721Time.sol';
 import 'contracts/interfaces/ILensMultiState.sol';
 import {Typehash} from 'contracts/libraries/constants/Typehash.sol';
@@ -41,11 +41,7 @@ interface IOldHub {
 
     function follow(uint256[] calldata profileIds, bytes[] calldata datas) external;
 
-    function collect(
-        uint256 profileId,
-        uint256 pubId,
-        bytes calldata data
-    ) external;
+    function collect(uint256 profileId, uint256 pubId, bytes calldata data) external;
 }
 
 contract UpgradeForkTest is BaseTest {
@@ -173,11 +169,7 @@ contract UpgradeForkTest is BaseTest {
         return profileId;
     }
 
-    function _fullPublishSequence(
-        uint256 profileId,
-        address gov,
-        ILensHub hub
-    ) private {
+    function _fullPublishSequence(uint256 profileId, address gov, ILensHub hub) private {
         // First check if the new interface works, if not, use the old interface.
 
         // Set the proper initial params, these must be redundantly reset as they may have been set
@@ -303,11 +295,7 @@ contract UpgradeForkTest is BaseTest {
         }
     }
 
-    function _fullFollowCollectSequence(
-        uint256 profileId,
-        address gov,
-        ILensHub hub
-    ) private {
+    function _fullFollowCollectSequence(uint256 profileId, address gov, ILensHub hub) private {
         // First check if the new interface works, if not, use the old interface.
         uint256[] memory profileIds = new uint256[](1);
         profileIds[0] = profileId;
