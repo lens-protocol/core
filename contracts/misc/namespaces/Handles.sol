@@ -4,7 +4,7 @@ pragma solidity ^0.8.19;
 
 import {ERC721} from '@openzeppelin/contracts/token/ERC721/ERC721.sol';
 import {Ownable} from '@openzeppelin/contracts/access/Ownable.sol';
-import {VersionedInitializable} from 'contracts/upgradeability/VersionedInitializable.sol';
+import {VersionedInitializable} from 'contracts/base/upgradeability/VersionedInitializable.sol';
 
 library Events {
     event HandleMinted(string handle, string namespace, uint256 handleId, address to);

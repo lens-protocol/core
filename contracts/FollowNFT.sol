@@ -3,16 +3,16 @@
 pragma solidity ^0.8.15;
 
 import {Types} from 'contracts/libraries/constants/Types.sol';
-import {ERC2981CollectionRoyalties} from 'contracts/core/base/ERC2981CollectionRoyalties.sol';
-import {ERC721Enumerable} from 'contracts/core/base/ERC721Enumerable.sol';
+import {ERC2981CollectionRoyalties} from 'contracts/base/ERC2981CollectionRoyalties.sol';
+import {ERC721Enumerable} from 'contracts/base/ERC721Enumerable.sol';
 import {Errors} from 'contracts/libraries/constants/Errors.sol';
 import {Events} from 'contracts/libraries/constants/Events.sol';
-import {HubRestricted} from 'contracts/core/base/HubRestricted.sol';
+import {HubRestricted} from 'contracts/base/HubRestricted.sol';
 import {IERC721} from '@openzeppelin/contracts/token/ERC721/IERC721.sol';
 import {IERC721Time} from 'contracts/interfaces/IERC721Time.sol';
 import {IFollowNFT} from 'contracts/interfaces/IFollowNFT.sol';
 import {ILensHub} from 'contracts/interfaces/ILensHub.sol';
-import {LensNFTBase} from 'contracts/core/base/LensNFTBase.sol';
+import {LensNFTBase} from 'contracts/base/LensNFTBase.sol';
 import {MetaTxLib} from 'contracts/libraries/MetaTxLib.sol';
 import {Strings} from '@openzeppelin/contracts/utils/Strings.sol';
 
@@ -243,13 +243,9 @@ contract FollowNFT is HubRestricted, LensNFTBase, ERC2981CollectionRoyalties, IF
     /**
      * @dev See {IERC165-supportsInterface}.
      */
-    function supportsInterface(bytes4 interfaceId)
-        public
-        view
-        virtual
-        override(ERC2981CollectionRoyalties, ERC721Enumerable)
-        returns (bool)
-    {
+    function supportsInterface(
+        bytes4 interfaceId
+    ) public view virtual override(ERC2981CollectionRoyalties, ERC721Enumerable) returns (bool) {
         return
             ERC2981CollectionRoyalties.supportsInterface(interfaceId) ||
             ERC721Enumerable.supportsInterface(interfaceId);
@@ -352,11 +348,7 @@ contract FollowNFT is HubRestricted, LensNFTBase, ERC2981CollectionRoyalties, IF
         _baseFollow({followerProfileId: newFollowerProfileId, followTokenId: followTokenId, isOriginalFollow: false});
     }
 
-    function _baseFollow(
-        uint256 followerProfileId,
-        uint256 followTokenId,
-        bool isOriginalFollow
-    ) internal {
+    function _baseFollow(uint256 followerProfileId, uint256 followTokenId, bool isOriginalFollow) internal {
         _followTokenIdByFollowerProfileId[followerProfileId] = followTokenId;
         _followDataByFollowTokenId[followTokenId].followerProfileId = uint160(followerProfileId);
         _followDataByFollowTokenId[followTokenId].followTimestamp = uint48(block.timestamp);
@@ -389,11 +381,7 @@ contract FollowNFT is HubRestricted, LensNFTBase, ERC2981CollectionRoyalties, IF
     /**
      * @dev Upon transfers, we clear follow approvals, and emit the transfer event in the hub.
      */
-    function _beforeTokenTransfer(
-        address from,
-        address to,
-        uint256 followTokenId
-    ) internal override {
+    function _beforeTokenTransfer(address from, address to, uint256 followTokenId) internal override {
         if (from != address(0)) {
             // It is cleared on unwrappings and transfers, and it can not be set on unwrapped tokens.
             // As a consequence, there is no need to clear it on wrappings.
@@ -403,15 +391,11 @@ contract FollowNFT is HubRestricted, LensNFTBase, ERC2981CollectionRoyalties, IF
         ILensHub(HUB).emitFollowNFTTransferEvent(_followedProfileId, followTokenId, from, to);
     }
 
-    function _getReceiver(
-        uint256 /* followTokenId */
-    ) internal view override returns (address) {
+    function _getReceiver(uint256 /* followTokenId */) internal view override returns (address) {
         return IERC721(HUB).ownerOf(_followedProfileId);
     }
 
-    function _beforeRoyaltiesSet(
-        uint256 /* royaltiesInBasisPoints */
-    ) internal view override {
+    function _beforeRoyaltiesSet(uint256 /* royaltiesInBasisPoints */) internal view override {
         if (IERC721(HUB).ownerOf(_followedProfileId) != msg.sender) {
             revert Errors.NotProfileOwner();
         }

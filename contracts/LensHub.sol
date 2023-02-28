@@ -12,10 +12,10 @@ import {ValidationLib} from 'contracts/libraries/ValidationLib.sol';
 import {ProfileLib} from 'contracts/libraries/ProfileLib.sol';
 import {PublicationLib} from 'contracts/libraries/PublicationLib.sol';
 import {ProfileTokenURILib} from 'contracts/libraries/ProfileTokenURILib.sol';
-import {LensNFTBase} from 'contracts/core/base/LensNFTBase.sol';
-import {LensMultiState} from 'contracts/core/base/LensMultiState.sol';
-import {LensHubStorage} from 'contracts/core/storage/LensHubStorage.sol';
-import {VersionedInitializable} from 'contracts/upgradeability/VersionedInitializable.sol';
+import {LensNFTBase} from 'contracts/base/LensNFTBase.sol';
+import {LensMultiState} from 'contracts/base/LensMultiState.sol';
+import {LensHubStorage} from 'contracts/base/LensHubStorage.sol';
+import {VersionedInitializable} from 'contracts/base/upgradeability/VersionedInitializable.sol';
 import {IERC721Enumerable} from '@openzeppelin/contracts/token/ERC721/extensions/IERC721Enumerable.sol';
 import {MetaTxLib} from 'contracts/libraries/MetaTxLib.sol';
 import {GovernanceLib} from 'contracts/libraries/GovernanceLib.sol';
@@ -126,12 +126,9 @@ contract LensHub is LensNFTBase, VersionedInitializable, LensMultiState, LensHub
     ///////////////////////////////////////////
 
     /// @inheritdoc ILensHub
-    function createProfile(Types.CreateProfileParams calldata createProfileParams)
-        external
-        override
-        whenNotPaused
-        returns (uint256)
-    {
+    function createProfile(
+        Types.CreateProfileParams calldata createProfileParams
+    ) external override whenNotPaused returns (uint256) {
         unchecked {
             uint256 profileId = ++_profileCounter;
             _mint(createProfileParams.to, profileId);
@@ -141,12 +138,10 @@ contract LensHub is LensNFTBase, VersionedInitializable, LensMultiState, LensHub
     }
 
     /// @inheritdoc ILensHub
-    function setProfileMetadataURI(uint256 profileId, string calldata metadataURI)
-        external
-        override
-        whenNotPaused
-        onlyProfileOwnerOrDelegatedExecutor(msg.sender, profileId)
-    {
+    function setProfileMetadataURI(
+        uint256 profileId,
+        string calldata metadataURI
+    ) external override whenNotPaused onlyProfileOwnerOrDelegatedExecutor(msg.sender, profileId) {
         ProfileLib.setProfileMetadataURI(profileId, metadataURI);
     }
 
@@ -232,12 +227,10 @@ contract LensHub is LensNFTBase, VersionedInitializable, LensMultiState, LensHub
     }
 
     /// @inheritdoc ILensHub
-    function setProfileImageURI(uint256 profileId, string calldata imageURI)
-        external
-        override
-        whenNotPaused
-        onlyProfileOwnerOrDelegatedExecutor(msg.sender, profileId)
-    {
+    function setProfileImageURI(
+        uint256 profileId,
+        string calldata imageURI
+    ) external override whenNotPaused onlyProfileOwnerOrDelegatedExecutor(msg.sender, profileId) {
         ProfileLib.setProfileImageURI(profileId, imageURI);
     }
 
@@ -252,12 +245,10 @@ contract LensHub is LensNFTBase, VersionedInitializable, LensMultiState, LensHub
     }
 
     /// @inheritdoc ILensHub
-    function setFollowNFTURI(uint256 profileId, string calldata followNFTURI)
-        external
-        override
-        whenNotPaused
-        onlyProfileOwnerOrDelegatedExecutor(msg.sender, profileId)
-    {
+    function setFollowNFTURI(
+        uint256 profileId,
+        string calldata followNFTURI
+    ) external override whenNotPaused onlyProfileOwnerOrDelegatedExecutor(msg.sender, profileId) {
         ProfileLib.setFollowNFTURI(profileId, followNFTURI);
     }
 
@@ -276,7 +267,9 @@ contract LensHub is LensNFTBase, VersionedInitializable, LensMultiState, LensHub
     ////////////////////////////////////////
 
     /// @inheritdoc ILensHub
-    function post(Types.PostParams calldata postParams)
+    function post(
+        Types.PostParams calldata postParams
+    )
         external
         override
         whenPublishingEnabled
@@ -287,7 +280,10 @@ contract LensHub is LensNFTBase, VersionedInitializable, LensMultiState, LensHub
     }
 
     /// @inheritdoc ILensHub
-    function postWithSig(Types.PostParams calldata postParams, Types.EIP712Signature calldata signature)
+    function postWithSig(
+        Types.PostParams calldata postParams,
+        Types.EIP712Signature calldata signature
+    )
         external
         override
         whenPublishingEnabled
@@ -299,7 +295,9 @@ contract LensHub is LensNFTBase, VersionedInitializable, LensMultiState, LensHub
     }
 
     /// @inheritdoc ILensHub
-    function comment(Types.CommentParams calldata commentParams)
+    function comment(
+        Types.CommentParams calldata commentParams
+    )
         external
         override
         whenPublishingEnabled
@@ -312,7 +310,10 @@ contract LensHub is LensNFTBase, VersionedInitializable, LensMultiState, LensHub
     }
 
     /// @inheritdoc ILensHub
-    function commentWithSig(Types.CommentParams calldata commentParams, Types.EIP712Signature calldata signature)
+    function commentWithSig(
+        Types.CommentParams calldata commentParams,
+        Types.EIP712Signature calldata signature
+    )
         external
         override
         whenPublishingEnabled
@@ -326,7 +327,9 @@ contract LensHub is LensNFTBase, VersionedInitializable, LensMultiState, LensHub
     }
 
     /// @inheritdoc ILensHub
-    function mirror(Types.MirrorParams calldata mirrorParams)
+    function mirror(
+        Types.MirrorParams calldata mirrorParams
+    )
         external
         override
         whenPublishingEnabled
@@ -339,7 +342,10 @@ contract LensHub is LensNFTBase, VersionedInitializable, LensMultiState, LensHub
     }
 
     /// @inheritdoc ILensHub
-    function mirrorWithSig(Types.MirrorParams calldata mirrorParams, Types.EIP712Signature calldata signature)
+    function mirrorWithSig(
+        Types.MirrorParams calldata mirrorParams,
+        Types.EIP712Signature calldata signature
+    )
         external
         override
         whenPublishingEnabled
@@ -353,7 +359,9 @@ contract LensHub is LensNFTBase, VersionedInitializable, LensMultiState, LensHub
     }
 
     /// @inheritdoc ILensHub
-    function quote(Types.QuoteParams calldata quoteParams)
+    function quote(
+        Types.QuoteParams calldata quoteParams
+    )
         external
         override
         whenPublishingEnabled
@@ -366,7 +374,10 @@ contract LensHub is LensNFTBase, VersionedInitializable, LensMultiState, LensHub
     }
 
     /// @inheritdoc ILensHub
-    function quoteWithSig(Types.QuoteParams calldata quoteParams, Types.EIP712Signature calldata signature)
+    function quoteWithSig(
+        Types.QuoteParams calldata quoteParams,
+        Types.EIP712Signature calldata signature
+    )
         external
         override
         whenPublishingEnabled
@@ -389,12 +400,10 @@ contract LensHub is LensNFTBase, VersionedInitializable, LensMultiState, LensHub
     /**
      * @notice Burns a profile with a signature, this maintains the profile data struct.
      */
-    function burnWithSig(uint256 tokenId, Types.EIP712Signature calldata signature)
-        public
-        override
-        whenNotPaused
-        onlyProfileOwner(signature.signer, tokenId)
-    {
+    function burnWithSig(
+        uint256 tokenId,
+        Types.EIP712Signature calldata signature
+    ) public override whenNotPaused onlyProfileOwner(signature.signer, tokenId) {
         MetaTxLib.validateBurnSignature(signature, tokenId);
         _burn(tokenId);
     }
@@ -452,12 +461,10 @@ contract LensHub is LensNFTBase, VersionedInitializable, LensMultiState, LensHub
     }
 
     /// @inheritdoc ILensHub
-    function unfollow(uint256 unfollowerProfileId, uint256[] calldata idsOfProfilesToUnfollow)
-        external
-        override
-        whenNotPaused
-        onlyProfileOwnerOrDelegatedExecutor(msg.sender, unfollowerProfileId)
-    {
+    function unfollow(
+        uint256 unfollowerProfileId,
+        uint256[] calldata idsOfProfilesToUnfollow
+    ) external override whenNotPaused onlyProfileOwnerOrDelegatedExecutor(msg.sender, unfollowerProfileId) {
         return
             FollowLib.unfollow({
                 unfollowerProfileId: unfollowerProfileId,
@@ -503,7 +510,9 @@ contract LensHub is LensNFTBase, VersionedInitializable, LensMultiState, LensHub
     }
 
     /// TODO: Inherit natspec
-    function collect(Types.CollectParams calldata collectParams)
+    function collect(
+        Types.CollectParams calldata collectParams
+    )
         external
         override
         whenNotPaused
@@ -521,7 +530,10 @@ contract LensHub is LensNFTBase, VersionedInitializable, LensMultiState, LensHub
     }
 
     /// @inheritdoc ILensHub
-    function collectWithSig(Types.CollectParams calldata collectParams, Types.EIP712Signature calldata signature)
+    function collectWithSig(
+        Types.CollectParams calldata collectParams,
+        Types.EIP712Signature calldata signature
+    )
         external
         override
         whenNotPaused
@@ -708,12 +720,10 @@ contract LensHub is LensNFTBase, VersionedInitializable, LensMultiState, LensHub
     }
 
     /// @inheritdoc ILensHub
-    function getPublicationType(uint256 profileId, uint256 pubId)
-        external
-        view
-        override
-        returns (Types.PublicationType)
-    {
+    function getPublicationType(
+        uint256 profileId,
+        uint256 pubId
+    ) external view override returns (Types.PublicationType) {
         return PublicationLib.getPublicationType(profileId, pubId);
     }
 
@@ -753,11 +763,7 @@ contract LensHub is LensNFTBase, VersionedInitializable, LensMultiState, LensHub
     ///        INTERNAL FUNCTIONS      ///
     //////////////////////////////////////
 
-    function _beforeTokenTransfer(
-        address from,
-        address to,
-        uint256 tokenId
-    ) internal override whenNotPaused {
+    function _beforeTokenTransfer(address from, address to, uint256 tokenId) internal override whenNotPaused {
         // Switches to new fresh delegated executors configuration (except on minting, as it already has a fresh setup).
         if (from != address(0)) {
             ProfileLib.switchToNewFreshDelegatedExecutorsConfig(tokenId);

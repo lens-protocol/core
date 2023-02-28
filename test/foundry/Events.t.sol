@@ -4,7 +4,7 @@ pragma solidity ^0.8.13;
 import 'test/foundry/base/BaseTest.t.sol';
 
 import {Events} from 'contracts/libraries/constants/Events.sol';
-import {MockFollowModule} from 'contracts/mocks/MockFollowModule.sol';
+import {MockFollowModule} from 'test/mocks/MockFollowModule.sol';
 
 contract EventTest is BaseTest {
     address profileOwnerTwo = address(0x2222);

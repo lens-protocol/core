@@ -4,9 +4,9 @@ pragma solidity ^0.8.13;
 import 'forge-std/Script.sol';
 import 'forge-std/console2.sol';
 
-import 'contracts/core/LensHub.sol';
-import 'contracts/core/FollowNFT.sol';
-import 'contracts/core/CollectNFT.sol';
+import 'contracts/LensHub.sol';
+import 'contracts/FollowNFT.sol';
+import 'contracts/CollectNFT.sol';
 
 /**
  * This script will deploy the current repository implementations, using the given environment

@@ -3,7 +3,7 @@
 pragma solidity ^0.8.0;
 
 import {Errors} from 'contracts/libraries/constants/Errors.sol';
-import {ERC721Time} from 'contracts/core/base/ERC721Time.sol';
+import {ERC721Time} from 'contracts/base/ERC721Time.sol';
 import {IERC721Enumerable} from '@openzeppelin/contracts/token/ERC721/extensions/IERC721Enumerable.sol';
 import {IERC165} from '@openzeppelin/contracts/interfaces/IERC165.sol';
 
@@ -74,11 +74,7 @@ abstract contract ERC721Enumerable is ERC721Time, IERC721Enumerable {
      *
      * To learn more about hooks, head to xref:ROOT:extending-contracts.adoc#using-hooks[Using Hooks].
      */
-    function _beforeTokenTransfer(
-        address from,
-        address to,
-        uint256 tokenId
-    ) internal virtual override {
+    function _beforeTokenTransfer(address from, address to, uint256 tokenId) internal virtual override {
         super._beforeTokenTransfer(from, to, tokenId);
 
         if (from == address(0)) {

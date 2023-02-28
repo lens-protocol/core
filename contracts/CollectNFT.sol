@@ -2,14 +2,14 @@
 
 pragma solidity ^0.8.15;
 
-import {ERC2981CollectionRoyalties} from 'contracts/core/base/ERC2981CollectionRoyalties.sol';
-import {ERC721Enumerable} from 'contracts/core/base/ERC721Enumerable.sol';
+import {ERC2981CollectionRoyalties} from 'contracts/base/ERC2981CollectionRoyalties.sol';
+import {ERC721Enumerable} from 'contracts/base/ERC721Enumerable.sol';
 import {Errors} from 'contracts/libraries/constants/Errors.sol';
 import {Events} from 'contracts/libraries/constants/Events.sol';
 import {ICollectNFT} from 'contracts/interfaces/ICollectNFT.sol';
 import {IERC721} from '@openzeppelin/contracts/token/ERC721/IERC721.sol';
 import {ILensHub} from 'contracts/interfaces/ILensHub.sol';
-import {LensNFTBase} from 'contracts/core/base/LensNFTBase.sol';
+import {LensNFTBase} from 'contracts/base/LensNFTBase.sol';
 
 /**
  * @title CollectNFT
@@ -76,27 +76,19 @@ contract CollectNFT is LensNFTBase, ERC2981CollectionRoyalties, ICollectNFT {
     /**
      * @dev See {IERC165-supportsInterface}.
      */
-    function supportsInterface(bytes4 interfaceId)
-        public
-        view
-        virtual
-        override(ERC2981CollectionRoyalties, ERC721Enumerable)
-        returns (bool)
-    {
+    function supportsInterface(
+        bytes4 interfaceId
+    ) public view virtual override(ERC2981CollectionRoyalties, ERC721Enumerable) returns (bool) {
         return
             ERC2981CollectionRoyalties.supportsInterface(interfaceId) ||
             ERC721Enumerable.supportsInterface(interfaceId);
     }
 
-    function _getReceiver(
-        uint256 /* tokenId */
-    ) internal view override returns (address) {
+    function _getReceiver(uint256 /* tokenId */) internal view override returns (address) {
         return IERC721(HUB).ownerOf(_profileId);
     }
 
-    function _beforeRoyaltiesSet(
-        uint256 /* royaltiesInBasisPoints */
-    ) internal view override {
+    function _beforeRoyaltiesSet(uint256 /* royaltiesInBasisPoints */) internal view override {
         if (IERC721(HUB).ownerOf(_profileId) != msg.sender) {
             revert Errors.NotProfileOwner();
         }
@@ -113,11 +105,7 @@ contract CollectNFT is LensNFTBase, ERC2981CollectionRoyalties, ICollectNFT {
     /**
      * @dev Upon transfers, we emit the transfer event in the hub.
      */
-    function _beforeTokenTransfer(
-        address from,
-        address to,
-        uint256 tokenId
-    ) internal override {
+    function _beforeTokenTransfer(address from, address to, uint256 tokenId) internal override {
         super._beforeTokenTransfer(from, to, tokenId);
         ILensHub(HUB).emitCollectNFTTransferEvent(_profileId, _pubId, tokenId, from, to);
     }

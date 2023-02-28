@@ -5,17 +5,17 @@ import 'forge-std/Test.sol';
 
 // Deployments
 import {ILensHub} from 'contracts/interfaces/ILensHub.sol';
-import {LensHub} from 'contracts/core/LensHub.sol';
-import {FollowNFT} from 'contracts/core/FollowNFT.sol';
-import {CollectNFT} from 'contracts/core/CollectNFT.sol';
-import {ModuleGlobals} from 'contracts/core/modules/ModuleGlobals.sol';
-import {TransparentUpgradeableProxy} from 'contracts/upgradeability/TransparentUpgradeableProxy.sol';
+import {LensHub} from 'contracts/LensHub.sol';
+import {FollowNFT} from 'contracts/FollowNFT.sol';
+import {CollectNFT} from 'contracts/CollectNFT.sol';
+import {ModuleGlobals} from 'contracts/misc/ModuleGlobals.sol';
+import {TransparentUpgradeableProxy} from 'contracts/base/upgradeability/TransparentUpgradeableProxy.sol';
 import {Types} from 'contracts/libraries/constants/Types.sol';
 import {Errors} from 'contracts/libraries/constants/Errors.sol';
 import {Events} from 'contracts/libraries/constants/Events.sol';
 import {ProfileTokenURILib} from 'contracts/libraries/ProfileTokenURILib.sol';
-import {MockCollectModule} from 'contracts/mocks/MockCollectModule.sol';
-import {MockReferenceModule} from 'contracts/mocks/MockReferenceModule.sol';
+import {MockCollectModule} from 'test/mocks/MockCollectModule.sol';
+import {MockReferenceModule} from 'test/mocks/MockReferenceModule.sol';
 import 'test/foundry/helpers/ForkManagement.sol';
 import 'test/foundry/Constants.sol';
 import {Typehash} from 'contracts/libraries/constants/Typehash.sol';

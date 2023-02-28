@@ -2,7 +2,7 @@
 pragma solidity ^0.8.13;
 
 import 'test/foundry/base/BaseTest.t.sol';
-import 'contracts/mocks/MockFollowModule.sol';
+import 'test/mocks/MockFollowModule.sol';
 
 // Original Misc
 contract NFTTransferEmittersTest is BaseTest {
