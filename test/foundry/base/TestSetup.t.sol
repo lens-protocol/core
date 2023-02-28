@@ -5,10 +5,10 @@ import 'forge-std/Test.sol';
 
 // Deployments
 import {ILensHub} from 'contracts/interfaces/ILensHub.sol';
-import {LensHub} from 'contracts/core/LensHub.sol';
-import {FollowNFT} from 'contracts/core/FollowNFT.sol';
-import {CollectNFT} from 'contracts/core/CollectNFT.sol';
-import {ModuleGlobals} from 'contracts/core/ModuleGlobals.sol';
+import {LensHub} from 'contracts/LensHub.sol';
+import {FollowNFT} from 'contracts/FollowNFT.sol';
+import {CollectNFT} from 'contracts/CollectNFT.sol';
+import {ModuleGlobals} from 'contracts/ModuleGlobals.sol';
 import {TransparentUpgradeableProxy} from 'contracts/upgradeability/TransparentUpgradeableProxy.sol';
 import {Types} from 'contracts/libraries/constants/Types.sol';
 import {Errors} from 'contracts/libraries/constants/Errors.sol';

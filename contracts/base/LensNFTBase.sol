@@ -7,8 +7,8 @@ import {Errors} from 'contracts/libraries/constants/Errors.sol';
 import {Types} from 'contracts/libraries/constants/Types.sol';
 import {Events} from 'contracts/libraries/constants/Events.sol';
 import {MetaTxLib} from 'contracts/libraries/MetaTxLib.sol';
-import {ERC721Time} from 'contracts/core/base/ERC721Time.sol';
-import {ERC721Enumerable} from 'contracts/core/base/ERC721Enumerable.sol';
+import {ERC721Time} from 'contracts/base/ERC721Time.sol';
+import {ERC721Enumerable} from 'contracts/base/ERC721Enumerable.sol';
 
 /**
  * @title LensNFTBase

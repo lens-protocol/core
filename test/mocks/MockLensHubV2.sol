@@ -2,8 +2,8 @@
 
 pragma solidity ^0.8.15;
 
-import {LensNFTBase} from 'contracts/core/base/LensNFTBase.sol';
-import {LensMultiState} from 'contracts/core/base/LensMultiState.sol';
+import {LensNFTBase} from 'contracts/base/LensNFTBase.sol';
+import {LensMultiState} from 'contracts/base/LensMultiState.sol';
 import {VersionedInitializable} from 'contracts/upgradeability/VersionedInitializable.sol';
 import {MockLensHubV2Storage} from 'test/mocks/MockLensHubV2Storage.sol';
 

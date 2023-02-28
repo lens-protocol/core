@@ -5,7 +5,7 @@ import 'test/foundry/base/BaseTest.t.sol';
 import 'test/foundry/ERC721Test.t.sol';
 import {IERC721} from '@openzeppelin/contracts/token/ERC721/IERC721.sol';
 import {IFollowNFT} from 'contracts/interfaces/IFollowNFT.sol';
-import {FollowNFT} from 'contracts/core/FollowNFT.sol';
+import {FollowNFT} from 'contracts/FollowNFT.sol';
 
 contract FollowNFTTest is BaseTest, ERC721Test {
     uint256 constant MINT_NEW_TOKEN = 0;
@@ -682,9 +682,9 @@ contract FollowNFTTest is BaseTest, ERC721Test {
         followNFT.wrap(followTokenId);
     }
 
-    function testCannotWrapRecoveringWhenTheSenderDoesNotOwnTheProfileAllowedToRecover(address unrelatedAddress)
-        public
-    {
+    function testCannotWrapRecoveringWhenTheSenderDoesNotOwnTheProfileAllowedToRecover(
+        address unrelatedAddress
+    ) public {
         vm.assume(unrelatedAddress != address(0));
         vm.assume(unrelatedAddress != alreadyFollowingProfileOwner);
 
@@ -768,9 +768,9 @@ contract FollowNFTTest is BaseTest, ERC721Test {
         assertEq(followNFT.getProfileIdAllowedToRecover(followTokenId), 0);
     }
 
-    function testRecoveringTokenThroughWrappingItAfterProfileAllowedToRecoverWasTransferred(address unrelatedAddress)
-        public
-    {
+    function testRecoveringTokenThroughWrappingItAfterProfileAllowedToRecoverWasTransferred(
+        address unrelatedAddress
+    ) public {
         vm.assume(unrelatedAddress != address(0));
         vm.assume(unrelatedAddress != alreadyFollowingProfileOwner);
 
@@ -888,9 +888,9 @@ contract FollowNFTTest is BaseTest, ERC721Test {
         assertFalse(followNFT.exists(followTokenId));
     }
 
-    function testUnwrappedTokenStillTiedToFollowerProfileAfterAFollowerProfileTransfer(address newFollowerProfileOwner)
-        public
-    {
+    function testUnwrappedTokenStillTiedToFollowerProfileAfterAFollowerProfileTransfer(
+        address newFollowerProfileOwner
+    ) public {
         vm.assume(newFollowerProfileOwner != followerProfileOwner);
         vm.assume(newFollowerProfileOwner != address(0));
 
