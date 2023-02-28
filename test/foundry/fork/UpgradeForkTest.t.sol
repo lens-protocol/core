@@ -12,7 +12,6 @@ import 'test/mocks/MockCollectModule.sol';
 import 'test/mocks/MockDeprecatedCollectModule.sol';
 import 'test/mocks/MockFollowModule.sol';
 import 'test/mocks/MockDeprecatedFollowModule.sol';
-import 'contracts/interfaces/IERC721Time.sol';
 import 'contracts/interfaces/ILensMultiState.sol';
 import {Typehash} from 'contracts/libraries/constants/Typehash.sol';
 
@@ -384,7 +383,7 @@ contract UpgradeForkTest is BaseTest {
             abi.encode(
                 Typehash.EIP712_DOMAIN,
                 keccak256('Lens Protocol Profiles'),
-                MetaTxLib.EIP712_REVISION_HASH,
+                MetaTxLib.EIP712_DOMAIN_VERSION_HASH,
                 block.chainid,
                 hubProxyAddr
             )

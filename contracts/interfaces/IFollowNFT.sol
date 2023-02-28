@@ -19,21 +19,6 @@ interface IFollowNFT {
     error DoesNotHavePermissions();
 
     /**
-     * @notice A struct containing token follow-related data.
-     *
-     * @param followerProfileId The ID of the profile using the token to follow.
-     * @param originalFollowTimestamp The timestamp of the first follow performed with the token.
-     * @param followTimestamp The timestamp of the current follow, if a profile is using the token to follow.
-     * @param profileIdAllowedToRecover The ID of the profile allowed to recover the follow ID, if any.
-     */
-    struct FollowData {
-        uint160 followerProfileId;
-        uint48 originalFollowTimestamp;
-        uint48 followTimestamp;
-        uint256 profileIdAllowedToRecover;
-    }
-
-    /**
      * @notice Initializes the follow NFT.
      *
      * @dev Sets the hub as priviliged sender, the targeted profile, and the token royalties.
@@ -55,11 +40,7 @@ interface IFollowNFT {
      *
      * @return uint256 The ID of the token used to follow.
      */
-    function follow(
-        uint256 followerProfileId,
-        address executor,
-        uint256 followTokenId
-    ) external returns (uint256);
+    function follow(uint256 followerProfileId, address executor, uint256 followTokenId) external returns (uint256);
 
     /**
      * @notice Makes the passed profile to unfollow the profile targeted in this contract.
@@ -162,7 +143,7 @@ interface IFollowNFT {
      *
      * @return FollowData The token data associated with the given follow token.
      */
-    function getFollowData(uint256 followTokenId) external view returns (FollowData memory);
+    function getFollowData(uint256 followTokenId) external view returns (Types.FollowData memory);
 
     /**
      * @notice Tells if the given profile is following the profile targeted in this contract.
@@ -190,4 +171,12 @@ interface IFollowNFT {
      * @return uint256 The ID of the profile approved to follow with the given token, zero if none of them is approved.
      */
     function getFollowApproved(uint256 followTokenId) external view returns (uint256);
+
+    /**
+     * @notice Gets the count of the followers of the profile targeted in this contract.
+     * @notice This number might be out of sync if one of the followers burns their profile.
+     *
+     * @return uint256 The count of the followers of the profile targeted in this contract.
+     */
+    function getFollowerCount() external view returns (uint256);
 }

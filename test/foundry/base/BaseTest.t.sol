@@ -86,11 +86,7 @@ contract BaseTest is TestSetup {
         return _calculateDigest(structHash);
     }
 
-    function _getBurnTypedDataHash(
-        uint256 profileId,
-        uint256 nonce,
-        uint256 deadline
-    ) internal view returns (bytes32) {
+    function _getBurnTypedDataHash(uint256 profileId, uint256 nonce, uint256 deadline) internal view returns (bytes32) {
         bytes32 structHash = keccak256(abi.encode(Typehash.BURN, profileId, nonce, deadline));
         return _calculateDigest(structHash);
     }
@@ -403,31 +399,31 @@ contract BaseTest is TestSetup {
             );
     }
 
-    function _postWithSig(Types.PostParams memory postParams, Types.EIP712Signature memory signature)
-        internal
-        returns (uint256)
-    {
+    function _postWithSig(
+        Types.PostParams memory postParams,
+        Types.EIP712Signature memory signature
+    ) internal returns (uint256) {
         return hub.postWithSig(postParams, signature);
     }
 
-    function _commentWithSig(Types.CommentParams memory commentParams, Types.EIP712Signature memory signature)
-        internal
-        returns (uint256)
-    {
+    function _commentWithSig(
+        Types.CommentParams memory commentParams,
+        Types.EIP712Signature memory signature
+    ) internal returns (uint256) {
         return hub.commentWithSig(commentParams, signature);
     }
 
-    function _mirrorWithSig(Types.MirrorParams memory mirrorParams, Types.EIP712Signature memory signature)
-        internal
-        returns (uint256)
-    {
+    function _mirrorWithSig(
+        Types.MirrorParams memory mirrorParams,
+        Types.EIP712Signature memory signature
+    ) internal returns (uint256) {
         return hub.mirrorWithSig(mirrorParams, signature);
     }
 
-    function _collectWithSig(Types.CollectParams memory collectParams, Types.EIP712Signature memory signature)
-        internal
-        returns (uint256)
-    {
+    function _collectWithSig(
+        Types.CollectParams memory collectParams,
+        Types.EIP712Signature memory signature
+    ) internal returns (uint256) {
         return hub.collectWithSig(collectParams, signature);
     }
 
@@ -489,12 +485,7 @@ contract BaseTest is TestSetup {
         hub.setEmergencyAdmin(newEmergencyAdmin);
     }
 
-    function _transferProfile(
-        address msgSender,
-        address from,
-        address to,
-        uint256 tokenId
-    ) internal {
+    function _transferProfile(address msgSender, address from, address to, uint256 tokenId) internal {
         vm.prank(msgSender);
         hub.transferFrom(from, to, tokenId);
     }
@@ -532,11 +523,7 @@ contract BaseTest is TestSetup {
         hub.setFollowModuleWithSig(profileId, followModule, followModuleInitData, signature);
     }
 
-    function _setProfileImageURI(
-        address msgSender,
-        uint256 profileId,
-        string memory imageURI
-    ) internal {
+    function _setProfileImageURI(address msgSender, uint256 profileId, string memory imageURI) internal {
         vm.prank(msgSender);
         hub.setProfileImageURI(profileId, imageURI);
     }
@@ -549,11 +536,7 @@ contract BaseTest is TestSetup {
         hub.setProfileImageURIWithSig(profileId, imageURI, signature);
     }
 
-    function _setFollowNFTURI(
-        address msgSender,
-        uint256 profileId,
-        string memory followNFTURI
-    ) internal {
+    function _setFollowNFTURI(address msgSender, uint256 profileId, string memory followNFTURI) internal {
         vm.prank(msgSender);
         hub.setFollowNFTURI(profileId, followNFTURI);
     }
@@ -571,16 +554,12 @@ contract BaseTest is TestSetup {
         hub.burn(profileId);
     }
 
-    function _burnWithSig(uint256 profileId, Types.EIP712Signature memory signature) internal {
-        hub.burnWithSig(profileId, signature);
-    }
-
     function _getPub(uint256 profileId, uint256 pubId) internal view returns (Types.Publication memory) {
         return hub.getPub(profileId, pubId);
     }
 
     function _getSigNonce(address signer) internal view returns (uint256) {
-        return hub.sigNonces(signer);
+        return hub.nonces(signer);
     }
 
     function _getPubCount(uint256 profileId) internal view returns (uint256) {

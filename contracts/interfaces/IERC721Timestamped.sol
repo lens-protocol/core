@@ -2,30 +2,16 @@
 
 pragma solidity ^0.8.0;
 
-import {IERC721} from '@openzeppelin/contracts/token/ERC721/IERC721.sol';
+import {Types} from 'contracts/libraries/constants/Types.sol';
 
 /**
- * @title IERC721Time
+ * @title IERC721Timestamped
  * @author Lens Protocol
  *
  * @notice This is an expansion of the IERC721 interface that includes a struct for token data,
  * which contains the token owner and the mint timestamp as well as associated getters.
  */
-interface IERC721Time is IERC721 {
-    /**
-     * @notice Contains the owner address and the mint timestamp for every NFT.
-     *
-     * Note: Instead of the owner address in the _tokenOwners private mapping, we now store it in the
-     * _tokenData mapping, alongside the unchanging mintTimestamp.
-     *
-     * @param owner The token owner.
-     * @param mintTimestamp The mint timestamp.
-     */
-    struct TokenData {
-        address owner;
-        uint96 mintTimestamp;
-    }
-
+interface IERC721Timestamped {
     /**
      * @notice Returns the mint timestamp associated with a given NFT, stored only once upon initial mint.
      *
@@ -44,7 +30,7 @@ interface IERC721Time is IERC721 {
      *
      * @return TokenData token data struct containing both the owner address and the mint timestamp.
      */
-    function tokenDataOf(uint256 tokenId) external view returns (TokenData memory);
+    function tokenDataOf(uint256 tokenId) external view returns (Types.TokenData memory);
 
     /**
      * @notice Returns whether a token with the given token ID exists.
@@ -54,4 +40,11 @@ interface IERC721Time is IERC721 {
      * @return bool True if the token exists.
      */
     function exists(uint256 tokenId) external view returns (bool);
+
+    /**
+     * @notice Returns the amount of tokens in circulation.
+     *
+     * @return uint256 The current total supply of tokens.
+     */
+    function totalSupply() external view returns (uint256);
 }

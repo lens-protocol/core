@@ -208,7 +208,7 @@ contract TestSetup is Test, ForkManagement {
             abi.encode(
                 Typehash.EIP712_DOMAIN,
                 keccak256('Lens Protocol Profiles'),
-                MetaTxLib.EIP712_REVISION_HASH,
+                MetaTxLib.EIP712_DOMAIN_VERSION_HASH,
                 block.chainid,
                 hubProxyAddr
             )

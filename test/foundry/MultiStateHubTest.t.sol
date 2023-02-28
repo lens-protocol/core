@@ -385,15 +385,6 @@ contract MultiStateHubTest_PausedState_WithSig is MultiStateHubTest_PausedState_
         _mirrorWithSig(mockMirrorParams, _getSigStruct(profileOwner, profileOwnerKey, digest, deadline));
     }
 
-    function _mockBurn() internal override {
-        bytes32 digest = _getBurnTypedDataHash(newProfileId, nonce, deadline);
-
-        _burnWithSig({
-            profileId: newProfileId,
-            signature: _getSigStruct(profileOwner, profileOwnerKey, digest, deadline)
-        });
-    }
-
     function _mockFollow() internal override {
         bytes32 digest = _getFollowTypedDataHash(
             followerProfileId,
@@ -647,15 +638,6 @@ contract MultiStateHubTest_PublishingPausedState_WithSig is MultiStateHubTest_Pu
         bytes32 digest = _getMirrorTypedDataHash(mockMirrorParams, nonce, deadline);
 
         _mirrorWithSig(mockMirrorParams, _getSigStruct(profileOwner, profileOwnerKey, digest, deadline));
-    }
-
-    function _mockBurn() internal override {
-        bytes32 digest = _getBurnTypedDataHash(newProfileId, nonce, deadline);
-
-        _burnWithSig({
-            profileId: newProfileId,
-            signature: _getSigStruct(profileOwner, profileOwnerKey, digest, deadline)
-        });
     }
 
     function _mockFollow() internal override {

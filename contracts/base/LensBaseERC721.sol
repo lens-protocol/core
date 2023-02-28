@@ -3,11 +3,15 @@
 pragma solidity ^0.8.0;
 
 import {Errors} from 'contracts/libraries/constants/Errors.sol';
-import {IERC721Time} from 'contracts/interfaces/IERC721Time.sol';
+import {Types} from 'contracts/libraries/constants/Types.sol';
+import {Events} from 'contracts/libraries/constants/Events.sol';
+import {MetaTxLib} from 'contracts/libraries/MetaTxLib.sol';
+import {IERC721Timestamped} from 'contracts/interfaces/IERC721Timestamped.sol';
+import {IERC721Burnable} from 'contracts/interfaces/IERC721Burnable.sol';
+import {IERC721MetaTx} from 'contracts/interfaces/IERC721MetaTx.sol';
 import {IERC721Receiver} from '@openzeppelin/contracts/token/ERC721/IERC721Receiver.sol';
 import {IERC721Metadata} from '@openzeppelin/contracts/token/ERC721/extensions/IERC721Metadata.sol';
 import {Address} from '@openzeppelin/contracts/utils/Address.sol';
-import {Context} from '@openzeppelin/contracts/utils/Context.sol';
 import {Strings} from '@openzeppelin/contracts/utils/Strings.sol';
 import {ERC165} from '@openzeppelin/contracts/utils/introspection/ERC165.sol';
 import {IERC165} from '@openzeppelin/contracts/interfaces/IERC165.sol';
@@ -23,7 +27,14 @@ import {IERC721} from '@openzeppelin/contracts/interfaces/IERC721.sol';
  * 2. Constructor replaced with an initializer.
  * 3. Mint timestamp is now stored in a TokenData struct alongside the owner address.
  */
-abstract contract ERC721Time is Context, ERC165, IERC721Time, IERC721Metadata {
+abstract contract LensBaseERC721 is
+    ERC165,
+    IERC721,
+    IERC721Timestamped,
+    IERC721Burnable,
+    IERC721MetaTx,
+    IERC721Metadata
+{
     using Address for address;
     using Strings for uint256;
 
@@ -35,7 +46,7 @@ abstract contract ERC721Time is Context, ERC165, IERC721Time, IERC721Metadata {
 
     // Mapping from token ID to token Data (owner address and mint timestamp uint96), this
     // replaces the original mapping(uint256 => address) private _owners;
-    mapping(uint256 => IERC721Time.TokenData) private _tokenData;
+    mapping(uint256 => Types.TokenData) private _tokenData;
 
     // Mapping owner address to token count
     mapping(address => uint256) private _balances;
@@ -46,15 +57,28 @@ abstract contract ERC721Time is Context, ERC165, IERC721Time, IERC721Metadata {
     // Mapping from owner to operator approvals
     mapping(address => mapping(address => bool)) private _operatorApprovals;
 
+    // Deprecated in V2 after removing ERC712Enumerable logic.
+    mapping(address => mapping(uint256 => uint256)) private __DEPRECATED__ownedTokens;
+    mapping(uint256 => uint256) private __DEPRECATED__ownedTokensIndex;
+
+    // Dirty hack on a deprecated slot:
+    uint256 private _totalSupply; // uint256[] private __DEPRECATED__allTokens;
+
+    // Deprecated in V2 after removing ERC712Enumerable logic.
+    mapping(uint256 => uint256) private __DEPRECATED__allTokensIndex;
+
+    mapping(address => uint256) private _nonces;
+
     /**
      * @dev Initializes the ERC721 name and symbol.
      *
      * @param name_ The name to set.
      * @param symbol_ The symbol to set.
      */
-    function __ERC721_Init(string calldata name_, string calldata symbol_) internal {
+    function _initialize(string calldata name_, string calldata symbol_) internal {
         _name = name_;
         _symbol = symbol_;
+        emit Events.BaseInitialized(name_, symbol_, block.timestamp);
     }
 
     /**
@@ -65,6 +89,15 @@ abstract contract ERC721Time is Context, ERC165, IERC721Time, IERC721Metadata {
             interfaceId == type(IERC721).interfaceId ||
             interfaceId == type(IERC721Metadata).interfaceId ||
             super.supportsInterface(interfaceId);
+    }
+
+    function nonces(address signer) public view override returns (uint256) {
+        return _nonces[signer];
+    }
+
+    /// @inheritdoc IERC721MetaTx
+    function getDomainSeparator() external view virtual override returns (bytes32) {
+        return MetaTxLib.calculateDomainSeparator();
     }
 
     /**
@@ -85,7 +118,7 @@ abstract contract ERC721Time is Context, ERC165, IERC721Time, IERC721Metadata {
     }
 
     /**
-     * @dev See {IERC721Time-mintTimestampOf}
+     * @dev See {IERC721Timestamped-mintTimestampOf}
      */
     function mintTimestampOf(uint256 tokenId) public view virtual override returns (uint256) {
         uint96 mintTimestamp = _tokenData[tokenId].mintTimestamp;
@@ -94,15 +127,15 @@ abstract contract ERC721Time is Context, ERC165, IERC721Time, IERC721Metadata {
     }
 
     /**
-     * @dev See {IERC721Time-tokenDataOf}
+     * @dev See {IERC721Timestamped-tokenDataOf}
      */
-    function tokenDataOf(uint256 tokenId) public view virtual override returns (IERC721Time.TokenData memory) {
+    function tokenDataOf(uint256 tokenId) public view virtual override returns (Types.TokenData memory) {
         if (!_exists(tokenId)) revert Errors.ERC721Time_TokenDataQueryForNonexistantToken();
         return _tokenData[tokenId];
     }
 
     /**
-     * @dev See {IERC721Time-exists}
+     * @dev See {IERC721Timestamped-exists}
      */
     function exists(uint256 tokenId) public view virtual override returns (bool) {
         return _exists(tokenId);
@@ -120,6 +153,10 @@ abstract contract ERC721Time is Context, ERC165, IERC721Time, IERC721Metadata {
      */
     function symbol() public view virtual override returns (string memory) {
         return _symbol;
+    }
+
+    function totalSupply() external view virtual override returns (uint256) {
+        return _totalSupply;
     }
 
     /**
@@ -145,10 +182,10 @@ abstract contract ERC721Time is Context, ERC165, IERC721Time, IERC721Metadata {
      * @dev See {IERC721-approve}.
      */
     function approve(address to, uint256 tokenId) public virtual override {
-        address owner = ERC721Time.ownerOf(tokenId);
+        address owner = ownerOf(tokenId);
         if (to == owner) revert Errors.ERC721Time_ApprovalToCurrentOwner();
 
-        if (_msgSender() != owner && !isApprovedForAll(owner, _msgSender()))
+        if (msg.sender != owner && !isApprovedForAll(owner, msg.sender))
             revert Errors.ERC721Time_ApproveCallerNotOwnerOrApprovedForAll();
 
         _approve(to, tokenId);
@@ -167,9 +204,9 @@ abstract contract ERC721Time is Context, ERC165, IERC721Time, IERC721Metadata {
      * @dev See {IERC721-setApprovalForAll}.
      */
     function setApprovalForAll(address operator, bool approved) public virtual override {
-        if (operator == _msgSender()) revert Errors.ERC721Time_ApproveToCaller();
+        if (operator == msg.sender) revert Errors.ERC721Time_ApproveToCaller();
 
-        _setOperatorApproval(_msgSender(), operator, approved);
+        _setOperatorApproval(msg.sender, operator, approved);
     }
 
     /**
@@ -182,13 +219,9 @@ abstract contract ERC721Time is Context, ERC165, IERC721Time, IERC721Metadata {
     /**
      * @dev See {IERC721-transferFrom}.
      */
-    function transferFrom(
-        address from,
-        address to,
-        uint256 tokenId
-    ) public virtual override {
+    function transferFrom(address from, address to, uint256 tokenId) public virtual override {
         //solhint-disable-next-line max-line-length
-        if (!_isApprovedOrOwner(_msgSender(), tokenId)) revert Errors.ERC721Time_TransferCallerNotOwnerOrApproved();
+        if (!_isApprovedOrOwner(msg.sender, tokenId)) revert Errors.ERC721Time_TransferCallerNotOwnerOrApproved();
 
         _transfer(from, to, tokenId);
     }
@@ -196,25 +229,28 @@ abstract contract ERC721Time is Context, ERC165, IERC721Time, IERC721Metadata {
     /**
      * @dev See {IERC721-safeTransferFrom}.
      */
-    function safeTransferFrom(
-        address from,
-        address to,
-        uint256 tokenId
-    ) public virtual override {
+    function safeTransferFrom(address from, address to, uint256 tokenId) public virtual override {
         safeTransferFrom(from, to, tokenId, '');
     }
 
     /**
      * @dev See {IERC721-safeTransferFrom}.
      */
-    function safeTransferFrom(
-        address from,
-        address to,
-        uint256 tokenId,
-        bytes memory _data
-    ) public virtual override {
-        if (!_isApprovedOrOwner(_msgSender(), tokenId)) revert Errors.ERC721Time_TransferCallerNotOwnerOrApproved();
+    function safeTransferFrom(address from, address to, uint256 tokenId, bytes memory _data) public virtual override {
+        if (!_isApprovedOrOwner(msg.sender, tokenId)) revert Errors.ERC721Time_TransferCallerNotOwnerOrApproved();
         _safeTransfer(from, to, tokenId, _data);
+    }
+
+    /**
+     * @dev Burns `tokenId`.
+     *
+     * Requirements:
+     *
+     * - The caller must own `tokenId` or be an approved operator.
+     */
+    function burn(uint256 tokenId) public virtual override {
+        if (!_isApprovedOrOwner(msg.sender, tokenId)) revert Errors.NotOwnerOrApproved();
+        _burn(tokenId);
     }
 
     /**
@@ -248,12 +284,7 @@ abstract contract ERC721Time is Context, ERC165, IERC721Time, IERC721Metadata {
      *
      * Emits a {Transfer} event.
      */
-    function _safeTransfer(
-        address from,
-        address to,
-        uint256 tokenId,
-        bytes memory _data
-    ) internal virtual {
+    function _safeTransfer(address from, address to, uint256 tokenId, bytes memory _data) internal virtual {
         _transfer(from, to, tokenId);
         if (!_checkOnERC721Received(from, to, tokenId, _data))
             revert Errors.ERC721Time_TransferToNonERC721ReceiverImplementer();
@@ -280,7 +311,7 @@ abstract contract ERC721Time is Context, ERC165, IERC721Time, IERC721Metadata {
      */
     function _isApprovedOrOwner(address spender, uint256 tokenId) internal view virtual returns (bool) {
         if (!_exists(tokenId)) revert Errors.ERC721Time_OperatorQueryForNonexistantToken();
-        address owner = ERC721Time.ownerOf(tokenId);
+        address owner = ownerOf(tokenId);
         return (spender == owner || getApproved(tokenId) == spender || isApprovedForAll(owner, spender));
     }
 
@@ -302,11 +333,7 @@ abstract contract ERC721Time is Context, ERC165, IERC721Time, IERC721Metadata {
      * @dev Same as {xref-ERC721-_safeMint-address-uint256-}[`_safeMint`], with an additional `data` parameter which is
      * forwarded in {IERC721Receiver-onERC721Received} to contract recipients.
      */
-    function _safeMint(
-        address to,
-        uint256 tokenId,
-        bytes memory _data
-    ) internal virtual {
+    function _safeMint(address to, uint256 tokenId, bytes memory _data) internal virtual {
         _mint(to, tokenId);
         if (!_checkOnERC721Received(address(0), to, tokenId, _data))
             revert Errors.ERC721Time_TransferToNonERC721ReceiverImplementer();
@@ -332,6 +359,7 @@ abstract contract ERC721Time is Context, ERC165, IERC721Time, IERC721Metadata {
 
         unchecked {
             ++_balances[to];
+            ++_totalSupply;
         }
         _tokenData[tokenId].owner = to;
         _tokenData[tokenId].mintTimestamp = uint96(block.timestamp);
@@ -350,7 +378,7 @@ abstract contract ERC721Time is Context, ERC165, IERC721Time, IERC721Metadata {
      * Emits a {Transfer} event.
      */
     function _burn(uint256 tokenId) internal virtual {
-        address owner = ERC721Time.ownerOf(tokenId);
+        address owner = ownerOf(tokenId);
 
         _beforeTokenTransfer(owner, address(0), tokenId);
 
@@ -359,6 +387,7 @@ abstract contract ERC721Time is Context, ERC165, IERC721Time, IERC721Metadata {
 
         unchecked {
             --_balances[owner];
+            --_totalSupply;
         }
         delete _tokenData[tokenId];
 
@@ -376,12 +405,8 @@ abstract contract ERC721Time is Context, ERC165, IERC721Time, IERC721Metadata {
      *
      * Emits a {Transfer} event.
      */
-    function _transfer(
-        address from,
-        address to,
-        uint256 tokenId
-    ) internal virtual {
-        if (ERC721Time.ownerOf(tokenId) != from) revert Errors.ERC721Time_TransferOfTokenThatIsNotOwn();
+    function _transfer(address from, address to, uint256 tokenId) internal virtual {
+        if (ownerOf(tokenId) != from) revert Errors.ERC721Time_TransferOfTokenThatIsNotOwn();
         if (to == address(0)) revert Errors.ERC721Time_TransferToZeroAddress();
 
         _beforeTokenTransfer(from, to, tokenId);
@@ -405,7 +430,7 @@ abstract contract ERC721Time is Context, ERC165, IERC721Time, IERC721Metadata {
      */
     function _approve(address to, uint256 tokenId) internal virtual {
         _tokenApprovals[tokenId] = to;
-        emit Approval(ERC721Time.ownerOf(tokenId), to, tokenId);
+        emit Approval(ownerOf(tokenId), to, tokenId);
     }
 
     /**
@@ -414,11 +439,7 @@ abstract contract ERC721Time is Context, ERC165, IERC721Time, IERC721Metadata {
      *
      * Emits a {ApprovalForAll} event.
      */
-    function _setOperatorApproval(
-        address owner,
-        address operator,
-        bool approved
-    ) internal virtual {
+    function _setOperatorApproval(address owner, address operator, bool approved) internal virtual {
         _operatorApprovals[owner][operator] = approved;
         emit ApprovalForAll(owner, operator, approved);
     }
@@ -440,7 +461,7 @@ abstract contract ERC721Time is Context, ERC165, IERC721Time, IERC721Metadata {
         bytes memory _data
     ) private returns (bool) {
         if (to.isContract()) {
-            try IERC721Receiver(to).onERC721Received(_msgSender(), from, tokenId, _data) returns (bytes4 retval) {
+            try IERC721Receiver(to).onERC721Received(msg.sender, from, tokenId, _data) returns (bytes4 retval) {
                 return retval == IERC721Receiver.onERC721Received.selector;
             } catch (bytes memory reason) {
                 if (reason.length == 0) {
@@ -470,9 +491,5 @@ abstract contract ERC721Time is Context, ERC165, IERC721Time, IERC721Metadata {
      *
      * To learn more about hooks, head to xref:ROOT:extending-contracts.adoc#using-hooks[Using Hooks].
      */
-    function _beforeTokenTransfer(
-        address from,
-        address to,
-        uint256 tokenId
-    ) internal virtual {}
+    function _beforeTokenTransfer(address from, address to, uint256 tokenId) internal virtual {}
 }

@@ -10,6 +10,35 @@ pragma solidity ^0.8.15;
  */
 library Types {
     /**
+     * @notice ERC721Timestamped storage. Contains the owner address and the mint timestamp for every NFT.
+     *
+     * Note: Instead of the owner address in the _tokenOwners private mapping, we now store it in the
+     * _tokenData mapping, alongside the unchanging mintTimestamp.
+     *
+     * @param owner The token owner.
+     * @param mintTimestamp The mint timestamp.
+     */
+    struct TokenData {
+        address owner;
+        uint96 mintTimestamp;
+    }
+
+    /**
+     * @notice A struct containing token follow-related data.
+     *
+     * @param followerProfileId The ID of the profile using the token to follow.
+     * @param originalFollowTimestamp The timestamp of the first follow performed with the token.
+     * @param followTimestamp The timestamp of the current follow, if a profile is using the token to follow.
+     * @param profileIdAllowedToRecover The ID of the profile allowed to recover the follow ID, if any.
+     */
+    struct FollowData {
+        uint160 followerProfileId;
+        uint48 originalFollowTimestamp;
+        uint48 followTimestamp;
+        uint256 profileIdAllowedToRecover;
+    }
+
+    /**
      * @notice An enum containing the different states the protocol can be in, limiting certain actions.
      *
      * @param Unpaused The fully unpaused state.
