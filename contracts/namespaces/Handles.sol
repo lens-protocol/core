@@ -2,53 +2,68 @@
 
 pragma solidity ^0.8.19;
 
-import {IERC721} from '@openzeppelin/contracts/token/ERC721/IERC721.sol';
 import {ERC721} from '@openzeppelin/contracts/token/ERC721/ERC721.sol';
 import {Ownable} from '@openzeppelin/contracts/access/Ownable.sol';
 import {VersionedInitializable} from 'contracts/upgradeability/VersionedInitializable.sol';
 
-struct Token {
-    uint256 id;
-    address collection;
+library Events {
+    event HandleMinted(string handle, string namespace, uint256 handleId, address to);
 }
 
-contract Handles is ERC721, Ownable, VersionedInitializable {
+// TODO list:
+// 1. Code a contract that can batch-mint those handles
+// 2. Code a contract that can batch-link handles to profiles
+
+contract LensHandles is ERC721, Ownable, VersionedInitializable {
     // Constant for upgradeability purposes, see VersionedInitializable. Do not confuse with EIP-712 revision number.
     uint256 internal constant REVISION = 1;
 
-    address immutable LENS_HUB;
-    bytes32 immutable NAMESPACE_HASH = keccak256('lens');
+    string constant NAMESPACE = 'lens';
+    bytes32 constant NAMESPACE_HASH = keccak256(bytes(NAMESPACE));
 
-    // TODO: In future we might replace ProfileId with a struct that contains the tokenId and the collection
-    // V1
-    // mapping(uint256 handleId => uint256 profileId) handleToProfile;
-    // mapping(uint256 profileId => uint256 handleId) profileToHandle;
-    // TODO: In future we can add support for multiple handles per profile while still keeping the default handle above
-    // mapping(uint256 profileId => mapping(uint256 handleId => bool linked)) profileToHandles;
-
-    // NOTE: We don't need to construct/initialize ERC721 name/symbol as we use immutable constants for the first version.
-    constructor(address lensHub, address owner) ERC721('', '') {
-        LENS_HUB = lensHub;
+    constructor(address owner) ERC721('', '') {
         Ownable._transferOwnership(owner);
     }
 
     function name() public pure override returns (string memory) {
-        return '.lens Handles';
+        return string.concat(symbol(), ' Handles');
     }
 
     function symbol() public pure override returns (string memory) {
-        return '.lens';
+        return string.concat('.', NAMESPACE);
     }
 
     function initialize(address owner) external initializer {
         Ownable._transferOwnership(owner);
     }
 
-    function mintHandle(address to, string calldata handle) external onlyOwner returns (uint256) {
-        bytes32 handleHash = keccak256(abi.encodePacked(handle, NAMESPACE_HASH));
+    /**
+     * @notice Mints a handle in the given namespace.
+     * @notice A handle is composed by a local name and a namespace, separated by dot.
+     * @notice Example: `john.lens` is a handle composed by the local name `john` and the namespace `lens`.
+     *
+     * @param to The address where the handle is being minted to.
+     * @param localName The local name of the handle.
+     */
+    function mintHandle(address to, string calldata localName) external onlyOwner returns (uint256) {
+        bytes32 localNameHash = keccak256(bytes(localName));
+        bytes32 handleHash = keccak256(abi.encodePacked(localNameHash, NAMESPACE_HASH));
         uint256 handleId = uint256(handleHash);
         _mint(to, handleId);
+        emit Events.HandleMinted(localName, NAMESPACE, handleId, to);
         return handleId;
+    }
+
+    function burn(uint256 tokenId) external {
+        _burn(tokenId);
+    }
+
+    function getNamespace() external pure returns (string memory) {
+        return NAMESPACE;
+    }
+
+    function getNamespaceHash() external pure returns (bytes32) {
+        return NAMESPACE_HASH;
     }
 
     //////////////////////////////////////
