@@ -37,9 +37,9 @@ interface ICollectModule {
      * @param collectorProfileId The LensHub profile token ID of the collector's profile.
      * @param collectorProfileOwner The collector address.
      * @param executor The collector or an approved delegated executor.
-     * @param referrerProfileId TODO
-     * @param referrerPubId TODO
-     * @param referrerPubType TODO
+     * @param referrerProfileIds TODO
+     * @param referrerPubIds TODO
+     * @param referrerPubTypes TODO
      * @param data Arbitrary data __passed from the collector!__ to be decoded.
      */
     function processCollect(
@@ -48,9 +48,9 @@ interface ICollectModule {
         uint256 collectorProfileId,
         address collectorProfileOwner,
         address executor,
-        uint256 referrerProfileId,
-        uint256 referrerPubId,
-        Types.PublicationType referrerPubType,
+        uint256[] calldata referrerProfileIds,
+        uint256[] calldata referrerPubIds,
+        Types.PublicationType[] calldata referrerPubTypes,
         bytes calldata data
     ) external;
 }

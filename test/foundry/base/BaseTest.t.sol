@@ -140,8 +140,8 @@ contract BaseTest is TestSetup {
         string memory contentURI,
         uint256 pointedProfileId,
         uint256 pointedPubId,
-        uint256 referrerProfileId,
-        uint256 referrerPubId,
+        uint256[] memory referrerProfileIds,
+        uint256[] memory referrerPubIds,
         bytes memory referenceModuleData,
         address collectModule,
         bytes memory collectModuleInitData,
@@ -157,8 +157,8 @@ contract BaseTest is TestSetup {
                 keccak256(bytes(contentURI)),
                 pointedProfileId,
                 pointedPubId,
-                referrerProfileId,
-                referrerPubId,
+                referrerProfileIds,
+                referrerPubIds,
                 keccak256(referenceModuleData),
                 collectModule,
                 keccak256(collectModuleInitData),
@@ -182,8 +182,8 @@ contract BaseTest is TestSetup {
                 contentURI: commentParams.contentURI,
                 pointedProfileId: commentParams.pointedProfileId,
                 pointedPubId: commentParams.pointedPubId,
-                referrerProfileId: 0,
-                referrerPubId: 0,
+                referrerProfileIds: _toUint256Array(0),
+                referrerPubIds: _toUint256Array(0),
                 referenceModuleData: commentParams.referenceModuleData,
                 collectModule: commentParams.collectModule,
                 collectModuleInitData: commentParams.collectModuleInitData,
@@ -198,8 +198,8 @@ contract BaseTest is TestSetup {
         uint256 profileId,
         uint256 pointedProfileId,
         uint256 pointedPubId,
-        uint256 referrerProfileId,
-        uint256 referrerPubId,
+        uint256[] memory referrerProfileIds,
+        uint256[] memory referrerPubIds,
         bytes memory referenceModuleData,
         uint256 nonce,
         uint256 deadline
@@ -210,8 +210,8 @@ contract BaseTest is TestSetup {
                 profileId,
                 pointedProfileId,
                 pointedPubId,
-                referrerProfileId,
-                referrerPubId,
+                referrerProfileIds,
+                referrerPubIds,
                 keccak256(referenceModuleData),
                 nonce,
                 deadline
@@ -230,8 +230,8 @@ contract BaseTest is TestSetup {
                 profileId: mirrorParams.profileId,
                 pointedProfileId: mirrorParams.pointedProfileId,
                 pointedPubId: mirrorParams.pointedPubId,
-                referrerProfileId: 0,
-                referrerPubId: 0,
+                referrerProfileIds: _toUint256Array(0),
+                referrerPubIds: _toUint256Array(0),
                 referenceModuleData: mirrorParams.referenceModuleData,
                 nonce: nonce,
                 deadline: deadline
@@ -280,8 +280,8 @@ contract BaseTest is TestSetup {
                 collectParams.publicationCollectedProfileId,
                 collectParams.publicationCollectedId,
                 collectParams.collectorProfileId,
-                collectParams.referrerProfileId,
-                collectParams.referrerPubId,
+                collectParams.referrerProfileIds,
+                collectParams.referrerPubIds,
                 keccak256(collectParams.collectModuleData),
                 nonce,
                 deadline
@@ -314,58 +314,6 @@ contract BaseTest is TestSetup {
         return Types.EIP712Signature(signer, v, r, s, deadline);
     }
 
-    function _toUint256Array(uint256 n) internal pure returns (uint256[] memory) {
-        uint256[] memory ret = new uint256[](1);
-        ret[0] = n;
-        return ret;
-    }
-
-    function _toUint256Array(uint256 n0, uint256 n1) internal pure returns (uint256[] memory) {
-        uint256[] memory ret = new uint256[](2);
-        ret[0] = n0;
-        ret[1] = n1;
-        return ret;
-    }
-
-    function _toBytesArray(bytes memory b) internal pure returns (bytes[] memory) {
-        bytes[] memory ret = new bytes[](1);
-        ret[0] = b;
-        return ret;
-    }
-
-    function _toBytesArray(bytes memory b0, bytes memory b1) internal pure returns (bytes[] memory) {
-        bytes[] memory ret = new bytes[](2);
-        ret[0] = b0;
-        ret[1] = b1;
-        return ret;
-    }
-
-    function _toBoolArray(bool b) internal pure returns (bool[] memory) {
-        bool[] memory ret = new bool[](1);
-        ret[0] = b;
-        return ret;
-    }
-
-    function _toBoolArray(bool b0, bool b1) internal pure returns (bool[] memory) {
-        bool[] memory ret = new bool[](2);
-        ret[0] = b0;
-        ret[1] = b1;
-        return ret;
-    }
-
-    function _toAddressArray(address a) internal pure returns (address[] memory) {
-        address[] memory ret = new address[](1);
-        ret[0] = a;
-        return ret;
-    }
-
-    function _toAddressArray(address a0, address a1) internal pure returns (address[] memory) {
-        address[] memory ret = new address[](2);
-        ret[0] = a0;
-        ret[1] = a1;
-        return ret;
-    }
-
     // Internal functions
 
     function _post(Types.PostParams memory postParams) internal returns (uint256) {
@@ -392,8 +340,8 @@ contract BaseTest is TestSetup {
                     publicationCollectedProfileId: publisherProfileId,
                     publicationCollectedId: pubId,
                     collectorProfileId: collectorProfileId,
-                    referrerProfileId: 0,
-                    referrerPubId: 0,
+                    referrerProfileIds: _toUint256Array(0),
+                    referrerPubIds: _toUint256Array(0),
                     collectModuleData: data
                 })
             );

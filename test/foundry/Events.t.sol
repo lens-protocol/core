@@ -323,8 +323,8 @@ contract EventTest is BaseTest {
             publicationCollectedProfileId: newProfileId, // TODO: Replace with proper ProfileID
             publicationCollectedId: expectedPubId,
             collectorProfileId: newProfileId,
-            referrerProfileId: 0,
-            referrerPubId: 0,
+            referrerProfileIds: _toUint256Array(0),
+            referrerPubIds: _toUint256Array(0),
             collectModuleData: '',
             timestamp: block.timestamp
         });
@@ -335,8 +335,8 @@ contract EventTest is BaseTest {
                 publicationCollectedProfileId: newProfileId,
                 publicationCollectedId: expectedPubId,
                 collectorProfileId: newProfileId,
-                referrerProfileId: 0,
-                referrerPubId: 0,
+                referrerProfileIds: _toUint256Array(0),
+                referrerPubIds: _toUint256Array(0),
                 collectModuleData: ''
             })
         );
@@ -389,8 +389,8 @@ contract EventTest is BaseTest {
             publicationCollectedProfileId: newProfileId, // TODO: Replace with proper ProfileID
             publicationCollectedId: postId,
             collectorProfileId: newProfileId,
-            referrerProfileId: newProfileId,
-            referrerPubId: mirrorId,
+            referrerProfileIds: _toUint256Array(newProfileId),
+            referrerPubIds: _toUint256Array(mirrorId),
             collectModuleData: '',
             timestamp: block.timestamp
         });
@@ -401,8 +401,8 @@ contract EventTest is BaseTest {
                 publicationCollectedProfileId: newProfileId,
                 publicationCollectedId: postId,
                 collectorProfileId: newProfileId,
-                referrerProfileId: newProfileId,
-                referrerPubId: mirrorId,
+                referrerProfileIds: _toUint256Array(newProfileId),
+                referrerPubIds: _toUint256Array(mirrorId),
                 collectModuleData: ''
             })
         );

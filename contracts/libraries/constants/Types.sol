@@ -174,8 +174,8 @@ library Types {
         string contentURI;
         uint256 pointedProfileId;
         uint256 pointedPubId;
-        uint256 referrerProfileId;
-        uint256 referrerPubId;
+        uint256[] referrerProfileIds;
+        uint256[] referrerPubIds;
         bytes referenceModuleData;
         address collectModule;
         bytes collectModuleInitData;
@@ -203,8 +203,8 @@ library Types {
         string contentURI;
         uint256 pointedProfileId;
         uint256 pointedPubId;
-        uint256 referrerProfileId;
-        uint256 referrerPubId;
+        uint256[] referrerProfileIds;
+        uint256[] referrerPubIds;
         bytes referenceModuleData;
         address collectModule;
         bytes collectModuleInitData;
@@ -232,8 +232,8 @@ library Types {
         string contentURI;
         uint256 pointedProfileId;
         uint256 pointedPubId;
-        uint256 referrerProfileId;
-        uint256 referrerPubId;
+        uint256[] referrerProfileIds;
+        uint256[] referrerPubIds;
         bytes referenceModuleData;
         address collectModule;
         bytes collectModuleInitData;
@@ -253,8 +253,8 @@ library Types {
         uint256 profileId;
         uint256 pointedProfileId;
         uint256 pointedPubId;
-        uint256 referrerProfileId;
-        uint256 referrerPubId;
+        uint256[] referrerProfileIds;
+        uint256[] referrerPubIds;
         bytes referenceModuleData;
     }
 
@@ -272,8 +272,8 @@ library Types {
         uint256 publicationCollectedProfileId;
         uint256 publicationCollectedId;
         uint256 collectorProfileId;
-        uint256 referrerProfileId;
-        uint256 referrerPubId;
+        uint256[] referrerProfileIds;
+        uint256[] referrerPubIds;
         bytes collectModuleData;
     }
 

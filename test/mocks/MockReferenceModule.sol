@@ -25,9 +25,9 @@ contract MockReferenceModule is IReferenceModule {
         address executor,
         uint256 pointedProfileId,
         uint256 pointedPubId,
-        uint256 referrerProfileId,
-        uint256 referrerPubId,
-        Types.PublicationType referrerPubType,
+        uint256[] calldata referrerProfileIds,
+        uint256[] calldata referrerPubIds,
+        Types.PublicationType[] calldata referrerPubTypes,
         bytes calldata data
     ) external override {}
 
@@ -36,9 +36,9 @@ contract MockReferenceModule is IReferenceModule {
         address executor,
         uint256 pointedProfileId,
         uint256 pointedPubId,
-        uint256 referrerProfileId,
-        uint256 referrerPubId,
-        Types.PublicationType referrerPubType,
+        uint256[] calldata referrerProfileIds,
+        uint256[] calldata referrerPubIds,
+        Types.PublicationType[] calldata referrerPubTypes,
         bytes calldata data
     ) external override {}
 
@@ -47,9 +47,9 @@ contract MockReferenceModule is IReferenceModule {
         address executor,
         uint256 pointedProfileId,
         uint256 pointedPubId,
-        uint256 referrerProfileId,
-        uint256 referrerPubId,
-        Types.PublicationType referrerPubType,
+        uint256[] calldata referrerProfileIds,
+        uint256[] calldata referrerPubIds,
+        Types.PublicationType[] calldata referrerPubTypes,
         bytes calldata data
     ) external override {}
 }

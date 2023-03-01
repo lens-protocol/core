@@ -38,9 +38,9 @@ contract MockCollectModule is ICollectModule {
         uint256 collectorProfileId,
         address collectorProfileOwner,
         address executor,
-        uint256 referrerProfileId,
-        uint256 referrerPubId,
-        Types.PublicationType referrerPubType,
+        uint256[] calldata referrerProfileIds,
+        uint256[] calldata referrerPubId,
+        Types.PublicationType[] calldata referrerPubTypes,
         bytes calldata data
     ) external view override {}
 }

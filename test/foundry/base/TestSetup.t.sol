@@ -16,13 +16,14 @@ import {Events} from 'contracts/libraries/constants/Events.sol';
 import {ProfileTokenURILib} from 'contracts/libraries/ProfileTokenURILib.sol';
 import {MockCollectModule} from 'test/mocks/MockCollectModule.sol';
 import {MockReferenceModule} from 'test/mocks/MockReferenceModule.sol';
-import 'test/foundry/helpers/ForkManagement.sol';
-import 'test/foundry/Constants.sol';
+import {ForkManagement} from 'test/foundry/helpers/ForkManagement.sol';
+import {ArrayHelpers} from 'test/foundry/helpers/ArrayHelpers.sol';
 import {Typehash} from 'contracts/libraries/constants/Typehash.sol';
 import {MetaTxLib} from 'contracts/libraries/MetaTxLib.sol';
 import {StorageLib} from 'contracts/libraries/StorageLib.sol';
+import 'test/foundry/Constants.sol';
 
-contract TestSetup is Test, ForkManagement {
+contract TestSetup is Test, ForkManagement, ArrayHelpers {
     using stdJson for string;
 
     uint256 newProfileId; // TODO: We should get rid of this everywhere, and create dedicated profiles instead (see Follow tests)
@@ -239,8 +240,8 @@ contract TestSetup is Test, ForkManagement {
             contentURI: MOCK_URI,
             pointedProfileId: newProfileId,
             pointedPubId: FIRST_PUB_ID,
-            referrerProfileId: 0,
-            referrerPubId: 0,
+            referrerProfileIds: _toUint256Array(0),
+            referrerPubIds: _toUint256Array(0),
             referenceModuleData: '',
             collectModule: address(mockCollectModule),
             collectModuleInitData: abi.encode(1),
@@ -253,8 +254,8 @@ contract TestSetup is Test, ForkManagement {
             profileId: newProfileId,
             pointedProfileId: newProfileId,
             pointedPubId: FIRST_PUB_ID,
-            referrerProfileId: 0,
-            referrerPubId: 0,
+            referrerProfileIds: _toUint256Array(0),
+            referrerPubIds: _toUint256Array(0),
             referenceModuleData: ''
         });
 
@@ -263,8 +264,8 @@ contract TestSetup is Test, ForkManagement {
             publicationCollectedProfileId: newProfileId,
             publicationCollectedId: FIRST_PUB_ID,
             collectorProfileId: newProfileId,
-            referrerProfileId: 0,
-            referrerPubId: 0,
+            referrerProfileIds: _toUint256Array(0),
+            referrerPubIds: _toUint256Array(0),
             collectModuleData: ''
         });
 

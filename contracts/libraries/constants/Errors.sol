@@ -62,6 +62,8 @@ library Errors {
     error NotFollowing();
     error SelfFollow();
     error InvalidReferrer();
+    error DuplicatedReferrer();
+    error DeprecaredModulesOnlySupportOneReferrer();
     error InvalidPointedPub();
 
     // Module Errors

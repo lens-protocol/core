@@ -183,29 +183,32 @@ library MetaTxLib {
         Types.EIP712Signature calldata signature,
         Types.CommentParams calldata commentParams
     ) internal {
-        uint256 nonce = _getAndIncrementNonce(signature.signer);
-        uint256 deadline = signature.deadline;
+        bytes memory abiEncodedFirstHalf;
+        {
+            abiEncodedFirstHalf = abi.encode(
+                Typehash.COMMENT,
+                commentParams.profileId,
+                keccak256(bytes(commentParams.contentURI)),
+                commentParams.pointedProfileId,
+                commentParams.pointedPubId,
+                commentParams.referrerProfileIds,
+                commentParams.referrerPubIds
+            );
+        }
+        bytes memory abiEncodedSecondHalf;
+        {
+            abiEncodedSecondHalf = abi.encode(
+                keccak256(commentParams.referenceModuleData),
+                commentParams.collectModule,
+                keccak256(commentParams.collectModuleInitData),
+                commentParams.referenceModule,
+                keccak256(commentParams.referenceModuleInitData),
+                _getAndIncrementNonce(signature.signer),
+                signature.deadline
+            );
+        }
         _validateRecoveredAddress(
-            _calculateDigest(
-                keccak256(
-                    abi.encode(
-                        Typehash.COMMENT,
-                        commentParams.profileId,
-                        keccak256(bytes(commentParams.contentURI)),
-                        commentParams.pointedProfileId,
-                        commentParams.pointedPubId,
-                        commentParams.referrerProfileId,
-                        commentParams.referrerPubId,
-                        keccak256(commentParams.referenceModuleData),
-                        commentParams.collectModule,
-                        keccak256(commentParams.collectModuleInitData),
-                        commentParams.referenceModule,
-                        keccak256(commentParams.referenceModuleInitData),
-                        nonce,
-                        deadline
-                    )
-                )
-            ),
+            _calculateDigest(keccak256(abi.encodePacked(abiEncodedFirstHalf, abiEncodedSecondHalf))),
             signature
         );
     }
@@ -214,29 +217,32 @@ library MetaTxLib {
         Types.EIP712Signature calldata signature,
         Types.QuoteParams calldata quoteParams
     ) internal {
-        uint256 nonce = _getAndIncrementNonce(signature.signer);
-        uint256 deadline = signature.deadline;
+        bytes memory abiEncodedFirstHalf;
+        {
+            abiEncodedFirstHalf = abi.encode(
+                Typehash.COMMENT,
+                quoteParams.profileId,
+                keccak256(bytes(quoteParams.contentURI)),
+                quoteParams.pointedProfileId,
+                quoteParams.pointedPubId,
+                keccak256(quoteParams.referenceModuleData),
+                quoteParams.referrerProfileIds
+            );
+        }
+        bytes memory abiEncodedSecondHalf;
+        {
+            abiEncodedSecondHalf = abi.encode(
+                quoteParams.referrerPubIds,
+                quoteParams.collectModule,
+                keccak256(quoteParams.collectModuleInitData),
+                quoteParams.referenceModule,
+                keccak256(quoteParams.referenceModuleInitData),
+                _getAndIncrementNonce(signature.signer),
+                signature.deadline
+            );
+        }
         _validateRecoveredAddress(
-            _calculateDigest(
-                keccak256(
-                    abi.encode(
-                        Typehash.COMMENT,
-                        quoteParams.profileId,
-                        keccak256(bytes(quoteParams.contentURI)),
-                        quoteParams.pointedProfileId,
-                        quoteParams.pointedPubId,
-                        keccak256(quoteParams.referenceModuleData),
-                        quoteParams.referrerProfileId,
-                        quoteParams.referrerPubId,
-                        quoteParams.collectModule,
-                        keccak256(quoteParams.collectModuleInitData),
-                        quoteParams.referenceModule,
-                        keccak256(quoteParams.referenceModuleInitData),
-                        nonce,
-                        deadline
-                    )
-                )
-            ),
+            _calculateDigest(keccak256(abi.encodePacked(abiEncodedFirstHalf, abiEncodedSecondHalf))),
             signature
         );
     }
@@ -253,8 +259,8 @@ library MetaTxLib {
                         mirrorParams.profileId,
                         mirrorParams.pointedProfileId,
                         mirrorParams.pointedPubId,
-                        mirrorParams.referrerProfileId,
-                        mirrorParams.referrerPubId,
+                        mirrorParams.referrerProfileIds,
+                        mirrorParams.referrerPubIds,
                         keccak256(mirrorParams.referenceModuleData),
                         _getAndIncrementNonce(signature.signer),
                         signature.deadline
@@ -368,8 +374,8 @@ library MetaTxLib {
                         collectParams.publicationCollectedProfileId,
                         collectParams.publicationCollectedId,
                         collectParams.collectorProfileId,
-                        collectParams.referrerProfileId,
-                        collectParams.referrerPubId,
+                        collectParams.referrerProfileIds,
+                        collectParams.referrerPubIds,
                         keccak256(collectParams.collectModuleData),
                         _getAndIncrementNonce(signature.signer),
                         signature.deadline
