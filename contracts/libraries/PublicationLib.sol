@@ -226,44 +226,24 @@ library PublicationLib {
 
     function _asReferencePubParams(
         Types.QuoteParams calldata quoteParams
-    ) private pure returns (Types.ReferencePubParams memory) {
-        return
-            Types.ReferencePubParams({
-                profileId: quoteParams.profileId,
-                contentURI: quoteParams.contentURI,
-                pointedProfileId: quoteParams.pointedProfileId,
-                pointedPubId: quoteParams.pointedPubId,
-                referrerProfileIds: quoteParams.referrerProfileIds,
-                referrerPubIds: quoteParams.referrerPubIds,
-                referenceModuleData: quoteParams.referenceModuleData,
-                collectModule: quoteParams.collectModule,
-                collectModuleInitData: quoteParams.collectModuleInitData,
-                referenceModule: quoteParams.referenceModule,
-                referenceModuleInitData: quoteParams.referenceModuleInitData
-            });
+    ) private pure returns (Types.ReferencePubParams calldata referencePubParams) {
+        // We use assembly to cast the types keeping the params in calldata, as they match the fields.
+        assembly {
+            referencePubParams := quoteParams
+        }
     }
 
     function _asReferencePubParams(
         Types.CommentParams calldata commentParams
-    ) private pure returns (Types.ReferencePubParams memory) {
-        return
-            Types.ReferencePubParams({
-                profileId: commentParams.profileId,
-                contentURI: commentParams.contentURI,
-                pointedProfileId: commentParams.pointedProfileId,
-                pointedPubId: commentParams.pointedPubId,
-                referrerProfileIds: commentParams.referrerProfileIds,
-                referrerPubIds: commentParams.referrerPubIds,
-                referenceModuleData: commentParams.referenceModuleData,
-                collectModule: commentParams.collectModule,
-                collectModuleInitData: commentParams.collectModuleInitData,
-                referenceModule: commentParams.referenceModule,
-                referenceModuleInitData: commentParams.referenceModuleInitData
-            });
+    ) private pure returns (Types.ReferencePubParams calldata referencePubParams) {
+        // We use assembly to cast the types keeping the params in calldata, as they match the fields.
+        assembly {
+            referencePubParams := commentParams
+        }
     }
 
     function _createReferencePublication(
-        Types.ReferencePubParams memory referencePubParams,
+        Types.ReferencePubParams calldata referencePubParams,
         address transactionExecutor,
         Types.PublicationType referencePubType
     ) private returns (uint256, bytes memory, bytes memory, Types.PublicationType[] memory) {
@@ -331,16 +311,18 @@ library PublicationLib {
             .referenceModule;
         if (refModule != address(0)) {
             try
-                IReferenceModule(refModule).processComment({
-                    profileId: commentParams.profileId,
-                    executor: transactionExecutor,
-                    pointedProfileId: commentParams.pointedProfileId,
-                    pointedPubId: commentParams.pointedPubId,
-                    referrerProfileIds: commentParams.referrerProfileIds,
-                    referrerPubIds: commentParams.referrerPubIds,
-                    referrerPubTypes: referrerPubTypes,
-                    data: commentParams.referenceModuleData
-                })
+                IReferenceModule(refModule).processComment(
+                    Types.ProcessCommentParams({
+                        profileId: commentParams.profileId,
+                        executor: transactionExecutor,
+                        pointedProfileId: commentParams.pointedProfileId,
+                        pointedPubId: commentParams.pointedPubId,
+                        referrerProfileIds: commentParams.referrerProfileIds,
+                        referrerPubIds: commentParams.referrerPubIds,
+                        referrerPubTypes: referrerPubTypes,
+                        data: commentParams.referenceModuleData
+                    })
+                )
             {} catch (bytes memory err) {
                 assembly {
                     /// Equivalent to reverting with the returned error selector if
@@ -378,16 +360,18 @@ library PublicationLib {
             .referenceModule;
         if (refModule != address(0)) {
             try
-                IReferenceModule(refModule).processQuote({
-                    profileId: quoteParams.profileId,
-                    executor: transactionExecutor,
-                    pointedProfileId: quoteParams.pointedProfileId,
-                    pointedPubId: quoteParams.pointedPubId,
-                    referrerProfileIds: quoteParams.referrerProfileIds,
-                    referrerPubIds: quoteParams.referrerPubIds,
-                    referrerPubTypes: referrerPubTypes,
-                    data: quoteParams.referenceModuleData
-                })
+                IReferenceModule(refModule).processQuote(
+                    Types.ProcessQuoteParams({
+                        profileId: quoteParams.profileId,
+                        executor: transactionExecutor,
+                        pointedProfileId: quoteParams.pointedProfileId,
+                        pointedPubId: quoteParams.pointedPubId,
+                        referrerProfileIds: quoteParams.referrerProfileIds,
+                        referrerPubIds: quoteParams.referrerPubIds,
+                        referrerPubTypes: referrerPubTypes,
+                        data: quoteParams.referenceModuleData
+                    })
+                )
             {} catch (bytes memory err) {
                 assembly {
                     /// Equivalent to reverting with the returned error selector if
@@ -426,14 +410,16 @@ library PublicationLib {
         if (refModule != address(0)) {
             try
                 IReferenceModule(refModule).processMirror(
-                    mirrorParams.profileId,
-                    transactionExecutor,
-                    mirrorParams.pointedProfileId,
-                    mirrorParams.pointedPubId,
-                    mirrorParams.referrerProfileIds,
-                    mirrorParams.referrerPubIds,
-                    referrerPubTypes,
-                    mirrorParams.referenceModuleData
+                    Types.ProcessMirrorParams({
+                        profileId: mirrorParams.profileId,
+                        executor: transactionExecutor,
+                        pointedProfileId: mirrorParams.pointedProfileId,
+                        pointedPubId: mirrorParams.pointedPubId,
+                        referrerProfileIds: mirrorParams.referrerProfileIds,
+                        referrerPubIds: mirrorParams.referrerPubIds,
+                        referrerPubTypes: referrerPubTypes,
+                        data: mirrorParams.referenceModuleData
+                    })
                 )
             {} catch (bytes memory err) {
                 assembly {

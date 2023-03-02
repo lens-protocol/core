@@ -277,6 +277,51 @@ library Types {
         bytes collectModuleData;
     }
 
+    struct ProcessCollectParams {
+        uint256 publicationCollectedProfileId;
+        uint256 publicationCollectedId;
+        uint256 collectorProfileId;
+        address collectorProfileOwner;
+        address executor;
+        uint256[] referrerProfileIds;
+        uint256[] referrerPubIds;
+        Types.PublicationType[] referrerPubTypes;
+        bytes data;
+    }
+
+    struct ProcessCommentParams {
+        uint256 profileId;
+        address executor;
+        uint256 pointedProfileId;
+        uint256 pointedPubId;
+        uint256[] referrerProfileIds;
+        uint256[] referrerPubIds;
+        Types.PublicationType[] referrerPubTypes;
+        bytes data;
+    }
+
+    struct ProcessQuoteParams {
+        uint256 profileId;
+        address executor;
+        uint256 pointedProfileId;
+        uint256 pointedPubId;
+        uint256[] referrerProfileIds;
+        uint256[] referrerPubIds;
+        Types.PublicationType[] referrerPubTypes;
+        bytes data;
+    }
+
+    struct ProcessMirrorParams {
+        uint256 profileId;
+        address executor;
+        uint256 pointedProfileId;
+        uint256 pointedPubId;
+        uint256[] referrerProfileIds;
+        uint256[] referrerPubIds;
+        Types.PublicationType[] referrerPubTypes;
+        bytes data;
+    }
+
     /**
      * @notice A struct containing a profile's delegated executors configuration.
      *

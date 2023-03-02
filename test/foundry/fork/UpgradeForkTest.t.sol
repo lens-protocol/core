@@ -312,8 +312,8 @@ contract UpgradeForkTest is BaseTest {
                     publicationCollectedProfileId: profileId,
                     publicationCollectedId: 1,
                     collectorProfileId: profileId,
-                    referrerProfileIds: _toUint256Array(0),
-                    referrerPubIds: _toUint256Array(0),
+                    referrerProfileIds: _emptyUint256Array(),
+                    referrerPubIds: _emptyUint256Array(),
                     collectModuleData: ''
                 })
             );
@@ -322,8 +322,8 @@ contract UpgradeForkTest is BaseTest {
                     publicationCollectedProfileId: profileId,
                     publicationCollectedId: 2,
                     collectorProfileId: profileId,
-                    referrerProfileIds: _toUint256Array(0),
-                    referrerPubIds: _toUint256Array(0),
+                    referrerProfileIds: _emptyUint256Array(),
+                    referrerPubIds: _emptyUint256Array(),
                     collectModuleData: ''
                 })
             );
@@ -332,8 +332,8 @@ contract UpgradeForkTest is BaseTest {
                     publicationCollectedProfileId: profileId,
                     publicationCollectedId: 3,
                     collectorProfileId: profileId,
-                    referrerProfileIds: _toUint256Array(0),
-                    referrerPubIds: _toUint256Array(0),
+                    referrerProfileIds: _emptyUint256Array(),
+                    referrerPubIds: _emptyUint256Array(),
                     collectModuleData: ''
                 })
             );
@@ -416,8 +416,8 @@ contract UpgradeForkTest is BaseTest {
             contentURI: MOCK_URI,
             pointedProfileId: newProfileId,
             pointedPubId: 1,
-            referrerProfileIds: _toUint256Array(0),
-            referrerPubIds: _toUint256Array(0),
+            referrerProfileIds: _emptyUint256Array(),
+            referrerPubIds: _emptyUint256Array(),
             referenceModuleData: '',
             collectModule: address(0),
             collectModuleInitData: abi.encode(1),
@@ -430,8 +430,8 @@ contract UpgradeForkTest is BaseTest {
             profileId: 0,
             pointedProfileId: newProfileId,
             pointedPubId: 1,
-            referrerProfileIds: _toUint256Array(0),
-            referrerPubIds: _toUint256Array(0),
+            referrerProfileIds: _emptyUint256Array(),
+            referrerPubIds: _emptyUint256Array(),
             referenceModuleData: ''
         });
     }

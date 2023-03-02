@@ -179,72 +179,106 @@ library MetaTxLib {
         );
     }
 
+    // We need this to deal with stack too deep:
+    struct ReferenceParamsForAbiEncode {
+        bytes32 typehash;
+        uint256 profileId;
+        bytes32 contentURIHash;
+        uint256 pointedProfileId;
+        uint256 pointedPubId;
+        uint256[] referrerProfileIds;
+        uint256[] referrerPubIds;
+        bytes32 referenceModuleDataHash;
+        address collectModule;
+        bytes32 collectModuleInitDataHash;
+        address referenceModule;
+        bytes32 referenceModuleInitDataHash;
+        uint256 nonce;
+        uint256 deadline;
+    }
+
+    function abiEncode(
+        ReferenceParamsForAbiEncode memory referenceParamsForAbiEncode
+    ) internal pure returns (bytes memory) {
+        return
+            abi.encode(
+                referenceParamsForAbiEncode.typehash,
+                referenceParamsForAbiEncode.profileId,
+                referenceParamsForAbiEncode.contentURIHash,
+                referenceParamsForAbiEncode.pointedProfileId,
+                referenceParamsForAbiEncode.pointedPubId,
+                referenceParamsForAbiEncode.referrerProfileIds,
+                referenceParamsForAbiEncode.referrerPubIds,
+                referenceParamsForAbiEncode.referenceModuleDataHash,
+                referenceParamsForAbiEncode.collectModule,
+                referenceParamsForAbiEncode.collectModuleInitDataHash,
+                referenceParamsForAbiEncode.referenceModule,
+                referenceParamsForAbiEncode.referenceModuleInitDataHash,
+                referenceParamsForAbiEncode.nonce,
+                referenceParamsForAbiEncode.deadline
+            );
+    }
+
     function validateCommentSignature(
         Types.EIP712Signature calldata signature,
         Types.CommentParams calldata commentParams
     ) internal {
-        bytes memory abiEncodedFirstHalf;
-        {
-            abiEncodedFirstHalf = abi.encode(
+        bytes32 contentURIHash = keccak256(bytes(commentParams.contentURI));
+        bytes32 referenceModuleDataHash = keccak256(commentParams.referenceModuleData);
+        bytes32 collectModuleInitDataHash = keccak256(commentParams.collectModuleInitData);
+        bytes32 referenceModuleInitDataHash = keccak256(commentParams.referenceModuleInitData);
+        uint256 nonce = _getAndIncrementNonce(signature.signer);
+        uint256 deadline = signature.deadline;
+        bytes memory encodedAbi = abiEncode(
+            ReferenceParamsForAbiEncode(
                 Typehash.COMMENT,
                 commentParams.profileId,
-                keccak256(bytes(commentParams.contentURI)),
+                contentURIHash,
                 commentParams.pointedProfileId,
                 commentParams.pointedPubId,
                 commentParams.referrerProfileIds,
-                commentParams.referrerPubIds
-            );
-        }
-        bytes memory abiEncodedSecondHalf;
-        {
-            abiEncodedSecondHalf = abi.encode(
-                keccak256(commentParams.referenceModuleData),
+                commentParams.referrerPubIds,
+                referenceModuleDataHash,
                 commentParams.collectModule,
-                keccak256(commentParams.collectModuleInitData),
+                collectModuleInitDataHash,
                 commentParams.referenceModule,
-                keccak256(commentParams.referenceModuleInitData),
-                _getAndIncrementNonce(signature.signer),
-                signature.deadline
-            );
-        }
-        _validateRecoveredAddress(
-            _calculateDigest(keccak256(abi.encodePacked(abiEncodedFirstHalf, abiEncodedSecondHalf))),
-            signature
+                referenceModuleInitDataHash,
+                nonce,
+                deadline
+            )
         );
+        _validateRecoveredAddress(_calculateDigest(keccak256(encodedAbi)), signature);
     }
 
     function validateQuoteSignature(
         Types.EIP712Signature calldata signature,
         Types.QuoteParams calldata quoteParams
     ) internal {
-        bytes memory abiEncodedFirstHalf;
-        {
-            abiEncodedFirstHalf = abi.encode(
-                Typehash.COMMENT,
+        bytes32 contentURIHash = keccak256(bytes(quoteParams.contentURI));
+        bytes32 referenceModuleDataHash = keccak256(quoteParams.referenceModuleData);
+        bytes32 collectModuleInitDataHash = keccak256(quoteParams.collectModuleInitData);
+        bytes32 referenceModuleInitDataHash = keccak256(quoteParams.referenceModuleInitData);
+        uint256 nonce = _getAndIncrementNonce(signature.signer);
+        uint256 deadline = signature.deadline;
+        bytes memory encodedAbi = abiEncode(
+            ReferenceParamsForAbiEncode(
+                Typehash.QUOTE,
                 quoteParams.profileId,
-                keccak256(bytes(quoteParams.contentURI)),
+                contentURIHash,
                 quoteParams.pointedProfileId,
                 quoteParams.pointedPubId,
-                keccak256(quoteParams.referenceModuleData),
-                quoteParams.referrerProfileIds
-            );
-        }
-        bytes memory abiEncodedSecondHalf;
-        {
-            abiEncodedSecondHalf = abi.encode(
+                quoteParams.referrerProfileIds,
                 quoteParams.referrerPubIds,
+                referenceModuleDataHash,
                 quoteParams.collectModule,
-                keccak256(quoteParams.collectModuleInitData),
+                collectModuleInitDataHash,
                 quoteParams.referenceModule,
-                keccak256(quoteParams.referenceModuleInitData),
-                _getAndIncrementNonce(signature.signer),
-                signature.deadline
-            );
-        }
-        _validateRecoveredAddress(
-            _calculateDigest(keccak256(abi.encodePacked(abiEncodedFirstHalf, abiEncodedSecondHalf))),
-            signature
+                referenceModuleInitDataHash,
+                nonce,
+                deadline
+            )
         );
+        _validateRecoveredAddress(_calculateDigest(keccak256(encodedAbi)), signature);
     }
 
     function validateMirrorSignature(

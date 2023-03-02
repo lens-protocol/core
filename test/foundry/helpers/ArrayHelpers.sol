@@ -2,6 +2,11 @@
 pragma solidity ^0.8.13;
 
 contract ArrayHelpers {
+    function _emptyUint256Array() internal pure returns (uint256[] memory) {
+        uint256[] memory ret = new uint256[](0);
+        return ret;
+    }
+
     function _toUint256Array(uint256 n) internal pure returns (uint256[] memory) {
         uint256[] memory ret = new uint256[](1);
         ret[0] = n;

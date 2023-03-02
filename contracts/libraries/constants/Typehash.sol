@@ -8,7 +8,7 @@ library Typehash {
 
     bytes32 constant CHANGE_DELEGATED_EXECUTORS_CONFIG = keccak256('ChangeDelegatedExecutorsConfig(uint256 delegatorProfileId,address[] executors,bool[] approvals,uint64 configNumber,bool switchToGivenConfig,uint256 nonce,uint256 deadline)');
 
-    bytes32 constant COLLECT = keccak256('Collect(uint256 publicationCollectedProfileId,uint256 publicationCollectedId,uint256 collectorProfileId,uint256[] referrerProfileId,uint256[] referrerPubId,bytes collectModuleData,uint256 nonce,uint256 deadline)');
+    bytes32 constant COLLECT = keccak256('Collect(uint256 publicationCollectedProfileId,uint256 publicationCollectedId,uint256 collectorProfileId,uint256[] referrerProfileIds,uint256[] referrerPubIds,bytes collectModuleData,uint256 nonce,uint256 deadline)');
 
     bytes32 constant COMMENT = keccak256('Comment(uint256 profileId,string contentURI,uint256 pointedProfileId,uint256 pointedPubId,uint256[] referrerProfileIds,uint256[] referrerPubIds,bytes referenceModuleData,address collectModule,bytes collectModuleInitData,address referenceModule,bytes referenceModuleInitData,uint256 nonce,uint256 deadline)');
 
@@ -22,7 +22,7 @@ library Typehash {
 
     bytes32 constant POST = keccak256('Post(uint256 profileId,string contentURI,address collectModule,bytes collectModuleInitData,address referenceModule,bytes referenceModuleInitData,uint256 nonce,uint256 deadline)');
 
-    bytes32 constant QUOTE = keccak256('Quote(uint256 profileId,string contentURI,uint256 pointedProfileId,uint256 pointedPubId,uint256[] referrerProfileId,uint256[] referrerPubId,bytes referenceModuleData,address collectModule,bytes collectModuleInitData,address referenceModule,bytes referenceModuleInitData,uint256 nonce,uint256 deadline)');
+    bytes32 constant QUOTE = keccak256('Quote(uint256 profileId,string contentURI,uint256 pointedProfileId,uint256 pointedPubId,uint256[] referrerProfileIds,uint256[] referrerPubIds,bytes referenceModuleData,address collectModule,bytes collectModuleInitData,address referenceModule,bytes referenceModuleInitData,uint256 nonce,uint256 deadline)');
 
     bytes32 constant SET_BLOCK_STATUS = keccak256('SetBlockStatus(uint256 byProfileId,uint256[] idsOfProfilesToSetBlockStatus,bool[] blockStatus,uint256 nonce,uint256 deadline)');
 

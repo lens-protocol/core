@@ -98,17 +98,19 @@ library CollectLib {
         ProcessCollectParams memory processCollectParams
     ) private {
         try
-            ICollectModule(processCollectParams.collectModule).processCollect({
-                publicationCollectedProfileId: collectParams.publicationCollectedProfileId,
-                publicationCollectedId: collectParams.publicationCollectedId,
-                collectorProfileId: collectParams.collectorProfileId,
-                collectorProfileOwner: processCollectParams.collectorProfileOwner,
-                executor: processCollectParams.transactionExecutor,
-                referrerProfileIds: collectParams.referrerProfileIds,
-                referrerPubIds: collectParams.referrerPubIds,
-                referrerPubTypes: processCollectParams.referrerPubTypes,
-                data: collectParams.collectModuleData
-            })
+            ICollectModule(processCollectParams.collectModule).processCollect(
+                Types.ProcessCollectParams({
+                    publicationCollectedProfileId: collectParams.publicationCollectedProfileId,
+                    publicationCollectedId: collectParams.publicationCollectedId,
+                    collectorProfileId: collectParams.collectorProfileId,
+                    collectorProfileOwner: processCollectParams.collectorProfileOwner,
+                    executor: processCollectParams.transactionExecutor,
+                    referrerProfileIds: collectParams.referrerProfileIds,
+                    referrerPubIds: collectParams.referrerPubIds,
+                    referrerPubTypes: processCollectParams.referrerPubTypes,
+                    data: collectParams.collectModuleData
+                })
+            )
         {} catch (bytes memory err) {
             assembly {
                 // Equivalent to reverting with the returned error selector if

@@ -240,8 +240,8 @@ contract TestSetup is Test, ForkManagement, ArrayHelpers {
             contentURI: MOCK_URI,
             pointedProfileId: newProfileId,
             pointedPubId: FIRST_PUB_ID,
-            referrerProfileIds: _toUint256Array(0),
-            referrerPubIds: _toUint256Array(0),
+            referrerProfileIds: _emptyUint256Array(),
+            referrerPubIds: _emptyUint256Array(),
             referenceModuleData: '',
             collectModule: address(mockCollectModule),
             collectModuleInitData: abi.encode(1),
@@ -254,8 +254,8 @@ contract TestSetup is Test, ForkManagement, ArrayHelpers {
             profileId: newProfileId,
             pointedProfileId: newProfileId,
             pointedPubId: FIRST_PUB_ID,
-            referrerProfileIds: _toUint256Array(0),
-            referrerPubIds: _toUint256Array(0),
+            referrerProfileIds: _emptyUint256Array(),
+            referrerPubIds: _emptyUint256Array(),
             referenceModuleData: ''
         });
 
@@ -264,8 +264,8 @@ contract TestSetup is Test, ForkManagement, ArrayHelpers {
             publicationCollectedProfileId: newProfileId,
             publicationCollectedId: FIRST_PUB_ID,
             collectorProfileId: newProfileId,
-            referrerProfileIds: _toUint256Array(0),
-            referrerPubIds: _toUint256Array(0),
+            referrerProfileIds: _emptyUint256Array(),
+            referrerPubIds: _emptyUint256Array(),
             collectModuleData: ''
         });
 

@@ -323,8 +323,8 @@ contract EventTest is BaseTest {
             publicationCollectedProfileId: newProfileId, // TODO: Replace with proper ProfileID
             publicationCollectedId: expectedPubId,
             collectorProfileId: newProfileId,
-            referrerProfileIds: _toUint256Array(0),
-            referrerPubIds: _toUint256Array(0),
+            referrerProfileIds: _emptyUint256Array(),
+            referrerPubIds: _emptyUint256Array(),
             collectModuleData: '',
             timestamp: block.timestamp
         });
@@ -335,8 +335,8 @@ contract EventTest is BaseTest {
                 publicationCollectedProfileId: newProfileId,
                 publicationCollectedId: expectedPubId,
                 collectorProfileId: newProfileId,
-                referrerProfileIds: _toUint256Array(0),
-                referrerPubIds: _toUint256Array(0),
+                referrerProfileIds: _emptyUint256Array(),
+                referrerPubIds: _emptyUint256Array(),
                 collectModuleData: ''
             })
         );

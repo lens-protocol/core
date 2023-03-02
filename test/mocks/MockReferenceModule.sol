@@ -20,36 +20,9 @@ contract MockReferenceModule is IReferenceModule {
         return new bytes(0);
     }
 
-    function processComment(
-        uint256 profileId,
-        address executor,
-        uint256 pointedProfileId,
-        uint256 pointedPubId,
-        uint256[] calldata referrerProfileIds,
-        uint256[] calldata referrerPubIds,
-        Types.PublicationType[] calldata referrerPubTypes,
-        bytes calldata data
-    ) external override {}
+    function processComment(Types.ProcessCommentParams calldata processCommentParams) external override {}
 
-    function processQuote(
-        uint256 profileId,
-        address executor,
-        uint256 pointedProfileId,
-        uint256 pointedPubId,
-        uint256[] calldata referrerProfileIds,
-        uint256[] calldata referrerPubIds,
-        Types.PublicationType[] calldata referrerPubTypes,
-        bytes calldata data
-    ) external override {}
+    function processQuote(Types.ProcessQuoteParams calldata processQuoteParams) external override {}
 
-    function processMirror(
-        uint256 profileId,
-        address executor,
-        uint256 pointedProfileId,
-        uint256 pointedPubId,
-        uint256[] calldata referrerProfileIds,
-        uint256[] calldata referrerPubIds,
-        Types.PublicationType[] calldata referrerPubTypes,
-        bytes calldata data
-    ) external override {}
+    function processMirror(Types.ProcessMirrorParams calldata processMirrorParams) external override {}
 }

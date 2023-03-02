@@ -182,8 +182,8 @@ contract BaseTest is TestSetup {
                 contentURI: commentParams.contentURI,
                 pointedProfileId: commentParams.pointedProfileId,
                 pointedPubId: commentParams.pointedPubId,
-                referrerProfileIds: _toUint256Array(0),
-                referrerPubIds: _toUint256Array(0),
+                referrerProfileIds: _emptyUint256Array(),
+                referrerPubIds: _emptyUint256Array(),
                 referenceModuleData: commentParams.referenceModuleData,
                 collectModule: commentParams.collectModule,
                 collectModuleInitData: commentParams.collectModuleInitData,
@@ -230,8 +230,8 @@ contract BaseTest is TestSetup {
                 profileId: mirrorParams.profileId,
                 pointedProfileId: mirrorParams.pointedProfileId,
                 pointedPubId: mirrorParams.pointedPubId,
-                referrerProfileIds: _toUint256Array(0),
-                referrerPubIds: _toUint256Array(0),
+                referrerProfileIds: _emptyUint256Array(),
+                referrerPubIds: _emptyUint256Array(),
                 referenceModuleData: mirrorParams.referenceModuleData,
                 nonce: nonce,
                 deadline: deadline
@@ -340,8 +340,8 @@ contract BaseTest is TestSetup {
                     publicationCollectedProfileId: publisherProfileId,
                     publicationCollectedId: pubId,
                     collectorProfileId: collectorProfileId,
-                    referrerProfileIds: _toUint256Array(0),
-                    referrerPubIds: _toUint256Array(0),
+                    referrerProfileIds: _emptyUint256Array(),
+                    referrerPubIds: _emptyUint256Array(),
                     collectModuleData: data
                 })
             );

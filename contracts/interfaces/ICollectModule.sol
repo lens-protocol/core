@@ -29,28 +29,5 @@ interface ICollectModule {
         bytes calldata data
     ) external returns (bytes memory);
 
-    /**
-     * @notice Processes a collect action for a given publication, this can only be called by the hub.
-     *
-     * @param publicationCollectedProfileId The token ID of the profile associated with the publication being collected.
-     * @param publicationCollectedId The LensHub publication ID associated with the publication being collected.
-     * @param collectorProfileId The LensHub profile token ID of the collector's profile.
-     * @param collectorProfileOwner The collector address.
-     * @param executor The collector or an approved delegated executor.
-     * @param referrerProfileIds TODO
-     * @param referrerPubIds TODO
-     * @param referrerPubTypes TODO
-     * @param data Arbitrary data __passed from the collector!__ to be decoded.
-     */
-    function processCollect(
-        uint256 publicationCollectedProfileId,
-        uint256 publicationCollectedId,
-        uint256 collectorProfileId,
-        address collectorProfileOwner,
-        address executor,
-        uint256[] calldata referrerProfileIds,
-        uint256[] calldata referrerPubIds,
-        Types.PublicationType[] calldata referrerPubTypes,
-        bytes calldata data
-    ) external;
+    function processCollect(Types.ProcessCollectParams calldata processCollectParams) external;
 }
