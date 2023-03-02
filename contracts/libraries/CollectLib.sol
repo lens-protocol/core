@@ -30,7 +30,7 @@ library CollectLib {
         address collectNFTImpl
     ) internal returns (uint256) {
         address collectModule;
-        Types.PublicationType referrerPubType;
+        Types.PublicationType[] memory referrerPubTypes;
         uint256 tokenId;
         {
             Types.Publication storage _collectedPublication = StorageLib.getPublication(
@@ -42,9 +42,10 @@ library CollectLib {
                 // Doesn't have collectModule, thus it cannot be a collected (a mirror or non-existent).
                 revert Errors.CollectNotAllowed();
             }
-            referrerPubType = ValidationLib.validateReferrerAndGetReferrerPubType(
-                collectParams.referrerProfileId,
-                collectParams.referrerPubId,
+
+            referrerPubTypes = ValidationLib.validateReferrersAndGetReferrersPubTypes(
+                collectParams.referrerProfileIds,
+                collectParams.referrerPubIds,
                 collectParams.publicationCollectedProfileId,
                 collectParams.publicationCollectedId
             );
@@ -57,13 +58,15 @@ library CollectLib {
             tokenId = ICollectNFT(collectNFT).mint(collectorProfileOwner);
         }
 
-        _processCollect({
-            collectParams: collectParams,
-            transactionExecutor: transactionExecutor,
-            collectorProfileOwner: collectorProfileOwner,
-            referrerPubType: referrerPubType,
-            collectModule: collectModule
-        });
+        _processCollect(
+            collectParams,
+            ProcessCollectParams({
+                transactionExecutor: transactionExecutor,
+                collectorProfileOwner: collectorProfileOwner,
+                referrerPubTypes: referrerPubTypes,
+                collectModule: collectModule
+            })
+        );
 
         return tokenId;
     }
@@ -82,50 +85,69 @@ library CollectLib {
         return collectNFT;
     }
 
+    // Stack too deep, so we need to use a struct.
+    struct ProcessCollectParams {
+        address transactionExecutor;
+        address collectorProfileOwner;
+        Types.PublicationType[] referrerPubTypes;
+        address collectModule;
+    }
+
     function _processCollect(
         Types.CollectParams calldata collectParams,
-        address transactionExecutor,
-        address collectorProfileOwner,
-        Types.PublicationType referrerPubType,
-        address collectModule
+        ProcessCollectParams memory processCollectParams
     ) private {
         try
-            ICollectModule(collectModule).processCollect({
-                publicationCollectedProfileId: collectParams.publicationCollectedProfileId,
-                publicationCollectedId: collectParams.publicationCollectedId,
-                collectorProfileId: collectParams.collectorProfileId,
-                collectorProfileOwner: collectorProfileOwner,
-                executor: transactionExecutor,
-                referrerProfileId: collectParams.referrerProfileId,
-                referrerPubId: collectParams.referrerPubId,
-                referrerPubType: referrerPubType,
-                data: collectParams.collectModuleData
-            })
+            ICollectModule(processCollectParams.collectModule).processCollect(
+                Types.ProcessCollectParams({
+                    publicationCollectedProfileId: collectParams.publicationCollectedProfileId,
+                    publicationCollectedId: collectParams.publicationCollectedId,
+                    collectorProfileId: collectParams.collectorProfileId,
+                    collectorProfileOwner: processCollectParams.collectorProfileOwner,
+                    executor: processCollectParams.transactionExecutor,
+                    referrerProfileIds: collectParams.referrerProfileIds,
+                    referrerPubIds: collectParams.referrerPubIds,
+                    referrerPubTypes: processCollectParams.referrerPubTypes,
+                    data: collectParams.collectModuleData
+                })
+            )
         {} catch (bytes memory err) {
             assembly {
-                /// Equivalent to reverting with the returned error selector if
-                /// the length is not zero.
+                // Equivalent to reverting with the returned error selector if
+                // the length is not zero.
                 let length := mload(err)
                 if iszero(iszero(length)) {
                     revert(add(err, 32), length)
                 }
             }
-            if (collectorProfileOwner != transactionExecutor) revert Errors.ExecutorInvalid();
-            IDeprecatedCollectModule(collectModule).processCollect(
+            if (processCollectParams.collectorProfileOwner != processCollectParams.transactionExecutor) {
+                revert Errors.ExecutorInvalid();
+            }
+            uint256 referrerProfileId;
+            uint256 referrerPubId;
+            if (collectParams.referrerProfileIds.length > 0) {
+                if (collectParams.referrerProfileIds.length > 1) {
+                    // Deprecated modules only support one referrer.
+                    revert Errors.DeprecaredModulesOnlySupportOneReferrer();
+                }
+                // Only one referral was passed.
+                referrerProfileId = collectParams.referrerProfileIds[0];
+                referrerPubId = collectParams.referrerPubIds[0];
+            }
+            IDeprecatedCollectModule(processCollectParams.collectModule).processCollect(
                 collectParams.publicationCollectedProfileId,
-                collectorProfileOwner,
-                collectParams.referrerProfileId,
-                collectParams.referrerPubId,
+                processCollectParams.collectorProfileOwner,
+                referrerProfileId,
+                referrerPubId,
                 collectParams.collectModuleData
             );
         }
-
         emit Events.Collected({
             publicationCollectedProfileId: collectParams.publicationCollectedProfileId,
             publicationCollectedId: collectParams.publicationCollectedId,
             collectorProfileId: collectParams.collectorProfileId,
-            referrerProfileId: collectParams.referrerProfileId,
-            referrerPubId: collectParams.referrerPubId,
+            referrerProfileIds: collectParams.referrerProfileIds,
+            referrerPubIds: collectParams.referrerPubIds,
             collectModuleData: collectParams.collectModuleData,
             timestamp: block.timestamp
         });
@@ -140,11 +162,7 @@ library CollectLib {
      *
      * @return address The address of the deployed Collect NFT contract.
      */
-    function _deployCollectNFT(
-        uint256 profileId,
-        uint256 pubId,
-        address collectNFTImpl
-    ) private returns (address) {
+    function _deployCollectNFT(uint256 profileId, uint256 pubId, address collectNFTImpl) private returns (address) {
         address collectNFT = Clones.clone(collectNFTImpl);
 
         string memory collectNFTName = string(

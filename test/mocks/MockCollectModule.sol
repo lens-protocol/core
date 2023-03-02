@@ -32,15 +32,5 @@ contract MockCollectModule is ICollectModule {
      * @dev Processes a collect by:
      *  1. Ensuring the collector is a follower, if needed
      */
-    function processCollect(
-        uint256 publicationCollectedProfileId,
-        uint256 publicationCollectedId,
-        uint256 collectorProfileId,
-        address collectorProfileOwner,
-        address executor,
-        uint256 referrerProfileId,
-        uint256 referrerPubId,
-        Types.PublicationType referrerPubType,
-        bytes calldata data
-    ) external view override {}
+    function processCollect(Types.ProcessCollectParams calldata processCollectParams) external view override {}
 }

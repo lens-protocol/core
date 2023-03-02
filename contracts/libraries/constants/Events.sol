@@ -309,8 +309,8 @@ library Events {
      * @param publicationCollectedProfileId The profile token ID of the profile whose publication is being collected.
      * @param publicationCollectedId The publication ID of the publication being collected.
      * @param collectorProfileId The address collecting the publication.
-     * @param referrerProfileId TODO
-     * @param referrerPubId TODO
+     * @param referrerProfileIds TODO
+     * @param referrerPubIds TODO
      * @param collectModuleData The data passed to the collect module.
      * @param timestamp The current block timestamp.
      */
@@ -318,8 +318,8 @@ library Events {
         uint256 publicationCollectedProfileId,
         uint256 publicationCollectedId,
         uint256 collectorProfileId,
-        uint256 referrerProfileId,
-        uint256 referrerPubId,
+        uint256[] referrerProfileIds,
+        uint256[] referrerPubIds,
         bytes collectModuleData,
         uint256 timestamp
     );
