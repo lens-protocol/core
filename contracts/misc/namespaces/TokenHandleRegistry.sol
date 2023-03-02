@@ -43,6 +43,9 @@ contract TokenHandleRegistry is VersionedInitializable {
     address immutable LENS_HUB;
     address immutable LENS_HANDLES;
 
+    // Migration constants
+    address immutable migrator;
+
     /// 1to1 mapping for now, can be replaced to support multiple handles per token if using mappings
     /// NOTE: Using bytes32 _handleHash(Handle) and _tokenHash(Token) as keys because solidity doesn't support structs as keys.
     mapping(bytes32 handle => Token token) handleToToken;
@@ -78,12 +81,23 @@ contract TokenHandleRegistry is VersionedInitializable {
     }
 
     // NOTE: We don't need whitelisting yet as we use immutable constants for the first version.
-    constructor(address lensHub, address lensHandles) {
+    constructor(address lensHub, address lensHandles, address migratorAddress) {
         LENS_HUB = lensHub;
         LENS_HANDLES = lensHandles;
+        migrator = migratorAddress;
     }
 
     function initialize() external initializer {}
+
+    // V1->V2 Migration function
+    function migrationLinkHandleWithToken(uint256 handleId, uint256 tokenId) external {
+        require(msg.sender == migrator, 'Only migrator');
+        Handle memory handle = Handle({collection: LENS_HANDLES, id: handleId});
+        Token memory token = Token({collection: LENS_HUB, id: tokenId});
+        handleToToken[_handleHash(handle)] = token;
+        tokenToHandle[_tokenHash(token)] = handle;
+        emit Events.HandleLinked(handle, token);
+    }
 
     // NOTE: Simplified interfaces for the first version - Namespace and LensHub are constants
     // TODO: Custom logic for linking/unlinking handles and tokens (modules, with bytes passed)

@@ -3,27 +3,21 @@
 pragma solidity ^0.8.19;
 
 import {ERC721} from '@openzeppelin/contracts/token/ERC721/ERC721.sol';
-import {Ownable} from '@openzeppelin/contracts/access/Ownable.sol';
 import {VersionedInitializable} from 'contracts/base/upgradeability/VersionedInitializable.sol';
+import {ImmutableOwnable} from 'contracts/misc/migrations/ImmutableOwnable.sol';
 
 library Events {
     event HandleMinted(string handle, string namespace, uint256 handleId, address to);
 }
 
-// TODO list:
-// 1. Code a contract that can batch-mint those handles
-// 2. Code a contract that can batch-link handles to profiles
-
-contract LensHandles is ERC721, Ownable, VersionedInitializable {
+contract LensHandles is ERC721, VersionedInitializable, ImmutableOwnable {
     // Constant for upgradeability purposes, see VersionedInitializable. Do not confuse with EIP-712 revision number.
     uint256 internal constant REVISION = 1;
 
     string constant NAMESPACE = 'lens';
     bytes32 constant NAMESPACE_HASH = keccak256(bytes(NAMESPACE));
 
-    constructor(address owner) ERC721('', '') {
-        Ownable._transferOwnership(owner);
-    }
+    constructor(address owner, address lensHub) ERC721('', '') ImmutableOwnable(owner, lensHub) {}
 
     function name() public pure override returns (string memory) {
         return string.concat(symbol(), ' Handles');
@@ -33,9 +27,7 @@ contract LensHandles is ERC721, Ownable, VersionedInitializable {
         return string.concat('.', NAMESPACE);
     }
 
-    function initialize(address owner) external initializer {
-        Ownable._transferOwnership(owner);
-    }
+    function initialize() external initializer {}
 
     /**
      * @notice Mints a handle in the given namespace.
@@ -45,7 +37,7 @@ contract LensHandles is ERC721, Ownable, VersionedInitializable {
      * @param to The address where the handle is being minted to.
      * @param localName The local name of the handle.
      */
-    function mintHandle(address to, string calldata localName) external onlyOwner returns (uint256) {
+    function mintHandle(address to, string calldata localName) external onlyOwnerOrHub returns (uint256) {
         bytes32 localNameHash = keccak256(bytes(localName));
         bytes32 handleHash = keccak256(abi.encodePacked(localNameHash, NAMESPACE_HASH));
         uint256 handleId = uint256(handleHash);

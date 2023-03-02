@@ -22,6 +22,10 @@ import {StorageLib} from 'contracts/libraries/StorageLib.sol';
 import {FollowLib} from 'contracts/libraries/FollowLib.sol';
 import {CollectLib} from 'contracts/libraries/CollectLib.sol';
 
+///////////////////////////////////// Migration imports ////////////////////////////////////
+import {LensHandles} from 'contracts/misc/namespaces/LensHandles.sol';
+import {TokenHandleRegistry} from 'contracts/misc/namespaces/TokenHandleRegistry.sol';
+
 /**
  * @title LensHub
  * @author Lens Protocol
@@ -41,6 +45,13 @@ contract LensHub is LensBaseERC721, VersionedInitializable, LensMultiState, Lens
     address internal immutable FOLLOW_NFT_IMPL;
     address internal immutable COLLECT_NFT_IMPL;
 
+    ///////////////////////////////////// Migration constants ////////////////////////////////////
+    uint256 internal constant LENS_PROTOCOL_PROFILE_ID = 1;
+    address internal immutable migrator;
+    LensHandles internal immutable lensHandles;
+    TokenHandleRegistry internal immutable tokenHandleRegistry;
+    ///////////////////////////////// End of migration constants /////////////////////////////////
+
     /**
      * @dev This modifier reverts if the caller is not the configured governance address.
      */
@@ -55,11 +66,20 @@ contract LensHub is LensBaseERC721, VersionedInitializable, LensMultiState, Lens
      * @param followNFTImpl The follow NFT implementation address.
      * @param collectNFTImpl The collect NFT implementation address.
      */
-    constructor(address followNFTImpl, address collectNFTImpl) {
+    constructor(
+        address followNFTImpl,
+        address collectNFTImpl,
+        address migratorAddress,
+        address lensHandlesAddress,
+        address tokenHandleRegistryAddress
+    ) {
         if (followNFTImpl == address(0)) revert Errors.InitParamsInvalid();
         if (collectNFTImpl == address(0)) revert Errors.InitParamsInvalid();
         FOLLOW_NFT_IMPL = followNFTImpl;
         COLLECT_NFT_IMPL = collectNFTImpl;
+        migrator = migratorAddress;
+        lensHandles = LensHandles(lensHandlesAddress);
+        tokenHandleRegistry = TokenHandleRegistry(tokenHandleRegistryAddress);
     }
 
     /// @inheritdoc ILensHub
@@ -119,6 +139,49 @@ contract LensHub is LensBaseERC721, VersionedInitializable, LensMultiState, Lens
         _collectModuleWhitelisted[collectModule] = whitelist;
         emit Events.CollectModuleWhitelisted(collectModule, whitelist, block.timestamp);
     }
+
+    ///////////////////////////////////////////
+    ///      V1->V2 MIGRATION FUNCTIONS     ///
+    ///////////////////////////////////////////
+
+    function migrateProfile(uint256 profileId, bytes32 handleHash) external {
+        require(msg.sender == migrator, 'Only migrator');
+        delete _profileById[profileId].handleDeprecated;
+        delete _profileIdByHandleHash[handleHash];
+    }
+
+    event ProfileMigrated(uint256 profileId, address profileDestination, string handle, uint256 handleId);
+
+    function _migrateProfilePublic(uint256 profileId) internal {
+        address profileOwner = StorageLib.getTokenData(profileId).owner;
+        if (profileOwner != address(0)) {
+            string memory handle = _profileById[profileId].handleDeprecated;
+            bytes32 handleHash = keccak256(bytes(handle));
+            // "lensprotocol" is the only edge case without .lens suffix:
+            if (profileId != LENS_PROTOCOL_PROFILE_ID) {
+                assembly {
+                    let handle_length := mload(handle)
+                    mstore(handle, sub(handle_length, 5)) // Cut 5 chars (.lens) from the end
+                }
+            }
+            delete _profileById[profileId].handleDeprecated;
+            delete _profileIdByHandleHash[handleHash];
+
+            uint256 handleId = lensHandles.mintHandle(profileOwner, handle);
+            tokenHandleRegistry.migrationLinkHandleWithToken(handleId, profileId);
+            emit ProfileMigrated(profileId, profileOwner, handle, handleId);
+        }
+    }
+
+    function batchMigrateProfiles(uint256[] calldata profileIds) external {
+        for (uint256 i = 0; i < profileIds.length; i++) {
+            _migrateProfilePublic(profileIds[i]);
+        }
+    }
+
+    ///////////////////////////////////////////
+    ///  END OF V1->V2 MIGRATION FUNCTIONS  ///
+    ///////////////////////////////////////////
 
     ///////////////////////////////////////////
     ///        PROFILE OWNER FUNCTIONS      ///
