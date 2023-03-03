@@ -11,11 +11,14 @@ import {ModuleGlobals} from 'contracts/misc/ModuleGlobals.sol';
 import {LensHandles} from 'contracts/misc/namespaces/LensHandles.sol';
 import {TokenHandleRegistry} from 'contracts/misc/namespaces/TokenHandleRegistry.sol';
 import {Types} from 'contracts/libraries/constants/Types.sol';
+import {IERC721} from '@openzeppelin/contracts/token/ERC721/IERC721.sol';
+import {IERC721Enumerable} from '@openzeppelin/contracts/token/ERC721/extensions/IERC721Enumerable.sol';
 
 contract MigrationsTest is Test, ForkManagement {
     using stdJson for string;
 
     uint256 internal constant LENS_PROTOCOL_PROFILE_ID = 1;
+    uint256 internal constant ENUMERABLE_GET_FIRST_PROFILE = 0;
 
     bytes32 constant PROXY_IMPLEMENTATION_STORAGE_SLOT =
         bytes32(uint256(keccak256('eip1967.proxy.implementation')) - 1);
@@ -38,6 +41,8 @@ contract MigrationsTest is Test, ForkManagement {
     LensHub hub;
     ModuleGlobals moduleGlobals;
 
+    uint256[] followerProfileIds = new uint256[](10);
+
     function loadBaseAddresses(string memory targetEnv) internal virtual {
         console.log('targetEnv:', targetEnv);
 
@@ -48,7 +53,7 @@ contract MigrationsTest is Test, ForkManagement {
 
         console.log('Hub:', address(hub));
 
-        address followNFTAddr = hub.getFollowNFTImpl();
+        // address followNFTAddr = hub.getFollowNFTImpl();
         address collectNFTAddr = hub.getCollectNFTImpl();
 
         address hubImplAddr = address(uint160(uint256(vm.load(hubProxyAddr, PROXY_IMPLEMENTATION_STORAGE_SLOT))));
@@ -56,7 +61,6 @@ contract MigrationsTest is Test, ForkManagement {
 
         proxyAdmin = address(uint160(uint256(vm.load(hubProxyAddr, ADMIN_SLOT))));
 
-        followNFT = FollowNFT(followNFTAddr);
         collectNFT = CollectNFT(collectNFTAddr);
         hubAsProxy = TransparentUpgradeableProxy(payable(address(hub)));
         moduleGlobals = ModuleGlobals(json.readAddress(string(abi.encodePacked('.', targetEnv, '.ModuleGlobals'))));
@@ -79,18 +83,53 @@ contract MigrationsTest is Test, ForkManagement {
         tokenHandleRegistry = new TokenHandleRegistry(address(hub), lensHandlesAddress);
         assertEq(address(tokenHandleRegistry), tokenHandleRegistryAddress);
 
+        followNFT = new FollowNFT(address(hub));
+
         hubImpl = new LensHub(address(followNFT), address(collectNFT), lensHandlesAddress, tokenHandleRegistryAddress);
         vm.stopPrank();
 
+        // TODO: This can be moved and split
+        uint256 idOfProfileFollowed = 8;
+        address followNFTAddress = hub.getFollowNFT(idOfProfileFollowed);
+        for (uint256 i = 0; i < 10; i++) {
+            uint256 followTokenId = i + 1;
+            address followerOwner = IERC721(followNFTAddress).ownerOf(followTokenId);
+            uint256 followerProfileId = IERC721Enumerable(address(hub)).tokenOfOwnerByIndex(
+                followerOwner,
+                ENUMERABLE_GET_FIRST_PROFILE
+            );
+            followerProfileIds[i] = followerProfileId;
+        }
+
+        // TODO: Upgrade can be moved to a separate function
         vm.prank(proxyAdmin);
         hubAsProxy.upgradeTo(address(hubImpl));
     }
 
-    function testMigrationsPublic() public onlyFork {
+    function testProfileMigration() public onlyFork {
         uint256[] memory profileIds = new uint256[](10);
         for (uint256 i = 0; i < 10; i++) {
             profileIds[i] = i + 1;
         }
         hub.batchMigrateProfiles(profileIds);
+    }
+
+    function testFollowMigration() public onlyFork {
+        uint256 idOfProfileFollowed = 8;
+
+        address followNFTAddress = hub.getFollowNFT(idOfProfileFollowed);
+
+        uint256[] memory idsOfProfileFollowed = new uint256[](10);
+        address[] memory followNFTAddresses = new address[](10);
+        uint256[] memory followTokenIds = new uint256[](10);
+        for (uint256 i = 0; i < 10; i++) {
+            uint256 followTokenId = i + 1;
+
+            idsOfProfileFollowed[i] = idOfProfileFollowed;
+            followNFTAddresses[i] = followNFTAddress;
+            followTokenIds[i] = followTokenId;
+        }
+
+        hub.batchMigrateFollows(followerProfileIds, idsOfProfileFollowed, followNFTAddresses, followTokenIds);
     }
 }

@@ -179,4 +179,12 @@ interface IFollowNFT {
      * @return uint256 The count of the followers of the profile targeted in this contract.
      */
     function getFollowerCount() external view returns (uint256);
+
+    // V1-V2 Follower Migration function
+    function migrate(
+        uint256 followerProfileId,
+        address followerProfileOwner,
+        uint256 idOfProfileFollowed,
+        uint256 followTokenId
+    ) external returns (uint48);
 }
