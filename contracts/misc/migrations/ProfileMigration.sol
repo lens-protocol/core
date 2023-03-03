@@ -7,6 +7,13 @@ import {LensHub} from 'contracts/LensHub.sol';
 import {LensHandles} from 'contracts/misc/namespaces/LensHandles.sol';
 import {TokenHandleRegistry} from 'contracts/misc/namespaces/TokenHandleRegistry.sol';
 
+struct ProfileMigrationData {
+    uint256 profileId;
+    address profileDestination;
+    string handle;
+    bytes32 handleHash;
+}
+
 contract ProfileMigration is Ownable {
     LensHub public immutable lensHub;
     LensHandles public immutable lensHandles;
@@ -24,13 +31,6 @@ contract ProfileMigration is Ownable {
         lensHub = LensHub(lensHubAddress);
         lensHandles = LensHandles(lensHandlesAddress);
         tokenHandleRegistry = TokenHandleRegistry(tokenHandleRegistryAddress);
-    }
-
-    struct ProfileMigrationData {
-        uint256 profileId;
-        address profileDestination;
-        string handle;
-        bytes32 handleHash;
     }
 
     // TODO: Assume we pause everything - creating, transfer, etc.

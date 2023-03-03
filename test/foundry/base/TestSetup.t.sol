@@ -64,37 +64,8 @@ contract TestSetup is Test, ForkManagement, ArrayHelpers {
     Types.MirrorParams mockMirrorParams;
     Types.CollectParams mockCollectParams;
 
-    function isEnvSet(string memory key) internal returns (bool) {
-        try vm.envString(key) {
-            return true;
-        } catch {
-            return false;
-        }
-    }
-
     constructor() {
-        // TODO: Replace with envOr when it's released
-        forkEnv = isEnvSet('TESTING_FORK') ? vm.envString('TESTING_FORK') : '';
-
         if (bytes(forkEnv).length > 0) {
-            fork = true;
-            console.log('\n\n Testing using %s fork', forkEnv);
-            loadJson();
-
-            network = getNetwork();
-
-            if (isEnvSet('FORK_BLOCK')) {
-                forkBlockNumber = vm.envUint('FORK_BLOCK');
-                vm.createSelectFork(network, forkBlockNumber);
-                console.log('Fork Block number (FIXED BLOCK):', forkBlockNumber);
-            } else {
-                vm.createSelectFork(network);
-                forkBlockNumber = block.number;
-                console.log('Fork Block number:', forkBlockNumber);
-            }
-
-            checkNetworkParams();
-
             loadBaseAddresses(forkEnv);
         } else {
             deployBaseContracts();
@@ -109,12 +80,6 @@ contract TestSetup is Test, ForkManagement, ArrayHelpers {
 
         vm.stopPrank();
         ///////////////////////////////////////// End governance actions.
-    }
-
-    // TODO: Replace with forge-std/StdJson.sol::keyExists(...) when/if this PR is approved:
-    //       https://github.com/foundry-rs/forge-std/pull/226
-    function keyExists(string memory key) internal returns (bool) {
-        return json.parseRaw(key).length > 0;
     }
 
     function loadBaseAddresses(string memory targetEnv) internal virtual {

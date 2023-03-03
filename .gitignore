@@ -24,8 +24,6 @@ coverage.json
 .coverage_contracts
 lcov*
 
-addresses.json
-
 # Compiler files
 forge-cache/
 out/

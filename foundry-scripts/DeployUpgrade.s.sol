@@ -8,31 +8,65 @@ import 'contracts/LensHub.sol';
 import 'contracts/FollowNFT.sol';
 import 'contracts/CollectNFT.sol';
 
+import 'contracts/misc/migrations/ProfileMigration.sol';
+import {LensHandles} from 'contracts/misc/namespaces/LensHandles.sol';
+import {TokenHandleRegistry} from 'contracts/misc/namespaces/TokenHandleRegistry.sol';
+
 /**
  * This script will deploy the current repository implementations, using the given environment
  * hub proxy address.
  */
 contract DeployUpgradeScript is Script {
     function run() public {
-        uint256 deployerKey = vm.envUint('DEPLOYER_KEY');
+        string memory deployerMnemonic = vm.envString('MNEMONIC');
+        uint256 deployerKey = vm.deriveKey(deployerMnemonic, 0);
         address deployer = vm.addr(deployerKey);
         address hubProxyAddr = vm.envAddress('HUB_PROXY_ADDRESS');
+
+        address owner = deployer;
+
+        LensHub hub = LensHub(hubProxyAddr);
+        address followNFTAddress = hub.getFollowNFTImpl();
+        address collectNFTAddress = hub.getCollectNFTImpl();
+
+        uint256 deployerNonce = vm.getNonce(deployer);
+
+        // Precompute needed addresss.
+        address lensHandlesAddress = computeCreateAddress(deployer, deployerNonce);
+        address migratorAddress = computeCreateAddress(deployer, deployerNonce + 1);
+        address tokenHandleRegistryAddress = computeCreateAddress(deployer, deployerNonce + 2);
 
         // Start deployments.
         vm.startBroadcast(deployerKey);
 
-        // Precompute needed addresss.
-        address followNFTAddr = computeCreateAddress(deployer, 1);
-        address collectNFTAddr = computeCreateAddress(deployer, 2);
+        LensHandles lensHandles = new LensHandles(owner, address(hub), migratorAddress);
+        console.log(address(lensHandles), lensHandlesAddress);
 
-        // Deploy implementation contracts.
-        address hubImpl = address(new LensHub(followNFTAddr, collectNFTAddr));
-        address followNFT = address(new FollowNFT(hubProxyAddr));
-        address collectNFT = address(new CollectNFT(hubProxyAddr));
+        ProfileMigration migrator = new ProfileMigration(
+            owner,
+            address(hub),
+            lensHandlesAddress,
+            tokenHandleRegistryAddress
+        );
+        console.log(address(migrator), migratorAddress);
 
-        vm.writeFile('addrs', '');
-        vm.writeLine('addrs', string(abi.encodePacked('hubImpl: ', vm.toString(hubImpl))));
-        vm.writeLine('addrs', string(abi.encodePacked('followNFT: ', vm.toString(followNFT))));
-        vm.writeLine('addrs', string(abi.encodePacked('collectNFT: ', vm.toString(collectNFT))));
+        TokenHandleRegistry tokenHandleRegistry = new TokenHandleRegistry(
+            address(hub),
+            lensHandlesAddress,
+            migratorAddress
+        );
+        console.log(address(tokenHandleRegistry), tokenHandleRegistryAddress);
+
+        address hubImpl = address(
+            new LensHub(
+                followNFTAddress,
+                collectNFTAddress,
+                migratorAddress,
+                lensHandlesAddress,
+                tokenHandleRegistryAddress
+            )
+        );
+        console.log('New hub impl:', hubImpl);
+        vm.stopBroadcast();
     }
 }

@@ -6,7 +6,7 @@ import {ERC721} from '@openzeppelin/contracts/token/ERC721/ERC721.sol';
 import {VersionedInitializable} from 'contracts/base/upgradeability/VersionedInitializable.sol';
 import {ImmutableOwnable} from 'contracts/misc/migrations/ImmutableOwnable.sol';
 
-library Events {
+library HandlesEvents {
     event HandleMinted(string handle, string namespace, uint256 handleId, address to);
 }
 
@@ -17,7 +17,11 @@ contract LensHandles is ERC721, VersionedInitializable, ImmutableOwnable {
     string constant NAMESPACE = 'lens';
     bytes32 constant NAMESPACE_HASH = keccak256(bytes(NAMESPACE));
 
-    constructor(address owner, address lensHub) ERC721('', '') ImmutableOwnable(owner, lensHub) {}
+    constructor(
+        address owner,
+        address lensHub,
+        address migrator
+    ) ERC721('', '') ImmutableOwnable(owner, lensHub, migrator) {}
 
     function name() public pure override returns (string memory) {
         return string.concat(symbol(), ' Handles');
@@ -37,12 +41,12 @@ contract LensHandles is ERC721, VersionedInitializable, ImmutableOwnable {
      * @param to The address where the handle is being minted to.
      * @param localName The local name of the handle.
      */
-    function mintHandle(address to, string calldata localName) external onlyOwnerOrHub returns (uint256) {
+    function mintHandle(address to, string calldata localName) external onlyOwnerOrHubOrMigrator returns (uint256) {
         bytes32 localNameHash = keccak256(bytes(localName));
         bytes32 handleHash = keccak256(abi.encodePacked(localNameHash, NAMESPACE_HASH));
         uint256 handleId = uint256(handleHash);
         _mint(to, handleId);
-        emit Events.HandleMinted(localName, NAMESPACE, handleId, to);
+        emit HandlesEvents.HandleMinted(localName, NAMESPACE, handleId, to);
         return handleId;
     }
 
