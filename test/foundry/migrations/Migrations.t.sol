@@ -8,7 +8,6 @@ import {LensHub} from 'contracts/LensHub.sol';
 import {FollowNFT} from 'contracts/FollowNFT.sol';
 import {TransparentUpgradeableProxy} from 'contracts/base/upgradeability/TransparentUpgradeableProxy.sol';
 import {ModuleGlobals} from 'contracts/misc/ModuleGlobals.sol';
-import 'contracts/misc/migrations/ProfileMigration.sol';
 import {LensHandles} from 'contracts/misc/namespaces/LensHandles.sol';
 import {TokenHandleRegistry} from 'contracts/misc/namespaces/TokenHandleRegistry.sol';
 import {Types} from 'contracts/libraries/constants/Types.sol';
@@ -29,7 +28,6 @@ contract MigrationsTest is Test, ForkManagement {
     address hubProxyAddr;
     address proxyAdmin;
 
-    ProfileMigration migrator;
     LensHandles lensHandles;
     TokenHandleRegistry tokenHandleRegistry;
 
@@ -71,27 +69,17 @@ contract MigrationsTest is Test, ForkManagement {
 
         // Precompute needed addresss.
         address lensHandlesAddress = computeCreateAddress(deployer, 0);
-        address migratorAddress = computeCreateAddress(deployer, 1);
-        address tokenHandleRegistryAddress = computeCreateAddress(deployer, 2);
+        address tokenHandleRegistryAddress = computeCreateAddress(deployer, 1);
 
         vm.startPrank(deployer);
 
-        lensHandles = new LensHandles(owner, address(hub), migratorAddress);
+        lensHandles = new LensHandles(owner, address(hub));
         assertEq(address(lensHandles), lensHandlesAddress);
 
-        migrator = new ProfileMigration(owner, address(hub), lensHandlesAddress, tokenHandleRegistryAddress);
-        assertEq(address(migrator), migratorAddress);
-
-        tokenHandleRegistry = new TokenHandleRegistry(address(hub), lensHandlesAddress, migratorAddress);
+        tokenHandleRegistry = new TokenHandleRegistry(address(hub), lensHandlesAddress);
         assertEq(address(tokenHandleRegistry), tokenHandleRegistryAddress);
 
-        hubImpl = new LensHub(
-            address(followNFT),
-            address(collectNFT),
-            migratorAddress,
-            lensHandlesAddress,
-            tokenHandleRegistryAddress
-        );
+        hubImpl = new LensHub(address(followNFT), address(collectNFT), lensHandlesAddress, tokenHandleRegistryAddress);
         vm.stopPrank();
 
         vm.prank(proxyAdmin);
@@ -104,32 +92,5 @@ contract MigrationsTest is Test, ForkManagement {
             profileIds[i] = i + 1;
         }
         hub.batchMigrateProfiles(profileIds);
-    }
-
-    function testMigrationsByOwner() public onlyFork {
-        ProfileMigrationData[] memory profileMigrationDatas = new ProfileMigrationData[](10);
-
-        for (uint256 i = 0; i < 10; i++) {
-            uint256 profileId = i + 1;
-            string memory handleWithLens = hub.getProfile(profileId).handleDeprecated;
-            string memory handle = hub.getProfile(profileId).handleDeprecated;
-
-            if (profileId != LENS_PROTOCOL_PROFILE_ID) {
-                assembly {
-                    let handle_length := mload(handle)
-                    mstore(handle, sub(handle_length, 5)) // Cut 5 chars (.lens) from the end
-                }
-            }
-
-            profileMigrationDatas[i] = ProfileMigrationData({
-                profileId: profileId,
-                profileDestination: hub.ownerOf(profileId),
-                handle: handle,
-                handleHash: keccak256(bytes(handleWithLens))
-            });
-        }
-
-        vm.prank(owner);
-        migrator.batchMigrateProfiles(profileMigrationDatas);
     }
 }

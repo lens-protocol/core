@@ -47,7 +47,6 @@ contract LensHub is LensBaseERC721, VersionedInitializable, LensMultiState, Lens
 
     ///////////////////////////////////// Migration constants ////////////////////////////////////
     uint256 internal constant LENS_PROTOCOL_PROFILE_ID = 1;
-    address internal immutable migrator;
     LensHandles internal immutable lensHandles;
     TokenHandleRegistry internal immutable tokenHandleRegistry;
     ///////////////////////////////// End of migration constants /////////////////////////////////
@@ -69,7 +68,6 @@ contract LensHub is LensBaseERC721, VersionedInitializable, LensMultiState, Lens
     constructor(
         address followNFTImpl,
         address collectNFTImpl,
-        address migratorAddress,
         address lensHandlesAddress,
         address tokenHandleRegistryAddress
     ) {
@@ -77,7 +75,6 @@ contract LensHub is LensBaseERC721, VersionedInitializable, LensMultiState, Lens
         if (collectNFTImpl == address(0)) revert Errors.InitParamsInvalid();
         FOLLOW_NFT_IMPL = followNFTImpl;
         COLLECT_NFT_IMPL = collectNFTImpl;
-        migrator = migratorAddress;
         lensHandles = LensHandles(lensHandlesAddress);
         tokenHandleRegistry = TokenHandleRegistry(tokenHandleRegistryAddress);
     }
@@ -144,18 +141,30 @@ contract LensHub is LensBaseERC721, VersionedInitializable, LensMultiState, Lens
     ///      V1->V2 MIGRATION FUNCTIONS     ///
     ///////////////////////////////////////////
 
-    function migrateProfile(uint256 profileId, bytes32 handleHash) external {
-        require(msg.sender == migrator, 'Only migrator');
-        delete _profileById[profileId].handleDeprecated;
-        delete _profileIdByHandleHash[handleHash];
-    }
-
     event ProfileMigrated(uint256 profileId, address profileDestination, string handle, uint256 handleId);
 
+    /**
+     * @notice Migrates a profile from V1 to V2.
+     *
+     * @dev We check if the profile exists by checking owner != address(0).
+     * @dev We check if the profile has already been migrated by checking handleDeprecated != "".
+     * @dev We check if the profile is the "lensprotocol" profile by checking profileId != 1. This is the only profile
+     *      without a .lens suffix.
+     * @dev We mint a new handle on LensHandles contract and link it to the profile in TokenHandleRegistry contract.
+     * @dev The resulting handle NFT is sent to the profile owner.
+     * @dev We emit ProfileMigrated event.
+     * @dev We do not revert in any case, as we want to allow the migration to continue even if one profile fails
+     *      (and it usually fails if already migrated or profileNFT moved).
+     *
+     * @dev Estimated gas cost of one profile migration is around 150k gas.
+     *
+     * @param profileId The profile ID to migrate.
+     */
     function _migrateProfilePublic(uint256 profileId) internal {
         address profileOwner = StorageLib.getTokenData(profileId).owner;
         if (profileOwner != address(0)) {
             string memory handle = _profileById[profileId].handleDeprecated;
+            if (bytes(handle).length == 0) return; // Already migrated
             bytes32 handleHash = keccak256(bytes(handle));
             // "lensprotocol" is the only edge case without .lens suffix:
             if (profileId != LENS_PROTOCOL_PROFILE_ID) {
@@ -164,15 +173,20 @@ contract LensHub is LensBaseERC721, VersionedInitializable, LensMultiState, Lens
                     mstore(handle, sub(handle_length, 5)) // Cut 5 chars (.lens) from the end
                 }
             }
-            delete _profileById[profileId].handleDeprecated;
-            delete _profileIdByHandleHash[handleHash];
-
             uint256 handleId = lensHandles.mintHandle(profileOwner, handle);
             tokenHandleRegistry.migrationLinkHandleWithToken(handleId, profileId);
             emit ProfileMigrated(profileId, profileOwner, handle, handleId);
+            delete _profileById[profileId].handleDeprecated;
+            delete _profileIdByHandleHash[handleHash];
         }
     }
 
+    /**
+     * @notice Migrates an array of profiles from V1 to V2. This function can be callable by anyone.
+     * We would still do the migration in batches by ourselves, but good to allow users to migrate on their own if they want to.
+     *
+     * @param profileIds The array of profile IDs to migrate.
+     */
     function batchMigrateProfiles(uint256[] calldata profileIds) external {
         for (uint256 i = 0; i < profileIds.length; i++) {
             _migrateProfilePublic(profileIds[i]);

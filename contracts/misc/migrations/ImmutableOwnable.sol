@@ -5,11 +5,9 @@ pragma solidity ^0.8.19;
 contract ImmutableOwnable {
     address immutable OWNER;
     address immutable LENS_HUB;
-    address immutable MIGRATOR;
 
     error OnlyOwner();
     error OnlyOwnerOrHub();
-    error OnlyOwnerOrHubOrMigrator();
 
     modifier onlyOwner() {
         if (msg.sender != OWNER) {
@@ -25,16 +23,8 @@ contract ImmutableOwnable {
         _;
     }
 
-    modifier onlyOwnerOrHubOrMigrator() {
-        if (msg.sender != OWNER && msg.sender != LENS_HUB && msg.sender != MIGRATOR) {
-            revert OnlyOwnerOrHubOrMigrator();
-        }
-        _;
-    }
-
-    constructor(address owner, address lensHub, address migrator) {
+    constructor(address owner, address lensHub) {
         OWNER = owner;
         LENS_HUB = lensHub;
-        MIGRATOR = migrator;
     }
 }

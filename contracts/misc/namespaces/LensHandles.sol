@@ -17,11 +17,7 @@ contract LensHandles is ERC721, VersionedInitializable, ImmutableOwnable {
     string constant NAMESPACE = 'lens';
     bytes32 constant NAMESPACE_HASH = keccak256(bytes(NAMESPACE));
 
-    constructor(
-        address owner,
-        address lensHub,
-        address migrator
-    ) ERC721('', '') ImmutableOwnable(owner, lensHub, migrator) {}
+    constructor(address owner, address lensHub) ERC721('', '') ImmutableOwnable(owner, lensHub) {}
 
     function name() public pure override returns (string memory) {
         return string.concat(symbol(), ' Handles');
@@ -41,7 +37,7 @@ contract LensHandles is ERC721, VersionedInitializable, ImmutableOwnable {
      * @param to The address where the handle is being minted to.
      * @param localName The local name of the handle.
      */
-    function mintHandle(address to, string calldata localName) external onlyOwnerOrHubOrMigrator returns (uint256) {
+    function mintHandle(address to, string calldata localName) external onlyOwnerOrHub returns (uint256) {
         bytes32 localNameHash = keccak256(bytes(localName));
         bytes32 handleHash = keccak256(abi.encodePacked(localNameHash, NAMESPACE_HASH));
         uint256 handleId = uint256(handleHash);

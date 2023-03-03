@@ -133,7 +133,7 @@ contract TestSetup is Test, ForkManagement, ArrayHelpers {
         hubProxyAddr = computeCreateAddress(deployer, 3);
 
         // Deploy implementation contracts.
-        hubImpl = new LensHub(followNFTAddr, collectNFTAddr, address(0), address(0), address(0));
+        hubImpl = new LensHub(followNFTAddr, collectNFTAddr, address(0), address(0));
         followNFT = new FollowNFT(hubProxyAddr);
         collectNFT = new CollectNFT(hubProxyAddr);
 
