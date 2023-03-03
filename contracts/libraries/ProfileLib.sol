@@ -13,7 +13,7 @@ import {IFollowNFT} from 'contracts/interfaces/IFollowNFT.sol';
 library ProfileLib {
     uint16 constant MAX_PROFILE_IMAGE_URI_LENGTH = 6000;
 
-    function ownerOf(uint256 profileId) internal view returns (address) {
+    function ownerOf(uint256 profileId) external view returns (address) {
         address profileOwner = StorageLib.getTokenData(profileId).owner;
         if (profileOwner == address(0)) {
             revert Errors.TokenDoesNotExist();
@@ -100,11 +100,7 @@ library ProfileLib {
      * @param followModule The follow module to set for the given profile, if any.
      * @param followModuleInitData The data to pass to the follow module for profile initialization.
      */
-    function setFollowModule(
-        uint256 profileId,
-        address followModule,
-        bytes calldata followModuleInitData
-    ) external {
+    function setFollowModule(uint256 profileId, address followModule, bytes calldata followModuleInitData) external {
         StorageLib.getProfile(profileId).followModule = followModule;
         bytes memory followModuleReturnData;
         if (followModule != address(0)) {
@@ -145,7 +141,7 @@ library ProfileLib {
         uint256 byProfileId,
         uint256[] calldata idsOfProfilesToSetBlockStatus,
         bool[] calldata blockStatus
-    ) internal {
+    ) external {
         if (idsOfProfilesToSetBlockStatus.length != blockStatus.length) {
             revert Errors.ArrayMismatch();
         }
@@ -225,7 +221,7 @@ library ProfileLib {
         );
     }
 
-    function isExecutorApproved(uint256 delegatorProfileId, address executor) internal view returns (bool) {
+    function isExecutorApproved(uint256 delegatorProfileId, address executor) external view returns (bool) {
         Types.DelegatedExecutorsConfig storage _delegatedExecutorsConfig = StorageLib.getDelegatedExecutorsConfig(
             delegatorProfileId
         );

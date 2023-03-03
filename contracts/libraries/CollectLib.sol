@@ -28,7 +28,7 @@ library CollectLib {
         address transactionExecutor,
         address collectorProfileOwner,
         address collectNFTImpl
-    ) internal returns (uint256) {
+    ) external returns (uint256) {
         address collectModule;
         Types.PublicationType[] memory referrerPubTypes;
         uint256 tokenId;

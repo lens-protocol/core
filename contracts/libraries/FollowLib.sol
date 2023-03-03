@@ -18,7 +18,7 @@ library FollowLib {
         uint256[] calldata idsOfProfilesToFollow,
         uint256[] calldata followTokenIds,
         bytes[] calldata followModuleDatas
-    ) internal returns (uint256[] memory) {
+    ) external returns (uint256[] memory) {
         if (
             idsOfProfilesToFollow.length != followTokenIds.length ||
             idsOfProfilesToFollow.length != followModuleDatas.length
@@ -55,7 +55,7 @@ library FollowLib {
         uint256 unfollowerProfileId,
         address transactionExecutor,
         uint256[] calldata idsOfProfilesToUnfollow
-    ) internal {
+    ) external {
         uint256 i;
         while (i < idsOfProfilesToUnfollow.length) {
             uint256 idOfProfileToUnfollow = idsOfProfilesToUnfollow[i];
@@ -98,7 +98,7 @@ library FollowLib {
         uint256 idOfProfileToFollow,
         uint256 followTokenId,
         bytes calldata followModuleData
-    ) internal returns (uint256) {
+    ) private returns (uint256) {
         Types.Profile storage _profileToFollow = StorageLib.getProfile(idOfProfileToFollow);
 
         address followNFT = _profileToFollow.followNFT;

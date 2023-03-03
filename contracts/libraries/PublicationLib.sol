@@ -188,7 +188,7 @@ library PublicationLib {
         return pubType;
     }
 
-    function getContentURI(uint256 profileId, uint256 pubId) internal view returns (string memory) {
+    function getContentURI(uint256 profileId, uint256 pubId) external view returns (string memory) {
         Types.Publication storage _publication = StorageLib.getPublication(profileId, pubId);
         Types.PublicationType pubType = _publication.pubType;
         if (pubType == Types.PublicationType.Nonexistent) {
