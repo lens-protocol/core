@@ -6,7 +6,7 @@ import {IERC721} from '@openzeppelin/contracts/token/ERC721/IERC721.sol';
 import {VersionedInitializable} from 'contracts/base/upgradeability/VersionedInitializable.sol';
 
 // TODO: Move to Errors file
-library Errors {
+library RegistryErrors {
     error NotHandleOwner();
     error NotTokenOwner();
     error NotHandleOrTokenOwner();
@@ -26,7 +26,7 @@ struct Handle {
 }
 
 // TODO: Move to Events file
-library Events {
+library RegistryEvents {
     event HandleLinked(Handle handle, Token token);
     event HandleUnlinked(Handle handle, Token token);
 }
@@ -50,14 +50,14 @@ contract TokenHandleRegistry is VersionedInitializable {
 
     modifier onlyHandleOwner(Handle memory handle, address transactionExecutor) {
         if (IERC721(handle.collection).ownerOf(handle.id) != transactionExecutor) {
-            revert Errors.NotHandleOwner();
+            revert RegistryErrors.NotHandleOwner();
         }
         _;
     }
 
     modifier onlyTokenOwner(Token memory token, address transactionExecutor) {
         if (IERC721(token.collection).ownerOf(token.id) != transactionExecutor) {
-            revert Errors.NotTokenOwner();
+            revert RegistryErrors.NotTokenOwner();
         }
         _;
     }
@@ -72,7 +72,7 @@ contract TokenHandleRegistry is VersionedInitializable {
             !(IERC721(handle.collection).ownerOf(handle.id) == transactionExecutor ||
                 IERC721(token.collection).ownerOf(token.id) == transactionExecutor)
         ) {
-            revert Errors.NotHandleOrTokenOwner();
+            revert RegistryErrors.NotHandleOrTokenOwner();
         }
         _;
     }
@@ -84,6 +84,16 @@ contract TokenHandleRegistry is VersionedInitializable {
     }
 
     function initialize() external initializer {}
+
+    // V1->V2 Migration function
+    function migrationLinkHandleWithToken(uint256 handleId, uint256 tokenId) external {
+        require(msg.sender == LENS_HUB, 'Only hub');
+        Handle memory handle = Handle({collection: LENS_HANDLES, id: handleId});
+        Token memory token = Token({collection: LENS_HUB, id: tokenId});
+        handleToToken[_handleHash(handle)] = token;
+        tokenToHandle[_tokenHash(token)] = handle;
+        emit RegistryEvents.HandleLinked(handle, token);
+    }
 
     // NOTE: Simplified interfaces for the first version - Namespace and LensHub are constants
     // TODO: Custom logic for linking/unlinking handles and tokens (modules, with bytes passed)
@@ -131,9 +141,21 @@ contract TokenHandleRegistry is VersionedInitializable {
         Handle memory handle,
         Token memory token
     ) internal onlyTokenOwner(token, msg.sender) onlyHandleOwner(handle, msg.sender) {
+        _unlinkIfAlreadyLinked(handle, token);
         handleToToken[_handleHash(handle)] = token;
         tokenToHandle[_tokenHash(token)] = handle;
-        emit Events.HandleLinked(handle, token);
+        emit RegistryEvents.HandleLinked(handle, token);
+    }
+
+    function _unlinkIfAlreadyLinked(Handle memory handle, Token memory token) internal {
+        Token memory currentToken = handleToToken[_handleHash(handle)];
+        Handle memory currentHandle = tokenToHandle[_tokenHash(token)];
+        if (currentToken.collection != address(0) || currentToken.id != 0) {
+            delete tokenToHandle[_tokenHash(currentToken)];
+        }
+        if (currentHandle.collection != address(0) || currentHandle.id != 0) {
+            delete handleToToken[_handleHash(currentHandle)];
+        }
     }
 
     function _unlinkHandleFromToken(
@@ -142,7 +164,7 @@ contract TokenHandleRegistry is VersionedInitializable {
     ) internal onlyHandleOrTokenOwner(handle, token, msg.sender) {
         delete handleToToken[_handleHash(handle)];
         delete tokenToHandle[_tokenHash(token)];
-        emit Events.HandleUnlinked(handle, token);
+        emit RegistryEvents.HandleUnlinked(handle, token);
     }
 
     // Utility functions for mappings

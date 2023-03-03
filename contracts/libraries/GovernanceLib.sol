@@ -59,11 +59,6 @@ library GovernanceLib {
         emit Events.StateSet(msg.sender, prevState, newState, block.timestamp);
     }
 
-    function whitelistFollowModule(address followModule, bool whitelist) internal {
-        // _followModuleWhitelisted[followModule] = whitelist; // StorageLib
-        emit Events.FollowModuleWhitelisted(followModule, whitelist, block.timestamp);
-    }
-
     function _setState(Types.ProtocolState newState) private returns (Types.ProtocolState) {
         Types.ProtocolState prevState = StorageLib.getState();
         StorageLib.setState(newState);

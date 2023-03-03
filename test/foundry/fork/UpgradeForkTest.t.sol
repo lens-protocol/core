@@ -355,7 +355,7 @@ contract UpgradeForkTest is BaseTest {
         address collectNFTAddr = computeCreateAddress(deployer, 2);
 
         // Deploy implementation contracts.
-        hubImpl = new LensHub(followNFTAddr, collectNFTAddr);
+        hubImpl = new LensHub(followNFTAddr, collectNFTAddr, address(0), address(0));
         followNFT = new FollowNFT(hubProxyAddr);
         collectNFT = new CollectNFT(hubProxyAddr);
 

@@ -44,7 +44,7 @@ library MetaTxLib {
         Types.EIP712Signature calldata signature,
         uint256 profileId,
         string calldata metadataURI
-    ) internal {
+    ) external {
         _validateRecoveredAddress(
             _calculateDigest(
                 keccak256(
@@ -66,7 +66,7 @@ library MetaTxLib {
         uint256 profileId,
         address followModule,
         bytes calldata followModuleInitData
-    ) internal {
+    ) external {
         _validateRecoveredAddress(
             _calculateDigest(
                 keccak256(
@@ -91,7 +91,7 @@ library MetaTxLib {
         bool[] calldata approvals,
         uint64 configNumber,
         bool switchToGivenConfig
-    ) internal {
+    ) external {
         uint256 nonce = _getAndIncrementNonce(signature.signer);
         uint256 deadline = signature.deadline;
         _validateRecoveredAddress(
@@ -117,7 +117,7 @@ library MetaTxLib {
         Types.EIP712Signature calldata signature,
         uint256 profileId,
         string calldata imageURI
-    ) internal {
+    ) external {
         _validateRecoveredAddress(
             _calculateDigest(
                 keccak256(
@@ -138,7 +138,7 @@ library MetaTxLib {
         Types.EIP712Signature calldata signature,
         uint256 profileId,
         string calldata followNFTURI
-    ) internal {
+    ) external {
         _validateRecoveredAddress(
             _calculateDigest(
                 keccak256(
@@ -158,7 +158,7 @@ library MetaTxLib {
     function validatePostSignature(
         Types.EIP712Signature calldata signature,
         Types.PostParams calldata postParams
-    ) internal {
+    ) external {
         _validateRecoveredAddress(
             _calculateDigest(
                 keccak256(
@@ -222,7 +222,7 @@ library MetaTxLib {
     function validateCommentSignature(
         Types.EIP712Signature calldata signature,
         Types.CommentParams calldata commentParams
-    ) internal {
+    ) external {
         bytes32 contentURIHash = keccak256(bytes(commentParams.contentURI));
         bytes32 referenceModuleDataHash = keccak256(commentParams.referenceModuleData);
         bytes32 collectModuleInitDataHash = keccak256(commentParams.collectModuleInitData);
@@ -253,7 +253,7 @@ library MetaTxLib {
     function validateQuoteSignature(
         Types.EIP712Signature calldata signature,
         Types.QuoteParams calldata quoteParams
-    ) internal {
+    ) external {
         bytes32 contentURIHash = keccak256(bytes(quoteParams.contentURI));
         bytes32 referenceModuleDataHash = keccak256(quoteParams.referenceModuleData);
         bytes32 collectModuleInitDataHash = keccak256(quoteParams.collectModuleInitData);
@@ -284,7 +284,7 @@ library MetaTxLib {
     function validateMirrorSignature(
         Types.EIP712Signature calldata signature,
         Types.MirrorParams calldata mirrorParams
-    ) internal {
+    ) external {
         _validateRecoveredAddress(
             _calculateDigest(
                 keccak256(
@@ -305,7 +305,7 @@ library MetaTxLib {
         );
     }
 
-    function validateBurnSignature(Types.EIP712Signature calldata signature, uint256 tokenId) internal {
+    function validateBurnSignature(Types.EIP712Signature calldata signature, uint256 tokenId) external {
         _validateRecoveredAddress(
             _calculateDigest(
                 keccak256(
@@ -322,7 +322,7 @@ library MetaTxLib {
         uint256[] calldata idsOfProfilesToFollow,
         uint256[] calldata followTokenIds,
         bytes[] calldata datas
-    ) internal {
+    ) external {
         uint256 dataLength = datas.length;
         bytes32[] memory dataHashes = new bytes32[](dataLength);
         for (uint256 i = 0; i < dataLength; ) {
@@ -356,7 +356,7 @@ library MetaTxLib {
         Types.EIP712Signature calldata signature,
         uint256 unfollowerProfileId,
         uint256[] calldata idsOfProfilesToUnfollow
-    ) internal {
+    ) external {
         _validateRecoveredAddress(
             _calculateDigest(
                 keccak256(
@@ -378,7 +378,7 @@ library MetaTxLib {
         uint256 byProfileId,
         uint256[] calldata idsOfProfilesToSetBlockStatus,
         bool[] calldata blockStatus
-    ) internal {
+    ) external {
         _validateRecoveredAddress(
             _calculateDigest(
                 keccak256(
@@ -399,7 +399,7 @@ library MetaTxLib {
     function validateCollectSignature(
         Types.EIP712Signature calldata signature,
         Types.CollectParams calldata collectParams
-    ) internal {
+    ) external {
         _validateRecoveredAddress(
             _calculateDigest(
                 keccak256(
@@ -424,7 +424,7 @@ library MetaTxLib {
         Types.EIP712Signature calldata signature,
         address spender,
         uint256 tokenId
-    ) internal {
+    ) external {
         _validateRecoveredAddress(
             _calculateDigest(
                 keccak256(

@@ -74,8 +74,8 @@ library Types {
      * @param signer The address of the signer.
      * @param v The signature's recovery parameter.
      * @param r The signature's r parameter.
-     * @param s The signature's s parameter
-     * @param deadline The signature's deadline
+     * @param s The signature's s parameter.
+     * @param deadline The signature's deadline.
      */
     struct EIP712Signature {
         address signer;
@@ -90,8 +90,8 @@ library Types {
      *
      * @param pubCount The number of publications made to this profile.
      * @param followModule The address of the current follow module in use by this profile, can be empty.
-     * @param followNFT The address of the followNFT associated with this profile, can be empty..
-     * @param handleDeprecated The deprecated handle slot, no longer used. .
+     * @param followNFT The address of the followNFT associated with this profile, can be empty.
+     * @param handleDeprecated The deprecated handle slot, no longer used.
      * @param imageURI The URI to be used for the profile's image.
      * @param followNFTURI The URI to be used for the follow NFT.
      */
