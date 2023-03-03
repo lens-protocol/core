@@ -4,13 +4,15 @@ pragma solidity ^0.8.19;
 
 import {ERC721} from '@openzeppelin/contracts/token/ERC721/ERC721.sol';
 import {VersionedInitializable} from 'contracts/base/upgradeability/VersionedInitializable.sol';
-import {ImmutableOwnable} from 'contracts/misc/migrations/ImmutableOwnable.sol';
+import {ImmutableOwnable} from 'contracts/misc/ImmutableOwnable.sol';
+import {ILensHandles} from 'contracts/interfaces/ILensHandles.sol';
+import {Errors} from 'contracts/libraries/constants/Errors.sol';
 
 library HandlesEvents {
     event HandleMinted(string handle, string namespace, uint256 handleId, address to);
 }
 
-contract LensHandles is ERC721, VersionedInitializable, ImmutableOwnable {
+contract LensHandles is ILensHandles, ERC721, VersionedInitializable, ImmutableOwnable {
     // Constant for upgradeability purposes, see VersionedInitializable. Do not confuse with EIP-712 revision number.
     uint256 internal constant REVISION = 1;
 
@@ -29,15 +31,9 @@ contract LensHandles is ERC721, VersionedInitializable, ImmutableOwnable {
 
     function initialize() external initializer {}
 
-    /**
-     * @notice Mints a handle in the given namespace.
-     * @notice A handle is composed by a local name and a namespace, separated by dot.
-     * @notice Example: `john.lens` is a handle composed by the local name `john` and the namespace `lens`.
-     *
-     * @param to The address where the handle is being minted to.
-     * @param localName The local name of the handle.
-     */
+    /// @inheritdoc ILensHandles
     function mintHandle(address to, string calldata localName) external onlyOwnerOrHub returns (uint256) {
+        _validateLocalName(localName);
         bytes32 localNameHash = keccak256(bytes(localName));
         bytes32 handleHash = keccak256(abi.encodePacked(localNameHash, NAMESPACE_HASH));
         uint256 handleId = uint256(handleHash);
@@ -61,6 +57,21 @@ contract LensHandles is ERC721, VersionedInitializable, ImmutableOwnable {
     //////////////////////////////////////
     ///        INTERNAL FUNCTIONS      ///
     //////////////////////////////////////
+
+    function _validateLocalName(string memory handle) internal pure {
+        uint256 handleLength = bytes(handle).length;
+        if (handleLength == 0) revert Errors.HandleLengthInvalid();
+
+        bytes1 firstByte = bytes(handle)[0];
+        if (firstByte == '-' || firstByte == '_') revert Errors.HandleFirstCharInvalid();
+
+        for (uint256 i = 0; i < handleLength; ) {
+            if (bytes(handle)[i] == '.') revert Errors.HandleContainsInvalidCharacters();
+            unchecked {
+                ++i;
+            }
+        }
+    }
 
     function getRevision() internal pure virtual override returns (uint256) {
         return REVISION;
