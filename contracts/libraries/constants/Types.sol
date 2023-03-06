@@ -110,12 +110,13 @@ library Types {
         uint256 pointedPubId;
         string contentURI;
         address referenceModule;
-        address collectModule;
-        address collectNFT;
+        address __DEPRECATED__collectModule; // Deprecated in V2
+        address __DEPRECATED__collectNFT; // Deprecated in V2
         // Added in Lens V2, so these will be zero for old publications:
         PublicationType pubType;
         uint256 rootProfileId;
         uint256 rootPubId;
+        uint256 actionModulesBitmap; // TODO: Maybe write at keccak256(actionModulesBitmap.slot) so it is already treated as array and ready to be extended
     }
 
     /**
@@ -140,16 +141,16 @@ library Types {
      *
      * @param profileId The token ID of the profile to publish to.
      * @param contentURI The URI to set for this new publication.
-     * @param collectModule The collect module to set for this new publication.
-     * @param collectModuleInitData The data to pass to the collect module's initialization.
+     * @param actionModules The action modules to set for this new publication.
+     * @param actionModulesInitDatas The data to pass to the action modules' initialization.
      * @param referenceModule The reference module to set for the given publication, must be whitelisted.
      * @param referenceModuleInitData The data to be passed to the reference module for initialization.
      */
     struct PostParams {
         uint256 profileId;
         string contentURI;
-        address collectModule;
-        bytes collectModuleInitData;
+        address[] actionModules;
+        bytes[] actionModulesInitDatas;
         address referenceModule;
         bytes referenceModuleInitData;
     }
@@ -164,8 +165,8 @@ library Types {
      * @param referrerProfileId The profile token ID of the publication that referred to the publication being commented on/quoted.
      * @param referrerPubId The ID of the publication that referred to the publication being commented on/quoted.
      * @param referenceModuleData The data passed to the reference module.
-     * @param collectModule The collect module to set for this new publication.
-     * @param collectModuleInitData The data to pass to the collect module's initialization.
+     * @param actionModules The action modules to set for this new publication.
+     * @param actionModulesInitDatas The data to pass to the action modules' initialization.
      * @param referenceModule The reference module to set for the given publication, must be whitelisted.
      * @param referenceModuleInitData The data to be passed to the reference module for initialization.
      */
@@ -177,8 +178,8 @@ library Types {
         uint256[] referrerProfileIds;
         uint256[] referrerPubIds;
         bytes referenceModuleData;
-        address collectModule;
-        bytes collectModuleInitData;
+        address[] actionModules;
+        bytes[] actionModulesInitDatas;
         address referenceModule;
         bytes referenceModuleInitData;
     }
@@ -193,8 +194,8 @@ library Types {
      * @param referrerProfileId The profile token ID of the publication that referred to the publication being commented on/quoted.
      * @param referrerPubId The ID of the publication that referred to the publication being commented on/quoted.
      * @param referenceModuleData The data passed to the reference module.
-     * @param collectModule The collect module to set for this new publication.
-     * @param collectModuleInitData The data to pass to the collect module's initialization.
+     * @param actionModules The action modules to set for this new publication.
+     * @param actionModulesInitDatas The data to pass to the action modules' initialization.
      * @param referenceModule The reference module to set for the given publication, must be whitelisted.
      * @param referenceModuleInitData The data to be passed to the reference module for initialization.
      */
@@ -206,8 +207,8 @@ library Types {
         uint256[] referrerProfileIds;
         uint256[] referrerPubIds;
         bytes referenceModuleData;
-        address collectModule;
-        bytes collectModuleInitData;
+        address[] actionModules;
+        bytes[] actionModulesInitDatas;
         address referenceModule;
         bytes referenceModuleInitData;
     }
@@ -222,8 +223,8 @@ library Types {
      * @param referrerProfileId The profile token ID of the publication that referred to the publication being commented on/quoted.
      * @param referrerPubId The ID of the publication that referred to the publication being commented on/quoted.
      * @param referenceModuleData The data passed to the reference module.
-     * @param collectModule The collect module to set for this new publication.
-     * @param collectModuleInitData The data to pass to the collect module's initialization.
+     * @param actionModules The action modules to set for this new publication.
+     * @param actionModulesInitDatas The data to pass to the action modules' initialization.
      * @param referenceModule The reference module to set for the given publication, must be whitelisted.
      * @param referenceModuleInitData The data to be passed to the reference module for initialization.
      */
@@ -235,8 +236,8 @@ library Types {
         uint256[] referrerProfileIds;
         uint256[] referrerPubIds;
         bytes referenceModuleData;
-        address collectModule;
-        bytes collectModuleInitData;
+        address[] actionModules;
+        bytes[] actionModulesInitDatas;
         address referenceModule;
         bytes referenceModuleInitData;
     }
@@ -259,6 +260,7 @@ library Types {
     }
 
     /**
+     * Deprecated in V2: Will be removed after some time after upgrade to V2.
      * @notice A struct containing the parameters required for the `collect()` function.
      *
      * @param publicationCollectedProfileId The token ID of the profile that published the publication to collect.
@@ -275,6 +277,39 @@ library Types {
         uint256[] referrerProfileIds;
         uint256[] referrerPubIds;
         bytes collectModuleData;
+    }
+
+    /**
+     * @notice A struct containing the parameters required for the `action()` function.
+     *
+     * @param publicationActedProfileId The token ID of the profile that published the publication to action.
+     * @param publicationActedId The publication to action's publication ID.
+     * @param actorProfileId The actor profile.
+     * @param referrerProfileId TODO
+     * @param referrerPubId TODO
+     * @param actionModuleAddress TODO
+     * @param actionModuleData The arbitrary data to pass to the actionModule if needed.
+     */
+    struct PublicationActionParams {
+        uint256 publicationActedProfileId;
+        uint256 publicationActedId;
+        uint256 actorProfileId;
+        uint256[] referrerProfileIds;
+        uint256[] referrerPubIds;
+        address actionModuleAddress;
+        bytes actionModuleData;
+    }
+
+    struct ProcessActionParams {
+        uint256 publicationActedProfileId;
+        uint256 publicationActedId;
+        uint256 actorProfileId;
+        address actorProfileOwner;
+        address executor;
+        uint256[] referrerProfileIds;
+        uint256[] referrerPubIds;
+        Types.PublicationType[] referrerPubTypes;
+        bytes actionModuleData;
     }
 
     struct ProcessCollectParams {

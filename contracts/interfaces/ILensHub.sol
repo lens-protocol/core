@@ -20,11 +20,7 @@ interface ILensHub {
      * @param symbol The symbol to set for the hub NFT.
      * @param newGovernance The governance address to set.
      */
-    function initialize(
-        string calldata name,
-        string calldata symbol,
-        address newGovernance
-    ) external;
+    function initialize(string calldata name, string calldata symbol, address newGovernance) external;
 
     /**
      * @notice Sets the privileged governance role. This function can only be called by the current governance
@@ -82,13 +78,13 @@ interface ILensHub {
     function whitelistReferenceModule(address referenceModule, bool whitelist) external;
 
     /**
-     * @notice Adds or removes a collect module from the whitelist. This function can only be called by the current
+     * @notice Adds or removes a action module from the whitelist. This function can only be called by the current
      * governance address.
      *
-     * @param collectModule The collect module contract address to add or remove from the whitelist.
-     * @param whitelist Whether or not the collect module should be whitelisted.
+     * @param actionModule The action module contract address to add or remove from the whitelist.
+     * @param whitelistId The whitelist ID to set for the action module (0 if not whitelisted).
      */
-    function whitelistCollectModule(address collectModule, bool whitelist) external;
+    function whitelistActionModuleId(address actionModule, uint256 whitelistId) external;
 
     /**
      * @notice Creates a profile with the specified parameters, minting a profile NFT to the given recipient. This
@@ -132,11 +128,7 @@ interface ILensHub {
      * @param followModule The follow module to set for the given profile, must be whitelisted.
      * @param followModuleInitData The data to be passed to the follow module for initialization.
      */
-    function setFollowModule(
-        uint256 profileId,
-        address followModule,
-        bytes calldata followModuleInitData
-    ) external;
+    function setFollowModule(uint256 profileId, address followModule, bytes calldata followModuleInitData) external;
 
     /**
      * @notice Sets the follow module via signature for the given profile with the specified parameters. The signer must
@@ -276,9 +268,10 @@ interface ILensHub {
      *
      * @return uint256 An integer representing the post's publication ID.
      */
-    function postWithSig(Types.PostParams calldata postParams, Types.EIP712Signature calldata signature)
-        external
-        returns (uint256);
+    function postWithSig(
+        Types.PostParams calldata postParams,
+        Types.EIP712Signature calldata signature
+    ) external returns (uint256);
 
     /**
      * @notice Publishes a comment to a given profile, must be called by the profile owner.
@@ -298,9 +291,10 @@ interface ILensHub {
      *
      * @return uint256 An integer representing the comment's publication ID.
      */
-    function commentWithSig(Types.CommentParams calldata commentParams, Types.EIP712Signature calldata signature)
-        external
-        returns (uint256);
+    function commentWithSig(
+        Types.CommentParams calldata commentParams,
+        Types.EIP712Signature calldata signature
+    ) external returns (uint256);
 
     /**
      * @notice Publishes a mirror to a given profile, must be called by the profile owner.
@@ -320,9 +314,10 @@ interface ILensHub {
      *
      * @return uint256 An integer representing the mirror's publication ID.
      */
-    function mirrorWithSig(Types.MirrorParams calldata mirrorParams, Types.EIP712Signature calldata signature)
-        external
-        returns (uint256);
+    function mirrorWithSig(
+        Types.MirrorParams calldata mirrorParams,
+        Types.EIP712Signature calldata signature
+    ) external returns (uint256);
 
     /**
      * @notice Publishes a quote to a given profile, must be called by the profile owner.
@@ -342,9 +337,10 @@ interface ILensHub {
      *
      * @return uint256 An integer representing the quote's publication ID.
      */
-    function quoteWithSig(Types.QuoteParams calldata quoteParams, Types.EIP712Signature calldata signature)
-        external
-        returns (uint256);
+    function quoteWithSig(
+        Types.QuoteParams calldata quoteParams,
+        Types.EIP712Signature calldata signature
+    ) external returns (uint256);
 
     /**
      * @notice Follows the given profiles, executing each profile's follow module logic (if any).
@@ -461,9 +457,34 @@ interface ILensHub {
      *
      * @return uint256 An integer representing the minted token ID.
      */
-    function collectWithSig(Types.CollectParams calldata collectParams, Types.EIP712Signature calldata signature)
-        external
-        returns (uint256);
+    function collectWithSig(
+        Types.CollectParams calldata collectParams,
+        Types.EIP712Signature calldata signature
+    ) external returns (uint256);
+
+    /**
+     * @notice Acts on a given publication with the specified parameters. The caller must either be the profile owner
+     * or a delegated executor.
+     *
+     * @param publicationActionParams A PublicationActionParams struct containing the parameters.
+     *
+     * @return bytes Arbitrary data the action module returns.
+     */
+    function act(Types.PublicationActionParams calldata publicationActionParams) external returns (bytes memory);
+
+    /**
+     * @notice Acts on a given publication via signature with the specified parameters. The signer must either be the profile owner
+     * or a delegated executor.
+     *
+     * @param publicationActionParams A PublicationActionParams struct containing the parameters.
+     * @param signature The signature for the collect.
+     *
+     * @return bytes Arbitrary data the action module returns.
+     */
+    function actWithSig(
+        Types.PublicationActionParams calldata publicationActionParams,
+        Types.EIP712Signature calldata signature
+    ) external returns (bytes memory);
 
     /**
      * @dev Helper function to emit a detailed followNFT transfer event from the hub, to be consumed by indexers to
@@ -474,12 +495,7 @@ interface ILensHub {
      * @param from The address the followNFT is being transferred from.
      * @param to The address the followNFT is being transferred to.
      */
-    function emitFollowNFTTransferEvent(
-        uint256 profileId,
-        uint256 followNFTId,
-        address from,
-        address to
-    ) external;
+    function emitFollowNFTTransferEvent(uint256 profileId, uint256 followNFTId, address from, address to) external;
 
     /**
      * @dev Helper function to emit a detailed collectNFT transfer event from the hub, to be consumed by indexers to
@@ -549,13 +565,13 @@ interface ILensHub {
     function isReferenceModuleWhitelisted(address referenceModule) external view returns (bool);
 
     /**
-     * @notice Returns whether or not a collect module is whitelisted.
+     * @notice Returns whether or not a action module is whitelisted.
      *
-     * @param collectModule The address of the collect module to check.
+     * @param actionModule The address of the action module to check.
      *
-     * @return bool True if the the collect module is whitelisted, false otherwise.
+     * @return bool True if the the action module is whitelisted, false otherwise.
      */
-    function isCollectModuleWhitelisted(address collectModule) external view returns (bool);
+    function isActionModuleWhitelisted(address actionModule) external view returns (bool);
 
     /**
      * @notice Returns the currently configured governance address.

@@ -49,7 +49,7 @@ library ValidationLib {
     }
 
     function validateCollectModuleWhitelisted(address collectModule) internal view {
-        if (!StorageLib.collectModuleWhitelisted()[collectModule]) {
+        if (StorageLib.actionModuleWhitelistedId()[collectModule] == 0) {
             revert Errors.CollectModuleNotWhitelisted();
         }
     }

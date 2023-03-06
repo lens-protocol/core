@@ -11,6 +11,7 @@ import {ICollectModule} from 'contracts/interfaces/ICollectModule.sol';
 import {IReferenceModule} from 'contracts/interfaces/IReferenceModule.sol';
 import {IDeprecatedReferenceModule} from 'contracts/interfaces/IDeprecatedReferenceModule.sol';
 import {StorageLib} from 'contracts/libraries/StorageLib.sol';
+import {IPublicationActionModule} from 'contracts/interfaces/IPublicationActionModule.sol';
 
 library PublicationLib {
     /**
@@ -27,12 +28,12 @@ library PublicationLib {
         _post.contentURI = postParams.contentURI;
         _post.pubType = Types.PublicationType.Post;
 
-        bytes memory collectModuleReturnData = _initPubCollectModule(
+        bytes[] memory actionModulesReturnDatas = _initPubActionModules(
             postParams.profileId,
             transactionExecutor,
             pubIdAssigned,
-            postParams.collectModule,
-            postParams.collectModuleInitData
+            postParams.actionModules,
+            postParams.actionModulesInitDatas
         );
 
         bytes memory referenceModuleReturnData = _initPubReferenceModule(
@@ -47,8 +48,8 @@ library PublicationLib {
             postParams.profileId,
             pubIdAssigned,
             postParams.contentURI,
-            postParams.collectModule,
-            collectModuleReturnData,
+            postParams.actionModules,
+            actionModulesReturnDatas,
             postParams.referenceModule,
             referenceModuleReturnData,
             block.timestamp
@@ -70,7 +71,7 @@ library PublicationLib {
     ) external returns (uint256) {
         (
             uint256 pubIdAssigned,
-            bytes memory collectModuleReturnData,
+            bytes[] memory actionModulesReturnDatas,
             bytes memory referenceModuleReturnData,
             Types.PublicationType[] memory referrerPubTypes
         ) = _createReferencePublication(
@@ -81,14 +82,14 @@ library PublicationLib {
 
         _processCommentIfNeeded(commentParams, transactionExecutor, referrerPubTypes);
 
-        _emitCommentEvent(commentParams, pubIdAssigned, collectModuleReturnData, referenceModuleReturnData);
+        _emitCommentEvent(commentParams, pubIdAssigned, actionModulesReturnDatas, referenceModuleReturnData);
         return pubIdAssigned;
     }
 
     function _emitCommentEvent(
         Types.CommentParams calldata commentParams,
         uint256 pubIdAssigned,
-        bytes memory collectModuleReturnData,
+        bytes[] memory actionModulesReturnDatas,
         bytes memory referenceModuleReturnData
     ) private {
         emit Events.CommentCreated(
@@ -98,8 +99,8 @@ library PublicationLib {
             commentParams.pointedProfileId,
             commentParams.pointedPubId,
             commentParams.referenceModuleData,
-            commentParams.collectModule,
-            collectModuleReturnData,
+            commentParams.actionModules,
+            actionModulesReturnDatas,
             commentParams.referenceModule,
             referenceModuleReturnData,
             block.timestamp
@@ -152,7 +153,7 @@ library PublicationLib {
     function quote(Types.QuoteParams calldata quoteParams, address transactionExecutor) external returns (uint256) {
         (
             uint256 pubIdAssigned,
-            bytes memory collectModuleReturnData,
+            bytes[] memory actionModulesReturnDatas,
             bytes memory referenceModuleReturnData,
             Types.PublicationType[] memory referrerPubTypes
         ) = _createReferencePublication(
@@ -163,7 +164,7 @@ library PublicationLib {
 
         _processQuoteIfNeeded(quoteParams, transactionExecutor, referrerPubTypes);
 
-        _emitQuoteEvent(quoteParams, pubIdAssigned, collectModuleReturnData, referenceModuleReturnData);
+        _emitQuoteEvent(quoteParams, pubIdAssigned, actionModulesReturnDatas, referenceModuleReturnData);
 
         return pubIdAssigned;
     }
@@ -172,16 +173,16 @@ library PublicationLib {
         Types.Publication storage _publication = StorageLib.getPublication(profileId, pubId);
         Types.PublicationType pubType = _publication.pubType;
         if (uint8(pubType) == 0) {
-            // If publication type is 0, we check using the legacy rules.
+            // Legacy V1: If publication type is 0, we check using the legacy rules.
             if (_publication.pointedProfileId != 0) {
                 // It is pointing to a publication, so it can be either a comment or a mirror, depending on if it has a
                 // collect module or not.
-                if (_publication.collectModule == address(0)) {
+                if (_publication.__DEPRECATED__collectModule == address(0)) {
                     return Types.PublicationType.Mirror;
                 } else {
                     return Types.PublicationType.Comment;
                 }
-            } else if (_publication.collectModule != address(0)) {
+            } else if (_publication.__DEPRECATED__collectModule != address(0)) {
                 return Types.PublicationType.Post;
             }
         }
@@ -206,7 +207,7 @@ library PublicationLib {
     function _emitQuoteEvent(
         Types.QuoteParams calldata quoteParams,
         uint256 pubIdAssigned,
-        bytes memory collectModuleReturnData,
+        bytes[] memory actionModulesReturnDatas,
         bytes memory referenceModuleReturnData
     ) private {
         emit Events.QuoteCreated(
@@ -216,8 +217,8 @@ library PublicationLib {
             quoteParams.pointedProfileId,
             quoteParams.pointedPubId,
             quoteParams.referenceModuleData,
-            quoteParams.collectModule,
-            collectModuleReturnData,
+            quoteParams.actionModules,
+            actionModulesReturnDatas,
             quoteParams.referenceModule,
             referenceModuleReturnData,
             block.timestamp
@@ -246,7 +247,7 @@ library PublicationLib {
         Types.ReferencePubParams calldata referencePubParams,
         address transactionExecutor,
         Types.PublicationType referencePubType
-    ) private returns (uint256, bytes memory, bytes memory, Types.PublicationType[] memory) {
+    ) private returns (uint256, bytes[] memory, bytes memory, Types.PublicationType[] memory) {
         Types.PublicationType[] memory referrerPubTypes = ValidationLib.validateReferrersAndGetReferrersPubTypes(
             referencePubParams.referrerProfileIds,
             referencePubParams.referrerPubIds,
@@ -256,12 +257,12 @@ library PublicationLib {
 
         uint256 pubIdAssigned = _fillReferencePublicationStorage(referencePubParams, referencePubType);
 
-        bytes memory collectModuleReturnData = _initPubCollectModule(
+        bytes[] memory actionModulesReturnDatas = _initPubActionModules(
             referencePubParams.profileId,
             transactionExecutor,
             pubIdAssigned,
-            referencePubParams.collectModule,
-            referencePubParams.collectModuleInitData
+            referencePubParams.actionModules,
+            referencePubParams.actionModulesInitDatas
         );
 
         bytes memory referenceModuleReturnData = _initPubReferenceModule(
@@ -272,7 +273,7 @@ library PublicationLib {
             referencePubParams.referenceModuleInitData
         );
 
-        return (pubIdAssigned, collectModuleReturnData, referenceModuleReturnData, referrerPubTypes);
+        return (pubIdAssigned, actionModulesReturnDatas, referenceModuleReturnData, referrerPubTypes);
     }
 
     function _fillReferencePublicationStorage(
@@ -448,25 +449,35 @@ library PublicationLib {
         }
     }
 
-    function _initPubCollectModule(
+    function _initPubActionModules(
         uint256 profileId,
         address transactionExecutor,
         uint256 pubId,
-        address collectModule,
-        bytes memory collectModuleInitData
-    ) private returns (bytes memory) {
-        if (collectModule == address(0)) {
-            return new bytes(0);
-        }
-        ValidationLib.validateCollectModuleWhitelisted(collectModule);
-        StorageLib.getPublication(profileId, pubId).collectModule = collectModule;
-        return
-            ICollectModule(collectModule).initializePublicationCollectModule(
+        address[] calldata actionModules,
+        bytes[] calldata actionModulesInitDatas
+    ) private returns (bytes[] memory) {
+        bytes[] memory actionModuleInitResults = new bytes[](actionModules.length);
+        uint256 actionModuleBitmap;
+
+        for (uint256 i = 0; i < actionModules.length; i++) {
+            uint256 actionModuleId = StorageLib.actionModuleWhitelistedId()[actionModules[i]];
+            if (actionModuleId == 0) {
+                revert Errors.ActionModuleNotWhitelisted();
+            }
+
+            actionModuleBitmap = actionModuleBitmap | (1 << (actionModuleId - 1));
+
+            actionModuleInitResults[i] = IPublicationActionModule(actionModules[i]).initializePublicationAction(
                 profileId,
                 pubId,
                 transactionExecutor,
-                collectModuleInitData
+                actionModulesInitDatas[0]
             );
+        }
+
+        StorageLib.getPublication(profileId, pubId).actionModulesBitmap = actionModuleBitmap;
+
+        return actionModuleInitResults;
     }
 
     function _initPubReferenceModule(

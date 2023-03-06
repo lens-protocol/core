@@ -89,13 +89,13 @@ library Events {
     event ReferenceModuleWhitelisted(address indexed referenceModule, bool indexed whitelisted, uint256 timestamp);
 
     /**
-     * @dev Emitted when a collect module is added to or removed from the whitelist.
+     * @dev Emitted when a action module is added to or removed from the whitelist.
      *
-     * @param collectModule The address of the collect module.
-     * @param whitelisted Whether or not the collect module is being added to the whitelist.
+     * @param actionModule The address of the action module.
+     * @param whitelistedId Id of the whitelisted action module (0 if not whitelisted).
      * @param timestamp The current block timestamp.
      */
-    event CollectModuleWhitelisted(address indexed collectModule, bool indexed whitelisted, uint256 timestamp);
+    event ActionModuleWhitelistedId(address indexed actionModule, uint256 indexed whitelistedId, uint256 timestamp);
 
     /**
      * @dev Emitted when a profile is created.
@@ -179,9 +179,9 @@ library Events {
      * @param profileId The profile's token ID.
      * @param pubId The new publication's ID.
      * @param contentURI The URI mapped to this new publication.
-     * @param collectModule The collect module mapped to this new publication. This CANNOT be the zero address.
-     * @param collectModuleReturnData The data returned from the collect module's initialization for this given
-     * publication. This is abi encoded and totally depends on the collect module chosen.
+     * @param actionModules The action modules array mapped to this new publication.
+     * @param actionModulesReturnDatas The data returned from the action modules' initialization for this given
+     * publication. This is abi encoded and totally depends on the action module chosen.
      * @param referenceModule The reference module set for this publication.
      * @param referenceModuleReturnData The data returned from the reference module at initialization. This is abi
      * encoded and totally depends on the reference module chosen.
@@ -191,8 +191,8 @@ library Events {
         uint256 indexed profileId,
         uint256 indexed pubId,
         string contentURI,
-        address collectModule,
-        bytes collectModuleReturnData,
+        address[] actionModules,
+        bytes[] actionModulesReturnDatas,
         address referenceModule,
         bytes referenceModuleReturnData,
         uint256 timestamp
@@ -207,9 +207,9 @@ library Events {
      * @param pointedProfileId The profile token ID that this comment points to.
      * @param pointedPubId The publication ID that this comment points to.
      * @param referenceModuleData The data passed to the reference module.
-     * @param collectModule The collect module mapped to this new publication. This CANNOT be the zero address.
-     * @param collectModuleReturnData The data returned from the collect module's initialization for this given
-     * publication. This is abi encoded and totally depends on the collect module chosen.
+     * @param actionModules The action modules array mapped to this new publication.
+     * @param actionModulesReturnDatas The data returned from the action modules' initialization for this given
+     * publication. This is abi encoded and totally depends on the action module chosen.
      * @param referenceModule The reference module set for this publication.
      * @param referenceModuleReturnData The data returned from the reference module at initialization. This is abi
      * encoded and totally depends on the reference module chosen.
@@ -222,8 +222,8 @@ library Events {
         uint256 pointedProfileId,
         uint256 pointedPubId,
         bytes referenceModuleData,
-        address collectModule,
-        bytes collectModuleReturnData,
+        address[] actionModules,
+        bytes[] actionModulesReturnDatas,
         address referenceModule,
         bytes referenceModuleReturnData,
         uint256 timestamp
@@ -257,9 +257,9 @@ library Events {
      * @param pointedProfileId The profile token ID which author is being quoted.
      * @param pointedPubId The publication ID that is being quoted.
      * @param referenceModuleData The data passed to the reference module.
-     * @param collectModule The collect module mapped to this new publication. This CANNOT be the zero address.
-     * @param collectModuleReturnData The data returned from the collect module's initialization for this given
-     * publication. This is abi encoded and totally depends on the collect module chosen.
+     * @param actionModules The action modules array mapped to this new publication.
+     * @param actionModulesReturnDatas The data returned from the action modules' initialization for this given
+     * publication. This is abi encoded and totally depends on the action module chosen.
      * @param referenceModule The reference module set for this publication.
      * @param referenceModuleReturnData The data returned from the reference module at initialization. This is abi
      * encoded and totally depends on the reference module chosen.
@@ -272,8 +272,8 @@ library Events {
         uint256 pointedProfileId,
         uint256 pointedPubId,
         bytes referenceModuleData,
-        address collectModule,
-        bytes collectModuleReturnData,
+        address[] actionModules,
+        bytes[] actionModulesReturnDatas,
         address referenceModule,
         bytes referenceModuleReturnData,
         uint256 timestamp
@@ -321,6 +321,17 @@ library Events {
         uint256[] referrerProfileIds,
         uint256[] referrerPubIds,
         bytes collectModuleData,
+        uint256 timestamp
+    );
+
+    event Acted(
+        uint256 publicationActedProfileId,
+        uint256 publicationActedId,
+        uint256 actorProfileId,
+        uint256[] referrerProfileIds,
+        uint256[] referrerPubIds,
+        address actionModuleAddress,
+        bytes actionModuleData,
         uint256 timestamp
     );
 

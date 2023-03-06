@@ -37,7 +37,7 @@ library CollectLib {
                 collectParams.publicationCollectedProfileId,
                 collectParams.publicationCollectedId
             );
-            collectModule = _collectedPublication.collectModule;
+            collectModule = _collectedPublication.__DEPRECATED__collectModule;
             if (collectModule == address(0)) {
                 // Doesn't have collectModule, thus it cannot be a collected (a mirror or non-existent).
                 revert Errors.CollectNotAllowed();
@@ -77,10 +77,10 @@ library CollectLib {
         uint256 publicationCollectedId,
         address collectNFTImpl
     ) private returns (address) {
-        address collectNFT = _collectedPublication.collectNFT;
+        address collectNFT = _collectedPublication.__DEPRECATED__collectNFT;
         if (collectNFT == address(0)) {
             collectNFT = _deployCollectNFT(publicationCollectedProfileId, publicationCollectedId, collectNFTImpl);
-            _collectedPublication.collectNFT = collectNFT;
+            _collectedPublication.__DEPRECATED__collectNFT = collectNFT;
         }
         return collectNFT;
     }

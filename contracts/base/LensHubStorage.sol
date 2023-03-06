@@ -15,7 +15,8 @@ import {Types} from 'contracts/libraries/constants/Types.sol';
 abstract contract LensHubStorage {
     mapping(address => bool) internal _profileCreatorWhitelisted; // Slot 13
     mapping(address => bool) internal _followModuleWhitelisted; // Slot 14
-    mapping(address => bool) internal _collectModuleWhitelisted; // Slot 15
+    // mapping(address => bool) internal _collectModuleWhitelisted; // Slot 15 // TODO: We need to unwhitelist all the old modules before V2 upgrade
+    mapping(address => uint256) internal _actionModuleWhitelistedId; // Slot 15 - Replaced in V2 for an ID instead of bool (starting from 1)
     mapping(address => bool) internal _referenceModuleWhitelisted; // Slot 16
 
     mapping(uint256 => address) internal ___DEPRECATED_SLOT; // Slot 17, deprecated, old _dispatcherByProfile
