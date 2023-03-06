@@ -14,6 +14,7 @@ import {ILensHub} from 'contracts/interfaces/ILensHub.sol';
 import {LensBaseERC721} from 'contracts/base/LensBaseERC721.sol';
 import {MetaTxLib} from 'contracts/libraries/MetaTxLib.sol';
 import {Strings} from '@openzeppelin/contracts/utils/Strings.sol';
+import {StorageLib} from 'contracts/libraries/StorageLib.sol';
 
 contract FollowNFT is HubRestricted, LensBaseERC721, ERC2981CollectionRoyalties, IFollowNFT {
     using Strings for uint256;
@@ -365,6 +366,14 @@ contract FollowNFT is HubRestricted, LensBaseERC721, ERC2981CollectionRoyalties,
         delete _followDataByFollowTokenId[followTokenId].profileIdAllowedToRecover;
         if (isOriginalFollow) {
             _followDataByFollowTokenId[followTokenId].originalFollowTimestamp = uint48(block.timestamp);
+        } else {
+            // Migration code.
+            // If the follow token was minted before the originalFollowTimestamp was introduced, it will be 0.
+            // In that case, we need to fetch the mint timestamp from the token data.
+            if (_followDataByFollowTokenId[followTokenId].originalFollowTimestamp == 0) {
+                uint48 mintTimestamp = uint48(StorageLib.getTokenData(followTokenId).mintTimestamp);
+                _followDataByFollowTokenId[followTokenId].originalFollowTimestamp = mintTimestamp;
+            }
         }
     }
 
@@ -430,5 +439,46 @@ contract FollowNFT is HubRestricted, LensBaseERC721, ERC2981CollectionRoyalties,
             slot := _royaltiesInBasisPoints.slot
         }
         return slot;
+    }
+
+    //////////////////
+    /// Migrations ///
+    //////////////////
+
+    function migrate(
+        uint256 followerProfileId,
+        address followerProfileOwner,
+        uint256 idOfProfileFollowed,
+        uint256 followTokenId
+    ) external onlyHub returns (uint48) {
+        // FollowNFT should have OriginalFollowTimestamp set
+        if (_followDataByFollowTokenId[followTokenId].originalFollowTimestamp != 0) {
+            return 0; // Already migrated
+        }
+
+        if (_followedProfileId != idOfProfileFollowed) {
+            revert Errors.InvalidParameter();
+        }
+
+        address followTokenOwner = ownerOf(followTokenId);
+        // ProfileNFT and FollowNFT should be in the same account
+        if (followerProfileOwner == followTokenOwner) {
+            unchecked {
+                ++_followerCount;
+            }
+
+            _followTokenIdByFollowerProfileId[followerProfileId] = followTokenId;
+
+            uint48 mintTimestamp = uint48(StorageLib.getTokenData(followTokenId).mintTimestamp);
+
+            _followDataByFollowTokenId[followTokenId].followerProfileId = uint160(followerProfileId);
+            _followDataByFollowTokenId[followTokenId].originalFollowTimestamp = mintTimestamp;
+            _followDataByFollowTokenId[followTokenId].followTimestamp = mintTimestamp;
+
+            super._burn(followTokenId);
+            return mintTimestamp;
+        } else {
+            return 0; // Not holding both Profile & Follow NFTs together
+        }
     }
 }

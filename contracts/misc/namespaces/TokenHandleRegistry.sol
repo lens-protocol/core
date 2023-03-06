@@ -4,6 +4,7 @@ pragma solidity ^0.8.19;
 
 import {IERC721} from '@openzeppelin/contracts/token/ERC721/IERC721.sol';
 import {VersionedInitializable} from 'contracts/base/upgradeability/VersionedInitializable.sol';
+import {ITokenHandleRegistry} from 'contracts/interfaces/ITokenHandleRegistry.sol';
 
 // TODO: Move to Errors file
 library RegistryErrors {
@@ -36,7 +37,7 @@ library RegistryEvents {
 ///     qwer.punk <-> Lens Profile #2
 ///     myname.lens <-> Cryptopunk #69
 ///     vitalik.eth <-> BAYC #234
-contract TokenHandleRegistry is VersionedInitializable {
+contract TokenHandleRegistry is ITokenHandleRegistry, VersionedInitializable {
     // Constant for upgradeability purposes, see VersionedInitializable. Do not confuse with EIP-712 revision number.
     uint256 internal constant REVISION = 1;
 

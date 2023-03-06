@@ -141,7 +141,21 @@ contract LensHub is LensBaseERC721, VersionedInitializable, LensMultiState, Lens
     ///      V1->V2 MIGRATION FUNCTIONS     ///
     ///////////////////////////////////////////
 
+    // Profiles Handles Migration:
+
     event ProfileMigrated(uint256 profileId, address profileDestination, string handle, uint256 handleId);
+
+    /**
+     * @notice Migrates an array of profiles from V1 to V2. This function can be callable by anyone.
+     * We would still do the migration in batches by ourselves, but good to allow users to migrate on their own if they want to.
+     *
+     * @param profileIds The array of profile IDs to migrate.
+     */
+    function batchMigrateProfiles(uint256[] calldata profileIds) external {
+        for (uint256 i = 0; i < profileIds.length; i++) {
+            _migrateProfilePublic(profileIds[i]);
+        }
+    }
 
     /**
      * @notice Migrates a profile from V1 to V2.
@@ -181,15 +195,51 @@ contract LensHub is LensBaseERC721, VersionedInitializable, LensMultiState, Lens
         }
     }
 
-    /**
-     * @notice Migrates an array of profiles from V1 to V2. This function can be callable by anyone.
-     * We would still do the migration in batches by ourselves, but good to allow users to migrate on their own if they want to.
-     *
-     * @param profileIds The array of profile IDs to migrate.
-     */
-    function batchMigrateProfiles(uint256[] calldata profileIds) external {
-        for (uint256 i = 0; i < profileIds.length; i++) {
-            _migrateProfilePublic(profileIds[i]);
+    // FollowNFT Migration:
+
+    function batchMigrateFollows(
+        uint256[] calldata followerProfileIds,
+        uint256[] calldata idsOfProfileFollowed,
+        address[] calldata followNFTAddresses,
+        uint256[] calldata followTokenIds
+    ) external {
+        if (
+            followerProfileIds.length != idsOfProfileFollowed.length ||
+            followerProfileIds.length != followNFTAddresses.length ||
+            followerProfileIds.length != followTokenIds.length
+        ) {
+            revert Errors.ArrayMismatch();
+        }
+        uint256 i;
+        while (i < followerProfileIds.length) {
+            _migrateFollow(followerProfileIds[i], idsOfProfileFollowed[i], followNFTAddresses[i], followTokenIds[i]);
+            unchecked {
+                ++i;
+            }
+        }
+    }
+
+    function _migrateFollow(
+        uint256 followerProfileId,
+        uint256 idOfProfileFollowed,
+        address followNFTAddress,
+        uint256 followTokenId
+    ) internal {
+        uint48 mintTimestamp = IFollowNFT(followNFTAddress).migrate({
+            followerProfileId: followerProfileId,
+            followerProfileOwner: StorageLib.getTokenData(followerProfileId).owner,
+            idOfProfileFollowed: idOfProfileFollowed,
+            followTokenId: followTokenId
+        });
+        // `mintTimestamp` will be 0 if already migrated (or not holding both Profile & Follow NFT together)
+        if (mintTimestamp != 0) {
+            emit Events.Followed({
+                followerProfileId: followerProfileId,
+                idOfProfileFollowed: idOfProfileFollowed,
+                followTokenIdAssigned: followTokenId,
+                followModuleData: '',
+                timestamp: mintTimestamp // The only case where this won't match block.timestamp is during the migration
+            });
         }
     }
 

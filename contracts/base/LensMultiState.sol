@@ -20,12 +20,16 @@ abstract contract LensMultiState is ILensMultiState {
     Types.ProtocolState private _state; // slot 12
 
     modifier whenNotPaused() {
-        _validateNotPaused();
+        if (_state == Types.ProtocolState.Paused) {
+            revert Errors.Paused();
+        }
         _;
     }
 
     modifier whenPublishingEnabled() {
-        _validatePublishingEnabled();
+        if (_state != Types.ProtocolState.Unpaused) {
+            revert Errors.PublishingPaused();
+        }
         _;
     }
 
@@ -59,15 +63,5 @@ abstract contract LensMultiState is ILensMultiState {
      */
     function getState() external view override returns (Types.ProtocolState) {
         return _state;
-    }
-
-    function _validatePublishingEnabled() internal view {
-        if (_state != Types.ProtocolState.Unpaused) {
-            revert Errors.PublishingPaused();
-        }
-    }
-
-    function _validateNotPaused() internal view {
-        if (_state == Types.ProtocolState.Paused) revert Errors.Paused();
     }
 }
