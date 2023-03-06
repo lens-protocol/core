@@ -366,6 +366,14 @@ contract FollowNFT is HubRestricted, LensBaseERC721, ERC2981CollectionRoyalties,
         delete _followDataByFollowTokenId[followTokenId].profileIdAllowedToRecover;
         if (isOriginalFollow) {
             _followDataByFollowTokenId[followTokenId].originalFollowTimestamp = uint48(block.timestamp);
+        } else {
+            // Migration code.
+            // If the follow token was minted before the originalFollowTimestamp was introduced, it will be 0.
+            // In that case, we need to fetch the mint timestamp from the token data.
+            if (_followDataByFollowTokenId[followTokenId].originalFollowTimestamp == 0) {
+                uint48 mintTimestamp = uint48(StorageLib.getTokenData(followTokenId).mintTimestamp);
+                _followDataByFollowTokenId[followTokenId].originalFollowTimestamp = mintTimestamp;
+            }
         }
     }
 
@@ -443,8 +451,8 @@ contract FollowNFT is HubRestricted, LensBaseERC721, ERC2981CollectionRoyalties,
         uint256 idOfProfileFollowed,
         uint256 followTokenId
     ) external onlyHub returns (uint48) {
-        // FollowNFT should have Profile set as a follower
-        if (_followDataByFollowTokenId[followTokenId].followerProfileId != 0) {
+        // FollowNFT should have OriginalFollowTimestamp set
+        if (_followDataByFollowTokenId[followTokenId].originalFollowTimestamp != 0) {
             return 0; // Already migrated
         }
 
