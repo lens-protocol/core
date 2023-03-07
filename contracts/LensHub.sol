@@ -707,10 +707,6 @@ contract LensHub is LensBaseERC721, VersionedInitializable, LensMultiState, Lens
             });
     }
 
-    function emitCollectNFTTransferEvent(uint256, uint256, uint256, address, address) external {
-        // Deprecated. Kept here just for backwards compatibility with Lens V1 Collect NFTs.
-    }
-
     /// @inheritdoc ILensHub
     function emitUnfollowedEvent(uint256 unfollowerProfileId, uint256 idOfProfileUnfollowed) external override {
         address expectedFollowNFT = _profileById[idOfProfileUnfollowed].followNFT;
@@ -906,4 +902,11 @@ contract LensHub is LensBaseERC721, VersionedInitializable, LensMultiState, Lens
     function getRevision() internal pure virtual override returns (uint256) {
         return REVISION;
     }
+
+    //////////////////////////////////////
+    ///       DEPRECATED FUNCTIONS     ///
+    //////////////////////////////////////
+
+    // Deprecated in V2. Kept here just for backwards compatibility with Lens V1 Collect NFTs.
+    function emitCollectNFTTransferEvent(uint256, uint256, uint256, address, address) external {}
 }
