@@ -487,35 +487,6 @@ interface ILensHub {
     ) external returns (bytes memory);
 
     /**
-     * @dev Helper function to emit a detailed followNFT transfer event from the hub, to be consumed by indexers to
-     * track followNFT transfers.
-     *
-     * @param profileId The token ID of the profile associated with the followNFT being transferred.
-     * @param followNFTId The followNFT being transferred's token ID.
-     * @param from The address the followNFT is being transferred from.
-     * @param to The address the followNFT is being transferred to.
-     */
-    function emitFollowNFTTransferEvent(uint256 profileId, uint256 followNFTId, address from, address to) external;
-
-    /**
-     * @dev Helper function to emit a detailed collectNFT transfer event from the hub, to be consumed by indexers to
-     * track collectNFT transfers.
-     *
-     * @param profileId The token ID of the profile associated with the collect NFT being transferred.
-     * @param pubId The publication ID associated with the collect NFT being transferred.
-     * @param collectNFTId The collectNFT being transferred's token ID.
-     * @param from The address the collectNFT is being transferred from.
-     * @param to The address the collectNFT is being transferred to.
-     */
-    function emitCollectNFTTransferEvent(
-        uint256 profileId,
-        uint256 pubId,
-        uint256 collectNFTId,
-        address from,
-        address to
-    ) external;
-
-    /**
      * @dev Helper function to emit an `Unfollowed` event from the hub, to be consumed by indexers to track unfollows.
      *
      * @param unfollowerProfileId The ID of the profile that executed the unfollow.

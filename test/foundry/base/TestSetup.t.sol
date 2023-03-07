@@ -159,7 +159,7 @@ contract TestSetup is Test, ForkManagement, ArrayHelpers {
         vm.startPrank(governance);
 
         // Whitelist the FreeCollectModule.
-        hub.whitelistCollectModule(address(mockCollectModule), true);
+        hub.whitelistActionModuleId(address(mockCollectModule), 1);
 
         // Whitelist the MockReferenceModule.
         hub.whitelistReferenceModule(address(mockReferenceModule), true);
@@ -193,8 +193,8 @@ contract TestSetup is Test, ForkManagement, ArrayHelpers {
         mockPostParams = Types.PostParams({
             profileId: newProfileId,
             contentURI: MOCK_URI,
-            collectModule: address(mockCollectModule),
-            collectModuleInitData: abi.encode(1),
+            actionModules: _toAddressArray(address(mockCollectModule)),
+            actionModulesInitDatas: _toBytesArray(abi.encode(1)),
             referenceModule: address(0),
             referenceModuleInitData: ''
         });
@@ -208,8 +208,8 @@ contract TestSetup is Test, ForkManagement, ArrayHelpers {
             referrerProfileIds: _emptyUint256Array(),
             referrerPubIds: _emptyUint256Array(),
             referenceModuleData: '',
-            collectModule: address(mockCollectModule),
-            collectModuleInitData: abi.encode(1),
+            actionModules: _toAddressArray(address(mockCollectModule)),
+            actionModulesInitDatas: _toBytesArray(abi.encode(1)),
             referenceModule: address(0),
             referenceModuleInitData: ''
         });

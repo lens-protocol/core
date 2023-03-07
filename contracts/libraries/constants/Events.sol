@@ -105,7 +105,7 @@ library Events {
      * @param to The address receiving the profile with the given profile ID.
      * @param imageURI The image uri set for the profile.
      * @param followModule The profile's newly set follow module. This CAN be the zero address.
-     * @param followModuleReturnData The data returned from the follow module's initialization. This is abi encoded
+     * @param followModuleReturnData The data returned from the follow module's initialization. This is ABI-encoded
      * and totally depends on the follow module chosen.
      * @param followNFTURI The URI set for the profile's follow NFT.
      * @param timestamp The current block timestamp.
@@ -162,7 +162,7 @@ library Events {
      *
      * @param profileId The profile's token ID.
      * @param followModule The profile's newly set follow module. This CAN be the zero address.
-     * @param followModuleReturnData The data returned from the follow module's initialization. This is abi encoded
+     * @param followModuleReturnData The data returned from the follow module's initialization. This is ABI-encoded
      * and totally depends on the follow module chosen.
      * @param timestamp The current block timestamp.
      */
@@ -174,107 +174,67 @@ library Events {
     );
 
     /**
-     * @dev Emitted when a "post" is published.
+     * @dev Emitted when a post is successfully published.
      *
-     * @param profileId The profile's token ID.
-     * @param pubId The new publication's ID.
-     * @param contentURI The URI mapped to this new publication.
-     * @param actionModules The action modules array mapped to this new publication.
+     * @param postParams The parameters passed to create the post publication.
+     * @param pubId The publication ID assigned to the created post.
      * @param actionModulesReturnDatas The data returned from the action modules' initialization for this given
-     * publication. This is abi encoded and totally depends on the action module chosen.
-     * @param referenceModule The reference module set for this publication.
-     * @param referenceModuleReturnData The data returned from the reference module at initialization. This is abi
-     * encoded and totally depends on the reference module chosen.
+     * publication. This is ABI-encoded and totally depends on the action module chosen.
+     * @param referenceModuleReturnData The data returned from the reference module at initialization. This is
+     * ABI-encoded and totally depends on the reference module chosen.
      * @param timestamp The current block timestamp.
      */
     event PostCreated(
-        uint256 indexed profileId,
+        Types.PostParams postParams,
         uint256 indexed pubId,
-        string contentURI,
-        address[] actionModules,
         bytes[] actionModulesReturnDatas,
-        address referenceModule,
         bytes referenceModuleReturnData,
         uint256 timestamp
     );
 
     /**
-     * @dev Emitted when a "comment" is published.
+     * @dev Emitted when a comment is successfully published.
      *
-     * @param profileId The profile's token ID.
-     * @param pubId The new publication's ID.
-     * @param contentURI The URI mapped to this new publication.
-     * @param pointedProfileId The profile token ID that this comment points to.
-     * @param pointedPubId The publication ID that this comment points to.
-     * @param referenceModuleData The data passed to the reference module.
-     * @param actionModules The action modules array mapped to this new publication.
+     * @param commentParams The parameters passed to create the comment publication.
+     * @param pubId The publication ID assigned to the created comment.
      * @param actionModulesReturnDatas The data returned from the action modules' initialization for this given
-     * publication. This is abi encoded and totally depends on the action module chosen.
-     * @param referenceModule The reference module set for this publication.
-     * @param referenceModuleReturnData The data returned from the reference module at initialization. This is abi
-     * encoded and totally depends on the reference module chosen.
+     * publication. This is ABI-encoded and totally depends on the action module chosen.
+     * @param referenceModuleReturnData The data returned from the reference module at initialization. This is
+     * ABI-encoded and totally depends on the reference module chosen.
      * @param timestamp The current block timestamp.
      */
     event CommentCreated(
-        uint256 indexed profileId,
+        Types.CommentParams commentParams,
         uint256 indexed pubId,
-        string contentURI,
-        uint256 pointedProfileId,
-        uint256 pointedPubId,
-        bytes referenceModuleData,
-        address[] actionModules,
         bytes[] actionModulesReturnDatas,
-        address referenceModule,
         bytes referenceModuleReturnData,
         uint256 timestamp
     );
 
     /**
-     * @dev Emitted when a "mirror" is published.
+     * @dev Emitted when a mirror is successfully published.
      *
-     * @param profileId The profile's token ID.
-     * @param pubId The new publication's ID.
-     * @param pointedProfileId The profile token ID that this mirror points to.
-     * @param pointedPubId The publication ID that this mirror points to.
-     * @param referenceModuleData The data passed to the reference module.
+     * @param mirrorParams The parameters passed to create the mirror publication.
+     * @param pubId The publication ID assigned to the created mirror.
      * @param timestamp The current block timestamp.
      */
-    event MirrorCreated(
-        uint256 indexed profileId,
-        uint256 indexed pubId,
-        uint256 pointedProfileId,
-        uint256 pointedPubId,
-        bytes referenceModuleData,
-        uint256 timestamp
-    );
+    event MirrorCreated(Types.MirrorParams mirrorParams, uint256 indexed pubId, uint256 timestamp);
 
     /**
-     * @dev Emitted when a "quote" is published.
+     * @dev Emitted when a quote is successfully published.
      *
-     * @param profileId The profile's token ID.
-     * @param pubId The new publication's ID.
-     * @param contentURI The URI mapped to this new publication.
-     * @param pointedProfileId The profile token ID which author is being quoted.
-     * @param pointedPubId The publication ID that is being quoted.
-     * @param referenceModuleData The data passed to the reference module.
-     * @param actionModules The action modules array mapped to this new publication.
+     * @param quoteParams The parameters passed to create the quote publication.
+     * @param pubId The publication ID assigned to the created quote.
      * @param actionModulesReturnDatas The data returned from the action modules' initialization for this given
-     * publication. This is abi encoded and totally depends on the action module chosen.
-     * @param referenceModule The reference module set for this publication.
-     * @param referenceModuleReturnData The data returned from the reference module at initialization. This is abi
-     * encoded and totally depends on the reference module chosen.
+     * publication. This is ABI-encoded and totally depends on the action module chosen.
+     * @param referenceModuleReturnData The data returned from the reference module at initialization. This is
+     * ABI-encoded and totally depends on the reference module chosen.
      * @param timestamp The current block timestamp.
      */
     event QuoteCreated(
-        uint256 indexed profileId,
+        Types.QuoteParams quoteParams,
         uint256 indexed pubId,
-        string contentURI,
-        uint256 pointedProfileId,
-        uint256 pointedPubId,
-        bytes referenceModuleData,
-        address[] actionModules,
         bytes[] actionModulesReturnDatas,
-        address referenceModule,
         bytes referenceModuleReturnData,
         uint256 timestamp
     );
@@ -306,34 +266,32 @@ library Events {
     /**
      * @dev Emitted upon a successful collect action.
      *
-     * @param publicationCollectedProfileId The profile token ID of the profile whose publication is being collected.
-     * @param publicationCollectedId The publication ID of the publication being collected.
-     * @param collectorProfileId The address collecting the publication.
-     * @param referrerProfileIds TODO
-     * @param referrerPubIds TODO
-     * @param collectModuleData The data passed to the collect module.
+     * @param collectActionParams The parameters passed to collect a publication.
+     * @param collectModule The collect module that was used to collect the publication.
+     * @param collectNFT The collect NFT that was used to collect the publication.
+     * @param tokenId The token ID of the collect NFT that was minted as a collect of the publication.
+     * @param collectActionResult The data returned from the collect module's collect action. This is ABI-encoded
+     * and totally depends on the collect module chosen.
      * @param timestamp The current block timestamp.
      */
     event Collected(
-        uint256 publicationCollectedProfileId,
-        uint256 publicationCollectedId,
-        uint256 collectorProfileId,
-        uint256[] referrerProfileIds,
-        uint256[] referrerPubIds,
-        bytes collectModuleData,
+        Types.ProcessActionParams collectActionParams,
+        address collectModule,
+        address collectNFT,
+        uint256 tokenId,
+        bytes collectActionResult,
         uint256 timestamp
     );
 
-    event Acted(
-        uint256 publicationActedProfileId,
-        uint256 publicationActedId,
-        uint256 actorProfileId,
-        uint256[] referrerProfileIds,
-        uint256[] referrerPubIds,
-        address actionModuleAddress,
-        bytes actionModuleData,
-        uint256 timestamp
-    );
+    /**
+     * @dev Emitted upon a successful action.
+     *
+     * @param publicationActionParams The parameters passed to act on a publication.
+     * @param actionModuleReturnData The data returned from the action module's. This is ABI-encoded and format
+     * totally depends on the action module chosen.
+     * @param timestamp The current block timestamp.
+     */
+    event Acted(Types.PublicationActionParams publicationActionParams, bytes actionModuleReturnData, uint256 timestamp);
 
     /**
      * @dev Emitted upon a successful follow operation.
@@ -414,36 +372,6 @@ library Events {
         address to,
         uint256 timestamp
     );
-
-    // Collect/Follow NFT-Specific
-
-    /**
-     * @dev Emitted when a newly deployed follow NFT is initialized.
-     *
-     * @param profileId The token ID of the profile connected to this follow NFT.
-     * @param timestamp The current block timestamp.
-     */
-    event FollowNFTInitialized(uint256 indexed profileId, uint256 timestamp);
-
-    /**
-     * @dev Emitted when delegation power in a FollowNFT is changed.
-     *
-     * @param delegate The delegate whose power has been changed.
-     * @param newPower The new governance power mapped to the delegate.
-     * @param timestamp The current block timestamp.
-     */
-    event FollowNFTDelegatedPowerChanged(address indexed delegate, uint256 indexed newPower, uint256 timestamp);
-
-    /**
-     * @dev Emitted when a newly deployed collect NFT is initialized.
-     *
-     * @param profileId The token ID of the profile connected to the publication mapped to this collect NFT.
-     * @param pubId The publication ID connected to the publication mapped to this collect NFT.
-     * @param timestamp The current block timestamp.
-     */
-    event CollectNFTInitialized(uint256 indexed profileId, uint256 indexed pubId, uint256 timestamp);
-
-    // Module-Specific
 
     /**
      * @notice Emitted when the ModuleGlobals governance address is set.

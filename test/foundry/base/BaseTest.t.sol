@@ -94,8 +94,8 @@ contract BaseTest is TestSetup {
     function _getPostTypedDataHash(
         uint256 profileId,
         string memory contentURI,
-        address collectModule,
-        bytes memory collectModuleInitData,
+        address[] memory actionModules,
+        bytes[] memory actionModulesInitDatas,
         address referenceModule,
         bytes memory referenceModuleInitData,
         uint256 nonce,
@@ -106,8 +106,8 @@ contract BaseTest is TestSetup {
                 Typehash.POST,
                 profileId,
                 keccak256(bytes(contentURI)),
-                collectModule,
-                keccak256(collectModuleInitData),
+                actionModules,
+                _prepareActionModulesInitDatas(actionModulesInitDatas),
                 referenceModule,
                 keccak256(referenceModuleInitData),
                 nonce,
@@ -115,6 +115,15 @@ contract BaseTest is TestSetup {
             )
         );
         return _calculateDigest(structHash);
+    }
+
+    // TODO: Check if this is how you do encoding of bytes[] array in ERC721
+    function _prepareActionModulesInitDatas(bytes[] memory actionModulesInitDatas) internal pure returns (bytes32) {
+        bytes32[] memory actionModulesInitDatasBytes = new bytes32[](actionModulesInitDatas.length);
+        for (uint256 i = 0; i < actionModulesInitDatas.length; i++) {
+            actionModulesInitDatasBytes[i] = keccak256(abi.encode(actionModulesInitDatas[i]));
+        }
+        return keccak256(abi.encode(actionModulesInitDatasBytes));
     }
 
     function _getPostTypedDataHash(
@@ -126,8 +135,8 @@ contract BaseTest is TestSetup {
             _getPostTypedDataHash({
                 profileId: postParams.profileId,
                 contentURI: postParams.contentURI,
-                collectModule: postParams.collectModule,
-                collectModuleInitData: postParams.collectModuleInitData,
+                actionModules: postParams.actionModules,
+                actionModulesInitDatas: postParams.actionModulesInitDatas,
                 referenceModule: postParams.referenceModule,
                 referenceModuleInitData: postParams.referenceModuleInitData,
                 nonce: nonce,
@@ -136,62 +145,29 @@ contract BaseTest is TestSetup {
     }
 
     function _getCommentTypedDataHash(
-        uint256 profileId,
-        string memory contentURI,
-        uint256 pointedProfileId,
-        uint256 pointedPubId,
-        uint256[] memory referrerProfileIds,
-        uint256[] memory referrerPubIds,
-        bytes memory referenceModuleData,
-        address collectModule,
-        bytes memory collectModuleInitData,
-        address referenceModule,
-        bytes memory referenceModuleInitData,
+        Types.CommentParams memory commentParams,
         uint256 nonce,
         uint256 deadline
     ) internal view returns (bytes32) {
         bytes32 structHash = keccak256(
             abi.encode(
                 Typehash.COMMENT,
-                profileId,
-                keccak256(bytes(contentURI)),
-                pointedProfileId,
-                pointedPubId,
-                referrerProfileIds,
-                referrerPubIds,
-                keccak256(referenceModuleData),
-                collectModule,
-                keccak256(collectModuleInitData),
-                referenceModule,
-                keccak256(referenceModuleInitData),
+                commentParams.profileId,
+                keccak256(bytes(commentParams.contentURI)),
+                commentParams.pointedProfileId,
+                commentParams.pointedPubId,
+                commentParams.referrerProfileIds,
+                commentParams.referrerPubIds,
+                keccak256(commentParams.referenceModuleData),
+                commentParams.actionModules,
+                _prepareActionModulesInitDatas(commentParams.actionModulesInitDatas),
+                commentParams.referenceModule,
+                keccak256(commentParams.referenceModuleInitData),
                 nonce,
                 deadline
             )
         );
         return _calculateDigest(structHash);
-    }
-
-    function _getCommentTypedDataHash(
-        Types.CommentParams memory commentParams,
-        uint256 nonce,
-        uint256 deadline
-    ) internal view returns (bytes32) {
-        return
-            _getCommentTypedDataHash({
-                profileId: commentParams.profileId,
-                contentURI: commentParams.contentURI,
-                pointedProfileId: commentParams.pointedProfileId,
-                pointedPubId: commentParams.pointedPubId,
-                referrerProfileIds: _emptyUint256Array(),
-                referrerPubIds: _emptyUint256Array(),
-                referenceModuleData: commentParams.referenceModuleData,
-                collectModule: commentParams.collectModule,
-                collectModuleInitData: commentParams.collectModuleInitData,
-                referenceModule: commentParams.referenceModule,
-                referenceModuleInitData: commentParams.referenceModuleInitData,
-                nonce: nonce,
-                deadline: deadline
-            });
     }
 
     function _getMirrorTypedDataHash(

@@ -179,7 +179,7 @@ library MetaTxLib {
         );
     }
 
-    // TODO: ERC721 encoding of bytes[] array
+    // TODO: Check if this is how you do encoding of bytes[] array in ERC721
     function _prepareActionModulesInitDatas(bytes[] memory actionModulesInitDatas) internal pure returns (bytes32) {
         bytes32[] memory actionModulesInitDatasBytes = new bytes32[](actionModulesInitDatas.length);
         for (uint256 i = 0; i < actionModulesInitDatas.length; i++) {

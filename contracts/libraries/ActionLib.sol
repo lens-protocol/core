@@ -47,31 +47,23 @@ library ActionLib {
                 publicationActionParams.publicationActedId
             );
 
-            bytes memory actionResult = IPublicationActionModule(actionModuleAddress).processPublicationAction(
-                Types.ProcessActionParams({
-                    publicationActedProfileId: publicationActionParams.publicationActedProfileId,
-                    publicationActedId: publicationActionParams.publicationActedId,
-                    actorProfileId: publicationActionParams.actorProfileId,
-                    actorProfileOwner: actorProfileOwner,
-                    executor: transactionExecutor,
-                    referrerProfileIds: publicationActionParams.referrerProfileIds,
-                    referrerPubIds: publicationActionParams.referrerPubIds,
-                    referrerPubTypes: referrerPubTypes,
-                    actionModuleData: publicationActionParams.actionModuleData
-                })
-            );
-            emit Events.Acted({
-                publicationActedProfileId: publicationActionParams.publicationActedProfileId,
-                publicationActedId: publicationActionParams.publicationActedId,
-                actorProfileId: publicationActionParams.actorProfileId,
-                referrerProfileIds: publicationActionParams.referrerProfileIds,
-                referrerPubIds: publicationActionParams.referrerPubIds,
-                actionModuleAddress: publicationActionParams.actionModuleAddress,
-                actionModuleData: publicationActionParams.actionModuleData,
-                timestamp: block.timestamp
-            });
+            bytes memory actionModuleReturnData = IPublicationActionModule(actionModuleAddress)
+                .processPublicationAction(
+                    Types.ProcessActionParams({
+                        publicationActedProfileId: publicationActionParams.publicationActedProfileId,
+                        publicationActedId: publicationActionParams.publicationActedId,
+                        actorProfileId: publicationActionParams.actorProfileId,
+                        actorProfileOwner: actorProfileOwner,
+                        executor: transactionExecutor,
+                        referrerProfileIds: publicationActionParams.referrerProfileIds,
+                        referrerPubIds: publicationActionParams.referrerPubIds,
+                        referrerPubTypes: referrerPubTypes,
+                        actionModuleData: publicationActionParams.actionModuleData
+                    })
+                );
+            emit Events.Acted(publicationActionParams, actionModuleReturnData, block.timestamp);
 
-            return actionResult;
+            return actionModuleReturnData;
         }
     }
 

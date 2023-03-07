@@ -707,29 +707,8 @@ contract LensHub is LensBaseERC721, VersionedInitializable, LensMultiState, Lens
             });
     }
 
-    /// @inheritdoc ILensHub
-    function emitFollowNFTTransferEvent(
-        uint256 profileId,
-        uint256 followNFTId,
-        address from,
-        address to
-    ) external override {
-        address expectedFollowNFT = _profileById[profileId].followNFT;
-        if (msg.sender != expectedFollowNFT) revert Errors.CallerNotFollowNFT();
-        emit Events.FollowNFTTransferred(profileId, followNFTId, from, to, block.timestamp);
-    }
-
-    /// @inheritdoc ILensHub
-    function emitCollectNFTTransferEvent(
-        uint256 profileId,
-        uint256 pubId,
-        uint256 collectNFTId,
-        address from,
-        address to
-    ) external override {
-        address expectedCollectNFT = _pubByIdByProfile[profileId][pubId].__DEPRECATED__collectNFT;
-        if (msg.sender != expectedCollectNFT) revert Errors.CallerNotCollectNFT();
-        emit Events.CollectNFTTransferred(profileId, pubId, collectNFTId, from, to, block.timestamp);
+    function emitCollectNFTTransferEvent(uint256, uint256, uint256, address, address) external {
+        // Deprecated. Kept here just for backwards compatibility with Lens V1 Collect NFTs.
     }
 
     /// @inheritdoc ILensHub

@@ -45,12 +45,9 @@ library PublicationLib {
         );
 
         emit Events.PostCreated(
-            postParams.profileId,
+            postParams,
             pubIdAssigned,
-            postParams.contentURI,
-            postParams.actionModules,
             actionModulesReturnDatas,
-            postParams.referenceModule,
             referenceModuleReturnData,
             block.timestamp
         );
@@ -82,29 +79,15 @@ library PublicationLib {
 
         _processCommentIfNeeded(commentParams, transactionExecutor, referrerPubTypes);
 
-        _emitCommentEvent(commentParams, pubIdAssigned, actionModulesReturnDatas, referenceModuleReturnData);
-        return pubIdAssigned;
-    }
-
-    function _emitCommentEvent(
-        Types.CommentParams calldata commentParams,
-        uint256 pubIdAssigned,
-        bytes[] memory actionModulesReturnDatas,
-        bytes memory referenceModuleReturnData
-    ) private {
         emit Events.CommentCreated(
-            commentParams.profileId,
+            commentParams,
             pubIdAssigned,
-            commentParams.contentURI,
-            commentParams.pointedProfileId,
-            commentParams.pointedPubId,
-            commentParams.referenceModuleData,
-            commentParams.actionModules,
             actionModulesReturnDatas,
-            commentParams.referenceModule,
             referenceModuleReturnData,
             block.timestamp
         );
+
+        return pubIdAssigned;
     }
 
     /**
@@ -131,14 +114,7 @@ library PublicationLib {
 
         _processMirrorIfNeeded(mirrorParams, transactionExecutor, referrerPubTypes);
 
-        emit Events.MirrorCreated(
-            mirrorParams.profileId,
-            pubIdAssigned,
-            mirrorParams.pointedProfileId,
-            mirrorParams.pointedPubId,
-            mirrorParams.referenceModuleData,
-            block.timestamp
-        );
+        emit Events.MirrorCreated(mirrorParams, pubIdAssigned, block.timestamp);
 
         return pubIdAssigned;
     }
@@ -164,7 +140,13 @@ library PublicationLib {
 
         _processQuoteIfNeeded(quoteParams, transactionExecutor, referrerPubTypes);
 
-        _emitQuoteEvent(quoteParams, pubIdAssigned, actionModulesReturnDatas, referenceModuleReturnData);
+        emit Events.QuoteCreated(
+            quoteParams,
+            pubIdAssigned,
+            actionModulesReturnDatas,
+            referenceModuleReturnData,
+            block.timestamp
+        );
 
         return pubIdAssigned;
     }
@@ -202,27 +184,6 @@ library PublicationLib {
         } else {
             return StorageLib.getPublication(profileId, pubId).contentURI;
         }
-    }
-
-    function _emitQuoteEvent(
-        Types.QuoteParams calldata quoteParams,
-        uint256 pubIdAssigned,
-        bytes[] memory actionModulesReturnDatas,
-        bytes memory referenceModuleReturnData
-    ) private {
-        emit Events.QuoteCreated(
-            quoteParams.profileId,
-            pubIdAssigned,
-            quoteParams.contentURI,
-            quoteParams.pointedProfileId,
-            quoteParams.pointedPubId,
-            quoteParams.referenceModuleData,
-            quoteParams.actionModules,
-            actionModulesReturnDatas,
-            quoteParams.referenceModule,
-            referenceModuleReturnData,
-            block.timestamp
-        );
     }
 
     function _asReferencePubParams(

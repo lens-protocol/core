@@ -29,5 +29,5 @@ interface ICollectModule {
         bytes calldata data
     ) external returns (bytes memory);
 
-    function processCollect(Types.ProcessCollectParams calldata processCollectParams) external;
+    function processCollect(Types.ProcessCollectParams calldata processCollectParams) external returns (bytes memory);
 }

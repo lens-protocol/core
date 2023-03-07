@@ -305,7 +305,7 @@ library Types {
         uint256 publicationActedId;
         uint256 actorProfileId;
         address actorProfileOwner;
-        address executor;
+        address executor; // TODO: Change to transactionExecutor
         uint256[] referrerProfileIds;
         uint256[] referrerPubIds;
         Types.PublicationType[] referrerPubTypes;
@@ -317,7 +317,7 @@ library Types {
         uint256 publicationCollectedId;
         uint256 collectorProfileId;
         address collectorProfileOwner;
-        address executor;
+        address executor; // TODO: Change to transactionExecutor
         uint256[] referrerProfileIds;
         uint256[] referrerPubIds;
         Types.PublicationType[] referrerPubTypes;
@@ -326,7 +326,7 @@ library Types {
 
     struct ProcessCommentParams {
         uint256 profileId;
-        address executor;
+        address executor; // TODO: Change to transactionExecutor
         uint256 pointedProfileId;
         uint256 pointedPubId;
         uint256[] referrerProfileIds;
@@ -337,7 +337,7 @@ library Types {
 
     struct ProcessQuoteParams {
         uint256 profileId;
-        address executor;
+        address executor; // TODO: Change to transactionExecutor
         uint256 pointedProfileId;
         uint256 pointedPubId;
         uint256[] referrerProfileIds;
@@ -348,7 +348,7 @@ library Types {
 
     struct ProcessMirrorParams {
         uint256 profileId;
-        address executor;
+        address executor; // TODO: Change to transactionExecutor
         uint256 pointedProfileId;
         uint256 pointedPubId;
         uint256[] referrerProfileIds;

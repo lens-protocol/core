@@ -49,7 +49,6 @@ contract CollectNFT is LensBaseERC721, ERC2981CollectionRoyalties, ICollectNFT {
         _profileId = profileId;
         _pubId = pubId;
         super._initialize(name, symbol);
-        emit Events.CollectNFTInitialized(profileId, pubId, block.timestamp);
     }
 
     /// @inheritdoc ICollectNFT
@@ -98,13 +97,5 @@ contract CollectNFT is LensBaseERC721, ERC2981CollectionRoyalties, ICollectNFT {
             slot := _royaltiesInBasisPoints.slot
         }
         return slot;
-    }
-
-    /**
-     * @dev Upon transfers, we emit the transfer event in the hub.
-     */
-    function _beforeTokenTransfer(address from, address to, uint256 tokenId) internal override {
-        super._beforeTokenTransfer(from, to, tokenId);
-        ILensHub(HUB).emitCollectNFTTransferEvent(_profileId, _pubId, tokenId, from, to);
     }
 }

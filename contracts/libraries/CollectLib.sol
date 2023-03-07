@@ -32,6 +32,7 @@ library CollectLib {
         address collectModule;
         Types.PublicationType[] memory referrerPubTypes;
         uint256 tokenId;
+        address collectNFT;
         {
             Types.Publication storage _collectedPublication = StorageLib.getPublication(
                 collectParams.publicationCollectedProfileId,
@@ -49,7 +50,7 @@ library CollectLib {
                 collectParams.publicationCollectedProfileId,
                 collectParams.publicationCollectedId
             );
-            address collectNFT = _getOrDeployCollectNFT(
+            collectNFT = _getOrDeployCollectNFT(
                 _collectedPublication,
                 collectParams.publicationCollectedProfileId,
                 collectParams.publicationCollectedId,
@@ -67,6 +68,25 @@ library CollectLib {
                 collectModule: collectModule
             })
         );
+
+        emit Events.Collected({
+            collectActionParams: Types.ProcessActionParams({
+                publicationActedProfileId: collectParams.publicationCollectedProfileId,
+                publicationActedId: collectParams.publicationCollectedId,
+                actorProfileId: collectParams.collectorProfileId,
+                actorProfileOwner: collectorProfileOwner,
+                executor: transactionExecutor,
+                referrerProfileIds: collectParams.referrerProfileIds,
+                referrerPubIds: collectParams.referrerPubIds,
+                referrerPubTypes: referrerPubTypes,
+                actionModuleData: collectParams.collectModuleData
+            }),
+            collectModule: collectModule,
+            collectNFT: collectNFT,
+            tokenId: tokenId,
+            collectActionResult: '',
+            timestamp: block.timestamp
+        });
 
         return tokenId;
     }
@@ -142,15 +162,6 @@ library CollectLib {
                 collectParams.collectModuleData
             );
         }
-        emit Events.Collected({
-            publicationCollectedProfileId: collectParams.publicationCollectedProfileId,
-            publicationCollectedId: collectParams.publicationCollectedId,
-            collectorProfileId: collectParams.collectorProfileId,
-            referrerProfileIds: collectParams.referrerProfileIds,
-            referrerPubIds: collectParams.referrerPubIds,
-            collectModuleData: collectParams.collectModuleData,
-            timestamp: block.timestamp
-        });
     }
 
     /**
