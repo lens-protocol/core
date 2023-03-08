@@ -16,55 +16,52 @@ library ActionLib {
         address actorProfileOwner
     ) external returns (bytes memory) {
         if (publicationActionParams.publicationActedId == 0) {
-            // Acted on Profile
-            revert Errors.ActionsOnProfilesNotImplementedYet();
-        } else {
-            // Acted on Publication
-            Types.Publication storage _actedOnPublication = StorageLib.getPublication(
-                publicationActionParams.publicationActedProfileId,
-                publicationActionParams.publicationActedId
-            );
-
-            address actionModuleAddress = publicationActionParams.actionModuleAddress;
-            uint256 actionModuleId = StorageLib.actionModuleWhitelistedId()[actionModuleAddress];
-
-            if (actionModuleId == 0) {
-                revert Errors.ActionNotAllowed();
-            }
-
-            if (_isActionAllowed(_actedOnPublication, actionModuleId)) {
-                // This will also revert for:
-                //   - Non-existent publications
-                //   - Legacy V1 publications
-                // Because the storage will be empty.
-                revert Errors.ActionNotAllowed();
-            }
-
-            Types.PublicationType[] memory referrerPubTypes = ValidationLib.validateReferrersAndGetReferrersPubTypes(
-                publicationActionParams.referrerProfileIds,
-                publicationActionParams.referrerPubIds,
-                publicationActionParams.publicationActedProfileId,
-                publicationActionParams.publicationActedId
-            );
-
-            bytes memory actionModuleReturnData = IPublicationActionModule(actionModuleAddress)
-                .processPublicationAction(
-                    Types.ProcessActionParams({
-                        publicationActedProfileId: publicationActionParams.publicationActedProfileId,
-                        publicationActedId: publicationActionParams.publicationActedId,
-                        actorProfileId: publicationActionParams.actorProfileId,
-                        actorProfileOwner: actorProfileOwner,
-                        executor: transactionExecutor,
-                        referrerProfileIds: publicationActionParams.referrerProfileIds,
-                        referrerPubIds: publicationActionParams.referrerPubIds,
-                        referrerPubTypes: referrerPubTypes,
-                        actionModuleData: publicationActionParams.actionModuleData
-                    })
-                );
-            emit Events.Acted(publicationActionParams, actionModuleReturnData, block.timestamp);
-
-            return actionModuleReturnData;
+            revert Errors.PublicationDoesNotExist();
         }
+
+        Types.Publication storage _actedOnPublication = StorageLib.getPublication(
+            publicationActionParams.publicationActedProfileId,
+            publicationActionParams.publicationActedId
+        );
+
+        address actionModuleAddress = publicationActionParams.actionModuleAddress;
+        uint256 actionModuleId = StorageLib.actionModuleWhitelistedId()[actionModuleAddress];
+
+        if (actionModuleId == 0) {
+            revert Errors.ActionNotAllowed();
+        }
+
+        if (_isActionAllowed(_actedOnPublication, actionModuleId)) {
+            // This will also revert for:
+            //   - Non-existent publications
+            //   - Legacy V1 publications
+            // Because the storage will be empty.
+            revert Errors.ActionNotAllowed();
+        }
+
+        Types.PublicationType[] memory referrerPubTypes = ValidationLib.validateReferrersAndGetReferrersPubTypes(
+            publicationActionParams.referrerProfileIds,
+            publicationActionParams.referrerPubIds,
+            publicationActionParams.publicationActedProfileId,
+            publicationActionParams.publicationActedId
+        );
+
+        bytes memory actionModuleReturnData = IPublicationActionModule(actionModuleAddress).processPublicationAction(
+            Types.ProcessActionParams({
+                publicationActedProfileId: publicationActionParams.publicationActedProfileId,
+                publicationActedId: publicationActionParams.publicationActedId,
+                actorProfileId: publicationActionParams.actorProfileId,
+                actorProfileOwner: actorProfileOwner,
+                executor: transactionExecutor,
+                referrerProfileIds: publicationActionParams.referrerProfileIds,
+                referrerPubIds: publicationActionParams.referrerPubIds,
+                referrerPubTypes: referrerPubTypes,
+                actionModuleData: publicationActionParams.actionModuleData
+            })
+        );
+        emit Events.Acted(publicationActionParams, actionModuleReturnData, block.timestamp);
+
+        return actionModuleReturnData;
     }
 
     function _isActionAllowed(Types.Publication storage _publication, uint256 actionId) internal view returns (bool) {

@@ -65,7 +65,6 @@ library Errors {
     error DuplicatedReferrer();
     error DeprecaredModulesOnlySupportOneReferrer();
     error InvalidPointedPub();
-    error ActionsOnProfilesNotImplementedYet();
     error ActionModuleNotWhitelisted();
 
     // TODO: Should we clear all the Collect references here?

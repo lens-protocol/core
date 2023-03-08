@@ -420,20 +420,25 @@ library PublicationLib {
         bytes[] memory actionModuleInitResults = new bytes[](actionModules.length);
         uint256 actionModuleBitmap;
 
-        for (uint256 i = 0; i < actionModules.length; i++) {
+        uint256 i;
+        while (i < actionModules.length) {
             uint256 actionModuleId = StorageLib.actionModuleWhitelistedId()[actionModules[i]];
             if (actionModuleId == 0) {
                 revert Errors.ActionModuleNotWhitelisted();
             }
 
-            actionModuleBitmap = actionModuleBitmap | (1 << (actionModuleId - 1));
+            actionModuleBitmap |= 1 << (actionModuleId - 1);
 
             actionModuleInitResults[i] = IPublicationActionModule(actionModules[i]).initializePublicationAction(
                 profileId,
                 pubId,
                 transactionExecutor,
-                actionModulesInitDatas[0]
+                actionModulesInitDatas[i]
             );
+
+            unchecked {
+                ++i;
+            }
         }
 
         StorageLib.getPublication(profileId, pubId).actionModulesBitmap = actionModuleBitmap;
