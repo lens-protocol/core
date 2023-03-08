@@ -245,20 +245,42 @@ contract BaseTest is TestSetup {
         return _calculateDigest(structHash);
     }
 
-    function _getCollectTypedDataHash(
-        Types.CollectParams memory collectParams,
+    // function _getCollectTypedDataHash(
+    //     Types.CollectParams memory collectParams,
+    //     uint256 nonce,
+    //     uint256 deadline
+    // ) internal view returns (bytes32) {
+    //     bytes32 structHash = keccak256(
+    //         abi.encode(
+    //             Typehash.COLLECT,
+    //             collectParams.publicationCollectedProfileId,
+    //             collectParams.publicationCollectedId,
+    //             collectParams.collectorProfileId,
+    //             collectParams.referrerProfileIds,
+    //             collectParams.referrerPubIds,
+    //             keccak256(collectParams.collectModuleData),
+    //             nonce,
+    //             deadline
+    //         )
+    //     );
+    //     return _calculateDigest(structHash);
+    // }
+
+    function _getActTypedDataHash(
+        Types.PublicationActionParams memory publicationActionParams,
         uint256 nonce,
         uint256 deadline
     ) internal view returns (bytes32) {
         bytes32 structHash = keccak256(
             abi.encode(
-                Typehash.COLLECT,
-                collectParams.publicationCollectedProfileId,
-                collectParams.publicationCollectedId,
-                collectParams.collectorProfileId,
-                collectParams.referrerProfileIds,
-                collectParams.referrerPubIds,
-                keccak256(collectParams.collectModuleData),
+                Typehash.ACT,
+                publicationActionParams.publicationActedProfileId,
+                publicationActionParams.publicationActedId,
+                publicationActionParams.actorProfileId,
+                publicationActionParams.referrerProfileIds,
+                publicationActionParams.referrerPubIds,
+                publicationActionParams.actionModuleAddress,
+                keccak256(publicationActionParams.actionModuleData),
                 nonce,
                 deadline
             )
@@ -304,21 +326,42 @@ contract BaseTest is TestSetup {
         return hub.mirror(mirrorParams);
     }
 
-    function _collect(
-        uint256 collectorProfileId,
-        uint256 publisherProfileId,
-        uint256 pubId,
+    // function _collect(
+    //     uint256 collectorProfileId,
+    //     uint256 publisherProfileId,
+    //     uint256 pubId,
+    //     bytes memory data
+    // ) internal returns (uint256) {
+    //     return
+    //         hub.collect(
+    //             Types.CollectParams({
+    //                 publicationCollectedProfileId: publisherProfileId,
+    //                 publicationCollectedId: pubId,
+    //                 collectorProfileId: collectorProfileId,
+    //                 referrerProfileIds: _emptyUint256Array(),
+    //                 referrerPubIds: _emptyUint256Array(),
+    //                 collectModuleData: data
+    //             })
+    //         );
+    // }
+
+    function _act(
+        uint256 actorProfileId,
+        uint256 publicationActedProfileId,
+        uint256 publicationActedId,
+        address actionModuleAddress,
         bytes memory data
-    ) internal returns (uint256) {
+    ) internal returns (bytes memory) {
         return
-            hub.collect(
-                Types.CollectParams({
-                    publicationCollectedProfileId: publisherProfileId,
-                    publicationCollectedId: pubId,
-                    collectorProfileId: collectorProfileId,
+            hub.act(
+                Types.PublicationActionParams({
+                    publicationActedProfileId: publicationActedProfileId,
+                    publicationActedId: publicationActedId,
+                    actorProfileId: actorProfileId,
                     referrerProfileIds: _emptyUint256Array(),
                     referrerPubIds: _emptyUint256Array(),
-                    collectModuleData: data
+                    actionModuleAddress: actionModuleAddress,
+                    actionModuleData: data
                 })
             );
     }
@@ -344,11 +387,18 @@ contract BaseTest is TestSetup {
         return hub.mirrorWithSig(mirrorParams, signature);
     }
 
-    function _collectWithSig(
-        Types.CollectParams memory collectParams,
+    // function _collectWithSig(
+    //     Types.CollectParams memory collectParams,
+    //     Types.EIP712Signature memory signature
+    // ) internal returns (uint256) {
+    //     return hub.collectWithSig(collectParams, signature);
+    // }
+
+    function _actWithSig(
+        Types.PublicationActionParams memory publiactionActionParams,
         Types.EIP712Signature memory signature
-    ) internal returns (uint256) {
-        return hub.collectWithSig(collectParams, signature);
+    ) internal returns (bytes memory) {
+        return hub.actWithSig(publiactionActionParams, signature);
     }
 
     function _follow(

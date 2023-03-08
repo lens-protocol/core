@@ -171,15 +171,14 @@ contract MultiStateHubTest_PausedState_Direct is BaseTest {
         });
     }
 
-    // TODO: The following two functions were copy-pasted from CollectingTest.t.sol
-    // TODO: Consider extracting them somewhere else to be used by both of tests
-    function _mockCollect() internal virtual {
+    function _mockAct() internal virtual {
         vm.prank(profileOwner);
-        _collect(
-            mockCollectParams.collectorProfileId,
-            mockCollectParams.publicationCollectedProfileId,
-            mockCollectParams.publicationCollectedId,
-            mockCollectParams.collectModuleData
+        _act(
+            mockActParams.actorProfileId,
+            mockActParams.publicationActedProfileId,
+            mockActParams.publicationActedId,
+            mockActParams.actionModuleAddress,
+            mockActParams.actionModuleData
         );
     }
 
@@ -289,14 +288,14 @@ contract MultiStateHubTest_PausedState_Direct is BaseTest {
         _mockFollow();
     }
 
-    function testCannotCollectWhilePaused() public {
+    function testActCollectWhilePaused() public {
         vm.expectRevert(Errors.Paused.selector);
-        _mockCollect();
+        _mockAct();
 
         vm.prank(governance);
         _setState(Types.ProtocolState.Unpaused);
 
-        _mockCollect();
+        _mockAct();
     }
 }
 
@@ -404,10 +403,10 @@ contract MultiStateHubTest_PausedState_WithSig is MultiStateHubTest_PausedState_
         });
     }
 
-    function _mockCollect() internal override {
-        bytes32 digest = _getCollectTypedDataHash(mockCollectParams, nonce, deadline);
+    function _mockAct() internal override {
+        bytes32 digest = _getActTypedDataHash(mockActParams, nonce, deadline);
 
-        _collectWithSig(mockCollectParams, _getSigStruct(profileOwner, profileOwnerKey, digest, deadline));
+        _actWithSig(mockActParams, _getSigStruct(profileOwner, profileOwnerKey, digest, deadline));
     }
 
     // Methods that cannot be called with signature
@@ -481,13 +480,14 @@ contract MultiStateHubTest_PublishingPausedState_Direct is BaseTest {
 
     // TODO: The following two functions were copy-pasted from CollectingTest.t.sol
     // TODO: Consider extracting them somewhere else to be used by both of tests
-    function _mockCollect() internal virtual {
+    function _mockAct() internal virtual {
         vm.prank(profileOwner);
-        _collect(
-            mockCollectParams.collectorProfileId,
-            mockCollectParams.publicationCollectedProfileId,
-            mockCollectParams.publicationCollectedId,
-            mockCollectParams.collectModuleData
+        _act(
+            mockActParams.actorProfileId,
+            mockActParams.publicationActedProfileId,
+            mockActParams.publicationActedId,
+            mockActParams.actionModuleAddress,
+            mockActParams.actionModuleData
         );
     }
 
@@ -525,7 +525,7 @@ contract MultiStateHubTest_PublishingPausedState_Direct is BaseTest {
     }
 
     function testCanCollectWhilePublishingPaused() public {
-        _mockCollect();
+        _mockAct();
     }
 
     function testCannotPostWhilePublishingPaused() public {
@@ -660,10 +660,10 @@ contract MultiStateHubTest_PublishingPausedState_WithSig is MultiStateHubTest_Pu
         });
     }
 
-    function _mockCollect() internal override {
-        bytes32 digest = _getCollectTypedDataHash(mockCollectParams, nonce, deadline);
+    function _mockAct() internal override {
+        bytes32 digest = _getActTypedDataHash(mockActParams, nonce, deadline);
 
-        _collectWithSig(mockCollectParams, _getSigStruct(profileOwner, profileOwnerKey, digest, deadline));
+        _actWithSig(mockActParams, _getSigStruct(profileOwner, profileOwnerKey, digest, deadline));
     }
 
     // Methods that cannot be called with signature

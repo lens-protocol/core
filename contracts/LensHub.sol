@@ -135,6 +135,7 @@ contract LensHub is LensBaseERC721, VersionedInitializable, LensMultiState, Lens
     /// @inheritdoc ILensHub
     function whitelistActionModuleId(address actionModule, uint256 whitelistId) external override onlyGov {
         _actionModuleWhitelistedId[actionModule] = whitelistId;
+        _actionModuleById[whitelistId] = actionModule;
         emit Events.ActionModuleWhitelistedId(actionModule, whitelistId, block.timestamp);
     }
 
@@ -866,6 +867,10 @@ contract LensHub is LensBaseERC721, VersionedInitializable, LensMultiState, Lens
     /// @inheritdoc ILensHub
     function getCollectNFTImpl() external view override returns (address) {
         return COLLECT_NFT_IMPL;
+    }
+
+    function getWhitelistedActionModuleById(uint256 id) external view returns (address) {
+        return _actionModuleById[id];
     }
 
     /**

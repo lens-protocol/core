@@ -14,7 +14,7 @@ import {Types} from 'contracts/libraries/constants/Types.sol';
 import {Errors} from 'contracts/libraries/constants/Errors.sol';
 import {Events} from 'contracts/libraries/constants/Events.sol';
 import {ProfileTokenURILib} from 'contracts/libraries/ProfileTokenURILib.sol';
-import {MockCollectModule} from 'test/mocks/MockCollectModule.sol';
+import {MockActionModule} from 'test/mocks/MockActionModule.sol';
 import {MockReferenceModule} from 'test/mocks/MockReferenceModule.sol';
 import {ForkManagement} from 'test/foundry/helpers/ForkManagement.sol';
 import {ArrayHelpers} from 'test/foundry/helpers/ArrayHelpers.sol';
@@ -53,7 +53,7 @@ contract TestSetup is Test, ForkManagement, ArrayHelpers {
     LensHub hubImpl;
     TransparentUpgradeableProxy hubAsProxy;
     LensHub hub;
-    MockCollectModule mockCollectModule;
+    MockActionModule mockActionModule;
     MockReferenceModule mockReferenceModule;
     ModuleGlobals moduleGlobals;
 
@@ -63,6 +63,7 @@ contract TestSetup is Test, ForkManagement, ArrayHelpers {
     Types.CommentParams mockCommentParams;
     Types.MirrorParams mockMirrorParams;
     Types.CollectParams mockCollectParams;
+    Types.PublicationActionParams mockActParams;
 
     constructor() {
         if (bytes(forkEnv).length > 0) {
@@ -144,8 +145,8 @@ contract TestSetup is Test, ForkManagement, ArrayHelpers {
         // Cast proxy to LensHub interface.
         hub = LensHub(address(hubAsProxy));
 
-        // Deploy the MockCollectModule.
-        mockCollectModule = new MockCollectModule();
+        // Deploy the MockActionModule.
+        mockActionModule = new MockActionModule();
 
         // Deploy the MockReferenceModule.
         mockReferenceModule = new MockReferenceModule();
@@ -158,8 +159,8 @@ contract TestSetup is Test, ForkManagement, ArrayHelpers {
         // Start governance actions.
         vm.startPrank(governance);
 
-        // Whitelist the FreeCollectModule.
-        hub.whitelistActionModuleId(address(mockCollectModule), 1);
+        // Whitelist the MockActionModule.
+        hub.whitelistActionModuleId(address(mockActionModule), 1);
 
         // Whitelist the MockReferenceModule.
         hub.whitelistReferenceModule(address(mockReferenceModule), true);
@@ -193,7 +194,7 @@ contract TestSetup is Test, ForkManagement, ArrayHelpers {
         mockPostParams = Types.PostParams({
             profileId: newProfileId,
             contentURI: MOCK_URI,
-            actionModules: _toAddressArray(address(mockCollectModule)),
+            actionModules: _toAddressArray(address(mockActionModule)),
             actionModulesInitDatas: _toBytesArray(abi.encode(1)),
             referenceModule: address(0),
             referenceModuleInitData: ''
@@ -208,7 +209,7 @@ contract TestSetup is Test, ForkManagement, ArrayHelpers {
             referrerProfileIds: _emptyUint256Array(),
             referrerPubIds: _emptyUint256Array(),
             referenceModuleData: '',
-            actionModules: _toAddressArray(address(mockCollectModule)),
+            actionModules: _toAddressArray(address(mockActionModule)),
             actionModulesInitDatas: _toBytesArray(abi.encode(1)),
             referenceModule: address(0),
             referenceModuleInitData: ''
@@ -224,15 +225,25 @@ contract TestSetup is Test, ForkManagement, ArrayHelpers {
             referenceModuleData: ''
         });
 
-        // Precompute basic collect data.
-        mockCollectParams = Types.CollectParams({
-            publicationCollectedProfileId: newProfileId,
-            publicationCollectedId: FIRST_PUB_ID,
-            collectorProfileId: newProfileId,
+        mockActParams = Types.PublicationActionParams({
+            publicationActedProfileId: newProfileId,
+            publicationActedId: FIRST_PUB_ID,
+            actorProfileId: newProfileId,
             referrerProfileIds: _emptyUint256Array(),
             referrerPubIds: _emptyUint256Array(),
-            collectModuleData: ''
+            actionModuleAddress: address(mockActionModule),
+            actionModuleData: abi.encode(true)
         });
+
+        // // Precompute basic collect data.
+        // mockCollectParams = Types.CollectParams({
+        //     publicationCollectedProfileId: newProfileId,
+        //     publicationCollectedId: FIRST_PUB_ID,
+        //     collectorProfileId: newProfileId,
+        //     referrerProfileIds: _emptyUint256Array(),
+        //     referrerPubIds: _emptyUint256Array(),
+        //     collectModuleData: ''
+        // });
 
         hub.createProfile(mockCreateProfileParams);
     }

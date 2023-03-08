@@ -9,6 +9,8 @@ import {IPublicationActionModule} from 'contracts/interfaces/IPublicationActionM
 import {Errors} from 'contracts/libraries/constants/Errors.sol';
 import {Events} from 'contracts/libraries/constants/Events.sol';
 
+import 'forge-std/console.sol';
+
 library ActionLib {
     function act(
         Types.PublicationActionParams calldata publicationActionParams,
@@ -31,7 +33,7 @@ library ActionLib {
             revert Errors.ActionNotAllowed();
         }
 
-        if (_isActionAllowed(_actedOnPublication, actionModuleId)) {
+        if (!_isActionAllowed(_actedOnPublication, actionModuleId)) {
             // This will also revert for:
             //   - Non-existent publications
             //   - Legacy V1 publications
