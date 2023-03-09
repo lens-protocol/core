@@ -166,8 +166,8 @@ library MetaTxLib {
                         Typehash.POST,
                         postParams.profileId,
                         keccak256(bytes(postParams.contentURI)),
-                        postParams.collectModule,
-                        keccak256(postParams.collectModuleInitData),
+                        postParams.actionModules,
+                        _prepareActionModulesInitDatas(postParams.actionModulesInitDatas),
                         postParams.referenceModule,
                         keccak256(postParams.referenceModuleInitData),
                         _getAndIncrementNonce(signature.signer),
@@ -177,6 +177,15 @@ library MetaTxLib {
             ),
             signature
         );
+    }
+
+    // TODO: Check if this is how you do encoding of bytes[] array in ERC721
+    function _prepareActionModulesInitDatas(bytes[] memory actionModulesInitDatas) internal pure returns (bytes32) {
+        bytes32[] memory actionModulesInitDatasBytes = new bytes32[](actionModulesInitDatas.length);
+        for (uint256 i = 0; i < actionModulesInitDatas.length; i++) {
+            actionModulesInitDatasBytes[i] = keccak256(abi.encode(actionModulesInitDatas[i]));
+        }
+        return keccak256(abi.encode(actionModulesInitDatasBytes));
     }
 
     // We need this to deal with stack too deep:
@@ -189,8 +198,8 @@ library MetaTxLib {
         uint256[] referrerProfileIds;
         uint256[] referrerPubIds;
         bytes32 referenceModuleDataHash;
-        address collectModule;
-        bytes32 collectModuleInitDataHash;
+        address[] actionModules;
+        bytes32 actionModulesInitDataHash;
         address referenceModule;
         bytes32 referenceModuleInitDataHash;
         uint256 nonce;
@@ -210,8 +219,8 @@ library MetaTxLib {
                 referenceParamsForAbiEncode.referrerProfileIds,
                 referenceParamsForAbiEncode.referrerPubIds,
                 referenceParamsForAbiEncode.referenceModuleDataHash,
-                referenceParamsForAbiEncode.collectModule,
-                referenceParamsForAbiEncode.collectModuleInitDataHash,
+                referenceParamsForAbiEncode.actionModules,
+                referenceParamsForAbiEncode.actionModulesInitDataHash,
                 referenceParamsForAbiEncode.referenceModule,
                 referenceParamsForAbiEncode.referenceModuleInitDataHash,
                 referenceParamsForAbiEncode.nonce,
@@ -225,7 +234,7 @@ library MetaTxLib {
     ) external {
         bytes32 contentURIHash = keccak256(bytes(commentParams.contentURI));
         bytes32 referenceModuleDataHash = keccak256(commentParams.referenceModuleData);
-        bytes32 collectModuleInitDataHash = keccak256(commentParams.collectModuleInitData);
+        bytes32 actionModulesInitDataHash = _prepareActionModulesInitDatas(commentParams.actionModulesInitDatas);
         bytes32 referenceModuleInitDataHash = keccak256(commentParams.referenceModuleInitData);
         uint256 nonce = _getAndIncrementNonce(signature.signer);
         uint256 deadline = signature.deadline;
@@ -239,8 +248,8 @@ library MetaTxLib {
                 commentParams.referrerProfileIds,
                 commentParams.referrerPubIds,
                 referenceModuleDataHash,
-                commentParams.collectModule,
-                collectModuleInitDataHash,
+                commentParams.actionModules,
+                actionModulesInitDataHash,
                 commentParams.referenceModule,
                 referenceModuleInitDataHash,
                 nonce,
@@ -256,7 +265,7 @@ library MetaTxLib {
     ) external {
         bytes32 contentURIHash = keccak256(bytes(quoteParams.contentURI));
         bytes32 referenceModuleDataHash = keccak256(quoteParams.referenceModuleData);
-        bytes32 collectModuleInitDataHash = keccak256(quoteParams.collectModuleInitData);
+        bytes32 actionModulesInitDataHash = _prepareActionModulesInitDatas(quoteParams.actionModulesInitDatas);
         bytes32 referenceModuleInitDataHash = keccak256(quoteParams.referenceModuleInitData);
         uint256 nonce = _getAndIncrementNonce(signature.signer);
         uint256 deadline = signature.deadline;
@@ -270,8 +279,8 @@ library MetaTxLib {
                 quoteParams.referrerProfileIds,
                 quoteParams.referrerPubIds,
                 referenceModuleDataHash,
-                quoteParams.collectModule,
-                collectModuleInitDataHash,
+                quoteParams.actionModules,
+                actionModulesInitDataHash,
                 quoteParams.referenceModule,
                 referenceModuleInitDataHash,
                 nonce,
@@ -411,6 +420,31 @@ library MetaTxLib {
                         collectParams.referrerProfileIds,
                         collectParams.referrerPubIds,
                         keccak256(collectParams.collectModuleData),
+                        _getAndIncrementNonce(signature.signer),
+                        signature.deadline
+                    )
+                )
+            ),
+            signature
+        );
+    }
+
+    function validateActSignature(
+        Types.EIP712Signature calldata signature,
+        Types.PublicationActionParams calldata publicationActionParams
+    ) external {
+        _validateRecoveredAddress(
+            _calculateDigest(
+                keccak256(
+                    abi.encode(
+                        Typehash.ACT,
+                        publicationActionParams.publicationActedProfileId,
+                        publicationActionParams.publicationActedId,
+                        publicationActionParams.actorProfileId,
+                        publicationActionParams.referrerProfileIds,
+                        publicationActionParams.referrerPubIds,
+                        publicationActionParams.actionModuleAddress,
+                        keccak256(publicationActionParams.actionModuleData),
                         _getAndIncrementNonce(signature.signer),
                         signature.deadline
                     )

@@ -158,7 +158,10 @@ library ProfileLib {
             }
             blockedStatus = blockStatus[i];
             if (followNFT != address(0) && blockedStatus) {
-                IFollowNFT(followNFT).processBlock(idOfProfileToSetBlockStatus);
+                bool hasUnfollowed = IFollowNFT(followNFT).processBlock(idOfProfileToSetBlockStatus);
+                if (hasUnfollowed) {
+                    emit Events.Unfollowed(idOfProfileToSetBlockStatus, byProfileId, block.timestamp);
+                }
             }
             _blockedStatus[idOfProfileToSetBlockStatus] = blockedStatus;
             if (blockedStatus) {

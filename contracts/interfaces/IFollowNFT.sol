@@ -97,8 +97,10 @@ interface IFollowNFT {
      * @dev This must be only callable by the LensHub contract.
      *
      * @param followerProfileId The ID of the follow token to unwrap and tie.
+     *
+     * @return bool True if the given profile was following and now has unfollowed, false otherwise.
      */
-    function processBlock(uint256 followerProfileId) external;
+    function processBlock(uint256 followerProfileId) external returns (bool);
 
     /**
      * @notice Gets the ID of the profile following with the given follow token.

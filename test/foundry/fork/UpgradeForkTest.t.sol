@@ -174,7 +174,7 @@ contract UpgradeForkTest is BaseTest {
         // Set the proper initial params, these must be redundantly reset as they may have been set
         // to different values in memory.
         mockPostParams.profileId = profileId;
-        mockPostParams.collectModule = mockCollectModuleAddr;
+        // mockPostParams.collectModule = mockCollectModuleAddr; // TODO: Proper test
         mockPostParams.referenceModule = mockReferenceModuleAddr;
 
         mockCommentParams.profileId = profileId;
@@ -191,7 +191,7 @@ contract UpgradeForkTest is BaseTest {
             uint256 postId = retPubId;
             assertEq(postId, 1);
 
-            mockCommentParams.collectModule = mockCollectModuleAddr;
+            // mockCommentParams.collectModule = mockCollectModuleAddr; // TODO: Proper test
             mockCommentParams.referenceModule = mockReferenceModuleAddr;
 
             // Validate post.
@@ -201,8 +201,8 @@ contract UpgradeForkTest is BaseTest {
             assertEq(pub.pointedPubId, 0);
             assertEq(pub.contentURI, mockPostParams.contentURI);
             assertEq(pub.referenceModule, mockPostParams.referenceModule);
-            assertEq(pub.collectModule, mockPostParams.collectModule);
-            assertEq(pub.collectNFT, address(0));
+            // assertEq(pub.collectModule, mockPostParams.collectModule); // TODO: Proper test
+            // assertEq(pub.collectNFT, address(0));
 
             // Comment.
             uint256 commentId = hub.comment(mockCommentParams);
@@ -214,8 +214,8 @@ contract UpgradeForkTest is BaseTest {
             assertEq(pub.pointedPubId, mockCommentParams.pointedPubId);
             assertEq(pub.contentURI, mockCommentParams.contentURI);
             assertEq(pub.referenceModule, mockCommentParams.referenceModule);
-            assertEq(pub.collectModule, mockCommentParams.collectModule);
-            assertEq(pub.collectNFT, address(0));
+            // assertEq(pub.collectModule, mockCommentParams.collectModule); // TODO: Proper test
+            // assertEq(pub.collectNFT, address(0));
 
             // Mirror.
             uint256 mirrorId = hub.mirror(mockMirrorParams);
@@ -227,21 +227,21 @@ contract UpgradeForkTest is BaseTest {
             assertEq(pub.pointedPubId, mockMirrorParams.pointedPubId);
             assertEq(pub.contentURI, '');
             assertEq(pub.referenceModule, address(0));
-            assertEq(pub.collectModule, address(0));
-            assertEq(pub.collectNFT, address(0));
+            // assertEq(pub.collectModule, address(0)); // TODO: Proper tests
+            // assertEq(pub.collectNFT, address(0));
         } catch {
             console2.log('Post with modern collect and reference module failed, Attempting with deprecated modules');
 
-            address mockDeprecatedCollectModule = address(new MockDeprecatedCollectModule());
+            // address mockDeprecatedCollectModule = address(new MockDeprecatedCollectModule()); // TODO: Proper test
             address mockDeprecatedReferenceModule = address(new MockDeprecatedReferenceModule());
 
             vm.startPrank(gov);
-            hub.whitelistCollectModule(mockDeprecatedCollectModule, true);
+            // hub.whitelistCollectModule(mockDeprecatedCollectModule, true); // TODO: Proper test
             hub.whitelistReferenceModule(mockDeprecatedReferenceModule, true);
             vm.stopPrank();
 
             // Post.
-            mockPostParams.collectModule = mockDeprecatedCollectModule;
+            // mockPostParams.collectModule = mockDeprecatedCollectModule; // TODO: Proper test
             mockPostParams.referenceModule = mockDeprecatedReferenceModule;
             uint256 postId = hub.post(mockPostParams);
 
@@ -252,11 +252,11 @@ contract UpgradeForkTest is BaseTest {
             assertEq(pub.pointedPubId, 0);
             assertEq(pub.contentURI, mockPostParams.contentURI);
             assertEq(pub.referenceModule, mockPostParams.referenceModule);
-            assertEq(pub.collectModule, mockPostParams.collectModule);
-            assertEq(pub.collectNFT, address(0));
+            // assertEq(pub.collectModule, mockPostParams.collectModule); // TODO: Proper test
+            // assertEq(pub.collectNFT, address(0));
 
             // Comment.
-            mockCommentParams.collectModule = mockDeprecatedCollectModule;
+            // mockCommentParams.collectModule = mockDeprecatedCollectModule; // TODO: Proper test
             mockCommentParams.referenceModule = mockDeprecatedReferenceModule;
             uint256 commentId = hub.comment(mockCommentParams);
 
@@ -267,8 +267,8 @@ contract UpgradeForkTest is BaseTest {
             assertEq(pub.pointedPubId, mockCommentParams.pointedPubId);
             assertEq(pub.contentURI, mockCommentParams.contentURI);
             assertEq(pub.referenceModule, mockCommentParams.referenceModule);
-            assertEq(pub.collectModule, mockCommentParams.collectModule);
-            assertEq(pub.collectNFT, address(0));
+            // assertEq(pub.collectModule, mockCommentParams.collectModule); // TODO: Proper test
+            // assertEq(pub.collectNFT, address(0));
 
             // Mirror.
             OldMirrorParams memory oldMirrorParams = OldMirrorParams({
@@ -289,8 +289,8 @@ contract UpgradeForkTest is BaseTest {
             assertEq(pub.pointedPubId, mockMirrorParams.pointedPubId);
             assertEq(pub.contentURI, '');
             assertEq(pub.referenceModule, mockDeprecatedReferenceModule);
-            assertEq(pub.collectModule, address(0));
-            assertEq(pub.collectNFT, address(0));
+            // assertEq(pub.collectModule, address(0)); // TODO: Proper test
+            // assertEq(pub.collectNFT, address(0));
         }
     }
 
@@ -372,7 +372,7 @@ contract UpgradeForkTest is BaseTest {
         vm.startPrank(gov);
         hub.whitelistProfileCreator(me, true);
         hub.whitelistFollowModule(mockFollowModuleAddr, true);
-        hub.whitelistCollectModule(mockCollectModuleAddr, true);
+        // hub.whitelistCollectModule(mockCollectModuleAddr, true); // TODO: Proper test
         hub.whitelistReferenceModule(mockReferenceModuleAddr, true);
 
         // End gov actions.
@@ -404,8 +404,8 @@ contract UpgradeForkTest is BaseTest {
         mockPostParams = Types.PostParams({
             profileId: 0,
             contentURI: MOCK_URI,
-            collectModule: address(0),
-            collectModuleInitData: abi.encode(1),
+            actionModules: _toAddressArray(address(0)),
+            actionModulesInitDatas: _toBytesArray(abi.encode(1)),
             referenceModule: address(0),
             referenceModuleInitData: abi.encode(1)
         });
@@ -419,8 +419,8 @@ contract UpgradeForkTest is BaseTest {
             referrerProfileIds: _emptyUint256Array(),
             referrerPubIds: _emptyUint256Array(),
             referenceModuleData: '',
-            collectModule: address(0),
-            collectModuleInitData: abi.encode(1),
+            actionModules: _toAddressArray(address(0)),
+            actionModulesInitDatas: _toBytesArray(abi.encode(1)),
             referenceModule: address(0),
             referenceModuleInitData: abi.encode(1)
         });

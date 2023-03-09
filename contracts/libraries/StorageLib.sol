@@ -14,7 +14,7 @@ library StorageLib {
     uint256 constant PROTOCOL_STATE_SLOT = 12;
     uint256 constant PROFILE_CREATOR_WHITELIST_MAPPING_SLOT = 13;
     uint256 constant FOLLOW_MODULE_WHITELIST_MAPPING_SLOT = 14;
-    uint256 constant COLLECT_MODULE_WHITELIST_MAPPING_SLOT = 15;
+    uint256 constant ACTION_MODULE_WHITELIST_ID_MAPPING_SLOT = 15;
     uint256 constant REFERENCE_MODULE_WHITELIST_MAPPING_SLOT = 16;
     // Slot 17 deprecated in Lens V2, it was used for dispatcher address by profile ID.
     uint256 constant PROFILE_ID_BY_HANDLE_HASH_MAPPING_SLOT = 18;
@@ -103,13 +103,13 @@ library StorageLib {
         }
     }
 
-    function collectModuleWhitelisted()
+    function actionModuleWhitelistedId()
         internal
         pure
-        returns (mapping(address => bool) storage _collectModuleWhitelisted)
+        returns (mapping(address => uint256) storage _actionModuleWhitelistedId)
     {
         assembly {
-            _collectModuleWhitelisted.slot := COLLECT_MODULE_WHITELIST_MAPPING_SLOT
+            _actionModuleWhitelistedId.slot := ACTION_MODULE_WHITELIST_ID_MAPPING_SLOT
         }
     }
 

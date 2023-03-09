@@ -94,8 +94,8 @@ contract BaseTest is TestSetup {
     function _getPostTypedDataHash(
         uint256 profileId,
         string memory contentURI,
-        address collectModule,
-        bytes memory collectModuleInitData,
+        address[] memory actionModules,
+        bytes[] memory actionModulesInitDatas,
         address referenceModule,
         bytes memory referenceModuleInitData,
         uint256 nonce,
@@ -106,8 +106,8 @@ contract BaseTest is TestSetup {
                 Typehash.POST,
                 profileId,
                 keccak256(bytes(contentURI)),
-                collectModule,
-                keccak256(collectModuleInitData),
+                actionModules,
+                _prepareActionModulesInitDatas(actionModulesInitDatas),
                 referenceModule,
                 keccak256(referenceModuleInitData),
                 nonce,
@@ -115,6 +115,15 @@ contract BaseTest is TestSetup {
             )
         );
         return _calculateDigest(structHash);
+    }
+
+    // TODO: Check if this is how you do encoding of bytes[] array in ERC721
+    function _prepareActionModulesInitDatas(bytes[] memory actionModulesInitDatas) internal pure returns (bytes32) {
+        bytes32[] memory actionModulesInitDatasBytes = new bytes32[](actionModulesInitDatas.length);
+        for (uint256 i = 0; i < actionModulesInitDatas.length; i++) {
+            actionModulesInitDatasBytes[i] = keccak256(abi.encode(actionModulesInitDatas[i]));
+        }
+        return keccak256(abi.encode(actionModulesInitDatasBytes));
     }
 
     function _getPostTypedDataHash(
@@ -126,8 +135,8 @@ contract BaseTest is TestSetup {
             _getPostTypedDataHash({
                 profileId: postParams.profileId,
                 contentURI: postParams.contentURI,
-                collectModule: postParams.collectModule,
-                collectModuleInitData: postParams.collectModuleInitData,
+                actionModules: postParams.actionModules,
+                actionModulesInitDatas: postParams.actionModulesInitDatas,
                 referenceModule: postParams.referenceModule,
                 referenceModuleInitData: postParams.referenceModuleInitData,
                 nonce: nonce,
@@ -136,62 +145,29 @@ contract BaseTest is TestSetup {
     }
 
     function _getCommentTypedDataHash(
-        uint256 profileId,
-        string memory contentURI,
-        uint256 pointedProfileId,
-        uint256 pointedPubId,
-        uint256[] memory referrerProfileIds,
-        uint256[] memory referrerPubIds,
-        bytes memory referenceModuleData,
-        address collectModule,
-        bytes memory collectModuleInitData,
-        address referenceModule,
-        bytes memory referenceModuleInitData,
+        Types.CommentParams memory commentParams,
         uint256 nonce,
         uint256 deadline
     ) internal view returns (bytes32) {
         bytes32 structHash = keccak256(
             abi.encode(
                 Typehash.COMMENT,
-                profileId,
-                keccak256(bytes(contentURI)),
-                pointedProfileId,
-                pointedPubId,
-                referrerProfileIds,
-                referrerPubIds,
-                keccak256(referenceModuleData),
-                collectModule,
-                keccak256(collectModuleInitData),
-                referenceModule,
-                keccak256(referenceModuleInitData),
+                commentParams.profileId,
+                keccak256(bytes(commentParams.contentURI)),
+                commentParams.pointedProfileId,
+                commentParams.pointedPubId,
+                commentParams.referrerProfileIds,
+                commentParams.referrerPubIds,
+                keccak256(commentParams.referenceModuleData),
+                commentParams.actionModules,
+                _prepareActionModulesInitDatas(commentParams.actionModulesInitDatas),
+                commentParams.referenceModule,
+                keccak256(commentParams.referenceModuleInitData),
                 nonce,
                 deadline
             )
         );
         return _calculateDigest(structHash);
-    }
-
-    function _getCommentTypedDataHash(
-        Types.CommentParams memory commentParams,
-        uint256 nonce,
-        uint256 deadline
-    ) internal view returns (bytes32) {
-        return
-            _getCommentTypedDataHash({
-                profileId: commentParams.profileId,
-                contentURI: commentParams.contentURI,
-                pointedProfileId: commentParams.pointedProfileId,
-                pointedPubId: commentParams.pointedPubId,
-                referrerProfileIds: _emptyUint256Array(),
-                referrerPubIds: _emptyUint256Array(),
-                referenceModuleData: commentParams.referenceModuleData,
-                collectModule: commentParams.collectModule,
-                collectModuleInitData: commentParams.collectModuleInitData,
-                referenceModule: commentParams.referenceModule,
-                referenceModuleInitData: commentParams.referenceModuleInitData,
-                nonce: nonce,
-                deadline: deadline
-            });
     }
 
     function _getMirrorTypedDataHash(
@@ -269,20 +245,42 @@ contract BaseTest is TestSetup {
         return _calculateDigest(structHash);
     }
 
-    function _getCollectTypedDataHash(
-        Types.CollectParams memory collectParams,
+    // function _getCollectTypedDataHash(
+    //     Types.CollectParams memory collectParams,
+    //     uint256 nonce,
+    //     uint256 deadline
+    // ) internal view returns (bytes32) {
+    //     bytes32 structHash = keccak256(
+    //         abi.encode(
+    //             Typehash.COLLECT,
+    //             collectParams.publicationCollectedProfileId,
+    //             collectParams.publicationCollectedId,
+    //             collectParams.collectorProfileId,
+    //             collectParams.referrerProfileIds,
+    //             collectParams.referrerPubIds,
+    //             keccak256(collectParams.collectModuleData),
+    //             nonce,
+    //             deadline
+    //         )
+    //     );
+    //     return _calculateDigest(structHash);
+    // }
+
+    function _getActTypedDataHash(
+        Types.PublicationActionParams memory publicationActionParams,
         uint256 nonce,
         uint256 deadline
     ) internal view returns (bytes32) {
         bytes32 structHash = keccak256(
             abi.encode(
-                Typehash.COLLECT,
-                collectParams.publicationCollectedProfileId,
-                collectParams.publicationCollectedId,
-                collectParams.collectorProfileId,
-                collectParams.referrerProfileIds,
-                collectParams.referrerPubIds,
-                keccak256(collectParams.collectModuleData),
+                Typehash.ACT,
+                publicationActionParams.publicationActedProfileId,
+                publicationActionParams.publicationActedId,
+                publicationActionParams.actorProfileId,
+                publicationActionParams.referrerProfileIds,
+                publicationActionParams.referrerPubIds,
+                publicationActionParams.actionModuleAddress,
+                keccak256(publicationActionParams.actionModuleData),
                 nonce,
                 deadline
             )
@@ -328,21 +326,42 @@ contract BaseTest is TestSetup {
         return hub.mirror(mirrorParams);
     }
 
-    function _collect(
-        uint256 collectorProfileId,
-        uint256 publisherProfileId,
-        uint256 pubId,
+    // function _collect(
+    //     uint256 collectorProfileId,
+    //     uint256 publisherProfileId,
+    //     uint256 pubId,
+    //     bytes memory data
+    // ) internal returns (uint256) {
+    //     return
+    //         hub.collect(
+    //             Types.CollectParams({
+    //                 publicationCollectedProfileId: publisherProfileId,
+    //                 publicationCollectedId: pubId,
+    //                 collectorProfileId: collectorProfileId,
+    //                 referrerProfileIds: _emptyUint256Array(),
+    //                 referrerPubIds: _emptyUint256Array(),
+    //                 collectModuleData: data
+    //             })
+    //         );
+    // }
+
+    function _act(
+        uint256 actorProfileId,
+        uint256 publicationActedProfileId,
+        uint256 publicationActedId,
+        address actionModuleAddress,
         bytes memory data
-    ) internal returns (uint256) {
+    ) internal returns (bytes memory) {
         return
-            hub.collect(
-                Types.CollectParams({
-                    publicationCollectedProfileId: publisherProfileId,
-                    publicationCollectedId: pubId,
-                    collectorProfileId: collectorProfileId,
+            hub.act(
+                Types.PublicationActionParams({
+                    publicationActedProfileId: publicationActedProfileId,
+                    publicationActedId: publicationActedId,
+                    actorProfileId: actorProfileId,
                     referrerProfileIds: _emptyUint256Array(),
                     referrerPubIds: _emptyUint256Array(),
-                    collectModuleData: data
+                    actionModuleAddress: actionModuleAddress,
+                    actionModuleData: data
                 })
             );
     }
@@ -368,11 +387,18 @@ contract BaseTest is TestSetup {
         return hub.mirrorWithSig(mirrorParams, signature);
     }
 
-    function _collectWithSig(
-        Types.CollectParams memory collectParams,
+    // function _collectWithSig(
+    //     Types.CollectParams memory collectParams,
+    //     Types.EIP712Signature memory signature
+    // ) internal returns (uint256) {
+    //     return hub.collectWithSig(collectParams, signature);
+    // }
+
+    function _actWithSig(
+        Types.PublicationActionParams memory publiactionActionParams,
         Types.EIP712Signature memory signature
-    ) internal returns (uint256) {
-        return hub.collectWithSig(collectParams, signature);
+    ) internal returns (bytes memory) {
+        return hub.actWithSig(publiactionActionParams, signature);
     }
 
     function _follow(

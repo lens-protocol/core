@@ -20,6 +20,7 @@ import {MetaTxLib} from 'contracts/libraries/MetaTxLib.sol';
 import {GovernanceLib} from 'contracts/libraries/GovernanceLib.sol';
 import {StorageLib} from 'contracts/libraries/StorageLib.sol';
 import {FollowLib} from 'contracts/libraries/FollowLib.sol';
+import {ActionLib} from 'contracts/libraries/ActionLib.sol';
 import {CollectLib} from 'contracts/libraries/CollectLib.sol';
 
 ///////////////////////////////////// Migration imports ////////////////////////////////////
@@ -132,9 +133,10 @@ contract LensHub is LensBaseERC721, VersionedInitializable, LensMultiState, Lens
 
     // TODO: Move to GovernanceLib?
     /// @inheritdoc ILensHub
-    function whitelistCollectModule(address collectModule, bool whitelist) external override onlyGov {
-        _collectModuleWhitelisted[collectModule] = whitelist;
-        emit Events.CollectModuleWhitelisted(collectModule, whitelist, block.timestamp);
+    function whitelistActionModuleId(address actionModule, uint256 whitelistId) external override onlyGov {
+        _actionModuleWhitelistedId[actionModule] = whitelistId;
+        _actionModuleById[whitelistId] = actionModule;
+        emit Events.ActionModuleWhitelistedId(actionModule, whitelistId, block.timestamp);
     }
 
     ///////////////////////////////////////////
@@ -624,7 +626,7 @@ contract LensHub is LensBaseERC721, VersionedInitializable, LensMultiState, Lens
         return ProfileLib.setBlockStatus(byProfileId, idsOfProfilesToSetBlockStatus, blockStatus);
     }
 
-    /// TODO: Inherit natspec
+    /// @inheritdoc ILensHub
     function collect(
         Types.CollectParams calldata collectParams
     )
@@ -667,28 +669,43 @@ contract LensHub is LensBaseERC721, VersionedInitializable, LensMultiState, Lens
     }
 
     /// @inheritdoc ILensHub
-    function emitFollowNFTTransferEvent(
-        uint256 profileId,
-        uint256 followNFTId,
-        address from,
-        address to
-    ) external override {
-        address expectedFollowNFT = _profileById[profileId].followNFT;
-        if (msg.sender != expectedFollowNFT) revert Errors.CallerNotFollowNFT();
-        emit Events.FollowNFTTransferred(profileId, followNFTId, from, to, block.timestamp);
+    function act(
+        Types.PublicationActionParams calldata publicationActionParams
+    )
+        external
+        override
+        whenNotPaused
+        onlyProfileOwnerOrDelegatedExecutor(msg.sender, publicationActionParams.actorProfileId)
+        whenNotBlocked(publicationActionParams.actorProfileId, publicationActionParams.publicationActedProfileId)
+        returns (bytes memory)
+    {
+        return
+            ActionLib.act({
+                publicationActionParams: publicationActionParams,
+                transactionExecutor: msg.sender,
+                actorProfileOwner: ownerOf(publicationActionParams.actorProfileId)
+            });
     }
 
     /// @inheritdoc ILensHub
-    function emitCollectNFTTransferEvent(
-        uint256 profileId,
-        uint256 pubId,
-        uint256 collectNFTId,
-        address from,
-        address to
-    ) external override {
-        address expectedCollectNFT = _pubByIdByProfile[profileId][pubId].collectNFT;
-        if (msg.sender != expectedCollectNFT) revert Errors.CallerNotCollectNFT();
-        emit Events.CollectNFTTransferred(profileId, pubId, collectNFTId, from, to, block.timestamp);
+    function actWithSig(
+        Types.PublicationActionParams calldata publicationActionParams,
+        Types.EIP712Signature calldata signature
+    )
+        external
+        override
+        whenNotPaused
+        onlyProfileOwnerOrDelegatedExecutor(signature.signer, publicationActionParams.actorProfileId)
+        whenNotBlocked(publicationActionParams.actorProfileId, publicationActionParams.publicationActedProfileId)
+        returns (bytes memory)
+    {
+        MetaTxLib.validateActSignature(signature, publicationActionParams);
+        return
+            ActionLib.act({
+                publicationActionParams: publicationActionParams,
+                transactionExecutor: signature.signer,
+                actorProfileOwner: ownerOf(publicationActionParams.actorProfileId)
+            });
     }
 
     /// @inheritdoc ILensHub
@@ -725,8 +742,8 @@ contract LensHub is LensBaseERC721, VersionedInitializable, LensMultiState, Lens
     }
 
     /// @inheritdoc ILensHub
-    function isCollectModuleWhitelisted(address collectModule) external view override returns (bool) {
-        return _collectModuleWhitelisted[collectModule];
+    function isActionModuleWhitelisted(address actionModule) external view override returns (bool) {
+        return _actionModuleWhitelistedId[actionModule] > 0;
     }
 
     /// @inheritdoc ILensHub
@@ -795,7 +812,7 @@ contract LensHub is LensBaseERC721, VersionedInitializable, LensMultiState, Lens
 
     /// @inheritdoc ILensHub
     function getCollectNFT(uint256 profileId, uint256 pubId) external view override returns (address) {
-        return _pubByIdByProfile[profileId][pubId].collectNFT;
+        return _pubByIdByProfile[profileId][pubId].__DEPRECATED__collectNFT;
     }
 
     /// @inheritdoc ILensHub
@@ -805,7 +822,7 @@ contract LensHub is LensBaseERC721, VersionedInitializable, LensMultiState, Lens
 
     /// @inheritdoc ILensHub
     function getCollectModule(uint256 profileId, uint256 pubId) external view override returns (address) {
-        return _pubByIdByProfile[profileId][pubId].collectModule;
+        return _pubByIdByProfile[profileId][pubId].__DEPRECATED__collectModule;
     }
 
     /// @inheritdoc ILensHub
@@ -852,6 +869,10 @@ contract LensHub is LensBaseERC721, VersionedInitializable, LensMultiState, Lens
         return COLLECT_NFT_IMPL;
     }
 
+    function getWhitelistedActionModuleById(uint256 id) external view returns (address) {
+        return _actionModuleById[id];
+    }
+
     /**
      * @dev Overrides the ERC721 tokenURI function to return the associated URI with a given profile.
      */
@@ -886,4 +907,11 @@ contract LensHub is LensBaseERC721, VersionedInitializable, LensMultiState, Lens
     function getRevision() internal pure virtual override returns (uint256) {
         return REVISION;
     }
+
+    //////////////////////////////////////
+    ///       DEPRECATED FUNCTIONS     ///
+    //////////////////////////////////////
+
+    // Deprecated in V2. Kept here just for backwards compatibility with Lens V1 Collect NFTs.
+    function emitCollectNFTTransferEvent(uint256, uint256, uint256, address, address) external {}
 }

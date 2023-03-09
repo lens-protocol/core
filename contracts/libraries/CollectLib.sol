@@ -32,12 +32,13 @@ library CollectLib {
         address collectModule;
         Types.PublicationType[] memory referrerPubTypes;
         uint256 tokenId;
+        address collectNFT;
         {
             Types.Publication storage _collectedPublication = StorageLib.getPublication(
                 collectParams.publicationCollectedProfileId,
                 collectParams.publicationCollectedId
             );
-            collectModule = _collectedPublication.collectModule;
+            collectModule = _collectedPublication.__DEPRECATED__collectModule;
             if (collectModule == address(0)) {
                 // Doesn't have collectModule, thus it cannot be a collected (a mirror or non-existent).
                 revert Errors.CollectNotAllowed();
@@ -49,7 +50,7 @@ library CollectLib {
                 collectParams.publicationCollectedProfileId,
                 collectParams.publicationCollectedId
             );
-            address collectNFT = _getOrDeployCollectNFT(
+            collectNFT = _getOrDeployCollectNFT(
                 _collectedPublication,
                 collectParams.publicationCollectedProfileId,
                 collectParams.publicationCollectedId,
@@ -68,6 +69,25 @@ library CollectLib {
             })
         );
 
+        emit Events.Collected({
+            collectActionParams: Types.ProcessActionParams({
+                publicationActedProfileId: collectParams.publicationCollectedProfileId,
+                publicationActedId: collectParams.publicationCollectedId,
+                actorProfileId: collectParams.collectorProfileId,
+                actorProfileOwner: collectorProfileOwner,
+                executor: transactionExecutor,
+                referrerProfileIds: collectParams.referrerProfileIds,
+                referrerPubIds: collectParams.referrerPubIds,
+                referrerPubTypes: referrerPubTypes,
+                actionModuleData: collectParams.collectModuleData
+            }),
+            collectModule: collectModule,
+            collectNFT: collectNFT,
+            tokenId: tokenId,
+            collectActionResult: '',
+            timestamp: block.timestamp
+        });
+
         return tokenId;
     }
 
@@ -77,10 +97,10 @@ library CollectLib {
         uint256 publicationCollectedId,
         address collectNFTImpl
     ) private returns (address) {
-        address collectNFT = _collectedPublication.collectNFT;
+        address collectNFT = _collectedPublication.__DEPRECATED__collectNFT;
         if (collectNFT == address(0)) {
             collectNFT = _deployCollectNFT(publicationCollectedProfileId, publicationCollectedId, collectNFTImpl);
-            _collectedPublication.collectNFT = collectNFT;
+            _collectedPublication.__DEPRECATED__collectNFT = collectNFT;
         }
         return collectNFT;
     }
@@ -142,15 +162,6 @@ library CollectLib {
                 collectParams.collectModuleData
             );
         }
-        emit Events.Collected({
-            publicationCollectedProfileId: collectParams.publicationCollectedProfileId,
-            publicationCollectedId: collectParams.publicationCollectedId,
-            collectorProfileId: collectParams.collectorProfileId,
-            referrerProfileIds: collectParams.referrerProfileIds,
-            referrerPubIds: collectParams.referrerPubIds,
-            collectModuleData: collectParams.collectModuleData,
-            timestamp: block.timestamp
-        });
     }
 
     /**

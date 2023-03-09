@@ -51,7 +51,6 @@ contract FollowNFT is HubRestricted, LensBaseERC721, ERC2981CollectionRoyalties,
         _initialized = true;
         _followedProfileId = profileId;
         _setRoyalty(1000); // 10% of royalties
-        emit Events.FollowNFTInitialized(profileId, block.timestamp);
     }
 
     /// @inheritdoc IFollowNFT
@@ -183,7 +182,8 @@ contract FollowNFT is HubRestricted, LensBaseERC721, ERC2981CollectionRoyalties,
     }
 
     /// @inheritdoc IFollowNFT
-    function processBlock(uint256 followerProfileId) external override onlyHub {
+    function processBlock(uint256 followerProfileId) external override onlyHub returns (bool) {
+        bool hasUnfollowed;
         uint256 followTokenId = _followTokenIdByFollowerProfileId[followerProfileId];
         if (followTokenId != 0) {
             if (!_isFollowTokenWrapped(followTokenId)) {
@@ -191,8 +191,9 @@ contract FollowNFT is HubRestricted, LensBaseERC721, ERC2981CollectionRoyalties,
                 _mint(IERC721(HUB).ownerOf(followerProfileId), followTokenId);
             }
             _unfollow(followerProfileId, followTokenId);
-            ILensHub(HUB).emitUnfollowedEvent(followerProfileId, _followedProfileId);
+            hasUnfollowed = true;
         }
+        return hasUnfollowed;
     }
 
     /// @inheritdoc IFollowNFT
@@ -412,7 +413,6 @@ contract FollowNFT is HubRestricted, LensBaseERC721, ERC2981CollectionRoyalties,
             _approveFollow(0, followTokenId);
         }
         super._beforeTokenTransfer(from, to, followTokenId);
-        ILensHub(HUB).emitFollowNFTTransferEvent(_followedProfileId, followTokenId, from, to);
     }
 
     function _getReceiver(uint256 /* followTokenId */) internal view override returns (address) {
