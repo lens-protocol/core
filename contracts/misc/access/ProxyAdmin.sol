@@ -3,7 +3,7 @@
 pragma solidity ^0.8.19;
 
 import {TransparentUpgradeableProxy} from 'contracts/base/upgradeability/TransparentUpgradeableProxy.sol';
-import {UpgradeContractPermissions} from 'contracts/misc/UpgradeContractPermissions.sol';
+import {UpgradeContractPermissions} from 'contracts/misc/access/UpgradeContractPermissions.sol';
 
 contract ProxyAdmin is UpgradeContractPermissions {
     TransparentUpgradeableProxy public immutable LENS_HUB_PROXY;

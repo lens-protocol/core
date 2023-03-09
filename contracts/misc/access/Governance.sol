@@ -3,7 +3,7 @@
 pragma solidity ^0.8.19;
 
 import {ILensHub} from 'contracts/interfaces/ILensHub.sol';
-import {UpgradeContractPermissions} from 'contracts/misc/UpgradeContractPermissions.sol';
+import {UpgradeContractPermissions} from 'contracts/misc/access/UpgradeContractPermissions.sol';
 
 contract Governance is UpgradeContractPermissions {
     ILensHub public immutable LENS_HUB;
