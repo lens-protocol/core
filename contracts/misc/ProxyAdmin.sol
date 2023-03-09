@@ -3,89 +3,50 @@
 pragma solidity ^0.8.19;
 
 import {TransparentUpgradeableProxy} from 'contracts/base/upgradeability/TransparentUpgradeableProxy.sol';
+import {UpgradeContractPermissions} from 'contracts/misc/UpgradeContractPermissions.sol';
 
-contract ProxyAdmin {
-    error Unauthorized();
-
+contract ProxyAdmin is UpgradeContractPermissions {
     TransparentUpgradeableProxy public immutable LENS_HUB_PROXY;
     address public previousImplementation;
 
-    address public proxyAdminOwner;
-    address public upgradeContract;
-
-    modifier onlyProxyAdminOwner() {
-        if (msg.sender != proxyAdminOwner) {
-            revert Unauthorized();
-        }
-        _;
-    }
-
-    modifier onlyProxyAdminOwnerOrUpgradeContract() {
-        if (msg.sender != proxyAdminOwner && msg.sender != upgradeContract) {
-            revert Unauthorized();
-        }
-        _;
-    }
-
-    constructor(address lensHubAddress_, address previousImplementation_, address proxyAdminOwner_) {
+    constructor(
+        address lensHubAddress_,
+        address previousImplementation_,
+        address proxyAdminOwner_
+    ) UpgradeContractPermissions(proxyAdminOwner_) {
         LENS_HUB_PROXY = TransparentUpgradeableProxy(payable(lensHubAddress_));
         previousImplementation = previousImplementation_;
-        proxyAdminOwner = proxyAdminOwner_;
     }
 
-    ///////////////////////////////////
-    /// TransparentUpgradeableProxy ///
-    ///     Standard Functions      ///
-    ///////////////////////////////////
+    function currentImplementation() external returns (address) {
+        return LENS_HUB_PROXY.implementation();
+    }
 
-    function proxy_upgrade(address newImplementation) external onlyProxyAdminOwnerOrUpgradeContract {
+    //////////////////////////////////////////////////////
+    ///             ONLY PROXY ADMIN OWNER             ///
+    //////////////////////////////////////////////////////
+
+    function rollbackLastUpgrade() external onlyOwner {
+        LENS_HUB_PROXY.upgradeTo(previousImplementation);
+    }
+
+    function proxy_changeAdmin(address newAdmin) external onlyOwner {
+        LENS_HUB_PROXY.changeAdmin(newAdmin);
+    }
+
+    //////////////////////////////////////////////////////
+    ///   ONLY PROXY ADMIN OWNER OR UPGRADE CONTRACT   ///
+    //////////////////////////////////////////////////////
+
+    function proxy_upgrade(address newImplementation) external onlyOwnerOrUpgradeContract {
         previousImplementation = LENS_HUB_PROXY.implementation();
         LENS_HUB_PROXY.upgradeTo(newImplementation);
         delete upgradeContract;
     }
 
-    function proxy_upgradeAndCall(
-        address newImplementation,
-        bytes calldata data
-    ) external onlyProxyAdminOwnerOrUpgradeContract {
+    function proxy_upgradeAndCall(address newImplementation, bytes calldata data) external onlyOwnerOrUpgradeContract {
         previousImplementation = LENS_HUB_PROXY.implementation();
         LENS_HUB_PROXY.upgradeToAndCall(newImplementation, data);
         delete upgradeContract;
-    }
-
-    function proxy_changeAdmin(address newAdmin) external onlyProxyAdminOwner {
-        LENS_HUB_PROXY.changeAdmin(newAdmin);
-    }
-
-    ///////////////////////////////////
-    ///     Extra functionality     ///
-    ///////////////////////////////////
-
-    function rollbackLastUpgrade() external onlyProxyAdminOwner {
-        LENS_HUB_PROXY.upgradeTo(previousImplementation);
-    }
-
-    function clearUpgradeContract() external onlyProxyAdminOwner {
-        delete upgradeContract;
-    }
-
-    //////////////////////////////
-    ///   Permissions setters  ///
-    //////////////////////////////
-
-    function setProxyAdminOwner(address newProxyAdminOwner) external onlyProxyAdminOwner {
-        proxyAdminOwner = newProxyAdminOwner;
-    }
-
-    function setUpgradeContract(address newUpgradeContract) external onlyProxyAdminOwner {
-        upgradeContract = newUpgradeContract;
-    }
-
-    //////////////////////////////
-    ///        Getters         ///
-    //////////////////////////////
-
-    function currentImplementation() external returns (address) {
-        return LENS_HUB_PROXY.implementation();
     }
 }
