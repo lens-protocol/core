@@ -40,6 +40,8 @@ contract CollectPublicationAction is HubRestricted, VersionedInitializable, IPub
         COLLECT_NFT_IMPL = collectNFTImpl;
     }
 
+    // TODO: Add whitelist collect module function
+
     function initializePublicationAction(
         uint256 profileId,
         uint256 pubId,
