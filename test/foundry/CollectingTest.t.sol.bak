@@ -6,7 +6,7 @@ import 'test/foundry/helpers/SignatureHelpers.sol';
 import 'test/foundry/helpers/CollectingHelpers.sol';
 import 'test/foundry/MetaTxNegatives.t.sol';
 
-// TODO: Check what to do with this .bak
+// TODO: We still need these collecting tests to work with Deprecated collect modules in V1 posts
 // TODO add check for _initialize() called for fork tests - check name and symbol set
 
 contract CollectingTest is BaseTest, CollectingHelpers, SigSetup {
