@@ -7,23 +7,23 @@ import 'test/mocks/MockFollowModule.sol';
 // New Misc
 contract MiscTest is BaseTest {
     // Negatives
-    function testSetProfileImageURINotExecutorFails() public {
+    function testSetProfileImageURINotDelegatedExecutorFails() public {
         vm.expectRevert(Errors.ExecutorInvalid.selector);
         hub.setProfileImageURI(newProfileId, MOCK_URI);
     }
 
-    function testSetFollowNFTURINotExecutorFails() public {
+    function testSetFollowNFTURINotDelegatedExecutorFails() public {
         vm.expectRevert(Errors.ExecutorInvalid.selector);
         hub.setFollowNFTURI(newProfileId, MOCK_URI);
     }
 
     // Positives
-    function testExecutorSetProfileImageURI() public {
+    function testDelegatedExecutorSetProfileImageURI() public {
         assertEq(hub.getProfileImageURI(newProfileId), MOCK_URI);
         vm.prank(profileOwner);
         hub.changeCurrentDelegatedExecutorsConfig({
             delegatorProfileId: newProfileId,
-            executors: _toAddressArray(otherSigner),
+            delegatedExecutors: _toAddressArray(otherSigner),
             approvals: _toBoolArray(true)
         });
 
@@ -32,12 +32,12 @@ contract MiscTest is BaseTest {
         assertEq(hub.getProfileImageURI(newProfileId), 'test');
     }
 
-    function testExecutorSetFollowNFTURI() public {
+    function testDelegatedExecutorSetFollowNFTURI() public {
         assertEq(hub.getFollowNFTURI(newProfileId), MOCK_URI);
         vm.prank(profileOwner);
         hub.changeCurrentDelegatedExecutorsConfig({
             delegatorProfileId: newProfileId,
-            executors: _toAddressArray(otherSigner),
+            delegatedExecutors: _toAddressArray(otherSigner),
             approvals: _toBoolArray(true)
         });
 
@@ -61,7 +61,7 @@ contract MiscTest is BaseTest {
         });
     }
 
-    function testSetProfileImageURIWithSigNotExecutorFails() public {
+    function testSetProfileImageURIWithSigNotDelegatedExecutorFails() public {
         uint256 nonce = 0;
         uint256 deadline = type(uint256).max;
         bytes32 digest = _getSetProfileImageURITypedDataHash(newProfileId, MOCK_URI, nonce, deadline);
@@ -91,7 +91,7 @@ contract MiscTest is BaseTest {
         });
     }
 
-    function testSetFollowNFTURIWithSigNotExecutorFails() public {
+    function testSetFollowNFTURIWithSigNotDelegatedExecutorFails() public {
         uint256 nonce = 0;
         uint256 deadline = type(uint256).max;
         bytes32 digest = _getSetFollowNFTURITypedDataHash(newProfileId, MOCK_URI, nonce, deadline);
@@ -119,11 +119,11 @@ contract MiscTest is BaseTest {
         assertEq(hub.getProfileImageURI(newProfileId), 'test');
     }
 
-    function testExecutorSetProfileImageURIWithSig() public {
+    function testDelegatedExecutorSetProfileImageURIWithSig() public {
         vm.prank(profileOwner);
         hub.changeCurrentDelegatedExecutorsConfig({
             delegatorProfileId: newProfileId,
-            executors: _toAddressArray(otherSigner),
+            delegatedExecutors: _toAddressArray(otherSigner),
             approvals: _toBoolArray(true)
         });
 
@@ -154,11 +154,11 @@ contract MiscTest is BaseTest {
         assertEq(hub.getFollowNFTURI(newProfileId), 'test');
     }
 
-    function testExecutorSetFollowNFTURIWithSig() public {
+    function testDelegatedExecutorSetFollowNFTURIWithSig() public {
         vm.prank(profileOwner);
         hub.changeCurrentDelegatedExecutorsConfig({
             delegatorProfileId: newProfileId,
-            executors: _toAddressArray(otherSigner),
+            delegatedExecutors: _toAddressArray(otherSigner),
             approvals: _toBoolArray(true)
         });
 

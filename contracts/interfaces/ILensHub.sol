@@ -153,7 +153,7 @@ interface ILensHub {
      * @dev The message sender must be the owner of the delegator profile.
      *
      * @param delegatorProfileId The ID of the profile to which the delegated executor is being changed for.
-     * @param executors The array of executors to set the approval for.
+     * @param delegatedExecutors The array of delegated executors to set the approval for.
      * @param approvals The array of booleans indicating the corresponding executor new approval status.
      * @param configNumber The number of the configuration where the executor approval state is being set.
      * @param switchToGivenConfig A boolean indicanting if the configuration must be switched to the one with the given
@@ -161,7 +161,7 @@ interface ILensHub {
      */
     function changeDelegatedExecutorsConfig(
         uint256 delegatorProfileId,
-        address[] calldata executors,
+        address[] calldata delegatedExecutors,
         bool[] calldata approvals,
         uint64 configNumber,
         bool switchToGivenConfig
@@ -173,12 +173,12 @@ interface ILensHub {
      * @dev The message sender must be the owner of the delegator profile.
      *
      * @param delegatorProfileId The ID of the profile to which the delegated executor is being changed for.
-     * @param executors The array of executors to set the approval for.
+     * @param delegatedExecutors The array of delegated executors to set the approval for.
      * @param approvals The array of booleans indicating the corresponding executor new approval status.
      */
     function changeCurrentDelegatedExecutorsConfig(
         uint256 delegatorProfileId,
-        address[] calldata executors,
+        address[] calldata delegatedExecutors,
         bool[] calldata approvals
     ) external;
 
@@ -190,7 +190,7 @@ interface ILensHub {
      * the `configNumber` and `switchToGivenConfig` params are required to be passed explicitly.
      *
      * @param delegatorProfileId The ID of the profile to which the delegated executor is being changed for.
-     * @param executors The array of executors to set the approval for.
+     * @param delegatedExecutors The array of delegated executors to set the approval for.
      * @param approvals The array of booleans indicating the corresponding executor new approval status.
      * @param configNumber The number of the configuration where the executor approval state is being set.
      * @param switchToGivenConfig A boolean indicanting if the configuration must be switched to the one with the given
@@ -199,7 +199,7 @@ interface ILensHub {
      */
     function changeDelegatedExecutorsConfigWithSig(
         uint256 delegatorProfileId,
-        address[] calldata executors,
+        address[] calldata delegatedExecutors,
         bool[] calldata approvals,
         uint64 configNumber,
         bool switchToGivenConfig,
@@ -556,7 +556,7 @@ interface ILensHub {
      * number, to act on behalf of the given profile.
      *
      * @param delegatorProfileId The ID of the profile to check the delegated executor approval for.
-     * @param executor The address to query the delegated executor approval for.
+     * @param delegatedExecutor The address to query the delegated executor approval for.
      * @param configNumber The number of the configuration where the executor approval state is being queried.
      *
      * @return bool True if the address is approved as a delegated executor to act on behalf of the profile in the
@@ -564,7 +564,7 @@ interface ILensHub {
      */
     function isDelegatedExecutorApproved(
         uint256 delegatorProfileId,
-        address executor,
+        address delegatedExecutor,
         uint64 configNumber
     ) external view returns (bool);
 
@@ -573,12 +573,15 @@ interface ILensHub {
      * on behalf of the given profile.
      *
      * @param delegatorProfileId The ID of the profile to check the delegated executor approval for.
-     * @param executor The address to query the delegated executor approval for.
+     * @param delegatedExecutor The address to query the delegated executor approval for.
      *
      * @return bool True if the address is approved as a delegated executor to act on behalf of the profile in the
      * current configuration, false otherwise.
      */
-    function isDelegatedExecutorApproved(uint256 delegatorProfileId, address executor) external view returns (bool);
+    function isDelegatedExecutorApproved(
+        uint256 delegatorProfileId,
+        address delegatedExecutor
+    ) external view returns (bool);
 
     /**
      * @param delegatorProfileId The ID of the profile from which the delegated executors configuration number is being

@@ -87,7 +87,7 @@ library MetaTxLib {
     function validateChangeDelegatedExecutorsConfigSignature(
         Types.EIP712Signature calldata signature,
         uint256 delegatorProfileId,
-        address[] calldata executors,
+        address[] calldata delegatedExecutors,
         bool[] calldata approvals,
         uint64 configNumber,
         bool switchToGivenConfig
@@ -100,7 +100,7 @@ library MetaTxLib {
                     abi.encode(
                         Typehash.CHANGE_DELEGATED_EXECUTORS_CONFIG,
                         delegatorProfileId,
-                        abi.encodePacked(executors),
+                        abi.encodePacked(delegatedExecutors),
                         abi.encodePacked(approvals),
                         configNumber,
                         switchToGivenConfig,

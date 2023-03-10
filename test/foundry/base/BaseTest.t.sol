@@ -41,7 +41,7 @@ contract BaseTest is TestSetup {
     function _getChangeDelegatedExecutorsConfigTypedDataHash(
         uint256 delegatorProfileId,
         uint64 configNumber,
-        address[] memory executors,
+        address[] memory delegatedExecutors,
         bool[] memory approvals,
         bool switchToGivenConfig,
         uint256 nonce,
@@ -51,7 +51,7 @@ contract BaseTest is TestSetup {
             abi.encode(
                 Typehash.CHANGE_DELEGATED_EXECUTORS_CONFIG,
                 delegatorProfileId,
-                abi.encodePacked(executors),
+                abi.encodePacked(delegatedExecutors),
                 abi.encodePacked(approvals),
                 configNumber,
                 switchToGivenConfig,
@@ -467,13 +467,13 @@ contract BaseTest is TestSetup {
     function _changeDelegatedExecutorsConfig(
         address msgSender,
         uint256 profileId,
-        address executor,
+        address delegatedExecutor,
         bool approved
     ) internal {
         vm.prank(msgSender);
         hub.changeCurrentDelegatedExecutorsConfig({
             delegatorProfileId: profileId,
-            executors: _toAddressArray(executor),
+            delegatedExecutors: _toAddressArray(delegatedExecutor),
             approvals: _toBoolArray(approved)
         });
     }

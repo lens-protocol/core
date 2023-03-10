@@ -3,12 +3,12 @@
 pragma solidity ^0.8.15;
 
 library Typehash {
-    
+
     bytes32 constant ACT = keccak256('Act(uint256 publicationActedProfileId,uint256 publicationActedId,uint256 actorProfileId,uint256[] referrerProfileIds,uint256[] referrerPubIds,address actionModuleAddress,bytes actionModuleData,uint256 nonce,uint256 deadline)');
 
     bytes32 constant BURN = keccak256('Burn(uint256 tokenId,uint256 nonce,uint256 deadline)');
 
-    bytes32 constant CHANGE_DELEGATED_EXECUTORS_CONFIG = keccak256('ChangeDelegatedExecutorsConfig(uint256 delegatorProfileId,address[] executors,bool[] approvals,uint64 configNumber,bool switchToGivenConfig,uint256 nonce,uint256 deadline)');
+    bytes32 constant CHANGE_DELEGATED_EXECUTORS_CONFIG = keccak256('ChangeDelegatedExecutorsConfig(uint256 delegatorProfileId,address[] delegatedExecutors,bool[] approvals,uint64 configNumber,bool switchToGivenConfig,uint256 nonce,uint256 deadline)');
 
     bytes32 constant COLLECT = keccak256('Collect(uint256 publicationCollectedProfileId,uint256 publicationCollectedId,uint256 collectorProfileId,uint256[] referrerProfileIds,uint256[] referrerPubIds,bytes collectModuleData,uint256 nonce,uint256 deadline)');
 

@@ -127,9 +127,9 @@ contract MultiStateHubTest_PausedState_Direct is BaseTest {
     }
 
     function _mockChangeDelegatedExecutorsConfig() internal virtual {
-        address executor = otherSigner;
+        address delegatedExecutor = otherSigner;
         bool approved = true;
-        _changeDelegatedExecutorsConfig(profileOwner, newProfileId, executor, approved);
+        _changeDelegatedExecutorsConfig(profileOwner, newProfileId, delegatedExecutor, approved);
     }
 
     function _mockSetProfileImageURI() internal virtual {
@@ -323,11 +323,11 @@ contract MultiStateHubTest_PausedState_WithSig is MultiStateHubTest_PausedState_
 
     // Positives
     function _mockChangeDelegatedExecutorsConfig() internal override {
-        address executor = otherSigner;
+        address delegatedExecutor = otherSigner;
 
         bytes32 digest = _getChangeDelegatedExecutorsConfigTypedDataHash({
             delegatorProfileId: newProfileId,
-            executors: _toAddressArray(executor),
+            delegatedExecutors: _toAddressArray(delegatedExecutor),
             approvals: _toBoolArray(true),
             configNumber: 0,
             switchToGivenConfig: true,
@@ -336,7 +336,7 @@ contract MultiStateHubTest_PausedState_WithSig is MultiStateHubTest_PausedState_
         });
         hub.changeDelegatedExecutorsConfigWithSig({
             delegatorProfileId: newProfileId,
-            executors: _toAddressArray(executor),
+            delegatedExecutors: _toAddressArray(delegatedExecutor),
             approvals: _toBoolArray(true),
             configNumber: 0,
             switchToGivenConfig: true,
@@ -434,9 +434,9 @@ contract MultiStateHubTest_PublishingPausedState_Direct is BaseTest {
     }
 
     function _mockChangeDelegatedExecutorsConfig() internal virtual {
-        address executor = otherSigner;
+        address delegatedExecutor = otherSigner;
         bool approved = true;
-        _changeDelegatedExecutorsConfig(profileOwner, newProfileId, executor, approved);
+        _changeDelegatedExecutorsConfig(profileOwner, newProfileId, delegatedExecutor, approved);
     }
 
     function _mockSetProfileImageURI() internal virtual {
@@ -579,11 +579,11 @@ contract MultiStateHubTest_PublishingPausedState_WithSig is MultiStateHubTest_Pu
 
     // Positives
     function _mockChangeDelegatedExecutorsConfig() internal override {
-        address executor = otherSigner;
+        address delegatedExecutor = otherSigner;
 
         bytes32 digest = _getChangeDelegatedExecutorsConfigTypedDataHash({
             delegatorProfileId: newProfileId,
-            executors: _toAddressArray(executor),
+            delegatedExecutors: _toAddressArray(delegatedExecutor),
             approvals: _toBoolArray(true),
             configNumber: 0,
             switchToGivenConfig: true,
@@ -592,7 +592,7 @@ contract MultiStateHubTest_PublishingPausedState_WithSig is MultiStateHubTest_Pu
         });
         hub.changeDelegatedExecutorsConfigWithSig({
             delegatorProfileId: newProfileId,
-            executors: _toAddressArray(executor),
+            delegatedExecutors: _toAddressArray(delegatedExecutor),
             approvals: _toBoolArray(true),
             configNumber: 0,
             switchToGivenConfig: true,

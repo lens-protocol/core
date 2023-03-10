@@ -13,14 +13,14 @@ interface IFollowModuleLegacy {
      * @notice Initializes a follow module for a given Lens profile. This can only be called by the hub contract.
      *
      * @param profileId The token ID of the profile to initialize this follow module for.
-     * @param executor The owner or an approved delegated executor.
+     * @param transactionExecutor The owner or an approved delegated executor.
      * @param data Arbitrary data passed by the profile creator.
      *
      * @return bytes The encoded data to emit in the hub.
      */
     function initializeFollowModule(
         uint256 profileId,
-        address executor,
+        address transactionExecutor,
         bytes calldata data
     ) external returns (bytes memory);
 
@@ -29,14 +29,14 @@ interface IFollowModuleLegacy {
      *
      * @param followerProfileId The LensHub profile token ID of the follower's profile (currently unused, preemptive interface upgrade).
      * @param follower The follower address.
-     * @param executor The follower or an approved delegated executor.
+     * @param transactionExecutor The follower or an approved delegated executor.
      * @param profileId The token ID of the profile being followed.
      * @param data Arbitrary data passed by the follower.
      */
     function processFollow(
         uint256 followerProfileId,
         address follower,
-        address executor,
+        address transactionExecutor,
         uint256 profileId,
         bytes calldata data
     ) external;
@@ -54,12 +54,7 @@ interface IFollowModuleLegacy {
      * @param to The address receiving the follow NFT.
      * @param followNFTTokenId The token ID of the follow NFT being transferred.
      */
-    function followModuleTransferHook(
-        uint256 profileId,
-        address from,
-        address to,
-        uint256 followNFTTokenId
-    ) external;
+    function followModuleTransferHook(uint256 profileId, address from, address to, uint256 followNFTTokenId) external;
 
     /**
      * @notice This is a helper function that could be used in conjunction with specific collect modules.

@@ -44,7 +44,7 @@ contract SetFollowModuleTest is BaseTest, SigSetup {
     }
 
     // Negatives
-    function testCannotSetFollowModuleNotExecutor() public {
+    function testCannotSetFollowModuleNotDelegatedExecutor() public {
         vm.expectRevert(Errors.ExecutorInvalid.selector);
         hub.setFollowModule(newProfileId, address(0), '');
     }
@@ -72,12 +72,12 @@ contract SetFollowModuleTest is BaseTest, SigSetup {
         assertEq(hub.getFollowModule(newProfileId), address(0));
     }
 
-    function testExecutorSetFollowModule() public {
+    function testDelegatedExecutorSetFollowModule() public {
         assertEq(hub.getFollowModule(newProfileId), address(0));
         vm.prank(profileOwner);
         hub.changeCurrentDelegatedExecutorsConfig({
             delegatorProfileId: newProfileId,
-            executors: _toAddressArray(otherSigner),
+            delegatedExecutors: _toAddressArray(otherSigner),
             approvals: _toBoolArray(true)
         });
 
@@ -147,12 +147,12 @@ contract SetFollowModuleTest is BaseTest, SigSetup {
         _setFollowModulehWithSig({delegatedSigner: profileOwner, signerPrivKey: profileOwnerKey});
     }
 
-    function testCannotPublishWithSigNotExecutor() public {
+    function testCannotPublishWithSigNotDelegatedExecutor() public {
         vm.expectRevert(Errors.ExecutorInvalid.selector);
         _setFollowModulehWithSig({delegatedSigner: otherSigner, signerPrivKey: otherSignerKey});
     }
 
-    function testSetFollowModuleWithSigNotExecutorFails() public {
+    function testSetFollowModuleWithSigNotDelegatedExecutorFails() public {
         vm.expectRevert(Errors.ExecutorInvalid.selector);
         _setFollowModulehWithSig({delegatedSigner: otherSigner, signerPrivKey: otherSignerKey});
     }
@@ -164,7 +164,7 @@ contract SetFollowModuleTest is BaseTest, SigSetup {
         assertEq(hub.getFollowModule(newProfileId), mockFollowModule);
     }
 
-    function testExecutorPublishWithSig() public {
+    function testDelegatedExecutorPublishWithSig() public {
         _changeDelegatedExecutorsConfig(profileOwner, newProfileId, otherSigner, true);
 
         assertEq(hub.getFollowModule(newProfileId), address(0));

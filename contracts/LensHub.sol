@@ -306,14 +306,14 @@ contract LensHub is LensBaseERC721, VersionedInitializable, LensMultiState, Lens
     /// @inheritdoc ILensHub
     function changeDelegatedExecutorsConfig(
         uint256 delegatorProfileId,
-        address[] calldata executors,
+        address[] calldata delegatedExecutors,
         bool[] calldata approvals,
         uint64 configNumber,
         bool switchToGivenConfig
     ) external override whenNotPaused onlyProfileOwner(msg.sender, delegatorProfileId) {
         ProfileLib.changeGivenDelegatedExecutorsConfig(
             delegatorProfileId,
-            executors,
+            delegatedExecutors,
             approvals,
             configNumber,
             switchToGivenConfig
@@ -322,16 +322,16 @@ contract LensHub is LensBaseERC721, VersionedInitializable, LensMultiState, Lens
 
     function changeCurrentDelegatedExecutorsConfig(
         uint256 delegatorProfileId,
-        address[] calldata executors,
+        address[] calldata delegatedExecutors,
         bool[] calldata approvals
     ) external override whenNotPaused onlyProfileOwner(msg.sender, delegatorProfileId) {
-        ProfileLib.changeCurrentDelegatedExecutorsConfig(delegatorProfileId, executors, approvals);
+        ProfileLib.changeCurrentDelegatedExecutorsConfig(delegatorProfileId, delegatedExecutors, approvals);
     }
 
     /// @inheritdoc ILensHub
     function changeDelegatedExecutorsConfigWithSig(
         uint256 delegatorProfileId,
-        address[] calldata executors,
+        address[] calldata delegatedExecutors,
         bool[] calldata approvals,
         uint64 configNumber,
         bool switchToGivenConfig,
@@ -340,14 +340,14 @@ contract LensHub is LensBaseERC721, VersionedInitializable, LensMultiState, Lens
         MetaTxLib.validateChangeDelegatedExecutorsConfigSignature(
             signature,
             delegatorProfileId,
-            executors,
+            delegatedExecutors,
             approvals,
             configNumber,
             switchToGivenConfig
         );
         ProfileLib.changeGivenDelegatedExecutorsConfig(
             delegatorProfileId,
-            executors,
+            delegatedExecutors,
             approvals,
             configNumber,
             switchToGivenConfig
@@ -754,15 +754,18 @@ contract LensHub is LensBaseERC721, VersionedInitializable, LensMultiState, Lens
     /// @inheritdoc ILensHub
     function isDelegatedExecutorApproved(
         uint256 delegatorProfileId,
-        address executor,
+        address delegatedExecutor,
         uint64 configNumber
     ) external view returns (bool) {
-        return StorageLib.getDelegatedExecutorsConfig(delegatorProfileId).isApproved[configNumber][executor];
+        return StorageLib.getDelegatedExecutorsConfig(delegatorProfileId).isApproved[configNumber][delegatedExecutor];
     }
 
     /// @inheritdoc ILensHub
-    function isDelegatedExecutorApproved(uint256 delegatorProfileId, address executor) external view returns (bool) {
-        return ProfileLib.isExecutorApproved(delegatorProfileId, executor);
+    function isDelegatedExecutorApproved(
+        uint256 delegatorProfileId,
+        address delegatedExecutor
+    ) external view returns (bool) {
+        return ProfileLib.isExecutorApproved(delegatorProfileId, delegatedExecutor);
     }
 
     /// @inheritdoc ILensHub

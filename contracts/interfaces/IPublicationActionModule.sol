@@ -14,7 +14,7 @@ interface IPublicationActionModule {
     function initializePublicationAction(
         uint256 profileId,
         uint256 pubId,
-        address executor,
+        address transactionExecutor,
         bytes calldata data
     ) external returns (bytes memory);
 

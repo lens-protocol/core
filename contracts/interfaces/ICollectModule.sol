@@ -16,7 +16,7 @@ interface ICollectModule {
      *
      * @param profileId The token ID of the profile publishing the publication.
      * @param pubId The associated publication's LensHub publication ID.
-     * @param executor The owner or an approved delegated executor.
+     * @param transactionExecutor The owner or an approved delegated executor.
      * @param data Arbitrary data __passed from the user!__ to be decoded.
      *
      * @return bytes An abi encoded byte array encapsulating the execution's state changes. This will be emitted by the
@@ -25,7 +25,7 @@ interface ICollectModule {
     function initializePublicationCollectModule(
         uint256 profileId,
         uint256 pubId,
-        address executor,
+        address transactionExecutor,
         bytes calldata data
     ) external returns (bytes memory);
 

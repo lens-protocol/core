@@ -33,14 +33,18 @@ interface IFollowNFT {
      * @dev This must be only callable by the LensHub contract.
      *
      * @param followerProfileId The ID of the profile acting as the follower.
-     * @param executor The address executing the operation, which is the signer in case of using meta-transactions or
+     * @param transactionExecutor The address executing the operation, which is the signer in case of using meta-transactions or
      * the sender otherwise.
      * @param followTokenId The ID of the follow token to be used for this follow operation. Zero if a new follow token
      * should be minted.
      *
      * @return uint256 The ID of the token used to follow.
      */
-    function follow(uint256 followerProfileId, address executor, uint256 followTokenId) external returns (uint256);
+    function follow(
+        uint256 followerProfileId,
+        address transactionExecutor,
+        uint256 followTokenId
+    ) external returns (uint256);
 
     /**
      * @notice Makes the passed profile to unfollow the profile targeted in this contract.
@@ -48,10 +52,10 @@ interface IFollowNFT {
      * @dev This must be only callable by the LensHub contract.
      *
      * @param unfollowerProfileId The ID of the profile that is perfrorming the unfollow operation.
-     * @param executor The address executing the operation, which is the signer in case of using meta-transactions or
+     * @param transactionExecutor The address executing the operation, which is the signer in case of using meta-transactions or
      * the sender otherwise.
      */
-    function unfollow(uint256 unfollowerProfileId, address executor) external;
+    function unfollow(uint256 unfollowerProfileId, address transactionExecutor) external;
 
     /**
      * @notice Removes the follower from the given follow NFT.

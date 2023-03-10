@@ -67,7 +67,10 @@ library FollowLib {
                 revert Errors.NotFollowing();
             }
 
-            IFollowNFT(followNFT).unfollow({unfollowerProfileId: unfollowerProfileId, executor: transactionExecutor});
+            IFollowNFT(followNFT).unfollow({
+                unfollowerProfileId: unfollowerProfileId,
+                transactionExecutor: transactionExecutor
+            });
 
             emit Events.Unfollowed(unfollowerProfileId, idOfProfileToUnfollow, block.timestamp);
 
@@ -109,7 +112,7 @@ library FollowLib {
 
         uint256 followTokenIdAssigned = IFollowNFT(followNFT).follow({
             followerProfileId: followerProfileId,
-            executor: transactionExecutor,
+            transactionExecutor: transactionExecutor,
             followTokenId: followTokenId
         });
 

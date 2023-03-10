@@ -116,12 +116,12 @@ library ProfileLib {
 
     function _initFollowModule(
         uint256 profileId,
-        address executor,
+        address transactionExecutor,
         address followModule,
         bytes memory followModuleInitData
     ) private returns (bytes memory) {
         ValidationLib.validateFollowModuleWhitelisted(followModule);
-        return IFollowModule(followModule).initializeFollowModule(profileId, executor, followModuleInitData);
+        return IFollowModule(followModule).initializeFollowModule(profileId, transactionExecutor, followModuleInitData);
     }
 
     function _setProfileImageURI(uint256 profileId, string calldata imageURI) private {
@@ -182,7 +182,7 @@ library ProfileLib {
         _changeDelegatedExecutorsConfig({
             _delegatedExecutorsConfig: _delegatedExecutorsConfig,
             delegatorProfileId: profileId,
-            executors: new address[](0),
+            delegatedExecutors: new address[](0),
             approvals: new bool[](0),
             configNumber: _delegatedExecutorsConfig.maxConfigNumberSet + 1,
             switchToGivenConfig: true
@@ -191,7 +191,7 @@ library ProfileLib {
 
     function changeCurrentDelegatedExecutorsConfig(
         uint256 delegatorProfileId,
-        address[] calldata executors,
+        address[] calldata delegatedExecutors,
         bool[] calldata approvals
     ) external {
         Types.DelegatedExecutorsConfig storage _delegatedExecutorsConfig = StorageLib.getDelegatedExecutorsConfig(
@@ -200,7 +200,7 @@ library ProfileLib {
         _changeDelegatedExecutorsConfig(
             _delegatedExecutorsConfig,
             delegatorProfileId,
-            executors,
+            delegatedExecutors,
             approvals,
             _delegatedExecutorsConfig.configNumber,
             false
@@ -209,7 +209,7 @@ library ProfileLib {
 
     function changeGivenDelegatedExecutorsConfig(
         uint256 delegatorProfileId,
-        address[] calldata executors,
+        address[] calldata delegatedExecutors,
         bool[] calldata approvals,
         uint64 configNumber,
         bool switchToGivenConfig
@@ -217,29 +217,29 @@ library ProfileLib {
         _changeDelegatedExecutorsConfig(
             StorageLib.getDelegatedExecutorsConfig(delegatorProfileId),
             delegatorProfileId,
-            executors,
+            delegatedExecutors,
             approvals,
             configNumber,
             switchToGivenConfig
         );
     }
 
-    function isExecutorApproved(uint256 delegatorProfileId, address executor) external view returns (bool) {
+    function isExecutorApproved(uint256 delegatorProfileId, address delegatedExecutor) external view returns (bool) {
         Types.DelegatedExecutorsConfig storage _delegatedExecutorsConfig = StorageLib.getDelegatedExecutorsConfig(
             delegatorProfileId
         );
-        return _delegatedExecutorsConfig.isApproved[_delegatedExecutorsConfig.configNumber][executor];
+        return _delegatedExecutorsConfig.isApproved[_delegatedExecutorsConfig.configNumber][delegatedExecutor];
     }
 
     function _changeDelegatedExecutorsConfig(
         Types.DelegatedExecutorsConfig storage _delegatedExecutorsConfig,
         uint256 delegatorProfileId,
-        address[] memory executors,
+        address[] memory delegatedExecutors,
         bool[] memory approvals,
         uint64 configNumber,
         bool switchToGivenConfig
     ) private {
-        if (executors.length != approvals.length) {
+        if (delegatedExecutors.length != approvals.length) {
             revert Errors.ArrayMismatch();
         }
         bool configSwitched = _prepareStorageToApplyChangesUnderGivenConfig(
@@ -248,8 +248,8 @@ library ProfileLib {
             switchToGivenConfig
         );
         uint256 i;
-        while (i < executors.length) {
-            _delegatedExecutorsConfig.isApproved[configNumber][executors[i]] = approvals[i];
+        while (i < delegatedExecutors.length) {
+            _delegatedExecutorsConfig.isApproved[configNumber][delegatedExecutors[i]] = approvals[i];
             unchecked {
                 ++i;
             }
@@ -257,7 +257,7 @@ library ProfileLib {
         emit Events.DelegatedExecutorsConfigChanged(
             delegatorProfileId,
             configNumber,
-            executors,
+            delegatedExecutors,
             approvals,
             configSwitched
         );

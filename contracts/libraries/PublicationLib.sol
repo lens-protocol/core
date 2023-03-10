@@ -276,7 +276,7 @@ library PublicationLib {
                 IReferenceModule(refModule).processComment(
                     Types.ProcessCommentParams({
                         profileId: commentParams.profileId,
-                        executor: transactionExecutor,
+                        transactionExecutor: transactionExecutor,
                         pointedProfileId: commentParams.pointedProfileId,
                         pointedPubId: commentParams.pointedPubId,
                         referrerProfileIds: commentParams.referrerProfileIds,
@@ -325,7 +325,7 @@ library PublicationLib {
                 IReferenceModule(refModule).processQuote(
                     Types.ProcessQuoteParams({
                         profileId: quoteParams.profileId,
-                        executor: transactionExecutor,
+                        transactionExecutor: transactionExecutor,
                         pointedProfileId: quoteParams.pointedProfileId,
                         pointedPubId: quoteParams.pointedPubId,
                         referrerProfileIds: quoteParams.referrerProfileIds,
@@ -374,7 +374,7 @@ library PublicationLib {
                 IReferenceModule(refModule).processMirror(
                     Types.ProcessMirrorParams({
                         profileId: mirrorParams.profileId,
-                        executor: transactionExecutor,
+                        transactionExecutor: transactionExecutor,
                         pointedProfileId: mirrorParams.pointedProfileId,
                         pointedPubId: mirrorParams.pointedPubId,
                         referrerProfileIds: mirrorParams.referrerProfileIds,

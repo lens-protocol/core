@@ -6,28 +6,24 @@ import 'test/foundry/MetaTxNegatives.t.sol';
 import {Events} from 'contracts/libraries/constants/Events.sol';
 
 contract ProfileMetadataURITest is BaseTest {
-    function _setProfileMetadataURI(
-        uint256 pk,
-        uint256 profileId,
-        string memory metadataURI
-    ) internal virtual {
+    function _setProfileMetadataURI(uint256 pk, uint256 profileId, string memory metadataURI) internal virtual {
         vm.prank(vm.addr(pk));
         hub.setProfileMetadataURI(profileId, metadataURI);
     }
 
     // Negatives
-    function testCannotSetProfileMetadataURINotExecutor() public {
+    function testCannotSetProfileMetadataURINotDelegatedExecutor() public {
         vm.expectRevert(Errors.ExecutorInvalid.selector);
         _setProfileMetadataURI({pk: alienSignerKey, profileId: newProfileId, metadataURI: MOCK_URI});
     }
 
     // Positives
-    function testExecutorSetProfileMetadataURI() public {
+    function testDelegatedExecutorSetProfileMetadataURI() public {
         assertEq(hub.getProfileMetadataURI(newProfileId), '');
         vm.prank(profileOwner);
         hub.changeCurrentDelegatedExecutorsConfig({
             delegatorProfileId: newProfileId,
-            executors: _toAddressArray(otherSigner),
+            delegatedExecutors: _toAddressArray(otherSigner),
             approvals: _toBoolArray(true)
         });
 
@@ -53,9 +49,9 @@ contract ProfileMetadataURITest is BaseTest {
         testSetProfileMetadataURI();
     }
 
-    function testExecutorSetProfileMetadataURI_EmitsProperEvent() public {
+    function testDelegatedExecutorSetProfileMetadataURI_EmitsProperEvent() public {
         expectProfileMetadataSetEvent();
-        testExecutorSetProfileMetadataURI();
+        testDelegatedExecutorSetProfileMetadataURI();
     }
 }
 
@@ -95,11 +91,7 @@ contract ProfileMetadataURITest_MetaTx is ProfileMetadataURITest, MetaTxNegative
         });
     }
 
-    function _executeMetaTx(
-        uint256 signerPk,
-        uint256 nonce,
-        uint256 deadline
-    ) internal virtual override {
+    function _executeMetaTx(uint256 signerPk, uint256 nonce, uint256 deadline) internal virtual override {
         bytes32 digest = _getSetProfileMetadataURITypedDataHash(newProfileId, MOCK_URI, nonce, deadline);
 
         hub.setProfileMetadataURIWithSig({

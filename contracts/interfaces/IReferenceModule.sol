@@ -14,7 +14,7 @@ interface IReferenceModule {
      * @notice Initializes data for a given publication being published. This can only be called by the hub.
      *
      * @param profileId The token ID of the profile publishing the publication.
-     * @param executor The owner or an approved delegated executor.
+     * @param transactionExecutor The owner or an approved delegated executor.
      * @param pubId The associated publication's LensHub publication ID.
      * @param data Arbitrary data passed from the user to be decoded.
      *
@@ -23,7 +23,7 @@ interface IReferenceModule {
      */
     function initializeReferenceModule(
         uint256 profileId,
-        address executor,
+        address transactionExecutor,
         uint256 pubId,
         bytes calldata data
     ) external returns (bytes memory);

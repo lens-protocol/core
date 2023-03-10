@@ -31,7 +31,7 @@ abstract contract PublishingTest is BaseTest, PublishingHelpers, SigSetup {
     }
 
     // negatives
-    function testCannotPublishIfNotExecutor() public {
+    function testCannotPublishIfNotDelegatedExecutor() public {
         vm.expectRevert(Errors.ExecutorInvalid.selector);
         _publish();
     }
@@ -111,7 +111,7 @@ abstract contract PublishingTest is BaseTest, PublishingHelpers, SigSetup {
         _publishWithSig({delegatedSigner: profileOwner, signerPrivKey: otherSignerKey});
     }
 
-    function testCannotPublishWithSigNotExecutor() public {
+    function testCannotPublishWithSigNotDelegatedExecutor() public {
         vm.expectRevert(Errors.ExecutorInvalid.selector);
         _publishWithSig({delegatedSigner: otherSigner, signerPrivKey: otherSignerKey});
     }
@@ -158,7 +158,7 @@ abstract contract PublishingTest is BaseTest, PublishingHelpers, SigSetup {
         _verifyPublication(pub, _expectedPubFromInitData());
     }
 
-    function testExecutorPublish() public {
+    function testDelegatedExecutorPublish() public {
         _changeDelegatedExecutorsConfig(profileOwner, newProfileId, otherSigner, true);
 
         uint256 expectedPubId = _getPubCount(newProfileId) + 1;
@@ -171,7 +171,7 @@ abstract contract PublishingTest is BaseTest, PublishingHelpers, SigSetup {
         _verifyPublication(pub, _expectedPubFromInitData());
     }
 
-    function testExecutorPublishWithSig() public {
+    function testDelegatedExecutorPublishWithSig() public {
         _changeDelegatedExecutorsConfig(profileOwner, newProfileId, otherSigner, true);
 
         uint256 expectedPubId = _getPubCount(newProfileId) + 1;

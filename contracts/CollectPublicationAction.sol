@@ -45,7 +45,7 @@ contract CollectPublicationAction is HubRestricted, VersionedInitializable, IPub
     function initializePublicationAction(
         uint256 profileId,
         uint256 pubId,
-        address executor,
+        address transactionExecutor,
         bytes calldata data
     ) external override onlyHub returns (bytes memory) {
         (address collectModule, bytes memory collectModuleInitData) = abi.decode(data, (address, bytes));
@@ -56,7 +56,7 @@ contract CollectPublicationAction is HubRestricted, VersionedInitializable, IPub
         ICollectModule(collectModule).initializePublicationCollectModule(
             profileId,
             pubId,
-            executor,
+            transactionExecutor,
             collectModuleInitData
         );
         return data;
@@ -115,7 +115,7 @@ contract CollectPublicationAction is HubRestricted, VersionedInitializable, IPub
                     publicationCollectedId: processActionParams.publicationActedProfileId,
                     collectorProfileId: processActionParams.actorProfileId,
                     collectorProfileOwner: processActionParams.actorProfileOwner,
-                    executor: processActionParams.executor,
+                    transactionExecutor: processActionParams.transactionExecutor,
                     referrerProfileIds: processActionParams.referrerProfileIds,
                     referrerPubIds: processActionParams.referrerPubIds,
                     referrerPubTypes: processActionParams.referrerPubTypes,

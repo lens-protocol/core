@@ -126,7 +126,7 @@ library Events {
      *
      * @param delegatorProfileId The ID of the profile for which the delegated executor was changed.
      * @param configNumber The number of the configuration where the executor approval state was set.
-     * @param executors The array of executors whose approval was set for.
+     * @param delegatedExecutors The array of delegated executors whose approval was set for.
      * @param approvals The array of booleans indicating the corresponding executor new approval status.
      * @param configSwitched A boolean indicanting if the configuration was switched to the one emitted in the
      * `configNumber` parameter.
@@ -134,7 +134,7 @@ library Events {
     event DelegatedExecutorsConfigChanged(
         uint256 indexed delegatorProfileId,
         uint256 indexed configNumber,
-        address[] executors,
+        address[] delegatedExecutors,
         bool[] approvals,
         bool indexed configSwitched
     );

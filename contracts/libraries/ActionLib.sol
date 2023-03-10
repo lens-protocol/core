@@ -54,7 +54,7 @@ library ActionLib {
                 publicationActedId: publicationActionParams.publicationActedId,
                 actorProfileId: publicationActionParams.actorProfileId,
                 actorProfileOwner: actorProfileOwner,
-                executor: transactionExecutor,
+                transactionExecutor: transactionExecutor,
                 referrerProfileIds: publicationActionParams.referrerProfileIds,
                 referrerPubIds: publicationActionParams.referrerPubIds,
                 referrerPubTypes: referrerPubTypes,
