@@ -17,7 +17,7 @@ abstract contract LensHubStorage {
     mapping(address => bool) internal _followModuleWhitelisted; // Slot 14
 
     // `_collectModuleWhitelisted` slot replaced by `_actionModuleWhitelistedId` in Lens V2.
-    // TODO: We will need to unwhitelist all the old modules before V2 upgrade so they don't conflict with new bitmap.
+    // We will need to unwhitelist all the old modules before V2 upgrade so they don't conflict with new bitmap.
     //      e.g. any address that was True as bool will be mapped to new ID of 1.
     // mapping(address => bool) internal __DEPRECATED__collectModuleWhitelisted;
     mapping(address => uint256) internal _actionModuleWhitelistedId; // Slot 15

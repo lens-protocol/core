@@ -19,7 +19,7 @@ contract CollectPublicationAction is HubRestricted, VersionedInitializable, IPub
     // Constant for upgradeability purposes, see VersionedInitializable. Do not confuse with EIP-712 version number.
     uint256 internal constant REVISION = 1;
 
-    // TODO: Should we move this to some Types file
+    // TODO: Should we move this to some Types file when in Modules repo
     struct CollectData {
         address collectModule;
         address collectNFT;
