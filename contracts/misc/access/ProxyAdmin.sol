@@ -3,9 +3,9 @@
 pragma solidity ^0.8.19;
 
 import {TransparentUpgradeableProxy} from 'contracts/base/upgradeability/TransparentUpgradeableProxy.sol';
-import {UpgradeContractPermissions} from 'contracts/misc/access/UpgradeContractPermissions.sol';
+import {ControllableByContract} from 'contracts/misc/access/ControllableByContract.sol';
 
-contract ProxyAdmin is UpgradeContractPermissions {
+contract ProxyAdmin is ControllableByContract {
     TransparentUpgradeableProxy public immutable LENS_HUB_PROXY;
     address public previousImplementation;
 
@@ -13,7 +13,7 @@ contract ProxyAdmin is UpgradeContractPermissions {
         address lensHubAddress_,
         address previousImplementation_,
         address proxyAdminOwner_
-    ) UpgradeContractPermissions(proxyAdminOwner_) {
+    ) ControllableByContract(proxyAdminOwner_) {
         LENS_HUB_PROXY = TransparentUpgradeableProxy(payable(lensHubAddress_));
         previousImplementation = previousImplementation_;
     }
@@ -22,9 +22,9 @@ contract ProxyAdmin is UpgradeContractPermissions {
         return LENS_HUB_PROXY.implementation();
     }
 
-    //////////////////////////////////////////////////////
-    ///             ONLY PROXY ADMIN OWNER             ///
-    //////////////////////////////////////////////////////
+    /////////////////////////////////////////////////////////
+    ///               ONLY PROXY ADMIN OWNER              ///
+    /////////////////////////////////////////////////////////
 
     function rollbackLastUpgrade() external onlyOwner {
         LENS_HUB_PROXY.upgradeTo(previousImplementation);
@@ -34,19 +34,22 @@ contract ProxyAdmin is UpgradeContractPermissions {
         LENS_HUB_PROXY.changeAdmin(newAdmin);
     }
 
-    //////////////////////////////////////////////////////
-    ///   ONLY PROXY ADMIN OWNER OR UPGRADE CONTRACT   ///
-    //////////////////////////////////////////////////////
+    /////////////////////////////////////////////////////////
+    ///   ONLY PROXY ADMIN OWNER OR CONTROLLER CONTRACT   ///
+    /////////////////////////////////////////////////////////
 
-    function proxy_upgrade(address newImplementation) external onlyOwnerOrUpgradeContract {
+    function proxy_upgrade(address newImplementation) external onlyOwnerOrControllerContract {
         previousImplementation = LENS_HUB_PROXY.implementation();
         LENS_HUB_PROXY.upgradeTo(newImplementation);
-        delete upgradeContract;
+        delete controllerContract;
     }
 
-    function proxy_upgradeAndCall(address newImplementation, bytes calldata data) external onlyOwnerOrUpgradeContract {
+    function proxy_upgradeAndCall(
+        address newImplementation,
+        bytes calldata data
+    ) external onlyOwnerOrControllerContract {
         previousImplementation = LENS_HUB_PROXY.implementation();
         LENS_HUB_PROXY.upgradeToAndCall(newImplementation, data);
-        delete upgradeContract;
+        delete controllerContract;
     }
 }
