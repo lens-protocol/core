@@ -23,9 +23,6 @@ abstract contract HubRestricted {
     }
 
     constructor(address hub) {
-        if (hub == address(0)) {
-            revert Errors.InitParamsInvalid();
-        }
         HUB = hub;
     }
 }
