@@ -180,13 +180,25 @@ contract SeaDropMintPublicationAction is VersionedInitializable, HubRestricted, 
         CollectionData memory collectionData = _collectionDataByPub[processActionParams.publicationActedProfileId][
             processActionParams.publicationActedId
         ];
-
-        uint256 quantityToMint = abi.decode(processActionParams.actionModuleData, (uint256));
-
+        (address lensTreasuryAddress, uint16 lensTreasuryFeeBps) = MODULE_GLOBALS.getTreasuryData();
         ISeaDrop.PublicDrop memory publicDrop = SEADROP.getPublicDrop(collectionData.nftCollectionAddress);
 
-        (address lensTreasuryAddress, uint16 lensTreasuryFeeBps) = MODULE_GLOBALS.getTreasuryData();
-        _validateFees(publicDrop, lensTreasuryFeeBps, collectionData.referrersFeeBps);
+        (uint256 quantityToMint, uint256 expectedMintPrice) = abi.decode(
+            processActionParams.actionModuleData,
+            (uint256, uint256)
+        );
+
+        if (publicDrop.mintPrice > expectedMintPrice) {
+            revert MintPriceExceedsExpectedOne();
+        }
+
+        _validateFeesAndRescaleThemIfNecessary(
+            processActionParams.publicationActedProfileId,
+            processActionParams.publicationActedId,
+            publicDrop,
+            lensTreasuryFeeBps,
+            collectionData.referrersFeeBps
+        );
 
         uint256 mintPaymentAmount = publicDrop.mintPrice * quantityToMint;
         uint256 expectedFees = (mintPaymentAmount * publicDrop.feeBps) / MAX_BPS;
