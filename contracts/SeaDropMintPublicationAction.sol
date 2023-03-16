@@ -133,28 +133,35 @@ contract SeaDropMintPublicationAction is VersionedInitializable, HubRestricted, 
         (, uint16 lensTreasuryFeeBps) = MODULE_GLOBALS.getTreasuryData();
         CollectionData memory collectionData = abi.decode(data, (CollectionData));
 
-        _validateFees(
-            SEADROP.getPublicDrop(collectionData.nftCollectionAddress),
-            lensTreasuryFeeBps,
-            collectionData.referrersFeeBps
-        );
+        ISeaDrop.PublicDrop memory publicDrop = SEADROP.getPublicDrop(collectionData.nftCollectionAddress);
+
+        // The collection should allow `address(this)` as a payer, otherwise this module won't be able to mint
+        // on behalf of other addresses.
+        // If `address(this)` is removed from allowed payers later on, the mint will fail.
+        if (!SEADROP.getPayerIsAllowed({nftContract: collectionData.nftCollectionAddress, payer: address(this)})) {
+            revert ActionModuleNotAllowedAsPayer();
+        }
+
+        // The collection should allow `address(this)` as a fee recipient, otherwise this module won't be able to
+        // distribute fees among Lens treasury and referrals after minting.
+        // If `address(this)` is removed from allowed fee recipients later on, the mint will fail.
+        if (
+            !SEADROP.getFeeRecipientIsAllowed({
+                nftContract: collectionData.nftCollectionAddress,
+                feeRecipient: address(this)
+            })
+        ) {
+            revert ActionModuleNotAllowedAsFeeRecipient();
+        }
+
+        _validateFees(publicDrop, lensTreasuryFeeBps, collectionData.referrersFeeBps);
 
         _collectionDataByPub[profileId][pubId] = collectionData;
-        return data;
+        return abi.encode(publicDrop);
     }
 
-    // Function to allow receiving MATIC native currency.
+    // Function to allow receiving MATIC native currency while minting (as a fee recipient).
     receive() external payable {}
-
-    function rescaleFees(uint256 profileId, uint256 pubId) external {
-        (, uint16 lensTreasuryFeeBps) = MODULE_GLOBALS.getTreasuryData();
-        CollectionData storage _collectionData = _collectionDataByPub[profileId][pubId];
-        ISeaDrop.PublicDrop memory publicDrop = SEADROP.getPublicDrop(_collectionData.nftCollectionAddress);
-        if (publicDrop.feeBps >= lensTreasuryFeeBps) {
-            _collectionData.referrersFeeBps = publicDrop.feeBps - lensTreasuryFeeBps;
-        }
-        // event?
-    }
 
     // A function to allow withdrawing dust and rogue native currency and ERC20 tokens left in this contract to treasury.
     function withdrawToTreasury(address currency) external {
