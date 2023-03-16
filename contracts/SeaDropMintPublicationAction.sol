@@ -232,6 +232,27 @@ contract SeaDropMintPublicationAction is VersionedInitializable, HubRestricted, 
         return '';
     }
 
+    function rescaleFees(uint256 profileId, uint256 pubId) public {
+        (, uint16 lensTreasuryFeeBps) = MODULE_GLOBALS.getTreasuryData();
+        ISeaDrop.PublicDrop memory publicDrop = SEADROP.getPublicDrop(
+            _collectionDataByPub[profileId][pubId].nftCollectionAddress
+        );
+        _rescaleFees(profileId, pubId, lensTreasuryFeeBps, publicDrop);
+    }
+
+    function _rescaleFees(
+        uint256 profileId,
+        uint256 pubId,
+        uint16 lensTreasuryFeeBps,
+        ISeaDrop.PublicDrop memory publicDrop
+    ) internal {
+        if (publicDrop.feeBps < lensTreasuryFeeBps) {
+            revert NotEnoughFeesSet();
+        }
+        _collectionDataByPub[profileId][pubId].referrersFeeBps = publicDrop.feeBps - lensTreasuryFeeBps;
+        emit SeaDropPublicationFeesRescaled(profileId, pubId, publicDrop.feeBps - lensTreasuryFeeBps);
+    }
+
     function _distributeFees(
         uint256 feesToDistribute,
         uint256 mintPaymentAmount,
@@ -272,11 +293,27 @@ contract SeaDropMintPublicationAction is VersionedInitializable, HubRestricted, 
 
     function _validateFees(
         ISeaDrop.PublicDrop memory publicDrop,
-        uint256 lensTreasuryFeeBps,
-        uint256 referrersFeeBps
+        uint16 lensTreasuryFeeBps,
+        uint16 referrersFeeBps
     ) internal pure {
         if (publicDrop.mintPrice > 0 && publicDrop.feeBps < lensTreasuryFeeBps + referrersFeeBps) {
-            revert FeesDoNotMatch();
+            revert NotEnoughFeesSet();
         }
+    }
+
+    function _validateFeesAndRescaleThemIfNecessary(
+        uint256 profileId,
+        uint256 pubId,
+        ISeaDrop.PublicDrop memory publicDrop,
+        uint16 lensTreasuryFeeBps,
+        uint16 referrersFeeBps
+    ) internal {
+        if (publicDrop.mintPrice > 0 && publicDrop.feeBps != lensTreasuryFeeBps + referrersFeeBps) {
+            _rescaleFees(profileId, pubId, lensTreasuryFeeBps, publicDrop);
+        }
+    }
+
+    function getRevision() internal pure virtual override returns (uint256) {
+        return REVISION;
     }
 }
