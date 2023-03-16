@@ -9,6 +9,7 @@ import {Errors} from 'contracts/libraries/constants/Errors.sol';
 import {Types} from 'contracts/libraries/constants/Types.sol';
 import {IERC20} from '@openzeppelin/contracts/token/ERC20/IERC20.sol';
 import {IERC721} from '@openzeppelin/contracts/token/ERC721/IERC721.sol';
+import {VersionedInitializable} from 'contracts/base/upgradeability/VersionedInitializable.sol';
 
 // TODO: Move this to Interface file
 interface ISeaDrop {
@@ -67,7 +68,10 @@ interface IWMATIC is IERC20 {
     function deposit() external payable;
 }
 
-contract SeaDropMintPublicationAction is HubRestricted, IPublicationActionModule {
+contract SeaDropMintPublicationAction is VersionedInitializable, HubRestricted, IPublicationActionModule {
+    // Constant for upgradeability purposes, see VersionedInitializable. Do not confuse with EIP-712 version number.
+    uint256 internal constant REVISION = 1;
+
     uint256 constant MAX_BPS = 10_000;
 
     ISeaDrop public immutable SEADROP;
