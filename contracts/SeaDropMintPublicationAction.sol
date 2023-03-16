@@ -183,40 +183,45 @@ contract SeaDropMintPublicationAction is VersionedInitializable, HubRestricted, 
         (address lensTreasuryAddress, uint16 lensTreasuryFeeBps) = MODULE_GLOBALS.getTreasuryData();
         ISeaDrop.PublicDrop memory publicDrop = SEADROP.getPublicDrop(collectionData.nftCollectionAddress);
 
-        (uint256 quantityToMint, uint256 expectedMintPrice) = abi.decode(
-            processActionParams.actionModuleData,
-            (uint256, uint256)
-        );
+        uint256 expectedFees;
+        uint256 mintPaymentAmount;
+        uint256 balanceBeforeMinting;
+        {
+            (uint256 quantityToMint, uint256 expectedMintPrice) = abi.decode(
+                processActionParams.actionModuleData,
+                (uint256, uint256)
+            );
 
-        if (publicDrop.mintPrice > expectedMintPrice) {
-            revert MintPriceExceedsExpectedOne();
+            if (publicDrop.mintPrice > expectedMintPrice) {
+                revert MintPriceExceedsExpectedOne();
+            }
+
+            _validateFeesAndRescaleThemIfNecessary(
+                processActionParams.publicationActedProfileId,
+                processActionParams.publicationActedId,
+                publicDrop,
+                lensTreasuryFeeBps,
+                collectionData.referrersFeeBps
+            );
+
+            mintPaymentAmount = publicDrop.mintPrice * quantityToMint;
+            expectedFees = (mintPaymentAmount * publicDrop.feeBps) / MAX_BPS;
+
+            balanceBeforeMinting = address(this).balance;
+
+            // Get the WMATIC to perform the mint payment from the transaction executor.
+            WMATIC.transferFrom(processActionParams.executor, address(this), mintPaymentAmount);
+            // Unwrap WMATIC into MATIC.
+            WMATIC.withdraw(mintPaymentAmount);
+
+            // Now this module holds the mint payment amount in MATIC. Proceeds to perform the mint.
+            SEADROP.mintPublic{value: mintPaymentAmount}({
+                nftContract: collectionData.nftCollectionAddress,
+                feeRecipient: address(this),
+                minterIfNotPayer: processActionParams.actorProfileOwner,
+                quantity: quantityToMint
+            });
         }
-
-        _validateFeesAndRescaleThemIfNecessary(
-            processActionParams.publicationActedProfileId,
-            processActionParams.publicationActedId,
-            publicDrop,
-            lensTreasuryFeeBps,
-            collectionData.referrersFeeBps
-        );
-
-        uint256 mintPaymentAmount = publicDrop.mintPrice * quantityToMint;
-        uint256 expectedFees = (mintPaymentAmount * publicDrop.feeBps) / MAX_BPS;
-
-        uint256 balanceBeforeMinting = address(this).balance;
-
-        // Get the WMATIC to perform the mint payment from the transaction executor.
-        WMATIC.transferFrom(processActionParams.executor, address(this), mintPaymentAmount);
-        // Unwrap WMATIC into MATIC.
-        WMATIC.withdraw(mintPaymentAmount);
-
-        // Now this module holds the mint payment amount in MATIC. Proceeds to perform the mint.
-        SEADROP.mintPublic{value: mintPaymentAmount}({
-            nftContract: collectionData.nftCollectionAddress,
-            feeRecipient: address(this),
-            minterIfNotPayer: processActionParams.actorProfileOwner,
-            quantity: quantityToMint
-        });
 
         if (expectedFees > 0) {
             uint256 balanceAfterMinting = address(this).balance;
