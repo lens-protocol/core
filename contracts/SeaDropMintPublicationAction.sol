@@ -59,6 +59,24 @@ interface ISeaDrop {
      * @param nftContract The nft contract.
      */
     function getPublicDrop(address nftContract) external view returns (PublicDrop memory);
+
+    /**
+     * @notice Returns if the specified fee recipient is allowed
+     *         for the nft contract.
+     *
+     * @param nftContract  The nft contract.
+     * @param feeRecipient The fee recipient.
+     */
+    function getFeeRecipientIsAllowed(address nftContract, address feeRecipient) external view returns (bool);
+
+    /**
+     * @notice Returns if the specified payer is allowed
+     *         for the nft contract.
+     *
+     * @param nftContract The nft contract.
+     * @param payer       The payer.
+     */
+    function getPayerIsAllowed(address nftContract, address payer) external view returns (bool);
 }
 
 // TODO: Move this to Interface file
@@ -88,7 +106,12 @@ contract SeaDropMintPublicationAction is VersionedInitializable, HubRestricted, 
     // TODO: Move these to `Errors` when this action is moved to modules repository.
     error WrongMintPaymentAmount();
     error SeaDropFeesNotReceived();
-    error FeesDoNotMatch();
+    error ActionModuleNotAllowedAsPayer();
+    error ActionModuleNotAllowedAsFeeRecipient();
+    error MintPriceExceedsExpectedOne();
+    error NotEnoughFeesSet();
+
+    event SeaDropPublicationFeesRescaled(uint256 profileId, uint256 pubId, uint16 referrersFeeBps);
 
     mapping(uint256 profileId => mapping(uint256 pubId => CollectionData collectionData)) internal _collectionDataByPub;
 
