@@ -10,74 +10,11 @@ import {Types} from 'contracts/libraries/constants/Types.sol';
 import {IERC20} from '@openzeppelin/contracts/token/ERC20/IERC20.sol';
 import {IERC721} from '@openzeppelin/contracts/token/ERC721/IERC721.sol';
 import {VersionedInitializable} from 'contracts/base/upgradeability/VersionedInitializable.sol';
-
-// TODO: Move this to Interface file
-interface ISeaDrop {
-    /**
-     * @notice A struct defining public drop data.
-     *         Designed to fit efficiently in one storage slot.
-     *
-     * @param mintPrice                The mint price per token. (Up to 1.2m
-     *                                 of native token, e.g. ETH, MATIC)
-     * @param startTime                The start time, ensure this is not zero.
-     * @param endTIme                  The end time, ensure this is not zero.
-     * @param maxTotalMintableByWallet Maximum total number of mints a user is
-     *                                 allowed. (The limit for this field is
-     *                                 2^16 - 1)
-     * @param feeBps                   Fee out of 10_000 basis points to be
-     *                                 collected.
-     * @param restrictFeeRecipients    If false, allow any fee recipient;
-     *                                 if true, check fee recipient is allowed.
-     */
-    struct PublicDrop {
-        uint80 mintPrice;
-        uint48 startTime;
-        uint48 endTime;
-        uint16 maxTotalMintableByWallet;
-        uint16 feeBps;
-        bool restrictFeeRecipients;
-    }
-
-    /**
-     * @notice Mint a public drop.
-     *
-     * @param nftContract      The nft contract to mint.
-     * @param feeRecipient     The fee recipient.
-     * @param minterIfNotPayer The mint recipient if different than the payer.
-     * @param quantity         The number of tokens to mint.
-     */
-    function mintPublic(
-        address nftContract,
-        address feeRecipient,
-        address minterIfNotPayer,
-        uint256 quantity
-    ) external payable;
-
-    /**
-     * @notice Returns the public drop data for the nft contract.
-     *
-     * @param nftContract The nft contract.
-     */
-    function getPublicDrop(address nftContract) external view returns (PublicDrop memory);
-
-    /**
-     * @notice Returns if the specified fee recipient is allowed
-     *         for the nft contract.
-     *
-     * @param nftContract  The nft contract.
-     * @param feeRecipient The fee recipient.
-     */
-    function getFeeRecipientIsAllowed(address nftContract, address feeRecipient) external view returns (bool);
-
-    /**
-     * @notice Returns if the specified payer is allowed
-     *         for the nft contract.
-     *
-     * @param nftContract The nft contract.
-     * @param payer       The payer.
-     */
-    function getPayerIsAllowed(address nftContract, address payer) external view returns (bool);
-}
+import {ERC721SeaDropStructsErrorsAndEvents} from '@seadrop/lib/ERC721SeaDropStructsErrorsAndEvents.sol';
+import {ISeaDrop} from '@seadrop/interfaces/ISeaDrop.sol';
+import {Clones} from 'openzeppelin-contracts/proxy/Clones.sol';
+import {PublicDrop} from '@seadrop/lib/SeaDropStructs.sol';
+import {LensSeaDropCollection} from 'contracts/LensSeaDropCollection.sol';
 
 // TODO: Move this to Interface file
 interface IWMATIC is IERC20 {
@@ -110,10 +47,20 @@ contract SeaDropMintPublicationAction is VersionedInitializable, HubRestricted, 
     error ActionModuleNotAllowedAsFeeRecipient();
     error MintPriceExceedsExpectedOne();
     error NotEnoughFeesSet();
+    error Unauthorized();
 
     event SeaDropPublicationFeesRescaled(uint256 profileId, uint256 pubId, uint16 referrersFeeBps);
+    event LensSeaDropCollectionDeployed(
+        address collectionAddress,
+        address owner,
+        string name,
+        string symbol,
+        ERC721SeaDropStructsErrorsAndEvents.MultiConfigureStruct config
+    );
 
     mapping(uint256 profileId => mapping(uint256 pubId => CollectionData collectionData)) internal _collectionDataByPub;
+
+    address public lensSeaDropCollectionImpl;
 
     constructor(address hub, address moduleGlobals, address seaDrop, address wmatic) HubRestricted(hub) {
         MODULE_GLOBALS = IModuleGlobals(moduleGlobals);
@@ -124,16 +71,38 @@ contract SeaDropMintPublicationAction is VersionedInitializable, HubRestricted, 
         SEADROP = ISeaDrop(seaDrop);
     }
 
+    function deploySeaDropCollection(
+        address owner,
+        string memory name,
+        string memory symbol,
+        ERC721SeaDropStructsErrorsAndEvents.MultiConfigureStruct calldata config
+    ) external returns (address) {
+        bytes32 cloneSalt = keccak256(abi.encodePacked(owner, name, symbol, blockhash(block.number), msg.sender));
+        address instance = Clones.cloneDeterministic(lensSeaDropCollectionImpl, cloneSalt);
+        address[] memory allowedSeaDrop = new address[](1);
+        allowedSeaDrop[0] = address(SEADROP);
+        LensSeaDropCollection(instance).initialize(owner, name, symbol, allowedSeaDrop, config);
+        emit LensSeaDropCollectionDeployed(instance, owner, name, symbol, config);
+        return instance;
+    }
+
+    function setLensSeaDropCollectionImpl(address newLensSeaDropCollectionImpl) external {
+        if (msg.sender != MODULE_GLOBALS.getGovernance()) {
+            revert Unauthorized();
+        }
+        lensSeaDropCollectionImpl = newLensSeaDropCollectionImpl;
+    }
+
     function initializePublicationAction(
         uint256 profileId,
         uint256 pubId,
         address /* transactionExecutor */,
         bytes calldata data
     ) external override onlyHub returns (bytes memory) {
-        (, uint16 lensTreasuryFeeBps) = MODULE_GLOBALS.getTreasuryData();
+        uint16 lensTreasuryFeeBps = MODULE_GLOBALS.getTreasuryFee();
         CollectionData memory collectionData = abi.decode(data, (CollectionData));
 
-        ISeaDrop.PublicDrop memory publicDrop = SEADROP.getPublicDrop(collectionData.nftCollectionAddress);
+        PublicDrop memory publicDrop = SEADROP.getPublicDrop(collectionData.nftCollectionAddress);
 
         // The collection should allow `address(this)` as a payer, otherwise this module won't be able to mint
         // on behalf of other addresses.
@@ -181,7 +150,7 @@ contract SeaDropMintPublicationAction is VersionedInitializable, HubRestricted, 
             processActionParams.publicationActedId
         ];
         (address lensTreasuryAddress, uint16 lensTreasuryFeeBps) = MODULE_GLOBALS.getTreasuryData();
-        ISeaDrop.PublicDrop memory publicDrop = SEADROP.getPublicDrop(collectionData.nftCollectionAddress);
+        PublicDrop memory publicDrop = SEADROP.getPublicDrop(collectionData.nftCollectionAddress);
 
         uint256 expectedFees;
         uint256 mintPaymentAmount;
@@ -238,8 +207,8 @@ contract SeaDropMintPublicationAction is VersionedInitializable, HubRestricted, 
     }
 
     function rescaleFees(uint256 profileId, uint256 pubId) public {
-        (, uint16 lensTreasuryFeeBps) = MODULE_GLOBALS.getTreasuryData();
-        ISeaDrop.PublicDrop memory publicDrop = SEADROP.getPublicDrop(
+        uint16 lensTreasuryFeeBps = MODULE_GLOBALS.getTreasuryFee();
+        PublicDrop memory publicDrop = SEADROP.getPublicDrop(
             _collectionDataByPub[profileId][pubId].nftCollectionAddress
         );
         _rescaleFees(profileId, pubId, lensTreasuryFeeBps, publicDrop);
@@ -249,7 +218,7 @@ contract SeaDropMintPublicationAction is VersionedInitializable, HubRestricted, 
         uint256 profileId,
         uint256 pubId,
         uint16 lensTreasuryFeeBps,
-        ISeaDrop.PublicDrop memory publicDrop
+        PublicDrop memory publicDrop
     ) internal {
         if (publicDrop.feeBps < lensTreasuryFeeBps) {
             revert NotEnoughFeesSet();
@@ -297,7 +266,7 @@ contract SeaDropMintPublicationAction is VersionedInitializable, HubRestricted, 
     }
 
     function _validateFees(
-        ISeaDrop.PublicDrop memory publicDrop,
+        PublicDrop memory publicDrop,
         uint16 lensTreasuryFeeBps,
         uint16 referrersFeeBps
     ) internal pure {
@@ -309,7 +278,7 @@ contract SeaDropMintPublicationAction is VersionedInitializable, HubRestricted, 
     function _validateFeesAndRescaleThemIfNecessary(
         uint256 profileId,
         uint256 pubId,
-        ISeaDrop.PublicDrop memory publicDrop,
+        PublicDrop memory publicDrop,
         uint16 lensTreasuryFeeBps,
         uint16 referrersFeeBps
     ) internal {
