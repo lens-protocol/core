@@ -7,17 +7,18 @@ import {PublicDrop} from '@seadrop/lib/SeaDropStructs.sol';
 import {IModuleGlobals} from 'contracts/interfaces/IModuleGlobals.sol';
 import {ERC721SeaDropStructsErrorsAndEvents} from '@seadrop/lib/ERC721SeaDropStructsErrorsAndEvents.sol';
 
-// TODO: Maybe also check that SeaDropMintPublicationModule is allowed as payer and as fee recipient.
 contract LensSeaDropCollection is ERC721SeaDropCloneable {
     error OnlySeaDropActionModule();
     error FeesDoNotCoverLensTreasury();
     error InvalidParams();
 
+    uint16 private constant ROYALTIES_BPS = 1_000;
+
     IModuleGlobals immutable MODULE_GLOBALS;
 
     address immutable SEADROP_ACTION_MODULE;
 
-    ISeaDrop immutable SEADROP_IMPL;
+    address immutable DEFAULT_SEADROP;
 
     modifier onlySeaDropActionModule() {
         if (msg.sender != SEADROP_ACTION_MODULE) {
@@ -26,21 +27,10 @@ contract LensSeaDropCollection is ERC721SeaDropCloneable {
         _;
     }
 
-    /**
-     * @dev Reverts if the sender is not the owner or the contract itself or predefined LensSeaDropActionModule.
-     *      This function is inlined instead of being a modifier
-     *      to save contract space from being inlined N times.
-     */
-    function _onlyOwnerOrSelfOrLensActionModule() internal view {
-        if (msg.sender == owner() || msg.sender == address(this) || msg.sender == SEADROP_ACTION_MODULE) {
-            revert OnlyOwner();
-        }
-    }
-
-    constructor(address seaDropActionModule, address moduleGlobals, address seaDropImpl) {
+    constructor(address seaDropActionModule, address moduleGlobals, address defaultSeaDrop) {
         SEADROP_ACTION_MODULE = seaDropActionModule;
         MODULE_GLOBALS = IModuleGlobals(moduleGlobals);
-        SEADROP_IMPL = ISeaDrop(seaDropImpl);
+        DEFAULT_SEADROP = defaultSeaDrop;
     }
 
     function initialize(
@@ -50,60 +40,123 @@ contract LensSeaDropCollection is ERC721SeaDropCloneable {
         address[] calldata allowedSeaDrops,
         MultiConfigureStruct calldata config
     ) external onlySeaDropActionModule {
-        if (allowedSeaDrops.length == 0 || allowedSeaDrops[0] != address(SEADROP_IMPL)) {
-            revert InvalidParams();
-        }
+        _validateInitializationData(allowedSeaDrops, config);
         super.initialize({
             __name: name,
             __symbol: symbol,
             allowedSeaDrop: allowedSeaDrops,
             initialOwner: address(this)
         });
-        ERC721SeaDropCloneable(address(this)).multiConfigure(config);
-        _initializeValidActionModuleValues(config);
-        ERC721SeaDropCloneable(address(this)).setRoyaltyInfo(RoyaltyInfo({royaltyAddress: owner, royaltyBps: 1000}));
+        this.multiConfigure(config);
+        this.setRoyaltyInfo(RoyaltyInfo({royaltyAddress: owner, royaltyBps: ROYALTIES_BPS}));
         _transferOwnership(owner);
     }
 
-    function _initializeValidActionModuleValues(MultiConfigureStruct calldata config) internal {
-        // Make sure the feeBps is at lest the same as the LensTreasury fee.
-        uint16 treasuryFee = MODULE_GLOBALS.getTreasuryFee();
-        if (config.publicDrop.feeBps < treasuryFee) {
-            PublicDrop memory publicDrop = config.publicDrop;
-            publicDrop.feeBps = treasuryFee;
-            SEADROP_IMPL.updatePublicDrop(publicDrop);
+    function _validateInitializationData(
+        address[] calldata allowedSeaDrops,
+        MultiConfigureStruct calldata config
+    ) internal view {
+        // Makes sure that the default used SeaDrop is allowed as the first element of the array.
+        if (allowedSeaDrops.length == 0 || allowedSeaDrops[0] != DEFAULT_SEADROP) {
+            revert InvalidParams();
         }
-        // Make sure the LensSeaDropActionModule is allowed as a fee recipient.
-        SEADROP_IMPL.updateAllowedFeeRecipient(SEADROP_ACTION_MODULE, true);
-        // Make sure the LensSeaDropActionModule is allowed as a payer.
-        SEADROP_IMPL.updatePayer(SEADROP_ACTION_MODULE, true);
+        // Makes sure that the SeaDropMintPublicationAction is allowed as a fee recipient.
+        if (config.allowedFeeRecipients.length == 0 || config.allowedFeeRecipients[0] != SEADROP_ACTION_MODULE) {
+            revert InvalidParams();
+        }
+        // Makes sure that the SeaDropMintPublicationAction is allowed as a payer.
+        if (config.allowedPayers.length == 0 || config.allowedPayers[0] != SEADROP_ACTION_MODULE) {
+            revert InvalidParams();
+        }
+        // NOTE: Validations of fee BPS, disallowed fee recipients or payers are done in the respective overriden
+        // functions that will be called by the `multiConfigure` function afterwards.
     }
 
-    function updatePublicDrop(PublicDrop calldata publicDrop) external virtual {
-        updatePublicDrop(address(SEADROP_IMPL), publicDrop);
+    /**
+     * @notice Update the allowed SeaDrop contracts.
+     *         Only the owner or administrator can use this function.
+     *
+     * @param allowedSeaDrop The allowed SeaDrop addresses.
+     */
+    function updateAllowedSeaDrop(address[] calldata allowedSeaDrop) external virtual override onlyOwner {
+        // Makes sure that the default used SeaDrop is allowed as the first element of the array.
+        if (allowedSeaDrop.length == 0 || allowedSeaDrop[0] != DEFAULT_SEADROP) {
+            revert InvalidParams();
+        }
+        _updateAllowedSeaDrop(allowedSeaDrop);
     }
 
     /**
      * @notice Update the public drop data for this nft contract on SeaDrop.
-     *         Only the owner or predefined LensSeaDropActionModule can use this function.
+     *         Only the owner can use this function.
      *
+     * @param seaDropImpl The allowed SeaDrop contract.
      * @param publicDrop  The public drop data.
      */
-    function updatePublicDrop(address seaDropImpl, PublicDrop calldata publicDrop) public virtual override {
-        _onlyOwnerOrSelfOrLensActionModule();
+    function updatePublicDrop(address seaDropImpl, PublicDrop calldata publicDrop) external virtual override {
+        // We only enforce the fees to cover the Lens Treasury fees when using the default SeaDrop, as it is the SeaDrop
+        // chosen by Lens.
+        if (seaDropImpl == DEFAULT_SEADROP && publicDrop.feeBps < MODULE_GLOBALS.getTreasuryFee()) {
+            revert FeesDoNotCoverLensTreasury();
+        }
+        // Ensure the sender is only the owner or contract itself.
+        _onlyOwnerOrSelf();
 
-        _verifyFeesAreStillCoveringLensTreasury(publicDrop);
-
+        // Ensure the SeaDrop is allowed.
         _onlyAllowedSeaDrop(seaDropImpl);
 
         // Update the public drop data on SeaDrop.
         ISeaDrop(seaDropImpl).updatePublicDrop(publicDrop);
     }
 
-    // TODO: Discuss if we want to keep this enforcing. Maybe yes to force fees for when we mint through Lens.
-    function _verifyFeesAreStillCoveringLensTreasury(PublicDrop calldata publicDrop) internal view {
-        if (publicDrop.feeBps < MODULE_GLOBALS.getTreasuryFee()) {
-            revert FeesDoNotCoverLensTreasury();
+    /**
+     * @notice Update the allowed fee recipient for this nft contract
+     *         on SeaDrop.
+     *         Only the owner can set the allowed fee recipient.
+     *
+     * @param seaDropImpl  The allowed SeaDrop contract.
+     * @param feeRecipient The new fee recipient.
+     * @param allowed      If the fee recipient is allowed.
+     */
+    function updateAllowedFeeRecipient(
+        address seaDropImpl,
+        address feeRecipient,
+        bool allowed
+    ) external virtual override {
+        // We only enforce the SeaDropMintPublicationAction to be used as a fee recipient when using the default SeaDrop.
+        if (seaDropImpl == DEFAULT_SEADROP && !allowed && feeRecipient == SEADROP_ACTION_MODULE) {
+            revert InvalidParams();
         }
+        // Ensure the sender is only the owner or contract itself.
+        _onlyOwnerOrSelf();
+
+        // Ensure the SeaDrop is allowed.
+        _onlyAllowedSeaDrop(seaDropImpl);
+
+        // Update the allowed fee recipient.
+        ISeaDrop(seaDropImpl).updateAllowedFeeRecipient(feeRecipient, allowed);
+    }
+
+    /**
+     * @notice Update the allowed payers for this nft contract on SeaDrop.
+     *         Only the owner can use this function.
+     *
+     * @param seaDropImpl The allowed SeaDrop contract.
+     * @param payer       The payer to update.
+     * @param allowed     Whether the payer is allowed.
+     */
+    function updatePayer(address seaDropImpl, address payer, bool allowed) external virtual override {
+        // We only enforce the SeaDropMintPublicationAction to be enabled as a payer when using the default SeaDrop.
+        if (seaDropImpl == DEFAULT_SEADROP && !allowed && payer == SEADROP_ACTION_MODULE) {
+            revert InvalidParams();
+        }
+        // Ensure the sender is only the owner or contract itself.
+        _onlyOwnerOrSelf();
+
+        // Ensure the SeaDrop is allowed.
+        _onlyAllowedSeaDrop(seaDropImpl);
+
+        // Update the payer.
+        ISeaDrop(seaDropImpl).updatePayer(payer, allowed);
     }
 }
