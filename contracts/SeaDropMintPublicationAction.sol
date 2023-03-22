@@ -179,7 +179,7 @@ contract SeaDropMintPublicationAction is VersionedInitializable, HubRestricted, 
             balanceBeforeMinting = address(this).balance;
 
             // Get the WMATIC to perform the mint payment from the transaction executor.
-            WMATIC.transferFrom(processActionParams.executor, address(this), mintPaymentAmount);
+            WMATIC.transferFrom(processActionParams.transactionExecutor, address(this), mintPaymentAmount);
             // Unwrap WMATIC into MATIC.
             WMATIC.withdraw(mintPaymentAmount);
 
