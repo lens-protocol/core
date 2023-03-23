@@ -3,7 +3,6 @@
 pragma solidity ^0.8.15;
 
 import {Errors} from 'contracts/libraries/constants/Errors.sol';
-import {Events} from 'contracts/libraries/constants/Events.sol';
 
 /**
  * @title HubRestricted

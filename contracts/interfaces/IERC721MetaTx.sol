@@ -2,8 +2,6 @@
 
 pragma solidity ^0.8.19;
 
-import {Types} from 'contracts/libraries/constants/Types.sol';
-
 /**
  * @title IERC721MetaTx
  * @author Lens Protocol

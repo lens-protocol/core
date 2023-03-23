@@ -5,7 +5,6 @@ import {ERC721SeaDropCloneable} from '@seadrop/clones/ERC721SeaDropCloneable.sol
 import {ISeaDrop} from '@seadrop/interfaces/ISeaDrop.sol';
 import {PublicDrop} from '@seadrop/lib/SeaDropStructs.sol';
 import {IModuleGlobals} from 'contracts/interfaces/IModuleGlobals.sol';
-import {ERC721SeaDropStructsErrorsAndEvents} from '@seadrop/lib/ERC721SeaDropStructsErrorsAndEvents.sol';
 
 contract LensSeaDropCollection is ERC721SeaDropCloneable {
     error OnlySeaDropActionModule();

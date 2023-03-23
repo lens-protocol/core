@@ -3,11 +3,9 @@
 pragma solidity ^0.8.15;
 
 import {ValidationLib} from 'contracts/libraries/ValidationLib.sol';
-import {MetaTxLib} from 'contracts/libraries/MetaTxLib.sol';
 import {Types} from 'contracts/libraries/constants/Types.sol';
 import {Events} from 'contracts/libraries/constants/Events.sol';
 import {Errors} from 'contracts/libraries/constants/Errors.sol';
-import {ICollectModule} from 'contracts/interfaces/ICollectModule.sol';
 import {IReferenceModule} from 'contracts/interfaces/IReferenceModule.sol';
 import {IDeprecatedReferenceModule} from 'contracts/interfaces/IDeprecatedReferenceModule.sol';
 import {StorageLib} from 'contracts/libraries/StorageLib.sol';

@@ -2,7 +2,6 @@
 
 pragma solidity ^0.8.15;
 
-import {Events} from 'contracts/libraries/constants/Events.sol';
 import {Types} from 'contracts/libraries/constants/Types.sol';
 import {Errors} from 'contracts/libraries/constants/Errors.sol';
 import {ILensMultiState} from 'contracts/interfaces/ILensMultiState.sol';

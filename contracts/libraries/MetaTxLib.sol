@@ -4,7 +4,6 @@ pragma solidity ^0.8.15;
 import {IEIP1271Implementer} from 'contracts/interfaces/IEIP1271Implementer.sol';
 import {Types} from 'contracts/libraries/constants/Types.sol';
 import {Errors} from 'contracts/libraries/constants/Errors.sol';
-import {ValidationLib} from 'contracts/libraries/ValidationLib.sol';
 import {Typehash} from 'contracts/libraries/constants/Typehash.sol';
 import {StorageLib} from 'contracts/libraries/StorageLib.sol';
 
