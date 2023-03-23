@@ -32,7 +32,7 @@ jobs:
       - name: Run Forge build
         run: |
           forge --version
-          forge build
+          forge build --deny-warnings
       - name: Run Forge tests
         run: |
           cp .env.example .env
