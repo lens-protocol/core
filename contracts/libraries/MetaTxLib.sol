@@ -180,7 +180,7 @@ library MetaTxLib {
     }
 
     // TODO: Check if this is how you do encoding of bytes[] array in ERC721
-    function _prepareActionModulesInitDatas(bytes[] memory actionModulesInitDatas) internal pure returns (bytes32) {
+    function _prepareActionModulesInitDatas(bytes[] memory actionModulesInitDatas) private pure returns (bytes32) {
         bytes32[] memory actionModulesInitDatasBytes = new bytes32[](actionModulesInitDatas.length);
         for (uint256 i = 0; i < actionModulesInitDatas.length; i++) {
             actionModulesInitDatasBytes[i] = keccak256(abi.encode(actionModulesInitDatas[i]));
@@ -206,9 +206,9 @@ library MetaTxLib {
         uint256 deadline;
     }
 
-    function abiEncode(
+    function _abiEncode(
         ReferenceParamsForAbiEncode memory referenceParamsForAbiEncode
-    ) internal pure returns (bytes memory) {
+    ) private pure returns (bytes memory) {
         return
             abi.encode(
                 referenceParamsForAbiEncode.typehash,
@@ -238,7 +238,7 @@ library MetaTxLib {
         bytes32 referenceModuleInitDataHash = keccak256(commentParams.referenceModuleInitData);
         uint256 nonce = _getAndIncrementNonce(signature.signer);
         uint256 deadline = signature.deadline;
-        bytes memory encodedAbi = abiEncode(
+        bytes memory encodedAbi = _abiEncode(
             ReferenceParamsForAbiEncode(
                 Typehash.COMMENT,
                 commentParams.profileId,
@@ -269,7 +269,7 @@ library MetaTxLib {
         bytes32 referenceModuleInitDataHash = keccak256(quoteParams.referenceModuleInitData);
         uint256 nonce = _getAndIncrementNonce(signature.signer);
         uint256 deadline = signature.deadline;
-        bytes memory encodedAbi = abiEncode(
+        bytes memory encodedAbi = _abiEncode(
             ReferenceParamsForAbiEncode(
                 Typehash.QUOTE,
                 quoteParams.profileId,
@@ -494,7 +494,7 @@ library MetaTxLib {
     /**
      * @dev Wrapper for ecrecover to reduce code size, used in meta-tx specific functions.
      */
-    function _validateRecoveredAddress(bytes32 digest, Types.EIP712Signature calldata signature) internal view {
+    function _validateRecoveredAddress(bytes32 digest, Types.EIP712Signature calldata signature) private view {
         if (signature.deadline < block.timestamp) revert Errors.SignatureExpired();
         // If the expected address is a contract, check the signature there.
         if (signature.signer.code.length != 0) {

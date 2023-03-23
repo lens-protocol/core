@@ -65,4 +65,25 @@ library GovernanceLib {
         emit Events.StateSet(msg.sender, prevState, newState, block.timestamp);
         return prevState;
     }
+
+    function whitelistProfileCreator(address profileCreator, bool whitelist) external {
+        StorageLib.profileCreatorWhitelisted()[profileCreator] = whitelist;
+        emit Events.ProfileCreatorWhitelisted(profileCreator, whitelist, block.timestamp);
+    }
+
+    function whitelistFollowModule(address followModule, bool whitelist) external {
+        StorageLib.followModuleWhitelisted()[followModule] = whitelist;
+        emit Events.FollowModuleWhitelisted(followModule, whitelist, block.timestamp);
+    }
+
+    function whitelistReferenceModule(address referenceModule, bool whitelist) external {
+        StorageLib.referenceModuleWhitelisted()[referenceModule] = whitelist;
+        emit Events.ReferenceModuleWhitelisted(referenceModule, whitelist, block.timestamp);
+    }
+
+    function whitelistActionModuleId(address actionModule, uint256 whitelistId) external {
+        StorageLib.actionModuleWhitelistedId()[actionModule] = whitelistId;
+        StorageLib.actionModuleById()[whitelistId] = actionModule;
+        emit Events.ActionModuleWhitelistedId(actionModule, whitelistId, block.timestamp);
+    }
 }

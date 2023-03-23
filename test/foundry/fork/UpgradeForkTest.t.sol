@@ -1,5 +1,5 @@
 // This test should upgrade the forked Polygon deployment, and run a series of tests.
-// SPDX-License-Identifier: UNLICENSED
+// SPDX-License-Identifier: MIT
 pragma solidity ^0.8.13;
 
 import '@openzeppelin/contracts/token/ERC721/extensions/IERC721Enumerable.sol';

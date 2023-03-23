@@ -208,10 +208,8 @@ contract SeaDropMintPublicationAction is VersionedInitializable, HubRestricted, 
 
     function rescaleFees(uint256 profileId, uint256 pubId) public {
         uint16 lensTreasuryFeeBps = MODULE_GLOBALS.getTreasuryFee();
-        PublicDrop memory publicDrop = SEADROP.getPublicDrop(
-            _collectionDataByPub[profileId][pubId].nftCollectionAddress
-        );
-        _rescaleFees(profileId, pubId, lensTreasuryFeeBps, publicDrop);
+        PublicDrop memory publicDrop = SEADROP.getPublicDrop(_collectionDataByPub[0][pubId].nftCollectionAddress);
+        _rescaleFees(0, pubId, lensTreasuryFeeBps, publicDrop);
     }
 
     function _rescaleFees(

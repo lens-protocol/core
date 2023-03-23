@@ -69,11 +69,10 @@ library ProfileTokenURILib {
      *
      * @return string The profile token image as a base64-encoded SVG.
      */
-    function _getSVGImageBase64Encoded(string memory handleWithAtSymbol, string memory imageURI)
-        internal
-        pure
-        returns (string memory)
-    {
+    function _getSVGImageBase64Encoded(
+        string memory handleWithAtSymbol,
+        string memory imageURI
+    ) private pure returns (string memory) {
         return
             Base64.encode(
                 abi.encodePacked(
@@ -98,7 +97,7 @@ library ProfileTokenURILib {
      *
      * @return string The fragment of the SVG token's image correspondending to the profile picture.
      */
-    function _getSVGProfilePicture(string memory imageURI) internal pure returns (string memory) {
+    function _getSVGProfilePicture(string memory imageURI) private pure returns (string memory) {
         if (_shouldUseCustomPicture(imageURI)) {
             return
                 string(
@@ -125,7 +124,7 @@ library ProfileTokenURILib {
      * @param handleLength The profile's handle length.
      * @return uint256 The font size.
      */
-    function _handleLengthToFontSize(uint256 handleLength) internal pure returns (uint256) {
+    function _handleLengthToFontSize(uint256 handleLength) private pure returns (uint256) {
         return
             handleLength <= MAX_HANDLE_LENGTH_WITH_DEFAULT_FONT_SIZE
                 ? DEFAULT_FONT_SIZE
@@ -142,7 +141,7 @@ library ProfileTokenURILib {
      *
      * @return bool A boolean indicating whether custom profile picture should be used or not.
      */
-    function _shouldUseCustomPicture(string memory imageURI) internal pure returns (bool) {
+    function _shouldUseCustomPicture(string memory imageURI) private pure returns (bool) {
         bytes memory imageURIBytes = bytes(imageURI);
         if (imageURIBytes.length == 0) {
             return false;

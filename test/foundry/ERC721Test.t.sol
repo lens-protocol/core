@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: AGPL-3.0-only
-// File modified from https://github.com/transmissions11/solmate/blob/main/src/test/ERC721.t.sol
+// License should stay as `AGPL-3.0-only` as it was modified from:
+// https://github.com/transmissions11/solmate/blob/main/src/test/ERC721.t.sol
 pragma solidity ^0.8.15;
 
 import 'forge-std/Test.sol';
@@ -29,23 +30,13 @@ contract ERC721Recipient is IERC721Receiver {
 }
 
 contract RevertingERC721Recipient is IERC721Receiver {
-    function onERC721Received(
-        address,
-        address,
-        uint256,
-        bytes calldata
-    ) public virtual override returns (bytes4) {
+    function onERC721Received(address, address, uint256, bytes calldata) public virtual override returns (bytes4) {
         revert(string(abi.encodePacked(IERC721Receiver.onERC721Received.selector)));
     }
 }
 
 contract WrongReturnDataERC721Recipient is IERC721Receiver {
-    function onERC721Received(
-        address,
-        address,
-        uint256,
-        bytes calldata
-    ) public virtual override returns (bytes4) {
+    function onERC721Received(address, address, uint256, bytes calldata) public virtual override returns (bytes4) {
         return 0xCAFEBEEF;
     }
 }

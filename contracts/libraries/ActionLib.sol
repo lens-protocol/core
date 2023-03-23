@@ -66,7 +66,7 @@ library ActionLib {
         return actionModuleReturnData;
     }
 
-    function _isActionAllowed(Types.Publication storage _publication, uint256 actionId) internal view returns (bool) {
+    function _isActionAllowed(Types.Publication storage _publication, uint256 actionId) private view returns (bool) {
         uint256 actionIdBitmapMask = 1 << (actionId - 1);
         return actionIdBitmapMask & _publication.actionModulesBitmap != 0;
     }
