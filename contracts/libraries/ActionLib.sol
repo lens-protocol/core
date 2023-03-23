@@ -17,6 +17,11 @@ library ActionLib {
         address transactionExecutor,
         address actorProfileOwner
     ) external returns (bytes memory) {
+        ValidationLib.validateNotBlocked({
+            profile: publicationActionParams.actorProfileId,
+            byProfile: publicationActionParams.publicationActedProfileId
+        });
+
         if (publicationActionParams.publicationActedId == 0) {
             revert Errors.PublicationDoesNotExist();
         }

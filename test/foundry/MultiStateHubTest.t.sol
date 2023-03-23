@@ -136,10 +136,6 @@ contract MultiStateHubTest_PausedState_Direct is BaseTest {
         _setProfileImageURI(profileOwner, newProfileId, MOCK_URI);
     }
 
-    function _mockSetFollowNFTURI() internal virtual {
-        _setFollowNFTURI(profileOwner, newProfileId, MOCK_URI);
-    }
-
     function _mockPost() internal virtual {
         vm.prank(profileOwner);
         _post(mockPostParams);
@@ -226,16 +222,6 @@ contract MultiStateHubTest_PausedState_Direct is BaseTest {
         _setState(Types.ProtocolState.Unpaused);
 
         _mockSetProfileImageURI();
-    }
-
-    function testCannotSetFollowNFTURIWhilePaused() public {
-        vm.expectRevert(Errors.Paused.selector);
-        _mockSetFollowNFTURI();
-
-        vm.prank(governance);
-        _setState(Types.ProtocolState.Unpaused);
-
-        _mockSetFollowNFTURI();
     }
 
     function testCannotPostWhilePaused() public {
@@ -354,16 +340,6 @@ contract MultiStateHubTest_PausedState_WithSig is MultiStateHubTest_PausedState_
         });
     }
 
-    function _mockSetFollowNFTURI() internal override {
-        bytes32 digest = _getSetFollowNFTURITypedDataHash(newProfileId, MOCK_URI, nonce, deadline);
-
-        _setFollowNFTURIWithSig({
-            profileId: newProfileId,
-            followNFTURI: MOCK_URI,
-            signature: _getSigStruct(profileOwner, profileOwnerKey, digest, deadline)
-        });
-    }
-
     function _mockPost() internal override {
         bytes32 digest = _getPostTypedDataHash(mockPostParams, nonce, deadline);
 
@@ -443,10 +419,6 @@ contract MultiStateHubTest_PublishingPausedState_Direct is BaseTest {
         _setProfileImageURI(profileOwner, newProfileId, MOCK_URI);
     }
 
-    function _mockSetFollowNFTURI() internal virtual {
-        _setFollowNFTURI(profileOwner, newProfileId, MOCK_URI);
-    }
-
     function _mockPost() internal virtual {
         vm.prank(profileOwner);
         _post(mockPostParams);
@@ -510,10 +482,6 @@ contract MultiStateHubTest_PublishingPausedState_Direct is BaseTest {
 
     function testCanSetProfileImageURIWhilePublishingPaused() public {
         _mockSetProfileImageURI();
-    }
-
-    function testCanSetFollowNFTURIWhilePublishingPaused() public {
-        _mockSetFollowNFTURI();
     }
 
     function testCanBurnWhilePublishingPaused() public {
@@ -606,16 +574,6 @@ contract MultiStateHubTest_PublishingPausedState_WithSig is MultiStateHubTest_Pu
         _setProfileImageURIWithSig({
             profileId: newProfileId,
             imageURI: MOCK_URI,
-            signature: _getSigStruct(profileOwner, profileOwnerKey, digest, deadline)
-        });
-    }
-
-    function _mockSetFollowNFTURI() internal override {
-        bytes32 digest = _getSetFollowNFTURITypedDataHash(newProfileId, MOCK_URI, nonce, deadline);
-
-        _setFollowNFTURIWithSig({
-            profileId: newProfileId,
-            followNFTURI: MOCK_URI,
             signature: _getSigStruct(profileOwner, profileOwnerKey, digest, deadline)
         });
     }

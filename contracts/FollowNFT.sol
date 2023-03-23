@@ -267,8 +267,10 @@ contract FollowNFT is HubRestricted, LensBaseERC721, ERC2981CollectionRoyalties,
      * @dev This returns the follow NFT URI fetched from the hub.
      */
     function tokenURI(uint256 followTokenId) public view override returns (string memory) {
-        if (!_exists(followTokenId)) revert Errors.TokenDoesNotExist();
-        return ILensHub(HUB).getFollowNFTURI(_followedProfileId);
+        if (!_exists(followTokenId)) {
+            revert Errors.TokenDoesNotExist();
+        }
+        return 'Not implemented yet'; // TODO: Implement tokenURI.
     }
 
     function _followMintingNewToken(uint256 followerProfileId) internal returns (uint256) {

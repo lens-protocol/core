@@ -43,16 +43,6 @@ abstract contract LensMultiState is ILensMultiState {
         _;
     }
 
-    modifier whenNotBlocked(uint256 profile, uint256 byProfile) {
-        ValidationLib.validateNotBlocked(profile, byProfile);
-        _;
-    }
-
-    modifier onlyValidPointedPub(uint256 profileId, uint256 pubId) {
-        ValidationLib.validatePointedPub(profileId, pubId);
-        _;
-    }
-
     /**
      * @notice Returns the current protocol state.
      *

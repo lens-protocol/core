@@ -98,6 +98,9 @@ library PublicationLib {
      * @return uint256 The created publication's pubId.
      */
     function mirror(Types.MirrorParams calldata mirrorParams, address transactionExecutor) external returns (uint256) {
+        ValidationLib.validatePointedPub(mirrorParams.pointedProfileId, mirrorParams.pointedPubId);
+        ValidationLib.validateNotBlocked({profile: mirrorParams.profileId, byProfile: mirrorParams.pointedProfileId});
+
         Types.PublicationType[] memory referrerPubTypes = ValidationLib.validateReferrersAndGetReferrersPubTypes(
             mirrorParams.referrerProfileIds,
             mirrorParams.referrerPubIds,
@@ -209,6 +212,12 @@ library PublicationLib {
         address transactionExecutor,
         Types.PublicationType referencePubType
     ) private returns (uint256, bytes[] memory, bytes memory, Types.PublicationType[] memory) {
+        ValidationLib.validatePointedPub(referencePubParams.pointedProfileId, referencePubParams.pointedPubId);
+        ValidationLib.validateNotBlocked({
+            profile: referencePubParams.profileId,
+            byProfile: referencePubParams.pointedProfileId
+        });
+
         Types.PublicationType[] memory referrerPubTypes = ValidationLib.validateReferrersAndGetReferrersPubTypes(
             referencePubParams.referrerProfileIds,
             referencePubParams.referrerPubIds,

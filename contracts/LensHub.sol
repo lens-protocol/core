@@ -24,12 +24,10 @@ import {ProfileLib} from 'contracts/libraries/ProfileLib.sol';
 import {PublicationLib} from 'contracts/libraries/PublicationLib.sol';
 import {ProfileTokenURILib} from 'contracts/libraries/ProfileTokenURILib.sol';
 import {StorageLib} from 'contracts/libraries/StorageLib.sol';
-import {ValidationLib} from 'contracts/libraries/ValidationLib.sol';
+import {MigrationLib} from 'contracts/libraries/MigrationLib.sol';
 
 import {LensHandles} from 'contracts/misc/namespaces/LensHandles.sol';
 import {TokenHandleRegistry} from 'contracts/misc/namespaces/TokenHandleRegistry.sol';
-
-import {MigrationLib} from 'contracts/libraries/MigrationLib.sol';
 
 /**
  * @title LensHub
@@ -272,24 +270,6 @@ contract LensHub is LensBaseERC721, VersionedInitializable, LensMultiState, Lens
         ProfileLib.setProfileImageURI(profileId, imageURI);
     }
 
-    /// @inheritdoc ILensHub
-    function setFollowNFTURI(
-        uint256 profileId,
-        string calldata followNFTURI
-    ) external override whenNotPaused onlyProfileOwnerOrDelegatedExecutor(msg.sender, profileId) {
-        ProfileLib.setFollowNFTURI(profileId, followNFTURI);
-    }
-
-    /// @inheritdoc ILensHub
-    function setFollowNFTURIWithSig(
-        uint256 profileId,
-        string calldata followNFTURI,
-        Types.EIP712Signature calldata signature
-    ) external override whenNotPaused onlyProfileOwnerOrDelegatedExecutor(signature.signer, profileId) {
-        MetaTxLib.validateSetFollowNFTURISignature(signature, profileId, followNFTURI);
-        ProfileLib.setFollowNFTURI(profileId, followNFTURI);
-    }
-
     ////////////////////////////////////////
     ///        PUBLISHING FUNCTIONS      ///
     ////////////////////////////////////////
@@ -330,8 +310,6 @@ contract LensHub is LensBaseERC721, VersionedInitializable, LensMultiState, Lens
         override
         whenPublishingEnabled
         onlyProfileOwnerOrDelegatedExecutor(msg.sender, commentParams.profileId)
-        onlyValidPointedPub(commentParams.pointedProfileId, commentParams.pointedPubId)
-        whenNotBlocked(commentParams.profileId, commentParams.pointedProfileId)
         returns (uint256)
     {
         return PublicationLib.comment({commentParams: commentParams, transactionExecutor: msg.sender});
@@ -346,8 +324,6 @@ contract LensHub is LensBaseERC721, VersionedInitializable, LensMultiState, Lens
         override
         whenPublishingEnabled
         onlyProfileOwnerOrDelegatedExecutor(signature.signer, commentParams.profileId)
-        onlyValidPointedPub(commentParams.pointedProfileId, commentParams.pointedPubId)
-        whenNotBlocked(commentParams.profileId, commentParams.pointedProfileId)
         returns (uint256)
     {
         MetaTxLib.validateCommentSignature(signature, commentParams);
@@ -362,8 +338,6 @@ contract LensHub is LensBaseERC721, VersionedInitializable, LensMultiState, Lens
         override
         whenPublishingEnabled
         onlyProfileOwnerOrDelegatedExecutor(msg.sender, mirrorParams.profileId)
-        onlyValidPointedPub(mirrorParams.pointedProfileId, mirrorParams.pointedPubId)
-        whenNotBlocked(mirrorParams.profileId, mirrorParams.pointedProfileId)
         returns (uint256)
     {
         return PublicationLib.mirror({mirrorParams: mirrorParams, transactionExecutor: msg.sender});
@@ -378,8 +352,6 @@ contract LensHub is LensBaseERC721, VersionedInitializable, LensMultiState, Lens
         override
         whenPublishingEnabled
         onlyProfileOwnerOrDelegatedExecutor(signature.signer, mirrorParams.profileId)
-        onlyValidPointedPub(mirrorParams.pointedProfileId, mirrorParams.pointedPubId)
-        whenNotBlocked(mirrorParams.profileId, mirrorParams.pointedProfileId)
         returns (uint256)
     {
         MetaTxLib.validateMirrorSignature(signature, mirrorParams);
@@ -394,8 +366,6 @@ contract LensHub is LensBaseERC721, VersionedInitializable, LensMultiState, Lens
         override
         whenPublishingEnabled
         onlyProfileOwnerOrDelegatedExecutor(msg.sender, quoteParams.profileId)
-        onlyValidPointedPub(quoteParams.pointedProfileId, quoteParams.pointedPubId)
-        whenNotBlocked(quoteParams.profileId, quoteParams.pointedProfileId)
         returns (uint256)
     {
         return PublicationLib.quote({quoteParams: quoteParams, transactionExecutor: msg.sender});
@@ -410,8 +380,6 @@ contract LensHub is LensBaseERC721, VersionedInitializable, LensMultiState, Lens
         override
         whenPublishingEnabled
         onlyProfileOwnerOrDelegatedExecutor(signature.signer, quoteParams.profileId)
-        onlyValidPointedPub(quoteParams.pointedProfileId, quoteParams.pointedPubId)
-        whenNotBlocked(quoteParams.profileId, quoteParams.pointedProfileId)
         returns (uint256)
     {
         MetaTxLib.validateQuoteSignature(signature, quoteParams);
@@ -534,7 +502,6 @@ contract LensHub is LensBaseERC721, VersionedInitializable, LensMultiState, Lens
         override
         whenNotPaused
         onlyProfileOwnerOrDelegatedExecutor(msg.sender, collectParams.collectorProfileId)
-        whenNotBlocked(collectParams.collectorProfileId, collectParams.publicationCollectedProfileId)
         returns (uint256)
     {
         return
@@ -555,7 +522,6 @@ contract LensHub is LensBaseERC721, VersionedInitializable, LensMultiState, Lens
         override
         whenNotPaused
         onlyProfileOwnerOrDelegatedExecutor(signature.signer, collectParams.collectorProfileId)
-        whenNotBlocked(collectParams.collectorProfileId, collectParams.publicationCollectedProfileId)
         returns (uint256)
     {
         MetaTxLib.validateCollectSignature(signature, collectParams);
@@ -576,7 +542,6 @@ contract LensHub is LensBaseERC721, VersionedInitializable, LensMultiState, Lens
         override
         whenNotPaused
         onlyProfileOwnerOrDelegatedExecutor(msg.sender, publicationActionParams.actorProfileId)
-        whenNotBlocked(publicationActionParams.actorProfileId, publicationActionParams.publicationActedProfileId)
         returns (bytes memory)
     {
         return
@@ -596,7 +561,6 @@ contract LensHub is LensBaseERC721, VersionedInitializable, LensMultiState, Lens
         override
         whenNotPaused
         onlyProfileOwnerOrDelegatedExecutor(signature.signer, publicationActionParams.actorProfileId)
-        whenNotBlocked(publicationActionParams.actorProfileId, publicationActionParams.publicationActedProfileId)
         returns (bytes memory)
     {
         MetaTxLib.validateActSignature(signature, publicationActionParams);
@@ -706,11 +670,6 @@ contract LensHub is LensBaseERC721, VersionedInitializable, LensMultiState, Lens
     /// @inheritdoc ILensHub
     function getFollowNFT(uint256 profileId) external view override returns (address) {
         return _profileById[profileId].followNFT;
-    }
-
-    /// @inheritdoc ILensHub
-    function getFollowNFTURI(uint256 profileId) external view override returns (string memory) {
-        return _profileById[profileId].followNFTURI;
     }
 
     /// @inheritdoc ILensHub

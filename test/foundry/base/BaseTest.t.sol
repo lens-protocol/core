@@ -74,18 +74,6 @@ contract BaseTest is TestSetup {
         return _calculateDigest(structHash);
     }
 
-    function _getSetFollowNFTURITypedDataHash(
-        uint256 profileId,
-        string memory followNFTURI,
-        uint256 nonce,
-        uint256 deadline
-    ) internal view returns (bytes32) {
-        bytes32 structHash = keccak256(
-            abi.encode(Typehash.SET_FOLLOW_NFT_URI, profileId, keccak256(bytes(followNFTURI)), nonce, deadline)
-        );
-        return _calculateDigest(structHash);
-    }
-
     function _getBurnTypedDataHash(uint256 profileId, uint256 nonce, uint256 deadline) internal view returns (bytes32) {
         bytes32 structHash = keccak256(abi.encode(Typehash.BURN, profileId, nonce, deadline));
         return _calculateDigest(structHash);
@@ -508,19 +496,6 @@ contract BaseTest is TestSetup {
         Types.EIP712Signature memory signature
     ) internal {
         hub.setProfileImageURIWithSig(profileId, imageURI, signature);
-    }
-
-    function _setFollowNFTURI(address msgSender, uint256 profileId, string memory followNFTURI) internal {
-        vm.prank(msgSender);
-        hub.setFollowNFTURI(profileId, followNFTURI);
-    }
-
-    function _setFollowNFTURIWithSig(
-        uint256 profileId,
-        string memory followNFTURI,
-        Types.EIP712Signature memory signature
-    ) internal {
-        hub.setFollowNFTURIWithSig(profileId, followNFTURI, signature);
     }
 
     function _burn(address msgSender, uint256 profileId) internal {

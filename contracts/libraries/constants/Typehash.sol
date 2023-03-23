@@ -30,8 +30,6 @@ library Typehash {
 
     bytes32 constant SET_FOLLOW_MODULE = keccak256('SetFollowModule(uint256 profileId,address followModule,bytes followModuleInitData,uint256 nonce,uint256 deadline)');
 
-    bytes32 constant SET_FOLLOW_NFT_URI = keccak256('SetFollowNFTURI(uint256 profileId,string followNFTURI,uint256 nonce,uint256 deadline)');
-
     bytes32 constant SET_PROFILE_IMAGE_URI = keccak256('SetProfileImageURI(uint256 profileId,string imageURI,uint256 nonce,uint256 deadline)');
 
     bytes32 constant SET_PROFILE_METADATA_URI = keccak256('SetProfileMetadataURI(uint256 profileId,string metadata,uint256 nonce,uint256 deadline)');

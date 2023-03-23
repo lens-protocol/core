@@ -29,6 +29,11 @@ library CollectLib {
         address collectorProfileOwner,
         address collectNFTImpl
     ) external returns (uint256) {
+        ValidationLib.validateNotBlocked({
+            profile: collectParams.collectorProfileId,
+            byProfile: collectParams.publicationCollectedProfileId
+        });
+
         address collectModule;
         Types.PublicationType[] memory referrerPubTypes;
         uint256 tokenId;

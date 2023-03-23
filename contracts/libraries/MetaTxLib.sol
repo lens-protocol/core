@@ -134,27 +134,6 @@ library MetaTxLib {
         );
     }
 
-    function validateSetFollowNFTURISignature(
-        Types.EIP712Signature calldata signature,
-        uint256 profileId,
-        string calldata followNFTURI
-    ) external {
-        _validateRecoveredAddress(
-            _calculateDigest(
-                keccak256(
-                    abi.encode(
-                        Typehash.SET_FOLLOW_NFT_URI,
-                        profileId,
-                        keccak256(bytes(followNFTURI)),
-                        _getAndIncrementNonce(signature.signer),
-                        signature.deadline
-                    )
-                )
-            ),
-            signature
-        );
-    }
-
     function validatePostSignature(
         Types.EIP712Signature calldata signature,
         Types.PostParams calldata postParams

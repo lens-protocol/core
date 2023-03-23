@@ -229,28 +229,6 @@ interface ILensHub {
     ) external;
 
     /**
-     * @notice Sets a followNFT URI for a given profile's follow NFT.
-     *
-     * @param profileId The token ID of the profile for which to set the followNFT URI.
-     * @param followNFTURI The follow NFT URI to set.
-     */
-    function setFollowNFTURI(uint256 profileId, string calldata followNFTURI) external;
-
-    /**
-     * @notice Sets a followNFT URI via signature for the given profile with the specified parameters. The signer must
-     * either be the profile owner or a delegated executor.
-     *
-     * @param profileId The token ID of the profile for which to set the followNFT URI.
-     * @param followNFTURI The follow NFT URI to set.
-     * @param signature The signature for the post.
-     */
-    function setFollowNFTURIWithSig(
-        uint256 profileId,
-        string calldata followNFTURI,
-        Types.EIP712Signature calldata signature
-    ) external;
-
-    /**
      * @notice Publishes a post to a given profile, must be called by the profile owner.
      *
      * @param postParams A PostParams struct containing the needed parameters.
@@ -653,15 +631,6 @@ interface ILensHub {
      * @return address The followNFT associated with the given profile.
      */
     function getFollowNFT(uint256 profileId) external view returns (address);
-
-    /**
-     * @notice Returns the followNFT URI associated with a given profile.
-     *
-     * @param profileId The token ID of the profile to query the followNFT URI for.
-     *
-     * @return string The followNFT URI associated with the given profile.
-     */
-    function getFollowNFTURI(uint256 profileId) external view returns (string memory);
 
     /**
      * @notice Returns the collectNFT associated with a given publication, if any.
