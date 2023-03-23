@@ -5,6 +5,9 @@ libs = ['node_modules', 'lib']
 test = 'test/foundry'
 cache_path  = 'forge-cache'
 fs_permissions = [{ access = "read-write", path = "./"}]
+optimizer = true
+runs = 200
+ignored_error_codes = []
 
 [rpc_endpoints]
 polygon = "${POLYGON_RPC_URL}"
