@@ -27,6 +27,7 @@ library StorageLib {
     // Introduced in Lens V2:
     uint256 constant DELEGATED_EXECUTOR_CONFIG_MAPPING_SLOT = 25;
     uint256 constant BLOCKED_STATUS_MAPPING_SLOT = 26;
+    uint256 constant ACTION_MODULE_BY_ID_SLOT = 27;
 
     function getPublication(
         uint256 profileId,
@@ -83,6 +84,16 @@ library StorageLib {
         }
     }
 
+    function profileIdByHandleHash()
+        internal
+        pure
+        returns (mapping(bytes32 => uint256) storage _profileIdByHandleHash)
+    {
+        assembly {
+            _profileIdByHandleHash.slot := PROFILE_ID_BY_HANDLE_HASH_MAPPING_SLOT
+        }
+    }
+
     function profileCreatorWhitelisted()
         internal
         pure
@@ -110,6 +121,12 @@ library StorageLib {
     {
         assembly {
             _actionModuleWhitelistedId.slot := ACTION_MODULE_WHITELIST_ID_MAPPING_SLOT
+        }
+    }
+
+    function actionModuleById() internal pure returns (mapping(uint256 => address) storage _actionModuleById) {
+        assembly {
+            _actionModuleById.slot := ACTION_MODULE_BY_ID_SLOT
         }
     }
 

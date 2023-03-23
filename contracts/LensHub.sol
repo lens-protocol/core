@@ -2,30 +2,34 @@
 
 pragma solidity ^0.8.15;
 
-import {IFollowNFT} from 'contracts/interfaces/IFollowNFT.sol';
+import {IERC721Timestamped} from 'contracts/interfaces/IERC721Timestamped.sol';
 import {ILensHub} from 'contracts/interfaces/ILensHub.sol';
+import {IFollowNFT} from 'contracts/interfaces/IFollowNFT.sol';
+
 import {Events} from 'contracts/libraries/constants/Events.sol';
 import {Types} from 'contracts/libraries/constants/Types.sol';
 import {Errors} from 'contracts/libraries/constants/Errors.sol';
-import {ValidationLib} from 'contracts/libraries/ValidationLib.sol';
-import {ProfileLib} from 'contracts/libraries/ProfileLib.sol';
-import {PublicationLib} from 'contracts/libraries/PublicationLib.sol';
-import {ProfileTokenURILib} from 'contracts/libraries/ProfileTokenURILib.sol';
+
 import {LensBaseERC721} from 'contracts/base/LensBaseERC721.sol';
 import {LensMultiState} from 'contracts/base/LensMultiState.sol';
 import {LensHubStorage} from 'contracts/base/LensHubStorage.sol';
 import {VersionedInitializable} from 'contracts/base/upgradeability/VersionedInitializable.sol';
-import {IERC721Enumerable} from '@openzeppelin/contracts/token/ERC721/extensions/IERC721Enumerable.sol';
-import {MetaTxLib} from 'contracts/libraries/MetaTxLib.sol';
-import {GovernanceLib} from 'contracts/libraries/GovernanceLib.sol';
-import {StorageLib} from 'contracts/libraries/StorageLib.sol';
-import {FollowLib} from 'contracts/libraries/FollowLib.sol';
+
 import {ActionLib} from 'contracts/libraries/ActionLib.sol';
 import {CollectLib} from 'contracts/libraries/CollectLib.sol';
+import {FollowLib} from 'contracts/libraries/FollowLib.sol';
+import {GovernanceLib} from 'contracts/libraries/GovernanceLib.sol';
+import {MetaTxLib} from 'contracts/libraries/MetaTxLib.sol';
+import {ProfileLib} from 'contracts/libraries/ProfileLib.sol';
+import {PublicationLib} from 'contracts/libraries/PublicationLib.sol';
+import {ProfileTokenURILib} from 'contracts/libraries/ProfileTokenURILib.sol';
+import {StorageLib} from 'contracts/libraries/StorageLib.sol';
+import {ValidationLib} from 'contracts/libraries/ValidationLib.sol';
 
-///////////////////////////////////// Migration imports ////////////////////////////////////
 import {LensHandles} from 'contracts/misc/namespaces/LensHandles.sol';
 import {TokenHandleRegistry} from 'contracts/misc/namespaces/TokenHandleRegistry.sol';
+
+import {MigrationLib} from 'contracts/libraries/MigrationLib.sol';
 
 /**
  * @title LensHub
@@ -46,11 +50,9 @@ contract LensHub is LensBaseERC721, VersionedInitializable, LensMultiState, Lens
     address internal immutable FOLLOW_NFT_IMPL;
     address internal immutable COLLECT_NFT_IMPL;
 
-    ///////////////////////////////////// Migration constants ////////////////////////////////////
-    uint256 internal constant LENS_PROTOCOL_PROFILE_ID = 1;
+    // Added in Lens V2:
     LensHandles internal immutable lensHandles;
     TokenHandleRegistry internal immutable tokenHandleRegistry;
-    ///////////////////////////////// End of migration constants /////////////////////////////////
 
     /**
      * @dev This modifier reverts if the caller is not the configured governance address.
@@ -110,94 +112,33 @@ contract LensHub is LensBaseERC721, VersionedInitializable, LensMultiState, Lens
         GovernanceLib.setState(newState);
     }
 
-    // TODO: Move to GovernanceLib?
     ///@inheritdoc ILensHub
     function whitelistProfileCreator(address profileCreator, bool whitelist) external override onlyGov {
-        _profileCreatorWhitelisted[profileCreator] = whitelist;
-        emit Events.ProfileCreatorWhitelisted(profileCreator, whitelist, block.timestamp);
+        GovernanceLib.whitelistProfileCreator(profileCreator, whitelist);
     }
 
-    // TODO: Move to GovernanceLib?
     /// @inheritdoc ILensHub
     function whitelistFollowModule(address followModule, bool whitelist) external override onlyGov {
-        _followModuleWhitelisted[followModule] = whitelist;
-        emit Events.FollowModuleWhitelisted(followModule, whitelist, block.timestamp);
+        GovernanceLib.whitelistFollowModule(followModule, whitelist);
     }
 
-    // TODO: Move to GovernanceLib?
     /// @inheritdoc ILensHub
     function whitelistReferenceModule(address referenceModule, bool whitelist) external override onlyGov {
-        _referenceModuleWhitelisted[referenceModule] = whitelist;
-        emit Events.ReferenceModuleWhitelisted(referenceModule, whitelist, block.timestamp);
+        GovernanceLib.whitelistReferenceModule(referenceModule, whitelist);
     }
 
-    // TODO: Move to GovernanceLib?
     /// @inheritdoc ILensHub
     function whitelistActionModuleId(address actionModule, uint256 whitelistId) external override onlyGov {
-        _actionModuleWhitelistedId[actionModule] = whitelistId;
-        _actionModuleById[whitelistId] = actionModule;
-        emit Events.ActionModuleWhitelistedId(actionModule, whitelistId, block.timestamp);
+        GovernanceLib.whitelistActionModuleId(actionModule, whitelistId);
     }
 
     ///////////////////////////////////////////
     ///      V1->V2 MIGRATION FUNCTIONS     ///
     ///////////////////////////////////////////
 
-    // Profiles Handles Migration:
-
-    event ProfileMigrated(uint256 profileId, address profileDestination, string handle, uint256 handleId);
-
-    /**
-     * @notice Migrates an array of profiles from V1 to V2. This function can be callable by anyone.
-     * We would still do the migration in batches by ourselves, but good to allow users to migrate on their own if they want to.
-     *
-     * @param profileIds The array of profile IDs to migrate.
-     */
     function batchMigrateProfiles(uint256[] calldata profileIds) external {
-        for (uint256 i = 0; i < profileIds.length; i++) {
-            _migrateProfilePublic(profileIds[i]);
-        }
+        MigrationLib.batchMigrateProfiles(profileIds, lensHandles, tokenHandleRegistry);
     }
-
-    /**
-     * @notice Migrates a profile from V1 to V2.
-     *
-     * @dev We check if the profile exists by checking owner != address(0).
-     * @dev We check if the profile has already been migrated by checking handleDeprecated != "".
-     * @dev We check if the profile is the "lensprotocol" profile by checking profileId != 1. This is the only profile
-     *      without a .lens suffix.
-     * @dev We mint a new handle on LensHandles contract and link it to the profile in TokenHandleRegistry contract.
-     * @dev The resulting handle NFT is sent to the profile owner.
-     * @dev We emit ProfileMigrated event.
-     * @dev We do not revert in any case, as we want to allow the migration to continue even if one profile fails
-     *      (and it usually fails if already migrated or profileNFT moved).
-     *
-     * @dev Estimated gas cost of one profile migration is around 150k gas.
-     *
-     * @param profileId The profile ID to migrate.
-     */
-    function _migrateProfilePublic(uint256 profileId) internal {
-        address profileOwner = StorageLib.getTokenData(profileId).owner;
-        if (profileOwner != address(0)) {
-            string memory handle = _profileById[profileId].handleDeprecated;
-            if (bytes(handle).length == 0) return; // Already migrated
-            bytes32 handleHash = keccak256(bytes(handle));
-            // "lensprotocol" is the only edge case without .lens suffix:
-            if (profileId != LENS_PROTOCOL_PROFILE_ID) {
-                assembly {
-                    let handle_length := mload(handle)
-                    mstore(handle, sub(handle_length, 5)) // Cut 5 chars (.lens) from the end
-                }
-            }
-            uint256 handleId = lensHandles.mintHandle(profileOwner, handle);
-            tokenHandleRegistry.migrationLinkHandleWithToken(handleId, profileId);
-            emit ProfileMigrated(profileId, profileOwner, handle, handleId);
-            delete _profileById[profileId].handleDeprecated;
-            delete _profileIdByHandleHash[handleHash];
-        }
-    }
-
-    // FollowNFT Migration:
 
     function batchMigrateFollows(
         uint256[] calldata followerProfileIds,
@@ -205,49 +146,8 @@ contract LensHub is LensBaseERC721, VersionedInitializable, LensMultiState, Lens
         address[] calldata followNFTAddresses,
         uint256[] calldata followTokenIds
     ) external {
-        if (
-            followerProfileIds.length != idsOfProfileFollowed.length ||
-            followerProfileIds.length != followNFTAddresses.length ||
-            followerProfileIds.length != followTokenIds.length
-        ) {
-            revert Errors.ArrayMismatch();
-        }
-        uint256 i;
-        while (i < followerProfileIds.length) {
-            _migrateFollow(followerProfileIds[i], idsOfProfileFollowed[i], followNFTAddresses[i], followTokenIds[i]);
-            unchecked {
-                ++i;
-            }
-        }
+        MigrationLib.batchMigrateFollows(followerProfileIds, idsOfProfileFollowed, followNFTAddresses, followTokenIds);
     }
-
-    function _migrateFollow(
-        uint256 followerProfileId,
-        uint256 idOfProfileFollowed,
-        address followNFTAddress,
-        uint256 followTokenId
-    ) internal {
-        uint48 mintTimestamp = IFollowNFT(followNFTAddress).migrate({
-            followerProfileId: followerProfileId,
-            followerProfileOwner: StorageLib.getTokenData(followerProfileId).owner,
-            idOfProfileFollowed: idOfProfileFollowed,
-            followTokenId: followTokenId
-        });
-        // `mintTimestamp` will be 0 if already migrated (or not holding both Profile & Follow NFT together)
-        if (mintTimestamp != 0) {
-            emit Events.Followed({
-                followerProfileId: followerProfileId,
-                idOfProfileFollowed: idOfProfileFollowed,
-                followTokenIdAssigned: followTokenId,
-                followModuleData: '',
-                timestamp: mintTimestamp // The only case where this won't match block.timestamp is during the migration
-            });
-        }
-    }
-
-    ///////////////////////////////////////////
-    ///  END OF V1->V2 MIGRATION FUNCTIONS  ///
-    ///////////////////////////////////////////
 
     ///////////////////////////////////////////
     ///        PROFILE OWNER FUNCTIONS      ///
@@ -884,7 +784,7 @@ contract LensHub is LensBaseERC721, VersionedInitializable, LensMultiState, Lens
         return
             ProfileTokenURILib.getProfileTokenURI(
                 tokenId,
-                followNFT == address(0) ? 0 : IERC721Enumerable(followNFT).totalSupply(),
+                followNFT == address(0) ? 0 : IERC721Timestamped(followNFT).totalSupply(),
                 ownerOf(tokenId),
                 'Lens Profile',
                 _profileById[tokenId].imageURI
