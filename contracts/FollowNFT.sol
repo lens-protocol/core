@@ -90,7 +90,7 @@ contract FollowNFT is HubRestricted, LensBaseERC721, ERC2981CollectionRoyalties,
                 });
         }
 
-        // Provided follow token does not exist anymore, it can only be used if profile attempting to follow is
+        // Provided follow token does not exist anymore, it can only be used if the profile attempting to follow is
         // allowed to recover it.
         return _followByRecoveringToken({followerProfileId: followerProfileId, followTokenId: followTokenId});
     }
@@ -304,7 +304,7 @@ contract FollowNFT is HubRestricted, LensBaseERC721, ERC2981CollectionRoyalties,
         }
         // The transactionExecutor is allowed to write the follower in that wrapped token.
         if (isFollowApproved) {
-            // The `_followApprovalByFollowTokenId` was used, now needs to be cleared.
+            // The `_followApprovalByFollowTokenId` was used, and now it needs to be cleared.
             _approveFollow(0, followTokenId);
         }
         _replaceFollower({
@@ -348,7 +348,7 @@ contract FollowNFT is HubRestricted, LensBaseERC721, ERC2981CollectionRoyalties,
         uint256 followTokenId
     ) internal {
         if (currentFollowerProfileId != 0) {
-            // As it has a follower, unfollow first, removing current follower.
+            // As it has a follower, unfollow first, removing the current follower.
             delete _followTokenIdByFollowerProfileId[currentFollowerProfileId];
             ILensHub(HUB).emitUnfollowedEvent(currentFollowerProfileId, _followedProfileId);
         } else {
@@ -356,7 +356,7 @@ contract FollowNFT is HubRestricted, LensBaseERC721, ERC2981CollectionRoyalties,
                 _followerCount++;
             }
         }
-        // Perform the follow, setting new follower.
+        // Perform the follow, setting a new follower.
         _baseFollow({followerProfileId: newFollowerProfileId, followTokenId: followTokenId, isOriginalFollow: false});
     }
 
@@ -404,7 +404,7 @@ contract FollowNFT is HubRestricted, LensBaseERC721, ERC2981CollectionRoyalties,
     }
 
     /**
-     * @dev Upon transfers, we clear follow approvals, and emit the transfer event in the hub.
+     * @dev Upon transfers, we clear follow approvals and emit the transfer event in the hub.
      */
     function _beforeTokenTransfer(address from, address to, uint256 followTokenId) internal override {
         if (from != address(0)) {

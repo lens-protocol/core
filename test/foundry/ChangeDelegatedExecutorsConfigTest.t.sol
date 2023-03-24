@@ -151,7 +151,7 @@ contract ChangeDelegatedExecutorsConfigTest_CurrentConfig is BaseTest {
     //////////////////////////////////////////////////////////////////////
 
     function _refreshCachedNonce(address signer) internal virtual {
-        // Nothing to do here, this is meant to be overriden by the meta-tx tests.
+        // Nothing to do here, this is meant to be overridden by the meta-tx tests.
     }
 
     function _changeCurrentDelegatedExecutorsConfig(
@@ -330,7 +330,7 @@ contract ChangeDelegatedExecutorsConfigTest_GivenConfig is ChangeDelegatedExecut
         assertFalse(hub.isDelegatedExecutorApproved(testDelegatorProfileId, address(3)));
         assertFalse(hub.isDelegatedExecutorApproved(testDelegatorProfileId, address(4)));
 
-        // Switch to fourth configuration, now the previous configuration is the second one.
+        // Switch to the fourth configuration, now the previous configuration is the second one.
         _refreshCachedNonce(testDelegatorProfileOwner);
         _changeDelegatedExecutorsConfig({
             pk: testDelegatorProfileOwnerPk,

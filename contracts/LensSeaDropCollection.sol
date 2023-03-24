@@ -67,8 +67,8 @@ contract LensSeaDropCollection is ERC721SeaDropCloneable {
         if (config.allowedPayers.length == 0 || config.allowedPayers[0] != SEADROP_ACTION_MODULE) {
             revert InvalidParams();
         }
-        // NOTE: Validations of fee BPS, disallowed fee recipients or payers are done in the respective overriden
-        // functions that will be called by the `multiConfigure` function afterwards.
+        // NOTE: Validations of fee BPS, disallowed fee recipients or payers are done in the respective overridden
+        // functions that will be called by the `multiConfigure` function afterward.
     }
 
     /**
@@ -86,7 +86,7 @@ contract LensSeaDropCollection is ERC721SeaDropCloneable {
     }
 
     /**
-     * @notice Update the public drop data for this nft contract on SeaDrop.
+     * @notice Update the public drop data for this NFT contract on SeaDrop.
      *         Only the owner can use this function.
      *
      * @param seaDropImpl The allowed SeaDrop contract.
@@ -98,7 +98,7 @@ contract LensSeaDropCollection is ERC721SeaDropCloneable {
         if (seaDropImpl == DEFAULT_SEADROP && publicDrop.feeBps < MODULE_GLOBALS.getTreasuryFee()) {
             revert FeesDoNotCoverLensTreasury();
         }
-        // Ensure the sender is only the owner or contract itself.
+        // Ensure the sender is only the owner or this contract itself.
         _onlyOwnerOrSelf();
 
         // Ensure the SeaDrop is allowed.
@@ -109,7 +109,7 @@ contract LensSeaDropCollection is ERC721SeaDropCloneable {
     }
 
     /**
-     * @notice Update the allowed fee recipient for this nft contract
+     * @notice Update the allowed fee recipient for this NFT contract
      *         on SeaDrop.
      *         Only the owner can set the allowed fee recipient.
      *
@@ -126,7 +126,7 @@ contract LensSeaDropCollection is ERC721SeaDropCloneable {
         if (seaDropImpl == DEFAULT_SEADROP && !allowed && feeRecipient == SEADROP_ACTION_MODULE) {
             revert InvalidParams();
         }
-        // Ensure the sender is only the owner or contract itself.
+        // Ensure the sender is only the owner or this contract itself.
         _onlyOwnerOrSelf();
 
         // Ensure the SeaDrop is allowed.
@@ -137,7 +137,7 @@ contract LensSeaDropCollection is ERC721SeaDropCloneable {
     }
 
     /**
-     * @notice Update the allowed payers for this nft contract on SeaDrop.
+     * @notice Update the allowed payers for this NFT contract on SeaDrop.
      *         Only the owner can use this function.
      *
      * @param seaDropImpl The allowed SeaDrop contract.
@@ -149,7 +149,7 @@ contract LensSeaDropCollection is ERC721SeaDropCloneable {
         if (seaDropImpl == DEFAULT_SEADROP && !allowed && payer == SEADROP_ACTION_MODULE) {
             revert InvalidParams();
         }
-        // Ensure the sender is only the owner or contract itself.
+        // Ensure the sender is only the owner or this contract itself.
         _onlyOwnerOrSelf();
 
         // Ensure the SeaDrop is allowed.

@@ -1178,7 +1178,7 @@ contract FollowNFTTest is BaseTest, ERC721Test {
 
         assertEq(followNFT.getFollowApproved(followTokenId), 0);
 
-        // Transfers back to previous owner and checks that it keeps being clear.
+        // Transfers back to the previous owner and checks that it keeps being clear.
 
         vm.prank(followerProfileOwner);
         followNFT.transferFrom(followerProfileOwner, alreadyFollowingProfileOwner, followTokenId);

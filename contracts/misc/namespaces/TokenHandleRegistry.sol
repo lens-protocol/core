@@ -6,14 +6,14 @@ import {IERC721} from '@openzeppelin/contracts/token/ERC721/IERC721.sol';
 import {VersionedInitializable} from 'contracts/base/upgradeability/VersionedInitializable.sol';
 import {ITokenHandleRegistry} from 'contracts/interfaces/ITokenHandleRegistry.sol';
 
-// TODO: Move to Errors file
+// TODO: Move to the Errors file
 library RegistryErrors {
     error NotHandleOwner();
     error NotTokenOwner();
     error NotHandleOrTokenOwner();
 }
 
-// TODO: Move to Types file
+// TODO: Move to the Types file
 struct Token {
     uint256 id; // SLOT 0
     address collection; // SLOT 1 - end
@@ -26,7 +26,7 @@ struct Handle {
     // uint96 _gap; // SLOT 1 - start
 }
 
-// TODO: Move to Events file
+// TODO: Move to the Events file
 library RegistryEvents {
     event HandleLinked(Handle handle, Token token);
     event HandleUnlinked(Handle handle, Token token);
@@ -38,13 +38,13 @@ library RegistryEvents {
 ///     myname.lens <-> Cryptopunk #69
 ///     vitalik.eth <-> BAYC #234
 contract TokenHandleRegistry is ITokenHandleRegistry, VersionedInitializable {
-    // Constant for upgradeability purposes, see VersionedInitializable. Do not confuse with EIP-712 revision number.
+    // Constant for upgradeability purposes, see VersionedInitializable. Do not confuse it with the EIP-712 revision number.
     uint256 internal constant REVISION = 1;
 
     address immutable LENS_HUB;
     address immutable LENS_HANDLES;
 
-    /// 1to1 mapping for now, can be replaced to support multiple handles per token if using mappings
+    /// 1to1 mapping for now. Can be replaced to support multiple handles per token if using mappings
     /// NOTE: Using bytes32 _handleHash(Handle) and _tokenHash(Token) as keys because solidity doesn't support structs as keys.
     mapping(bytes32 handle => Token token) handleToToken;
     mapping(bytes32 token => Handle handle) tokenToHandle;
@@ -112,14 +112,14 @@ contract TokenHandleRegistry is ITokenHandleRegistry, VersionedInitializable {
         );
     }
 
-    // TODO: Think of better name?
+    // TODO: Think of a better name?
     // handleToToken(handleId)?
     // resolveTokenByHandle(handleId)?
     function resolveHandle(uint256 handleId) external view returns (uint256) {
         return _resolveHandle(Handle({collection: LENS_HANDLES, id: handleId})).id;
     }
 
-    // TODO: Same here - think of better name?
+    // TODO: Same here - think of a better name?
     // tokenToHandle(tokenId)?
     // resolveHandleByToken(tokenId)?
     function resolveToken(uint256 tokenId) external view returns (uint256) {

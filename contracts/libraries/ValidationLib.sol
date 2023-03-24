@@ -14,7 +14,7 @@ import {PublicationLib} from 'contracts/libraries/PublicationLib.sol';
  */
 library ValidationLib {
     function validatePointedPub(uint256 profileId, uint256 pubId) internal view {
-        // If it is pointing to itself it will fail because it will return non-existent type.
+        // If it is pointing to itself it will fail because it will return a non-existent type.
         Types.PublicationType pointedPubType = PublicationLib.getPublicationType(profileId, pubId);
         if (pointedPubType == Types.PublicationType.Nonexistent || pointedPubType == Types.PublicationType.Mirror) {
             revert Errors.InvalidPointedPub();
@@ -161,7 +161,7 @@ library ValidationLib {
         if (
             // Publication being collected/referenced is not pointing to the referrer post and...
             (_publication.pointedProfileId != referrerProfileId || _publication.pointedPubId != referrerPubId) &&
-            // ...publication being collected/referenced has not the referrer post as a root.
+            // ...publication being collected/referenced does not have the referrer post as the root.
             (_publication.rootProfileId != referrerProfileId || _publication.rootPubId != referrerPubId)
         ) {
             revert Errors.InvalidReferrer();
@@ -184,7 +184,7 @@ library ValidationLib {
     }
 
     /**
-     * @dev Validates that the referrer publication and the interacted publilcation are linked.
+     * @dev Validates that the referrer publication and the interacted publication are linked.
      *
      * @param referrerProfileId The profile id of the referrer.
      * @param referrerPubId The publication id of the referrer.
@@ -201,7 +201,7 @@ library ValidationLib {
         Types.PublicationType typeOfPubPointedByReferrer = PublicationLib.getPublicationType(profileId, pubId);
         // We already know that the publication being collected/referenced is not a mirror nor a non-existent one.
         if (typeOfPubPointedByReferrer == Types.PublicationType.Post) {
-            // If the publication collected/referenced is a post, the referrer comment/quote must have it as root.
+            // If the publication collected/referenced is a post, the referrer comment/quote must have it as the root.
             if (_referrerPub.rootProfileId != profileId || _referrerPub.rootPubId != pubId) {
                 revert Errors.InvalidReferrer();
             }

@@ -21,14 +21,14 @@ interface IFollowNFT {
     /**
      * @notice Initializes the follow NFT.
      *
-     * @dev Sets the hub as priviliged sender, the targeted profile, and the token royalties.
+     * @dev Sets the hub as privileged sender, the targeted profile, and the token royalties.
      *
      * @param profileId The ID of the profile targeted by the follow tokens minted by this collection.
      */
     function initialize(uint256 profileId) external;
 
     /**
-     * @notice Makes the passed profile to follow the profile targeted in this contract.
+     * @notice Makes the passed profile follow the profile targeted in this contract.
      *
      * @dev This must be only callable by the LensHub contract.
      *
@@ -47,11 +47,11 @@ interface IFollowNFT {
     ) external returns (uint256);
 
     /**
-     * @notice Makes the passed profile to unfollow the profile targeted in this contract.
+     * @notice Makes the passed profile unfollow the profile targeted in this contract.
      *
      * @dev This must be only callable by the LensHub contract.
      *
-     * @param unfollowerProfileId The ID of the profile that is perfrorming the unfollow operation.
+     * @param unfollowerProfileId The ID of the profile that is performing the unfollow operation.
      * @param transactionExecutor The address executing the operation, which is the signer in case of using meta-transactions or
      * the sender otherwise.
      */
@@ -60,7 +60,7 @@ interface IFollowNFT {
     /**
      * @notice Removes the follower from the given follow NFT.
      *
-     * @dev It can only be called over wrapped tokens, by their owner or an approved-for-all address.
+     * @dev It can only be called on wrapped tokens, by their owner or an approved-for-all address.
      *
      * @param followTokenId The ID of the follow token to remove the follower from.
      */
@@ -96,7 +96,7 @@ interface IFollowNFT {
 
     /**
      * @notice Processes logic when the given profile is being blocked. If it was following the targeted profile,
-     * this will make it to unfollow.
+     * this will make it unfollow.
      *
      * @dev This must be only callable by the LensHub contract.
      *
@@ -156,7 +156,7 @@ interface IFollowNFT {
      *
      * @param followerProfileId The ID of the profile whose following state should be queried.
      *
-     * @return uint256 The ID of the profile set as follower in the given token, zero if it is not being used to follow.
+     * @return uint256 The ID of the profile set as a follower in the given token, zero if it is not being used to follow.
      */
     function isFollowing(uint256 followerProfileId) external view returns (bool);
 

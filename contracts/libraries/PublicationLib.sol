@@ -156,7 +156,7 @@ library PublicationLib {
         Types.Publication storage _publication = StorageLib.getPublication(profileId, pubId);
         Types.PublicationType pubType = _publication.pubType;
         if (uint8(pubType) == 0) {
-            // Legacy V1: If publication type is 0, we check using the legacy rules.
+            // Legacy V1: If the publication type is 0, we check using the legacy rules.
             if (_publication.pointedProfileId != 0) {
                 // It is pointing to a publication, so it can be either a comment or a mirror, depending on if it has a
                 // collect module or not.

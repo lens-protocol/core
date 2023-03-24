@@ -45,7 +45,7 @@ library CollectLib {
             );
             collectModule = _collectedPublication.__DEPRECATED__collectModule;
             if (collectModule == address(0)) {
-                // Doesn't have collectModule, thus it cannot be a collected (a mirror or non-existent).
+                // Doesn't have collectModule, thus it cannot be collected (a mirror or non-existent).
                 revert Errors.CollectNotAllowed();
             }
 

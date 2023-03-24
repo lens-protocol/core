@@ -21,7 +21,7 @@ abstract contract ERC2981CollectionRoyalties is IERC2981 {
     /**
      * @notice Changes the royalty percentage for secondary sales.
      *
-     * @param royaltiesInBasisPoints The royalty percentage meassured in basis points.
+     * @param royaltiesInBasisPoints The royalty percentage (measured in basis points).
      */
     function setRoyalty(uint256 royaltiesInBasisPoints) external {
         _beforeRoyaltiesSet(royaltiesInBasisPoints);
@@ -33,7 +33,7 @@ abstract contract ERC2981CollectionRoyalties is IERC2981 {
      *
      * @param tokenId The ID of the token queried for royalty information.
      * @param salePrice The sale price of the token specified.
-     * @return A tuple with the address who should receive the royalties and the royalty
+     * @return A tuple with the address that should receive the royalties and the royalty
      * payment amount for the given sale price.
      */
     function royaltyInfo(uint256 tokenId, uint256 salePrice) external view returns (address, uint256) {
@@ -48,10 +48,7 @@ abstract contract ERC2981CollectionRoyalties is IERC2981 {
         }
     }
 
-    function _getRoyaltyAmount(
-        uint256, /* tokenId */
-        uint256 salePrice
-    ) internal view virtual returns (uint256) {
+    function _getRoyaltyAmount(uint256 /* tokenId */, uint256 salePrice) internal view virtual returns (uint256) {
         return (salePrice * _loadRoyaltiesInBasisPoints()) / BASIS_POINTS;
     }
 

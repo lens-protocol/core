@@ -11,7 +11,7 @@ import {StorageLib} from 'contracts/libraries/StorageLib.sol';
  * @title MetaTxLib
  * @author Lens Protocol
  *
- * NOTE: the baseFunctions in this contract operate under the assumption that the passed signer is already validated
+ * NOTE: the functions in this contract operate under the assumption that the passed signer is already validated
  * to either be the originator or one of their delegated executors.
  *
  * @dev User nonces are incremented from this library as well.

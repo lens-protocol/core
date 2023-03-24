@@ -13,7 +13,7 @@ library HandlesEvents {
 }
 
 contract LensHandles is ILensHandles, ERC721, VersionedInitializable, ImmutableOwnable {
-    // Constant for upgradeability purposes, see VersionedInitializable. Do not confuse with EIP-712 revision number.
+    // Constant for upgradeability purposes, see VersionedInitializable. Do not confuse it with the EIP-712 revision number.
     uint256 internal constant REVISION = 1;
 
     string constant NAMESPACE = 'lens';

@@ -16,7 +16,7 @@ import {Clones} from 'openzeppelin-contracts/proxy/Clones.sol';
 import {PublicDrop} from '@seadrop/lib/SeaDropStructs.sol';
 import {LensSeaDropCollection} from 'contracts/LensSeaDropCollection.sol';
 
-// TODO: Move this to Interface file
+// TODO: Move this to the Interface file
 interface IWMATIC is IERC20 {
     function withdraw(uint amountToUnwrap) external;
 
@@ -24,7 +24,8 @@ interface IWMATIC is IERC20 {
 }
 
 contract SeaDropMintPublicationAction is VersionedInitializable, HubRestricted, IPublicationActionModule {
-    // Constant for upgradeability purposes, see VersionedInitializable. Do not confuse with EIP-712 version number.
+    // Constant for upgradeability purposes, see VersionedInitializable,
+    // do not confuse it with the EIP-712 version number.
     uint256 internal constant REVISION = 1;
 
     uint256 constant MAX_BPS = 10_000;
@@ -34,13 +35,13 @@ contract SeaDropMintPublicationAction is VersionedInitializable, HubRestricted, 
 
     IModuleGlobals public immutable MODULE_GLOBALS;
 
-    // TODO: Move this to `Types` when this action is moved to modules repository.
+    // TODO: Move this to `Types` when this action is moved to the Modules repository.
     struct CollectionData {
         address nftCollectionAddress;
         uint16 referrersFeeBps;
     }
 
-    // TODO: Move these to `Errors` when this action is moved to modules repository.
+    // TODO: Move these to `Errors` when this action is moved to the Modules repository.
     error WrongMintPaymentAmount();
     error SeaDropFeesNotReceived();
     error ActionModuleNotAllowedAsPayer();
@@ -132,7 +133,8 @@ contract SeaDropMintPublicationAction is VersionedInitializable, HubRestricted, 
     // Function to allow receiving MATIC native currency while minting (as a fee recipient).
     receive() external payable {}
 
-    // A function to allow withdrawing dust and rogue native currency and ERC20 tokens left in this contract to treasury.
+    // A function to allow withdrawing dust, and rogue native currency,
+    // and ERC20 tokens left in this contract to the treasury.
     function withdrawToTreasury(address currency) external {
         address lensTreasuryAddress = MODULE_GLOBALS.getTreasury();
         if (currency == address(0)) {

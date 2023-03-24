@@ -15,7 +15,7 @@ library StorageLib {
     uint256 constant FOLLOW_MODULE_WHITELIST_MAPPING_SLOT = 14;
     uint256 constant ACTION_MODULE_WHITELIST_ID_MAPPING_SLOT = 15;
     uint256 constant REFERENCE_MODULE_WHITELIST_MAPPING_SLOT = 16;
-    // Slot 17 deprecated in Lens V2, it was used for dispatcher address by profile ID.
+    // Slot 17 is deprecated in Lens V2. In V1 it was used for the dispatcher address by profile ID.
     uint256 constant PROFILE_ID_BY_HANDLE_HASH_MAPPING_SLOT = 18;
     uint256 constant PROFILE_BY_ID_MAPPING_SLOT = 19;
     uint256 constant PUB_BY_ID_BY_PROFILE_MAPPING_SLOT = 20;

@@ -26,11 +26,7 @@ interface IDeprecatedFollowModule {
      * @param profileId The token ID of the profile being followed.
      * @param data Arbitrary data passed by the follower.
      */
-    function processFollow(
-        address follower,
-        uint256 profileId,
-        bytes calldata data
-    ) external;
+    function processFollow(address follower, uint256 profileId, bytes calldata data) external;
 
     /**
      * @notice This is a transfer hook that is called upon follow NFT transfer in `beforeTokenTransfer. This can
@@ -38,19 +34,14 @@ interface IDeprecatedFollowModule {
      *
      * NOTE: Special care needs to be taken here: It is possible that follow NFTs were issued before this module
      * was initialized if the profile's follow module was previously different. This transfer hook should take this
-     * into consideration, especially when the module holds state associated with individual follow NFTs.
+     * into consideration, especially when the module holds a state associated with individual follow NFTs.
      *
      * @param profileId The token ID of the profile associated with the follow NFT being transferred.
      * @param from The address sending the follow NFT.
      * @param to The address receiving the follow NFT.
      * @param followNFTTokenId The token ID of the follow NFT being transferred.
      */
-    function followModuleTransferHook(
-        uint256 profileId,
-        address from,
-        address to,
-        uint256 followNFTTokenId
-    ) external;
+    function followModuleTransferHook(uint256 profileId, address from, address to, uint256 followNFTTokenId) external;
 
     /**
      * @notice This is a helper function that could be used in conjunction with specific collect modules.
@@ -74,9 +65,5 @@ interface IDeprecatedFollowModule {
      *
      * @return true if the given address is following the given profile ID, false otherwise.
      */
-    function isFollowing(
-        uint256 profileId,
-        address follower,
-        uint256 followNFTTokenId
-    ) external view returns (bool);
+    function isFollowing(uint256 profileId, address follower, uint256 followNFTTokenId) external view returns (bool);
 }

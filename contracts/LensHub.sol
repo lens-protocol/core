@@ -33,16 +33,16 @@ import {TokenHandleRegistry} from 'contracts/misc/namespaces/TokenHandleRegistry
  * @title LensHub
  * @author Lens Protocol
  *
- * @notice This is the main entrypoint of the Lens Protocol. It contains governance functionality as well as
+ * @notice This is the main entry point of the Lens Protocol. It contains governance functionality as well as
  * publishing and profile interaction functionality.
  *
  * NOTE: The Lens Protocol is unique in that frontend operators need to track a potentially overwhelming
  * number of NFT contracts and interactions at once. For that reason, we've made two quirky design decisions:
- *      1. Both Follow & Collect NFTs invoke an LensHub callback on transfer with the sole purpose of emitting an event.
+ *      1. Both Follow & Collect NFTs invoke a LensHub callback on transfer with the sole purpose of emitting an event.
  *      2. Almost every event in the protocol emits the current block timestamp, reducing the need to fetch it manually.
  */
 contract LensHub is LensBaseERC721, VersionedInitializable, LensMultiState, LensHubStorage, ILensHub {
-    // Constant for upgradeability purposes, see VersionedInitializable. Do not confuse with EIP-712 version number.
+    // Constant for upgradeability purposes, see VersionedInitializable. Do not confuse it with the EIP-712 version number.
     uint256 internal constant REVISION = 1;
 
     address internal immutable FOLLOW_NFT_IMPL;

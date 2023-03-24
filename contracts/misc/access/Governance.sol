@@ -68,7 +68,7 @@ contract Governance is ControllableByContract {
         ILensHub_V1(address(LENS_HUB)).whitelistCollectModule(collectModule, whitelist);
     }
 
-    // This allows the governance to call anything on-behalf of itself.
+    // This allows the governance to call anything on behalf of itself.
     // And also allows the Upgradable contract to call anything, except the LensHub with Governance permissions.
     function executeAsGovernance(
         address target,

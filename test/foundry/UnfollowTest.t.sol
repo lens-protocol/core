@@ -78,7 +78,7 @@ contract UnfollowTest is BaseTest {
             idsOfProfilesToUnfollow: _toUint256Array(targetProfileId, unexistentProfileId)
         });
 
-        // Asserts that the unfollow operation has been completely reverted after one of the unfollow's failed.
+        // Asserts that the unfollow operation has been completely reverted after one of the unfollows failed.
         assertTrue(hub.isFollowing(testUnfollowerProfileId, targetProfileId));
     }
 

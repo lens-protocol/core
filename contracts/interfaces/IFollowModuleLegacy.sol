@@ -47,7 +47,7 @@ interface IFollowModuleLegacy {
      *
      * NOTE: Special care needs to be taken here: It is possible that follow NFTs were issued before this module
      * was initialized if the profile's follow module was previously different. This transfer hook should take this
-     * into consideration, especially when the module holds state associated with individual follow NFTs.
+     * into consideration, especially when the module holds a state associated with individual follow NFTs.
      *
      * @param profileId The token ID of the profile associated with the follow NFT being transferred.
      * @param from The address sending the follow NFT.

@@ -71,7 +71,7 @@ contract MigrationsTest is Test, ForkManagement {
     function setUp() public onlyFork {
         loadBaseAddresses(forkEnv);
 
-        // Precompute needed addresss.
+        // Precompute needed addresses.
         address lensHandlesAddress = computeCreateAddress(deployer, 0);
         address tokenHandleRegistryAddress = computeCreateAddress(deployer, 1);
 

@@ -6,7 +6,7 @@ import 'test/foundry/base/BaseTest.t.sol';
 /* Test plan:
  *
  * Test New V2 Publications:
- * - Test that non-existent publication returns type PublicationType.Noneexistent (0)
+ * - Test that non-existent publication returns type PublicationType.Nonexistent (0)
  * - Create a Post and test that a Post returns type PublicationType.Post (1)
  * - Create a Comment and test that a Comment returns type PublicationType.Comment (2)
  * - Create a Mirror and test that a Mirror returns type PublicationType.Mirror (3)
