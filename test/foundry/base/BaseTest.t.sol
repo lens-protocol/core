@@ -95,7 +95,7 @@ contract BaseTest is TestSetup {
                 profileId,
                 keccak256(bytes(contentURI)),
                 actionModules,
-                _prepareActionModulesInitDatas(actionModulesInitDatas),
+                _hashActionModulesInitDatas(actionModulesInitDatas),
                 referenceModule,
                 keccak256(referenceModuleInitData),
                 nonce,
@@ -105,13 +105,16 @@ contract BaseTest is TestSetup {
         return _calculateDigest(structHash);
     }
 
-    // TODO: Check if this is how you do encoding of bytes[] array in ERC721
-    function _prepareActionModulesInitDatas(bytes[] memory actionModulesInitDatas) internal pure returns (bytes32) {
-        bytes32[] memory actionModulesInitDatasBytes = new bytes32[](actionModulesInitDatas.length);
-        for (uint256 i = 0; i < actionModulesInitDatas.length; i++) {
-            actionModulesInitDatasBytes[i] = keccak256(abi.encode(actionModulesInitDatas[i]));
+    function _hashActionModulesInitDatas(bytes[] memory actionModulesInitDatas) private pure returns (bytes32) {
+        bytes32[] memory actionModulesInitDatasHashes = new bytes32[](actionModulesInitDatas.length);
+        uint256 i;
+        while (i < actionModulesInitDatas.length) {
+            actionModulesInitDatasHashes[i] = keccak256(abi.encode(actionModulesInitDatas[i]));
+            unchecked {
+                ++i;
+            }
         }
-        return keccak256(abi.encode(actionModulesInitDatasBytes));
+        return keccak256(abi.encodePacked(actionModulesInitDatasHashes));
     }
 
     function _getPostTypedDataHash(
@@ -148,7 +151,7 @@ contract BaseTest is TestSetup {
                 commentParams.referrerPubIds,
                 keccak256(commentParams.referenceModuleData),
                 commentParams.actionModules,
-                _prepareActionModulesInitDatas(commentParams.actionModulesInitDatas),
+                _hashActionModulesInitDatas(commentParams.actionModulesInitDatas),
                 commentParams.referenceModule,
                 keccak256(commentParams.referenceModuleInitData),
                 nonce,

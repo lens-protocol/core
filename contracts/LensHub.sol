@@ -509,7 +509,7 @@ contract LensHub is LensBaseERC721, VersionedInitializable, LensMultiState, Lens
                 collectParams: collectParams,
                 transactionExecutor: msg.sender,
                 collectorProfileOwner: ownerOf(collectParams.collectorProfileId),
-                collectNFTImpl: COLLECT_NFT_IMPL // TODO: Think how we can not pass this
+                collectNFTImpl: COLLECT_NFT_IMPL
             });
     }
 

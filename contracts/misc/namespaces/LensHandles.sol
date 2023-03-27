@@ -60,13 +60,20 @@ contract LensHandles is ILensHandles, ERC721, VersionedInitializable, ImmutableO
 
     function _validateLocalName(string memory handle) internal pure {
         uint256 handleLength = bytes(handle).length;
-        if (handleLength == 0) revert Errors.HandleLengthInvalid();
+        if (handleLength == 0) {
+            revert Errors.HandleLengthInvalid();
+        }
 
         bytes1 firstByte = bytes(handle)[0];
-        if (firstByte == '-' || firstByte == '_') revert Errors.HandleFirstCharInvalid();
+        if (firstByte == '-' || firstByte == '_') {
+            revert Errors.HandleFirstCharInvalid();
+        }
 
-        for (uint256 i = 0; i < handleLength; ) {
-            if (bytes(handle)[i] == '.') revert Errors.HandleContainsInvalidCharacters();
+        uint256 i;
+        while (i < handleLength) {
+            if (bytes(handle)[i] == '.') {
+                revert Errors.HandleContainsInvalidCharacters();
+            }
             unchecked {
                 ++i;
             }

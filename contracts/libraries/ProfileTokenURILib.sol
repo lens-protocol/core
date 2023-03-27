@@ -147,7 +147,8 @@ library ProfileTokenURILib {
             return false;
         }
         uint256 imageURIBytesLength = imageURIBytes.length;
-        for (uint256 i = 0; i < imageURIBytesLength; ) {
+        uint256 i;
+        while (i < imageURIBytesLength) {
             if (imageURIBytes[i] == '"') {
                 // Avoids embedding a user-provided imageURI containing double quotes to prevent injection attacks
                 return false;

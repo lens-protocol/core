@@ -266,8 +266,8 @@ library Types {
      * @param publicationCollectedProfileId The token ID of the profile that published the publication to collect.
      * @param publicationCollectedId The publication to collect's publication ID.
      * @param collectorProfileId The collector profile.
-     * @param referrerProfileId TODO
-     * @param referrerPubId TODO
+     * @param referrerProfileId
+     * @param referrerPubId
      * @param collectModuleData The arbitrary data to pass to the collectModule if needed.
      */
     struct CollectParams {
@@ -285,9 +285,9 @@ library Types {
      * @param publicationActedProfileId The token ID of the profile that published the publication to action.
      * @param publicationActedId The publication to action's publication ID.
      * @param actorProfileId The actor profile.
-     * @param referrerProfileId TODO
-     * @param referrerPubId TODO
-     * @param actionModuleAddress TODO
+     * @param referrerProfileId
+     * @param referrerPubId
+     * @param actionModuleAddress
      * @param actionModuleData The arbitrary data to pass to the actionModule if needed.
      */
     struct PublicationActionParams {

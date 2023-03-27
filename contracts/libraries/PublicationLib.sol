@@ -301,10 +301,6 @@ library PublicationLib {
                         revert(add(err, 32), length)
                     }
                 }
-                if (transactionExecutor != StorageLib.getTokenData(commentParams.profileId).owner) {
-                    // TODO: WTF is this?
-                    revert Errors.ExecutorInvalid();
-                }
                 if (commentParams.referrerProfileIds.length > 0) {
                     // Deprecated reference modules don't support referrers.
                     revert Errors.InvalidReferrer();
@@ -350,10 +346,6 @@ library PublicationLib {
                         revert(add(err, 32), length)
                     }
                 }
-                if (transactionExecutor != StorageLib.getTokenData(quoteParams.profileId).owner) {
-                    // TODO: WTF is this?
-                    revert Errors.ExecutorInvalid();
-                }
                 if (quoteParams.referrerProfileIds.length > 0) {
                     // Deprecated reference modules don't support referrers.
                     revert Errors.InvalidReferrer();
@@ -398,10 +390,6 @@ library PublicationLib {
                     if iszero(iszero(length)) {
                         revert(add(err, 32), length)
                     }
-                }
-                if (transactionExecutor != StorageLib.getTokenData(mirrorParams.profileId).owner) {
-                    // TODO: WTF is this?
-                    revert Errors.ExecutorInvalid();
                 }
                 if (mirrorParams.referrerProfileIds.length > 0) {
                     // Deprecated reference modules don't support referrers.

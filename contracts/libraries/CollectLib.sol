@@ -145,9 +145,6 @@ library CollectLib {
                     revert(add(err, 32), length)
                 }
             }
-            if (processCollectParams.collectorProfileOwner != processCollectParams.transactionExecutor) {
-                revert Errors.ExecutorInvalid();
-            }
             uint256 referrerProfileId;
             uint256 referrerPubId;
             if (collectParams.referrerProfileIds.length > 0) {
@@ -161,7 +158,7 @@ library CollectLib {
             }
             IDeprecatedCollectModule(processCollectParams.collectModule).processCollect(
                 collectParams.publicationCollectedProfileId,
-                processCollectParams.collectorProfileOwner,
+                processCollectParams.transactionExecutor,
                 referrerProfileId,
                 referrerPubId,
                 collectParams.collectModuleData

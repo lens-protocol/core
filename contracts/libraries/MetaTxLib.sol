@@ -35,7 +35,7 @@ library MetaTxLib {
      * );
      */
     bytes32 constant LENS_HUB_CACHED_POLYGON_DOMAIN_SEPARATOR =
-        0xbf9544cf7d7a0338fc4f071be35409a61e51e9caef559305410ad74e16a05f2d; // TODO: Test this on a fork
+        0xbf9544cf7d7a0338fc4f071be35409a61e51e9caef559305410ad74e16a05f2d;
 
     address constant LENS_HUB_ADDRESS = 0xDb46d1Dc155634FbC732f92E853b10B288AD5a1d;
 
@@ -145,7 +145,7 @@ library MetaTxLib {
                         postParams.profileId,
                         keccak256(bytes(postParams.contentURI)),
                         postParams.actionModules,
-                        _prepareActionModulesInitDatas(postParams.actionModulesInitDatas),
+                        _hashActionModulesInitDatas(postParams.actionModulesInitDatas),
                         postParams.referenceModule,
                         keccak256(postParams.referenceModuleInitData),
                         _getAndIncrementNonce(signature.signer),
@@ -157,13 +157,16 @@ library MetaTxLib {
         );
     }
 
-    // TODO: Check if this is how you do encoding of bytes[] array in ERC721
-    function _prepareActionModulesInitDatas(bytes[] memory actionModulesInitDatas) private pure returns (bytes32) {
-        bytes32[] memory actionModulesInitDatasBytes = new bytes32[](actionModulesInitDatas.length);
-        for (uint256 i = 0; i < actionModulesInitDatas.length; i++) {
-            actionModulesInitDatasBytes[i] = keccak256(abi.encode(actionModulesInitDatas[i]));
+    function _hashActionModulesInitDatas(bytes[] memory actionModulesInitDatas) private pure returns (bytes32) {
+        bytes32[] memory actionModulesInitDatasHashes = new bytes32[](actionModulesInitDatas.length);
+        uint256 i;
+        while (i < actionModulesInitDatas.length) {
+            actionModulesInitDatasHashes[i] = keccak256(abi.encode(actionModulesInitDatas[i]));
+            unchecked {
+                ++i;
+            }
         }
-        return keccak256(abi.encode(actionModulesInitDatasBytes));
+        return keccak256(abi.encodePacked(actionModulesInitDatasHashes));
     }
 
     // We need this to deal with stack too deep:
@@ -212,7 +215,7 @@ library MetaTxLib {
     ) external {
         bytes32 contentURIHash = keccak256(bytes(commentParams.contentURI));
         bytes32 referenceModuleDataHash = keccak256(commentParams.referenceModuleData);
-        bytes32 actionModulesInitDataHash = _prepareActionModulesInitDatas(commentParams.actionModulesInitDatas);
+        bytes32 actionModulesInitDataHash = _hashActionModulesInitDatas(commentParams.actionModulesInitDatas);
         bytes32 referenceModuleInitDataHash = keccak256(commentParams.referenceModuleInitData);
         uint256 nonce = _getAndIncrementNonce(signature.signer);
         uint256 deadline = signature.deadline;
@@ -243,7 +246,7 @@ library MetaTxLib {
     ) external {
         bytes32 contentURIHash = keccak256(bytes(quoteParams.contentURI));
         bytes32 referenceModuleDataHash = keccak256(quoteParams.referenceModuleData);
-        bytes32 actionModulesInitDataHash = _prepareActionModulesInitDatas(quoteParams.actionModulesInitDatas);
+        bytes32 actionModulesInitDataHash = _hashActionModulesInitDatas(quoteParams.actionModulesInitDatas);
         bytes32 referenceModuleInitDataHash = keccak256(quoteParams.referenceModuleInitData);
         uint256 nonce = _getAndIncrementNonce(signature.signer);
         uint256 deadline = signature.deadline;
@@ -312,7 +315,8 @@ library MetaTxLib {
     ) external {
         uint256 dataLength = datas.length;
         bytes32[] memory dataHashes = new bytes32[](dataLength);
-        for (uint256 i = 0; i < dataLength; ) {
+        uint256 i;
+        while (i < dataLength) {
             dataHashes[i] = keccak256(datas[i]);
             unchecked {
                 ++i;

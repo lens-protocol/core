@@ -11,6 +11,7 @@ import {Clones} from '@openzeppelin/contracts/proxy/Clones.sol';
 import {Strings} from '@openzeppelin/contracts/utils/Strings.sol';
 import {Errors} from 'contracts/libraries/constants/Errors.sol';
 import {HubRestricted} from 'contracts/base/HubRestricted.sol';
+import {IModuleGlobals} from 'contracts/interfaces/IModuleGlobals.sol';
 import {VersionedInitializable} from 'contracts/base/upgradeability/VersionedInitializable.sol';
 
 contract CollectPublicationAction is HubRestricted, VersionedInitializable, IPublicationActionModule {
@@ -25,7 +26,11 @@ contract CollectPublicationAction is HubRestricted, VersionedInitializable, IPub
         address collectNFT;
     }
 
+    // TODO: We should move this to Events file when in the Modules repo
+    event CollectModuleWhitelisted(address collectModule, bool whitelist, uint256 timestamp);
+
     address immutable COLLECT_NFT_IMPL;
+    address immutable MODULE_GLOBALS;
 
     string constant COLLECT_NFT_NAME_INFIX = '-Collect-';
     string constant COLLECT_NFT_SYMBOL_INFIX = '-Cl-';
@@ -33,14 +38,22 @@ contract CollectPublicationAction is HubRestricted, VersionedInitializable, IPub
     mapping(address collectModule => bool isWhitelisted) internal _collectModuleWhitelisted;
     mapping(uint256 profileId => mapping(uint256 pubId => CollectData collectData)) internal _collectDataByPub;
 
-    constructor(address hub, address collectNFTImpl) HubRestricted(hub) {
-        if (collectNFTImpl == address(0)) {
+    constructor(address hub, address collectNFTImpl, address moduleGlobals) HubRestricted(hub) {
+        if (collectNFTImpl == address(0) || moduleGlobals == address(0)) {
             revert Errors.InitParamsInvalid();
         }
         COLLECT_NFT_IMPL = collectNFTImpl;
+        MODULE_GLOBALS = moduleGlobals;
     }
 
-    // TODO: Add whitelist collect module function
+    function whitelistCollectModule(address collectModule, bool whitelist) external {
+        address governance = IModuleGlobals(MODULE_GLOBALS).getGovernance();
+        if (msg.sender != governance) {
+            revert Errors.NotGovernance();
+        }
+        _collectModuleWhitelisted[collectModule] = whitelist;
+        emit CollectModuleWhitelisted(collectModule, whitelist, block.timestamp);
+    }
 
     function initializePublicationAction(
         uint256 profileId,
