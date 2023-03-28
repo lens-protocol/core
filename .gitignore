@@ -28,6 +28,8 @@ lcov*
 forge-cache/
 out/
 
+docs/
+
 # Ignores development broadcast logs
 !/broadcast
 /broadcast/*/31337/
