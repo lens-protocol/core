@@ -1,5 +1,5 @@
 // This test should upgrade the forked Polygon deployment, and run a series of tests.
-// SPDX-License-Identifier: UNLICENSED
+// SPDX-License-Identifier: MIT
 pragma solidity ^0.8.13;
 
 import '@openzeppelin/contracts/token/ERC721/extensions/IERC721Enumerable.sol';
@@ -81,7 +81,7 @@ contract UpgradeForkTest is BaseTest {
         address proxyAdmin = address(uint160(uint256(vm.load(hubProxyAddr, ADMIN_SLOT))));
         address gov = hub.getGovernance();
 
-        // Setup the new deployment and helper memory structs.
+        // Set up the new deployment and helper memory structs.
         _forkSetup(hubProxyAddr, gov);
 
         // Create a profile on the old hub, set the default profile.
@@ -126,7 +126,7 @@ contract UpgradeForkTest is BaseTest {
     }
 
     function _fullCreateProfileSequence(address gov, ILensHub hub) private returns (uint256) {
-        // In order to make this test suite evergreen, we must try setting a modern follow module since we don't know
+        // To make this test suite evergreen, we must try setting a modern follow module since we don't know
         // which version of the hub we're working with, if this fails, then we should use a deprecated one.
 
         // mockCreateProfileParams.handle = vm.toString(IERC721Enumerable(address(hub)).totalSupply());

@@ -9,7 +9,7 @@ import {Types} from 'contracts/libraries/constants/Types.sol';
  * @author Lens Protocol
  *
  * @notice This is an abstract contract that *only* contains storage for the LensHub contract. This
- * *must* be inherited last (bar interfaces) in order to preserve the LensHub storage layout. Adding
+ * *must* be inherited last (bar interfaces) to preserve the LensHub storage layout. Adding
  * storage variables should be done solely at the bottom of this contract.
  */
 abstract contract LensHubStorage {
@@ -17,8 +17,8 @@ abstract contract LensHubStorage {
     mapping(address => bool) internal _followModuleWhitelisted; // Slot 14
 
     // `_collectModuleWhitelisted` slot replaced by `_actionModuleWhitelistedId` in Lens V2.
-    // TODO: We will need to unwhitelist all the old modules before V2 upgrade so they don't conflict with new bitmap.
-    //      e.g. any address that was True as bool will be mapped to new ID of 1.
+    // We will need to unwhitelist all the old modules before V2 upgrade so they don't conflict with the new bitmap.
+    //      e.g. any address that was True as bool will be mapped to a new ID of 1.
     // mapping(address => bool) internal __DEPRECATED__collectModuleWhitelisted;
     mapping(address => uint256) internal _actionModuleWhitelistedId; // Slot 15
 
@@ -31,7 +31,7 @@ abstract contract LensHubStorage {
 
     mapping(address => uint256) internal _defaultProfileByAddress; // Slot 21, deprecated but needed for V2 migration
 
-    uint256 internal _profileCounter; // Slot 22 - this is different to TotalSupply, as TotalSupply is decreased when the Profile is burned
+    uint256 internal _profileCounter; // Slot 22 - this is different from TotalSupply, as TotalSupply is decreased when the Profile is burned
     address internal _governance; // Slot 23
     address internal _emergencyAdmin; // Slot 24
 

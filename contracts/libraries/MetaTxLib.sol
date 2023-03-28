@@ -4,7 +4,6 @@ pragma solidity ^0.8.15;
 import {IEIP1271Implementer} from 'contracts/interfaces/IEIP1271Implementer.sol';
 import {Types} from 'contracts/libraries/constants/Types.sol';
 import {Errors} from 'contracts/libraries/constants/Errors.sol';
-import {ValidationLib} from 'contracts/libraries/ValidationLib.sol';
 import {Typehash} from 'contracts/libraries/constants/Typehash.sol';
 import {StorageLib} from 'contracts/libraries/StorageLib.sol';
 
@@ -12,7 +11,7 @@ import {StorageLib} from 'contracts/libraries/StorageLib.sol';
  * @title MetaTxLib
  * @author Lens Protocol
  *
- * NOTE: the baseFunctions in this contract operate under the assumption that the passed signer is already validated
+ * NOTE: the functions in this contract operate under the assumption that the passed signer is already validated
  * to either be the originator or one of their delegated executors.
  *
  * @dev User nonces are incremented from this library as well.
@@ -36,7 +35,7 @@ library MetaTxLib {
      * );
      */
     bytes32 constant LENS_HUB_CACHED_POLYGON_DOMAIN_SEPARATOR =
-        0xbf9544cf7d7a0338fc4f071be35409a61e51e9caef559305410ad74e16a05f2d; // TODO: Test this on a fork
+        0xbf9544cf7d7a0338fc4f071be35409a61e51e9caef559305410ad74e16a05f2d;
 
     address constant LENS_HUB_ADDRESS = 0xDb46d1Dc155634FbC732f92E853b10B288AD5a1d;
 
@@ -87,7 +86,7 @@ library MetaTxLib {
     function validateChangeDelegatedExecutorsConfigSignature(
         Types.EIP712Signature calldata signature,
         uint256 delegatorProfileId,
-        address[] calldata executors,
+        address[] calldata delegatedExecutors,
         bool[] calldata approvals,
         uint64 configNumber,
         bool switchToGivenConfig
@@ -100,7 +99,7 @@ library MetaTxLib {
                     abi.encode(
                         Typehash.CHANGE_DELEGATED_EXECUTORS_CONFIG,
                         delegatorProfileId,
-                        abi.encodePacked(executors),
+                        abi.encodePacked(delegatedExecutors),
                         abi.encodePacked(approvals),
                         configNumber,
                         switchToGivenConfig,
@@ -134,27 +133,6 @@ library MetaTxLib {
         );
     }
 
-    function validateSetFollowNFTURISignature(
-        Types.EIP712Signature calldata signature,
-        uint256 profileId,
-        string calldata followNFTURI
-    ) external {
-        _validateRecoveredAddress(
-            _calculateDigest(
-                keccak256(
-                    abi.encode(
-                        Typehash.SET_FOLLOW_NFT_URI,
-                        profileId,
-                        keccak256(bytes(followNFTURI)),
-                        _getAndIncrementNonce(signature.signer),
-                        signature.deadline
-                    )
-                )
-            ),
-            signature
-        );
-    }
-
     function validatePostSignature(
         Types.EIP712Signature calldata signature,
         Types.PostParams calldata postParams
@@ -167,7 +145,7 @@ library MetaTxLib {
                         postParams.profileId,
                         keccak256(bytes(postParams.contentURI)),
                         postParams.actionModules,
-                        _prepareActionModulesInitDatas(postParams.actionModulesInitDatas),
+                        _hashActionModulesInitDatas(postParams.actionModulesInitDatas),
                         postParams.referenceModule,
                         keccak256(postParams.referenceModuleInitData),
                         _getAndIncrementNonce(signature.signer),
@@ -179,13 +157,16 @@ library MetaTxLib {
         );
     }
 
-    // TODO: Check if this is how you do encoding of bytes[] array in ERC721
-    function _prepareActionModulesInitDatas(bytes[] memory actionModulesInitDatas) internal pure returns (bytes32) {
-        bytes32[] memory actionModulesInitDatasBytes = new bytes32[](actionModulesInitDatas.length);
-        for (uint256 i = 0; i < actionModulesInitDatas.length; i++) {
-            actionModulesInitDatasBytes[i] = keccak256(abi.encode(actionModulesInitDatas[i]));
+    function _hashActionModulesInitDatas(bytes[] memory actionModulesInitDatas) private pure returns (bytes32) {
+        bytes32[] memory actionModulesInitDatasHashes = new bytes32[](actionModulesInitDatas.length);
+        uint256 i;
+        while (i < actionModulesInitDatas.length) {
+            actionModulesInitDatasHashes[i] = keccak256(abi.encode(actionModulesInitDatas[i]));
+            unchecked {
+                ++i;
+            }
         }
-        return keccak256(abi.encode(actionModulesInitDatasBytes));
+        return keccak256(abi.encodePacked(actionModulesInitDatasHashes));
     }
 
     // We need this to deal with stack too deep:
@@ -206,9 +187,9 @@ library MetaTxLib {
         uint256 deadline;
     }
 
-    function abiEncode(
+    function _abiEncode(
         ReferenceParamsForAbiEncode memory referenceParamsForAbiEncode
-    ) internal pure returns (bytes memory) {
+    ) private pure returns (bytes memory) {
         return
             abi.encode(
                 referenceParamsForAbiEncode.typehash,
@@ -234,11 +215,11 @@ library MetaTxLib {
     ) external {
         bytes32 contentURIHash = keccak256(bytes(commentParams.contentURI));
         bytes32 referenceModuleDataHash = keccak256(commentParams.referenceModuleData);
-        bytes32 actionModulesInitDataHash = _prepareActionModulesInitDatas(commentParams.actionModulesInitDatas);
+        bytes32 actionModulesInitDataHash = _hashActionModulesInitDatas(commentParams.actionModulesInitDatas);
         bytes32 referenceModuleInitDataHash = keccak256(commentParams.referenceModuleInitData);
         uint256 nonce = _getAndIncrementNonce(signature.signer);
         uint256 deadline = signature.deadline;
-        bytes memory encodedAbi = abiEncode(
+        bytes memory encodedAbi = _abiEncode(
             ReferenceParamsForAbiEncode(
                 Typehash.COMMENT,
                 commentParams.profileId,
@@ -265,11 +246,11 @@ library MetaTxLib {
     ) external {
         bytes32 contentURIHash = keccak256(bytes(quoteParams.contentURI));
         bytes32 referenceModuleDataHash = keccak256(quoteParams.referenceModuleData);
-        bytes32 actionModulesInitDataHash = _prepareActionModulesInitDatas(quoteParams.actionModulesInitDatas);
+        bytes32 actionModulesInitDataHash = _hashActionModulesInitDatas(quoteParams.actionModulesInitDatas);
         bytes32 referenceModuleInitDataHash = keccak256(quoteParams.referenceModuleInitData);
         uint256 nonce = _getAndIncrementNonce(signature.signer);
         uint256 deadline = signature.deadline;
-        bytes memory encodedAbi = abiEncode(
+        bytes memory encodedAbi = _abiEncode(
             ReferenceParamsForAbiEncode(
                 Typehash.QUOTE,
                 quoteParams.profileId,
@@ -334,7 +315,8 @@ library MetaTxLib {
     ) external {
         uint256 dataLength = datas.length;
         bytes32[] memory dataHashes = new bytes32[](dataLength);
-        for (uint256 i = 0; i < dataLength; ) {
+        uint256 i;
+        while (i < dataLength) {
             dataHashes[i] = keccak256(datas[i]);
             unchecked {
                 ++i;
@@ -494,7 +476,7 @@ library MetaTxLib {
     /**
      * @dev Wrapper for ecrecover to reduce code size, used in meta-tx specific functions.
      */
-    function _validateRecoveredAddress(bytes32 digest, Types.EIP712Signature calldata signature) internal view {
+    function _validateRecoveredAddress(bytes32 digest, Types.EIP712Signature calldata signature) private view {
         if (signature.deadline < block.timestamp) revert Errors.SignatureExpired();
         // If the expected address is a contract, check the signature there.
         if (signature.signer.code.length != 0) {

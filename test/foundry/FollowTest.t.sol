@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: UNLICENSED
+// SPDX-License-Identifier: MIT
 pragma solidity ^0.8.13;
 
 import 'test/foundry/base/BaseTest.t.sol';
@@ -90,17 +90,19 @@ contract FollowTest is BaseTest {
         });
     }
 
-    function testCannotFollowIfExecutorIsNotTheProfileOwnerOrHisApprovedExecutor(uint256 executorPk) public {
-        executorPk = bound(executorPk, 1, ISSECP256K1_CURVE_ORDER - 1);
-        address executor = vm.addr(executorPk);
-        vm.assume(executor != address(0));
-        vm.assume(executor != testFollowerProfileOwner);
-        vm.assume(!hub.isDelegatedExecutorApproved(testFollowerProfileId, executor));
+    function testCannotFollowIfTransactionExecutorIsNotTheProfileOwnerOrApprovedExecutor(
+        uint256 transactionExecutorPk
+    ) public {
+        transactionExecutorPk = bound(transactionExecutorPk, 1, ISSECP256K1_CURVE_ORDER - 1);
+        address transactionExecutor = vm.addr(transactionExecutorPk);
+        vm.assume(transactionExecutor != address(0));
+        vm.assume(transactionExecutor != testFollowerProfileOwner);
+        vm.assume(!hub.isDelegatedExecutorApproved(testFollowerProfileId, transactionExecutor));
 
         vm.expectRevert(Errors.ExecutorInvalid.selector);
 
         _follow({
-            pk: executorPk,
+            pk: transactionExecutorPk,
             isFollowerProfileOwner: false,
             followerProfileId: testFollowerProfileId,
             idsOfProfilesToFollow: _toUint256Array(targetProfileId),
@@ -109,14 +111,14 @@ contract FollowTest is BaseTest {
         });
     }
 
-    function testCannotFollowWithUnwrappedTokenIfExecutorIsNotTheProfileOwnerOrHisApprovedExecutor(
-        uint256 executorPk
+    function testCannotFollowWithUnwrappedTokenIfTransactionExecutorIsNotTheProfileOwnerOrApprovedExecutor(
+        uint256 transactionExecutorPk
     ) public {
-        executorPk = bound(executorPk, 1, ISSECP256K1_CURVE_ORDER - 1);
-        address executor = vm.addr(executorPk);
-        vm.assume(executor != address(0));
-        vm.assume(executor != testFollowerProfileOwner);
-        vm.assume(!hub.isDelegatedExecutorApproved(testFollowerProfileId, executor));
+        transactionExecutorPk = bound(transactionExecutorPk, 1, ISSECP256K1_CURVE_ORDER - 1);
+        address transactionExecutor = vm.addr(transactionExecutorPk);
+        vm.assume(transactionExecutor != address(0));
+        vm.assume(transactionExecutor != testFollowerProfileOwner);
+        vm.assume(!hub.isDelegatedExecutorApproved(testFollowerProfileId, transactionExecutor));
 
         followTokenId = followNFT.getFollowTokenId(alreadyFollowingProfileId);
         assertFalse(followNFT.exists(followTokenId));
@@ -124,7 +126,7 @@ contract FollowTest is BaseTest {
         vm.expectRevert(Errors.ExecutorInvalid.selector);
 
         _follow({
-            pk: executorPk,
+            pk: transactionExecutorPk,
             isFollowerProfileOwner: false,
             followerProfileId: testFollowerProfileId,
             idsOfProfilesToFollow: _toUint256Array(targetProfileId),
@@ -133,14 +135,14 @@ contract FollowTest is BaseTest {
         });
     }
 
-    function testCannotFollowWithWrappedTokenIfExecutorIsNotTheProfileOwnerOrHisApprovedExecutor(
-        uint256 executorPk
+    function testCannotFollowWithWrappedTokenIfTransactionExecutorIsNotTheProfileOwnerOrApprovedExecutor(
+        uint256 transactionExecutorPk
     ) public {
-        executorPk = bound(executorPk, 1, ISSECP256K1_CURVE_ORDER - 1);
-        address executor = vm.addr(executorPk);
-        vm.assume(executor != address(0));
-        vm.assume(executor != testFollowerProfileOwner);
-        vm.assume(!hub.isDelegatedExecutorApproved(testFollowerProfileId, executor));
+        transactionExecutorPk = bound(transactionExecutorPk, 1, ISSECP256K1_CURVE_ORDER - 1);
+        address transactionExecutor = vm.addr(transactionExecutorPk);
+        vm.assume(transactionExecutor != address(0));
+        vm.assume(transactionExecutor != testFollowerProfileOwner);
+        vm.assume(!hub.isDelegatedExecutorApproved(testFollowerProfileId, transactionExecutor));
 
         followTokenId = followNFT.getFollowTokenId(alreadyFollowingProfileId);
         vm.prank(alreadyFollowingProfileOwner);
@@ -149,7 +151,7 @@ contract FollowTest is BaseTest {
         vm.expectRevert(Errors.ExecutorInvalid.selector);
 
         _follow({
-            pk: executorPk,
+            pk: transactionExecutorPk,
             isFollowerProfileOwner: false,
             followerProfileId: testFollowerProfileId,
             idsOfProfilesToFollow: _toUint256Array(targetProfileId),
@@ -328,7 +330,7 @@ contract FollowTest is BaseTest {
         vm.prank(testFollowerProfileOwner);
         hub.changeCurrentDelegatedExecutorsConfig({
             delegatorProfileId: testFollowerProfileId,
-            executors: _toAddressArray(approvedDelegatedExecutor),
+            delegatedExecutors: _toAddressArray(approvedDelegatedExecutor),
             approvals: _toBoolArray(true)
         });
 

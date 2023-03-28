@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: UNLICENSED
+// SPDX-License-Identifier: MIT
 pragma solidity ^0.8.13;
 
 import 'test/foundry/base/BaseTest.t.sol';
@@ -6,6 +6,7 @@ import 'test/foundry/helpers/SignatureHelpers.sol';
 import 'test/foundry/helpers/CollectingHelpers.sol';
 import 'test/foundry/MetaTxNegatives.t.sol';
 
+// TODO: We still need these collecting tests to work with Deprecated collect modules in V1 posts
 // TODO add check for _initialize() called for fork tests - check name and symbol set
 
 contract CollectingTest is BaseTest, CollectingHelpers, SigSetup {
@@ -43,7 +44,7 @@ contract CollectingTest is BaseTest, CollectingHelpers, SigSetup {
     // NEGATIVES
 
     // Also acts like a test for cannot collect specifying another (non-owned) profile as a parameter
-    function testCannotCollectIfNotExecutor() public {
+    function testCannotCollectIfNotDelegatedExecutor() public {
         vm.expectRevert(Errors.ExecutorInvalid.selector);
         _collect(collectorProfileOwnerPk, otherSigner, mockCollectParams);
     }
@@ -125,7 +126,7 @@ contract CollectingTest is BaseTest, CollectingHelpers, SigSetup {
         _checkCollectNFTAfter(nftId, startNftId + 1);
     }
 
-    function testExecutorCollect() public {
+    function testDelegatedExecutorCollect() public {
         uint256 startNftId = _checkCollectNFTBefore();
 
         // delegate power to executor
@@ -137,7 +138,7 @@ contract CollectingTest is BaseTest, CollectingHelpers, SigSetup {
         _checkCollectNFTAfter(nftId, startNftId + 1);
     }
 
-    function testExecutorCollectMirror() public {
+    function testDelegatedExecutorCollectMirror() public {
         uint256 startNftId = _checkCollectNFTBefore();
 
         // mirror, then delegate power to executor

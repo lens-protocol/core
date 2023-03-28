@@ -29,6 +29,11 @@ library CollectLib {
         address collectorProfileOwner,
         address collectNFTImpl
     ) external returns (uint256) {
+        ValidationLib.validateNotBlocked({
+            profile: collectParams.collectorProfileId,
+            byProfile: collectParams.publicationCollectedProfileId
+        });
+
         address collectModule;
         Types.PublicationType[] memory referrerPubTypes;
         uint256 tokenId;
@@ -40,7 +45,7 @@ library CollectLib {
             );
             collectModule = _collectedPublication.__DEPRECATED__collectModule;
             if (collectModule == address(0)) {
-                // Doesn't have collectModule, thus it cannot be a collected (a mirror or non-existent).
+                // Doesn't have collectModule, thus it cannot be collected (a mirror or non-existent).
                 revert Errors.CollectNotAllowed();
             }
 
@@ -75,7 +80,7 @@ library CollectLib {
                 publicationActedId: collectParams.publicationCollectedId,
                 actorProfileId: collectParams.collectorProfileId,
                 actorProfileOwner: collectorProfileOwner,
-                executor: transactionExecutor,
+                transactionExecutor: transactionExecutor,
                 referrerProfileIds: collectParams.referrerProfileIds,
                 referrerPubIds: collectParams.referrerPubIds,
                 referrerPubTypes: referrerPubTypes,
@@ -124,7 +129,7 @@ library CollectLib {
                     publicationCollectedId: collectParams.publicationCollectedId,
                     collectorProfileId: collectParams.collectorProfileId,
                     collectorProfileOwner: processCollectParams.collectorProfileOwner,
-                    executor: processCollectParams.transactionExecutor,
+                    transactionExecutor: processCollectParams.transactionExecutor,
                     referrerProfileIds: collectParams.referrerProfileIds,
                     referrerPubIds: collectParams.referrerPubIds,
                     referrerPubTypes: processCollectParams.referrerPubTypes,
@@ -140,9 +145,6 @@ library CollectLib {
                     revert(add(err, 32), length)
                 }
             }
-            if (processCollectParams.collectorProfileOwner != processCollectParams.transactionExecutor) {
-                revert Errors.ExecutorInvalid();
-            }
             uint256 referrerProfileId;
             uint256 referrerPubId;
             if (collectParams.referrerProfileIds.length > 0) {
@@ -156,7 +158,7 @@ library CollectLib {
             }
             IDeprecatedCollectModule(processCollectParams.collectModule).processCollect(
                 collectParams.publicationCollectedProfileId,
-                processCollectParams.collectorProfileOwner,
+                processCollectParams.transactionExecutor,
                 referrerProfileId,
                 referrerPubId,
                 collectParams.collectModuleData

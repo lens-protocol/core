@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: UNLICENSED
+// SPDX-License-Identifier: MIT
 pragma solidity ^0.8.13;
 
 import 'test/foundry/base/BaseTest.t.sol';
@@ -18,11 +18,7 @@ abstract contract MetaTxNegatives is BaseTest {
 
     // Functions to mandatorily override.
 
-    function _executeMetaTx(
-        uint256 signerPk,
-        uint256 nonce,
-        uint256 deadline
-    ) internal virtual;
+    function _executeMetaTx(uint256 signerPk, uint256 nonce, uint256 deadline) internal virtual;
 
     function _getDefaultMetaTxSignerPk() internal virtual returns (uint256);
 

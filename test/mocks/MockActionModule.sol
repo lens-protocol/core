@@ -14,7 +14,7 @@ contract MockActionModule is IPublicationActionModule {
     function initializePublicationAction(
         uint256 /** profileId*/,
         uint256 /** pubId*/,
-        address /** executor*/,
+        address /** transactionExecutor*/,
         bytes calldata data
     ) external pure override returns (bytes memory) {
         return data;

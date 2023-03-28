@@ -2,8 +2,8 @@
 
 pragma solidity ^0.8.15;
 
-import '@openzeppelin/contracts/utils/Base64.sol';
-import '@openzeppelin/contracts/utils/Strings.sol';
+import {Base64} from '@openzeppelin/contracts/utils/Base64.sol';
+import {Strings} from '@openzeppelin/contracts/utils/Strings.sol';
 
 library ProfileTokenURILib {
     uint8 internal constant DEFAULT_FONT_SIZE = 24;
@@ -19,7 +19,7 @@ library ProfileTokenURILib {
      * @param followers The number of profile's followers.
      * @param owner The address which owns the profile.
      * @param handle The profile's handle.
-     * @param imageURI The profile's picture URI. An empty string if has not been set.
+     * @param imageURI The profile's picture URI. An empty string if it has not been set.
      *
      * @return string The profile's token URI as a base64-encoded JSON string.
      */
@@ -65,15 +65,14 @@ library ProfileTokenURILib {
      * Otherwise, a default picture will be used. Handle font size is a function of handle length.
      *
      * @param handleWithAtSymbol The profile's handle beginning with "@" symbol.
-     * @param imageURI The profile's picture URI. An empty string if has not been set.
+     * @param imageURI The profile's picture URI. An empty string if it has not been set.
      *
      * @return string The profile token image as a base64-encoded SVG.
      */
-    function _getSVGImageBase64Encoded(string memory handleWithAtSymbol, string memory imageURI)
-        internal
-        pure
-        returns (string memory)
-    {
+    function _getSVGImageBase64Encoded(
+        string memory handleWithAtSymbol,
+        string memory imageURI
+    ) private pure returns (string memory) {
         return
             Base64.encode(
                 abi.encodePacked(
@@ -89,16 +88,16 @@ library ProfileTokenURILib {
     }
 
     /**
-     * @notice Gets the fragment of the SVG correponding to the profile picture.
+     * @notice Gets the fragment of the SVG corresponding to the profile picture.
      *
      * @dev If the image URI was set and meets URI format conditions, this will return an image tag referencing it.
      * Otherwise, a group tag that renders the default picture will be returned.
      *
-     * @param imageURI The profile's picture URI. An empty string if has not been set.
+     * @param imageURI The profile's picture URI. An empty string if it has not been set.
      *
-     * @return string The fragment of the SVG token's image correspondending to the profile picture.
+     * @return string The fragment of the SVG token's image corresponding to the profile picture.
      */
-    function _getSVGProfilePicture(string memory imageURI) internal pure returns (string memory) {
+    function _getSVGProfilePicture(string memory imageURI) private pure returns (string memory) {
         if (_shouldUseCustomPicture(imageURI)) {
             return
                 string(
@@ -115,7 +114,7 @@ library ProfileTokenURILib {
     }
 
     /**
-     * @notice Maps the handle length to a font size.
+     * @notice Maps the handle length to font size.
      *
      * @dev Gives the font size as a function of handle length using the following formula:
      *
@@ -125,7 +124,7 @@ library ProfileTokenURILib {
      * @param handleLength The profile's handle length.
      * @return uint256 The font size.
      */
-    function _handleLengthToFontSize(uint256 handleLength) internal pure returns (uint256) {
+    function _handleLengthToFontSize(uint256 handleLength) private pure returns (uint256) {
         return
             handleLength <= MAX_HANDLE_LENGTH_WITH_DEFAULT_FONT_SIZE
                 ? DEFAULT_FONT_SIZE
@@ -135,22 +134,23 @@ library ProfileTokenURILib {
     /**
      * @notice Decides if Profile NFT should use user provided custom profile picture or the default one.
      *
-     * @dev It checks if there is a custom imageURI set and makes sure it does not contain double-quotes to prevent
+     * @dev It checks if there is a custom imageURI set and makes sure it does not contain double quotes to prevent
      * injection attacks through the generated SVG.
      *
      * @param imageURI The imageURI set by the profile owner.
      *
-     * @return bool A boolean indicating whether custom profile picture should be used or not.
+     * @return bool A boolean indicating whether a custom profile picture should be used or not.
      */
-    function _shouldUseCustomPicture(string memory imageURI) internal pure returns (bool) {
+    function _shouldUseCustomPicture(string memory imageURI) private pure returns (bool) {
         bytes memory imageURIBytes = bytes(imageURI);
         if (imageURIBytes.length == 0) {
             return false;
         }
         uint256 imageURIBytesLength = imageURIBytes.length;
-        for (uint256 i = 0; i < imageURIBytesLength; ) {
+        uint256 i;
+        while (i < imageURIBytesLength) {
             if (imageURIBytes[i] == '"') {
-                // Avoids embedding a user provided imageURI containing double-quotes to prevent injection attacks
+                // Avoids embedding a user-provided imageURI containing double quotes to prevent injection attacks
                 return false;
             }
             unchecked {

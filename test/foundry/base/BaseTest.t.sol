@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: UNLICENSED
+// SPDX-License-Identifier: MIT
 pragma solidity ^0.8.13;
 
 import 'test/foundry/base/TestSetup.t.sol';
@@ -41,7 +41,7 @@ contract BaseTest is TestSetup {
     function _getChangeDelegatedExecutorsConfigTypedDataHash(
         uint256 delegatorProfileId,
         uint64 configNumber,
-        address[] memory executors,
+        address[] memory delegatedExecutors,
         bool[] memory approvals,
         bool switchToGivenConfig,
         uint256 nonce,
@@ -51,7 +51,7 @@ contract BaseTest is TestSetup {
             abi.encode(
                 Typehash.CHANGE_DELEGATED_EXECUTORS_CONFIG,
                 delegatorProfileId,
-                abi.encodePacked(executors),
+                abi.encodePacked(delegatedExecutors),
                 abi.encodePacked(approvals),
                 configNumber,
                 switchToGivenConfig,
@@ -70,18 +70,6 @@ contract BaseTest is TestSetup {
     ) internal view returns (bytes32) {
         bytes32 structHash = keccak256(
             abi.encode(Typehash.SET_PROFILE_IMAGE_URI, profileId, keccak256(bytes(imageURI)), nonce, deadline)
-        );
-        return _calculateDigest(structHash);
-    }
-
-    function _getSetFollowNFTURITypedDataHash(
-        uint256 profileId,
-        string memory followNFTURI,
-        uint256 nonce,
-        uint256 deadline
-    ) internal view returns (bytes32) {
-        bytes32 structHash = keccak256(
-            abi.encode(Typehash.SET_FOLLOW_NFT_URI, profileId, keccak256(bytes(followNFTURI)), nonce, deadline)
         );
         return _calculateDigest(structHash);
     }
@@ -107,7 +95,7 @@ contract BaseTest is TestSetup {
                 profileId,
                 keccak256(bytes(contentURI)),
                 actionModules,
-                _prepareActionModulesInitDatas(actionModulesInitDatas),
+                _hashActionModulesInitDatas(actionModulesInitDatas),
                 referenceModule,
                 keccak256(referenceModuleInitData),
                 nonce,
@@ -117,13 +105,16 @@ contract BaseTest is TestSetup {
         return _calculateDigest(structHash);
     }
 
-    // TODO: Check if this is how you do encoding of bytes[] array in ERC721
-    function _prepareActionModulesInitDatas(bytes[] memory actionModulesInitDatas) internal pure returns (bytes32) {
-        bytes32[] memory actionModulesInitDatasBytes = new bytes32[](actionModulesInitDatas.length);
-        for (uint256 i = 0; i < actionModulesInitDatas.length; i++) {
-            actionModulesInitDatasBytes[i] = keccak256(abi.encode(actionModulesInitDatas[i]));
+    function _hashActionModulesInitDatas(bytes[] memory actionModulesInitDatas) private pure returns (bytes32) {
+        bytes32[] memory actionModulesInitDatasHashes = new bytes32[](actionModulesInitDatas.length);
+        uint256 i;
+        while (i < actionModulesInitDatas.length) {
+            actionModulesInitDatasHashes[i] = keccak256(abi.encode(actionModulesInitDatas[i]));
+            unchecked {
+                ++i;
+            }
         }
-        return keccak256(abi.encode(actionModulesInitDatasBytes));
+        return keccak256(abi.encodePacked(actionModulesInitDatasHashes));
     }
 
     function _getPostTypedDataHash(
@@ -160,7 +151,7 @@ contract BaseTest is TestSetup {
                 commentParams.referrerPubIds,
                 keccak256(commentParams.referenceModuleData),
                 commentParams.actionModules,
-                _prepareActionModulesInitDatas(commentParams.actionModulesInitDatas),
+                _hashActionModulesInitDatas(commentParams.actionModulesInitDatas),
                 commentParams.referenceModule,
                 keccak256(commentParams.referenceModuleInitData),
                 nonce,
@@ -467,13 +458,13 @@ contract BaseTest is TestSetup {
     function _changeDelegatedExecutorsConfig(
         address msgSender,
         uint256 profileId,
-        address executor,
+        address delegatedExecutor,
         bool approved
     ) internal {
         vm.prank(msgSender);
         hub.changeCurrentDelegatedExecutorsConfig({
             delegatorProfileId: profileId,
-            executors: _toAddressArray(executor),
+            delegatedExecutors: _toAddressArray(delegatedExecutor),
             approvals: _toBoolArray(approved)
         });
     }
@@ -508,19 +499,6 @@ contract BaseTest is TestSetup {
         Types.EIP712Signature memory signature
     ) internal {
         hub.setProfileImageURIWithSig(profileId, imageURI, signature);
-    }
-
-    function _setFollowNFTURI(address msgSender, uint256 profileId, string memory followNFTURI) internal {
-        vm.prank(msgSender);
-        hub.setFollowNFTURI(profileId, followNFTURI);
-    }
-
-    function _setFollowNFTURIWithSig(
-        uint256 profileId,
-        string memory followNFTURI,
-        Types.EIP712Signature memory signature
-    ) internal {
-        hub.setFollowNFTURIWithSig(profileId, followNFTURI, signature);
     }
 
     function _burn(address msgSender, uint256 profileId) internal {

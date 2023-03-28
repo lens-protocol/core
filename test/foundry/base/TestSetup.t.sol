@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: UNLICENSED
+// SPDX-License-Identifier: MIT
 pragma solidity ^0.8.13;
 
 import 'forge-std/Test.sol';
@@ -128,7 +128,7 @@ contract TestSetup is Test, ForkManagement, ArrayHelpers {
         ///////////////////////////////////////// Start deployments.
         vm.startPrank(deployer);
 
-        // Precompute needed addresss.
+        // Precompute needed addresses.
         address followNFTAddr = computeCreateAddress(deployer, 1);
         address collectNFTAddr = computeCreateAddress(deployer, 2);
         hubProxyAddr = computeCreateAddress(deployer, 3);
@@ -181,7 +181,7 @@ contract TestSetup is Test, ForkManagement, ArrayHelpers {
             )
         );
 
-        // precompute basic profile creaton data.
+        // precompute basic profile creation data.
         mockCreateProfileParams = Types.CreateProfileParams({
             to: profileOwner,
             imageURI: MOCK_URI,

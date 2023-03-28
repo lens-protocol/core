@@ -17,6 +17,11 @@ library ActionLib {
         address transactionExecutor,
         address actorProfileOwner
     ) external returns (bytes memory) {
+        ValidationLib.validateNotBlocked({
+            profile: publicationActionParams.actorProfileId,
+            byProfile: publicationActionParams.publicationActedProfileId
+        });
+
         if (publicationActionParams.publicationActedId == 0) {
             revert Errors.PublicationDoesNotExist();
         }
@@ -54,7 +59,7 @@ library ActionLib {
                 publicationActedId: publicationActionParams.publicationActedId,
                 actorProfileId: publicationActionParams.actorProfileId,
                 actorProfileOwner: actorProfileOwner,
-                executor: transactionExecutor,
+                transactionExecutor: transactionExecutor,
                 referrerProfileIds: publicationActionParams.referrerProfileIds,
                 referrerPubIds: publicationActionParams.referrerPubIds,
                 referrerPubTypes: referrerPubTypes,
@@ -66,7 +71,7 @@ library ActionLib {
         return actionModuleReturnData;
     }
 
-    function _isActionAllowed(Types.Publication storage _publication, uint256 actionId) internal view returns (bool) {
+    function _isActionAllowed(Types.Publication storage _publication, uint256 actionId) private view returns (bool) {
         uint256 actionIdBitmapMask = 1 << (actionId - 1);
         return actionIdBitmapMask & _publication.actionModulesBitmap != 0;
     }

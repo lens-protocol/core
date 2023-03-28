@@ -5,12 +5,12 @@ pragma solidity ^0.8.19;
 import {IERC721} from '@openzeppelin/contracts/token/ERC721/IERC721.sol';
 
 interface ILensHandles is IERC721 {
-    // Constant for upgradeability purposes, see VersionedInitializable. Do not confuse with EIP-712 revision number.
+    // Constant for upgradeability purposes, see VersionedInitializable. Do not confuse it with the EIP-712 revision number.
 
     /**
      * @notice Mints a handle in the given namespace.
-     * @notice A handle is composed by a local name and a namespace, separated by dot.
-     * @notice Example: `john.lens` is a handle composed by the local name `john` and the namespace `lens`.
+     * @notice A handle is composed of a local name and a namespace, separated by a dot.
+     * @notice Example: `john.lens` is a handle composed of the local name `john` and the namespace `lens`.
      *
      * @param to The address where the handle is being minted to.
      * @param localName The local name of the handle.

@@ -13,14 +13,14 @@ interface IFollowModuleLegacy {
      * @notice Initializes a follow module for a given Lens profile. This can only be called by the hub contract.
      *
      * @param profileId The token ID of the profile to initialize this follow module for.
-     * @param executor The owner or an approved delegated executor.
+     * @param transactionExecutor The owner or an approved delegated executor.
      * @param data Arbitrary data passed by the profile creator.
      *
      * @return bytes The encoded data to emit in the hub.
      */
     function initializeFollowModule(
         uint256 profileId,
-        address executor,
+        address transactionExecutor,
         bytes calldata data
     ) external returns (bytes memory);
 
@@ -29,14 +29,14 @@ interface IFollowModuleLegacy {
      *
      * @param followerProfileId The LensHub profile token ID of the follower's profile (currently unused, preemptive interface upgrade).
      * @param follower The follower address.
-     * @param executor The follower or an approved delegated executor.
+     * @param transactionExecutor The follower or an approved delegated executor.
      * @param profileId The token ID of the profile being followed.
      * @param data Arbitrary data passed by the follower.
      */
     function processFollow(
         uint256 followerProfileId,
         address follower,
-        address executor,
+        address transactionExecutor,
         uint256 profileId,
         bytes calldata data
     ) external;
@@ -47,19 +47,14 @@ interface IFollowModuleLegacy {
      *
      * NOTE: Special care needs to be taken here: It is possible that follow NFTs were issued before this module
      * was initialized if the profile's follow module was previously different. This transfer hook should take this
-     * into consideration, especially when the module holds state associated with individual follow NFTs.
+     * into consideration, especially when the module holds a state associated with individual follow NFTs.
      *
      * @param profileId The token ID of the profile associated with the follow NFT being transferred.
      * @param from The address sending the follow NFT.
      * @param to The address receiving the follow NFT.
      * @param followNFTTokenId The token ID of the follow NFT being transferred.
      */
-    function followModuleTransferHook(
-        uint256 profileId,
-        address from,
-        address to,
-        uint256 followNFTTokenId
-    ) external;
+    function followModuleTransferHook(uint256 profileId, address from, address to, uint256 followNFTTokenId) external;
 
     /**
      * @notice This is a helper function that could be used in conjunction with specific collect modules.

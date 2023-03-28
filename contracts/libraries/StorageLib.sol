@@ -3,7 +3,6 @@
 pragma solidity ^0.8.15;
 
 import {Types} from 'contracts/libraries/constants/Types.sol';
-import {Errors} from 'contracts/libraries/constants/Errors.sol';
 
 library StorageLib {
     uint256 constant NAME_SLOT = 0;
@@ -16,7 +15,7 @@ library StorageLib {
     uint256 constant FOLLOW_MODULE_WHITELIST_MAPPING_SLOT = 14;
     uint256 constant ACTION_MODULE_WHITELIST_ID_MAPPING_SLOT = 15;
     uint256 constant REFERENCE_MODULE_WHITELIST_MAPPING_SLOT = 16;
-    // Slot 17 deprecated in Lens V2, it was used for dispatcher address by profile ID.
+    // Slot 17 is deprecated in Lens V2. In V1 it was used for the dispatcher address by profile ID.
     uint256 constant PROFILE_ID_BY_HANDLE_HASH_MAPPING_SLOT = 18;
     uint256 constant PROFILE_BY_ID_MAPPING_SLOT = 19;
     uint256 constant PUB_BY_ID_BY_PROFILE_MAPPING_SLOT = 20;
@@ -27,6 +26,7 @@ library StorageLib {
     // Introduced in Lens V2:
     uint256 constant DELEGATED_EXECUTOR_CONFIG_MAPPING_SLOT = 25;
     uint256 constant BLOCKED_STATUS_MAPPING_SLOT = 26;
+    uint256 constant ACTION_MODULE_BY_ID_SLOT = 27;
 
     function getPublication(
         uint256 profileId,
@@ -83,6 +83,16 @@ library StorageLib {
         }
     }
 
+    function profileIdByHandleHash()
+        internal
+        pure
+        returns (mapping(bytes32 => uint256) storage _profileIdByHandleHash)
+    {
+        assembly {
+            _profileIdByHandleHash.slot := PROFILE_ID_BY_HANDLE_HASH_MAPPING_SLOT
+        }
+    }
+
     function profileCreatorWhitelisted()
         internal
         pure
@@ -110,6 +120,12 @@ library StorageLib {
     {
         assembly {
             _actionModuleWhitelistedId.slot := ACTION_MODULE_WHITELIST_ID_MAPPING_SLOT
+        }
+    }
+
+    function actionModuleById() internal pure returns (mapping(uint256 => address) storage _actionModuleById) {
+        assembly {
+            _actionModuleById.slot := ACTION_MODULE_BY_ID_SLOT
         }
     }
 

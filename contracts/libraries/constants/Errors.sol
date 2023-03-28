@@ -67,16 +67,13 @@ library Errors {
     error InvalidPointedPub();
     error ActionModuleNotWhitelisted();
 
-    // TODO: Should we clear all the Collect references here?
-
     // Module Errors
     error InitParamsInvalid();
-    error CollectExpired();
     error FollowInvalid();
     error ModuleDataMismatch();
     error FollowNotApproved();
     error MintLimitExceeded();
-    error CollectNotAllowed();
+    error CollectNotAllowed(); // TODO: Move this to Modules repo
     error ActionNotAllowed();
 
     // MultiState Errors

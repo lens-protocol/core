@@ -2,7 +2,6 @@
 
 pragma solidity ^0.8.15;
 
-import {Events} from 'contracts/libraries/constants/Events.sol';
 import {Types} from 'contracts/libraries/constants/Types.sol';
 import {Errors} from 'contracts/libraries/constants/Errors.sol';
 import {ILensMultiState} from 'contracts/interfaces/ILensMultiState.sol';
@@ -40,16 +39,6 @@ abstract contract LensMultiState is ILensMultiState {
 
     modifier onlyProfileOwner(address expectedOwner, uint256 profileId) {
         ValidationLib.validateAddressIsProfileOwner(expectedOwner, profileId);
-        _;
-    }
-
-    modifier whenNotBlocked(uint256 profile, uint256 byProfile) {
-        ValidationLib.validateNotBlocked(profile, byProfile);
-        _;
-    }
-
-    modifier onlyValidPointedPub(uint256 profileId, uint256 pubId) {
-        ValidationLib.validatePointedPub(profileId, pubId);
         _;
     }
 

@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: UNLICENSED
+// SPDX-License-Identifier: MIT
 pragma solidity ^0.8.13;
 
 import 'test/foundry/base/BaseTest.t.sol';
@@ -280,11 +280,7 @@ contract SetBlockStatusMetaTxTest is SetBlockStatusTest, MetaTxNegatives {
         });
     }
 
-    function _executeMetaTx(
-        uint256 signerPk,
-        uint256 nonce,
-        uint256 deadline
-    ) internal override {
+    function _executeMetaTx(uint256 signerPk, uint256 nonce, uint256 deadline) internal override {
         hub.setBlockStatusWithSig({
             byProfileId: statusSetterProfileId,
             idsOfProfilesToSetBlockStatus: _toUint256Array(blockeeProfileId),

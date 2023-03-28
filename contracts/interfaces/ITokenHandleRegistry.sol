@@ -6,7 +6,7 @@ interface ITokenHandleRegistry {
     // V1->V2 Migration function
     function migrationLinkHandleWithToken(uint256 handleId, uint256 tokenId) external;
 
-    function linkHandleWithToken(uint256 handleId, uint256 tokenId) external;
+    function linkHandleWithToken(uint256 handleId, uint256 tokenId, bytes calldata data) external;
 
     function unlinkHandleFromToken(uint256 handleId, uint256 tokenId) external;
 

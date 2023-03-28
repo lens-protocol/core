@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: UNLICENSED
+// SPDX-License-Identifier: MIT
 pragma solidity ^0.8.13;
 
 import 'test/foundry/base/BaseTest.t.sol';
@@ -78,7 +78,7 @@ contract UnfollowTest is BaseTest {
             idsOfProfilesToUnfollow: _toUint256Array(targetProfileId, unexistentProfileId)
         });
 
-        // Asserts that the unfollow operation has been completely reverted after one of the unfollow's failed.
+        // Asserts that the unfollow operation has been completely reverted after one of the unfollows failed.
         assertTrue(hub.isFollowing(testUnfollowerProfileId, targetProfileId));
     }
 
@@ -104,16 +104,16 @@ contract UnfollowTest is BaseTest {
         });
     }
 
-    function testCannotUnfollowIfNotProfileOwnerOrDelegatedExecutor(uint256 executorPk) public {
-        executorPk = bound(
-            executorPk,
+    function testCannotUnfollowIfNotProfileOwnerOrDelegatedExecutor(uint256 transactionExecutorPk) public {
+        transactionExecutorPk = bound(
+            transactionExecutorPk,
             1,
             115792089237316195423570985008687907852837564279074904382605163141518161494337 - 1
         );
-        address executor = vm.addr(executorPk);
-        vm.assume(executor != testUnfollowerProfileOwner);
-        vm.assume(!hub.isDelegatedExecutorApproved(testUnfollowerProfileId, executor));
-        vm.assume(!followNFT.isApprovedForAll(testUnfollowerProfileOwner, executor));
+        address transactionExecutor = vm.addr(transactionExecutorPk);
+        vm.assume(transactionExecutor != testUnfollowerProfileOwner);
+        vm.assume(!hub.isDelegatedExecutorApproved(testUnfollowerProfileId, transactionExecutor));
+        vm.assume(!followNFT.isApprovedForAll(testUnfollowerProfileOwner, transactionExecutor));
 
         followTokenId = followNFT.getFollowTokenId(testUnfollowerProfileId);
         vm.prank(testUnfollowerProfileOwner);
@@ -122,7 +122,7 @@ contract UnfollowTest is BaseTest {
         vm.expectRevert(Errors.ExecutorInvalid.selector);
 
         _unfollow({
-            pk: executorPk,
+            pk: transactionExecutorPk,
             unfollowerProfileId: testUnfollowerProfileId,
             idsOfProfilesToUnfollow: _toUint256Array(targetProfileId)
         });
@@ -159,7 +159,7 @@ contract UnfollowTest is BaseTest {
         vm.prank(testUnfollowerProfileOwner);
         hub.changeCurrentDelegatedExecutorsConfig({
             delegatorProfileId: testUnfollowerProfileId,
-            executors: _toAddressArray(approvedDelegatedExecutor),
+            delegatedExecutors: _toAddressArray(approvedDelegatedExecutor),
             approvals: _toBoolArray(true)
         });
 
@@ -224,11 +224,7 @@ contract UnfollowMetaTxTest is UnfollowTest, MetaTxNegatives {
         });
     }
 
-    function _executeMetaTx(
-        uint256 signerPk,
-        uint256 nonce,
-        uint256 deadline
-    ) internal virtual override {
+    function _executeMetaTx(uint256 signerPk, uint256 nonce, uint256 deadline) internal virtual override {
         hub.unfollowWithSig({
             unfollowerProfileId: testUnfollowerProfileId,
             idsOfProfilesToUnfollow: _toUint256Array(targetProfileId),

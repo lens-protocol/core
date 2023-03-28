@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: UNLICENSED
+// SPDX-License-Identifier: MIT
 pragma solidity ^0.8.13;
 
 import 'test/foundry/base/BaseTest.t.sol';
@@ -127,17 +127,13 @@ contract MultiStateHubTest_PausedState_Direct is BaseTest {
     }
 
     function _mockChangeDelegatedExecutorsConfig() internal virtual {
-        address executor = otherSigner;
+        address delegatedExecutor = otherSigner;
         bool approved = true;
-        _changeDelegatedExecutorsConfig(profileOwner, newProfileId, executor, approved);
+        _changeDelegatedExecutorsConfig(profileOwner, newProfileId, delegatedExecutor, approved);
     }
 
     function _mockSetProfileImageURI() internal virtual {
         _setProfileImageURI(profileOwner, newProfileId, MOCK_URI);
-    }
-
-    function _mockSetFollowNFTURI() internal virtual {
-        _setFollowNFTURI(profileOwner, newProfileId, MOCK_URI);
     }
 
     function _mockPost() internal virtual {
@@ -228,16 +224,6 @@ contract MultiStateHubTest_PausedState_Direct is BaseTest {
         _mockSetProfileImageURI();
     }
 
-    function testCannotSetFollowNFTURIWhilePaused() public {
-        vm.expectRevert(Errors.Paused.selector);
-        _mockSetFollowNFTURI();
-
-        vm.prank(governance);
-        _setState(Types.ProtocolState.Unpaused);
-
-        _mockSetFollowNFTURI();
-    }
-
     function testCannotPostWhilePaused() public {
         vm.expectRevert(Errors.PublishingPaused.selector);
         _mockPost();
@@ -323,11 +309,11 @@ contract MultiStateHubTest_PausedState_WithSig is MultiStateHubTest_PausedState_
 
     // Positives
     function _mockChangeDelegatedExecutorsConfig() internal override {
-        address executor = otherSigner;
+        address delegatedExecutor = otherSigner;
 
         bytes32 digest = _getChangeDelegatedExecutorsConfigTypedDataHash({
             delegatorProfileId: newProfileId,
-            executors: _toAddressArray(executor),
+            delegatedExecutors: _toAddressArray(delegatedExecutor),
             approvals: _toBoolArray(true),
             configNumber: 0,
             switchToGivenConfig: true,
@@ -336,7 +322,7 @@ contract MultiStateHubTest_PausedState_WithSig is MultiStateHubTest_PausedState_
         });
         hub.changeDelegatedExecutorsConfigWithSig({
             delegatorProfileId: newProfileId,
-            executors: _toAddressArray(executor),
+            delegatedExecutors: _toAddressArray(delegatedExecutor),
             approvals: _toBoolArray(true),
             configNumber: 0,
             switchToGivenConfig: true,
@@ -350,16 +336,6 @@ contract MultiStateHubTest_PausedState_WithSig is MultiStateHubTest_PausedState_
         _setProfileImageURIWithSig({
             profileId: newProfileId,
             imageURI: MOCK_URI,
-            signature: _getSigStruct(profileOwner, profileOwnerKey, digest, deadline)
-        });
-    }
-
-    function _mockSetFollowNFTURI() internal override {
-        bytes32 digest = _getSetFollowNFTURITypedDataHash(newProfileId, MOCK_URI, nonce, deadline);
-
-        _setFollowNFTURIWithSig({
-            profileId: newProfileId,
-            followNFTURI: MOCK_URI,
             signature: _getSigStruct(profileOwner, profileOwnerKey, digest, deadline)
         });
     }
@@ -434,17 +410,13 @@ contract MultiStateHubTest_PublishingPausedState_Direct is BaseTest {
     }
 
     function _mockChangeDelegatedExecutorsConfig() internal virtual {
-        address executor = otherSigner;
+        address delegatedExecutor = otherSigner;
         bool approved = true;
-        _changeDelegatedExecutorsConfig(profileOwner, newProfileId, executor, approved);
+        _changeDelegatedExecutorsConfig(profileOwner, newProfileId, delegatedExecutor, approved);
     }
 
     function _mockSetProfileImageURI() internal virtual {
         _setProfileImageURI(profileOwner, newProfileId, MOCK_URI);
-    }
-
-    function _mockSetFollowNFTURI() internal virtual {
-        _setFollowNFTURI(profileOwner, newProfileId, MOCK_URI);
     }
 
     function _mockPost() internal virtual {
@@ -512,10 +484,6 @@ contract MultiStateHubTest_PublishingPausedState_Direct is BaseTest {
         _mockSetProfileImageURI();
     }
 
-    function testCanSetFollowNFTURIWhilePublishingPaused() public {
-        _mockSetFollowNFTURI();
-    }
-
     function testCanBurnWhilePublishingPaused() public {
         _mockBurn();
     }
@@ -579,11 +547,11 @@ contract MultiStateHubTest_PublishingPausedState_WithSig is MultiStateHubTest_Pu
 
     // Positives
     function _mockChangeDelegatedExecutorsConfig() internal override {
-        address executor = otherSigner;
+        address delegatedExecutor = otherSigner;
 
         bytes32 digest = _getChangeDelegatedExecutorsConfigTypedDataHash({
             delegatorProfileId: newProfileId,
-            executors: _toAddressArray(executor),
+            delegatedExecutors: _toAddressArray(delegatedExecutor),
             approvals: _toBoolArray(true),
             configNumber: 0,
             switchToGivenConfig: true,
@@ -592,7 +560,7 @@ contract MultiStateHubTest_PublishingPausedState_WithSig is MultiStateHubTest_Pu
         });
         hub.changeDelegatedExecutorsConfigWithSig({
             delegatorProfileId: newProfileId,
-            executors: _toAddressArray(executor),
+            delegatedExecutors: _toAddressArray(delegatedExecutor),
             approvals: _toBoolArray(true),
             configNumber: 0,
             switchToGivenConfig: true,
@@ -606,16 +574,6 @@ contract MultiStateHubTest_PublishingPausedState_WithSig is MultiStateHubTest_Pu
         _setProfileImageURIWithSig({
             profileId: newProfileId,
             imageURI: MOCK_URI,
-            signature: _getSigStruct(profileOwner, profileOwnerKey, digest, deadline)
-        });
-    }
-
-    function _mockSetFollowNFTURI() internal override {
-        bytes32 digest = _getSetFollowNFTURITypedDataHash(newProfileId, MOCK_URI, nonce, deadline);
-
-        _setFollowNFTURIWithSig({
-            profileId: newProfileId,
-            followNFTURI: MOCK_URI,
             signature: _getSigStruct(profileOwner, profileOwnerKey, digest, deadline)
         });
     }

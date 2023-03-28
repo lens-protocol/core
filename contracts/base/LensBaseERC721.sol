@@ -172,7 +172,7 @@ abstract contract LensBaseERC721 is
     /**
      * @dev Base URI for computing {tokenURI}. If set, the resulting URI for each
      * token will be the concatenation of the `baseURI` and the `tokenId`. Empty
-     * by default, can be overriden in child contracts.
+     * by default, can be overridden in child contracts.
      */
     function _baseURI() internal view virtual returns (string memory) {
         return '';
@@ -258,7 +258,7 @@ abstract contract LensBaseERC721 is
      *
      * @dev It is prefixed as `unsafe` as it does not revert when the token does not exist.
      *
-     * @param tokenId The token which owner is being queried.
+     * @param tokenId The token whose owner is being queried.
      *
      * @return address The address owning the given token, zero address if the token does not exist.
      */
@@ -273,7 +273,7 @@ abstract contract LensBaseERC721 is
      * `_data` is additional data, it has no specified format and it is sent in call to `to`.
      *
      * This internal function is equivalent to {safeTransferFrom}, and can be used to e.g.
-     * implement alternative mechanisms to perform token transfer, such as signature-based.
+     * implement alternative mechanisms to perform a token transfer, such as signature-based.
      *
      * Requirements:
      *

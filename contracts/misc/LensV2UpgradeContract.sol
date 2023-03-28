@@ -62,44 +62,69 @@ contract LensV2UpgradeContract is ImmutableOwnable {
     }
 
     function _unwhitelistOldFollowModules() internal {
-        for (uint256 i = 0; i < oldFollowModulesToUnwhitelist.length; i++) {
+        uint256 oldFollowModulesToUnwhitelistLength = oldFollowModulesToUnwhitelist.length;
+        uint256 i;
+        while (i < oldFollowModulesToUnwhitelistLength) {
             GOVERNANCE.lensHub_whitelistFollowModule(oldFollowModulesToUnwhitelist[i], false);
+            unchecked {
+                ++i;
+            }
         }
     }
 
     function _unwhitelistOldReferenceModules() internal {
-        for (uint256 i = 0; i < oldReferenceModulesToUnwhitelist.length; i++) {
+        uint256 oldReferenceModulesToUnwhitelistLength = oldReferenceModulesToUnwhitelist.length;
+        uint256 i;
+        while (i < oldReferenceModulesToUnwhitelistLength) {
             GOVERNANCE.lensHub_whitelistReferenceModule(oldReferenceModulesToUnwhitelist[i], false);
+            unchecked {
+                ++i;
+            }
         }
     }
 
     function _unwhitelistOldCollectModules() internal {
-        for (uint256 i = 0; i < oldCollectModulesToUnwhitelist.length; i++) {
+        uint256 oldCollectModulesToUnwhitelistLength = oldCollectModulesToUnwhitelist.length;
+        uint256 i;
+        while (i < oldCollectModulesToUnwhitelistLength) {
             GOVERNANCE.lensHub_whitelistCollectModule(oldCollectModulesToUnwhitelist[i], false);
+            unchecked {
+                ++i;
+            }
         }
     }
 
     function _whitelistNewFollowModules() internal {
-        for (uint256 i = 0; i < newFollowModulesToWhitelist.length; i++) {
+        uint256 newFollowModulesToWhitelistLength = newFollowModulesToWhitelist.length;
+        uint256 i;
+        while (i < newFollowModulesToWhitelistLength) {
             GOVERNANCE.lensHub_whitelistFollowModule(newFollowModulesToWhitelist[i], true);
+            unchecked {
+                ++i;
+            }
         }
     }
 
     function _whitelistNewReferenceModules() internal {
-        for (uint256 i = 0; i < newReferenceModulesToWhitelist.length; i++) {
+        uint256 newReferenceModulesToWhitelistLength = newReferenceModulesToWhitelist.length;
+        uint256 i;
+        while (i < newReferenceModulesToWhitelistLength) {
             GOVERNANCE.lensHub_whitelistReferenceModule(newReferenceModulesToWhitelist[i], true);
+            unchecked {
+                ++i;
+            }
         }
     }
 
     function _whitelistNewActionModules() internal {
-        for (uint256 i = 0; i < newActionModulesToWhitelist.length; i++) {
+        uint256 newActionModulesToWhitelistLength = newActionModulesToWhitelist.length;
+        uint256 i;
+        while (i < newActionModulesToWhitelistLength) {
             uint256 moduleId = i + 1; // Starting from 1
             GOVERNANCE.lensHub_whitelistActionModuleId(newActionModulesToWhitelist[i], moduleId);
+            unchecked {
+                ++i;
+            }
         }
-    }
-
-    function _whitelistNewCollectModules() internal {
-        // TODO: Implement calling each action module needed and whitelisting collectModules inside it
-        // GOVERNANCE.executeAsGovernance(target, data);
     }
 }

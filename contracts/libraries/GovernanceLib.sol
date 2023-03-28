@@ -48,7 +48,7 @@ library GovernanceLib {
      * @param newState The new protocol state to set.
      */
     function setState(Types.ProtocolState newState) external {
-        // NOTE: This does not follow CEI-pattern, but there is no interaction and allows to abstract `_setState` logic.
+        // NOTE: This does not follow the CEI-pattern, but there is no interaction and this allows to abstract `_setState` logic.
         Types.ProtocolState prevState = _setState(newState);
         // If the sender is the emergency admin, prevent them from reducing restrictions.
         if (msg.sender == StorageLib.getEmergencyAdmin()) {
@@ -64,5 +64,26 @@ library GovernanceLib {
         StorageLib.setState(newState);
         emit Events.StateSet(msg.sender, prevState, newState, block.timestamp);
         return prevState;
+    }
+
+    function whitelistProfileCreator(address profileCreator, bool whitelist) external {
+        StorageLib.profileCreatorWhitelisted()[profileCreator] = whitelist;
+        emit Events.ProfileCreatorWhitelisted(profileCreator, whitelist, block.timestamp);
+    }
+
+    function whitelistFollowModule(address followModule, bool whitelist) external {
+        StorageLib.followModuleWhitelisted()[followModule] = whitelist;
+        emit Events.FollowModuleWhitelisted(followModule, whitelist, block.timestamp);
+    }
+
+    function whitelistReferenceModule(address referenceModule, bool whitelist) external {
+        StorageLib.referenceModuleWhitelisted()[referenceModule] = whitelist;
+        emit Events.ReferenceModuleWhitelisted(referenceModule, whitelist, block.timestamp);
+    }
+
+    function whitelistActionModuleId(address actionModule, uint256 whitelistId) external {
+        StorageLib.actionModuleWhitelistedId()[actionModule] = whitelistId;
+        StorageLib.actionModuleById()[whitelistId] = actionModule;
+        emit Events.ActionModuleWhitelistedId(actionModule, whitelistId, block.timestamp);
     }
 }

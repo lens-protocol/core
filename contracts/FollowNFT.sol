@@ -5,14 +5,12 @@ pragma solidity ^0.8.15;
 import {Types} from 'contracts/libraries/constants/Types.sol';
 import {ERC2981CollectionRoyalties} from 'contracts/base/ERC2981CollectionRoyalties.sol';
 import {Errors} from 'contracts/libraries/constants/Errors.sol';
-import {Events} from 'contracts/libraries/constants/Events.sol';
 import {HubRestricted} from 'contracts/base/HubRestricted.sol';
 import {IERC721} from '@openzeppelin/contracts/token/ERC721/IERC721.sol';
 import {IERC721Timestamped} from 'contracts/interfaces/IERC721Timestamped.sol';
 import {IFollowNFT} from 'contracts/interfaces/IFollowNFT.sol';
 import {ILensHub} from 'contracts/interfaces/ILensHub.sol';
 import {LensBaseERC721} from 'contracts/base/LensBaseERC721.sol';
-import {MetaTxLib} from 'contracts/libraries/MetaTxLib.sol';
 import {Strings} from '@openzeppelin/contracts/utils/Strings.sol';
 import {StorageLib} from 'contracts/libraries/StorageLib.sol';
 
@@ -56,7 +54,7 @@ contract FollowNFT is HubRestricted, LensBaseERC721, ERC2981CollectionRoyalties,
     /// @inheritdoc IFollowNFT
     function follow(
         uint256 followerProfileId,
-        address executor,
+        address transactionExecutor,
         uint256 followTokenId
     ) external override onlyHub returns (uint256) {
         if (_followTokenIdByFollowerProfileId[followerProfileId] != 0) {
@@ -74,7 +72,7 @@ contract FollowNFT is HubRestricted, LensBaseERC721, ERC2981CollectionRoyalties,
             return
                 _followWithWrappedToken({
                     followerProfileId: followerProfileId,
-                    executor: executor,
+                    transactionExecutor: transactionExecutor,
                     followTokenId: followTokenId,
                     followTokenOwner: followTokenOwner
                 });
@@ -92,13 +90,13 @@ contract FollowNFT is HubRestricted, LensBaseERC721, ERC2981CollectionRoyalties,
                 });
         }
 
-        // Provided follow token does not exist anymore, it can only be used if profile attempting to follow is
+        // Provided follow token does not exist anymore, it can only be used if the profile attempting to follow is
         // allowed to recover it.
         return _followByRecoveringToken({followerProfileId: followerProfileId, followTokenId: followTokenId});
     }
 
     /// @inheritdoc IFollowNFT
-    function unfollow(uint256 unfollowerProfileId, address executor) external override onlyHub {
+    function unfollow(uint256 unfollowerProfileId, address transactionExecutor) external override onlyHub {
         uint256 followTokenId = _followTokenIdByFollowerProfileId[unfollowerProfileId];
         if (followTokenId == 0) {
             revert NotFollowing();
@@ -115,8 +113,8 @@ contract FollowNFT is HubRestricted, LensBaseERC721, ERC2981CollectionRoyalties,
             // Follower profile owner or its approved delegated executor must hold the token or be approved-for-all.
             if (
                 (followTokenOwner != unfollowerProfileOwner) &&
-                (followTokenOwner != executor) &&
-                !isApprovedForAll(followTokenOwner, executor) &&
+                (followTokenOwner != transactionExecutor) &&
+                !isApprovedForAll(followTokenOwner, transactionExecutor) &&
                 !isApprovedForAll(followTokenOwner, unfollowerProfileOwner)
             ) {
                 revert DoesNotHavePermissions();
@@ -267,8 +265,10 @@ contract FollowNFT is HubRestricted, LensBaseERC721, ERC2981CollectionRoyalties,
      * @dev This returns the follow NFT URI fetched from the hub.
      */
     function tokenURI(uint256 followTokenId) public view override returns (string memory) {
-        if (!_exists(followTokenId)) revert Errors.TokenDoesNotExist();
-        return ILensHub(HUB).getFollowNFTURI(_followedProfileId);
+        if (!_exists(followTokenId)) {
+            revert Errors.TokenDoesNotExist();
+        }
+        return 'Not implemented yet';
     }
 
     function _followMintingNewToken(uint256 followerProfileId) internal returns (uint256) {
@@ -287,7 +287,7 @@ contract FollowNFT is HubRestricted, LensBaseERC721, ERC2981CollectionRoyalties,
 
     function _followWithWrappedToken(
         uint256 followerProfileId,
-        address executor,
+        address transactionExecutor,
         uint256 followTokenId,
         address followTokenOwner
     ) internal returns (uint256) {
@@ -296,15 +296,15 @@ contract FollowNFT is HubRestricted, LensBaseERC721, ERC2981CollectionRoyalties,
         if (
             !isFollowApproved &&
             followTokenOwner != followerProfileOwner &&
-            followTokenOwner != executor &&
-            !isApprovedForAll(followTokenOwner, executor) &&
+            followTokenOwner != transactionExecutor &&
+            !isApprovedForAll(followTokenOwner, transactionExecutor) &&
             !isApprovedForAll(followTokenOwner, followerProfileOwner)
         ) {
             revert DoesNotHavePermissions();
         }
-        // The executor is allowed to write the follower in that wrapped token.
+        // The transactionExecutor is allowed to write the follower in that wrapped token.
         if (isFollowApproved) {
-            // The `_followApprovalByFollowTokenId` was used, now needs to be cleared.
+            // The `_followApprovalByFollowTokenId` was used, and now it needs to be cleared.
             _approveFollow(0, followTokenId);
         }
         _replaceFollower({
@@ -348,7 +348,7 @@ contract FollowNFT is HubRestricted, LensBaseERC721, ERC2981CollectionRoyalties,
         uint256 followTokenId
     ) internal {
         if (currentFollowerProfileId != 0) {
-            // As it has a follower, unfollow first, removing current follower.
+            // As it has a follower, unfollow first, removing the current follower.
             delete _followTokenIdByFollowerProfileId[currentFollowerProfileId];
             ILensHub(HUB).emitUnfollowedEvent(currentFollowerProfileId, _followedProfileId);
         } else {
@@ -356,7 +356,7 @@ contract FollowNFT is HubRestricted, LensBaseERC721, ERC2981CollectionRoyalties,
                 _followerCount++;
             }
         }
-        // Perform the follow, setting new follower.
+        // Perform the follow, setting a new follower.
         _baseFollow({followerProfileId: newFollowerProfileId, followTokenId: followTokenId, isOriginalFollow: false});
     }
 
@@ -404,7 +404,7 @@ contract FollowNFT is HubRestricted, LensBaseERC721, ERC2981CollectionRoyalties,
     }
 
     /**
-     * @dev Upon transfers, we clear follow approvals, and emit the transfer event in the hub.
+     * @dev Upon transfers, we clear follow approvals and emit the transfer event in the hub.
      */
     function _beforeTokenTransfer(address from, address to, uint256 followTokenId) internal override {
         if (from != address(0)) {

@@ -6,7 +6,7 @@ pragma solidity ^0.8.15;
  * @title IModuleGlobals
  * @author Lens Protocol
  *
- * @notice This is the interface for the ModuleGlobals contract, a data providing contract to be queried by modules
+ * @notice This is the interface for the ModuleGlobals contract, a data-providing contract to be queried by modules
  * for the most up-to-date parameters.
  */
 interface IModuleGlobals {
@@ -76,7 +76,7 @@ interface IModuleGlobals {
     /**
      * @notice Returns the treasury address and treasury fee in a single call.
      *
-     * @return tuplee First, the treasury address, second, the treasury fee.
+     * @return tuple First, the treasury address, second, the treasury fee.
      */
     function getTreasuryData() external view returns (address, uint16);
 }

@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: UNLICENSED
+// SPDX-License-Identifier: MIT
 pragma solidity ^0.8.13;
 
 import 'forge-std/Test.sol';
@@ -71,9 +71,12 @@ contract MigrationsTest is Test, ForkManagement {
     function setUp() public onlyFork {
         loadBaseAddresses(forkEnv);
 
-        // Precompute needed addresss.
+        // Precompute needed addresses.
         address lensHandlesAddress = computeCreateAddress(deployer, 0);
         address tokenHandleRegistryAddress = computeCreateAddress(deployer, 1);
+
+        console.log('lensHandlesAddress:', lensHandlesAddress);
+        console.log('tokenHandleRegistryAddress:', tokenHandleRegistryAddress);
 
         vm.startPrank(deployer);
 

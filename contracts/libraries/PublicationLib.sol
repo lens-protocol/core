@@ -3,11 +3,9 @@
 pragma solidity ^0.8.15;
 
 import {ValidationLib} from 'contracts/libraries/ValidationLib.sol';
-import {MetaTxLib} from 'contracts/libraries/MetaTxLib.sol';
 import {Types} from 'contracts/libraries/constants/Types.sol';
 import {Events} from 'contracts/libraries/constants/Events.sol';
 import {Errors} from 'contracts/libraries/constants/Errors.sol';
-import {ICollectModule} from 'contracts/interfaces/ICollectModule.sol';
 import {IReferenceModule} from 'contracts/interfaces/IReferenceModule.sol';
 import {IDeprecatedReferenceModule} from 'contracts/interfaces/IDeprecatedReferenceModule.sol';
 import {StorageLib} from 'contracts/libraries/StorageLib.sol';
@@ -98,6 +96,9 @@ library PublicationLib {
      * @return uint256 The created publication's pubId.
      */
     function mirror(Types.MirrorParams calldata mirrorParams, address transactionExecutor) external returns (uint256) {
+        ValidationLib.validatePointedPub(mirrorParams.pointedProfileId, mirrorParams.pointedPubId);
+        ValidationLib.validateNotBlocked({profile: mirrorParams.profileId, byProfile: mirrorParams.pointedProfileId});
+
         Types.PublicationType[] memory referrerPubTypes = ValidationLib.validateReferrersAndGetReferrersPubTypes(
             mirrorParams.referrerProfileIds,
             mirrorParams.referrerPubIds,
@@ -155,7 +156,7 @@ library PublicationLib {
         Types.Publication storage _publication = StorageLib.getPublication(profileId, pubId);
         Types.PublicationType pubType = _publication.pubType;
         if (uint8(pubType) == 0) {
-            // Legacy V1: If publication type is 0, we check using the legacy rules.
+            // Legacy V1: If the publication type is 0, we check using the legacy rules.
             if (_publication.pointedProfileId != 0) {
                 // It is pointing to a publication, so it can be either a comment or a mirror, depending on if it has a
                 // collect module or not.
@@ -209,6 +210,12 @@ library PublicationLib {
         address transactionExecutor,
         Types.PublicationType referencePubType
     ) private returns (uint256, bytes[] memory, bytes memory, Types.PublicationType[] memory) {
+        ValidationLib.validatePointedPub(referencePubParams.pointedProfileId, referencePubParams.pointedPubId);
+        ValidationLib.validateNotBlocked({
+            profile: referencePubParams.profileId,
+            byProfile: referencePubParams.pointedProfileId
+        });
+
         Types.PublicationType[] memory referrerPubTypes = ValidationLib.validateReferrersAndGetReferrersPubTypes(
             referencePubParams.referrerProfileIds,
             referencePubParams.referrerPubIds,
@@ -276,7 +283,7 @@ library PublicationLib {
                 IReferenceModule(refModule).processComment(
                     Types.ProcessCommentParams({
                         profileId: commentParams.profileId,
-                        executor: transactionExecutor,
+                        transactionExecutor: transactionExecutor,
                         pointedProfileId: commentParams.pointedProfileId,
                         pointedPubId: commentParams.pointedPubId,
                         referrerProfileIds: commentParams.referrerProfileIds,
@@ -293,10 +300,6 @@ library PublicationLib {
                     if iszero(iszero(length)) {
                         revert(add(err, 32), length)
                     }
-                }
-                if (transactionExecutor != StorageLib.getTokenData(commentParams.profileId).owner) {
-                    // TODO: WTF is this?
-                    revert Errors.ExecutorInvalid();
                 }
                 if (commentParams.referrerProfileIds.length > 0) {
                     // Deprecated reference modules don't support referrers.
@@ -325,7 +328,7 @@ library PublicationLib {
                 IReferenceModule(refModule).processQuote(
                     Types.ProcessQuoteParams({
                         profileId: quoteParams.profileId,
-                        executor: transactionExecutor,
+                        transactionExecutor: transactionExecutor,
                         pointedProfileId: quoteParams.pointedProfileId,
                         pointedPubId: quoteParams.pointedPubId,
                         referrerProfileIds: quoteParams.referrerProfileIds,
@@ -342,10 +345,6 @@ library PublicationLib {
                     if iszero(iszero(length)) {
                         revert(add(err, 32), length)
                     }
-                }
-                if (transactionExecutor != StorageLib.getTokenData(quoteParams.profileId).owner) {
-                    // TODO: WTF is this?
-                    revert Errors.ExecutorInvalid();
                 }
                 if (quoteParams.referrerProfileIds.length > 0) {
                     // Deprecated reference modules don't support referrers.
@@ -374,7 +373,7 @@ library PublicationLib {
                 IReferenceModule(refModule).processMirror(
                     Types.ProcessMirrorParams({
                         profileId: mirrorParams.profileId,
-                        executor: transactionExecutor,
+                        transactionExecutor: transactionExecutor,
                         pointedProfileId: mirrorParams.pointedProfileId,
                         pointedPubId: mirrorParams.pointedPubId,
                         referrerProfileIds: mirrorParams.referrerProfileIds,
@@ -391,10 +390,6 @@ library PublicationLib {
                     if iszero(iszero(length)) {
                         revert(add(err, 32), length)
                     }
-                }
-                if (transactionExecutor != StorageLib.getTokenData(mirrorParams.profileId).owner) {
-                    // TODO: WTF is this?
-                    revert Errors.ExecutorInvalid();
                 }
                 if (mirrorParams.referrerProfileIds.length > 0) {
                     // Deprecated reference modules don't support referrers.

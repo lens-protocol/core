@@ -78,7 +78,7 @@ interface ILensHub {
     function whitelistReferenceModule(address referenceModule, bool whitelist) external;
 
     /**
-     * @notice Adds or removes a action module from the whitelist. This function can only be called by the current
+     * @notice Adds or removes an action module from the whitelist. This function can only be called by the current
      * governance address.
      *
      * @param actionModule The action module contract address to add or remove from the whitelist.
@@ -147,21 +147,21 @@ interface ILensHub {
     ) external;
 
     /**
-     * @notice Changes the delegated executors configuration for the given profile. It allows to set the approvals for
+     * @notice Changes the delegated executors configuration for the given profile. It allows setting the approvals for
      * delegated executors in the specified configuration, as well as switching to it.
      *
      * @dev The message sender must be the owner of the delegator profile.
      *
      * @param delegatorProfileId The ID of the profile to which the delegated executor is being changed for.
-     * @param executors The array of executors to set the approval for.
-     * @param approvals The array of booleans indicating the corresponding executor new approval status.
+     * @param delegatedExecutors The array of delegated executors to set the approval for.
+     * @param approvals The array of booleans indicating the corresponding executor's new approval status.
      * @param configNumber The number of the configuration where the executor approval state is being set.
-     * @param switchToGivenConfig A boolean indicanting if the configuration must be switched to the one with the given
+     * @param switchToGivenConfig A boolean indicating if the configuration must be switched to the one with the given
      * number.
      */
     function changeDelegatedExecutorsConfig(
         uint256 delegatorProfileId,
-        address[] calldata executors,
+        address[] calldata delegatedExecutors,
         bool[] calldata approvals,
         uint64 configNumber,
         bool switchToGivenConfig
@@ -173,33 +173,33 @@ interface ILensHub {
      * @dev The message sender must be the owner of the delegator profile.
      *
      * @param delegatorProfileId The ID of the profile to which the delegated executor is being changed for.
-     * @param executors The array of executors to set the approval for.
-     * @param approvals The array of booleans indicating the corresponding executor new approval status.
+     * @param delegatedExecutors The array of delegated executors to set the approval for.
+     * @param approvals The array of booleans indicating the corresponding executor's new approval status.
      */
     function changeCurrentDelegatedExecutorsConfig(
         uint256 delegatorProfileId,
-        address[] calldata executors,
+        address[] calldata delegatedExecutors,
         bool[] calldata approvals
     ) external;
 
     /**
-     * @notice Changes the delegated executors configuration for the given profile. It allows to set the approvals for
+     * @notice Changes the delegated executors configuration for the given profile. It allows setting the approvals for
      * delegated executors in the specified configuration, as well as switching to it.
      *
-     * @dev The signer must be the owner of the delegator profile. The meta-tx function only exists in the flavour where
+     * @dev The signer must be the owner of the delegator profile. The meta-tx function only exists in the flavor where
      * the `configNumber` and `switchToGivenConfig` params are required to be passed explicitly.
      *
      * @param delegatorProfileId The ID of the profile to which the delegated executor is being changed for.
-     * @param executors The array of executors to set the approval for.
-     * @param approvals The array of booleans indicating the corresponding executor new approval status.
+     * @param delegatedExecutors The array of delegated executors to set the approval for.
+     * @param approvals The array of booleans indicating the corresponding executor's new approval status.
      * @param configNumber The number of the configuration where the executor approval state is being set.
-     * @param switchToGivenConfig A boolean indicanting if the configuration must be switched to the one with the given
+     * @param switchToGivenConfig A boolean indicating if the configuration must be switched to the one with the given
      * number.
      * @param signature The signature for the post.
      */
     function changeDelegatedExecutorsConfigWithSig(
         uint256 delegatorProfileId,
-        address[] calldata executors,
+        address[] calldata delegatedExecutors,
         bool[] calldata approvals,
         uint64 configNumber,
         bool switchToGivenConfig,
@@ -209,7 +209,7 @@ interface ILensHub {
     /**
      * @notice Sets a profile's image URI, which is reflected in the `tokenURI()` function.
      *
-     * @param profileId The token ID of the profile of the profile to set the URI for.
+     * @param profileId The token ID of the profile to set the URI for.
      * @param imageURI The URI to set for the given profile.
      */
     function setProfileImageURI(uint256 profileId, string calldata imageURI) external;
@@ -218,7 +218,7 @@ interface ILensHub {
      * @notice Sets the image URI via signature for the given profile with the specified parameters. The signer must
      * either be the profile owner or a delegated executor.
      *
-     * @param profileId The token ID of the profile of the profile to set the URI for.
+     * @param profileId The token ID of the profile to set the URI for.
      * @param imageURI The URI to set for the given profile.
      * @param signature The signature for the post.
      */
@@ -229,29 +229,7 @@ interface ILensHub {
     ) external;
 
     /**
-     * @notice Sets a followNFT URI for a given profile's follow NFT.
-     *
-     * @param profileId The token ID of the profile for which to set the followNFT URI.
-     * @param followNFTURI The follow NFT URI to set.
-     */
-    function setFollowNFTURI(uint256 profileId, string calldata followNFTURI) external;
-
-    /**
-     * @notice Sets a followNFT URI via signature for the given profile with the specified parameters. The signer must
-     * either be the profile owner or a delegated executor.
-     *
-     * @param profileId The token ID of the profile for which to set the followNFT URI.
-     * @param followNFTURI The follow NFT URI to set.
-     * @param signature The signature for the post.
-     */
-    function setFollowNFTURIWithSig(
-        uint256 profileId,
-        string calldata followNFTURI,
-        Types.EIP712Signature calldata signature
-    ) external;
-
-    /**
-     * @notice Publishes a post to a given profile, must be called by the profile owner.
+     * @notice Publishes a post to a given profile. Must be called by the profile owner.
      *
      * @param postParams A PostParams struct containing the needed parameters.
      *
@@ -274,7 +252,7 @@ interface ILensHub {
     ) external returns (uint256);
 
     /**
-     * @notice Publishes a comment to a given profile, must be called by the profile owner.
+     * @notice Publishes a comment to a given profile. Must be called by the profile owner.
      *
      * @param commentParams A CommentParams struct containing the needed parameters.
      *
@@ -297,7 +275,7 @@ interface ILensHub {
     ) external returns (uint256);
 
     /**
-     * @notice Publishes a mirror to a given profile, must be called by the profile owner.
+     * @notice Publishes a mirror to a given profile. Must be called by the profile owner.
      *
      * @param mirrorParams A MirrorParams struct containing the necessary parameters.
      *
@@ -320,7 +298,7 @@ interface ILensHub {
     ) external returns (uint256);
 
     /**
-     * @notice Publishes a quote to a given profile, must be called by the profile owner.
+     * @notice Publishes a quote to a given profile. Must be called by the profile owner.
      *
      * @param quoteParams A QuoteParams struct containing the needed parameters.
      *
@@ -439,8 +417,8 @@ interface ILensHub {
     ) external;
 
     /**
-     * @notice Collects a given publication via signature with the specified parameters. The caller must either be the collector
-     * or a delegated executor.
+     * @notice Collects a given publication via signature with the specified parameters.
+     * The caller must either be the collector or a delegated executor.
      *
      * @param collectParams A CollectParams struct containing the parameters.
      *
@@ -449,8 +427,8 @@ interface ILensHub {
     function collect(Types.CollectParams calldata collectParams) external returns (uint256);
 
     /**
-     * @notice Collects a given publication via signature with the specified parameters. The signer must either be the collector
-     * or a delegated executor.
+     * @notice Collects a given publication via signature with the specified parameters.
+     * The signer must either be the collector or a delegated executor.
      *
      * @param collectParams A CollectParams struct containing the parameters.
      * @param signature The signature for the collect.
@@ -473,8 +451,8 @@ interface ILensHub {
     function act(Types.PublicationActionParams calldata publicationActionParams) external returns (bytes memory);
 
     /**
-     * @notice Acts on a given publication via signature with the specified parameters. The signer must either be the profile owner
-     * or a delegated executor.
+     * @notice Acts on a given publication via signature with the specified parameters.
+     * The signer must either be the profile owner or a delegated executor.
      *
      * @param publicationActionParams A PublicationActionParams struct containing the parameters.
      * @param signature The signature for the collect.
@@ -499,7 +477,7 @@ interface ILensHub {
     /// ************************
 
     /**
-     * @notice Returns whether  or not `followerProfileId` is following `followedProfileId`.
+     * @notice Returns whether or not `followerProfileId` is following `followedProfileId`.
      *
      * @param followerProfileId The ID of the profile whose following state should be queried.
      * @param followedProfileId The ID of the profile whose followed state should be queried.
@@ -522,7 +500,7 @@ interface ILensHub {
      *
      * @param followModule The address of the follow module to check.
      *
-     * @return bool True if the the follow module is whitelisted, false otherwise.
+     * @return bool True if the follow module is whitelisted, false otherwise.
      */
     function isFollowModuleWhitelisted(address followModule) external view returns (bool);
 
@@ -531,16 +509,16 @@ interface ILensHub {
      *
      * @param referenceModule The address of the reference module to check.
      *
-     * @return bool True if the the reference module is whitelisted, false otherwise.
+     * @return bool True if the reference module is whitelisted, false otherwise.
      */
     function isReferenceModuleWhitelisted(address referenceModule) external view returns (bool);
 
     /**
-     * @notice Returns whether or not a action module is whitelisted.
+     * @notice Returns whether or not an action module is whitelisted.
      *
      * @param actionModule The address of the action module to check.
      *
-     * @return bool True if the the action module is whitelisted, false otherwise.
+     * @return bool True if the action module is whitelisted, false otherwise.
      */
     function isActionModuleWhitelisted(address actionModule) external view returns (bool);
 
@@ -556,7 +534,7 @@ interface ILensHub {
      * number, to act on behalf of the given profile.
      *
      * @param delegatorProfileId The ID of the profile to check the delegated executor approval for.
-     * @param executor The address to query the delegated executor approval for.
+     * @param delegatedExecutor The address to query the delegated executor approval for.
      * @param configNumber The number of the configuration where the executor approval state is being queried.
      *
      * @return bool True if the address is approved as a delegated executor to act on behalf of the profile in the
@@ -564,7 +542,7 @@ interface ILensHub {
      */
     function isDelegatedExecutorApproved(
         uint256 delegatorProfileId,
-        address executor,
+        address delegatedExecutor,
         uint64 configNumber
     ) external view returns (bool);
 
@@ -573,12 +551,15 @@ interface ILensHub {
      * on behalf of the given profile.
      *
      * @param delegatorProfileId The ID of the profile to check the delegated executor approval for.
-     * @param executor The address to query the delegated executor approval for.
+     * @param delegatedExecutor The address to query the delegated executor approval for.
      *
      * @return bool True if the address is approved as a delegated executor to act on behalf of the profile in the
      * current configuration, false otherwise.
      */
-    function isDelegatedExecutorApproved(uint256 delegatorProfileId, address executor) external view returns (bool);
+    function isDelegatedExecutorApproved(
+        uint256 delegatorProfileId,
+        address delegatedExecutor
+    ) external view returns (bool);
 
     /**
      * @param delegatorProfileId The ID of the profile from which the delegated executors configuration number is being
@@ -589,7 +570,7 @@ interface ILensHub {
     function getDelegatedExecutorsConfigNumber(uint256 delegatorProfileId) external view returns (uint64);
 
     /**
-     * @param delegatorProfileId The ID of the profile from which the delegated executors previous configuration number
+     * @param delegatorProfileId The ID of the profile from which the delegated executors' previous configuration number
      * set is being queried.
      *
      * @return uint256 The delegated executor configuration number previously set. It will coincide with the current
@@ -598,7 +579,7 @@ interface ILensHub {
     function getDelegatedExecutorsPrevConfigNumber(uint256 delegatorProfileId) external view returns (uint64);
 
     /**
-     * @param delegatorProfileId The ID of the profile from which the delegated executors maximum configuration number
+     * @param delegatorProfileId The ID of the profile from which the delegated executors' maximum configuration number
      * set is being queried.
      *
      * @return uint256 The delegated executor maximum configuration number set.
@@ -652,15 +633,6 @@ interface ILensHub {
     function getFollowNFT(uint256 profileId) external view returns (address);
 
     /**
-     * @notice Returns the followNFT URI associated with a given profile.
-     *
-     * @param profileId The token ID of the profile to query the followNFT URI for.
-     *
-     * @return string The followNFT URI associated with the given profile.
-     */
-    function getFollowNFTURI(uint256 profileId) external view returns (string memory);
-
-    /**
      * @notice Returns the collectNFT associated with a given publication, if any.
      *
      * @param profileId The token ID of the profile that published the publication to query.
@@ -671,7 +643,7 @@ interface ILensHub {
     function getCollectNFT(uint256 profileId, uint256 pubId) external view returns (address);
 
     /**
-     * @notice Returns the follow module associated witha  given profile, if any.
+     * @notice Returns the follow module associated with a given profile, if any.
      *
      * @param profileId The token ID of the profile to query the follow module for.
      *
@@ -690,9 +662,9 @@ interface ILensHub {
     function getCollectModule(uint256 profileId, uint256 pubId) external view returns (address);
 
     /**
-     * @notice Returns the reference module associated witha  given profile, if any.
+     * @notice Returns the reference module associated with a given profile, if any.
      *
-     * @param profileId The token ID of the profile that published the publication to querythe reference module for.
+     * @param profileId The token ID of the profile that published the publication to query the reference module for.
      * @param pubId The publication ID of the publication to query the reference module for.
      *
      * @return address The address of the reference module associated with the given profile.
