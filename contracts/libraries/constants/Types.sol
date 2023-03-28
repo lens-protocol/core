@@ -116,7 +116,7 @@ library Types {
         PublicationType pubType;
         uint256 rootProfileId;
         uint256 rootPubId;
-        uint256 actionModulesBitmap; // TODO: Maybe write at keccak256(actionModulesBitmap.slot) so it is already treated as array and ready to be extended
+        uint256 actionModulesBitmap; // In future this can be (uint256 => uint256) mapping if we need >256 modules
     }
 
     /**

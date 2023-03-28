@@ -127,9 +127,4 @@ contract LensV2UpgradeContract is ImmutableOwnable {
             }
         }
     }
-
-    function _whitelistNewCollectModules() internal {
-        // TODO: Implement calling each action module needed and whitelisting collectModules inside it
-        // GOVERNANCE.executeAsGovernance(target, data);
-    }
 }

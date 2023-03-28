@@ -86,7 +86,7 @@ contract TokenHandleRegistry is ITokenHandleRegistry, VersionedInitializable {
 
     function initialize() external initializer {}
 
-    // V1->V2 Migration function
+    // V1 --> V2 Migration function
     function migrationLinkHandleWithToken(uint256 handleId, uint256 tokenId) external {
         require(msg.sender == LENS_HUB, 'Only hub');
         Handle memory handle = Handle({collection: LENS_HANDLES, id: handleId});
@@ -97,8 +97,7 @@ contract TokenHandleRegistry is ITokenHandleRegistry, VersionedInitializable {
     }
 
     // NOTE: Simplified interfaces for the first version - Namespace and LensHub are constants
-    // TODO: Custom logic for linking/unlinking handles and tokens (modules, with bytes passed)
-    function linkHandleWithToken(uint256 handleId, uint256 tokenId) external {
+    function linkHandleWithToken(uint256 handleId, uint256 tokenId, bytes calldata /* data */) external {
         _linkHandleWithToken(
             Handle({collection: LENS_HANDLES, id: handleId}),
             Token({collection: LENS_HUB, id: tokenId})
@@ -112,16 +111,10 @@ contract TokenHandleRegistry is ITokenHandleRegistry, VersionedInitializable {
         );
     }
 
-    // TODO: Think of a better name?
-    // handleToToken(handleId)?
-    // resolveTokenByHandle(handleId)?
     function resolveHandle(uint256 handleId) external view returns (uint256) {
         return _resolveHandle(Handle({collection: LENS_HANDLES, id: handleId})).id;
     }
 
-    // TODO: Same here - think of a better name?
-    // tokenToHandle(tokenId)?
-    // resolveHandleByToken(tokenId)?
     function resolveToken(uint256 tokenId) external view returns (uint256) {
         return _resolveToken(Token({collection: LENS_HUB, id: tokenId})).id;
     }

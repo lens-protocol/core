@@ -42,7 +42,8 @@ contract ProfileCreationProxy is ImmutableOwnable {
     ) external onlyOwner returns (uint256, uint256) {
         uint256 profileId = ILensHub(LENS_HUB).createProfile(createProfileParams);
         uint256 handleId = LENS_HANDLES.mintHandle(createProfileParams.to, handle);
-        TOKEN_HANDLE_REGISTRY.linkHandleWithToken({handleId: handleId, tokenId: profileId}); // Permissionless (same address must just own both)
+        // The linking below is permissionless (same address just must own both for it to work)
+        TOKEN_HANDLE_REGISTRY.linkHandleWithToken({handleId: handleId, tokenId: profileId, data: ''});
         return (profileId, handleId);
     }
 
