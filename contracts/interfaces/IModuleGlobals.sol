@@ -39,9 +39,9 @@ interface IModuleGlobals {
      */
     function whitelistCurrency(address currency, bool toWhitelist) external;
 
-    /// ************************
-    /// *****VIEW FUNCTIONS*****
-    /// ************************
+    /////////////////////////////////
+    ///       VIEW FUNCTIONS      ///
+    /////////////////////////////////
 
     /**
      * @notice Returns whether a currency is whitelisted.

@@ -13,6 +13,7 @@ import {Types} from 'contracts/libraries/constants/Types.sol';
 interface IPublicationActionModule {
     /**
      * @notice Initializes the action module for the given publication.
+     * @custom:permissions LensHub.
      *
      * @param profileId The profile ID of the author publishing the content with Publication Action.
      * @param pubId The publication ID of the content being published.
@@ -30,9 +31,9 @@ interface IPublicationActionModule {
 
     /**
      * @notice Initializes the action module for the given publication.
+     * @custom:permissions LensHub.
      *
      * @param processActionParams The parameters needed to execute the publication action.
-     * See `Types.ProcessActionParams` for more details about the type.
      *
      * @return bytes Any custom ABI-encoded data depending on the module implementation.
      */
