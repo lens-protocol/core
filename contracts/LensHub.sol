@@ -693,6 +693,11 @@ contract LensHub is LensBaseERC721, VersionedInitializable, LensMultiState, Lens
     }
 
     /// @inheritdoc ILensHub
+    function getActionModulesBitmap(uint256 profileId, uint256 pubId) external view override returns (uint256) {
+        return _pubByIdByProfile[profileId][pubId].actionModulesBitmap;
+    }
+
+    /// @inheritdoc ILensHub
     function getPubPointer(uint256 profileId, uint256 pubId) external view override returns (uint256, uint256) {
         return (_pubByIdByProfile[profileId][pubId].pointedProfileId, _pubByIdByProfile[profileId][pubId].pointedPubId);
     }

@@ -338,6 +338,8 @@ interface ILensHub {
     /**
      * @notice Sets the block status for the given profiles. Changing a profile's block status to `true` (i.e. blocked),
      * when will also force them to unfollow.
+     * Blocked profiles cannot perform any actions with the profile that blocked them: they cannot comment or mirror
+     * their publications, they cannot follow them, they cannot collect, tip them, etc.
      * @custom:permissions Profile Owner or Delegated Executor.
      *
      * @dev Both the `idsOfProfilesToSetBlockStatus` and `blockStatus` arrays must be of the same length.
@@ -366,7 +368,8 @@ interface ILensHub {
      * @notice Collects a given publication via signature with the specified parameters.
      * Collect can have referrers (e.g. publications or profiles that allowed to discover the pointed publication).
      * @custom:permissions Collector Profile Owner or its Delegated Executor.
-     * @custom:pending-deprecation
+     * @custom:pending-deprecation Collect modules were replaced by PublicationAction Collect modules in V2. This method
+     * is left here for backwards compatibility with posts made in V1 that had Collect modules.
      *
      * @param collectParams A CollectParams struct containing the parameters.
      *
@@ -502,14 +505,17 @@ interface ILensHub {
     ) external view returns (bool);
 
     /**
-     * @param delegatorProfileId The ID of the profile from which the delegated executors configuration number is being
-     * queried.
+     * @notice Returns the current delegated executor config number for the given profile.
+     *
+     * @param delegatorProfileId The ID of the profile from which the delegated executors config number is being queried
      *
      * @return uint256 The current delegated executor configuration number.
      */
     function getDelegatedExecutorsConfigNumber(uint256 delegatorProfileId) external view returns (uint64);
 
     /**
+     * @notice Returns the previous used delegated executor config number for the given profile.
+     *
      * @param delegatorProfileId The ID of the profile from which the delegated executors' previous configuration number
      * set is being queried.
      *
@@ -519,6 +525,10 @@ interface ILensHub {
     function getDelegatedExecutorsPrevConfigNumber(uint256 delegatorProfileId) external view returns (uint64);
 
     /**
+     * @notice Returns the maximum delegated executor config number for the given profile.
+     * This is the maximum config number that was ever used by this profile.
+     * When creating a new clean configuration, you can only use a number that is maxConfigNumber + 1.
+     *
      * @param delegatorProfileId The ID of the profile from which the delegated executors' maximum configuration number
      * set is being queried.
      *
@@ -527,7 +537,8 @@ interface ILensHub {
     function getDelegatedExecutorsMaxConfigNumberSet(uint256 delegatorProfileId) external view returns (uint64);
 
     /**
-     * @notice Returns whether `profile` is blocked by `byProfile`.
+     * @notice Returns whether `profileId` is blocked by `byProfileId`.
+     * See setBlockStatus() for more information on how blocking works on the platform.
      *
      * @param profileId The ID of the profile whose blocked status should be queried.
      * @param byProfileId The ID of the profile whose blocker status should be queried.
@@ -538,6 +549,7 @@ interface ILensHub {
 
     /**
      * @notice Returns the metadata URI for a given profile
+     * MetadataURI is used to store the profile's metadata, for example: displayed name, description, interests, etc.
      *
      * @param profileId The token ID of the profile to query the metadata URI for.
      *
@@ -564,16 +576,19 @@ interface ILensHub {
     function getProfileImageURI(uint256 profileId) external view returns (string memory);
 
     /**
-     * @notice Returns the followNFT associated with a given profile, if any.
+     * @notice Returns the address of the Follow NFT collection associated with a given profile.
+     * @dev It can return address(0) if the profile has not been followed yet, as the collection is lazy-deployed upon
+     * the first follow.
      *
-     * @param profileId The token ID of the profile to query the followNFT for.
+     * @param profileId The token ID of the profile to query the Follow NFT for.
      *
-     * @return address The followNFT associated with the given profile.
+     * @return address The Follow NFT associated with the given profile.
      */
     function getFollowNFT(uint256 profileId) external view returns (address);
 
     /**
      * @notice Returns the collectNFT associated with a given publication, if any.
+     * @custom:pending-deprecation
      *
      * @param profileId The token ID of the profile that published the publication to query.
      * @param pubId The publication ID of the publication to query.
@@ -583,7 +598,8 @@ interface ILensHub {
     function getCollectNFT(uint256 profileId, uint256 pubId) external view returns (address);
 
     /**
-     * @notice Returns the follow module associated with a given profile, if any.
+     * @notice Returns the follow module associated with a given profile.
+     * Returns address(0) if none.
      *
      * @param profileId The token ID of the profile to query the follow module for.
      *
@@ -593,6 +609,7 @@ interface ILensHub {
 
     /**
      * @notice Returns the collect module associated with a given publication.
+     * @custom:pending-deprecation
      *
      * @param profileId The token ID of the profile that published the publication to query.
      * @param pubId The publication ID of the publication to query.
@@ -612,7 +629,28 @@ interface ILensHub {
     function getReferenceModule(uint256 profileId, uint256 pubId) external view returns (address);
 
     /**
-     * @notice Returns the publication pointer (profileId & pubId) associated with a given publication.
+     * @notice Returns the action modules associated with a given publication in a bitmap.
+     * The bitmap is a uint256 where each bit represents an action module: 1 if the publication uses it, and 0 if not.
+     * You can use getWhitelistedActionModuleById() to get the address of the action module associated with a given bit.
+     * Or
+     *
+     * In the future this can be replaced with a getter that allows to query the bitmap by index, if there are more than
+     * 256 action modules.
+     *
+     * @param profileId The ID of the profile that published the publication to query the action modules for.
+     * @param pubId The publication ID of the publication to query the action modules for.
+     *
+     * @return uint256 The bitmap that represents the action modules associated with the given publication.
+     */
+    function getActionModulesBitmap(uint256 profileId, uint256 pubId) external view returns (uint256);
+
+    /**
+     * @notice Returns the publication (profileId & pubId) that a given publication is pointing to.
+     * This is used to implement the "reference" feature of the platform and is used in:
+     * - Mirrors
+     * - Comments
+     * - Quotes
+     * Returns (0,0) if the publication is not pointing to any other publication (i.e. the publication is a Post).
      *
      * @param profileId The token ID of the profile that published the publication to query the pointer for.
      * @param pubId The publication ID of the publication to query the pointer for.
@@ -624,6 +662,7 @@ interface ILensHub {
 
     /**
      * @notice Returns the URI associated with a given publication.
+     * This is used to store the publication's metadata, e.g.: content, images, etc.
      *
      * @param profileId The token ID of the profile that published the publication to query.
      * @param pubId The publication ID of the publication to query.
@@ -651,19 +690,34 @@ interface ILensHub {
      */
     function getPub(uint256 profileId, uint256 pubId) external view returns (Types.Publication memory);
 
+    /**
+     * @notice Returns the type of a given publication.
+     * The type can be one of the following (see PublicationType enum):
+     * - Nonexistent
+     * - Post
+     * - Comment
+     * - Mirror
+     * - Quote
+     *
+     * @param profileId The token ID of the profile that published the publication to query.
+     * @param pubId The publication ID of the publication to query.
+     *
+     * @return PublicationType The publication type of the queried publication.
+     */
     function getPublicationType(uint256 profileId, uint256 pubId) external view returns (Types.PublicationType);
 
     /**
-     * @notice Returns the follow NFT implementation address.
+     * @notice Returns the Follow NFT implementation address that is used across the hub to deploy Follow NFTs.
      *
-     * @return address The follow NFT implementation address.
+     * @return address The Follow NFT implementation address.
      */
     function getFollowNFTImpl() external view returns (address);
 
     /**
-     * @notice Returns the collect NFT implementation address.
+     * @notice Returns the Collect NFT implementation address.
+     * @custom:pending-deprecation
      *
-     * @return address The collect NFT implementation address.
+     * @return address The Collect NFT implementation address.
      */
     function getCollectNFTImpl() external view returns (address);
 }
