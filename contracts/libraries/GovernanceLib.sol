@@ -81,9 +81,27 @@ library GovernanceLib {
         emit Events.ReferenceModuleWhitelisted(referenceModule, whitelist, block.timestamp);
     }
 
-    function whitelistActionModuleId(address actionModule, uint256 whitelistId) external {
-        StorageLib.actionModuleWhitelistedId()[actionModule] = whitelistId;
-        StorageLib.actionModuleById()[whitelistId] = actionModule;
-        emit Events.ActionModuleWhitelistedId(actionModule, whitelistId, block.timestamp);
+    function whitelistActionModule(address actionModule, bool whitelist) external {
+        Types.ActionModuleWhitelistData memory actionModuleWhitelistData = StorageLib.actionModuleWhitelistData()[
+            actionModule
+        ];
+
+        uint256 id;
+        if (actionModuleWhitelistData.id == 0) {
+            if (!whitelist) {
+                revert('ModuleNotWhitelisted');
+            }
+            id = StorageLib.incrementMaxActionModuleIdUsed();
+
+            StorageLib.actionModuleWhitelistData()[actionModule] = Types.ActionModuleWhitelistData(
+                uint248(id),
+                whitelist
+            );
+            StorageLib.actionModuleById()[id] = actionModule;
+        } else {
+            StorageLib.actionModuleWhitelistData()[actionModule].isWhitelisted = whitelist;
+            id = actionModuleWhitelistData.id;
+        }
+        emit Events.ActionModuleWhitelisted(actionModule, id, whitelist, block.timestamp);
     }
 }

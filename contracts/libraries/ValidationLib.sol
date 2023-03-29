@@ -48,12 +48,6 @@ library ValidationLib {
         }
     }
 
-    function validateCollectModuleWhitelisted(address collectModule) internal view {
-        if (StorageLib.actionModuleWhitelistedId()[collectModule] == 0) {
-            revert Errors.CollectModuleNotWhitelisted();
-        }
-    }
-
     function validateReferenceModuleWhitelisted(address referenceModule) internal view {
         if (!StorageLib.referenceModuleWhitelisted()[referenceModule]) {
             revert Errors.ReferenceModuleNotWhitelisted();

@@ -80,9 +80,9 @@ interface ILensHub {
      * @custom:permissions Governance.
      *
      * @param actionModule The action module contract address to add or remove from the whitelist.
-     * @param whitelistId The whitelist ID to set for the action module (0 if not whitelisted).
+     * @param whitelist True if the action module should be whitelisted, false if it should be unwhitelisted.
      */
-    function whitelistActionModuleId(address actionModule, uint256 whitelistId) external;
+    function whitelistActionModule(address actionModule, bool whitelist) external;
 
     /**
      * @notice Creates a profile with the specified parameters, minting a Profile NFT to the given recipient.
@@ -457,13 +457,16 @@ interface ILensHub {
     function isReferenceModuleWhitelisted(address referenceModule) external view returns (bool);
 
     /**
-     * @notice Returns whether or not an action module is whitelisted.
+     * @notice Returns whether or not an action module is whitelisted, and its ID assigned.
+     * @dev If the ID is zero, it means the module has never been whitelisted, so no ID assigned to it yet.
      *
-     * @param actionModule The address of the action module to check.
+     * @param actionModule The address of the action module to get whitelist data of.
      *
-     * @return bool True if the action module is whitelisted, false otherwise.
+     * @return ActionModuleWhitelistData The data containing the ID and whitelist status of the given module.
      */
-    function isActionModuleWhitelisted(address actionModule) external view returns (bool);
+    function getActionModuleWhitelistData(
+        address actionModule
+    ) external view returns (Types.ActionModuleWhitelistData memory);
 
     /**
      * @notice Returns the currently configured governance address.
@@ -631,8 +634,8 @@ interface ILensHub {
     /**
      * @notice Returns the action modules associated with a given publication in a bitmap.
      * The bitmap is a uint256 where each bit represents an action module: 1 if the publication uses it, and 0 if not.
-     * You can use getWhitelistedActionModuleById() to get the address of the action module associated with a given bit.
-     * Or
+     * You can use getActionModuleById() to get the address of the action module associated with a given bit.
+     *
      *
      * In the future this can be replaced with a getter that allows to query the bitmap by index, if there are more than
      * 256 action modules.
@@ -643,6 +646,15 @@ interface ILensHub {
      * @return uint256 The bitmap that represents the action modules associated with the given publication.
      */
     function getActionModulesBitmap(uint256 profileId, uint256 pubId) external view returns (uint256);
+
+    /**
+     * @notice Returns the address of the action module associated with the given whitelist ID, address(0) if none.
+     *
+     * @param id The ID of the module whose address wants to be queried.
+     *
+     * @return address The address of the action module associated with the given ID.
+     */
+    function getActionModuleById(uint256 id) external view returns (address);
 
     /**
      * @notice Returns the publication (profileId & pubId) that a given publication is pointing to.

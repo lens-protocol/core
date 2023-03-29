@@ -371,4 +371,9 @@ library Types {
         uint64 prevConfigNumber;
         uint64 maxConfigNumberSet;
     }
+
+    struct ActionModuleWhitelistData {
+        uint248 id;
+        bool isWhitelisted;
+    }
 }

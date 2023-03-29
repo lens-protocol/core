@@ -126,8 +126,8 @@ contract LensHub is LensBaseERC721, VersionedInitializable, LensMultiState, Lens
     }
 
     /// @inheritdoc ILensHub
-    function whitelistActionModuleId(address actionModule, uint256 whitelistId) external override onlyGov {
-        GovernanceLib.whitelistActionModuleId(actionModule, whitelistId);
+    function whitelistActionModule(address actionModule, bool whitelist) external override onlyGov {
+        GovernanceLib.whitelistActionModule(actionModule, whitelist);
     }
 
     ///////////////////////////////////////////
@@ -606,8 +606,10 @@ contract LensHub is LensBaseERC721, VersionedInitializable, LensMultiState, Lens
     }
 
     /// @inheritdoc ILensHub
-    function isActionModuleWhitelisted(address actionModule) external view override returns (bool) {
-        return _actionModuleWhitelistedId[actionModule] > 0;
+    function getActionModuleWhitelistData(
+        address actionModule
+    ) external view override returns (Types.ActionModuleWhitelistData memory) {
+        return _actionModuleWhitelistData[actionModule];
     }
 
     /// @inheritdoc ILensHub
@@ -736,7 +738,7 @@ contract LensHub is LensBaseERC721, VersionedInitializable, LensMultiState, Lens
         return COLLECT_NFT_IMPL;
     }
 
-    function getWhitelistedActionModuleById(uint256 id) external view returns (address) {
+    function getActionModuleById(uint256 id) external view override returns (address) {
         return _actionModuleById[id];
     }
 

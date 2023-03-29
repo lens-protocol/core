@@ -16,11 +16,10 @@ abstract contract LensHubStorage {
     mapping(address => bool) internal _profileCreatorWhitelisted; // Slot 13
     mapping(address => bool) internal _followModuleWhitelisted; // Slot 14
 
-    // `_collectModuleWhitelisted` slot replaced by `_actionModuleWhitelistedId` in Lens V2.
-    // We will need to unwhitelist all the old modules before V2 upgrade so they don't conflict with the new bitmap.
-    //      e.g. any address that was True as bool will be mapped to a new ID of 1.
+    // `_collectModuleWhitelisted` slot replaced by `_actionModuleWhitelistData` in Lens V2.
+    // All the old modules need to be unwhitelisted before V2 upgrade to avoid dirty storage.
     // mapping(address => bool) internal __DEPRECATED__collectModuleWhitelisted;
-    mapping(address => uint256) internal _actionModuleWhitelistedId; // Slot 15
+    mapping(address => Types.ActionModuleWhitelistData) internal _actionModuleWhitelistData; // Slot 15
 
     mapping(address => bool) internal _referenceModuleWhitelisted; // Slot 16
 
@@ -40,4 +39,5 @@ abstract contract LensHubStorage {
     mapping(uint256 => Types.DelegatedExecutorsConfig) internal _delegatedExecutorsConfigByProfileId; // Slot 25
     mapping(uint256 => mapping(uint256 => bool)) internal _blockedStatus; // Slot 26, _blockedStatus[byProfile][profile]
     mapping(uint256 id => address actionModule) internal _actionModuleById; // Slot 27
+    uint256 _maxActionModuleIdUsed; // Slot 28
 }

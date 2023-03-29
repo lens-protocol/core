@@ -53,11 +53,11 @@ contract Governance is ControllableByContract {
         LENS_HUB.whitelistReferenceModule(referenceModule, whitelist);
     }
 
-    function lensHub_whitelistActionModuleId(
+    function lensHub_whitelistActionModule(
         address actionModule,
-        uint256 whitelistId
+        bool whitelist
     ) external onlyOwnerOrControllerContract {
-        LENS_HUB.whitelistActionModuleId(actionModule, whitelistId);
+        LENS_HUB.whitelistActionModule(actionModule, whitelist);
     }
 
     // Interface to the Deprecated LensHub V1 to unwhitelist collect modules

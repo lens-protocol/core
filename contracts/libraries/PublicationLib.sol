@@ -417,12 +417,15 @@ library PublicationLib {
 
         uint256 i;
         while (i < actionModules.length) {
-            uint256 actionModuleId = StorageLib.actionModuleWhitelistedId()[actionModules[i]];
-            if (actionModuleId == 0) {
+            Types.ActionModuleWhitelistData memory actionModuleWhitelistData = StorageLib.actionModuleWhitelistData()[
+                actionModules[i]
+            ];
+
+            if (!actionModuleWhitelistData.isWhitelisted) {
                 revert Errors.ActionModuleNotWhitelisted();
             }
 
-            actionModuleBitmap |= 1 << (actionModuleId - 1);
+            actionModuleBitmap |= 1 << (actionModuleWhitelistData.id - 1);
 
             actionModuleInitResults[i] = IPublicationActionModule(actionModules[i]).initializePublicationAction(
                 profileId,

@@ -92,10 +92,16 @@ library Events {
      * @dev Emitted when a action module is added to or removed from the whitelist.
      *
      * @param actionModule The address of the action module.
-     * @param whitelistedId Id of the whitelisted action module (0 if not whitelisted).
+     * @param id Id of the whitelisted action module.
+     * @param whitelisted Whether or not the action module is being added to the whitelist.
      * @param timestamp The current block timestamp.
      */
-    event ActionModuleWhitelistedId(address indexed actionModule, uint256 indexed whitelistedId, uint256 timestamp);
+    event ActionModuleWhitelisted(
+        address indexed actionModule,
+        uint256 indexed id,
+        bool indexed whitelisted,
+        uint256 timestamp
+    );
 
     /**
      * @dev Emitted when a profile is created.

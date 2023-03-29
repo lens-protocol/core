@@ -160,7 +160,7 @@ contract TestSetup is Test, ForkManagement, ArrayHelpers {
         vm.startPrank(governance);
 
         // Whitelist the MockActionModule.
-        hub.whitelistActionModuleId(address(mockActionModule), 1);
+        hub.whitelistActionModule(address(mockActionModule), true);
 
         // Whitelist the MockReferenceModule.
         hub.whitelistReferenceModule(address(mockReferenceModule), true);
