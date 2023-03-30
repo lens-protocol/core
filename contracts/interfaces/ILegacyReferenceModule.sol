@@ -5,10 +5,11 @@ pragma solidity ^0.8.15;
 /**
  * @title IReferenceModule
  * @author Lens Protocol
+ * @custom:pending-deprecation
  *
  * @notice This is the deprecated interface for previously Lens-compatible ReferenceModules.
  */
-interface IDeprecatedReferenceModule {
+interface ILegacyReferenceModule {
     /**
      * @notice Initializes data for a given publication being published. This can only be called by the hub.
      *

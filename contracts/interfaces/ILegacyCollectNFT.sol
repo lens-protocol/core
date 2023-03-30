@@ -3,17 +3,17 @@
 pragma solidity ^0.8.15;
 
 /**
- * @title ICollectNFT
+ * @title ILegacyCollectNFT
  * @author Lens Protocol
  *
- * @notice This is the interface for the CollectNFT contract. Which is cloned upon the first collect for any given
- * publication.
+ * @notice This is the interface for the Lens V1 CollectNFT contract. Which is cloned upon the first collect for any
+ * given publication.
  */
-interface ICollectNFT {
+interface ILegacyCollectNFT {
     /**
-     * @notice Initializes the collect NFT, setting the feed as the privileged minter, storing the collected publication pointer
-     * and initializing the name and symbol in the LensNFTBase contract.
-     * @custom:permissions CollectPublicationAction.
+     * @notice Initializes the collect NFT, setting the feed as the privileged minter, storing the collected publication
+     * pointer and initializing the name and symbol in the LensNFTBase contract.
+     * @custom:permissions LensHub.
      *
      * @param profileId The token ID of the profile in the hub that this Collect NFT points to.
      * @param pubId The profile publication ID in the hub that this Collect NFT points to.
@@ -23,9 +23,8 @@ interface ICollectNFT {
     function initialize(uint256 profileId, uint256 pubId, string calldata name, string calldata symbol) external;
 
     /**
-     * @notice Mints a collect NFT to the specified address. This can only be called by the hub and is called
-     * upon collection.
-     * @custom:permissions CollectPublicationAction.
+     * @notice Mints a collect NFT to the specified address.
+     * @custom:permissions LensHub.
      *
      * @param to The address to mint the NFT to.
      *

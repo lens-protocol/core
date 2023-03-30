@@ -6,17 +6,24 @@ pragma solidity ^0.8.15;
  * @title IFollowModule
  * @author Lens Protocol
  *
- * @notice This is the standard interface for all Lens-compatible FollowModules.
+ * @notice This is the standard interface for all Lens-compatible Follow Modules.
+ * These are responsible for processing the follow actions and can be used to implement any kind of follow logic.
+ * For example:
+ *  - Token-gated follows (e.g. a user must hold a certain amount of a token to follow a profile).
+ *  - Paid follows (e.g. a user must pay a certain amount of a token to follow a profile).
+ *  - Rewarding users for following a profile.
+ *  - Etc.
  */
 interface IFollowModule {
     /**
-     * @notice Initializes a follow module for a given Lens profile. This can only be called by the hub contract.
+     * @notice Initializes a follow module for a given Lens profile.
+     * @custom:permissions LensHub.
      *
-     * @param profileId The token ID of the profile to initialize this follow module for.
-     * @param transactionExecutor The owner or an approved delegated executor.
-     * @param data Arbitrary data passed by the profile creator.
+     * @param profileId The Profile ID to initialize this follow module for.
+     * @param transactionExecutor The address of the transaction executor (e.g. for any funds to transferFrom).
+     * @param data Arbitrary data passed from the user to be decoded by the Follow Module during initialization.
      *
-     * @return bytes The encoded data to emit in the hub.
+     * @return bytes The encoded data to be emitted from the hub.
      */
     function initializeFollowModule(
         uint256 profileId,
@@ -25,14 +32,18 @@ interface IFollowModule {
     ) external returns (bytes memory);
 
     /**
-     * @notice Processes a given follow, this can only be called from the LensHub contract.
+     * @notice Processes a given follow.
+     * @custom:permissions LensHub.
      *
-     * @param followerProfileId The LensHub profile token ID of the follower's profile (currently unused, preemptive interface upgrade).
-     * @param followTokenId The ID of the follow token used to follow. Zero if a new one was minted, in this case, the follow ID assigned
-     * can be queried from the Follow NFT collection if needed.
-     * @param transactionExecutor The follower or an approved delegated executor.
+     * @param followerProfileId The Profile ID of the follower's profile.
+     * @param followTokenId The Follow Token ID that is being used to follow. Zero if we are processing a new fresh
+     * follow, in this case, the follow ID assigned can be queried from the Follow NFT collection if needed.
+     * @param transactionExecutor The address of the transaction executor (e.g. for any funds to transferFrom).
      * @param profileId The token ID of the profile being followed.
      * @param data Arbitrary data passed by the follower.
+     *
+     * @return bytes Any custom ABI-encoded data. This will be a LensHub event params that can be used by
+     * indexers or UIs.
      */
     function processFollow(
         uint256 followerProfileId,
@@ -40,5 +51,5 @@ interface IFollowModule {
         address transactionExecutor,
         uint256 profileId,
         bytes calldata data
-    ) external;
+    ) external returns (bytes memory);
 }

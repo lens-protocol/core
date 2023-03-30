@@ -3,10 +3,10 @@
 pragma solidity ^0.8.19;
 
 /**
- * @title Token-Handle Registry
+ * @title ITokenHandleRegistry
  * @author Lens Protocol
  *
- * @notice This contract is responsible for linking a handle NFT to a token NFT.
+ * @notice The interface for TokenHandleRegistry contract that is responsible for linking a handle NFT to a token NFT.
  * Linking means a connection between the two NFTs is created, and the handle NFT can be used to resolve the token NFT
  * or vice versa:
  *   handle.lens <-> Lens Profile #1 (<< only this is supported in the first iteration)

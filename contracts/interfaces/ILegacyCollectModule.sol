@@ -5,10 +5,11 @@ pragma solidity ^0.8.15;
 /**
  * @title ICollectModule
  * @author Lens Protocol
+ * @custom:pending-deprecation
  *
  * @notice This is the deprecated interface for previously Lens-compatible CollectModules.
  */
-interface IDeprecatedCollectModule {
+interface ILegacyCollectModule {
     /**
      * @notice Initializes data for a given publication being published. This can only be called by the hub.
      *
@@ -16,7 +17,7 @@ interface IDeprecatedCollectModule {
      * @param pubId The associated publication's LensHub publication ID.
      * @param data Arbitrary data __passed from the user!__ to be decoded.
      *
-     * @return bytes An abi-encoded byte array encapsulating the execution's state changes. This will be emitted by the
+     * @return bytes An ABI-encoded encapsulating the execution's state changes. This will be emitted by the
      * hub alongside the collect module's address and should be consumed by front ends.
      */
     function initializePublicationCollectModule(

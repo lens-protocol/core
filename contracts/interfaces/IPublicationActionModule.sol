@@ -10,10 +10,10 @@ import {Types} from 'contracts/libraries/constants/Types.sol';
  *
  * @notice This is the standard interface for all Lens-compatible Publication Actions.
  * Publication action modules allow users to execute actions directly from a publication, like:
- *  - Minting NFTs
- *  - Collecting a publication
- *  - Sending funds to the profile owner (tipping, etc)
- *  - etc
+ *  - Minting NFTs.
+ *  - Collecting a publication.
+ *  - Sending funds to the publication author (e.g. tipping).
+ *  - Etc.
  * Referrers are supported, so any publication or profile that references the publication can receive a share from the
  * publication's action if the action module supports it.
  */
@@ -27,9 +27,8 @@ interface IPublicationActionModule {
      * @param transactionExecutor The address of the transaction executor (e.g. for any funds to transferFrom).
      * @param data Arbitrary data passed from the user to be decoded by the Action Module during initialization.
      *
-     * @return bytes An abi-encoded byte array encapsulating the execution's state changes. This will be emitted by the
-     * hub alongside the collect module's address and should be consumed by front ends.
-     * // TODO: Is the above return description correct?
+     * @return bytes Any custom ABI-encoded data. This will be a LensHub event params that can be used by
+     * indexers or UIs.
      */
     function initializePublicationAction(
         uint256 profileId,
@@ -39,13 +38,14 @@ interface IPublicationActionModule {
     ) external returns (bytes memory);
 
     /**
-     * @notice Initializes the action module for the given publication.
-     * @custom:permissions LensHub
+     * @notice Processes the action for a given publication. This includes the action's logic and any monetary/token
+     * operations.
+     * @custom:permissions LensHub.
      *
      * @param processActionParams The parameters needed to execute the publication action.
      *
-     * @return bytes Any custom ABI-encoded data depending on the module implementation.
-     * // TODO: Do we need to return data? Reference modules do not return anything.
+     * @return bytes Any custom ABI-encoded data. This will be a LensHub event params that can be used by
+     * indexers or UIs.
      */
     function processPublicationAction(
         Types.ProcessActionParams calldata processActionParams
