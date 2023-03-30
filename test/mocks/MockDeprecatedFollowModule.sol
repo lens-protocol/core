@@ -2,29 +2,21 @@
 
 pragma solidity ^0.8.15;
 
-import {IDeprecatedFollowModule} from 'contracts/interfaces/IDeprecatedFollowModule.sol';
+import {ILegacyFollowModule} from 'test/mocks/ILegacyFollowModule.sol';
 
 /**
  * @dev This is a simple mock follow module to be used for testing.
  */
-contract MockDeprecatedFollowModule is IDeprecatedFollowModule {
+contract MockDeprecatedFollowModule is ILegacyFollowModule {
     function initializeFollowModule(uint256, bytes calldata data) external pure override returns (bytes memory) {
         uint256 number = abi.decode(data, (uint256));
         require(number == 1, 'MockFollowModule: invalid');
         return new bytes(0);
     }
 
-    function processFollow(
-        address follower,
-        uint256 profileId,
-        bytes calldata data
-    ) external override {}
+    function processFollow(address follower, uint256 profileId, bytes calldata data) external override {}
 
-    function isFollowing(
-        uint256,
-        address,
-        uint256
-    ) external pure override returns (bool) {
+    function isFollowing(uint256, address, uint256) external pure override returns (bool) {
         return true;
     }
 

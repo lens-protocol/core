@@ -24,9 +24,10 @@ contract MockFollowModuleWithRevertFlag is IFollowModule {
         address /* transactionExecutor */,
         uint256 /* profileId */,
         bytes calldata data
-    ) external pure override {
+    ) external pure override returns (bytes memory) {
         if (abi.decode(data, (bool))) {
             revert MockFollowModuleReverted();
         }
+        return '';
     }
 }

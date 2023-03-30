@@ -2,12 +2,12 @@
 
 pragma solidity ^0.8.15;
 
-import {IDeprecatedReferenceModule} from 'contracts/interfaces/IDeprecatedReferenceModule.sol';
+import {ILegacyReferenceModule} from 'contracts/interfaces/ILegacyReferenceModule.sol';
 
 /**
  * @dev This is a simple mock follow module to be used for testing.
  */
-contract MockDeprecatedReferenceModule is IDeprecatedReferenceModule {
+contract MockDeprecatedReferenceModule is ILegacyReferenceModule {
     function initializeReferenceModule(
         uint256,
         uint256,

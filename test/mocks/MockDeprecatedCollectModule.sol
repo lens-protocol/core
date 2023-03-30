@@ -2,7 +2,7 @@
 
 pragma solidity ^0.8.15;
 
-import {IDeprecatedCollectModule} from 'contracts/interfaces/IDeprecatedCollectModule.sol';
+import {ILegacyCollectModule} from 'contracts/interfaces/ILegacyCollectModule.sol';
 
 /**
  * @title FreeCollectModule
@@ -12,7 +12,7 @@ import {IDeprecatedCollectModule} from 'contracts/interfaces/IDeprecatedCollectM
  *
  * This module works by allowing all collects.
  */
-contract MockDeprecatedCollectModule is IDeprecatedCollectModule {
+contract MockDeprecatedCollectModule is ILegacyCollectModule {
     /**
      * @dev There is nothing needed at initialization.
      */
