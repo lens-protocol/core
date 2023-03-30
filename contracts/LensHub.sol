@@ -52,6 +52,10 @@ contract LensHub is LensBaseERC721, VersionedInitializable, LensMultiState, Lens
     LensHandles internal immutable lensHandles;
     TokenHandleRegistry internal immutable tokenHandleRegistry;
 
+    // Migration constants:
+    address internal immutable FEE_FOLLOW_MODULE;
+    address internal immutable PROFILE_FOLLOW_MODULE;
+
     /**
      * @dev This modifier reverts if the caller is not the configured governance address.
      */
@@ -70,7 +74,9 @@ contract LensHub is LensBaseERC721, VersionedInitializable, LensMultiState, Lens
         address followNFTImpl,
         address collectNFTImpl,
         address lensHandlesAddress,
-        address tokenHandleRegistryAddress
+        address tokenHandleRegistryAddress,
+        address feeFollowModule,
+        address profileFollowModule
     ) {
         if (followNFTImpl == address(0)) revert Errors.InitParamsInvalid();
         if (collectNFTImpl == address(0)) revert Errors.InitParamsInvalid();
@@ -78,6 +84,8 @@ contract LensHub is LensBaseERC721, VersionedInitializable, LensMultiState, Lens
         COLLECT_NFT_IMPL = collectNFTImpl;
         lensHandles = LensHandles(lensHandlesAddress);
         tokenHandleRegistry = TokenHandleRegistry(tokenHandleRegistryAddress);
+        FEE_FOLLOW_MODULE = feeFollowModule;
+        PROFILE_FOLLOW_MODULE = profileFollowModule;
     }
 
     /// @inheritdoc ILensHub
@@ -145,6 +153,10 @@ contract LensHub is LensBaseERC721, VersionedInitializable, LensMultiState, Lens
         uint256[] calldata followTokenIds
     ) external {
         MigrationLib.batchMigrateFollows(followerProfileIds, idsOfProfileFollowed, followNFTAddresses, followTokenIds);
+    }
+
+    function batchMigrateFollowModules(uint256[] calldata profileIds) external {
+        MigrationLib.batchMigrateFollowModules(profileIds, FEE_FOLLOW_MODULE, PROFILE_FOLLOW_MODULE);
     }
 
     ///////////////////////////////////////////

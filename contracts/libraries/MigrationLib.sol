@@ -8,6 +8,17 @@ import {StorageLib} from 'contracts/libraries/StorageLib.sol';
 import {IFollowNFT} from 'contracts/interfaces/IFollowNFT.sol';
 import {LensHandles} from 'contracts/misc/namespaces/LensHandles.sol';
 import {TokenHandleRegistry} from 'contracts/misc/namespaces/TokenHandleRegistry.sol';
+import {IFollowModule} from 'contracts/interfaces/IFollowModule.sol';
+
+interface ILegacyFeeFollowModule {
+    struct ProfileData {
+        address currency;
+        uint256 amount;
+        address recipient;
+    }
+
+    function getProfileData(uint256 profileId) external view returns (ProfileData memory);
+}
 
 library MigrationLib {
     uint256 internal constant LENS_PROTOCOL_PROFILE_ID = 1;
@@ -30,7 +41,7 @@ library MigrationLib {
     ) external {
         uint256 i;
         while (i < profileIds.length) {
-            _migrateProfilePublic(profileIds[i], lensHandles, tokenHandleRegistry);
+            _migrateProfile(profileIds[i], lensHandles, tokenHandleRegistry);
             unchecked {
                 ++i;
             }
@@ -54,11 +65,11 @@ library MigrationLib {
      *
      * @param profileId The profile ID to migrate.
      */
-    function _migrateProfilePublic(
+    function _migrateProfile(
         uint256 profileId,
         LensHandles lensHandles,
         TokenHandleRegistry tokenHandleRegistry
-    ) internal {
+    ) private {
         address profileOwner = StorageLib.getTokenData(profileId).owner;
         if (profileOwner != address(0)) {
             string memory handle = StorageLib.getProfile(profileId).handleDeprecated;
@@ -110,7 +121,7 @@ library MigrationLib {
         uint256 idOfProfileFollowed,
         address followNFTAddress,
         uint256 followTokenId
-    ) internal {
+    ) private {
         uint48 mintTimestamp = IFollowNFT(followNFTAddress).migrate({
             followerProfileId: followerProfileId,
             followerProfileOwner: StorageLib.getTokenData(followerProfileId).owner,
@@ -126,6 +137,42 @@ library MigrationLib {
                 followModuleData: '',
                 timestamp: mintTimestamp // The only case where this won't match block.timestamp is during the migration
             });
+        }
+    }
+
+    function batchMigrateFollowModules(
+        uint256[] calldata profileIds,
+        address legacyFeeFollowModule,
+        address legacyProfileFollowModule,
+        address newFeeFollowModule
+    ) external {
+        uint256 i;
+        while (i < profileIds.length) {
+            address currentFollowModule = StorageLib.getProfile(profileIds[i]).followModule;
+            if (currentFollowModule == legacyFeeFollowModule) {
+                // If the profile had the legacy 'feeFollowModule' set, we need to read its parameters
+                // and initialize the new feeFollowModule with them.
+                StorageLib.getProfile(profileIds[i]).followModule = newFeeFollowModule;
+                ILegacyFeeFollowModule.ProfileData memory feeFollowModuleData = ILegacyFeeFollowModule(
+                    legacyFeeFollowModule
+                ).getProfileData(profileIds[i]);
+                IFollowModule(newFeeFollowModule).initializeFollowModule({
+                    profileId: profileIds[i],
+                    transactionExecutor: msg.sender,
+                    data: abi.encode(
+                        feeFollowModuleData.currency,
+                        feeFollowModuleData.amount,
+                        feeFollowModuleData.recipient
+                    )
+                });
+            } else if (currentFollowModule == legacyProfileFollowModule) {
+                // If the profile had `ProfileFollowModule` set, we just remove the follow module, as in Lens V2
+                // you can only follow with a Lens profile.
+                delete StorageLib.getProfile(profileIds[i]).followModule;
+            }
+            unchecked {
+                ++i;
+            }
         }
     }
 }
