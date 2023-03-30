@@ -88,12 +88,13 @@ contract MigrationsTest is Test, ForkManagement {
 
         followNFT = new FollowNFT(address(hub));
 
-        // TODO: Last 2 addresses are for the follow modules for migration purposes.
+        // TODO: Last 3 addresses are for the follow modules for migration purposes.
         hubImpl = new LensHub(
             address(followNFT),
             address(collectNFT),
             lensHandlesAddress,
             tokenHandleRegistryAddress,
+            address(0),
             address(0),
             address(0)
         );

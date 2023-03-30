@@ -11,10 +11,29 @@ contract CollectingHelpers is TestSetup {
 
     CollectNFT _collectNftAfter;
 
-    function _checkCollectNFTBefore() internal view returns (uint256) {
+    uint256 constant PUB_BY_ID_BY_PROFILE_MAPPING_SLOT = 20;
+    uint256 constant COLLECT_NFT_OFFSET = 5;
+
+    function _getCollectNFT(uint256 profileId, uint256 pubId) internal returns (address) {
+        uint256 collectNftSlot = uint256(
+            keccak256(
+                abi.encode(
+                    uint256(
+                        keccak256(
+                            abi.encode(uint256(keccak256(abi.encode(PUB_BY_ID_BY_PROFILE_MAPPING_SLOT))) + profileId)
+                        )
+                    ) + pubId
+                )
+            )
+        ) + COLLECT_NFT_OFFSET;
+        address collectNft = address(uint160(uint256(vm.load(address(hub), bytes32(collectNftSlot)))));
+        return collectNft;
+    }
+
+    function _checkCollectNFTBefore() internal returns (uint256) {
         // collect NFT doesn't exist yet
 
-        address collectNftAddress = hub.getCollectNFT(
+        address collectNftAddress = _getCollectNFT(
             mockCollectParams.publicationCollectedProfileId,
             mockCollectParams.publicationCollectedId
         );
@@ -29,7 +48,7 @@ contract CollectingHelpers is TestSetup {
 
     function _checkCollectNFTAfter(uint256 nftId, uint256 expectedNftId) internal {
         _collectNftAfter = CollectNFT(
-            hub.getCollectNFT(mockCollectParams.publicationCollectedProfileId, mockCollectParams.publicationCollectedId)
+            _getCollectNFT(mockCollectParams.publicationCollectedProfileId, mockCollectParams.publicationCollectedId)
         );
 
         (uint256 profileId, uint256 pubId) = _collectNftAfter.getSourcePublicationPointer();

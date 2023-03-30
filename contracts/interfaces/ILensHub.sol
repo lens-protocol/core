@@ -598,7 +598,8 @@ interface ILensHub {
      *
      * @return address The address of the collectNFT associated with the given publication.
      */
-    function getCollectNFT(uint256 profileId, uint256 pubId) external view returns (address);
+    // TODO: Consider removing this if it's not used
+    // function getCollectNFT(uint256 profileId, uint256 pubId) external view returns (address);
 
     /**
      * @notice Returns the follow module associated with a given profile.
@@ -619,7 +620,8 @@ interface ILensHub {
      *
      * @return address The address of the collect module associated with the queried publication.
      */
-    function getCollectModule(uint256 profileId, uint256 pubId) external view returns (address);
+    // TODO: Consider removing this if it's not used
+    // function getCollectModule(uint256 profileId, uint256 pubId) external view returns (address);
 
     /**
      * @notice Returns the reference module associated with a given profile, if any.
