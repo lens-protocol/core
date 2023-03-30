@@ -11,6 +11,7 @@ library RegistryErrors {
     error NotHandleOwner();
     error NotTokenOwner();
     error NotHandleOrTokenOwner();
+    error OnlyLensHub();
 }
 
 // TODO: Move to the Types file
@@ -32,11 +33,6 @@ library RegistryEvents {
     event HandleUnlinked(Handle handle, Token token);
 }
 
-/// This contract just links two tokens together:
-///     handle.lens <-> Lens Profile #1
-///     qwer.punk <-> Lens Profile #2
-///     myname.lens <-> Cryptopunk #69
-///     vitalik.eth <-> BAYC #234
 contract TokenHandleRegistry is ITokenHandleRegistry, VersionedInitializable {
     // Constant for upgradeability purposes, see VersionedInitializable. Do not confuse it with the EIP-712 revision number.
     uint256 internal constant REVISION = 1;
@@ -88,7 +84,9 @@ contract TokenHandleRegistry is ITokenHandleRegistry, VersionedInitializable {
 
     // V1 --> V2 Migration function
     function migrationLinkHandleWithToken(uint256 handleId, uint256 tokenId) external {
-        require(msg.sender == LENS_HUB, 'Only hub');
+        if (msg.sender != LENS_HUB) {
+            revert RegistryErrors.OnlyLensHub();
+        }
         Handle memory handle = Handle({collection: LENS_HANDLES, id: handleId});
         Token memory token = Token({collection: LENS_HUB, id: tokenId});
         handleToToken[_handleHash(handle)] = token;
@@ -96,7 +94,8 @@ contract TokenHandleRegistry is ITokenHandleRegistry, VersionedInitializable {
         emit RegistryEvents.HandleLinked(handle, token);
     }
 
-    // NOTE: Simplified interfaces for the first version - Namespace and LensHub are constants
+    // NOTE: Simplified interfaces for the first iteration - Namespace and LensHub are constants
+    /// @inheritdoc ITokenHandleRegistry
     function linkHandleWithToken(uint256 handleId, uint256 tokenId, bytes calldata /* data */) external {
         _linkHandleWithToken(
             Handle({collection: LENS_HANDLES, id: handleId}),
@@ -104,6 +103,8 @@ contract TokenHandleRegistry is ITokenHandleRegistry, VersionedInitializable {
         );
     }
 
+    // NOTE: Simplified interfaces for the first iteration - Namespace and LensHub are constants
+    /// @inheritdoc ITokenHandleRegistry
     function unlinkHandleFromToken(uint256 handleId, uint256 tokenId) external {
         _unlinkHandleFromToken(
             Handle({collection: LENS_HANDLES, id: handleId}),
@@ -111,10 +112,14 @@ contract TokenHandleRegistry is ITokenHandleRegistry, VersionedInitializable {
         );
     }
 
+    // NOTE: Simplified interfaces for the first iteration - Namespace and LensHub are constants
+    /// @inheritdoc ITokenHandleRegistry
     function resolveHandle(uint256 handleId) external view returns (uint256) {
         return _resolveHandle(Handle({collection: LENS_HANDLES, id: handleId})).id;
     }
 
+    // NOTE: Simplified interfaces for the first iteration - Namespace and LensHub are constants
+    /// @inheritdoc ITokenHandleRegistry
     function resolveToken(uint256 tokenId) external view returns (uint256) {
         return _resolveToken(Token({collection: LENS_HUB, id: tokenId})).id;
     }
