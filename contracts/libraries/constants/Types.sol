@@ -13,7 +13,7 @@ library Types {
      * @notice ERC721Timestamped storage. Contains the owner address and the mint timestamp for every NFT.
      *
      * Note: Instead of the owner address in the _tokenOwners private mapping, we now store it in the
-     * _tokenData mapping, alongside the unchanging mintTimestamp.
+     * _tokenData mapping, alongside the mint timestamp.
      *
      * @param owner The token owner.
      * @param mintTimestamp The mint timestamp.

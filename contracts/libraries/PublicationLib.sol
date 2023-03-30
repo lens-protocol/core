@@ -7,7 +7,7 @@ import {Types} from 'contracts/libraries/constants/Types.sol';
 import {Events} from 'contracts/libraries/constants/Events.sol';
 import {Errors} from 'contracts/libraries/constants/Errors.sol';
 import {IReferenceModule} from 'contracts/interfaces/IReferenceModule.sol';
-import {IDeprecatedReferenceModule} from 'contracts/interfaces/IDeprecatedReferenceModule.sol';
+import {ILegacyReferenceModule} from 'contracts/interfaces/ILegacyReferenceModule.sol';
 import {StorageLib} from 'contracts/libraries/StorageLib.sol';
 import {IPublicationActionModule} from 'contracts/interfaces/IPublicationActionModule.sol';
 
@@ -66,8 +66,8 @@ library PublicationLib {
     ) external returns (uint256) {
         (
             uint256 pubIdAssigned,
-            bytes[] memory actionModulesReturnDatas,
-            bytes memory referenceModuleReturnData,
+            bytes[] memory actionModulesInitReturnDatas,
+            bytes memory referenceModuleInitReturnData,
             Types.PublicationType[] memory referrerPubTypes
         ) = _createReferencePublication(
                 _asReferencePubParams(commentParams),
@@ -75,13 +75,18 @@ library PublicationLib {
                 Types.PublicationType.Comment
             );
 
-        _processCommentIfNeeded(commentParams, transactionExecutor, referrerPubTypes);
+        bytes memory processReferenceModuleReturnData = _processCommentIfNeeded(
+            commentParams,
+            transactionExecutor,
+            referrerPubTypes
+        );
 
         emit Events.CommentCreated(
             commentParams,
             pubIdAssigned,
-            actionModulesReturnDatas,
-            referenceModuleReturnData,
+            processReferenceModuleReturnData,
+            actionModulesInitReturnDatas,
+            referenceModuleInitReturnData,
             block.timestamp
         );
 
@@ -113,9 +118,13 @@ library PublicationLib {
         _publication.pointedPubId = mirrorParams.pointedPubId;
         _publication.pubType = Types.PublicationType.Mirror;
 
-        _processMirrorIfNeeded(mirrorParams, transactionExecutor, referrerPubTypes);
+        bytes memory processReferenceModuleReturnData = _processMirrorIfNeeded(
+            mirrorParams,
+            transactionExecutor,
+            referrerPubTypes
+        );
 
-        emit Events.MirrorCreated(mirrorParams, pubIdAssigned, block.timestamp);
+        emit Events.MirrorCreated(mirrorParams, pubIdAssigned, processReferenceModuleReturnData, block.timestamp);
 
         return pubIdAssigned;
     }
@@ -139,11 +148,16 @@ library PublicationLib {
                 Types.PublicationType.Quote
             );
 
-        _processQuoteIfNeeded(quoteParams, transactionExecutor, referrerPubTypes);
+        bytes memory processReferenceModuleReturnData = _processQuoteIfNeeded(
+            quoteParams,
+            transactionExecutor,
+            referrerPubTypes
+        );
 
         emit Events.QuoteCreated(
             quoteParams,
             pubIdAssigned,
+            processReferenceModuleReturnData,
             actionModulesReturnDatas,
             referenceModuleReturnData,
             block.timestamp
@@ -274,7 +288,7 @@ library PublicationLib {
         Types.CommentParams calldata commentParams,
         address transactionExecutor,
         Types.PublicationType[] memory referrerPubTypes
-    ) private {
+    ) private returns (bytes memory) {
         address refModule = StorageLib
             .getPublication(commentParams.pointedProfileId, commentParams.pointedPubId)
             .referenceModule;
@@ -292,7 +306,9 @@ library PublicationLib {
                         data: commentParams.referenceModuleData
                     })
                 )
-            {} catch (bytes memory err) {
+            returns (bytes memory returnData) {
+                return (returnData);
+            } catch (bytes memory err) {
                 assembly {
                     /// Equivalent to reverting with the returned error selector if
                     /// the length is not zero.
@@ -305,7 +321,7 @@ library PublicationLib {
                     // Deprecated reference modules don't support referrers.
                     revert Errors.InvalidReferrer();
                 }
-                IDeprecatedReferenceModule(refModule).processComment(
+                ILegacyReferenceModule(refModule).processComment(
                     commentParams.profileId,
                     commentParams.pointedProfileId,
                     commentParams.pointedPubId,
@@ -313,13 +329,14 @@ library PublicationLib {
                 );
             }
         }
+        return '';
     }
 
     function _processQuoteIfNeeded(
         Types.QuoteParams calldata quoteParams,
         address transactionExecutor,
         Types.PublicationType[] memory referrerPubTypes
-    ) private {
+    ) private returns (bytes memory) {
         address refModule = StorageLib
             .getPublication(quoteParams.pointedProfileId, quoteParams.pointedPubId)
             .referenceModule;
@@ -337,7 +354,9 @@ library PublicationLib {
                         data: quoteParams.referenceModuleData
                     })
                 )
-            {} catch (bytes memory err) {
+            returns (bytes memory returnData) {
+                return (returnData);
+            } catch (bytes memory err) {
                 assembly {
                     /// Equivalent to reverting with the returned error selector if
                     /// the length is not zero.
@@ -350,7 +369,7 @@ library PublicationLib {
                     // Deprecated reference modules don't support referrers.
                     revert Errors.InvalidReferrer();
                 }
-                IDeprecatedReferenceModule(refModule).processComment(
+                ILegacyReferenceModule(refModule).processComment(
                     quoteParams.profileId,
                     quoteParams.pointedProfileId,
                     quoteParams.pointedPubId,
@@ -358,13 +377,14 @@ library PublicationLib {
                 );
             }
         }
+        return '';
     }
 
     function _processMirrorIfNeeded(
         Types.MirrorParams calldata mirrorParams,
         address transactionExecutor,
         Types.PublicationType[] memory referrerPubTypes
-    ) private {
+    ) private returns (bytes memory) {
         address refModule = StorageLib
             .getPublication(mirrorParams.pointedProfileId, mirrorParams.pointedPubId)
             .referenceModule;
@@ -382,7 +402,9 @@ library PublicationLib {
                         data: mirrorParams.referenceModuleData
                     })
                 )
-            {} catch (bytes memory err) {
+            returns (bytes memory returnData) {
+                return (returnData);
+            } catch (bytes memory err) {
                 assembly {
                     /// Equivalent to reverting with the returned error selector if
                     /// the length is not zero.
@@ -395,7 +417,7 @@ library PublicationLib {
                     // Deprecated reference modules don't support referrers.
                     revert Errors.InvalidReferrer();
                 }
-                IDeprecatedReferenceModule(refModule).processMirror(
+                ILegacyReferenceModule(refModule).processMirror(
                     mirrorParams.profileId,
                     mirrorParams.pointedProfileId,
                     mirrorParams.pointedPubId,
@@ -403,6 +425,7 @@ library PublicationLib {
                 );
             }
         }
+        return '';
     }
 
     function _initPubActionModules(
@@ -459,8 +482,8 @@ library PublicationLib {
         return
             IReferenceModule(referenceModule).initializeReferenceModule(
                 profileId,
-                transactionExecutor,
                 pubId,
+                transactionExecutor,
                 referenceModuleInitData
             );
     }

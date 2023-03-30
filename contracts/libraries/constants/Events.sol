@@ -184,17 +184,17 @@ library Events {
      *
      * @param postParams The parameters passed to create the post publication.
      * @param pubId The publication ID assigned to the created post.
-     * @param actionModulesReturnDatas The data returned from the action modules' initialization for this given
+     * @param actionModulesInitReturnDatas The data returned from the action modules' initialization for this given
      * publication. This is ABI-encoded and totally depends on the action module chosen.
-     * @param referenceModuleReturnData The data returned from the reference module at initialization. This is
+     * @param referenceModuleInitReturnData The data returned from the reference module at initialization. This is
      * ABI-encoded and totally depends on the reference module chosen.
      * @param timestamp The current block timestamp.
      */
     event PostCreated(
         Types.PostParams postParams,
         uint256 indexed pubId,
-        bytes[] actionModulesReturnDatas,
-        bytes referenceModuleReturnData,
+        bytes[] actionModulesInitReturnDatas,
+        bytes referenceModuleInitReturnData,
         uint256 timestamp
     );
 
@@ -203,17 +203,20 @@ library Events {
      *
      * @param commentParams The parameters passed to create the comment publication.
      * @param pubId The publication ID assigned to the created comment.
-     * @param actionModulesReturnDatas The data returned from the action modules' initialization for this given
+     * @param processReferenceModuleReturnData The data returned by the commented publication reference module's
+     * processComment function, if the commented publication has a reference module set.
+     * @param actionModulesInitReturnDatas The data returned from the action modules' initialization for this given
      * publication. This is ABI-encoded and totally depends on the action module chosen.
-     * @param referenceModuleReturnData The data returned from the reference module at initialization. This is
+     * @param referenceModuleInitReturnData The data returned from the reference module at initialization. This is
      * ABI-encoded and totally depends on the reference module chosen.
      * @param timestamp The current block timestamp.
      */
     event CommentCreated(
         Types.CommentParams commentParams,
         uint256 indexed pubId,
-        bytes[] actionModulesReturnDatas,
-        bytes referenceModuleReturnData,
+        bytes processReferenceModuleReturnData,
+        bytes[] actionModulesInitReturnDatas,
+        bytes referenceModuleInitReturnData,
         uint256 timestamp
     );
 
@@ -222,26 +225,36 @@ library Events {
      *
      * @param mirrorParams The parameters passed to create the mirror publication.
      * @param pubId The publication ID assigned to the created mirror.
+     * @param processReferenceModuleReturnData The data returned by the mirrored publication reference module's
+     * processMirror function, if the mirrored publication has a reference module set.
      * @param timestamp The current block timestamp.
      */
-    event MirrorCreated(Types.MirrorParams mirrorParams, uint256 indexed pubId, uint256 timestamp);
+    event MirrorCreated(
+        Types.MirrorParams mirrorParams,
+        uint256 indexed pubId,
+        bytes processReferenceModuleReturnData,
+        uint256 timestamp
+    );
 
     /**
      * @dev Emitted when a quote is successfully published.
      *
      * @param quoteParams The parameters passed to create the quote publication.
      * @param pubId The publication ID assigned to the created quote.
-     * @param actionModulesReturnDatas The data returned from the action modules' initialization for this given
+     * @param processReferenceModuleReturnData The data returned by the quoted publication reference module's
+     * processQuote function, if the quoted publication has a reference module set.
+     * @param actionModulesInitReturnDatas The data returned from the action modules' initialization for this given
      * publication. This is ABI-encoded and totally depends on the action module chosen.
-     * @param referenceModuleReturnData The data returned from the reference module at initialization. This is
+     * @param referenceModuleInitReturnData The data returned from the reference module at initialization. This is
      * ABI-encoded and totally depends on the reference module chosen.
      * @param timestamp The current block timestamp.
      */
     event QuoteCreated(
         Types.QuoteParams quoteParams,
         uint256 indexed pubId,
-        bytes[] actionModulesReturnDatas,
-        bytes referenceModuleReturnData,
+        bytes processReferenceModuleReturnData,
+        bytes[] actionModulesInitReturnDatas,
+        bytes referenceModuleInitReturnData,
         uint256 timestamp
     );
 

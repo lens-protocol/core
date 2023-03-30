@@ -9,6 +9,7 @@ contract ImmutableOwnable {
     error OnlyOwner();
     error OnlyOwnerOrHub();
 
+    // TODO: Should we rename this to ADMIN? Cause Owner is usually Profile Owner
     modifier onlyOwner() {
         if (msg.sender != OWNER) {
             revert OnlyOwner();
