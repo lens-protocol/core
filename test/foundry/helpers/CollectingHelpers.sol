@@ -14,16 +14,11 @@ contract CollectingHelpers is TestSetup {
     uint256 constant PUB_BY_ID_BY_PROFILE_MAPPING_SLOT = 20;
     uint256 constant COLLECT_NFT_OFFSET = 5;
 
+    // TODO: Need a test for this function, as the tests pass even if it's implemented incorrectly
     function _getCollectNFT(uint256 profileId, uint256 pubId) internal returns (address) {
         uint256 collectNftSlot = uint256(
             keccak256(
-                abi.encode(
-                    uint256(
-                        keccak256(
-                            abi.encode(uint256(keccak256(abi.encode(PUB_BY_ID_BY_PROFILE_MAPPING_SLOT))) + profileId)
-                        )
-                    ) + pubId
-                )
+                abi.encodePacked(pubId, keccak256(abi.encodePacked(profileId, PUB_BY_ID_BY_PROFILE_MAPPING_SLOT)))
             )
         ) + COLLECT_NFT_OFFSET;
         address collectNft = address(uint160(uint256(vm.load(address(hub), bytes32(collectNftSlot)))));
