@@ -319,6 +319,8 @@ library Events {
      * @param idOfProfileFollowed The ID of the profile that was followed.
      * @param followTokenIdAssigned The ID of the follow token assigned to the follower.
      * @param followModuleData The data to passed to the follow module, if any.
+     * @param processFollowModuleReturnData The data returned by the followed profile follow module's processFollow
+     * function, if the followed profile has a reference module set.
      * @param timestamp The timestamp of the follow operation.
      */
     event Followed(
@@ -326,6 +328,7 @@ library Events {
         uint256 idOfProfileFollowed,
         uint256 followTokenIdAssigned,
         bytes followModuleData,
+        bytes processFollowModuleReturnData,
         uint256 timestamp
     );
 

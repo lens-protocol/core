@@ -291,6 +291,7 @@ contract FollowTest is BaseTest {
             targetProfileId,
             expectedFollowTokenIdAssigned,
             followModuleData,
+            '',
             block.timestamp
         );
 
@@ -347,6 +348,7 @@ contract FollowTest is BaseTest {
             targetProfileId,
             expectedFollowTokenIdAssigned,
             followModuleData,
+            '',
             block.timestamp
         );
 
