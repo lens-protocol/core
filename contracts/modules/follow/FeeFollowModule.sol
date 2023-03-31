@@ -83,7 +83,7 @@ contract FeeFollowModule is FeeModuleBase, HubRestricted, IFollowModule {
                 IERC20(currency).safeTransferFrom(transactionExecutor, treasury, treasuryAmount);
             }
         }
-        return data;
+        return data; // TODO: Should we return amount 0 if following with token? Or maybe fail if amount != 0 is passed.
     }
 
     /**

@@ -312,6 +312,8 @@ library Events {
      */
     event Acted(Types.PublicationActionParams publicationActionParams, bytes actionModuleReturnData, uint256 timestamp);
 
+    // TODO: Rename Acted's `actionModuleReturnData`, or Followed, Quote, Comment, Mirror param to be consistent.
+
     /**
      * @dev Emitted upon a successful follow operation.
      *
