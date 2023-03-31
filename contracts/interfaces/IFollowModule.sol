@@ -39,7 +39,7 @@ interface IFollowModule {
      * @param followTokenId The Follow Token ID that is being used to follow. Zero if we are processing a new fresh
      * follow, in this case, the follow ID assigned can be queried from the Follow NFT collection if needed.
      * @param transactionExecutor The address of the transaction executor (e.g. for any funds to transferFrom).
-     * @param profileId The token ID of the profile being followed.
+     * @param targetProfileId The token ID of the profile being followed.
      * @param data Arbitrary data passed by the follower.
      *
      * @return bytes Any custom ABI-encoded data. This will be a LensHub event params that can be used by
@@ -49,7 +49,7 @@ interface IFollowModule {
         uint256 followerProfileId,
         uint256 followTokenId,
         address transactionExecutor,
-        uint256 profileId,
+        uint256 targetProfileId,
         bytes calldata data
     ) external returns (bytes memory);
 }
