@@ -45,6 +45,7 @@ contract FollowNFT is HubRestricted, LensBaseERC721, ERC2981CollectionRoyalties,
 
     /// @inheritdoc IFollowNFT
     function initialize(uint256 profileId) external override {
+        // This is called right after deployment by the LensHub, so we can skip the onlyHub check.
         if (_initialized) revert Errors.Initialized();
         _initialized = true;
         _followedProfileId = profileId;

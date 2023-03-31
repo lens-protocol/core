@@ -89,7 +89,7 @@ library Events {
     event ReferenceModuleWhitelisted(address indexed referenceModule, bool indexed whitelisted, uint256 timestamp);
 
     /**
-     * @dev Emitted when a action module is added to or removed from the whitelist.
+     * @dev Emitted when an action module is added to or removed from the whitelist.
      *
      * @param actionModule The address of the action module.
      * @param id Id of the whitelisted action module.
@@ -109,7 +109,7 @@ library Events {
      * @param profileId The newly created profile's token ID.
      * @param creator The profile creator, who created the token with the given profile ID.
      * @param to The address receiving the profile with the given profile ID.
-     * @param imageURI The image uri set for the profile.
+     * @param imageURI The image URI set for the profile.
      * @param followModule The profile's newly set follow module. This CAN be the zero address.
      * @param followModuleReturnData The data returned from the follow module's initialization. This is ABI-encoded
      * and totally depends on the follow module chosen.
@@ -134,7 +134,7 @@ library Events {
      * @param configNumber The number of the configuration where the executor approval state was set.
      * @param delegatedExecutors The array of delegated executors whose approval was set for.
      * @param approvals The array of booleans indicating the corresponding executor new approval status.
-     * @param configSwitched A boolean indicanting if the configuration was switched to the one emitted in the
+     * @param configSwitched A boolean indicating if the configuration was switched to the one emitted in the
      * `configNumber` parameter.
      */
     event DelegatedExecutorsConfigChanged(
@@ -169,7 +169,7 @@ library Events {
      * @param profileId The profile's token ID.
      * @param followModule The profile's newly set follow module. This CAN be the zero address.
      * @param followModuleReturnData The data returned from the follow module's initialization. This is ABI-encoded
-     * and totally depends on the follow module chosen.
+     * and depends on the follow module chosen.
      * @param timestamp The current block timestamp.
      */
     event FollowModuleSet(
@@ -185,9 +185,9 @@ library Events {
      * @param postParams The parameters passed to create the post publication.
      * @param pubId The publication ID assigned to the created post.
      * @param actionModulesInitReturnDatas The data returned from the action modules' initialization for this given
-     * publication. This is ABI-encoded and totally depends on the action module chosen.
+     * publication. This is ABI-encoded and depends on the action module chosen.
      * @param referenceModuleInitReturnData The data returned from the reference module at initialization. This is
-     * ABI-encoded and totally depends on the reference module chosen.
+     * ABI-encoded and depends on the reference module chosen.
      * @param timestamp The current block timestamp.
      */
     event PostCreated(
@@ -206,9 +206,9 @@ library Events {
      * @param processReferenceModuleReturnData The data returned by the commented publication reference module's
      * processComment function, if the commented publication has a reference module set.
      * @param actionModulesInitReturnDatas The data returned from the action modules' initialization for this given
-     * publication. This is ABI-encoded and totally depends on the action module chosen.
+     * publication. This is ABI-encoded and depends on the action module chosen.
      * @param referenceModuleInitReturnData The data returned from the reference module at initialization. This is
-     * ABI-encoded and totally depends on the reference module chosen.
+     * ABI-encoded and depends on the reference module chosen.
      * @param timestamp The current block timestamp.
      */
     event CommentCreated(
@@ -244,9 +244,9 @@ library Events {
      * @param processReferenceModuleReturnData The data returned by the quoted publication reference module's
      * processQuote function, if the quoted publication has a reference module set.
      * @param actionModulesInitReturnDatas The data returned from the action modules' initialization for this given
-     * publication. This is ABI-encoded and totally depends on the action module chosen.
+     * publication. This is ABI-encoded and depends on the action module chosen.
      * @param referenceModuleInitReturnData The data returned from the reference module at initialization. This is
-     * ABI-encoded and totally depends on the reference module chosen.
+     * ABI-encoded and depends on the reference module chosen.
      * @param timestamp The current block timestamp.
      */
     event QuoteCreated(
@@ -290,7 +290,7 @@ library Events {
      * @param collectNFT The collect NFT that was used to collect the publication.
      * @param tokenId The token ID of the collect NFT that was minted as a collect of the publication.
      * @param collectActionResult The data returned from the collect module's collect action. This is ABI-encoded
-     * and totally depends on the collect module chosen.
+     * and depends on the collect module chosen.
      * @param timestamp The current block timestamp.
      */
     event Collected(
@@ -306,8 +306,8 @@ library Events {
      * @dev Emitted upon a successful action.
      *
      * @param publicationActionParams The parameters passed to act on a publication.
-     * @param actionModuleReturnData The data returned from the action module's. This is ABI-encoded and format
-     * totally depends on the action module chosen.
+     * @param actionModuleReturnData The data returned from the action modules. This is ABI-encoded and the format
+     * depends on the action module chosen.
      * @param timestamp The current block timestamp.
      */
     event Acted(Types.PublicationActionParams publicationActionParams, bytes actionModuleReturnData, uint256 timestamp);
@@ -440,7 +440,7 @@ library Events {
      *
      * @param owner The profile owner who executed the approval.
      * @param profileId The profile ID that the follow approvals are granted/revoked for.
-     * @param addresses The addresses that have had the follow approvals grnated/revoked.
+     * @param addresses The addresses that have had the follow approvals granted/revoked.
      * @param approved Whether each corresponding address is now approved or disapproved.
      * @param timestamp The current block timestamp.
      */

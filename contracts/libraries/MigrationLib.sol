@@ -5,7 +5,7 @@ pragma solidity ^0.8.19;
 import {Events} from 'contracts/libraries/constants/Events.sol';
 import {Errors} from 'contracts/libraries/constants/Errors.sol';
 import {StorageLib} from 'contracts/libraries/StorageLib.sol';
-import {IFollowNFT} from 'contracts/interfaces/IFollowNFT.sol';
+import {FollowNFT} from 'contracts/FollowNFT.sol';
 import {LensHandles} from 'contracts/misc/namespaces/LensHandles.sol';
 import {TokenHandleRegistry} from 'contracts/misc/namespaces/TokenHandleRegistry.sol';
 import {IFollowModule} from 'contracts/interfaces/IFollowModule.sol';
@@ -122,7 +122,7 @@ library MigrationLib {
         address followNFTAddress,
         uint256 followTokenId
     ) private {
-        uint48 mintTimestamp = IFollowNFT(followNFTAddress).migrate({
+        uint48 mintTimestamp = FollowNFT(followNFTAddress).migrate({
             followerProfileId: followerProfileId,
             followerProfileOwner: StorageLib.getTokenData(followerProfileId).owner,
             idOfProfileFollowed: idOfProfileFollowed,
