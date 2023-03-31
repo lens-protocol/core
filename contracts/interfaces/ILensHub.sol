@@ -13,17 +13,6 @@ import {Types} from 'contracts/libraries/constants/Types.sol';
  */
 interface ILensHub {
     /**
-     * @notice Initializes the LensHub, setting the initial governance address, the name and symbol of the profiles
-     * in the LensNFTBase contract, and Protocol State (Paused).
-     * @custom:permissions Anyone. This is expected to be called using upgradeAndCall() and is only callable once.
-     *
-     * @param name The name of the Profile NFT.
-     * @param symbol The symbol of the Profile NFT.
-     * @param newGovernance The governance address to set.
-     */
-    function initialize(string calldata name, string calldata symbol, address newGovernance) external;
-
-    /**
      * @notice Sets the privileged governance role.
      * @custom:permissions Governance.
      *

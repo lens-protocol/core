@@ -42,7 +42,8 @@ import {TokenHandleRegistry} from 'contracts/misc/namespaces/TokenHandleRegistry
  *      2. Almost every event in the protocol emits the current block timestamp, reducing the need to fetch it manually.
  */
 contract LensHub is LensBaseERC721, VersionedInitializable, LensMultiState, LensHubStorage, ILensHub {
-    // Constant for upgradeability purposes, see VersionedInitializable. Do not confuse it with the EIP-712 version number.
+    // Constant for upgradeability purposes, see VersionedInitializable.
+    // Do not confuse it with the EIP-712 version number.
     uint256 internal constant REVISION = 1;
 
     address internal immutable FOLLOW_NFT_IMPL;
@@ -65,12 +66,6 @@ contract LensHub is LensBaseERC721, VersionedInitializable, LensMultiState, Lens
         _;
     }
 
-    /**
-     * @dev The constructor sets the immutable follow & collect NFT implementations.
-     *
-     * @param followNFTImpl The follow NFT implementation address.
-     * @param collectNFTImpl The collect NFT implementation address.
-     */
     constructor(
         address followNFTImpl,
         address collectNFTImpl, // We still pass the deprecated CollectNFTImpl for legacy Collects to work
@@ -89,17 +84,6 @@ contract LensHub is LensBaseERC721, VersionedInitializable, LensMultiState, Lens
         FEE_FOLLOW_MODULE = legacyFeeFollowModule;
         PROFILE_FOLLOW_MODULE = legacyProfileFollowModule;
         NEW_FEE_FOLLOW_MODULE = newFeeFollowModule;
-    }
-
-    /// @inheritdoc ILensHub
-    function initialize(
-        string calldata name,
-        string calldata symbol,
-        address newGovernance
-    ) external override initializer {
-        super._initialize(name, symbol);
-        GovernanceLib.initState(Types.ProtocolState.Paused);
-        GovernanceLib.setGovernance(newGovernance);
     }
 
     /////////////////////////////////

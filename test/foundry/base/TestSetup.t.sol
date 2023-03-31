@@ -6,6 +6,7 @@ import 'forge-std/Test.sol';
 // Deployments
 import {ILensHub} from 'contracts/interfaces/ILensHub.sol';
 import {LensHub} from 'contracts/LensHub.sol';
+import {LensHubInitializable} from 'contracts/misc/LensHubInitializable.sol';
 import {FollowNFT} from 'contracts/FollowNFT.sol';
 import {CollectNFT} from 'contracts/CollectNFT.sol';
 import {ModuleGlobals} from 'contracts/misc/ModuleGlobals.sol';
@@ -50,7 +51,7 @@ contract TestSetup is Test, ForkManagement, ArrayHelpers {
     address hubProxyAddr;
     CollectNFT collectNFT;
     FollowNFT followNFT;
-    LensHub hubImpl;
+    LensHubInitializable hubImpl;
     TransparentUpgradeableProxy hubAsProxy;
     LensHub hub;
     MockActionModule mockActionModule;
@@ -100,7 +101,7 @@ contract TestSetup is Test, ForkManagement, ArrayHelpers {
 
         address hubImplAddr = address(uint160(uint256(vm.load(hubProxyAddr, PROXY_IMPLEMENTATION_STORAGE_SLOT))));
         console.log('Found hubImplAddr:', hubImplAddr);
-        hubImpl = LensHub(hubImplAddr);
+        hubImpl = LensHubInitializable(hubImplAddr);
         followNFT = FollowNFT(followNFTAddr);
         collectNFT = CollectNFT(collectNFTAddr);
         hubAsProxy = TransparentUpgradeableProxy(payable(address(hub)));
@@ -135,7 +136,7 @@ contract TestSetup is Test, ForkManagement, ArrayHelpers {
 
         // Deploy implementation contracts.
         // TODO: Last 3 addresses are for the follow modules for migration purposes.
-        hubImpl = new LensHub(
+        hubImpl = new LensHubInitializable(
             followNFTAddr,
             collectNFTAddr,
             address(0),

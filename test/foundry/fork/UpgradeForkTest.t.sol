@@ -356,7 +356,7 @@ contract UpgradeForkTest is BaseTest {
 
         // Deploy implementation contracts.
         // TODO: Last 3 addresses are for the follow modules for migration purposes.
-        hubImpl = new LensHub(
+        hubImpl = new LensHubInitializable(
             followNFTAddr,
             collectNFTAddr,
             address(0),
