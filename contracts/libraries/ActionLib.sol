@@ -9,8 +9,6 @@ import {IPublicationActionModule} from 'contracts/interfaces/IPublicationActionM
 import {Errors} from 'contracts/libraries/constants/Errors.sol';
 import {Events} from 'contracts/libraries/constants/Events.sol';
 
-import 'forge-std/console.sol';
-
 library ActionLib {
     function act(
         Types.PublicationActionParams calldata publicationActionParams,
@@ -32,7 +30,7 @@ library ActionLib {
         );
 
         address actionModuleAddress = publicationActionParams.actionModuleAddress;
-        uint256 actionModuleId = StorageLib.actionModuleWhitelistedId()[actionModuleAddress];
+        uint256 actionModuleId = StorageLib.actionModuleWhitelistData()[actionModuleAddress].id;
 
         if (actionModuleId == 0) {
             revert Errors.ActionNotAllowed();

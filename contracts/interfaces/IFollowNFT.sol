@@ -9,6 +9,10 @@ import {Types} from 'contracts/libraries/constants/Types.sol';
  * @author Lens Protocol
  *
  * @notice This is the interface for the FollowNFT contract, which is cloned upon the first follow for any profile.
+ * By default the Follow tokens are tied to the follower profile, which means that they will be automatically
+ * transferred with it.
+ * This is achieved by them not being ERC-721 initially. However, the Follow NFT collections support converting them to
+ * ERC-721 tokens (i.e. wrapping) natively, enabling composability with existing ERC-721-based protocols.
  */
 interface IFollowNFT {
     error AlreadyFollowing();
@@ -20,8 +24,9 @@ interface IFollowNFT {
 
     /**
      * @notice Initializes the follow NFT.
+     * @custom:permissions LensHub.
      *
-     * @dev Sets the hub as privileged sender, the targeted profile, and the token royalties.
+     * @dev Sets the targeted profile, and the token royalties.
      *
      * @param profileId The ID of the profile targeted by the follow tokens minted by this collection.
      */
@@ -29,12 +34,10 @@ interface IFollowNFT {
 
     /**
      * @notice Makes the passed profile follow the profile targeted in this contract.
-     *
-     * @dev This must be only callable by the LensHub contract.
+     * @custom:permissions LensHub.
      *
      * @param followerProfileId The ID of the profile acting as the follower.
-     * @param transactionExecutor The address executing the operation, which is the signer in case of using meta-transactions or
-     * the sender otherwise.
+     * @param transactionExecutor The address of the transaction executor (e.g. for any funds to transferFrom).
      * @param followTokenId The ID of the follow token to be used for this follow operation. Zero if a new follow token
      * should be minted.
      *
@@ -48,19 +51,18 @@ interface IFollowNFT {
 
     /**
      * @notice Makes the passed profile unfollow the profile targeted in this contract.
-     *
-     * @dev This must be only callable by the LensHub contract.
+     * @custom:permissions LensHub.
      *
      * @param unfollowerProfileId The ID of the profile that is performing the unfollow operation.
-     * @param transactionExecutor The address executing the operation, which is the signer in case of using meta-transactions or
-     * the sender otherwise.
+     * @param transactionExecutor The address of the transaction executor (e.g. for any funds to transferFrom).
      */
     function unfollow(uint256 unfollowerProfileId, address transactionExecutor) external;
 
     /**
      * @notice Removes the follower from the given follow NFT.
-     *
-     * @dev It can only be called on wrapped tokens, by their owner or an approved-for-all address.
+     * @custom:permissions Follow token owner or approved-for-all.
+
+     * @dev Only on wrapped token.
      *
      * @param followTokenId The ID of the follow token to remove the follower from.
      */
@@ -68,8 +70,10 @@ interface IFollowNFT {
 
     /**
      * @notice Approves the given profile to follow with the given wrapped token.
+     * @custom:permissions Follow token owner or approved-for-all.
      *
-     * @dev It approves setting a follower on the given wrapped follow token, which lets the follow token owner to allow
+     * @dev Only on wrapped tokens.
+     * It approves setting a follower on the given wrapped follow token, which lets the follow token owner to allow
      * a profile to follow with his token without losing its ownership. This approval is cleared on transfers, as well
      * as when unwrapping.
      *
@@ -81,6 +85,9 @@ interface IFollowNFT {
     /**
      * @notice Unties the follow token from the follower's profile one, and wraps it into the ERC-721 untied follow
      * tokens collection. Untied follow tokens will NOT be automatically transferred with their follower profile.
+     * @custom:permissions Follower profile owner.
+     *
+     * @dev Only on unwrapped follow tokens.
      *
      * @param followTokenId The ID of the follow token to untie and wrap.
      */
@@ -97,14 +104,17 @@ interface IFollowNFT {
     /**
      * @notice Processes logic when the given profile is being blocked. If it was following the targeted profile,
      * this will make it unfollow.
-     *
-     * @dev This must be only callable by the LensHub contract.
+     * @custom:permissions LensHub.
      *
      * @param followerProfileId The ID of the follow token to unwrap and tie.
      *
      * @return bool True if the given profile was following and now has unfollowed, false otherwise.
      */
     function processBlock(uint256 followerProfileId) external returns (bool);
+
+    ///////////////////////////
+    ///       GETTERS       ///
+    ///////////////////////////
 
     /**
      * @notice Gets the ID of the profile following with the given follow token.
@@ -185,12 +195,4 @@ interface IFollowNFT {
      * @return uint256 The count of the followers of the profile targeted in this contract.
      */
     function getFollowerCount() external view returns (uint256);
-
-    // V1-V2 Follower Migration function
-    function migrate(
-        uint256 followerProfileId,
-        address followerProfileOwner,
-        uint256 idOfProfileFollowed,
-        uint256 followTokenId
-    ) external returns (uint48);
 }

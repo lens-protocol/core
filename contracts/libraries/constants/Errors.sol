@@ -67,6 +67,9 @@ library Errors {
     error InvalidPointedPub();
     error ActionModuleNotWhitelisted();
 
+    // Internal Errors
+    error MaxActionModuleIdReached(); // This means we need an upgrade
+
     // Module Errors
     error InitParamsInvalid();
     error FollowInvalid();

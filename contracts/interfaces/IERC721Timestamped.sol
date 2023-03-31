@@ -8,16 +8,16 @@ import {Types} from 'contracts/libraries/constants/Types.sol';
  * @title IERC721Timestamped
  * @author Lens Protocol
  *
- * @notice This is an expansion of the IERC721 interface that includes a struct for token data,
- * which contains the token owner and the mint timestamp as well as associated getters.
+ * @notice Extension of ERC-721 including a struct for token data, which contains the owner and the mint timestamp, as
+ * well as their associated getters.
  */
 interface IERC721Timestamped {
     /**
-     * @notice Returns the mint timestamp associated with a given NFT, stored only once upon initial mint.
+     * @notice Returns the mint timestamp associated with a given NFT.
      *
      * @param tokenId The token ID of the NFT to query the mint timestamp for.
      *
-     * @return uint256 mint timestamp, this is stored as a uint96 but returned as a uint256 to reduce unnecessary
+     * @return uint256 Mint timestamp, this is stored as a uint96 but returned as a uint256 to reduce unnecessary
      * padding.
      */
     function mintTimestampOf(uint256 tokenId) external view returns (uint256);
@@ -28,7 +28,7 @@ interface IERC721Timestamped {
      *
      * @param tokenId The token ID of the NFT to query the token data for.
      *
-     * @return TokenData token data struct containing both the owner address and the mint timestamp.
+     * @return TokenData A struct containing both the owner address and the mint timestamp.
      */
     function tokenDataOf(uint256 tokenId) external view returns (Types.TokenData memory);
 

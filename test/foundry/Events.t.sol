@@ -39,7 +39,16 @@ contract EventTest is BaseTest {
         hubProxyAddr = predictContractAddress(deployer, 3);
 
         // Deploy implementation contracts.
-        hubImpl = new LensHub(followNFTAddr, collectNFTAddr, address(0), address(0));
+        // TODO: Last 3 addresses are for the follow modules for migration purposes.
+        hubImpl = new LensHubInitializable(
+            followNFTAddr,
+            collectNFTAddr,
+            address(0),
+            address(0),
+            address(0),
+            address(0),
+            address(0)
+        );
         followNFT = new FollowNFT(hubProxyAddr);
         collectNFT = new CollectNFT(hubProxyAddr);
 
@@ -240,7 +249,7 @@ contract EventTest is BaseTest {
         vm.startPrank(profileOwner);
         hub.post(mockPostParams);
         vm.expectEmit(true, true, false, true, address(hub));
-        emit Events.CommentCreated(mockCommentParams, 2, _toBytesArray(abi.encode(true)), '', block.timestamp);
+        emit Events.CommentCreated(mockCommentParams, 2, '', _toBytesArray(abi.encode(true)), '', block.timestamp);
         hub.comment(mockCommentParams);
         vm.stopPrank();
     }
@@ -249,7 +258,7 @@ contract EventTest is BaseTest {
         vm.startPrank(profileOwner);
         hub.post(mockPostParams);
         vm.expectEmit(true, true, false, true, address(hub));
-        emit Events.MirrorCreated(mockMirrorParams, 2, block.timestamp);
+        emit Events.MirrorCreated(mockMirrorParams, 2, '', block.timestamp);
         hub.mirror(mockMirrorParams);
         vm.stopPrank();
     }

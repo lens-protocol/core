@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.15;
 
-import {IEIP1271Implementer} from 'contracts/interfaces/IEIP1271Implementer.sol';
+import {IERC1271} from '@openzeppelin/contracts/interfaces/IERC1271.sol';
 import {Types} from 'contracts/libraries/constants/Types.sol';
 import {Errors} from 'contracts/libraries/constants/Errors.sol';
 import {Typehash} from 'contracts/libraries/constants/Typehash.sol';
@@ -481,9 +481,7 @@ library MetaTxLib {
         // If the expected address is a contract, check the signature there.
         if (signature.signer.code.length != 0) {
             bytes memory concatenatedSig = abi.encodePacked(signature.r, signature.s, signature.v);
-            if (
-                IEIP1271Implementer(signature.signer).isValidSignature(digest, concatenatedSig) != EIP1271_MAGIC_VALUE
-            ) {
+            if (IERC1271(signature.signer).isValidSignature(digest, concatenatedSig) != EIP1271_MAGIC_VALUE) {
                 revert Errors.SignatureInvalid();
             }
         } else {

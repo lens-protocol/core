@@ -11,8 +11,8 @@ import {Types} from 'contracts/libraries/constants/Types.sol';
 contract MockReferenceModule is IReferenceModule {
     function initializeReferenceModule(
         uint256,
-        address,
         uint256,
+        address,
         bytes calldata data
     ) external pure override returns (bytes memory) {
         uint256 number = abi.decode(data, (uint256));
@@ -20,9 +20,15 @@ contract MockReferenceModule is IReferenceModule {
         return new bytes(0);
     }
 
-    function processComment(Types.ProcessCommentParams calldata processCommentParams) external override {}
+    function processComment(
+        Types.ProcessCommentParams calldata processCommentParams
+    ) external override returns (bytes memory) {}
 
-    function processQuote(Types.ProcessQuoteParams calldata processQuoteParams) external override {}
+    function processQuote(
+        Types.ProcessQuoteParams calldata processQuoteParams
+    ) external override returns (bytes memory) {}
 
-    function processMirror(Types.ProcessMirrorParams calldata processMirrorParams) external override {}
+    function processMirror(
+        Types.ProcessMirrorParams calldata processMirrorParams
+    ) external override returns (bytes memory) {}
 }

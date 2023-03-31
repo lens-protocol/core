@@ -2,7 +2,7 @@
 
 pragma solidity ^0.8.15;
 
-import {LensNFTBase} from 'contracts/base/LensNFTBase.sol';
+import {LensBaseERC721} from 'contracts/base/LensBaseERC721.sol';
 import {LensMultiState} from 'contracts/base/LensMultiState.sol';
 import {VersionedInitializable} from 'contracts/base/upgradeability/VersionedInitializable.sol';
 import {MockLensHubV2Storage} from 'test/mocks/MockLensHubV2Storage.sol';
@@ -10,7 +10,7 @@ import {MockLensHubV2Storage} from 'test/mocks/MockLensHubV2Storage.sol';
 /**
  * @dev A mock upgraded LensHub contract that is used to validate that the initializer cannot be called with the same revision.
  */
-contract MockLensHubV2BadRevision is LensNFTBase, VersionedInitializable, LensMultiState, MockLensHubV2Storage {
+contract MockLensHubV2BadRevision is LensBaseERC721, VersionedInitializable, LensMultiState, MockLensHubV2Storage {
     uint256 internal constant REVISION = 1; // Should fail the initializer check
 
     function initialize(uint256 newValue) external initializer {

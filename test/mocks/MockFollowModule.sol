@@ -24,5 +24,5 @@ contract MockFollowModule is IFollowModule {
         address transactionExecutor,
         uint256 profileId,
         bytes calldata data
-    ) external pure override {}
+    ) external pure override returns (bytes memory) {}
 }

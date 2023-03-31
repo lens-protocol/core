@@ -42,7 +42,8 @@ import {TokenHandleRegistry} from 'contracts/misc/namespaces/TokenHandleRegistry
  *      2. Almost every event in the protocol emits the current block timestamp, reducing the need to fetch it manually.
  */
 contract LensHub is LensBaseERC721, VersionedInitializable, LensMultiState, LensHubStorage, ILensHub {
-    // Constant for upgradeability purposes, see VersionedInitializable. Do not confuse it with the EIP-712 version number.
+    // Constant for upgradeability purposes, see VersionedInitializable.
+    // Do not confuse it with the EIP-712 version number.
     uint256 internal constant REVISION = 1;
 
     address internal immutable FOLLOW_NFT_IMPL;
@@ -52,6 +53,11 @@ contract LensHub is LensBaseERC721, VersionedInitializable, LensMultiState, Lens
     LensHandles internal immutable lensHandles;
     TokenHandleRegistry internal immutable tokenHandleRegistry;
 
+    // Migration constants:
+    address internal immutable FEE_FOLLOW_MODULE;
+    address internal immutable PROFILE_FOLLOW_MODULE;
+    address internal immutable NEW_FEE_FOLLOW_MODULE;
+
     /**
      * @dev This modifier reverts if the caller is not the configured governance address.
      */
@@ -60,17 +66,14 @@ contract LensHub is LensBaseERC721, VersionedInitializable, LensMultiState, Lens
         _;
     }
 
-    /**
-     * @dev The constructor sets the immutable follow & collect NFT implementations.
-     *
-     * @param followNFTImpl The follow NFT implementation address.
-     * @param collectNFTImpl The collect NFT implementation address.
-     */
     constructor(
         address followNFTImpl,
-        address collectNFTImpl,
+        address collectNFTImpl, // We still pass the deprecated CollectNFTImpl for legacy Collects to work
         address lensHandlesAddress,
-        address tokenHandleRegistryAddress
+        address tokenHandleRegistryAddress,
+        address legacyFeeFollowModule,
+        address legacyProfileFollowModule,
+        address newFeeFollowModule
     ) {
         if (followNFTImpl == address(0)) revert Errors.InitParamsInvalid();
         if (collectNFTImpl == address(0)) revert Errors.InitParamsInvalid();
@@ -78,17 +81,9 @@ contract LensHub is LensBaseERC721, VersionedInitializable, LensMultiState, Lens
         COLLECT_NFT_IMPL = collectNFTImpl;
         lensHandles = LensHandles(lensHandlesAddress);
         tokenHandleRegistry = TokenHandleRegistry(tokenHandleRegistryAddress);
-    }
-
-    /// @inheritdoc ILensHub
-    function initialize(
-        string calldata name,
-        string calldata symbol,
-        address newGovernance
-    ) external override initializer {
-        super._initialize(name, symbol);
-        GovernanceLib.initState(Types.ProtocolState.Paused);
-        GovernanceLib.setGovernance(newGovernance);
+        FEE_FOLLOW_MODULE = legacyFeeFollowModule;
+        PROFILE_FOLLOW_MODULE = legacyProfileFollowModule;
+        NEW_FEE_FOLLOW_MODULE = newFeeFollowModule;
     }
 
     /////////////////////////////////
@@ -126,8 +121,8 @@ contract LensHub is LensBaseERC721, VersionedInitializable, LensMultiState, Lens
     }
 
     /// @inheritdoc ILensHub
-    function whitelistActionModuleId(address actionModule, uint256 whitelistId) external override onlyGov {
-        GovernanceLib.whitelistActionModuleId(actionModule, whitelistId);
+    function whitelistActionModule(address actionModule, bool whitelist) external override onlyGov {
+        GovernanceLib.whitelistActionModule(actionModule, whitelist);
     }
 
     ///////////////////////////////////////////
@@ -145,6 +140,15 @@ contract LensHub is LensBaseERC721, VersionedInitializable, LensMultiState, Lens
         uint256[] calldata followTokenIds
     ) external {
         MigrationLib.batchMigrateFollows(followerProfileIds, idsOfProfileFollowed, followNFTAddresses, followTokenIds);
+    }
+
+    function batchMigrateFollowModules(uint256[] calldata profileIds) external {
+        MigrationLib.batchMigrateFollowModules(
+            profileIds,
+            FEE_FOLLOW_MODULE,
+            PROFILE_FOLLOW_MODULE,
+            NEW_FEE_FOLLOW_MODULE
+        );
     }
 
     ///////////////////////////////////////////
@@ -606,8 +610,10 @@ contract LensHub is LensBaseERC721, VersionedInitializable, LensMultiState, Lens
     }
 
     /// @inheritdoc ILensHub
-    function isActionModuleWhitelisted(address actionModule) external view override returns (bool) {
-        return _actionModuleWhitelistedId[actionModule] > 0;
+    function getActionModuleWhitelistData(
+        address actionModule
+    ) external view override returns (Types.ActionModuleWhitelistData memory) {
+        return _actionModuleWhitelistData[actionModule];
     }
 
     /// @inheritdoc ILensHub
@@ -672,10 +678,11 @@ contract LensHub is LensBaseERC721, VersionedInitializable, LensMultiState, Lens
         return _profileById[profileId].followNFT;
     }
 
-    /// @inheritdoc ILensHub
-    function getCollectNFT(uint256 profileId, uint256 pubId) external view override returns (address) {
-        return _pubByIdByProfile[profileId][pubId].__DEPRECATED__collectNFT;
-    }
+    // /// @inheritdoc ILensHub
+    // TODO: Consider removing this if it's not used
+    // function getCollectNFT(uint256 profileId, uint256 pubId) external view override returns (address) {
+    //     return _pubByIdByProfile[profileId][pubId].__DEPRECATED__collectNFT;
+    // }
 
     /// @inheritdoc ILensHub
     function getFollowModule(uint256 profileId) external view override returns (address) {
@@ -683,13 +690,19 @@ contract LensHub is LensBaseERC721, VersionedInitializable, LensMultiState, Lens
     }
 
     /// @inheritdoc ILensHub
-    function getCollectModule(uint256 profileId, uint256 pubId) external view override returns (address) {
-        return _pubByIdByProfile[profileId][pubId].__DEPRECATED__collectModule;
-    }
+    // TODO: Consider removing this if it's not used
+    // function getCollectModule(uint256 profileId, uint256 pubId) external view override returns (address) {
+    //     return _pubByIdByProfile[profileId][pubId].__DEPRECATED__collectModule;
+    // }
 
     /// @inheritdoc ILensHub
     function getReferenceModule(uint256 profileId, uint256 pubId) external view override returns (address) {
         return _pubByIdByProfile[profileId][pubId].referenceModule;
+    }
+
+    /// @inheritdoc ILensHub
+    function getActionModulesBitmap(uint256 profileId, uint256 pubId) external view override returns (uint256) {
+        return _pubByIdByProfile[profileId][pubId].actionModulesBitmap;
     }
 
     /// @inheritdoc ILensHub
@@ -731,7 +744,7 @@ contract LensHub is LensBaseERC721, VersionedInitializable, LensMultiState, Lens
         return COLLECT_NFT_IMPL;
     }
 
-    function getWhitelistedActionModuleById(uint256 id) external view returns (address) {
+    function getActionModuleById(uint256 id) external view override returns (address) {
         return _actionModuleById[id];
     }
 

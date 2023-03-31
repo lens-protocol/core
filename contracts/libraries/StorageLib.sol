@@ -3,6 +3,7 @@
 pragma solidity ^0.8.15;
 
 import {Types} from 'contracts/libraries/constants/Types.sol';
+import {Errors} from 'contracts/libraries/constants/Errors.sol';
 
 library StorageLib {
     uint256 constant NAME_SLOT = 0;
@@ -13,7 +14,7 @@ library StorageLib {
     uint256 constant PROTOCOL_STATE_SLOT = 12;
     uint256 constant PROFILE_CREATOR_WHITELIST_MAPPING_SLOT = 13;
     uint256 constant FOLLOW_MODULE_WHITELIST_MAPPING_SLOT = 14;
-    uint256 constant ACTION_MODULE_WHITELIST_ID_MAPPING_SLOT = 15;
+    uint256 constant ACTION_MODULE_WHITELIST_DATA_MAPPING_SLOT = 15;
     uint256 constant REFERENCE_MODULE_WHITELIST_MAPPING_SLOT = 16;
     // Slot 17 is deprecated in Lens V2. In V1 it was used for the dispatcher address by profile ID.
     uint256 constant PROFILE_ID_BY_HANDLE_HASH_MAPPING_SLOT = 18;
@@ -27,6 +28,9 @@ library StorageLib {
     uint256 constant DELEGATED_EXECUTOR_CONFIG_MAPPING_SLOT = 25;
     uint256 constant BLOCKED_STATUS_MAPPING_SLOT = 26;
     uint256 constant ACTION_MODULE_BY_ID_SLOT = 27;
+    uint256 constant MAX_ACTION_MODULE_ID_USED_SLOT = 28;
+
+    uint256 constant MAX_ACTION_MODULE_ID_SUPPORTED = 255;
 
     function getPublication(
         uint256 profileId,
@@ -113,13 +117,13 @@ library StorageLib {
         }
     }
 
-    function actionModuleWhitelistedId()
+    function actionModuleWhitelistData()
         internal
         pure
-        returns (mapping(address => uint256) storage _actionModuleWhitelistedId)
+        returns (mapping(address => Types.ActionModuleWhitelistData) storage _actionModuleWhitelistData)
     {
         assembly {
-            _actionModuleWhitelistedId.slot := ACTION_MODULE_WHITELIST_ID_MAPPING_SLOT
+            _actionModuleWhitelistData.slot := ACTION_MODULE_WHITELIST_DATA_MAPPING_SLOT
         }
     }
 
@@ -127,6 +131,18 @@ library StorageLib {
         assembly {
             _actionModuleById.slot := ACTION_MODULE_BY_ID_SLOT
         }
+    }
+
+    function incrementMaxActionModuleIdUsed() internal returns (uint256) {
+        uint256 incrementedId;
+        assembly {
+            incrementedId := add(sload(MAX_ACTION_MODULE_ID_USED_SLOT), 1)
+            sstore(MAX_ACTION_MODULE_ID_USED_SLOT, incrementedId)
+        }
+        if (incrementedId > MAX_ACTION_MODULE_ID_SUPPORTED) {
+            revert Errors.MaxActionModuleIdReached();
+        }
+        return incrementedId;
     }
 
     function referenceModuleWhitelisted()

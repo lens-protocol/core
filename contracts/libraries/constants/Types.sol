@@ -13,7 +13,7 @@ library Types {
      * @notice ERC721Timestamped storage. Contains the owner address and the mint timestamp for every NFT.
      *
      * Note: Instead of the owner address in the _tokenOwners private mapping, we now store it in the
-     * _tokenData mapping, alongside the unchanging mintTimestamp.
+     * _tokenData mapping, alongside the mint timestamp.
      *
      * @param owner The token owner.
      * @param mintTimestamp The mint timestamp.
@@ -55,10 +55,10 @@ library Types {
      * @notice An enum specifically used in a helper function to easily retrieve the publication type for integrations.
      *
      * @param Nonexistent An indicator showing the queried publication does not exist.
-     * @param Post A standard post, having an URI, a collect module but no pointer to another publication.
-     * @param Comment A comment, having an URI, a collect module and a pointer to another publication.
-     * @param Mirror A mirror, having a pointer to another publication, but no URI or collect module.
-     * @param Quote A quote, having an URI, a collect module and a pointer to another publication.
+     * @param Post A standard post, having an URI, action modules and no pointer to another publication.
+     * @param Comment A comment, having an URI, action modules and a pointer to another publication.
+     * @param Mirror A mirror, having a pointer to another publication, but no URI or action modules.
+     * @param Quote A quote, having an URI, action modules, and a pointer to another publication.
      */
     enum PublicationType {
         Nonexistent,
@@ -91,7 +91,7 @@ library Types {
      * @param pubCount The number of publications made to this profile.
      * @param followModule The address of the current follow module in use by this profile, can be empty.
      * @param followNFT The address of the followNFT associated with this profile, can be empty.
-     * @param handleDeprecated The deprecated handle slot, no longer used.
+     * @param handleDeprecated The deprecated handle slot, is no longer used.
      * @param imageURI The URI to be used for the profile's image.
      * @param followNFTURI The URI to be used for the follow NFT.
      */
@@ -260,7 +260,7 @@ library Types {
     }
 
     /**
-     * Deprecated in V2: Will be removed after some time after upgrade to V2.
+     * Deprecated in V2: Will be removed after some time after upgrading to V2.
      * @notice A struct containing the parameters required for the `collect()` function.
      *
      * @param publicationCollectedProfileId The token ID of the profile that published the publication to collect.
@@ -370,5 +370,10 @@ library Types {
         uint64 configNumber;
         uint64 prevConfigNumber;
         uint64 maxConfigNumberSet;
+    }
+
+    struct ActionModuleWhitelistData {
+        uint248 id;
+        bool isWhitelisted;
     }
 }

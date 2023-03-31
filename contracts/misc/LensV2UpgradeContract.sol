@@ -120,8 +120,7 @@ contract LensV2UpgradeContract is ImmutableOwnable {
         uint256 newActionModulesToWhitelistLength = newActionModulesToWhitelist.length;
         uint256 i;
         while (i < newActionModulesToWhitelistLength) {
-            uint256 moduleId = i + 1; // Starting from 1
-            GOVERNANCE.lensHub_whitelistActionModuleId(newActionModulesToWhitelist[i], moduleId);
+            GOVERNANCE.lensHub_whitelistActionModule(newActionModulesToWhitelist[i], true);
             unchecked {
                 ++i;
             }

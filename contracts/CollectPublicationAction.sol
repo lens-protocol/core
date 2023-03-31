@@ -17,7 +17,8 @@ import {VersionedInitializable} from 'contracts/base/upgradeability/VersionedIni
 contract CollectPublicationAction is HubRestricted, VersionedInitializable, IPublicationActionModule {
     using Strings for uint256;
 
-    // Constant for upgradeability purposes, see VersionedInitializable. Do not confuse it with the EIP-712 version number.
+    // Constant for upgradeability purposes, see VersionedInitializable.
+    // Do not confuse it with the EIP-712 version number.
     uint256 internal constant REVISION = 1;
 
     // TODO: Should we move this to some Types file when in the Modules repo
@@ -102,6 +103,10 @@ contract CollectPublicationAction is HubRestricted, VersionedInitializable, IPub
         });
 
         return abi.encode(tokenId, collectActionResult);
+    }
+
+    function getCollectData(uint256 profileId, uint256 pubId) external view returns (CollectData memory) {
+        return _collectDataByPub[profileId][pubId];
     }
 
     function _getOrDeployCollectNFT(

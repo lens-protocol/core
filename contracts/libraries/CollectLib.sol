@@ -8,7 +8,7 @@ import {Errors} from 'contracts/libraries/constants/Errors.sol';
 import {Events} from 'contracts/libraries/constants/Events.sol';
 import {ICollectNFT} from 'contracts/interfaces/ICollectNFT.sol';
 import {ICollectModule} from 'contracts/interfaces/ICollectModule.sol';
-import {IDeprecatedCollectModule} from 'contracts/interfaces/IDeprecatedCollectModule.sol';
+import {ILegacyCollectModule} from 'contracts/interfaces/ILegacyCollectModule.sol';
 import {Clones} from '@openzeppelin/contracts/proxy/Clones.sol';
 import {Strings} from '@openzeppelin/contracts/utils/Strings.sol';
 import {StorageLib} from 'contracts/libraries/StorageLib.sol';
@@ -156,7 +156,7 @@ library CollectLib {
                 referrerProfileId = collectParams.referrerProfileIds[0];
                 referrerPubId = collectParams.referrerPubIds[0];
             }
-            IDeprecatedCollectModule(processCollectParams.collectModule).processCollect(
+            ILegacyCollectModule(processCollectParams.collectModule).processCollect(
                 collectParams.publicationCollectedProfileId,
                 processCollectParams.transactionExecutor,
                 referrerProfileId,

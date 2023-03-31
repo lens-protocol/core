@@ -6,13 +6,13 @@ pragma solidity ^0.8.19;
  * @title IERC721MetaTx
  * @author Lens Protocol
  *
- * @notice Includes functions realted to EIP-712 meta-tx signatures.
+ * @notice Extension of ERC-721 including meta-tx signatures related functions.
  */
 interface IERC721MetaTx {
     /**
-     * @notice Returns EIP-712 signature nonce.
+     * @notice Returns the current signature nonce of the given signer.
      *
-     * @param signer The address whom the nonce is being queried for.
+     * @param signer The address for which to query the nonce.
      *
      * @return uint256 The current nonce of the given signer.
      */
