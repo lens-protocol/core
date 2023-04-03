@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: MIT
 
-pragma solidity ^0.8.10;
+pragma solidity ^0.8.19;
 
 import {Types} from 'contracts/libraries/constants/Types.sol';
 import {EIP712} from '@openzeppelin/contracts/utils/cryptography/draft-EIP712.sol';
@@ -12,6 +12,7 @@ import {ILensHub} from 'contracts/interfaces/ILensHub.sol';
 import {IERC721Timestamped} from 'contracts/interfaces/IERC721Timestamped.sol';
 import {IReferenceModule} from 'contracts/interfaces/IReferenceModule.sol';
 import {HubRestricted} from 'contracts/base/HubRestricted.sol';
+import {FollowValidationLib} from 'contracts/modules/libraries/FollowValidationLib.sol';
 
 /**
  * @notice Struct representing the module configuration for certain publication.
@@ -42,6 +43,8 @@ struct ModuleConfig {
  * as the author of the root publication.
  */
 contract DegreesOfSeparationReferenceModule is HubRestricted, IReferenceModule {
+    using FollowValidationLib for ILensHub;
+
     error InvalidDegreesOfSeparation();
     error OperationDisabled();
     error ProfilePathExceedsDegreesOfSeparation();
@@ -222,23 +225,26 @@ contract DegreesOfSeparationReferenceModule is HubRestricted, IReferenceModule {
         if (profilePath.length > 0) {
             // Checks that the source profile follows the first profile in the path.
             // In the previous notation: sourceProfile --> path[0]
-            ILensHub(HUB).isFollowing({followerProfileId: sourceProfile, followedProfileId: profilePath[0]});
+            ILensHub(HUB).validateIsFollowing({followerProfileId: sourceProfile, followedProfileId: profilePath[0]});
             // Checks each profile owner in the path is following the profile coming next, according the order.
             // In the previous notaiton: path[0] --> path[1] --> path[2] --> ... --> path[n-2] --> path[n-1]
             uint256 i;
             while (i < profilePath.length - 1) {
-                ILensHub(HUB).isFollowing({followerProfileId: profilePath[i], followedProfileId: profilePath[i + 1]});
+                ILensHub(HUB).validateIsFollowing({
+                    followerProfileId: profilePath[i],
+                    followedProfileId: profilePath[i + 1]
+                });
                 unchecked {
                     ++i;
                 }
             }
             // Checks that the last profile in the path follows the profile authoring the new publication.
             // In the previous notation: path[n-1] --> profileId
-            ILensHub(HUB).isFollowing({followerProfileId: profilePath[i], followedProfileId: profileId});
+            ILensHub(HUB).validateIsFollowing({followerProfileId: profilePath[i], followedProfileId: profileId});
         } else {
             // Checks that the source profile follows the profile authoring the new publication.
             // In the previous notation: sourceProfile --> profileId
-            ILensHub(HUB).isFollowing({followerProfileId: sourceProfile, followedProfileId: profileId});
+            ILensHub(HUB).validateIsFollowing({followerProfileId: sourceProfile, followedProfileId: profileId});
         }
     }
 

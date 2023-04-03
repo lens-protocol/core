@@ -13,6 +13,7 @@ import {Types} from 'contracts/libraries/constants/Types.sol';
 import {IERC20} from '@openzeppelin/contracts/token/ERC20/IERC20.sol';
 import {IERC721} from '@openzeppelin/contracts/token/ERC721/IERC721.sol';
 import {SafeERC20} from '@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol';
+import {FollowValidationLib} from 'contracts/modules/libraries/FollowValidationLib.sol';
 
 import {BaseFeeCollectModuleInitData, BaseProfilePublicationData, IBaseFeeCollectModule} from 'contracts/modules/interfaces/IBaseFeeCollectModule.sol';
 
@@ -30,6 +31,7 @@ import {BaseFeeCollectModuleInitData, BaseProfilePublicationData, IBaseFeeCollec
  */
 abstract contract BaseFeeCollectModule is FeeModuleBase, HubRestricted, IBaseFeeCollectModule {
     using SafeERC20 for IERC20;
+    using FollowValidationLib for ILensHub;
 
     mapping(uint256 => mapping(uint256 => BaseProfilePublicationData)) internal _dataByPublicationByProfile;
 
@@ -132,11 +134,12 @@ abstract contract BaseFeeCollectModule is FeeModuleBase, HubRestricted, IBaseFee
             _dataByPublicationByProfile[processCollectParams.publicationCollectedProfileId][
                 processCollectParams.publicationCollectedId
             ].followerOnly
-        )
-            ILensHub(HUB).isFollowing(
-                processCollectParams.collectorProfileId,
-                processCollectParams.publicationCollectedProfileId
-            );
+        ) {
+            ILensHub(HUB).validateIsFollowing({
+                followerProfileId: processCollectParams.collectorProfileId,
+                followedProfileId: processCollectParams.publicationCollectedProfileId
+            });
+        }
 
         uint256 endTimestamp = _dataByPublicationByProfile[processCollectParams.publicationCollectedProfileId][
             processCollectParams.publicationCollectedId
