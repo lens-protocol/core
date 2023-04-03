@@ -7,4 +7,6 @@ library Errors {
     error ModuleDataMismatch();
     error NotHub();
     error InitParamsInvalid();
+    error MintLimitExceeded();
+    error CollectExpired();
 }
