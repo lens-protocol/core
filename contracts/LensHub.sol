@@ -678,22 +678,10 @@ contract LensHub is LensBaseERC721, VersionedInitializable, LensMultiState, Lens
         return _profileById[profileId].followNFT;
     }
 
-    // /// @inheritdoc ILensHub
-    // TODO: Consider removing this if it's not used
-    // function getCollectNFT(uint256 profileId, uint256 pubId) external view override returns (address) {
-    //     return _pubByIdByProfile[profileId][pubId].__DEPRECATED__collectNFT;
-    // }
-
     /// @inheritdoc ILensHub
     function getFollowModule(uint256 profileId) external view override returns (address) {
         return _profileById[profileId].followModule;
     }
-
-    /// @inheritdoc ILensHub
-    // TODO: Consider removing this if it's not used
-    // function getCollectModule(uint256 profileId, uint256 pubId) external view override returns (address) {
-    //     return _pubByIdByProfile[profileId][pubId].__DEPRECATED__collectModule;
-    // }
 
     /// @inheritdoc ILensHub
     function getReferenceModule(uint256 profileId, uint256 pubId) external view override returns (address) {

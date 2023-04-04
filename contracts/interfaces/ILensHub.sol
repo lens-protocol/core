@@ -580,18 +580,6 @@ interface ILensHub {
     function getFollowNFT(uint256 profileId) external view returns (address);
 
     /**
-     * @notice Returns the collectNFT associated with a given publication, if any.
-     * @custom:pending-deprecation
-     *
-     * @param profileId The token ID of the profile that published the publication to query.
-     * @param pubId The publication ID of the publication to query.
-     *
-     * @return address The address of the collectNFT associated with the given publication.
-     */
-    // TODO: Consider removing this if it's not used
-    // function getCollectNFT(uint256 profileId, uint256 pubId) external view returns (address);
-
-    /**
      * @notice Returns the follow module associated with a given profile.
      * Returns address(0) if none.
      *
@@ -600,18 +588,6 @@ interface ILensHub {
      * @return address The address of the follow module associated with the given profile.
      */
     function getFollowModule(uint256 profileId) external view returns (address);
-
-    /**
-     * @notice Returns the collect module associated with a given publication.
-     * @custom:pending-deprecation
-     *
-     * @param profileId The token ID of the profile that published the publication to query.
-     * @param pubId The publication ID of the publication to query.
-     *
-     * @return address The address of the collect module associated with the queried publication.
-     */
-    // TODO: Consider removing this if it's not used
-    // function getCollectModule(uint256 profileId, uint256 pubId) external view returns (address);
 
     /**
      * @notice Returns the reference module associated with a given profile, if any.
