@@ -6,6 +6,7 @@ import {Types} from 'contracts/libraries/constants/Types.sol';
 import {Errors} from 'contracts/libraries/constants/Errors.sol';
 import {ILensMultiState} from 'contracts/interfaces/ILensMultiState.sol';
 import {ValidationLib} from 'contracts/libraries/ValidationLib.sol';
+import {GovernanceLib} from 'contracts/libraries/GovernanceLib.sol';
 
 /**
  * @title LensMultiState
@@ -40,6 +41,10 @@ abstract contract LensMultiState is ILensMultiState {
     modifier onlyProfileOwner(address expectedOwner, uint256 profileId) {
         ValidationLib.validateAddressIsProfileOwner(expectedOwner, profileId);
         _;
+    }
+
+    function setState(Types.ProtocolState newState) external override {
+        GovernanceLib.setState(newState);
     }
 
     /**

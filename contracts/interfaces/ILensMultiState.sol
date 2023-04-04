@@ -15,7 +15,13 @@ import {Types} from 'contracts/libraries/constants/Types.sol';
  *  - Paused: The protocol is paused for all operations.
  */
 interface ILensMultiState {
-    // TODO: Why don't we have setState in the interface?
+    /**
+     * @notice Sets the protocol state to either a global pause, a publishing pause or an unpaused state.
+     * @custom:permissions Governance or Emergency Admin. Emergency Admin can only restrict more.
+     *
+     * @param newState The state to set (from ProtocolState enum).
+     */
+    function setState(Types.ProtocolState newState) external;
 
     /**
      * @notice Gets the state currently set in the protocol. It could be a global pause, a publishing pause or an

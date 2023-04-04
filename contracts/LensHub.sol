@@ -2,8 +2,12 @@
 
 pragma solidity ^0.8.15;
 
+import {ILensProtocol} from 'contracts/interfaces/ILensProtocol.sol';
+import {ILensGovernable} from 'contracts/interfaces/ILensGovernable.sol';
+import {ILensHubEventHooks} from 'contracts/interfaces/ILensHubEventHooks.sol';
+import {ILensHubImplGetters} from 'contracts/interfaces/ILensHubImplGetters.sol';
+
 import {IERC721Timestamped} from 'contracts/interfaces/IERC721Timestamped.sol';
-import {ILensHub} from 'contracts/interfaces/ILensHub.sol';
 import {IFollowNFT} from 'contracts/interfaces/IFollowNFT.sol';
 
 import {Events} from 'contracts/libraries/constants/Events.sol';
@@ -41,7 +45,16 @@ import {TokenHandleRegistry} from 'contracts/misc/namespaces/TokenHandleRegistry
  *      1. Both Follow & Collect NFTs invoke a LensHub callback on transfer with the sole purpose of emitting an event.
  *      2. Almost every event in the protocol emits the current block timestamp, reducing the need to fetch it manually.
  */
-contract LensHub is LensBaseERC721, VersionedInitializable, LensMultiState, LensHubStorage, ILensHub {
+contract LensHub is
+    LensBaseERC721,
+    VersionedInitializable,
+    LensMultiState,
+    LensHubStorage,
+    ILensProtocol,
+    ILensGovernable,
+    ILensHubEventHooks,
+    ILensHubImplGetters
+{
     // Constant for upgradeability purposes, see VersionedInitializable.
     // Do not confuse it with the EIP-712 version number.
     uint256 internal constant REVISION = 1;
@@ -86,41 +99,37 @@ contract LensHub is LensBaseERC721, VersionedInitializable, LensMultiState, Lens
         NEW_FEE_FOLLOW_MODULE = newFeeFollowModule;
     }
 
+    // TODO: Move all gov/migration/etc functions to their respective files
     /////////////////////////////////
     ///        GOV FUNCTIONS      ///
     /////////////////////////////////
 
-    /// @inheritdoc ILensHub
-    function setGovernance(address newGovernance) external onlyGov {
+    /// @inheritdoc ILensGovernable
+    function setGovernance(address newGovernance) external override onlyGov {
         GovernanceLib.setGovernance(newGovernance);
     }
 
-    /// @inheritdoc ILensHub
+    /// @inheritdoc ILensGovernable
     function setEmergencyAdmin(address newEmergencyAdmin) external override onlyGov {
         GovernanceLib.setEmergencyAdmin(newEmergencyAdmin);
     }
 
-    /// @inheritdoc ILensHub
-    function setState(Types.ProtocolState newState) external override {
-        GovernanceLib.setState(newState);
-    }
-
-    ///@inheritdoc ILensHub
+    ///@inheritdoc ILensGovernable
     function whitelistProfileCreator(address profileCreator, bool whitelist) external override onlyGov {
         GovernanceLib.whitelistProfileCreator(profileCreator, whitelist);
     }
 
-    /// @inheritdoc ILensHub
+    /// @inheritdoc ILensGovernable
     function whitelistFollowModule(address followModule, bool whitelist) external override onlyGov {
         GovernanceLib.whitelistFollowModule(followModule, whitelist);
     }
 
-    /// @inheritdoc ILensHub
+    /// @inheritdoc ILensGovernable
     function whitelistReferenceModule(address referenceModule, bool whitelist) external override onlyGov {
         GovernanceLib.whitelistReferenceModule(referenceModule, whitelist);
     }
 
-    /// @inheritdoc ILensHub
+    /// @inheritdoc ILensGovernable
     function whitelistActionModule(address actionModule, bool whitelist) external override onlyGov {
         GovernanceLib.whitelistActionModule(actionModule, whitelist);
     }
@@ -155,7 +164,7 @@ contract LensHub is LensBaseERC721, VersionedInitializable, LensMultiState, Lens
     ///        PROFILE OWNER FUNCTIONS      ///
     ///////////////////////////////////////////
 
-    /// @inheritdoc ILensHub
+    /// @inheritdoc ILensProtocol
     function createProfile(
         Types.CreateProfileParams calldata createProfileParams
     ) external override whenNotPaused returns (uint256) {
@@ -167,7 +176,7 @@ contract LensHub is LensBaseERC721, VersionedInitializable, LensMultiState, Lens
         }
     }
 
-    /// @inheritdoc ILensHub
+    /// @inheritdoc ILensProtocol
     function setProfileMetadataURI(
         uint256 profileId,
         string calldata metadataURI
@@ -175,7 +184,7 @@ contract LensHub is LensBaseERC721, VersionedInitializable, LensMultiState, Lens
         ProfileLib.setProfileMetadataURI(profileId, metadataURI);
     }
 
-    /// @inheritdoc ILensHub
+    /// @inheritdoc ILensProtocol
     function setProfileMetadataURIWithSig(
         uint256 profileId,
         string calldata metadataURI,
@@ -185,7 +194,7 @@ contract LensHub is LensBaseERC721, VersionedInitializable, LensMultiState, Lens
         ProfileLib.setProfileMetadataURI(profileId, metadataURI);
     }
 
-    /// @inheritdoc ILensHub
+    /// @inheritdoc ILensProtocol
     function setFollowModule(
         uint256 profileId,
         address followModule,
@@ -194,7 +203,7 @@ contract LensHub is LensBaseERC721, VersionedInitializable, LensMultiState, Lens
         ProfileLib.setFollowModule(profileId, followModule, followModuleInitData);
     }
 
-    /// @inheritdoc ILensHub
+    /// @inheritdoc ILensProtocol
     function setFollowModuleWithSig(
         uint256 profileId,
         address followModule,
@@ -205,7 +214,7 @@ contract LensHub is LensBaseERC721, VersionedInitializable, LensMultiState, Lens
         ProfileLib.setFollowModule(profileId, followModule, followModuleInitData);
     }
 
-    /// @inheritdoc ILensHub
+    /// @inheritdoc ILensProtocol
     function changeDelegatedExecutorsConfig(
         uint256 delegatorProfileId,
         address[] calldata delegatedExecutors,
@@ -230,7 +239,7 @@ contract LensHub is LensBaseERC721, VersionedInitializable, LensMultiState, Lens
         ProfileLib.changeCurrentDelegatedExecutorsConfig(delegatorProfileId, delegatedExecutors, approvals);
     }
 
-    /// @inheritdoc ILensHub
+    /// @inheritdoc ILensProtocol
     function changeDelegatedExecutorsConfigWithSig(
         uint256 delegatorProfileId,
         address[] calldata delegatedExecutors,
@@ -256,7 +265,7 @@ contract LensHub is LensBaseERC721, VersionedInitializable, LensMultiState, Lens
         );
     }
 
-    /// @inheritdoc ILensHub
+    /// @inheritdoc ILensProtocol
     function setProfileImageURI(
         uint256 profileId,
         string calldata imageURI
@@ -264,7 +273,7 @@ contract LensHub is LensBaseERC721, VersionedInitializable, LensMultiState, Lens
         ProfileLib.setProfileImageURI(profileId, imageURI);
     }
 
-    /// @inheritdoc ILensHub
+    /// @inheritdoc ILensProtocol
     function setProfileImageURIWithSig(
         uint256 profileId,
         string calldata imageURI,
@@ -278,7 +287,7 @@ contract LensHub is LensBaseERC721, VersionedInitializable, LensMultiState, Lens
     ///        PUBLISHING FUNCTIONS      ///
     ////////////////////////////////////////
 
-    /// @inheritdoc ILensHub
+    /// @inheritdoc ILensProtocol
     function post(
         Types.PostParams calldata postParams
     )
@@ -291,7 +300,7 @@ contract LensHub is LensBaseERC721, VersionedInitializable, LensMultiState, Lens
         return PublicationLib.post({postParams: postParams, transactionExecutor: msg.sender});
     }
 
-    /// @inheritdoc ILensHub
+    /// @inheritdoc ILensProtocol
     function postWithSig(
         Types.PostParams calldata postParams,
         Types.EIP712Signature calldata signature
@@ -306,7 +315,7 @@ contract LensHub is LensBaseERC721, VersionedInitializable, LensMultiState, Lens
         return PublicationLib.post({postParams: postParams, transactionExecutor: signature.signer});
     }
 
-    /// @inheritdoc ILensHub
+    /// @inheritdoc ILensProtocol
     function comment(
         Types.CommentParams calldata commentParams
     )
@@ -319,7 +328,7 @@ contract LensHub is LensBaseERC721, VersionedInitializable, LensMultiState, Lens
         return PublicationLib.comment({commentParams: commentParams, transactionExecutor: msg.sender});
     }
 
-    /// @inheritdoc ILensHub
+    /// @inheritdoc ILensProtocol
     function commentWithSig(
         Types.CommentParams calldata commentParams,
         Types.EIP712Signature calldata signature
@@ -334,7 +343,7 @@ contract LensHub is LensBaseERC721, VersionedInitializable, LensMultiState, Lens
         return PublicationLib.comment({commentParams: commentParams, transactionExecutor: signature.signer});
     }
 
-    /// @inheritdoc ILensHub
+    /// @inheritdoc ILensProtocol
     function mirror(
         Types.MirrorParams calldata mirrorParams
     )
@@ -347,7 +356,7 @@ contract LensHub is LensBaseERC721, VersionedInitializable, LensMultiState, Lens
         return PublicationLib.mirror({mirrorParams: mirrorParams, transactionExecutor: msg.sender});
     }
 
-    /// @inheritdoc ILensHub
+    /// @inheritdoc ILensProtocol
     function mirrorWithSig(
         Types.MirrorParams calldata mirrorParams,
         Types.EIP712Signature calldata signature
@@ -362,7 +371,7 @@ contract LensHub is LensBaseERC721, VersionedInitializable, LensMultiState, Lens
         return PublicationLib.mirror({mirrorParams: mirrorParams, transactionExecutor: signature.signer});
     }
 
-    /// @inheritdoc ILensHub
+    /// @inheritdoc ILensProtocol
     function quote(
         Types.QuoteParams calldata quoteParams
     )
@@ -375,7 +384,7 @@ contract LensHub is LensBaseERC721, VersionedInitializable, LensMultiState, Lens
         return PublicationLib.quote({quoteParams: quoteParams, transactionExecutor: msg.sender});
     }
 
-    /// @inheritdoc ILensHub
+    /// @inheritdoc ILensProtocol
     function quoteWithSig(
         Types.QuoteParams calldata quoteParams,
         Types.EIP712Signature calldata signature
@@ -401,7 +410,7 @@ contract LensHub is LensBaseERC721, VersionedInitializable, LensMultiState, Lens
     ///        PROFILE INTERACTION FUNCTIONS      ///
     /////////////////////////////////////////////////
 
-    /// @inheritdoc ILensHub
+    /// @inheritdoc ILensProtocol
     function follow(
         uint256 followerProfileId,
         uint256[] calldata idsOfProfilesToFollow,
@@ -424,7 +433,7 @@ contract LensHub is LensBaseERC721, VersionedInitializable, LensMultiState, Lens
             });
     }
 
-    /// @inheritdoc ILensHub
+    /// @inheritdoc ILensProtocol
     function followWithSig(
         uint256 followerProfileId,
         uint256[] calldata idsOfProfilesToFollow,
@@ -449,7 +458,7 @@ contract LensHub is LensBaseERC721, VersionedInitializable, LensMultiState, Lens
             });
     }
 
-    /// @inheritdoc ILensHub
+    /// @inheritdoc ILensProtocol
     function unfollow(
         uint256 unfollowerProfileId,
         uint256[] calldata idsOfProfilesToUnfollow
@@ -462,7 +471,7 @@ contract LensHub is LensBaseERC721, VersionedInitializable, LensMultiState, Lens
             });
     }
 
-    /// @inheritdoc ILensHub
+    /// @inheritdoc ILensProtocol
     function unfollowWithSig(
         uint256 unfollowerProfileId,
         uint256[] calldata idsOfProfilesToUnfollow,
@@ -478,7 +487,7 @@ contract LensHub is LensBaseERC721, VersionedInitializable, LensMultiState, Lens
             });
     }
 
-    /// @inheritdoc ILensHub
+    /// @inheritdoc ILensProtocol
     function setBlockStatus(
         uint256 byProfileId,
         uint256[] calldata idsOfProfilesToSetBlockStatus,
@@ -487,7 +496,7 @@ contract LensHub is LensBaseERC721, VersionedInitializable, LensMultiState, Lens
         return ProfileLib.setBlockStatus(byProfileId, idsOfProfilesToSetBlockStatus, blockStatus);
     }
 
-    /// @inheritdoc ILensHub
+    /// @inheritdoc ILensProtocol
     function setBlockStatusWithSig(
         uint256 byProfileId,
         uint256[] calldata idsOfProfilesToSetBlockStatus,
@@ -498,7 +507,7 @@ contract LensHub is LensBaseERC721, VersionedInitializable, LensMultiState, Lens
         return ProfileLib.setBlockStatus(byProfileId, idsOfProfilesToSetBlockStatus, blockStatus);
     }
 
-    /// @inheritdoc ILensHub
+    /// @inheritdoc ILensProtocol
     function collect(
         Types.CollectParams calldata collectParams
     )
@@ -517,7 +526,7 @@ contract LensHub is LensBaseERC721, VersionedInitializable, LensMultiState, Lens
             });
     }
 
-    /// @inheritdoc ILensHub
+    /// @inheritdoc ILensProtocol
     function collectWithSig(
         Types.CollectParams calldata collectParams,
         Types.EIP712Signature calldata signature
@@ -538,7 +547,7 @@ contract LensHub is LensBaseERC721, VersionedInitializable, LensMultiState, Lens
             });
     }
 
-    /// @inheritdoc ILensHub
+    /// @inheritdoc ILensProtocol
     function act(
         Types.PublicationActionParams calldata publicationActionParams
     )
@@ -556,7 +565,7 @@ contract LensHub is LensBaseERC721, VersionedInitializable, LensMultiState, Lens
             });
     }
 
-    /// @inheritdoc ILensHub
+    /// @inheritdoc ILensProtocol
     function actWithSig(
         Types.PublicationActionParams calldata publicationActionParams,
         Types.EIP712Signature calldata signature
@@ -576,7 +585,7 @@ contract LensHub is LensBaseERC721, VersionedInitializable, LensMultiState, Lens
             });
     }
 
-    /// @inheritdoc ILensHub
+    /// @inheritdoc ILensHubEventHooks
     function emitUnfollowedEvent(uint256 unfollowerProfileId, uint256 idOfProfileUnfollowed) external override {
         address expectedFollowNFT = _profileById[idOfProfileUnfollowed].followNFT;
         if (msg.sender != expectedFollowNFT) {
@@ -589,39 +598,40 @@ contract LensHub is LensBaseERC721, VersionedInitializable, LensMultiState, Lens
     ///        EXTERNAL VIEW FUNCTIONS      ///
     ///////////////////////////////////////////
 
+    /// @inheritdoc ILensProtocol
     function isFollowing(uint256 followerProfileId, uint256 followedProfileId) external view returns (bool) {
         address followNFT = _profileById[followedProfileId].followNFT;
         return followNFT != address(0) && IFollowNFT(followNFT).isFollowing(followerProfileId);
     }
 
-    /// @inheritdoc ILensHub
+    /// @inheritdoc ILensGovernable
     function isProfileCreatorWhitelisted(address profileCreator) external view override returns (bool) {
         return _profileCreatorWhitelisted[profileCreator];
     }
 
-    /// @inheritdoc ILensHub
+    /// @inheritdoc ILensGovernable
     function isFollowModuleWhitelisted(address followModule) external view override returns (bool) {
         return _followModuleWhitelisted[followModule];
     }
 
-    /// @inheritdoc ILensHub
+    /// @inheritdoc ILensGovernable
     function isReferenceModuleWhitelisted(address referenceModule) external view override returns (bool) {
         return _referenceModuleWhitelisted[referenceModule];
     }
 
-    /// @inheritdoc ILensHub
+    /// @inheritdoc ILensGovernable
     function getActionModuleWhitelistData(
         address actionModule
     ) external view override returns (Types.ActionModuleWhitelistData memory) {
         return _actionModuleWhitelistData[actionModule];
     }
 
-    /// @inheritdoc ILensHub
+    /// @inheritdoc ILensGovernable
     function getGovernance() external view override returns (address) {
         return _governance;
     }
 
-    /// @inheritdoc ILensHub
+    /// @inheritdoc ILensProtocol
     function isDelegatedExecutorApproved(
         uint256 delegatorProfileId,
         address delegatedExecutor,
@@ -630,7 +640,7 @@ contract LensHub is LensBaseERC721, VersionedInitializable, LensMultiState, Lens
         return StorageLib.getDelegatedExecutorsConfig(delegatorProfileId).isApproved[configNumber][delegatedExecutor];
     }
 
-    /// @inheritdoc ILensHub
+    /// @inheritdoc ILensProtocol
     function isDelegatedExecutorApproved(
         uint256 delegatorProfileId,
         address delegatedExecutor
@@ -638,83 +648,83 @@ contract LensHub is LensBaseERC721, VersionedInitializable, LensMultiState, Lens
         return ProfileLib.isExecutorApproved(delegatorProfileId, delegatedExecutor);
     }
 
-    /// @inheritdoc ILensHub
+    /// @inheritdoc ILensProtocol
     function getDelegatedExecutorsConfigNumber(uint256 delegatorProfileId) external view returns (uint64) {
         return StorageLib.getDelegatedExecutorsConfig(delegatorProfileId).configNumber;
     }
 
-    /// @inheritdoc ILensHub
+    /// @inheritdoc ILensProtocol
     function getDelegatedExecutorsPrevConfigNumber(uint256 delegatorProfileId) external view returns (uint64) {
         return StorageLib.getDelegatedExecutorsConfig(delegatorProfileId).prevConfigNumber;
     }
 
-    /// @inheritdoc ILensHub
+    /// @inheritdoc ILensProtocol
     function getDelegatedExecutorsMaxConfigNumberSet(uint256 delegatorProfileId) external view returns (uint64) {
         return StorageLib.getDelegatedExecutorsConfig(delegatorProfileId).maxConfigNumberSet;
     }
 
-    /// @inheritdoc ILensHub
+    /// @inheritdoc ILensProtocol
     function isBlocked(uint256 profileId, uint256 byProfileId) external view returns (bool) {
         return _blockedStatus[byProfileId][profileId];
     }
 
-    /// @inheritdoc ILensHub
+    /// @inheritdoc ILensProtocol
     function getProfileMetadataURI(uint256 profileId) external view override returns (string memory) {
         return StorageLib.getProfile(profileId).metadataURI;
     }
 
-    /// @inheritdoc ILensHub
+    /// @inheritdoc ILensProtocol
     function getPubCount(uint256 profileId) external view override returns (uint256) {
         return _profileById[profileId].pubCount;
     }
 
-    /// @inheritdoc ILensHub
+    /// @inheritdoc ILensProtocol
     function getProfileImageURI(uint256 profileId) external view override returns (string memory) {
         return _profileById[profileId].imageURI;
     }
 
-    /// @inheritdoc ILensHub
+    /// @inheritdoc ILensProtocol
     function getFollowNFT(uint256 profileId) external view override returns (address) {
         return _profileById[profileId].followNFT;
     }
 
-    /// @inheritdoc ILensHub
+    /// @inheritdoc ILensProtocol
     function getFollowModule(uint256 profileId) external view override returns (address) {
         return _profileById[profileId].followModule;
     }
 
-    /// @inheritdoc ILensHub
+    /// @inheritdoc ILensProtocol
     function getReferenceModule(uint256 profileId, uint256 pubId) external view override returns (address) {
         return _pubByIdByProfile[profileId][pubId].referenceModule;
     }
 
-    /// @inheritdoc ILensHub
+    /// @inheritdoc ILensProtocol
     function getActionModulesBitmap(uint256 profileId, uint256 pubId) external view override returns (uint256) {
         return _pubByIdByProfile[profileId][pubId].actionModulesBitmap;
     }
 
-    /// @inheritdoc ILensHub
+    /// @inheritdoc ILensProtocol
     function getPubPointer(uint256 profileId, uint256 pubId) external view override returns (uint256, uint256) {
         return (_pubByIdByProfile[profileId][pubId].pointedProfileId, _pubByIdByProfile[profileId][pubId].pointedPubId);
     }
 
-    /// @inheritdoc ILensHub
+    /// @inheritdoc ILensProtocol
     function getContentURI(uint256 profileId, uint256 pubId) external view override returns (string memory) {
         // This function is used by the Collect NFTs' tokenURI function.
         return PublicationLib.getContentURI(profileId, pubId);
     }
 
-    /// @inheritdoc ILensHub
+    /// @inheritdoc ILensProtocol
     function getProfile(uint256 profileId) external view override returns (Types.Profile memory) {
         return _profileById[profileId];
     }
 
-    /// @inheritdoc ILensHub
+    /// @inheritdoc ILensProtocol
     function getPub(uint256 profileId, uint256 pubId) external view override returns (Types.Publication memory) {
         return _pubByIdByProfile[profileId][pubId];
     }
 
-    /// @inheritdoc ILensHub
+    /// @inheritdoc ILensProtocol
     function getPublicationType(
         uint256 profileId,
         uint256 pubId
@@ -722,12 +732,12 @@ contract LensHub is LensBaseERC721, VersionedInitializable, LensMultiState, Lens
         return PublicationLib.getPublicationType(profileId, pubId);
     }
 
-    /// @inheritdoc ILensHub
+    /// @inheritdoc ILensHubImplGetters
     function getFollowNFTImpl() external view override returns (address) {
         return FOLLOW_NFT_IMPL;
     }
 
-    /// @inheritdoc ILensHub
+    /// @inheritdoc ILensHubImplGetters
     function getCollectNFTImpl() external view override returns (address) {
         return COLLECT_NFT_IMPL;
     }
