@@ -116,6 +116,11 @@ library MigrationLib {
         }
     }
 
+    // TODO: What if the user has a module that does not allow "follow with token" (i.e. only allow fresh follows),
+    // but users can migrate the token as a hack to follow anyways. Should we ask for `mintTimestamp` form the token to
+    // be before V1-to-V2 timestamp? We can store the V1-to-V2 timestamp as immutable constant in the hub.
+    // Maybe it is not necessary for now, because of the modules we have, and we will remove this migration function
+    // before we whitelist follow modules that does not allow "follow with token". But we should be aware of this.
     function _migrateFollow(
         uint256 followerProfileId,
         uint256 idOfProfileFollowed,
@@ -135,6 +140,7 @@ library MigrationLib {
                 idOfProfileFollowed: idOfProfileFollowed,
                 followTokenIdAssigned: followTokenId,
                 followModuleData: '',
+                processFollowModuleReturnData: '',
                 timestamp: mintTimestamp // The only case where this won't match block.timestamp is during the migration
             });
         }

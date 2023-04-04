@@ -116,9 +116,10 @@ library FollowLib {
             followTokenId: followTokenId
         });
 
+        bytes memory processFollowModuleReturnData;
         address followModule = _profileToFollow.followModule;
         if (followModule != address(0)) {
-            IFollowModule(followModule).processFollow(
+            processFollowModuleReturnData = IFollowModule(followModule).processFollow(
                 followerProfileId,
                 followTokenId,
                 transactionExecutor,
@@ -132,6 +133,7 @@ library FollowLib {
             idOfProfileToFollow,
             followTokenIdAssigned,
             followModuleData,
+            processFollowModuleReturnData,
             block.timestamp
         );
 

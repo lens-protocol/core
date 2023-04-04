@@ -491,6 +491,7 @@ interface ILensHub {
      * @return bool True if the address is approved as a delegated executor to act on behalf of the profile in the
      * current configuration, false otherwise.
      */
+    // TODO: Rename to `isDelegatedExecutorApprovedInCurrentConfig` ?
     function isDelegatedExecutorApproved(
         uint256 delegatorProfileId,
         address delegatedExecutor
