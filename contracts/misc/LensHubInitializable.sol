@@ -6,6 +6,7 @@ import {LensHub} from 'contracts/LensHub.sol';
 import {Types} from 'contracts/libraries/constants/Types.sol';
 import {GovernanceLib} from 'contracts/libraries/GovernanceLib.sol';
 import {ILensHubInitializable} from 'contracts/interfaces/ILensHubInitializable.sol';
+import {VersionedInitializable} from 'contracts/base/upgradeability/VersionedInitializable.sol';
 
 /**
  * @title LensHubInitializable
@@ -13,8 +14,13 @@ import {ILensHubInitializable} from 'contracts/interfaces/ILensHubInitializable.
  *
  * @notice Extension of LensHub contract that includes initialization for fresh deployments.
  */
-contract LensHubInitializable is LensHub, ILensHubInitializable {
+contract LensHubInitializable is LensHub, VersionedInitializable, ILensHubInitializable {
+    // Constant for upgradeability purposes, see VersionedInitializable.
+    // Do not confuse it with the EIP-712 version number.
+    uint256 internal constant REVISION = 1;
+
     constructor(
+        address moduleGlobals,
         address followNFTImpl,
         address collectNFTImpl,
         address lensHandlesAddress,
@@ -24,6 +30,7 @@ contract LensHubInitializable is LensHub, ILensHubInitializable {
         address newFeeFollowModule
     )
         LensHub(
+            moduleGlobals,
             followNFTImpl,
             collectNFTImpl,
             lensHandlesAddress,
@@ -46,5 +53,9 @@ contract LensHubInitializable is LensHub, ILensHubInitializable {
         super._initialize(name, symbol);
         GovernanceLib.initState(Types.ProtocolState.Paused);
         GovernanceLib.setGovernance(newGovernance);
+    }
+
+    function getRevision() internal pure virtual override returns (uint256) {
+        return REVISION;
     }
 }

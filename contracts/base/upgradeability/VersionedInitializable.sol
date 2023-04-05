@@ -2,6 +2,7 @@
 pragma solidity ^0.8.15;
 
 import {Errors} from 'contracts/libraries/constants/Errors.sol';
+import {StorageLib} from 'contracts/libraries/StorageLib.sol';
 
 /**
  * @title VersionedInitializable
@@ -24,18 +25,17 @@ abstract contract VersionedInitializable {
     address private immutable originalImpl;
 
     /**
-     * @dev Indicates that the contract has been initialized.
-     */
-    uint256 private lastInitializedRevision = 0;
-
-    /**
      * @dev Modifier to use in the initializer function of a contract.
      */
     modifier initializer() {
         uint256 revision = getRevision();
-        if (address(this) == originalImpl) revert Errors.CannotInitImplementation();
-        if (revision <= lastInitializedRevision) revert Errors.Initialized();
-        lastInitializedRevision = revision;
+        if (address(this) == originalImpl) {
+            revert Errors.CannotInitImplementation();
+        }
+        if (revision <= StorageLib.getLastInitializedRevision()) {
+            revert Errors.Initialized();
+        }
+        StorageLib.setLastInitializedRevision(revision);
         _;
     }
 

@@ -34,8 +34,6 @@ library ProfileLib {
      * @param profileId The profile ID to associate with this profile NFT (token ID).
      */
     function createProfile(Types.CreateProfileParams calldata createProfileParams, uint256 profileId) external {
-        ValidationLib.validateProfileCreatorWhitelisted(msg.sender);
-
         if (bytes(createProfileParams.imageURI).length > MAX_PROFILE_IMAGE_URI_LENGTH) {
             revert Errors.ProfileImageURILengthInvalid();
         }

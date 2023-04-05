@@ -6,6 +6,7 @@ import {Errors} from 'contracts/libraries/constants/Errors.sol';
 import {Types} from 'contracts/libraries/constants/Types.sol';
 import {Events} from 'contracts/libraries/constants/Events.sol';
 import {MetaTxLib} from 'contracts/libraries/MetaTxLib.sol';
+import {ILensERC721} from 'contracts/interfaces/ILensERC721.sol';
 import {IERC721Timestamped} from 'contracts/interfaces/IERC721Timestamped.sol';
 import {IERC721Burnable} from 'contracts/interfaces/IERC721Burnable.sol';
 import {IERC721MetaTx} from 'contracts/interfaces/IERC721MetaTx.sol';
@@ -27,14 +28,7 @@ import {IERC721} from '@openzeppelin/contracts/token/ERC721/IERC721.sol';
  * 2. Constructor replaced with an initializer.
  * 3. Mint timestamp is now stored in a TokenData struct alongside the owner address.
  */
-abstract contract LensBaseERC721 is
-    ERC165,
-    IERC721,
-    IERC721Timestamped,
-    IERC721Burnable,
-    IERC721MetaTx,
-    IERC721Metadata
-{
+abstract contract LensBaseERC721 is ERC165, ILensERC721 {
     using Address for address;
     using Strings for uint256;
 
@@ -87,6 +81,9 @@ abstract contract LensBaseERC721 is
     function supportsInterface(bytes4 interfaceId) public view virtual override(ERC165, IERC165) returns (bool) {
         return
             interfaceId == type(IERC721).interfaceId ||
+            interfaceId == type(IERC721Timestamped).interfaceId ||
+            interfaceId == type(IERC721Burnable).interfaceId ||
+            interfaceId == type(IERC721MetaTx).interfaceId ||
             interfaceId == type(IERC721Metadata).interfaceId ||
             super.supportsInterface(interfaceId);
     }

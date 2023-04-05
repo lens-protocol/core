@@ -28,6 +28,17 @@ interface ILensGovernable {
     function setEmergencyAdmin(address newEmergencyAdmin) external;
 
     /**
+     * @notice Sets the protocol state to either a global pause, a publishing pause or an unpaused state.
+     * @custom:permissions Governance or Emergency Admin. Emergency Admin can only restrict more.
+     *
+     * @param newState The state to set. It can be one of the following:
+     *  - Unpaused: The protocol is fully operational.
+     *  - PublishingPaused: The protocol is paused for publishing, but it is still operational for others operations.
+     *  - Paused: The protocol is paused for all operations.
+     */
+    function setState(Types.ProtocolState newState) external;
+
+    /**
      * @notice Adds or removes a profile creator from the whitelist.
      * @custom:permissions Governance.
      *
@@ -70,6 +81,15 @@ interface ILensGovernable {
      * @return address The address of the currently configured governance.
      */
     function getGovernance() external view returns (address);
+
+    /**
+     * @notice Gets the state currently set in the protocol. It could be a global pause, a publishing pause or an
+     * unpaused state.
+     * @custom:permissions Anyone.
+     *
+     * @return Types.ProtocolState The state currently set in the protocol.
+     */
+    function getState() external view returns (Types.ProtocolState);
 
     /**
      * @notice Returns whether or not a profile creator is whitelisted.

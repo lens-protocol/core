@@ -3,13 +3,13 @@
 pragma solidity ^0.8.15;
 
 /**
- * @title ILensHubImplGetters
+ * @title ILensImplGetters
  * @author Lens Protocol
  *
  * @notice This is the interface for the LensHub contract's implementation getters. These implementations will be used
  * for deploying each respective contract for each profile.
  */
-interface ILensHubImplGetters {
+interface ILensImplGetters {
     /**
      * @notice Returns the Follow NFT implementation address that is used for all deployed Follow NFTs.
      *

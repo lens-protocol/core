@@ -6,8 +6,7 @@ pragma solidity >0.6.0;
 import {ILensProtocol} from 'contracts/interfaces/ILensProtocol.sol';
 import {ILensGovernable} from 'contracts/interfaces/ILensGovernable.sol';
 import {ILensHubEventHooks} from 'contracts/interfaces/ILensHubEventHooks.sol';
-import {ILensHubImplGetters} from 'contracts/interfaces/ILensHubImplGetters.sol';
+import {ILensImplGetters} from 'contracts/interfaces/ILensImplGetters.sol';
+import {ILensERC721} from 'contracts/interfaces/ILensERC721.sol';
 
-interface ILensHub is ILensProtocol, ILensGovernable, ILensHubEventHooks, ILensHubImplGetters {
-    // TODO: Remove `ILensHub`, and replace for its proper underlying interface.
-}
+interface ILensHub is ILensERC721, ILensProtocol, ILensGovernable, ILensHubEventHooks, ILensImplGetters {}
