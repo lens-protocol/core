@@ -49,11 +49,11 @@ import {LensV2Migration} from 'contracts/misc/LensV2Migration.sol';
  */
 contract LensHub is
     LensProfiles,
-    LensHubStorage,
     LensGovernable,
     LensV2Migration,
     LensImplGetters,
     LensHubEventHooks,
+    LensHubStorage,
     ILensProtocol
 {
     modifier onlyProfileOwnerOrDelegatedExecutor(address expectedOwnerOrDelegatedExecutor, uint256 profileId) {
