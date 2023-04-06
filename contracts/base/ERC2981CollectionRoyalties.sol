@@ -68,7 +68,7 @@ abstract contract ERC2981CollectionRoyalties is IERC2981 {
         return royaltyAmount;
     }
 
-    function _beforeRoyaltiesSet(uint256 royaltiesInBasisPoints) internal view virtual {}
+    function _beforeRoyaltiesSet(uint256 royaltiesInBasisPoints) internal view virtual;
 
     function _getRoyaltiesInBasisPointsSlot() internal view virtual returns (uint256);
 
