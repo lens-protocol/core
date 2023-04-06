@@ -32,7 +32,7 @@ library StorageLib {
     uint256 constant BLOCKED_STATUS_MAPPING_SLOT = 26;
     uint256 constant ACTION_MODULE_BY_ID_SLOT = 27;
     uint256 constant MAX_ACTION_MODULE_ID_USED_SLOT = 28;
-    uint256 constant PROFILE_ROYALTIES_BPS = 29;
+    uint256 constant PROFILE_ROYALTIES_BPS_SLOT = 29;
 
     uint256 constant MAX_ACTION_MODULE_ID_SUPPORTED = 255;
 
