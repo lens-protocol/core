@@ -78,6 +78,12 @@ library ValidationLib {
         }
     }
 
+    function validateCallerIsGovernance() internal view {
+        if (msg.sender != StorageLib.getGovernance()) {
+            revert Errors.NotGovernance();
+        }
+    }
+
     function validateReferrersAndGetReferrersPubTypes(
         uint256[] memory referrerProfileIds,
         uint256[] memory referrerPubIds,
