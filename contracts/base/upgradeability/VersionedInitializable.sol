@@ -28,14 +28,13 @@ abstract contract VersionedInitializable {
      * @dev Modifier to use in the initializer function of a contract.
      */
     modifier initializer() {
-        uint256 revision = getRevision();
         if (address(this) == originalImpl) {
             revert Errors.CannotInitImplementation();
         }
-        if (revision <= StorageLib.getLastInitializedRevision()) {
+        if (getRevision() <= StorageLib.getLastInitializedRevision()) {
             revert Errors.Initialized();
         }
-        StorageLib.setLastInitializedRevision(revision);
+        StorageLib.setLastInitializedRevision(getRevision());
         _;
     }
 

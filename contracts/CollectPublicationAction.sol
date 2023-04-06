@@ -64,7 +64,7 @@ contract CollectPublicationAction is HubRestricted, VersionedInitializable, IPub
     ) external override onlyHub returns (bytes memory) {
         (address collectModule, bytes memory collectModuleInitData) = abi.decode(data, (address, bytes));
         if (!_collectModuleWhitelisted[collectModule]) {
-            revert Errors.CollectModuleNotWhitelisted();
+            revert Errors.NotWhitelisted();
         }
         _collectDataByPub[profileId][pubId].collectModule = collectModule;
         ICollectModule(collectModule).initializePublicationCollectModule(

@@ -172,7 +172,7 @@ contract FollowNFTTest is BaseTest, ERC721Test {
 
         assertTrue(followNFT.isFollowing(followerProfileId));
 
-        vm.expectRevert(Errors.ERC721Time_OwnerQueryForNonexistantToken.selector);
+        vm.expectRevert(Errors.TokenDoesNotExist.selector);
         followNFT.ownerOf(assignedTokenId);
     }
 
@@ -703,7 +703,7 @@ contract FollowNFTTest is BaseTest, ERC721Test {
         hub.burn(alreadyFollowingProfileId);
 
         vm.prank(alreadyFollowingProfileOwner);
-        vm.expectRevert(Errors.ERC721Time_OwnerQueryForNonexistantToken.selector);
+        vm.expectRevert(Errors.TokenDoesNotExist.selector);
         followNFT.wrap(followTokenId);
     }
 
@@ -855,7 +855,7 @@ contract FollowNFTTest is BaseTest, ERC721Test {
     function testCannotUnwrapIfTokenIsAlreadyUnwrapped() public {
         uint256 followTokenId = followNFT.getFollowTokenId(alreadyFollowingProfileId);
 
-        vm.expectRevert(Errors.ERC721Time_OperatorQueryForNonexistantToken.selector);
+        vm.expectRevert(Errors.TokenDoesNotExist.selector);
         vm.prank(alreadyFollowingProfileOwner);
         followNFT.unwrap(followTokenId);
     }

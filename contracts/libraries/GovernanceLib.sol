@@ -89,7 +89,7 @@ library GovernanceLib {
         uint256 id;
         if (actionModuleWhitelistData.id == 0) {
             if (!whitelist) {
-                revert('ModuleNotWhitelisted');
+                revert Errors.NotWhitelisted();
             }
             id = StorageLib.incrementMaxActionModuleIdUsed();
 
