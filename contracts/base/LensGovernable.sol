@@ -5,6 +5,7 @@ pragma solidity ^0.8.15;
 import {ILensGovernable} from 'contracts/interfaces/ILensGovernable.sol';
 import {Errors} from 'contracts/libraries/constants/Errors.sol';
 import {GovernanceLib} from 'contracts/libraries/GovernanceLib.sol';
+import {ValidationLib} from 'contracts/libraries/ValidationLib.sol';
 import {StorageLib} from 'contracts/libraries/StorageLib.sol';
 import {Types} from 'contracts/libraries/constants/Types.sol';
 
@@ -13,7 +14,7 @@ abstract contract LensGovernable is ILensGovernable {
      * @dev This modifier reverts if the caller is not the configured governance address.
      */
     modifier onlyGov() {
-        _validateCallerIsGovernance();
+        ValidationLib.validateCallerIsGovernance();
         _;
     }
 
@@ -53,14 +54,6 @@ abstract contract LensGovernable is ILensGovernable {
     /// @inheritdoc ILensGovernable
     function whitelistActionModule(address actionModule, bool whitelist) external override onlyGov {
         GovernanceLib.whitelistActionModule(actionModule, whitelist);
-    }
-
-    //////////////////////////////////////
-    ///        INTERNAL FUNCTIONS      ///
-    //////////////////////////////////////
-
-    function _validateCallerIsGovernance() internal view {
-        if (msg.sender != StorageLib.getGovernance()) revert Errors.NotGovernance();
     }
 
     ///////////////////////////////////////////
