@@ -84,7 +84,6 @@ abstract contract LensProfiles is LensBaseERC721, ERC2981CollectionRoyalties {
     function supportsInterface(
         bytes4 interfaceId
     ) public view virtual override(LensBaseERC721, ERC2981CollectionRoyalties) returns (bool) {
-        return
-            LensBaseERC721.supportsInterface(interfaceId) || ERC2981CollectionRoyalties.supportsInterface(interfaceId);
+        return ERC2981CollectionRoyalties.supportsInterface(interfaceId);
     }
 }
