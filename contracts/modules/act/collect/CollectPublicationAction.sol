@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: MIT
 
-pragma solidity ^0.8.19;
+pragma solidity ^0.8.18;
 
 import {IPublicationActionModule} from 'contracts/interfaces/IPublicationActionModule.sol';
 import {ICollectModule} from 'contracts/interfaces/ICollectModule.sol';
@@ -21,13 +21,11 @@ contract CollectPublicationAction is HubRestricted, VersionedInitializable, IPub
     // Do not confuse it with the EIP-712 version number.
     uint256 internal constant REVISION = 1;
 
-    // TODO: Should we move this to some Types file when in the Modules repo
     struct CollectData {
         address collectModule;
         address collectNFT;
     }
 
-    // TODO: We should move this to Events file when in the Modules repo
     event CollectModuleWhitelisted(address collectModule, bool whitelist, uint256 timestamp);
 
     address immutable COLLECT_NFT_IMPL;

@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.10;
+pragma solidity >=0.6.0;
 
 import {ICollectModule} from 'contracts/interfaces/ICollectModule.sol';
 import {Types} from 'contracts/libraries/constants/Types.sol';

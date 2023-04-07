@@ -8,20 +8,14 @@ import {HubRestricted} from 'contracts/base/HubRestricted.sol';
 import {Errors} from 'contracts/libraries/constants/Errors.sol';
 import {Types} from 'contracts/libraries/constants/Types.sol';
 import {IERC20} from '@openzeppelin/contracts/token/ERC20/IERC20.sol';
+import {IWMATIC} from 'contracts/modules/interfaces/IWMATIC.sol';
 import {IERC721} from '@openzeppelin/contracts/token/ERC721/IERC721.sol';
 import {VersionedInitializable} from 'contracts/base/upgradeability/VersionedInitializable.sol';
 import {ERC721SeaDropStructsErrorsAndEvents} from '@seadrop/lib/ERC721SeaDropStructsErrorsAndEvents.sol';
 import {ISeaDrop} from '@seadrop/interfaces/ISeaDrop.sol';
 import {Clones} from 'openzeppelin-contracts/proxy/Clones.sol';
 import {PublicDrop} from '@seadrop/lib/SeaDropStructs.sol';
-import {LensSeaDropCollection} from 'contracts/LensSeaDropCollection.sol';
-
-// TODO: Move this to the Interface file
-interface IWMATIC is IERC20 {
-    function withdraw(uint amountToUnwrap) external;
-
-    function deposit() external payable;
-}
+import {LensSeaDropCollection} from 'contracts/modules/act/seadrop/LensSeaDropCollection.sol';
 
 contract SeaDropMintPublicationAction is VersionedInitializable, HubRestricted, IPublicationActionModule {
     // Constant for upgradeability purposes, see VersionedInitializable,
@@ -35,13 +29,11 @@ contract SeaDropMintPublicationAction is VersionedInitializable, HubRestricted, 
 
     IModuleGlobals public immutable MODULE_GLOBALS;
 
-    // TODO: Move this to `Types` when this action is moved to the Modules repository.
     struct CollectionData {
         address nftCollectionAddress;
         uint16 referrersFeeBps;
     }
 
-    // TODO: Move these to `Errors` when this action is moved to the Modules repository.
     error WrongMintPaymentAmount();
     error SeaDropFeesNotReceived();
     error ActionModuleNotAllowedAsPayer();
