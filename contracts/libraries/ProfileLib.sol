@@ -187,7 +187,7 @@ library ProfileLib {
         });
     }
 
-    function changeCurrentDelegatedExecutorsConfig(
+    function changeDelegatedExecutorsConfig(
         uint256 delegatorProfileId,
         address[] calldata delegatedExecutors,
         bool[] calldata approvals

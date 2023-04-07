@@ -6,8 +6,8 @@ import {Events} from 'contracts/libraries/constants/Events.sol';
 import {Errors} from 'contracts/libraries/constants/Errors.sol';
 import {StorageLib} from 'contracts/libraries/StorageLib.sol';
 import {FollowNFT} from 'contracts/FollowNFT.sol';
-import {LensHandles} from 'contracts/misc/namespaces/LensHandles.sol';
-import {TokenHandleRegistry} from 'contracts/misc/namespaces/TokenHandleRegistry.sol';
+import {LensHandles} from 'contracts/namespaces/LensHandles.sol';
+import {TokenHandleRegistry} from 'contracts/namespaces/TokenHandleRegistry.sol';
 import {IFollowModule} from 'contracts/interfaces/IFollowModule.sol';
 
 interface ILegacyFeeFollowModule {
@@ -116,18 +116,13 @@ library MigrationLib {
         }
     }
 
-    // TODO: What if the user has a module that does not allow "follow with token" (i.e. only allow fresh follows),
-    // but users can migrate the token as a hack to follow anyways. Should we ask for `mintTimestamp` form the token to
-    // be before V1-to-V2 timestamp? We can store the V1-to-V2 timestamp as immutable constant in the hub.
-    // Maybe it is not necessary for now, because of the modules we have, and we will remove this migration function
-    // before we whitelist follow modules that does not allow "follow with token". But we should be aware of this.
     function _migrateFollow(
         uint256 followerProfileId,
         uint256 idOfProfileFollowed,
         address followNFTAddress,
         uint256 followTokenId
     ) private {
-        uint48 mintTimestamp = FollowNFT(followNFTAddress).migrate({
+        uint48 mintTimestamp = FollowNFT(followNFTAddress).tryMigrate({
             followerProfileId: followerProfileId,
             followerProfileOwner: StorageLib.getTokenData(followerProfileId).owner,
             idOfProfileFollowed: idOfProfileFollowed,

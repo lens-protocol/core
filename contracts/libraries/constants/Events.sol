@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: MIT
 
-pragma solidity ^0.8.15;
+pragma solidity >=0.6.0;
 
 import {Types} from 'contracts/libraries/constants/Types.sol';
 
@@ -203,7 +203,7 @@ library Events {
      *
      * @param commentParams The parameters passed to create the comment publication.
      * @param pubId The publication ID assigned to the created comment.
-     * @param processReferenceModuleReturnData The data returned by the commented publication reference module's
+     * @param referenceModuleReturnData The data returned by the commented publication reference module's
      * processComment function, if the commented publication has a reference module set.
      * @param actionModulesInitReturnDatas The data returned from the action modules' initialization for this given
      * publication. This is ABI-encoded and depends on the action module chosen.
@@ -214,7 +214,7 @@ library Events {
     event CommentCreated(
         Types.CommentParams commentParams,
         uint256 indexed pubId,
-        bytes processReferenceModuleReturnData,
+        bytes referenceModuleReturnData,
         bytes[] actionModulesInitReturnDatas,
         bytes referenceModuleInitReturnData,
         uint256 timestamp
@@ -225,14 +225,14 @@ library Events {
      *
      * @param mirrorParams The parameters passed to create the mirror publication.
      * @param pubId The publication ID assigned to the created mirror.
-     * @param processReferenceModuleReturnData The data returned by the mirrored publication reference module's
+     * @param referenceModuleReturnData The data returned by the mirrored publication reference module's
      * processMirror function, if the mirrored publication has a reference module set.
      * @param timestamp The current block timestamp.
      */
     event MirrorCreated(
         Types.MirrorParams mirrorParams,
         uint256 indexed pubId,
-        bytes processReferenceModuleReturnData,
+        bytes referenceModuleReturnData,
         uint256 timestamp
     );
 
@@ -241,7 +241,7 @@ library Events {
      *
      * @param quoteParams The parameters passed to create the quote publication.
      * @param pubId The publication ID assigned to the created quote.
-     * @param processReferenceModuleReturnData The data returned by the quoted publication reference module's
+     * @param referenceModuleReturnData The data returned by the quoted publication reference module's
      * processQuote function, if the quoted publication has a reference module set.
      * @param actionModulesInitReturnDatas The data returned from the action modules' initialization for this given
      * publication. This is ABI-encoded and depends on the action module chosen.
@@ -252,7 +252,7 @@ library Events {
     event QuoteCreated(
         Types.QuoteParams quoteParams,
         uint256 indexed pubId,
-        bytes processReferenceModuleReturnData,
+        bytes referenceModuleReturnData,
         bytes[] actionModulesInitReturnDatas,
         bytes referenceModuleInitReturnData,
         uint256 timestamp
@@ -311,8 +311,6 @@ library Events {
      * @param timestamp The current block timestamp.
      */
     event Acted(Types.PublicationActionParams publicationActionParams, bytes actionModuleReturnData, uint256 timestamp);
-
-    // TODO: Rename Acted's `actionModuleReturnData`, or Followed, Quote, Comment, Mirror param to be consistent.
 
     /**
      * @dev Emitted upon a successful follow operation.

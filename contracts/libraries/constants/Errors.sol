@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: MIT
 
-pragma solidity ^0.8.15;
+pragma solidity >=0.6.0;
 
 library Errors {
     error CannotInitImplementation();
@@ -16,9 +16,6 @@ library Errors {
     error EmergencyAdminCanOnlyPauseFurther();
     error NotProfileOwner();
     error PublicationDoesNotExist();
-    error HandleLengthInvalid();
-    error HandleContainsInvalidCharacters();
-    error HandleFirstCharInvalid();
     error ProfileImageURILengthInvalid();
     error CallerNotFollowNFT();
     error ArrayMismatch();
@@ -39,12 +36,9 @@ library Errors {
 
     // Module Errors
     error InitParamsInvalid();
-    error FollowInvalid();
-    error ModuleDataMismatch();
-    error FollowNotApproved();
-    error MintLimitExceeded();
-    error CollectNotAllowed(); // TODO: Move this to Modules repo
     error ActionNotAllowed();
+
+    error CollectNotAllowed(); // Used in CollectLib (pending deprecation)
 
     // MultiState Errors
     error Paused();

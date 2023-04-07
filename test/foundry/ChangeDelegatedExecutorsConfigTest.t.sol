@@ -33,7 +33,7 @@ contract ChangeDelegatedExecutorsConfigTest_CurrentConfig is BaseTest {
 
         vm.expectRevert(Errors.Paused.selector);
 
-        _changeCurrentDelegatedExecutorsConfig(
+        _changeDelegatedExecutorsConfig(
             testDelegatorProfileOwnerPk,
             testDelegatorProfileId,
             _toAddressArray(delegatedExecutor),
@@ -48,7 +48,7 @@ contract ChangeDelegatedExecutorsConfigTest_CurrentConfig is BaseTest {
     ) public {
         vm.expectRevert(Errors.ArrayMismatch.selector);
 
-        _changeCurrentDelegatedExecutorsConfig(
+        _changeDelegatedExecutorsConfig(
             testDelegatorProfileOwnerPk,
             testDelegatorProfileId,
             _toAddressArray(firstExecutor, secondExecutor),
@@ -66,7 +66,7 @@ contract ChangeDelegatedExecutorsConfigTest_CurrentConfig is BaseTest {
 
         vm.expectRevert(Errors.NotProfileOwner.selector);
 
-        _changeCurrentDelegatedExecutorsConfig(
+        _changeDelegatedExecutorsConfig(
             nonOwnerPk,
             testDelegatorProfileId,
             _toAddressArray(delegatedExecutor),
@@ -83,7 +83,7 @@ contract ChangeDelegatedExecutorsConfigTest_CurrentConfig is BaseTest {
 
         vm.expectRevert(Errors.TokenDoesNotExist.selector);
 
-        _changeCurrentDelegatedExecutorsConfig(
+        _changeDelegatedExecutorsConfig(
             testDelegatorProfileOwnerPk,
             unexistentProfileId,
             _toAddressArray(delegatedExecutor),
@@ -102,7 +102,7 @@ contract ChangeDelegatedExecutorsConfigTest_CurrentConfig is BaseTest {
         vm.assume(newProfileOwner != address(0));
         vm.assume(newProfileOwner != testDelegatorProfileOwner);
 
-        _changeCurrentDelegatedExecutorsConfig(
+        _changeDelegatedExecutorsConfig(
             testDelegatorProfileOwnerPk,
             testDelegatorProfileId,
             _toAddressArray(delegatedExecutor),
@@ -128,7 +128,7 @@ contract ChangeDelegatedExecutorsConfigTest_CurrentConfig is BaseTest {
     function testDelegatedExecutorApprovalCanBeChanged(address delegatedExecutor) public {
         vm.assume(!hub.isDelegatedExecutorApproved(testDelegatorProfileId, delegatedExecutor));
 
-        _changeCurrentDelegatedExecutorsConfig(
+        _changeDelegatedExecutorsConfig(
             testDelegatorProfileOwnerPk,
             testDelegatorProfileId,
             _toAddressArray(delegatedExecutor),
@@ -138,7 +138,7 @@ contract ChangeDelegatedExecutorsConfigTest_CurrentConfig is BaseTest {
         assertTrue(hub.isDelegatedExecutorApproved(testDelegatorProfileId, delegatedExecutor));
 
         _refreshCachedNonce(testDelegatorProfileOwner);
-        _changeCurrentDelegatedExecutorsConfig(
+        _changeDelegatedExecutorsConfig(
             testDelegatorProfileOwnerPk,
             testDelegatorProfileId,
             _toAddressArray(delegatedExecutor),
@@ -154,7 +154,7 @@ contract ChangeDelegatedExecutorsConfigTest_CurrentConfig is BaseTest {
         // Nothing to do here, this is meant to be overridden by the meta-tx tests.
     }
 
-    function _changeCurrentDelegatedExecutorsConfig(
+    function _changeDelegatedExecutorsConfig(
         uint256 pk,
         uint256 delegatorProfileId,
         address[] memory delegatedExecutors,
@@ -172,7 +172,7 @@ contract ChangeDelegatedExecutorsConfigTest_CurrentConfig is BaseTest {
         bool /* switchToGivenConfig */
     ) internal virtual {
         vm.prank(vm.addr(pk));
-        hub.changeCurrentDelegatedExecutorsConfig(delegatorProfileId, delegatedExecutors, approvals);
+        hub.changeDelegatedExecutorsConfig(delegatorProfileId, delegatedExecutors, approvals);
     }
 }
 

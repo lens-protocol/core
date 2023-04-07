@@ -161,12 +161,12 @@ contract LensHub is
         );
     }
 
-    function changeCurrentDelegatedExecutorsConfig(
+    function changeDelegatedExecutorsConfig(
         uint256 delegatorProfileId,
         address[] calldata delegatedExecutors,
         bool[] calldata approvals
     ) external override whenNotPaused onlyProfileOwner(msg.sender, delegatorProfileId) {
-        ProfileLib.changeCurrentDelegatedExecutorsConfig(delegatorProfileId, delegatedExecutors, approvals);
+        ProfileLib.changeDelegatedExecutorsConfig(delegatorProfileId, delegatedExecutors, approvals);
     }
 
     /// @inheritdoc ILensProtocol

@@ -75,7 +75,7 @@ library PublicationLib {
                 Types.PublicationType.Comment
             );
 
-        bytes memory processReferenceModuleReturnData = _processCommentIfNeeded(
+        bytes memory referenceModuleReturnData = _processCommentIfNeeded(
             commentParams,
             transactionExecutor,
             referrerPubTypes
@@ -84,7 +84,7 @@ library PublicationLib {
         emit Events.CommentCreated(
             commentParams,
             pubIdAssigned,
-            processReferenceModuleReturnData,
+            referenceModuleReturnData,
             actionModulesInitReturnDatas,
             referenceModuleInitReturnData,
             block.timestamp
@@ -118,13 +118,13 @@ library PublicationLib {
         _publication.pointedPubId = mirrorParams.pointedPubId;
         _publication.pubType = Types.PublicationType.Mirror;
 
-        bytes memory processReferenceModuleReturnData = _processMirrorIfNeeded(
+        bytes memory referenceModuleReturnData = _processMirrorIfNeeded(
             mirrorParams,
             transactionExecutor,
             referrerPubTypes
         );
 
-        emit Events.MirrorCreated(mirrorParams, pubIdAssigned, processReferenceModuleReturnData, block.timestamp);
+        emit Events.MirrorCreated(mirrorParams, pubIdAssigned, referenceModuleReturnData, block.timestamp);
 
         return pubIdAssigned;
     }
@@ -140,7 +140,7 @@ library PublicationLib {
         (
             uint256 pubIdAssigned,
             bytes[] memory actionModulesReturnDatas,
-            bytes memory referenceModuleReturnData,
+            bytes memory referenceModuleInitReturnData,
             Types.PublicationType[] memory referrerPubTypes
         ) = _createReferencePublication(
                 _asReferencePubParams(quoteParams),
@@ -148,7 +148,7 @@ library PublicationLib {
                 Types.PublicationType.Quote
             );
 
-        bytes memory processReferenceModuleReturnData = _processQuoteIfNeeded(
+        bytes memory referenceModuleReturnData = _processQuoteIfNeeded(
             quoteParams,
             transactionExecutor,
             referrerPubTypes
@@ -157,9 +157,9 @@ library PublicationLib {
         emit Events.QuoteCreated(
             quoteParams,
             pubIdAssigned,
-            processReferenceModuleReturnData,
-            actionModulesReturnDatas,
             referenceModuleReturnData,
+            actionModulesReturnDatas,
+            referenceModuleInitReturnData,
             block.timestamp
         );
 

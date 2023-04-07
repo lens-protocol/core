@@ -75,7 +75,7 @@ contract SetFollowModuleTest is BaseTest, SigSetup {
     function testDelegatedExecutorSetFollowModule() public {
         assertEq(hub.getFollowModule(newProfileId), address(0));
         vm.prank(profileOwner);
-        hub.changeCurrentDelegatedExecutorsConfig({
+        hub.changeDelegatedExecutorsConfig({
             delegatorProfileId: newProfileId,
             delegatedExecutors: _toAddressArray(otherSigner),
             approvals: _toBoolArray(true)
