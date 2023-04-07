@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: MIT
 
-pragma solidity ^0.8.15;
+pragma solidity >=0.6.0;
 
 import {Types} from 'contracts/libraries/constants/Types.sol';
 
@@ -86,7 +86,7 @@ interface ILensProtocol {
      * @param delegatedExecutors The array of delegated executors to set the approval for.
      * @param approvals The array of booleans indicating the corresponding executor's new approval status.
      */
-    function changeCurrentDelegatedExecutorsConfig(
+    function changeDelegatedExecutorsConfig(
         uint256 delegatorProfileId,
         address[] calldata delegatedExecutors,
         bool[] calldata approvals
@@ -375,7 +375,6 @@ interface ILensProtocol {
      * @return bool True if the address is approved as a delegated executor to act on behalf of the profile in the
      * current configuration, false otherwise.
      */
-    // TODO: Rename to `isDelegatedExecutorApprovedInCurrentConfig` ?
     function isDelegatedExecutorApproved(
         uint256 delegatorProfileId,
         address delegatedExecutor

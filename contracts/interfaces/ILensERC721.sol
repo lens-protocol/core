@@ -1,7 +1,6 @@
 // SPDX-License-Identifier: MIT
 
-// TODO: Replace solidity version in all interfaces with >0.6.0
-pragma solidity >0.6.0;
+pragma solidity >=0.6.0;
 
 import {IERC721} from '@openzeppelin/contracts/token/ERC721/IERC721.sol';
 import {IERC721Timestamped} from 'contracts/interfaces/IERC721Timestamped.sol';
