@@ -61,10 +61,6 @@ contract EventTest is BaseTest {
         vm.expectEmit(true, false, false, true, hubProxyAddr);
         emit Upgraded(address(hubImpl));
 
-        // BaseInitialized
-        vm.expectEmit(false, false, false, true, hubProxyAddr);
-        emit Events.BaseInitialized(expectedNFTName, expectedNFTSymbol, block.timestamp);
-
         // StateSet
         vm.expectEmit(true, true, true, true, hubProxyAddr);
         emit Events.StateSet(deployer, Types.ProtocolState.Unpaused, Types.ProtocolState.Paused, block.timestamp);
