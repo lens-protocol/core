@@ -89,10 +89,6 @@ contract LensHub is
         LensImplGetters(followNFTImpl, collectNFTImpl)
     {}
 
-    ///////////////////////////////////////////
-    ///        PROFILE OWNER FUNCTIONS      ///
-    ///////////////////////////////////////////
-
     /// @inheritdoc ILensProtocol
     function createProfile(
         Types.CreateProfileParams calldata createProfileParams
@@ -105,6 +101,10 @@ contract LensHub is
             return profileId;
         }
     }
+
+    ///////////////////////////////////////////
+    ///        PROFILE OWNER FUNCTIONS      ///
+    ///////////////////////////////////////////
 
     /// @inheritdoc ILensProtocol
     function setProfileMetadataURI(

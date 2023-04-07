@@ -32,7 +32,9 @@ abstract contract LensGovernable is ILensGovernable {
         GovernanceLib.setEmergencyAdmin(newEmergencyAdmin);
     }
 
+    /// @inheritdoc ILensGovernable
     function setState(Types.ProtocolState newState) external override {
+        // Access control is handled inside the library because we need to check for both EmergencyAdmin and Governance.
         GovernanceLib.setState(newState);
     }
 
