@@ -72,7 +72,6 @@ abstract contract LensBaseERC721 is ERC165, ILensERC721 {
     function _initialize(string calldata name_, string calldata symbol_) internal {
         _name = name_;
         _symbol = symbol_;
-        emit Events.BaseInitialized(name_, symbol_, block.timestamp);
     }
 
     /**
@@ -101,7 +100,9 @@ abstract contract LensBaseERC721 is ERC165, ILensERC721 {
      * @dev See {IERC721-balanceOf}.
      */
     function balanceOf(address owner) public view virtual override returns (uint256) {
-        if (owner == address(0)) revert Errors.ERC721Time_BalanceQueryForZeroAddress();
+        if (owner == address(0)) {
+            revert Errors.InvalidParameter();
+        }
         return _balances[owner];
     }
 
@@ -110,7 +111,9 @@ abstract contract LensBaseERC721 is ERC165, ILensERC721 {
      */
     function ownerOf(uint256 tokenId) public view virtual override returns (address) {
         address owner = _tokenData[tokenId].owner;
-        if (owner == address(0)) revert Errors.ERC721Time_OwnerQueryForNonexistantToken();
+        if (owner == address(0)) {
+            revert Errors.TokenDoesNotExist();
+        }
         return owner;
     }
 
@@ -119,7 +122,9 @@ abstract contract LensBaseERC721 is ERC165, ILensERC721 {
      */
     function mintTimestampOf(uint256 tokenId) public view virtual override returns (uint256) {
         uint96 mintTimestamp = _tokenData[tokenId].mintTimestamp;
-        if (mintTimestamp == 0) revert Errors.ERC721Time_MintTimestampQueryForNonexistantToken();
+        if (mintTimestamp == 0) {
+            revert Errors.TokenDoesNotExist();
+        }
         return mintTimestamp;
     }
 
@@ -127,7 +132,9 @@ abstract contract LensBaseERC721 is ERC165, ILensERC721 {
      * @dev See {IERC721Timestamped-tokenDataOf}
      */
     function tokenDataOf(uint256 tokenId) public view virtual override returns (Types.TokenData memory) {
-        if (!_exists(tokenId)) revert Errors.ERC721Time_TokenDataQueryForNonexistantToken();
+        if (!_exists(tokenId)) {
+            revert Errors.TokenDoesNotExist();
+        }
         return _tokenData[tokenId];
     }
 
@@ -160,7 +167,9 @@ abstract contract LensBaseERC721 is ERC165, ILensERC721 {
      * @dev See {IERC721Metadata-tokenURI}.
      */
     function tokenURI(uint256 tokenId) public view virtual override returns (string memory) {
-        if (!_exists(tokenId)) revert Errors.ERC721Time_URIQueryForNonexistantToken();
+        if (!_exists(tokenId)) {
+            revert Errors.TokenDoesNotExist();
+        }
 
         string memory baseURI = _baseURI();
         return bytes(baseURI).length > 0 ? string(abi.encodePacked(baseURI, tokenId.toString())) : '';
@@ -180,10 +189,13 @@ abstract contract LensBaseERC721 is ERC165, ILensERC721 {
      */
     function approve(address to, uint256 tokenId) public virtual override {
         address owner = ownerOf(tokenId);
-        if (to == owner) revert Errors.ERC721Time_ApprovalToCurrentOwner();
+        if (to == owner) {
+            revert Errors.InvalidParameter();
+        }
 
-        if (msg.sender != owner && !isApprovedForAll(owner, msg.sender))
-            revert Errors.ERC721Time_ApproveCallerNotOwnerOrApprovedForAll();
+        if (msg.sender != owner && !isApprovedForAll(owner, msg.sender)) {
+            revert Errors.NotOwnerOrApproved();
+        }
 
         _approve(to, tokenId);
     }
@@ -192,7 +204,9 @@ abstract contract LensBaseERC721 is ERC165, ILensERC721 {
      * @dev See {IERC721-getApproved}.
      */
     function getApproved(uint256 tokenId) public view virtual override returns (address) {
-        if (!_exists(tokenId)) revert Errors.ERC721Time_ApprovedQueryForNonexistantToken();
+        if (!_exists(tokenId)) {
+            revert Errors.TokenDoesNotExist();
+        }
 
         return _tokenApprovals[tokenId];
     }
@@ -201,7 +215,9 @@ abstract contract LensBaseERC721 is ERC165, ILensERC721 {
      * @dev See {IERC721-setApprovalForAll}.
      */
     function setApprovalForAll(address operator, bool approved) public virtual override {
-        if (operator == msg.sender) revert Errors.ERC721Time_ApproveToCaller();
+        if (operator == msg.sender) {
+            revert Errors.InvalidParameter();
+        }
 
         _setOperatorApproval(msg.sender, operator, approved);
     }
@@ -218,7 +234,9 @@ abstract contract LensBaseERC721 is ERC165, ILensERC721 {
      */
     function transferFrom(address from, address to, uint256 tokenId) public virtual override {
         //solhint-disable-next-line max-line-length
-        if (!_isApprovedOrOwner(msg.sender, tokenId)) revert Errors.ERC721Time_TransferCallerNotOwnerOrApproved();
+        if (!_isApprovedOrOwner(msg.sender, tokenId)) {
+            revert Errors.NotOwnerOrApproved();
+        }
 
         _transfer(from, to, tokenId);
     }
@@ -234,7 +252,9 @@ abstract contract LensBaseERC721 is ERC165, ILensERC721 {
      * @dev See {IERC721-safeTransferFrom}.
      */
     function safeTransferFrom(address from, address to, uint256 tokenId, bytes memory _data) public virtual override {
-        if (!_isApprovedOrOwner(msg.sender, tokenId)) revert Errors.ERC721Time_TransferCallerNotOwnerOrApproved();
+        if (!_isApprovedOrOwner(msg.sender, tokenId)) {
+            revert Errors.NotOwnerOrApproved();
+        }
         _safeTransfer(from, to, tokenId, _data);
     }
 
@@ -246,7 +266,9 @@ abstract contract LensBaseERC721 is ERC165, ILensERC721 {
      * - The caller must own `tokenId` or be an approved operator.
      */
     function burn(uint256 tokenId) public virtual override {
-        if (!_isApprovedOrOwner(msg.sender, tokenId)) revert Errors.NotOwnerOrApproved();
+        if (!_isApprovedOrOwner(msg.sender, tokenId)) {
+            revert Errors.NotOwnerOrApproved();
+        }
         _burn(tokenId);
     }
 
@@ -283,8 +305,9 @@ abstract contract LensBaseERC721 is ERC165, ILensERC721 {
      */
     function _safeTransfer(address from, address to, uint256 tokenId, bytes memory _data) internal virtual {
         _transfer(from, to, tokenId);
-        if (!_checkOnERC721Received(from, to, tokenId, _data))
-            revert Errors.ERC721Time_TransferToNonERC721ReceiverImplementer();
+        if (!_checkOnERC721Received(from, to, tokenId, _data)) {
+            revert Errors.NonERC721ReceiverImplementer();
+        }
     }
 
     /**
@@ -307,33 +330,11 @@ abstract contract LensBaseERC721 is ERC165, ILensERC721 {
      * - `tokenId` must exist.
      */
     function _isApprovedOrOwner(address spender, uint256 tokenId) internal view virtual returns (bool) {
-        if (!_exists(tokenId)) revert Errors.ERC721Time_OperatorQueryForNonexistantToken();
+        if (!_exists(tokenId)) {
+            revert Errors.TokenDoesNotExist();
+        }
         address owner = ownerOf(tokenId);
         return (spender == owner || getApproved(tokenId) == spender || isApprovedForAll(owner, spender));
-    }
-
-    /**
-     * @dev Safely mints `tokenId` and transfers it to `to`.
-     *
-     * Requirements:
-     *
-     * - `tokenId` must not exist.
-     * - If `to` refers to a smart contract, it must implement {IERC721Receiver-onERC721Received}, which is called upon a safe transfer.
-     *
-     * Emits a {Transfer} event.
-     */
-    function _safeMint(address to, uint256 tokenId) internal virtual {
-        _safeMint(to, tokenId, '');
-    }
-
-    /**
-     * @dev Same as {xref-ERC721-_safeMint-address-uint256-}[`_safeMint`], with an additional `data` parameter which is
-     * forwarded in {IERC721Receiver-onERC721Received} to contract recipients.
-     */
-    function _safeMint(address to, uint256 tokenId, bytes memory _data) internal virtual {
-        _mint(to, tokenId);
-        if (!_checkOnERC721Received(address(0), to, tokenId, _data))
-            revert Errors.ERC721Time_TransferToNonERC721ReceiverImplementer();
     }
 
     /**
@@ -349,8 +350,9 @@ abstract contract LensBaseERC721 is ERC165, ILensERC721 {
      * Emits a {Transfer} event.
      */
     function _mint(address to, uint256 tokenId) internal virtual {
-        if (to == address(0)) revert Errors.ERC721Time_MintToZeroAddress();
-        if (_exists(tokenId)) revert Errors.ERC721Time_TokenAlreadyMinted();
+        if (to == address(0) || _exists(tokenId)) {
+            revert Errors.InvalidParameter();
+        }
 
         _beforeTokenTransfer(address(0), to, tokenId);
 
@@ -403,8 +405,12 @@ abstract contract LensBaseERC721 is ERC165, ILensERC721 {
      * Emits a {Transfer} event.
      */
     function _transfer(address from, address to, uint256 tokenId) internal virtual {
-        if (ownerOf(tokenId) != from) revert Errors.ERC721Time_TransferOfTokenThatIsNotOwn();
-        if (to == address(0)) revert Errors.ERC721Time_TransferToZeroAddress();
+        if (ownerOf(tokenId) != from) {
+            revert Errors.InvalidOwner();
+        }
+        if (to == address(0)) {
+            revert Errors.InvalidParameter();
+        }
 
         _beforeTokenTransfer(from, to, tokenId);
 
@@ -462,7 +468,7 @@ abstract contract LensBaseERC721 is ERC165, ILensERC721 {
                 return retval == IERC721Receiver.onERC721Received.selector;
             } catch (bytes memory reason) {
                 if (reason.length == 0) {
-                    revert Errors.ERC721Time_TransferToNonERC721ReceiverImplementer();
+                    revert Errors.NonERC721ReceiverImplementer();
                 } else {
                     assembly {
                         revert(add(32, reason), mload(reason))

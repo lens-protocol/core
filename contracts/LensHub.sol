@@ -61,6 +61,13 @@ contract LensHub is
         _;
     }
 
+    modifier whenPublishingEnabled() {
+        if (StorageLib.getState() != Types.ProtocolState.Unpaused) {
+            revert Errors.PublishingPaused();
+        }
+        _;
+    }
+
     constructor(
         address moduleGlobals,
         address followNFTImpl,

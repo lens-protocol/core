@@ -445,7 +445,7 @@ library PublicationLib {
             ];
 
             if (!actionModuleWhitelistData.isWhitelisted) {
-                revert Errors.ActionModuleNotWhitelisted();
+                revert Errors.NotWhitelisted();
             }
 
             actionModuleBitmap |= 1 << (actionModuleWhitelistData.id - 1);

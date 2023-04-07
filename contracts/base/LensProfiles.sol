@@ -17,13 +17,6 @@ import {ERC2981CollectionRoyalties} from 'contracts/base/ERC2981CollectionRoyalt
 import {Errors} from 'contracts/libraries/constants/Errors.sol';
 import {Types} from 'contracts/libraries/constants/Types.sol';
 
-/**
- * @title LensProfiles
- * @author Lens Protocol
- *
- * @notice
- */
-// TODO: Natspec
 abstract contract LensProfiles is LensBaseERC721, ERC2981CollectionRoyalties {
     IModuleGlobals immutable MODULE_GLOBALS;
 
@@ -31,18 +24,9 @@ abstract contract LensProfiles is LensBaseERC721, ERC2981CollectionRoyalties {
         MODULE_GLOBALS = IModuleGlobals(moduleGlobals);
     }
 
-    // TODO: See what to do with this one
     modifier whenNotPaused() {
         if (StorageLib.getState() == Types.ProtocolState.Paused) {
             revert Errors.Paused();
-        }
-        _;
-    }
-
-    // TODO: See what to do with this one
-    modifier whenPublishingEnabled() {
-        if (StorageLib.getState() != Types.ProtocolState.Unpaused) {
-            revert Errors.PublishingPaused();
         }
         _;
     }
@@ -74,12 +58,16 @@ abstract contract LensProfiles is LensBaseERC721, ERC2981CollectionRoyalties {
             );
     }
 
-    function _getRoyaltiesInBasisPointsSlot() internal view virtual override returns (uint256) {
-        return StorageLib.PROFILE_ROYALTIES_BPS;
+    function _getRoyaltiesInBasisPointsSlot() internal pure override returns (uint256) {
+        return StorageLib.PROFILE_ROYALTIES_BPS_SLOT;
     }
 
-    function _getReceiver(uint256 /* tokenId */) internal view virtual override returns (address) {
+    function _getReceiver(uint256 /* tokenId */) internal view override returns (address) {
         return MODULE_GLOBALS.getTreasury();
+    }
+
+    function _beforeRoyaltiesSet(uint256 /* royaltiesInBasisPoints */) internal view override {
+        ValidationLib.validateCallerIsGovernance();
     }
 
     function _beforeTokenTransfer(address from, address to, uint256 tokenId) internal override whenNotPaused {
@@ -96,7 +84,6 @@ abstract contract LensProfiles is LensBaseERC721, ERC2981CollectionRoyalties {
     function supportsInterface(
         bytes4 interfaceId
     ) public view virtual override(LensBaseERC721, ERC2981CollectionRoyalties) returns (bool) {
-        return
-            LensBaseERC721.supportsInterface(interfaceId) || ERC2981CollectionRoyalties.supportsInterface(interfaceId);
+        return ERC2981CollectionRoyalties.supportsInterface(interfaceId);
     }
 }
