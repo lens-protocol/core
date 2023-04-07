@@ -43,8 +43,6 @@ struct ModuleConfig {
  * as the author of the root publication.
  */
 contract DegreesOfSeparationReferenceModule is HubRestricted, IReferenceModule {
-    using FollowValidationLib for ILensHub;
-
     error InvalidDegreesOfSeparation();
     error OperationDisabled();
     error ProfilePathExceedsDegreesOfSeparation();
@@ -225,12 +223,17 @@ contract DegreesOfSeparationReferenceModule is HubRestricted, IReferenceModule {
         if (profilePath.length > 0) {
             // Checks that the source profile follows the first profile in the path.
             // In the previous notation: sourceProfile --> path[0]
-            ILensHub(HUB).validateIsFollowing({followerProfileId: sourceProfile, followedProfileId: profilePath[0]});
+            FollowValidationLib.validateIsFollowing({
+                hub: HUB,
+                followerProfileId: sourceProfile,
+                followedProfileId: profilePath[0]
+            });
             // Checks each profile owner in the path is following the profile coming next, according the order.
             // In the previous notaiton: path[0] --> path[1] --> path[2] --> ... --> path[n-2] --> path[n-1]
             uint256 i;
             while (i < profilePath.length - 1) {
-                ILensHub(HUB).validateIsFollowing({
+                FollowValidationLib.validateIsFollowing({
+                    hub: HUB,
                     followerProfileId: profilePath[i],
                     followedProfileId: profilePath[i + 1]
                 });
@@ -240,11 +243,19 @@ contract DegreesOfSeparationReferenceModule is HubRestricted, IReferenceModule {
             }
             // Checks that the last profile in the path follows the profile authoring the new publication.
             // In the previous notation: path[n-1] --> profileId
-            ILensHub(HUB).validateIsFollowing({followerProfileId: profilePath[i], followedProfileId: profileId});
+            FollowValidationLib.validateIsFollowing({
+                hub: HUB,
+                followerProfileId: profilePath[i],
+                followedProfileId: profileId
+            });
         } else {
             // Checks that the source profile follows the profile authoring the new publication.
             // In the previous notation: sourceProfile --> profileId
-            ILensHub(HUB).validateIsFollowing({followerProfileId: sourceProfile, followedProfileId: profileId});
+            FollowValidationLib.validateIsFollowing({
+                hub: HUB,
+                followerProfileId: sourceProfile,
+                followedProfileId: profileId
+            });
         }
     }
 
