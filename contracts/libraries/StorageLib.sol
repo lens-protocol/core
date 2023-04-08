@@ -11,6 +11,7 @@ library StorageLib {
     uint256 constant TOKEN_APPROVAL_MAPPING_SLOT = 4;
     uint256 constant OPERATOR_APPROVAL_MAPPING_SLOT = 5;
     uint256 constant SIG_NONCES_MAPPING_SLOT = 10;
+    uint256 constant LAST_INITIALIZED_REVISION_SLOT = 11; // VersionedInitializable's `lastInitializedRevision` field.
     uint256 constant PROTOCOL_STATE_SLOT = 12;
     uint256 constant PROFILE_CREATOR_WHITELIST_MAPPING_SLOT = 13;
     uint256 constant FOLLOW_MODULE_WHITELIST_MAPPING_SLOT = 14;
@@ -24,11 +25,14 @@ library StorageLib {
     uint256 constant PROFILE_COUNTER_SLOT = 22;
     uint256 constant GOVERNANCE_SLOT = 23;
     uint256 constant EMERGENCY_ADMIN_SLOT = 24;
-    // Introduced in Lens V2:
+    //////////////////////////////////
+    ///   Introduced in Lens V2:   ///
+    //////////////////////////////////
     uint256 constant DELEGATED_EXECUTOR_CONFIG_MAPPING_SLOT = 25;
     uint256 constant BLOCKED_STATUS_MAPPING_SLOT = 26;
     uint256 constant ACTION_MODULE_BY_ID_SLOT = 27;
     uint256 constant MAX_ACTION_MODULE_ID_USED_SLOT = 28;
+    uint256 constant PROFILE_ROYALTIES_BPS_SLOT = 29;
 
     uint256 constant MAX_ACTION_MODULE_ID_SUPPORTED = 255;
 
@@ -45,11 +49,11 @@ library StorageLib {
         }
     }
 
-    function getProfile(uint256 profileId) internal pure returns (Types.Profile storage _profile) {
+    function getProfile(uint256 profileId) internal pure returns (Types.Profile storage _profiles) {
         assembly {
             mstore(0, profileId)
             mstore(32, PROFILE_BY_ID_MAPPING_SLOT)
-            _profile.slot := keccak256(0, 64)
+            _profiles.slot := keccak256(0, 64)
         }
     }
 
@@ -127,9 +131,9 @@ library StorageLib {
         }
     }
 
-    function actionModuleById() internal pure returns (mapping(uint256 => address) storage _actionModuleById) {
+    function actionModuleById() internal pure returns (mapping(uint256 => address) storage _actionModules) {
         assembly {
-            _actionModuleById.slot := ACTION_MODULE_BY_ID_SLOT
+            _actionModules.slot := ACTION_MODULE_BY_ID_SLOT
         }
     }
 
@@ -195,6 +199,18 @@ library StorageLib {
     function setState(Types.ProtocolState newState) internal {
         assembly {
             sstore(PROTOCOL_STATE_SLOT, newState)
+        }
+    }
+
+    function getLastInitializedRevision() internal view returns (uint256 _lastInitializedRevision) {
+        assembly {
+            _lastInitializedRevision := sload(LAST_INITIALIZED_REVISION_SLOT)
+        }
+    }
+
+    function setLastInitializedRevision(uint256 newLastInitializedRevision) internal {
+        assembly {
+            sstore(LAST_INITIALIZED_REVISION_SLOT, newLastInitializedRevision)
         }
     }
 }

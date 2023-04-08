@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: MIT
 
-pragma solidity ^0.8.19;
+pragma solidity ^0.8.15;
 
 import {ILensHub} from 'contracts/interfaces/ILensHub.sol';
 import {ControllableByContract} from 'contracts/misc/access/ControllableByContract.sol';

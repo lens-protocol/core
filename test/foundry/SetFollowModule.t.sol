@@ -50,7 +50,7 @@ contract SetFollowModuleTest is BaseTest, SigSetup {
     }
 
     function testCannotSetFollowModuleNotWhitelisted() public {
-        vm.expectRevert(Errors.FollowModuleNotWhitelisted.selector);
+        vm.expectRevert(Errors.NotWhitelisted.selector);
         vm.prank(profileOwner);
         hub.setFollowModule(newProfileId, address(1), '');
     }
@@ -75,7 +75,7 @@ contract SetFollowModuleTest is BaseTest, SigSetup {
     function testDelegatedExecutorSetFollowModule() public {
         assertEq(hub.getFollowModule(newProfileId), address(0));
         vm.prank(profileOwner);
-        hub.changeCurrentDelegatedExecutorsConfig({
+        hub.changeDelegatedExecutorsConfig({
             delegatorProfileId: newProfileId,
             delegatedExecutors: _toAddressArray(otherSigner),
             approvals: _toBoolArray(true)
@@ -93,7 +93,7 @@ contract SetFollowModuleTest is BaseTest, SigSetup {
     // Meta-tx
     // Negatives
     function testCannotSetFollowModuleNotWhitelistedWithSig() public {
-        vm.expectRevert(Errors.FollowModuleNotWhitelisted.selector);
+        vm.expectRevert(Errors.NotWhitelisted.selector);
         bytes32 digest = _getSetFollowModuleTypedDataHash(newProfileId, address(1), '', nonce, deadline);
 
         hub.setFollowModuleWithSig({

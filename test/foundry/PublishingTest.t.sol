@@ -41,7 +41,7 @@ abstract contract PublishingTest is BaseTest, PublishingHelpers, SigSetup {
     //     mockPostParams.collectModule = address(0xC0FFEE);
     //     replicateInitData();
     //     vm.prank(profileOwner);
-    //     vm.expectRevert(Errors.CollectModuleNotWhitelisted.selector);
+    //     vm.expectRevert(Errors.NotWhitelisted.selector);
     //     _publish();
     // }
 
@@ -49,7 +49,7 @@ abstract contract PublishingTest is BaseTest, PublishingHelpers, SigSetup {
         mockPostParams.referenceModule = address(0xC0FFEE);
         replicateInitData();
         vm.prank(profileOwner);
-        vm.expectRevert(Errors.ReferenceModuleNotWhitelisted.selector);
+        vm.expectRevert(Errors.NotWhitelisted.selector);
         _publish();
     }
 
@@ -57,14 +57,14 @@ abstract contract PublishingTest is BaseTest, PublishingHelpers, SigSetup {
     // function testCannotPublishWithSigNotWhitelistedCollectModule() public virtual {
     //     mockPostParams.collectModule = address(0xC0FFEE);
     //     replicateInitData();
-    //     vm.expectRevert(Errors.CollectModuleNotWhitelisted.selector);
+    //     vm.expectRevert(Errors.NotWhitelisted.selector);
     //     _publishWithSig({delegatedSigner: profileOwner, signerPrivKey: profileOwnerKey});
     // }
 
     function testCannotPublishWithSigNotWhitelistedReferenceModule() public virtual {
         mockPostParams.referenceModule = address(0xC0FFEE);
         replicateInitData();
-        vm.expectRevert(Errors.ReferenceModuleNotWhitelisted.selector);
+        vm.expectRevert(Errors.NotWhitelisted.selector);
         _publishWithSig({delegatedSigner: profileOwner, signerPrivKey: profileOwnerKey});
     }
 

@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: MIT
 
-pragma solidity ^0.8.19;
+pragma solidity ^0.8.15;
 
 contract ImmutableOwnable {
     address immutable OWNER;
@@ -9,7 +9,6 @@ contract ImmutableOwnable {
     error OnlyOwner();
     error OnlyOwnerOrHub();
 
-    // TODO: Should we rename this to ADMIN? Cause Owner is usually Profile Owner
     modifier onlyOwner() {
         if (msg.sender != OWNER) {
             revert OnlyOwner();

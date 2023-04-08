@@ -40,15 +40,16 @@ contract EventTest is BaseTest {
 
         // Deploy implementation contracts.
         // TODO: Last 3 addresses are for the follow modules for migration purposes.
-        hubImpl = new LensHubInitializable(
-            followNFTAddr,
-            collectNFTAddr,
-            address(0),
-            address(0),
-            address(0),
-            address(0),
-            address(0)
-        );
+        hubImpl = new LensHubInitializable({
+            moduleGlobals: address(0),
+            followNFTImpl: followNFTAddr,
+            collectNFTImpl: collectNFTAddr,
+            lensHandlesAddress: address(0),
+            tokenHandleRegistryAddress: address(0),
+            legacyFeeFollowModule: address(0),
+            legacyProfileFollowModule: address(0),
+            newFeeFollowModule: address(0)
+        });
         followNFT = new FollowNFT(hubProxyAddr);
         collectNFT = new CollectNFT(hubProxyAddr);
 
@@ -59,10 +60,6 @@ contract EventTest is BaseTest {
         // Upgraded
         vm.expectEmit(true, false, false, true, hubProxyAddr);
         emit Upgraded(address(hubImpl));
-
-        // BaseInitialized
-        vm.expectEmit(false, false, false, true, hubProxyAddr);
-        emit Events.BaseInitialized(expectedNFTName, expectedNFTSymbol, block.timestamp);
 
         // StateSet
         vm.expectEmit(true, true, true, true, hubProxyAddr);

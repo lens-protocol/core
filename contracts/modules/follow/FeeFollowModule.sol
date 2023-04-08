@@ -82,8 +82,14 @@ contract FeeFollowModule is FeeModuleBase, HubRestricted, IFollowModule {
             if (treasuryAmount > 0) {
                 IERC20(currency).safeTransferFrom(transactionExecutor, treasury, treasuryAmount);
             }
+        } else {
+            // If following with a follow token, we validate the amount is zero.
+            (, uint256 decodedAmount) = abi.decode(data, (address, uint256));
+            if (decodedAmount != 0) {
+                revert Errors.InvalidParams();
+            }
         }
-        return data; // TODO: Should we return amount 0 if following with token? Or maybe fail if amount != 0 is passed.
+        return data;
     }
 
     /**

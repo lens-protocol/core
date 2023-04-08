@@ -1,37 +1,13 @@
 // SPDX-License-Identifier: MIT
 
-pragma solidity ^0.8.19;
+pragma solidity ^0.8.18;
 
 import {IERC721} from '@openzeppelin/contracts/token/ERC721/IERC721.sol';
 import {VersionedInitializable} from 'contracts/base/upgradeability/VersionedInitializable.sol';
 import {ITokenHandleRegistry} from 'contracts/interfaces/ITokenHandleRegistry.sol';
-
-// TODO: Move to the Errors file
-library RegistryErrors {
-    error NotHandleOwner();
-    error NotTokenOwner();
-    error NotHandleOrTokenOwner();
-    error OnlyLensHub();
-}
-
-// TODO: Move to the Types file
-struct Token {
-    uint256 id; // SLOT 0
-    address collection; // SLOT 1 - end
-    // uint96 _gap; // SLOT 1 - start
-}
-
-struct Handle {
-    uint256 id; // SLOT 0
-    address collection; // SLOT 1 - end
-    // uint96 _gap; // SLOT 1 - start
-}
-
-// TODO: Move to the Events file
-library RegistryEvents {
-    event HandleLinked(Handle handle, Token token);
-    event HandleUnlinked(Handle handle, Token token);
-}
+import {RegistryTypes} from 'contracts/namespaces/constants/Types.sol';
+import {RegistryErrors} from 'contracts/namespaces/constants/Errors.sol';
+import {RegistryEvents} from 'contracts/namespaces/constants/Events.sol';
 
 contract TokenHandleRegistry is ITokenHandleRegistry, VersionedInitializable {
     // Constant for upgradeability purposes, see VersionedInitializable. Do not confuse it with the EIP-712 revision number.
@@ -42,17 +18,17 @@ contract TokenHandleRegistry is ITokenHandleRegistry, VersionedInitializable {
 
     /// 1to1 mapping for now. Can be replaced to support multiple handles per token if using mappings
     /// NOTE: Using bytes32 _handleHash(Handle) and _tokenHash(Token) as keys because solidity doesn't support structs as keys.
-    mapping(bytes32 handle => Token token) handleToToken;
-    mapping(bytes32 token => Handle handle) tokenToHandle;
+    mapping(bytes32 handle => RegistryTypes.Token token) handleToToken;
+    mapping(bytes32 token => RegistryTypes.Handle handle) tokenToHandle;
 
-    modifier onlyHandleOwner(Handle memory handle, address transactionExecutor) {
+    modifier onlyHandleOwner(RegistryTypes.Handle memory handle, address transactionExecutor) {
         if (IERC721(handle.collection).ownerOf(handle.id) != transactionExecutor) {
             revert RegistryErrors.NotHandleOwner();
         }
         _;
     }
 
-    modifier onlyTokenOwner(Token memory token, address transactionExecutor) {
+    modifier onlyTokenOwner(RegistryTypes.Token memory token, address transactionExecutor) {
         if (IERC721(token.collection).ownerOf(token.id) != transactionExecutor) {
             revert RegistryErrors.NotTokenOwner();
         }
@@ -60,8 +36,8 @@ contract TokenHandleRegistry is ITokenHandleRegistry, VersionedInitializable {
     }
 
     modifier onlyHandleOrTokenOwner(
-        Handle memory handle,
-        Token memory token,
+        RegistryTypes.Handle memory handle,
+        RegistryTypes.Token memory token,
         address transactionExecutor
     ) {
         // The transaction executor must be the owner of the handle or the token (or both).
@@ -87,8 +63,8 @@ contract TokenHandleRegistry is ITokenHandleRegistry, VersionedInitializable {
         if (msg.sender != LENS_HUB) {
             revert RegistryErrors.OnlyLensHub();
         }
-        Handle memory handle = Handle({collection: LENS_HANDLES, id: handleId});
-        Token memory token = Token({collection: LENS_HUB, id: tokenId});
+        RegistryTypes.Handle memory handle = RegistryTypes.Handle({collection: LENS_HANDLES, id: handleId});
+        RegistryTypes.Token memory token = RegistryTypes.Token({collection: LENS_HUB, id: tokenId});
         handleToToken[_handleHash(handle)] = token;
         tokenToHandle[_tokenHash(token)] = handle;
         emit RegistryEvents.HandleLinked(handle, token);
@@ -98,8 +74,8 @@ contract TokenHandleRegistry is ITokenHandleRegistry, VersionedInitializable {
     /// @inheritdoc ITokenHandleRegistry
     function linkHandleWithToken(uint256 handleId, uint256 tokenId, bytes calldata /* data */) external {
         _linkHandleWithToken(
-            Handle({collection: LENS_HANDLES, id: handleId}),
-            Token({collection: LENS_HUB, id: tokenId})
+            RegistryTypes.Handle({collection: LENS_HANDLES, id: handleId}),
+            RegistryTypes.Token({collection: LENS_HUB, id: tokenId})
         );
     }
 
@@ -107,38 +83,38 @@ contract TokenHandleRegistry is ITokenHandleRegistry, VersionedInitializable {
     /// @inheritdoc ITokenHandleRegistry
     function unlinkHandleFromToken(uint256 handleId, uint256 tokenId) external {
         _unlinkHandleFromToken(
-            Handle({collection: LENS_HANDLES, id: handleId}),
-            Token({collection: LENS_HUB, id: tokenId})
+            RegistryTypes.Handle({collection: LENS_HANDLES, id: handleId}),
+            RegistryTypes.Token({collection: LENS_HUB, id: tokenId})
         );
     }
 
     // NOTE: Simplified interfaces for the first iteration - Namespace and LensHub are constants
     /// @inheritdoc ITokenHandleRegistry
     function resolveHandle(uint256 handleId) external view returns (uint256) {
-        return _resolveHandle(Handle({collection: LENS_HANDLES, id: handleId})).id;
+        return _resolveHandle(RegistryTypes.Handle({collection: LENS_HANDLES, id: handleId})).id;
     }
 
     // NOTE: Simplified interfaces for the first iteration - Namespace and LensHub are constants
     /// @inheritdoc ITokenHandleRegistry
     function resolveToken(uint256 tokenId) external view returns (uint256) {
-        return _resolveToken(Token({collection: LENS_HUB, id: tokenId})).id;
+        return _resolveToken(RegistryTypes.Token({collection: LENS_HUB, id: tokenId})).id;
     }
 
     //////////////////////////////////////
     ///        INTERNAL FUNCTIONS      ///
     //////////////////////////////////////
 
-    function _resolveHandle(Handle memory handle) internal view returns (Token storage) {
+    function _resolveHandle(RegistryTypes.Handle memory handle) internal view returns (RegistryTypes.Token storage) {
         return handleToToken[_handleHash(handle)];
     }
 
-    function _resolveToken(Token memory token) internal view returns (Handle storage) {
+    function _resolveToken(RegistryTypes.Token memory token) internal view returns (RegistryTypes.Handle storage) {
         return tokenToHandle[_tokenHash(token)];
     }
 
     function _linkHandleWithToken(
-        Handle memory handle,
-        Token memory token
+        RegistryTypes.Handle memory handle,
+        RegistryTypes.Token memory token
     ) internal onlyTokenOwner(token, msg.sender) onlyHandleOwner(handle, msg.sender) {
         _unlinkIfAlreadyLinked(handle, token);
         handleToToken[_handleHash(handle)] = token;
@@ -146,9 +122,9 @@ contract TokenHandleRegistry is ITokenHandleRegistry, VersionedInitializable {
         emit RegistryEvents.HandleLinked(handle, token);
     }
 
-    function _unlinkIfAlreadyLinked(Handle memory handle, Token memory token) internal {
-        Token memory currentToken = handleToToken[_handleHash(handle)];
-        Handle memory currentHandle = tokenToHandle[_tokenHash(token)];
+    function _unlinkIfAlreadyLinked(RegistryTypes.Handle memory handle, RegistryTypes.Token memory token) internal {
+        RegistryTypes.Token memory currentToken = handleToToken[_handleHash(handle)];
+        RegistryTypes.Handle memory currentHandle = tokenToHandle[_tokenHash(token)];
         if (currentToken.collection != address(0) || currentToken.id != 0) {
             delete tokenToHandle[_tokenHash(currentToken)];
         }
@@ -158,8 +134,8 @@ contract TokenHandleRegistry is ITokenHandleRegistry, VersionedInitializable {
     }
 
     function _unlinkHandleFromToken(
-        Handle memory handle,
-        Token memory token
+        RegistryTypes.Handle memory handle,
+        RegistryTypes.Token memory token
     ) internal onlyHandleOrTokenOwner(handle, token, msg.sender) {
         delete handleToToken[_handleHash(handle)];
         delete tokenToHandle[_tokenHash(token)];
@@ -168,11 +144,11 @@ contract TokenHandleRegistry is ITokenHandleRegistry, VersionedInitializable {
 
     // Utility functions for mappings
 
-    function _handleHash(Handle memory handle) internal pure returns (bytes32) {
+    function _handleHash(RegistryTypes.Handle memory handle) internal pure returns (bytes32) {
         return keccak256(abi.encodePacked(handle.collection, handle.id));
     }
 
-    function _tokenHash(Token memory token) internal pure returns (bytes32) {
+    function _tokenHash(RegistryTypes.Token memory token) internal pure returns (bytes32) {
         return keccak256(abi.encodePacked(token.collection, token.id));
     }
 

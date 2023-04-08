@@ -462,7 +462,7 @@ contract BaseTest is TestSetup {
         bool approved
     ) internal {
         vm.prank(msgSender);
-        hub.changeCurrentDelegatedExecutorsConfig({
+        hub.changeDelegatedExecutorsConfig({
             delegatorProfileId: profileId,
             delegatedExecutors: _toAddressArray(delegatedExecutor),
             approvals: _toBoolArray(approved)

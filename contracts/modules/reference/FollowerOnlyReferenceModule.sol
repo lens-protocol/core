@@ -16,8 +16,6 @@ import {FollowValidationLib} from 'contracts/modules/libraries/FollowValidationL
  * follows the profile of the original publication.
  */
 contract FollowerOnlyReferenceModule is HubRestricted, IReferenceModule {
-    using FollowValidationLib for ILensHub;
-
     constructor(address hub) HubRestricted(hub) {}
 
     /**
@@ -42,7 +40,8 @@ contract FollowerOnlyReferenceModule is HubRestricted, IReferenceModule {
     function processComment(
         Types.ProcessCommentParams calldata processCommentParams
     ) external view override returns (bytes memory) {
-        ILensHub(HUB).validateIsFollowing({
+        FollowValidationLib.validateIsFollowing({
+            hub: HUB,
             followerProfileId: processCommentParams.profileId,
             followedProfileId: processCommentParams.pointedProfileId
         });
@@ -57,7 +56,8 @@ contract FollowerOnlyReferenceModule is HubRestricted, IReferenceModule {
     function processQuote(
         Types.ProcessQuoteParams calldata processQuoteParams
     ) external view override returns (bytes memory) {
-        ILensHub(HUB).validateIsFollowing({
+        FollowValidationLib.validateIsFollowing({
+            hub: HUB,
             followerProfileId: processQuoteParams.profileId,
             followedProfileId: processQuoteParams.pointedProfileId
         });
@@ -72,7 +72,8 @@ contract FollowerOnlyReferenceModule is HubRestricted, IReferenceModule {
     function processMirror(
         Types.ProcessMirrorParams calldata processMirrorParams
     ) external view override returns (bytes memory) {
-        ILensHub(HUB).validateIsFollowing({
+        FollowValidationLib.validateIsFollowing({
+            hub: HUB,
             followerProfileId: processMirrorParams.profileId,
             followedProfileId: processMirrorParams.pointedProfileId
         });

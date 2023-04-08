@@ -50,19 +50,19 @@ library ValidationLib {
 
     function validateReferenceModuleWhitelisted(address referenceModule) internal view {
         if (!StorageLib.referenceModuleWhitelisted()[referenceModule]) {
-            revert Errors.ReferenceModuleNotWhitelisted();
+            revert Errors.NotWhitelisted();
         }
     }
 
     function validateFollowModuleWhitelisted(address followModule) internal view {
         if (!StorageLib.followModuleWhitelisted()[followModule]) {
-            revert Errors.FollowModuleNotWhitelisted();
+            revert Errors.NotWhitelisted();
         }
     }
 
     function validateProfileCreatorWhitelisted(address profileCreator) internal view {
         if (!StorageLib.profileCreatorWhitelisted()[profileCreator]) {
-            revert Errors.ProfileCreatorNotWhitelisted();
+            revert Errors.NotWhitelisted();
         }
     }
 
@@ -75,6 +75,12 @@ library ValidationLib {
     function validateProfileExists(uint256 profileId) internal view {
         if (StorageLib.getTokenData(profileId).owner == address(0)) {
             revert Errors.TokenDoesNotExist();
+        }
+    }
+
+    function validateCallerIsGovernance() internal view {
+        if (msg.sender != StorageLib.getGovernance()) {
+            revert Errors.NotGovernance();
         }
     }
 

@@ -31,7 +31,6 @@ import {BaseFeeCollectModuleInitData, BaseProfilePublicationData, IBaseFeeCollec
  */
 abstract contract BaseFeeCollectModule is FeeModuleBase, HubRestricted, IBaseFeeCollectModule {
     using SafeERC20 for IERC20;
-    using FollowValidationLib for ILensHub;
 
     mapping(uint256 => mapping(uint256 => BaseProfilePublicationData)) internal _dataByPublicationByProfile;
 
@@ -135,7 +134,8 @@ abstract contract BaseFeeCollectModule is FeeModuleBase, HubRestricted, IBaseFee
                 processCollectParams.publicationCollectedId
             ].followerOnly
         ) {
-            ILensHub(HUB).validateIsFollowing({
+            FollowValidationLib.validateIsFollowing({
+                hub: HUB,
                 followerProfileId: processCollectParams.collectorProfileId,
                 followedProfileId: processCollectParams.publicationCollectedProfileId
             });

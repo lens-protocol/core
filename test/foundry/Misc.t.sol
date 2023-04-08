@@ -16,7 +16,7 @@ contract MiscTest is BaseTest {
     function testDelegatedExecutorSetProfileImageURI() public {
         assertEq(hub.getProfileImageURI(newProfileId), MOCK_URI);
         vm.prank(profileOwner);
-        hub.changeCurrentDelegatedExecutorsConfig({
+        hub.changeDelegatedExecutorsConfig({
             delegatorProfileId: newProfileId,
             delegatedExecutors: _toAddressArray(otherSigner),
             approvals: _toBoolArray(true)
@@ -72,7 +72,7 @@ contract MiscTest is BaseTest {
 
     function testDelegatedExecutorSetProfileImageURIWithSig() public {
         vm.prank(profileOwner);
-        hub.changeCurrentDelegatedExecutorsConfig({
+        hub.changeDelegatedExecutorsConfig({
             delegatorProfileId: newProfileId,
             delegatedExecutors: _toAddressArray(otherSigner),
             approvals: _toBoolArray(true)

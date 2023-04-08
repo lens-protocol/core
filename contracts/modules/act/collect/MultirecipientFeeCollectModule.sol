@@ -3,7 +3,7 @@
 pragma solidity ^0.8.10;
 
 import {Errors} from 'contracts/modules/constants/Errors.sol';
-import {BaseFeeCollectModule} from 'contracts/modules/collect/base/BaseFeeCollectModule.sol';
+import {BaseFeeCollectModule} from 'contracts/modules/act/collect/base/BaseFeeCollectModule.sol';
 import {BaseProfilePublicationData, BaseFeeCollectModuleInitData} from 'contracts/modules/interfaces/IBaseFeeCollectModule.sol';
 import {IERC20} from '@openzeppelin/contracts/token/ERC20/IERC20.sol';
 import {SafeERC20} from '@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol';

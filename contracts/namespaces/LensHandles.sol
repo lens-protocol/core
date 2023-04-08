@@ -1,16 +1,13 @@
 // SPDX-License-Identifier: MIT
 
-pragma solidity ^0.8.19;
+pragma solidity ^0.8.18;
 
 import {ERC721} from '@openzeppelin/contracts/token/ERC721/ERC721.sol';
 import {VersionedInitializable} from 'contracts/base/upgradeability/VersionedInitializable.sol';
 import {ImmutableOwnable} from 'contracts/misc/ImmutableOwnable.sol';
 import {ILensHandles} from 'contracts/interfaces/ILensHandles.sol';
-import {Errors} from 'contracts/libraries/constants/Errors.sol';
-
-library HandlesEvents {
-    event HandleMinted(string handle, string namespace, uint256 handleId, address to);
-}
+import {HandlesEvents} from 'contracts/namespaces/constants/Events.sol';
+import {HandlesErrors} from 'contracts/namespaces/constants/Errors.sol';
 
 contract LensHandles is ILensHandles, ERC721, VersionedInitializable, ImmutableOwnable {
     // Constant for upgradeability purposes, see VersionedInitializable. Do not confuse it with the EIP-712 revision number.
@@ -61,18 +58,18 @@ contract LensHandles is ILensHandles, ERC721, VersionedInitializable, ImmutableO
     function _validateLocalName(string memory handle) internal pure {
         uint256 handleLength = bytes(handle).length;
         if (handleLength == 0) {
-            revert Errors.HandleLengthInvalid();
+            revert HandlesErrors.HandleLengthInvalid();
         }
 
         bytes1 firstByte = bytes(handle)[0];
         if (firstByte == '-' || firstByte == '_') {
-            revert Errors.HandleFirstCharInvalid();
+            revert HandlesErrors.HandleFirstCharInvalid();
         }
 
         uint256 i;
         while (i < handleLength) {
             if (bytes(handle)[i] == '.') {
-                revert Errors.HandleContainsInvalidCharacters();
+                revert HandlesErrors.HandleContainsInvalidCharacters();
             }
             unchecked {
                 ++i;

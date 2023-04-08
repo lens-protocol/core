@@ -8,8 +8,8 @@ import {LensHub} from 'contracts/LensHub.sol';
 import {FollowNFT} from 'contracts/FollowNFT.sol';
 import {TransparentUpgradeableProxy} from 'contracts/base/upgradeability/TransparentUpgradeableProxy.sol';
 import {ModuleGlobals} from 'contracts/misc/ModuleGlobals.sol';
-import {LensHandles} from 'contracts/misc/namespaces/LensHandles.sol';
-import {TokenHandleRegistry} from 'contracts/misc/namespaces/TokenHandleRegistry.sol';
+import {LensHandles} from 'contracts/namespaces/LensHandles.sol';
+import {TokenHandleRegistry} from 'contracts/namespaces/TokenHandleRegistry.sol';
 import {Types} from 'contracts/libraries/constants/Types.sol';
 import {IERC721} from '@openzeppelin/contracts/token/ERC721/IERC721.sol';
 import {IERC721Enumerable} from '@openzeppelin/contracts/token/ERC721/extensions/IERC721Enumerable.sol';
@@ -89,15 +89,17 @@ contract MigrationsTest is Test, ForkManagement {
         followNFT = new FollowNFT(address(hub));
 
         // TODO: Last 3 addresses are for the follow modules for migration purposes.
-        hubImpl = new LensHub(
-            address(followNFT),
-            address(collectNFT),
-            lensHandlesAddress,
-            tokenHandleRegistryAddress,
-            address(0),
-            address(0),
-            address(0)
-        );
+        hubImpl = new LensHub({
+            moduleGlobals: address(0),
+            followNFTImpl: address(followNFT),
+            collectNFTImpl: address(collectNFT),
+            lensHandlesAddress: lensHandlesAddress,
+            tokenHandleRegistryAddress: tokenHandleRegistryAddress,
+            legacyFeeFollowModule: address(0),
+            legacyProfileFollowModule: address(0),
+            newFeeFollowModule: address(0)
+        });
+
         vm.stopPrank();
 
         // TODO: This can be moved and split
