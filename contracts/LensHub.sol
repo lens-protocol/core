@@ -28,7 +28,6 @@ import {GovernanceLib} from 'contracts/libraries/GovernanceLib.sol';
 import {MetaTxLib} from 'contracts/libraries/MetaTxLib.sol';
 import {ProfileLib} from 'contracts/libraries/ProfileLib.sol';
 import {PublicationLib} from 'contracts/libraries/PublicationLib.sol';
-import {ProfileTokenURILib} from 'contracts/libraries/ProfileTokenURILib.sol';
 import {StorageLib} from 'contracts/libraries/StorageLib.sol';
 import {ValidationLib} from 'contracts/libraries/ValidationLib.sol';
 
