@@ -51,7 +51,7 @@ library ProfileTokenURILib {
                     TokenURISecondaryFontLib.getFontBase64Encoded(),
                     '</style></defs><g clip-path="url(#clip0_2578_6938)"><rect width="724" height="724" fill="#C3E4CD"/><rect x="164" y="165" width="396" height="396" rx="20.5645" fill="#FFEBB8"/><text opacity="0.7" fill="#5A4E4C" font-family="',
                     TokenURISecondaryFontLib.getFontName(),
-                    '"  text-anchor="middle" font-size="26" letter-spacing="-0.2px"><tspan x="50%" y="504.748">Lens Profile</tspan></text><text fill="#5A4E4C" text-anchor="middle" font-family="',
+                    '" text-anchor="middle" font-size="26" letter-spacing="-0.2px"><tspan x="50%" y="504.748">Lens Profile</tspan></text><text fill="#5A4E4C" text-anchor="middle" font-family="',
                     TokenURIMainFontLib.getFontName(),
                     '" font-size="42" letter-spacing="-1.5px"><tspan x="50%" y="468.182">#',
                     profileIdAsString,
