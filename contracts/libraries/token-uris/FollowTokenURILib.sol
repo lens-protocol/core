@@ -31,7 +31,7 @@ library FollowTokenURILib {
                             '","attributes":[{"display_type": "number", "trait_type":"ID","value":"',
                             followTokenIdAsString,
                             '"},{"trait_type":"DIGITS","value":"',
-                            bytes(followTokenIdAsString).length,
+                            bytes(followTokenIdAsString).length + 48, // ASCII conversion
                             '"},{"trait_type":"WRAPPED AT","value":"',
                             StorageLib.getTokenData(followTokenId).mintTimestamp.toString(), // TODO: Useless?
                             '"}]}' // TODO: original follow timestamp

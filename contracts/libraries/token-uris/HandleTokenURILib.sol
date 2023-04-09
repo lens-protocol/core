@@ -7,7 +7,7 @@ import {TokenURIMainFontLib} from 'contracts/libraries/token-uris/TokenURIMainFo
 import {TokenURISecondaryFontLib} from 'contracts/libraries/token-uris/TokenURISecondaryFontLib.sol';
 
 library HandleTokenURILib {
-    function getTokenURI(string memory handle) external pure returns (string memory) {
+    function getTokenURI(string memory handle, string memory namespace) external pure returns (string memory) {
         return
             string(
                 abi.encodePacked(
@@ -19,11 +19,13 @@ library HandleTokenURILib {
                             '","description":"Lens Protocol - @',
                             handle,
                             '","image":"data:image/svg+xml;base64,',
-                            _getSVGImageBase64Encoded(handle),
+                            _getSVGImageBase64Encoded(handle), // TODO: Do we want to attach .lens somewhere?
                             '","attributes":[{"display_type": "number", "trait_type":"ID","value":"',
                             handle,
-                            '"},{"trait_type":"NAMESPACE","value":".lens"},{"trait_type":"LENGTH","value":"',
-                            bytes(handle).length,
+                            '"},{"trait_type":"NAMESPACE","value":".',
+                            namespace,
+                            '"},{"trait_type":"LENGTH","value":"',
+                            bytes(handle).length + 48, // ASCII conversion
                             '"}]}'
                         )
                     )
