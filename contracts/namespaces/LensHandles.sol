@@ -8,6 +8,7 @@ import {ImmutableOwnable} from 'contracts/misc/ImmutableOwnable.sol';
 import {ILensHandles} from 'contracts/interfaces/ILensHandles.sol';
 import {HandlesEvents} from 'contracts/namespaces/constants/Events.sol';
 import {HandlesErrors} from 'contracts/namespaces/constants/Errors.sol';
+import {HandleTokenURILib} from 'contracts/libraries/token-uris/HandleTokenURILib.sol';
 
 contract LensHandles is ILensHandles, ERC721, VersionedInitializable, ImmutableOwnable {
     // Constant for upgradeability purposes, see VersionedInitializable. Do not confuse it with the EIP-712 revision number.
@@ -27,6 +28,15 @@ contract LensHandles is ILensHandles, ERC721, VersionedInitializable, ImmutableO
     }
 
     function initialize() external initializer {}
+
+    /**
+     * @dev See {IERC721Metadata-tokenURI}.
+     */
+    function tokenURI(uint256 tokenId) public view override returns (string memory) {
+        _requireMinted(tokenId);
+        // TODO: tokenId => handle resolution needed
+        return HandleTokenURILib.getTokenURI('');
+    }
 
     /// @inheritdoc ILensHandles
     function mintHandle(address to, string calldata localName) external onlyOwnerOrHub returns (uint256) {
