@@ -3,15 +3,10 @@
 pragma solidity ^0.8.15;
 
 import {Base64} from '@openzeppelin/contracts/utils/Base64.sol';
-import {Strings} from '@openzeppelin/contracts/utils/Strings.sol';
 import {TokenURIMainFontLib} from 'contracts/libraries/token-uris/TokenURIMainFontLib.sol';
 import {TokenURISecondaryFontLib} from 'contracts/libraries/token-uris/TokenURISecondaryFontLib.sol';
-import {StorageLib} from 'contracts/libraries/StorageLib.sol';
 
 library HandleTokenURILib {
-    using Strings for uint96;
-    using Strings for uint256;
-
     function getTokenURI(string memory handle) external pure returns (string memory) {
         return
             string(
