@@ -17,6 +17,8 @@ contract LensHandles is ILensHandles, ERC721, VersionedInitializable, ImmutableO
     string constant NAMESPACE = 'lens';
     bytes32 constant NAMESPACE_HASH = keccak256(bytes(NAMESPACE));
 
+    mapping(uint256 tokenId => string localName) public handles;
+
     constructor(address owner, address lensHub) ERC721('', '') ImmutableOwnable(owner, lensHub) {}
 
     function name() public pure override returns (string memory) {
@@ -34,8 +36,7 @@ contract LensHandles is ILensHandles, ERC721, VersionedInitializable, ImmutableO
      */
     function tokenURI(uint256 tokenId) public view override returns (string memory) {
         _requireMinted(tokenId);
-        // TODO: tokenId => handle resolution needed
-        return HandleTokenURILib.getTokenURI('');
+        return HandleTokenURILib.getTokenURI(handles[tokenId], NAMESPACE);
     }
 
     /// @inheritdoc ILensHandles
@@ -45,6 +46,7 @@ contract LensHandles is ILensHandles, ERC721, VersionedInitializable, ImmutableO
         bytes32 handleHash = keccak256(abi.encodePacked(localNameHash, NAMESPACE_HASH));
         uint256 handleId = uint256(handleHash);
         _mint(to, handleId);
+        handles[handleId] = localName;
         emit HandlesEvents.HandleMinted(localName, NAMESPACE, handleId, to);
         return handleId;
     }
