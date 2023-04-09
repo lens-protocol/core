@@ -13,6 +13,7 @@ import {ILensHub} from 'contracts/interfaces/ILensHub.sol';
 import {LensBaseERC721} from 'contracts/base/LensBaseERC721.sol';
 import {Strings} from '@openzeppelin/contracts/utils/Strings.sol';
 import {StorageLib} from 'contracts/libraries/StorageLib.sol';
+import {FollowTokenURILib} from 'contracts/libraries/token-uris/FollowTokenURILib.sol';
 
 contract FollowNFT is HubRestricted, LensBaseERC721, ERC2981CollectionRoyalties, IFollowNFT {
     using Strings for uint256;
@@ -269,7 +270,7 @@ contract FollowNFT is HubRestricted, LensBaseERC721, ERC2981CollectionRoyalties,
         if (!_exists(followTokenId)) {
             revert Errors.TokenDoesNotExist();
         }
-        return 'Not implemented yet';
+        return FollowTokenURILib.getTokenURI(followTokenId); //TODO: pass extra needed params
     }
 
     function _followMintingNewToken(uint256 followerProfileId) internal returns (uint256) {
