@@ -270,7 +270,12 @@ contract FollowNFT is HubRestricted, LensBaseERC721, ERC2981CollectionRoyalties,
         if (!_exists(followTokenId)) {
             revert Errors.TokenDoesNotExist();
         }
-        return FollowTokenURILib.getTokenURI(followTokenId); //TODO: pass extra needed params
+        return
+            FollowTokenURILib.getTokenURI(
+                followTokenId,
+                _followedProfileId,
+                _followDataByFollowTokenId[followTokenId].originalFollowTimestamp
+            );
     }
 
     function _followMintingNewToken(uint256 followerProfileId) internal returns (uint256) {

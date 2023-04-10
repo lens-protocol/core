@@ -36,7 +36,7 @@ contract LensHandles is ILensHandles, ERC721, VersionedInitializable, ImmutableO
      */
     function tokenURI(uint256 tokenId) public view override returns (string memory) {
         _requireMinted(tokenId);
-        return HandleTokenURILib.getTokenURI(handles[tokenId], NAMESPACE);
+        return HandleTokenURILib.getTokenURI(tokenId, handles[tokenId]);
     }
 
     /// @inheritdoc ILensHandles

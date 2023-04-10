@@ -31,7 +31,7 @@ library ProfileTokenURILib {
                             '"},{"trait_type":"HEX ID","value":"',
                             profileId.toHexString(),
                             '"},{"trait_type":"DIGITS","value":"',
-                            bytes(profileIdAsString).length + 48, // ASCII conversion, TODO: should we use toString here?
+                            bytes(profileIdAsString).length.toString(),
                             '"},{"trait_type":"MINTED AT","value":"',
                             StorageLib.getTokenData(profileId).mintTimestamp.toString(),
                             '"}]}'

@@ -12,8 +12,13 @@ library FollowTokenURILib {
     using Strings for uint96;
     using Strings for uint256;
 
-    function getTokenURI(uint256 followTokenId) external view returns (string memory) {
+    function getTokenURI(
+        uint256 followTokenId,
+        uint256 followedProfileId,
+        uint256 originalFollowTimestamp
+    ) external pure returns (string memory) {
         string memory followTokenIdAsString = followTokenId.toString();
+        string memory followedProfileIdAsString = followedProfileId.toString();
         return
             string(
                 abi.encodePacked(
@@ -25,16 +30,16 @@ library FollowTokenURILib {
                             '","description":"Lens Protocol - Follower #',
                             followTokenIdAsString,
                             'of Profile #',
-                            followTokenIdAsString, // TODO: followedProfileIdAsString
+                            followedProfileIdAsString,
                             '","image":"data:image/svg+xml;base64,',
-                            _getSVGImageBase64Encoded(followTokenIdAsString, 'followedProfileIdAsString'), // TODO: followedProfileIdAsString
+                            _getSVGImageBase64Encoded(followTokenIdAsString, followedProfileIdAsString),
                             '","attributes":[{"display_type": "number", "trait_type":"ID","value":"',
                             followTokenIdAsString,
                             '"},{"trait_type":"DIGITS","value":"',
-                            bytes(followTokenIdAsString).length + 48, // ASCII conversion
-                            '"},{"trait_type":"WRAPPED AT","value":"',
-                            StorageLib.getTokenData(followTokenId).mintTimestamp.toString(), // TODO: Useless?
-                            '"}]}' // TODO: original follow timestamp
+                            bytes(followTokenIdAsString).length.toString(),
+                            '"},{"trait_type":"MINTED AT","value":"',
+                            originalFollowTimestamp,
+                            '"}]}'
                         )
                     )
                 )
