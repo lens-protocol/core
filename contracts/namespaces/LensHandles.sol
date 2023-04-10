@@ -8,6 +8,7 @@ import {ImmutableOwnable} from 'contracts/misc/ImmutableOwnable.sol';
 import {ILensHandles} from 'contracts/interfaces/ILensHandles.sol';
 import {HandlesEvents} from 'contracts/namespaces/constants/Events.sol';
 import {HandlesErrors} from 'contracts/namespaces/constants/Errors.sol';
+import {HandleTokenURILib} from 'contracts/libraries/token-uris/HandleTokenURILib.sol';
 
 contract LensHandles is ILensHandles, ERC721, VersionedInitializable, ImmutableOwnable {
     // Constant for upgradeability purposes, see VersionedInitializable. Do not confuse it with the EIP-712 revision number.
@@ -15,6 +16,8 @@ contract LensHandles is ILensHandles, ERC721, VersionedInitializable, ImmutableO
 
     string constant NAMESPACE = 'lens';
     bytes32 constant NAMESPACE_HASH = keccak256(bytes(NAMESPACE));
+
+    mapping(uint256 tokenId => string localName) public handles;
 
     constructor(address owner, address lensHub) ERC721('', '') ImmutableOwnable(owner, lensHub) {}
 
@@ -28,6 +31,14 @@ contract LensHandles is ILensHandles, ERC721, VersionedInitializable, ImmutableO
 
     function initialize() external initializer {}
 
+    /**
+     * @dev See {IERC721Metadata-tokenURI}.
+     */
+    function tokenURI(uint256 tokenId) public view override returns (string memory) {
+        _requireMinted(tokenId);
+        return HandleTokenURILib.getTokenURI(tokenId, handles[tokenId]);
+    }
+
     /// @inheritdoc ILensHandles
     function mintHandle(address to, string calldata localName) external onlyOwnerOrHub returns (uint256) {
         _validateLocalName(localName);
@@ -35,6 +46,7 @@ contract LensHandles is ILensHandles, ERC721, VersionedInitializable, ImmutableO
         bytes32 handleHash = keccak256(abi.encodePacked(localNameHash, NAMESPACE_HASH));
         uint256 handleId = uint256(handleHash);
         _mint(to, handleId);
+        handles[handleId] = localName;
         emit HandlesEvents.HandleMinted(localName, NAMESPACE, handleId, to);
         return handleId;
     }

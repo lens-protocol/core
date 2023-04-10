@@ -14,7 +14,7 @@ import {TransparentUpgradeableProxy} from 'contracts/base/upgradeability/Transpa
 import {Types} from 'contracts/libraries/constants/Types.sol';
 import {Errors} from 'contracts/libraries/constants/Errors.sol';
 import {Events} from 'contracts/libraries/constants/Events.sol';
-import {ProfileTokenURILib} from 'contracts/libraries/ProfileTokenURILib.sol';
+import {ProfileTokenURILib} from 'contracts/libraries/token-uris/ProfileTokenURILib.sol';
 import {MockActionModule} from 'test/mocks/MockActionModule.sol';
 import {MockReferenceModule} from 'test/mocks/MockReferenceModule.sol';
 import {ForkManagement} from 'test/foundry/helpers/ForkManagement.sol';

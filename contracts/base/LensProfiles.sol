@@ -9,7 +9,7 @@ import {LensBaseERC721} from 'contracts/base/LensBaseERC721.sol';
 
 import {ProfileLib} from 'contracts/libraries/ProfileLib.sol';
 import {StorageLib} from 'contracts/libraries/StorageLib.sol';
-import {ProfileTokenURILib} from 'contracts/libraries/ProfileTokenURILib.sol';
+import {ProfileTokenURILib} from 'contracts/libraries/token-uris/ProfileTokenURILib.sol';
 import {ValidationLib} from 'contracts/libraries/ValidationLib.sol';
 
 import {ERC2981CollectionRoyalties} from 'contracts/base/ERC2981CollectionRoyalties.sol';
@@ -46,17 +46,8 @@ abstract contract LensProfiles is LensBaseERC721, ERC2981CollectionRoyalties {
     /**
      * @dev Overrides the ERC721 tokenURI function to return the associated URI with a given profile.
      */
-    function tokenURI(uint256 tokenId) public pure override returns (string memory) {
-        // address followNFT = StorageLib.getProfile(tokenId).followNFT;
-        // return
-        //     ProfileTokenURILib.getProfileTokenURI(
-        //         tokenId,
-        //         followNFT == address(0) ? 0 : IERC721Timestamped(followNFT).totalSupply(),
-        //         ownerOf(tokenId),
-        //         'Lens Profile',
-        //         StorageLib.getProfile(tokenId).imageURI
-        //     );
-        return ProfileTokenURILib.getProfileTokenURI(tokenId, 0, address(0), '', '');
+    function tokenURI(uint256 tokenId) public view override returns (string memory) {
+        return ProfileTokenURILib.getTokenURI(tokenId);
     }
 
     function _getRoyaltiesInBasisPointsSlot() internal pure override returns (uint256) {
