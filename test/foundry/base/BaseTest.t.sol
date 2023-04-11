@@ -135,27 +135,59 @@ contract BaseTest is TestSetup {
             });
     }
 
+    // We need this to deal with stack too deep:
+    struct ReferenceParamsForAbiEncode {
+        bytes32 typehash;
+        uint256 profileId;
+        bytes32 contentURIHash;
+        uint256 pointedProfileId;
+        uint256 pointedPubId;
+        uint256[] referrerProfileIds;
+        uint256[] referrerPubIds;
+        bytes32 referenceModuleDataHash;
+        address[] actionModules;
+        bytes32 actionModulesInitDataHash;
+        address referenceModule;
+        bytes32 referenceModuleInitDataHash;
+        uint256 nonce;
+        uint256 deadline;
+    }
+
+    function _abiEncode(
+        ReferenceParamsForAbiEncode memory referenceParamsForAbiEncode
+    ) private pure returns (bytes memory) {
+        bytes memory encodedStruct = abi.encode(referenceParamsForAbiEncode);
+        assembly {
+            let lengthWithoutOffset := sub(mload(encodedStruct), 32) // Calculates length without offset.
+            encodedStruct := add(encodedStruct, 32) // Skips the offset by shifting the memory pointer.
+            mstore(encodedStruct, lengthWithoutOffset) // Stores new length, which now excludes the offset.
+        }
+        return encodedStruct;
+    }
+
     function _getCommentTypedDataHash(
         Types.CommentParams memory commentParams,
         uint256 nonce,
         uint256 deadline
     ) internal view returns (bytes32) {
         bytes32 structHash = keccak256(
-            abi.encode(
-                Typehash.COMMENT,
-                commentParams.profileId,
-                keccak256(bytes(commentParams.contentURI)),
-                commentParams.pointedProfileId,
-                commentParams.pointedPubId,
-                commentParams.referrerProfileIds,
-                commentParams.referrerPubIds,
-                keccak256(commentParams.referenceModuleData),
-                commentParams.actionModules,
-                _hashActionModulesInitDatas(commentParams.actionModulesInitDatas),
-                commentParams.referenceModule,
-                keccak256(commentParams.referenceModuleInitData),
-                nonce,
-                deadline
+            _abiEncode(
+                ReferenceParamsForAbiEncode(
+                    Typehash.COMMENT,
+                    commentParams.profileId,
+                    keccak256(bytes(commentParams.contentURI)),
+                    commentParams.pointedProfileId,
+                    commentParams.pointedPubId,
+                    commentParams.referrerProfileIds,
+                    commentParams.referrerPubIds,
+                    keccak256(commentParams.referenceModuleData),
+                    commentParams.actionModules,
+                    _hashActionModulesInitDatas(commentParams.actionModulesInitDatas),
+                    commentParams.referenceModule,
+                    keccak256(commentParams.referenceModuleInitData),
+                    nonce,
+                    deadline
+                )
             )
         );
         return _calculateDigest(structHash);
