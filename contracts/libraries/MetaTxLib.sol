@@ -190,23 +190,34 @@ library MetaTxLib {
     function _abiEncode(
         ReferenceParamsForAbiEncode memory referenceParamsForAbiEncode
     ) private pure returns (bytes memory) {
-        return
-            abi.encode(
-                referenceParamsForAbiEncode.typehash,
-                referenceParamsForAbiEncode.profileId,
-                referenceParamsForAbiEncode.contentURIHash,
-                referenceParamsForAbiEncode.pointedProfileId,
-                referenceParamsForAbiEncode.pointedPubId,
-                referenceParamsForAbiEncode.referrerProfileIds,
-                referenceParamsForAbiEncode.referrerPubIds,
-                referenceParamsForAbiEncode.referenceModuleDataHash,
-                referenceParamsForAbiEncode.actionModules,
-                referenceParamsForAbiEncode.actionModulesInitDataHash,
-                referenceParamsForAbiEncode.referenceModule,
-                referenceParamsForAbiEncode.referenceModuleInitDataHash,
-                referenceParamsForAbiEncode.nonce,
-                referenceParamsForAbiEncode.deadline
-            );
+        // This assembly workaround allows us to avoid Stack Too Deep error when encoding all the params of the struct.
+        // We remove the first 32 bytes of the encoded struct, which is the offset of the struct.
+        // The rest of the encoding is the same, so we can just return it.
+        bytes memory encodedStruct = abi.encode(referenceParamsForAbiEncode);
+        assembly {
+            let lengthWithoutOffset := sub(mload(encodedStruct), 32) // Calculates length without offset.
+            encodedStruct := add(encodedStruct, 32) // Skips the offset by shifting the memory pointer.
+            mstore(encodedStruct, lengthWithoutOffset) // Stores new length, which now excludes the offset.
+        }
+        return encodedStruct;
+        // The code above is the equivalent of:
+        //
+        // return abi.encode(
+        //     referenceParamsForAbiEncode.typehash,
+        //     referenceParamsForAbiEncode.profileId,
+        //     referenceParamsForAbiEncode.contentURIHash,
+        //     referenceParamsForAbiEncode.pointedProfileId,
+        //     referenceParamsForAbiEncode.pointedPubId,
+        //     referenceParamsForAbiEncode.referrerProfileIds,
+        //     referenceParamsForAbiEncode.referrerPubIds,
+        //     referenceParamsForAbiEncode.referenceModuleDataHash,
+        //     referenceParamsForAbiEncode.actionModules,
+        //     referenceParamsForAbiEncode.actionModulesInitDataHash,
+        //     referenceParamsForAbiEncode.referenceModule,
+        //     referenceParamsForAbiEncode.referenceModuleInitDataHash,
+        //     referenceParamsForAbiEncode.nonce,
+        //     referenceParamsForAbiEncode.deadline
+        // );
     }
 
     function validateCommentSignature(
