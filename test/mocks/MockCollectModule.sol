@@ -14,6 +14,10 @@ import {Types} from 'contracts/libraries/constants/Types.sol';
  * This module works by allowing all collects.
  */
 contract MockCollectModule is ICollectModule {
+    function testMockCollectModule() public {
+        // Prevents being counted in Foundry Coverage
+    }
+
     /**
      * @dev There is nothing needed at initialization.
      */

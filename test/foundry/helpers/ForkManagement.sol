@@ -6,6 +6,10 @@ import 'forge-std/Script.sol';
 contract ForkManagement is Script {
     using stdJson for string;
 
+    function testForkManagement() public {
+        // Prevents being counted in Foundry Coverage
+    }
+
     string forkEnv;
     bool fork;
     string network;

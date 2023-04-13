@@ -415,6 +415,10 @@ contract ChangeDelegatedExecutorsConfigTest_GivenConfig is ChangeDelegatedExecut
 contract ChangeDelegatedExecutorsConfigTest_MetaTx is ChangeDelegatedExecutorsConfigTest_GivenConfig, MetaTxNegatives {
     mapping(address => uint256) cachedNonceByAddress;
 
+    function testChangeDelegatedExecutorsConfigTest_MetaTx() public {
+        // Prevents being counted in Foundry Coverage
+    }
+
     function setUp() public override(ChangeDelegatedExecutorsConfigTest_CurrentConfig, MetaTxNegatives) {
         ChangeDelegatedExecutorsConfigTest_CurrentConfig.setUp();
         MetaTxNegatives.setUp();

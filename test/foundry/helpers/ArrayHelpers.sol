@@ -2,6 +2,10 @@
 pragma solidity ^0.8.13;
 
 contract ArrayHelpers {
+    function testArrayHelpers() public {
+        // Prevents being counted in Foundry Coverage
+    }
+
     function _emptyUint256Array() internal pure returns (uint256[] memory) {
         uint256[] memory ret = new uint256[](0);
         return ret;

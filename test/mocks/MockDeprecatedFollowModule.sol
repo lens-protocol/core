@@ -8,6 +8,10 @@ import {ILegacyFollowModule} from 'test/mocks/ILegacyFollowModule.sol';
  * @dev This is a simple mock follow module to be used for testing.
  */
 contract MockDeprecatedFollowModule is ILegacyFollowModule {
+    function testMockDeprecatedFollowModule() public {
+        // Prevents being counted in Foundry Coverage
+    }
+
     function initializeFollowModule(uint256, bytes calldata data) external pure override returns (bytes memory) {
         uint256 number = abi.decode(data, (uint256));
         require(number == 1, 'MockFollowModule: invalid');

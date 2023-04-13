@@ -9,6 +9,10 @@ import {Types} from 'contracts/libraries/constants/Types.sol';
  * @dev This is a simple mock follow module to be used for testing.
  */
 contract MockReferenceModule is IReferenceModule {
+    function testMockReferenceModule() public {
+        // Prevents being counted in Foundry Coverage
+    }
+
     function initializeReferenceModule(
         uint256,
         uint256,

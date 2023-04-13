@@ -58,6 +58,10 @@ contract ProfileMetadataURITest is BaseTest {
 contract ProfileMetadataURITest_MetaTx is ProfileMetadataURITest, MetaTxNegatives {
     mapping(address => uint256) cachedNonceByAddress;
 
+    function testProfileMetadataURITest_MetaTx() public {
+        // Prevents being counted in Foundry Coverage
+    }
+
     function setUp() public override(MetaTxNegatives, TestSetup) {
         TestSetup.setUp();
         MetaTxNegatives.setUp();

@@ -8,6 +8,10 @@ import {ILegacyReferenceModule} from 'contracts/interfaces/ILegacyReferenceModul
  * @dev This is a simple mock follow module to be used for testing.
  */
 contract MockDeprecatedReferenceModule is ILegacyReferenceModule {
+    function testMockDeprecatedReferenceModule() public {
+        // Prevents being counted in Foundry Coverage
+    }
+
     function initializeReferenceModule(
         uint256,
         uint256,

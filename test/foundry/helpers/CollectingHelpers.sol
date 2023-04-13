@@ -6,6 +6,10 @@ import 'forge-std/Test.sol';
 import 'contracts/libraries/constants/Types.sol';
 
 contract CollectingHelpers is TestSetup {
+    function testCollectingHelpers() public {
+        // Prevents being counted in Foundry Coverage
+    }
+
     string constant COLLECT_NFT_NAME_INFIX = '-Collect-';
     string constant COLLECT_NFT_SYMBOL_INFIX = '-Cl-';
 
