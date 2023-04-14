@@ -10,6 +10,10 @@ import {IFollowModule} from 'contracts/interfaces/IFollowModule.sol';
 contract MockFollowModuleWithRevertFlag is IFollowModule {
     error MockFollowModuleReverted();
 
+    function testMockFollowModuleWithRevertFlag() public {
+        // Prevents being counted in Foundry Coverage
+    }
+
     function initializeFollowModule(
         uint256 /* profileId */,
         address /* transactionExecutor */,

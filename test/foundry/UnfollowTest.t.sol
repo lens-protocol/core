@@ -193,6 +193,10 @@ contract UnfollowTest is BaseTest {
 contract UnfollowMetaTxTest is UnfollowTest, MetaTxNegatives {
     mapping(address => uint256) cachedNonceByAddress;
 
+    function testUnfollowMetaTxTest() public {
+        // Prevents being counted in Foundry Coverage
+    }
+
     function setUp() public override(UnfollowTest, MetaTxNegatives) {
         UnfollowTest.setUp();
         MetaTxNegatives.setUp();

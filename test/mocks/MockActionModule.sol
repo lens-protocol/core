@@ -11,6 +11,10 @@ import {Types} from 'contracts/libraries/constants/Types.sol';
 contract MockActionModule is IPublicationActionModule {
     error MockActionModuleReverted();
 
+    function testMockActionModule() public {
+        // Prevents being counted in Foundry Coverage
+    }
+
     function initializePublicationAction(
         uint256 /** profileId*/,
         uint256 /** pubId*/,

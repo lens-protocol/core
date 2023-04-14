@@ -184,6 +184,10 @@ abstract contract PublishingTest is BaseTest, PublishingHelpers, SigSetup {
 }
 
 contract PostTest is PublishingTest {
+    function testPostTest() public {
+        // Prevents being counted in Foundry Coverage
+    }
+
     function _publish() internal virtual override returns (uint256) {
         return _post(mockPostParams);
     }

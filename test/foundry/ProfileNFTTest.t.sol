@@ -5,6 +5,10 @@ import 'test/foundry/base/BaseTest.t.sol';
 import 'test/foundry/ERC721Test.t.sol';
 
 contract ProfileNFTTest is BaseTest, ERC721Test {
+    function testProfileNFTTest() public {
+        // Prevents being counted in Foundry Coverage
+    }
+
     function _mintERC721(address to) internal virtual override returns (uint256) {
         return _createProfile(to);
     }

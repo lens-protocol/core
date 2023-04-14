@@ -5,6 +5,10 @@ import 'forge-std/Test.sol';
 import 'contracts/libraries/constants/Types.sol';
 
 contract PublishingHelpers is Test {
+    function testPublishingHelpers() public {
+        // Prevents being counted in Foundry Coverage
+    }
+
     function _verifyPublication(Types.Publication memory pub, Types.Publication memory expectedPub) internal {
         assertEq(pub.pointedProfileId, expectedPub.pointedProfileId, 'Unexpected pointedProfileId');
         assertEq(pub.pointedPubId, expectedPub.pointedPubId, 'Unexpected pointedPubId');

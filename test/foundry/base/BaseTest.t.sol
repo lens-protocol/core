@@ -6,6 +6,10 @@ import 'contracts/libraries/constants/Types.sol';
 import {Typehash} from 'contracts/libraries/constants/Typehash.sol';
 
 contract BaseTest is TestSetup {
+    function testBaseTest() public {
+        // Prevents being counted in Foundry Coverage
+    }
+
     function _getSetProfileMetadataURITypedDataHash(
         uint256 profileId,
         string memory metadataURI,

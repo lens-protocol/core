@@ -14,6 +14,10 @@ contract ERC721Recipient is IERC721Receiver {
     uint256 public id;
     bytes public data;
 
+    function testERC721Recipient() public {
+        // Prevents being counted in Foundry Coverage
+    }
+
     function onERC721Received(
         address _operator,
         address _from,
@@ -30,12 +34,20 @@ contract ERC721Recipient is IERC721Receiver {
 }
 
 contract RevertingERC721Recipient is IERC721Receiver {
+    function testRevertingERC721Recipient() public {
+        // Prevents being counted in Foundry Coverage
+    }
+
     function onERC721Received(address, address, uint256, bytes calldata) public virtual override returns (bytes4) {
         revert(string(abi.encodePacked(IERC721Receiver.onERC721Received.selector)));
     }
 }
 
 contract WrongReturnDataERC721Recipient is IERC721Receiver {
+    function testWrongReturnDataERC721Recipient() public {
+        // Prevents being counted in Foundry Coverage
+    }
+
     function onERC721Received(address, address, uint256, bytes calldata) public virtual override returns (bytes4) {
         return 0xCAFEBEEF;
     }
