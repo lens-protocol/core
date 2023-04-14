@@ -8,6 +8,10 @@ import {IFollowModule} from 'contracts/interfaces/IFollowModule.sol';
  * @dev This is a simple mock follow module to be used for testing.
  */
 contract MockFollowModule is IFollowModule {
+    function testMockFollowModule() public {
+        // Prevents being counted in Foundry Coverage
+    }
+
     function initializeFollowModule(
         uint256 /* profileId */,
         address /* transactionExecutor */,

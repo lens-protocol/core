@@ -403,6 +403,10 @@ contract FollowTest is BaseTest {
 contract FollowMetaTxTest is FollowTest, MetaTxNegatives {
     mapping(address => uint256) cachedNonceByAddress;
 
+    function testFollowMetaTxTest() public {
+        // Prevents being counted in Foundry Coverage
+    }
+
     function setUp() public override(FollowTest, MetaTxNegatives) {
         FollowTest.setUp();
         MetaTxNegatives.setUp();

@@ -243,6 +243,10 @@ contract SetBlockStatusTest is BaseTest {
 contract SetBlockStatusMetaTxTest is SetBlockStatusTest, MetaTxNegatives {
     mapping(address => uint256) cachedNonceByAddress;
 
+    function testSetBlockStatusMetaTxTest() public {
+        // Prevents being counted in Foundry Coverage
+    }
+
     function setUp() public override(SetBlockStatusTest, MetaTxNegatives) {
         SetBlockStatusTest.setUp();
         MetaTxNegatives.setUp();

@@ -13,6 +13,10 @@ import {ILegacyCollectModule} from 'contracts/interfaces/ILegacyCollectModule.so
  * This module works by allowing all collects.
  */
 contract MockDeprecatedCollectModule is ILegacyCollectModule {
+    function testMockDeprecatedCollectModule() public {
+        // Prevents being counted in Foundry Coverage
+    }
+
     /**
      * @dev There is nothing needed at initialization.
      */

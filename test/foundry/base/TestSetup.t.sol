@@ -27,6 +27,10 @@ import 'test/foundry/Constants.sol';
 contract TestSetup is Test, ForkManagement, ArrayHelpers {
     using stdJson for string;
 
+    function testTestSetup() public {
+        // Prevents being counted in Foundry Coverage
+    }
+
     uint256 newProfileId; // TODO: We should get rid of this everywhere, and create dedicated profiles instead (see Follow tests)
 
     address deployer;
