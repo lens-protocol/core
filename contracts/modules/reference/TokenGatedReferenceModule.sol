@@ -26,6 +26,15 @@ struct GateParams {
     uint256 minThreshold;
 }
 
+library TokenGatedEvents {
+    event TokenGatedReferencePublicationCreated(
+        uint256 indexed profileId,
+        uint256 indexed pubId,
+        address tokenAddress,
+        uint256 minThreshold
+    );
+}
+
 /**
  * @title TokenGatedReferenceModule
  * @author Lens Protocol
@@ -34,13 +43,6 @@ struct GateParams {
  */
 contract TokenGatedReferenceModule is HubRestricted, IReferenceModule {
     uint256 internal constant UINT256_BYTES = 32;
-
-    event TokenGatedReferencePublicationCreated(
-        uint256 indexed profileId,
-        uint256 indexed pubId,
-        address tokenAddress,
-        uint256 minThreshold
-    );
 
     error NotEnoughBalance();
 
@@ -71,7 +73,12 @@ contract TokenGatedReferenceModule is HubRestricted, IReferenceModule {
         }
 
         _gateParams[profileId][pubId] = gateParams;
-        emit TokenGatedReferencePublicationCreated(profileId, pubId, gateParams.tokenAddress, gateParams.minThreshold);
+        emit TokenGatedEvents.TokenGatedReferencePublicationCreated(
+            profileId,
+            pubId,
+            gateParams.tokenAddress,
+            gateParams.minThreshold
+        );
         return '';
     }
 
