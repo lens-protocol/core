@@ -17,10 +17,6 @@ contract TokenGatedReferenceModuleBase is BaseModuleTest {
         uint256 minThreshold
     );
 
-    function setUp() public virtual override {
-        super.setUp();
-    }
-
     // Deploy & Whitelist TokenGatedReferenceModule
     constructor() BaseModuleTest() {
         if (fork && keyExists(string(abi.encodePacked('.', forkEnv, '.TokenGatedReferenceModule')))) {
