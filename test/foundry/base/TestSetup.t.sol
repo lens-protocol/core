@@ -185,6 +185,9 @@ contract TestSetup is Test, ForkManagement, ArrayHelpers {
     }
 
     function setUp() public virtual {
+        vm.label(address(hub), 'LensHub');
+        vm.label(address(governance), 'Governance');
+
         // Compute the domain separator.
         domainSeparator = keccak256(
             abi.encode(
@@ -210,7 +213,7 @@ contract TestSetup is Test, ForkManagement, ArrayHelpers {
             profileId: newProfileId,
             contentURI: MOCK_URI,
             actionModules: _toAddressArray(address(mockActionModule)),
-            actionModulesInitDatas: _toBytesArray(abi.encode(1)),
+            actionModulesInitDatas: _toBytesArray(abi.encode(true)),
             referenceModule: address(0),
             referenceModuleInitData: ''
         });
