@@ -10,6 +10,25 @@ contract BaseTest is TestSetup {
         // Prevents being counted in Foundry Coverage
     }
 
+    function _loadAccountAs(
+        string memory accountLabel
+    ) internal returns (uint256 pk, address owner, uint256 profileId) {
+        // We derive a new account from the given label.
+        (address accountOwner, uint256 accountOwnerPk) = makeAddrAndKey(accountLabel);
+        uint256 accountProfileId;
+        if (fork) {
+            // If testing in a fork, we load the desired profile and transfer it to the derived account.
+            accountProfileId = vm.envUint('FORK_PROFILE_ID');
+            address currentProfileOwner = hub.ownerOf(accountProfileId);
+            vm.prank(currentProfileOwner);
+            hub.transferFrom(currentProfileOwner, accountOwner, accountProfileId);
+        } else {
+            // If not testing in a fork, we create a fresh profile for the derived account.
+            accountProfileId = _createProfile(accountOwner);
+        }
+        return (accountOwnerPk, accountOwner, accountProfileId);
+    }
+
     function _getSetProfileMetadataURITypedDataHash(
         uint256 profileId,
         string memory metadataURI,
