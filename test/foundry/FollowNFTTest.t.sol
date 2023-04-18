@@ -113,6 +113,15 @@ contract FollowNFTTest is BaseTest, ERC721Test {
     // Follow - Minting new token - Scenarios
     //////////////////////////////////////////////////////////
 
+    // Initial condition
+    function testFirstFollowTokenHasIdOne() public {
+        uint256 profileIdToFollow = _createProfile(me);
+
+        uint256 assignedTokenId = _follow(followerProfileOwner, followerProfileId, profileIdToFollow, 0, '')[0];
+
+        assertEq(assignedTokenId, 1);
+    }
+
     function testNewMintedTokenIdIsLastAssignedPlusOne() public {
         vm.prank(address(hub));
 
