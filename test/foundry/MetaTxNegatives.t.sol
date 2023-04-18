@@ -42,7 +42,7 @@ abstract contract MetaTxNegatives is BaseTest {
 
     // Functions for MetaTx Negative test cases.
 
-    function testCannotExecuteMetaTxWhenSignatureHasExpired() public {
+    function testCannotExecuteMetaTx_WhenSignature_HasExpired() public {
         domainSeparator = _getValidDomainSeparator();
         uint256 expiredTimestamp = block.timestamp;
         uint256 mockTimestamp = expiredTimestamp + 69;
@@ -55,7 +55,7 @@ abstract contract MetaTxNegatives is BaseTest {
         });
     }
 
-    function testCannotExecuteMetaTxWhenSignatureNonceIsInvalid() public {
+    function testCannotExecuteMetaTx_WhenSignature_NonceIsInvalid() public {
         domainSeparator = _getValidDomainSeparator();
         vm.expectRevert(Errors.SignatureInvalid.selector);
         _executeMetaTx({
@@ -65,13 +65,13 @@ abstract contract MetaTxNegatives is BaseTest {
         });
     }
 
-    function testCannotExecuteMetaTxWhenSignatureSignerIsInvalid() public {
+    function testCannotExecuteMetaTx_WhenSignature_SignerIsInvalid() public {
         domainSeparator = _getValidDomainSeparator();
         vm.expectRevert(Errors.SignatureInvalid.selector);
         _executeMetaTx({signerPk: 1234569696969, nonce: _defaultMetaTxSignerNonce, deadline: NO_DEADLINE});
     }
 
-    function testCannotExecuteMetaTxWhenSignatureDomainWasGeneratedWithWrongRevisionNumber() public {
+    function testCannotExecuteMetaTx_WhenSignatureDomain_WasGeneratedWithWrong_RevisionNumber() public {
         domainSeparator = keccak256(
             abi.encode(
                 Typehash.EIP712_DOMAIN,
@@ -85,7 +85,7 @@ abstract contract MetaTxNegatives is BaseTest {
         _executeMetaTx({signerPk: _defaultMetaTxSignerPk, nonce: _defaultMetaTxSignerNonce, deadline: NO_DEADLINE});
     }
 
-    function testCannotExecuteMetaTxWhenSignatureDomainWasGeneratedWithWrongChainId() public {
+    function testCannotExecuteMetaTx_WhenSignatureDomain_WasGeneratedWithWrong_ChainId() public {
         domainSeparator = keccak256(
             abi.encode(
                 Typehash.EIP712_DOMAIN,
@@ -99,7 +99,7 @@ abstract contract MetaTxNegatives is BaseTest {
         _executeMetaTx({signerPk: _defaultMetaTxSignerPk, nonce: _defaultMetaTxSignerNonce, deadline: NO_DEADLINE});
     }
 
-    function testCannotExecuteMetaTxWhenSignatureDomainWasGeneratedWithWrongVerifyingContract() public {
+    function testCannotExecuteMetaTx_WhenSignatureDomain_WasGeneratedWithWrong_VerifyingContract() public {
         domainSeparator = keccak256(
             abi.encode(
                 Typehash.EIP712_DOMAIN,
@@ -113,7 +113,7 @@ abstract contract MetaTxNegatives is BaseTest {
         _executeMetaTx({signerPk: _defaultMetaTxSignerPk, nonce: _defaultMetaTxSignerNonce, deadline: NO_DEADLINE});
     }
 
-    function testCannotExecuteMetaTxWhenSignatureDomainWasGeneratedWithWrongName() public {
+    function testCannotExecuteMetaTx_WhenSignatureDomain_WasGeneratedWithWrong_Name() public {
         domainSeparator = keccak256(
             abi.encode(
                 Typehash.EIP712_DOMAIN,
