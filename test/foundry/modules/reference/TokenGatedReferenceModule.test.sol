@@ -1,14 +1,20 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity ^0.8.10;
 
-import 'test/foundry/modules/base/BaseModuleTest.t.sol';
+import 'test/foundry/base/BaseTest.t.sol';
 import {TokenGatedReferenceModule, GateParams} from 'contracts/modules/reference/TokenGatedReferenceModule.sol';
 import {Types} from 'contracts/libraries/constants/Types.sol';
 import {ArrayHelpers} from 'test/foundry/helpers/ArrayHelpers.sol';
+import {Currency} from 'test/mocks/Currency.sol';
+import {NFT} from 'test/mocks/NFT.sol';
 
-contract TokenGatedReferenceModuleBase is BaseModuleTest {
+contract TokenGatedReferenceModuleBase is BaseTest {
     using stdJson for string;
     TokenGatedReferenceModule tokenGatedReferenceModule;
+
+    NFT nft;
+    Currency currency;
+    uint256 profileId;
 
     event TokenGatedReferencePublicationCreated(
         uint256 indexed profileId,
@@ -17,8 +23,15 @@ contract TokenGatedReferenceModuleBase is BaseModuleTest {
         uint256 minThreshold
     );
 
+    function setUp() public override {
+        super.setUp();
+        currency = new Currency();
+        nft = new NFT();
+        profileId = _createProfile(profileOwner);
+    }
+
     // Deploy & Whitelist TokenGatedReferenceModule
-    constructor() BaseModuleTest() {
+    constructor() TestSetup() {
         if (fork && keyExists(string(abi.encodePacked('.', forkEnv, '.TokenGatedReferenceModule')))) {
             tokenGatedReferenceModule = TokenGatedReferenceModule(
                 json.readAddress(string(abi.encodePacked('.', forkEnv, '.TokenGatedReferenceModule')))
