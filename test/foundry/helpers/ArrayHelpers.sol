@@ -24,6 +24,11 @@ contract ArrayHelpers {
         return ret;
     }
 
+    function _emptyBytesArray() internal pure returns (bytes[] memory) {
+        bytes[] memory ret = new bytes[](0);
+        return ret;
+    }
+
     function _toBytesArray(bytes memory b) internal pure returns (bytes[] memory) {
         bytes[] memory ret = new bytes[](1);
         ret[0] = b;
@@ -47,6 +52,11 @@ contract ArrayHelpers {
         bool[] memory ret = new bool[](2);
         ret[0] = b0;
         ret[1] = b1;
+        return ret;
+    }
+
+    function _emptyAddressArray() internal pure returns (address[] memory) {
+        address[] memory ret = new address[](0);
         return ret;
     }
 
