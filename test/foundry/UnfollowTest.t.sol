@@ -151,7 +151,7 @@ contract UnfollowTest is BaseTest {
     }
 
     function testUnfollowAsUnfollowerApprovedDelegatedExecutor(uint256 approvedDelegatedExecutorPk) public {
-        approvedDelegatedExecutorPk = bound(approvedDelegatedExecutorPk, 1, ISSECP256K1_CURVE_ORDER - 1);
+        approvedDelegatedExecutorPk = _boundPk(approvedDelegatedExecutorPk);
         address approvedDelegatedExecutor = vm.addr(approvedDelegatedExecutorPk);
         vm.assume(approvedDelegatedExecutor != address(0));
         vm.assume(approvedDelegatedExecutor != testUnfollowerProfileOwner);

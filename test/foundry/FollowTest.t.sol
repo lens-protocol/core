@@ -93,7 +93,7 @@ contract FollowTest is BaseTest {
     function testCannotFollowIfTransactionExecutorIsNotTheProfileOwnerOrApprovedExecutor(
         uint256 transactionExecutorPk
     ) public {
-        transactionExecutorPk = bound(transactionExecutorPk, 1, ISSECP256K1_CURVE_ORDER - 1);
+        transactionExecutorPk = _boundPk(transactionExecutorPk);
         address transactionExecutor = vm.addr(transactionExecutorPk);
         vm.assume(transactionExecutor != address(0));
         vm.assume(transactionExecutor != testFollowerProfileOwner);
@@ -114,7 +114,7 @@ contract FollowTest is BaseTest {
     function testCannotFollowWithUnwrappedTokenIfTransactionExecutorIsNotTheProfileOwnerOrApprovedExecutor(
         uint256 transactionExecutorPk
     ) public {
-        transactionExecutorPk = bound(transactionExecutorPk, 1, ISSECP256K1_CURVE_ORDER - 1);
+        transactionExecutorPk = _boundPk(transactionExecutorPk);
         address transactionExecutor = vm.addr(transactionExecutorPk);
         vm.assume(transactionExecutor != address(0));
         vm.assume(transactionExecutor != testFollowerProfileOwner);
@@ -138,7 +138,7 @@ contract FollowTest is BaseTest {
     function testCannotFollowWithWrappedTokenIfTransactionExecutorIsNotTheProfileOwnerOrApprovedExecutor(
         uint256 transactionExecutorPk
     ) public {
-        transactionExecutorPk = bound(transactionExecutorPk, 1, ISSECP256K1_CURVE_ORDER - 1);
+        transactionExecutorPk = _boundPk(transactionExecutorPk);
         address transactionExecutor = vm.addr(transactionExecutorPk);
         vm.assume(transactionExecutor != address(0));
         vm.assume(transactionExecutor != testFollowerProfileOwner);
@@ -323,7 +323,7 @@ contract FollowTest is BaseTest {
     }
 
     function testFollowAsFollowerApprovedDelegatedExecutor(uint256 approvedDelegatedExecutorPk) public {
-        approvedDelegatedExecutorPk = bound(approvedDelegatedExecutorPk, 1, ISSECP256K1_CURVE_ORDER - 1);
+        approvedDelegatedExecutorPk = _boundPk(approvedDelegatedExecutorPk);
         address approvedDelegatedExecutor = vm.addr(approvedDelegatedExecutorPk);
         vm.assume(approvedDelegatedExecutor != address(0));
         vm.assume(approvedDelegatedExecutor != testFollowerProfileOwner);

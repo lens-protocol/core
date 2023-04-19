@@ -29,6 +29,10 @@ contract BaseTest is TestSetup {
         return (accountOwnerPk, accountOwner, accountProfileId);
     }
 
+    function _boundPk(uint256 fuzzedUint256) internal returns (uint256 fuzzedPk) {
+        return bound(fuzzedUint256, 1, ISSECP256K1_CURVE_ORDER - 1);
+    }
+
     function _getSetProfileMetadataURITypedDataHash(
         uint256 profileId,
         string memory metadataURI,
