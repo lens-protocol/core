@@ -27,6 +27,7 @@ contract MigrationsTest is Test, ForkManagement {
     address owner = address(0x087E4);
     address deployer = address(1);
     address governance;
+    address modulesGovernance;
     address treasury;
     address hubProxyAddr;
     address proxyAdmin;
@@ -66,6 +67,7 @@ contract MigrationsTest is Test, ForkManagement {
         moduleGlobals = ModuleGlobals(json.readAddress(string(abi.encodePacked('.', targetEnv, '.ModuleGlobals'))));
 
         governance = hub.getGovernance();
+        modulesGovernance = moduleGlobals.getGovernance();
     }
 
     function setUp() public onlyFork {

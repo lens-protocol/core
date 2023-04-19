@@ -11,6 +11,7 @@ contract EventTest is BaseTest {
     address mockFollowModule;
 
     // Non-Lens Events
+    // TODO: Replace this with import from test/foundry/helpers/Events.sol
     event Transfer(address indexed from, address indexed to, uint256 indexed tokenId);
     event Upgraded(address indexed implementation);
     event AdminChanged(address previousAdmin, address newAdmin);
@@ -396,14 +397,14 @@ contract EventTest is BaseTest {
     // MODULE GLOBALS GOVERNANCE
 
     function testGovernanceChangeEmitsExpectedEvents() public {
-        vm.prank(governance);
+        vm.prank(modulesGovernance);
         vm.expectEmit(true, true, true, true, address(moduleGlobals));
-        emit Events.ModuleGlobalsGovernanceSet(governance, me, block.timestamp);
+        emit Events.ModuleGlobalsGovernanceSet(modulesGovernance, me, block.timestamp);
         moduleGlobals.setGovernance(me);
     }
 
     function testTreasuryChangeEmitsExpectedEvents() public {
-        vm.prank(governance);
+        vm.prank(modulesGovernance);
         vm.expectEmit(true, true, false, true, address(moduleGlobals));
         emit Events.ModuleGlobalsTreasurySet(treasury, me, block.timestamp);
         moduleGlobals.setTreasury(me);
@@ -411,19 +412,19 @@ contract EventTest is BaseTest {
 
     function testTreasuryFeeChangeEmitsExpectedEvents() public {
         uint16 newFee = 1;
-        vm.prank(governance);
+        vm.prank(modulesGovernance);
         vm.expectEmit(true, true, false, true, address(moduleGlobals));
         emit Events.ModuleGlobalsTreasuryFeeSet(TREASURY_FEE_BPS, newFee, block.timestamp);
         moduleGlobals.setTreasuryFee(newFee);
     }
 
     function testCurrencyWhitelistEmitsExpectedEvents() public {
-        vm.prank(governance);
+        vm.prank(modulesGovernance);
         vm.expectEmit(true, true, true, true, address(moduleGlobals));
         emit Events.ModuleGlobalsCurrencyWhitelisted(me, false, true, block.timestamp);
         moduleGlobals.whitelistCurrency(me, true);
 
-        vm.prank(governance);
+        vm.prank(modulesGovernance);
         vm.expectEmit(true, true, true, true, address(moduleGlobals));
         emit Events.ModuleGlobalsCurrencyWhitelisted(me, true, false, block.timestamp);
         moduleGlobals.whitelistCurrency(me, false);

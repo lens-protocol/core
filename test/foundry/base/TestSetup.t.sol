@@ -36,6 +36,7 @@ contract TestSetup is Test, ForkManagement, ArrayHelpers {
     address deployer;
     address governance;
     address treasury;
+    address modulesGovernance;
 
     string constant MOCK_URI = 'ipfs://QmUXfQWe43RKx31VzA2BnbwhSMW8WuaJvszFWChD59m76U';
 
@@ -117,6 +118,7 @@ contract TestSetup is Test, ForkManagement, ArrayHelpers {
         deployer = address(1);
 
         governance = hub.getGovernance();
+        modulesGovernance = moduleGlobals.getGovernance();
         treasury = moduleGlobals.getTreasury();
 
         TREASURY_FEE_BPS = moduleGlobals.getTreasuryFee();
@@ -127,6 +129,7 @@ contract TestSetup is Test, ForkManagement, ArrayHelpers {
         deployer = address(1);
         governance = address(2);
         treasury = address(3);
+        modulesGovernance = address(4);
 
         TREASURY_FEE_BPS = 50;
 
@@ -166,7 +169,7 @@ contract TestSetup is Test, ForkManagement, ArrayHelpers {
         // Deploy the MockReferenceModule.
         mockReferenceModule = new MockReferenceModule();
 
-        moduleGlobals = new ModuleGlobals(governance, treasury, TREASURY_FEE_BPS);
+        moduleGlobals = new ModuleGlobals(modulesGovernance, treasury, TREASURY_FEE_BPS);
 
         vm.stopPrank();
         ///////////////////////////////////////// End deployments.
