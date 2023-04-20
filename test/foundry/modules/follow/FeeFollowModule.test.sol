@@ -208,6 +208,8 @@ contract FeeFollowModuleTest is BaseTest {
         uint256 recipient;
     }
 
+    uint16 constant BPS_MAX = 10000; // TODO: Move to constants?
+
     // ProcessFollow - Scenarios
     function testCanProcessFollow(
         uint256 followerProfileId,
@@ -215,13 +217,19 @@ contract FeeFollowModuleTest is BaseTest {
         uint256 amount,
         address recipient,
         address transactionExecutor,
-        uint256 followTokenId
+        uint256 followTokenId,
+        uint16 treasuryFee
     ) public {
         vm.assume(followerProfileId != 0);
         vm.assume(targetProfileId != 0);
-        // TODO: Add fuzzing for treasury fee
-        (, uint16 treasuryFee) = moduleGlobals.getTreasuryData();
-        vm.assume(amount != 0 && amount < type(uint256).max / uint256(treasuryFee));
+        treasuryFee = uint16(bound(uint256(treasuryFee), 0, (BPS_MAX / 2) - 1));
+        vm.prank(modulesGovernance);
+        moduleGlobals.setTreasuryFee(treasuryFee);
+
+        // Overflow protection (cause treasuryAmount = amount * treasuryFee / BPS_MAX)
+        vm.assume(
+            amount != 0 && amount <= (treasuryFee == 0 ? type(uint256).max : type(uint256).max / uint256(treasuryFee))
+        );
         vm.assume(transactionExecutor != address(0));
 
         // TODO: Figure out how to deal with burning
@@ -268,7 +276,6 @@ contract FeeFollowModuleTest is BaseTest {
             balancesChange.follower = balancesBefore.follower - balancesAfter.follower;
         }
 
-        uint16 BPS_MAX = 10000; // TODO: Move to constants?
         if (followTokenId == 0) {
             // Fresh follow
             assertEq(
