@@ -115,6 +115,23 @@ library ValidationLib {
         return referrerPubTypes;
     }
 
+    function validateLegacyCollectReferrer(
+        uint256 referrerProfileId,
+        uint256 referrerPubId,
+        uint256 publicationCollectedProfileId,
+        uint256 publicationCollectedId
+    ) external view {
+        if (PublicationLib.getPublicationType(referrerProfileId, referrerPubId) != Types.PublicationType.Mirror) {
+            revert Errors.InvalidReferrer();
+        }
+        _validateReferrerAsMirror(
+            referrerProfileId,
+            referrerPubId,
+            publicationCollectedProfileId,
+            publicationCollectedId
+        );
+    }
+
     function _validateReferrerAndGetReferrerPubType(
         uint256 referrerProfileId,
         uint256 referrerPubId,

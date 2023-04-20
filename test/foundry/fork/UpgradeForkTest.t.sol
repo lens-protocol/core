@@ -311,8 +311,8 @@ contract UpgradeForkTest is BaseTest {
                     publicationCollectedProfileId: profileId,
                     publicationCollectedId: 1,
                     collectorProfileId: profileId,
-                    referrerProfileIds: _emptyUint256Array(),
-                    referrerPubIds: _emptyUint256Array(),
+                    referrerProfileId: 0,
+                    referrerPubId: 0,
                     collectModuleData: ''
                 })
             );
@@ -321,8 +321,8 @@ contract UpgradeForkTest is BaseTest {
                     publicationCollectedProfileId: profileId,
                     publicationCollectedId: 2,
                     collectorProfileId: profileId,
-                    referrerProfileIds: _emptyUint256Array(),
-                    referrerPubIds: _emptyUint256Array(),
+                    referrerProfileId: 0,
+                    referrerPubId: 0,
                     collectModuleData: ''
                 })
             );
@@ -331,8 +331,8 @@ contract UpgradeForkTest is BaseTest {
                     publicationCollectedProfileId: profileId,
                     publicationCollectedId: 3,
                     collectorProfileId: profileId,
-                    referrerProfileIds: _emptyUint256Array(),
-                    referrerPubIds: _emptyUint256Array(),
+                    referrerProfileId: 0,
+                    referrerPubId: 0,
                     collectModuleData: ''
                 })
             );
