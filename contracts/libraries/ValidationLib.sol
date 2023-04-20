@@ -225,6 +225,11 @@ library ValidationLib {
             // The publication acted/referenced is a comment or a quote.
             Types.Publication storage _targetedPub = StorageLib.getPublication(targetedProfileId, targetedPubId);
             if (
+                // Targeted pub must be a "pure" Lens V2 comment/quote, which means there is no Lens V1 Legacy comment
+                // or post on its tree of interactions, and its root pub is filled.
+                // Otherwise, two Lens V2 "non-pure" publications could be passed as a referrer to each other,
+                // even without having any interaction in common.
+                _targetedPub.rootPubId == 0 ||
                 // The referrer publication and the acted/referenced publication must share the same root.
                 _referrerPub.rootProfileId != _targetedPub.rootProfileId ||
                 _referrerPub.rootPubId != _targetedPub.rootPubId
