@@ -259,7 +259,7 @@ library PublicationLib {
     }
 
     function _fillReferencePublicationStorage(
-        Types.ReferencePubParams memory referencePubParams,
+        Types.ReferencePubParams calldata referencePubParams,
         Types.PublicationType referencePubType
     ) private returns (uint256) {
         uint256 pubIdAssigned = ++StorageLib.getProfile(referencePubParams.profileId).pubCount;
@@ -273,14 +273,20 @@ library PublicationLib {
             referencePubParams.pointedProfileId,
             referencePubParams.pointedPubId
         );
-        if (_pubPointed.pubType == Types.PublicationType.Post) {
+        Types.PublicationType pubPointedType = _pubPointed.pubType;
+        if (pubPointedType == Types.PublicationType.Post) {
+            // The publication pointed is a Lens V2 post.
             _referencePub.rootProfileId = referencePubParams.pointedProfileId;
             _referencePub.rootPubId = referencePubParams.pointedPubId;
-        } else {
-            // The publication pointed is either a comment or a quote.
+        } else if (pubPointedType == Types.PublicationType.Comment || pubPointedType == Types.PublicationType.Quote) {
+            // The publication pointed is either a Lens V2 comment or a Lens V2 quote.
+            // Note that even when the publication pointed is a V2 one, it will lack `rootProfileId` and `rootPubId` if
+            // there is a Lens V1 Legacy publication in the thread of interactions (including the root post itself).
             _referencePub.rootProfileId = _pubPointed.rootProfileId;
             _referencePub.rootPubId = _pubPointed.rootPubId;
         }
+        // Otherwise the root is not filled, as the pointed publication is a Lens V1 Legacy publication, which does not
+        // support Lens V2 referral system.
         return pubIdAssigned;
     }
 

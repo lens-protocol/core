@@ -1,0 +1,158 @@
+// SPDX-License-Identifier: MIT
+
+pragma solidity ^0.8.15;
+
+import {ValidationLib} from 'contracts/libraries/ValidationLib.sol';
+import {Types} from 'contracts/libraries/constants/Types.sol';
+import {Errors} from 'contracts/libraries/constants/Errors.sol';
+import {Events} from 'contracts/libraries/constants/Events.sol';
+import {ICollectNFT} from 'contracts/interfaces/ICollectNFT.sol';
+import {ICollectModule} from 'contracts/interfaces/ICollectModule.sol';
+import {ILegacyCollectModule} from 'contracts/interfaces/ILegacyCollectModule.sol';
+import {Clones} from '@openzeppelin/contracts/proxy/Clones.sol';
+import {Strings} from '@openzeppelin/contracts/utils/Strings.sol';
+import {StorageLib} from 'contracts/libraries/StorageLib.sol';
+import {PublicationLib} from 'contracts/libraries/PublicationLib.sol';
+
+/**
+ * @title LegacyCollectLib
+ * @author Lens Protocol
+ * @notice Library containing the logic for legacy collect operation.
+ */
+library LegacyCollectLib {
+    using Strings for uint256;
+
+    string constant COLLECT_NFT_NAME_INFIX = '-Collect-';
+    string constant COLLECT_NFT_SYMBOL_INFIX = '-Cl-';
+
+    /**
+     * @dev Emitted upon a successful legacy collect action.
+     *
+     * @param publicationCollectedProfileId The profile ID of the publication being collected.
+     * @param publicationCollectedId The publication ID of the publication being collected.
+     * @param transactionExecutor The address of the account that executed the collect transaction.
+     * @param referrerProfileId The profile ID of the referrer, if any. Zero if no referrer.
+     * @param referrerPubId The publication ID of the referrer, if any. Zero if no referrer.
+     * @param collectModuleData The data passed to the collect module's collect action. This is ABI-encoded and depends
+     * on the collect module chosen.
+     * @param timestamp The current block timestamp.
+     */
+    event CollectedLegacy(
+        uint256 indexed publicationCollectedProfileId,
+        uint256 indexed publicationCollectedId,
+        address transactionExecutor,
+        uint256 referrerProfileId,
+        uint256 referrerPubId,
+        bytes collectModuleData,
+        uint256 timestamp
+    );
+
+    function collect(
+        Types.CollectParams calldata collectParams,
+        address transactionExecutor,
+        address collectorProfileOwner,
+        address collectNFTImpl
+    ) external returns (uint256) {
+        ValidationLib.validateNotBlocked({
+            profile: collectParams.collectorProfileId,
+            byProfile: collectParams.publicationCollectedProfileId
+        });
+
+        address collectModule;
+        uint256 tokenId;
+        address collectNFT;
+        {
+            Types.Publication storage _collectedPublication = StorageLib.getPublication(
+                collectParams.publicationCollectedProfileId,
+                collectParams.publicationCollectedId
+            );
+            // This is a legacy collect operation, so we get the collect module from the deprecated storage field.
+            collectModule = _collectedPublication.__DEPRECATED__collectModule;
+            if (collectModule == address(0)) {
+                // It doesn't have collect module, thus it cannot be collected (a mirror or non-existent).
+                revert Errors.CollectNotAllowed();
+            }
+
+            if (collectParams.referrerProfileId != 0 || collectParams.referrerPubId != 0) {
+                ValidationLib.validateLegacyCollectReferrer(
+                    collectParams.referrerProfileId,
+                    collectParams.referrerPubId,
+                    collectParams.publicationCollectedProfileId,
+                    collectParams.publicationCollectedId
+                );
+            }
+
+            collectNFT = _getOrDeployCollectNFT(
+                _collectedPublication,
+                collectParams.publicationCollectedProfileId,
+                collectParams.publicationCollectedId,
+                collectNFTImpl
+            );
+            tokenId = ICollectNFT(collectNFT).mint(collectorProfileOwner);
+        }
+
+        ILegacyCollectModule(collectModule).processCollect({
+            // Legacy collect modules expect referrer profile ID to match the collected pub's author if no referrer set.
+            referrerProfileId: collectParams.referrerProfileId == 0
+                ? collectParams.publicationCollectedProfileId
+                : collectParams.referrerProfileId,
+            // Collect NFT is minted to the `collectorProfileOwner`. Some follow-based constraints are expected to be
+            // broken in legacy collect modules if the `transactionExecutor` does not match the `collectorProfileOwner`.
+            collector: transactionExecutor,
+            profileId: collectParams.publicationCollectedProfileId,
+            pubId: collectParams.publicationCollectedId,
+            data: collectParams.collectModuleData
+        });
+
+        emit CollectedLegacy({
+            publicationCollectedProfileId: collectParams.publicationCollectedProfileId,
+            publicationCollectedId: collectParams.publicationCollectedId,
+            transactionExecutor: transactionExecutor,
+            referrerProfileId: collectParams.referrerProfileId,
+            referrerPubId: collectParams.referrerPubId,
+            collectModuleData: collectParams.collectModuleData,
+            timestamp: block.timestamp
+        });
+
+        return tokenId;
+    }
+
+    function _getOrDeployCollectNFT(
+        Types.Publication storage _collectedPublication,
+        uint256 publicationCollectedProfileId,
+        uint256 publicationCollectedId,
+        address collectNFTImpl
+    ) private returns (address) {
+        address collectNFT = _collectedPublication.__DEPRECATED__collectNFT;
+        if (collectNFT == address(0)) {
+            collectNFT = _deployCollectNFT(publicationCollectedProfileId, publicationCollectedId, collectNFTImpl);
+            _collectedPublication.__DEPRECATED__collectNFT = collectNFT;
+        }
+        return collectNFT;
+    }
+
+    /**
+     * @notice Deploys the given profile's Collect NFT contract.
+     *
+     * @param profileId The token ID of the profile which Collect NFT should be deployed.
+     * @param pubId The publication ID of the publication being collected, which Collect NFT should be deployed.
+     * @param collectNFTImpl The address of the Collect NFT implementation that should be used for the deployment.
+     *
+     * @return address The address of the deployed Collect NFT contract.
+     */
+    function _deployCollectNFT(uint256 profileId, uint256 pubId, address collectNFTImpl) private returns (address) {
+        address collectNFT = Clones.clone(collectNFTImpl);
+
+        string memory collectNFTName = string(
+            abi.encodePacked(profileId.toString(), COLLECT_NFT_NAME_INFIX, pubId.toString())
+        );
+        string memory collectNFTSymbol = string(
+            abi.encodePacked(profileId.toString(), COLLECT_NFT_SYMBOL_INFIX, pubId.toString())
+        );
+
+        ICollectNFT(collectNFT).initialize(profileId, pubId, collectNFTName, collectNFTSymbol);
+        emit Events.CollectNFTDeployed(profileId, pubId, collectNFT, block.timestamp);
+
+        return collectNFT;
+    }
+}

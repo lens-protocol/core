@@ -398,7 +398,7 @@ library MetaTxLib {
         );
     }
 
-    function validateCollectSignature(
+    function validateLegacyCollectSignature(
         Types.EIP712Signature calldata signature,
         Types.CollectParams calldata collectParams
     ) external {
@@ -406,12 +406,12 @@ library MetaTxLib {
             _calculateDigest(
                 keccak256(
                     abi.encode(
-                        Typehash.COLLECT,
+                        Typehash.LEGACY_COLLECT,
                         collectParams.publicationCollectedProfileId,
                         collectParams.publicationCollectedId,
                         collectParams.collectorProfileId,
-                        collectParams.referrerProfileIds,
-                        collectParams.referrerPubIds,
+                        collectParams.referrerProfileId,
+                        collectParams.referrerPubId,
                         keccak256(collectParams.collectModuleData),
                         _getAndIncrementNonce(signature.signer),
                         signature.deadline

@@ -261,21 +261,22 @@ library Types {
 
     /**
      * Deprecated in V2: Will be removed after some time after upgrading to V2.
-     * @notice A struct containing the parameters required for the `collect()` function.
+     * @notice A struct containing the parameters required for the legacy `collect()` function.
+     * @dev The referrer can only be a mirror of the publication being collected.
      *
      * @param publicationCollectedProfileId The token ID of the profile that published the publication to collect.
      * @param publicationCollectedId The publication to collect's publication ID.
      * @param collectorProfileId The collector profile.
-     * @param referrerProfileId
-     * @param referrerPubId
+     * @param referrerProfileId The ID of a profile that authored a mirror that helped discovering the collected pub.
+     * @param referrerPubId The ID of the mirror that helped discovering the collected pub.
      * @param collectModuleData The arbitrary data to pass to the collectModule if needed.
      */
     struct CollectParams {
         uint256 publicationCollectedProfileId;
         uint256 publicationCollectedId;
         uint256 collectorProfileId;
-        uint256[] referrerProfileIds;
-        uint256[] referrerPubIds;
+        uint256 referrerProfileId;
+        uint256 referrerPubId;
         bytes collectModuleData;
     }
 

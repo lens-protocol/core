@@ -87,8 +87,8 @@ library ValidationLib {
     function validateReferrersAndGetReferrersPubTypes(
         uint256[] memory referrerProfileIds,
         uint256[] memory referrerPubIds,
-        uint256 profileId,
-        uint256 pubId
+        uint256 targetedProfileId,
+        uint256 targetedPubId
     ) internal view returns (Types.PublicationType[] memory) {
         if (referrerProfileIds.length != referrerPubIds.length) {
             revert Errors.ArrayMismatch();
@@ -105,8 +105,8 @@ library ValidationLib {
             referrerPubTypes[i] = _validateReferrerAndGetReferrerPubType(
                 referrerProfileId,
                 referrerPubId,
-                profileId,
-                pubId
+                targetedProfileId,
+                targetedPubId
             );
             unchecked {
                 i++;
@@ -115,15 +115,34 @@ library ValidationLib {
         return referrerPubTypes;
     }
 
+    function validateLegacyCollectReferrer(
+        uint256 referrerProfileId,
+        uint256 referrerPubId,
+        uint256 publicationCollectedProfileId,
+        uint256 publicationCollectedId
+    ) external view {
+        if (PublicationLib.getPublicationType(referrerProfileId, referrerPubId) != Types.PublicationType.Mirror) {
+            revert Errors.InvalidReferrer();
+        }
+        _validateReferrerAsMirror(
+            referrerProfileId,
+            referrerPubId,
+            publicationCollectedProfileId,
+            publicationCollectedId
+        );
+    }
+
     function _validateReferrerAndGetReferrerPubType(
         uint256 referrerProfileId,
         uint256 referrerPubId,
-        uint256 profileId,
-        uint256 pubId
+        uint256 targetedProfileId,
+        uint256 targetedPubId
     ) private view returns (Types.PublicationType) {
         if (referrerPubId == 0) {
             // Unchecked/Unverified referral. Profile referrer, not attached to a publication.
-            if (StorageLib.getTokenData(referrerProfileId).owner == address(0) || referrerProfileId == profileId) {
+            if (
+                StorageLib.getTokenData(referrerProfileId).owner == address(0) || referrerProfileId == targetedProfileId
+            ) {
                 revert Errors.InvalidReferrer();
             }
             return Types.PublicationType.Nonexistent;
@@ -131,19 +150,19 @@ library ValidationLib {
             // Checked/Verified referral. Publication referrer.
             if (
                 // Cannot pass itself as a referrer.
-                referrerProfileId == profileId && referrerPubId == pubId
+                referrerProfileId == targetedProfileId && referrerPubId == targetedPubId
             ) {
                 revert Errors.InvalidReferrer();
             }
             Types.PublicationType referrerPubType = PublicationLib.getPublicationType(referrerProfileId, referrerPubId);
             if (referrerPubType == Types.PublicationType.Mirror) {
-                _validateReferrerAsMirror(referrerProfileId, referrerPubId, profileId, pubId);
+                _validateReferrerAsMirror(referrerProfileId, referrerPubId, targetedProfileId, targetedPubId);
             } else if (
                 referrerPubType == Types.PublicationType.Comment || referrerPubType == Types.PublicationType.Quote
             ) {
-                _validateReferrerAsCommentOrQuote(referrerProfileId, referrerPubId, profileId, pubId);
+                _validateReferrerAsCommentOrQuote(referrerProfileId, referrerPubId, targetedProfileId, targetedPubId);
             } else if (referrerPubType == Types.PublicationType.Post) {
-                _validateReferrerAsPost(referrerProfileId, referrerPubId, profileId, pubId);
+                _validateReferrerAsPost(referrerProfileId, referrerPubId, targetedProfileId, targetedPubId);
             } else {
                 revert Errors.InvalidReferrer();
             }
@@ -154,16 +173,13 @@ library ValidationLib {
     function _validateReferrerAsPost(
         uint256 referrerProfileId,
         uint256 referrerPubId,
-        uint256 profileId,
-        uint256 pubId
+        uint256 targetedProfileId,
+        uint256 targetedPubId
     ) private view {
-        Types.Publication storage _publication = StorageLib.getPublication(profileId, pubId);
-        if (
-            // Publication being collected/referenced is not pointing to the referrer post and...
-            (_publication.pointedProfileId != referrerProfileId || _publication.pointedPubId != referrerPubId) &&
-            // ...publication being collected/referenced does not have the referrer post as the root.
-            (_publication.rootProfileId != referrerProfileId || _publication.rootPubId != referrerPubId)
-        ) {
+        Types.Publication storage _targetedPub = StorageLib.getPublication(targetedProfileId, targetedPubId);
+        // Publication targeted must have the referrer post as the root. This enables the use case of rewarding the
+        // root publication for an action over any of its descendants.
+        if (_targetedPub.rootProfileId != referrerProfileId || _targetedPub.rootPubId != referrerPubId) {
             revert Errors.InvalidReferrer();
         }
     }
@@ -171,13 +187,13 @@ library ValidationLib {
     function _validateReferrerAsMirror(
         uint256 referrerProfileId,
         uint256 referrerPubId,
-        uint256 profileId,
-        uint256 pubId
+        uint256 targetedProfileId,
+        uint256 targetedPubId
     ) private view {
         Types.Publication storage _referrerMirror = StorageLib.getPublication(referrerProfileId, referrerPubId);
         if (
             // A mirror can only be a referrer of a publication if it is pointing to it.
-            _referrerMirror.pointedProfileId != profileId || _referrerMirror.pointedPubId != pubId
+            _referrerMirror.pointedProfileId != targetedProfileId || _referrerMirror.pointedPubId != targetedPubId
         ) {
             revert Errors.InvalidReferrer();
         }
@@ -188,30 +204,35 @@ library ValidationLib {
      *
      * @param referrerProfileId The profile id of the referrer.
      * @param referrerPubId The publication id of the referrer.
-     * @param profileId This is the ID of the profile who authored the publication being collected or referenced.
-     * @param pubId This is the pub user collects or references.
+     * @param targetedProfileId The ID of the profile who authored the publication being acted or referenced.
+     * @param targetedPubId The pub ID being acted or referenced.
      */
     function _validateReferrerAsCommentOrQuote(
         uint256 referrerProfileId,
         uint256 referrerPubId,
-        uint256 profileId,
-        uint256 pubId
+        uint256 targetedProfileId,
+        uint256 targetedPubId
     ) private view {
         Types.Publication storage _referrerPub = StorageLib.getPublication(referrerProfileId, referrerPubId);
-        Types.PublicationType typeOfPubPointedByReferrer = PublicationLib.getPublicationType(profileId, pubId);
-        // We already know that the publication being collected/referenced is not a mirror nor a non-existent one.
-        if (typeOfPubPointedByReferrer == Types.PublicationType.Post) {
-            // If the publication collected/referenced is a post, the referrer comment/quote must have it as the root.
-            if (_referrerPub.rootProfileId != profileId || _referrerPub.rootPubId != pubId) {
+        Types.PublicationType typeOfTargetedPub = PublicationLib.getPublicationType(targetedProfileId, targetedPubId);
+        // We already know that the publication being acted/referenced is not a mirror nor a non-existent one.
+        if (typeOfTargetedPub == Types.PublicationType.Post) {
+            // If the publication acted/referenced is a post, the referrer comment/quote must have it as the root.
+            if (_referrerPub.rootProfileId != targetedProfileId || _referrerPub.rootPubId != targetedPubId) {
                 revert Errors.InvalidReferrer();
             }
         } else {
-            // The publication collected/referenced is a comment or a quote.
-            Types.Publication storage _pubPointedByReferrer = StorageLib.getPublication(profileId, pubId);
-            // The referrer publication and the collected/referenced publication must share the same root.
+            // The publication acted/referenced is a comment or a quote.
+            Types.Publication storage _targetedPub = StorageLib.getPublication(targetedProfileId, targetedPubId);
             if (
-                _referrerPub.rootProfileId != _pubPointedByReferrer.rootProfileId ||
-                _referrerPub.rootPubId != _pubPointedByReferrer.rootPubId
+                // Targeted pub must be a "pure" Lens V2 comment/quote, which means there is no Lens V1 Legacy comment
+                // or post on its tree of interactions, and its root pub is filled.
+                // Otherwise, two Lens V2 "non-pure" publications could be passed as a referrer to each other,
+                // even without having any interaction in common.
+                _targetedPub.rootPubId == 0 ||
+                // The referrer publication and the acted/referenced publication must share the same root.
+                _referrerPub.rootProfileId != _targetedPub.rootProfileId ||
+                _referrerPub.rootPubId != _targetedPub.rootPubId
             ) {
                 revert Errors.InvalidReferrer();
             }
