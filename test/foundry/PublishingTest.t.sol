@@ -5,7 +5,7 @@ import 'test/foundry/base/BaseTest.t.sol';
 import 'test/foundry/helpers/SignatureHelpers.sol';
 import {PublishingHelpers} from 'test/foundry/helpers/PublishingHelpers.sol';
 
-abstract contract PublishingTest is BaseTest, PublishingHelpers, SigSetup {
+abstract contract PublishingTest_Old is BaseTest, PublishingHelpers, SigSetup {
     function replicateInitData() internal virtual {
         // Default implementation does nothing.
     }
@@ -183,8 +183,8 @@ abstract contract PublishingTest is BaseTest, PublishingHelpers, SigSetup {
     }
 }
 
-contract PostTest is PublishingTest {
-    function testPostTest() public {
+contract PostTest_Old is PublishingTest_Old {
+    function testPostTest_Old() public {
         // Prevents being counted in Foundry Coverage
     }
 
@@ -208,7 +208,7 @@ contract PostTest is PublishingTest {
     }
 }
 
-contract CommentTest is PublishingTest {
+contract CommentTest_Old is PublishingTest_Old {
     uint256 postId;
 
     function replicateInitData() internal override {
@@ -240,7 +240,7 @@ contract CommentTest is PublishingTest {
     }
 
     function setUp() public override {
-        PublishingTest.setUp();
+        PublishingTest_Old.setUp();
 
         vm.prank(profileOwner);
         postId = _post(mockPostParams);
@@ -345,7 +345,7 @@ contract CommentTest is PublishingTest {
     }
 }
 
-contract MirrorTest is PublishingTest {
+contract MirrorTest_Old is PublishingTest_Old {
     uint256 postId;
 
     function replicateInitData() internal override {
@@ -372,7 +372,7 @@ contract MirrorTest is PublishingTest {
     }
 
     function setUp() public override {
-        PublishingTest.setUp();
+        PublishingTest_Old.setUp();
 
         vm.prank(profileOwner);
         postId = _post(mockPostParams);
