@@ -204,8 +204,8 @@ library ValidationLib {
      *
      * @param referrerProfileId The profile id of the referrer.
      * @param referrerPubId The publication id of the referrer.
-     * @param targetedProfileId The ID of the profile who authored the publication being collected or referenced.
-     * @param targetedPubId The pub ID being collected or referenced.
+     * @param targetedProfileId The ID of the profile who authored the publication being acted or referenced.
+     * @param targetedPubId The pub ID being acted or referenced.
      */
     function _validateReferrerAsCommentOrQuote(
         uint256 referrerProfileId,
@@ -215,17 +215,17 @@ library ValidationLib {
     ) private view {
         Types.Publication storage _referrerPub = StorageLib.getPublication(referrerProfileId, referrerPubId);
         Types.PublicationType typeOfTargetedPub = PublicationLib.getPublicationType(targetedProfileId, targetedPubId);
-        // We already know that the publication being collected/referenced is not a mirror nor a non-existent one.
+        // We already know that the publication being acted/referenced is not a mirror nor a non-existent one.
         if (typeOfTargetedPub == Types.PublicationType.Post) {
-            // If the publication collected/referenced is a post, the referrer comment/quote must have it as the root.
+            // If the publication acted/referenced is a post, the referrer comment/quote must have it as the root.
             if (_referrerPub.rootProfileId != targetedProfileId || _referrerPub.rootPubId != targetedPubId) {
                 revert Errors.InvalidReferrer();
             }
         } else {
-            // The publication collected/referenced is a comment or a quote.
+            // The publication acted/referenced is a comment or a quote.
             Types.Publication storage _targetedPub = StorageLib.getPublication(targetedProfileId, targetedPubId);
             if (
-                // The referrer publication and the collected/referenced publication must share the same root.
+                // The referrer publication and the acted/referenced publication must share the same root.
                 _referrerPub.rootProfileId != _targetedPub.rootProfileId ||
                 _referrerPub.rootPubId != _targetedPub.rootPubId
             ) {
