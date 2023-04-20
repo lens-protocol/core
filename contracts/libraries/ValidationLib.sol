@@ -177,12 +177,9 @@ library ValidationLib {
         uint256 targetedPubId
     ) private view {
         Types.Publication storage _targetedPub = StorageLib.getPublication(targetedProfileId, targetedPubId);
-        if (
-            // Publication being collected/referenced is not pointing to the referrer post and...
-            (_targetedPub.pointedProfileId != referrerProfileId || _targetedPub.pointedPubId != referrerPubId) &&
-            // ...publication being collected/referenced does not have the referrer post as the root.
-            (_targetedPub.rootProfileId != referrerProfileId || _targetedPub.rootPubId != referrerPubId)
-        ) {
+        // Publication targeted must have the referrer post as the root. This enables the use case of rewarding the
+        // root publication for an action over any of its descendants.
+        if (_targetedPub.rootProfileId != referrerProfileId || _targetedPub.rootPubId != referrerPubId) {
             revert Errors.InvalidReferrer();
         }
     }
