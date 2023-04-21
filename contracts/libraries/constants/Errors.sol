@@ -27,7 +27,6 @@ library Errors {
     error NotFollowing();
     error SelfFollow();
     error InvalidReferrer();
-    error DeprecaredModulesOnlySupportOneReferrer();
     error InvalidPointedPub();
     error NonERC721ReceiverImplementer();
 
@@ -38,7 +37,7 @@ library Errors {
     error InitParamsInvalid();
     error ActionNotAllowed();
 
-    error CollectNotAllowed(); // Used in CollectLib (pending deprecation)
+    error CollectNotAllowed(); // Used in LegacyCollectLib (pending deprecation)
 
     // MultiState Errors
     error Paused();

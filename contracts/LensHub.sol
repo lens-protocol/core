@@ -22,7 +22,7 @@ import {LensHubEventHooks} from 'contracts/base/LensHubEventHooks.sol';
 
 // Libraries
 import {ActionLib} from 'contracts/libraries/ActionLib.sol';
-import {CollectLib} from 'contracts/libraries/CollectLib.sol';
+import {LegacyCollectLib} from 'contracts/libraries/LegacyCollectLib.sol';
 import {FollowLib} from 'contracts/libraries/FollowLib.sol';
 import {GovernanceLib} from 'contracts/libraries/GovernanceLib.sol';
 import {MetaTxLib} from 'contracts/libraries/MetaTxLib.sol';
@@ -440,7 +440,7 @@ contract LensHub is
         returns (uint256)
     {
         return
-            CollectLib.collect({
+            LegacyCollectLib.collect({
                 collectParams: collectParams,
                 transactionExecutor: msg.sender,
                 collectorProfileOwner: ownerOf(collectParams.collectorProfileId),
@@ -459,9 +459,9 @@ contract LensHub is
         onlyProfileOwnerOrDelegatedExecutor(signature.signer, collectParams.collectorProfileId)
         returns (uint256)
     {
-        MetaTxLib.validateCollectSignature(signature, collectParams);
+        MetaTxLib.validateLegacyCollectSignature(signature, collectParams);
         return
-            CollectLib.collect({
+            LegacyCollectLib.collect({
                 collectParams: collectParams,
                 transactionExecutor: signature.signer,
                 collectorProfileOwner: ownerOf(collectParams.collectorProfileId),

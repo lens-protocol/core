@@ -1,6 +1,8 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.13;
 
+import {Types} from 'contracts/libraries/constants/Types.sol';
+
 contract ArrayHelpers {
     function testArrayHelpers() public {
         // Prevents being counted in Foundry Coverage
@@ -8,6 +10,21 @@ contract ArrayHelpers {
 
     function _emptyUint256Array() internal pure returns (uint256[] memory) {
         uint256[] memory ret = new uint256[](0);
+        return ret;
+    }
+
+    function _emptyAddressArray() internal pure returns (address[] memory) {
+        address[] memory ret = new address[](0);
+        return ret;
+    }
+
+    function _emptyBytesArray() internal pure returns (bytes[] memory) {
+        bytes[] memory ret = new bytes[](0);
+        return ret;
+    }
+
+    function _emptyPubTypesArray() internal pure returns (Types.PublicationType[] memory) {
+        Types.PublicationType[] memory ret = new Types.PublicationType[](0);
         return ret;
     }
 
