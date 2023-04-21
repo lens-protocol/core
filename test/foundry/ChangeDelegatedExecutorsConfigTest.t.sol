@@ -61,7 +61,7 @@ contract ChangeDelegatedExecutorsConfigTest_CurrentConfig is BaseTest {
         address delegatedExecutor,
         bool approval
     ) public {
-        nonOwnerPk = bound(nonOwnerPk, 1, ISSECP256K1_CURVE_ORDER - 1);
+        nonOwnerPk = _boundPk(nonOwnerPk);
         vm.assume(nonOwnerPk != testDelegatorProfileOwnerPk);
 
         vm.expectRevert(Errors.NotProfileOwner.selector);

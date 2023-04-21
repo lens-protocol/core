@@ -32,6 +32,7 @@ contract TestSetup is Test, ForkManagement, ArrayHelpers {
     }
 
     uint256 newProfileId; // TODO: We should get rid of this everywhere, and create dedicated profiles instead (see Follow tests)
+    uint256 mockPostId;
 
     address deployer;
     address governance;
@@ -66,6 +67,7 @@ contract TestSetup is Test, ForkManagement, ArrayHelpers {
 
     Types.PostParams mockPostParams;
     Types.CommentParams mockCommentParams;
+    Types.QuoteParams mockQuoteParams;
     Types.MirrorParams mockMirrorParams;
     Types.CollectParams mockCollectParams;
     Types.PublicationActionParams mockActParams;
@@ -111,9 +113,6 @@ contract TestSetup is Test, ForkManagement, ArrayHelpers {
         hubAsProxy = TransparentUpgradeableProxy(payable(address(hub)));
         moduleGlobals = ModuleGlobals(json.readAddress(string(abi.encodePacked('.', targetEnv, '.ModuleGlobals'))));
 
-        newProfileId = _getNextProfileId();
-        console.log('newProfileId:', newProfileId);
-
         deployer = address(1);
 
         governance = hub.getGovernance();
@@ -123,7 +122,6 @@ contract TestSetup is Test, ForkManagement, ArrayHelpers {
     }
 
     function deployBaseContracts() internal {
-        newProfileId = FIRST_PROFILE_ID;
         deployer = address(1);
         governance = address(2);
         treasury = address(3);
@@ -185,6 +183,9 @@ contract TestSetup is Test, ForkManagement, ArrayHelpers {
     }
 
     function setUp() public virtual {
+        vm.label(address(hub), 'LensHub');
+        vm.label(address(governance), 'Governance');
+
         // Compute the domain separator.
         domainSeparator = keccak256(
             abi.encode(
@@ -205,22 +206,42 @@ contract TestSetup is Test, ForkManagement, ArrayHelpers {
             followNFTURI: MOCK_URI
         });
 
+        newProfileId = hub.createProfile(mockCreateProfileParams);
+
         // Precompute basic post data.
         mockPostParams = Types.PostParams({
             profileId: newProfileId,
             contentURI: MOCK_URI,
             actionModules: _toAddressArray(address(mockActionModule)),
-            actionModulesInitDatas: _toBytesArray(abi.encode(1)),
+            actionModulesInitDatas: _toBytesArray(abi.encode(true)),
             referenceModule: address(0),
             referenceModuleInitData: ''
         });
+
+        vm.prank(profileOwner);
+        mockPostId = hub.post(mockPostParams);
 
         // Precompute basic comment data.
         mockCommentParams = Types.CommentParams({
             profileId: newProfileId,
             contentURI: MOCK_URI,
             pointedProfileId: newProfileId,
-            pointedPubId: FIRST_PUB_ID,
+            pointedPubId: mockPostId,
+            referrerProfileIds: _emptyUint256Array(),
+            referrerPubIds: _emptyUint256Array(),
+            referenceModuleData: '',
+            actionModules: _toAddressArray(address(mockActionModule)),
+            actionModulesInitDatas: _toBytesArray(abi.encode(1)),
+            referenceModule: address(0),
+            referenceModuleInitData: ''
+        });
+
+        // Precompute basic quote data.
+        mockQuoteParams = Types.QuoteParams({
+            profileId: newProfileId,
+            contentURI: MOCK_URI,
+            pointedProfileId: newProfileId,
+            pointedPubId: mockPostId,
             referrerProfileIds: _emptyUint256Array(),
             referrerPubIds: _emptyUint256Array(),
             referenceModuleData: '',
@@ -234,7 +255,7 @@ contract TestSetup is Test, ForkManagement, ArrayHelpers {
         mockMirrorParams = Types.MirrorParams({
             profileId: newProfileId,
             pointedProfileId: newProfileId,
-            pointedPubId: FIRST_PUB_ID,
+            pointedPubId: mockPostId,
             referrerProfileIds: _emptyUint256Array(),
             referrerPubIds: _emptyUint256Array(),
             referenceModuleData: ''
@@ -249,18 +270,6 @@ contract TestSetup is Test, ForkManagement, ArrayHelpers {
             actionModuleAddress: address(mockActionModule),
             actionModuleData: abi.encode(true)
         });
-
-        // // Precompute basic collect data.
-        // mockCollectParams = Types.CollectParams({
-        //     publicationCollectedProfileId: newProfileId,
-        //     publicationCollectedId: FIRST_PUB_ID,
-        //     collectorProfileId: newProfileId,
-        //     referrerProfileIds: _emptyUint256Array(),
-        //     referrerPubIds: _emptyUint256Array(),
-        //     collectModuleData: ''
-        // });
-
-        hub.createProfile(mockCreateProfileParams);
     }
 
     // TODO: Find a better place for such helpers that have access to Hub without rekting inheritance

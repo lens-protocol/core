@@ -10,6 +10,29 @@ contract BaseTest is TestSetup {
         // Prevents being counted in Foundry Coverage
     }
 
+    function _loadAccountAs(
+        string memory accountLabel
+    ) internal returns (uint256 pk, address owner, uint256 profileId) {
+        // We derive a new account from the given label.
+        (address accountOwner, uint256 accountOwnerPk) = makeAddrAndKey(accountLabel);
+        uint256 accountProfileId;
+        if (fork) {
+            // If testing in a fork, we load the desired profile and transfer it to the derived account.
+            accountProfileId = vm.envUint('FORK_PROFILE_ID');
+            address currentProfileOwner = hub.ownerOf(accountProfileId);
+            vm.prank(currentProfileOwner);
+            hub.transferFrom(currentProfileOwner, accountOwner, accountProfileId);
+        } else {
+            // If not testing in a fork, we create a fresh profile for the derived account.
+            accountProfileId = _createProfile(accountOwner);
+        }
+        return (accountOwnerPk, accountOwner, accountProfileId);
+    }
+
+    function _boundPk(uint256 fuzzedUint256) internal returns (uint256 fuzzedPk) {
+        return bound(fuzzedUint256, 1, ISSECP256K1_CURVE_ORDER - 1);
+    }
+
     function _getSetProfileMetadataURITypedDataHash(
         uint256 profileId,
         string memory metadataURI,
@@ -189,6 +212,34 @@ contract BaseTest is TestSetup {
                     _hashActionModulesInitDatas(commentParams.actionModulesInitDatas),
                     commentParams.referenceModule,
                     keccak256(commentParams.referenceModuleInitData),
+                    nonce,
+                    deadline
+                )
+            )
+        );
+        return _calculateDigest(structHash);
+    }
+
+    function _getQuoteTypedDataHash(
+        Types.QuoteParams memory quoteParams,
+        uint256 nonce,
+        uint256 deadline
+    ) internal view returns (bytes32) {
+        bytes32 structHash = keccak256(
+            _abiEncode(
+                ReferenceParamsForAbiEncode(
+                    Typehash.QUOTE,
+                    quoteParams.profileId,
+                    keccak256(bytes(quoteParams.contentURI)),
+                    quoteParams.pointedProfileId,
+                    quoteParams.pointedPubId,
+                    quoteParams.referrerProfileIds,
+                    quoteParams.referrerPubIds,
+                    keccak256(quoteParams.referenceModuleData),
+                    quoteParams.actionModules,
+                    _hashActionModulesInitDatas(quoteParams.actionModulesInitDatas),
+                    quoteParams.referenceModule,
+                    keccak256(quoteParams.referenceModuleInitData),
                     nonce,
                     deadline
                 )

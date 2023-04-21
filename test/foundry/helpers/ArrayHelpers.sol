@@ -13,16 +13,6 @@ contract ArrayHelpers {
         return ret;
     }
 
-    function _emptyAddressArray() internal pure returns (address[] memory) {
-        address[] memory ret = new address[](0);
-        return ret;
-    }
-
-    function _emptyBytesArray() internal pure returns (bytes[] memory) {
-        bytes[] memory ret = new bytes[](0);
-        return ret;
-    }
-
     function _emptyPubTypesArray() internal pure returns (Types.PublicationType[] memory) {
         Types.PublicationType[] memory ret = new Types.PublicationType[](0);
         return ret;
@@ -38,6 +28,11 @@ contract ArrayHelpers {
         uint256[] memory ret = new uint256[](2);
         ret[0] = n0;
         ret[1] = n1;
+        return ret;
+    }
+
+    function _emptyBytesArray() internal pure returns (bytes[] memory) {
+        bytes[] memory ret = new bytes[](0);
         return ret;
     }
 
@@ -64,6 +59,11 @@ contract ArrayHelpers {
         bool[] memory ret = new bool[](2);
         ret[0] = b0;
         ret[1] = b1;
+        return ret;
+    }
+
+    function _emptyAddressArray() internal pure returns (address[] memory) {
+        address[] memory ret = new address[](0);
         return ret;
     }
 

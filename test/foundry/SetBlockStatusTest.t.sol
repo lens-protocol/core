@@ -74,7 +74,7 @@ contract SetBlockStatusTest is BaseTest {
     function testCannotSetBlockStatusIfNotOwnerOrApprovedDelegatedExecutorOfSetterProfile(
         uint256 nonOwnerNorDelegatedExecutorPk
     ) public {
-        nonOwnerNorDelegatedExecutorPk = bound(nonOwnerNorDelegatedExecutorPk, 1, ISSECP256K1_CURVE_ORDER - 1);
+        nonOwnerNorDelegatedExecutorPk = _boundPk(nonOwnerNorDelegatedExecutorPk);
         address nonOwnerNorDelegatedExecutor = vm.addr(nonOwnerNorDelegatedExecutorPk);
         vm.assume(nonOwnerNorDelegatedExecutor != address(0));
         vm.assume(nonOwnerNorDelegatedExecutor != statusSetterProfileOwner);
