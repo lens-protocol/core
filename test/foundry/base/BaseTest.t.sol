@@ -220,6 +220,34 @@ contract BaseTest is TestSetup {
         return _calculateDigest(structHash);
     }
 
+    function _getQuoteTypedDataHash(
+        Types.QuoteParams memory quoteParams,
+        uint256 nonce,
+        uint256 deadline
+    ) internal view returns (bytes32) {
+        bytes32 structHash = keccak256(
+            _abiEncode(
+                ReferenceParamsForAbiEncode(
+                    Typehash.QUOTE,
+                    quoteParams.profileId,
+                    keccak256(bytes(quoteParams.contentURI)),
+                    quoteParams.pointedProfileId,
+                    quoteParams.pointedPubId,
+                    quoteParams.referrerProfileIds,
+                    quoteParams.referrerPubIds,
+                    keccak256(quoteParams.referenceModuleData),
+                    quoteParams.actionModules,
+                    _hashActionModulesInitDatas(quoteParams.actionModulesInitDatas),
+                    quoteParams.referenceModule,
+                    keccak256(quoteParams.referenceModuleInitData),
+                    nonce,
+                    deadline
+                )
+            )
+        );
+        return _calculateDigest(structHash);
+    }
+
     function _getMirrorTypedDataHash(
         uint256 profileId,
         uint256 pointedProfileId,

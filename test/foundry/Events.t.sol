@@ -236,28 +236,34 @@ contract EventTest is BaseTest {
     }
 
     function testPostingEmitsExpectedEvents() public {
-        vm.prank(profileOwner);
+        uint256 expectedPostId = hub.getPubCount(mockPostParams.profileId) + 1;
         vm.expectEmit(true, true, false, true, address(hub));
-        emit Events.PostCreated(mockPostParams, 1, _toBytesArray(abi.encode(true)), '', block.timestamp);
+        emit Events.PostCreated(mockPostParams, expectedPostId, _toBytesArray(abi.encode(true)), '', block.timestamp);
+        vm.prank(profileOwner);
         hub.post(mockPostParams);
     }
 
     function testCommentingEmitsExpectedEvents() public {
-        vm.startPrank(profileOwner);
-        hub.post(mockPostParams);
+        uint256 expectedCommentId = hub.getPubCount(mockPostParams.profileId) + 1;
         vm.expectEmit(true, true, false, true, address(hub));
-        emit Events.CommentCreated(mockCommentParams, 2, '', _toBytesArray(abi.encode(true)), '', block.timestamp);
+        emit Events.CommentCreated(
+            mockCommentParams,
+            expectedCommentId,
+            '',
+            _toBytesArray(abi.encode(true)),
+            '',
+            block.timestamp
+        );
+        vm.prank(profileOwner);
         hub.comment(mockCommentParams);
-        vm.stopPrank();
     }
 
     function testMirroringEmitsExpectedEvents() public {
-        vm.startPrank(profileOwner);
-        hub.post(mockPostParams);
+        uint256 expectedMirrorId = hub.getPubCount(mockPostParams.profileId) + 1;
         vm.expectEmit(true, true, false, true, address(hub));
-        emit Events.MirrorCreated(mockMirrorParams, 2, '', block.timestamp);
+        emit Events.MirrorCreated(mockMirrorParams, expectedMirrorId, '', block.timestamp);
+        vm.prank(profileOwner);
         hub.mirror(mockMirrorParams);
-        vm.stopPrank();
     }
 
     // TODO: Proper tests for Act
