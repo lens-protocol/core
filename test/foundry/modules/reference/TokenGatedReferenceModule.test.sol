@@ -73,7 +73,9 @@ contract TokenGatedReferenceModule_Publication is TokenGatedReferenceModuleBase 
         );
     }
 
-    function testCannotCallInitializeFromNonHub() public {
+    function testCannotCallInitializeFromNonHub(address from) public {
+        vm.assume(from != address(hub));
+        vm.prank(from);
         vm.expectRevert(Errors.NotHub.selector);
         tokenGatedReferenceModule.initializeReferenceModule(
             profileId,
@@ -83,7 +85,9 @@ contract TokenGatedReferenceModule_Publication is TokenGatedReferenceModuleBase 
         );
     }
 
-    function testCannotProcessCommentFromNonHub() public {
+    function testCannotProcessCommentFromNonHub(address from) public {
+        vm.assume(from != address(hub));
+        vm.prank(from);
         vm.expectRevert(Errors.NotHub.selector);
         tokenGatedReferenceModule.processComment(
             Types.ProcessCommentParams({
@@ -99,7 +103,9 @@ contract TokenGatedReferenceModule_Publication is TokenGatedReferenceModuleBase 
         );
     }
 
-    function testCannotProcessQuoteFromNonHub() public {
+    function testCannotProcessQuoteFromNonHub(address from) public {
+        vm.assume(from != address(hub));
+        vm.prank(from);
         vm.expectRevert(Errors.NotHub.selector);
         tokenGatedReferenceModule.processQuote(
             Types.ProcessQuoteParams({
@@ -115,7 +121,9 @@ contract TokenGatedReferenceModule_Publication is TokenGatedReferenceModuleBase 
         );
     }
 
-    function testCannotProcessMirrorFromNonHub() public {
+    function testCannotProcessMirrorFromNonHub(address from) public {
+        vm.assume(from != address(hub));
+        vm.prank(from);
         vm.expectRevert(Errors.NotHub.selector);
         tokenGatedReferenceModule.processMirror(
             Types.ProcessMirrorParams({

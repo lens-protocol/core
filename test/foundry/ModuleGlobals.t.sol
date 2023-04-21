@@ -27,25 +27,25 @@ contract ModuleGlobalsTest is BaseTest {
 
     // Negatives - Gov caller
     function testCannotSetGovernanceToZeroAddress() public {
-        vm.prank(governance);
+        vm.prank(modulesGovernance);
         vm.expectRevert(Errors.InitParamsInvalid.selector);
         moduleGlobals.setGovernance(address(0));
     }
 
     function testCannotSetTreasuryToZeroAddress() public {
-        vm.prank(governance);
+        vm.prank(modulesGovernance);
         vm.expectRevert(Errors.InitParamsInvalid.selector);
         moduleGlobals.setTreasury(address(0));
     }
 
     function testCannotWhitelistZeroAddressAsCurrency() public {
-        vm.prank(governance);
+        vm.prank(modulesGovernance);
         vm.expectRevert(Errors.InitParamsInvalid.selector);
         moduleGlobals.whitelistCurrency(address(0), true);
     }
 
     function testCannotSetTreasuryFee_largerOrEqualThanHalfOfBPS_MAX() public {
-        vm.prank(governance);
+        vm.prank(modulesGovernance);
         vm.expectRevert(Errors.InitParamsInvalid.selector);
         moduleGlobals.setTreasuryFee(TREASURY_FEE_MAX_BPS / 2);
     }
@@ -55,9 +55,9 @@ contract ModuleGlobalsTest is BaseTest {
         address governanceBefore = moduleGlobals.getGovernance();
         address newGovernance = address(uint160(governanceBefore) + 1);
 
-        assertEq(governanceBefore, governance, 'ModuleGlobals Governance is not Governance');
+        assertEq(governanceBefore, modulesGovernance, 'ModuleGlobals Governance is not Governance');
 
-        vm.prank(governance);
+        vm.prank(modulesGovernance);
         moduleGlobals.setGovernance(newGovernance);
 
         address governanceAfter = moduleGlobals.getGovernance();
@@ -70,7 +70,7 @@ contract ModuleGlobalsTest is BaseTest {
         address treasuryBefore = moduleGlobals.getTreasury();
         address newTreasury = address(uint160(treasuryBefore) + 1);
 
-        vm.prank(governance);
+        vm.prank(modulesGovernance);
         moduleGlobals.setTreasury(newTreasury);
 
         address treasuryAfter = moduleGlobals.getTreasury();
@@ -84,7 +84,7 @@ contract ModuleGlobalsTest is BaseTest {
         uint16 newTreasuryFee = treasuryFeeBefore + 1;
         if (newTreasuryFee == TREASURY_FEE_MAX_BPS / 2) newTreasuryFee = 0;
 
-        vm.prank(governance);
+        vm.prank(modulesGovernance);
         moduleGlobals.setTreasuryFee(newTreasuryFee);
 
         uint16 treasuryFeeAfter = moduleGlobals.getTreasuryFee();
@@ -94,19 +94,19 @@ contract ModuleGlobalsTest is BaseTest {
     }
 
     function testGetGovernance() public {
-        vm.prank(governance);
+        vm.prank(modulesGovernance);
         moduleGlobals.setGovernance(address(42));
         assertEq(moduleGlobals.getGovernance(), address(42), 'ModuleGlobals Governance does not match set value');
     }
 
     function testGetTreasury() public {
-        vm.prank(governance);
+        vm.prank(modulesGovernance);
         moduleGlobals.setTreasury(address(42));
         assertEq(moduleGlobals.getTreasury(), address(42), 'ModuleGlobals Treasury does not match set value');
     }
 
     function testGetTreasuryFee() public {
-        vm.prank(governance);
+        vm.prank(modulesGovernance);
         moduleGlobals.setTreasuryFee(42);
         assertEq(moduleGlobals.getTreasuryFee(), 42, 'ModuleGlobals TreasuryFee does not match set value');
     }
