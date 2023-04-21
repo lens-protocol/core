@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.13;
 
-import 'test/foundry/base/BaseTest.t.sol';
+import 'test/base/BaseTest.t.sol';
 
 contract ModuleGlobalsTest is BaseTest {
     function setUp() public override {

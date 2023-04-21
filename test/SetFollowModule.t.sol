@@ -1,9 +1,9 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.13;
 
-import 'test/foundry/base/BaseTest.t.sol';
+import 'test/base/BaseTest.t.sol';
 import 'test/mocks/MockFollowModule.sol';
-import 'test/foundry/helpers/SignatureHelpers.sol';
+import 'test/helpers/SignatureHelpers.sol';
 
 // TODO: Refactor out all `hub.` calls (if we decide to go this route)
 contract SetFollowModuleTest is BaseTest, SigSetup {

@@ -2,7 +2,7 @@
 pragma solidity ^0.8.13;
 
 import 'forge-std/Test.sol';
-import {ForkManagement} from 'test/foundry/helpers/ForkManagement.sol';
+import {ForkManagement} from 'test/helpers/ForkManagement.sol';
 import {CollectNFT} from 'contracts/CollectNFT.sol';
 import {LensHub} from 'contracts/LensHub.sol';
 import {FollowNFT} from 'contracts/FollowNFT.sol';

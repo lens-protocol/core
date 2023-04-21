@@ -1,8 +1,8 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.13;
 
-import 'test/foundry/base/BaseTest.t.sol';
-import 'test/foundry/MetaTxNegatives.t.sol';
+import 'test/base/BaseTest.t.sol';
+import 'test/MetaTxNegatives.t.sol';
 import {Strings} from '@openzeppelin/contracts/utils/Strings.sol';
 import {IFollowNFT} from 'contracts/interfaces/IFollowNFT.sol';
 import 'test/mocks/MockFollowModuleWithRevertFlag.sol';

@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.13;
 
-import 'test/foundry/base/BaseTest.t.sol';
+import 'test/base/BaseTest.t.sol';
 
 import {Events} from 'contracts/libraries/constants/Events.sol';
 import {MockFollowModule} from 'test/mocks/MockFollowModule.sol';
@@ -11,7 +11,7 @@ contract EventTest is BaseTest {
     address mockFollowModule;
 
     // Non-Lens Events
-    // TODO: Replace this with import from test/foundry/helpers/Events.sol
+    // TODO: Replace this with import from test/helpers/Events.sol
     event Transfer(address indexed from, address indexed to, uint256 indexed tokenId);
     event Upgraded(address indexed implementation);
     event AdminChanged(address previousAdmin, address newAdmin);

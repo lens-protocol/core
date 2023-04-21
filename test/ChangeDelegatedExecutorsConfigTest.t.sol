@@ -1,8 +1,8 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.13;
 
-import 'test/foundry/base/BaseTest.t.sol';
-import 'test/foundry/MetaTxNegatives.t.sol';
+import 'test/base/BaseTest.t.sol';
+import 'test/MetaTxNegatives.t.sol';
 import {Typehash} from 'contracts/libraries/constants/Typehash.sol';
 
 contract ChangeDelegatedExecutorsConfigTest_CurrentConfig is BaseTest {

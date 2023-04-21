@@ -1,10 +1,10 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity ^0.8.10;
 
-import 'test/foundry/base/BaseTest.t.sol';
+import 'test/base/BaseTest.t.sol';
 import {TokenGatedReferenceModule, GateParams} from 'contracts/modules/reference/TokenGatedReferenceModule.sol';
 import {Types} from 'contracts/libraries/constants/Types.sol';
-import {ArrayHelpers} from 'test/foundry/helpers/ArrayHelpers.sol';
+import {ArrayHelpers} from 'test/helpers/ArrayHelpers.sol';
 import {Currency} from 'test/mocks/Currency.sol';
 import {NFT} from 'test/mocks/NFT.sol';
 

@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity ^0.8.10;
 
-import 'test/foundry/base/BaseTest.t.sol';
+import 'test/base/BaseTest.t.sol';
 import {FeeConfig, FeeFollowModule} from 'contracts/modules/follow/FeeFollowModule.sol';
 import {Errors as ModuleErrors} from 'contracts/modules/constants/Errors.sol';
 import {Currency} from 'test/mocks/Currency.sol';

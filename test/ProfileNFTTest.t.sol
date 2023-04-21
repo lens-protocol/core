@@ -1,8 +1,8 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.13;
 
-import 'test/foundry/base/BaseTest.t.sol';
-import 'test/foundry/ERC721Test.t.sol';
+import 'test/base/BaseTest.t.sol';
+import 'test/ERC721Test.t.sol';
 
 contract ProfileNFTTest is BaseTest, ERC721Test {
     function testProfileNFTTest() public {

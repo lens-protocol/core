@@ -2,8 +2,8 @@
 pragma solidity ^0.8.13;
 
 import {Types} from 'contracts/libraries/constants/Types.sol';
-import {PublicationTest} from 'test/foundry/publications/PublicationTest.t.sol';
-import {MetaTxNegatives} from 'test/foundry/MetaTxNegatives.t.sol';
+import {PublicationTest} from 'test/publications/PublicationTest.t.sol';
+import {MetaTxNegatives} from 'test/MetaTxNegatives.t.sol';
 
 contract QuoteTest is PublicationTest {
     function testQuoteTest() public {

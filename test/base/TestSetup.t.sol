@@ -17,12 +17,12 @@ import {Events} from 'contracts/libraries/constants/Events.sol';
 import {ProfileTokenURILib} from 'contracts/libraries/token-uris/ProfileTokenURILib.sol';
 import {MockActionModule} from 'test/mocks/MockActionModule.sol';
 import {MockReferenceModule} from 'test/mocks/MockReferenceModule.sol';
-import {ForkManagement} from 'test/foundry/helpers/ForkManagement.sol';
-import {ArrayHelpers} from 'test/foundry/helpers/ArrayHelpers.sol';
+import {ForkManagement} from 'test/helpers/ForkManagement.sol';
+import {ArrayHelpers} from 'test/helpers/ArrayHelpers.sol';
 import {Typehash} from 'contracts/libraries/constants/Typehash.sol';
 import {MetaTxLib} from 'contracts/libraries/MetaTxLib.sol';
 import {StorageLib} from 'contracts/libraries/StorageLib.sol';
-import 'test/foundry/Constants.sol';
+import 'test/Constants.sol';
 
 contract TestSetup is Test, ForkManagement, ArrayHelpers {
     using stdJson for string;

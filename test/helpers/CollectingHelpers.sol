@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.13;
 
-import 'test/foundry/base/TestSetup.t.sol';
+import 'test/base/TestSetup.t.sol';
 import 'forge-std/Test.sol';
 import 'contracts/libraries/constants/Types.sol';
 

@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity ^0.8.10;
 
-import 'test/foundry/base/BaseTest.t.sol';
+import 'test/base/BaseTest.t.sol';
 import {RevertFollowModule} from 'contracts/modules/follow/RevertFollowModule.sol';
 import {Errors as ModuleErrors} from 'contracts/modules/constants/Errors.sol';
 

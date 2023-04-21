@@ -5,7 +5,7 @@ pragma solidity ^0.8.13;
 import '@openzeppelin/contracts/token/ERC721/extensions/IERC721Enumerable.sol';
 import '@openzeppelin/contracts/token/ERC721/IERC721.sol';
 import 'forge-std/console2.sol';
-import 'test/foundry/base/BaseTest.t.sol';
+import 'test/base/BaseTest.t.sol';
 import 'test/mocks/MockReferenceModule.sol';
 import 'test/mocks/MockDeprecatedReferenceModule.sol';
 import 'test/mocks/MockCollectModule.sol';

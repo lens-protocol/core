@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity ^0.8.10;
 
-import 'test/foundry/base/BaseTest.t.sol';
+import 'test/base/BaseTest.t.sol';
 import {FollowerOnlyReferenceModule} from 'contracts/modules/reference/FollowerOnlyReferenceModule.sol';
 import {FollowValidationLib} from 'contracts/modules/libraries/FollowValidationLib.sol';
 import {Errors} from 'contracts/libraries/constants/Errors.sol';
