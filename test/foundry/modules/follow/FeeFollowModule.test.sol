@@ -102,7 +102,7 @@ contract FeeFollowModuleTest is BaseTest {
         uint256 followerProfileId,
         uint256 targetProfileId,
         uint256 amount,
-        address chosenCurrency,
+        address passedCurrency,
         address recipient,
         address transactionExecutor
     ) public {
@@ -116,7 +116,7 @@ contract FeeFollowModuleTest is BaseTest {
         vm.prank(address(hub));
         feeFollowModule.initializeFollowModule(targetProfileId, address(0), abi.encode(feeConfig));
 
-        if (chosenCurrency != address(currency)) {
+        if (passedCurrency != address(currency)) {
             vm.expectRevert(ModuleErrors.ModuleDataMismatch.selector);
         } else {
             currency.mint(transactionExecutor, amount);
@@ -129,7 +129,7 @@ contract FeeFollowModuleTest is BaseTest {
             0,
             transactionExecutor,
             targetProfileId,
-            abi.encode(chosenCurrency, amount)
+            abi.encode(passedCurrency, amount)
         );
     }
 
@@ -138,7 +138,7 @@ contract FeeFollowModuleTest is BaseTest {
         uint256 followerProfileId,
         uint256 targetProfileId,
         uint256 amount,
-        uint256 chosenAmount,
+        uint256 passedAmount,
         address recipient,
         address transactionExecutor
     ) public {
@@ -152,12 +152,12 @@ contract FeeFollowModuleTest is BaseTest {
         vm.prank(address(hub));
         feeFollowModule.initializeFollowModule(targetProfileId, address(0), abi.encode(feeConfig));
 
-        if (chosenAmount != amount) {
+        if (passedAmount != amount) {
             vm.expectRevert(ModuleErrors.ModuleDataMismatch.selector);
         } else {
-            currency.mint(transactionExecutor, chosenAmount);
+            currency.mint(transactionExecutor, passedAmount);
             vm.prank(transactionExecutor);
-            currency.approve(address(feeFollowModule), chosenAmount);
+            currency.approve(address(feeFollowModule), passedAmount);
         }
         vm.prank(address(hub));
         feeFollowModule.processFollow(
@@ -165,7 +165,7 @@ contract FeeFollowModuleTest is BaseTest {
             0,
             transactionExecutor,
             targetProfileId,
-            abi.encode(address(currency), chosenAmount)
+            abi.encode(address(currency), passedAmount)
         );
     }
 
@@ -174,7 +174,7 @@ contract FeeFollowModuleTest is BaseTest {
         uint256 followerProfileId,
         uint256 targetProfileId,
         uint256 amount,
-        uint256 chosenAmount,
+        uint256 passedAmount,
         address recipient,
         address transactionExecutor,
         uint256 followTokenId
@@ -189,7 +189,7 @@ contract FeeFollowModuleTest is BaseTest {
         vm.prank(address(hub));
         feeFollowModule.initializeFollowModule(targetProfileId, address(0), abi.encode(feeConfig));
 
-        if (chosenAmount != 0) {
+        if (passedAmount != 0) {
             vm.expectRevert(ModuleErrors.InvalidParams.selector);
         }
         vm.prank(address(hub));
@@ -198,7 +198,7 @@ contract FeeFollowModuleTest is BaseTest {
             followTokenId,
             transactionExecutor,
             targetProfileId,
-            abi.encode(address(currency), chosenAmount)
+            abi.encode(address(currency), passedAmount)
         );
     }
 

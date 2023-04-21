@@ -51,7 +51,7 @@ contract TestSetup is Test, ForkManagement, ArrayHelpers {
     bytes32 domainSeparator;
 
     uint16 TREASURY_FEE_BPS;
-    uint16 constant TREASURY_FEE_MAX_BPS = 10000;
+    uint16 constant TREASURY_FEE_MAX_BPS = 10000; // TODO: This should be a constant in 'contracts/libraries/constants/'
 
     address hubProxyAddr;
     CollectNFT collectNFT;
