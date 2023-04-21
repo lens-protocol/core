@@ -39,19 +39,7 @@ jobs:
           source .env
           forge test -vvv
 
-  # compile_and_run_tests:
-  #   runs-on: ubuntu-latest
-  #   steps:
-  #     - uses: actions/checkout@v2
-  #     - uses: actions/setup-node@v2
-  #       with:
-  #         node-version: '16'
-  #     - name: Install dependencies
-  #       run: npm ci
-  #     - name: Compile code and run test coverage
-  #       run: npm run hardhat:coverage
-
-  # foundry_merge:
+  # foundry_coverage:
   #   strategy:
   #     fail-fast: true
 
