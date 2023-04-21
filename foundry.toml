@@ -6,7 +6,7 @@ test = 'test/foundry'
 cache_path  = 'forge-cache'
 fs_permissions = [{ access = "read-write", path = "./"}]
 optimizer = true
-optimizer_runs = 65
+optimizer_runs = 10
 ignored_error_codes = []
 
 [rpc_endpoints]
