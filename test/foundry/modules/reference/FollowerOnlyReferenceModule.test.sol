@@ -44,9 +44,9 @@ contract FollowerOnlyReferenceModuleTest is BaseTest {
 
     // FollowerOnlyReferenceModule doesn't need initialization, so this always returns an empty bytes array and is
     // callable by anyone
-    function testInitialize(address from, uint256 profileId, uint256 pubId) public {
+    function testInitialize(address from, uint256 fuzzProfileId, uint256 fuzzPubId) public {
         vm.prank(from);
-        followerOnlyReferenceModule.initializeReferenceModule(profileId, pubId, address(0), '');
+        followerOnlyReferenceModule.initializeReferenceModule(fuzzProfileId, fuzzPubId, address(0), '');
     }
 
     // Negatives
