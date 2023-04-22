@@ -234,7 +234,7 @@ contract TestSetup is Test, ForkManagement, ArrayHelpers {
             referrerPubIds: _emptyUint256Array(),
             referenceModuleData: '',
             actionModules: _toAddressArray(address(mockActionModule)),
-            actionModulesInitDatas: _toBytesArray(abi.encode(1)),
+            actionModulesInitDatas: _toBytesArray(abi.encode(true)),
             referenceModule: address(0),
             referenceModuleInitData: ''
         });
@@ -249,7 +249,7 @@ contract TestSetup is Test, ForkManagement, ArrayHelpers {
             referrerPubIds: _emptyUint256Array(),
             referenceModuleData: '',
             actionModules: _toAddressArray(address(mockActionModule)),
-            actionModulesInitDatas: _toBytesArray(abi.encode(1)),
+            actionModulesInitDatas: _toBytesArray(abi.encode(true)),
             referenceModule: address(0),
             referenceModuleInitData: ''
         });

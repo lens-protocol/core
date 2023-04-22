@@ -233,7 +233,7 @@ contract EventTest is BaseTest {
         vm.prank(profileOwnerTwo);
         vm.expectEmit(true, true, true, true, address(hub));
         emit Events.FollowModuleSet(expectedProfileId, address(mockFollowModule), '', block.timestamp);
-        hub.setFollowModule(expectedProfileId, address(mockFollowModule), abi.encode(1));
+        hub.setFollowModule(expectedProfileId, address(mockFollowModule), abi.encode(true));
     }
 
     function testPostingEmitsExpectedEvents() public {

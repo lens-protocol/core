@@ -30,7 +30,7 @@ contract SetFollowModuleTest is BaseTest, SigSetup {
         bytes32 digest = _getSetFollowModuleTypedDataHash(
             newProfileId,
             mockFollowModule,
-            abi.encode(1),
+            abi.encode(true),
             nonce,
             digestDeadline
         );
@@ -38,7 +38,7 @@ contract SetFollowModuleTest is BaseTest, SigSetup {
         hub.setFollowModuleWithSig({
             profileId: newProfileId,
             followModule: mockFollowModule,
-            followModuleInitData: abi.encode(1),
+            followModuleInitData: abi.encode(true),
             signature: _getSigStruct(delegatedSigner, signerPrivKey, digest, sigDeadline)
         });
     }
@@ -64,7 +64,7 @@ contract SetFollowModuleTest is BaseTest, SigSetup {
     // Positives
     function testSetFollowModule() public {
         vm.prank(profileOwner);
-        hub.setFollowModule(newProfileId, mockFollowModule, abi.encode(1));
+        hub.setFollowModule(newProfileId, mockFollowModule, abi.encode(true));
         assertEq(hub.getFollowModule(newProfileId), mockFollowModule);
 
         vm.prank(profileOwner);
@@ -86,7 +86,7 @@ contract SetFollowModuleTest is BaseTest, SigSetup {
         hub.whitelistFollowModule(mockFollowModule, true);
 
         vm.prank(otherSigner);
-        hub.setFollowModule(newProfileId, mockFollowModule, abi.encode(1));
+        hub.setFollowModule(newProfileId, mockFollowModule, abi.encode(true));
         assertEq(hub.getFollowModule(newProfileId), mockFollowModule);
     }
 

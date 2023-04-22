@@ -4,6 +4,7 @@ pragma solidity ^0.8.15;
 
 import {ICollectModule} from 'contracts/interfaces/ICollectModule.sol';
 import {Types} from 'contracts/libraries/constants/Types.sol';
+import {MockModule} from 'test/mocks/MockModule.sol';
 
 /**
  * @title FreeCollectModule
@@ -13,7 +14,7 @@ import {Types} from 'contracts/libraries/constants/Types.sol';
  *
  * This module works by allowing all collects.
  */
-contract MockCollectModule is ICollectModule {
+contract MockCollectModule is MockModule, ICollectModule {
     function testMockCollectModule() public {
         // Prevents being counted in Foundry Coverage
     }
@@ -27,9 +28,7 @@ contract MockCollectModule is ICollectModule {
         address,
         bytes calldata data
     ) external pure override returns (bytes memory) {
-        uint256 number = abi.decode(data, (uint256));
-        require(number == 1, 'MockCollectModule: invalid');
-        return new bytes(0);
+        return _decodeFlagAndRevertIfFalse(data);
     }
 
     /**
@@ -38,5 +37,7 @@ contract MockCollectModule is ICollectModule {
      */
     function processCollect(
         Types.ProcessCollectParams calldata processCollectParams
-    ) external view override returns (bytes memory) {}
+    ) external view override returns (bytes memory) {
+        return _decodeFlagAndRevertIfFalse(processCollectParams.data);
+    }
 }

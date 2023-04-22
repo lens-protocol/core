@@ -148,7 +148,7 @@ contract UpgradeForkTest is BaseTest {
                 to: me,
                 imageURI: MOCK_URI,
                 followModule: address(0),
-                followModuleInitData: abi.encode(1),
+                followModuleInitData: abi.encode(true),
                 followNFTURI: MOCK_URI
             });
 
@@ -405,7 +405,7 @@ contract UpgradeForkTest is BaseTest {
             to: me,
             imageURI: MOCK_URI,
             followModule: address(0),
-            followModuleInitData: abi.encode(1),
+            followModuleInitData: abi.encode(true),
             followNFTURI: MOCK_URI
         });
 
@@ -414,9 +414,9 @@ contract UpgradeForkTest is BaseTest {
             profileId: 0,
             contentURI: MOCK_URI,
             actionModules: _toAddressArray(address(0)),
-            actionModulesInitDatas: _toBytesArray(abi.encode(1)),
+            actionModulesInitDatas: _toBytesArray(abi.encode(true)),
             referenceModule: address(0),
-            referenceModuleInitData: abi.encode(1)
+            referenceModuleInitData: abi.encode(true)
         });
 
         // Precompute basic comment data.
@@ -429,9 +429,9 @@ contract UpgradeForkTest is BaseTest {
             referrerPubIds: _emptyUint256Array(),
             referenceModuleData: '',
             actionModules: _toAddressArray(address(0)),
-            actionModulesInitDatas: _toBytesArray(abi.encode(1)),
+            actionModulesInitDatas: _toBytesArray(abi.encode(true)),
             referenceModule: address(0),
-            referenceModuleInitData: abi.encode(1)
+            referenceModuleInitData: abi.encode(true)
         });
 
         // Precompute basic mirror data.
