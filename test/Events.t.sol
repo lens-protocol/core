@@ -23,7 +23,7 @@ contract EventTest is BaseTest {
         hub.whitelistFollowModule(mockFollowModule, true);
     }
 
-    function predictContractAddress(address user, uint256 distanceFromCurrentNonce) internal returns (address) {
+    function predictContractAddress(address user, uint256 distanceFromCurrentNonce) internal view returns (address) {
         return computeCreateAddress(user, vm.getNonce(user) + distanceFromCurrentNonce);
     }
 

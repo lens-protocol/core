@@ -31,6 +31,12 @@ contract TestSetup is Test, ForkManagement, ArrayHelpers {
         // Prevents being counted in Foundry Coverage
     }
 
+    struct TestAccount {
+        uint256 ownerPk;
+        address owner;
+        uint256 profileId;
+    }
+
     uint256 newProfileId; // TODO: We should get rid of this everywhere, and create dedicated profiles instead (see Follow tests)
     uint256 mockPostId;
 
@@ -275,8 +281,73 @@ contract TestSetup is Test, ForkManagement, ArrayHelpers {
         });
     }
 
-    // TODO: Find a better place for such helpers that have access to Hub without rekting inheritance
-    function _getNextProfileId() internal returns (uint256) {
+    // _getDefaultMirrorParams() returns (Types.MirrorParams memory) {
+    //     return Types.MirrorParams({
+    //         profileId: newProfileId,
+    //         pointedProfileId: newProfileId,
+    //         pointedPubId: mockPostId,
+    //         referrerProfileIds: _emptyUint256Array(),
+    //         referrerPubIds: _emptyUint256Array(),
+    //         referenceModuleData: ''
+    //     });
+    // }
+
+    function _createProfile(address newProfileOwner) internal returns (uint256) {
+        Types.CreateProfileParams memory CreateProfileParams = Types.CreateProfileParams({
+            to: newProfileOwner,
+            imageURI: mockCreateProfileParams.imageURI,
+            followModule: mockCreateProfileParams.followModule,
+            followModuleInitData: mockCreateProfileParams.followModuleInitData,
+            followNFTURI: mockCreateProfileParams.followNFTURI
+        });
+
+        return hub.createProfile(CreateProfileParams);
+    }
+
+    function _loadAccountAs(string memory accountLabel) internal returns (TestAccount memory) {
+        return _loadAccountAs({accountLabel: accountLabel, requireCustomProfileOnFork: true});
+    }
+
+    function _loadAccountAs(
+        string memory accountLabel,
+        bool requireCustomProfileOnFork
+    ) internal returns (TestAccount memory) {
+        // We derive a new account from the given label.
+        (address accountOwner, uint256 accountOwnerPk) = makeAddrAndKey(accountLabel);
+        uint256 accountProfileId;
+        if (fork) {
+            // If testing in a fork, load the desired profile from .env and transfer it to the derived account.
+            accountProfileId = vm.envOr({
+                name: string.concat('FORK_TEST_ACCOUNT__', accountLabel, '__PROFILE_ID'),
+                defaultValue: uint256(0)
+            });
+            // If the custom profile wasn't founde in the .env file and it was required, reverts.
+            if (accountProfileId == 0 && requireCustomProfileOnFork) {
+                revert(
+                    string.concat(
+                        'Custom profile not set for ',
+                        accountLabel,
+                        '. Add ',
+                        string.concat('FORK_TEST_ACCOUNT__', accountLabel, '__PROFILE_ID'),
+                        ' env variable or set `requireCustomProfileOnFork` as false for it.'
+                    )
+                );
+            }
+        }
+        if (accountProfileId != 0) {
+            // If profile was loaded from .env, we transfer it to the generated account. This is needed as otherwise we
+            // won't have the private key of the owner, which is needed for signing meta-tx in some tests.
+            address currentProfileOwner = hub.ownerOf(accountProfileId);
+            vm.prank(currentProfileOwner);
+            hub.transferFrom(currentProfileOwner, accountOwner, accountProfileId);
+        } else {
+            // If profile was not loaded yet, we create a fresh one.
+            accountProfileId = _createProfile(accountOwner);
+        }
+        return TestAccount({ownerPk: accountOwnerPk, owner: accountOwner, profileId: accountProfileId});
+    }
+
+    function _getNextProfileId() internal view returns (uint256) {
         return uint256(vm.load(hubProxyAddr, bytes32(uint256(StorageLib.PROFILE_COUNTER_SLOT)))) + 1;
     }
 }

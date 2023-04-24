@@ -46,7 +46,13 @@ contract FollowTest is BaseTest {
         alreadyFollowingProfileOwner = vm.addr(alreadyFollowingProfileOwnerPk);
         alreadyFollowingProfileId = _createProfile(alreadyFollowingProfileOwner);
 
-        followTokenId = _follow(alreadyFollowingProfileOwner, alreadyFollowingProfileId, targetProfileId, 0, '')[0];
+        vm.prank(alreadyFollowingProfileOwner);
+        followTokenId = hub.follow(
+            alreadyFollowingProfileId,
+            _toUint256Array(targetProfileId),
+            _toUint256Array(0),
+            _toBytesArray('')
+        )[0];
 
         targetFollowNFTAddress = hub.getFollowNFT(targetProfileId);
         followNFT = FollowNFT(targetFollowNFTAddress);

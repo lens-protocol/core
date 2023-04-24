@@ -25,19 +25,19 @@ contract MockReferenceModule is MockModule, IReferenceModule {
 
     function processComment(
         Types.ProcessCommentParams calldata processCommentParams
-    ) external override returns (bytes memory) {
+    ) external pure override returns (bytes memory) {
         return _decodeFlagAndRevertIfFalse(processCommentParams.data);
     }
 
     function processQuote(
         Types.ProcessQuoteParams calldata processQuoteParams
-    ) external override returns (bytes memory) {
+    ) external pure override returns (bytes memory) {
         return _decodeFlagAndRevertIfFalse(processQuoteParams.data);
     }
 
     function processMirror(
         Types.ProcessMirrorParams calldata processMirrorParams
-    ) external override returns (bytes memory) {
+    ) external pure override returns (bytes memory) {
         return _decodeFlagAndRevertIfFalse(processMirrorParams.data);
     }
 }

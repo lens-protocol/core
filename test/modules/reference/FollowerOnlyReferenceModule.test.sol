@@ -24,7 +24,8 @@ contract FollowerOnlyReferenceModuleTest is BaseTest {
         followerProfileId = _createProfile(followerProfileOwner);
         notFollowerProfileId = _createProfile(notFollowerProfileOwner);
 
-        _follow(followerProfileOwner, followerProfileId, profileId, 0, '')[0];
+        vm.prank(followerProfileOwner);
+        hub.follow(followerProfileId, _toUint256Array(profileId), _toUint256Array(0), _toBytesArray(''));
         assertTrue(hub.isFollowing(followerProfileId, profileId));
         assertFalse(hub.isFollowing(notFollowerProfileId, profileId));
     }

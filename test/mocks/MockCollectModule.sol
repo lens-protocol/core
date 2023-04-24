@@ -37,7 +37,7 @@ contract MockCollectModule is MockModule, ICollectModule {
      */
     function processCollect(
         Types.ProcessCollectParams calldata processCollectParams
-    ) external view override returns (bytes memory) {
+    ) external pure override returns (bytes memory) {
         return _decodeFlagAndRevertIfFalse(processCollectParams.data);
     }
 }

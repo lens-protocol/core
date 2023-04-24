@@ -4,32 +4,16 @@ pragma solidity ^0.8.13;
 import 'test/base/TestSetup.t.sol';
 import 'contracts/libraries/constants/Types.sol';
 import {Typehash} from 'contracts/libraries/constants/Typehash.sol';
+import {Strings} from '@openzeppelin/contracts/utils/Strings.sol';
 
 contract BaseTest is TestSetup {
+    using Strings for string;
+
     function testBaseTest() public {
         // Prevents being counted in Foundry Coverage
     }
 
-    function _loadAccountAs(
-        string memory accountLabel
-    ) internal returns (uint256 pk, address owner, uint256 profileId) {
-        // We derive a new account from the given label.
-        (address accountOwner, uint256 accountOwnerPk) = makeAddrAndKey(accountLabel);
-        uint256 accountProfileId;
-        if (fork) {
-            // If testing in a fork, we load the desired profile and transfer it to the derived account.
-            accountProfileId = vm.envUint('FORK_PROFILE_ID');
-            address currentProfileOwner = hub.ownerOf(accountProfileId);
-            vm.prank(currentProfileOwner);
-            hub.transferFrom(currentProfileOwner, accountOwner, accountProfileId);
-        } else {
-            // If not testing in a fork, we create a fresh profile for the derived account.
-            accountProfileId = _createProfile(accountOwner);
-        }
-        return (accountOwnerPk, accountOwner, accountProfileId);
-    }
-
-    function _boundPk(uint256 fuzzedUint256) internal returns (uint256 fuzzedPk) {
+    function _boundPk(uint256 fuzzedUint256) internal view returns (uint256 fuzzedPk) {
         return bound(fuzzedUint256, 1, ISSECP256K1_CURVE_ORDER - 1);
     }
 
@@ -323,27 +307,6 @@ contract BaseTest is TestSetup {
         return _calculateDigest(structHash);
     }
 
-    // function _getCollectTypedDataHash(
-    //     Types.CollectParams memory collectParams,
-    //     uint256 nonce,
-    //     uint256 deadline
-    // ) internal view returns (bytes32) {
-    //     bytes32 structHash = keccak256(
-    //         abi.encode(
-    //             Typehash.COLLECT,
-    //             collectParams.publicationCollectedProfileId,
-    //             collectParams.publicationCollectedId,
-    //             collectParams.collectorProfileId,
-    //             collectParams.referrerProfileIds,
-    //             collectParams.referrerPubIds,
-    //             keccak256(collectParams.collectModuleData),
-    //             nonce,
-    //             deadline
-    //         )
-    //     );
-    //     return _calculateDigest(structHash);
-    // }
-
     function _getActTypedDataHash(
         Types.PublicationActionParams memory publicationActionParams,
         uint256 nonce,
@@ -375,7 +338,7 @@ contract BaseTest is TestSetup {
         uint256 pKey,
         bytes32 digest,
         uint256 deadline
-    ) internal returns (Types.EIP712Signature memory) {
+    ) internal pure returns (Types.EIP712Signature memory) {
         (uint8 v, bytes32 r, bytes32 s) = vm.sign(pKey, digest);
         return Types.EIP712Signature(vm.addr(pKey), v, r, s, deadline);
     }
@@ -385,156 +348,9 @@ contract BaseTest is TestSetup {
         uint256 pKey,
         bytes32 digest,
         uint256 deadline
-    ) internal returns (Types.EIP712Signature memory) {
+    ) internal pure returns (Types.EIP712Signature memory) {
         (uint8 v, bytes32 r, bytes32 s) = vm.sign(pKey, digest);
         return Types.EIP712Signature(signer, v, r, s, deadline);
-    }
-
-    // Internal functions
-
-    function _post(Types.PostParams memory postParams) internal returns (uint256) {
-        return hub.post(postParams);
-    }
-
-    function _comment(Types.CommentParams memory commentParams) internal returns (uint256) {
-        return hub.comment(commentParams);
-    }
-
-    function _mirror(Types.MirrorParams memory mirrorParams) internal returns (uint256) {
-        return hub.mirror(mirrorParams);
-    }
-
-    // function _collect(
-    //     uint256 collectorProfileId,
-    //     uint256 publisherProfileId,
-    //     uint256 pubId,
-    //     bytes memory data
-    // ) internal returns (uint256) {
-    //     return
-    //         hub.collect(
-    //             Types.CollectParams({
-    //                 publicationCollectedProfileId: publisherProfileId,
-    //                 publicationCollectedId: pubId,
-    //                 collectorProfileId: collectorProfileId,
-    //                 referrerProfileIds: _emptyUint256Array(),
-    //                 referrerPubIds: _emptyUint256Array(),
-    //                 collectModuleData: data
-    //             })
-    //         );
-    // }
-
-    function _act(
-        uint256 actorProfileId,
-        uint256 publicationActedProfileId,
-        uint256 publicationActedId,
-        address actionModuleAddress,
-        bytes memory data
-    ) internal returns (bytes memory) {
-        return
-            hub.act(
-                Types.PublicationActionParams({
-                    publicationActedProfileId: publicationActedProfileId,
-                    publicationActedId: publicationActedId,
-                    actorProfileId: actorProfileId,
-                    referrerProfileIds: _emptyUint256Array(),
-                    referrerPubIds: _emptyUint256Array(),
-                    actionModuleAddress: actionModuleAddress,
-                    actionModuleData: data
-                })
-            );
-    }
-
-    function _postWithSig(
-        Types.PostParams memory postParams,
-        Types.EIP712Signature memory signature
-    ) internal returns (uint256) {
-        return hub.postWithSig(postParams, signature);
-    }
-
-    function _commentWithSig(
-        Types.CommentParams memory commentParams,
-        Types.EIP712Signature memory signature
-    ) internal returns (uint256) {
-        return hub.commentWithSig(commentParams, signature);
-    }
-
-    function _mirrorWithSig(
-        Types.MirrorParams memory mirrorParams,
-        Types.EIP712Signature memory signature
-    ) internal returns (uint256) {
-        return hub.mirrorWithSig(mirrorParams, signature);
-    }
-
-    // function _collectWithSig(
-    //     Types.CollectParams memory collectParams,
-    //     Types.EIP712Signature memory signature
-    // ) internal returns (uint256) {
-    //     return hub.collectWithSig(collectParams, signature);
-    // }
-
-    function _actWithSig(
-        Types.PublicationActionParams memory publiactionActionParams,
-        Types.EIP712Signature memory signature
-    ) internal returns (bytes memory) {
-        return hub.actWithSig(publiactionActionParams, signature);
-    }
-
-    function _follow(
-        address msgSender,
-        uint256 followerProfileId,
-        uint256 idOfProfileToFollow,
-        uint256 followTokenId,
-        bytes memory data
-    ) internal returns (uint256[] memory) {
-        vm.prank(msgSender);
-        return
-            hub.follow(
-                followerProfileId,
-                _toUint256Array(idOfProfileToFollow),
-                _toUint256Array(followTokenId),
-                _toBytesArray(data)
-            );
-    }
-
-    function _followWithSig(
-        uint256 followerProfileId,
-        uint256 idOfProfileToFollow,
-        uint256 followTokenId,
-        bytes memory data,
-        Types.EIP712Signature memory signature
-    ) internal returns (uint256[] memory) {
-        return
-            hub.followWithSig(
-                followerProfileId,
-                _toUint256Array(idOfProfileToFollow),
-                _toUint256Array(followTokenId),
-                _toBytesArray(data),
-                signature
-            );
-    }
-
-    function _createProfile(address newProfileOwner) internal returns (uint256) {
-        Types.CreateProfileParams memory CreateProfileParams = Types.CreateProfileParams({
-            to: newProfileOwner,
-            imageURI: mockCreateProfileParams.imageURI,
-            followModule: mockCreateProfileParams.followModule,
-            followModuleInitData: mockCreateProfileParams.followModuleInitData,
-            followNFTURI: mockCreateProfileParams.followNFTURI
-        });
-
-        return hub.createProfile(CreateProfileParams);
-    }
-
-    function _setState(Types.ProtocolState newState) internal {
-        hub.setState(newState);
-    }
-
-    function _getState() internal view returns (Types.ProtocolState) {
-        return hub.getState();
-    }
-
-    function _setEmergencyAdmin(address newEmergencyAdmin) internal {
-        hub.setEmergencyAdmin(newEmergencyAdmin);
     }
 
     function _transferProfile(address msgSender, address from, address to, uint256 tokenId) internal {
@@ -604,13 +420,4 @@ contract BaseTest is TestSetup {
     function _getPubCount(uint256 profileId) internal view returns (uint256) {
         return hub.getPubCount(profileId);
     }
-
-    // function _getCollectCount(uint256 profileId, uint256 pubId) internal view returns (uint256) {
-    //     address collectNft = hub.getCollectNFT(profileId, pubId);
-    //     if (collectNft == address(0)) {
-    //         return 0;
-    //     } else {
-    //         return CollectNFT(collectNft).totalSupply();
-    //     }
-    // }
 }

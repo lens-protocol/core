@@ -8,61 +8,61 @@ contract MultiStateHubTest_Common is BaseTest {
     // Negatives
     function testCannotSetStateAsRegularUser() public {
         vm.expectRevert(Errors.NotGovernanceOrEmergencyAdmin.selector);
-        _setState(Types.ProtocolState.Paused);
+        hub.setState(Types.ProtocolState.Paused);
 
         vm.expectRevert(Errors.NotGovernanceOrEmergencyAdmin.selector);
-        _setState(Types.ProtocolState.PublishingPaused);
+        hub.setState(Types.ProtocolState.PublishingPaused);
 
         vm.expectRevert(Errors.NotGovernanceOrEmergencyAdmin.selector);
-        _setState(Types.ProtocolState.Unpaused);
+        hub.setState(Types.ProtocolState.Unpaused);
     }
 
     function testCannotSetEmergencyAdminAsRegularUser() public {
         vm.expectRevert(Errors.NotGovernance.selector);
-        _setEmergencyAdmin(address(this));
+        hub.setEmergencyAdmin(address(this));
     }
 
     function testCannotUnpauseAsEmergencyAdmin() public {
         vm.prank(governance);
-        _setEmergencyAdmin(address(this));
+        hub.setEmergencyAdmin(address(this));
 
         vm.expectRevert(Errors.EmergencyAdminCanOnlyPauseFurther.selector);
-        _setState(Types.ProtocolState.Unpaused);
+        hub.setState(Types.ProtocolState.Unpaused);
     }
 
     function testCannotSetLowerStateAsEmergencyAdmin() public {
         vm.prank(governance);
-        _setEmergencyAdmin(address(this));
+        hub.setEmergencyAdmin(address(this));
 
-        _setState(Types.ProtocolState.Paused);
-
-        vm.expectRevert(Errors.EmergencyAdminCanOnlyPauseFurther.selector);
-        _setState(Types.ProtocolState.PublishingPaused);
+        hub.setState(Types.ProtocolState.Paused);
 
         vm.expectRevert(Errors.EmergencyAdminCanOnlyPauseFurther.selector);
-        _setState(Types.ProtocolState.Paused);
+        hub.setState(Types.ProtocolState.PublishingPaused);
+
+        vm.expectRevert(Errors.EmergencyAdminCanOnlyPauseFurther.selector);
+        hub.setState(Types.ProtocolState.Paused);
     }
 
     function testCannotSetEmergencyAdminAsEmergencyAdmin() public {
         vm.prank(governance);
-        _setEmergencyAdmin(address(this));
+        hub.setEmergencyAdmin(address(this));
 
         vm.expectRevert(Errors.NotGovernance.selector);
-        _setEmergencyAdmin(address(0));
+        hub.setEmergencyAdmin(address(0));
     }
 
     // Scenarios
     function testSetProtocolStateAsEmergencyAdmin() public {
         vm.prank(governance);
-        _setEmergencyAdmin(address(this));
+        hub.setEmergencyAdmin(address(this));
 
         Types.ProtocolState[2] memory states = [Types.ProtocolState.PublishingPaused, Types.ProtocolState.Paused];
 
         for (uint256 i = 0; i < states.length; i++) {
             Types.ProtocolState newState = states[i];
-            Types.ProtocolState prevState = _getState();
-            _setState(newState);
-            Types.ProtocolState curState = _getState();
+            Types.ProtocolState prevState = hub.getState();
+            hub.setState(newState);
+            Types.ProtocolState curState = hub.getState();
             assertTrue(newState == curState);
             assertTrue(curState != prevState);
         }
@@ -82,9 +82,9 @@ contract MultiStateHubTest_Common is BaseTest {
 
         for (uint256 i = 0; i < states.length; i++) {
             Types.ProtocolState newState = states[i];
-            Types.ProtocolState prevState = _getState();
-            _setState(newState);
-            Types.ProtocolState curState = _getState();
+            Types.ProtocolState prevState = hub.getState();
+            hub.setState(newState);
+            Types.ProtocolState curState = hub.getState();
             assertTrue(newState == curState);
             assertTrue(curState != prevState);
         }
@@ -93,15 +93,15 @@ contract MultiStateHubTest_Common is BaseTest {
 
     function testGovernanceCanRevokeEmergencyAdmin() public {
         vm.prank(governance);
-        _setEmergencyAdmin(address(this));
+        hub.setEmergencyAdmin(address(this));
 
-        _setState(Types.ProtocolState.PublishingPaused);
+        hub.setState(Types.ProtocolState.PublishingPaused);
 
         vm.prank(governance);
-        _setEmergencyAdmin(address(0));
+        hub.setEmergencyAdmin(address(0));
 
         vm.expectRevert(Errors.NotGovernanceOrEmergencyAdmin.selector);
-        _setState(Types.ProtocolState.Paused);
+        hub.setState(Types.ProtocolState.Paused);
     }
 }
 
@@ -115,10 +115,10 @@ contract MultiStateHubTest_PausedState_Direct is BaseTest {
         followerProfileId = _createProfile(me);
 
         vm.prank(profileOwner);
-        postId = _post(mockPostParams);
+        postId = hub.post(mockPostParams);
 
         vm.prank(governance);
-        _setState(Types.ProtocolState.Paused);
+        hub.setState(Types.ProtocolState.Paused);
     }
 
     // TODO: Consider extracting these mock actions functions somewhere because they're used in several places
@@ -138,19 +138,19 @@ contract MultiStateHubTest_PausedState_Direct is BaseTest {
 
     function _mockPost() internal virtual {
         vm.prank(profileOwner);
-        _post(mockPostParams);
+        hub.post(mockPostParams);
     }
 
     function _mockComment() internal virtual {
         mockCommentParams.pointedPubId = postId;
         vm.prank(profileOwner);
-        _comment(mockCommentParams);
+        hub.comment(mockCommentParams);
     }
 
     function _mockMirror() internal virtual {
         mockMirrorParams.pointedPubId = postId;
         vm.prank(profileOwner);
-        _mirror(mockMirrorParams);
+        hub.mirror(mockMirrorParams);
     }
 
     function _mockBurn() internal virtual {
@@ -158,24 +158,12 @@ contract MultiStateHubTest_PausedState_Direct is BaseTest {
     }
 
     function _mockFollow() internal virtual {
-        _follow({
-            msgSender: me,
-            followerProfileId: followerProfileId,
-            idOfProfileToFollow: newProfileId,
-            followTokenId: 0,
-            data: ''
-        });
+        hub.follow(followerProfileId, _toUint256Array(newProfileId), _toUint256Array(0), _toBytesArray(''));
     }
 
     function _mockAct() internal virtual {
         vm.prank(profileOwner);
-        _act(
-            mockActParams.actorProfileId,
-            mockActParams.publicationActedProfileId,
-            mockActParams.publicationActedId,
-            mockActParams.actionModuleAddress,
-            mockActParams.actionModuleData
-        );
+        hub.act(mockActParams);
     }
 
     // Negatives
@@ -189,7 +177,7 @@ contract MultiStateHubTest_PausedState_Direct is BaseTest {
         _createProfile(address(this));
 
         vm.prank(governance);
-        _setState(Types.ProtocolState.Unpaused);
+        hub.setState(Types.ProtocolState.Unpaused);
 
         _createProfile(address(this));
     }
@@ -199,7 +187,7 @@ contract MultiStateHubTest_PausedState_Direct is BaseTest {
         _mockSetFollowModule();
 
         vm.prank(governance);
-        _setState(Types.ProtocolState.Unpaused);
+        hub.setState(Types.ProtocolState.Unpaused);
 
         _mockSetFollowModule();
     }
@@ -209,7 +197,7 @@ contract MultiStateHubTest_PausedState_Direct is BaseTest {
         _mockChangeDelegatedExecutorsConfig();
 
         vm.prank(governance);
-        _setState(Types.ProtocolState.Unpaused);
+        hub.setState(Types.ProtocolState.Unpaused);
 
         _mockChangeDelegatedExecutorsConfig();
     }
@@ -219,7 +207,7 @@ contract MultiStateHubTest_PausedState_Direct is BaseTest {
         _mockSetProfileImageURI();
 
         vm.prank(governance);
-        _setState(Types.ProtocolState.Unpaused);
+        hub.setState(Types.ProtocolState.Unpaused);
 
         _mockSetProfileImageURI();
     }
@@ -229,7 +217,7 @@ contract MultiStateHubTest_PausedState_Direct is BaseTest {
         _mockPost();
 
         vm.prank(governance);
-        _setState(Types.ProtocolState.Unpaused);
+        hub.setState(Types.ProtocolState.Unpaused);
 
         _mockPost();
     }
@@ -239,7 +227,7 @@ contract MultiStateHubTest_PausedState_Direct is BaseTest {
         _mockComment();
 
         vm.prank(governance);
-        _setState(Types.ProtocolState.Unpaused);
+        hub.setState(Types.ProtocolState.Unpaused);
 
         _mockComment();
     }
@@ -249,7 +237,7 @@ contract MultiStateHubTest_PausedState_Direct is BaseTest {
         _mockMirror();
 
         vm.prank(governance);
-        _setState(Types.ProtocolState.Unpaused);
+        hub.setState(Types.ProtocolState.Unpaused);
 
         _mockMirror();
     }
@@ -259,7 +247,7 @@ contract MultiStateHubTest_PausedState_Direct is BaseTest {
         _mockBurn();
 
         vm.prank(governance);
-        _setState(Types.ProtocolState.Unpaused);
+        hub.setState(Types.ProtocolState.Unpaused);
 
         _mockBurn();
     }
@@ -269,7 +257,7 @@ contract MultiStateHubTest_PausedState_Direct is BaseTest {
         _mockFollow();
 
         vm.prank(governance);
-        _setState(Types.ProtocolState.Unpaused);
+        hub.setState(Types.ProtocolState.Unpaused);
 
         _mockFollow();
     }
@@ -279,7 +267,7 @@ contract MultiStateHubTest_PausedState_Direct is BaseTest {
         _mockAct();
 
         vm.prank(governance);
-        _setState(Types.ProtocolState.Unpaused);
+        hub.setState(Types.ProtocolState.Unpaused);
 
         _mockAct();
     }
@@ -290,10 +278,10 @@ contract MultiStateHubTest_PausedState_WithSig is MultiStateHubTest_PausedState_
         MultiStateHubTest_PausedState_Direct.setUp();
         SigSetup.setUp();
         vm.prank(governance);
-        _setState(Types.ProtocolState.Unpaused);
+        hub.setState(Types.ProtocolState.Unpaused);
         followerProfileId = _createProfile(otherSigner);
         vm.prank(governance);
-        _setState(Types.ProtocolState.Paused);
+        hub.setState(Types.ProtocolState.Paused);
     }
 
     function _mockSetFollowModule() internal override {
@@ -343,21 +331,21 @@ contract MultiStateHubTest_PausedState_WithSig is MultiStateHubTest_PausedState_
     function _mockPost() internal override {
         bytes32 digest = _getPostTypedDataHash(mockPostParams, nonce, deadline);
 
-        _postWithSig(mockPostParams, _getSigStruct(profileOwner, profileOwnerKey, digest, deadline));
+        hub.postWithSig(mockPostParams, _getSigStruct(profileOwner, profileOwnerKey, digest, deadline));
     }
 
     function _mockComment() internal override {
         mockCommentParams.pointedPubId = postId;
         bytes32 digest = _getCommentTypedDataHash(mockCommentParams, nonce, deadline);
 
-        _commentWithSig(mockCommentParams, _getSigStruct(profileOwner, profileOwnerKey, digest, deadline));
+        hub.commentWithSig(mockCommentParams, _getSigStruct(profileOwner, profileOwnerKey, digest, deadline));
     }
 
     function _mockMirror() internal override {
         mockMirrorParams.pointedPubId = postId;
         bytes32 digest = _getMirrorTypedDataHash(mockMirrorParams, nonce, deadline);
 
-        _mirrorWithSig(mockMirrorParams, _getSigStruct(profileOwner, profileOwnerKey, digest, deadline));
+        hub.mirrorWithSig(mockMirrorParams, _getSigStruct(profileOwner, profileOwnerKey, digest, deadline));
     }
 
     function _mockFollow() internal override {
@@ -370,11 +358,11 @@ contract MultiStateHubTest_PausedState_WithSig is MultiStateHubTest_PausedState_
             deadline
         );
 
-        _followWithSig({
+        hub.followWithSig({
             followerProfileId: followerProfileId,
-            idOfProfileToFollow: newProfileId,
-            followTokenId: 0,
-            data: '',
+            idsOfProfilesToFollow: _toUint256Array(newProfileId),
+            followTokenIds: _toUint256Array(0),
+            datas: _toBytesArray(''),
             signature: _getSigStruct(otherSigner, otherSignerKey, digest, deadline)
         });
     }
@@ -382,7 +370,7 @@ contract MultiStateHubTest_PausedState_WithSig is MultiStateHubTest_PausedState_
     function _mockAct() internal override {
         bytes32 digest = _getActTypedDataHash(mockActParams, nonce, deadline);
 
-        _actWithSig(mockActParams, _getSigStruct(profileOwner, profileOwnerKey, digest, deadline));
+        hub.actWithSig(mockActParams, _getSigStruct(profileOwner, profileOwnerKey, digest, deadline));
     }
 
     // Methods that cannot be called with signature
@@ -398,10 +386,10 @@ contract MultiStateHubTest_PublishingPausedState_Direct is BaseTest {
         super.setUp();
 
         vm.prank(profileOwner);
-        postId = _post(mockPostParams);
+        postId = hub.post(mockPostParams);
 
         vm.prank(governance);
-        _setState(Types.ProtocolState.PublishingPaused);
+        hub.setState(Types.ProtocolState.PublishingPaused);
     }
 
     // TODO: Consider extracting these mock actions functions somewhere because they're used in several places
@@ -421,19 +409,19 @@ contract MultiStateHubTest_PublishingPausedState_Direct is BaseTest {
 
     function _mockPost() internal virtual {
         vm.prank(profileOwner);
-        _post(mockPostParams);
+        hub.post(mockPostParams);
     }
 
     function _mockComment() internal virtual {
         mockCommentParams.pointedPubId = postId;
         vm.prank(profileOwner);
-        _comment(mockCommentParams);
+        hub.comment(mockCommentParams);
     }
 
     function _mockMirror() internal virtual {
         mockMirrorParams.pointedPubId = postId;
         vm.prank(profileOwner);
-        _mirror(mockMirrorParams);
+        hub.mirror(mockMirrorParams);
     }
 
     function _mockBurn() internal virtual {
@@ -441,26 +429,14 @@ contract MultiStateHubTest_PublishingPausedState_Direct is BaseTest {
     }
 
     function _mockFollow() internal virtual {
-        _follow({
-            msgSender: me,
-            followerProfileId: _createProfile(me),
-            idOfProfileToFollow: newProfileId,
-            followTokenId: 0,
-            data: ''
-        });
+        hub.follow(_createProfile(me), _toUint256Array(newProfileId), _toUint256Array(0), _toBytesArray(''));
     }
 
     // TODO: The following two functions were copy-pasted from CollectingTest.t.sol
     // TODO: Consider extracting them somewhere else to be used by both of tests
     function _mockAct() internal virtual {
         vm.prank(profileOwner);
-        _act(
-            mockActParams.actorProfileId,
-            mockActParams.publicationActedProfileId,
-            mockActParams.publicationActedId,
-            mockActParams.actionModuleAddress,
-            mockActParams.actionModuleData
-        );
+        hub.act(mockActParams);
     }
 
     // Negatives
@@ -501,7 +477,7 @@ contract MultiStateHubTest_PublishingPausedState_Direct is BaseTest {
         _mockPost();
 
         vm.prank(governance);
-        _setState(Types.ProtocolState.Unpaused);
+        hub.setState(Types.ProtocolState.Unpaused);
 
         _mockPost();
     }
@@ -511,7 +487,7 @@ contract MultiStateHubTest_PublishingPausedState_Direct is BaseTest {
         _mockComment();
 
         vm.prank(governance);
-        _setState(Types.ProtocolState.Unpaused);
+        hub.setState(Types.ProtocolState.Unpaused);
 
         _mockComment();
     }
@@ -521,7 +497,7 @@ contract MultiStateHubTest_PublishingPausedState_Direct is BaseTest {
         _mockMirror();
 
         vm.prank(governance);
-        _setState(Types.ProtocolState.Unpaused);
+        hub.setState(Types.ProtocolState.Unpaused);
 
         _mockMirror();
     }
@@ -581,21 +557,21 @@ contract MultiStateHubTest_PublishingPausedState_WithSig is MultiStateHubTest_Pu
     function _mockPost() internal override {
         bytes32 digest = _getPostTypedDataHash(mockPostParams, nonce, deadline);
 
-        _postWithSig(mockPostParams, _getSigStruct(profileOwner, profileOwnerKey, digest, deadline));
+        hub.postWithSig(mockPostParams, _getSigStruct(profileOwner, profileOwnerKey, digest, deadline));
     }
 
     function _mockComment() internal override {
         mockCommentParams.pointedPubId = postId;
         bytes32 digest = _getCommentTypedDataHash(mockCommentParams, nonce, deadline);
 
-        _commentWithSig(mockCommentParams, _getSigStruct(profileOwner, profileOwnerKey, digest, deadline));
+        hub.commentWithSig(mockCommentParams, _getSigStruct(profileOwner, profileOwnerKey, digest, deadline));
     }
 
     function _mockMirror() internal override {
         mockMirrorParams.pointedPubId = postId;
         bytes32 digest = _getMirrorTypedDataHash(mockMirrorParams, nonce, deadline);
 
-        _mirrorWithSig(mockMirrorParams, _getSigStruct(profileOwner, profileOwnerKey, digest, deadline));
+        hub.mirrorWithSig(mockMirrorParams, _getSigStruct(profileOwner, profileOwnerKey, digest, deadline));
     }
 
     function _mockFollow() internal override {
@@ -609,11 +585,11 @@ contract MultiStateHubTest_PublishingPausedState_WithSig is MultiStateHubTest_Pu
             deadline
         );
 
-        _followWithSig({
+        hub.followWithSig({
             followerProfileId: followerProfileId,
-            idOfProfileToFollow: newProfileId,
-            followTokenId: 0,
-            data: '',
+            idsOfProfilesToFollow: _toUint256Array(newProfileId),
+            followTokenIds: _toUint256Array(0),
+            datas: _toBytesArray(''),
             signature: _getSigStruct(otherSigner, otherSignerKey, digest, deadline)
         });
     }
@@ -621,7 +597,7 @@ contract MultiStateHubTest_PublishingPausedState_WithSig is MultiStateHubTest_Pu
     function _mockAct() internal override {
         bytes32 digest = _getActTypedDataHash(mockActParams, nonce, deadline);
 
-        _actWithSig(mockActParams, _getSigStruct(profileOwner, profileOwnerKey, digest, deadline));
+        hub.actWithSig(mockActParams, _getSigStruct(profileOwner, profileOwnerKey, digest, deadline));
     }
 
     // Methods that cannot be called with signature
