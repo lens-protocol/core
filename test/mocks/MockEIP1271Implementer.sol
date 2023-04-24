@@ -8,6 +8,10 @@ import {IERC1271} from '@openzeppelin/contracts/interfaces/IERC1271.sol';
  * @dev This is a mock contract that validates an EIP1271 signature against its deployer.
  */
 contract MockEIP1271Implementer is IERC1271 {
+    function testMockEIP1271Implementer() public {
+        // Prevents being counted in Foundry Coverage
+    }
+
     // bytes4(keccak256("isValidSignature(bytes32,bytes)")
     bytes4 internal constant MAGIC_VALUE = 0x1626ba7e;
 
