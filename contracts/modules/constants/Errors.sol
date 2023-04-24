@@ -10,4 +10,5 @@ library Errors {
     error InvalidParams();
     error MintLimitExceeded();
     error CollectExpired();
+    error NotActionModule();
 }
