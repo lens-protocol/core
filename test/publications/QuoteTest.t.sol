@@ -2,17 +2,17 @@
 pragma solidity ^0.8.13;
 
 import {Types} from 'contracts/libraries/constants/Types.sol';
-import {PublicationTest} from 'test/publications/PublicationTest.t.sol';
+import {PublicationTest, ReferencePublicationTest} from 'test/publications/PublicationTest.t.sol';
 import {MetaTxNegatives} from 'test/MetaTxNegatives.t.sol';
 
-contract QuoteTest is PublicationTest {
+contract QuoteTest is ReferencePublicationTest {
     function testQuoteTest() public {
         // Prevents being counted in Foundry Coverage
     }
 
     function setUp() public virtual override {
         super.setUp();
-        mockQuoteParams.profileId = publisherProfileId;
+        mockQuoteParams.profileId = publisher.profileId;
     }
 
     function _publish(uint256 signerPk, uint256 publisherProfileId) internal virtual override returns (uint256) {
@@ -21,8 +21,25 @@ contract QuoteTest is PublicationTest {
         return hub.quote(mockQuoteParams);
     }
 
+    function _setPointedPub(uint256 pointedProfileId, uint256 pointedPubId) internal virtual override {
+        mockQuoteParams.pointedProfileId = pointedProfileId;
+        mockQuoteParams.pointedPubId = pointedPubId;
+    }
+
     function _pubType() internal virtual override returns (Types.PublicationType) {
         return Types.PublicationType.Quote;
+    }
+
+    function _setReferrers(
+        uint256[] memory referrerProfileIds,
+        uint256[] memory referrerPubIds
+    ) internal virtual override {
+        mockQuoteParams.referrerProfileIds = referrerProfileIds;
+        mockQuoteParams.referrerPubIds = referrerPubIds;
+    }
+
+    function _setReferenceModuleData(bytes memory referenceModuleData) internal virtual override {
+        mockQuoteParams.referenceModuleData = referenceModuleData;
     }
 }
 
@@ -71,6 +88,6 @@ contract QuoteMetaTxTest is QuoteTest, MetaTxNegatives {
     }
 
     function _getDefaultMetaTxSignerPk() internal virtual override returns (uint256) {
-        return publisherOwnerPk;
+        return publisher.ownerPk;
     }
 }
