@@ -13,6 +13,10 @@ import {Errors} from 'contracts/libraries/constants/Errors.sol';
  * @notice This is a proxy contract that enforces ".test" handle suffixes and adds char validations at profile creation.
  */
 contract MockProfileCreationProxy {
+    function testMockProfileCreationProxy() public {
+        // Prevents being counted in Foundry Coverage
+    }
+
     ILensHub immutable LENS_HUB;
 
     constructor(ILensHub hub) {

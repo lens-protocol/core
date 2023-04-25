@@ -8,6 +8,10 @@ import {IERC1271} from '@openzeppelin/contracts/interfaces/IERC1271.sol';
  * @dev This is a mock contract that always returns the wrong value upon being checked with EIP-1271.
  */
 contract BadMockEIP1271Implementer is IERC1271 {
+    function testBadMockEIP1271Implementer() public {
+        // Prevents being counted in Foundry Coverage
+    }
+
     function isValidSignature(
         bytes32 /* _hash */,
         bytes memory /* _signature */

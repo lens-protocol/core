@@ -16,7 +16,11 @@ import {ICollectModule} from 'contracts/interfaces/ICollectModule.sol';
  * functionality along with getPublicationData function.
  */
 contract SimpleFeeCollectModule is BaseFeeCollectModule {
-    constructor(address hub, address moduleGlobals) BaseFeeCollectModule(hub, moduleGlobals) {}
+    constructor(
+        address hub,
+        address actionModule,
+        address moduleGlobals
+    ) BaseFeeCollectModule(hub, actionModule, moduleGlobals) {}
 
     /**
      * @inheritdoc ICollectModule
@@ -37,7 +41,7 @@ contract SimpleFeeCollectModule is BaseFeeCollectModule {
         uint256 pubId,
         address /* transactionExecutor */,
         bytes calldata data
-    ) external override returns (bytes memory) {
+    ) external override onlyActionModule returns (bytes memory) {
         BaseFeeCollectModuleInitData memory baseInitData = abi.decode(data, (BaseFeeCollectModuleInitData));
         _validateBaseInitData(baseInitData);
         _storeBasePublicationCollectParameters(profileId, pubId, baseInitData);

@@ -5,7 +5,7 @@ pragma solidity ^0.8.10;
 import {Errors} from 'contracts/modules/constants/Errors.sol';
 import {FeeModuleBase} from 'contracts/modules/FeeModuleBase.sol';
 import {ICollectModule} from 'contracts/interfaces/ICollectModule.sol';
-import {HubRestricted} from 'contracts/base/HubRestricted.sol';
+import {ActionRestricted} from 'contracts/modules/ActionRestricted.sol';
 import {ILensHub} from 'contracts/interfaces/ILensHub.sol';
 
 import {Types} from 'contracts/libraries/constants/Types.sol';
@@ -29,12 +29,20 @@ import {BaseFeeCollectModuleInitData, BaseProfilePublicationData, IBaseFeeCollec
  * This contract is marked "abstract" as it requires you to implement initializePublicationCollectModule and
  * getPublicationData functions when you inherit from it. See SimpleFeeCollectModule as an example implementation.
  */
-abstract contract BaseFeeCollectModule is FeeModuleBase, HubRestricted, IBaseFeeCollectModule {
+abstract contract BaseFeeCollectModule is FeeModuleBase, ActionRestricted, IBaseFeeCollectModule {
     using SafeERC20 for IERC20;
+
+    address immutable HUB;
 
     mapping(uint256 => mapping(uint256 => BaseProfilePublicationData)) internal _dataByPublicationByProfile;
 
-    constructor(address hub, address moduleGlobals) HubRestricted(hub) FeeModuleBase(moduleGlobals) {}
+    constructor(
+        address hub,
+        address actionModule,
+        address moduleGlobals
+    ) ActionRestricted(actionModule) FeeModuleBase(moduleGlobals) {
+        HUB = hub;
+    }
 
     /**
      * @inheritdoc ICollectModule
@@ -46,7 +54,7 @@ abstract contract BaseFeeCollectModule is FeeModuleBase, HubRestricted, IBaseFee
      */
     function processCollect(
         Types.ProcessCollectParams calldata processCollectParams
-    ) external virtual onlyHub returns (bytes memory) {
+    ) external virtual onlyActionModule returns (bytes memory) {
         _validateAndStoreCollect(processCollectParams);
 
         if (processCollectParams.referrerProfileIds.length == 0) {

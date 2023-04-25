@@ -8,7 +8,6 @@ import 'forge-std/console2.sol';
 import 'test/base/BaseTest.t.sol';
 import 'test/mocks/MockReferenceModule.sol';
 import 'test/mocks/MockDeprecatedReferenceModule.sol';
-import 'test/mocks/MockCollectModule.sol';
 import 'test/mocks/MockDeprecatedCollectModule.sol';
 import 'test/mocks/MockFollowModule.sol';
 import 'test/mocks/MockDeprecatedFollowModule.sol';
@@ -49,7 +48,6 @@ contract UpgradeForkTest is BaseTest {
     uint256 polygonForkId;
     uint256 mumbaiForkId;
 
-    address mockCollectModuleAddr;
     address mockFollowModuleAddr;
     address mockReferenceModuleAddr;
 
@@ -172,7 +170,6 @@ contract UpgradeForkTest is BaseTest {
         // Set the proper initial params, these must be redundantly reset as they may have been set
         // to different values in memory.
         mockPostParams.profileId = profileId;
-        // mockPostParams.collectModule = mockCollectModuleAddr; // TODO: Proper test
         mockPostParams.referenceModule = mockReferenceModuleAddr;
 
         mockCommentParams.profileId = profileId;
@@ -189,7 +186,6 @@ contract UpgradeForkTest is BaseTest {
             uint256 postId = retPubId;
             assertEq(postId, 1);
 
-            // mockCommentParams.collectModule = mockCollectModuleAddr; // TODO: Proper test
             mockCommentParams.referenceModule = mockReferenceModuleAddr;
 
             // Validate post.
@@ -350,14 +346,14 @@ contract UpgradeForkTest is BaseTest {
 
         // Precompute needed addresss.
         address followNFTAddr = computeCreateAddress(deployer, 1);
-        address collectNFTAddr = computeCreateAddress(deployer, 2);
+        address legacyCollectNFTAddr = computeCreateAddress(deployer, 2);
 
         // Deploy implementation contracts.
         // TODO: Last 3 addresses are for the follow modules for migration purposes.
         hubImpl = new LensHubInitializable({
             moduleGlobals: address(0),
             followNFTImpl: followNFTAddr,
-            collectNFTImpl: collectNFTAddr,
+            collectNFTImpl: legacyCollectNFTAddr,
             lensHandlesAddress: address(0),
             tokenHandleRegistryAddress: address(0),
             legacyFeeFollowModule: address(0),
@@ -365,10 +361,9 @@ contract UpgradeForkTest is BaseTest {
             newFeeFollowModule: address(0)
         });
         followNFT = new FollowNFT(hubProxyAddr);
-        collectNFT = new CollectNFT(hubProxyAddr);
+        legacyCollectNFT = new LegacyCollectNFT(hubProxyAddr);
 
         // Deploy the mock modules.
-        mockCollectModuleAddr = address(new MockCollectModule());
         mockReferenceModuleAddr = address(new MockReferenceModule());
         mockFollowModuleAddr = address(new MockFollowModule());
 
@@ -380,7 +375,6 @@ contract UpgradeForkTest is BaseTest {
         vm.startPrank(gov);
         hub.whitelistProfileCreator(address(this), true);
         hub.whitelistFollowModule(mockFollowModuleAddr, true);
-        // hub.whitelistCollectModule(mockCollectModuleAddr, true); // TODO: Proper test
         hub.whitelistReferenceModule(mockReferenceModuleAddr, true);
 
         // End gov actions.

@@ -76,7 +76,11 @@ contract MultirecipientFeeCollectModule is BaseFeeCollectModule {
 
     mapping(uint256 => mapping(uint256 => RecipientData[])) internal _recipientsByPublicationByProfile;
 
-    constructor(address hub, address moduleGlobals) BaseFeeCollectModule(hub, moduleGlobals) {}
+    constructor(
+        address hub,
+        address actionModule,
+        address moduleGlobals
+    ) BaseFeeCollectModule(hub, actionModule, moduleGlobals) {}
 
     /**
      * @inheritdoc ICollectModule
@@ -86,7 +90,7 @@ contract MultirecipientFeeCollectModule is BaseFeeCollectModule {
         uint256 pubId,
         address /* transactionExecutor */,
         bytes calldata data
-    ) external override onlyHub returns (bytes memory) {
+    ) external override onlyActionModule returns (bytes memory) {
         MultirecipientFeeCollectModuleInitData memory initData = abi.decode(
             data,
             (MultirecipientFeeCollectModuleInitData)

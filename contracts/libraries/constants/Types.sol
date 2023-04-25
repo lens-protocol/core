@@ -313,6 +313,7 @@ library Types {
         bytes actionModuleData;
     }
 
+    // TODO: Shouldn't this be in the modules Types?
     struct ProcessCollectParams {
         uint256 publicationCollectedProfileId;
         uint256 publicationCollectedId;

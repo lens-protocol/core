@@ -14,3 +14,4 @@ polygon = "${POLYGON_RPC_URL}"
 
 [fuzz]
 runs = 10000
+max_test_rejects = 200000
