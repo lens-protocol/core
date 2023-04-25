@@ -112,9 +112,9 @@ contract MultiStateHubTest_PausedState_Direct is BaseTest {
     function setUp() public virtual override {
         super.setUp();
 
-        followerProfileId = _createProfile(me);
+        followerProfileId = _createProfile(address(this));
 
-        vm.prank(profileOwner);
+        vm.prank(defaultAccount.owner);
         postId = hub.post(mockPostParams);
 
         vm.prank(governance);
@@ -123,53 +123,58 @@ contract MultiStateHubTest_PausedState_Direct is BaseTest {
 
     // TODO: Consider extracting these mock actions functions somewhere because they're used in several places
     function _mockSetFollowModule() internal virtual {
-        _setFollowModule(profileOwner, newProfileId, address(0), '');
+        _setFollowModule(defaultAccount.owner, defaultAccount.profileId, address(0), '');
     }
 
     function _mockChangeDelegatedExecutorsConfig() internal virtual {
-        address delegatedExecutor = otherSigner;
+        address delegatedExecutor = otherSigner.owner;
         bool approved = true;
-        _changeDelegatedExecutorsConfig(profileOwner, newProfileId, delegatedExecutor, approved);
+        _changeDelegatedExecutorsConfig(defaultAccount.owner, defaultAccount.profileId, delegatedExecutor, approved);
     }
 
     function _mockSetProfileImageURI() internal virtual {
-        _setProfileImageURI(profileOwner, newProfileId, MOCK_URI);
+        _setProfileImageURI(defaultAccount.owner, defaultAccount.profileId, MOCK_URI);
     }
 
     function _mockPost() internal virtual {
-        vm.prank(profileOwner);
+        vm.prank(defaultAccount.owner);
         hub.post(mockPostParams);
     }
 
     function _mockComment() internal virtual {
         mockCommentParams.pointedPubId = postId;
-        vm.prank(profileOwner);
+        vm.prank(defaultAccount.owner);
         hub.comment(mockCommentParams);
     }
 
     function _mockMirror() internal virtual {
         mockMirrorParams.pointedPubId = postId;
-        vm.prank(profileOwner);
+        vm.prank(defaultAccount.owner);
         hub.mirror(mockMirrorParams);
     }
 
     function _mockBurn() internal virtual {
-        _burn(profileOwner, newProfileId);
+        _burn(defaultAccount.owner, defaultAccount.profileId);
     }
 
     function _mockFollow() internal virtual {
-        hub.follow(followerProfileId, _toUint256Array(newProfileId), _toUint256Array(0), _toBytesArray(''));
+        hub.follow(followerProfileId, _toUint256Array(defaultAccount.profileId), _toUint256Array(0), _toBytesArray(''));
     }
 
     function _mockAct() internal virtual {
-        vm.prank(profileOwner);
+        vm.prank(defaultAccount.owner);
         hub.act(mockActParams);
     }
 
     // Negatives
     function testCannotTransferProfileWhilePaused() public virtual {
         vm.expectRevert(Errors.Paused.selector);
-        _transferProfile({msgSender: profileOwner, from: profileOwner, to: address(111), tokenId: newProfileId});
+        _transferProfile({
+            msgSender: defaultAccount.owner,
+            from: defaultAccount.owner,
+            to: address(111),
+            tokenId: defaultAccount.profileId
+        });
     }
 
     function testCannotCreateProfileWhilePaused() public virtual {
@@ -279,28 +284,28 @@ contract MultiStateHubTest_PausedState_WithSig is MultiStateHubTest_PausedState_
         SigSetup.setUp();
         vm.prank(governance);
         hub.setState(Types.ProtocolState.Unpaused);
-        followerProfileId = _createProfile(otherSigner);
+        followerProfileId = _createProfile(otherSigner.owner);
         vm.prank(governance);
         hub.setState(Types.ProtocolState.Paused);
     }
 
     function _mockSetFollowModule() internal override {
-        bytes32 digest = _getSetFollowModuleTypedDataHash(newProfileId, address(0), '', nonce, deadline);
+        bytes32 digest = _getSetFollowModuleTypedDataHash(defaultAccount.profileId, address(0), '', nonce, deadline);
 
         _setFollowModuleWithSig({
-            profileId: newProfileId,
+            profileId: defaultAccount.profileId,
             followModule: address(0),
             followModuleInitData: '',
-            signature: _getSigStruct(profileOwner, profileOwnerKey, digest, deadline)
+            signature: _getSigStruct(defaultAccount.owner, defaultAccount.ownerPk, digest, deadline)
         });
     }
 
     // Positives
     function _mockChangeDelegatedExecutorsConfig() internal override {
-        address delegatedExecutor = otherSigner;
+        address delegatedExecutor = otherSigner.owner;
 
         bytes32 digest = _getChangeDelegatedExecutorsConfigTypedDataHash({
-            delegatorProfileId: newProfileId,
+            delegatorProfileId: defaultAccount.profileId,
             delegatedExecutors: _toAddressArray(delegatedExecutor),
             approvals: _toBoolArray(true),
             configNumber: 0,
@@ -309,49 +314,55 @@ contract MultiStateHubTest_PausedState_WithSig is MultiStateHubTest_PausedState_
             deadline: deadline
         });
         hub.changeDelegatedExecutorsConfigWithSig({
-            delegatorProfileId: newProfileId,
+            delegatorProfileId: defaultAccount.profileId,
             delegatedExecutors: _toAddressArray(delegatedExecutor),
             approvals: _toBoolArray(true),
             configNumber: 0,
             switchToGivenConfig: true,
-            signature: _getSigStruct(profileOwner, profileOwnerKey, digest, deadline)
+            signature: _getSigStruct(defaultAccount.owner, defaultAccount.ownerPk, digest, deadline)
         });
     }
 
     function _mockSetProfileImageURI() internal override {
-        bytes32 digest = _getSetProfileImageURITypedDataHash(newProfileId, MOCK_URI, nonce, deadline);
+        bytes32 digest = _getSetProfileImageURITypedDataHash(defaultAccount.profileId, MOCK_URI, nonce, deadline);
 
         _setProfileImageURIWithSig({
-            profileId: newProfileId,
+            profileId: defaultAccount.profileId,
             imageURI: MOCK_URI,
-            signature: _getSigStruct(profileOwner, profileOwnerKey, digest, deadline)
+            signature: _getSigStruct(defaultAccount.owner, defaultAccount.ownerPk, digest, deadline)
         });
     }
 
     function _mockPost() internal override {
         bytes32 digest = _getPostTypedDataHash(mockPostParams, nonce, deadline);
 
-        hub.postWithSig(mockPostParams, _getSigStruct(profileOwner, profileOwnerKey, digest, deadline));
+        hub.postWithSig(mockPostParams, _getSigStruct(defaultAccount.owner, defaultAccount.ownerPk, digest, deadline));
     }
 
     function _mockComment() internal override {
         mockCommentParams.pointedPubId = postId;
         bytes32 digest = _getCommentTypedDataHash(mockCommentParams, nonce, deadline);
 
-        hub.commentWithSig(mockCommentParams, _getSigStruct(profileOwner, profileOwnerKey, digest, deadline));
+        hub.commentWithSig(
+            mockCommentParams,
+            _getSigStruct(defaultAccount.owner, defaultAccount.ownerPk, digest, deadline)
+        );
     }
 
     function _mockMirror() internal override {
         mockMirrorParams.pointedPubId = postId;
         bytes32 digest = _getMirrorTypedDataHash(mockMirrorParams, nonce, deadline);
 
-        hub.mirrorWithSig(mockMirrorParams, _getSigStruct(profileOwner, profileOwnerKey, digest, deadline));
+        hub.mirrorWithSig(
+            mockMirrorParams,
+            _getSigStruct(defaultAccount.owner, defaultAccount.ownerPk, digest, deadline)
+        );
     }
 
     function _mockFollow() internal override {
         bytes32 digest = _getFollowTypedDataHash(
             followerProfileId,
-            _toUint256Array(newProfileId),
+            _toUint256Array(defaultAccount.profileId),
             _toUint256Array(0),
             _toBytesArray(''),
             nonce,
@@ -360,17 +371,17 @@ contract MultiStateHubTest_PausedState_WithSig is MultiStateHubTest_PausedState_
 
         hub.followWithSig({
             followerProfileId: followerProfileId,
-            idsOfProfilesToFollow: _toUint256Array(newProfileId),
+            idsOfProfilesToFollow: _toUint256Array(defaultAccount.profileId),
             followTokenIds: _toUint256Array(0),
             datas: _toBytesArray(''),
-            signature: _getSigStruct(otherSigner, otherSignerKey, digest, deadline)
+            signature: _getSigStruct(otherSigner.ownerPk, digest, deadline)
         });
     }
 
     function _mockAct() internal override {
         bytes32 digest = _getActTypedDataHash(mockActParams, nonce, deadline);
 
-        hub.actWithSig(mockActParams, _getSigStruct(profileOwner, profileOwnerKey, digest, deadline));
+        hub.actWithSig(mockActParams, _getSigStruct(defaultAccount.owner, defaultAccount.ownerPk, digest, deadline));
     }
 
     // Methods that cannot be called with signature
@@ -385,7 +396,7 @@ contract MultiStateHubTest_PublishingPausedState_Direct is BaseTest {
     function setUp() public virtual override {
         super.setUp();
 
-        vm.prank(profileOwner);
+        vm.prank(defaultAccount.owner);
         postId = hub.post(mockPostParams);
 
         vm.prank(governance);
@@ -394,54 +405,64 @@ contract MultiStateHubTest_PublishingPausedState_Direct is BaseTest {
 
     // TODO: Consider extracting these mock actions functions somewhere because they're used in several places
     function _mockSetFollowModule() internal virtual {
-        _setFollowModule(profileOwner, newProfileId, address(0), '');
+        _setFollowModule(defaultAccount.owner, defaultAccount.profileId, address(0), '');
     }
 
     function _mockChangeDelegatedExecutorsConfig() internal virtual {
-        address delegatedExecutor = otherSigner;
+        address delegatedExecutor = otherSigner.owner;
         bool approved = true;
-        _changeDelegatedExecutorsConfig(profileOwner, newProfileId, delegatedExecutor, approved);
+        _changeDelegatedExecutorsConfig(defaultAccount.owner, defaultAccount.profileId, delegatedExecutor, approved);
     }
 
     function _mockSetProfileImageURI() internal virtual {
-        _setProfileImageURI(profileOwner, newProfileId, MOCK_URI);
+        _setProfileImageURI(defaultAccount.owner, defaultAccount.profileId, MOCK_URI);
     }
 
     function _mockPost() internal virtual {
-        vm.prank(profileOwner);
+        vm.prank(defaultAccount.owner);
         hub.post(mockPostParams);
     }
 
     function _mockComment() internal virtual {
         mockCommentParams.pointedPubId = postId;
-        vm.prank(profileOwner);
+        vm.prank(defaultAccount.owner);
         hub.comment(mockCommentParams);
     }
 
     function _mockMirror() internal virtual {
         mockMirrorParams.pointedPubId = postId;
-        vm.prank(profileOwner);
+        vm.prank(defaultAccount.owner);
         hub.mirror(mockMirrorParams);
     }
 
     function _mockBurn() internal virtual {
-        _burn(profileOwner, newProfileId);
+        _burn(defaultAccount.owner, defaultAccount.profileId);
     }
 
     function _mockFollow() internal virtual {
-        hub.follow(_createProfile(me), _toUint256Array(newProfileId), _toUint256Array(0), _toBytesArray(''));
+        hub.follow(
+            _createProfile(address(this)),
+            _toUint256Array(defaultAccount.profileId),
+            _toUint256Array(0),
+            _toBytesArray('')
+        );
     }
 
     // TODO: The following two functions were copy-pasted from CollectingTest.t.sol
     // TODO: Consider extracting them somewhere else to be used by both of tests
     function _mockAct() internal virtual {
-        vm.prank(profileOwner);
+        vm.prank(defaultAccount.owner);
         hub.act(mockActParams);
     }
 
     // Negatives
     function testCanTransferProfileWhilePublishingPaused() public virtual {
-        _transferProfile({msgSender: profileOwner, from: profileOwner, to: address(111), tokenId: newProfileId});
+        _transferProfile({
+            msgSender: defaultAccount.owner,
+            from: defaultAccount.owner,
+            to: address(111),
+            tokenId: defaultAccount.profileId
+        });
     }
 
     function testCanCreateProfileWhilePublishingPaused() public virtual {
@@ -511,22 +532,22 @@ contract MultiStateHubTest_PublishingPausedState_WithSig is MultiStateHubTest_Pu
     }
 
     function _mockSetFollowModule() internal override {
-        bytes32 digest = _getSetFollowModuleTypedDataHash(newProfileId, address(0), '', nonce, deadline);
+        bytes32 digest = _getSetFollowModuleTypedDataHash(defaultAccount.profileId, address(0), '', nonce, deadline);
 
         _setFollowModuleWithSig({
-            profileId: newProfileId,
+            profileId: defaultAccount.profileId,
             followModule: address(0),
             followModuleInitData: '',
-            signature: _getSigStruct(profileOwner, profileOwnerKey, digest, deadline)
+            signature: _getSigStruct(defaultAccount.owner, defaultAccount.ownerPk, digest, deadline)
         });
     }
 
     // Positives
     function _mockChangeDelegatedExecutorsConfig() internal override {
-        address delegatedExecutor = otherSigner;
+        address delegatedExecutor = otherSigner.owner;
 
         bytes32 digest = _getChangeDelegatedExecutorsConfigTypedDataHash({
-            delegatorProfileId: newProfileId,
+            delegatorProfileId: defaultAccount.profileId,
             delegatedExecutors: _toAddressArray(delegatedExecutor),
             approvals: _toBoolArray(true),
             configNumber: 0,
@@ -535,50 +556,56 @@ contract MultiStateHubTest_PublishingPausedState_WithSig is MultiStateHubTest_Pu
             deadline: deadline
         });
         hub.changeDelegatedExecutorsConfigWithSig({
-            delegatorProfileId: newProfileId,
+            delegatorProfileId: defaultAccount.profileId,
             delegatedExecutors: _toAddressArray(delegatedExecutor),
             approvals: _toBoolArray(true),
             configNumber: 0,
             switchToGivenConfig: true,
-            signature: _getSigStruct(profileOwner, profileOwnerKey, digest, deadline)
+            signature: _getSigStruct(defaultAccount.owner, defaultAccount.ownerPk, digest, deadline)
         });
     }
 
     function _mockSetProfileImageURI() internal override {
-        bytes32 digest = _getSetProfileImageURITypedDataHash(newProfileId, MOCK_URI, nonce, deadline);
+        bytes32 digest = _getSetProfileImageURITypedDataHash(defaultAccount.profileId, MOCK_URI, nonce, deadline);
 
         _setProfileImageURIWithSig({
-            profileId: newProfileId,
+            profileId: defaultAccount.profileId,
             imageURI: MOCK_URI,
-            signature: _getSigStruct(profileOwner, profileOwnerKey, digest, deadline)
+            signature: _getSigStruct(defaultAccount.owner, defaultAccount.ownerPk, digest, deadline)
         });
     }
 
     function _mockPost() internal override {
         bytes32 digest = _getPostTypedDataHash(mockPostParams, nonce, deadline);
 
-        hub.postWithSig(mockPostParams, _getSigStruct(profileOwner, profileOwnerKey, digest, deadline));
+        hub.postWithSig(mockPostParams, _getSigStruct(defaultAccount.owner, defaultAccount.ownerPk, digest, deadline));
     }
 
     function _mockComment() internal override {
         mockCommentParams.pointedPubId = postId;
         bytes32 digest = _getCommentTypedDataHash(mockCommentParams, nonce, deadline);
 
-        hub.commentWithSig(mockCommentParams, _getSigStruct(profileOwner, profileOwnerKey, digest, deadline));
+        hub.commentWithSig(
+            mockCommentParams,
+            _getSigStruct(defaultAccount.owner, defaultAccount.ownerPk, digest, deadline)
+        );
     }
 
     function _mockMirror() internal override {
         mockMirrorParams.pointedPubId = postId;
         bytes32 digest = _getMirrorTypedDataHash(mockMirrorParams, nonce, deadline);
 
-        hub.mirrorWithSig(mockMirrorParams, _getSigStruct(profileOwner, profileOwnerKey, digest, deadline));
+        hub.mirrorWithSig(
+            mockMirrorParams,
+            _getSigStruct(defaultAccount.owner, defaultAccount.ownerPk, digest, deadline)
+        );
     }
 
     function _mockFollow() internal override {
-        uint256 followerProfileId = _createProfile(otherSigner);
+        uint256 followerProfileId = _createProfile(otherSigner.owner);
         bytes32 digest = _getFollowTypedDataHash(
             followerProfileId,
-            _toUint256Array(newProfileId),
+            _toUint256Array(defaultAccount.profileId),
             _toUint256Array(0),
             _toBytesArray(''),
             nonce,
@@ -587,17 +614,17 @@ contract MultiStateHubTest_PublishingPausedState_WithSig is MultiStateHubTest_Pu
 
         hub.followWithSig({
             followerProfileId: followerProfileId,
-            idsOfProfilesToFollow: _toUint256Array(newProfileId),
+            idsOfProfilesToFollow: _toUint256Array(defaultAccount.profileId),
             followTokenIds: _toUint256Array(0),
             datas: _toBytesArray(''),
-            signature: _getSigStruct(otherSigner, otherSignerKey, digest, deadline)
+            signature: _getSigStruct(otherSigner.ownerPk, digest, deadline)
         });
     }
 
     function _mockAct() internal override {
         bytes32 digest = _getActTypedDataHash(mockActParams, nonce, deadline);
 
-        hub.actWithSig(mockActParams, _getSigStruct(profileOwner, profileOwnerKey, digest, deadline));
+        hub.actWithSig(mockActParams, _getSigStruct(defaultAccount.owner, defaultAccount.ownerPk, digest, deadline));
     }
 
     // Methods that cannot be called with signature

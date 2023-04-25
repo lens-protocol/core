@@ -36,7 +36,7 @@ contract PostMetaTxTest is PostTest, MetaTxNegatives {
     function setUp() public virtual override(PostTest, MetaTxNegatives) {
         PostTest.setUp();
         MetaTxNegatives.setUp();
-        cachedNonceByAddress[profileOwner] = _getSigNonce(profileOwner);
+        cachedNonceByAddress[defaultAccount.owner] = _getSigNonce(defaultAccount.owner);
     }
 
     function _publish(uint256 signerPk, uint256 publisherProfileId) internal virtual override returns (uint256) {

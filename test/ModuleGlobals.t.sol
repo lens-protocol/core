@@ -6,7 +6,7 @@ import 'test/base/BaseTest.t.sol';
 contract ModuleGlobalsTest is BaseTest {
     function setUp() public override {
         super.setUp();
-        assertFalse(me == hub.getGovernance(), 'address(this) should not be governance');
+        assertFalse(address(this) == hub.getGovernance(), 'address(this) should not be governance');
     }
 
     // Negatives - non Gov caller

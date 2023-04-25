@@ -19,7 +19,7 @@ contract FollowerOnlyReferenceModuleTest is BaseTest {
 
     function setUp() public virtual override {
         super.setUp();
-        profileId = _createProfile(profileOwner);
+        profileId = _createProfile(defaultAccount.owner);
 
         followerProfileId = _createProfile(followerProfileOwner);
         notFollowerProfileId = _createProfile(notFollowerProfileOwner);
@@ -58,7 +58,7 @@ contract FollowerOnlyReferenceModuleTest is BaseTest {
         followerOnlyReferenceModule.processComment(
             Types.ProcessCommentParams({
                 profileId: notFollowerProfileId,
-                transactionExecutor: profileOwner,
+                transactionExecutor: defaultAccount.owner,
                 pointedProfileId: profileId,
                 pointedPubId: pubId,
                 referrerProfileIds: _emptyUint256Array(),
@@ -76,7 +76,7 @@ contract FollowerOnlyReferenceModuleTest is BaseTest {
         followerOnlyReferenceModule.processMirror(
             Types.ProcessMirrorParams({
                 profileId: notFollowerProfileId,
-                transactionExecutor: profileOwner,
+                transactionExecutor: defaultAccount.owner,
                 pointedProfileId: profileId,
                 pointedPubId: pubId,
                 referrerProfileIds: _emptyUint256Array(),
@@ -94,7 +94,7 @@ contract FollowerOnlyReferenceModuleTest is BaseTest {
         followerOnlyReferenceModule.processQuote(
             Types.ProcessQuoteParams({
                 profileId: notFollowerProfileId,
-                transactionExecutor: profileOwner,
+                transactionExecutor: defaultAccount.owner,
                 pointedProfileId: profileId,
                 pointedPubId: pubId,
                 referrerProfileIds: _emptyUint256Array(),
@@ -110,7 +110,7 @@ contract FollowerOnlyReferenceModuleTest is BaseTest {
         followerOnlyReferenceModule.processComment(
             Types.ProcessCommentParams({
                 profileId: followerProfileId,
-                transactionExecutor: profileOwner,
+                transactionExecutor: defaultAccount.owner,
                 pointedProfileId: profileId,
                 pointedPubId: pubId,
                 referrerProfileIds: _emptyUint256Array(),
@@ -126,7 +126,7 @@ contract FollowerOnlyReferenceModuleTest is BaseTest {
         followerOnlyReferenceModule.processMirror(
             Types.ProcessMirrorParams({
                 profileId: followerProfileId,
-                transactionExecutor: profileOwner,
+                transactionExecutor: defaultAccount.owner,
                 pointedProfileId: profileId,
                 pointedPubId: pubId,
                 referrerProfileIds: _emptyUint256Array(),
@@ -142,7 +142,7 @@ contract FollowerOnlyReferenceModuleTest is BaseTest {
         followerOnlyReferenceModule.processQuote(
             Types.ProcessQuoteParams({
                 profileId: followerProfileId,
-                transactionExecutor: profileOwner,
+                transactionExecutor: defaultAccount.owner,
                 pointedProfileId: profileId,
                 pointedPubId: pubId,
                 referrerProfileIds: _emptyUint256Array(),

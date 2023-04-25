@@ -25,7 +25,7 @@ contract FollowNFTTest is BaseTest, ERC721Test {
 
         targetProfileOwner = address(0xC0FFEE);
         targetProfileId = _createProfile(targetProfileOwner);
-        followerProfileOwner = me;
+        followerProfileOwner = address(this);
         followerProfileId = _createProfile(followerProfileOwner);
 
         followHolder = address(0xF0110111401DE2);
@@ -127,7 +127,7 @@ contract FollowNFTTest is BaseTest, ERC721Test {
 
     // Initial condition
     function testFirstFollowTokenHasIdOne() public {
-        uint256 profileIdToFollow = _createProfile(me);
+        uint256 profileIdToFollow = _createProfile(address(this));
 
         vm.prank(followerProfileOwner);
         uint256 assignedTokenId = hub.follow(

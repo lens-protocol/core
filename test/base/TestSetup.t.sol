@@ -31,35 +31,42 @@ contract TestSetup is Test, ForkManagement, ArrayHelpers {
         // Prevents being counted in Foundry Coverage
     }
 
+    ////////////////////////////////// Types
     struct TestAccount {
         uint256 ownerPk;
         address owner;
         uint256 profileId;
     }
 
-    uint256 newProfileId; // TODO: We should get rid of this everywhere, and create dedicated profiles instead (see Follow tests)
-    uint256 mockPostId;
+    struct TestPublication {
+        uint256 profileId;
+        uint256 pubId;
+    }
 
+    ////////////////////////////////// Accounts
+    TestAccount defaultAccount;
+
+    // TODO: We can avoid this `otherSigner` and do it better by using fuzzing instead, but it requires to refactor a
+    // lot of tests, like MultiStateHubTest ones. We should do it later.
+    TestAccount otherSigner;
+
+    ////////////////////////////////// Publications
+    TestPublication defaultPub;
+
+    ////////////////////////////////// Relevant actors' addresses
     address deployer;
     address governance;
     address treasury;
     address modulesGovernance;
+    address proxyAdmin;
 
-    string constant MOCK_URI = 'ipfs://QmUXfQWe43RKx31VzA2BnbwhSMW8WuaJvszFWChD59m76U';
-
-    uint256 constant otherSignerKey = 0x737562;
-    uint256 constant profileOwnerKey = 0x04546b;
-    uint256 constant alienSignerKey = 0x123456;
-    address immutable profileOwner = vm.addr(profileOwnerKey);
-    address immutable otherSigner = vm.addr(otherSignerKey);
-    address immutable alienSigner = vm.addr(alienSignerKey);
-    address immutable me = address(this);
-
-    bytes32 domainSeparator;
-
+    ////////////////////////////////// Relevant values or constants
     uint16 TREASURY_FEE_BPS;
     uint16 constant TREASURY_FEE_MAX_BPS = 10000; // TODO: This should be a constant in 'contracts/libraries/constants/'
+    string constant MOCK_URI = 'ipfs://QmUXfQWe43RKx31VzA2BnbwhSMW8WuaJvszFWChD59m76U';
+    bytes32 domainSeparator;
 
+    ////////////////////////////////// Deployed addresses
     address hubProxyAddr;
     CollectNFT collectNFT;
     FollowNFT followNFT;
@@ -71,7 +78,6 @@ contract TestSetup is Test, ForkManagement, ArrayHelpers {
     ModuleGlobals moduleGlobals;
 
     Types.CreateProfileParams mockCreateProfileParams;
-
     Types.PostParams mockPostParams;
     Types.CommentParams mockCommentParams;
     Types.QuoteParams mockQuoteParams;
@@ -88,10 +94,12 @@ contract TestSetup is Test, ForkManagement, ArrayHelpers {
         ///////////////////////////////////////// Start governance actions.
         vm.startPrank(governance);
 
-        if (hub.getState() != Types.ProtocolState.Unpaused) hub.setState(Types.ProtocolState.Unpaused);
+        if (hub.getState() != Types.ProtocolState.Unpaused) {
+            hub.setState(Types.ProtocolState.Unpaused);
+        }
 
         // Whitelist the test contract as a profile creator
-        hub.whitelistProfileCreator(me, true);
+        hub.whitelistProfileCreator(address(this), true);
 
         vm.stopPrank();
         ///////////////////////////////////////// End governance actions.
@@ -120,20 +128,30 @@ contract TestSetup is Test, ForkManagement, ArrayHelpers {
         hubAsProxy = TransparentUpgradeableProxy(payable(address(hub)));
         moduleGlobals = ModuleGlobals(json.readAddress(string(abi.encodePacked('.', targetEnv, '.ModuleGlobals'))));
 
-        deployer = address(1);
+        deployer = _loadAddressAs('DEPLOYER');
 
         governance = hub.getGovernance();
+        vm.label(governance, 'GOVERNANCE');
+
         modulesGovernance = moduleGlobals.getGovernance();
+        vm.label(governance, 'MODULES_GOVERNANCE');
+
         treasury = moduleGlobals.getTreasury();
+        vm.label(governance, 'TREASURY');
+
+        proxyAdmin = address(uint160(uint256(vm.load(hubProxyAddr, ADMIN_SLOT))));
+        vm.label(proxyAdmin, 'HUB_PROXY_ADMIN');
 
         TREASURY_FEE_BPS = moduleGlobals.getTreasuryFee();
     }
 
     function deployBaseContracts() internal {
-        deployer = address(1);
-        governance = address(2);
-        treasury = address(3);
-        modulesGovernance = address(4);
+        deployer = _loadAddressAs('DEPLOYER'); // TODO: Shouldn't it be address(this) here??
+        governance = _loadAddressAs('GOVERNANCE');
+        treasury = _loadAddressAs('TREASURY');
+        modulesGovernance = _loadAddressAs('MODULES_GOVERNANCE');
+        proxyAdmin = address(uint160(uint256(vm.load(hubProxyAddr, ADMIN_SLOT))));
+        vm.label(proxyAdmin, 'HUB_PROXY_ADMIN');
 
         TREASURY_FEE_BPS = 50;
 
@@ -166,14 +184,18 @@ contract TestSetup is Test, ForkManagement, ArrayHelpers {
 
         // Cast proxy to LensHub interface.
         hub = LensHub(address(hubAsProxy));
+        vm.label(address(hub), 'LENS_HUB');
 
         // Deploy the MockActionModule.
         mockActionModule = new MockActionModule();
+        vm.label(address(mockActionModule), 'MOCK_ACTION_MODULE');
 
         // Deploy the MockReferenceModule.
         mockReferenceModule = new MockReferenceModule();
+        vm.label(address(mockReferenceModule), 'MOCK_REFERENCE_MODULE');
 
         moduleGlobals = new ModuleGlobals(modulesGovernance, treasury, TREASURY_FEE_BPS);
+        vm.label(address(moduleGlobals), 'MODULE_GLOBALS');
 
         vm.stopPrank();
         ///////////////////////////////////////// End deployments.
@@ -192,9 +214,6 @@ contract TestSetup is Test, ForkManagement, ArrayHelpers {
     }
 
     function setUp() public virtual {
-        vm.label(address(hub), 'LensHub');
-        vm.label(address(governance), 'Governance');
-
         // Compute the domain separator.
         domainSeparator = keccak256(
             abi.encode(
@@ -208,18 +227,19 @@ contract TestSetup is Test, ForkManagement, ArrayHelpers {
 
         // precompute basic profile creation data.
         mockCreateProfileParams = Types.CreateProfileParams({
-            to: profileOwner,
+            to: defaultAccount.owner,
             imageURI: MOCK_URI,
             followModule: address(0),
             followModuleInitData: '',
             followNFTURI: MOCK_URI
         });
 
-        newProfileId = hub.createProfile(mockCreateProfileParams);
+        defaultAccount = _loadAccountAs('DEFAULT_ACCOUNT');
+        otherSigner = _loadAccountAs('OTHER_SIGNER_ACCOUNT');
 
         // Precompute basic post data.
         mockPostParams = Types.PostParams({
-            profileId: newProfileId,
+            profileId: defaultAccount.profileId,
             contentURI: MOCK_URI,
             actionModules: _toAddressArray(address(mockActionModule)),
             actionModulesInitDatas: _toBytesArray(abi.encode(true)),
@@ -227,15 +247,14 @@ contract TestSetup is Test, ForkManagement, ArrayHelpers {
             referenceModuleInitData: ''
         });
 
-        vm.prank(profileOwner);
-        mockPostId = hub.post(mockPostParams);
+        defaultPub = _loadDefaultPublication();
 
         // Precompute basic comment data.
         mockCommentParams = Types.CommentParams({
-            profileId: newProfileId,
+            profileId: defaultAccount.profileId,
             contentURI: MOCK_URI,
-            pointedProfileId: newProfileId,
-            pointedPubId: mockPostId,
+            pointedProfileId: defaultPub.profileId,
+            pointedPubId: defaultPub.pubId,
             referrerProfileIds: _emptyUint256Array(),
             referrerPubIds: _emptyUint256Array(),
             referenceModuleData: '',
@@ -247,10 +266,10 @@ contract TestSetup is Test, ForkManagement, ArrayHelpers {
 
         // Precompute basic quote data.
         mockQuoteParams = Types.QuoteParams({
-            profileId: newProfileId,
+            profileId: defaultAccount.profileId,
             contentURI: MOCK_URI,
-            pointedProfileId: newProfileId,
-            pointedPubId: mockPostId,
+            pointedProfileId: defaultPub.profileId,
+            pointedPubId: defaultPub.pubId,
             referrerProfileIds: _emptyUint256Array(),
             referrerPubIds: _emptyUint256Array(),
             referenceModuleData: '',
@@ -262,18 +281,18 @@ contract TestSetup is Test, ForkManagement, ArrayHelpers {
 
         // Precompute basic mirror data.
         mockMirrorParams = Types.MirrorParams({
-            profileId: newProfileId,
-            pointedProfileId: newProfileId,
-            pointedPubId: mockPostId,
+            profileId: defaultAccount.profileId,
+            pointedProfileId: defaultPub.profileId,
+            pointedPubId: defaultPub.pubId,
             referrerProfileIds: _emptyUint256Array(),
             referrerPubIds: _emptyUint256Array(),
             referenceModuleData: ''
         });
 
         mockActParams = Types.PublicationActionParams({
-            publicationActedProfileId: newProfileId,
-            publicationActedId: FIRST_PUB_ID,
-            actorProfileId: newProfileId,
+            publicationActedProfileId: defaultPub.profileId,
+            publicationActedId: defaultPub.pubId,
+            actorProfileId: defaultAccount.profileId,
             referrerProfileIds: _emptyUint256Array(),
             referrerPubIds: _emptyUint256Array(),
             actionModuleAddress: address(mockActionModule),
@@ -281,27 +300,10 @@ contract TestSetup is Test, ForkManagement, ArrayHelpers {
         });
     }
 
-    // _getDefaultMirrorParams() returns (Types.MirrorParams memory) {
-    //     return Types.MirrorParams({
-    //         profileId: newProfileId,
-    //         pointedProfileId: newProfileId,
-    //         pointedPubId: mockPostId,
-    //         referrerProfileIds: _emptyUint256Array(),
-    //         referrerPubIds: _emptyUint256Array(),
-    //         referenceModuleData: ''
-    //     });
-    // }
-
-    function _createProfile(address newProfileOwner) internal returns (uint256) {
-        Types.CreateProfileParams memory CreateProfileParams = Types.CreateProfileParams({
-            to: newProfileOwner,
-            imageURI: mockCreateProfileParams.imageURI,
-            followModule: mockCreateProfileParams.followModule,
-            followModuleInitData: mockCreateProfileParams.followModuleInitData,
-            followNFTURI: mockCreateProfileParams.followNFTURI
-        });
-
-        return hub.createProfile(CreateProfileParams);
+    function _createProfile(address profileOwner) internal returns (uint256) {
+        Types.CreateProfileParams memory createProfileParams = _getDefaultCreateProfileParams();
+        createProfileParams.to = profileOwner;
+        return hub.createProfile(createProfileParams);
     }
 
     function _loadAccountAs(string memory accountLabel) internal returns (TestAccount memory) {
@@ -347,7 +349,54 @@ contract TestSetup is Test, ForkManagement, ArrayHelpers {
         return TestAccount({ownerPk: accountOwnerPk, owner: accountOwner, profileId: accountProfileId});
     }
 
+    function _loadDefaultPublication() internal returns (TestPublication memory) {
+        if (fork) {
+            // If testing in a fork, try loading the profile ID from .env file.
+            uint256 profileId = vm.envOr({name: 'FORK_TEST_PUB__DEFAULT__PROFILE_ID', defaultValue: uint256(0)});
+            if (profileId != 0) {
+                // If profile ID was in the .env file, pub ID must be there too, otherwise fail.
+                uint256 pubId = vm.envUint('FORK_TEST_PUB__DEFAULT__PUB_ID');
+                Types.PublicationType loadedPubType = hub.getPublicationType(profileId, pubId);
+                if (loadedPubType == Types.PublicationType.Nonexistent) {
+                    revert('Default publication loaded from .env file does not exist in the fork you are testing on.');
+                } else if (loadedPubType == Types.PublicationType.Mirror) {
+                    // As you cannot reference a mirror or act on it.
+                    revert('Default publication loaded from .env file cannot be a mirror.');
+                }
+                return TestPublication(profileId, pubId);
+            }
+        }
+        vm.prank(defaultAccount.owner);
+        return TestPublication(defaultAccount.profileId, hub.post(mockPostParams));
+    }
+
+    function _loadAddressAs(string memory addressLabel) internal returns (address) {
+        address loadedAddress;
+        if (fork) {
+            loadedAddress = vm.envOr({
+                name: string.concat('FORK__', addressLabel, '__ADDRESS'),
+                defaultValue: address(0)
+            });
+            if (loadedAddress != address(0)) {
+                vm.label(loadedAddress, addressLabel);
+                return loadedAddress;
+            }
+        }
+        return makeAddr(addressLabel);
+    }
+
     function _getNextProfileId() internal view returns (uint256) {
         return uint256(vm.load(hubProxyAddr, bytes32(uint256(StorageLib.PROFILE_COUNTER_SLOT)))) + 1;
+    }
+
+    function _getDefaultCreateProfileParams() internal view returns (Types.CreateProfileParams memory) {
+        return
+            Types.CreateProfileParams({
+                to: defaultAccount.owner,
+                imageURI: MOCK_URI,
+                followModule: address(0),
+                followModuleInitData: '',
+                followNFTURI: MOCK_URI
+            });
     }
 }

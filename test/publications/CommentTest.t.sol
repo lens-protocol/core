@@ -53,7 +53,7 @@ contract CommentMetaTxTest is CommentTest, MetaTxNegatives {
     function setUp() public virtual override(CommentTest, MetaTxNegatives) {
         CommentTest.setUp();
         MetaTxNegatives.setUp();
-        cachedNonceByAddress[profileOwner] = _getSigNonce(profileOwner);
+        cachedNonceByAddress[defaultAccount.owner] = _getSigNonce(defaultAccount.owner);
     }
 
     function _publish(uint256 signerPk, uint256 publisherProfileId) internal virtual override returns (uint256) {
