@@ -281,7 +281,7 @@ contract CollectPublicationActionTest is BaseTest {
             referrerProfileIds: _emptyUint256Array(),
             referrerPubIds: _emptyUint256Array(),
             referrerPubTypes: _emptyPubTypesArray(),
-            actionModuleData: 'test'
+            actionModuleData: abi.encode(true)
         });
 
         uint256 contractNonce = vm.getNonce(address(collectPublicationAction));
@@ -311,7 +311,7 @@ contract CollectPublicationActionTest is BaseTest {
             collectModule: mockCollectModule,
             collectNFT: collectNFT,
             tokenId: 1,
-            collectActionResult: 'test',
+            collectActionResult: abi.encode(true),
             timestamp: block.timestamp
         });
 
@@ -324,7 +324,7 @@ contract CollectPublicationActionTest is BaseTest {
         bytes memory returnData = collectPublicationAction.processPublicationAction(processActionParams);
         (uint256 tokenId, bytes memory collectActionResult) = abi.decode(returnData, (uint256, bytes));
         assertEq(tokenId, 1, 'Invalid tokenId');
-        assertEq(collectActionResult, 'test', 'Invalid collectActionResult data');
+        assertEq(collectActionResult, abi.encode(true), 'Invalid collectActionResult data');
 
         assertEq(CollectNFT(collectNFT).name(), expectedCollectNftName, 'Invalid collect NFT name');
         assertEq(CollectNFT(collectNFT).symbol(), expectedCollectNftSymbol, 'Invalid collect NFT symbol');
@@ -366,7 +366,7 @@ contract CollectPublicationActionTest is BaseTest {
             referrerProfileIds: _emptyUint256Array(),
             referrerPubIds: _emptyUint256Array(),
             referrerPubTypes: _emptyPubTypesArray(),
-            actionModuleData: 'test2'
+            actionModuleData: abi.encode(true)
         });
 
         vm.expectEmit(true, true, true, true, address(collectNFT));
@@ -378,7 +378,7 @@ contract CollectPublicationActionTest is BaseTest {
             collectModule: mockCollectModule,
             collectNFT: collectNFT,
             tokenId: 2,
-            collectActionResult: 'test2',
+            collectActionResult: abi.encode(true),
             timestamp: block.timestamp
         });
 
@@ -386,7 +386,7 @@ contract CollectPublicationActionTest is BaseTest {
         bytes memory returnData = collectPublicationAction.processPublicationAction(processActionParams);
         (uint256 tokenId, bytes memory collectActionResult) = abi.decode(returnData, (uint256, bytes));
         assertEq(tokenId, 2, 'Invalid tokenId');
-        assertEq(collectActionResult, 'test2', 'Invalid collectActionResult data');
+        assertEq(collectActionResult, abi.encode(true), 'Invalid collectActionResult data');
 
         assertEq(CollectNFT(collectNFT).ownerOf(2), actorProfileOwner, 'Invalid collect NFT owner');
     }

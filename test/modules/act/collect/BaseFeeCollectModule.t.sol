@@ -477,7 +477,7 @@ contract BaseFeeCollectModule_ProcessCollect is BaseFeeCollectModuleBase {
         address recipient,
         address collectorProfileOwner
     ) public virtual {
-        uint256 profileId = _createProfile(me);
+        uint256 profileId = defaultAccount.profileId;
         {
             vm.assume(pubId != 0);
             vm.assume(transactionExecutor != address(0));
@@ -517,7 +517,8 @@ contract BaseFeeCollectModule_ProcessCollect is BaseFeeCollectModuleBase {
         }
 
         if (followerOnly) {
-            _follow(collectorProfileOwner, collectorProfileId, profileId, 0, '');
+            vm.prank(collectorProfileOwner);
+            hub.follow(collectorProfileId, _toUint256Array(profileId), _toUint256Array(0), _toBytesArray(''));
         }
 
         vm.prank(collectPublicationAction);

@@ -4,7 +4,7 @@ pragma solidity ^0.8.10;
 import {MultirecipientCollectModuleBase} from 'test/modules/act/collect/MultirecipientCollectModule.base.sol';
 import {IBaseFeeCollectModule} from 'contracts/modules/interfaces/IBaseFeeCollectModule.sol';
 import {RecipientSplitCannotBeZero, TooManyRecipients, InvalidRecipientSplits, MultirecipientFeeCollectProfilePublicationData, MultirecipientFeeCollectModuleInitData, RecipientData, MultirecipientFeeCollectModule} from 'contracts/modules/act/collect/MultirecipientFeeCollectModule.sol';
-import {BaseFeeCollectModule_Initialization, BaseFeeCollectModule_ProcessCollect, BaseFeeCollectModule_FeeDistribution} from 'test/modules/act/collect/BaseFeeCollectModule.test.sol';
+import {BaseFeeCollectModule_Initialization, BaseFeeCollectModule_ProcessCollect, BaseFeeCollectModule_FeeDistribution} from 'test/modules/act/collect/BaseFeeCollectModule.t.sol';
 import {BaseFeeCollectModuleBase} from 'test/modules/act/collect/BaseFeeCollectModule.base.sol';
 import {Errors as ModuleErrors} from 'contracts/modules/constants/Errors.sol';
 import {Types} from 'contracts/libraries/constants/Types.sol';
@@ -71,15 +71,17 @@ contract MultirecipientCollectModule_Initialization is
         uint256 profileId,
         uint256 pubId,
         address transactionExecutor,
+        address recipient,
         uint16 split
     ) public {
         vm.assume(profileId != 0);
         vm.assume(pubId != 0);
         vm.assume(transactionExecutor != address(0));
+        vm.assume(recipient != address(0));
         split = uint16(bound(split, 0, BPS_MAX - 1));
 
         delete multirecipientExampleInitData.recipients;
-        multirecipientExampleInitData.recipients.push(RecipientData({recipient: me, split: split}));
+        multirecipientExampleInitData.recipients.push(RecipientData({recipient: recipient, split: split}));
 
         vm.expectRevert(InvalidRecipientSplits.selector);
         vm.prank(collectPublicationAction);
@@ -95,6 +97,7 @@ contract MultirecipientCollectModule_Initialization is
         uint256 profileId,
         uint256 pubId,
         address transactionExecutor,
+        address recipient,
         uint256 recipientsNumber,
         uint16 split1,
         uint16 split2,
@@ -105,6 +108,7 @@ contract MultirecipientCollectModule_Initialization is
         vm.assume(profileId != 0);
         vm.assume(pubId != 0);
         vm.assume(transactionExecutor != address(0));
+        vm.assume(recipient != address(0));
         recipientsNumber = bound(recipientsNumber, 2, MAX_RECIPIENTS);
         split1 = uint16(bound(split1, 1, BPS_MAX - recipientsNumber));
         split2 = uint16(bound(split2, 1, BPS_MAX - recipientsNumber));
@@ -127,7 +131,7 @@ contract MultirecipientCollectModule_Initialization is
         uint16 splitUsed;
         for (uint256 i = 0; i < MAX_RECIPIENTS; i++) {
             splitUsed += splits[i];
-            multirecipientExampleInitData.recipients.push(RecipientData({recipient: me, split: splits[i]}));
+            multirecipientExampleInitData.recipients.push(RecipientData({recipient: recipient, split: splits[i]}));
         }
         assert(splitUsed < BPS_MAX);
 
@@ -146,6 +150,7 @@ contract MultirecipientCollectModule_Initialization is
         uint256 pubId,
         address transactionExecutor,
         uint256 recipientsNumber,
+        address recipient,
         bool splitIsZero1,
         bool splitIsZero2,
         bool splitIsZero3,
@@ -155,6 +160,7 @@ contract MultirecipientCollectModule_Initialization is
         vm.assume(profileId != 0);
         vm.assume(pubId != 0);
         vm.assume(transactionExecutor != address(0));
+        vm.assume(recipient != address(0));
         recipientsNumber = bound(recipientsNumber, 1, MAX_RECIPIENTS);
 
         bool[] memory splitsAreZero = new bool[](5);
@@ -170,7 +176,7 @@ contract MultirecipientCollectModule_Initialization is
         uint16 splitUsed;
         for (uint256 i = 0; i < MAX_RECIPIENTS; i++) {
             multirecipientExampleInitData.recipients.push(
-                RecipientData({recipient: me, split: splitsAreZero[i] ? 0 : 2000})
+                RecipientData({recipient: recipient, split: splitsAreZero[i] ? 0 : 2000})
             );
             splitUsed += splitsAreZero[i] ? 0 : 2000;
         }
@@ -504,7 +510,12 @@ contract MultirecipientCollectModule_FeeDistribution is MultirecipientCollectMod
         uint256 collectorProfileId = _createProfile(collectorProfileOwner);
 
         vm.prank(collectPublicationAction);
-        IBaseFeeCollectModule(baseFeeCollectModule).initializePublicationCollectModule(1, 1, me, getEncodedInitData());
+        IBaseFeeCollectModule(baseFeeCollectModule).initializePublicationCollectModule(
+            1,
+            1,
+            address(0),
+            getEncodedInitData()
+        );
 
         balancesBefore.treasury = currency.balanceOf(treasury);
 

@@ -30,7 +30,7 @@ contract BaseFeeCollectModuleBase is BaseTest {
         exampleInitData.referralFee = 0;
         exampleInitData.followerOnly = false;
         exampleInitData.endTimestamp = 0;
-        exampleInitData.recipient = me;
+        exampleInitData.recipient = defaultAccount.owner;
     }
 
     // Deploy & Whitelist BaseFeeCollectModule
