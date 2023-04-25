@@ -53,7 +53,7 @@ contract MirrorMetaTxTest is MirrorTest, MetaTxNegatives {
     function setUp() public virtual override(MirrorTest, MetaTxNegatives) {
         MirrorTest.setUp();
         MetaTxNegatives.setUp();
-        cachedNonceByAddress[defaultAccount.owner] = _getSigNonce(defaultAccount.owner);
+        cachedNonceByAddress[defaultAccount.owner] = hub.nonces(defaultAccount.owner);
     }
 
     function _publish(uint256 signerPk, uint256 publisherProfileId) internal virtual override returns (uint256) {

@@ -417,8 +417,8 @@ contract FollowMetaTxTest is FollowTest, MetaTxNegatives {
         FollowTest.setUp();
         MetaTxNegatives.setUp();
 
-        cachedNonceByAddress[testFollowerProfileOwner] = _getSigNonce(testFollowerProfileOwner);
-        cachedNonceByAddress[alreadyFollowingProfileOwner] = _getSigNonce(alreadyFollowingProfileOwner);
+        cachedNonceByAddress[testFollowerProfileOwner] = hub.nonces(testFollowerProfileOwner);
+        cachedNonceByAddress[alreadyFollowingProfileOwner] = hub.nonces(alreadyFollowingProfileOwner);
     }
 
     function _follow(
@@ -509,7 +509,7 @@ contract FollowMetaTxTest is FollowTest, MetaTxNegatives {
     }
 
     function _refreshCachedNonces() internal override {
-        cachedNonceByAddress[testFollowerProfileOwner] = _getSigNonce(testFollowerProfileOwner);
-        cachedNonceByAddress[alreadyFollowingProfileOwner] = _getSigNonce(alreadyFollowingProfileOwner);
+        cachedNonceByAddress[testFollowerProfileOwner] = hub.nonces(testFollowerProfileOwner);
+        cachedNonceByAddress[alreadyFollowingProfileOwner] = hub.nonces(alreadyFollowingProfileOwner);
     }
 }

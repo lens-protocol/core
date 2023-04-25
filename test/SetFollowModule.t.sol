@@ -113,7 +113,7 @@ contract SetFollowModuleTest is BaseTest, SigSetup {
     }
 
     function testCannotPublishWithSigInvalidNonce() public {
-        nonce = _getSigNonce(defaultAccount.owner) + 1;
+        nonce = hub.nonces(defaultAccount.owner) + 1;
         vm.expectRevert(Errors.SignatureInvalid.selector);
         _setFollowModulehWithSig({delegatedSigner: defaultAccount.owner, signerPrivKey: defaultAccount.ownerPk});
     }
@@ -129,11 +129,11 @@ contract SetFollowModuleTest is BaseTest, SigSetup {
     }
 
     function testCannotPublishIfNonceWasIncrementedWithAnotherAction() public {
-        assertEq(_getSigNonce(defaultAccount.owner), nonce, 'Wrong nonce before posting');
+        assertEq(hub.nonces(defaultAccount.owner), nonce, 'Wrong nonce before posting');
 
         _setFollowModulehWithSig({delegatedSigner: defaultAccount.owner, signerPrivKey: defaultAccount.ownerPk});
 
-        assertTrue(_getSigNonce(defaultAccount.owner) != nonce, 'Wrong nonce after posting');
+        assertTrue(hub.nonces(defaultAccount.owner) != nonce, 'Wrong nonce after posting');
 
         vm.expectRevert(Errors.SignatureInvalid.selector);
         _setFollowModulehWithSig({delegatedSigner: defaultAccount.owner, signerPrivKey: defaultAccount.ownerPk});
@@ -165,7 +165,12 @@ contract SetFollowModuleTest is BaseTest, SigSetup {
     }
 
     function testDelegatedExecutorPublishWithSig() public {
-        _changeDelegatedExecutorsConfig(defaultAccount.owner, defaultAccount.profileId, otherSigner.owner, true);
+        vm.prank(defaultAccount.owner);
+        hub.changeDelegatedExecutorsConfig({
+            delegatorProfileId: defaultAccount.profileId,
+            delegatedExecutors: _toAddressArray(otherSigner.owner),
+            approvals: _toBoolArray(true)
+        });
 
         assertEq(hub.getFollowModule(defaultAccount.profileId), address(0));
         _setFollowModulehWithSig({delegatedSigner: otherSigner.owner, signerPrivKey: otherSigner.ownerPk});

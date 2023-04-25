@@ -83,9 +83,9 @@ contract ProfileMetadataURITest_MetaTx is ProfileMetadataURITest, MetaTxNegative
         ProfileMetadataURITest.setUp();
         MetaTxNegatives.setUp();
 
-        cachedNonceByAddress[alienSigner.owner] = _getSigNonce(alienSigner.owner);
-        cachedNonceByAddress[otherSigner.owner] = _getSigNonce(otherSigner.owner);
-        cachedNonceByAddress[defaultAccount.owner] = _getSigNonce(defaultAccount.owner);
+        cachedNonceByAddress[alienSigner.owner] = hub.nonces(alienSigner.owner);
+        cachedNonceByAddress[otherSigner.owner] = hub.nonces(otherSigner.owner);
+        cachedNonceByAddress[defaultAccount.owner] = hub.nonces(defaultAccount.owner);
     }
 
     function _setProfileMetadataURI(

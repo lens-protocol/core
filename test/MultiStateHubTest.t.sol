@@ -123,17 +123,24 @@ contract MultiStateHubTest_PausedState_Direct is BaseTest {
 
     // TODO: Consider extracting these mock actions functions somewhere because they're used in several places
     function _mockSetFollowModule() internal virtual {
-        _setFollowModule(defaultAccount.owner, defaultAccount.profileId, address(0), '');
+        vm.prank(defaultAccount.owner);
+        hub.setFollowModule(defaultAccount.profileId, address(0), '');
     }
 
     function _mockChangeDelegatedExecutorsConfig() internal virtual {
         address delegatedExecutor = otherSigner.owner;
         bool approved = true;
-        _changeDelegatedExecutorsConfig(defaultAccount.owner, defaultAccount.profileId, delegatedExecutor, approved);
+        vm.prank(defaultAccount.owner);
+        hub.changeDelegatedExecutorsConfig({
+            delegatorProfileId: defaultAccount.profileId,
+            delegatedExecutors: _toAddressArray(delegatedExecutor),
+            approvals: _toBoolArray(approved)
+        });
     }
 
     function _mockSetProfileImageURI() internal virtual {
-        _setProfileImageURI(defaultAccount.owner, defaultAccount.profileId, MOCK_URI);
+        vm.prank(defaultAccount.owner);
+        hub.setProfileImageURI(defaultAccount.profileId, MOCK_URI);
     }
 
     function _mockPost() internal virtual {
@@ -154,7 +161,8 @@ contract MultiStateHubTest_PausedState_Direct is BaseTest {
     }
 
     function _mockBurn() internal virtual {
-        _burn(defaultAccount.owner, defaultAccount.profileId);
+        vm.prank(defaultAccount.owner);
+        hub.burn(defaultAccount.profileId);
     }
 
     function _mockFollow() internal virtual {
@@ -169,12 +177,8 @@ contract MultiStateHubTest_PausedState_Direct is BaseTest {
     // Negatives
     function testCannotTransferProfileWhilePaused() public virtual {
         vm.expectRevert(Errors.Paused.selector);
-        _transferProfile({
-            msgSender: defaultAccount.owner,
-            from: defaultAccount.owner,
-            to: address(111),
-            tokenId: defaultAccount.profileId
-        });
+        vm.prank(defaultAccount.owner);
+        hub.transferFrom(defaultAccount.owner, address(111), defaultAccount.profileId);
     }
 
     function testCannotCreateProfileWhilePaused() public virtual {
@@ -292,7 +296,7 @@ contract MultiStateHubTest_PausedState_WithSig is MultiStateHubTest_PausedState_
     function _mockSetFollowModule() internal override {
         bytes32 digest = _getSetFollowModuleTypedDataHash(defaultAccount.profileId, address(0), '', nonce, deadline);
 
-        _setFollowModuleWithSig({
+        hub.setFollowModuleWithSig({
             profileId: defaultAccount.profileId,
             followModule: address(0),
             followModuleInitData: '',
@@ -326,7 +330,7 @@ contract MultiStateHubTest_PausedState_WithSig is MultiStateHubTest_PausedState_
     function _mockSetProfileImageURI() internal override {
         bytes32 digest = _getSetProfileImageURITypedDataHash(defaultAccount.profileId, MOCK_URI, nonce, deadline);
 
-        _setProfileImageURIWithSig({
+        hub.setProfileImageURIWithSig({
             profileId: defaultAccount.profileId,
             imageURI: MOCK_URI,
             signature: _getSigStruct(defaultAccount.owner, defaultAccount.ownerPk, digest, deadline)
@@ -405,17 +409,24 @@ contract MultiStateHubTest_PublishingPausedState_Direct is BaseTest {
 
     // TODO: Consider extracting these mock actions functions somewhere because they're used in several places
     function _mockSetFollowModule() internal virtual {
-        _setFollowModule(defaultAccount.owner, defaultAccount.profileId, address(0), '');
+        vm.prank(defaultAccount.owner);
+        hub.setFollowModule(defaultAccount.profileId, address(0), '');
     }
 
     function _mockChangeDelegatedExecutorsConfig() internal virtual {
         address delegatedExecutor = otherSigner.owner;
         bool approved = true;
-        _changeDelegatedExecutorsConfig(defaultAccount.owner, defaultAccount.profileId, delegatedExecutor, approved);
+        vm.prank(defaultAccount.owner);
+        hub.changeDelegatedExecutorsConfig({
+            delegatorProfileId: defaultAccount.profileId,
+            delegatedExecutors: _toAddressArray(delegatedExecutor),
+            approvals: _toBoolArray(approved)
+        });
     }
 
     function _mockSetProfileImageURI() internal virtual {
-        _setProfileImageURI(defaultAccount.owner, defaultAccount.profileId, MOCK_URI);
+        vm.prank(defaultAccount.owner);
+        hub.setProfileImageURI(defaultAccount.profileId, MOCK_URI);
     }
 
     function _mockPost() internal virtual {
@@ -436,7 +447,8 @@ contract MultiStateHubTest_PublishingPausedState_Direct is BaseTest {
     }
 
     function _mockBurn() internal virtual {
-        _burn(defaultAccount.owner, defaultAccount.profileId);
+        vm.prank(defaultAccount.owner);
+        hub.burn(defaultAccount.profileId);
     }
 
     function _mockFollow() internal virtual {
@@ -457,12 +469,7 @@ contract MultiStateHubTest_PublishingPausedState_Direct is BaseTest {
 
     // Negatives
     function testCanTransferProfileWhilePublishingPaused() public virtual {
-        _transferProfile({
-            msgSender: defaultAccount.owner,
-            from: defaultAccount.owner,
-            to: address(111),
-            tokenId: defaultAccount.profileId
-        });
+        hub.transferFrom(defaultAccount.owner, address(111), defaultAccount.profileId);
     }
 
     function testCanCreateProfileWhilePublishingPaused() public virtual {
@@ -534,7 +541,7 @@ contract MultiStateHubTest_PublishingPausedState_WithSig is MultiStateHubTest_Pu
     function _mockSetFollowModule() internal override {
         bytes32 digest = _getSetFollowModuleTypedDataHash(defaultAccount.profileId, address(0), '', nonce, deadline);
 
-        _setFollowModuleWithSig({
+        hub.setFollowModuleWithSig({
             profileId: defaultAccount.profileId,
             followModule: address(0),
             followModuleInitData: '',
@@ -568,7 +575,7 @@ contract MultiStateHubTest_PublishingPausedState_WithSig is MultiStateHubTest_Pu
     function _mockSetProfileImageURI() internal override {
         bytes32 digest = _getSetProfileImageURITypedDataHash(defaultAccount.profileId, MOCK_URI, nonce, deadline);
 
-        _setProfileImageURIWithSig({
+        hub.setProfileImageURIWithSig({
             profileId: defaultAccount.profileId,
             imageURI: MOCK_URI,
             signature: _getSigStruct(defaultAccount.owner, defaultAccount.ownerPk, digest, deadline)

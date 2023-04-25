@@ -207,8 +207,8 @@ contract UnfollowMetaTxTest is UnfollowTest, MetaTxNegatives {
         UnfollowTest.setUp();
         MetaTxNegatives.setUp();
 
-        cachedNonceByAddress[nonFollowingProfileOwner] = _getSigNonce(nonFollowingProfileOwner);
-        cachedNonceByAddress[testUnfollowerProfileOwner] = _getSigNonce(testUnfollowerProfileOwner);
+        cachedNonceByAddress[nonFollowingProfileOwner] = hub.nonces(nonFollowingProfileOwner);
+        cachedNonceByAddress[testUnfollowerProfileOwner] = hub.nonces(testUnfollowerProfileOwner);
     }
 
     function _unfollow(

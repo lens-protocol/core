@@ -25,7 +25,7 @@ abstract contract MetaTxNegatives is BaseTest {
     // Functions to override ONLY if the contract where to execute the MetaTx is not the LensHub.
 
     function _getMetaTxNonce(address signer) internal virtual returns (uint256) {
-        return _getSigNonce(signer);
+        return hub.nonces(signer);
     }
 
     function _getDomainName() internal virtual returns (bytes memory) {

@@ -252,11 +252,11 @@ contract SetBlockStatusMetaTxTest is SetBlockStatusTest, MetaTxNegatives {
         SetBlockStatusTest.setUp();
         MetaTxNegatives.setUp();
 
-        cachedNonceByAddress[statusSetterProfileOwner] = _getSigNonce(statusSetterProfileOwner);
+        cachedNonceByAddress[statusSetterProfileOwner] = hub.nonces(statusSetterProfileOwner);
     }
 
     function _refreshCachedNonces() internal override {
-        cachedNonceByAddress[statusSetterProfileOwner] = _getSigNonce(statusSetterProfileOwner);
+        cachedNonceByAddress[statusSetterProfileOwner] = hub.nonces(statusSetterProfileOwner);
     }
 
     function _setBlockStatus(

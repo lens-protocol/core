@@ -330,8 +330,7 @@ contract BaseTest is TestSetup {
     }
 
     function _calculateDigest(bytes32 structHash) internal view returns (bytes32) {
-        bytes32 digest = keccak256(abi.encodePacked('\x19\x01', domainSeparator, structHash));
-        return digest;
+        return keccak256(abi.encodePacked('\x19\x01', domainSeparator, structHash));
     }
 
     function _getSigStruct(
@@ -339,8 +338,7 @@ contract BaseTest is TestSetup {
         bytes32 digest,
         uint256 deadline
     ) internal pure returns (Types.EIP712Signature memory) {
-        (uint8 v, bytes32 r, bytes32 s) = vm.sign(pKey, digest);
-        return Types.EIP712Signature(vm.addr(pKey), v, r, s, deadline);
+        return _getSigStruct(vm.addr(pKey), pKey, digest, deadline);
     }
 
     function _getSigStruct(
@@ -351,73 +349,5 @@ contract BaseTest is TestSetup {
     ) internal pure returns (Types.EIP712Signature memory) {
         (uint8 v, bytes32 r, bytes32 s) = vm.sign(pKey, digest);
         return Types.EIP712Signature(signer, v, r, s, deadline);
-    }
-
-    function _transferProfile(address msgSender, address from, address to, uint256 tokenId) internal {
-        vm.prank(msgSender);
-        hub.transferFrom(from, to, tokenId);
-    }
-
-    function _changeDelegatedExecutorsConfig(
-        address msgSender,
-        uint256 profileId,
-        address delegatedExecutor,
-        bool approved
-    ) internal {
-        vm.prank(msgSender);
-        hub.changeDelegatedExecutorsConfig({
-            delegatorProfileId: profileId,
-            delegatedExecutors: _toAddressArray(delegatedExecutor),
-            approvals: _toBoolArray(approved)
-        });
-    }
-
-    function _setFollowModule(
-        address msgSender,
-        uint256 profileId,
-        address followModule,
-        bytes memory followModuleInitData
-    ) internal {
-        vm.prank(msgSender);
-        hub.setFollowModule(profileId, followModule, followModuleInitData);
-    }
-
-    function _setFollowModuleWithSig(
-        uint256 profileId,
-        address followModule,
-        bytes memory followModuleInitData,
-        Types.EIP712Signature memory signature
-    ) internal {
-        hub.setFollowModuleWithSig(profileId, followModule, followModuleInitData, signature);
-    }
-
-    function _setProfileImageURI(address msgSender, uint256 profileId, string memory imageURI) internal {
-        vm.prank(msgSender);
-        hub.setProfileImageURI(profileId, imageURI);
-    }
-
-    function _setProfileImageURIWithSig(
-        uint256 profileId,
-        string memory imageURI,
-        Types.EIP712Signature memory signature
-    ) internal {
-        hub.setProfileImageURIWithSig(profileId, imageURI, signature);
-    }
-
-    function _burn(address msgSender, uint256 profileId) internal {
-        vm.prank(msgSender);
-        hub.burn(profileId);
-    }
-
-    function _getPub(uint256 profileId, uint256 pubId) internal view returns (Types.Publication memory) {
-        return hub.getPub(profileId, pubId);
-    }
-
-    function _getSigNonce(address signer) internal view returns (uint256) {
-        return hub.nonces(signer);
-    }
-
-    function _getPubCount(uint256 profileId) internal view returns (uint256) {
-        return hub.getPubCount(profileId);
     }
 }
