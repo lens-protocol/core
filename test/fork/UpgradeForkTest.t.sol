@@ -125,11 +125,11 @@ contract UpgradeForkTest is BaseTest {
         // To make this test suite evergreen, we must try setting a modern follow module since we don't know
         // which version of the hub we're working with, if this fails, then we should use a deprecated one.
 
-        // mockCreateProfileParams.handle = vm.toString(IERC721Enumerable(address(hub)).totalSupply());
-        mockCreateProfileParams.followModule = mockFollowModuleAddr;
+        Types.CreateProfileParams memory createProfileParams = _getDefaultCreateProfileParams();
+        createProfileParams.followModule = mockFollowModuleAddr;
 
         uint256 profileId;
-        try hub.createProfile(mockCreateProfileParams) returns (uint256 retProfileId) {
+        try hub.createProfile(createProfileParams) returns (uint256 retProfileId) {
             profileId = retProfileId;
             console2.log('Profile created with modern follow module.');
         } catch {
@@ -141,7 +141,7 @@ contract UpgradeForkTest is BaseTest {
             hub.whitelistFollowModule(mockDeprecatedFollowModule, true);
 
             // precompute basic profile creaton data.
-            mockCreateProfileParams = Types.CreateProfileParams({
+            createProfileParams = Types.CreateProfileParams({
                 to: address(this),
                 imageURI: MOCK_URI,
                 followModule: address(0),
@@ -150,12 +150,12 @@ contract UpgradeForkTest is BaseTest {
             });
 
             OldCreateProfileParams memory oldCreateProfileParams = OldCreateProfileParams(
-                mockCreateProfileParams.to,
+                createProfileParams.to,
                 vm.toString((IERC721Enumerable(address(hub)).totalSupply())),
-                mockCreateProfileParams.imageURI,
+                createProfileParams.imageURI,
                 mockDeprecatedFollowModule,
-                mockCreateProfileParams.followModuleInitData,
-                mockCreateProfileParams.followNFTURI
+                createProfileParams.followModuleInitData,
+                createProfileParams.followNFTURI
             );
 
             oldCreateProfileParams.followModule = mockDeprecatedFollowModule;
@@ -392,15 +392,6 @@ contract UpgradeForkTest is BaseTest {
         );
 
         // NOTE: Structs are invalid as-is. Handle and modules must be set on the fly.
-
-        // precompute basic profile creaton data.
-        mockCreateProfileParams = Types.CreateProfileParams({
-            to: address(this),
-            imageURI: MOCK_URI,
-            followModule: address(0),
-            followModuleInitData: abi.encode(true),
-            followNFTURI: MOCK_URI
-        });
 
         // Precompute basic post data.
         mockPostParams = Types.PostParams({

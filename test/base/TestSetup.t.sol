@@ -77,7 +77,6 @@ contract TestSetup is Test, ForkManagement, ArrayHelpers {
     MockReferenceModule mockReferenceModule;
     ModuleGlobals moduleGlobals;
 
-    Types.CreateProfileParams mockCreateProfileParams;
     Types.PostParams mockPostParams;
     Types.CommentParams mockCommentParams;
     Types.QuoteParams mockQuoteParams;
@@ -226,15 +225,6 @@ contract TestSetup is Test, ForkManagement, ArrayHelpers {
                 hubProxyAddr
             )
         );
-
-        // precompute basic profile creation data.
-        mockCreateProfileParams = Types.CreateProfileParams({
-            to: defaultAccount.owner,
-            imageURI: MOCK_URI,
-            followModule: address(0),
-            followModuleInitData: '',
-            followNFTURI: MOCK_URI
-        });
 
         defaultAccount = _loadAccountAs('DEFAULT_ACCOUNT');
         otherSigner = _loadAccountAs('OTHER_SIGNER_ACCOUNT');
