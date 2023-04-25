@@ -47,7 +47,7 @@ contract TestSetup is Test, ForkManagement, ArrayHelpers {
     TestAccount defaultAccount;
 
     // TODO: We can avoid this `otherSigner` and do it better by using fuzzing instead, but it requires to refactor a
-    // lot of tests, like MultiStateHubTest ones. We should do it later.
+    // lot of tests, like ProfileMetadataURITest and SetFollowModuleTest. We should do it later.
     TestAccount otherSigner;
 
     ////////////////////////////////// Publications
@@ -77,7 +77,6 @@ contract TestSetup is Test, ForkManagement, ArrayHelpers {
     MockReferenceModule mockReferenceModule;
     ModuleGlobals moduleGlobals;
 
-    Types.PostParams mockPostParams;
     Types.CommentParams mockCommentParams;
     Types.QuoteParams mockQuoteParams;
     Types.MirrorParams mockMirrorParams;
@@ -229,16 +228,6 @@ contract TestSetup is Test, ForkManagement, ArrayHelpers {
         defaultAccount = _loadAccountAs('DEFAULT_ACCOUNT');
         otherSigner = _loadAccountAs('OTHER_SIGNER_ACCOUNT');
 
-        // Precompute basic post data.
-        mockPostParams = Types.PostParams({
-            profileId: defaultAccount.profileId,
-            contentURI: MOCK_URI,
-            actionModules: _toAddressArray(address(mockActionModule)),
-            actionModulesInitDatas: _toBytesArray(abi.encode(true)),
-            referenceModule: address(0),
-            referenceModuleInitData: ''
-        });
-
         defaultPub = _loadDefaultPublication();
 
         // Precompute basic comment data.
@@ -359,7 +348,7 @@ contract TestSetup is Test, ForkManagement, ArrayHelpers {
             }
         }
         vm.prank(defaultAccount.owner);
-        return TestPublication(defaultAccount.profileId, hub.post(mockPostParams));
+        return TestPublication(defaultAccount.profileId, hub.post(_getDefaultPostParams()));
     }
 
     function _loadAddressAs(string memory addressLabel) internal returns (address) {
@@ -389,6 +378,18 @@ contract TestSetup is Test, ForkManagement, ArrayHelpers {
                 followModule: address(0),
                 followModuleInitData: '',
                 followNFTURI: MOCK_URI
+            });
+    }
+
+    function _getDefaultPostParams() internal view returns (Types.PostParams memory) {
+        return
+            Types.PostParams({
+                profileId: defaultAccount.profileId,
+                contentURI: MOCK_URI,
+                actionModules: _toAddressArray(address(mockActionModule)),
+                actionModulesInitDatas: _toBytesArray(abi.encode(true)),
+                referenceModule: address(0),
+                referenceModuleInitData: ''
             });
     }
 }

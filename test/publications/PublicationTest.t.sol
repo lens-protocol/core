@@ -113,11 +113,12 @@ abstract contract ReferencePublicationTest is PublicationTest {
     function _setPointedPub(uint256 pointedProfileId, uint256 pointedPubId) internal virtual;
 
     function testCannotReferenceA_Post_IfReferenceModule_RejectsIt() public {
-        mockPostParams.profileId = anotherPublisher.profileId;
-        mockPostParams.referenceModule = address(mockReferenceModule);
-        mockPostParams.referenceModuleInitData = abi.encode(true);
+        Types.PostParams memory postParams = _getDefaultPostParams();
+        postParams.profileId = anotherPublisher.profileId;
+        postParams.referenceModule = address(mockReferenceModule);
+        postParams.referenceModuleInitData = abi.encode(true);
         vm.prank(anotherPublisher.owner);
-        uint256 pointedPubId = hub.post(mockPostParams);
+        uint256 pointedPubId = hub.post(postParams);
 
         _setPointedPub(anotherPublisher.profileId, pointedPubId);
         _setReferenceModuleData(abi.encode(false));

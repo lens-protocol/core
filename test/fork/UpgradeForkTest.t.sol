@@ -167,10 +167,11 @@ contract UpgradeForkTest is BaseTest {
     function _fullPublishSequence(uint256 profileId, address gov, ILensHub hub) private {
         // First check if the new interface works, if not, use the old interface.
 
+        Types.PostParams memory postParams = _getDefaultPostParams();
         // Set the proper initial params, these must be redundantly reset as they may have been set
         // to different values in memory.
-        mockPostParams.profileId = profileId;
-        mockPostParams.referenceModule = mockReferenceModuleAddr;
+        postParams.profileId = profileId;
+        postParams.referenceModule = mockReferenceModuleAddr;
 
         mockCommentParams.profileId = profileId;
         mockCommentParams.pointedProfileId = profileId;
@@ -179,9 +180,9 @@ contract UpgradeForkTest is BaseTest {
         mockMirrorParams.pointedProfileId = profileId;
 
         // Set the modern reference module, the modern collect module is already set by default.
-        mockPostParams.referenceModule = mockReferenceModuleAddr;
+        postParams.referenceModule = mockReferenceModuleAddr;
 
-        try hub.post(mockPostParams) returns (uint256 retPubId) {
+        try hub.post(postParams) returns (uint256 retPubId) {
             console2.log('Post published with modern collect and reference module, continuing with modern modules.');
             uint256 postId = retPubId;
             assertEq(postId, 1);
@@ -193,9 +194,9 @@ contract UpgradeForkTest is BaseTest {
             Types.Publication memory pub = hub.getPub(profileId, postId);
             assertEq(pub.pointedProfileId, 0);
             assertEq(pub.pointedPubId, 0);
-            assertEq(pub.contentURI, mockPostParams.contentURI);
-            assertEq(pub.referenceModule, mockPostParams.referenceModule);
-            // assertEq(pub.collectModule, mockPostParams.collectModule); // TODO: Proper test
+            assertEq(pub.contentURI, postParams.contentURI);
+            assertEq(pub.referenceModule, postParams.referenceModule);
+            // assertEq(pub.collectModule, postParams.collectModule); // TODO: Proper test
             // assertEq(pub.collectNFT, address(0));
 
             // Comment.
@@ -235,18 +236,18 @@ contract UpgradeForkTest is BaseTest {
             vm.stopPrank();
 
             // Post.
-            // mockPostParams.collectModule = mockDeprecatedCollectModule; // TODO: Proper test
-            mockPostParams.referenceModule = mockDeprecatedReferenceModule;
-            uint256 postId = hub.post(mockPostParams);
+            // postParams.collectModule = mockDeprecatedCollectModule; // TODO: Proper test
+            postParams.referenceModule = mockDeprecatedReferenceModule;
+            uint256 postId = hub.post(postParams);
 
             // Validate post.
             assertEq(postId, 1);
             Types.Publication memory pub = hub.getPub(profileId, postId);
             assertEq(pub.pointedProfileId, 0);
             assertEq(pub.pointedPubId, 0);
-            assertEq(pub.contentURI, mockPostParams.contentURI);
-            assertEq(pub.referenceModule, mockPostParams.referenceModule);
-            // assertEq(pub.collectModule, mockPostParams.collectModule); // TODO: Proper test
+            assertEq(pub.contentURI, postParams.contentURI);
+            assertEq(pub.referenceModule, postParams.referenceModule);
+            // assertEq(pub.collectModule, postParams.collectModule); // TODO: Proper test
             // assertEq(pub.collectNFT, address(0));
 
             // Comment.
@@ -392,16 +393,6 @@ contract UpgradeForkTest is BaseTest {
         );
 
         // NOTE: Structs are invalid as-is. Handle and modules must be set on the fly.
-
-        // Precompute basic post data.
-        mockPostParams = Types.PostParams({
-            profileId: 0,
-            contentURI: MOCK_URI,
-            actionModules: _toAddressArray(address(0)),
-            actionModulesInitDatas: _toBytesArray(abi.encode(true)),
-            referenceModule: address(0),
-            referenceModuleInitData: abi.encode(true)
-        });
 
         // Precompute basic comment data.
         mockCommentParams = Types.CommentParams({

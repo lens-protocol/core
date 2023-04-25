@@ -6,19 +6,21 @@ import {PublicationTest} from 'test/publications/PublicationTest.t.sol';
 import {MetaTxNegatives} from 'test/MetaTxNegatives.t.sol';
 
 contract PostTest is PublicationTest {
+    Types.PostParams postParams;
+
     function testPostTest() public {
         // Prevents being counted in Foundry Coverage
     }
 
     function setUp() public virtual override {
         super.setUp();
-        mockPostParams.profileId = publisher.profileId;
+        postParams = _getDefaultPostParams();
     }
 
     function _publish(uint256 signerPk, uint256 publisherProfileId) internal virtual override returns (uint256) {
-        mockPostParams.profileId = publisherProfileId;
+        postParams.profileId = publisherProfileId;
         vm.prank(vm.addr(signerPk));
-        return hub.post(mockPostParams);
+        return hub.post(postParams);
     }
 
     function _pubType() internal virtual override returns (Types.PublicationType) {
@@ -40,16 +42,16 @@ contract PostMetaTxTest is PostTest, MetaTxNegatives {
     }
 
     function _publish(uint256 signerPk, uint256 publisherProfileId) internal virtual override returns (uint256) {
-        mockPostParams.profileId = publisherProfileId;
+        postParams.profileId = publisherProfileId;
         address signer = vm.addr(signerPk);
         return
             hub.postWithSig(
-                mockPostParams,
+                postParams,
                 _getSigStruct({
                     signer: signer,
                     pKey: signerPk,
                     digest: _getPostTypedDataHash({
-                        postParams: mockPostParams,
+                        postParams: postParams,
                         nonce: cachedNonceByAddress[signer],
                         deadline: type(uint256).max
                     }),
@@ -59,12 +61,13 @@ contract PostMetaTxTest is PostTest, MetaTxNegatives {
     }
 
     function _executeMetaTx(uint256 signerPk, uint256 nonce, uint256 deadline) internal virtual override {
+        postParams.profileId = publisher.profileId;
         hub.postWithSig(
-            mockPostParams,
+            postParams,
             _getSigStruct({
                 signer: vm.addr(_getDefaultMetaTxSignerPk()),
                 pKey: signerPk,
-                digest: _getPostTypedDataHash(mockPostParams, nonce, deadline),
+                digest: _getPostTypedDataHash(postParams, nonce, deadline),
                 deadline: deadline
             })
         );
