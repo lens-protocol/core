@@ -146,11 +146,10 @@ contract TestSetup is Test, ForkManagement, ArrayHelpers {
     }
 
     function deployBaseContracts() internal {
-        deployer = _loadAddressAs('DEPLOYER'); // TODO: Shouldn't it be address(this) here??
+        deployer = _loadAddressAs('DEPLOYER');
         governance = _loadAddressAs('GOVERNANCE');
         treasury = _loadAddressAs('TREASURY');
         modulesGovernance = _loadAddressAs('MODULES_GOVERNANCE');
-        proxyAdmin = address(uint160(uint256(vm.load(hubProxyAddr, ADMIN_SLOT))));
         vm.label(proxyAdmin, 'HUB_PROXY_ADMIN');
 
         TREASURY_FEE_BPS = 50;
@@ -185,6 +184,9 @@ contract TestSetup is Test, ForkManagement, ArrayHelpers {
         // Cast proxy to LensHub interface.
         hub = LensHub(address(hubAsProxy));
         vm.label(address(hub), 'LENS_HUB');
+
+        proxyAdmin = address(uint160(uint256(vm.load(hubProxyAddr, ADMIN_SLOT))));
+        vm.label(proxyAdmin, 'HUB_PROXY_ADMIN');
 
         // Deploy the MockActionModule.
         mockActionModule = new MockActionModule();
