@@ -27,9 +27,9 @@ contract MockCollectModule is ICollectModule {
         address,
         bytes calldata data
     ) external pure override returns (bytes memory) {
-        uint256 number = abi.decode(data, (uint256));
-        require(number == 1, 'MockCollectModule: invalid');
-        return new bytes(0);
+        bool shouldSucceed = abi.decode(data, (bool));
+        require(shouldSucceed, 'MockCollectModule: failing flag set');
+        return data;
     }
 
     /**
@@ -38,5 +38,7 @@ contract MockCollectModule is ICollectModule {
      */
     function processCollect(
         Types.ProcessCollectParams calldata processCollectParams
-    ) external view override returns (bytes memory) {}
+    ) external pure override returns (bytes memory) {
+        return processCollectParams.data;
+    }
 }

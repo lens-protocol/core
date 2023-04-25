@@ -3,7 +3,7 @@ pragma solidity ^0.8.13;
 
 import 'forge-std/Test.sol';
 import {ForkManagement} from 'test/helpers/ForkManagement.sol';
-import {CollectNFT} from 'contracts/CollectNFT.sol';
+import {LegacyCollectNFT} from 'contracts/misc/LegacyCollectNFT.sol';
 import {LensHub} from 'contracts/LensHub.sol';
 import {FollowNFT} from 'contracts/FollowNFT.sol';
 import {TransparentUpgradeableProxy} from 'contracts/base/upgradeability/TransparentUpgradeableProxy.sol';
@@ -35,7 +35,7 @@ contract MigrationsTest is Test, ForkManagement {
     LensHandles lensHandles;
     TokenHandleRegistry tokenHandleRegistry;
 
-    CollectNFT collectNFT;
+    LegacyCollectNFT legacyCollectNFT;
     FollowNFT followNFT;
     LensHub hubImpl;
     TransparentUpgradeableProxy hubAsProxy;
@@ -55,14 +55,14 @@ contract MigrationsTest is Test, ForkManagement {
         console.log('Hub:', address(hub));
 
         // address followNFTAddr = hub.getFollowNFTImpl();
-        address collectNFTAddr = hub.getCollectNFTImpl();
+        address legacyCollectNFTAddr = hub.getCollectNFTImpl();
 
         address hubImplAddr = address(uint160(uint256(vm.load(hubProxyAddr, PROXY_IMPLEMENTATION_STORAGE_SLOT))));
         console.log('Found hubImplAddr:', hubImplAddr);
 
         proxyAdmin = address(uint160(uint256(vm.load(hubProxyAddr, ADMIN_SLOT))));
 
-        collectNFT = CollectNFT(collectNFTAddr);
+        legacyCollectNFT = LegacyCollectNFT(legacyCollectNFTAddr);
         hubAsProxy = TransparentUpgradeableProxy(payable(address(hub)));
         moduleGlobals = ModuleGlobals(json.readAddress(string(abi.encodePacked('.', targetEnv, '.ModuleGlobals'))));
 
@@ -94,7 +94,7 @@ contract MigrationsTest is Test, ForkManagement {
         hubImpl = new LensHub({
             moduleGlobals: address(0),
             followNFTImpl: address(followNFT),
-            collectNFTImpl: address(collectNFT),
+            collectNFTImpl: address(legacyCollectNFT),
             lensHandlesAddress: lensHandlesAddress,
             tokenHandleRegistryAddress: tokenHandleRegistryAddress,
             legacyFeeFollowModule: address(0),

@@ -20,7 +20,7 @@ contract FeeFollowModuleTest is BaseTest {
         moduleGlobals.whitelistCurrency(address(currency), true);
     }
 
-    // Deploy & Whitelist FeeFollowModule
+    // Deploy FeeFollowModule
     constructor() TestSetup() {
         if (fork && keyExists(string(abi.encodePacked('.', forkEnv, '.FeeFollowModule')))) {
             feeFollowModule = FeeFollowModule(

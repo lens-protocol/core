@@ -36,7 +36,7 @@ contract EventTest is BaseTest {
         vm.startPrank(deployer);
 
         address followNFTAddr = predictContractAddress(deployer, 1);
-        address collectNFTAddr = predictContractAddress(deployer, 2);
+        address legacyCollectNFTAddr = predictContractAddress(deployer, 2);
         hubProxyAddr = predictContractAddress(deployer, 3);
 
         // Deploy implementation contracts.
@@ -44,7 +44,7 @@ contract EventTest is BaseTest {
         hubImpl = new LensHubInitializable({
             moduleGlobals: address(0),
             followNFTImpl: followNFTAddr,
-            collectNFTImpl: collectNFTAddr,
+            collectNFTImpl: legacyCollectNFTAddr,
             lensHandlesAddress: address(0),
             tokenHandleRegistryAddress: address(0),
             legacyFeeFollowModule: address(0),
@@ -52,7 +52,7 @@ contract EventTest is BaseTest {
             newFeeFollowModule: address(0)
         });
         followNFT = new FollowNFT(hubProxyAddr);
-        collectNFT = new CollectNFT(hubProxyAddr);
+        legacyCollectNFT = new LegacyCollectNFT(hubProxyAddr);
 
         // Deploy and initialize proxy.
         bytes memory initData = abi.encodeCall(hubImpl.initialize, (expectedNFTName, expectedNFTSymbol, governance));

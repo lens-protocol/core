@@ -8,7 +8,7 @@ import {ILensHub} from 'contracts/interfaces/ILensHub.sol';
 import {LensHub} from 'contracts/LensHub.sol';
 import {LensHubInitializable} from 'contracts/misc/LensHubInitializable.sol';
 import {FollowNFT} from 'contracts/FollowNFT.sol';
-import {CollectNFT} from 'contracts/CollectNFT.sol';
+import {LegacyCollectNFT} from 'contracts/misc/LegacyCollectNFT.sol';
 import {ModuleGlobals} from 'contracts/misc/ModuleGlobals.sol';
 import {TransparentUpgradeableProxy} from 'contracts/base/upgradeability/TransparentUpgradeableProxy.sol';
 import {Types} from 'contracts/libraries/constants/Types.sol';
@@ -55,7 +55,7 @@ contract TestSetup is Test, ForkManagement, ArrayHelpers {
     uint16 constant TREASURY_FEE_MAX_BPS = 10000; // TODO: This should be a constant in 'contracts/libraries/constants/'
 
     address hubProxyAddr;
-    CollectNFT collectNFT;
+    LegacyCollectNFT legacyCollectNFT;
     FollowNFT followNFT;
     LensHubInitializable hubImpl;
     TransparentUpgradeableProxy hubAsProxy;
@@ -104,13 +104,13 @@ contract TestSetup is Test, ForkManagement, ArrayHelpers {
         console.log('Hub:', address(hub));
 
         address followNFTAddr = hub.getFollowNFTImpl();
-        address collectNFTAddr = hub.getCollectNFTImpl();
+        address legacyCollectNFTAddr = hub.getCollectNFTImpl();
 
         address hubImplAddr = address(uint160(uint256(vm.load(hubProxyAddr, PROXY_IMPLEMENTATION_STORAGE_SLOT))));
         console.log('Found hubImplAddr:', hubImplAddr);
         hubImpl = LensHubInitializable(hubImplAddr);
         followNFT = FollowNFT(followNFTAddr);
-        collectNFT = CollectNFT(collectNFTAddr);
+        legacyCollectNFT = LegacyCollectNFT(legacyCollectNFTAddr);
         hubAsProxy = TransparentUpgradeableProxy(payable(address(hub)));
         moduleGlobals = ModuleGlobals(json.readAddress(string(abi.encodePacked('.', targetEnv, '.ModuleGlobals'))));
 
@@ -136,7 +136,7 @@ contract TestSetup is Test, ForkManagement, ArrayHelpers {
 
         // Precompute needed addresses.
         address followNFTAddr = computeCreateAddress(deployer, 1);
-        address collectNFTAddr = computeCreateAddress(deployer, 2);
+        address legacyCollectNFTAddr = computeCreateAddress(deployer, 2);
         hubProxyAddr = computeCreateAddress(deployer, 3);
 
         // Deploy implementation contracts.
@@ -144,7 +144,7 @@ contract TestSetup is Test, ForkManagement, ArrayHelpers {
         hubImpl = new LensHubInitializable({
             moduleGlobals: address(0),
             followNFTImpl: followNFTAddr,
-            collectNFTImpl: collectNFTAddr,
+            collectNFTImpl: legacyCollectNFTAddr,
             lensHandlesAddress: address(0),
             tokenHandleRegistryAddress: address(0),
             legacyFeeFollowModule: address(0),
@@ -152,7 +152,7 @@ contract TestSetup is Test, ForkManagement, ArrayHelpers {
             newFeeFollowModule: address(0)
         });
         followNFT = new FollowNFT(hubProxyAddr);
-        collectNFT = new CollectNFT(hubProxyAddr);
+        legacyCollectNFT = new LegacyCollectNFT(hubProxyAddr);
 
         // Deploy and initialize proxy.
         bytes memory initData = abi.encodeCall(hubImpl.initialize, ('Lens Protocol Profiles', 'LPP', governance));

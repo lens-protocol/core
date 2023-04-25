@@ -13,7 +13,7 @@ contract CollectingHelpers is TestSetup {
     string constant COLLECT_NFT_NAME_INFIX = '-Collect-';
     string constant COLLECT_NFT_SYMBOL_INFIX = '-Cl-';
 
-    CollectNFT _collectNftAfter;
+    LegacyCollectNFT _collectNftAfter;
 
     uint256 constant PUB_BY_ID_BY_PROFILE_MAPPING_SLOT = 20;
     uint256 constant COLLECT_NFT_OFFSET = 5;
@@ -39,14 +39,14 @@ contract CollectingHelpers is TestSetup {
 
         // returns nft ID or 0 if no collect nft yet
         if (collectNftAddress != address(0)) {
-            return CollectNFT(collectNftAddress).totalSupply();
+            return LegacyCollectNFT(collectNftAddress).totalSupply();
         } else {
             return 0;
         }
     }
 
     function _checkCollectNFTAfter(uint256 nftId, uint256 expectedNftId) internal {
-        _collectNftAfter = CollectNFT(
+        _collectNftAfter = LegacyCollectNFT(
             _getCollectNFT(mockCollectParams.publicationCollectedProfileId, mockCollectParams.publicationCollectedId)
         );
 
