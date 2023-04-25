@@ -6,24 +6,26 @@ import {PublicationTest, ReferencePublicationTest} from 'test/publications/Publi
 import {MetaTxNegatives} from 'test/MetaTxNegatives.t.sol';
 
 contract MirrorTest is ReferencePublicationTest {
+    Types.MirrorParams mirrorParams;
+
     function testMirrorTest() public {
         // Prevents being counted in Foundry Coverage
     }
 
     function setUp() public virtual override {
         super.setUp();
-        mockMirrorParams.profileId = publisher.profileId;
+        mirrorParams = _getDefaultMirrorParams();
     }
 
     function _publish(uint256 signerPk, uint256 publisherProfileId) internal virtual override returns (uint256) {
-        mockMirrorParams.profileId = publisherProfileId;
+        mirrorParams.profileId = publisherProfileId;
         vm.prank(vm.addr(signerPk));
-        return hub.mirror(mockMirrorParams);
+        return hub.mirror(mirrorParams);
     }
 
     function _setPointedPub(uint256 pointedProfileId, uint256 pointedPubId) internal virtual override {
-        mockMirrorParams.pointedProfileId = pointedProfileId;
-        mockMirrorParams.pointedPubId = pointedPubId;
+        mirrorParams.pointedProfileId = pointedProfileId;
+        mirrorParams.pointedPubId = pointedPubId;
     }
 
     function _pubType() internal virtual override returns (Types.PublicationType) {
@@ -34,12 +36,12 @@ contract MirrorTest is ReferencePublicationTest {
         uint256[] memory referrerProfileIds,
         uint256[] memory referrerPubIds
     ) internal virtual override {
-        mockMirrorParams.referrerProfileIds = referrerProfileIds;
-        mockMirrorParams.referrerPubIds = referrerPubIds;
+        mirrorParams.referrerProfileIds = referrerProfileIds;
+        mirrorParams.referrerPubIds = referrerPubIds;
     }
 
     function _setReferenceModuleData(bytes memory referenceModuleData) internal virtual override {
-        mockMirrorParams.referenceModuleData = referenceModuleData;
+        mirrorParams.referenceModuleData = referenceModuleData;
     }
 }
 
@@ -57,16 +59,16 @@ contract MirrorMetaTxTest is MirrorTest, MetaTxNegatives {
     }
 
     function _publish(uint256 signerPk, uint256 publisherProfileId) internal virtual override returns (uint256) {
-        mockMirrorParams.profileId = publisherProfileId;
+        mirrorParams.profileId = publisherProfileId;
         address signer = vm.addr(signerPk);
         return
             hub.mirrorWithSig(
-                mockMirrorParams,
+                mirrorParams,
                 _getSigStruct({
                     signer: signer,
                     pKey: signerPk,
                     digest: _getMirrorTypedDataHash({
-                        mirrorParams: mockMirrorParams,
+                        mirrorParams: mirrorParams,
                         nonce: cachedNonceByAddress[signer],
                         deadline: type(uint256).max
                     }),
@@ -76,12 +78,13 @@ contract MirrorMetaTxTest is MirrorTest, MetaTxNegatives {
     }
 
     function _executeMetaTx(uint256 signerPk, uint256 nonce, uint256 deadline) internal virtual override {
+        mirrorParams.profileId = publisher.profileId;
         hub.mirrorWithSig(
-            mockMirrorParams,
+            mirrorParams,
             _getSigStruct({
                 signer: vm.addr(_getDefaultMetaTxSignerPk()),
                 pKey: signerPk,
-                digest: _getMirrorTypedDataHash(mockMirrorParams, nonce, deadline),
+                digest: _getMirrorTypedDataHash(mirrorParams, nonce, deadline),
                 deadline: deadline
             })
         );

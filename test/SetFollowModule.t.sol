@@ -7,11 +7,15 @@ import 'test/helpers/SignatureHelpers.sol';
 
 // TODO: Refactor out all `hub.` calls (if we decide to go this route)
 contract SetFollowModuleTest is BaseTest, SigSetup {
+    // TODO: We can avoid this `otherSigner` and do it better by using fuzzing instead, but it requires a refactor here.
+    TestAccount otherSigner;
+
     address mockFollowModule;
 
     function setUp() public virtual override(SigSetup, TestSetup) {
         TestSetup.setUp();
         SigSetup.setUp();
+        otherSigner = _loadAccountAs('OTHER_SIGNER_ACCOUNT');
         mockFollowModule = address(new MockFollowModule());
         vm.prank(governance);
         hub.whitelistFollowModule(mockFollowModule, true);

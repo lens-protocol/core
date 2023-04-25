@@ -128,11 +128,12 @@ abstract contract ReferencePublicationTest is PublicationTest {
     }
 
     function testCannotReferenceA_Comment_IfReferenceModule_RejectsIt() public {
-        mockCommentParams.profileId = anotherPublisher.profileId;
-        mockCommentParams.referenceModule = address(mockReferenceModule);
-        mockCommentParams.referenceModuleInitData = abi.encode(true);
+        Types.CommentParams memory commentParams = _getDefaultCommentParams();
+        commentParams.profileId = anotherPublisher.profileId;
+        commentParams.referenceModule = address(mockReferenceModule);
+        commentParams.referenceModuleInitData = abi.encode(true);
         vm.prank(anotherPublisher.owner);
-        uint256 pointedPubId = hub.comment(mockCommentParams);
+        uint256 pointedPubId = hub.comment(commentParams);
 
         _setPointedPub(anotherPublisher.profileId, pointedPubId);
         _setReferenceModuleData(abi.encode(false));
@@ -142,11 +143,12 @@ abstract contract ReferencePublicationTest is PublicationTest {
     }
 
     function testCannotReferenceA_Quote_IfReferenceModule_RejectsIt() public {
-        mockQuoteParams.profileId = anotherPublisher.profileId;
-        mockQuoteParams.referenceModule = address(mockReferenceModule);
-        mockQuoteParams.referenceModuleInitData = abi.encode(true);
+        Types.QuoteParams memory quoteParams = _getDefaultQuoteParams();
+        quoteParams.profileId = anotherPublisher.profileId;
+        quoteParams.referenceModule = address(mockReferenceModule);
+        quoteParams.referenceModuleInitData = abi.encode(true);
         vm.prank(anotherPublisher.owner);
-        uint256 pointedPubId = hub.quote(mockQuoteParams);
+        uint256 pointedPubId = hub.quote(quoteParams);
 
         _setPointedPub(anotherPublisher.profileId, pointedPubId);
         _setReferenceModuleData(abi.encode(false));
@@ -156,9 +158,10 @@ abstract contract ReferencePublicationTest is PublicationTest {
     }
 
     function testCannotReferenceA_Mirror() public {
-        mockMirrorParams.profileId = anotherPublisher.profileId;
+        Types.MirrorParams memory mirrorParams = _getDefaultMirrorParams();
+        mirrorParams.profileId = anotherPublisher.profileId;
         vm.prank(anotherPublisher.owner);
-        uint256 pointedPubId = hub.mirror(mockMirrorParams);
+        uint256 pointedPubId = hub.mirror(mirrorParams);
 
         _setPointedPub(anotherPublisher.profileId, pointedPubId);
 

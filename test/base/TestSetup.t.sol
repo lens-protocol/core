@@ -46,10 +46,6 @@ contract TestSetup is Test, ForkManagement, ArrayHelpers {
     ////////////////////////////////// Accounts
     TestAccount defaultAccount;
 
-    // TODO: We can avoid this `otherSigner` and do it better by using fuzzing instead, but it requires to refactor a
-    // lot of tests, like ProfileMetadataURITest and SetFollowModuleTest. We should do it later.
-    TestAccount otherSigner;
-
     ////////////////////////////////// Publications
     TestPublication defaultPub;
 
@@ -76,12 +72,6 @@ contract TestSetup is Test, ForkManagement, ArrayHelpers {
     MockActionModule mockActionModule;
     MockReferenceModule mockReferenceModule;
     ModuleGlobals moduleGlobals;
-
-    Types.CommentParams mockCommentParams;
-    Types.QuoteParams mockQuoteParams;
-    Types.MirrorParams mockMirrorParams;
-    Types.CollectParams mockCollectParams;
-    Types.PublicationActionParams mockActParams;
 
     constructor() {
         if (bytes(forkEnv).length > 0) {
@@ -214,7 +204,6 @@ contract TestSetup is Test, ForkManagement, ArrayHelpers {
     }
 
     function setUp() public virtual {
-        // Compute the domain separator.
         domainSeparator = keccak256(
             abi.encode(
                 Typehash.EIP712_DOMAIN,
@@ -224,61 +213,8 @@ contract TestSetup is Test, ForkManagement, ArrayHelpers {
                 hubProxyAddr
             )
         );
-
         defaultAccount = _loadAccountAs('DEFAULT_ACCOUNT');
-        otherSigner = _loadAccountAs('OTHER_SIGNER_ACCOUNT');
-
         defaultPub = _loadDefaultPublication();
-
-        // Precompute basic comment data.
-        mockCommentParams = Types.CommentParams({
-            profileId: defaultAccount.profileId,
-            contentURI: MOCK_URI,
-            pointedProfileId: defaultPub.profileId,
-            pointedPubId: defaultPub.pubId,
-            referrerProfileIds: _emptyUint256Array(),
-            referrerPubIds: _emptyUint256Array(),
-            referenceModuleData: '',
-            actionModules: _toAddressArray(address(mockActionModule)),
-            actionModulesInitDatas: _toBytesArray(abi.encode(true)),
-            referenceModule: address(0),
-            referenceModuleInitData: ''
-        });
-
-        // Precompute basic quote data.
-        mockQuoteParams = Types.QuoteParams({
-            profileId: defaultAccount.profileId,
-            contentURI: MOCK_URI,
-            pointedProfileId: defaultPub.profileId,
-            pointedPubId: defaultPub.pubId,
-            referrerProfileIds: _emptyUint256Array(),
-            referrerPubIds: _emptyUint256Array(),
-            referenceModuleData: '',
-            actionModules: _toAddressArray(address(mockActionModule)),
-            actionModulesInitDatas: _toBytesArray(abi.encode(true)),
-            referenceModule: address(0),
-            referenceModuleInitData: ''
-        });
-
-        // Precompute basic mirror data.
-        mockMirrorParams = Types.MirrorParams({
-            profileId: defaultAccount.profileId,
-            pointedProfileId: defaultPub.profileId,
-            pointedPubId: defaultPub.pubId,
-            referrerProfileIds: _emptyUint256Array(),
-            referrerPubIds: _emptyUint256Array(),
-            referenceModuleData: ''
-        });
-
-        mockActParams = Types.PublicationActionParams({
-            publicationActedProfileId: defaultPub.profileId,
-            publicationActedId: defaultPub.pubId,
-            actorProfileId: defaultAccount.profileId,
-            referrerProfileIds: _emptyUint256Array(),
-            referrerPubIds: _emptyUint256Array(),
-            actionModuleAddress: address(mockActionModule),
-            actionModuleData: abi.encode(true)
-        });
     }
 
     function _createProfile(address profileOwner) internal returns (uint256) {
@@ -386,6 +322,52 @@ contract TestSetup is Test, ForkManagement, ArrayHelpers {
             Types.PostParams({
                 profileId: defaultAccount.profileId,
                 contentURI: MOCK_URI,
+                actionModules: _toAddressArray(address(mockActionModule)),
+                actionModulesInitDatas: _toBytesArray(abi.encode(true)),
+                referenceModule: address(0),
+                referenceModuleInitData: ''
+            });
+    }
+
+    function _getDefaultCommentParams() internal view returns (Types.CommentParams memory) {
+        return
+            Types.CommentParams({
+                profileId: defaultAccount.profileId,
+                contentURI: MOCK_URI,
+                pointedProfileId: defaultPub.profileId,
+                pointedPubId: defaultPub.pubId,
+                referrerProfileIds: _emptyUint256Array(),
+                referrerPubIds: _emptyUint256Array(),
+                referenceModuleData: '',
+                actionModules: _toAddressArray(address(mockActionModule)),
+                actionModulesInitDatas: _toBytesArray(abi.encode(true)),
+                referenceModule: address(0),
+                referenceModuleInitData: ''
+            });
+    }
+
+    function _getDefaultMirrorParams() internal view returns (Types.MirrorParams memory) {
+        return
+            Types.MirrorParams({
+                profileId: defaultAccount.profileId,
+                pointedProfileId: defaultPub.profileId,
+                pointedPubId: defaultPub.pubId,
+                referrerProfileIds: _emptyUint256Array(),
+                referrerPubIds: _emptyUint256Array(),
+                referenceModuleData: ''
+            });
+    }
+
+    function _getDefaultQuoteParams() internal view returns (Types.QuoteParams memory) {
+        return
+            Types.QuoteParams({
+                profileId: defaultAccount.profileId,
+                contentURI: MOCK_URI,
+                pointedProfileId: defaultPub.profileId,
+                pointedPubId: defaultPub.pubId,
+                referrerProfileIds: _emptyUint256Array(),
+                referrerPubIds: _emptyUint256Array(),
+                referenceModuleData: '',
                 actionModules: _toAddressArray(address(mockActionModule)),
                 actionModulesInitDatas: _toBytesArray(abi.encode(true)),
                 referenceModule: address(0),
