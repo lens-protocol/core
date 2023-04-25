@@ -14,12 +14,8 @@ import {HubRestricted} from 'contracts/base/HubRestricted.sol';
 import {IModuleGlobals} from 'contracts/interfaces/IModuleGlobals.sol';
 import {VersionedInitializable} from 'contracts/base/upgradeability/VersionedInitializable.sol';
 
-contract CollectPublicationAction is HubRestricted, VersionedInitializable, IPublicationActionModule {
+contract CollectPublicationAction is HubRestricted, IPublicationActionModule {
     using Strings for uint256;
-
-    // Constant for upgradeability purposes, see VersionedInitializable.
-    // Do not confuse it with the EIP-712 version number.
-    uint256 internal constant REVISION = 1;
 
     struct CollectData {
         address collectModule;
@@ -28,8 +24,8 @@ contract CollectPublicationAction is HubRestricted, VersionedInitializable, IPub
 
     event CollectModuleWhitelisted(address collectModule, bool whitelist, uint256 timestamp);
 
-    address immutable COLLECT_NFT_IMPL;
-    address immutable MODULE_GLOBALS;
+    address public immutable COLLECT_NFT_IMPL;
+    address public immutable MODULE_GLOBALS;
 
     string constant COLLECT_NFT_NAME_INFIX = '-Collect-';
     string constant COLLECT_NFT_SYMBOL_INFIX = '-Cl-';
@@ -38,9 +34,6 @@ contract CollectPublicationAction is HubRestricted, VersionedInitializable, IPub
     mapping(uint256 profileId => mapping(uint256 pubId => CollectData collectData)) internal _collectDataByPub;
 
     constructor(address hub, address collectNFTImpl, address moduleGlobals) HubRestricted(hub) {
-        if (collectNFTImpl == address(0) || moduleGlobals == address(0)) {
-            revert Errors.InitParamsInvalid();
-        }
         COLLECT_NFT_IMPL = collectNFTImpl;
         MODULE_GLOBALS = moduleGlobals;
     }
@@ -156,7 +149,7 @@ contract CollectPublicationAction is HubRestricted, VersionedInitializable, IPub
         return collectNFT;
     }
 
-    function getRevision() internal pure virtual override returns (uint256) {
-        return REVISION;
+    function isCollectModuleWhitelisted(address collectModule) external view returns (bool) {
+        return _collectModuleWhitelisted[collectModule];
     }
 }
