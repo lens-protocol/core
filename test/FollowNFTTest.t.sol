@@ -25,23 +25,35 @@ contract FollowNFTTest is BaseTest, ERC721Test {
 
         targetProfileOwner = address(0xC0FFEE);
         targetProfileId = _createProfile(targetProfileOwner);
-        followerProfileOwner = me;
+        followerProfileOwner = address(this);
         followerProfileId = _createProfile(followerProfileOwner);
 
         followHolder = address(0xF0110111401DE2);
 
         alreadyFollowingProfileOwner = address(0xF01108);
         alreadyFollowingProfileId = _createProfile(alreadyFollowingProfileOwner);
-        lastAssignedTokenId = _follow(alreadyFollowingProfileOwner, alreadyFollowingProfileId, targetProfileId, 0, '')[
-            0
-        ];
+        vm.prank(alreadyFollowingProfileOwner);
+        lastAssignedTokenId = hub.follow(
+            alreadyFollowingProfileId,
+            _toUint256Array(targetProfileId),
+            _toUint256Array(0),
+            _toBytesArray('')
+        )[0];
 
         targetFollowNFT = hub.getFollowNFT(targetProfileId);
         followNFT = FollowNFT(targetFollowNFT);
     }
 
     function _mintERC721(address to) internal virtual override returns (uint256) {
-        uint256 tokenId = _follow(to, _createProfile(to), targetProfileId, 0, '')[0];
+        followerProfileId = _createProfile(to);
+        vm.prank(to);
+        uint256 tokenId = hub.follow(
+            followerProfileId,
+            _toUint256Array(targetProfileId),
+            _toUint256Array(0),
+            _toBytesArray('')
+        )[0];
+
         vm.prank(to);
         followNFT.wrap(tokenId);
         return tokenId;
@@ -115,9 +127,15 @@ contract FollowNFTTest is BaseTest, ERC721Test {
 
     // Initial condition
     function testFirstFollowTokenHasIdOne() public {
-        uint256 profileIdToFollow = _createProfile(me);
+        uint256 profileIdToFollow = _createProfile(address(this));
 
-        uint256 assignedTokenId = _follow(followerProfileOwner, followerProfileId, profileIdToFollow, 0, '')[0];
+        vm.prank(followerProfileOwner);
+        uint256 assignedTokenId = hub.follow(
+            followerProfileId,
+            _toUint256Array(profileIdToFollow),
+            _toUint256Array(0),
+            _toBytesArray('')
+        )[0];
 
         assertEq(assignedTokenId, 1);
     }

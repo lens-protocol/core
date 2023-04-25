@@ -46,7 +46,13 @@ contract FollowTest is BaseTest {
         alreadyFollowingProfileOwner = vm.addr(alreadyFollowingProfileOwnerPk);
         alreadyFollowingProfileId = _createProfile(alreadyFollowingProfileOwner);
 
-        followTokenId = _follow(alreadyFollowingProfileOwner, alreadyFollowingProfileId, targetProfileId, 0, '')[0];
+        vm.prank(alreadyFollowingProfileOwner);
+        followTokenId = hub.follow(
+            alreadyFollowingProfileId,
+            _toUint256Array(targetProfileId),
+            _toUint256Array(0),
+            _toBytesArray('')
+        )[0];
 
         targetFollowNFTAddress = hub.getFollowNFT(targetProfileId);
         followNFT = FollowNFT(targetFollowNFTAddress);
@@ -411,8 +417,8 @@ contract FollowMetaTxTest is FollowTest, MetaTxNegatives {
         FollowTest.setUp();
         MetaTxNegatives.setUp();
 
-        cachedNonceByAddress[testFollowerProfileOwner] = _getSigNonce(testFollowerProfileOwner);
-        cachedNonceByAddress[alreadyFollowingProfileOwner] = _getSigNonce(alreadyFollowingProfileOwner);
+        cachedNonceByAddress[testFollowerProfileOwner] = hub.nonces(testFollowerProfileOwner);
+        cachedNonceByAddress[alreadyFollowingProfileOwner] = hub.nonces(alreadyFollowingProfileOwner);
     }
 
     function _follow(
@@ -503,7 +509,7 @@ contract FollowMetaTxTest is FollowTest, MetaTxNegatives {
     }
 
     function _refreshCachedNonces() internal override {
-        cachedNonceByAddress[testFollowerProfileOwner] = _getSigNonce(testFollowerProfileOwner);
-        cachedNonceByAddress[alreadyFollowingProfileOwner] = _getSigNonce(alreadyFollowingProfileOwner);
+        cachedNonceByAddress[testFollowerProfileOwner] = hub.nonces(testFollowerProfileOwner);
+        cachedNonceByAddress[alreadyFollowingProfileOwner] = hub.nonces(alreadyFollowingProfileOwner);
     }
 }

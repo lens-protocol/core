@@ -27,7 +27,7 @@ contract TokenGatedReferenceModuleBase is BaseTest {
         super.setUp();
         currency = new Currency();
         nft = new NFT();
-        profileId = _createProfile(profileOwner);
+        profileId = _createProfile(defaultAccount.owner);
     }
 
     // Deploy & Whitelist TokenGatedReferenceModule
@@ -80,7 +80,7 @@ contract TokenGatedReferenceModule_Publication is TokenGatedReferenceModuleBase 
         tokenGatedReferenceModule.initializeReferenceModule(
             profileId,
             1,
-            profileOwner,
+            defaultAccount.owner,
             abi.encode(GateParams({tokenAddress: address(currency), minThreshold: 1}))
         );
     }
@@ -92,7 +92,7 @@ contract TokenGatedReferenceModule_Publication is TokenGatedReferenceModuleBase 
         tokenGatedReferenceModule.processComment(
             Types.ProcessCommentParams({
                 profileId: profileId,
-                transactionExecutor: profileOwner,
+                transactionExecutor: defaultAccount.owner,
                 pointedProfileId: profileId,
                 pointedPubId: 1,
                 referrerProfileIds: _emptyUint256Array(),
@@ -110,7 +110,7 @@ contract TokenGatedReferenceModule_Publication is TokenGatedReferenceModuleBase 
         tokenGatedReferenceModule.processQuote(
             Types.ProcessQuoteParams({
                 profileId: profileId,
-                transactionExecutor: profileOwner,
+                transactionExecutor: defaultAccount.owner,
                 pointedProfileId: profileId,
                 pointedPubId: 1,
                 referrerProfileIds: _emptyUint256Array(),
@@ -128,7 +128,7 @@ contract TokenGatedReferenceModule_Publication is TokenGatedReferenceModuleBase 
         tokenGatedReferenceModule.processMirror(
             Types.ProcessMirrorParams({
                 profileId: profileId,
-                transactionExecutor: profileOwner,
+                transactionExecutor: defaultAccount.owner,
                 pointedProfileId: profileId,
                 pointedPubId: 1,
                 referrerProfileIds: _emptyUint256Array(),
@@ -200,7 +200,7 @@ contract TokenGatedReferenceModule_ERC20_Gated is TokenGatedReferenceModuleBase 
         uint256 publisherPubId,
         uint256 minThreshold
     ) public {
-        assertEq(currency.balanceOf(address(profileOwner)), 0);
+        assertEq(currency.balanceOf(address(defaultAccount.owner)), 0);
 
         _initialize(publisherProfileId, publisherPubId, minThreshold);
 
@@ -210,7 +210,7 @@ contract TokenGatedReferenceModule_ERC20_Gated is TokenGatedReferenceModuleBase 
         tokenGatedReferenceModule.processComment(
             Types.ProcessCommentParams({
                 profileId: profileId,
-                transactionExecutor: profileOwner,
+                transactionExecutor: defaultAccount.owner,
                 pointedProfileId: publisherProfileId,
                 pointedPubId: publisherPubId,
                 referrerProfileIds: _emptyUint256Array(),
@@ -226,7 +226,7 @@ contract TokenGatedReferenceModule_ERC20_Gated is TokenGatedReferenceModuleBase 
         uint256 publisherPubId,
         uint256 minThreshold
     ) public {
-        assertEq(currency.balanceOf(address(profileOwner)), 0);
+        assertEq(currency.balanceOf(address(defaultAccount.owner)), 0);
 
         _initialize(publisherProfileId, publisherPubId, minThreshold);
 
@@ -235,7 +235,7 @@ contract TokenGatedReferenceModule_ERC20_Gated is TokenGatedReferenceModuleBase 
         tokenGatedReferenceModule.processMirror(
             Types.ProcessMirrorParams({
                 profileId: profileId,
-                transactionExecutor: profileOwner,
+                transactionExecutor: defaultAccount.owner,
                 pointedProfileId: publisherProfileId,
                 pointedPubId: publisherPubId,
                 referrerProfileIds: _emptyUint256Array(),
@@ -251,7 +251,7 @@ contract TokenGatedReferenceModule_ERC20_Gated is TokenGatedReferenceModuleBase 
         uint256 publisherPubId,
         uint256 minThreshold
     ) public {
-        assertEq(currency.balanceOf(address(profileOwner)), 0);
+        assertEq(currency.balanceOf(address(defaultAccount.owner)), 0);
 
         _initialize(publisherProfileId, publisherPubId, minThreshold);
 
@@ -260,7 +260,7 @@ contract TokenGatedReferenceModule_ERC20_Gated is TokenGatedReferenceModuleBase 
         tokenGatedReferenceModule.processQuote(
             Types.ProcessQuoteParams({
                 profileId: profileId,
-                transactionExecutor: profileOwner,
+                transactionExecutor: defaultAccount.owner,
                 pointedProfileId: publisherProfileId,
                 pointedPubId: publisherPubId,
                 referrerProfileIds: _emptyUint256Array(),
@@ -277,8 +277,8 @@ contract TokenGatedReferenceModule_ERC20_Gated is TokenGatedReferenceModuleBase 
         uint256 publisherPubId,
         uint256 minThreshold
     ) public {
-        currency.mint(profileOwner, minThreshold);
-        assertTrue(currency.balanceOf(profileOwner) >= minThreshold);
+        currency.mint(defaultAccount.owner, minThreshold);
+        assertTrue(currency.balanceOf(defaultAccount.owner) >= minThreshold);
 
         _initialize(publisherProfileId, publisherPubId, minThreshold);
 
@@ -286,7 +286,7 @@ contract TokenGatedReferenceModule_ERC20_Gated is TokenGatedReferenceModuleBase 
         tokenGatedReferenceModule.processComment(
             Types.ProcessCommentParams({
                 profileId: profileId,
-                transactionExecutor: profileOwner,
+                transactionExecutor: defaultAccount.owner,
                 pointedProfileId: publisherProfileId,
                 pointedPubId: publisherPubId,
                 referrerProfileIds: _emptyUint256Array(),
@@ -302,8 +302,8 @@ contract TokenGatedReferenceModule_ERC20_Gated is TokenGatedReferenceModuleBase 
         uint256 publisherPubId,
         uint256 minThreshold
     ) public {
-        currency.mint(profileOwner, minThreshold);
-        assertTrue(currency.balanceOf(profileOwner) >= minThreshold);
+        currency.mint(defaultAccount.owner, minThreshold);
+        assertTrue(currency.balanceOf(defaultAccount.owner) >= minThreshold);
 
         _initialize(publisherProfileId, publisherPubId, minThreshold);
 
@@ -311,7 +311,7 @@ contract TokenGatedReferenceModule_ERC20_Gated is TokenGatedReferenceModuleBase 
         tokenGatedReferenceModule.processMirror(
             Types.ProcessMirrorParams({
                 profileId: profileId,
-                transactionExecutor: profileOwner,
+                transactionExecutor: defaultAccount.owner,
                 pointedProfileId: publisherProfileId,
                 pointedPubId: publisherPubId,
                 referrerProfileIds: _emptyUint256Array(),
@@ -327,8 +327,8 @@ contract TokenGatedReferenceModule_ERC20_Gated is TokenGatedReferenceModuleBase 
         uint256 publisherPubId,
         uint256 minThreshold
     ) public {
-        currency.mint(profileOwner, minThreshold);
-        assertTrue(currency.balanceOf(profileOwner) >= minThreshold);
+        currency.mint(defaultAccount.owner, minThreshold);
+        assertTrue(currency.balanceOf(defaultAccount.owner) >= minThreshold);
 
         _initialize(publisherProfileId, publisherPubId, minThreshold);
 
@@ -336,7 +336,7 @@ contract TokenGatedReferenceModule_ERC20_Gated is TokenGatedReferenceModuleBase 
         tokenGatedReferenceModule.processQuote(
             Types.ProcessQuoteParams({
                 profileId: profileId,
-                transactionExecutor: profileOwner,
+                transactionExecutor: defaultAccount.owner,
                 pointedProfileId: publisherProfileId,
                 pointedPubId: publisherPubId,
                 referrerProfileIds: _emptyUint256Array(),
@@ -370,7 +370,7 @@ contract TokenGatedReferenceModule_ERC721_Gated is TokenGatedReferenceModuleBase
 
     // Negatives
     function testCannotProcessComment_IfNotEnoughBalance(uint256 publisherProfileId, uint256 publisherPubId) public {
-        assertEq(nft.balanceOf(address(profileOwner)), 0);
+        assertEq(nft.balanceOf(address(defaultAccount.owner)), 0);
 
         _initialize(publisherProfileId, publisherPubId);
 
@@ -379,7 +379,7 @@ contract TokenGatedReferenceModule_ERC721_Gated is TokenGatedReferenceModuleBase
         tokenGatedReferenceModule.processComment(
             Types.ProcessCommentParams({
                 profileId: profileId,
-                transactionExecutor: profileOwner,
+                transactionExecutor: defaultAccount.owner,
                 pointedProfileId: publisherProfileId,
                 pointedPubId: publisherPubId,
                 referrerProfileIds: _emptyUint256Array(),
@@ -391,7 +391,7 @@ contract TokenGatedReferenceModule_ERC721_Gated is TokenGatedReferenceModuleBase
     }
 
     function testCannotProcessMirror_IfNotEnoughBalance(uint256 publisherProfileId, uint256 publisherPubId) public {
-        assertEq(nft.balanceOf(address(profileOwner)), 0);
+        assertEq(nft.balanceOf(address(defaultAccount.owner)), 0);
 
         _initialize(publisherProfileId, publisherPubId);
 
@@ -400,7 +400,7 @@ contract TokenGatedReferenceModule_ERC721_Gated is TokenGatedReferenceModuleBase
         tokenGatedReferenceModule.processMirror(
             Types.ProcessMirrorParams({
                 profileId: profileId,
-                transactionExecutor: profileOwner,
+                transactionExecutor: defaultAccount.owner,
                 pointedProfileId: publisherProfileId,
                 pointedPubId: publisherPubId,
                 referrerProfileIds: _emptyUint256Array(),
@@ -412,7 +412,7 @@ contract TokenGatedReferenceModule_ERC721_Gated is TokenGatedReferenceModuleBase
     }
 
     function testCannotProcessQuote_IfNotEnoughBalance(uint256 publisherProfileId, uint256 publisherPubId) public {
-        assertEq(nft.balanceOf(address(profileOwner)), 0);
+        assertEq(nft.balanceOf(address(defaultAccount.owner)), 0);
 
         _initialize(publisherProfileId, publisherPubId);
 
@@ -421,7 +421,7 @@ contract TokenGatedReferenceModule_ERC721_Gated is TokenGatedReferenceModuleBase
         tokenGatedReferenceModule.processQuote(
             Types.ProcessQuoteParams({
                 profileId: profileId,
-                transactionExecutor: profileOwner,
+                transactionExecutor: defaultAccount.owner,
                 pointedProfileId: publisherProfileId,
                 pointedPubId: publisherPubId,
                 referrerProfileIds: _emptyUint256Array(),
@@ -434,8 +434,8 @@ contract TokenGatedReferenceModule_ERC721_Gated is TokenGatedReferenceModuleBase
 
     // Scenarios
     function testProcessComment_HoldingEnoughTokens(uint256 publisherProfileId, uint256 publisherPubId) public {
-        nft.mint({to: profileOwner, nftId: 1});
-        assertTrue(nft.balanceOf(profileOwner) >= minThreshold);
+        nft.mint({to: defaultAccount.owner, nftId: 1});
+        assertTrue(nft.balanceOf(defaultAccount.owner) >= minThreshold);
 
         _initialize(publisherProfileId, publisherPubId);
 
@@ -443,7 +443,7 @@ contract TokenGatedReferenceModule_ERC721_Gated is TokenGatedReferenceModuleBase
         tokenGatedReferenceModule.processComment(
             Types.ProcessCommentParams({
                 profileId: profileId,
-                transactionExecutor: profileOwner,
+                transactionExecutor: defaultAccount.owner,
                 pointedProfileId: publisherProfileId,
                 pointedPubId: publisherPubId,
                 referrerProfileIds: _emptyUint256Array(),
@@ -455,8 +455,8 @@ contract TokenGatedReferenceModule_ERC721_Gated is TokenGatedReferenceModuleBase
     }
 
     function testProcessMirror_HoldingEnoughTokens(uint256 publisherProfileId, uint256 publisherPubId) public {
-        nft.mint({to: profileOwner, nftId: 1});
-        assertTrue(nft.balanceOf(profileOwner) >= minThreshold);
+        nft.mint({to: defaultAccount.owner, nftId: 1});
+        assertTrue(nft.balanceOf(defaultAccount.owner) >= minThreshold);
 
         _initialize(publisherProfileId, publisherPubId);
 
@@ -464,7 +464,7 @@ contract TokenGatedReferenceModule_ERC721_Gated is TokenGatedReferenceModuleBase
         tokenGatedReferenceModule.processMirror(
             Types.ProcessMirrorParams({
                 profileId: profileId,
-                transactionExecutor: profileOwner,
+                transactionExecutor: defaultAccount.owner,
                 pointedProfileId: publisherProfileId,
                 pointedPubId: publisherPubId,
                 referrerProfileIds: _emptyUint256Array(),
@@ -476,8 +476,8 @@ contract TokenGatedReferenceModule_ERC721_Gated is TokenGatedReferenceModuleBase
     }
 
     function testProcessQuote_HoldingEnoughTokens(uint256 publisherProfileId, uint256 publisherPubId) public {
-        nft.mint({to: profileOwner, nftId: 1});
-        assertTrue(nft.balanceOf(profileOwner) >= minThreshold);
+        nft.mint({to: defaultAccount.owner, nftId: 1});
+        assertTrue(nft.balanceOf(defaultAccount.owner) >= minThreshold);
 
         _initialize(publisherProfileId, publisherPubId);
 
@@ -485,7 +485,7 @@ contract TokenGatedReferenceModule_ERC721_Gated is TokenGatedReferenceModuleBase
         tokenGatedReferenceModule.processQuote(
             Types.ProcessQuoteParams({
                 profileId: profileId,
-                transactionExecutor: profileOwner,
+                transactionExecutor: defaultAccount.owner,
                 pointedProfileId: publisherProfileId,
                 pointedPubId: publisherPubId,
                 referrerProfileIds: _emptyUint256Array(),

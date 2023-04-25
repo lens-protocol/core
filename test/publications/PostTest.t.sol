@@ -12,7 +12,7 @@ contract PostTest is PublicationTest {
 
     function setUp() public virtual override {
         super.setUp();
-        mockPostParams.profileId = publisherProfileId;
+        mockPostParams.profileId = publisher.profileId;
     }
 
     function _publish(uint256 signerPk, uint256 publisherProfileId) internal virtual override returns (uint256) {
@@ -36,7 +36,7 @@ contract PostMetaTxTest is PostTest, MetaTxNegatives {
     function setUp() public virtual override(PostTest, MetaTxNegatives) {
         PostTest.setUp();
         MetaTxNegatives.setUp();
-        cachedNonceByAddress[profileOwner] = _getSigNonce(profileOwner);
+        cachedNonceByAddress[defaultAccount.owner] = hub.nonces(defaultAccount.owner);
     }
 
     function _publish(uint256 signerPk, uint256 publisherProfileId) internal virtual override returns (uint256) {
@@ -71,6 +71,6 @@ contract PostMetaTxTest is PostTest, MetaTxNegatives {
     }
 
     function _getDefaultMetaTxSignerPk() internal virtual override returns (uint256) {
-        return publisherOwnerPk;
+        return publisher.ownerPk;
     }
 }

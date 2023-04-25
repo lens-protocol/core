@@ -42,7 +42,6 @@ interface IOldHub {
 }
 
 contract UpgradeForkTest is BaseTest {
-    bytes32 constant ADMIN_SLOT = bytes32(uint256(keccak256('eip1967.proxy.admin')) - 1);
     address constant POLYGON_HUB_PROXY = 0xDb46d1Dc155634FbC732f92E853b10B288AD5a1d;
     address constant MUMBAI_HUB_PROXY = 0x60Ae865ee4C725cd04353b5AAb364553f56ceF82;
 
@@ -118,8 +117,8 @@ contract UpgradeForkTest is BaseTest {
 
         // Fourth, set new data and ensure getters return the new data (proper slots set).
         vm.prank(gov);
-        hub.setGovernance(me);
-        assertEq(hub.getGovernance(), me);
+        hub.setGovernance(address(this));
+        assertEq(hub.getGovernance(), address(this));
     }
 
     function _fullCreateProfileSequence(address gov, ILensHub hub) private returns (uint256) {
@@ -143,10 +142,10 @@ contract UpgradeForkTest is BaseTest {
 
             // precompute basic profile creaton data.
             mockCreateProfileParams = Types.CreateProfileParams({
-                to: me,
+                to: address(this),
                 imageURI: MOCK_URI,
                 followModule: address(0),
-                followModuleInitData: abi.encode(1),
+                followModuleInitData: abi.encode(true),
                 followNFTURI: MOCK_URI
             });
 
@@ -374,7 +373,7 @@ contract UpgradeForkTest is BaseTest {
         hub = LensHub(hubProxyAddr);
         // Start gov actions.
         vm.startPrank(gov);
-        hub.whitelistProfileCreator(me, true);
+        hub.whitelistProfileCreator(address(this), true);
         hub.whitelistFollowModule(mockFollowModuleAddr, true);
         hub.whitelistReferenceModule(mockReferenceModuleAddr, true);
 
@@ -396,10 +395,10 @@ contract UpgradeForkTest is BaseTest {
 
         // precompute basic profile creaton data.
         mockCreateProfileParams = Types.CreateProfileParams({
-            to: me,
+            to: address(this),
             imageURI: MOCK_URI,
             followModule: address(0),
-            followModuleInitData: abi.encode(1),
+            followModuleInitData: abi.encode(true),
             followNFTURI: MOCK_URI
         });
 
@@ -408,30 +407,30 @@ contract UpgradeForkTest is BaseTest {
             profileId: 0,
             contentURI: MOCK_URI,
             actionModules: _toAddressArray(address(0)),
-            actionModulesInitDatas: _toBytesArray(abi.encode(1)),
+            actionModulesInitDatas: _toBytesArray(abi.encode(true)),
             referenceModule: address(0),
-            referenceModuleInitData: abi.encode(1)
+            referenceModuleInitData: abi.encode(true)
         });
 
         // Precompute basic comment data.
         mockCommentParams = Types.CommentParams({
             profileId: 0,
             contentURI: MOCK_URI,
-            pointedProfileId: newProfileId,
+            pointedProfileId: defaultAccount.profileId,
             pointedPubId: 1,
             referrerProfileIds: _emptyUint256Array(),
             referrerPubIds: _emptyUint256Array(),
             referenceModuleData: '',
             actionModules: _toAddressArray(address(0)),
-            actionModulesInitDatas: _toBytesArray(abi.encode(1)),
+            actionModulesInitDatas: _toBytesArray(abi.encode(true)),
             referenceModule: address(0),
-            referenceModuleInitData: abi.encode(1)
+            referenceModuleInitData: abi.encode(true)
         });
 
         // Precompute basic mirror data.
         mockMirrorParams = Types.MirrorParams({
             profileId: 0,
-            pointedProfileId: newProfileId,
+            pointedProfileId: defaultAccount.profileId,
             pointedPubId: 1,
             referrerProfileIds: _emptyUint256Array(),
             referrerPubIds: _emptyUint256Array(),

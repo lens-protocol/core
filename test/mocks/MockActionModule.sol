@@ -4,11 +4,12 @@ pragma solidity ^0.8.15;
 
 import {IPublicationActionModule} from 'contracts/interfaces/IPublicationActionModule.sol';
 import {Types} from 'contracts/libraries/constants/Types.sol';
+import {MockModule} from 'test/mocks/MockModule.sol';
 
 /**
  * @dev This is a simple mock Action module to be used for testing revert cases on processAction.
  */
-contract MockActionModule is IPublicationActionModule {
+contract MockActionModule is MockModule, IPublicationActionModule {
     error MockActionModuleReverted();
 
     function testMockActionModule() public {
@@ -30,14 +31,5 @@ contract MockActionModule is IPublicationActionModule {
         Types.ProcessActionParams calldata processActionParams
     ) external pure override returns (bytes memory) {
         return _decodeFlagAndRevertIfFalse(processActionParams.actionModuleData);
-    }
-
-    // Reverts if the flag decoded from the data is not `true`.
-    function _decodeFlagAndRevertIfFalse(bytes memory data) internal pure returns (bytes memory) {
-        bool shouldItSucceed = abi.decode(data, (bool));
-        if (!shouldItSucceed) {
-            revert MockActionModuleReverted();
-        }
-        return data;
     }
 }

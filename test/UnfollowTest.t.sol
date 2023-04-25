@@ -29,7 +29,13 @@ contract UnfollowTest is BaseTest {
         nonFollowingProfileId = _createProfile(nonFollowingProfileOwner);
         testUnfollowerProfileOwner = vm.addr(testUnfollowerProfileOwnerPk);
         testUnfollowerProfileId = _createProfile(testUnfollowerProfileOwner);
-        followTokenId = _follow(testUnfollowerProfileOwner, testUnfollowerProfileId, targetProfileId, 0, '')[0];
+        vm.prank(testUnfollowerProfileOwner);
+        followTokenId = hub.follow(
+            testUnfollowerProfileId,
+            _toUint256Array(targetProfileId),
+            _toUint256Array(0),
+            _toBytesArray('')
+        )[0];
 
         targetFollowNFT = hub.getFollowNFT(targetProfileId);
         followNFT = FollowNFT(targetFollowNFT);
@@ -201,8 +207,8 @@ contract UnfollowMetaTxTest is UnfollowTest, MetaTxNegatives {
         UnfollowTest.setUp();
         MetaTxNegatives.setUp();
 
-        cachedNonceByAddress[nonFollowingProfileOwner] = _getSigNonce(nonFollowingProfileOwner);
-        cachedNonceByAddress[testUnfollowerProfileOwner] = _getSigNonce(testUnfollowerProfileOwner);
+        cachedNonceByAddress[nonFollowingProfileOwner] = hub.nonces(nonFollowingProfileOwner);
+        cachedNonceByAddress[testUnfollowerProfileOwner] = hub.nonces(testUnfollowerProfileOwner);
     }
 
     function _unfollow(

@@ -28,17 +28,17 @@ contract SetFollowModuleTest is BaseTest, SigSetup {
         uint256 sigDeadline
     ) internal virtual {
         bytes32 digest = _getSetFollowModuleTypedDataHash(
-            newProfileId,
+            defaultAccount.profileId,
             mockFollowModule,
-            abi.encode(1),
+            abi.encode(true),
             nonce,
             digestDeadline
         );
 
         hub.setFollowModuleWithSig({
-            profileId: newProfileId,
+            profileId: defaultAccount.profileId,
             followModule: mockFollowModule,
-            followModuleInitData: abi.encode(1),
+            followModuleInitData: abi.encode(true),
             signature: _getSigStruct(delegatedSigner, signerPrivKey, digest, sigDeadline)
         });
     }
@@ -46,38 +46,38 @@ contract SetFollowModuleTest is BaseTest, SigSetup {
     // Negatives
     function testCannotSetFollowModuleNotDelegatedExecutor() public {
         vm.expectRevert(Errors.ExecutorInvalid.selector);
-        hub.setFollowModule(newProfileId, address(0), '');
+        hub.setFollowModule(defaultAccount.profileId, address(0), '');
     }
 
     function testCannotSetFollowModuleNotWhitelisted() public {
         vm.expectRevert(Errors.NotWhitelisted.selector);
-        vm.prank(profileOwner);
-        hub.setFollowModule(newProfileId, address(1), '');
+        vm.prank(defaultAccount.owner);
+        hub.setFollowModule(defaultAccount.profileId, address(1), '');
     }
 
     function testCannotSetFollowModuleWithWrongInitData() public {
         vm.expectRevert(bytes(''));
-        vm.prank(profileOwner);
-        hub.setFollowModule(newProfileId, mockFollowModule, '');
+        vm.prank(defaultAccount.owner);
+        hub.setFollowModule(defaultAccount.profileId, mockFollowModule, '');
     }
 
     // Positives
     function testSetFollowModule() public {
-        vm.prank(profileOwner);
-        hub.setFollowModule(newProfileId, mockFollowModule, abi.encode(1));
-        assertEq(hub.getFollowModule(newProfileId), mockFollowModule);
+        vm.prank(defaultAccount.owner);
+        hub.setFollowModule(defaultAccount.profileId, mockFollowModule, abi.encode(true));
+        assertEq(hub.getFollowModule(defaultAccount.profileId), mockFollowModule);
 
-        vm.prank(profileOwner);
-        hub.setFollowModule(newProfileId, address(0), '');
-        assertEq(hub.getFollowModule(newProfileId), address(0));
+        vm.prank(defaultAccount.owner);
+        hub.setFollowModule(defaultAccount.profileId, address(0), '');
+        assertEq(hub.getFollowModule(defaultAccount.profileId), address(0));
     }
 
     function testDelegatedExecutorSetFollowModule() public {
-        assertEq(hub.getFollowModule(newProfileId), address(0));
-        vm.prank(profileOwner);
+        assertEq(hub.getFollowModule(defaultAccount.profileId), address(0));
+        vm.prank(defaultAccount.owner);
         hub.changeDelegatedExecutorsConfig({
-            delegatorProfileId: newProfileId,
-            delegatedExecutors: _toAddressArray(otherSigner),
+            delegatorProfileId: defaultAccount.profileId,
+            delegatedExecutors: _toAddressArray(otherSigner.owner),
             approvals: _toBoolArray(true)
         });
 
@@ -85,58 +85,58 @@ contract SetFollowModuleTest is BaseTest, SigSetup {
         vm.prank(governance);
         hub.whitelistFollowModule(mockFollowModule, true);
 
-        vm.prank(otherSigner);
-        hub.setFollowModule(newProfileId, mockFollowModule, abi.encode(1));
-        assertEq(hub.getFollowModule(newProfileId), mockFollowModule);
+        vm.prank(otherSigner.owner);
+        hub.setFollowModule(defaultAccount.profileId, mockFollowModule, abi.encode(true));
+        assertEq(hub.getFollowModule(defaultAccount.profileId), mockFollowModule);
     }
 
     // Meta-tx
     // Negatives
     function testCannotSetFollowModuleNotWhitelistedWithSig() public {
         vm.expectRevert(Errors.NotWhitelisted.selector);
-        bytes32 digest = _getSetFollowModuleTypedDataHash(newProfileId, address(1), '', nonce, deadline);
+        bytes32 digest = _getSetFollowModuleTypedDataHash(defaultAccount.profileId, address(1), '', nonce, deadline);
 
         hub.setFollowModuleWithSig({
-            profileId: newProfileId,
+            profileId: defaultAccount.profileId,
             followModule: address(1),
             followModuleInitData: '',
-            signature: _getSigStruct(profileOwner, profileOwnerKey, digest, deadline)
+            signature: _getSigStruct(defaultAccount.owner, defaultAccount.ownerPk, digest, deadline)
         });
     }
 
     function testCannotPublishWithSigInvalidSigner() public {
-        address delegatedSigner = profileOwner;
-        uint256 signerPrivKey = otherSignerKey;
+        address delegatedSigner = defaultAccount.owner;
+        uint256 signerPrivKey = otherSigner.ownerPk;
         assertTrue(vm.addr(signerPrivKey) != delegatedSigner);
         vm.expectRevert(Errors.SignatureInvalid.selector);
         _setFollowModulehWithSig(delegatedSigner, signerPrivKey);
     }
 
     function testCannotPublishWithSigInvalidNonce() public {
-        nonce = _getSigNonce(profileOwner) + 1;
+        nonce = hub.nonces(defaultAccount.owner) + 1;
         vm.expectRevert(Errors.SignatureInvalid.selector);
-        _setFollowModulehWithSig({delegatedSigner: profileOwner, signerPrivKey: profileOwnerKey});
+        _setFollowModulehWithSig({delegatedSigner: defaultAccount.owner, signerPrivKey: defaultAccount.ownerPk});
     }
 
     function testCannotPublishWithSigInvalidDeadline() public {
         vm.expectRevert(Errors.SignatureInvalid.selector);
         _setFollowModulehWithSig({
-            delegatedSigner: profileOwner,
-            signerPrivKey: profileOwnerKey,
+            delegatedSigner: defaultAccount.owner,
+            signerPrivKey: defaultAccount.ownerPk,
             digestDeadline: type(uint256).max,
             sigDeadline: block.timestamp + 10
         });
     }
 
     function testCannotPublishIfNonceWasIncrementedWithAnotherAction() public {
-        assertEq(_getSigNonce(profileOwner), nonce, 'Wrong nonce before posting');
+        assertEq(hub.nonces(defaultAccount.owner), nonce, 'Wrong nonce before posting');
 
-        _setFollowModulehWithSig({delegatedSigner: profileOwner, signerPrivKey: profileOwnerKey});
+        _setFollowModulehWithSig({delegatedSigner: defaultAccount.owner, signerPrivKey: defaultAccount.ownerPk});
 
-        assertTrue(_getSigNonce(profileOwner) != nonce, 'Wrong nonce after posting');
+        assertTrue(hub.nonces(defaultAccount.owner) != nonce, 'Wrong nonce after posting');
 
         vm.expectRevert(Errors.SignatureInvalid.selector);
-        _setFollowModulehWithSig({delegatedSigner: profileOwner, signerPrivKey: profileOwnerKey});
+        _setFollowModulehWithSig({delegatedSigner: defaultAccount.owner, signerPrivKey: defaultAccount.ownerPk});
     }
 
     function testCannotPublishWithSigExpiredDeadline() public {
@@ -144,31 +144,36 @@ contract SetFollowModuleTest is BaseTest, SigSetup {
         vm.warp(20);
 
         vm.expectRevert(Errors.SignatureExpired.selector);
-        _setFollowModulehWithSig({delegatedSigner: profileOwner, signerPrivKey: profileOwnerKey});
+        _setFollowModulehWithSig({delegatedSigner: defaultAccount.owner, signerPrivKey: defaultAccount.ownerPk});
     }
 
     function testCannotPublishWithSigNotDelegatedExecutor() public {
         vm.expectRevert(Errors.ExecutorInvalid.selector);
-        _setFollowModulehWithSig({delegatedSigner: otherSigner, signerPrivKey: otherSignerKey});
+        _setFollowModulehWithSig({delegatedSigner: otherSigner.owner, signerPrivKey: otherSigner.ownerPk});
     }
 
     function testSetFollowModuleWithSigNotDelegatedExecutorFails() public {
         vm.expectRevert(Errors.ExecutorInvalid.selector);
-        _setFollowModulehWithSig({delegatedSigner: otherSigner, signerPrivKey: otherSignerKey});
+        _setFollowModulehWithSig({delegatedSigner: otherSigner.owner, signerPrivKey: otherSigner.ownerPk});
     }
 
     // Postivies
     function testPublishWithSig() public {
-        assertEq(hub.getFollowModule(newProfileId), address(0));
-        _setFollowModulehWithSig({delegatedSigner: profileOwner, signerPrivKey: profileOwnerKey});
-        assertEq(hub.getFollowModule(newProfileId), mockFollowModule);
+        assertEq(hub.getFollowModule(defaultAccount.profileId), address(0));
+        _setFollowModulehWithSig({delegatedSigner: defaultAccount.owner, signerPrivKey: defaultAccount.ownerPk});
+        assertEq(hub.getFollowModule(defaultAccount.profileId), mockFollowModule);
     }
 
     function testDelegatedExecutorPublishWithSig() public {
-        _changeDelegatedExecutorsConfig(profileOwner, newProfileId, otherSigner, true);
+        vm.prank(defaultAccount.owner);
+        hub.changeDelegatedExecutorsConfig({
+            delegatorProfileId: defaultAccount.profileId,
+            delegatedExecutors: _toAddressArray(otherSigner.owner),
+            approvals: _toBoolArray(true)
+        });
 
-        assertEq(hub.getFollowModule(newProfileId), address(0));
-        _setFollowModulehWithSig({delegatedSigner: otherSigner, signerPrivKey: otherSignerKey});
-        assertEq(hub.getFollowModule(newProfileId), mockFollowModule);
+        assertEq(hub.getFollowModule(defaultAccount.profileId), address(0));
+        _setFollowModulehWithSig({delegatedSigner: otherSigner.owner, signerPrivKey: otherSigner.ownerPk});
+        assertEq(hub.getFollowModule(defaultAccount.profileId), mockFollowModule);
     }
 }

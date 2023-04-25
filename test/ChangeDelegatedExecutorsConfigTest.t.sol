@@ -423,13 +423,13 @@ contract ChangeDelegatedExecutorsConfigTest_MetaTx is ChangeDelegatedExecutorsCo
         ChangeDelegatedExecutorsConfigTest_CurrentConfig.setUp();
         MetaTxNegatives.setUp();
 
-        cachedNonceByAddress[testDelegatorProfileOwner] = _getSigNonce(testDelegatorProfileOwner);
+        cachedNonceByAddress[testDelegatorProfileOwner] = hub.nonces(testDelegatorProfileOwner);
     }
 
     //////////////////////////////////////////////////////////////////////
 
     function _refreshCachedNonce(address signer) internal override {
-        cachedNonceByAddress[signer] = _getSigNonce(signer);
+        cachedNonceByAddress[signer] = hub.nonces(signer);
     }
 
     function _changeDelegatedExecutorsConfig(
