@@ -34,7 +34,8 @@ contract SetBlockStatusTest is BaseTest {
         anotherBlockeeProfileOwner = vm.addr(anotherBlockeeProfileOwnerPk);
         anotherBlockeeProfileId = _createProfile(anotherBlockeeProfileOwner);
 
-        _follow(blockeeProfileOwner, blockeeProfileId, statusSetterProfileId, 0, '');
+        vm.prank(blockeeProfileOwner);
+        hub.follow(blockeeProfileId, _toUint256Array(statusSetterProfileId), _toUint256Array(0), _toBytesArray(''));
 
         followNFTAddress = hub.getFollowNFT(statusSetterProfileId);
         followNFT = FollowNFT(followNFTAddress);
@@ -251,11 +252,11 @@ contract SetBlockStatusMetaTxTest is SetBlockStatusTest, MetaTxNegatives {
         SetBlockStatusTest.setUp();
         MetaTxNegatives.setUp();
 
-        cachedNonceByAddress[statusSetterProfileOwner] = _getSigNonce(statusSetterProfileOwner);
+        cachedNonceByAddress[statusSetterProfileOwner] = hub.nonces(statusSetterProfileOwner);
     }
 
     function _refreshCachedNonces() internal override {
-        cachedNonceByAddress[statusSetterProfileOwner] = _getSigNonce(statusSetterProfileOwner);
+        cachedNonceByAddress[statusSetterProfileOwner] = hub.nonces(statusSetterProfileOwner);
     }
 
     function _setBlockStatus(

@@ -11,20 +11,20 @@ contract GovernanceFunctionsTest is BaseTest {
     // NEGATIVES
 
     function testUserCannotCallGovernanceFunctions() public {
-        vm.startPrank(profileOwner);
+        vm.startPrank(defaultAccount.owner);
 
         vm.expectRevert(Errors.NotGovernance.selector);
-        hub.setGovernance(profileOwner);
+        hub.setGovernance(defaultAccount.owner);
 
         vm.expectRevert(Errors.NotGovernance.selector);
-        hub.whitelistFollowModule(profileOwner, true);
+        hub.whitelistFollowModule(defaultAccount.owner, true);
 
         vm.expectRevert(Errors.NotGovernance.selector);
-        hub.whitelistReferenceModule(profileOwner, true);
+        hub.whitelistReferenceModule(defaultAccount.owner, true);
 
         // TODO: Proper test
         // vm.expectRevert(Errors.NotGovernance.selector);
-        // hub.whitelistCollectModule(profileOwner, true);
+        // hub.whitelistCollectModule(defaultAccount.owner, true);
 
         vm.stopPrank();
     }
@@ -36,30 +36,30 @@ contract GovernanceFunctionsTest is BaseTest {
 
         // Whitelist
 
-        assertEq(hub.isFollowModuleWhitelisted(profileOwner), false);
-        hub.whitelistFollowModule(profileOwner, true);
-        assertEq(hub.isFollowModuleWhitelisted(profileOwner), true);
+        assertEq(hub.isFollowModuleWhitelisted(defaultAccount.owner), false);
+        hub.whitelistFollowModule(defaultAccount.owner, true);
+        assertEq(hub.isFollowModuleWhitelisted(defaultAccount.owner), true);
 
-        assertEq(hub.isReferenceModuleWhitelisted(profileOwner), false);
-        hub.whitelistReferenceModule(profileOwner, true);
-        assertEq(hub.isReferenceModuleWhitelisted(profileOwner), true);
+        assertEq(hub.isReferenceModuleWhitelisted(defaultAccount.owner), false);
+        hub.whitelistReferenceModule(defaultAccount.owner, true);
+        assertEq(hub.isReferenceModuleWhitelisted(defaultAccount.owner), true);
 
         // TODO: Proper test
-        // assertEq(hub.isCollectModuleWhitelisted(profileOwner), false);
-        // hub.whitelistCollectModule(profileOwner, true);
-        // assertEq(hub.isCollectModuleWhitelisted(profileOwner), true);
+        // assertEq(hub.isCollectModuleWhitelisted(defaultAccount.owner), false);
+        // hub.whitelistCollectModule(defaultAccount.owner, true);
+        // assertEq(hub.isCollectModuleWhitelisted(defaultAccount.owner), true);
 
         // Unwhitelist
 
-        hub.whitelistFollowModule(profileOwner, false);
-        assertEq(hub.isFollowModuleWhitelisted(profileOwner), false);
+        hub.whitelistFollowModule(defaultAccount.owner, false);
+        assertEq(hub.isFollowModuleWhitelisted(defaultAccount.owner), false);
 
-        hub.whitelistReferenceModule(profileOwner, false);
-        assertEq(hub.isReferenceModuleWhitelisted(profileOwner), false);
+        hub.whitelistReferenceModule(defaultAccount.owner, false);
+        assertEq(hub.isReferenceModuleWhitelisted(defaultAccount.owner), false);
 
         // TODO: Proper test
-        // hub.whitelistCollectModule(profileOwner, false);
-        // assertEq(hub.isCollectModuleWhitelisted(profileOwner), false);
+        // hub.whitelistCollectModule(defaultAccount.owner, false);
+        // assertEq(hub.isCollectModuleWhitelisted(defaultAccount.owner), false);
 
         vm.stopPrank();
     }
@@ -68,8 +68,8 @@ contract GovernanceFunctionsTest is BaseTest {
         vm.startPrank(governance);
 
         assertEq(hub.getGovernance(), governance);
-        hub.setGovernance(profileOwner);
-        assertEq(hub.getGovernance(), profileOwner);
+        hub.setGovernance(defaultAccount.owner);
+        assertEq(hub.getGovernance(), defaultAccount.owner);
 
         vm.stopPrank();
     }

@@ -23,7 +23,7 @@ contract EventTest is BaseTest {
         hub.whitelistFollowModule(mockFollowModule, true);
     }
 
-    function predictContractAddress(address user, uint256 distanceFromCurrentNonce) internal returns (address) {
+    function predictContractAddress(address user, uint256 distanceFromCurrentNonce) internal view returns (address) {
         return computeCreateAddress(user, vm.getNonce(user) + distanceFromCurrentNonce);
     }
 
@@ -83,15 +83,15 @@ contract EventTest is BaseTest {
     function testGovernanceEmitsExpectedEvents() public {
         vm.prank(governance);
         vm.expectEmit(true, true, true, true, address(hub));
-        emit Events.GovernanceSet(governance, governance, me, block.timestamp);
-        hub.setGovernance(me);
+        emit Events.GovernanceSet(governance, governance, address(this), block.timestamp);
+        hub.setGovernance(address(this));
     }
 
     function testEmergencyAdminChangeEmitsExpectedEvents() public {
         vm.prank(governance);
         vm.expectEmit(true, true, true, true, address(hub));
-        emit Events.EmergencyAdminSet(governance, address(0), me, block.timestamp);
-        hub.setEmergencyAdmin(me);
+        emit Events.EmergencyAdminSet(governance, address(0), address(this), block.timestamp);
+        hub.setEmergencyAdmin(address(this));
     }
 
     function testProtocolStateChangeByGovEmitsExpectedEvents() public {
@@ -123,22 +123,22 @@ contract EventTest is BaseTest {
 
     function testProtocolStateChangeByEmergencyAdminEmitsExpectedEvents() public {
         vm.prank(governance);
-        hub.setEmergencyAdmin(profileOwner);
+        hub.setEmergencyAdmin(defaultAccount.owner);
 
-        vm.prank(profileOwner);
+        vm.prank(defaultAccount.owner);
         vm.expectEmit(true, true, true, true, address(hub));
         emit Events.StateSet(
-            profileOwner,
+            defaultAccount.owner,
             Types.ProtocolState.Unpaused,
             Types.ProtocolState.PublishingPaused,
             block.timestamp
         );
         hub.setState(Types.ProtocolState.PublishingPaused);
 
-        vm.prank(profileOwner);
+        vm.prank(defaultAccount.owner);
         vm.expectEmit(true, true, true, true, address(hub));
         emit Events.StateSet(
-            profileOwner,
+            defaultAccount.owner,
             Types.ProtocolState.PublishingPaused,
             Types.ProtocolState.Paused,
             block.timestamp
@@ -149,98 +149,59 @@ contract EventTest is BaseTest {
     function testFollowModuleWhitelistEmitsExpectedEvents() public {
         vm.prank(governance);
         vm.expectEmit(true, true, true, true, address(hub));
-        emit Events.FollowModuleWhitelisted(me, true, block.timestamp);
-        hub.whitelistFollowModule(me, true);
+        emit Events.FollowModuleWhitelisted(address(this), true, block.timestamp);
+        hub.whitelistFollowModule(address(this), true);
 
         vm.prank(governance);
         vm.expectEmit(true, true, true, true, address(hub));
-        emit Events.FollowModuleWhitelisted(me, false, block.timestamp);
-        hub.whitelistFollowModule(me, false);
+        emit Events.FollowModuleWhitelisted(address(this), false, block.timestamp);
+        hub.whitelistFollowModule(address(this), false);
     }
 
     function testReferenceModuleWhitelistEmitsExpectedEvents() public {
         vm.prank(governance);
         vm.expectEmit(true, true, true, true, address(hub));
-        emit Events.ReferenceModuleWhitelisted(me, true, block.timestamp);
-        hub.whitelistReferenceModule(me, true);
+        emit Events.ReferenceModuleWhitelisted(address(this), true, block.timestamp);
+        hub.whitelistReferenceModule(address(this), true);
 
         vm.prank(governance);
         vm.expectEmit(true, true, true, true, address(hub));
-        emit Events.ReferenceModuleWhitelisted(me, false, block.timestamp);
-        hub.whitelistReferenceModule(me, false);
+        emit Events.ReferenceModuleWhitelisted(address(this), false, block.timestamp);
+        hub.whitelistReferenceModule(address(this), false);
     }
-
-    // TODO: Proper test
-    // function testCollectModuleWhitelistEmitsExpectedEvents() public {
-    //     vm.prank(governance);
-    //     vm.expectEmit(true, true, true, true, address(hub));
-    //     emit Events.CollectModuleWhitelisted(me, true, block.timestamp);
-    //     hub.whitelistCollectModule(me, true);
-
-    //     vm.prank(governance);
-    //     vm.expectEmit(true, true, true, true, address(hub));
-    //     emit Events.CollectModuleWhitelisted(me, false, block.timestamp);
-    //     hub.whitelistCollectModule(me, false);
-    // }
-
-    // HUB INTERACTION
 
     function testProfileCreationEmitsExpectedEvents() public {
-        uint256 expectedTokenId = 2;
-        mockCreateProfileParams.to = profileOwnerTwo;
-        vm.prank(governance);
-        hub.whitelistProfileCreator(profileOwnerTwo, true);
-        vm.prank(profileOwnerTwo);
+        Types.CreateProfileParams memory createProfileParams = _getDefaultCreateProfileParams();
+        uint256 expectedTokenId = _getNextProfileId();
         vm.expectEmit(true, true, true, true, address(hub));
-        emit Transfer(address(0), profileOwnerTwo, expectedTokenId);
+        emit Transfer(address(0), createProfileParams.to, expectedTokenId);
         vm.expectEmit(true, true, true, true, address(hub));
         emit Events.ProfileCreated(
             expectedTokenId,
-            profileOwnerTwo,
-            profileOwnerTwo,
-            mockCreateProfileParams.imageURI,
-            mockCreateProfileParams.followModule,
+            address(this),
+            createProfileParams.to,
+            createProfileParams.imageURI,
+            createProfileParams.followModule,
             '',
-            mockCreateProfileParams.followNFTURI,
+            createProfileParams.followNFTURI,
             block.timestamp
         );
-        hub.createProfile(mockCreateProfileParams);
-    }
-
-    function testProfileCreationForOtherUserEmitsExpectedEvents() public {
-        uint256 expectedTokenId = 2;
-        mockCreateProfileParams.to = profileOwnerTwo;
-        vm.expectEmit(true, true, true, true, address(hub));
-        emit Transfer(address(0), profileOwnerTwo, expectedTokenId);
-        vm.expectEmit(true, true, true, true, address(hub));
-        emit Events.ProfileCreated(
-            expectedTokenId,
-            me,
-            profileOwnerTwo,
-            mockCreateProfileParams.imageURI,
-            mockCreateProfileParams.followModule,
-            '',
-            mockCreateProfileParams.followNFTURI,
-            block.timestamp
-        );
-        hub.createProfile(mockCreateProfileParams);
+        hub.createProfile(createProfileParams);
     }
 
     function testSettingFollowModuleEmitsExpectedEvents() public {
-        mockCreateProfileParams.to = profileOwnerTwo;
-        uint256 expectedProfileId = 2;
-        hub.createProfile(mockCreateProfileParams);
-        vm.prank(profileOwnerTwo);
+        uint256 profileId = hub.createProfile(_getDefaultCreateProfileParams());
+        vm.prank(defaultAccount.owner);
         vm.expectEmit(true, true, true, true, address(hub));
-        emit Events.FollowModuleSet(expectedProfileId, address(mockFollowModule), '', block.timestamp);
-        hub.setFollowModule(expectedProfileId, address(mockFollowModule), abi.encode(1));
+        emit Events.FollowModuleSet(profileId, address(mockFollowModule), '', block.timestamp);
+        hub.setFollowModule(profileId, address(mockFollowModule), abi.encode(true));
     }
 
     function testPostingEmitsExpectedEvents() public {
         uint256 expectedPostId = hub.getPubCount(mockPostParams.profileId) + 1;
         vm.expectEmit(true, true, false, true, address(hub));
         emit Events.PostCreated(mockPostParams, expectedPostId, _toBytesArray(abi.encode(true)), '', block.timestamp);
-        vm.prank(profileOwner);
+        vm.prank(defaultAccount.owner);
         hub.post(mockPostParams);
     }
 
@@ -255,7 +216,7 @@ contract EventTest is BaseTest {
             '',
             block.timestamp
         );
-        vm.prank(profileOwner);
+        vm.prank(defaultAccount.owner);
         hub.comment(mockCommentParams);
     }
 
@@ -263,13 +224,13 @@ contract EventTest is BaseTest {
         uint256 expectedMirrorId = hub.getPubCount(mockPostParams.profileId) + 1;
         vm.expectEmit(true, true, false, true, address(hub));
         emit Events.MirrorCreated(mockMirrorParams, expectedMirrorId, '', block.timestamp);
-        vm.prank(profileOwner);
+        vm.prank(defaultAccount.owner);
         hub.mirror(mockMirrorParams);
     }
 
     // TODO: Proper tests for Act
     // function testCollectingEmitsExpectedEvents() public {
-    //     vm.startPrank(profileOwner);
+    //     vm.startPrank(defaultAccount.owner);
     //     hub.post(mockPostParams);
 
     //     uint256 expectedPubId = 1;
@@ -296,13 +257,13 @@ contract EventTest is BaseTest {
     //         expectedPubId,
     //         1, // collect nft id
     //         address(0),
-    //         profileOwner,
+    //         defaultAccount.owner,
     //         block.timestamp
     //     );
 
     //     // Transfer
     //     vm.expectEmit(true, true, true, true, expectedCollectNFTAddress);
-    //     emit Transfer(address(0), profileOwner, 1);
+    //     emit Transfer(address(0), defaultAccount.owner, 1);
 
     //     // Collected
     //     // TODO: Proper test
@@ -341,7 +302,7 @@ contract EventTest is BaseTest {
     //     string memory expectedNFTName = '1-Collect-1';
     //     string memory expectedNFTSymbol = '1-Cl-1';
 
-    //     vm.startPrank(profileOwner);
+    //     vm.startPrank(defaultAccount.owner);
     //     uint256 postId = hub.post(mockPostParams);
     //     uint256 mirrorId = hub.mirror(mockMirrorParams);
 
@@ -365,13 +326,13 @@ contract EventTest is BaseTest {
     //         postId,
     //         1, // collect nft id
     //         address(0),
-    //         profileOwner,
+    //         defaultAccount.owner,
     //         block.timestamp
     //     );
 
     //     // Transfer
     //     vm.expectEmit(true, true, true, true, expectedCollectNFTAddress);
-    //     emit Transfer(address(0), profileOwner, 1);
+    //     emit Transfer(address(0), defaultAccount.owner, 1);
 
     //     // Collected
     //     // TODO: Proper test
@@ -405,15 +366,15 @@ contract EventTest is BaseTest {
     function testGovernanceChangeEmitsExpectedEvents() public {
         vm.prank(modulesGovernance);
         vm.expectEmit(true, true, true, true, address(moduleGlobals));
-        emit Events.ModuleGlobalsGovernanceSet(modulesGovernance, me, block.timestamp);
-        moduleGlobals.setGovernance(me);
+        emit Events.ModuleGlobalsGovernanceSet(modulesGovernance, address(this), block.timestamp);
+        moduleGlobals.setGovernance(address(this));
     }
 
     function testTreasuryChangeEmitsExpectedEvents() public {
         vm.prank(modulesGovernance);
         vm.expectEmit(true, true, false, true, address(moduleGlobals));
-        emit Events.ModuleGlobalsTreasurySet(treasury, me, block.timestamp);
-        moduleGlobals.setTreasury(me);
+        emit Events.ModuleGlobalsTreasurySet(treasury, address(this), block.timestamp);
+        moduleGlobals.setTreasury(address(this));
     }
 
     function testTreasuryFeeChangeEmitsExpectedEvents() public {
@@ -427,12 +388,12 @@ contract EventTest is BaseTest {
     function testCurrencyWhitelistEmitsExpectedEvents() public {
         vm.prank(modulesGovernance);
         vm.expectEmit(true, true, true, true, address(moduleGlobals));
-        emit Events.ModuleGlobalsCurrencyWhitelisted(me, false, true, block.timestamp);
-        moduleGlobals.whitelistCurrency(me, true);
+        emit Events.ModuleGlobalsCurrencyWhitelisted(address(this), false, true, block.timestamp);
+        moduleGlobals.whitelistCurrency(address(this), true);
 
         vm.prank(modulesGovernance);
         vm.expectEmit(true, true, true, true, address(moduleGlobals));
-        emit Events.ModuleGlobalsCurrencyWhitelisted(me, true, false, block.timestamp);
-        moduleGlobals.whitelistCurrency(me, false);
+        emit Events.ModuleGlobalsCurrencyWhitelisted(address(this), true, false, block.timestamp);
+        moduleGlobals.whitelistCurrency(address(this), false);
     }
 }

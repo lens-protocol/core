@@ -6,6 +6,15 @@ import 'test/MetaTxNegatives.t.sol';
 import {Events} from 'contracts/libraries/constants/Events.sol';
 
 contract ProfileMetadataURITest is BaseTest {
+    // TODO: We can avoid this `alienSigner` and do it better by using fuzzing instead, but it requires a refactor here.
+    TestAccount alienSigner;
+
+    function setUp() public virtual override {
+        TestSetup.setUp();
+
+        alienSigner = _loadAccountAs('ALIEN_SIGNER_ACCOUNT');
+    }
+
     function _setProfileMetadataURI(uint256 pk, uint256 profileId, string memory metadataURI) internal virtual {
         vm.prank(vm.addr(pk));
         hub.setProfileMetadataURI(profileId, metadataURI);
@@ -14,34 +23,42 @@ contract ProfileMetadataURITest is BaseTest {
     // Negatives
     function testCannotSetProfileMetadataURINotDelegatedExecutor() public {
         vm.expectRevert(Errors.ExecutorInvalid.selector);
-        _setProfileMetadataURI({pk: alienSignerKey, profileId: newProfileId, metadataURI: MOCK_URI});
+        _setProfileMetadataURI({pk: alienSigner.ownerPk, profileId: defaultAccount.profileId, metadataURI: MOCK_URI});
     }
 
     // Positives
     function testDelegatedExecutorSetProfileMetadataURI() public {
-        assertEq(hub.getProfileMetadataURI(newProfileId), '');
-        vm.prank(profileOwner);
+        assertEq(hub.getProfileMetadataURI(defaultAccount.profileId), '');
+        vm.prank(defaultAccount.owner);
         hub.changeDelegatedExecutorsConfig({
-            delegatorProfileId: newProfileId,
-            delegatedExecutors: _toAddressArray(otherSigner),
+            delegatorProfileId: defaultAccount.profileId,
+            delegatedExecutors: _toAddressArray(otherSigner.owner),
             approvals: _toBoolArray(true)
         });
 
-        _setProfileMetadataURI({pk: otherSignerKey, profileId: newProfileId, metadataURI: MOCK_URI});
-        assertEq(hub.getProfileMetadataURI(newProfileId), MOCK_URI);
+        _setProfileMetadataURI({pk: otherSigner.ownerPk, profileId: defaultAccount.profileId, metadataURI: MOCK_URI});
+        assertEq(hub.getProfileMetadataURI(defaultAccount.profileId), MOCK_URI);
     }
 
     function testSetProfileMetadataURI() public {
-        assertEq(hub.getProfileMetadataURI(newProfileId), '');
+        assertEq(hub.getProfileMetadataURI(defaultAccount.profileId), '');
 
-        _setProfileMetadataURI({pk: profileOwnerKey, profileId: newProfileId, metadataURI: MOCK_URI});
-        assertEq(hub.getProfileMetadataURI(newProfileId), MOCK_URI);
+        _setProfileMetadataURI({
+            pk: defaultAccount.ownerPk,
+            profileId: defaultAccount.profileId,
+            metadataURI: MOCK_URI
+        });
+        assertEq(hub.getProfileMetadataURI(defaultAccount.profileId), MOCK_URI);
     }
 
     // Events
     function expectProfileMetadataSetEvent() public {
         vm.expectEmit(true, true, true, true, address(hub));
-        emit Events.ProfileMetadataSet({profileId: newProfileId, metadata: MOCK_URI, timestamp: block.timestamp});
+        emit Events.ProfileMetadataSet({
+            profileId: defaultAccount.profileId,
+            metadata: MOCK_URI,
+            timestamp: block.timestamp
+        });
     }
 
     function testSetProfileMetadataURI_EmitsProperEvent() public {
@@ -62,13 +79,13 @@ contract ProfileMetadataURITest_MetaTx is ProfileMetadataURITest, MetaTxNegative
         // Prevents being counted in Foundry Coverage
     }
 
-    function setUp() public override(MetaTxNegatives, TestSetup) {
-        TestSetup.setUp();
+    function setUp() public override(MetaTxNegatives, ProfileMetadataURITest) {
+        ProfileMetadataURITest.setUp();
         MetaTxNegatives.setUp();
 
-        cachedNonceByAddress[alienSigner] = _getSigNonce(alienSigner);
-        cachedNonceByAddress[otherSigner] = _getSigNonce(otherSigner);
-        cachedNonceByAddress[profileOwner] = _getSigNonce(profileOwner);
+        cachedNonceByAddress[alienSigner.owner] = hub.nonces(alienSigner.owner);
+        cachedNonceByAddress[otherSigner.owner] = hub.nonces(otherSigner.owner);
+        cachedNonceByAddress[defaultAccount.owner] = hub.nonces(defaultAccount.owner);
     }
 
     function _setProfileMetadataURI(
@@ -86,26 +103,26 @@ contract ProfileMetadataURITest_MetaTx is ProfileMetadataURITest, MetaTxNegative
         uint256 nonce = cachedNonceByAddress[signer];
         uint256 deadline = type(uint256).max;
 
-        bytes32 digest = _getSetProfileMetadataURITypedDataHash(newProfileId, MOCK_URI, nonce, deadline);
+        bytes32 digest = _getSetProfileMetadataURITypedDataHash(defaultAccount.profileId, MOCK_URI, nonce, deadline);
 
         hub.setProfileMetadataURIWithSig({
-            profileId: newProfileId,
+            profileId: defaultAccount.profileId,
             metadataURI: MOCK_URI,
             signature: _getSigStruct(signer, pk, digest, deadline)
         });
     }
 
     function _executeMetaTx(uint256 signerPk, uint256 nonce, uint256 deadline) internal virtual override {
-        bytes32 digest = _getSetProfileMetadataURITypedDataHash(newProfileId, MOCK_URI, nonce, deadline);
+        bytes32 digest = _getSetProfileMetadataURITypedDataHash(defaultAccount.profileId, MOCK_URI, nonce, deadline);
 
         hub.setProfileMetadataURIWithSig({
-            profileId: newProfileId,
+            profileId: defaultAccount.profileId,
             metadataURI: MOCK_URI,
             signature: _getSigStruct(vm.addr(_getDefaultMetaTxSignerPk()), signerPk, digest, deadline)
         });
     }
 
     function _getDefaultMetaTxSignerPk() internal virtual override returns (uint256) {
-        return profileOwnerKey;
+        return defaultAccount.ownerPk;
     }
 }
