@@ -469,6 +469,7 @@ contract MultiStateHubTest_PublishingPausedState_Direct is BaseTest {
 
     // Negatives
     function testCanTransferProfileWhilePublishingPaused() public virtual {
+        vm.prank(defaultAccount.owner);
         hub.transferFrom(defaultAccount.owner, address(111), defaultAccount.profileId);
     }
 
