@@ -5,7 +5,7 @@ import 'test/base/BaseTest.t.sol';
 
 contract GovernanceFunctionsTest is BaseTest {
     function setUp() public virtual override {
-        TestSetup.setUp();
+        super.setUp();
     }
 
     // NEGATIVES

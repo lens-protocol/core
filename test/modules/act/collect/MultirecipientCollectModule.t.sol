@@ -252,7 +252,7 @@ contract MultirecipientCollectModule_Initialization is
         MultirecipientFeeCollectProfilePublicationData memory fetchedData = MultirecipientFeeCollectModule(
             baseFeeCollectModule
         ).getPublicationData(profileId, pubId);
-        assertEq(fetchedData.currency, multirecipientExampleInitData.currency, 'Currency initialization mismatch');
+        assertEq(fetchedData.currency, multirecipientExampleInitData.currency, 'MockCurrency initialization mismatch');
         assertEq(fetchedData.amount, multirecipientExampleInitData.amount, 'Amount initialization mismatch');
         assertEq(
             fetchedData.referralFee,

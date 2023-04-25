@@ -4,18 +4,18 @@ pragma solidity ^0.8.10;
 import 'test/base/BaseTest.t.sol';
 import {FeeConfig, FeeFollowModule} from 'contracts/modules/follow/FeeFollowModule.sol';
 import {Errors as ModuleErrors} from 'contracts/modules/constants/Errors.sol';
-import {Currency} from 'test/mocks/Currency.sol';
+import {MockCurrency} from 'test/mocks/MockCurrency.sol';
 
 contract FeeFollowModuleTest is BaseTest {
     using stdJson for string;
     FeeFollowModule feeFollowModule;
-    Currency currency;
+    MockCurrency currency;
 
     function setUp() public override {
         super.setUp();
 
         // Create & Whitelist mock currency
-        currency = new Currency();
+        currency = new MockCurrency();
         vm.prank(modulesGovernance);
         moduleGlobals.whitelistCurrency(address(currency), true);
     }

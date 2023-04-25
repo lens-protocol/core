@@ -4,7 +4,7 @@ pragma solidity ^0.8.10;
 import 'test/base/BaseTest.t.sol';
 import {SimpleFeeCollectModule} from 'contracts/modules/act/collect/SimpleFeeCollectModule.sol';
 import {BaseFeeCollectModuleInitData} from 'contracts/modules/interfaces/IBaseFeeCollectModule.sol';
-import {Currency} from 'test/mocks/Currency.sol';
+import {MockCurrency} from 'test/mocks/MockCurrency.sol';
 
 contract BaseFeeCollectModuleBase is BaseTest {
     function testBaseFeeCollectModuleBase() public {
@@ -15,7 +15,7 @@ contract BaseFeeCollectModuleBase is BaseTest {
     address baseFeeCollectModule;
     address constant collectPublicationAction = address(0xC011EC7AC7104);
 
-    Currency currency;
+    MockCurrency currency;
 
     BaseFeeCollectModuleInitData exampleInitData;
 
@@ -48,7 +48,7 @@ contract BaseFeeCollectModuleBase is BaseTest {
                 new SimpleFeeCollectModule(address(hub), collectPublicationAction, address(moduleGlobals))
             );
         }
-        currency = new Currency();
+        currency = new MockCurrency();
         vm.prank(modulesGovernance);
         moduleGlobals.whitelistCurrency(address(currency), true);
     }

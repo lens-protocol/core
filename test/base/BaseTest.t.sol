@@ -13,6 +13,11 @@ contract BaseTest is TestSetup {
         // Prevents being counted in Foundry Coverage
     }
 
+    // Empty setUp for easier overriding in other tests, otherwise you need to override from TestSetup and is confusing.
+    function setUp() public virtual override {
+        super.setUp();
+    }
+
     function _boundPk(uint256 fuzzedUint256) internal view returns (uint256 fuzzedPk) {
         return bound(fuzzedUint256, 1, ISSECP256K1_CURVE_ORDER - 1);
     }

@@ -5,15 +5,15 @@ import 'test/base/BaseTest.t.sol';
 import {TokenGatedReferenceModule, GateParams} from 'contracts/modules/reference/TokenGatedReferenceModule.sol';
 import {Types} from 'contracts/libraries/constants/Types.sol';
 import {ArrayHelpers} from 'test/helpers/ArrayHelpers.sol';
-import {Currency} from 'test/mocks/Currency.sol';
-import {NFT} from 'test/mocks/NFT.sol';
+import {MockCurrency} from 'test/mocks/MockCurrency.sol';
+import {MockNFT} from 'test/mocks/MockNFT.sol';
 
 contract TokenGatedReferenceModuleBase is BaseTest {
     using stdJson for string;
     TokenGatedReferenceModule tokenGatedReferenceModule;
 
-    NFT nft;
-    Currency currency;
+    MockNFT nft;
+    MockCurrency currency;
     uint256 profileId;
 
     event TokenGatedReferencePublicationCreated(
@@ -23,10 +23,14 @@ contract TokenGatedReferenceModuleBase is BaseTest {
         uint256 minThreshold
     );
 
+    function testTokenGatedReferenceModuleBase() public {
+        // Prevents being counted in Foundry Coverage
+    }
+
     function setUp() public override {
         super.setUp();
-        currency = new Currency();
-        nft = new NFT();
+        currency = new MockCurrency();
+        nft = new MockNFT();
         profileId = _createProfile(defaultAccount.owner);
     }
 

@@ -7,7 +7,7 @@ import {Events} from 'contracts/libraries/constants/Events.sol';
 
 contract ProfileMetadataURITest is BaseTest {
     function setUp() public virtual override {
-        TestSetup.setUp();
+        super.setUp();
     }
 
     function _setProfileMetadataURI(uint256 pk, uint256 profileId, string memory metadataURI) internal virtual {

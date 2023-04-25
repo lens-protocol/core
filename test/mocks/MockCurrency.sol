@@ -7,8 +7,8 @@ import {ERC20} from '@openzeppelin/contracts/token/ERC20/ERC20.sol';
 /**
  * @dev A simple mock currency to be used for testing.
  */
-contract Currency is ERC20('Currency', 'CRNC') {
-    function testCurrency() public {
+contract MockCurrency is ERC20('Currency', 'MCY') {
+    function testMockCurrency() public {
         // Prevents being counted in Foundry Coverage
     }
 

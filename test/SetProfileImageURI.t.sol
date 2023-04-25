@@ -2,10 +2,8 @@
 pragma solidity ^0.8.13;
 
 import 'test/base/BaseTest.t.sol';
-import 'test/mocks/MockFollowModule.sol';
 
-// New Misc
-contract MiscTest is BaseTest {
+contract SetProfileImageURI is BaseTest {
     // Negatives
     function testSetProfileImageURINotDelegatedExecutorFails() public {
         vm.expectRevert(Errors.ExecutorInvalid.selector);

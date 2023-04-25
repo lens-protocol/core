@@ -173,7 +173,7 @@ contract BaseFeeCollectModule_Initialization is BaseFeeCollectModuleBase {
 
         BaseProfilePublicationData memory fetchedData = IBaseFeeCollectModule(baseFeeCollectModule)
             .getBasePublicationData(profileId, pubId);
-        assertEq(fetchedData.currency, exampleInitData.currency, 'Currency initialization mismatch');
+        assertEq(fetchedData.currency, exampleInitData.currency, 'MockCurrency initialization mismatch');
         assertEq(fetchedData.amount, exampleInitData.amount, 'Amount initialization mismatch');
         assertEq(fetchedData.referralFee, exampleInitData.referralFee, 'Referral fee initialization mismatch');
         assertEq(fetchedData.followerOnly, exampleInitData.followerOnly, 'Follower only initialization mismatch');

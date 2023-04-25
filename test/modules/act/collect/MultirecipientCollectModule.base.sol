@@ -37,7 +37,7 @@ contract MultirecipientCollectModuleBase is BaseFeeCollectModuleBase {
             );
         }
         baseFeeCollectModule = address(multirecipientFeeCollectModule);
-        currency = new Currency();
+        currency = new MockCurrency();
         vm.prank(modulesGovernance);
         moduleGlobals.whitelistCurrency(address(currency), true);
     }
