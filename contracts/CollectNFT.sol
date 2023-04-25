@@ -8,6 +8,7 @@ import {ICollectNFT} from 'contracts/interfaces/ICollectNFT.sol';
 import {IERC721} from '@openzeppelin/contracts/token/ERC721/IERC721.sol';
 import {ILensHub} from 'contracts/interfaces/ILensHub.sol';
 import {LensBaseERC721} from 'contracts/base/LensBaseERC721.sol';
+import {ActionRestricted} from 'contracts/modules/ActionRestricted.sol';
 
 /**
  * @title CollectNFT
@@ -16,7 +17,7 @@ import {LensBaseERC721} from 'contracts/base/LensBaseERC721.sol';
  * @notice This is the NFT contract that is minted upon collecting a given publication. It is cloned upon
  * the first collect for a given publication, and the token URI points to the original publication's contentURI.
  */
-contract CollectNFT is LensBaseERC721, ERC2981CollectionRoyalties, ICollectNFT {
+contract CollectNFT is LensBaseERC721, ERC2981CollectionRoyalties, ActionRestricted, ICollectNFT {
     address public immutable HUB;
 
     uint256 internal _profileId;
@@ -29,8 +30,7 @@ contract CollectNFT is LensBaseERC721, ERC2981CollectionRoyalties, ICollectNFT {
 
     // We create the CollectNFT with the pre-computed HUB address before deploying the hub proxy in order
     // to initialize the hub proxy at construction.
-    constructor(address hub) {
-        if (hub == address(0)) revert Errors.InitParamsInvalid();
+    constructor(address hub, address actionModule) ActionRestricted(actionModule) {
         HUB = hub;
         _initialized = true;
     }
@@ -51,8 +51,7 @@ contract CollectNFT is LensBaseERC721, ERC2981CollectionRoyalties, ICollectNFT {
     }
 
     /// @inheritdoc ICollectNFT
-    function mint(address to) external override returns (uint256) {
-        if (msg.sender != HUB) revert Errors.NotHub();
+    function mint(address to) external override onlyActionModule returns (uint256) {
         unchecked {
             uint256 tokenId = ++_tokenIdCounter;
             _mint(to, tokenId);
