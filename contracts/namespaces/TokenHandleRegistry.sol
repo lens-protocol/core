@@ -3,16 +3,12 @@
 pragma solidity ^0.8.18;
 
 import {IERC721} from '@openzeppelin/contracts/token/ERC721/IERC721.sol';
-import {VersionedInitializable} from 'contracts/base/upgradeability/VersionedInitializable.sol';
 import {ITokenHandleRegistry} from 'contracts/interfaces/ITokenHandleRegistry.sol';
 import {RegistryTypes} from 'contracts/namespaces/constants/Types.sol';
 import {RegistryErrors} from 'contracts/namespaces/constants/Errors.sol';
 import {RegistryEvents} from 'contracts/namespaces/constants/Events.sol';
 
-contract TokenHandleRegistry is ITokenHandleRegistry, VersionedInitializable {
-    // Constant for upgradeability purposes, see VersionedInitializable. Do not confuse it with the EIP-712 revision number.
-    uint256 internal constant REVISION = 1;
-
+contract TokenHandleRegistry is ITokenHandleRegistry {
     address immutable LENS_HUB;
     address immutable LENS_HANDLES;
 
@@ -55,8 +51,6 @@ contract TokenHandleRegistry is ITokenHandleRegistry, VersionedInitializable {
         LENS_HUB = lensHub;
         LENS_HANDLES = lensHandles;
     }
-
-    function initialize() external initializer {}
 
     // V1 --> V2 Migration function
     function migrationLinkHandleWithToken(uint256 handleId, uint256 tokenId) external {
@@ -150,11 +144,5 @@ contract TokenHandleRegistry is ITokenHandleRegistry, VersionedInitializable {
 
     function _tokenHash(RegistryTypes.Token memory token) internal pure returns (bytes32) {
         return keccak256(abi.encodePacked(token.collection, token.id));
-    }
-
-    // VersionedInitializable
-
-    function getRevision() internal pure virtual override returns (uint256) {
-        return REVISION;
     }
 }
