@@ -12,7 +12,6 @@ import {Strings} from '@openzeppelin/contracts/utils/Strings.sol';
 import {Errors} from 'contracts/libraries/constants/Errors.sol';
 import {HubRestricted} from 'contracts/base/HubRestricted.sol';
 import {IModuleGlobals} from 'contracts/interfaces/IModuleGlobals.sol';
-import {VersionedInitializable} from 'contracts/base/upgradeability/VersionedInitializable.sol';
 
 contract CollectPublicationAction is HubRestricted, IPublicationActionModule {
     using Strings for uint256;

@@ -10,18 +10,13 @@ import {Types} from 'contracts/libraries/constants/Types.sol';
 import {IERC20} from '@openzeppelin/contracts/token/ERC20/IERC20.sol';
 import {IWMATIC} from 'contracts/modules/interfaces/IWMATIC.sol';
 import {IERC721} from '@openzeppelin/contracts/token/ERC721/IERC721.sol';
-import {VersionedInitializable} from 'contracts/base/upgradeability/VersionedInitializable.sol';
 import {ERC721SeaDropStructsErrorsAndEvents} from '@seadrop/lib/ERC721SeaDropStructsErrorsAndEvents.sol';
 import {ISeaDrop} from '@seadrop/interfaces/ISeaDrop.sol';
 import {Clones} from 'openzeppelin-contracts/proxy/Clones.sol';
 import {PublicDrop} from '@seadrop/lib/SeaDropStructs.sol';
 import {LensSeaDropCollection} from 'contracts/modules/act/seadrop/LensSeaDropCollection.sol';
 
-contract SeaDropMintPublicationAction is VersionedInitializable, HubRestricted, IPublicationActionModule {
-    // Constant for upgradeability purposes, see VersionedInitializable,
-    // do not confuse it with the EIP-712 version number.
-    uint256 internal constant REVISION = 1;
-
+contract SeaDropMintPublicationAction is HubRestricted, IPublicationActionModule {
     uint256 constant MAX_BPS = 10_000;
 
     ISeaDrop public immutable SEADROP;
@@ -279,9 +274,5 @@ contract SeaDropMintPublicationAction is VersionedInitializable, HubRestricted, 
         if (publicDrop.mintPrice > 0 && publicDrop.feeBps != lensTreasuryFeeBps + referrersFeeBps) {
             _rescaleFees(profileId, pubId, lensTreasuryFeeBps, publicDrop);
         }
-    }
-
-    function getRevision() internal pure virtual override returns (uint256) {
-        return REVISION;
     }
 }

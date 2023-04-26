@@ -3,17 +3,13 @@
 pragma solidity ^0.8.18;
 
 import {ERC721} from '@openzeppelin/contracts/token/ERC721/ERC721.sol';
-import {VersionedInitializable} from 'contracts/base/upgradeability/VersionedInitializable.sol';
 import {ImmutableOwnable} from 'contracts/misc/ImmutableOwnable.sol';
 import {ILensHandles} from 'contracts/interfaces/ILensHandles.sol';
 import {HandlesEvents} from 'contracts/namespaces/constants/Events.sol';
 import {HandlesErrors} from 'contracts/namespaces/constants/Errors.sol';
 import {HandleTokenURILib} from 'contracts/libraries/token-uris/HandleTokenURILib.sol';
 
-contract LensHandles is ILensHandles, ERC721, VersionedInitializable, ImmutableOwnable {
-    // Constant for upgradeability purposes, see VersionedInitializable. Do not confuse it with the EIP-712 revision number.
-    uint256 internal constant REVISION = 1;
-
+contract LensHandles is ILensHandles, ERC721, ImmutableOwnable {
     string constant NAMESPACE = 'lens';
     bytes32 constant NAMESPACE_HASH = keccak256(bytes(NAMESPACE));
 
@@ -28,8 +24,6 @@ contract LensHandles is ILensHandles, ERC721, VersionedInitializable, ImmutableO
     function symbol() public pure override returns (string memory) {
         return string.concat('.', NAMESPACE);
     }
-
-    function initialize() external initializer {}
 
     /**
      * @dev See {IERC721Metadata-tokenURI}.
@@ -87,9 +81,5 @@ contract LensHandles is ILensHandles, ERC721, VersionedInitializable, ImmutableO
                 ++i;
             }
         }
-    }
-
-    function getRevision() internal pure virtual override returns (uint256) {
-        return REVISION;
     }
 }
