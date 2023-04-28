@@ -235,7 +235,8 @@ contract CollectPublicationActionTest is BaseTest {
             abi.encodeCall(
                 ICollectModule.initializePublicationCollectModule,
                 (profileId, pubId, transactionExecutor, abi.encode(true))
-            )
+            ),
+            1
         );
 
         vm.prank(address(hub));
@@ -317,7 +318,8 @@ contract CollectPublicationActionTest is BaseTest {
 
         vm.expectCall(
             collectNFT,
-            abi.encodeCall(CollectNFT.initialize, (profileId, pubId, expectedCollectNftName, expectedCollectNftSymbol))
+            abi.encodeCall(CollectNFT.initialize, (profileId, pubId, expectedCollectNftName, expectedCollectNftSymbol)),
+            1
         );
 
         vm.prank(address(hub));

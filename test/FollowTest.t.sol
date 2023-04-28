@@ -303,7 +303,8 @@ contract FollowTest is BaseTest {
 
         vm.expectCall(
             targetFollowNFTAddress,
-            abi.encodeCall(followNFT.follow, (testFollowerProfileId, testFollowerProfileOwner, MINT_NEW_TOKEN))
+            abi.encodeCall(followNFT.follow, (testFollowerProfileId, testFollowerProfileOwner, MINT_NEW_TOKEN)),
+            1
         );
 
         vm.expectCall(
@@ -311,7 +312,8 @@ contract FollowTest is BaseTest {
             abi.encodeCall(
                 IFollowModule.processFollow,
                 (testFollowerProfileId, MINT_NEW_TOKEN, testFollowerProfileOwner, targetProfileId, followModuleData)
-            )
+            ),
+            1
         );
 
         uint256[] memory assignedFollowTokenIds = _follow({
@@ -360,7 +362,8 @@ contract FollowTest is BaseTest {
 
         vm.expectCall(
             targetFollowNFTAddress,
-            abi.encodeCall(followNFT.follow, (testFollowerProfileId, approvedDelegatedExecutor, MINT_NEW_TOKEN))
+            abi.encodeCall(followNFT.follow, (testFollowerProfileId, approvedDelegatedExecutor, MINT_NEW_TOKEN)),
+            1
         );
 
         vm.expectCall(
@@ -368,7 +371,8 @@ contract FollowTest is BaseTest {
             abi.encodeCall(
                 IFollowModule.processFollow,
                 (testFollowerProfileId, MINT_NEW_TOKEN, approvedDelegatedExecutor, targetProfileId, followModuleData)
-            )
+            ),
+            1
         );
 
         uint256[] memory assignedFollowTokenIds = _follow({

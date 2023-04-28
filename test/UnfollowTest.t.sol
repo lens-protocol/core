@@ -144,7 +144,8 @@ contract UnfollowTest is BaseTest {
 
         vm.expectCall(
             targetFollowNFT,
-            abi.encodeCall(followNFT.unfollow, (testUnfollowerProfileId, testUnfollowerProfileOwner))
+            abi.encodeCall(followNFT.unfollow, (testUnfollowerProfileId, testUnfollowerProfileOwner)),
+            1
         );
 
         _unfollow({
@@ -174,7 +175,8 @@ contract UnfollowTest is BaseTest {
 
         vm.expectCall(
             targetFollowNFT,
-            abi.encodeCall(followNFT.unfollow, (testUnfollowerProfileId, approvedDelegatedExecutor))
+            abi.encodeCall(followNFT.unfollow, (testUnfollowerProfileId, approvedDelegatedExecutor)),
+            1
         );
 
         _unfollow({
