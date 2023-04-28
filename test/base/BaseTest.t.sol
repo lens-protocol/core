@@ -355,4 +355,37 @@ contract BaseTest is TestSetup {
         (uint8 v, bytes32 r, bytes32 s) = vm.sign(pKey, digest);
         return Types.EIP712Signature(signer, v, r, s, deadline);
     }
+
+    function _toLegacyV1Pub(uint256 profileId, uint256 pubId, address referenceModule, address collectModule) internal {
+        Types.PublicationType pubType = hub.getPublicationType(profileId, pubId);
+        if (pubType == Types.PublicationType.Nonexistent || pubType == Types.PublicationType.Quote) {
+            revert('Cannot convert quotes or unexistent publications to legacy V1 publication.');
+        } else if (pubType == Types.PublicationType.Mirror && collectModule != address(0)) {
+            revert('Legacy V1 mirrors cannot have collect module.');
+        }
+
+        uint256 PUBLICATIONS_MAPPING_SLOT = 20;
+        uint256 publicationSlot;
+        assembly {
+            mstore(0, profileId)
+            mstore(32, PUBLICATIONS_MAPPING_SLOT)
+            mstore(32, keccak256(0, 64))
+            mstore(0, pubId)
+            publicationSlot := keccak256(0, 64)
+        }
+
+        uint256 REFERENCE_MODULE_OFFSET = 3;
+        uint256 referenceModuleSlot = publicationSlot + REFERENCE_MODULE_OFFSET;
+        vm.store({target: address(hub), slot: bytes32(referenceModuleSlot), value: bytes32(bytes20(referenceModule))});
+
+        uint256 COLLECT_MODULE_OFFSET = 4;
+        uint256 collectModuleSlot = publicationSlot + COLLECT_MODULE_OFFSET;
+        vm.store({target: address(hub), slot: bytes32(collectModuleSlot), value: bytes32(bytes20(collectModule))});
+
+        uint256 firstSlotOffsetToWipe = 5;
+        uint256 lastSlotOffsetToWipe = 8;
+        for (uint256 offset = firstSlotOffsetToWipe; offset <= lastSlotOffsetToWipe; offset++) {
+            vm.store({target: address(hub), slot: bytes32(publicationSlot + offset), value: 0});
+        }
+    }
 }
