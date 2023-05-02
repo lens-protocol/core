@@ -374,4 +374,17 @@ contract TestSetup is Test, ForkManagement, ArrayHelpers {
                 referenceModuleInitData: ''
             });
     }
+
+    function _getDefaultPublicationActionParams() internal view returns (Types.PublicationActionParams memory) {
+        return
+            Types.PublicationActionParams({
+                publicationActedProfileId: defaultPub.profileId,
+                publicationActedId: defaultPub.pubId,
+                actorProfileId: defaultAccount.profileId,
+                referrerProfileIds: _emptyUint256Array(),
+                referrerPubIds: _emptyUint256Array(),
+                actionModuleAddress: address(mockActionModule),
+                actionModuleData: abi.encode(true)
+            });
+    }
 }
