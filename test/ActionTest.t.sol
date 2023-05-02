@@ -7,30 +7,13 @@ import {ILensHub} from 'contracts/interfaces/ILensHub.sol';
 import {Types} from 'contracts/libraries/constants/Types.sol';
 import {Events} from 'contracts/libraries/constants/Events.sol';
 
-contract ActionTest is BaseTest {
-    // TODO: Should we test this on all types of publications?
-    // TODO: Can't act on mirrors
-    // TODO: Should we test if it works for any profile instead of just default?
-
+contract ActTest is BaseTest {
     function setUp() public virtual override {
         super.setUp();
     }
 
     // Negatives
-
-    // TODO: I don't like that we have two different errors for non-existent 0 pubId and general non-existent pubId
-    // TODO: And that it doesn't differentiate non-existent pub VS notEnabled actionModule
-    function testCannotAct_onZeroPublication() public {
-        Types.PublicationActionParams memory publicationActionParams = _getDefaultPublicationActionParams();
-        publicationActionParams.publicationActedId = 0;
-
-        vm.expectRevert(Errors.PublicationDoesNotExist.selector);
-
-        _act(defaultAccount.ownerPk, publicationActionParams);
-    }
-
     function testCannotAct_ifNonExistingPublication(uint256 nonexistentPubId) public {
-        vm.assume(nonexistentPubId != 0);
         vm.assume(nonexistentPubId != defaultPub.pubId);
         Types.PublicationActionParams memory publicationActionParams = _getDefaultPublicationActionParams();
         publicationActionParams.publicationActedId = nonexistentPubId;
@@ -121,17 +104,22 @@ contract ActionTest is BaseTest {
     }
 
     // TODO: Any ideas for more tests?
+    // - Cannot act when protocol state is Paused or PublishingPaused
+    // - Test this on all types of publications (comment, quote, mirror)
+    // - Can't act on mirrors
+    // - Create an ACTOR TestAccount
+    // -
 }
 
-contract ActionMetaTxTest is ActionTest, MetaTxNegatives {
+contract ActMetaTxTest is ActTest, MetaTxNegatives {
     mapping(address => uint256) cachedNonceByAddress;
 
     function testActionMetaTxTest() public {
         // Prevents being counted in Foundry Coverage
     }
 
-    function setUp() public override(ActionTest, MetaTxNegatives) {
-        ActionTest.setUp();
+    function setUp() public override(ActTest, MetaTxNegatives) {
+        ActTest.setUp();
         MetaTxNegatives.setUp();
 
         cachedNonceByAddress[defaultAccount.owner] = hub.nonces(defaultAccount.owner);
