@@ -2,6 +2,7 @@
 pragma solidity ^0.8.13;
 
 import 'test/base/BaseTest.t.sol';
+import 'test/MetaTxNegatives.t.sol';
 import {ILensHub} from 'contracts/interfaces/ILensHub.sol';
 import {Types} from 'contracts/libraries/constants/Types.sol';
 import {Events} from 'contracts/libraries/constants/Events.sol';
@@ -11,7 +12,7 @@ contract ActionTest is BaseTest {
     // TODO: Can't act on mirrors
     // TODO: Should we test if it works for any profile instead of just default?
 
-    function setUp() public override {
+    function setUp() public virtual override {
         super.setUp();
     }
 
@@ -25,8 +26,7 @@ contract ActionTest is BaseTest {
 
         vm.expectRevert(Errors.PublicationDoesNotExist.selector);
 
-        vm.prank(defaultAccount.owner);
-        hub.act(publicationActionParams);
+        _act(defaultAccount.ownerPk, publicationActionParams);
     }
 
     function testCannotAct_ifNonExistingPublication(uint256 nonexistentPubId) public {
@@ -37,8 +37,7 @@ contract ActionTest is BaseTest {
 
         vm.expectRevert(Errors.ActionNotAllowed.selector);
 
-        vm.prank(defaultAccount.owner);
-        hub.act(publicationActionParams);
+        _act(defaultAccount.ownerPk, publicationActionParams);
     }
 
     function testCannotAct_ifActionModuleNotEnabledForPublication(address notEnabledActionModule) public {
@@ -49,8 +48,7 @@ contract ActionTest is BaseTest {
 
         vm.expectRevert(Errors.ActionNotAllowed.selector);
 
-        vm.prank(defaultAccount.owner);
-        hub.act(publicationActionParams);
+        _act(defaultAccount.ownerPk, publicationActionParams);
     }
 
     // Scenarios
@@ -78,8 +76,7 @@ contract ActionTest is BaseTest {
             abi.encodeWithSelector(mockActionModule.processPublicationAction.selector, (processActionParams))
         );
 
-        vm.prank(defaultAccount.owner);
-        hub.act(publicationActionParams);
+        _act(defaultAccount.ownerPk, publicationActionParams);
     }
 
     function testCanAct_evenIfActionWasUnwhitelisted() public {
@@ -108,9 +105,99 @@ contract ActionTest is BaseTest {
             abi.encodeWithSelector(mockActionModule.processPublicationAction.selector, (processActionParams))
         );
 
-        vm.prank(defaultAccount.owner);
-        hub.act(publicationActionParams);
+        _act(defaultAccount.ownerPk, publicationActionParams);
+    }
+
+    function _act(
+        uint256 pk,
+        Types.PublicationActionParams memory publicationActionParams
+    ) internal virtual returns (bytes memory) {
+        vm.prank(vm.addr(pk));
+        return hub.act(publicationActionParams);
+    }
+
+    function _refreshCachedNonces() internal virtual {
+        // Nothing to do there.
     }
 
     // TODO: Any ideas for more tests?
+}
+
+contract ActionMetaTxTest is ActionTest, MetaTxNegatives {
+    mapping(address => uint256) cachedNonceByAddress;
+
+    function testActionMetaTxTest() public {
+        // Prevents being counted in Foundry Coverage
+    }
+
+    function setUp() public override(ActionTest, MetaTxNegatives) {
+        ActionTest.setUp();
+        MetaTxNegatives.setUp();
+
+        cachedNonceByAddress[defaultAccount.owner] = hub.nonces(defaultAccount.owner);
+    }
+
+    function _act(
+        uint256 pk,
+        Types.PublicationActionParams memory publicationActionParams
+    ) internal override returns (bytes memory) {
+        address signer = vm.addr(pk);
+        return
+            hub.actWithSig({
+                publicationActionParams: publicationActionParams,
+                signature: _getSigStruct({
+                    pKey: pk,
+                    digest: _calculateActWithSigDigest(
+                        publicationActionParams,
+                        cachedNonceByAddress[signer],
+                        type(uint256).max
+                    ),
+                    deadline: type(uint256).max
+                })
+            });
+    }
+
+    function _executeMetaTx(uint256 signerPk, uint256 nonce, uint256 deadline) internal virtual override {
+        hub.actWithSig({
+            publicationActionParams: _getDefaultPublicationActionParams(),
+            signature: _getSigStruct({
+                signer: vm.addr(_getDefaultMetaTxSignerPk()),
+                pKey: signerPk,
+                digest: _calculateActWithSigDigest(_getDefaultPublicationActionParams(), nonce, deadline),
+                deadline: deadline
+            })
+        });
+    }
+
+    function _getDefaultMetaTxSignerPk() internal virtual override returns (uint256) {
+        return defaultAccount.ownerPk;
+    }
+
+    function _calculateActWithSigDigest(
+        Types.PublicationActionParams memory publicationActionParams,
+        uint256 nonce,
+        uint256 deadline
+    ) internal view returns (bytes32) {
+        return
+            _calculateDigest(
+                keccak256(
+                    abi.encode(
+                        Typehash.ACT,
+                        publicationActionParams.publicationActedProfileId,
+                        publicationActionParams.publicationActedId,
+                        publicationActionParams.actorProfileId,
+                        publicationActionParams.referrerProfileIds,
+                        publicationActionParams.referrerPubIds,
+                        publicationActionParams.actionModuleAddress,
+                        keccak256(publicationActionParams.actionModuleData),
+                        nonce,
+                        deadline
+                    )
+                )
+            );
+    }
+
+    function _refreshCachedNonces() internal override {
+        cachedNonceByAddress[defaultAccount.owner] = hub.nonces(defaultAccount.owner);
+    }
 }
