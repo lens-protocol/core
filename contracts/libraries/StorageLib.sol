@@ -18,9 +18,9 @@ library StorageLib {
     uint256 constant ACTION_MODULE_WHITELIST_DATA_MAPPING_SLOT = 15;
     uint256 constant REFERENCE_MODULE_WHITELIST_MAPPING_SLOT = 16;
     // Slot 17 is deprecated in Lens V2. In V1 it was used for the dispatcher address by profile ID.
-    uint256 constant PROFILE_ID_BY_HANDLE_HASH_MAPPING_SLOT = 18;
-    uint256 constant PROFILE_BY_ID_MAPPING_SLOT = 19;
-    uint256 constant PUB_BY_ID_BY_PROFILE_MAPPING_SLOT = 20;
+    uint256 constant PROFILE_ID_BY_HANDLE_HASH_MAPPING_SLOT = 18; // Deprecated slot, but still needed for V2 migration.
+    uint256 constant PROFILES_MAPPING_SLOT = 19;
+    uint256 constant PUBLICATIONS_MAPPING_SLOT = 20;
     uint256 constant DEFAULT_PROFILE_MAPPING_SLOT = 21; // Deprecated slot, but still needed for V2 migration.
     uint256 constant PROFILE_COUNTER_SLOT = 22;
     uint256 constant GOVERNANCE_SLOT = 23;
@@ -30,7 +30,7 @@ library StorageLib {
     //////////////////////////////////
     uint256 constant DELEGATED_EXECUTOR_CONFIG_MAPPING_SLOT = 25;
     uint256 constant BLOCKED_STATUS_MAPPING_SLOT = 26;
-    uint256 constant ACTION_MODULE_BY_ID_SLOT = 27;
+    uint256 constant ACTION_MODULES_SLOT = 27;
     uint256 constant MAX_ACTION_MODULE_ID_USED_SLOT = 28;
     uint256 constant PROFILE_ROYALTIES_BPS_SLOT = 29;
 
@@ -42,7 +42,7 @@ library StorageLib {
     ) internal pure returns (Types.Publication storage _publication) {
         assembly {
             mstore(0, profileId)
-            mstore(32, PUB_BY_ID_BY_PROFILE_MAPPING_SLOT)
+            mstore(32, PUBLICATIONS_MAPPING_SLOT)
             mstore(32, keccak256(0, 64))
             mstore(0, pubId)
             _publication.slot := keccak256(0, 64)
@@ -52,7 +52,7 @@ library StorageLib {
     function getProfile(uint256 profileId) internal pure returns (Types.Profile storage _profiles) {
         assembly {
             mstore(0, profileId)
-            mstore(32, PROFILE_BY_ID_MAPPING_SLOT)
+            mstore(32, PROFILES_MAPPING_SLOT)
             _profiles.slot := keccak256(0, 64)
         }
     }
@@ -133,7 +133,7 @@ library StorageLib {
 
     function actionModuleById() internal pure returns (mapping(uint256 => address) storage _actionModules) {
         assembly {
-            _actionModules.slot := ACTION_MODULE_BY_ID_SLOT
+            _actionModules.slot := ACTION_MODULES_SLOT
         }
     }
 

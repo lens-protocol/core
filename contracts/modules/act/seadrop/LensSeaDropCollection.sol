@@ -19,6 +19,7 @@ contract LensSeaDropCollection is ERC721SeaDropCloneable {
 
     address immutable DEFAULT_SEADROP;
 
+    // TODO: Might use the ActionRestricted inheritance instead.
     modifier onlySeaDropActionModule() {
         if (msg.sender != SEADROP_ACTION_MODULE) {
             revert OnlySeaDropActionModule();

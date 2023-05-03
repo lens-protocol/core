@@ -20,10 +20,6 @@ library ActionLib {
             byProfile: publicationActionParams.publicationActedProfileId
         });
 
-        if (publicationActionParams.publicationActedId == 0) {
-            revert Errors.PublicationDoesNotExist();
-        }
-
         Types.Publication storage _actedOnPublication = StorageLib.getPublication(
             publicationActionParams.publicationActedProfileId,
             publicationActionParams.publicationActedId
@@ -32,12 +28,9 @@ library ActionLib {
         address actionModuleAddress = publicationActionParams.actionModuleAddress;
         uint256 actionModuleId = StorageLib.actionModuleWhitelistData()[actionModuleAddress].id;
 
-        if (actionModuleId == 0) {
-            revert Errors.ActionNotAllowed();
-        }
-
-        if (!_isActionAllowed(_actedOnPublication, actionModuleId)) {
+        if (!_isActionEnabled(_actedOnPublication, actionModuleId)) {
             // This will also revert for:
+            //   - Non-existent action modules
             //   - Non-existent publications
             //   - Legacy V1 publications
             // Because the storage will be empty.
@@ -69,8 +62,14 @@ library ActionLib {
         return actionModuleReturnData;
     }
 
-    function _isActionAllowed(Types.Publication storage _publication, uint256 actionId) private view returns (bool) {
-        uint256 actionIdBitmapMask = 1 << (actionId - 1);
-        return actionIdBitmapMask & _publication.actionModulesBitmap != 0;
+    function _isActionEnabled(
+        Types.Publication storage _publication,
+        uint256 actionModuleId
+    ) private view returns (bool) {
+        if (actionModuleId == 0) {
+            return false;
+        }
+        uint256 actionModuleIdBitmapMask = 1 << (actionModuleId - 1);
+        return actionModuleIdBitmapMask & _publication.actionModulesBitmap != 0;
     }
 }
