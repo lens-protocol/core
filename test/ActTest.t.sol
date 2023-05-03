@@ -8,50 +8,71 @@ import {Types} from 'contracts/libraries/constants/Types.sol';
 import {Events} from 'contracts/libraries/constants/Events.sol';
 
 contract ActTest is BaseTest {
+    TestAccount actor;
+    Types.PublicationActionParams defaultPubActionParams;
+
     function setUp() public virtual override {
         super.setUp();
+        actor = _loadAccountAs('ACTOR');
+        defaultPubActionParams = _getDefaultPublicationActionParams();
+        defaultPubActionParams.actorProfileId = actor.profileId;
     }
 
     // Negatives
     function testCannotAct_ifNonExistingPublication(uint256 nonexistentPubId) public {
         vm.assume(nonexistentPubId != defaultPub.pubId);
-        Types.PublicationActionParams memory publicationActionParams = _getDefaultPublicationActionParams();
-        publicationActionParams.publicationActedId = nonexistentPubId;
+        defaultPubActionParams.publicationActedId = nonexistentPubId;
 
         vm.expectRevert(Errors.ActionNotAllowed.selector);
 
-        _act(defaultAccount.ownerPk, publicationActionParams);
+        _act(actor.ownerPk, defaultPubActionParams);
     }
 
     function testCannotAct_ifActionModuleNotEnabledForPublication(address notEnabledActionModule) public {
         vm.assume(notEnabledActionModule != address(mockActionModule));
 
-        Types.PublicationActionParams memory publicationActionParams = _getDefaultPublicationActionParams();
-        publicationActionParams.actionModuleAddress = notEnabledActionModule;
+        defaultPubActionParams.actionModuleAddress = notEnabledActionModule;
 
         vm.expectRevert(Errors.ActionNotAllowed.selector);
 
-        _act(defaultAccount.ownerPk, publicationActionParams);
+        _act(actor.ownerPk, defaultPubActionParams);
+    }
+
+    function testCannotAct_ifProtocolIsPaused() public {
+        vm.prank(governance);
+        hub.setState(Types.ProtocolState.Paused);
+
+        vm.expectRevert(Errors.Paused.selector);
+        _act(actor.ownerPk, defaultPubActionParams);
+    }
+
+    function testCannotAct_onMirrors() public {
+        Types.MirrorParams memory mirrorParams = _getDefaultMirrorParams();
+        vm.prank(defaultAccount.owner);
+        uint256 mirrorPubId = hub.mirror(mirrorParams);
+
+        defaultPubActionParams.publicationActedId = mirrorPubId;
+
+        vm.expectRevert(Errors.ActionNotAllowed.selector);
+        _act(actor.ownerPk, defaultPubActionParams);
     }
 
     // Scenarios
 
     function testAct() public {
-        Types.PublicationActionParams memory publicationActionParams = _getDefaultPublicationActionParams();
-
         vm.expectEmit(true, true, true, true, address(hub));
-        emit Events.Acted(publicationActionParams, abi.encode(true), block.timestamp);
+        emit Events.Acted(defaultPubActionParams, abi.encode(true), block.timestamp);
 
         Types.ProcessActionParams memory processActionParams = Types.ProcessActionParams({
-            publicationActedProfileId: publicationActionParams.publicationActedProfileId,
-            publicationActedId: publicationActionParams.publicationActedId,
-            actorProfileId: publicationActionParams.actorProfileId,
-            actorProfileOwner: defaultAccount.owner,
-            transactionExecutor: defaultAccount.owner,
-            referrerProfileIds: publicationActionParams.referrerProfileIds,
-            referrerPubIds: publicationActionParams.referrerPubIds,
+            publicationActedProfileId: defaultPubActionParams.publicationActedProfileId,
+            publicationActedId: defaultPubActionParams.publicationActedId,
+            actorProfileId: defaultPubActionParams.actorProfileId,
+            actorProfileOwner: actor.owner,
+            transactionExecutor: actor.owner,
+            referrerProfileIds: defaultPubActionParams.referrerProfileIds,
+            referrerPubIds: defaultPubActionParams.referrerPubIds,
             referrerPubTypes: _emptyPubTypesArray(),
-            actionModuleData: publicationActionParams.actionModuleData
+            actionModuleData: defaultPubActionParams.actionModuleData
         });
 
         vm.expectCall(
@@ -59,36 +80,39 @@ contract ActTest is BaseTest {
             abi.encodeWithSelector(mockActionModule.processPublicationAction.selector, (processActionParams))
         );
 
-        _act(defaultAccount.ownerPk, publicationActionParams);
+        _act(actor.ownerPk, defaultPubActionParams);
+    }
+
+    function testAct_onComment() public {
+        Types.CommentParams memory commentParams = _getDefaultCommentParams();
+        vm.prank(defaultAccount.owner);
+        uint256 commentPubId = hub.comment(commentParams);
+
+        defaultPubActionParams.publicationActedId = commentPubId;
+        testAct();
+    }
+
+    function testAct_onQuote() public {
+        Types.QuoteParams memory quoteParams = _getDefaultQuoteParams();
+        vm.prank(defaultAccount.owner);
+        uint256 quotePubId = hub.quote(quoteParams);
+
+        defaultPubActionParams.publicationActedId = quotePubId;
+        testAct();
     }
 
     function testCanAct_evenIfActionWasUnwhitelisted() public {
-        Types.PublicationActionParams memory publicationActionParams = _getDefaultPublicationActionParams();
-
         vm.prank(governance);
-        hub.whitelistActionModule(publicationActionParams.actionModuleAddress, false);
+        hub.whitelistActionModule(defaultPubActionParams.actionModuleAddress, false);
 
-        vm.expectEmit(true, true, true, true, address(hub));
-        emit Events.Acted(publicationActionParams, abi.encode(true), block.timestamp);
+        testAct();
+    }
 
-        Types.ProcessActionParams memory processActionParams = Types.ProcessActionParams({
-            publicationActedProfileId: publicationActionParams.publicationActedProfileId,
-            publicationActedId: publicationActionParams.publicationActedId,
-            actorProfileId: publicationActionParams.actorProfileId,
-            actorProfileOwner: defaultAccount.owner,
-            transactionExecutor: defaultAccount.owner,
-            referrerProfileIds: publicationActionParams.referrerProfileIds,
-            referrerPubIds: publicationActionParams.referrerPubIds,
-            referrerPubTypes: _emptyPubTypesArray(),
-            actionModuleData: publicationActionParams.actionModuleData
-        });
+    function testCanAct_evenIfPublishingPaused() public {
+        vm.prank(governance);
+        hub.setState(Types.ProtocolState.PublishingPaused);
 
-        vm.expectCall(
-            address(mockActionModule),
-            abi.encodeWithSelector(mockActionModule.processPublicationAction.selector, (processActionParams))
-        );
-
-        _act(defaultAccount.ownerPk, publicationActionParams);
+        testAct();
     }
 
     function _act(
@@ -102,13 +126,6 @@ contract ActTest is BaseTest {
     function _refreshCachedNonces() internal virtual {
         // Nothing to do there.
     }
-
-    // TODO: Any ideas for more tests?
-    // - Cannot act when protocol state is Paused or PublishingPaused
-    // - Test this on all types of publications (comment, quote, mirror)
-    // - Can't act on mirrors
-    // - Create an ACTOR TestAccount
-    // -
 }
 
 contract ActMetaTxTest is ActTest, MetaTxNegatives {
@@ -122,7 +139,7 @@ contract ActMetaTxTest is ActTest, MetaTxNegatives {
         ActTest.setUp();
         MetaTxNegatives.setUp();
 
-        cachedNonceByAddress[defaultAccount.owner] = hub.nonces(defaultAccount.owner);
+        cachedNonceByAddress[actor.owner] = hub.nonces(actor.owner);
     }
 
     function _act(
@@ -147,18 +164,18 @@ contract ActMetaTxTest is ActTest, MetaTxNegatives {
 
     function _executeMetaTx(uint256 signerPk, uint256 nonce, uint256 deadline) internal virtual override {
         hub.actWithSig({
-            publicationActionParams: _getDefaultPublicationActionParams(),
+            publicationActionParams: defaultPubActionParams,
             signature: _getSigStruct({
                 signer: vm.addr(_getDefaultMetaTxSignerPk()),
                 pKey: signerPk,
-                digest: _calculateActWithSigDigest(_getDefaultPublicationActionParams(), nonce, deadline),
+                digest: _calculateActWithSigDigest(defaultPubActionParams, nonce, deadline),
                 deadline: deadline
             })
         });
     }
 
     function _getDefaultMetaTxSignerPk() internal virtual override returns (uint256) {
-        return defaultAccount.ownerPk;
+        return actor.ownerPk;
     }
 
     function _calculateActWithSigDigest(
@@ -186,6 +203,6 @@ contract ActMetaTxTest is ActTest, MetaTxNegatives {
     }
 
     function _refreshCachedNonces() internal override {
-        cachedNonceByAddress[defaultAccount.owner] = hub.nonces(defaultAccount.owner);
+        cachedNonceByAddress[actor.owner] = hub.nonces(actor.owner);
     }
 }
