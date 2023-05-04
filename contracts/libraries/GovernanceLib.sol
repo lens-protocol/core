@@ -88,6 +88,7 @@ library GovernanceLib {
 
         uint256 id;
         if (actionModuleWhitelistData.id == 0) {
+            // The action module with the given address wasn't whitelisted before, a new ID is assigned to it.
             if (!whitelist) {
                 revert Errors.NotWhitelisted();
             }
@@ -99,6 +100,7 @@ library GovernanceLib {
             );
             StorageLib.actionModuleById()[id] = actionModule;
         } else {
+            // The action module with the given address was already whitelisted before, it has an ID already assigned.
             StorageLib.actionModuleWhitelistData()[actionModule].isWhitelisted = whitelist;
             id = actionModuleWhitelistData.id;
         }

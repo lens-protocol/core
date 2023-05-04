@@ -56,8 +56,6 @@ contract DegreesOfSeparationReferenceModule is HubRestricted, IReferenceModule {
      */
     uint8 constant MAX_DEGREES_OF_SEPARATION = 3;
 
-    mapping(address signer => uint256 nonce) public nonces;
-
     mapping(uint256 profileId => mapping(uint256 pubId => ModuleConfig config)) internal _moduleConfig;
 
     constructor(address hub) HubRestricted(hub) {}

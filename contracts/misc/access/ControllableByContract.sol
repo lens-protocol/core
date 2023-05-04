@@ -5,6 +5,8 @@ pragma solidity ^0.8.15;
 import {Ownable} from '@openzeppelin/contracts/access/Ownable.sol';
 
 contract ControllableByContract is Ownable {
+    event ControllerContractUpdated(address previousControllerContract, address newControllerContract);
+
     error Unauthorized();
 
     address public controllerContract;
@@ -21,10 +23,12 @@ contract ControllableByContract is Ownable {
     }
 
     function clearControllerContract() external onlyOwnerOrControllerContract {
+        emit ControllerContractUpdated(controllerContract, address(0));
         delete controllerContract;
     }
 
     function setControllerContract(address newControllerContract) external onlyOwner {
+        emit ControllerContractUpdated(controllerContract, newControllerContract);
         controllerContract = newControllerContract;
     }
 }

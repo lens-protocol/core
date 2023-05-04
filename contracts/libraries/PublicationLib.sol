@@ -441,8 +441,12 @@ library PublicationLib {
         address[] calldata actionModules,
         bytes[] calldata actionModulesInitDatas
     ) private returns (bytes[] memory) {
+        if (actionModules.length != actionModulesInitDatas.length) {
+            revert Errors.ArrayMismatch();
+        }
+
         bytes[] memory actionModuleInitResults = new bytes[](actionModules.length);
-        uint256 actionModuleBitmap;
+        uint256 enabledActionModulesBitmap;
 
         uint256 i;
         while (i < actionModules.length) {
@@ -454,7 +458,13 @@ library PublicationLib {
                 revert Errors.NotWhitelisted();
             }
 
-            actionModuleBitmap |= 1 << (actionModuleWhitelistData.id - 1);
+            uint256 actionModuleIdBitmapMask = 1 << (actionModuleWhitelistData.id - 1);
+
+            if (enabledActionModulesBitmap & actionModuleIdBitmapMask != 0) {
+                revert Errors.AlreadyEnabled();
+            }
+
+            enabledActionModulesBitmap |= actionModuleIdBitmapMask;
 
             actionModuleInitResults[i] = IPublicationActionModule(actionModules[i]).initializePublicationAction(
                 profileId,
@@ -468,7 +478,7 @@ library PublicationLib {
             }
         }
 
-        StorageLib.getPublication(profileId, pubId).actionModulesBitmap = actionModuleBitmap;
+        StorageLib.getPublication(profileId, pubId).enabledActionModulesBitmap = enabledActionModulesBitmap;
 
         return actionModuleInitResults;
     }

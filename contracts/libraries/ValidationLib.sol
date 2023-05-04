@@ -94,11 +94,14 @@ library ValidationLib {
             revert Errors.ArrayMismatch();
         }
         Types.PublicationType[] memory referrerPubTypes = new Types.PublicationType[](referrerProfileIds.length);
-        // We decided not to check for duplicate referrals here to save gas and move this responsibility to modules
+
+        // We decided not to check for duplicate referrals here due to gas cost. If transient storage opcodes (EIP-1153)
+        // get included into the VM, this could be updated to implement an efficient duplicate check mechanism.
+        // For now, if a module strongly needs to avoid duplicate referrals, it can check for them at its own expense.
+
         uint256 referrerProfileId;
         uint256 referrerPubId;
         uint256 i;
-
         while (i < referrerProfileIds.length) {
             referrerProfileId = referrerProfileIds[i];
             referrerPubId = referrerPubIds[i];

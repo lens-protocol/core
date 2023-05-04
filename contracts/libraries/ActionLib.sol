@@ -70,6 +70,6 @@ library ActionLib {
             return false;
         }
         uint256 actionModuleIdBitmapMask = 1 << (actionModuleId - 1);
-        return actionModuleIdBitmapMask & _publication.actionModulesBitmap != 0;
+        return actionModuleIdBitmapMask & _publication.enabledActionModulesBitmap != 0;
     }
 }

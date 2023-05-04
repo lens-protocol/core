@@ -585,8 +585,8 @@ contract LensHub is
     }
 
     /// @inheritdoc ILensProtocol
-    function getActionModulesBitmap(uint256 profileId, uint256 pubId) external view override returns (uint256) {
-        return _publications[profileId][pubId].actionModulesBitmap;
+    function getEnabledActionModulesBitmap(uint256 profileId, uint256 pubId) external view override returns (uint256) {
+        return _publications[profileId][pubId].enabledActionModulesBitmap;
     }
 
     /// @inheritdoc ILensProtocol
