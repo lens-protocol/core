@@ -441,8 +441,12 @@ library PublicationLib {
         address[] calldata actionModules,
         bytes[] calldata actionModulesInitDatas
     ) private returns (bytes[] memory) {
+        if (actionModules.length != actionModulesInitDatas.length) {
+            revert Errors.ArrayMismatch();
+        }
+
         bytes[] memory actionModuleInitResults = new bytes[](actionModules.length);
-        uint256 actionModuleBitmap;
+        uint256 enabledActionModulesBitmap;
 
         uint256 i;
         while (i < actionModules.length) {
