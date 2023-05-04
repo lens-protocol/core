@@ -31,23 +31,31 @@ contract ProfileCreationProxy is ImmutableOwnable {
     }
 
     function proxyCreateProfile(
-        Types.CreateProfileParams memory createProfileParams
+        Types.CreateProfileParams calldata createProfileParams
     ) external onlyOwner returns (uint256) {
         return ILensHub(LENS_HUB).createProfile(createProfileParams);
     }
 
     function proxyCreateProfileWithHandle(
         Types.CreateProfileParams memory createProfileParams,
-        string memory handle
+        string calldata handle
     ) external onlyOwner returns (uint256, uint256) {
+        // We mint the handle & profile to this contract first, then link it to the profile
+        address destination = createProfileParams.to;
+        createProfileParams.to = address(this);
         uint256 profileId = ILensHub(LENS_HUB).createProfile(createProfileParams);
-        uint256 handleId = LENS_HANDLES.mintHandle(createProfileParams.to, handle);
-        // The linking below is permissionless (same address just must own both for it to work)
+        uint256 handleId = LENS_HANDLES.mintHandle(address(this), handle);
+
         TOKEN_HANDLE_REGISTRY.linkHandleWithToken({handleId: handleId, tokenId: profileId, data: ''});
+
+        // Transfer the handle & profile to the destination
+        LENS_HANDLES.transferFrom(address(this), destination, handleId);
+        ILensHub(LENS_HUB).transferFrom(address(this), destination, profileId);
+
         return (profileId, handleId);
     }
 
-    function proxyCreateHandle(address to, string memory handle) external onlyOwner returns (uint256) {
+    function proxyCreateHandle(address to, string calldata handle) external onlyOwner returns (uint256) {
         return LENS_HANDLES.mintHandle(to, handle);
     }
 }

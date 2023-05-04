@@ -13,4 +13,6 @@ library HandlesErrors {
     error HandleLengthInvalid();
     error HandleContainsInvalidCharacters();
     error HandleFirstCharInvalid();
+    error NotOwnerNorWhitelisted();
+    error NotOwner();
 }

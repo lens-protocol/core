@@ -45,4 +45,14 @@ interface ILensHandles is IERC721 {
      * @return bytes32 The hash of the namespace of the contract.
      */
     function getNamespaceHash() external pure returns (bytes32);
+
+    /**
+     * @notice Returns whether `tokenId` exists.
+     *
+     * Tokens start existing when they are minted (`_mint`),
+     * and stop existing when they are burned (`_burn`).
+     *
+     * @return bool Whether the token exists.
+     */
+    function exists(uint256 tokenId) external view returns (bool);
 }
