@@ -468,7 +468,7 @@ library PublicationLib {
             }
         }
 
-        StorageLib.getPublication(profileId, pubId).actionModulesBitmap = actionModuleBitmap;
+        StorageLib.getPublication(profileId, pubId).enabledActionModulesBitmap = enabledActionModulesBitmap;
 
         return actionModuleInitResults;
     }

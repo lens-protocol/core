@@ -483,10 +483,9 @@ interface ILensProtocol {
     function getReferenceModule(uint256 profileId, uint256 pubId) external view returns (address);
 
     /**
-     * @notice Returns the action modules associated with a given publication in a bitmap.
+     * @notice Returns the action modules enabled in a given publication as a bitmap.
      * The bitmap is a uint256 where each bit represents an action module: 1 if the publication uses it, and 0 if not.
      * You can use getActionModuleById() to get the address of the action module associated with a given bit.
-     *
      *
      * In the future this can be replaced with a getter that allows to query the bitmap by index, if there are more than
      * 256 action modules.
@@ -496,7 +495,7 @@ interface ILensProtocol {
      *
      * @return uint256 The bitmap that represents the action modules associated with the given publication.
      */
-    function getActionModulesBitmap(uint256 profileId, uint256 pubId) external view returns (uint256);
+    function getEnabledActionModulesBitmap(uint256 profileId, uint256 pubId) external view returns (uint256);
 
     /**
      * @notice Returns the address of the action module associated with the given whitelist ID, address(0) if none.

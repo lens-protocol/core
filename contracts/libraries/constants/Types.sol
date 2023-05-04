@@ -116,7 +116,7 @@ library Types {
         PublicationType pubType;
         uint256 rootProfileId;
         uint256 rootPubId;
-        uint256 actionModulesBitmap; // In future this can be (uint256 => uint256) mapping if we need >256 modules
+        uint256 enabledActionModulesBitmap; // In future this can be (uint256 => uint256) mapping if we need >256 modules
     }
 
     /**
