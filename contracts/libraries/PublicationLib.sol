@@ -458,7 +458,13 @@ library PublicationLib {
                 revert Errors.NotWhitelisted();
             }
 
-            actionModuleBitmap |= 1 << (actionModuleWhitelistData.id - 1);
+            uint256 actionModuleIdBitmapMask = 1 << (actionModuleWhitelistData.id - 1);
+
+            if (enabledActionModulesBitmap & actionModuleIdBitmapMask != 0) {
+                revert Errors.AlreadyEnabled();
+            }
+
+            enabledActionModulesBitmap |= actionModuleIdBitmapMask;
 
             actionModuleInitResults[i] = IPublicationActionModule(actionModules[i]).initializePublicationAction(
                 profileId,
