@@ -10,12 +10,14 @@ import {HandlesErrors} from 'contracts/namespaces/constants/Errors.sol';
 import {HandleTokenURILib} from 'contracts/libraries/token-uris/HandleTokenURILib.sol';
 import {ILensHub} from 'contracts/interfaces/ILensHub.sol';
 
-contract LensHandles is ILensHandles, ERC721, ImmutableOwnable {
+contract LensHandles is ERC721, ImmutableOwnable, ILensHandles {
     string constant NAMESPACE = 'lens';
     bytes32 constant NAMESPACE_HASH = keccak256(bytes(NAMESPACE));
 
-    modifier onlyOwnerOrWhitelistedProfileCreator() {
-        if (msg.sender != OWNER && !ILensHub(LENS_HUB).isProfileCreatorWhitelisted(msg.sender)) {
+    modifier onlyOwnerOrHubOrWhitelistedProfileCreator() {
+        if (
+            msg.sender != OWNER && msg.sender != LENS_HUB && !ILensHub(LENS_HUB).isProfileCreatorWhitelisted(msg.sender)
+        ) {
             revert HandlesErrors.NotOwnerNorWhitelisted();
         }
         _;
@@ -45,14 +47,14 @@ contract LensHandles is ILensHandles, ERC721, ImmutableOwnable {
     function mintHandle(
         address to,
         string calldata localName
-    ) external onlyOwnerOrWhitelistedProfileCreator returns (uint256) {
+    ) external onlyOwnerOrHubOrWhitelistedProfileCreator returns (uint256) {
         _validateLocalName(localName);
         bytes32 localNameHash = keccak256(bytes(localName));
         bytes32 handleHash = keccak256(abi.encodePacked(localNameHash, NAMESPACE_HASH));
         uint256 handleId = uint256(handleHash);
         _mint(to, handleId);
         handles[handleId] = localName;
-        emit HandlesEvents.HandleMinted(localName, NAMESPACE, handleId, to);
+        emit HandlesEvents.HandleMinted(localName, NAMESPACE, handleId, to, block.timestamp);
         return handleId;
     }
 
