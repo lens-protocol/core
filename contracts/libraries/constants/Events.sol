@@ -136,13 +136,15 @@ library Events {
      * @param approvals The array of booleans indicating the corresponding executor new approval status.
      * @param configSwitched A boolean indicating if the configuration was switched to the one emitted in the
      * `configNumber` parameter.
+     * @param timestamp The current block timestamp.
      */
     event DelegatedExecutorsConfigChanged(
         uint256 indexed delegatorProfileId,
         uint256 indexed configNumber,
         address[] delegatedExecutors,
         bool[] approvals,
-        bool indexed configSwitched
+        bool indexed configSwitched,
+        uint256 timestamp
     );
 
     /**

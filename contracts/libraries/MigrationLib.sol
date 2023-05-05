@@ -51,17 +51,9 @@ library MigrationLib {
     /**
      * @notice Migrates a profile from V1 to V2.
      *
-     * @dev We check if the profile exists by checking owner != address(0).
-     * @dev We check if the profile has already been migrated by checking handleDeprecated != "".
-     * @dev We check if the profile is the "lensprotocol" profile by checking profileId != 1. This is the only profile
-     *      without a .lens suffix.
-     * @dev We mint a new handle on the LensHandles contract and link it to the profile in the TokenHandleRegistry contract.
-     * @dev The resulting handle NFT is sent to the profile owner.
-     * @dev We emit the ProfileMigrated event.
      * @dev We do not revert in any case, as we want to allow the migration to continue even if one profile fails
      *      (and it usually fails if already migrated or profileNFT moved).
-     *
-     * @dev Estimated gas cost of one profile migration is around 150k gas.
+     * @dev Estimated gas cost of one profile migration is around 178k gas.
      *
      * @param profileId The profile ID to migrate.
      */
@@ -71,12 +63,15 @@ library MigrationLib {
         TokenHandleRegistry tokenHandleRegistry
     ) private {
         address profileOwner = StorageLib.getTokenData(profileId).owner;
+        // We check if the profile exists by checking owner != address(0).
         if (profileOwner != address(0)) {
+            // We check if the profile has already been migrated by checking handleDeprecated != "".
             string memory handle = StorageLib.getProfile(profileId).handleDeprecated;
             if (bytes(handle).length == 0) {
                 return; // Already migrated
             }
             bytes32 handleHash = keccak256(bytes(handle));
+            // We check if the profile is the "lensprotocol" profile by checking profileId != 1.
             // "lensprotocol" is the only edge case without the .lens suffix:
             if (profileId != LENS_PROTOCOL_PROFILE_ID) {
                 assembly {
@@ -84,8 +79,10 @@ library MigrationLib {
                     mstore(handle, sub(handle_length, DOT_LENS_SUFFIX_LENGTH)) // Cut 5 chars (.lens) from the end
                 }
             }
+            // We mint a new handle on the LensHandles contract. The resulting handle NFT is sent to the profile owner.
             uint256 handleId = lensHandles.mintHandle(profileOwner, handle);
-            tokenHandleRegistry.migrationLinkHandleWithToken(handleId, profileId);
+            // We link it to the profile in the TokenHandleRegistry contract.
+            tokenHandleRegistry.migrationLink(handleId, profileId);
             emit ProfileMigrated(profileId, profileOwner, handle, handleId);
             delete StorageLib.getProfile(profileId).handleDeprecated;
             delete StorageLib.profileIdByHandleHash()[handleHash];

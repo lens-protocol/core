@@ -7,91 +7,125 @@ import {ITokenHandleRegistry} from 'contracts/interfaces/ITokenHandleRegistry.so
 import {RegistryTypes} from 'contracts/namespaces/constants/Types.sol';
 import {RegistryErrors} from 'contracts/namespaces/constants/Errors.sol';
 import {RegistryEvents} from 'contracts/namespaces/constants/Events.sol';
+import {ILensHub} from 'contracts/interfaces/ILensHub.sol';
+import {ILensHandles} from 'contracts/interfaces/ILensHandles.sol';
 
+/**
+ * @title TokenHandleRegistry
+ * @author Lens Protocol
+ * @notice This contract is used to link a token with a handle.
+ * @custom:upgradeable Transparent upgradeable proxy without initializer.
+ */
 contract TokenHandleRegistry is ITokenHandleRegistry {
+    // First version of TokenHandleRegistry only works with Lens Profiles and .lens namespace.
     address immutable LENS_HUB;
     address immutable LENS_HANDLES;
 
-    /// 1to1 mapping for now. Can be replaced to support multiple handles per token if using mappings
-    /// NOTE: Using bytes32 _handleHash(Handle) and _tokenHash(Token) as keys because solidity doesn't support structs as keys.
+    // Using _handleHash(Handle) and _tokenHash(Token) as keys given that structs cannot be used as them.
     mapping(bytes32 handle => RegistryTypes.Token token) handleToToken;
     mapping(bytes32 token => RegistryTypes.Handle handle) tokenToHandle;
 
-    modifier onlyHandleOwner(RegistryTypes.Handle memory handle, address transactionExecutor) {
-        if (IERC721(handle.collection).ownerOf(handle.id) != transactionExecutor) {
+    modifier onlyHandleOwner(uint256 handleId, address transactionExecutor) {
+        if (IERC721(LENS_HANDLES).ownerOf(handleId) != transactionExecutor) {
             revert RegistryErrors.NotHandleOwner();
         }
         _;
     }
 
-    modifier onlyTokenOwner(RegistryTypes.Token memory token, address transactionExecutor) {
-        if (IERC721(token.collection).ownerOf(token.id) != transactionExecutor) {
+    modifier onlyTokenOwner(uint256 tokenId, address transactionExecutor) {
+        if (IERC721(LENS_HUB).ownerOf(tokenId) != transactionExecutor) {
             revert RegistryErrors.NotTokenOwner();
         }
         _;
     }
 
     modifier onlyHandleOrTokenOwner(
-        RegistryTypes.Handle memory handle,
-        RegistryTypes.Token memory token,
+        uint256 handleId,
+        uint256 tokenId,
         address transactionExecutor
     ) {
-        // The transaction executor must be the owner of the handle or the token (or both).
         if (
-            !(IERC721(handle.collection).ownerOf(handle.id) == transactionExecutor ||
-                IERC721(token.collection).ownerOf(token.id) == transactionExecutor)
+            IERC721(LENS_HANDLES).ownerOf(handleId) != transactionExecutor &&
+            IERC721(LENS_HUB).ownerOf(tokenId) != transactionExecutor
         ) {
-            revert RegistryErrors.NotHandleOrTokenOwner();
+            revert RegistryErrors.NotHandleNorTokenOwner();
         }
         _;
     }
 
-    // NOTE: We don't need whitelisting yet as we use immutable constants for the first version.
     constructor(address lensHub, address lensHandles) {
         LENS_HUB = lensHub;
         LENS_HANDLES = lensHandles;
     }
 
-    // V1 --> V2 Migration function
-    function migrationLinkHandleWithToken(uint256 handleId, uint256 tokenId) external {
+    // Lens V1 to Lens V2 migration function
+    function migrationLink(uint256 handleId, uint256 tokenId) external {
         if (msg.sender != LENS_HUB) {
             revert RegistryErrors.OnlyLensHub();
         }
+        _link(
+            RegistryTypes.Handle({collection: LENS_HANDLES, id: handleId}),
+            RegistryTypes.Token({collection: LENS_HUB, id: tokenId})
+        );
+    }
+
+    /// @inheritdoc ITokenHandleRegistry
+    function link(
+        uint256 handleId,
+        uint256 tokenId
+    ) external onlyTokenOwner(tokenId, msg.sender) onlyHandleOwner(handleId, msg.sender) {
+        _link(
+            RegistryTypes.Handle({collection: LENS_HANDLES, id: handleId}),
+            RegistryTypes.Token({collection: LENS_HUB, id: tokenId})
+        );
+    }
+
+    /// @inheritdoc ITokenHandleRegistry
+    function unlink(uint256 handleId, uint256 tokenId) external onlyHandleOrTokenOwner(handleId, tokenId, msg.sender) {
         RegistryTypes.Handle memory handle = RegistryTypes.Handle({collection: LENS_HANDLES, id: handleId});
+        RegistryTypes.Token memory tokenPointedByHandle = handleToToken[_handleHash(handle)];
+        if (tokenPointedByHandle.id != tokenId) {
+            revert RegistryErrors.NotLinked();
+        }
+        _unlink(handle, tokenPointedByHandle);
+    }
+
+    function unlinkIfTokenBurnt(uint256 tokenId) external {
+        // In the first version of the registry linkage is one-to-one, so we can check only one side of it to save gas.
         RegistryTypes.Token memory token = RegistryTypes.Token({collection: LENS_HUB, id: tokenId});
-        handleToToken[_handleHash(handle)] = token;
-        tokenToHandle[_tokenHash(token)] = handle;
-        emit RegistryEvents.HandleLinked(handle, token);
+        RegistryTypes.Handle memory handleThatTokenPointsTo = tokenToHandle[_tokenHash(token)];
+        if (ILensHub(LENS_HUB).exists(tokenId)) {
+            revert RegistryErrors.NotBurnt();
+        }
+        _unlink(handleThatTokenPointsTo, token);
     }
 
-    // NOTE: Simplified interfaces for the first iteration - Namespace and LensHub are constants
-    /// @inheritdoc ITokenHandleRegistry
-    function linkHandleWithToken(uint256 handleId, uint256 tokenId, bytes calldata /* data */) external {
-        _linkHandleWithToken(
-            RegistryTypes.Handle({collection: LENS_HANDLES, id: handleId}),
-            RegistryTypes.Token({collection: LENS_HUB, id: tokenId})
-        );
+    function unlinkIfHandleBurnt(uint256 handleId) external {
+        // In the first version of the registry linkage is one-to-one, so we can check only one side of it to save gas.
+        RegistryTypes.Handle memory handle = RegistryTypes.Handle({collection: LENS_HANDLES, id: handleId});
+        RegistryTypes.Token memory tokenPointedByHandle = handleToToken[_handleHash(handle)];
+        if (ILensHub(LENS_HUB).exists(handleId)) {
+            revert RegistryErrors.NotBurnt();
+        }
+        _unlink(handle, tokenPointedByHandle);
     }
 
-    // NOTE: Simplified interfaces for the first iteration - Namespace and LensHub are constants
-    /// @inheritdoc ITokenHandleRegistry
-    function unlinkHandleFromToken(uint256 handleId, uint256 tokenId) external {
-        _unlinkHandleFromToken(
-            RegistryTypes.Handle({collection: LENS_HANDLES, id: handleId}),
-            RegistryTypes.Token({collection: LENS_HUB, id: tokenId})
-        );
-    }
-
-    // NOTE: Simplified interfaces for the first iteration - Namespace and LensHub are constants
     /// @inheritdoc ITokenHandleRegistry
     function resolveHandle(uint256 handleId) external view returns (uint256) {
-        return _resolveHandle(RegistryTypes.Handle({collection: LENS_HANDLES, id: handleId})).id;
+        uint256 resolvedHandleId = _resolveHandle(RegistryTypes.Handle({collection: LENS_HANDLES, id: handleId})).id;
+        if (resolvedHandleId != 0 && !ILensHandles(LENS_HANDLES).exists(resolvedHandleId)) {
+            return 0; // Handle was burned - unlinkIfBurnt should be called
+        }
+        return resolvedHandleId;
     }
 
-    // NOTE: Simplified interfaces for the first iteration - Namespace and LensHub are constants
     /// @inheritdoc ITokenHandleRegistry
     function resolveToken(uint256 tokenId) external view returns (uint256) {
-        return _resolveToken(RegistryTypes.Token({collection: LENS_HUB, id: tokenId})).id;
+        uint256 resolvedTokenId = _resolveToken(RegistryTypes.Token({collection: LENS_HUB, id: tokenId})).id;
+        if (resolvedTokenId != 0 && !ILensHub(LENS_HUB).exists(resolvedTokenId)) {
+            return 0; // Token was burned - unlinkIfBurnt should be called
+        }
+        return resolvedTokenId;
     }
 
     //////////////////////////////////////
@@ -106,43 +140,44 @@ contract TokenHandleRegistry is ITokenHandleRegistry {
         return tokenToHandle[_tokenHash(token)];
     }
 
-    function _linkHandleWithToken(
-        RegistryTypes.Handle memory handle,
-        RegistryTypes.Token memory token
-    ) internal onlyTokenOwner(token, msg.sender) onlyHandleOwner(handle, msg.sender) {
-        _unlinkIfAlreadyLinked(handle, token);
+    function _link(RegistryTypes.Handle memory handle, RegistryTypes.Token memory token) internal {
+        _deleteTokenToHandleLinkageIfAny(handle);
         handleToToken[_handleHash(handle)] = token;
+
+        _deleteHandleToTokenLinkageIfAny(token);
         tokenToHandle[_tokenHash(token)] = handle;
-        emit RegistryEvents.HandleLinked(handle, token);
+
+        emit RegistryEvents.HandleLinked(handle, token, block.timestamp);
     }
 
-    function _unlinkIfAlreadyLinked(RegistryTypes.Handle memory handle, RegistryTypes.Token memory token) internal {
-        RegistryTypes.Token memory currentToken = handleToToken[_handleHash(handle)];
-        RegistryTypes.Handle memory currentHandle = tokenToHandle[_tokenHash(token)];
-        if (currentToken.collection != address(0) || currentToken.id != 0) {
-            delete tokenToHandle[_tokenHash(currentToken)];
-        }
-        if (currentHandle.collection != address(0) || currentHandle.id != 0) {
-            delete handleToToken[_handleHash(currentHandle)];
+    function _deleteTokenToHandleLinkageIfAny(RegistryTypes.Handle memory handle) internal {
+        RegistryTypes.Token memory tokenPointedByHandle = handleToToken[_handleHash(handle)];
+        if (tokenPointedByHandle.collection != address(0) || tokenPointedByHandle.id != 0) {
+            delete tokenToHandle[_tokenHash(tokenPointedByHandle)];
+            emit RegistryEvents.HandleUnlinked(handle, tokenPointedByHandle, block.timestamp);
         }
     }
 
-    function _unlinkHandleFromToken(
-        RegistryTypes.Handle memory handle,
-        RegistryTypes.Token memory token
-    ) internal onlyHandleOrTokenOwner(handle, token, msg.sender) {
+    function _deleteHandleToTokenLinkageIfAny(RegistryTypes.Token memory token) internal {
+        RegistryTypes.Handle memory handlePointedByToken = tokenToHandle[_tokenHash(token)];
+        if (handlePointedByToken.collection != address(0) || handlePointedByToken.id != 0) {
+            delete handleToToken[_handleHash(handlePointedByToken)];
+            emit RegistryEvents.HandleUnlinked(handlePointedByToken, token, block.timestamp);
+        }
+    }
+
+    function _unlink(RegistryTypes.Handle memory handle, RegistryTypes.Token memory token) internal {
         delete handleToToken[_handleHash(handle)];
+        // tokenToHandle is removed too, as the first version linkage is one-to-one.
         delete tokenToHandle[_tokenHash(token)];
-        emit RegistryEvents.HandleUnlinked(handle, token);
+        emit RegistryEvents.HandleUnlinked(handle, token, block.timestamp);
     }
-
-    // Utility functions for mappings
 
     function _handleHash(RegistryTypes.Handle memory handle) internal pure returns (bytes32) {
-        return keccak256(abi.encodePacked(handle.collection, handle.id));
+        return keccak256(abi.encode(handle.collection, handle.id));
     }
 
     function _tokenHash(RegistryTypes.Token memory token) internal pure returns (bytes32) {
-        return keccak256(abi.encodePacked(token.collection, token.id));
+        return keccak256(abi.encode(token.collection, token.id));
     }
 }
