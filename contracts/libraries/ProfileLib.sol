@@ -257,7 +257,8 @@ library ProfileLib {
             configNumber,
             delegatedExecutors,
             approvals,
-            configSwitched
+            configSwitched,
+            block.timestamp
         );
     }
 

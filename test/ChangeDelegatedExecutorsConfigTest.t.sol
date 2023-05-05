@@ -217,7 +217,8 @@ contract ChangeDelegatedExecutorsConfigTest_GivenConfig is ChangeDelegatedExecut
             configNumber: maxAvailableConfigNumber,
             delegatedExecutors: _toAddressArray(delegatedExecutor),
             approvals: _toBoolArray(true),
-            configSwitched: false
+            configSwitched: false,
+            timestamp: block.timestamp
         });
 
         _changeDelegatedExecutorsConfig({
@@ -248,7 +249,8 @@ contract ChangeDelegatedExecutorsConfigTest_GivenConfig is ChangeDelegatedExecut
             configNumber: maxAvailableConfigNumber,
             delegatedExecutors: _toAddressArray(delegatedExecutor),
             approvals: _toBoolArray(true),
-            configSwitched: true
+            configSwitched: true,
+            timestamp: block.timestamp
         });
 
         _changeDelegatedExecutorsConfig({
@@ -378,7 +380,8 @@ contract ChangeDelegatedExecutorsConfigTest_GivenConfig is ChangeDelegatedExecut
             configNumber: currentConfigNumber,
             delegatedExecutors: _toAddressArray(delegatedExecutor),
             approvals: _toBoolArray(approval),
-            configSwitched: false // Should emit `configSwitched` as `false`...
+            configSwitched: false, // Should emit `configSwitched` as `false`...
+            timestamp: block.timestamp
         });
 
         _changeDelegatedExecutorsConfig({
