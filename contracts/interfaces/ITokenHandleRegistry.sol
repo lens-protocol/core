@@ -70,10 +70,10 @@ interface ITokenHandleRegistry {
      *
      * @return tokenId ID of the Lens Protocol Profile NFT
      */
-    function resolveHandle(uint256 handleId) external view returns (uint256);
+    function resolve(uint256 handleId) external view returns (uint256);
 
     /**
-     * @notice Resolves a profile NFT to a handle NFT.
+     * @notice Gets a default handle for a profile NFT (aka reverse resolution).
      *
      * @dev In the first version of the registry, the contracts are hard-coded:
      *  - Handle is hard-coded to be of the .lens namespace
@@ -85,5 +85,5 @@ interface ITokenHandleRegistry {
      *
      * @return handleId ID of the .lens namespace handle NFT
      */
-    function resolveToken(uint256 tokenId) external view returns (uint256);
+    function getDefaultHandle(uint256 tokenId) external view returns (uint256);
 }

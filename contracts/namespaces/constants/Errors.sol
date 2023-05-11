@@ -7,8 +7,8 @@ library RegistryErrors {
     error NotTokenOwner();
     error NotHandleNorTokenOwner();
     error OnlyLensHub();
-    error NotBurnt();
     error NotLinked();
+    error DoesNotExist();
 }
 
 library HandlesErrors {
