@@ -90,53 +90,44 @@ contract TokenHandleRegistry is ITokenHandleRegistry {
         _unlink(handle, tokenPointedByHandle);
     }
 
-    function unlinkIfTokenBurnt(uint256 tokenId) external {
-        // In the first version of the registry linkage is one-to-one, so we can check only one side of it to save gas.
-        RegistryTypes.Token memory token = RegistryTypes.Token({collection: LENS_HUB, id: tokenId});
-        RegistryTypes.Handle memory handleThatTokenPointsTo = tokenToHandle[_tokenHash(token)];
-        if (ILensHub(LENS_HUB).exists(tokenId)) {
-            revert RegistryErrors.NotBurnt();
-        }
-        _unlink(handleThatTokenPointsTo, token);
-    }
-
-    function unlinkIfHandleBurnt(uint256 handleId) external {
-        // In the first version of the registry linkage is one-to-one, so we can check only one side of it to save gas.
-        RegistryTypes.Handle memory handle = RegistryTypes.Handle({collection: LENS_HANDLES, id: handleId});
-        RegistryTypes.Token memory tokenPointedByHandle = handleToToken[_handleHash(handle)];
-        if (ILensHub(LENS_HUB).exists(handleId)) {
-            revert RegistryErrors.NotBurnt();
-        }
-        _unlink(handle, tokenPointedByHandle);
-    }
-
     /// @inheritdoc ITokenHandleRegistry
-    function resolveHandle(uint256 handleId) external view returns (uint256) {
-        uint256 resolvedHandleId = _resolveHandle(RegistryTypes.Handle({collection: LENS_HANDLES, id: handleId})).id;
-        if (resolvedHandleId != 0 && !ILensHandles(LENS_HANDLES).exists(resolvedHandleId)) {
-            return 0; // Handle was burned - unlinkIfBurnt should be called
+    function resolve(uint256 handleId) external view returns (uint256) {
+        if (!ILensHandles(LENS_HANDLES).exists(handleId)) {
+            revert RegistryErrors.DoesNotExist();
         }
-        return resolvedHandleId;
-    }
-
-    /// @inheritdoc ITokenHandleRegistry
-    function resolveToken(uint256 tokenId) external view returns (uint256) {
-        uint256 resolvedTokenId = _resolveToken(RegistryTypes.Token({collection: LENS_HUB, id: tokenId})).id;
-        if (resolvedTokenId != 0 && !ILensHub(LENS_HUB).exists(resolvedTokenId)) {
-            return 0; // Token was burned - unlinkIfBurnt should be called
+        uint256 resolvedTokenId = _resolveHandleToToken(RegistryTypes.Handle({collection: LENS_HANDLES, id: handleId}))
+            .id;
+        if (resolvedTokenId == 0 || !ILensHub(LENS_HUB).exists(resolvedTokenId)) {
+            return 0;
         }
         return resolvedTokenId;
+    }
+
+    /// @inheritdoc ITokenHandleRegistry
+    function getDefaultHandle(uint256 tokenId) external view returns (uint256) {
+        if (!ILensHub(LENS_HUB).exists(tokenId)) {
+            revert RegistryErrors.DoesNotExist();
+        }
+        uint256 defaultHandleId = _resolveTokenToHandle(RegistryTypes.Token({collection: LENS_HUB, id: tokenId})).id;
+        if (defaultHandleId == 0 || !ILensHandles(LENS_HANDLES).exists(defaultHandleId)) {
+            return 0;
+        }
+        return defaultHandleId;
     }
 
     //////////////////////////////////////
     ///        INTERNAL FUNCTIONS      ///
     //////////////////////////////////////
 
-    function _resolveHandle(RegistryTypes.Handle memory handle) internal view returns (RegistryTypes.Token storage) {
+    function _resolveHandleToToken(
+        RegistryTypes.Handle memory handle
+    ) internal view returns (RegistryTypes.Token storage) {
         return handleToToken[_handleHash(handle)];
     }
 
-    function _resolveToken(RegistryTypes.Token memory token) internal view returns (RegistryTypes.Handle storage) {
+    function _resolveTokenToHandle(
+        RegistryTypes.Token memory token
+    ) internal view returns (RegistryTypes.Handle storage) {
         return tokenToHandle[_tokenHash(token)];
     }
 
