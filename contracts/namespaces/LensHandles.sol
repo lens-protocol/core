@@ -21,7 +21,10 @@ import {ILensHub} from 'contracts/interfaces/ILensHub.sol';
  *      handle === ${localName} ; inside some namespace.
  */
 contract LensHandles is ERC721, ImmutableOwnable, ILensHandles {
+    uint256 internal constant MAX_HANDLE_LENGTH = 31;
     string internal constant NAMESPACE = 'lens';
+    uint256 internal immutable NAMESPACE_LENGTH = bytes(NAMESPACE).length;
+    uint256 internal constant SEPARATOR_LENGTH = 1; // bytes('.').length;
     bytes32 internal constant NAMESPACE_HASH = keccak256(bytes(NAMESPACE));
 
     modifier onlyOwnerOrHubOrWhitelistedProfileCreator() {
@@ -102,9 +105,9 @@ contract LensHandles is ERC721, ImmutableOwnable, ILensHandles {
     ///        INTERNAL FUNCTIONS      ///
     //////////////////////////////////////
 
-    function _validateLocalName(string memory localName) internal pure {
+    function _validateLocalName(string memory localName) internal view {
         uint256 localNameLength = bytes(localName).length;
-        if (localNameLength == 0) {
+        if (localNameLength == 0 || localNameLength + SEPARATOR_LENGTH + NAMESPACE_LENGTH > MAX_HANDLE_LENGTH) {
             revert HandlesErrors.HandleLengthInvalid();
         }
 
