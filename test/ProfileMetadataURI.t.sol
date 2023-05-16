@@ -44,6 +44,12 @@ contract ProfileMetadataURITest is BaseTest {
             approvals: _toBoolArray(true)
         });
 
+        vm.expectEmit(true, true, true, true, address(hub));
+        emit Events.ProfileMetadataSet({
+            profileId: defaultAccount.profileId,
+            metadata: MOCK_URI,
+            timestamp: block.timestamp
+        });
         _setProfileMetadataURI({pk: delegatedExecutorPk, profileId: defaultAccount.profileId, metadataURI: MOCK_URI});
         assertEq(hub.getProfileMetadataURI(defaultAccount.profileId), MOCK_URI);
     }
@@ -51,35 +57,18 @@ contract ProfileMetadataURITest is BaseTest {
     function testSetProfileMetadataURI() public {
         assertEq(hub.getProfileMetadataURI(defaultAccount.profileId), '');
 
-        _setProfileMetadataURI({
-            pk: defaultAccount.ownerPk,
-            profileId: defaultAccount.profileId,
-            metadataURI: MOCK_URI
-        });
-        assertEq(hub.getProfileMetadataURI(defaultAccount.profileId), MOCK_URI);
-    }
-
-    // Events
-    function expectProfileMetadataSetEvent() public {
         vm.expectEmit(true, true, true, true, address(hub));
         emit Events.ProfileMetadataSet({
             profileId: defaultAccount.profileId,
             metadata: MOCK_URI,
             timestamp: block.timestamp
         });
-    }
-
-    function testSetProfileMetadataURI_EmitsProperEvent() public {
-        expectProfileMetadataSetEvent();
-        testSetProfileMetadataURI();
-    }
-
-    function testDelegatedExecutorSetProfileMetadataURI_EmitsProperEvent(uint256 delegatedExecutorPk) public {
-        delegatedExecutorPk = _boundPk(delegatedExecutorPk);
-        vm.assume(delegatedExecutorPk != defaultAccount.ownerPk);
-
-        expectProfileMetadataSetEvent();
-        testDelegatedExecutorSetProfileMetadataURI(delegatedExecutorPk);
+        _setProfileMetadataURI({
+            pk: defaultAccount.ownerPk,
+            profileId: defaultAccount.profileId,
+            metadataURI: MOCK_URI
+        });
+        assertEq(hub.getProfileMetadataURI(defaultAccount.profileId), MOCK_URI);
     }
 }
 
