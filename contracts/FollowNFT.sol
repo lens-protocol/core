@@ -448,6 +448,7 @@ contract FollowNFT is HubRestricted, LensBaseERC721, ERC2981CollectionRoyalties,
     /// Migrations ///
     //////////////////
 
+    // This function shouldn't fail under no circumstances, except if wrong parameters are passed.
     function tryMigrate(
         uint256 followerProfileId,
         address followerProfileOwner,
@@ -463,25 +464,30 @@ contract FollowNFT is HubRestricted, LensBaseERC721, ERC2981CollectionRoyalties,
             revert Errors.InvalidParameter();
         }
 
+        if (!_exists(followTokenId)) {
+            return 0; // Doesn't exist
+        }
+
         address followTokenOwner = ownerOf(followTokenId);
+
         // ProfileNFT and FollowNFT should be in the same account
-        if (followerProfileOwner == followTokenOwner) {
-            unchecked {
-                ++_followerCount;
-            }
-
-            _followTokenIdByFollowerProfileId[followerProfileId] = followTokenId;
-
-            uint48 mintTimestamp = uint48(StorageLib.getTokenData(followTokenId).mintTimestamp);
-
-            _followDataByFollowTokenId[followTokenId].followerProfileId = uint160(followerProfileId);
-            _followDataByFollowTokenId[followTokenId].originalFollowTimestamp = mintTimestamp;
-            _followDataByFollowTokenId[followTokenId].followTimestamp = mintTimestamp;
-
-            super._burn(followTokenId);
-            return mintTimestamp;
-        } else {
+        if (followerProfileOwner != followTokenOwner) {
             return 0; // Not holding both Profile & Follow NFTs together
         }
+
+        unchecked {
+            ++_followerCount;
+        }
+
+        _followTokenIdByFollowerProfileId[followerProfileId] = followTokenId;
+
+        uint48 mintTimestamp = uint48(StorageLib.getTokenData(followTokenId).mintTimestamp);
+
+        _followDataByFollowTokenId[followTokenId].followerProfileId = uint160(followerProfileId);
+        _followDataByFollowTokenId[followTokenId].originalFollowTimestamp = mintTimestamp;
+        _followDataByFollowTokenId[followTokenId].followTimestamp = mintTimestamp;
+
+        super._burn(followTokenId);
+        return mintTimestamp;
     }
 }

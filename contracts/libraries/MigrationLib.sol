@@ -125,7 +125,10 @@ library MigrationLib {
             idOfProfileFollowed: idOfProfileFollowed,
             followTokenId: followTokenId
         });
-        // `mintTimestamp` will be 0 if already migrated (or not holding both Profile & Follow NFT together)
+        // `mintTimestamp` will be 0 if:
+        // - Follow NFT was already migrated
+        // - Follow NFT does not exist or was burnt
+        // - Follower profile Owner is different from Follow NFT Owner
         if (mintTimestamp != 0) {
             emit Events.Followed({
                 followerProfileId: followerProfileId,
