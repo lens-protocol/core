@@ -23,7 +23,8 @@ contract LensHandles is ERC721, ImmutableOwnable, ILensHandles {
         _;
     }
 
-    mapping(uint256 tokenId => string localName) public handles;
+    // This mapping is named 'handles' instead of 'localNames' on purpose of easier perception.
+    mapping(uint256 tokenId => string localName) internal handles;
 
     constructor(address owner, address lensHub) ERC721('', '') ImmutableOwnable(owner, lensHub) {}
 
@@ -63,6 +64,11 @@ contract LensHandles is ERC721, ImmutableOwnable, ILensHandles {
             revert HandlesErrors.NotOwner();
         }
         _burn(tokenId);
+        delete handles[tokenId];
+    }
+
+    function exists(uint256 tokenId) external view returns (bool) {
+        return _exists(tokenId);
     }
 
     function getNamespace() external pure returns (string memory) {
@@ -73,8 +79,18 @@ contract LensHandles is ERC721, ImmutableOwnable, ILensHandles {
         return NAMESPACE_HASH;
     }
 
-    function exists(uint256 tokenId) external view returns (bool) {
-        return _exists(tokenId);
+    function getLocalName(uint256 tokenId) public view returns (string memory) {
+        return handles[tokenId];
+    }
+
+    function getHandle(uint256 tokenId) public view returns (string memory) {
+        return string.concat(handles[tokenId], '.', NAMESPACE);
+    }
+
+    function getTokenId(string memory localName) public pure returns (uint256) {
+        bytes32 localNameHash = keccak256(bytes(localName));
+        bytes32 handleHash = keccak256(abi.encodePacked(localNameHash, NAMESPACE_HASH));
+        return uint256(handleHash);
     }
 
     //////////////////////////////////////
