@@ -10,9 +10,22 @@ import {HandlesErrors} from 'contracts/namespaces/constants/Errors.sol';
 import {HandleTokenURILib} from 'contracts/libraries/token-uris/HandleTokenURILib.sol';
 import {ILensHub} from 'contracts/interfaces/ILensHub.sol';
 
+/**
+ * A handle is defined as a local name inside a namespace context. A handle is represented as the local name with its
+ * namespace applied as a suffix, using the dot symbol as separator.
+ *
+ *      handle = ${localName}.${namespace}
+ *
+ * Handle and local name can be used interchangeably once you are in a context of a namespace, as it became redundant.
+ *
+ *      handle === ${localName} ; inside some namespace.
+ */
 contract LensHandles is ERC721, ImmutableOwnable, ILensHandles {
-    string constant NAMESPACE = 'lens';
-    bytes32 constant NAMESPACE_HASH = keccak256(bytes(NAMESPACE));
+    uint256 internal constant MAX_HANDLE_LENGTH = 31;
+    string internal constant NAMESPACE = 'lens';
+    uint256 internal immutable NAMESPACE_LENGTH = bytes(NAMESPACE).length;
+    uint256 internal constant SEPARATOR_LENGTH = 1; // bytes('.').length;
+    bytes32 internal constant NAMESPACE_HASH = keccak256(bytes(NAMESPACE));
 
     modifier onlyOwnerOrHubOrWhitelistedProfileCreator() {
         if (
@@ -23,7 +36,7 @@ contract LensHandles is ERC721, ImmutableOwnable, ILensHandles {
         _;
     }
 
-    mapping(uint256 tokenId => string localName) public handles;
+    mapping(uint256 tokenId => string localName) internal _localNames;
 
     constructor(address owner, address lensHub) ERC721('', '') ImmutableOwnable(owner, lensHub) {}
 
@@ -40,7 +53,7 @@ contract LensHandles is ERC721, ImmutableOwnable, ILensHandles {
      */
     function tokenURI(uint256 tokenId) public view override returns (string memory) {
         _requireMinted(tokenId);
-        return HandleTokenURILib.getTokenURI(tokenId, handles[tokenId]);
+        return HandleTokenURILib.getTokenURI(tokenId, _localNames[tokenId]);
     }
 
     /// @inheritdoc ILensHandles
@@ -49,13 +62,11 @@ contract LensHandles is ERC721, ImmutableOwnable, ILensHandles {
         string calldata localName
     ) external onlyOwnerOrHubOrWhitelistedProfileCreator returns (uint256) {
         _validateLocalName(localName);
-        bytes32 localNameHash = keccak256(bytes(localName));
-        bytes32 handleHash = keccak256(abi.encodePacked(localNameHash, NAMESPACE_HASH));
-        uint256 handleId = uint256(handleHash);
-        _mint(to, handleId);
-        handles[handleId] = localName;
-        emit HandlesEvents.HandleMinted(localName, NAMESPACE, handleId, to, block.timestamp);
-        return handleId;
+        uint256 tokenId = getTokenId(localName);
+        _mint(to, tokenId);
+        _localNames[tokenId] = localName;
+        emit HandlesEvents.HandleMinted(localName, NAMESPACE, tokenId, to, block.timestamp);
+        return tokenId;
     }
 
     function burn(uint256 tokenId) external {
@@ -63,6 +74,11 @@ contract LensHandles is ERC721, ImmutableOwnable, ILensHandles {
             revert HandlesErrors.NotOwner();
         }
         _burn(tokenId);
+        delete _localNames[tokenId];
+    }
+
+    function exists(uint256 tokenId) external view returns (bool) {
+        return _exists(tokenId);
     }
 
     function getNamespace() external pure returns (string memory) {
@@ -73,28 +89,36 @@ contract LensHandles is ERC721, ImmutableOwnable, ILensHandles {
         return NAMESPACE_HASH;
     }
 
-    function exists(uint256 tokenId) external view returns (bool) {
-        return _exists(tokenId);
+    function getLocalName(uint256 tokenId) public view returns (string memory) {
+        return _localNames[tokenId];
+    }
+
+    function getHandle(uint256 tokenId) public view returns (string memory) {
+        return string.concat(_localNames[tokenId], '.', NAMESPACE);
+    }
+
+    function getTokenId(string memory localName) public pure returns (uint256) {
+        return uint256(keccak256(bytes(localName)));
     }
 
     //////////////////////////////////////
     ///        INTERNAL FUNCTIONS      ///
     //////////////////////////////////////
 
-    function _validateLocalName(string memory handle) internal pure {
-        uint256 handleLength = bytes(handle).length;
-        if (handleLength == 0) {
+    function _validateLocalName(string memory localName) internal view {
+        uint256 localNameLength = bytes(localName).length;
+        if (localNameLength == 0 || localNameLength + SEPARATOR_LENGTH + NAMESPACE_LENGTH > MAX_HANDLE_LENGTH) {
             revert HandlesErrors.HandleLengthInvalid();
         }
 
-        bytes1 firstByte = bytes(handle)[0];
+        bytes1 firstByte = bytes(localName)[0];
         if (firstByte == '-' || firstByte == '_') {
             revert HandlesErrors.HandleFirstCharInvalid();
         }
 
         uint256 i;
-        while (i < handleLength) {
-            if (bytes(handle)[i] == '.') {
+        while (i < localNameLength) {
+            if (bytes(localName)[i] == '.') {
                 revert HandlesErrors.HandleContainsInvalidCharacters();
             }
             unchecked {
