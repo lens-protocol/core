@@ -2,10 +2,8 @@
 pragma solidity ^0.8.13;
 
 import 'test/base/BaseTest.t.sol';
-import 'test/MetaTxNegatives.t.sol';
 import {ILensHub} from 'contracts/interfaces/ILensHub.sol';
 import {Types} from 'contracts/libraries/constants/Types.sol';
-import {Events} from 'contracts/libraries/constants/Events.sol';
 import {UIDataProvider, LatestData} from 'contracts/misc/UIDataProvider.sol';
 
 contract UIDataProviderTest is BaseTest {
