@@ -5,6 +5,10 @@ import 'test/base/BaseTest.t.sol';
 import {ProxyAdmin} from 'contracts/misc/access/ProxyAdmin.sol';
 
 contract MockContract {
+    function testMockContract() public {
+        // Prevents being counted in Foundry Coverage
+    }
+
     function initialize(address initializationAddress) public pure {}
 }
 
