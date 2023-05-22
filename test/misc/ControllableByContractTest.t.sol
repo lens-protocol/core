@@ -5,6 +5,10 @@ import 'test/base/BaseTest.t.sol';
 import {ControllableByContract} from 'contracts/misc/access/ControllableByContract.sol';
 
 contract MockControllableByContract is ControllableByContract {
+    function testMockControllableByContract() public {
+        // Prevents being counted in Foundry Coverage
+    }
+
     constructor(address owner) ControllableByContract(owner) {}
 
     function modifierRestricted() external view onlyOwnerOrControllerContract returns (bool) {
