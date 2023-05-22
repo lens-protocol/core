@@ -115,6 +115,11 @@ contract TokenHandleRegistry is ITokenHandleRegistry {
         return defaultHandleId;
     }
 
+    // TODO: Add this to interface and make it prettier
+    function isLinked(uint256 handleId, uint256 tokenId) external view returns (bool) {
+        return this.resolve(handleId) == tokenId && this.getDefaultHandle(tokenId) == handleId;
+    }
+
     //////////////////////////////////////
     ///        INTERNAL FUNCTIONS      ///
     //////////////////////////////////////
