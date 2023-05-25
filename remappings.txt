@@ -11,3 +11,5 @@ operator-filter-registry/=lib/seadrop/lib/operator-filter-registry/src/
 solmate/=lib/seadrop/lib/solmate/src/
 utility-contracts/=lib/seadrop/lib/utility-contracts/src/
 create2-scripts/=lib/seadrop/lib/create2-helpers/script/
+
+solady/=lib/solady/src/
