@@ -89,10 +89,12 @@ contract LensHandles is ERC721, ImmutableOwnable, ILensHandles {
         return NAMESPACE_HASH;
     }
 
+    // TODO: Should we revert if it doesn't exist?
     function getLocalName(uint256 tokenId) public view returns (string memory) {
         return _localNames[tokenId];
     }
 
+    // TODO: Should we revert if it doesn't exist?
     function getHandle(uint256 tokenId) public view returns (string memory) {
         return string.concat(_localNames[tokenId], '.', NAMESPACE);
     }
@@ -106,19 +108,27 @@ contract LensHandles is ERC721, ImmutableOwnable, ILensHandles {
     //////////////////////////////////////
 
     function _validateLocalName(string memory localName) internal view {
-        uint256 localNameLength = bytes(localName).length;
+        bytes memory byteLocalName = bytes(localName);
+        uint256 localNameLength = byteLocalName.length;
+
         if (localNameLength == 0 || localNameLength + SEPARATOR_LENGTH + NAMESPACE_LENGTH > MAX_HANDLE_LENGTH) {
             revert HandlesErrors.HandleLengthInvalid();
         }
 
-        bytes1 firstByte = bytes(localName)[0];
+        bytes1 firstByte = byteLocalName[0];
         if (firstByte == '-' || firstByte == '_') {
             revert HandlesErrors.HandleFirstCharInvalid();
         }
 
         uint256 i;
         while (i < localNameLength) {
-            if (bytes(localName)[i] == '.') {
+            if (
+                (byteLocalName[i] < '0' ||
+                    byteLocalName[i] > 'z' ||
+                    (byteLocalName[i] > '9' && byteLocalName[i] < 'a')) &&
+                byteLocalName[i] != '-' &&
+                byteLocalName[i] != '_'
+            ) {
                 revert HandlesErrors.HandleContainsInvalidCharacters();
             }
             unchecked {
