@@ -209,6 +209,16 @@ contract LensHandlesTest is BaseTest {
         lensHandles.mintHandle(address(this), '');
     }
 
+    function testCannot_MintHandle_WithNonUniqueLocalName() public {
+        vm.prank(address(hub));
+        lensHandles.mintHandle(address(this), 'handle');
+
+        vm.expectRevert('ERC721: token already minted');
+
+        vm.prank(address(hub));
+        lensHandles.mintHandle(makeAddr('ANOTHER_ADDRESS'), 'handle');
+    }
+
     function testCannot_MintHandle_WithLengthMoreThanMax(uint256 randomFuzz) public {
         string memory randomHandle = _randomAlphanumericString(MAX_HANDLE_LENGTH + 1, randomFuzz);
 
