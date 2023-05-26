@@ -16,6 +16,151 @@ contract LensHandlesTest is BaseTest {
         super.setUp();
     }
 
+    // NEGATIVES
+
+    function testCannot_GetTokenURI_IfNotMinted(uint256 tokenId) public {
+        vm.assume(!lensHandles.exists(tokenId));
+
+        vm.expectRevert('ERC721: invalid token ID');
+        lensHandles.tokenURI(tokenId);
+    }
+
+    function testCannot_Burn_IfNotOwnerOf(address owner, address otherAddress) public {
+        vm.assume(owner != otherAddress);
+        vm.assume(owner != address(0));
+        vm.assume(otherAddress != address(0));
+        address proxyAdmin = address(uint160(uint256(vm.load(address(lensHandles), ADMIN_SLOT))));
+        vm.assume(otherAddress != proxyAdmin);
+
+        string memory handle = 'handle';
+
+        vm.prank(address(hub));
+        uint256 handleId = lensHandles.mintHandle(owner, handle);
+
+        assertTrue(lensHandles.exists(handleId));
+        assertEq(lensHandles.ownerOf(handleId), owner);
+
+        vm.expectRevert(HandlesErrors.NotOwner.selector);
+
+        vm.prank(otherAddress);
+        lensHandles.burn(handleId);
+    }
+
+    function testCannot_MintHandle_IfNotOwnerOrHubOrWhitelistedProfileCreator(address otherAddress) public {
+        vm.assume(otherAddress != address(0));
+        vm.assume(otherAddress != address(hub));
+        vm.assume(otherAddress != lensHandles.OWNER());
+        vm.assume(!hub.isProfileCreatorWhitelisted(otherAddress));
+        address proxyAdmin = address(uint160(uint256(vm.load(address(lensHandles), ADMIN_SLOT))));
+        vm.assume(otherAddress != proxyAdmin);
+
+        string memory handle = 'handle';
+
+        vm.expectRevert(HandlesErrors.NotOwnerNorWhitelisted.selector);
+
+        vm.prank(otherAddress);
+        lensHandles.mintHandle(otherAddress, handle);
+    }
+
+    function testCannot_MintHandle_IfNotOwnerOrHubOrWhitelistedProfileCreator(address otherAddress) public {
+        vm.assume(otherAddress != address(0));
+        vm.assume(otherAddress != address(hub));
+        vm.assume(otherAddress != lensHandles.OWNER());
+        vm.assume(!hub.isProfileCreatorWhitelisted(otherAddress));
+        address proxyAdmin = address(uint160(uint256(vm.load(address(lensHandles), ADMIN_SLOT))));
+        vm.assume(otherAddress != proxyAdmin);
+
+        string memory handle = 'handle';
+
+        vm.expectRevert(HandlesErrors.NotOwnerNorWhitelisted.selector);
+
+        vm.prank(otherAddress);
+        lensHandles.mintHandle(otherAddress, handle);
+    }
+
+    function testCannot_MintHandle_WithZeroLength() public {
+        vm.expectRevert(HandlesErrors.HandleLengthInvalid.selector);
+
+        vm.prank(address(hub));
+        lensHandles.mintHandle(address(this), '');
+    }
+
+    function testCannot_MintHandle_WithNonUniqueLocalName() public {
+        vm.prank(address(hub));
+        lensHandles.mintHandle(address(this), 'handle');
+
+        vm.expectRevert('ERC721: token already minted');
+
+        vm.prank(address(hub));
+        lensHandles.mintHandle(makeAddr('ANOTHER_ADDRESS'), 'handle');
+    }
+
+    function testCannot_MintHandle_WithLengthMoreThanMax(uint256 randomFuzz) public {
+        string memory randomHandle = _randomAlphanumericString(MAX_HANDLE_LENGTH + 1, randomFuzz);
+
+        vm.expectRevert(HandlesErrors.HandleLengthInvalid.selector);
+
+        vm.prank(address(hub));
+        lensHandles.mintHandle(address(this), randomHandle);
+    }
+
+    function testCannot_MintHandle_WithInvalidFirstChar(uint256 length, uint256 randomFuzz) public {
+        length = bound(length, 0, MAX_HANDLE_LENGTH - 1); // we will add 1 char at the start, so length is shorter by 1
+
+        string memory randomHandle = _randomAlphanumericString(length, randomFuzz);
+
+        string memory invalidUnderscoreHandle = string.concat('_', randomHandle);
+
+        vm.expectRevert(HandlesErrors.HandleFirstCharInvalid.selector);
+
+        vm.prank(address(hub));
+        lensHandles.mintHandle(address(this), invalidUnderscoreHandle);
+
+        string memory invalidDashHandle = string.concat('-', randomHandle);
+
+        vm.expectRevert(HandlesErrors.HandleFirstCharInvalid.selector);
+
+        vm.prank(address(hub));
+        lensHandles.mintHandle(address(this), invalidDashHandle);
+    }
+
+    function testCannot_MintHandle_WithInvalidChar(
+        uint256 length,
+        uint256 insertionPosition,
+        uint256 randomFuzz,
+        uint256 invalidCharCode
+    ) public {
+        length = bound(length, 1, MAX_HANDLE_LENGTH);
+        insertionPosition = bound(insertionPosition, 0, length - 1);
+        invalidCharCode = bound(invalidCharCode, 0x00, 0xFF);
+        vm.assume(
+            (invalidCharCode < 48 || // '0'
+                invalidCharCode > 122 || // 'z'
+                (invalidCharCode > 57 && invalidCharCode < 97)) && // '9' and 'a'
+                invalidCharCode != 45 && // '-'
+                invalidCharCode != 95 // '_'
+        );
+
+        string memory randomHandle = _randomAlphanumericString(length, randomFuzz);
+
+        console.log('randomHandle:', randomHandle);
+        console.log('insert position:', insertionPosition);
+        console.log('invalid char code:', invalidCharCode);
+
+        bytes memory randomHandleBytes = bytes(randomHandle);
+        randomHandleBytes[insertionPosition] = bytes1(uint8(invalidCharCode));
+
+        string memory invalidHandle = string(randomHandleBytes);
+
+        console.log('invalidHandle', invalidHandle);
+
+        vm.expectRevert(HandlesErrors.HandleContainsInvalidCharacters.selector);
+        vm.prank(address(hub));
+        lensHandles.mintHandle(address(this), invalidHandle);
+    }
+
+    // SCENARIOS
+
     function testName() public {
         string memory name = lensHandles.name();
         assertEq(name, '.lens Handles');
@@ -130,34 +275,6 @@ contract LensHandlesTest is BaseTest {
         assertEq(decodedTokenURI.readUint('.attributes[2].value'), bytes(handle).length);
     }
 
-    function testCannot_GetTokenURI_IfNotMinted(uint256 tokenId) public {
-        vm.assume(!lensHandles.exists(tokenId));
-
-        vm.expectRevert('ERC721: invalid token ID');
-        lensHandles.tokenURI(tokenId);
-    }
-
-    function testCannot_Burn_IfNotOwnerOf(address owner, address otherAddress) public {
-        vm.assume(owner != otherAddress);
-        vm.assume(owner != address(0));
-        vm.assume(otherAddress != address(0));
-        address proxyAdmin = address(uint160(uint256(vm.load(address(lensHandles), ADMIN_SLOT))));
-        vm.assume(otherAddress != proxyAdmin);
-
-        string memory handle = 'handle';
-
-        vm.prank(address(hub));
-        uint256 handleId = lensHandles.mintHandle(owner, handle);
-
-        assertTrue(lensHandles.exists(handleId));
-        assertEq(lensHandles.ownerOf(handleId), owner);
-
-        vm.expectRevert(HandlesErrors.NotOwner.selector);
-
-        vm.prank(otherAddress);
-        lensHandles.burn(handleId);
-    }
-
     function testBurn(address owner) public {
         vm.assume(owner != address(0));
         address proxyAdmin = address(uint160(uint256(vm.load(address(lensHandles), ADMIN_SLOT))));
@@ -178,109 +295,12 @@ contract LensHandlesTest is BaseTest {
         assertEq(lensHandles.getLocalName(handleId), '');
     }
 
-    function testCannot_MintHandle_IfNotOwnerOrHubOrWhitelistedProfileCreator(address otherAddress) public {
-        vm.assume(otherAddress != address(0));
-        vm.assume(otherAddress != address(hub));
-        vm.assume(otherAddress != lensHandles.OWNER());
-        vm.assume(!hub.isProfileCreatorWhitelisted(otherAddress));
-        address proxyAdmin = address(uint160(uint256(vm.load(address(lensHandles), ADMIN_SLOT))));
-        vm.assume(otherAddress != proxyAdmin);
-
-        string memory handle = 'handle';
-
-        vm.expectRevert(HandlesErrors.NotOwnerNorWhitelisted.selector);
-
-        vm.prank(otherAddress);
-        lensHandles.mintHandle(otherAddress, handle);
-    }
-
     function testMintHandle_IfOwner(address to, uint256 length, uint256 randomFuzz) public {
         _mintHandle(lensHandles.OWNER(), to, length, randomFuzz);
     }
 
     function testMintHandle_ifHub(address to, uint256 length, uint256 randomFuzz) public {
         _mintHandle(address(hub), to, length, randomFuzz);
-    }
-
-    function testCannot_MintHandle_WithZeroLength() public {
-        vm.expectRevert(HandlesErrors.HandleLengthInvalid.selector);
-
-        vm.prank(address(hub));
-        lensHandles.mintHandle(address(this), '');
-    }
-
-    function testCannot_MintHandle_WithNonUniqueLocalName() public {
-        vm.prank(address(hub));
-        lensHandles.mintHandle(address(this), 'handle');
-
-        vm.expectRevert('ERC721: token already minted');
-
-        vm.prank(address(hub));
-        lensHandles.mintHandle(makeAddr('ANOTHER_ADDRESS'), 'handle');
-    }
-
-    function testCannot_MintHandle_WithLengthMoreThanMax(uint256 randomFuzz) public {
-        string memory randomHandle = _randomAlphanumericString(MAX_HANDLE_LENGTH + 1, randomFuzz);
-
-        vm.expectRevert(HandlesErrors.HandleLengthInvalid.selector);
-
-        vm.prank(address(hub));
-        lensHandles.mintHandle(address(this), randomHandle);
-    }
-
-    function testCannot_MintHandle_WithInvalidFirstChar(uint256 length, uint256 randomFuzz) public {
-        length = bound(length, 0, MAX_HANDLE_LENGTH - 1); // we will add 1 char at the start, so length is shorter by 1
-
-        string memory randomHandle = _randomAlphanumericString(length, randomFuzz);
-
-        string memory invalidUnderscoreHandle = string.concat('_', randomHandle);
-
-        vm.expectRevert(HandlesErrors.HandleFirstCharInvalid.selector);
-
-        vm.prank(address(hub));
-        lensHandles.mintHandle(address(this), invalidUnderscoreHandle);
-
-        string memory invalidDashHandle = string.concat('-', randomHandle);
-
-        vm.expectRevert(HandlesErrors.HandleFirstCharInvalid.selector);
-
-        vm.prank(address(hub));
-        lensHandles.mintHandle(address(this), invalidDashHandle);
-    }
-
-    function testCannot_MintHandle_WithInvalidChar(
-        uint256 length,
-        uint256 insertionPosition,
-        uint256 randomFuzz,
-        uint256 invalidCharCode
-    ) public {
-        length = bound(length, 1, MAX_HANDLE_LENGTH);
-        insertionPosition = bound(insertionPosition, 0, length - 1);
-        invalidCharCode = bound(invalidCharCode, 0x00, 0xFF);
-        vm.assume(
-            (invalidCharCode < 48 || // '0'
-                invalidCharCode > 122 || // 'z'
-                (invalidCharCode > 57 && invalidCharCode < 97)) && // '9' and 'a'
-                invalidCharCode != 45 && // '-'
-                invalidCharCode != 95 // '_'
-        );
-
-        string memory randomHandle = _randomAlphanumericString(length, randomFuzz);
-
-        console.log('randomHandle:', randomHandle);
-        console.log('insert position:', insertionPosition);
-        console.log('invalid char code:', invalidCharCode);
-
-        bytes memory randomHandleBytes = bytes(randomHandle);
-        randomHandleBytes[insertionPosition] = bytes1(uint8(invalidCharCode));
-
-        string memory invalidHandle = string(randomHandleBytes);
-
-        console.log('invalidHandle', invalidHandle);
-
-        vm.expectRevert(HandlesErrors.HandleContainsInvalidCharacters.selector);
-        vm.prank(address(hub));
-        lensHandles.mintHandle(address(this), invalidHandle);
     }
 
     function testMintHandle_ifWhitelistedProfileCreator(
