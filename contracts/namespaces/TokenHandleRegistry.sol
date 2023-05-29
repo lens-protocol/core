@@ -21,6 +21,9 @@ contract TokenHandleRegistry is ITokenHandleRegistry {
     address immutable LENS_HUB;
     address immutable LENS_HANDLES;
 
+    // TODO: We have "LENS_HUB" hardcoded everywhere.
+    //       Should we use Profile instead of Token as it's not yet generalized anyway? Should be more readable now.
+
     // Using _handleHash(Handle) and _tokenHash(Token) as keys given that structs cannot be used as them.
     mapping(bytes32 handle => RegistryTypes.Token token) handleToToken;
     mapping(bytes32 token => RegistryTypes.Handle handle) tokenToHandle;
