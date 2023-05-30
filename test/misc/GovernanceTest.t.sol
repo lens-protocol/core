@@ -13,6 +13,8 @@ contract MockNonLensHubGoverned {
 
     address public governance;
 
+    error CustomError();
+
     constructor(address newGovernance) {
         governance = newGovernance;
     }
@@ -22,6 +24,22 @@ contract MockNonLensHubGoverned {
         if (!pass) revert('Failure');
         return true;
     }
+
+    function failWithPanic() external pure {
+        assert(false);
+    }
+
+    function failWithStringRevert() external pure {
+        revert('Failure');
+    }
+
+    function failWithCustomError() external pure {
+        revert CustomError();
+    }
+
+    function failWithNoErrorData() external pure {
+        require(false);
+    }
 }
 
 contract GovernanceTest is BaseTest {
@@ -30,6 +48,7 @@ contract GovernanceTest is BaseTest {
     error Unauthorized();
 
     Governance governanceContract;
+    MockNonLensHubGoverned mockNonLensHubGoverned;
 
     address governanceOwner = makeAddr('GOVERNANCE_OWNER');
     address controllerContract = makeAddr('CONTROLLER_CONTRACT');
@@ -48,6 +67,8 @@ contract GovernanceTest is BaseTest {
 
         vm.prank(governance);
         hub.setGovernance(address(governanceContract));
+
+        mockNonLensHubGoverned = new MockNonLensHubGoverned(address(governanceContract));
     }
 
     // Negatives
@@ -317,8 +338,6 @@ contract GovernanceTest is BaseTest {
     }
 
     function testExecuteAsGovernance_ifControllerContract_success() public {
-        MockNonLensHubGoverned mockNonLensHubGoverned = new MockNonLensHubGoverned(address(governanceContract));
-
         vm.expectCall(
             address(mockNonLensHubGoverned),
             abi.encodeCall(MockNonLensHubGoverned.requiresGovernance, (true)),
@@ -333,8 +352,6 @@ contract GovernanceTest is BaseTest {
     }
 
     function testExecuteAsGovernance_ifControllerContract_failure() public {
-        MockNonLensHubGoverned mockNonLensHubGoverned = new MockNonLensHubGoverned(address(governanceContract));
-
         vm.expectCall(
             address(mockNonLensHubGoverned),
             abi.encodeCall(MockNonLensHubGoverned.requiresGovernance, (false)),
@@ -347,6 +364,66 @@ contract GovernanceTest is BaseTest {
         governanceContract.executeAsGovernance(
             address(mockNonLensHubGoverned),
             abi.encodeCall(MockNonLensHubGoverned.requiresGovernance, (false))
+        );
+    }
+
+    function testExecuteAsGovernance_RevertPanic() public {
+        vm.expectCall(address(mockNonLensHubGoverned), abi.encodeCall(MockNonLensHubGoverned.failWithPanic, ()), 1);
+
+        vm.expectRevert(stdError.assertionError);
+
+        vm.prank(controllerContract);
+        governanceContract.executeAsGovernance(
+            address(mockNonLensHubGoverned),
+            abi.encodeCall(MockNonLensHubGoverned.failWithPanic, ())
+        );
+    }
+
+    function testExecuteAsGovernance_RevertCustomError() public {
+        vm.expectCall(
+            address(mockNonLensHubGoverned),
+            abi.encodeCall(MockNonLensHubGoverned.failWithCustomError, ()),
+            1
+        );
+
+        vm.expectRevert(MockNonLensHubGoverned.CustomError.selector);
+
+        vm.prank(controllerContract);
+        governanceContract.executeAsGovernance(
+            address(mockNonLensHubGoverned),
+            abi.encodeCall(MockNonLensHubGoverned.failWithCustomError, ())
+        );
+    }
+
+    function testExecuteAsGovernance_RevertStringError() public {
+        vm.expectCall(
+            address(mockNonLensHubGoverned),
+            abi.encodeCall(MockNonLensHubGoverned.failWithStringRevert, ()),
+            1
+        );
+
+        vm.expectRevert('Failure');
+
+        vm.prank(controllerContract);
+        governanceContract.executeAsGovernance(
+            address(mockNonLensHubGoverned),
+            abi.encodeCall(MockNonLensHubGoverned.failWithStringRevert, ())
+        );
+    }
+
+    function testExecuteAsGovernance_RevertNoErrorData() public {
+        vm.expectCall(
+            address(mockNonLensHubGoverned),
+            abi.encodeCall(MockNonLensHubGoverned.failWithNoErrorData, ()),
+            1
+        );
+
+        vm.expectRevert(bytes(''));
+
+        vm.prank(controllerContract);
+        governanceContract.executeAsGovernance(
+            address(mockNonLensHubGoverned),
+            abi.encodeCall(MockNonLensHubGoverned.failWithNoErrorData, ())
         );
     }
 
