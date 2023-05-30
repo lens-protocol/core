@@ -91,12 +91,17 @@ contract LensHandles is ERC721, ImmutableOwnable, ILensHandles {
 
     // TODO: Should we revert if it doesn't exist?
     function getLocalName(uint256 tokenId) public view returns (string memory) {
+        string memory localName = _localNames[tokenId];
+        if (bytes(localName).length == 0) {
+            revert HandlesErrors.DoesNotExist();
+        }
         return _localNames[tokenId];
     }
 
     // TODO: Should we revert if it doesn't exist?
     function getHandle(uint256 tokenId) public view returns (string memory) {
-        return string.concat(_localNames[tokenId], '.', NAMESPACE);
+        string memory localName = getLocalName(tokenId);
+        return string.concat(localName, '.', NAMESPACE);
     }
 
     function getTokenId(string memory localName) public pure returns (uint256) {
@@ -108,32 +113,30 @@ contract LensHandles is ERC721, ImmutableOwnable, ILensHandles {
     //////////////////////////////////////
 
     function _validateLocalName(string memory localName) internal view {
-        bytes memory byteLocalName = bytes(localName);
-        uint256 localNameLength = byteLocalName.length;
+        bytes memory localNameAsBytes = bytes(localName);
+        uint256 localNameLength = localNameAsBytes.length;
 
         if (localNameLength == 0 || localNameLength + SEPARATOR_LENGTH + NAMESPACE_LENGTH > MAX_HANDLE_LENGTH) {
             revert HandlesErrors.HandleLengthInvalid();
         }
 
-        bytes1 firstByte = byteLocalName[0];
+        bytes1 firstByte = localNameAsBytes[0];
         if (firstByte == '-' || firstByte == '_') {
             revert HandlesErrors.HandleFirstCharInvalid();
         }
 
         uint256 i;
         while (i < localNameLength) {
-            if (
-                (byteLocalName[i] < '0' ||
-                    byteLocalName[i] > 'z' ||
-                    (byteLocalName[i] > '9' && byteLocalName[i] < 'a')) &&
-                byteLocalName[i] != '-' &&
-                byteLocalName[i] != '_'
-            ) {
+            if (!_isAlphaNumeric(localNameAsBytes[i]) && localNameAsBytes[i] != '-' && localNameAsBytes[i] != '_') {
                 revert HandlesErrors.HandleContainsInvalidCharacters();
             }
             unchecked {
                 ++i;
             }
         }
+    }
+
+    function _isAlphaNumeric(bytes1 char) internal pure returns (bool) {
+        return (char >= '0' && char <= '9') || (char >= 'a' && char <= 'z');
     }
 }
