@@ -27,31 +27,69 @@ contract UIDataProviderTest is BaseTest {
 
     function testGetLatestDataByProfile() public {
         Types.Profile memory profile = hub.getProfile(defaultAccount.profileId);
-        uint256 pubCount = profile.pubCount;
-        Types.Publication memory pub = hub.getPub(defaultAccount.profileId, pubCount);
+        uint256 pubCount1 = profile.pubCount;
+        Types.Publication memory pub1 = hub.getPub(defaultAccount.profileId, pubCount1);
 
-        vm.expectCall(address(hub), abi.encodeCall(hub.getProfile, (defaultAccount.profileId)), 1);
-        vm.expectCall(address(hub), abi.encodeCall(hub.getPub, (defaultAccount.profileId, pubCount)), 1);
+        vm.expectCall(address(hub), abi.encodeCall(hub.getProfile, (defaultAccount.profileId)), 3);
+        vm.expectCall(address(hub), abi.encodeCall(hub.getPub, (defaultAccount.profileId, pubCount1)), 1);
 
-        LatestData memory latestData = uiDataProvider.getLatestDataByProfile(defaultAccount.profileId);
+        LatestData memory latestData1 = uiDataProvider.getLatestDataByProfile(defaultAccount.profileId);
 
-        assertEq(latestData.profile.pubCount, profile.pubCount);
-        assertEq(latestData.profile.followModule, profile.followModule);
-        assertEq(latestData.profile.followNFT, profile.followNFT);
-        assertEq(latestData.profile.handleDeprecated, profile.handleDeprecated);
-        assertEq(latestData.profile.imageURI, profile.imageURI);
-        assertEq(latestData.profile.followNFTURI, profile.followNFTURI);
-        assertEq(latestData.profile.metadataURI, profile.metadataURI);
+        assertEq(latestData1.profile.pubCount, profile.pubCount);
+        assertEq(latestData1.profile.followModule, profile.followModule);
+        assertEq(latestData1.profile.followNFT, profile.followNFT);
+        assertEq(latestData1.profile.handleDeprecated, profile.handleDeprecated);
+        assertEq(latestData1.profile.imageURI, profile.imageURI);
+        assertEq(latestData1.profile.followNFTURI, profile.followNFTURI);
+        assertEq(latestData1.profile.metadataURI, profile.metadataURI);
 
-        assertEq(latestData.publication.pointedProfileId, pub.pointedProfileId);
-        assertEq(latestData.publication.pointedPubId, pub.pointedPubId);
-        assertEq(latestData.publication.contentURI, pub.contentURI);
-        assertEq(latestData.publication.referenceModule, pub.referenceModule);
-        assertEq(latestData.publication.__DEPRECATED__collectModule, pub.__DEPRECATED__collectModule);
-        assertEq(latestData.publication.__DEPRECATED__collectNFT, pub.__DEPRECATED__collectNFT);
-        assertTrue(latestData.publication.pubType == pub.pubType);
-        assertEq(latestData.publication.rootProfileId, pub.rootProfileId);
-        assertEq(latestData.publication.rootPubId, pub.rootPubId);
-        assertEq(latestData.publication.enabledActionModulesBitmap, pub.enabledActionModulesBitmap);
+        assertEq(latestData1.publication.pointedProfileId, pub1.pointedProfileId);
+        assertEq(latestData1.publication.pointedPubId, pub1.pointedPubId);
+        assertEq(latestData1.publication.contentURI, pub1.contentURI);
+        assertEq(latestData1.publication.referenceModule, pub1.referenceModule);
+        assertEq(latestData1.publication.__DEPRECATED__collectModule, pub1.__DEPRECATED__collectModule);
+        assertEq(latestData1.publication.__DEPRECATED__collectNFT, pub1.__DEPRECATED__collectNFT);
+        assertTrue(latestData1.publication.pubType == pub1.pubType);
+        assertEq(latestData1.publication.rootProfileId, pub1.rootProfileId);
+        assertEq(latestData1.publication.rootPubId, pub1.rootPubId);
+        assertEq(latestData1.publication.enabledActionModulesBitmap, pub1.enabledActionModulesBitmap);
+
+        Types.PostParams memory postParams = Types.PostParams({
+            profileId: defaultAccount.profileId,
+            contentURI: 'newPost',
+            actionModules: _toAddressArray(address(mockActionModule)),
+            actionModulesInitDatas: _toBytesArray(abi.encode(true)),
+            referenceModule: address(0),
+            referenceModuleInitData: ''
+        });
+
+        vm.prank(defaultAccount.owner);
+        hub.post(postParams);
+
+        profile = hub.getProfile(defaultAccount.profileId);
+        uint256 pubCount2 = profile.pubCount;
+
+        assertEq(pubCount2, pubCount1 + 1);
+
+        Types.Publication memory pub2 = hub.getPub(defaultAccount.profileId, pubCount2);
+
+        vm.expectCall(address(hub), abi.encodeCall(hub.getPub, (defaultAccount.profileId, pubCount2)), 1);
+
+        LatestData memory latestData2 = uiDataProvider.getLatestDataByProfile(defaultAccount.profileId);
+
+        assertEq(latestData2.profile.pubCount, profile.pubCount);
+
+        assertEq(latestData2.publication.pointedProfileId, pub2.pointedProfileId);
+        assertEq(latestData2.publication.pointedPubId, pub2.pointedPubId);
+        assertEq(latestData2.publication.contentURI, pub2.contentURI);
+        assertEq(latestData2.publication.referenceModule, pub2.referenceModule);
+        assertEq(latestData2.publication.__DEPRECATED__collectModule, pub2.__DEPRECATED__collectModule);
+        assertEq(latestData2.publication.__DEPRECATED__collectNFT, pub2.__DEPRECATED__collectNFT);
+        assertTrue(latestData2.publication.pubType == pub2.pubType);
+        assertEq(latestData2.publication.rootProfileId, pub2.rootProfileId);
+        assertEq(latestData2.publication.rootPubId, pub2.rootPubId);
+        assertEq(latestData2.publication.enabledActionModulesBitmap, pub2.enabledActionModulesBitmap);
+
+        assertEq(latestData2.publication.contentURI, postParams.contentURI);
     }
 }
