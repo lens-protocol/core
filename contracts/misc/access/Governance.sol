@@ -80,8 +80,9 @@ contract Governance is ControllableByContract {
         (bool success, bytes memory returnData) = target.call{gas: gasleft(), value: msg.value}(data);
 
         if (!success) {
+            uint256 len = returnData.length;
             assembly {
-                revert(add(returnData, 32), returnData)
+                revert(add(returnData, 32), len)
             }
         }
 
