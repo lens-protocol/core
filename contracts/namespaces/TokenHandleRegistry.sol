@@ -21,9 +21,6 @@ contract TokenHandleRegistry is ITokenHandleRegistry {
     address immutable LENS_HUB;
     address immutable LENS_HANDLES;
 
-    // TODO: We have "LENS_HUB" hardcoded everywhere.
-    //       Should we use Profile instead of Token as it's not yet generalized anyway? Should be more readable now.
-
     // Using _handleHash(Handle) and _tokenHash(Token) as keys given that structs cannot be used as them.
     mapping(bytes32 handle => RegistryTypes.Token token) handleToToken;
     mapping(bytes32 token => RegistryTypes.Handle handle) tokenToHandle;
@@ -38,20 +35,6 @@ contract TokenHandleRegistry is ITokenHandleRegistry {
     modifier onlyTokenOwner(uint256 tokenId, address transactionExecutor) {
         if (IERC721(LENS_HUB).ownerOf(tokenId) != transactionExecutor) {
             revert RegistryErrors.NotTokenOwner();
-        }
-        _;
-    }
-
-    modifier onlyHandleOrTokenOwner(
-        uint256 handleId,
-        uint256 tokenId,
-        address transactionExecutor
-    ) {
-        if (
-            IERC721(LENS_HANDLES).ownerOf(handleId) != transactionExecutor &&
-            IERC721(LENS_HUB).ownerOf(tokenId) != transactionExecutor
-        ) {
-            revert RegistryErrors.NotHandleNorTokenOwner();
         }
         _;
     }
@@ -86,9 +69,21 @@ contract TokenHandleRegistry is ITokenHandleRegistry {
     }
 
     /// @inheritdoc ITokenHandleRegistry
-    function unlink(uint256 handleId, uint256 tokenId) external onlyHandleOrTokenOwner(handleId, tokenId, msg.sender) {
+    function unlink(uint256 handleId, uint256 tokenId) external {
+        // We revert here only in the case if both tokens exists and the caller is not the owner of any of them
+        if (
+            ILensHandles(LENS_HANDLES).exists(handleId) &&
+            ILensHandles(LENS_HANDLES).ownerOf(handleId) != msg.sender &&
+            ILensHub(LENS_HUB).exists(tokenId) &&
+            ILensHub(LENS_HUB).ownerOf(tokenId) != msg.sender
+        ) {
+            revert RegistryErrors.NotHandleNorTokenOwner();
+        }
+
         RegistryTypes.Handle memory handle = RegistryTypes.Handle({collection: LENS_HANDLES, id: handleId});
         RegistryTypes.Token memory tokenPointedByHandle = handleToToken[_handleHash(handle)];
+
+        // We check if the tokens are (were) linked for the case if some of them doesn't exist
         if (tokenPointedByHandle.id != tokenId) {
             revert RegistryErrors.NotLinked();
         }
@@ -120,11 +115,6 @@ contract TokenHandleRegistry is ITokenHandleRegistry {
         return defaultHandleId;
     }
 
-    // TODO: Add this to interface and make it prettier
-    function isLinked(uint256 handleId, uint256 tokenId) external view returns (bool) {
-        return this.resolve(handleId) == tokenId && this.getDefaultHandle(tokenId) == handleId;
-    }
-
     //////////////////////////////////////
     ///        INTERNAL FUNCTIONS      ///
     //////////////////////////////////////
@@ -154,8 +144,6 @@ contract TokenHandleRegistry is ITokenHandleRegistry {
         emit RegistryEvents.HandleLinked(handle, token, block.timestamp);
     }
 
-    // WARNING: This function is one-sided (deletes only tokenToHandle linkage, but doesn't touch the reverse one).
-    // TODO: ^ Is that a problem?
     function _deleteTokenToHandleLinkageIfAny(RegistryTypes.Handle memory handle) internal {
         RegistryTypes.Token memory tokenPointedByHandle = handleToToken[_handleHash(handle)];
         if (tokenPointedByHandle.collection != address(0) || tokenPointedByHandle.id != 0) {
@@ -164,8 +152,6 @@ contract TokenHandleRegistry is ITokenHandleRegistry {
         }
     }
 
-    // WARNING: This function is one-sided (deletes only handleToToken linkage, but doesn't touch the reverse one).
-    // TODO: ^ Is that a problem?
     function _deleteHandleToTokenLinkageIfAny(RegistryTypes.Token memory token) internal {
         RegistryTypes.Handle memory handlePointedByToken = tokenToHandle[_tokenHash(token)];
         if (handlePointedByToken.collection != address(0) || handlePointedByToken.id != 0) {
@@ -174,9 +160,6 @@ contract TokenHandleRegistry is ITokenHandleRegistry {
         }
     }
 
-    // WARNING: This function doesn't check for existence of the Handle or Token. Nor it checks if the Handle and Token
-    //          are linked.
-    // TODO: ^ Is that a problem?
     function _unlink(RegistryTypes.Handle memory handle, RegistryTypes.Token memory token) internal {
         delete handleToToken[_handleHash(handle)];
         // tokenToHandle is removed too, as the first version linkage is one-to-one.

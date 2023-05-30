@@ -74,26 +74,13 @@ contract TokenHandleRegistryTest is BaseTest {
         vm.prank(address(hub));
         tokenHandleRegistry.migrationLink(handleId, profileId);
 
-        assertTrue(tokenHandleRegistry.isLinked(handleId, profileId));
+        assertEq(tokenHandleRegistry.resolve(handleId), profileId);
+        assertEq(tokenHandleRegistry.getDefaultHandle(profileId), handleId);
 
         vm.expectRevert(RegistryErrors.NotHandleNorTokenOwner.selector);
 
         vm.prank(otherAddress);
         tokenHandleRegistry.unlink(handleId, profileId);
-    }
-
-    function testIsLinked() public {
-        assertFalse(tokenHandleRegistry.isLinked(handleId, profileId));
-
-        vm.prank(address(hub));
-        tokenHandleRegistry.migrationLink(handleId, profileId);
-
-        assertTrue(tokenHandleRegistry.isLinked(handleId, profileId));
-
-        vm.prank(address(initialProfileHolder));
-        tokenHandleRegistry.unlink(handleId, profileId);
-
-        assertFalse(tokenHandleRegistry.isLinked(handleId, profileId));
     }
 
     function testResolve() public {
@@ -104,7 +91,19 @@ contract TokenHandleRegistryTest is BaseTest {
 
         assertEq(tokenHandleRegistry.resolve(handleId), profileId);
 
+        address newProfileHolder = makeAddr('NEW_PROFILE_HOLDER');
+        address newHandleHolder = makeAddr('NEW_HANDLE_HOLDER');
+
         vm.prank(address(initialProfileHolder));
+        hub.transferFrom(initialProfileHolder, newProfileHolder, profileId);
+
+        vm.prank(address(initialHandleHolder));
+        lensHandles.transferFrom(initialHandleHolder, newHandleHolder, handleId);
+
+        // Still resolves after both tokens were moved to new owners.
+        assertEq(tokenHandleRegistry.resolve(handleId), profileId);
+
+        vm.prank(address(newProfileHolder));
         tokenHandleRegistry.unlink(handleId, profileId);
 
         assertEq(tokenHandleRegistry.resolve(handleId), 0);
@@ -118,7 +117,19 @@ contract TokenHandleRegistryTest is BaseTest {
 
         assertEq(tokenHandleRegistry.getDefaultHandle(profileId), handleId);
 
+        address newProfileHolder = makeAddr('NEW_PROFILE_HOLDER');
+        address newHandleHolder = makeAddr('NEW_HANDLE_HOLDER');
+
         vm.prank(address(initialProfileHolder));
+        hub.transferFrom(initialProfileHolder, newProfileHolder, profileId);
+
+        vm.prank(address(initialHandleHolder));
+        lensHandles.transferFrom(initialHandleHolder, newHandleHolder, handleId);
+
+        // Still gets default handle after both tokens were moved to new owners.
+        assertEq(tokenHandleRegistry.getDefaultHandle(profileId), handleId);
+
+        vm.prank(address(newHandleHolder));
         tokenHandleRegistry.unlink(handleId, profileId);
 
         assertEq(tokenHandleRegistry.getDefaultHandle(profileId), 0);
@@ -143,11 +154,15 @@ contract TokenHandleRegistryTest is BaseTest {
         tokenHandleRegistry.migrationLink(handleId, profileId);
 
         assertEq(tokenHandleRegistry.resolve(handleId), profileId);
+        assertEq(tokenHandleRegistry.getDefaultHandle(profileId), handleId);
 
         vm.prank(address(initialProfileHolder));
         hub.burn(profileId);
 
         assertEq(tokenHandleRegistry.resolve(handleId), 0);
+
+        vm.expectRevert(RegistryErrors.DoesNotExist.selector);
+        tokenHandleRegistry.getDefaultHandle(profileId);
     }
 
     function testGetDefaultHandle_IfBurnt() public {
@@ -189,7 +204,6 @@ contract TokenHandleRegistryTest is BaseTest {
         vm.prank(holder);
         tokenHandleRegistry.link(handleId, profileId);
 
-        assertTrue(tokenHandleRegistry.isLinked(handleId, profileId));
         assertEq(tokenHandleRegistry.resolve(handleId), profileId);
         assertEq(tokenHandleRegistry.getDefaultHandle(profileId), handleId);
     }
@@ -236,12 +250,9 @@ contract TokenHandleRegistryTest is BaseTest {
         vm.prank(newHolder);
         tokenHandleRegistry.link(handleId, newProfileId);
 
-        assertFalse(tokenHandleRegistry.isLinked(handleId, profileId));
-        assertTrue(tokenHandleRegistry.isLinked(handleId, newProfileId));
-
+        assertEq(tokenHandleRegistry.getDefaultHandle(profileId), 0);
         assertEq(tokenHandleRegistry.resolve(handleId), newProfileId);
         assertEq(tokenHandleRegistry.getDefaultHandle(newProfileId), handleId);
-        assertEq(tokenHandleRegistry.getDefaultHandle(profileId), 0);
     }
 
     function testLink_AfterProfileWasMoved(address firstHolder, address newHolder) public {
@@ -288,9 +299,6 @@ contract TokenHandleRegistryTest is BaseTest {
 
         vm.prank(newHolder);
         tokenHandleRegistry.link(newHandleId, profileId);
-
-        assertFalse(tokenHandleRegistry.isLinked(handleId, profileId));
-        assertTrue(tokenHandleRegistry.isLinked(newHandleId, profileId));
 
         assertEq(tokenHandleRegistry.resolve(handleId), 0);
         assertEq(tokenHandleRegistry.resolve(newHandleId), profileId);
@@ -357,14 +365,11 @@ contract TokenHandleRegistryTest is BaseTest {
         vm.prank(newHolder);
         tokenHandleRegistry.link(newHandleId, profileId);
 
-        assertFalse(tokenHandleRegistry.isLinked(handleId, profileId));
-        assertFalse(tokenHandleRegistry.isLinked(newHandleId, newProfileId));
-        assertTrue(tokenHandleRegistry.isLinked(newHandleId, profileId));
-
         assertEq(tokenHandleRegistry.resolve(handleId), 0);
+        assertEq(tokenHandleRegistry.getDefaultHandle(newProfileId), 0);
+
         assertEq(tokenHandleRegistry.resolve(newHandleId), profileId);
         assertEq(tokenHandleRegistry.getDefaultHandle(profileId), newHandleId);
-        assertEq(tokenHandleRegistry.getDefaultHandle(newProfileId), 0);
     }
 
     function testUnlink(address holder) public {
@@ -383,7 +388,8 @@ contract TokenHandleRegistryTest is BaseTest {
         vm.prank(holder);
         tokenHandleRegistry.link(handleId, profileId);
 
-        assertTrue(tokenHandleRegistry.isLinked(handleId, profileId));
+        assertEq(tokenHandleRegistry.resolve(handleId), profileId);
+        assertEq(tokenHandleRegistry.getDefaultHandle(profileId), handleId);
 
         RegistryTypes.Handle memory handle = RegistryTypes.Handle({collection: address(lensHandles), id: handleId});
         RegistryTypes.Token memory token = RegistryTypes.Token({collection: address(hub), id: profileId});
@@ -394,7 +400,6 @@ contract TokenHandleRegistryTest is BaseTest {
         vm.prank(holder);
         tokenHandleRegistry.unlink(handleId, profileId);
 
-        assertFalse(tokenHandleRegistry.isLinked(handleId, profileId));
         assertEq(tokenHandleRegistry.resolve(handleId), 0);
         assertEq(tokenHandleRegistry.getDefaultHandle(profileId), 0);
     }
@@ -434,7 +439,6 @@ contract TokenHandleRegistryTest is BaseTest {
         vm.prank(firstHolder);
         tokenHandleRegistry.unlink(handleId, profileId);
 
-        assertFalse(tokenHandleRegistry.isLinked(handleId, profileId));
         assertEq(tokenHandleRegistry.resolve(handleId), 0);
         assertEq(tokenHandleRegistry.getDefaultHandle(profileId), 0);
     }
@@ -474,7 +478,6 @@ contract TokenHandleRegistryTest is BaseTest {
         vm.prank(newHolder);
         tokenHandleRegistry.unlink(handleId, profileId);
 
-        assertFalse(tokenHandleRegistry.isLinked(handleId, profileId));
         assertEq(tokenHandleRegistry.resolve(handleId), 0);
         assertEq(tokenHandleRegistry.getDefaultHandle(profileId), 0);
     }
@@ -514,7 +517,6 @@ contract TokenHandleRegistryTest is BaseTest {
         vm.prank(firstHolder);
         tokenHandleRegistry.unlink(handleId, profileId);
 
-        assertFalse(tokenHandleRegistry.isLinked(handleId, profileId));
         assertEq(tokenHandleRegistry.resolve(handleId), 0);
         assertEq(tokenHandleRegistry.getDefaultHandle(profileId), 0);
     }
@@ -554,7 +556,6 @@ contract TokenHandleRegistryTest is BaseTest {
         vm.prank(newHolder);
         tokenHandleRegistry.unlink(handleId, profileId);
 
-        assertFalse(tokenHandleRegistry.isLinked(handleId, profileId));
         assertEq(tokenHandleRegistry.resolve(handleId), 0);
         assertEq(tokenHandleRegistry.getDefaultHandle(profileId), 0);
     }
@@ -575,7 +576,8 @@ contract TokenHandleRegistryTest is BaseTest {
         vm.prank(holder);
         tokenHandleRegistry.link(handleId, profileId);
 
-        assertTrue(tokenHandleRegistry.isLinked(handleId, profileId));
+        assertEq(tokenHandleRegistry.resolve(handleId), profileId);
+        assertEq(tokenHandleRegistry.getDefaultHandle(profileId), handleId);
 
         vm.prank(holder);
         lensHandles.burn(handleId);
@@ -589,14 +591,125 @@ contract TokenHandleRegistryTest is BaseTest {
         vm.prank(holder);
         tokenHandleRegistry.unlink(handleId, profileId);
 
-        assertFalse(tokenHandleRegistry.isLinked(handleId, profileId));
-        assertEq(tokenHandleRegistry.resolve(handleId), 0);
+        vm.expectRevert(RegistryErrors.DoesNotExist.selector);
+        tokenHandleRegistry.resolve(handleId);
+
         assertEq(tokenHandleRegistry.getDefaultHandle(profileId), 0);
     }
 
+    function testUnlink_IfProfileWasBurned(address holder) public {
+        vm.assume(holder != address(0));
+        address proxyAdmin = address(uint160(uint256(vm.load(address(tokenHandleRegistry), ADMIN_SLOT))));
+        vm.assume(holder != proxyAdmin);
+        vm.assume(holder != initialProfileHolder);
+        vm.assume(holder != initialHandleHolder);
+
+        vm.prank(initialHandleHolder);
+        lensHandles.transferFrom(initialHandleHolder, holder, handleId);
+
+        vm.prank(initialProfileHolder);
+        hub.transferFrom(initialProfileHolder, holder, profileId);
+
+        vm.prank(holder);
+        tokenHandleRegistry.link(handleId, profileId);
+
+        assertEq(tokenHandleRegistry.resolve(handleId), profileId);
+        assertEq(tokenHandleRegistry.getDefaultHandle(profileId), handleId);
+
+        vm.prank(holder);
+        hub.burn(profileId);
+
+        RegistryTypes.Handle memory handle = RegistryTypes.Handle({collection: address(lensHandles), id: handleId});
+        RegistryTypes.Token memory token = RegistryTypes.Token({collection: address(hub), id: profileId});
+
+        vm.expectEmit(true, true, true, true, address(tokenHandleRegistry));
+        emit RegistryEvents.HandleUnlinked(handle, token, block.timestamp);
+
+        vm.prank(holder);
+        tokenHandleRegistry.unlink(handleId, profileId);
+
+        assertEq(tokenHandleRegistry.resolve(handleId), 0);
+
+        vm.expectRevert(RegistryErrors.DoesNotExist.selector);
+        tokenHandleRegistry.getDefaultHandle(profileId);
+    }
+
+    function testUnlink_IfHandleWasBurned_CalledByNotOwner(address holder) public {
+        vm.assume(holder != address(0));
+        address proxyAdmin = address(uint160(uint256(vm.load(address(tokenHandleRegistry), ADMIN_SLOT))));
+        vm.assume(holder != proxyAdmin);
+        vm.assume(holder != initialProfileHolder);
+        vm.assume(holder != initialHandleHolder);
+
+        vm.prank(initialHandleHolder);
+        lensHandles.transferFrom(initialHandleHolder, holder, handleId);
+
+        vm.prank(initialProfileHolder);
+        hub.transferFrom(initialProfileHolder, holder, profileId);
+
+        vm.prank(holder);
+        tokenHandleRegistry.link(handleId, profileId);
+
+        assertEq(tokenHandleRegistry.resolve(handleId), profileId);
+        assertEq(tokenHandleRegistry.getDefaultHandle(profileId), handleId);
+
+        vm.prank(holder);
+        lensHandles.burn(handleId);
+
+        RegistryTypes.Handle memory handle = RegistryTypes.Handle({collection: address(lensHandles), id: handleId});
+        RegistryTypes.Token memory token = RegistryTypes.Token({collection: address(hub), id: profileId});
+
+        vm.expectEmit(true, true, true, true, address(tokenHandleRegistry));
+        emit RegistryEvents.HandleUnlinked(handle, token, block.timestamp);
+
+        address otherAddress = makeAddr('OTHER_ADDRESS');
+        vm.prank(otherAddress);
+        tokenHandleRegistry.unlink(handleId, profileId);
+
+        vm.expectRevert(RegistryErrors.DoesNotExist.selector);
+        tokenHandleRegistry.resolve(handleId);
+
+        assertEq(tokenHandleRegistry.getDefaultHandle(profileId), 0);
+    }
+
+    function testUnlink_IfProfileWasBurned_CalledByNotOwner(address holder) public {
+        vm.assume(holder != address(0));
+        address proxyAdmin = address(uint160(uint256(vm.load(address(tokenHandleRegistry), ADMIN_SLOT))));
+        vm.assume(holder != proxyAdmin);
+        vm.assume(holder != initialProfileHolder);
+        vm.assume(holder != initialHandleHolder);
+
+        vm.prank(initialHandleHolder);
+        lensHandles.transferFrom(initialHandleHolder, holder, handleId);
+
+        vm.prank(initialProfileHolder);
+        hub.transferFrom(initialProfileHolder, holder, profileId);
+
+        vm.prank(holder);
+        tokenHandleRegistry.link(handleId, profileId);
+
+        assertEq(tokenHandleRegistry.resolve(handleId), profileId);
+        assertEq(tokenHandleRegistry.getDefaultHandle(profileId), handleId);
+
+        vm.prank(holder);
+        hub.burn(profileId);
+
+        RegistryTypes.Handle memory handle = RegistryTypes.Handle({collection: address(lensHandles), id: handleId});
+        RegistryTypes.Token memory token = RegistryTypes.Token({collection: address(hub), id: profileId});
+
+        vm.expectEmit(true, true, true, true, address(tokenHandleRegistry));
+        emit RegistryEvents.HandleUnlinked(handle, token, block.timestamp);
+
+        address otherAddress = makeAddr('OTHER_ADDRESS');
+        vm.prank(otherAddress);
+        tokenHandleRegistry.unlink(handleId, profileId);
+
+        assertEq(tokenHandleRegistry.resolve(handleId), 0);
+
+        vm.expectRevert(RegistryErrors.DoesNotExist.selector);
+        tokenHandleRegistry.getDefaultHandle(profileId);
+    }
+
     // TODO:
-    // - Cannot unlink if token or handle (or both) were burned (after someone mints the same handle it will become linked again)
     // - test migrationLink scenarios
-    // - test getters if token/handle was moved
-    // - test isLinked if burnt
 }

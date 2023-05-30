@@ -156,6 +156,7 @@ contract ProxyAdminTest is BaseTest {
 
         assertEq(hub.ownerOf(profileId), profileOwner, 'Profile owner mismatch');
         assertEq(lensHandles.ownerOf(handleId), profileOwner, 'Handle owner mismatch');
-        assertTrue(tokenHandleRegistry.isLinked(handleId, profileId), 'Handle not linked to profile');
+        assertEq(tokenHandleRegistry.resolve(handleId), profileId, 'Handle not linked to profile');
+        assertEq(tokenHandleRegistry.getDefaultHandle(profileId), handleId, 'Profile not linked to handle');
     }
 }
