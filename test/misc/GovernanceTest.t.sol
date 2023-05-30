@@ -432,8 +432,8 @@ contract GovernanceTest is BaseTest {
     function testWhitelistCollectModule_ifOwner(address collectModule, bool whitelist) public {
         vm.expectCall(address(hub), abi.encodeCall(ILensHub_V1.whitelistCollectModule, (collectModule, whitelist)), 1);
 
-        // As we're testing the V1 function, we expect a revert here because we don't have V1 contracts here.
-        // TODO: Think if this is okay or we want more extensive testing.
+        // Lens V2 does not support collect module whitelisting as top level feature.
+        // But we still test that Governance contract allows and does such a call to V1 implementation interface.
         vm.expectRevert();
 
         vm.prank(governanceOwner);
@@ -443,8 +443,8 @@ contract GovernanceTest is BaseTest {
     function testWhitelistCollectModule_ifControllerContract(address collectModule, bool whitelist) public {
         vm.expectCall(address(hub), abi.encodeCall(ILensHub_V1.whitelistCollectModule, (collectModule, whitelist)), 1);
 
-        // As we're testing the V1 function, we expect a revert here because we don't have V1 contracts here.
-        // TODO: Think if this is okay or we want more extensive testing.
+        // Lens V2 does not support collect module whitelisting as top level feature.
+        // But we still test that Governance contract allows and does such a call to V1 implementation interface.
         vm.expectRevert();
 
         vm.prank(controllerContract);
