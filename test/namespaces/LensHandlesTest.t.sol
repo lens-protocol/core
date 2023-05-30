@@ -66,7 +66,8 @@ contract LensHandlesTest is BaseTest {
         uint256 expectedTokenId = lensHandles.getTokenId(numbersHandle);
         vm.assume(!lensHandles.exists(expectedTokenId));
 
-        assertEq(lensHandles.getLocalName(expectedTokenId), '');
+        vm.expectRevert(HandlesErrors.DoesNotExist.selector);
+        lensHandles.getLocalName(expectedTokenId);
 
         vm.prank(address(hub));
         uint256 handleId = lensHandles.mintHandle(address(this), numbersHandle);
@@ -77,7 +78,9 @@ contract LensHandlesTest is BaseTest {
         assertEq(localName, numbersHandle);
 
         lensHandles.burn(handleId);
-        assertEq(lensHandles.getLocalName(expectedTokenId), '');
+
+        vm.expectRevert(HandlesErrors.DoesNotExist.selector);
+        lensHandles.getLocalName(expectedTokenId);
     }
 
     // TODO: Should we revert if it doesn't exist?
@@ -87,20 +90,22 @@ contract LensHandlesTest is BaseTest {
         uint256 expectedTokenId = lensHandles.getTokenId(numbersHandle);
         vm.assume(!lensHandles.exists(expectedTokenId));
 
-        string memory namespaceSuffix = string.concat('.', lensHandles.getNamespace());
-
-        assertEq(lensHandles.getHandle(expectedTokenId), namespaceSuffix);
+        vm.expectRevert(HandlesErrors.DoesNotExist.selector);
+        lensHandles.getHandle(expectedTokenId);
 
         vm.prank(address(hub));
         uint256 handleId = lensHandles.mintHandle(address(this), numbersHandle);
 
         assertEq(handleId, expectedTokenId);
 
+        string memory namespaceSuffix = string.concat('.', lensHandles.getNamespace());
         string memory handle = lensHandles.getHandle(handleId);
         assertEq(handle, string.concat(numbersHandle, namespaceSuffix));
 
         lensHandles.burn(handleId);
-        assertEq(lensHandles.getHandle(expectedTokenId), namespaceSuffix);
+
+        vm.expectRevert(HandlesErrors.DoesNotExist.selector);
+        lensHandles.getHandle(expectedTokenId);
     }
 
     function testGetTokenId(uint256 number) public {
@@ -175,7 +180,9 @@ contract LensHandlesTest is BaseTest {
         lensHandles.burn(handleId);
 
         assertFalse(lensHandles.exists(handleId));
-        assertEq(lensHandles.getLocalName(handleId), '');
+
+        vm.expectRevert(HandlesErrors.DoesNotExist.selector);
+        lensHandles.getLocalName(handleId);
     }
 
     function testCannot_MintHandle_IfNotOwnerOrHubOrWhitelistedProfileCreator(address otherAddress) public {
