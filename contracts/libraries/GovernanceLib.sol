@@ -52,7 +52,9 @@ library GovernanceLib {
         Types.ProtocolState prevState = _setState(newState);
         // If the sender is the emergency admin, prevent them from reducing restrictions.
         if (msg.sender == StorageLib.getEmergencyAdmin()) {
-            if (newState <= prevState) revert Errors.EmergencyAdminCanOnlyPauseFurther();
+            if (newState <= prevState) {
+                revert Errors.EmergencyAdminCanOnlyPauseFurther();
+            }
         } else if (msg.sender != StorageLib.getGovernance()) {
             revert Errors.NotGovernanceOrEmergencyAdmin();
         }
