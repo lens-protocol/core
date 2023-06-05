@@ -362,6 +362,8 @@ contract BaseTest is TestSetup {
             revert('Cannot convert quotes or unexistent publications to legacy V1 publication.');
         } else if (pubType == Types.PublicationType.Mirror && collectModule != address(0)) {
             revert('Legacy V1 mirrors cannot have collect module.');
+        } else if (pubType != Types.PublicationType.Mirror && collectModule == address(0)) {
+            revert('Legacy V1 non-mirror publications requires a non-zero collect module.');
         }
 
         uint256 PUBLICATIONS_MAPPING_SLOT = 20;
