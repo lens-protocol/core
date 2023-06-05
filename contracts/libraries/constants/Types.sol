@@ -46,6 +46,8 @@ library Types {
      * @param Paused The fully paused state.
      */
     enum ProtocolState {
+        // TODO: Reverse order, so Paused becomes 0 and the default. This will get rid of the initializer needs.
+        // It needs to be done carefully, as it might pause the protocol in the Lens V2 upgrade.
         Unpaused,
         PublishingPaused,
         Paused
