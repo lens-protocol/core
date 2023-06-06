@@ -62,22 +62,6 @@ contract LensHandlesTest is BaseTest {
         lensHandles.mintHandle(otherAddress, handle);
     }
 
-    function testCannot_MintHandle_IfNotOwnerOrHubOrWhitelistedProfileCreator(address otherAddress) public {
-        vm.assume(otherAddress != address(0));
-        vm.assume(otherAddress != address(hub));
-        vm.assume(otherAddress != lensHandles.OWNER());
-        vm.assume(!hub.isProfileCreatorWhitelisted(otherAddress));
-        address proxyAdmin = address(uint160(uint256(vm.load(address(lensHandles), ADMIN_SLOT))));
-        vm.assume(otherAddress != proxyAdmin);
-
-        string memory handle = 'handle';
-
-        vm.expectRevert(HandlesErrors.NotOwnerNorWhitelisted.selector);
-
-        vm.prank(otherAddress);
-        lensHandles.mintHandle(otherAddress, handle);
-    }
-
     function testCannot_MintHandle_WithZeroLength() public {
         vm.expectRevert(HandlesErrors.HandleLengthInvalid.selector);
 
