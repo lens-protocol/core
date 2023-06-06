@@ -17,4 +17,5 @@ library HandlesErrors {
     error HandleFirstCharInvalid();
     error NotOwnerNorWhitelisted();
     error NotOwner();
+    error DoesNotExist();
 }
