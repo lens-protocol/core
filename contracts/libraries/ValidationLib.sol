@@ -129,7 +129,10 @@ library ValidationLib {
         }
         Types.Publication storage _referrerMirror = StorageLib.getPublication(referrerProfileId, referrerPubId);
         // A mirror can only be a referrer of a legacy publication if it is pointing to it.
-        if (_referrerMirror.pointedProfileId != targetedProfileId || _referrerMirror.pointedPubId != targetedPubId) {
+        if (
+            _referrerMirror.pointedProfileId != publicationCollectedProfileId ||
+            _referrerMirror.pointedPubId != publicationCollectedId
+        ) {
             revert Errors.InvalidReferrer();
         }
     }
