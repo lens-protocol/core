@@ -127,6 +127,18 @@ abstract contract ReferencePublicationTest is PublicationTest {
         _publish({signerPk: publisher.ownerPk, publisherProfileId: publisher.profileId});
     }
 
+    function testCannotReferenceA_Publication_IfBlocked_ByTheAuthorOfThePointedPub() public {
+        vm.prank(defaultAccount.owner);
+        hub.setBlockStatus({
+            byProfileId: defaultAccount.profileId,
+            idsOfProfilesToSetBlockStatus: _toUint256Array(publisher.profileId),
+            blockStatus: _toBoolArray(true)
+        });
+
+        vm.expectRevert(Errors.Blocked.selector);
+        _publish({signerPk: publisher.ownerPk, publisherProfileId: publisher.profileId});
+    }
+
     function testCannotReferenceA_Comment_IfReferenceModule_RejectsIt() public {
         Types.CommentParams memory commentParams = _getDefaultCommentParams();
         commentParams.profileId = anotherPublisher.profileId;
