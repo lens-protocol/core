@@ -3,8 +3,8 @@
 pragma solidity ^0.8.15;
 
 contract ImmutableOwnable {
-    address immutable OWNER;
-    address immutable LENS_HUB;
+    address public immutable OWNER;
+    address public immutable LENS_HUB;
 
     error OnlyOwner();
     error OnlyOwnerOrHub();

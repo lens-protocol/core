@@ -23,6 +23,8 @@ import {Typehash} from 'contracts/libraries/constants/Typehash.sol';
 import {MetaTxLib} from 'contracts/libraries/MetaTxLib.sol';
 import {StorageLib} from 'contracts/libraries/StorageLib.sol';
 import 'test/Constants.sol';
+import {LensHandles} from 'contracts/namespaces/LensHandles.sol';
+import {TokenHandleRegistry} from 'contracts/namespaces/TokenHandleRegistry.sol';
 
 contract TestSetup is Test, ForkManagement, ArrayHelpers {
     using stdJson for string;
@@ -72,6 +74,8 @@ contract TestSetup is Test, ForkManagement, ArrayHelpers {
     MockActionModule mockActionModule;
     MockReferenceModule mockReferenceModule;
     ModuleGlobals moduleGlobals;
+    LensHandles lensHandles;
+    TokenHandleRegistry tokenHandleRegistry;
 
     constructor() {
         if (bytes(forkEnv).length > 0) {
@@ -115,6 +119,10 @@ contract TestSetup is Test, ForkManagement, ArrayHelpers {
         legacyCollectNFT = LegacyCollectNFT(legacyCollectNFTAddr);
         hubAsProxy = TransparentUpgradeableProxy(payable(address(hub)));
         moduleGlobals = ModuleGlobals(json.readAddress(string(abi.encodePacked('.', targetEnv, '.ModuleGlobals'))));
+        lensHandles = LensHandles(json.readAddress(string(abi.encodePacked('.', targetEnv, '.LensHandles'))));
+        tokenHandleRegistry = TokenHandleRegistry(
+            json.readAddress(string(abi.encodePacked('.', targetEnv, '.TokenHandleRegistry')))
+        );
 
         deployer = _loadAddressAs('DEPLOYER');
 
@@ -146,9 +154,13 @@ contract TestSetup is Test, ForkManagement, ArrayHelpers {
         vm.startPrank(deployer);
 
         // Precompute needed addresses.
-        address followNFTAddr = computeCreateAddress(deployer, 1);
-        address legacyCollectNFTAddr = computeCreateAddress(deployer, 2);
-        hubProxyAddr = computeCreateAddress(deployer, 3);
+        address followNFTAddr = computeCreateAddress(deployer, vm.getNonce(deployer) + 1);
+        address legacyCollectNFTAddr = computeCreateAddress(deployer, vm.getNonce(deployer) + 2);
+        hubProxyAddr = computeCreateAddress(deployer, vm.getNonce(deployer) + 3);
+        address lensHandlesImplAddr = computeCreateAddress(deployer, vm.getNonce(deployer) + 4);
+        address lensHandlesProxyAddr = computeCreateAddress(deployer, vm.getNonce(deployer) + 5);
+        address tokenHandleRegistryImplAddr = computeCreateAddress(deployer, vm.getNonce(deployer) + 6);
+        address tokenHandleRegistryProxyAddr = computeCreateAddress(deployer, vm.getNonce(deployer) + 7);
 
         // Deploy implementation contracts.
         // TODO: Last 3 addresses are for the follow modules for migration purposes.
@@ -156,8 +168,8 @@ contract TestSetup is Test, ForkManagement, ArrayHelpers {
             moduleGlobals: address(0),
             followNFTImpl: followNFTAddr,
             collectNFTImpl: legacyCollectNFTAddr,
-            lensHandlesAddress: address(0),
-            tokenHandleRegistryAddress: address(0),
+            lensHandlesAddress: lensHandlesProxyAddr,
+            tokenHandleRegistryAddress: tokenHandleRegistryProxyAddr,
             legacyFeeFollowModule: address(0),
             legacyProfileFollowModule: address(0),
             newFeeFollowModule: address(0)
@@ -167,7 +179,30 @@ contract TestSetup is Test, ForkManagement, ArrayHelpers {
 
         // Deploy and initialize proxy.
         bytes memory initData = abi.encodeCall(hubImpl.initialize, ('Lens Protocol Profiles', 'LPP', governance));
+        // TODO: Replace deployer owner with proxyAdmin.
         hubAsProxy = new TransparentUpgradeableProxy(address(hubImpl), deployer, initData);
+
+        // Deploy LensHandles implementation.
+        address lensHandlesImpl = address(new LensHandles(governance, address(hubAsProxy)));
+        assertEq(lensHandlesImpl, lensHandlesImplAddr);
+        vm.label(lensHandlesImpl, 'LENS_HANDLES_IMPL');
+
+        // TODO: Replace deployer owner with proxyAdmin.
+        lensHandles = LensHandles(address(new TransparentUpgradeableProxy(lensHandlesImpl, deployer, '')));
+        assertEq(address(lensHandles), lensHandlesProxyAddr);
+        vm.label(address(lensHandles), 'LENS_HANDLES');
+
+        // Deploy TokenHandleRegistry implementation.
+        address tokenHandleRegistryImpl = address(new TokenHandleRegistry(address(hubAsProxy), lensHandlesProxyAddr));
+        assertEq(tokenHandleRegistryImpl, tokenHandleRegistryImplAddr);
+        vm.label(tokenHandleRegistryImpl, 'TOKEN_HANDLE_REGISTRY_IMPL');
+
+        // TODO: Replace deployer owner with proxyAdmin.
+        tokenHandleRegistry = TokenHandleRegistry(
+            address(new TransparentUpgradeableProxy(tokenHandleRegistryImpl, deployer, ''))
+        );
+        assertEq(address(tokenHandleRegistry), tokenHandleRegistryProxyAddr);
+        vm.label(address(tokenHandleRegistry), 'TOKEN_HANDLE_REGISTRY');
 
         // Cast proxy to LensHub interface.
         hub = LensHub(address(hubAsProxy));
