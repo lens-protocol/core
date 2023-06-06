@@ -27,66 +27,66 @@ abstract contract ReferralSystemTest is BaseTest {
         uint256[] mirrors;
     }
 
-    function testV2References(uint256 commentQuoteFuzzBitmap) public {
-        commentQuoteFuzzBitmap = bound(commentQuoteFuzzBitmap, 0, 31);
-        Tree memory treeV2 = _createV2Tree(commentQuoteFuzzBitmap);
+    // function testV2References(uint256 commentQuoteFuzzBitmap) public {
+    //     commentQuoteFuzzBitmap = bound(commentQuoteFuzzBitmap, 0, 31);
+    //     Tree memory treeV2 = _createV2Tree(commentQuoteFuzzBitmap);
 
-        uint256 target = treeV2.post;
-        for (uint256 reference=0; i<treeV2.references.length)
-    }
+    //     uint256 target = treeV2.post;
+    //     // for (uint256 reference=0; i<treeV2.references.length)
+    // }
 
-    function _createV2Tree(uint256 commentQuoteFuzzBitmap) internal returns (Tree memory) {
-        /*
-            Post_1
-            |
-            |-- Comment/Quote_0 -- Mirror_0 (mirror of a direct reference)
-            |        |
-            |        |-- Comment/Quote_1 -- Mirror_1 (mirror of a 1st level reference)
-            |                 |
-            |                 |-- Comment/Quote_2 -- Mirror_2 (mirror of a 2nd level reference)
-            |                           |
-            |                           |-- Comment/Quote_3 -- Mirror_3 (mirror of a 3rd level reference)
-            |
-            |
-            |-- Comment/Quote_4 -- Mirror_4 (a different branch)
-            |
-            |
-            |-- Mirror_5 (direct post mirror)
-        */
+    // function _createV2Tree(uint256 commentQuoteFuzzBitmap) internal returns (Tree memory) {
+    //     /*
+    //         Post_1
+    //         |
+    //         |-- Comment/Quote_0 -- Mirror_0 (mirror of a direct reference)
+    //         |        |
+    //         |        |-- Comment/Quote_1 -- Mirror_1 (mirror of a 1st level reference)
+    //         |                 |
+    //         |                 |-- Comment/Quote_2 -- Mirror_2 (mirror of a 2nd level reference)
+    //         |                           |
+    //         |                           |-- Comment/Quote_3 -- Mirror_3 (mirror of a 3rd level reference)
+    //         |
+    //         |
+    //         |-- Comment/Quote_4 -- Mirror_4 (a different branch)
+    //         |
+    //         |
+    //         |-- Mirror_5 (direct post mirror)
+    //     */
 
-        Tree memory tree;
-        tree.references = new uint256[](5);
-        tree.mirrors = new uint256[](6);
+    //     Tree memory tree;
+    //     tree.references = new uint256[](5);
+    //     tree.mirrors = new uint256[](6);
 
-        tree.post = post();
+    //     tree.post = post();
 
-        tree.references[0] = _commentOrQuote(tree.post, commentQuoteFuzzBitmap, 0);
-        tree.mirrors[0] = mirror(tree.references[0]);
-        tree.references[1] = _commentOrQuote(tree.references[0], commentQuoteFuzzBitmap, 1);
-        tree.mirrors[1] = mirror(tree.references[1]);
-        tree.references[2] = _commentOrQuote(tree.references[1], commentQuoteFuzzBitmap, 2);
-        tree.mirrors[2] = mirror(tree.references[2]);
-        tree.references[3] = _commentOrQuote(tree.references[2], commentQuoteFuzzBitmap, 3);
-        tree.mirrors[3] = mirror(tree.references[3]);
+    //     tree.references[0] = _commentOrQuote(tree.post, commentQuoteFuzzBitmap, 0);
+    //     tree.mirrors[0] = mirror(tree.references[0]);
+    //     tree.references[1] = _commentOrQuote(tree.references[0], commentQuoteFuzzBitmap, 1);
+    //     tree.mirrors[1] = mirror(tree.references[1]);
+    //     tree.references[2] = _commentOrQuote(tree.references[1], commentQuoteFuzzBitmap, 2);
+    //     tree.mirrors[2] = mirror(tree.references[2]);
+    //     tree.references[3] = _commentOrQuote(tree.references[2], commentQuoteFuzzBitmap, 3);
+    //     tree.mirrors[3] = mirror(tree.references[3]);
 
-        tree.references[4] = _commentOrQuote(tree.post, commentQuoteFuzzBitmap, 4);
-        tree.mirrors[4] = mirror(tree.references[4]);
+    //     tree.references[4] = _commentOrQuote(tree.post, commentQuoteFuzzBitmap, 4);
+    //     tree.mirrors[4] = mirror(tree.references[4]);
 
-        tree.mirrors[5] = mirror(tree.post);
-    }
+    //     tree.mirrors[5] = mirror(tree.post);
+    // }
 
-    function _commentOrQuote(
-        uint256 pubId,
-        uint256 commentQuoteFuzzBitmap,
-        uint256 commentQuoteIndex
-    ) internal returns (uint256) {
-        uint256 commentQuoteFuzz = (commentQuoteFuzzBitmap >> (commentQuoteIndex)) & 1;
-        if (commentQuoteFuzz == 0) {
-            return comment(pubId);
-        } else {
-            return quote(pubId);
-        }
-    }
+    // function _commentOrQuote(
+    //     uint256 pubId,
+    //     uint256 commentQuoteFuzzBitmap,
+    //     uint256 commentQuoteIndex
+    // ) internal returns (uint256) {
+    //     uint256 commentQuoteFuzz = (commentQuoteFuzzBitmap >> (commentQuoteIndex)) & 1;
+    //     if (commentQuoteFuzz == 0) {
+    //         return comment(pubId);
+    //     } else {
+    //         return quote(pubId);
+    //     }
+    // }
 
     ////// setup////
     /// create a big tree with all possible situations (V2 posts)
