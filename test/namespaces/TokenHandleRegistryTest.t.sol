@@ -64,6 +64,24 @@ contract TokenHandleRegistryTest is BaseTest {
         tokenHandleRegistry.link(handleId, profileId);
     }
 
+    function testCannot_Link_IfHandleDoesNotExist(uint256 nonexistingHandleId) public {
+        vm.assume(!lensHandles.exists(nonexistingHandleId));
+
+        vm.expectRevert('ERC721: invalid token ID');
+
+        vm.prank(initialProfileHolder);
+        tokenHandleRegistry.link(nonexistingHandleId, profileId);
+    }
+
+    function testCannot_Link_IfProfileDoesNotExist(uint256 nonexistingProfileId) public {
+        vm.assume(!hub.exists(nonexistingProfileId));
+
+        vm.expectRevert(Errors.TokenDoesNotExist.selector);
+
+        vm.prank(initialHandleHolder);
+        tokenHandleRegistry.link(handleId, nonexistingProfileId);
+    }
+
     function testCannot_Unlink_IfNotHoldingProfileOrHandle(address otherAddress) public {
         vm.assume(otherAddress != lensHandles.ownerOf(handleId));
         vm.assume(otherAddress != hub.ownerOf(profileId));
@@ -709,7 +727,4 @@ contract TokenHandleRegistryTest is BaseTest {
         vm.expectRevert(RegistryErrors.DoesNotExist.selector);
         tokenHandleRegistry.getDefaultHandle(profileId);
     }
-
-    // TODO:
-    // - test migrationLink scenarios
 }

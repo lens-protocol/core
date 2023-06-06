@@ -45,8 +45,8 @@ contract TokenHandleRegistry is ITokenHandleRegistry {
     }
 
     // Lens V1 to Lens V2 migration function
-    // WARNING: Is able to link the Token and Handle even if they're not in the same wallet.
-    // TODO: ^ Is that a problem?
+    // WARNING: It is able to link the Token and Handle even if they're not in the same wallet.
+    //          But it is designed to be only called from LensHub migration function, which assures that they are.
     function migrationLink(uint256 handleId, uint256 tokenId) external {
         if (msg.sender != LENS_HUB) {
             revert RegistryErrors.OnlyLensHub();
@@ -131,9 +131,6 @@ contract TokenHandleRegistry is ITokenHandleRegistry {
         return tokenToHandle[_tokenHash(token)];
     }
 
-    // WARNING: This function doesn't check for existence of the Handle or Token. Nor it checks if the Handle and Token
-    //          are in the same wallet.
-    // TODO: ^ Is that a problem?
     function _link(RegistryTypes.Handle memory handle, RegistryTypes.Token memory token) internal {
         _deleteTokenToHandleLinkageIfAny(handle);
         handleToToken[_handleHash(handle)] = token;
