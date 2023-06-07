@@ -126,6 +126,82 @@ contract ActTest is BaseTest {
     function _refreshCachedNonces() internal virtual {
         // Nothing to do there.
     }
+
+    function testGetActionModuleById(address secondActionModule) public {
+        address firstActionModule = makeAddr('FIRST_ACTION_MODULE');
+        vm.assume(firstActionModule != secondActionModule);
+
+        Types.ActionModuleWhitelistData memory whitelistData = hub.getActionModuleWhitelistData(secondActionModule);
+        vm.assume(whitelistData.id == 0);
+        vm.assume(whitelistData.isWhitelisted == false);
+
+        vm.prank(governance);
+        hub.whitelistActionModule(firstActionModule, true);
+
+        whitelistData = hub.getActionModuleWhitelistData(firstActionModule);
+        uint256 firstActionModuleId = whitelistData.id;
+        assertTrue(whitelistData.isWhitelisted);
+
+        vm.prank(governance);
+        hub.whitelistActionModule(secondActionModule, true);
+
+        whitelistData = hub.getActionModuleWhitelistData(secondActionModule);
+        uint256 secondActionModuleId = whitelistData.id;
+        assertTrue(whitelistData.isWhitelisted);
+
+        assertEq(hub.getActionModuleById(firstActionModuleId), firstActionModule);
+        assertEq(hub.getActionModuleById(secondActionModuleId), secondActionModule);
+    }
+
+    // Will not work on fork with more complicated action modules cause we don't know how to initialize them
+    function testGetEnabledActionModulesBitmap(uint8 enabledActionModulesBitmap) public {
+        vm.assume(enabledActionModulesBitmap != 0);
+
+        address[] memory actionModules = new address[](9);
+        vm.startPrank(governance);
+        for (uint256 i = 1; i < actionModules.length; i++) {
+            if (hub.getActionModuleById(i) == address(0)) {
+                actionModules[i] = makeAddr(string.concat('ACTION_MODULE_', vm.toString(i)));
+                vm.etch(actionModules[i], address(mockActionModule).code);
+                hub.whitelistActionModule(actionModules[i], true);
+            } else {
+                actionModules[i] = hub.getActionModuleById(i);
+            }
+        }
+        vm.stopPrank();
+
+        // Count enabledActionModules from a bitmap
+        uint8 enabledActionModulesCount = 0;
+        for (uint256 i = 0; i < 8; i++) {
+            if (enabledActionModulesBitmap & (1 << i) != 0) {
+                enabledActionModulesCount++;
+            }
+        }
+
+        // Pick enabledActionModulesCount action modules
+        address[] memory enabledActionModules = new address[](enabledActionModulesCount);
+        uint256 enabledActionModulesIndex = 0;
+        for (uint256 i = 0; i < 8; i++) {
+            if (enabledActionModulesBitmap & (1 << i) != 0) {
+                enabledActionModules[enabledActionModulesIndex] = actionModules[i + 1];
+                enabledActionModulesIndex++;
+            }
+        }
+
+        bytes[] memory enabledActionModulesInitDatas = new bytes[](enabledActionModulesCount);
+        for (uint256 i = 0; i < enabledActionModulesCount; i++) {
+            enabledActionModulesInitDatas[i] = abi.encode(true);
+        }
+
+        Types.PostParams memory postParams = _getDefaultPostParams();
+        postParams.actionModules = enabledActionModules;
+        postParams.actionModulesInitDatas = enabledActionModulesInitDatas;
+
+        vm.prank(defaultAccount.owner);
+        uint256 pubId = hub.post(postParams);
+
+        assertEq(hub.getEnabledActionModulesBitmap(defaultAccount.profileId, pubId), enabledActionModulesBitmap);
+    }
 }
 
 contract ActMetaTxTest is ActTest, MetaTxNegatives {

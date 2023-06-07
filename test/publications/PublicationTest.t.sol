@@ -112,6 +112,37 @@ abstract contract ReferencePublicationTest is PublicationTest {
 
     function _setPointedPub(uint256 pointedProfileId, uint256 pointedPubId) internal virtual;
 
+    function testGetPubPointer() public {
+        Types.PostParams memory postParams = _getDefaultPostParams();
+        postParams.profileId = anotherPublisher.profileId;
+        postParams.referenceModule = address(mockReferenceModule);
+        postParams.referenceModuleInitData = abi.encode(true);
+
+        vm.prank(anotherPublisher.owner);
+        uint256 pointedPubId = hub.post(postParams);
+
+        _setPointedPub(anotherPublisher.profileId, pointedPubId);
+        _setReferenceModuleData(abi.encode(true));
+
+        uint256 pubId = _publish({signerPk: publisher.ownerPk, publisherProfileId: publisher.profileId});
+
+        (uint256 actualPointedProfileId, uint256 actualPointedPubId) = hub.getPubPointer(publisher.profileId, pubId);
+        assertEq(actualPointedProfileId, anotherPublisher.profileId);
+        assertEq(actualPointedPubId, pointedPubId);
+    }
+
+    function testGetReferenceModule() public {
+        address referenceModule = address(mockReferenceModule);
+        Types.PostParams memory postParams = _getDefaultPostParams();
+        postParams.referenceModule = referenceModule;
+        postParams.referenceModuleInitData = abi.encode(true);
+
+        vm.prank(defaultAccount.owner);
+        uint256 pubId = hub.post(postParams);
+
+        assertEq(hub.getReferenceModule(defaultAccount.profileId, pubId), referenceModule);
+    }
+
     function testCannotReferenceA_Post_IfReferenceModule_RejectsIt() public {
         Types.PostParams memory postParams = _getDefaultPostParams();
         postParams.profileId = anotherPublisher.profileId;
