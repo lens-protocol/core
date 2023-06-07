@@ -49,12 +49,12 @@ library ProfileLib {
 
             // We don't need to check for deprecated modules here because deprecated ones are no longer whitelisted.
             // Initialize the follow module.
-            followModuleReturnData = _initFollowModule(
-                profileId,
-                createProfileParams.to,
-                createProfileParams.followModule,
-                createProfileParams.followModuleInitData
-            );
+            followModuleReturnData = _initFollowModule({
+                profileId: profileId,
+                transactionExecutor: msg.sender,
+                followModule: createProfileParams.followModule,
+                followModuleInitData: createProfileParams.followModuleInitData
+            });
         }
         emit Events.ProfileCreated(
             profileId,
