@@ -113,7 +113,6 @@ library Events {
      * @param followModule The profile's newly set follow module. This CAN be the zero address.
      * @param followModuleReturnData The data returned from the follow module's initialization. This is ABI-encoded
      * and totally depends on the follow module chosen.
-     * @param followNFTURI The URI set for the profile's follow NFT.
      * @param timestamp The current block timestamp.
      */
     event ProfileCreated(
@@ -123,7 +122,6 @@ library Events {
         string imageURI,
         address followModule,
         bytes followModuleReturnData,
-        string followNFTURI,
         uint256 timestamp
     );
 
@@ -155,15 +153,6 @@ library Events {
      * @param timestamp The current block timestamp.
      */
     event ProfileImageURISet(uint256 indexed profileId, string imageURI, uint256 timestamp);
-
-    /**
-     * @dev Emitted when a follow NFT's URI is set.
-     *
-     * @param profileId The token ID of the profile for which the followNFT URI is set.
-     * @param followNFTURI The follow NFT URI set.
-     * @param timestamp The current block timestamp.
-     */
-    event FollowNFTURISet(uint256 indexed profileId, string followNFTURI, uint256 timestamp);
 
     /**
      * @dev Emitted when a profile's follow module is set.

@@ -43,8 +43,7 @@ contract ProxyAdminTest is BaseTest {
             to: otherAddress,
             imageURI: '',
             followModule: address(0),
-            followModuleInitData: '',
-            followNFTURI: ''
+            followModuleInitData: ''
         });
 
         vm.expectRevert(OnlyOwner.selector);
@@ -67,8 +66,7 @@ contract ProxyAdminTest is BaseTest {
             to: otherAddress,
             imageURI: '',
             followModule: address(0),
-            followModuleInitData: '',
-            followNFTURI: ''
+            followModuleInitData: ''
         });
 
         vm.expectRevert(OnlyOwner.selector);
@@ -85,8 +83,7 @@ contract ProxyAdminTest is BaseTest {
             to: profileOwner,
             imageURI: '',
             followModule: address(0),
-            followModuleInitData: '',
-            followNFTURI: ''
+            followModuleInitData: ''
         });
 
         vm.expectCall(address(hub), abi.encodeCall(hub.createProfile, (createProfileParams)));
@@ -117,8 +114,7 @@ contract ProxyAdminTest is BaseTest {
             to: profileOwner,
             imageURI: '',
             followModule: address(0),
-            followModuleInitData: '',
-            followNFTURI: ''
+            followModuleInitData: ''
         });
         string memory handle = 'handle';
 
@@ -129,8 +125,7 @@ contract ProxyAdminTest is BaseTest {
             to: address(profileCreationProxy),
             imageURI: createProfileParams.imageURI,
             followModule: createProfileParams.followModule,
-            followModuleInitData: createProfileParams.followModuleInitData,
-            followNFTURI: createProfileParams.followNFTURI
+            followModuleInitData: createProfileParams.followModuleInitData
         });
 
         vm.expectCall(address(hub), abi.encodeCall(hub.createProfile, (calledCreateProfileParams)), 1);

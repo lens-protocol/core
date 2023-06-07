@@ -347,8 +347,7 @@ contract TestSetup is Test, ForkManagement, ArrayHelpers {
                 to: defaultAccount.owner,
                 imageURI: MOCK_URI,
                 followModule: address(0),
-                followModuleInitData: '',
-                followNFTURI: MOCK_URI
+                followModuleInitData: ''
             });
     }
 

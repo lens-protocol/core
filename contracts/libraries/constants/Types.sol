@@ -96,6 +96,7 @@ library Types {
      * @param handleDeprecated The deprecated handle slot, is no longer used.
      * @param imageURI The URI to be used for the profile's image.
      * @param followNFTURI The URI to be used for the follow NFT.
+     * @param metadataURI The URI to be used for the profile's metadata.
      */
     struct Profile {
         uint256 pubCount; // offset 0
@@ -103,7 +104,7 @@ library Types {
         address followNFT; // offset 2
         string handleDeprecated; // offset 3
         string imageURI; // offset 4
-        string followNFTURI; // offset 5
+        string DEPRECATED_followNFTURI; // Deprecated in V2 as we have a common tokenURI for all Follows, offset 5
         string metadataURI; // offset 6
     }
 
@@ -128,14 +129,12 @@ library Types {
      * @param imageURI The URI to set for the profile image.
      * @param followModule The follow module to use, can be the zero address.
      * @param followModuleInitData The follow module initialization data, if any.
-     * @param followNFTURI The URI to use for the follow NFT.
      */
     struct CreateProfileParams {
         address to;
         string imageURI;
         address followModule;
         bytes followModuleInitData;
-        string followNFTURI;
     }
 
     /**

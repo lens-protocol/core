@@ -145,8 +145,7 @@ contract UpgradeForkTest is BaseTest {
                 to: address(this),
                 imageURI: MOCK_URI,
                 followModule: address(0),
-                followModuleInitData: abi.encode(true),
-                followNFTURI: MOCK_URI
+                followModuleInitData: abi.encode(true)
             });
 
             OldCreateProfileParams memory oldCreateProfileParams = OldCreateProfileParams(
@@ -155,7 +154,7 @@ contract UpgradeForkTest is BaseTest {
                 createProfileParams.imageURI,
                 mockDeprecatedFollowModule,
                 createProfileParams.followModuleInitData,
-                createProfileParams.followNFTURI
+                MOCK_URI
             );
 
             oldCreateProfileParams.followModule = mockDeprecatedFollowModule;

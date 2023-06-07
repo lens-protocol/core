@@ -40,7 +40,6 @@ contract UIDataProviderTest is BaseTest {
         assertEq(latestData1.profile.followNFT, profile.followNFT);
         assertEq(latestData1.profile.handleDeprecated, profile.handleDeprecated);
         assertEq(latestData1.profile.imageURI, profile.imageURI);
-        assertEq(latestData1.profile.followNFTURI, profile.followNFTURI);
         assertEq(latestData1.profile.metadataURI, profile.metadataURI);
 
         assertEq(latestData1.publication.pointedProfileId, pub1.pointedProfileId);
