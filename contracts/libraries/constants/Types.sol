@@ -93,18 +93,18 @@ library Types {
      * @param pubCount The number of publications made to this profile.
      * @param followModule The address of the current follow module in use by this profile, can be empty.
      * @param followNFT The address of the followNFT associated with this profile, can be empty.
-     * @param handleDeprecated The deprecated handle slot, is no longer used.
+     * @param __DEPRECATED__handle DEPRECATED in V2: handle slot, was replaced with LensHandles.
      * @param imageURI The URI to be used for the profile's image.
-     * @param followNFTURI The URI to be used for the follow NFT.
+     * @param __DEPRECATED__followNFTURI DEPRECATED in V2: The URI to be used for the follow NFT.
      * @param metadataURI The URI to be used for the profile's metadata.
      */
     struct Profile {
         uint256 pubCount; // offset 0
         address followModule; // offset 1
         address followNFT; // offset 2
-        string handleDeprecated; // offset 3
+        string __DEPRECATED__handle; // offset 3
         string imageURI; // offset 4
-        string DEPRECATED_followNFTURI; // Deprecated in V2 as we have a common tokenURI for all Follows, offset 5
+        string __DEPRECATED__followNFTURI; // Deprecated in V2 as we have a common tokenURI for all Follows, offset 5
         string metadataURI; // offset 6
     }
 
