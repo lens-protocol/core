@@ -94,7 +94,7 @@ contract ProfileMetadataURITest_MetaTx is ProfileMetadataURITest, MetaTxNegative
         /* Wen @solc-nowarn unused-param?
             Silence the compiler warning, but allow calling this with Named Params.
             These variables aren't used here, but are used in withSig case */
-        profileId = profileId;
+        profileId;
         metadataURI = metadataURI;
 
         address signer = vm.addr(pk);

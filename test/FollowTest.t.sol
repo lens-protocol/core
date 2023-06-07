@@ -400,7 +400,7 @@ contract FollowTest is BaseTest {
         /* Wen @solc-nowarn unused-param?
             Silence the compiler warning, but allow calling this with Named Params.
             This variable isn't used here, but used in withSig case. */
-        isFollowerProfileOwner = isFollowerProfileOwner;
+        isFollowerProfileOwner;
         vm.prank(vm.addr(pk));
         return hub.follow(followerProfileId, idsOfProfilesToFollow, followTokenIds, datas);
     }
