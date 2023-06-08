@@ -35,12 +35,12 @@ contract MockDeprecatedCollectModule is MockModule, ILegacyCollectModule {
      *  1. Ensuring the collector is a follower, if needed
      */
     function processCollect(
-        uint256,
-        address collector,
-        uint256 profileId,
-        uint256 pubId,
+        uint256 /* referrerProfileId */,
+        address /* collector */,
+        uint256 /* profileId */,
+        uint256 /* pubId */,
         bytes calldata data
-    ) external view override {
+    ) external pure override {
         _decodeFlagAndRevertIfFalse(data);
     }
 }
