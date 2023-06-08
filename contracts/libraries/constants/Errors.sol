@@ -18,6 +18,7 @@ library Errors {
     error PublicationDoesNotExist();
     error ProfileImageURILengthInvalid();
     error CallerNotFollowNFT();
+    error CallerNotCollectNFT(); // Legacy
     error ArrayMismatch();
     error NotWhitelisted();
     error InvalidParameter();
