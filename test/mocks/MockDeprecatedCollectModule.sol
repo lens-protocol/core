@@ -3,6 +3,7 @@
 pragma solidity ^0.8.15;
 
 import {ILegacyCollectModule} from 'contracts/interfaces/ILegacyCollectModule.sol';
+import {MockModule} from 'test/mocks/MockModule.sol';
 
 /**
  * @title FreeCollectModule
@@ -12,7 +13,7 @@ import {ILegacyCollectModule} from 'contracts/interfaces/ILegacyCollectModule.so
  *
  * This module works by allowing all collects.
  */
-contract MockDeprecatedCollectModule is ILegacyCollectModule {
+contract MockDeprecatedCollectModule is MockModule, ILegacyCollectModule {
     function testMockDeprecatedCollectModule() public {
         // Prevents being counted in Foundry Coverage
     }
@@ -25,9 +26,8 @@ contract MockDeprecatedCollectModule is ILegacyCollectModule {
         uint256,
         bytes calldata data
     ) external pure override returns (bytes memory) {
-        uint256 number = abi.decode(data, (uint256));
-        require(number == 1, 'MockReferenceModule: invalid');
-        return new bytes(0);
+        _decodeFlagAndRevertIfFalse(data);
+        return '';
     }
 
     /**
@@ -39,6 +39,8 @@ contract MockDeprecatedCollectModule is ILegacyCollectModule {
         address collector,
         uint256 profileId,
         uint256 pubId,
-        bytes calldata
-    ) external view override {}
+        bytes calldata data
+    ) external view override {
+        _decodeFlagAndRevertIfFalse(data);
+    }
 }
