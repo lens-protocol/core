@@ -5,6 +5,7 @@ import 'test/base/BaseTest.t.sol';
 import 'test/ERC721Test.t.sol';
 import {LegacyCollectNFT} from 'contracts/misc/LegacyCollectNFT.sol';
 import {MockDeprecatedCollectModule} from 'test/mocks/MockDeprecatedCollectModule.sol';
+import {Clones} from '@openzeppelin/contracts/proxy/Clones.sol';
 
 contract LegacyCollectNFTTest is BaseTest, ERC721Test {
     using stdJson for string;
@@ -17,6 +18,8 @@ contract LegacyCollectNFTTest is BaseTest, ERC721Test {
     address mockDeprecatedCollectModule;
     LegacyCollectNFT collectNFT;
     address collectNFTImpl;
+    uint256 defaultPubId;
+    uint256 firstCollectTokenId;
 
     function setUp() public override {
         super.setUp();
@@ -25,13 +28,13 @@ contract LegacyCollectNFTTest is BaseTest, ERC721Test {
 
         // Create a V1 pub
         vm.prank(defaultAccount.owner);
-        uint256 pubId = hub.post(_getDefaultPostParams());
+        defaultPubId = hub.post(_getDefaultPostParams());
 
-        _toLegacyV1Pub(defaultAccount.profileId, pubId, address(0), mockDeprecatedCollectModule);
+        _toLegacyV1Pub(defaultAccount.profileId, defaultPubId, address(0), mockDeprecatedCollectModule);
 
         defaultCollectParams = Types.CollectParams({
             publicationCollectedProfileId: defaultAccount.profileId,
-            publicationCollectedId: pubId,
+            publicationCollectedId: defaultPubId,
             collectorProfileId: defaultAccount.profileId,
             referrerProfileId: 0,
             referrerPubId: 0,
@@ -39,9 +42,11 @@ contract LegacyCollectNFTTest is BaseTest, ERC721Test {
         });
 
         vm.prank(defaultAccount.owner);
-        hub.collect(defaultCollectParams);
+        firstCollectTokenId = hub.collect(defaultCollectParams);
 
-        collectNFT = LegacyCollectNFT(hub.getPublication(defaultAccount.profileId, pubId).__DEPRECATED__collectNFT);
+        collectNFT = LegacyCollectNFT(
+            hub.getPublication(defaultAccount.profileId, defaultPubId).__DEPRECATED__collectNFT
+        );
     }
 
     function _mintERC721(address to) internal virtual override returns (uint256) {
@@ -120,5 +125,50 @@ contract LegacyCollectNFTTest is BaseTest, ERC721Test {
         vm.prank(defaultAccount.owner);
         vm.expectRevert(Errors.InvalidParameter.selector);
         collectNFT.setRoyalty(royaltiesInBasisPoints);
+    }
+
+    //
+
+    function testCannotInitializeTwoTimes(uint256 profileId, uint256 pubId) public {
+        vm.expectRevert(Errors.Initialized.selector);
+        collectNFT.initialize(profileId, pubId, 'someName', 'someSymbol');
+    }
+
+    function testTokenURI() public {
+        vm.expectCall(address(hub), abi.encodeCall(hub.getContentURI, (defaultAccount.profileId, defaultPubId)), 1);
+        collectNFT.tokenURI(firstCollectTokenId);
+    }
+
+    function testCannot_GetTokenURIIfTokenDoesNotExist(uint256 nonexistentToken) public {
+        vm.assume(collectNFT.exists(nonexistentToken) == false);
+        vm.expectRevert(Errors.TokenDoesNotExist.selector);
+        collectNFT.tokenURI(nonexistentToken);
+    }
+
+    function testCannot_MintNotFromHub(address notHub, address to) public {
+        vm.assume(notHub != address(hub));
+        vm.assume(notHub != address(0));
+        vm.expectRevert(Errors.NotHub.selector);
+        collectNFT.mint(to);
+    }
+
+    function testGetSourcePublicationPointer(address hub, uint256 profileId, uint256 pubId) public {
+        vm.assume(hub != address(0));
+        vm.assume(profileId != 0);
+        vm.assume(pubId != 0);
+
+        // Deploys Collect NFT implementation
+        collectNFTImpl = address(new LegacyCollectNFT(hub));
+
+        // Clones
+        collectNFT = LegacyCollectNFT(Clones.clone(collectNFTImpl));
+
+        // Initializes the clone
+        collectNFT.initialize(profileId, pubId, 'Name', 'SYMBOL');
+
+        (uint256 sourceProfileId, uint256 sourcePubId) = collectNFT.getSourcePublicationPointer();
+
+        assertEq(sourceProfileId, profileId);
+        assertEq(sourcePubId, pubId);
     }
 }

@@ -6,6 +6,8 @@ import 'test/ERC721Test.t.sol';
 import {CollectPublicationAction} from 'contracts/modules/act/collect/CollectPublicationAction.sol';
 import {CollectNFT} from 'contracts/CollectNFT.sol';
 import {MockCollectModule} from 'test/mocks/MockCollectModule.sol';
+import {Clones} from '@openzeppelin/contracts/proxy/Clones.sol';
+import {Errors as ModulesErrors} from 'contracts/modules/constants/Errors.sol';
 
 contract CollectNFTTest is BaseTest, ERC721Test {
     using stdJson for string;
@@ -18,6 +20,8 @@ contract CollectNFTTest is BaseTest, ERC721Test {
     address mockCollectModule;
     CollectNFT collectNFT;
     address collectNFTImpl;
+    uint256 defaultPubId;
+    uint256 firstCollectTokenId;
 
     Types.PublicationActionParams collectActionParams;
 
@@ -84,11 +88,11 @@ contract CollectNFTTest is BaseTest, ERC721Test {
         postParams.actionModulesInitDatas[0] = abi.encode(mockCollectModule, abi.encode(true));
 
         vm.prank(defaultAccount.owner);
-        uint256 pubId = hub.post(postParams);
+        defaultPubId = hub.post(postParams);
 
         collectActionParams = Types.PublicationActionParams({
             publicationActedProfileId: defaultAccount.profileId,
-            publicationActedId: pubId,
+            publicationActedId: defaultPubId,
             actorProfileId: defaultAccount.profileId,
             referrerProfileIds: _emptyUint256Array(),
             referrerPubIds: _emptyUint256Array(),
@@ -97,9 +101,13 @@ contract CollectNFTTest is BaseTest, ERC721Test {
         });
 
         vm.prank(defaultAccount.owner);
-        hub.act(collectActionParams);
+        bytes memory result = hub.act(collectActionParams);
+        (uint256 tokenId, ) = abi.decode(result, (uint256, bytes));
+        firstCollectTokenId = tokenId;
 
-        collectNFT = CollectNFT(collectPublicationAction.getCollectData(defaultAccount.profileId, pubId).collectNFT);
+        collectNFT = CollectNFT(
+            collectPublicationAction.getCollectData(defaultAccount.profileId, defaultPubId).collectNFT
+        );
     }
 
     function _mintERC721(address to) internal virtual override returns (uint256) {
@@ -179,5 +187,54 @@ contract CollectNFTTest is BaseTest, ERC721Test {
         vm.prank(defaultAccount.owner);
         vm.expectRevert(Errors.InvalidParameter.selector);
         collectNFT.setRoyalty(royaltiesInBasisPoints);
+    }
+
+    //
+
+    function testCannotInitializeTwoTimes(uint256 profileId, uint256 pubId) public {
+        vm.expectRevert(Errors.Initialized.selector);
+        collectNFT.initialize(profileId, pubId, 'someName', 'someSymbol');
+    }
+
+    function testTokenURI() public {
+        vm.expectCall(address(hub), abi.encodeCall(hub.getContentURI, (defaultAccount.profileId, defaultPubId)), 1);
+        collectNFT.tokenURI(firstCollectTokenId);
+    }
+
+    function testCannot_GetTokenURIIfTokenDoesNotExist(uint256 nonexistentToken) public {
+        vm.assume(collectNFT.exists(nonexistentToken) == false);
+        vm.expectRevert(Errors.TokenDoesNotExist.selector);
+        collectNFT.tokenURI(nonexistentToken);
+    }
+
+    function testCannot_MintNotFromActionModule(address notActionModule, address to) public {
+        vm.assume(notActionModule != address(collectPublicationAction));
+        vm.assume(notActionModule != address(0));
+        vm.expectRevert(ModulesErrors.NotActionModule.selector);
+        collectNFT.mint(to);
+    }
+
+    function testGetSourcePublicationPointer(
+        address hub,
+        address actionModule,
+        uint256 profileId,
+        uint256 pubId
+    ) public {
+        vm.assume(profileId != 0);
+        vm.assume(pubId != 0);
+
+        // Deploys Collect NFT implementation
+        collectNFTImpl = address(new CollectNFT(hub, actionModule));
+
+        // Clones
+        collectNFT = CollectNFT(Clones.clone(collectNFTImpl));
+
+        // Initializes the clone
+        collectNFT.initialize(profileId, pubId, 'Name', 'SYMBOL');
+
+        (uint256 sourceProfileId, uint256 sourcePubId) = collectNFT.getSourcePublicationPointer();
+
+        assertEq(sourceProfileId, profileId);
+        assertEq(sourcePubId, pubId);
     }
 }
