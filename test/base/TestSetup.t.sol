@@ -10,7 +10,7 @@ import {LensHubInitializable} from 'contracts/misc/LensHubInitializable.sol';
 import {FollowNFT} from 'contracts/FollowNFT.sol';
 import {LegacyCollectNFT} from 'contracts/misc/LegacyCollectNFT.sol';
 import {ModuleGlobals} from 'contracts/misc/ModuleGlobals.sol';
-import {TransparentUpgradeableProxy} from 'contracts/base/upgradeability/TransparentUpgradeableProxy.sol';
+import {TransparentUpgradeableProxy} from '@openzeppelin/contracts/proxy/transparent/TransparentUpgradeableProxy.sol';
 import {Types} from 'contracts/libraries/constants/Types.sol';
 import {Errors} from 'contracts/libraries/constants/Errors.sol';
 import {Events} from 'contracts/libraries/constants/Events.sol';

@@ -6,7 +6,7 @@ import {ForkManagement} from 'test/helpers/ForkManagement.sol';
 import {LegacyCollectNFT} from 'contracts/misc/LegacyCollectNFT.sol';
 import {LensHub} from 'contracts/LensHub.sol';
 import {FollowNFT} from 'contracts/FollowNFT.sol';
-import {TransparentUpgradeableProxy} from 'contracts/base/upgradeability/TransparentUpgradeableProxy.sol';
+import {TransparentUpgradeableProxy} from '@openzeppelin/contracts/proxy/transparent/TransparentUpgradeableProxy.sol';
 import {ModuleGlobals} from 'contracts/misc/ModuleGlobals.sol';
 import {LensHandles} from 'contracts/namespaces/LensHandles.sol';
 import {TokenHandleRegistry} from 'contracts/namespaces/TokenHandleRegistry.sol';
