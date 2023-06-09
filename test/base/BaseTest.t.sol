@@ -5,6 +5,7 @@ import 'test/base/TestSetup.t.sol';
 import 'contracts/libraries/constants/Types.sol';
 import {Typehash} from 'contracts/libraries/constants/Typehash.sol';
 import {Strings} from '@openzeppelin/contracts/utils/Strings.sol';
+import {StorageLib} from 'contracts/libraries/StorageLib.sol';
 
 contract BaseTest is TestSetup {
     using Strings for string;
@@ -20,6 +21,11 @@ contract BaseTest is TestSetup {
 
     function _boundPk(uint256 fuzzedUint256) internal view returns (uint256 fuzzedPk) {
         return bound(fuzzedUint256, 1, ISSECP256K1_CURVE_ORDER - 1);
+    }
+
+    function _isLensHubProxyAdmin(address proxyAdminCandidate) internal view returns (bool) {
+        address proxyAdmin = address(uint160(uint256(vm.load(address(hub), ADMIN_SLOT))));
+        return proxyAdminCandidate == proxyAdmin;
     }
 
     function _getSetProfileMetadataURITypedDataHash(
@@ -378,11 +384,19 @@ contract BaseTest is TestSetup {
 
         uint256 REFERENCE_MODULE_OFFSET = 3;
         uint256 referenceModuleSlot = publicationSlot + REFERENCE_MODULE_OFFSET;
-        vm.store({target: address(hub), slot: bytes32(referenceModuleSlot), value: bytes32(bytes20(referenceModule))});
+        vm.store({
+            target: address(hub),
+            slot: bytes32(referenceModuleSlot),
+            value: bytes32(uint256(uint160(referenceModule)))
+        });
 
         uint256 COLLECT_MODULE_OFFSET = 4;
         uint256 collectModuleSlot = publicationSlot + COLLECT_MODULE_OFFSET;
-        vm.store({target: address(hub), slot: bytes32(collectModuleSlot), value: bytes32(bytes20(collectModule))});
+        vm.store({
+            target: address(hub),
+            slot: bytes32(collectModuleSlot),
+            value: bytes32(uint256(uint160(collectModule)))
+        });
 
         uint256 firstSlotOffsetToWipe = 5;
         uint256 lastSlotOffsetToWipe = 8;
