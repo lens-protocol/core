@@ -41,7 +41,7 @@ contract LegacyCollectNFTTest is BaseTest, ERC721Test {
         vm.prank(defaultAccount.owner);
         hub.collect(defaultCollectParams);
 
-        collectNFT = LegacyCollectNFT(hub.getPub(defaultAccount.profileId, pubId).__DEPRECATED__collectNFT);
+        collectNFT = LegacyCollectNFT(hub.getPublication(defaultAccount.profileId, pubId).__DEPRECATED__collectNFT);
     }
 
     function _mintERC721(address to) internal virtual override returns (uint256) {
