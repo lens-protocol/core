@@ -109,6 +109,7 @@ library Types {
         string imageURI; // offset 4
         string __DEPRECATED__followNFTURI; // Deprecated in V2 as we have a common tokenURI for all Follows, offset 5
         string metadataURI; // offset 6
+    }
 
     /**
      * @notice A struct containing publication data.
@@ -134,9 +135,7 @@ library Types {
      * You can use getActionModuleById() to get the address of the action module associated with a given bit.
      * In the future this can be replaced with a getter that allows to query the bitmap by index, if there are more
      * than 256 action modules.
-     *
      */
-
     struct Publication {
         uint256 pointedProfileId;
         uint256 pointedPubId;
