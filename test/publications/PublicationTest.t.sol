@@ -54,15 +54,15 @@ abstract contract PublicationTest is BaseTest {
     // Scenarios
 
     function testPublisherPubCountIs_IncrementedByOne_AfterPublishing() public {
-        uint256 pubCountBeforePublishing = hub.getPubCount(publisher.profileId);
+        uint256 pubCountBeforePublishing = hub.getProfile(publisher.profileId).pubCount;
         _publish({signerPk: publisher.ownerPk, publisherProfileId: publisher.profileId});
-        uint256 pubCountAfterPublishing = hub.getPubCount(publisher.profileId);
+        uint256 pubCountAfterPublishing = hub.getProfile(publisher.profileId).pubCount;
         assertEq(pubCountAfterPublishing, pubCountBeforePublishing + 1);
     }
 
     function testPubIdAssignedIs_EqualsToPubCount_AfterPublishing() public {
         uint256 pubIdAssigned = _publish({signerPk: publisher.ownerPk, publisherProfileId: publisher.profileId});
-        uint256 pubCountAfterPublishing = hub.getPubCount(publisher.profileId);
+        uint256 pubCountAfterPublishing = hub.getProfile(publisher.profileId).pubCount;
         assertEq(pubIdAssigned, pubCountAfterPublishing);
     }
 
@@ -111,6 +111,39 @@ abstract contract ReferencePublicationTest is PublicationTest {
     function _setReferenceModuleData(bytes memory referenceModuleData) internal virtual;
 
     function _setPointedPub(uint256 pointedProfileId, uint256 pointedPubId) internal virtual;
+
+    function testGetPubPointer() public {
+        Types.PostParams memory postParams = _getDefaultPostParams();
+        postParams.profileId = anotherPublisher.profileId;
+        postParams.referenceModule = address(mockReferenceModule);
+        postParams.referenceModuleInitData = abi.encode(true);
+
+        vm.prank(anotherPublisher.owner);
+        uint256 pointedPubId = hub.post(postParams);
+
+        _setPointedPub(anotherPublisher.profileId, pointedPubId);
+        _setReferenceModuleData(abi.encode(true));
+
+        uint256 pubId = _publish({signerPk: publisher.ownerPk, publisherProfileId: publisher.profileId});
+
+        Types.Publication memory publication = hub.getPublication(publisher.profileId, pubId);
+        uint256 actualPointedProfileId = publication.pointedProfileId;
+        uint256 actualPointedPubId = publication.pointedPubId;
+        assertEq(actualPointedProfileId, anotherPublisher.profileId);
+        assertEq(actualPointedPubId, pointedPubId);
+    }
+
+    function testGetReferenceModule() public {
+        address referenceModule = address(mockReferenceModule);
+        Types.PostParams memory postParams = _getDefaultPostParams();
+        postParams.referenceModule = referenceModule;
+        postParams.referenceModuleInitData = abi.encode(true);
+
+        vm.prank(defaultAccount.owner);
+        uint256 pubId = hub.post(postParams);
+
+        assertEq(hub.getPublication(defaultAccount.profileId, pubId).referenceModule, referenceModule);
+    }
 
     function testCannotReferenceA_Post_IfReferenceModule_RejectsIt() public {
         Types.PostParams memory postParams = _getDefaultPostParams();
@@ -203,7 +236,7 @@ abstract contract ReferencePublicationTest is PublicationTest {
     }
 
     function testCannotReference_Itself() public {
-        uint256 nextPubId = hub.getPubCount(publisher.profileId) + 1;
+        uint256 nextPubId = hub.getProfile(publisher.profileId).pubCount + 1;
 
         _setPointedPub(publisher.profileId, nextPubId);
 

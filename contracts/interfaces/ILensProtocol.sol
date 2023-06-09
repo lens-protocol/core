@@ -424,80 +424,6 @@ interface ILensProtocol {
     function isBlocked(uint256 profileId, uint256 byProfileId) external view returns (bool);
 
     /**
-     * @notice Returns the metadata URI for a given profile
-     * MetadataURI is used to store the profile's metadata, for example: displayed name, description, interests, etc.
-     *
-     * @param profileId The token ID of the profile to query the metadata URI for.
-     *
-     * @return string The metadata URI associated with the given profile.
-     */
-    function getProfileMetadataURI(uint256 profileId) external view returns (string memory);
-
-    /**
-     * @notice Returns the publication count for a given profile.
-     *
-     * @param profileId The token ID of the profile to query the publication count for.
-     *
-     * @return uint256 The number of publications associated with the given profile.
-     */
-    function getPubCount(uint256 profileId) external view returns (uint256);
-
-    /**
-     * @notice Returns the image URI for a given profile
-     *
-     * @param profileId The token ID of the profile to query the image URI for.
-     *
-     * @return string The image URI associated with the given profile.
-     */
-    function getProfileImageURI(uint256 profileId) external view returns (string memory);
-
-    /**
-     * @notice Returns the address of the Follow NFT collection associated with a given profile.
-     * @dev It can return address(0) if the profile has not been followed yet, as the collection is lazy-deployed upon
-     * the first follow.
-     *
-     * @param profileId The token ID of the profile to query the Follow NFT for.
-     *
-     * @return address The Follow NFT associated with the given profile.
-     */
-    function getFollowNFT(uint256 profileId) external view returns (address);
-
-    /**
-     * @notice Returns the follow module associated with a given profile.
-     * Returns address(0) if none.
-     *
-     * @param profileId The token ID of the profile to query the follow module for.
-     *
-     * @return address The address of the follow module associated with the given profile.
-     */
-    function getFollowModule(uint256 profileId) external view returns (address);
-
-    /**
-     * @notice Returns the reference module associated with a given profile, if any.
-     *
-     * @param profileId The token ID of the profile that published the publication to query the reference module for.
-     * @param pubId The publication ID of the publication to query the reference module for.
-     *
-     * @return address The address of the reference module associated with the given profile.
-     */
-    function getReferenceModule(uint256 profileId, uint256 pubId) external view returns (address);
-
-    /**
-     * @notice Returns the action modules enabled in a given publication as a bitmap.
-     * The bitmap is a uint256 where each bit represents an action module: 1 if the publication uses it, and 0 if not.
-     * You can use getActionModuleById() to get the address of the action module associated with a given bit.
-     *
-     * In the future this can be replaced with a getter that allows to query the bitmap by index, if there are more than
-     * 256 action modules.
-     *
-     * @param profileId The ID of the profile that published the publication to query the action modules for.
-     * @param pubId The publication ID of the publication to query the action modules for.
-     *
-     * @return uint256 The bitmap that represents the action modules associated with the given publication.
-     */
-    function getEnabledActionModulesBitmap(uint256 profileId, uint256 pubId) external view returns (uint256);
-
-    /**
      * @notice Returns the address of the action module associated with the given whitelist ID, address(0) if none.
      *
      * @param id The ID of the module whose address wants to be queried.
@@ -505,22 +431,6 @@ interface ILensProtocol {
      * @return address The address of the action module associated with the given ID.
      */
     function getActionModuleById(uint256 id) external view returns (address);
-
-    /**
-     * @notice Returns the publication (profileId & pubId) that a given publication is pointing to.
-     * This is used to implement the "reference" feature of the platform and is used in:
-     * - Mirrors
-     * - Comments
-     * - Quotes
-     * Returns (0,0) if the publication is not pointing to any other publication (i.e. the publication is a Post).
-     *
-     * @param profileId The token ID of the profile that published the publication to query the pointer for.
-     * @param pubId The publication ID of the publication to query the pointer for.
-     *
-     * @return tuple First, the profile ID of the profile the current publication is pointing to, second, the
-     * publication ID of the publication the current publication is pointing to.
-     */
-    function getPubPointer(uint256 profileId, uint256 pubId) external view returns (uint256, uint256);
 
     /**
      * @notice Returns the URI associated with a given publication.
@@ -550,7 +460,7 @@ interface ILensProtocol {
      *
      * @return Publication The publication struct associated with the queried publication.
      */
-    function getPub(uint256 profileId, uint256 pubId) external view returns (Types.Publication memory);
+    function getPublication(uint256 profileId, uint256 pubId) external view returns (Types.Publication memory);
 
     /**
      * @notice Returns the type of a given publication.

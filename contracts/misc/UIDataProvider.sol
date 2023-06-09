@@ -40,6 +40,6 @@ contract UIDataProvider {
     function getLatestDataByProfile(uint256 profileId) external view returns (LatestData memory) {
         Types.Profile memory profile = HUB.getProfile(profileId);
         uint256 pubCount = profile.pubCount;
-        return LatestData(profile, HUB.getPub(profileId, pubCount));
+        return LatestData(profile, HUB.getPublication(profileId, pubCount));
     }
 }

@@ -6,11 +6,11 @@ import {ILensImplGetters} from 'contracts/interfaces/ILensImplGetters.sol';
 
 contract LensImplGetters is ILensImplGetters {
     address internal immutable FOLLOW_NFT_IMPL;
-    address internal immutable COLLECT_NFT_IMPL;
+    address internal immutable __LEGACY__COLLECT_NFT_IMPL;
 
     constructor(address followNFTImpl, address collectNFTImpl) {
         FOLLOW_NFT_IMPL = followNFTImpl;
-        COLLECT_NFT_IMPL = collectNFTImpl;
+        __LEGACY__COLLECT_NFT_IMPL = collectNFTImpl;
     }
 
     /// @inheritdoc ILensImplGetters
@@ -20,6 +20,6 @@ contract LensImplGetters is ILensImplGetters {
 
     /// @inheritdoc ILensImplGetters
     function getCollectNFTImpl() external view override returns (address) {
-        return COLLECT_NFT_IMPL;
+        return __LEGACY__COLLECT_NFT_IMPL; // LEGACY support: Used only for compatibility with V1 collectible posts.
     }
 }

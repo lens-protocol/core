@@ -378,11 +378,19 @@ contract BaseTest is TestSetup {
 
         uint256 REFERENCE_MODULE_OFFSET = 3;
         uint256 referenceModuleSlot = publicationSlot + REFERENCE_MODULE_OFFSET;
-        vm.store({target: address(hub), slot: bytes32(referenceModuleSlot), value: bytes32(bytes20(referenceModule))});
+        vm.store({
+            target: address(hub),
+            slot: bytes32(referenceModuleSlot),
+            value: bytes32(uint256(uint160(referenceModule)))
+        });
 
         uint256 COLLECT_MODULE_OFFSET = 4;
         uint256 collectModuleSlot = publicationSlot + COLLECT_MODULE_OFFSET;
-        vm.store({target: address(hub), slot: bytes32(collectModuleSlot), value: bytes32(bytes20(collectModule))});
+        vm.store({
+            target: address(hub),
+            slot: bytes32(collectModuleSlot),
+            value: bytes32(uint256(uint160(collectModule)))
+        });
 
         uint256 firstSlotOffsetToWipe = 5;
         uint256 lastSlotOffsetToWipe = 8;

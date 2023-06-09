@@ -41,6 +41,9 @@ contract ProfileCreationProxy is ImmutableOwnable {
         string calldata handle
     ) external onlyOwner returns (uint256, uint256) {
         // We mint the handle & profile to this contract first, then link it to the profile
+        // This will not allow to initialize follow modules that require funds from the msg.sender,
+        // but we assume only simple follow modules should be set during profile creation.
+        // Complex ones can be set after the profile is created.
         address destination = createProfileParams.to;
         createProfileParams.to = address(this);
         uint256 profileId = ILensHub(LENS_HUB).createProfile(createProfileParams);
