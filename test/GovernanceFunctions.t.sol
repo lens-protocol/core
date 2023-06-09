@@ -14,8 +14,7 @@ contract GovernanceFunctionsTest is BaseTest {
     function testCannot_SetGovernance_IfNotGovernance(address nonGovernanceCaller, address randomAddress) public {
         vm.assume(nonGovernanceCaller != governance);
         vm.assume(nonGovernanceCaller != address(0));
-        address proxyAdmin = address(uint160(uint256(vm.load(address(hub), ADMIN_SLOT))));
-        vm.assume(nonGovernanceCaller != proxyAdmin);
+        vm.assume(!_isLensHubProxyAdmin(nonGovernanceCaller));
 
         vm.expectRevert(Errors.NotGovernance.selector);
         vm.prank(nonGovernanceCaller);
@@ -25,8 +24,7 @@ contract GovernanceFunctionsTest is BaseTest {
     function testCannot_SetEmergencyAdmin_IfNotGovernance(address nonGovernanceCaller, address randomAddress) public {
         vm.assume(nonGovernanceCaller != governance);
         vm.assume(nonGovernanceCaller != address(0));
-        address proxyAdmin = address(uint160(uint256(vm.load(address(hub), ADMIN_SLOT))));
-        vm.assume(nonGovernanceCaller != proxyAdmin);
+        vm.assume(!_isLensHubProxyAdmin(nonGovernanceCaller));
 
         vm.expectRevert(Errors.NotGovernance.selector);
         vm.prank(nonGovernanceCaller);
@@ -39,8 +37,7 @@ contract GovernanceFunctionsTest is BaseTest {
     ) public {
         vm.assume(nonGovernanceOrEmergencyAdmin != governance);
         vm.assume(nonGovernanceOrEmergencyAdmin != address(0));
-        address proxyAdmin = address(uint160(uint256(vm.load(address(hub), ADMIN_SLOT))));
-        vm.assume(nonGovernanceOrEmergencyAdmin != proxyAdmin);
+        vm.assume(!_isLensHubProxyAdmin(nonGovernanceOrEmergencyAdmin));
 
         state = uint8(bound(state, uint8(Types.ProtocolState.Unpaused), uint8(Types.ProtocolState.Paused)));
 
@@ -94,8 +91,7 @@ contract GovernanceFunctionsTest is BaseTest {
     ) public {
         vm.assume(nonGovernanceCaller != governance);
         vm.assume(nonGovernanceCaller != address(0));
-        address proxyAdmin = address(uint160(uint256(vm.load(address(hub), ADMIN_SLOT))));
-        vm.assume(nonGovernanceCaller != proxyAdmin);
+        vm.assume(!_isLensHubProxyAdmin(nonGovernanceCaller));
 
         vm.expectRevert(Errors.NotGovernance.selector);
         vm.prank(nonGovernanceCaller);
@@ -109,8 +105,7 @@ contract GovernanceFunctionsTest is BaseTest {
     ) public {
         vm.assume(nonGovernanceCaller != governance);
         vm.assume(nonGovernanceCaller != address(0));
-        address proxyAdmin = address(uint160(uint256(vm.load(address(hub), ADMIN_SLOT))));
-        vm.assume(nonGovernanceCaller != proxyAdmin);
+        vm.assume(!_isLensHubProxyAdmin(nonGovernanceCaller));
 
         vm.expectRevert(Errors.NotGovernance.selector);
         vm.prank(nonGovernanceCaller);
@@ -124,8 +119,7 @@ contract GovernanceFunctionsTest is BaseTest {
     ) public {
         vm.assume(nonGovernanceCaller != governance);
         vm.assume(nonGovernanceCaller != address(0));
-        address proxyAdmin = address(uint160(uint256(vm.load(address(hub), ADMIN_SLOT))));
-        vm.assume(nonGovernanceCaller != proxyAdmin);
+        vm.assume(!_isLensHubProxyAdmin(nonGovernanceCaller));
 
         vm.expectRevert(Errors.NotGovernance.selector);
         vm.prank(nonGovernanceCaller);
@@ -139,8 +133,7 @@ contract GovernanceFunctionsTest is BaseTest {
     ) public {
         vm.assume(nonGovernanceCaller != governance);
         vm.assume(nonGovernanceCaller != address(0));
-        address proxyAdmin = address(uint160(uint256(vm.load(address(hub), ADMIN_SLOT))));
-        vm.assume(nonGovernanceCaller != proxyAdmin);
+        vm.assume(!_isLensHubProxyAdmin(nonGovernanceCaller));
 
         vm.expectRevert(Errors.NotGovernance.selector);
         vm.prank(nonGovernanceCaller);

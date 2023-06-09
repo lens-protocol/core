@@ -14,6 +14,9 @@ import {ActionRestricted} from 'contracts/modules/ActionRestricted.sol';
  * @title CollectNFT
  * @author Lens Protocol
  *
+ * @dev This is the CollectNFT for Lens V2, it differs from LegacyCollectNFT that it's restricted to be called by an
+ * action module instead of LensHub.
+ *
  * @notice This is the NFT contract that is minted upon collecting a given publication. It is cloned upon
  * the first collect for a given publication, and the token URI points to the original publication's contentURI.
  */

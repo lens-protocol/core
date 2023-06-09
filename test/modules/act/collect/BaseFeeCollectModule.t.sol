@@ -483,9 +483,7 @@ contract BaseFeeCollectModule_ProcessCollect is BaseFeeCollectModuleBase {
             vm.assume(transactionExecutor != address(0));
             vm.assume(collectorProfileOwner != address(0));
             vm.assume(recipient != address(0));
-            bytes32 ADMIN_SLOT = bytes32(uint256(keccak256('eip1967.proxy.admin')) - 1);
-            address proxyAdmin = address(uint160(uint256(vm.load(hubProxyAddr, ADMIN_SLOT))));
-            vm.assume(collectorProfileOwner != proxyAdmin);
+            vm.assume(!_isLensHubProxyAdmin(collectorProfileOwner));
         }
 
         exampleInitData.amount = amount;

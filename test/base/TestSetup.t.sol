@@ -77,6 +77,7 @@ contract TestSetup is Test, ForkManagement, ArrayHelpers {
     LensHandles lensHandles;
     TokenHandleRegistry tokenHandleRegistry;
 
+    // TODO: Avoid constructors in favour of setUp function - Failing asserts in constructor won't make the test fail!
     constructor() {
         if (bytes(forkEnv).length > 0) {
             loadBaseAddresses(forkEnv);
@@ -146,9 +147,11 @@ contract TestSetup is Test, ForkManagement, ArrayHelpers {
         governance = _loadAddressAs('GOVERNANCE');
         treasury = _loadAddressAs('TREASURY');
         modulesGovernance = _loadAddressAs('MODULES_GOVERNANCE');
-        vm.label(proxyAdmin, 'HUB_PROXY_ADMIN');
 
         TREASURY_FEE_BPS = 50;
+
+        moduleGlobals = new ModuleGlobals(modulesGovernance, treasury, TREASURY_FEE_BPS);
+        vm.label(address(moduleGlobals), 'MODULE_GLOBALS');
 
         ///////////////////////////////////////// Start deployments.
         vm.startPrank(deployer);
@@ -165,7 +168,7 @@ contract TestSetup is Test, ForkManagement, ArrayHelpers {
         // Deploy implementation contracts.
         // TODO: Last 3 addresses are for the follow modules for migration purposes.
         hubImpl = new LensHubInitializable({
-            moduleGlobals: address(0),
+            moduleGlobals: address(moduleGlobals),
             followNFTImpl: followNFTAddr,
             collectNFTImpl: legacyCollectNFTAddr,
             lensHandlesAddress: lensHandlesProxyAddr,
@@ -218,9 +221,6 @@ contract TestSetup is Test, ForkManagement, ArrayHelpers {
         // Deploy the MockReferenceModule.
         mockReferenceModule = new MockReferenceModule();
         vm.label(address(mockReferenceModule), 'MOCK_REFERENCE_MODULE');
-
-        moduleGlobals = new ModuleGlobals(modulesGovernance, treasury, TREASURY_FEE_BPS);
-        vm.label(address(moduleGlobals), 'MODULE_GLOBALS');
 
         vm.stopPrank();
         ///////////////////////////////////////// End deployments.

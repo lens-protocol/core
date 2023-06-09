@@ -1229,4 +1229,67 @@ contract FollowNFTTest is BaseTest, ERC721Test {
 
         assertEq(followNFT.getFollowApproved(followTokenId), 0);
     }
+
+    //////////////////////////////////////////////////////////
+    // ERC-2981 Royalties - Scenarios
+    //////////////////////////////////////////////////////////
+
+    function testSupportsErc2981Interface() public {
+        assertTrue(followNFT.supportsInterface(bytes4(keccak256('royaltyInfo(uint256,uint256)'))));
+    }
+
+    function testDefaultRoyaltiesAreSetTo10Percent(uint256 tokenId) public {
+        uint256 salePrice = 100;
+        uint256 expectedRoyalties = 10;
+
+        (address receiver, uint256 royalties) = followNFT.royaltyInfo(tokenId, salePrice);
+
+        assertEq(receiver, targetProfileOwner);
+        assertEq(royalties, expectedRoyalties);
+    }
+
+    function testSetRoyalties(uint256 royaltiesInBasisPoints, uint256 tokenId, uint256 salePrice) public {
+        uint256 basisPoints = 10000;
+        royaltiesInBasisPoints = bound(royaltiesInBasisPoints, 0, basisPoints);
+        uint256 salePriceTimesRoyalties;
+        unchecked {
+            salePriceTimesRoyalties = salePrice * royaltiesInBasisPoints;
+            // Fuzz prices that does not generate overflow, otherwise royaltyInfo will revert
+            vm.assume(salePrice == 0 || salePriceTimesRoyalties / salePrice == basisPoints);
+        }
+
+        vm.prank(targetProfileOwner);
+        followNFT.setRoyalty(royaltiesInBasisPoints);
+
+        (address receiver, uint256 royalties) = followNFT.royaltyInfo(tokenId, salePrice);
+
+        assertEq(receiver, targetProfileOwner);
+        assertEq(royalties, salePriceTimesRoyalties / basisPoints);
+    }
+
+    //////////////////////////////////////////////////////////
+    // ERC-2981 Royalties - Negatives
+    //////////////////////////////////////////////////////////
+
+    function testCannotSetRoyaltiesIf_NotTargetProfileOwner(
+        address nonTargetProfileOwner,
+        uint256 royaltiesInBasisPoints
+    ) public {
+        uint256 basisPoints = 10000;
+        royaltiesInBasisPoints = bound(royaltiesInBasisPoints, 0, basisPoints);
+        vm.assume(nonTargetProfileOwner != targetProfileOwner);
+
+        vm.prank(nonTargetProfileOwner);
+        vm.expectRevert(Errors.NotProfileOwner.selector);
+        followNFT.setRoyalty(royaltiesInBasisPoints);
+    }
+
+    function testCannotSetRoyaltiesIf_ExceedsBasisPoints(uint256 royaltiesInBasisPoints) public {
+        uint256 basisPoints = 10000;
+        vm.assume(royaltiesInBasisPoints > basisPoints);
+
+        vm.prank(targetProfileOwner);
+        vm.expectRevert(Errors.InvalidParameter.selector);
+        followNFT.setRoyalty(royaltiesInBasisPoints);
+    }
 }
