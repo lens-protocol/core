@@ -268,7 +268,7 @@ contract DegreesOfSeparationReferenceModule is HubRestricted, IReferenceModule {
         uint256 profileId
     ) internal view {
         // We are processing profileId's last publication, so we get the ID from his publication counter.
-        uint256 pubId = ILensHub(HUB).getPubCount(profileId);
+        uint256 pubId = ILensHub(HUB).getProfile(profileId).pubCount;
         // We only care about inheritance of the comment restrictions.
         if (
             !_moduleConfig[profileId][pubId].setUp ||

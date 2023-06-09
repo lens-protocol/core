@@ -54,7 +54,7 @@ contract LegacyCollectTest is BaseTest {
         hub.setState(Types.ProtocolState.Paused);
 
         vm.expectRevert(Errors.Paused.selector);
-        _collect(defaultAccount.ownerPk, true, defaultCollectParams);
+        _collect(defaultAccount.ownerPk, defaultCollectParams);
     }
 
     function testCannot_Collect_IfNotProfileOwnerOrDelegatedExecutor(uint256 otherPk) public {
@@ -65,7 +65,7 @@ contract LegacyCollectTest is BaseTest {
         vm.assume(!hub.isDelegatedExecutorApproved(defaultAccount.profileId, otherAddress));
 
         vm.expectRevert(Errors.ExecutorInvalid.selector);
-        _collect(otherPk, false, defaultCollectParams);
+        _collect(otherPk, defaultCollectParams);
     }
 
     function testCannot_Collect_IfCollectorProfileDoesNotExist(uint256 randomProfileId) public {
@@ -75,7 +75,7 @@ contract LegacyCollectTest is BaseTest {
         defaultCollectParams.collectorProfileId = randomProfileId;
 
         vm.expectRevert(Errors.TokenDoesNotExist.selector);
-        _collect(defaultAccount.ownerPk, true, defaultCollectParams);
+        _collect(defaultAccount.ownerPk, defaultCollectParams);
     }
 
     function testCannot_Collect_IfBlocked() public {
@@ -85,21 +85,21 @@ contract LegacyCollectTest is BaseTest {
         defaultCollectParams.collectorProfileId = blockedProfile.profileId;
 
         vm.expectRevert(Errors.Blocked.selector);
-        _collect(blockedProfile.ownerPk, true, defaultCollectParams);
+        _collect(blockedProfile.ownerPk, defaultCollectParams);
     }
 
     function testCannot_Collect_IfNoCollectModuleSet(uint256 randomPubId) public {
         vm.assume(randomPubId != 0);
-        vm.assume(hub.getPub(defaultAccount.profileId, randomPubId).__DEPRECATED__collectModule == address(0));
+        vm.assume(hub.getPublication(defaultAccount.profileId, randomPubId).__DEPRECATED__collectModule == address(0));
 
         defaultCollectParams.publicationCollectedId = randomPubId;
 
         vm.expectRevert(Errors.CollectNotAllowed.selector);
-        _collect(defaultAccount.ownerPk, true, defaultCollectParams);
+        _collect(defaultAccount.ownerPk, defaultCollectParams);
     }
 
     function testCollect() public {
-        Types.Publication memory pub = hub.getPub(defaultAccount.profileId, pubId);
+        Types.Publication memory pub = hub.getPublication(defaultAccount.profileId, pubId);
         assertTrue(pub.__DEPRECATED__collectNFT == address(0));
 
         address predictedCollectNFT = computeCreateAddress(address(hub), vm.getNonce(address(hub)));
@@ -166,12 +166,12 @@ contract LegacyCollectTest is BaseTest {
             timestamp: block.timestamp
         });
 
-        uint256 collectTokenId = _collect(defaultAccount.ownerPk, true, defaultCollectParams);
+        uint256 collectTokenId = _collect(defaultAccount.ownerPk, defaultCollectParams);
         assertEq(collectTokenId, 1);
 
         _refreshCachedNonces();
 
-        pub = hub.getPub(defaultAccount.profileId, pubId);
+        pub = hub.getPublication(defaultAccount.profileId, pubId);
         assertEq(pub.__DEPRECATED__collectNFT, predictedCollectNFT);
 
         vm.expectEmit(true, true, true, true, predictedCollectNFT);
@@ -188,19 +188,11 @@ contract LegacyCollectTest is BaseTest {
             timestamp: block.timestamp
         });
 
-        uint256 secondCollectTokenId = _collect(defaultAccount.ownerPk, true, defaultCollectParams);
+        uint256 secondCollectTokenId = _collect(defaultAccount.ownerPk, defaultCollectParams);
         assertEq(secondCollectTokenId, collectTokenId + 1);
     }
 
-    function _collect(
-        uint256 pk,
-        bool isProfileOwner,
-        Types.CollectParams memory collectParams
-    ) internal virtual returns (uint256) {
-        /* Wen @solc-nowarn unused-param?
-            Silence the compiler warning, but allow calling this with Named Params.
-            This variable isn't used here, but used in withSig case. */
-        isProfileOwner;
+    function _collect(uint256 pk, Types.CollectParams memory collectParams) internal virtual returns (uint256) {
         vm.prank(vm.addr(pk));
         return hub.collect(collectParams);
     }
@@ -226,13 +218,8 @@ contract LegacyCollectMetaTxTest is LegacyCollectTest, MetaTxNegatives {
 
     function _collect(
         uint256 pk,
-        bool isProfileOwner,
         Types.CollectParams memory collectParams
     ) internal virtual override returns (uint256) {
-        /* Wen @solc-nowarn unused-param?
-            Silence the compiler warning, but allow calling this with Named Params.
-            This variable isn't used here, but used in withSig case. */
-        isProfileOwner;
         address signer = vm.addr(pk);
 
         return

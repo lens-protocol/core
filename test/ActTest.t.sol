@@ -200,7 +200,10 @@ contract ActTest is BaseTest {
         vm.prank(defaultAccount.owner);
         uint256 pubId = hub.post(postParams);
 
-        assertEq(hub.getEnabledActionModulesBitmap(defaultAccount.profileId, pubId), enabledActionModulesBitmap);
+        assertEq(
+            hub.getPublication(defaultAccount.profileId, pubId).enabledActionModulesBitmap,
+            enabledActionModulesBitmap
+        );
     }
 }
 

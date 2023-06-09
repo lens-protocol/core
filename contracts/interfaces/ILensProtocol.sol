@@ -431,7 +431,7 @@ interface ILensProtocol {
      *
      * @return string The metadata URI associated with the given profile.
      */
-    function getProfileMetadataURI(uint256 profileId) external view returns (string memory);
+    // function getProfileMetadataURI(uint256 profileId) external view returns (string memory);
 
     /**
      * @notice Returns the publication count for a given profile.
@@ -440,7 +440,7 @@ interface ILensProtocol {
      *
      * @return uint256 The number of publications associated with the given profile.
      */
-    function getPubCount(uint256 profileId) external view returns (uint256);
+    // function getPubCount(uint256 profileId) external view returns (uint256);
 
     /**
      * @notice Returns the image URI for a given profile
@@ -449,7 +449,7 @@ interface ILensProtocol {
      *
      * @return string The image URI associated with the given profile.
      */
-    function getProfileImageURI(uint256 profileId) external view returns (string memory);
+    // function getProfileImageURI(uint256 profileId) external view returns (string memory);
 
     /**
      * @notice Returns the address of the Follow NFT collection associated with a given profile.
@@ -460,7 +460,7 @@ interface ILensProtocol {
      *
      * @return address The Follow NFT associated with the given profile.
      */
-    function getFollowNFT(uint256 profileId) external view returns (address);
+    // function getFollowNFT(uint256 profileId) external view returns (address);
 
     /**
      * @notice Returns the follow module associated with a given profile.
@@ -470,7 +470,7 @@ interface ILensProtocol {
      *
      * @return address The address of the follow module associated with the given profile.
      */
-    function getFollowModule(uint256 profileId) external view returns (address);
+    // function getFollowModule(uint256 profileId) external view returns (address);
 
     /**
      * @notice Returns the reference module associated with a given profile, if any.
@@ -480,7 +480,7 @@ interface ILensProtocol {
      *
      * @return address The address of the reference module associated with the given profile.
      */
-    function getReferenceModule(uint256 profileId, uint256 pubId) external view returns (address);
+    // function getReferenceModule(uint256 profileId, uint256 pubId) external view returns (address);
 
     /**
      * @notice Returns the action modules enabled in a given publication as a bitmap.
@@ -495,7 +495,7 @@ interface ILensProtocol {
      *
      * @return uint256 The bitmap that represents the action modules associated with the given publication.
      */
-    function getEnabledActionModulesBitmap(uint256 profileId, uint256 pubId) external view returns (uint256);
+    // function getEnabledActionModulesBitmap(uint256 profileId, uint256 pubId) external view returns (uint256);
 
     /**
      * @notice Returns the address of the action module associated with the given whitelist ID, address(0) if none.
@@ -520,7 +520,7 @@ interface ILensProtocol {
      * @return tuple First, the profile ID of the profile the current publication is pointing to, second, the
      * publication ID of the publication the current publication is pointing to.
      */
-    function getPubPointer(uint256 profileId, uint256 pubId) external view returns (uint256, uint256);
+    // function getPubPointer(uint256 profileId, uint256 pubId) external view returns (uint256, uint256);
 
     /**
      * @notice Returns the URI associated with a given publication.
@@ -550,7 +550,7 @@ interface ILensProtocol {
      *
      * @return Publication The publication struct associated with the queried publication.
      */
-    function getPub(uint256 profileId, uint256 pubId) external view returns (Types.Publication memory);
+    function getPublication(uint256 profileId, uint256 pubId) external view returns (Types.Publication memory);
 
     /**
      * @notice Returns the type of a given publication.

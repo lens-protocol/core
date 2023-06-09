@@ -106,7 +106,7 @@ contract MigrationsTest is Test, ForkManagement {
 
         // TODO: This can be moved and split
         uint256 idOfProfileFollowed = 8;
-        address followNFTAddress = hub.getFollowNFT(idOfProfileFollowed);
+        address followNFTAddress = hub.getProfile(idOfProfileFollowed).followNFT;
         for (uint256 i = 0; i < 10; i++) {
             uint256 followTokenId = i + 1;
             address followerOwner = IERC721(followNFTAddress).ownerOf(followTokenId);
@@ -133,7 +133,7 @@ contract MigrationsTest is Test, ForkManagement {
     function testFollowMigration() public onlyFork {
         uint256 idOfProfileFollowed = 8;
 
-        address followNFTAddress = hub.getFollowNFT(idOfProfileFollowed);
+        address followNFTAddress = hub.getProfile(idOfProfileFollowed).followNFT;
 
         uint256[] memory idsOfProfileFollowed = new uint256[](10);
         address[] memory followNFTAddresses = new address[](10);

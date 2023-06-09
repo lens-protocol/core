@@ -28,10 +28,10 @@ contract UIDataProviderTest is BaseTest {
     function testGetLatestDataByProfile() public {
         Types.Profile memory profile = hub.getProfile(defaultAccount.profileId);
         uint256 pubCount1 = profile.pubCount;
-        Types.Publication memory pub1 = hub.getPub(defaultAccount.profileId, pubCount1);
+        Types.Publication memory pub1 = hub.getPublication(defaultAccount.profileId, pubCount1);
 
         vm.expectCall(address(hub), abi.encodeCall(hub.getProfile, (defaultAccount.profileId)), 3);
-        vm.expectCall(address(hub), abi.encodeCall(hub.getPub, (defaultAccount.profileId, pubCount1)), 1);
+        vm.expectCall(address(hub), abi.encodeCall(hub.getPublication, (defaultAccount.profileId, pubCount1)), 1);
 
         LatestData memory latestData1 = uiDataProvider.getLatestDataByProfile(defaultAccount.profileId);
 
@@ -70,9 +70,9 @@ contract UIDataProviderTest is BaseTest {
 
         assertEq(pubCount2, pubCount1 + 1);
 
-        Types.Publication memory pub2 = hub.getPub(defaultAccount.profileId, pubCount2);
+        Types.Publication memory pub2 = hub.getPublication(defaultAccount.profileId, pubCount2);
 
-        vm.expectCall(address(hub), abi.encodeCall(hub.getPub, (defaultAccount.profileId, pubCount2)), 1);
+        vm.expectCall(address(hub), abi.encodeCall(hub.getPublication, (defaultAccount.profileId, pubCount2)), 1);
 
         LatestData memory latestData2 = uiDataProvider.getLatestDataByProfile(defaultAccount.profileId);
 

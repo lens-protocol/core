@@ -36,7 +36,7 @@ contract ProfileMetadataURITest is BaseTest {
         address delegatedExecutor = vm.addr(delegatedExecutorPk);
         vm.assume(delegatedExecutorPk != defaultAccount.ownerPk);
 
-        assertEq(hub.getProfileMetadataURI(defaultAccount.profileId), '');
+        assertEq(hub.getProfile(defaultAccount.profileId).metadataURI, '');
         vm.prank(defaultAccount.owner);
         hub.changeDelegatedExecutorsConfig({
             delegatorProfileId: defaultAccount.profileId,
@@ -51,11 +51,11 @@ contract ProfileMetadataURITest is BaseTest {
             timestamp: block.timestamp
         });
         _setProfileMetadataURI({pk: delegatedExecutorPk, profileId: defaultAccount.profileId, metadataURI: MOCK_URI});
-        assertEq(hub.getProfileMetadataURI(defaultAccount.profileId), MOCK_URI);
+        assertEq(hub.getProfile(defaultAccount.profileId).metadataURI, MOCK_URI);
     }
 
     function testSetProfileMetadataURI() public {
-        assertEq(hub.getProfileMetadataURI(defaultAccount.profileId), '');
+        assertEq(hub.getProfile(defaultAccount.profileId).metadataURI, '');
 
         vm.expectEmit(true, true, true, true, address(hub));
         emit Events.ProfileMetadataSet({
@@ -68,7 +68,7 @@ contract ProfileMetadataURITest is BaseTest {
             profileId: defaultAccount.profileId,
             metadataURI: MOCK_URI
         });
-        assertEq(hub.getProfileMetadataURI(defaultAccount.profileId), MOCK_URI);
+        assertEq(hub.getProfile(defaultAccount.profileId).metadataURI, MOCK_URI);
     }
 }
 

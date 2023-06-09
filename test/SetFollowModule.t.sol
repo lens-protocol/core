@@ -26,7 +26,6 @@ contract SetFollowModuleTest is BaseTest {
         vm.expectRevert(Errors.ExecutorInvalid.selector);
         _setFollowModule({
             pk: notOwnerPk,
-            isProfileOwner: true,
             profileId: defaultAccount.profileId,
             followModule: address(0),
             followModuleInitData: ''
@@ -44,7 +43,6 @@ contract SetFollowModuleTest is BaseTest {
         vm.expectRevert(Errors.ExecutorInvalid.selector);
         _setFollowModule({
             pk: notDelegatedExecutorPk,
-            isProfileOwner: false,
             profileId: defaultAccount.profileId,
             followModule: address(0),
             followModuleInitData: ''
@@ -58,7 +56,6 @@ contract SetFollowModuleTest is BaseTest {
         vm.expectRevert(Errors.NotWhitelisted.selector);
         _setFollowModule({
             pk: defaultAccount.ownerPk,
-            isProfileOwner: true,
             profileId: defaultAccount.profileId,
             followModule: followModule,
             followModuleInitData: ''
@@ -69,7 +66,6 @@ contract SetFollowModuleTest is BaseTest {
         vm.expectRevert(bytes(''));
         _setFollowModule({
             pk: defaultAccount.ownerPk,
-            isProfileOwner: true,
             profileId: defaultAccount.profileId,
             followModule: mockFollowModule,
             followModuleInitData: ''
@@ -80,23 +76,21 @@ contract SetFollowModuleTest is BaseTest {
     function testSetFollowModule() public {
         _setFollowModule({
             pk: defaultAccount.ownerPk,
-            isProfileOwner: true,
             profileId: defaultAccount.profileId,
             followModule: mockFollowModule,
             followModuleInitData: abi.encode(true)
         });
-        assertEq(hub.getFollowModule(defaultAccount.profileId), mockFollowModule);
+        assertEq(hub.getProfile(defaultAccount.profileId).followModule, mockFollowModule);
 
         _refreshCachedNonces();
 
         _setFollowModule({
             pk: defaultAccount.ownerPk,
-            isProfileOwner: true,
             profileId: defaultAccount.profileId,
             followModule: address(0),
             followModuleInitData: ''
         });
-        assertEq(hub.getFollowModule(defaultAccount.profileId), address(0));
+        assertEq(hub.getProfile(defaultAccount.profileId).followModule, address(0));
     }
 
     function testDelegatedExecutorSetFollowModule(uint256 delegatedExecutorPk) public {
@@ -107,7 +101,7 @@ contract SetFollowModuleTest is BaseTest {
         vm.assume(delegatedExecutor != defaultAccount.owner);
         vm.assume(delegatedExecutor != proxyAdmin);
 
-        assertEq(hub.getFollowModule(defaultAccount.profileId), address(0));
+        assertEq(hub.getProfile(defaultAccount.profileId).followModule, address(0));
         vm.prank(defaultAccount.owner);
         hub.changeDelegatedExecutorsConfig({
             delegatorProfileId: defaultAccount.profileId,
@@ -121,22 +115,19 @@ contract SetFollowModuleTest is BaseTest {
 
         _setFollowModule({
             pk: delegatedExecutorPk,
-            isProfileOwner: false,
             profileId: defaultAccount.profileId,
             followModule: mockFollowModule,
             followModuleInitData: abi.encode(true)
         });
-        assertEq(hub.getFollowModule(defaultAccount.profileId), mockFollowModule);
+        assertEq(hub.getProfile(defaultAccount.profileId).followModule, mockFollowModule);
     }
 
     function _setFollowModule(
         uint256 pk,
-        bool isProfileOwner,
         uint256 profileId,
         address followModule,
         bytes memory followModuleInitData
     ) internal virtual {
-        isProfileOwner;
         vm.prank(vm.addr(pk));
         hub.setFollowModule(profileId, followModule, followModuleInitData);
     }
@@ -162,7 +153,6 @@ contract SetFollowModuleMetaTxTest is SetFollowModuleTest, MetaTxNegatives {
 
     function _setFollowModule(
         uint256 pk,
-        bool isProfileOwner,
         uint256 profileId,
         address followModule,
         bytes memory followModuleInitData

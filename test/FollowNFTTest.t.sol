@@ -40,7 +40,7 @@ contract FollowNFTTest is BaseTest, ERC721Test {
             _toBytesArray('')
         )[0];
 
-        targetFollowNFT = hub.getFollowNFT(targetProfileId);
+        targetFollowNFT = hub.getProfile(targetProfileId).followNFT;
         followNFT = FollowNFT(targetFollowNFT);
     }
 

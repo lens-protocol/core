@@ -54,7 +54,7 @@ contract FollowTest is BaseTest {
             _toBytesArray('')
         )[0];
 
-        targetFollowNFTAddress = hub.getFollowNFT(targetProfileId);
+        targetFollowNFTAddress = hub.getProfile(targetProfileId).followNFT;
         followNFT = FollowNFT(targetFollowNFTAddress);
 
         followModuleWithRevertFlag = address(new MockFollowModuleWithRevertFlag());
@@ -72,7 +72,6 @@ contract FollowTest is BaseTest {
 
         _follow({
             pk: testFollowerProfileOwnerPk,
-            isFollowerProfileOwner: true,
             followerProfileId: testFollowerProfileId,
             idsOfProfilesToFollow: _toUint256Array(targetProfileId),
             followTokenIds: _toUint256Array(MINT_NEW_TOKEN),
@@ -88,7 +87,6 @@ contract FollowTest is BaseTest {
 
         _follow({
             pk: testFollowerProfileOwnerPk,
-            isFollowerProfileOwner: true,
             followerProfileId: testFollowerProfileId,
             idsOfProfilesToFollow: _toUint256Array(targetProfileId),
             followTokenIds: _toUint256Array(MINT_NEW_TOKEN),
@@ -109,7 +107,6 @@ contract FollowTest is BaseTest {
 
         _follow({
             pk: transactionExecutorPk,
-            isFollowerProfileOwner: false,
             followerProfileId: testFollowerProfileId,
             idsOfProfilesToFollow: _toUint256Array(targetProfileId),
             followTokenIds: _toUint256Array(MINT_NEW_TOKEN),
@@ -133,7 +130,6 @@ contract FollowTest is BaseTest {
 
         _follow({
             pk: transactionExecutorPk,
-            isFollowerProfileOwner: false,
             followerProfileId: testFollowerProfileId,
             idsOfProfilesToFollow: _toUint256Array(targetProfileId),
             followTokenIds: _toUint256Array(followTokenId),
@@ -158,7 +154,6 @@ contract FollowTest is BaseTest {
 
         _follow({
             pk: transactionExecutorPk,
-            isFollowerProfileOwner: false,
             followerProfileId: testFollowerProfileId,
             idsOfProfilesToFollow: _toUint256Array(targetProfileId),
             followTokenIds: _toUint256Array(followTokenId),
@@ -171,7 +166,6 @@ contract FollowTest is BaseTest {
 
         _follow({
             pk: testFollowerProfileOwnerPk,
-            isFollowerProfileOwner: true,
             followerProfileId: testFollowerProfileId,
             idsOfProfilesToFollow: _toUint256Array(targetProfileId, alreadyFollowingProfileId),
             followTokenIds: _toUint256Array(MINT_NEW_TOKEN),
@@ -184,7 +178,6 @@ contract FollowTest is BaseTest {
 
         _follow({
             pk: testFollowerProfileOwnerPk,
-            isFollowerProfileOwner: true,
             followerProfileId: testFollowerProfileId,
             idsOfProfilesToFollow: _toUint256Array(targetProfileId),
             followTokenIds: _toUint256Array(MINT_NEW_TOKEN),
@@ -200,7 +193,6 @@ contract FollowTest is BaseTest {
 
         _follow({
             pk: testFollowerProfileOwnerPk,
-            isFollowerProfileOwner: true,
             followerProfileId: testFollowerProfileId,
             idsOfProfilesToFollow: _toUint256Array(targetProfileId),
             followTokenIds: _toUint256Array(MINT_NEW_TOKEN),
@@ -213,7 +205,6 @@ contract FollowTest is BaseTest {
 
         _follow({
             pk: testFollowerProfileOwnerPk,
-            isFollowerProfileOwner: true,
             followerProfileId: testFollowerProfileId,
             idsOfProfilesToFollow: _toUint256Array(0),
             followTokenIds: _toUint256Array(MINT_NEW_TOKEN),
@@ -229,7 +220,6 @@ contract FollowTest is BaseTest {
 
         _follow({
             pk: testFollowerProfileOwnerPk,
-            isFollowerProfileOwner: true,
             followerProfileId: testFollowerProfileId,
             idsOfProfilesToFollow: _toUint256Array(targetProfileId),
             followTokenIds: _toUint256Array(MINT_NEW_TOKEN),
@@ -242,7 +232,6 @@ contract FollowTest is BaseTest {
 
         _follow({
             pk: alreadyFollowingProfileOwnerPk,
-            isFollowerProfileOwner: true,
             followerProfileId: alreadyFollowingProfileId,
             idsOfProfilesToFollow: _toUint256Array(targetProfileId),
             followTokenIds: _toUint256Array(MINT_NEW_TOKEN),
@@ -260,7 +249,6 @@ contract FollowTest is BaseTest {
 
         _follow({
             pk: testFollowerProfileOwnerPk,
-            isFollowerProfileOwner: true,
             followerProfileId: testFollowerProfileId,
             idsOfProfilesToFollow: _toUint256Array(targetProfileId),
             followTokenIds: _toUint256Array(MINT_NEW_TOKEN),
@@ -273,7 +261,6 @@ contract FollowTest is BaseTest {
 
         _follow({
             pk: targetProfileOwnerPk,
-            isFollowerProfileOwner: true,
             followerProfileId: targetProfileId,
             idsOfProfilesToFollow: _toUint256Array(targetProfileId),
             followTokenIds: _toUint256Array(MINT_NEW_TOKEN),
@@ -318,7 +305,6 @@ contract FollowTest is BaseTest {
 
         uint256[] memory assignedFollowTokenIds = _follow({
             pk: testFollowerProfileOwnerPk,
-            isFollowerProfileOwner: true,
             followerProfileId: testFollowerProfileId,
             idsOfProfilesToFollow: _toUint256Array(targetProfileId),
             followTokenIds: _toUint256Array(MINT_NEW_TOKEN),
@@ -377,7 +363,6 @@ contract FollowTest is BaseTest {
 
         uint256[] memory assignedFollowTokenIds = _follow({
             pk: approvedDelegatedExecutorPk,
-            isFollowerProfileOwner: false,
             followerProfileId: testFollowerProfileId,
             idsOfProfilesToFollow: _toUint256Array(targetProfileId),
             followTokenIds: _toUint256Array(MINT_NEW_TOKEN),
@@ -391,16 +376,11 @@ contract FollowTest is BaseTest {
 
     function _follow(
         uint256 pk,
-        bool isFollowerProfileOwner,
         uint256 followerProfileId,
         uint256[] memory idsOfProfilesToFollow,
         uint256[] memory followTokenIds,
         bytes[] memory datas
     ) internal virtual returns (uint256[] memory) {
-        /* Wen @solc-nowarn unused-param?
-            Silence the compiler warning, but allow calling this with Named Params.
-            This variable isn't used here, but used in withSig case. */
-        isFollowerProfileOwner;
         vm.prank(vm.addr(pk));
         return hub.follow(followerProfileId, idsOfProfilesToFollow, followTokenIds, datas);
     }
@@ -427,7 +407,6 @@ contract FollowMetaTxTest is FollowTest, MetaTxNegatives {
 
     function _follow(
         uint256 pk,
-        bool, // isFollowerProfileOwner,
         uint256 followerProfileId,
         uint256[] memory idsOfProfilesToFollow,
         uint256[] memory followTokenIds,

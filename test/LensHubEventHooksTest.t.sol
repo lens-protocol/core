@@ -71,7 +71,7 @@ contract LensHubEventHooksTest is BaseTest {
     }
 
     function testEmitCollectNFTTransferEvent_ForRealThisTime(uint256 collectNFTId, address from, address to) public {
-        address collectNFT = hub.getPub(defaultAccount.profileId, defaultPubId).__DEPRECATED__collectNFT;
+        address collectNFT = hub.getPublication(defaultAccount.profileId, defaultPubId).__DEPRECATED__collectNFT;
 
         vm.expectEmit(true, true, true, true, address(hub));
         emit Events.CollectNFTTransferred(
@@ -89,7 +89,7 @@ contract LensHubEventHooksTest is BaseTest {
 
     function testCannot_EmitCollectNFTTransferEvent_IfNotCollectNFTOfPublication(address randomAddress) public {
         vm.assume(randomAddress != address(0));
-        address collectNFT = hub.getPub(defaultAccount.profileId, defaultPubId).__DEPRECATED__collectNFT;
+        address collectNFT = hub.getPublication(defaultAccount.profileId, defaultPubId).__DEPRECATED__collectNFT;
         vm.assume(randomAddress != collectNFT);
         address proxyAdmin = address(uint160(uint256(vm.load(address(hub), ADMIN_SLOT))));
         vm.assume(randomAddress != proxyAdmin);

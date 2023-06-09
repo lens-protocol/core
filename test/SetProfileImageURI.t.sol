@@ -46,8 +46,8 @@ contract SetProfileImageURI is BaseTest {
         vm.assume(delegatedExecutor != defaultAccount.owner);
         vm.assume(delegatedExecutor != proxyAdmin);
 
-        console.log(hub.getProfileImageURI(defaultAccount.profileId));
-        assertEq(hub.getProfileImageURI(defaultAccount.profileId), MOCK_URI);
+        console.log(hub.getProfile(defaultAccount.profileId).imageURI);
+        assertEq(hub.getProfile(defaultAccount.profileId).imageURI, MOCK_URI);
 
         vm.prank(defaultAccount.owner);
         hub.changeDelegatedExecutorsConfig({
@@ -58,7 +58,7 @@ contract SetProfileImageURI is BaseTest {
 
         vm.prank(delegatedExecutor);
         hub.setProfileImageURI(defaultAccount.profileId, 'test');
-        assertEq(hub.getProfileImageURI(defaultAccount.profileId), 'test');
+        assertEq(hub.getProfile(defaultAccount.profileId).imageURI, 'test');
     }
 
     // Meta-tx
@@ -119,13 +119,13 @@ contract SetProfileImageURI is BaseTest {
         uint256 deadline = type(uint256).max;
         bytes32 digest = _getSetProfileImageURITypedDataHash(defaultAccount.profileId, 'test', nonce, deadline);
 
-        assertEq(hub.getProfileImageURI(defaultAccount.profileId), MOCK_URI);
+        assertEq(hub.getProfile(defaultAccount.profileId).imageURI, MOCK_URI);
         hub.setProfileImageURIWithSig({
             profileId: defaultAccount.profileId,
             imageURI: 'test',
             signature: _getSigStruct(defaultAccount.ownerPk, digest, deadline)
         });
-        assertEq(hub.getProfileImageURI(defaultAccount.profileId), 'test');
+        assertEq(hub.getProfile(defaultAccount.profileId).imageURI, 'test');
     }
 
     function testDelegatedExecutorSetProfileImageURIWithSig(uint256 delegatedExecutorPk) public {
@@ -144,12 +144,12 @@ contract SetProfileImageURI is BaseTest {
         uint256 deadline = type(uint256).max;
         bytes32 digest = _getSetProfileImageURITypedDataHash(defaultAccount.profileId, 'test', nonce, deadline);
 
-        assertEq(hub.getProfileImageURI(defaultAccount.profileId), MOCK_URI);
+        assertEq(hub.getProfile(defaultAccount.profileId).imageURI, MOCK_URI);
         hub.setProfileImageURIWithSig({
             profileId: defaultAccount.profileId,
             imageURI: 'test',
             signature: _getSigStruct(delegatedExecutorPk, digest, deadline)
         });
-        assertEq(hub.getProfileImageURI(defaultAccount.profileId), 'test');
+        assertEq(hub.getProfile(defaultAccount.profileId).imageURI, 'test');
     }
 }
