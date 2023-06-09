@@ -13,6 +13,9 @@ import {LensBaseERC721} from 'contracts/base/LensBaseERC721.sol';
  * @title CollectNFT
  * @author Lens Protocol
  *
+ * @dev This is the Legacy CollectNFT that is used for Legacy Lens V1 publications. The new CollectNFT was introduced in
+ * Lens V2 with the only difference that it is restricted by the Action Module instead of the LensHub.
+ *
  * @notice This is the NFT contract that is minted upon collecting a given publication. It is cloned upon
  * the first collect for a given publication, and the token URI points to the original publication's contentURI.
  */
