@@ -25,8 +25,7 @@ contract TokenHandleRegistryTest is BaseTest {
     function testCannot_MigrationLink_IfNotHub(address otherAddress) public {
         vm.assume(otherAddress != address(hub));
         vm.assume(otherAddress != address(0));
-        address proxyAdmin = address(uint160(uint256(vm.load(address(tokenHandleRegistry), ADMIN_SLOT))));
-        vm.assume(otherAddress != proxyAdmin);
+        vm.assume(!_isLensHubProxyAdmin(otherAddress));
 
         vm.expectRevert(RegistryErrors.OnlyLensHub.selector);
 
@@ -37,8 +36,7 @@ contract TokenHandleRegistryTest is BaseTest {
     function testCannot_Link_IfNotHoldingProfile(address otherAddress) public {
         vm.assume(otherAddress != hub.ownerOf(profileId));
         vm.assume(otherAddress != address(0));
-        address proxyAdmin = address(uint160(uint256(vm.load(address(tokenHandleRegistry), ADMIN_SLOT))));
-        vm.assume(otherAddress != proxyAdmin);
+        vm.assume(!_isLensHubProxyAdmin(otherAddress));
 
         vm.prank(initialHandleHolder);
         lensHandles.transferFrom(initialHandleHolder, otherAddress, handleId);
@@ -52,8 +50,7 @@ contract TokenHandleRegistryTest is BaseTest {
     function testCannot_Link_IfNotHoldingHandle(address otherAddress) public {
         vm.assume(otherAddress != lensHandles.ownerOf(handleId));
         vm.assume(otherAddress != address(0));
-        address proxyAdmin = address(uint160(uint256(vm.load(address(tokenHandleRegistry), ADMIN_SLOT))));
-        vm.assume(otherAddress != proxyAdmin);
+        vm.assume(!_isLensHubProxyAdmin(otherAddress));
 
         vm.prank(initialProfileHolder);
         hub.transferFrom(initialProfileHolder, otherAddress, profileId);
@@ -86,8 +83,7 @@ contract TokenHandleRegistryTest is BaseTest {
         vm.assume(otherAddress != lensHandles.ownerOf(handleId));
         vm.assume(otherAddress != hub.ownerOf(profileId));
         vm.assume(otherAddress != address(0));
-        address proxyAdmin = address(uint160(uint256(vm.load(address(tokenHandleRegistry), ADMIN_SLOT))));
-        vm.assume(otherAddress != proxyAdmin);
+        vm.assume(!_isLensHubProxyAdmin(otherAddress));
 
         vm.prank(address(hub));
         tokenHandleRegistry.migrationLink(handleId, profileId);
@@ -204,8 +200,7 @@ contract TokenHandleRegistryTest is BaseTest {
 
     function testFreshLink(address holder) public {
         vm.assume(holder != address(0));
-        address proxyAdmin = address(uint160(uint256(vm.load(address(tokenHandleRegistry), ADMIN_SLOT))));
-        vm.assume(holder != proxyAdmin);
+        vm.assume(!_isLensHubProxyAdmin(holder));
 
         vm.prank(initialHandleHolder);
         lensHandles.transferFrom(initialHandleHolder, holder, handleId);
@@ -228,13 +223,12 @@ contract TokenHandleRegistryTest is BaseTest {
 
     function testLink_AfterHandleWasMoved(address firstHolder, address newHolder) public {
         vm.assume(firstHolder != address(0));
-        address proxyAdmin = address(uint160(uint256(vm.load(address(tokenHandleRegistry), ADMIN_SLOT))));
-        vm.assume(firstHolder != proxyAdmin);
+        vm.assume(!_isLensHubProxyAdmin(firstHolder));
         vm.assume(firstHolder != initialProfileHolder);
         vm.assume(firstHolder != initialHandleHolder);
 
         vm.assume(newHolder != address(0));
-        vm.assume(newHolder != proxyAdmin);
+        vm.assume(!_isLensHubProxyAdmin(newHolder));
         vm.assume(newHolder != initialProfileHolder);
         vm.assume(newHolder != initialHandleHolder);
 
@@ -275,13 +269,12 @@ contract TokenHandleRegistryTest is BaseTest {
 
     function testLink_AfterProfileWasMoved(address firstHolder, address newHolder) public {
         vm.assume(firstHolder != address(0));
-        address proxyAdmin = address(uint160(uint256(vm.load(address(tokenHandleRegistry), ADMIN_SLOT))));
-        vm.assume(firstHolder != proxyAdmin);
+        vm.assume(!_isLensHubProxyAdmin(firstHolder));
         vm.assume(firstHolder != initialProfileHolder);
         vm.assume(firstHolder != initialHandleHolder);
 
         vm.assume(newHolder != address(0));
-        vm.assume(newHolder != proxyAdmin);
+        vm.assume(!_isLensHubProxyAdmin(newHolder));
         vm.assume(newHolder != initialProfileHolder);
         vm.assume(newHolder != initialHandleHolder);
 
@@ -327,14 +320,13 @@ contract TokenHandleRegistryTest is BaseTest {
         address thirdHolder = makeAddr('THIRD_HOLDER');
 
         vm.assume(firstHolder != address(0));
-        address proxyAdmin = address(uint160(uint256(vm.load(address(tokenHandleRegistry), ADMIN_SLOT))));
-        vm.assume(firstHolder != proxyAdmin);
+        vm.assume(!_isLensHubProxyAdmin(firstHolder));
         vm.assume(firstHolder != initialProfileHolder);
         vm.assume(firstHolder != initialHandleHolder);
         vm.assume(firstHolder != thirdHolder);
 
         vm.assume(newHolder != address(0));
-        vm.assume(newHolder != proxyAdmin);
+        vm.assume(!_isLensHubProxyAdmin(newHolder));
         vm.assume(newHolder != initialProfileHolder);
         vm.assume(newHolder != initialHandleHolder);
 
@@ -392,8 +384,7 @@ contract TokenHandleRegistryTest is BaseTest {
 
     function testUnlink(address holder) public {
         vm.assume(holder != address(0));
-        address proxyAdmin = address(uint160(uint256(vm.load(address(tokenHandleRegistry), ADMIN_SLOT))));
-        vm.assume(holder != proxyAdmin);
+        vm.assume(!_isLensHubProxyAdmin(holder));
         vm.assume(holder != initialProfileHolder);
         vm.assume(holder != initialHandleHolder);
 
@@ -424,13 +415,12 @@ contract TokenHandleRegistryTest is BaseTest {
 
     function testUnlink_ByProfileOwner_IfHandleWasMoved(address firstHolder, address newHolder) public {
         vm.assume(firstHolder != address(0));
-        address proxyAdmin = address(uint160(uint256(vm.load(address(tokenHandleRegistry), ADMIN_SLOT))));
-        vm.assume(firstHolder != proxyAdmin);
+        vm.assume(!_isLensHubProxyAdmin(firstHolder));
         vm.assume(firstHolder != initialProfileHolder);
         vm.assume(firstHolder != initialHandleHolder);
 
         vm.assume(newHolder != address(0));
-        vm.assume(newHolder != proxyAdmin);
+        vm.assume(!_isLensHubProxyAdmin(newHolder));
         vm.assume(newHolder != initialProfileHolder);
         vm.assume(newHolder != initialHandleHolder);
 
@@ -463,13 +453,12 @@ contract TokenHandleRegistryTest is BaseTest {
 
     function testUnlink_ByNewHandleOwner_IfHandleWasMoved(address firstHolder, address newHolder) public {
         vm.assume(firstHolder != address(0));
-        address proxyAdmin = address(uint160(uint256(vm.load(address(tokenHandleRegistry), ADMIN_SLOT))));
-        vm.assume(firstHolder != proxyAdmin);
+        vm.assume(!_isLensHubProxyAdmin(firstHolder));
         vm.assume(firstHolder != initialProfileHolder);
         vm.assume(firstHolder != initialHandleHolder);
 
         vm.assume(newHolder != address(0));
-        vm.assume(newHolder != proxyAdmin);
+        vm.assume(!_isLensHubProxyAdmin(newHolder));
         vm.assume(newHolder != initialProfileHolder);
         vm.assume(newHolder != initialHandleHolder);
 
@@ -502,13 +491,12 @@ contract TokenHandleRegistryTest is BaseTest {
 
     function testUnlink_ByHandleOwner_IfProfileWasMoved(address firstHolder, address newHolder) public {
         vm.assume(firstHolder != address(0));
-        address proxyAdmin = address(uint160(uint256(vm.load(address(tokenHandleRegistry), ADMIN_SLOT))));
-        vm.assume(firstHolder != proxyAdmin);
+        vm.assume(!_isLensHubProxyAdmin(firstHolder));
         vm.assume(firstHolder != initialProfileHolder);
         vm.assume(firstHolder != initialHandleHolder);
 
         vm.assume(newHolder != address(0));
-        vm.assume(newHolder != proxyAdmin);
+        vm.assume(!_isLensHubProxyAdmin(newHolder));
         vm.assume(newHolder != initialProfileHolder);
         vm.assume(newHolder != initialHandleHolder);
 
@@ -541,13 +529,12 @@ contract TokenHandleRegistryTest is BaseTest {
 
     function testUnlink_ByNewProfileOwner_IfProfileWasMoved(address firstHolder, address newHolder) public {
         vm.assume(firstHolder != address(0));
-        address proxyAdmin = address(uint160(uint256(vm.load(address(tokenHandleRegistry), ADMIN_SLOT))));
-        vm.assume(firstHolder != proxyAdmin);
+        vm.assume(!_isLensHubProxyAdmin(firstHolder));
         vm.assume(firstHolder != initialProfileHolder);
         vm.assume(firstHolder != initialHandleHolder);
 
         vm.assume(newHolder != address(0));
-        vm.assume(newHolder != proxyAdmin);
+        vm.assume(!_isLensHubProxyAdmin(newHolder));
         vm.assume(newHolder != initialProfileHolder);
         vm.assume(newHolder != initialHandleHolder);
 
@@ -580,8 +567,7 @@ contract TokenHandleRegistryTest is BaseTest {
 
     function testUnlink_IfHandleWasBurned(address holder) public {
         vm.assume(holder != address(0));
-        address proxyAdmin = address(uint160(uint256(vm.load(address(tokenHandleRegistry), ADMIN_SLOT))));
-        vm.assume(holder != proxyAdmin);
+        vm.assume(!_isLensHubProxyAdmin(holder));
         vm.assume(holder != initialProfileHolder);
         vm.assume(holder != initialHandleHolder);
 
@@ -617,8 +603,7 @@ contract TokenHandleRegistryTest is BaseTest {
 
     function testUnlink_IfProfileWasBurned(address holder) public {
         vm.assume(holder != address(0));
-        address proxyAdmin = address(uint160(uint256(vm.load(address(tokenHandleRegistry), ADMIN_SLOT))));
-        vm.assume(holder != proxyAdmin);
+        vm.assume(!_isLensHubProxyAdmin(holder));
         vm.assume(holder != initialProfileHolder);
         vm.assume(holder != initialHandleHolder);
 
@@ -654,8 +639,7 @@ contract TokenHandleRegistryTest is BaseTest {
 
     function testUnlink_IfHandleWasBurned_CalledByNotOwner(address holder) public {
         vm.assume(holder != address(0));
-        address proxyAdmin = address(uint160(uint256(vm.load(address(tokenHandleRegistry), ADMIN_SLOT))));
-        vm.assume(holder != proxyAdmin);
+        vm.assume(!_isLensHubProxyAdmin(holder));
         vm.assume(holder != initialProfileHolder);
         vm.assume(holder != initialHandleHolder);
 
@@ -692,8 +676,7 @@ contract TokenHandleRegistryTest is BaseTest {
 
     function testUnlink_IfProfileWasBurned_CalledByNotOwner(address holder) public {
         vm.assume(holder != address(0));
-        address proxyAdmin = address(uint160(uint256(vm.load(address(tokenHandleRegistry), ADMIN_SLOT))));
-        vm.assume(holder != proxyAdmin);
+        vm.assume(!_isLensHubProxyAdmin(holder));
         vm.assume(holder != initialProfileHolder);
         vm.assume(holder != initialHandleHolder);
 

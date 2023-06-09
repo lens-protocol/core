@@ -29,8 +29,7 @@ contract LensHandlesTest is BaseTest {
         vm.assume(owner != otherAddress);
         vm.assume(owner != address(0));
         vm.assume(otherAddress != address(0));
-        address proxyAdmin = address(uint160(uint256(vm.load(address(lensHandles), ADMIN_SLOT))));
-        vm.assume(otherAddress != proxyAdmin);
+        vm.assume(!_isLensHubProxyAdmin(otherAddress));
 
         string memory handle = 'handle';
 
@@ -51,8 +50,7 @@ contract LensHandlesTest is BaseTest {
         vm.assume(otherAddress != address(hub));
         vm.assume(otherAddress != lensHandles.OWNER());
         vm.assume(!hub.isProfileCreatorWhitelisted(otherAddress));
-        address proxyAdmin = address(uint160(uint256(vm.load(address(lensHandles), ADMIN_SLOT))));
-        vm.assume(otherAddress != proxyAdmin);
+        vm.assume(!_isLensHubProxyAdmin(otherAddress));
 
         string memory handle = 'handle';
 
@@ -266,8 +264,7 @@ contract LensHandlesTest is BaseTest {
 
     function testBurn(address owner) public {
         vm.assume(owner != address(0));
-        address proxyAdmin = address(uint160(uint256(vm.load(address(lensHandles), ADMIN_SLOT))));
-        vm.assume(owner != proxyAdmin);
+        vm.assume(!_isLensHubProxyAdmin(owner));
 
         string memory handle = 'handle';
 
@@ -303,8 +300,7 @@ contract LensHandlesTest is BaseTest {
         vm.assume(whitelistedProfileCreator != address(0));
         vm.assume(whitelistedProfileCreator != address(hub));
         vm.assume(whitelistedProfileCreator != lensHandles.OWNER());
-        address proxyAdmin = address(uint160(uint256(vm.load(address(lensHandles), ADMIN_SLOT))));
-        vm.assume(whitelistedProfileCreator != proxyAdmin);
+        vm.assume(!_isLensHubProxyAdmin(whitelistedProfileCreator));
 
         vm.prank(governance);
         hub.whitelistProfileCreator(whitelistedProfileCreator, true);
