@@ -3,10 +3,69 @@ pragma solidity ^0.8.13;
 
 import 'test/base/BaseTest.t.sol';
 import 'test/ERC721Test.t.sol';
+import {Base64} from 'solady/utils/Base64.sol';
+import {LibString} from 'solady/utils/LibString.sol';
 
 contract ProfileNFTTest is BaseTest, ERC721Test {
+    using stdJson for string;
+    using Strings for uint256;
+
     function testProfileNFTTest() public {
         // Prevents being counted in Foundry Coverage
+    }
+
+    function testGetTokenURI_Fuzz() public {
+        for (uint256 profileId = type(uint256).max; profileId > 0; profileId >>= 2) {
+            string memory profileIdAsString = vm.toString(profileId);
+            console.log(profileIdAsString);
+            string memory tokenURI = hub.tokenURI(profileId);
+            string memory base64prefix = 'data:application/json;base64,';
+            string memory decodedTokenURI = string(
+                Base64.decode(LibString.slice(tokenURI, bytes(base64prefix).length))
+            );
+            assertEq(decodedTokenURI.readString('.name'), string.concat('Profile #', profileIdAsString));
+            assertEq(
+                decodedTokenURI.readString('.description'),
+                string.concat('Lens Protocol - Profile #', profileIdAsString)
+            );
+            assertEq(decodedTokenURI.readUint('.attributes[0].value'), profileId);
+            assertEq(decodedTokenURI.readString('.attributes[1].value'), profileId.toHexString());
+            assertEq(decodedTokenURI.readUint('.attributes[2].value'), bytes(profileIdAsString).length);
+        }
+    }
+
+    function testGetTokenURI() public {
+        uint256 profileId = hub.createProfile(_getDefaultCreateProfileParams());
+
+        string memory profileIdAsString = vm.toString(profileId);
+
+        string memory tokenURI = hub.tokenURI(profileId);
+
+        string memory base64prefix = 'data:application/json;base64,';
+
+        string memory decodedTokenURI = string(Base64.decode(LibString.slice(tokenURI, bytes(base64prefix).length)));
+
+        assertEq(decodedTokenURI.readString('.name'), string.concat('Profile #', profileIdAsString));
+        assertEq(
+            decodedTokenURI.readString('.description'),
+            string.concat('Lens Protocol - Profile #', profileIdAsString)
+        );
+        assertEq(decodedTokenURI.readUint('.attributes[0].value'), profileId, "Profile ID doesn't match");
+        assertEq(
+            decodedTokenURI.readString('.attributes[1].value'),
+            profileId.toHexString(),
+            "Profile HEX ID doesn't match"
+        );
+        assertEq(
+            decodedTokenURI.readUint('.attributes[2].value'),
+            bytes(profileIdAsString).length,
+            "Profile Digits doesn't match"
+        );
+        assertEq(
+            decodedTokenURI.readUint('.attributes[3].value'),
+            hub.tokenDataOf(profileId).mintTimestamp,
+            "Profile Minted At doesn't match"
+        );
     }
 
     function _mintERC721(address to) internal virtual override returns (uint256) {
