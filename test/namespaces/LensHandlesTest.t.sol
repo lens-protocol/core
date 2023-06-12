@@ -244,22 +244,29 @@ contract LensHandlesTest is BaseTest {
     }
 
     function testTokenURI() public {
-        string memory handle = 'handle';
+        string memory handleTemplate = 'abcdefghijklmnopqrstuvwx-_';
 
-        vm.prank(address(hub));
-        uint256 handleId = lensHandles.mintHandle(address(this), handle);
+        for (uint length = 1; length <= bytes(handleTemplate).length; length++) {
+            string memory handle = LibString.slice(handleTemplate, 0, length);
+            console.log(handle);
 
-        string memory tokenURI = lensHandles.tokenURI(handleId);
+            vm.prank(address(hub));
+            uint256 handleId = lensHandles.mintHandle(address(this), handle);
 
-        string memory base64prefix = 'data:application/json;base64,';
+            string memory tokenURI = lensHandles.tokenURI(handleId);
 
-        string memory decodedTokenURI = string(Base64.decode(LibString.slice(tokenURI, bytes(base64prefix).length)));
+            string memory base64prefix = 'data:application/json;base64,';
 
-        assertEq(decodedTokenURI.readString('.name'), string.concat('@', handle));
-        assertEq(decodedTokenURI.readString('.description'), string.concat('Lens Protocol - @', handle));
-        assertEq(decodedTokenURI.readUint('.attributes[0].value'), handleId);
-        assertEq(decodedTokenURI.readString('.attributes[1].value'), lensHandles.symbol());
-        assertEq(decodedTokenURI.readUint('.attributes[2].value'), bytes(handle).length);
+            string memory decodedTokenURI = string(
+                Base64.decode(LibString.slice(tokenURI, bytes(base64prefix).length))
+            );
+
+            assertEq(decodedTokenURI.readString('.name'), string.concat('@', handle));
+            assertEq(decodedTokenURI.readString('.description'), string.concat('Lens Protocol - @', handle));
+            assertEq(decodedTokenURI.readUint('.attributes[0].value'), handleId);
+            assertEq(decodedTokenURI.readString('.attributes[1].value'), lensHandles.symbol());
+            assertEq(decodedTokenURI.readUint('.attributes[2].value'), bytes(handle).length);
+        }
     }
 
     function testBurn(address owner) public {
