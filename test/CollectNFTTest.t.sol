@@ -151,7 +151,7 @@ contract CollectNFTTest is BaseTest, ERC721Test {
         unchecked {
             salePriceTimesRoyalties = salePrice * royaltiesInBasisPoints;
             // Fuzz prices that does not generate overflow, otherwise royaltyInfo will revert
-            vm.assume(salePrice == 0 || salePriceTimesRoyalties / salePrice == basisPoints);
+            vm.assume(salePrice == 0 || salePriceTimesRoyalties / salePrice == royaltiesInBasisPoints);
         }
 
         vm.prank(defaultAccount.owner);
