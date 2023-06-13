@@ -2,13 +2,13 @@
 pragma solidity ^0.8.13;
 
 import 'test/base/BaseTest.t.sol';
-import 'test/ERC721Test.t.sol';
+import 'test/LensBaseERC721Test.t.sol';
 import {IERC721} from '@openzeppelin/contracts/token/ERC721/IERC721.sol';
 import {IFollowNFT} from 'contracts/interfaces/IFollowNFT.sol';
 import {FollowNFT} from 'contracts/FollowNFT.sol';
 import {Types} from 'contracts/libraries/constants/Types.sol';
 
-contract FollowNFTTest is BaseTest, ERC721Test {
+contract FollowNFTTest is BaseTest, LensBaseERC721Test {
     uint256 constant MINT_NEW_TOKEN = 0;
     address targetProfileOwner;
     uint256 targetProfileId;
@@ -45,6 +45,7 @@ contract FollowNFTTest is BaseTest, ERC721Test {
     }
 
     function _mintERC721(address to) internal virtual override returns (uint256) {
+        vm.assume(!_isLensHubProxyAdmin(to));
         followerProfileId = _createProfile(to);
         vm.prank(to);
         uint256 tokenId = hub.follow(
@@ -65,6 +66,11 @@ contract FollowNFTTest is BaseTest, ERC721Test {
 
     function _getERC721TokenAddress() internal view virtual override returns (address) {
         return targetFollowNFT;
+    }
+
+    function testDoesNotSupportOtherThanTheExpectedInterfaces(uint32 interfaceId) public override {
+        vm.assume(bytes4(interfaceId) != bytes4(keccak256('royaltyInfo(uint256,uint256)')));
+        super.testDoesNotSupportOtherThanTheExpectedInterfaces(interfaceId);
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////

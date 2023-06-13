@@ -2,14 +2,14 @@
 pragma solidity ^0.8.13;
 
 import 'test/base/BaseTest.t.sol';
-import 'test/ERC721Test.t.sol';
+import 'test/LensBaseERC721Test.t.sol';
 import {CollectPublicationAction} from 'contracts/modules/act/collect/CollectPublicationAction.sol';
 import {CollectNFT} from 'contracts/CollectNFT.sol';
 import {MockCollectModule} from 'test/mocks/MockCollectModule.sol';
 import {Clones} from '@openzeppelin/contracts/proxy/Clones.sol';
 import {Errors as ModulesErrors} from 'contracts/modules/constants/Errors.sol';
 
-contract CollectNFTTest is BaseTest, ERC721Test {
+contract CollectNFTTest is BaseTest, LensBaseERC721Test {
     using stdJson for string;
 
     function testCollectNFTTest() public {
@@ -111,6 +111,7 @@ contract CollectNFTTest is BaseTest, ERC721Test {
     }
 
     function _mintERC721(address to) internal virtual override returns (uint256) {
+        vm.assume(!_isLensHubProxyAdmin(to));
         collectActionParams.actorProfileId = _createProfile(to);
         vm.prank(to);
         bytes memory actResult = hub.act(collectActionParams);
@@ -124,6 +125,11 @@ contract CollectNFTTest is BaseTest, ERC721Test {
 
     function _getERC721TokenAddress() internal view virtual override returns (address) {
         return address(collectNFT);
+    }
+
+    function testDoesNotSupportOtherThanTheExpectedInterfaces(uint32 interfaceId) public override {
+        vm.assume(bytes4(interfaceId) != bytes4(keccak256('royaltyInfo(uint256,uint256)')));
+        super.testDoesNotSupportOtherThanTheExpectedInterfaces(interfaceId);
     }
 
     //////////////////////////////////////////////////////////

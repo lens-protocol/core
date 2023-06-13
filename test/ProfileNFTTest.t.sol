@@ -2,11 +2,11 @@
 pragma solidity ^0.8.13;
 
 import 'test/base/BaseTest.t.sol';
-import 'test/ERC721Test.t.sol';
+import 'test/LensBaseERC721Test.t.sol';
 import {Base64} from 'solady/utils/Base64.sol';
 import {LibString} from 'solady/utils/LibString.sol';
 
-contract ProfileNFTTest is BaseTest, ERC721Test {
+contract ProfileNFTTest is BaseTest, LensBaseERC721Test {
     using stdJson for string;
     using Strings for uint256;
 
@@ -69,6 +69,7 @@ contract ProfileNFTTest is BaseTest, ERC721Test {
     }
 
     function _mintERC721(address to) internal virtual override returns (uint256) {
+        vm.assume(!_isLensHubProxyAdmin(to));
         return _createProfile(to);
     }
 
@@ -78,6 +79,19 @@ contract ProfileNFTTest is BaseTest, ERC721Test {
 
     function _getERC721TokenAddress() internal view virtual override returns (address) {
         return address(hub);
+    }
+
+    function _getNotOwnerError() internal virtual override returns (bytes4) {
+        return Errors.NotProfileOwner.selector;
+    }
+
+    function _assumeNotProxyAdmin(address account) internal view virtual override {
+        vm.assume(!_isLensHubProxyAdmin(account));
+    }
+
+    function testDoesNotSupportOtherThanTheExpectedInterfaces(uint32 interfaceId) public override {
+        vm.assume(bytes4(interfaceId) != bytes4(keccak256('royaltyInfo(uint256,uint256)')));
+        super.testDoesNotSupportOtherThanTheExpectedInterfaces(interfaceId);
     }
 
     //////////////////////////////////////////////////////////
