@@ -6,6 +6,8 @@ import 'forge-std/Test.sol';
 import {ILensERC721} from 'contracts/interfaces/ILensERC721.sol';
 import {IERC721Receiver} from '@openzeppelin/contracts/token/ERC721/IERC721Receiver.sol';
 import {Errors} from 'contracts/libraries/constants/Errors.sol';
+import {Typehash} from 'contracts/libraries/constants/Typehash.sol';
+import {MetaTxLib} from 'contracts/libraries/MetaTxLib.sol';
 
 import {IERC165} from '@openzeppelin/contracts/utils/introspection/IERC165.sol';
 import {IERC721} from '@openzeppelin/contracts/token/ERC721/IERC721.sol';
@@ -292,12 +294,11 @@ abstract contract LensBaseERC721Test is Test {
         vm.assume(to != address(0));
         vm.assume(owner != address(0));
         vm.assume(otherAddress != address(0));
+        _assumeNotProxyAdmin(otherAddress);
 
         uint256 tokenId = _mintERC721(owner);
 
         vm.expectRevert(Errors.NotOwnerOrApproved.selector);
-
-        _assumeNotProxyAdmin(otherAddress);
         vm.prank(otherAddress);
         _LensERC721().safeTransferFrom(owner, to, tokenId);
     }
@@ -409,9 +410,9 @@ abstract contract LensBaseERC721Test is Test {
 
         uint256 tokenId = _mintERC721(owner);
 
-        vm.expectRevert(Errors.NotOwnerOrApproved.selector);
-
         _assumeNotProxyAdmin(otherAddress);
+
+        vm.expectRevert(Errors.NotOwnerOrApproved.selector);
         vm.prank(otherAddress);
         _LensERC721().transferFrom(owner, to, tokenId);
     }
@@ -572,15 +573,24 @@ abstract contract LensBaseERC721Test is Test {
         assertFalse(_LensERC721().supportsInterface(bytes4(interfaceId)));
     }
 
-    // getDomainSeparator
-    // which is different if the address calling is lensHub or not
+    function testGetDomainSeparator() public {
+        bytes32 expectedDomainSeparator = keccak256(
+            abi.encode(
+                Typehash.EIP712_DOMAIN,
+                keccak256(bytes(_LensERC721().name())),
+                MetaTxLib.EIP712_DOMAIN_VERSION_HASH,
+                block.chainid,
+                _getERC721TokenAddress()
+            )
+        );
+        assertEq(_LensERC721().getDomainSeparator(), expectedDomainSeparator);
+    }
 
     function testCannot_getBalanceOfAddressZero() public {
         vm.expectRevert(Errors.InvalidParameter.selector);
         _LensERC721().balanceOf(address(0));
     }
 
-    // mintTimestampOf(uint256 tokenId)
     function testMintTimestampIsTheExpectedOne(uint32 blockTimestamp, address nftRecipient) public {
         vm.assume(nftRecipient != address(0));
         vm.assume(blockTimestamp > 0);

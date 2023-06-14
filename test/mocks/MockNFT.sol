@@ -17,7 +17,7 @@ contract MockNFT is LensBaseERC721 {
         return 'NFT';
     }
 
-    function tokenURI(uint256 tokenId) external view override returns (string memory) {
+    function tokenURI(uint256 /* tokenId */) external pure override returns (string memory) {
         return 'https://ipfs.io/ipfs/QmNZiPk974vDsPmQii3YbrMKfi12KTSNM7XMiYyiea4VYZ';
     }
 
