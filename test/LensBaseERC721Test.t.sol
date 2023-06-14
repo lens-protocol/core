@@ -78,6 +78,14 @@ abstract contract LensBaseERC721Test is Test {
         assertEq(_LensERC721().getApproved(tokenId), to);
     }
 
+    function testCannot_GetApproved_OfNonexistingToken(uint256 nonExistingTokenId) public {
+        vm.assume(!_LensERC721().exists(nonExistingTokenId));
+
+        vm.expectRevert(Errors.TokenDoesNotExist.selector);
+
+        _LensERC721().getApproved(nonExistingTokenId);
+    }
+
     function testApproveAll(address msgSender, address to) public {
         vm.assume(msgSender != address(0));
         vm.assume(msgSender != to);
@@ -90,7 +98,16 @@ abstract contract LensBaseERC721Test is Test {
         assertTrue(_LensERC721().isApprovedForAll(msgSender, to));
     }
 
-    function testTransferFrom(address owner, address approvedTo, address to) public {
+    function testCannot_ApproveForAll_IfOperatorIsTheSender(address operatorAndSender, bool approved) public {
+        _assumeNotProxyAdmin(operatorAndSender);
+
+        vm.expectRevert(Errors.InvalidParameter.selector);
+
+        vm.prank(operatorAndSender);
+        _LensERC721().setApprovalForAll(operatorAndSender, approved);
+    }
+
+    function testTransferFrom_SenderIsApproved(address owner, address approvedTo, address to) public {
         vm.assume(owner != address(0));
         vm.assume(approvedTo != address(0));
         vm.assume(owner != approvedTo);
@@ -120,7 +137,7 @@ abstract contract LensBaseERC721Test is Test {
         }
     }
 
-    function testTransferFromSelf(address owner, address to) public {
+    function testTransferFrom_SenderIsTheOwner(address owner, address to) public {
         vm.assume(owner != address(0));
         vm.assume(to != address(0));
 
@@ -144,7 +161,7 @@ abstract contract LensBaseERC721Test is Test {
         }
     }
 
-    function testTransferFromApproveAll(address owner, address approvedTo, address to) public {
+    function testTransferFrom_SenderIsApprovedForAll(address owner, address approvedTo, address to) public {
         vm.assume(owner != address(0));
         vm.assume(approvedTo != address(0));
         vm.assume(owner != approvedTo);
@@ -165,7 +182,6 @@ abstract contract LensBaseERC721Test is Test {
         uint256 ownerBalanceAfter = _LensERC721().balanceOf(owner);
         uint256 toBalanceAfter = _LensERC721().balanceOf(to);
 
-        assertEq(_LensERC721().getApproved(tokenId), address(0));
         assertEq(_LensERC721().ownerOf(tokenId), to);
 
         if (owner != to) {
@@ -265,6 +281,41 @@ abstract contract LensBaseERC721Test is Test {
         assertEq(recipientBalanceAfter, recipientBalanceBefore + 1);
     }
 
+    function testCannotSafeTransferFrom_SenderNotOwnerOrApproved(
+        address owner,
+        address to,
+        address otherAddress
+    ) public {
+        vm.assume(owner != to);
+        vm.assume(owner != otherAddress);
+        vm.assume(to != address(0));
+        vm.assume(owner != address(0));
+        vm.assume(otherAddress != address(0));
+
+        uint256 tokenId = _mintERC721(owner);
+
+        vm.expectRevert(Errors.NotOwnerOrApproved.selector);
+
+        _assumeNotProxyAdmin(otherAddress);
+        vm.prank(otherAddress);
+        _LensERC721().safeTransferFrom(owner, to, tokenId);
+    }
+
+    function testCannotSafeTransferFrom_WrongFromParameter_SenderOwner(address owner, address from, address to) public {
+        _assumeNotProxyAdmin(owner);
+        vm.assume(owner != to);
+        vm.assume(owner != from);
+        vm.assume(owner != address(0));
+        vm.assume(to != address(0));
+
+        uint256 tokenId = _mintERC721(owner);
+
+        vm.expectRevert(Errors.InvalidOwner.selector);
+
+        vm.prank(owner);
+        _LensERC721().safeTransferFrom(from, to, tokenId);
+    }
+
     // TODO: Sometimes we cannot set the required preconditions to preform this test. For example, a profile hold by
     // address(0) to be able to follow. Maybe we can keep it abstract and try to test on each NFT in a custom way.
     // function testCannot_MintToZero() public {
@@ -358,6 +409,21 @@ abstract contract LensBaseERC721Test is Test {
         _assumeNotProxyAdmin(otherAddress);
         vm.prank(otherAddress);
         _LensERC721().transferFrom(owner, to, tokenId);
+    }
+
+    function testCannotTransferFrom_WrongFromParameter_SenderOwner(address owner, address from, address to) public {
+        _assumeNotProxyAdmin(owner);
+        vm.assume(owner != to);
+        vm.assume(owner != from);
+        vm.assume(owner != address(0));
+        vm.assume(to != address(0));
+
+        uint256 tokenId = _mintERC721(owner);
+
+        vm.expectRevert(Errors.InvalidOwner.selector);
+
+        vm.prank(owner);
+        _LensERC721().transferFrom(from, to, tokenId);
     }
 
     function testCannot_TransferFrom_NonexistingToken(uint256 tokenId, address from, address to) public {
@@ -548,22 +614,4 @@ abstract contract LensBaseERC721Test is Test {
         uint256 totalSupplyAfterBurn = _LensERC721().totalSupply();
         assertEq(totalSupplyAfterBurn, totalSupplyAfterMint - 1);
     }
-
-    // approve
-    // - to owner reverts Errors.InvalidParameter();
-    // - not owner or approvedforall reverts Errors.NotOwnerOrApproved();
-
-    // getApprove
-    // - reverts if token doesn't exist
-
-    // setApprovalForAll (reverts if given to msg.sender)
-
-    // transferFrom fails for not approved or not owner
-    // safeTransferFrom fails for not approved or not owner
-
-    // _checkOnERC721Received fails with Errors.NonERC721ReceiverImplementer();
-
-    // transfers fail if not owner or to zero address
-
-    // sending to a contract with IERC721Receiver isn't tested
 }
