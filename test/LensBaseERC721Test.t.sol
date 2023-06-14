@@ -265,10 +265,12 @@ abstract contract LensBaseERC721Test is Test {
         assertEq(recipientBalanceAfter, recipientBalanceBefore + 1);
     }
 
-    function testCannot_MintToZero() public {
-        vm.expectRevert(Errors.InvalidParameter.selector);
-        _mintERC721(address(0));
-    }
+    // TODO: Sometimes we cannot set the required preconditions to preform this test. For example, a profile hold by
+    // address(0) to be able to follow. Maybe we can keep it abstract and try to test on each NFT in a custom way.
+    // function testCannot_MintToZero() public {
+    //     vm.expectRevert(Errors.InvalidParameter.selector);
+    //     _mintERC721(address(0));
+    // }
 
     function testCannot_Burn_NonOwner_NorApproved_NorApprovedForAll(address owner, address otherAddress) public {
         vm.assume(owner != address(0));
@@ -315,18 +317,19 @@ abstract contract LensBaseERC721Test is Test {
         _LensERC721().approve(to, tokenId);
     }
 
-    function testCannot_Approve_Unauthorized(address to, address otherAddress, address approveTo) public {
-        vm.assume(to != otherAddress);
+    function testCannot_Approve_Unauthorized(address to, address unauthorizedCaller, address approveTo) public {
+        vm.assume(to != unauthorizedCaller);
+        vm.assume(to != approveTo);
         vm.assume(to != address(0));
-        vm.assume(otherAddress != address(0));
-        vm.assume(approveTo != otherAddress);
+        vm.assume(unauthorizedCaller != address(0));
+        vm.assume(approveTo != unauthorizedCaller);
         vm.assume(approveTo != address(0));
         uint256 tokenId = _mintERC721(to);
 
-        _assumeNotProxyAdmin(otherAddress);
+        _assumeNotProxyAdmin(unauthorizedCaller);
 
         vm.expectRevert(Errors.NotOwnerOrApproved.selector);
-        vm.prank(otherAddress);
+        vm.prank(unauthorizedCaller);
         _LensERC721().approve(approveTo, tokenId);
     }
 
