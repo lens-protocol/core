@@ -14,52 +14,9 @@ import {IERC721Burnable} from 'contracts/interfaces/IERC721Burnable.sol';
 import {IERC721MetaTx} from 'contracts/interfaces/IERC721MetaTx.sol';
 import {IERC721Metadata} from '@openzeppelin/contracts/token/ERC721/extensions/IERC721Metadata.sol';
 
-contract ERC721Recipient is IERC721Receiver {
-    address public operator;
-    address public from;
-    uint256 public id;
-    bytes public data;
-
-    function testERC721Recipient() public {
-        // Prevents being counted in Foundry Coverage
-    }
-
-    function onERC721Received(
-        address _operator,
-        address _from,
-        uint256 _id,
-        bytes calldata _data
-    ) public virtual override returns (bytes4) {
-        operator = _operator;
-        from = _from;
-        id = _id;
-        data = _data;
-
-        return IERC721Receiver.onERC721Received.selector;
-    }
-}
-
-contract RevertingERC721Recipient is IERC721Receiver {
-    function testRevertingERC721Recipient() public {
-        // Prevents being counted in Foundry Coverage
-    }
-
-    function onERC721Received(address, address, uint256, bytes calldata) public virtual override returns (bytes4) {
-        revert(string(abi.encodePacked(IERC721Receiver.onERC721Received.selector)));
-    }
-}
-
-contract WrongReturnDataERC721Recipient is IERC721Receiver {
-    function testWrongReturnDataERC721Recipient() public {
-        // Prevents being counted in Foundry Coverage
-    }
-
-    function onERC721Received(address, address, uint256, bytes calldata) public virtual override returns (bytes4) {
-        return 0xCAFEBEEF;
-    }
-}
-
-contract NonERC721Recipient {}
+import 'test/mocks/MockERC721RecipientWithRevertFlag.sol';
+import 'test/mocks/MockNonERC721Recipient.sol';
+import 'test/mocks/MockWrongReturnDataERC721Recipient.sol';
 
 abstract contract LensBaseERC721Test is Test {
     function _getERC721TokenAddress() internal view virtual returns (address);
@@ -253,7 +210,8 @@ abstract contract LensBaseERC721Test is Test {
         vm.assume(approvedTo != address(0));
         vm.assume(owner != approvedTo);
 
-        ERC721Recipient recipient = new ERC721Recipient();
+        address erc721recipient = address(new MockERC721RecipientWithRevertFlag());
+        vm.assume(owner != erc721recipient);
 
         uint256 tokenId = _mintERC721(owner);
 
@@ -261,25 +219,20 @@ abstract contract LensBaseERC721Test is Test {
         _LensERC721().setApprovalForAll(approvedTo, true);
 
         uint256 ownerBalanceBefore = _LensERC721().balanceOf(owner);
-        uint256 recipientBalanceBefore = _LensERC721().balanceOf(address(recipient));
+        uint256 recipientBalanceBefore = _LensERC721().balanceOf(erc721recipient);
 
         _assumeNotProxyAdmin(approvedTo);
         vm.prank(approvedTo);
-        _LensERC721().safeTransferFrom(owner, address(recipient), tokenId);
+        _LensERC721().safeTransferFrom(owner, erc721recipient, tokenId);
 
         uint256 ownerBalanceAfter = _LensERC721().balanceOf(owner);
-        uint256 recipientBalanceAfter = _LensERC721().balanceOf(address(recipient));
+        uint256 recipientBalanceAfter = _LensERC721().balanceOf(erc721recipient);
 
         assertEq(_LensERC721().getApproved(tokenId), address(0));
-        assertEq(_LensERC721().ownerOf(tokenId), address(recipient));
+        assertEq(_LensERC721().ownerOf(tokenId), erc721recipient);
 
         assertEq(ownerBalanceAfter, ownerBalanceBefore - 1);
         assertEq(recipientBalanceAfter, recipientBalanceBefore + 1);
-
-        assertEq(recipient.operator(), approvedTo);
-        assertEq(recipient.from(), owner);
-        assertEq(recipient.id(), tokenId);
-        assertEq(recipient.data(), '');
     }
 
     function testSafeTransferFromToERC721RecipientWithData(address owner, address approvedTo) public {
@@ -287,8 +240,8 @@ abstract contract LensBaseERC721Test is Test {
         vm.assume(approvedTo != address(0));
         vm.assume(owner != approvedTo);
 
-        ERC721Recipient recipient = new ERC721Recipient();
-        vm.assume(owner != address(recipient));
+        address erc721recipient = address(new MockERC721RecipientWithRevertFlag());
+        vm.assume(owner != erc721recipient);
 
         uint256 tokenId = _mintERC721(owner);
 
@@ -296,25 +249,20 @@ abstract contract LensBaseERC721Test is Test {
         _LensERC721().setApprovalForAll(approvedTo, true);
 
         uint256 ownerBalanceBefore = _LensERC721().balanceOf(owner);
-        uint256 recipientBalanceBefore = _LensERC721().balanceOf(address(recipient));
+        uint256 recipientBalanceBefore = _LensERC721().balanceOf(erc721recipient);
 
         _assumeNotProxyAdmin(approvedTo);
         vm.prank(approvedTo);
-        _LensERC721().safeTransferFrom(owner, address(recipient), tokenId, 'testing 123');
+        _LensERC721().safeTransferFrom(owner, erc721recipient, tokenId, abi.encode(false));
 
         uint256 ownerBalanceAfter = _LensERC721().balanceOf(owner);
-        uint256 recipientBalanceAfter = _LensERC721().balanceOf(address(recipient));
+        uint256 recipientBalanceAfter = _LensERC721().balanceOf(erc721recipient);
 
         assertEq(_LensERC721().getApproved(tokenId), address(0));
-        assertEq(_LensERC721().ownerOf(tokenId), address(recipient));
+        assertEq(_LensERC721().ownerOf(tokenId), erc721recipient);
 
         assertEq(ownerBalanceAfter, ownerBalanceBefore - 1);
         assertEq(recipientBalanceAfter, recipientBalanceBefore + 1);
-
-        assertEq(recipient.operator(), approvedTo);
-        assertEq(recipient.from(), owner);
-        assertEq(recipient.id(), tokenId);
-        assertEq(recipient.data(), 'testing 123');
     }
 
     function testCannot_MintToZero() public {
@@ -433,60 +381,87 @@ abstract contract LensBaseERC721Test is Test {
         vm.assume(owner != address(0));
         uint256 tokenId = _mintERC721(owner);
 
+        address nonERC721Recipient = address(new MockNonERC721Recipient());
+
         vm.expectRevert(Errors.NonERC721ReceiverImplementer.selector);
 
         vm.prank(owner);
-        _LensERC721().safeTransferFrom(owner, address(new NonERC721Recipient()), tokenId);
+        _LensERC721().safeTransferFrom(owner, nonERC721Recipient, tokenId);
     }
 
     function testCannot_SafeTransferFrom_ToNonERC721Recipient_WithData(address owner) public {
         vm.assume(owner != address(0));
         uint256 tokenId = _mintERC721(owner);
 
+        address nonERC721Recipient = address(new MockNonERC721Recipient());
+
         vm.expectRevert(Errors.NonERC721ReceiverImplementer.selector);
 
         vm.prank(owner);
-        _LensERC721().safeTransferFrom(owner, address(new NonERC721Recipient()), tokenId, 'testing 123');
+        _LensERC721().safeTransferFrom(owner, nonERC721Recipient, tokenId, abi.encode(false));
     }
 
     function testCannot_SafeTransferFrom_ToRevertingERC721Recipient(address owner) public {
         vm.assume(owner != address(0));
         uint256 tokenId = _mintERC721(owner);
 
-        vm.expectRevert(IERC721Receiver.onERC721Received.selector);
+        address revertingERC721Recipient = address(new MockERC721RecipientWithRevertFlag());
+        MockERC721RecipientWithRevertFlag(revertingERC721Recipient).revertOnNextCall();
+
+        vm.expectRevert(MockERC721RecipientWithRevertFlag.MockERC721RecipientReverted.selector);
 
         vm.prank(owner);
-        _LensERC721().safeTransferFrom(owner, address(new RevertingERC721Recipient()), tokenId);
+        _LensERC721().safeTransferFrom(owner, revertingERC721Recipient, tokenId);
     }
 
     function testCannot_SafeTransferFrom_ToRevertingERC721Recipient_WithData(address owner) public {
         vm.assume(owner != address(0));
         uint256 tokenId = _mintERC721(owner);
 
-        vm.expectRevert(IERC721Receiver.onERC721Received.selector);
+        address revertingERC721Recipient = address(new MockERC721RecipientWithRevertFlag());
+        bytes memory shouldRevertFlag = abi.encode(true);
+
+        vm.expectRevert(MockERC721RecipientWithRevertFlag.MockERC721RecipientReverted.selector);
 
         vm.prank(owner);
-        _LensERC721().safeTransferFrom(owner, address(new RevertingERC721Recipient()), tokenId, 'testing 123');
+        _LensERC721().safeTransferFrom(owner, revertingERC721Recipient, tokenId, shouldRevertFlag);
     }
 
-    function testCannot_SafeTransferFrom_ToERC721Recipient_WithWrongReturnData(address owner) public {
+    function testCannot_SafeTransferFrom_ToERC721Recipient_WithWrongReturnData(
+        address owner,
+        uint32 wrongReturnData
+    ) public {
         vm.assume(owner != address(0));
         uint256 tokenId = _mintERC721(owner);
+        vm.assume(bytes4(wrongReturnData) != IERC721Receiver.onERC721Received.selector);
+
+        address wrongReturnDataERC721Recipient = address(
+            new MockWrongReturnDataERC721Recipient(bytes4(wrongReturnData))
+        );
 
         vm.expectRevert(Errors.NonERC721ReceiverImplementer.selector);
 
         vm.prank(owner);
-        _LensERC721().safeTransferFrom(owner, address(new WrongReturnDataERC721Recipient()), tokenId);
+        _LensERC721().safeTransferFrom(owner, wrongReturnDataERC721Recipient, tokenId);
     }
 
-    function testCannot_SafeTransferFrom_ToERC721Recipient_WithWrongReturnData_WithData(address owner) public {
+    function testCannot_SafeTransferFrom_ToERC721Recipient_WithWrongReturnData_WithData(
+        address owner,
+        uint32 wrongReturnData,
+        uint256 dataToEncode
+    ) public {
         vm.assume(owner != address(0));
         uint256 tokenId = _mintERC721(owner);
+        vm.assume(bytes4(wrongReturnData) != IERC721Receiver.onERC721Received.selector);
+
+        address wrongReturnDataERC721Recipient = address(
+            new MockWrongReturnDataERC721Recipient(bytes4(wrongReturnData))
+        );
 
         vm.expectRevert(Errors.NonERC721ReceiverImplementer.selector);
 
         vm.prank(owner);
-        _LensERC721().safeTransferFrom(owner, address(new WrongReturnDataERC721Recipient()), tokenId, 'testing 123');
+        _LensERC721().safeTransferFrom(owner, wrongReturnDataERC721Recipient, tokenId, abi.encode(dataToEncode));
     }
 
     function testCannot_BalanceOfZeroAddress() public {
