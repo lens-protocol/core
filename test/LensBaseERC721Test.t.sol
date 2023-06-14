@@ -14,6 +14,7 @@ import {IERC721Burnable} from 'contracts/interfaces/IERC721Burnable.sol';
 import {IERC721MetaTx} from 'contracts/interfaces/IERC721MetaTx.sol';
 import {IERC721Metadata} from '@openzeppelin/contracts/token/ERC721/extensions/IERC721Metadata.sol';
 
+import {MockNFT} from 'test/mocks/MockNFT.sol';
 import 'test/mocks/MockERC721RecipientWithRevertFlag.sol';
 import 'test/mocks/MockNonERC721Recipient.sol';
 import 'test/mocks/MockWrongReturnDataERC721Recipient.sol';
@@ -316,12 +317,16 @@ abstract contract LensBaseERC721Test is Test {
         _LensERC721().safeTransferFrom(from, to, tokenId);
     }
 
-    // TODO: Sometimes we cannot set the required preconditions to preform this test. For example, a profile hold by
-    // address(0) to be able to follow. Maybe we can keep it abstract and try to test on each NFT in a custom way.
-    // function testCannot_MintToZero() public {
-    //     vm.expectRevert(Errors.InvalidParameter.selector);
-    //     _mintERC721(address(0));
-    // }
+    // Minting to address(0) is tested through the MockNFT instead of using `_LensERC721()._mintERC721(address(0))`
+    // because on inherited test contracts like FollowNFTTest, ProfileNFTTest, etc, we cannot reach the required
+    // preconditions to test it (e.g. a profile being owned by address(0), to then perform a follow or collect).
+    // This test can be overriden by any future contract that can meet the needed preconditions.
+    function testCannot_MintToZero(uint256 tokenId) public virtual {
+        MockNFT nft = new MockNFT();
+
+        vm.expectRevert(Errors.InvalidParameter.selector);
+        nft.mint(address(0), tokenId);
+    }
 
     function testCannot_Burn_NonOwner_NorApproved_NorApprovedForAll(address owner, address otherAddress) public {
         vm.assume(owner != address(0));

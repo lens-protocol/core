@@ -75,6 +75,11 @@ abstract contract LensBaseERC721 is ERC165, ILensERC721 {
     }
 
     /**
+     * @dev Returns the Uniform Resource Identifier (URI) for `tokenId` token.
+     */
+    function tokenURI(uint256 tokenId) external view virtual returns (string memory);
+
+    /**
      * @dev See {IERC165-supportsInterface}.
      */
     function supportsInterface(bytes4 interfaceId) public view virtual override(ERC165, IERC165) returns (bool) {
