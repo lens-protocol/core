@@ -7,8 +7,28 @@ import {IERC721} from '@openzeppelin/contracts/token/ERC721/IERC721.sol';
 import {IFollowNFT} from 'contracts/interfaces/IFollowNFT.sol';
 import {FollowNFT} from 'contracts/FollowNFT.sol';
 import {Types} from 'contracts/libraries/constants/Types.sol';
+import {Base64} from 'solady/utils/Base64.sol';
+import {LibString} from 'solady/utils/LibString.sol';
+import {FollowTokenURILib} from 'contracts/libraries/token-uris/FollowTokenURILib.sol';
+
+contract FollowTokenURILibMock {
+    function testFollowTokenURILibMock() public {
+        // Prevents being counted in Foundry Coverage
+    }
+
+    function getTokenURI(
+        uint256 followTokenId,
+        uint256 followedProfileId,
+        uint256 originalFollowTimestamp
+    ) external pure returns (string memory) {
+        return FollowTokenURILib.getTokenURI(followTokenId, followedProfileId, originalFollowTimestamp);
+    }
+}
 
 contract FollowNFTTest is BaseTest, LensBaseERC721Test {
+    using stdJson for string;
+    using Strings for uint256;
+
     uint256 constant MINT_NEW_TOKEN = 0;
     address targetProfileOwner;
     uint256 targetProfileId;
@@ -120,6 +140,203 @@ contract FollowNFTTest is BaseTest, LensBaseERC721Test {
             followTokenId: unexistentTokenId
         });
     }
+
+    function testCannotCallInitialize_AfterCreation(address anyAddress, uint256 profileId) public {
+        vm.expectRevert(Errors.Initialized.selector);
+        vm.prank(anyAddress);
+        followNFT.initialize(profileId);
+    }
+
+    function testOriginalAndGeneralFollowTimestamp(
+        uint32 initialTimestamp,
+        uint32 originalFollowTimestamp,
+        uint32 timeAdded
+    ) public {
+        vm.assume(initialTimestamp != 0);
+        originalFollowTimestamp = uint32(bound(originalFollowTimestamp, initialTimestamp, type(uint32).max));
+        uint48 laterTimestamp = uint48(originalFollowTimestamp) + uint48(timeAdded);
+
+        // Initial non-zero timestamp
+        vm.warp(initialTimestamp);
+
+        uint256 expectedTokenId = lastAssignedTokenId + 1;
+
+        assertEq(followNFT.getOriginalFollowTimestamp(expectedTokenId), 0);
+        assertEq(followNFT.getFollowTimestamp(expectedTokenId), 0);
+
+        // Original follow timestamp
+        vm.warp(originalFollowTimestamp);
+
+        vm.prank(followerProfileOwner);
+        uint256 assignedTokenId = hub.follow(
+            followerProfileId,
+            _toUint256Array(targetProfileId),
+            _toUint256Array(0),
+            _toBytesArray('')
+        )[0];
+        assertEq(assignedTokenId, expectedTokenId);
+
+        assertEq(followNFT.getOriginalFollowTimestamp(assignedTokenId), originalFollowTimestamp);
+        assertEq(followNFT.getFollowTimestamp(assignedTokenId), originalFollowTimestamp);
+
+        vm.prank(followerProfileOwner);
+        followNFT.wrap(assignedTokenId);
+
+        assertEq(followNFT.getOriginalFollowTimestamp(assignedTokenId), originalFollowTimestamp);
+        assertEq(followNFT.getFollowTimestamp(assignedTokenId), originalFollowTimestamp);
+
+        hub.unfollow(followerProfileId, _toUint256Array(targetProfileId));
+
+        assertEq(followNFT.getOriginalFollowTimestamp(assignedTokenId), originalFollowTimestamp);
+        assertEq(followNFT.getFollowTimestamp(assignedTokenId), 0);
+
+        // Some later timestamp
+        vm.warp(laterTimestamp);
+
+        vm.prank(followerProfileOwner);
+        uint256 repeatedAssignedTokenId = hub.follow(
+            followerProfileId,
+            _toUint256Array(targetProfileId),
+            _toUint256Array(assignedTokenId),
+            _toBytesArray('')
+        )[0];
+
+        assertEq(repeatedAssignedTokenId, assignedTokenId);
+
+        assertEq(followNFT.getOriginalFollowTimestamp(assignedTokenId), originalFollowTimestamp);
+        assertEq(followNFT.getFollowTimestamp(assignedTokenId), laterTimestamp);
+    }
+
+    function testFollowTimestampResetAfterFollowTokenIsBurned(uint32 initialTimestamp) public {
+        vm.assume(initialTimestamp != 0);
+        vm.warp(initialTimestamp);
+
+        uint256 expectedTokenId = lastAssignedTokenId + 1;
+
+        assertEq(followNFT.getOriginalFollowTimestamp(expectedTokenId), 0);
+        assertEq(followNFT.getFollowTimestamp(expectedTokenId), 0);
+
+        vm.prank(followerProfileOwner);
+        uint256 assignedTokenId = hub.follow(
+            followerProfileId,
+            _toUint256Array(targetProfileId),
+            _toUint256Array(0),
+            _toBytesArray('')
+        )[0];
+        assertEq(assignedTokenId, expectedTokenId);
+
+        assertEq(followNFT.getOriginalFollowTimestamp(assignedTokenId), initialTimestamp);
+        assertEq(followNFT.getFollowTimestamp(assignedTokenId), initialTimestamp);
+
+        vm.prank(followerProfileOwner);
+        followNFT.wrap(assignedTokenId);
+
+        vm.prank(followerProfileOwner);
+        followNFT.burn(assignedTokenId);
+
+        console.log('followerProfileId', followNFT.getFollowData(assignedTokenId).followerProfileId);
+        console.log('originalFollowTimestamp', followNFT.getFollowData(assignedTokenId).originalFollowTimestamp);
+        console.log('followTimestamp', followNFT.getFollowData(assignedTokenId).followTimestamp);
+        console.log('profileIdAllowedToRecover', followNFT.getFollowData(assignedTokenId).profileIdAllowedToRecover);
+
+        assertEq(followNFT.getOriginalFollowTimestamp(assignedTokenId), 0);
+        assertEq(followNFT.getFollowTimestamp(assignedTokenId), 0);
+    }
+
+    function testGetTokenURI_Fuzz() public {
+        FollowTokenURILibMock followTokenURILib = new FollowTokenURILibMock();
+        for (uint256 tokenId = type(uint256).max; tokenId > 0; tokenId >>= 16) {
+            for (
+                uint256 originalFollowTimestamp = type(uint48).max;
+                originalFollowTimestamp > 0;
+                originalFollowTimestamp >>= 8
+            ) {
+                uint256 followedProfileId = type(uint256).max - tokenId;
+                string memory tokenURI = followTokenURILib.getTokenURI(
+                    tokenId,
+                    followedProfileId,
+                    originalFollowTimestamp
+                );
+                string memory base64prefix = 'data:application/json;base64,';
+                string memory decodedTokenURI = string(
+                    Base64.decode(LibString.slice(tokenURI, bytes(base64prefix).length))
+                );
+
+                string memory tokenIdAsString = vm.toString(tokenId);
+                string memory followedProfileIdAsString = vm.toString(followedProfileId);
+                assertEq(decodedTokenURI.readString('.name'), string.concat('Follower #', tokenIdAsString));
+                assertEq(
+                    decodedTokenURI.readString('.description'),
+                    string.concat(
+                        'Lens Protocol - Follower #',
+                        tokenIdAsString,
+                        ' of Profile #',
+                        followedProfileIdAsString
+                    )
+                );
+                assertEq(decodedTokenURI.readUint('.attributes[0].value'), tokenId, "Token ID doesn't match");
+                assertEq(
+                    decodedTokenURI.readUint('.attributes[1].value'),
+                    bytes(tokenIdAsString).length,
+                    "Token ID Digits doesn't match"
+                );
+                assertEq(
+                    decodedTokenURI.readUint('.attributes[2].value'),
+                    originalFollowTimestamp,
+                    "Original Follow Timestamp doesn't match"
+                );
+            }
+        }
+    }
+
+    function testGetTokenURI() public {
+        vm.prank(alreadyFollowingProfileOwner);
+        followNFT.wrap(lastAssignedTokenId);
+
+        uint256 tokenId = lastAssignedTokenId;
+        string memory tokenURI = followNFT.tokenURI(tokenId);
+        string memory base64prefix = 'data:application/json;base64,';
+        string memory decodedTokenURI = string(Base64.decode(LibString.slice(tokenURI, bytes(base64prefix).length)));
+
+        string memory tokenIdAsString = vm.toString(tokenId);
+        assertEq(decodedTokenURI.readString('.name'), string.concat('Follower #', tokenIdAsString));
+        assertEq(
+            decodedTokenURI.readString('.description'),
+            string.concat('Lens Protocol - Follower #', tokenIdAsString, ' of Profile #', vm.toString(targetProfileId))
+        );
+        assertEq(decodedTokenURI.readUint('.attributes[0].value'), tokenId, "Token ID doesn't match");
+        assertEq(
+            decodedTokenURI.readUint('.attributes[1].value'),
+            bytes(tokenIdAsString).length,
+            "Token ID Digits doesn't match"
+        );
+        assertEq(
+            decodedTokenURI.readUint('.attributes[2].value'),
+            followNFT.getOriginalFollowTimestamp(tokenId),
+            "Original Follow Timestamp doesn't match"
+        );
+    }
+
+    function testCannot_GetTokenURI_IfDoesNotExist_OrIsUnwrapped(uint256 tokenId) public {
+        vm.assume(!followNFT.exists(tokenId));
+
+        vm.expectRevert(Errors.TokenDoesNotExist.selector);
+        followNFT.tokenURI(tokenId);
+    }
+
+    function testSymbol(uint256 followedProfileId) public {
+        followNFT = FollowNFT(address(new TransparentUpgradeableProxy(hub.getFollowNFTImpl(), proxyAdmin, '')));
+        followNFT.initialize(followedProfileId);
+
+        string memory FOLLOW_NFT_SYMBOL_SUFFIX = '-Fl';
+        string memory expectedSymbol = string.concat(vm.toString(followedProfileId), FOLLOW_NFT_SYMBOL_SUFFIX);
+        assertEq(followNFT.symbol(), expectedSymbol);
+    }
+
+    // GetFollowerCount - we need to test all cases and see how it increases/decreases
+    // FollowWithWrappedToken - cannot if DoesNotHavePermissions
+    // FollowWithUnwrappedTokenFromBurnedProfile - cannot if profile still exists
+    // ReplaceFollower - if doesn't have a currentFollower - then followerCount increases (can be in GetFollowerCount tests)
 
     //////////////////////////////////////////////////////////
     // Follow - Minting new token - Negatives
