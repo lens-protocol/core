@@ -5,6 +5,17 @@ import 'test/base/BaseTest.t.sol';
 import 'test/LensBaseERC721Test.t.sol';
 import {Base64} from 'solady/utils/Base64.sol';
 import {LibString} from 'solady/utils/LibString.sol';
+import {ProfileTokenURILib} from 'contracts/libraries/token-uris/ProfileTokenURILib.sol';
+
+contract ProfileTokenURILibMock {
+    function testProfileTokenURILibMock() public {
+        // Prevents being counted in Foundry Coverage
+    }
+
+    function getTokenURI(uint256 profileId) external view returns (string memory) {
+        return ProfileTokenURILib.getTokenURI(profileId);
+    }
+}
 
 contract ProfileNFTTest is BaseTest, LensBaseERC721Test {
     using stdJson for string;
@@ -15,10 +26,12 @@ contract ProfileNFTTest is BaseTest, LensBaseERC721Test {
     }
 
     function testGetTokenURI_Fuzz() public {
+        ProfileTokenURILibMock profileTokenURILib = new ProfileTokenURILibMock();
+
         for (uint256 profileId = type(uint256).max; profileId > 0; profileId >>= 2) {
             string memory profileIdAsString = vm.toString(profileId);
             console.log(profileIdAsString);
-            string memory tokenURI = hub.tokenURI(profileId);
+            string memory tokenURI = profileTokenURILib.getTokenURI(profileId);
             string memory base64prefix = 'data:application/json;base64,';
             string memory decodedTokenURI = string(
                 Base64.decode(LibString.slice(tokenURI, bytes(base64prefix).length))
@@ -66,6 +79,13 @@ contract ProfileNFTTest is BaseTest, LensBaseERC721Test {
             hub.tokenDataOf(profileId).mintTimestamp,
             "Profile Minted At doesn't match"
         );
+    }
+
+    function testCannot_GetTokenURI_IfDoesNotExist(uint256 tokenId) public {
+        vm.assume(!hub.exists(tokenId));
+
+        vm.expectRevert(Errors.TokenDoesNotExist.selector);
+        hub.tokenURI(tokenId);
     }
 
     function _mintERC721(address to) internal virtual override returns (uint256) {

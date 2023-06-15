@@ -47,6 +47,9 @@ abstract contract LensProfiles is LensBaseERC721, ERC2981CollectionRoyalties {
      * @dev Overrides the ERC721 tokenURI function to return the associated URI with a given profile.
      */
     function tokenURI(uint256 tokenId) public view override returns (string memory) {
+        if (!_exists(tokenId)) {
+            revert Errors.TokenDoesNotExist();
+        }
         return ProfileTokenURILib.getTokenURI(tokenId);
     }
 
