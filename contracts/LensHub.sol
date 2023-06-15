@@ -385,12 +385,11 @@ contract LensHub is
         uint256 unfollowerProfileId,
         uint256[] calldata idsOfProfilesToUnfollow
     ) external override whenNotPaused onlyProfileOwnerOrDelegatedExecutor(msg.sender, unfollowerProfileId) {
-        return
-            FollowLib.unfollow({
-                unfollowerProfileId: unfollowerProfileId,
-                idsOfProfilesToUnfollow: idsOfProfilesToUnfollow,
-                transactionExecutor: msg.sender
-            });
+        FollowLib.unfollow({
+            unfollowerProfileId: unfollowerProfileId,
+            idsOfProfilesToUnfollow: idsOfProfilesToUnfollow,
+            transactionExecutor: msg.sender
+        });
     }
 
     /// @inheritdoc ILensProtocol
@@ -401,12 +400,11 @@ contract LensHub is
     ) external override whenNotPaused onlyProfileOwnerOrDelegatedExecutor(signature.signer, unfollowerProfileId) {
         MetaTxLib.validateUnfollowSignature(signature, unfollowerProfileId, idsOfProfilesToUnfollow);
 
-        return
-            FollowLib.unfollow({
-                unfollowerProfileId: unfollowerProfileId,
-                idsOfProfilesToUnfollow: idsOfProfilesToUnfollow,
-                transactionExecutor: signature.signer
-            });
+        FollowLib.unfollow({
+            unfollowerProfileId: unfollowerProfileId,
+            idsOfProfilesToUnfollow: idsOfProfilesToUnfollow,
+            transactionExecutor: signature.signer
+        });
     }
 
     /// @inheritdoc ILensProtocol
