@@ -6,10 +6,16 @@ import {Types} from 'contracts/libraries/constants/Types.sol';
 import {Errors} from 'contracts/libraries/constants/Errors.sol';
 
 library StorageLib {
-    uint256 constant NAME_SLOT = 0;
+    // uint256 constant NAME_SLOT = 0;
+    // uint256 constant SYMBOL_SLOT = 1;
     uint256 constant TOKEN_DATA_MAPPING_SLOT = 2;
-    uint256 constant TOKEN_APPROVAL_MAPPING_SLOT = 4;
-    uint256 constant OPERATOR_APPROVAL_MAPPING_SLOT = 5;
+    // uint256 constant BALANCES_SLOT = 3;
+    // uint256 constant TOKEN_APPROVAL_MAPPING_SLOT = 4;
+    // uint256 constant OPERATOR_APPROVAL_MAPPING_SLOT = 5;
+    // Slot 6 is deprecated in Lens V2. In V1 it was used for ERC-721 Enumerable's `ownedTokens`.
+    // Slot 7 is deprecated in Lens V2. In V1 it was used for ERC-721 Enumerable's `ownedTokensIndex`.
+    // uint256 constant TOTAL_SUPPLY_SLOT = 8;
+    // Slot 9 is deprecated in Lens V2. In V1 it was used for ERC-721 Enumerable's `allTokensIndex`.
     uint256 constant SIG_NONCES_MAPPING_SLOT = 10;
     uint256 constant LAST_INITIALIZED_REVISION_SLOT = 11; // VersionedInitializable's `lastInitializedRevision` field.
     uint256 constant PROTOCOL_STATE_SLOT = 12;
@@ -21,7 +27,7 @@ library StorageLib {
     uint256 constant PROFILE_ID_BY_HANDLE_HASH_MAPPING_SLOT = 18; // Deprecated slot, but still needed for V2 migration.
     uint256 constant PROFILES_MAPPING_SLOT = 19;
     uint256 constant PUBLICATIONS_MAPPING_SLOT = 20;
-    uint256 constant DEFAULT_PROFILE_MAPPING_SLOT = 21; // Deprecated slot, but still needed for V2 migration.
+    // Slot 21 is deprecated in Lens V2. In V1 it was used for the default profile ID by address.
     uint256 constant PROFILE_COUNTER_SLOT = 22;
     uint256 constant GOVERNANCE_SLOT = 23;
     uint256 constant EMERGENCY_ADMIN_SLOT = 24;
@@ -156,13 +162,6 @@ library StorageLib {
     {
         assembly {
             _referenceModuleWhitelisted.slot := REFERENCE_MODULE_WHITELIST_MAPPING_SLOT
-        }
-    }
-
-    // Used for all `ERC721Time` inherited contracts.
-    function getName() internal pure returns (string storage _name) {
-        assembly {
-            _name.slot := NAME_SLOT
         }
     }
 
