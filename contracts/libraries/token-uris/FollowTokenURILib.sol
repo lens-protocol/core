@@ -29,7 +29,7 @@ library FollowTokenURILib {
                             followTokenIdAsString,
                             '","description":"Lens Protocol - Follower #',
                             followTokenIdAsString,
-                            'of Profile #',
+                            ' of Profile #',
                             followedProfileIdAsString,
                             '","image":"data:image/svg+xml;base64,',
                             _getSVGImageBase64Encoded(followTokenIdAsString, followedProfileIdAsString),
@@ -38,7 +38,7 @@ library FollowTokenURILib {
                             '"},{"trait_type":"DIGITS","value":"',
                             bytes(followTokenIdAsString).length.toString(),
                             '"},{"trait_type":"MINTED AT","value":"',
-                            originalFollowTimestamp,
+                            originalFollowTimestamp.toString(),
                             '"}]}'
                         )
                     )
