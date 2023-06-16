@@ -518,6 +518,7 @@ contract FollowNFTTest is BaseTest, LensBaseERC721Test {
         vm.assume(newFollowTokenHolder != address(0));
         vm.assume(delegatedExecutor != followerProfileOwner);
         vm.assume(delegatedExecutor != address(0));
+        vm.assume(delegatedExecutor != newFollowTokenHolder);
 
         vm.startPrank(followerProfileOwner);
         uint256 followTokenId = hub.follow(
