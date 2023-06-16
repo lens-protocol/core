@@ -18,6 +18,7 @@ contract MockControllableByContract is ControllableByContract {
 
 contract ControllableByContractTest is BaseTest {
     MockControllableByContract mockControllableByContract;
+    ControllableByContract controllableByContract;
 
     event ControllerContractUpdated(address previousControllerContract, address newControllerContract);
 
@@ -27,6 +28,7 @@ contract ControllableByContractTest is BaseTest {
 
     function setUp() public override {
         mockControllableByContract = new MockControllableByContract(owner);
+        controllableByContract = new ControllableByContract(owner);
     }
 
     // NEGATIVES
@@ -118,60 +120,60 @@ contract ControllableByContractTest is BaseTest {
 
     function testClearControllerContractByOwner(address controllerContract) public {
         vm.prank(owner);
-        mockControllableByContract.setControllerContract(controllerContract);
+        controllableByContract.setControllerContract(controllerContract);
 
-        assertEq(mockControllableByContract.controllerContract(), controllerContract);
+        assertEq(controllableByContract.controllerContract(), controllerContract);
 
-        vm.expectEmit(true, true, true, true, address(mockControllableByContract));
+        vm.expectEmit(true, true, true, true, address(controllableByContract));
         emit ControllerContractUpdated(controllerContract, address(0));
 
         vm.prank(owner);
-        mockControllableByContract.clearControllerContract();
+        controllableByContract.clearControllerContract();
 
-        assertEq(mockControllableByContract.controllerContract(), address(0));
+        assertEq(controllableByContract.controllerContract(), address(0));
     }
 
     function testClearControllerContractByControllerContract(address controllerContract) public {
         vm.prank(owner);
-        mockControllableByContract.setControllerContract(controllerContract);
+        controllableByContract.setControllerContract(controllerContract);
 
-        assertEq(mockControllableByContract.controllerContract(), controllerContract);
+        assertEq(controllableByContract.controllerContract(), controllerContract);
 
-        vm.expectEmit(true, true, true, true, address(mockControllableByContract));
+        vm.expectEmit(true, true, true, true, address(controllableByContract));
         emit ControllerContractUpdated(controllerContract, address(0));
 
         vm.prank(controllerContract);
-        mockControllableByContract.clearControllerContract();
+        controllableByContract.clearControllerContract();
 
-        assertEq(mockControllableByContract.controllerContract(), address(0));
+        assertEq(controllableByContract.controllerContract(), address(0));
     }
 
     function testSetControllerContract(address controllerContract) public {
-        assertEq(mockControllableByContract.controllerContract(), address(0));
+        assertEq(controllableByContract.controllerContract(), address(0));
 
-        vm.expectEmit(true, true, true, true, address(mockControllableByContract));
+        vm.expectEmit(true, true, true, true, address(controllableByContract));
         emit ControllerContractUpdated(address(0), controllerContract);
 
         vm.prank(owner);
-        mockControllableByContract.setControllerContract(controllerContract);
+        controllableByContract.setControllerContract(controllerContract);
 
-        assertEq(mockControllableByContract.controllerContract(), controllerContract);
+        assertEq(controllableByContract.controllerContract(), controllerContract);
     }
 
     function testChangeControllerContract(address initialControllerContract, address newControllerContract) public {
         vm.assume(initialControllerContract != address(0));
 
         vm.prank(owner);
-        mockControllableByContract.setControllerContract(initialControllerContract);
+        controllableByContract.setControllerContract(initialControllerContract);
 
-        assertEq(mockControllableByContract.controllerContract(), initialControllerContract);
+        assertEq(controllableByContract.controllerContract(), initialControllerContract);
 
-        vm.expectEmit(true, true, true, true, address(mockControllableByContract));
+        vm.expectEmit(true, true, true, true, address(controllableByContract));
         emit ControllerContractUpdated(initialControllerContract, newControllerContract);
 
         vm.prank(owner);
-        mockControllableByContract.setControllerContract(newControllerContract);
+        controllableByContract.setControllerContract(newControllerContract);
 
-        assertEq(mockControllableByContract.controllerContract(), newControllerContract);
+        assertEq(controllableByContract.controllerContract(), newControllerContract);
     }
 }
