@@ -32,6 +32,10 @@ contract MirrorTest is ReferencePublicationTest {
         return Types.PublicationType.Mirror;
     }
 
+    function _contentURI() internal virtual override returns (string memory contentURI) {
+        return hub.getContentURI(mirrorParams.pointedProfileId, mirrorParams.pointedPubId);
+    }
+
     function _setReferrers(
         uint256[] memory referrerProfileIds,
         uint256[] memory referrerPubIds

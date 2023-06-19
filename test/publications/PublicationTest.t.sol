@@ -15,6 +15,8 @@ abstract contract PublicationTest is BaseTest {
 
     function _pubType() internal virtual returns (Types.PublicationType);
 
+    function _contentURI() internal virtual returns (string memory contentURI);
+
     function setUp() public virtual override {
         super.setUp();
         publisher = _loadAccountAs('PUBLISHER');
@@ -93,6 +95,15 @@ abstract contract PublicationTest is BaseTest {
         Types.PublicationType expectedPubType = _pubType();
         assertTrue(assignedPubType == expectedPubType, 'Assigned publication type is different than the expected one');
     }
+
+    function testContentURI_IsCorrect() public {
+        uint256 publicationIdAssigned = _publish({
+            signerPk: publisher.ownerPk,
+            publisherProfileId: publisher.profileId
+        });
+
+        assertEq(hub.getContentURI(publisher.profileId, publicationIdAssigned), _contentURI());
+    }
 }
 
 /**
@@ -100,6 +111,34 @@ abstract contract PublicationTest is BaseTest {
  */
 abstract contract ActionablePublicationTest is PublicationTest {
     function _setActionModules(address[] memory actionModules, bytes[] memory actionModulesInitDatas) internal virtual;
+
+    function testCannotInitializeActionModule_AmountOfModulesMismatchAmountOfModulesData() public {
+        _setActionModules({
+            actionModules: _toAddressArray(address(mockActionModule), address(mockActionModule)),
+            actionModulesInitDatas: _toBytesArray(abi.encode(true))
+        });
+        vm.expectRevert(Errors.ArrayMismatch.selector);
+        _publish({signerPk: publisher.ownerPk, publisherProfileId: publisher.profileId});
+    }
+
+    function testCannot_InitializeActionModule_IfNotWhitelisted(address nonwhitelistedModule) public {
+        vm.assume(hub.getActionModuleWhitelistData(nonwhitelistedModule).isWhitelisted == false);
+        _setActionModules({
+            actionModules: _toAddressArray(nonwhitelistedModule),
+            actionModulesInitDatas: _toBytesArray('')
+        });
+        vm.expectRevert(Errors.NotWhitelisted.selector);
+        _publish({signerPk: publisher.ownerPk, publisherProfileId: publisher.profileId});
+    }
+
+    function testCannot_InitializeActionModule_IfDuplicated() public {
+        _setActionModules({
+            actionModules: _toAddressArray(address(mockActionModule), address(mockActionModule)),
+            actionModulesInitDatas: _toBytesArray(abi.encode(true), abi.encode(true))
+        });
+        vm.expectRevert(Errors.AlreadyEnabled.selector);
+        _publish({signerPk: publisher.ownerPk, publisherProfileId: publisher.profileId});
+    }
 }
 
 /**

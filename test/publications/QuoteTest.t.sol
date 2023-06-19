@@ -2,10 +2,10 @@
 pragma solidity ^0.8.13;
 
 import {Types} from 'contracts/libraries/constants/Types.sol';
-import {PublicationTest, ReferencePublicationTest} from 'test/publications/PublicationTest.t.sol';
+import {PublicationTest, ReferencePublicationTest, ActionablePublicationTest} from 'test/publications/PublicationTest.t.sol';
 import {MetaTxNegatives} from 'test/MetaTxNegatives.t.sol';
 
-contract QuoteTest is ReferencePublicationTest {
+contract QuoteTest is ReferencePublicationTest, ActionablePublicationTest {
     Types.QuoteParams quoteParams;
 
     function testQuoteTest() public {
@@ -32,6 +32,10 @@ contract QuoteTest is ReferencePublicationTest {
         return Types.PublicationType.Quote;
     }
 
+    function _contentURI() internal virtual override returns (string memory contentURI) {
+        return quoteParams.contentURI;
+    }
+
     function _setReferrers(
         uint256[] memory referrerProfileIds,
         uint256[] memory referrerPubIds
@@ -42,6 +46,14 @@ contract QuoteTest is ReferencePublicationTest {
 
     function _setReferenceModuleData(bytes memory referenceModuleData) internal virtual override {
         quoteParams.referenceModuleData = referenceModuleData;
+    }
+
+    function _setActionModules(
+        address[] memory actionModules,
+        bytes[] memory actionModulesInitDatas
+    ) internal virtual override {
+        quoteParams.actionModules = actionModules;
+        quoteParams.actionModulesInitDatas = actionModulesInitDatas;
     }
 }
 
