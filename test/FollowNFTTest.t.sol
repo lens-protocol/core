@@ -373,6 +373,8 @@ contract FollowNFTTest is BaseTest, LensBaseERC721Test {
     }
 
     function testFollowingMintingNewTokenSetsFollowerStatusCorrectly() public {
+        uint256 followerCountBefore = followNFT.getFollowerCount();
+
         vm.prank(address(hub));
 
         uint256 assignedTokenId = followNFT.follow({
@@ -389,6 +391,8 @@ contract FollowNFTTest is BaseTest, LensBaseERC721Test {
 
         uint256 followIdByFollower = followNFT.getFollowTokenId(followerProfileId);
         assertEq(followIdByFollower, assignedTokenId);
+
+        assertEq(followNFT.getFollowerCount(), followerCountBefore + 1);
     }
 
     function testExpectedFollowDataAfterMintingNewToken() public {
@@ -460,9 +464,14 @@ contract FollowNFTTest is BaseTest, LensBaseERC721Test {
     function testFollowWithUnwrappedTokenWhenCurrentFollowerWasBurnedAndTransactionExecutorIsFollowerOwner() public {
         uint256 followTokenId = followNFT.getFollowTokenId(alreadyFollowingProfileId);
 
+        uint256 followerCountBefore = followNFT.getFollowerCount();
+
         vm.prank(alreadyFollowingProfileOwner);
         hub.burn(alreadyFollowingProfileId);
         assertFalse(hub.exists(alreadyFollowingProfileId));
+
+        // NOTE: Follow NFT is not aware of Profile NFT burnings, follower count stays the same.
+        assertEq(followNFT.getFollowerCount(), followerCountBefore);
 
         vm.prank(address(hub));
 
@@ -477,6 +486,7 @@ contract FollowNFTTest is BaseTest, LensBaseERC721Test {
         assertEq(assignedTokenId, followTokenId);
         assertEq(followNFT.getFollowTokenId(followerProfileId), followTokenId);
         assertEq(followNFT.getFollowApproved(followTokenId), 0);
+        assertEq(followNFT.getFollowerCount(), followerCountBefore);
     }
 
     function testFollowWithUnwrappedTokenWhenCurrentFollowerWasBurnedAndTransactionExecutorIsApprovedDelegatee(
@@ -487,9 +497,14 @@ contract FollowNFTTest is BaseTest, LensBaseERC721Test {
 
         uint256 followTokenId = followNFT.getFollowTokenId(alreadyFollowingProfileId);
 
+        uint256 followerCountBefore = followNFT.getFollowerCount();
+
         vm.prank(alreadyFollowingProfileOwner);
         hub.burn(alreadyFollowingProfileId);
         assertFalse(hub.exists(alreadyFollowingProfileId));
+
+        // NOTE: Follow NFT is not aware of Profile NFT burnings, follower count stays the same.
+        assertEq(followNFT.getFollowerCount(), followerCountBefore);
 
         vm.prank(address(hub));
 
@@ -504,6 +519,7 @@ contract FollowNFTTest is BaseTest, LensBaseERC721Test {
         assertEq(assignedTokenId, followTokenId);
         assertEq(followNFT.getFollowTokenId(followerProfileId), followTokenId);
         assertEq(followNFT.getFollowApproved(followTokenId), 0);
+        assertEq(followNFT.getFollowerCount(), followerCountBefore);
     }
 
     //////////////////////////////////////////////////////////
@@ -573,11 +589,13 @@ contract FollowNFTTest is BaseTest, LensBaseERC721Test {
     // Follow - With wrapped token - Scenarios
     //////////////////////////////////////////////////////////
 
-    function testFollowWithWrappedTokenWhenFollowerOwnerOwnsFollowTokenAndIsActingAsTransactionExecutor() public {
+    function testFollowWithWrappedTokenWhen_FollowerOwnerOwnsFollowTokenAndIsActingAsTransactionExecutor() public {
         uint256 followTokenId = followNFT.getFollowTokenId(alreadyFollowingProfileId);
 
         vm.prank(alreadyFollowingProfileOwner);
         followNFT.wrap(followTokenId);
+
+        uint256 followerCountBefore = followNFT.getFollowerCount();
 
         vm.prank(alreadyFollowingProfileOwner);
         followNFT.transferFrom(alreadyFollowingProfileOwner, followerProfileOwner, followTokenId);
@@ -594,9 +612,47 @@ contract FollowNFTTest is BaseTest, LensBaseERC721Test {
         assertTrue(followNFT.isFollowing(followerProfileId));
         assertEq(assignedTokenId, followTokenId);
         assertEq(followNFT.getFollowTokenId(followerProfileId), followTokenId);
+        // NOTE: It just replaces the follower in the wrapped token, follower count stays the same.
+        assertEq(followNFT.getFollowerCount(), followerCountBefore);
     }
 
-    function testFollowWithWrappedTokenWhenFollowerOwnerAlsoOwnsFollowTokenAndTransactionExecutorIsApprovedDelegatee(
+    function testFollowWithWrappedTokenWhen_FollowerOwnerOwnsFollowTokenAndIsActingAsTransactionExecutor_FollowerUnfollowFirst()
+        public
+    {
+        uint256 followTokenId = followNFT.getFollowTokenId(alreadyFollowingProfileId);
+
+        vm.prank(alreadyFollowingProfileOwner);
+        followNFT.wrap(followTokenId);
+
+        uint256 followerCountBefore = followNFT.getFollowerCount();
+
+        vm.prank(address(hub));
+        followNFT.unfollow({
+            unfollowerProfileId: alreadyFollowingProfileId,
+            transactionExecutor: alreadyFollowingProfileOwner
+        });
+
+        assertEq(followNFT.getFollowerCount(), followerCountBefore - 1);
+
+        vm.prank(alreadyFollowingProfileOwner);
+        followNFT.transferFrom(alreadyFollowingProfileOwner, followerProfileOwner, followTokenId);
+
+        vm.prank(address(hub));
+
+        uint256 assignedTokenId = followNFT.follow({
+            followerProfileId: followerProfileId,
+            transactionExecutor: followerProfileOwner,
+            followTokenId: followTokenId
+        });
+
+        assertFalse(followNFT.isFollowing(alreadyFollowingProfileId));
+        assertTrue(followNFT.isFollowing(followerProfileId));
+        assertEq(assignedTokenId, followTokenId);
+        assertEq(followNFT.getFollowTokenId(followerProfileId), followTokenId);
+        assertEq(followNFT.getFollowerCount(), followerCountBefore);
+    }
+
+    function testFollowWithWrappedTokenWhen_FollowerOwnerAlsoOwnsFollowTokenAndTransactionExecutorIsApprovedDelegatee(
         address executorAsApprovedDelegatee
     ) public {
         vm.assume(executorAsApprovedDelegatee != followerProfileOwner);
@@ -624,7 +680,7 @@ contract FollowNFTTest is BaseTest, LensBaseERC721Test {
         assertEq(followNFT.getFollowTokenId(followerProfileId), followTokenId);
     }
 
-    function testFollowWithWrappedTokenWhenExecutorOwnsFollowTokenAndTransactionExecutorIsApprovedDelegatee(
+    function testFollowWithWrappedTokenWhen_ExecutorOwnsFollowTokenAndTransactionExecutorIsApprovedDelegatee(
         address executorAsApprovedDelegatee
     ) public {
         vm.assume(executorAsApprovedDelegatee != followerProfileOwner);
@@ -652,7 +708,7 @@ contract FollowNFTTest is BaseTest, LensBaseERC721Test {
         assertEq(followNFT.getFollowTokenId(followerProfileId), followTokenId);
     }
 
-    function testFollowWithWrappedTokenWhenExecutorIsApprovedForAllAndTransactionExecutorIsFollowerOwner() public {
+    function testFollowWithWrappedTokenWhen_ExecutorIsApprovedForAllAndTransactionExecutorIsFollowerOwner() public {
         uint256 followTokenId = followNFT.getFollowTokenId(alreadyFollowingProfileId);
 
         vm.prank(alreadyFollowingProfileOwner);
@@ -675,7 +731,7 @@ contract FollowNFTTest is BaseTest, LensBaseERC721Test {
         assertEq(followNFT.getFollowTokenId(followerProfileId), followTokenId);
     }
 
-    function testFollowWithWrappedTokenWhenExecutorIsApprovedForAllAndTransactionExecutorIsApprovedDelegatee(
+    function testFollowWithWrappedTokenWhen_ExecutorIsApprovedForAllAndTransactionExecutorIsApprovedDelegatee(
         address executorAsApprovedDelegatee
     ) public {
         vm.assume(executorAsApprovedDelegatee != followerProfileOwner);
@@ -704,7 +760,7 @@ contract FollowNFTTest is BaseTest, LensBaseERC721Test {
         assertEq(followNFT.getFollowTokenId(followerProfileId), followTokenId);
     }
 
-    function testFollowWithWrappedTokenWhenProfileIsApprovedToFollowAndTransactionExecutorIsFollowerOwner() public {
+    function testFollowWithWrappedTokenWhen_ProfileIsApprovedToFollowAndTransactionExecutorIsFollowerOwner() public {
         uint256 followTokenId = followNFT.getFollowTokenId(alreadyFollowingProfileId);
 
         vm.prank(alreadyFollowingProfileOwner);
@@ -729,7 +785,7 @@ contract FollowNFTTest is BaseTest, LensBaseERC721Test {
         assertEq(followNFT.getFollowApproved(followTokenId), 0);
     }
 
-    function testFollowWithWrappedTokenWhenProfileIsApprovedToFollowAndTransactionExecutorIsApprovedDelegatee(
+    function testFollowWithWrappedTokenWhen_ProfileIsApprovedToFollowAndTransactionExecutorIsApprovedDelegatee(
         address executorAsApprovedDelegatee
     ) public {
         vm.assume(executorAsApprovedDelegatee != followerProfileOwner);
@@ -766,6 +822,8 @@ contract FollowNFTTest is BaseTest, LensBaseERC721Test {
     function testFollowRecoveringToken() public {
         uint256 followTokenId = followNFT.getFollowTokenId(alreadyFollowingProfileId);
 
+        uint256 followerCountBefore = followNFT.getFollowerCount();
+
         vm.prank(address(hub));
 
         followNFT.unfollow({
@@ -775,6 +833,7 @@ contract FollowNFTTest is BaseTest, LensBaseERC721Test {
 
         assertFalse(followNFT.isFollowing(alreadyFollowingProfileId));
         assertEq(followNFT.getProfileIdAllowedToRecover(followTokenId), alreadyFollowingProfileId);
+        assertEq(followNFT.getFollowerCount(), followerCountBefore - 1);
 
         vm.prank(address(hub));
 
@@ -788,6 +847,7 @@ contract FollowNFTTest is BaseTest, LensBaseERC721Test {
         assertEq(assignedTokenId, followTokenId);
         assertEq(followNFT.getFollowTokenId(alreadyFollowingProfileId), followTokenId);
         assertEq(followNFT.getProfileIdAllowedToRecover(followTokenId), 0);
+        assertEq(followNFT.getFollowerCount(), followerCountBefore);
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -868,6 +928,8 @@ contract FollowNFTTest is BaseTest, LensBaseERC721Test {
         vm.prank(alreadyFollowingProfileOwner);
         followNFT.wrap(followTokenId);
 
+        uint256 followerCountBefore = followNFT.getFollowerCount();
+
         vm.prank(address(hub));
 
         followNFT.unfollow({
@@ -878,6 +940,7 @@ contract FollowNFTTest is BaseTest, LensBaseERC721Test {
         assertFalse(followNFT.isFollowing(alreadyFollowingProfileId));
         assertEq(followNFT.getFollowerProfileId(alreadyFollowingProfileId), 0);
         assertEq(followNFT.getProfileIdAllowedToRecover(followTokenId), 0);
+        assertEq(followNFT.getFollowerCount(), followerCountBefore - 1);
     }
 
     function testUnfollowAsApprovedDelegatedExecutorOfFollowerOwnerWhenTokenIsWrapped(
@@ -982,6 +1045,8 @@ contract FollowNFTTest is BaseTest, LensBaseERC721Test {
         vm.prank(alreadyFollowingProfileOwner);
         followNFT.wrap(followTokenId);
 
+        uint256 followerCountBefore = followNFT.getFollowerCount();
+
         vm.prank(alreadyFollowingProfileOwner);
         followNFT.transferFrom(alreadyFollowingProfileOwner, followHolder, followTokenId);
 
@@ -989,6 +1054,7 @@ contract FollowNFTTest is BaseTest, LensBaseERC721Test {
         followNFT.removeFollower({followTokenId: followTokenId});
 
         assertFalse(followNFT.isFollowing(alreadyFollowingProfileId));
+        assertEq(followNFT.getFollowerCount(), followerCountBefore - 1);
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
