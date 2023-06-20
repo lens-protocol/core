@@ -117,6 +117,7 @@ library PublicationLib {
         _publication.pointedProfileId = mirrorParams.pointedProfileId;
         _publication.pointedPubId = mirrorParams.pointedPubId;
         _publication.pubType = Types.PublicationType.Mirror;
+        _fillRootOfPublicationInStorage(_publication, mirrorParams.pointedProfileId, mirrorParams.pointedPubId);
 
         bytes memory referenceModuleReturnData = _processMirrorIfNeeded(
             mirrorParams,
@@ -193,9 +194,7 @@ library PublicationLib {
             pubType = getPublicationType(profileId, pubId);
         }
         if (pubType == Types.PublicationType.Mirror) {
-            uint256 rootProfileId = _publication.pointedProfileId;
-            uint256 rootPubId = _publication.pointedPubId;
-            return StorageLib.getPublication(rootProfileId, rootPubId).contentURI;
+            return StorageLib.getPublication(_publication.pointedProfileId, _publication.pointedPubId).contentURI;
         } else {
             return StorageLib.getPublication(profileId, pubId).contentURI;
         }
@@ -269,25 +268,34 @@ library PublicationLib {
         _referencePub.pointedPubId = referencePubParams.pointedPubId;
         _referencePub.contentURI = referencePubParams.contentURI;
         _referencePub.pubType = referencePubType;
-        Types.Publication storage _pubPointed = StorageLib.getPublication(
+        _fillRootOfPublicationInStorage(
+            _referencePub,
             referencePubParams.pointedProfileId,
             referencePubParams.pointedPubId
         );
+        return pubIdAssigned;
+    }
+
+    function _fillRootOfPublicationInStorage(
+        Types.Publication storage _publication,
+        uint256 pointedProfileId,
+        uint256 pointedPubId
+    ) internal {
+        Types.Publication storage _pubPointed = StorageLib.getPublication(pointedProfileId, pointedPubId);
         Types.PublicationType pubPointedType = _pubPointed.pubType;
         if (pubPointedType == Types.PublicationType.Post) {
             // The publication pointed is a Lens V2 post.
-            _referencePub.rootProfileId = referencePubParams.pointedProfileId;
-            _referencePub.rootPubId = referencePubParams.pointedPubId;
+            _publication.rootProfileId = pointedProfileId;
+            _publication.rootPubId = pointedPubId;
         } else if (pubPointedType == Types.PublicationType.Comment || pubPointedType == Types.PublicationType.Quote) {
             // The publication pointed is either a Lens V2 comment or a Lens V2 quote.
             // Note that even when the publication pointed is a V2 one, it will lack `rootProfileId` and `rootPubId` if
             // there is a Lens V1 Legacy publication in the thread of interactions (including the root post itself).
-            _referencePub.rootProfileId = _pubPointed.rootProfileId;
-            _referencePub.rootPubId = _pubPointed.rootPubId;
+            _publication.rootProfileId = _pubPointed.rootProfileId;
+            _publication.rootPubId = _pubPointed.rootPubId;
         }
         // Otherwise the root is not filled, as the pointed publication is a Lens V1 Legacy publication, which does not
         // support Lens V2 referral system.
-        return pubIdAssigned;
     }
 
     function _processCommentIfNeeded(
