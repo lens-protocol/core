@@ -1,41 +1,70 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.13;
 
-import 'test/base/BaseTest.t.sol';
 import 'test/MetaTxNegatives.t.sol';
 import {ILensHub} from 'contracts/interfaces/ILensHub.sol';
 import {Types} from 'contracts/libraries/constants/Types.sol';
 import {Events} from 'contracts/libraries/constants/Events.sol';
+import {ReferralSystemTest} from 'test/ReferralSystem.t.sol';
 
-contract ActTest is BaseTest {
+contract ActTest is ReferralSystemTest {
     TestAccount actor;
-    Types.PublicationActionParams defaultPubActionParams;
+    Types.PublicationActionParams actionParams;
+
+    function _referralSystem_PrepareOperation(
+        TestPublication memory target,
+        TestPublication memory referralPub
+    ) internal virtual override {
+        actionParams = _getDefaultPublicationActionParams();
+        actionParams.publicationActedProfileId = target.profileId;
+        actionParams.publicationActedId = target.pubId;
+        actionParams.actorProfileId = actor.profileId;
+        actionParams.referrerProfileIds = _toUint256Array(referralPub.profileId);
+        actionParams.referrerPubIds = _toUint256Array(referralPub.pubId);
+    }
+
+    function _referralSystem_ExecutePreparedOperation(
+        TestPublication memory target,
+        TestPublication memory referralPub
+    ) internal virtual override {
+        console.log('ACTING on %s, %s', vm.toString(target.profileId), vm.toString(target.pubId));
+        console.log('    with referral: %s, %s', vm.toString(referralPub.profileId), vm.toString(referralPub.pubId));
+
+        // TODO:
+        // we do some action on target while passing reference as referral and expect it to be called,
+        // so expectCall should check that the reference was passed as referral and it didn't revert.
+
+        // TODO TLDR: should do vm.expectCall /* */();
+
+        vm.prank(actor.owner);
+        hub.act(actionParams);
+    }
 
     function setUp() public virtual override {
         super.setUp();
         actor = _loadAccountAs('ACTOR');
-        defaultPubActionParams = _getDefaultPublicationActionParams();
-        defaultPubActionParams.actorProfileId = actor.profileId;
+        actionParams = _getDefaultPublicationActionParams();
+        actionParams.actorProfileId = actor.profileId;
     }
 
     // Negatives
     function testCannotAct_ifNonExistingPublication(uint256 nonexistentPubId) public {
         vm.assume(nonexistentPubId != defaultPub.pubId);
-        defaultPubActionParams.publicationActedId = nonexistentPubId;
+        actionParams.publicationActedId = nonexistentPubId;
 
         vm.expectRevert(Errors.ActionNotAllowed.selector);
 
-        _act(actor.ownerPk, defaultPubActionParams);
+        _act(actor.ownerPk, actionParams);
     }
 
     function testCannotAct_ifActionModuleNotEnabledForPublication(address notEnabledActionModule) public {
         vm.assume(notEnabledActionModule != address(mockActionModule));
 
-        defaultPubActionParams.actionModuleAddress = notEnabledActionModule;
+        actionParams.actionModuleAddress = notEnabledActionModule;
 
         vm.expectRevert(Errors.ActionNotAllowed.selector);
 
-        _act(actor.ownerPk, defaultPubActionParams);
+        _act(actor.ownerPk, actionParams);
     }
 
     function testCannotAct_ifProtocolIsPaused() public {
@@ -43,7 +72,7 @@ contract ActTest is BaseTest {
         hub.setState(Types.ProtocolState.Paused);
 
         vm.expectRevert(Errors.Paused.selector);
-        _act(actor.ownerPk, defaultPubActionParams);
+        _act(actor.ownerPk, actionParams);
     }
 
     function testCannotAct_onMirrors() public {
@@ -51,28 +80,28 @@ contract ActTest is BaseTest {
         vm.prank(defaultAccount.owner);
         uint256 mirrorPubId = hub.mirror(mirrorParams);
 
-        defaultPubActionParams.publicationActedId = mirrorPubId;
+        actionParams.publicationActedId = mirrorPubId;
 
         vm.expectRevert(Errors.ActionNotAllowed.selector);
-        _act(actor.ownerPk, defaultPubActionParams);
+        _act(actor.ownerPk, actionParams);
     }
 
     // Scenarios
 
     function testAct() public {
         vm.expectEmit(true, true, true, true, address(hub));
-        emit Events.Acted(defaultPubActionParams, abi.encode(true), block.timestamp);
+        emit Events.Acted(actionParams, abi.encode(true), block.timestamp);
 
         Types.ProcessActionParams memory processActionParams = Types.ProcessActionParams({
-            publicationActedProfileId: defaultPubActionParams.publicationActedProfileId,
-            publicationActedId: defaultPubActionParams.publicationActedId,
-            actorProfileId: defaultPubActionParams.actorProfileId,
+            publicationActedProfileId: actionParams.publicationActedProfileId,
+            publicationActedId: actionParams.publicationActedId,
+            actorProfileId: actionParams.actorProfileId,
             actorProfileOwner: actor.owner,
             transactionExecutor: actor.owner,
-            referrerProfileIds: defaultPubActionParams.referrerProfileIds,
-            referrerPubIds: defaultPubActionParams.referrerPubIds,
+            referrerProfileIds: actionParams.referrerProfileIds,
+            referrerPubIds: actionParams.referrerPubIds,
             referrerPubTypes: _emptyPubTypesArray(),
-            actionModuleData: defaultPubActionParams.actionModuleData
+            actionModuleData: actionParams.actionModuleData
         });
 
         vm.expectCall(
@@ -80,7 +109,7 @@ contract ActTest is BaseTest {
             abi.encodeWithSelector(mockActionModule.processPublicationAction.selector, (processActionParams))
         );
 
-        _act(actor.ownerPk, defaultPubActionParams);
+        _act(actor.ownerPk, actionParams);
     }
 
     function testAct_onComment() public {
@@ -88,7 +117,7 @@ contract ActTest is BaseTest {
         vm.prank(defaultAccount.owner);
         uint256 commentPubId = hub.comment(commentParams);
 
-        defaultPubActionParams.publicationActedId = commentPubId;
+        actionParams.publicationActedId = commentPubId;
         testAct();
     }
 
@@ -97,13 +126,13 @@ contract ActTest is BaseTest {
         vm.prank(defaultAccount.owner);
         uint256 quotePubId = hub.quote(quoteParams);
 
-        defaultPubActionParams.publicationActedId = quotePubId;
+        actionParams.publicationActedId = quotePubId;
         testAct();
     }
 
     function testCanAct_evenIfActionWasUnwhitelisted() public {
         vm.prank(governance);
-        hub.whitelistActionModule(defaultPubActionParams.actionModuleAddress, false);
+        hub.whitelistActionModule(actionParams.actionModuleAddress, false);
 
         testAct();
     }
@@ -243,11 +272,11 @@ contract ActMetaTxTest is ActTest, MetaTxNegatives {
 
     function _executeMetaTx(uint256 signerPk, uint256 nonce, uint256 deadline) internal virtual override {
         hub.actWithSig({
-            publicationActionParams: defaultPubActionParams,
+            publicationActionParams: actionParams,
             signature: _getSigStruct({
                 signer: vm.addr(_getDefaultMetaTxSignerPk()),
                 pKey: signerPk,
-                digest: _calculateActWithSigDigest(defaultPubActionParams, nonce, deadline),
+                digest: _calculateActWithSigDigest(actionParams, nonce, deadline),
                 deadline: deadline
             })
         });

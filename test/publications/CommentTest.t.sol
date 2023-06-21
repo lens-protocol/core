@@ -4,16 +4,18 @@ pragma solidity ^0.8.13;
 import {Types} from 'contracts/libraries/constants/Types.sol';
 import {PublicationTest, ReferencePublicationTest, ActionablePublicationTest} from 'test/publications/PublicationTest.t.sol';
 import {MetaTxNegatives} from 'test/MetaTxNegatives.t.sol';
+import {ReferralSystemTest} from 'test/ReferralSystem.t.sol';
+import 'forge-std/console.sol';
 
-contract CommentTest is ReferencePublicationTest, ActionablePublicationTest {
+contract CommentTest is ReferencePublicationTest, ActionablePublicationTest, ReferralSystemTest {
     Types.CommentParams commentParams;
 
     function testCommentTest() public {
         // Prevents being counted in Foundry Coverage
     }
 
-    function setUp() public virtual override {
-        super.setUp();
+    function setUp() public virtual override(PublicationTest, ReferralSystemTest) {
+        PublicationTest.setUp();
         commentParams = _getDefaultCommentParams();
     }
 
@@ -54,6 +56,30 @@ contract CommentTest is ReferencePublicationTest, ActionablePublicationTest {
     ) internal virtual override {
         commentParams.actionModules = actionModules;
         commentParams.actionModulesInitDatas = actionModulesInitDatas;
+    }
+
+    function _referralSystem_PrepareOperation(
+        TestPublication memory target,
+        TestPublication memory referralPub
+    ) internal virtual override {
+        _setPointedPub(target.profileId, target.pubId);
+        _setReferrers(_toUint256Array(referralPub.profileId), _toUint256Array(referralPub.pubId));
+    }
+
+    function _referralSystem_ExecutePreparedOperation(
+        TestPublication memory target,
+        TestPublication memory referralPub
+    ) internal virtual override {
+        console.log('COMMENTING on %s, %s', vm.toString(target.profileId), vm.toString(target.pubId));
+        console.log('    with referral: %s, %s', vm.toString(referralPub.profileId), vm.toString(referralPub.pubId));
+
+        // TODO:
+        // we do some action on target while passing reference as referral and expect it to be called,
+        // so expectCall should check that the reference was passed as referral and it didn't revert.
+
+        // TODO TLDR: should do vm.expectCall /* */();
+
+        _publish(publisher.ownerPk, publisher.profileId);
     }
 }
 

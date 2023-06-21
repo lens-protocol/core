@@ -363,9 +363,11 @@ contract BaseTest is TestSetup {
     }
 
     function _toLegacyV1Pub(uint256 profileId, uint256 pubId, address referenceModule, address collectModule) internal {
+        // NOTE: Quotes are converted into V1 comments.
+
         Types.PublicationType pubType = hub.getPublicationType(profileId, pubId);
-        if (pubType == Types.PublicationType.Nonexistent || pubType == Types.PublicationType.Quote) {
-            revert('Cannot convert quotes or unexistent publications to legacy V1 publication.');
+        if (pubType == Types.PublicationType.Nonexistent) {
+            revert('Cannot convert unexistent or already V1 publications.');
         } else if (pubType == Types.PublicationType.Mirror && collectModule != address(0)) {
             revert('Legacy V1 mirrors cannot have collect module.');
         } else if (pubType != Types.PublicationType.Mirror && collectModule == address(0)) {

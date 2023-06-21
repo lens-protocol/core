@@ -229,6 +229,7 @@ contract FeeFollowModuleTest is BaseTest {
     ) public {
         vm.assume(followerProfileId != 0);
         vm.assume(targetProfileId != 0);
+        vm.assume(transactionExecutor != treasury);
         treasuryFee = uint16(bound(uint256(treasuryFee), 0, (BPS_MAX / 2) - 1));
         vm.prank(modulesGovernance);
         moduleGlobals.setTreasuryFee(treasuryFee);
