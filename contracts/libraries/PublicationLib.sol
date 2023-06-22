@@ -343,7 +343,7 @@ library PublicationLib {
                 );
             }
         } else {
-            if (commentParams.referrerProfileIds.length > 0 || commentParams.referrerPubIds.length > 0) {
+            if (commentParams.referrerProfileIds.length > 0) {
                 // We don't allow referrers if the reference module is not set.
                 revert Errors.InvalidReferrer();
             }
@@ -396,7 +396,7 @@ library PublicationLib {
                 );
             }
         } else {
-            if (quoteParams.referrerProfileIds.length > 0 || quoteParams.referrerPubIds.length > 0) {
+            if (quoteParams.referrerProfileIds.length > 0) {
                 // We don't allow referrers if the reference module is not set.
                 revert Errors.InvalidReferrer();
             }
@@ -449,7 +449,7 @@ library PublicationLib {
                 );
             }
         } else {
-            if (mirrorParams.referrerProfileIds.length > 0 || mirrorParams.referrerPubIds.length > 0) {
+            if (mirrorParams.referrerProfileIds.length > 0) {
                 // We don't allow referrers if the reference module is not set.
                 revert Errors.InvalidReferrer();
             }
