@@ -40,10 +40,11 @@ abstract contract ReferralSystemTest is BaseTest {
         TestPublication memory referralPub
     ) internal virtual;
 
+    // Returns true if expectRevert was added, so we avoid a dobule expectRevert scenario.
     function _referralSystem_ExpectRevertsIfNeeded(
         TestPublication memory target,
         TestPublication memory referralPub
-    ) internal virtual;
+    ) internal virtual returns (bool);
 
     function _referralSystem_ExecutePreparedOperation(
         TestPublication memory target,
@@ -158,10 +159,14 @@ abstract contract ReferralSystemTest is BaseTest {
 
             // check if target is V2 or V1
             Types.Publication memory targetPublication = hub.getPublication(target.profileId, target.pubId);
-            // Shoule revert as V1-contaminated trees don't have a root and only allow downwards referrals
 
             _referralSystem_PrepareOperation(target, referralPub);
-            vm.expectRevert(Errors.InvalidReferrer.selector);
+
+            // Shoule revert as V1-contaminated trees don't have a root and only allow downwards referrals
+            if (!_referralSystem_ExpectRevertsIfNeeded(target, referralPub)) {
+                vm.expectRevert(Errors.InvalidReferrer.selector);
+            }
+
             _referralSystem_ExecutePreparedOperation(target, referralPub);
         }
     }
@@ -173,7 +178,7 @@ abstract contract ReferralSystemTest is BaseTest {
         // Target as a comment node and pass another comments as referral
         for (uint256 i = 0; i < treeV1.references.length; i++) {
             TestPublication memory target = treeV1.references[i];
-            for (uint256 j = 0; j < treeV1.references.length; j++) {
+            for (uint256 j = 1; j < treeV1.references.length; j++) {
                 TestPublication memory referralPub = treeV1.references[j];
                 if (i == j) continue; // skip self
 
@@ -187,13 +192,13 @@ abstract contract ReferralSystemTest is BaseTest {
                 );
 
                 if (
-                    _isV1LegacyPub(targetPublication) ||
-                    referralPublication.pointedProfileId != target.profileId ||
-                    referralPublication.pointedPubId != target.pubId
+                    !_referralSystem_ExpectRevertsIfNeeded(target, referralPub) &&
+                    (_isV1LegacyPub(targetPublication) ||
+                        referralPublication.pointedProfileId != target.profileId ||
+                        referralPublication.pointedPubId != target.pubId)
                 ) {
+                    // Non-pure V2 trees only allow one-level referrers.
                     vm.expectRevert(Errors.InvalidReferrer.selector);
-                } else {
-                    _referralSystem_ExpectRevertsIfNeeded(target, referralPub);
                 }
 
                 _referralSystem_ExecutePreparedOperation(target, referralPub);
@@ -222,13 +227,13 @@ abstract contract ReferralSystemTest is BaseTest {
                 );
 
                 if (
-                    _isV1LegacyPub(targetPublication) ||
-                    referralPublication.pointedProfileId != target.profileId ||
-                    referralPublication.pointedPubId != target.pubId
+                    !_referralSystem_ExpectRevertsIfNeeded(target, referralPub) &&
+                    (_isV1LegacyPub(targetPublication) ||
+                        referralPublication.pointedProfileId != target.profileId ||
+                        referralPublication.pointedPubId != target.pubId)
                 ) {
+                    // Non-pure V2 trees only allow one-level referrers.
                     vm.expectRevert(Errors.InvalidReferrer.selector);
-                } else {
-                    _referralSystem_ExpectRevertsIfNeeded(target, referralPub);
                 }
 
                 _referralSystem_ExecutePreparedOperation(target, referralPub);

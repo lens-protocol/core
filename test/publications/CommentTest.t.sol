@@ -5,8 +5,8 @@ import {Types} from 'contracts/libraries/constants/Types.sol';
 import {PublicationTest, ReferencePublicationTest, ActionablePublicationTest} from 'test/publications/PublicationTest.t.sol';
 import {MetaTxNegatives} from 'test/MetaTxNegatives.t.sol';
 import {ReferralSystemTest} from 'test/ReferralSystem.t.sol';
-import 'forge-std/console.sol';
 import {Errors} from 'contracts/libraries/constants/Errors.sol';
+import 'forge-std/console.sol';
 
 contract CommentTest is ReferencePublicationTest, ActionablePublicationTest, ReferralSystemTest {
     Types.CommentParams commentParams;
@@ -70,25 +70,29 @@ contract CommentTest is ReferencePublicationTest, ActionablePublicationTest, Ref
         if (targetPublication.referenceModule != address(0)) {
             commentParams.referenceModuleData = abi.encode(true);
         }
+        _refreshCachedNonces();
     }
 
     function _referralSystem_ExpectRevertsIfNeeded(
         TestPublication memory target,
         TestPublication memory referralPub
-    ) internal virtual override {
+    ) internal virtual override returns (bool) {
         Types.Publication memory targetPublication = hub.getPublication(target.profileId, target.pubId);
 
         if (commentParams.referrerProfileIds.length > 0 || commentParams.referrerPubIds.length > 0) {
             if (_isV1LegacyPub(targetPublication)) {
                 // V1 should not accept referrers for comments
                 vm.expectRevert(Errors.InvalidReferrer.selector);
+                return true;
             } else {
                 // V2 without referenceModule should not accept referrers
                 if (targetPublication.referenceModule == address(0)) {
                     vm.expectRevert(Errors.InvalidReferrer.selector);
+                    return true;
                 }
             }
         }
+        return false;
     }
 
     function _referralSystem_ExecutePreparedOperation(
@@ -97,14 +101,11 @@ contract CommentTest is ReferencePublicationTest, ActionablePublicationTest, Ref
     ) internal virtual override {
         console.log('COMMENTING on %s, %s', vm.toString(target.profileId), vm.toString(target.pubId));
         console.log('    with referral: %s, %s', vm.toString(referralPub.profileId), vm.toString(referralPub.pubId));
-
-        // TODO:
-        // we do some action on target while passing reference as referral and expect it to be called,
-        // so expectCall should check that the reference was passed as referral and it didn't revert.
-
-        // TODO TLDR: should do vm.expectCall /* */();
-
         _publish(publisher.ownerPk, publisher.profileId);
+    }
+
+    function _refreshCachedNonces() internal virtual {
+        // Nothing to do there.
     }
 }
 
@@ -155,5 +156,10 @@ contract CommentMetaTxTest is CommentTest, MetaTxNegatives {
 
     function _getDefaultMetaTxSignerPk() internal virtual override returns (uint256) {
         return publisher.ownerPk;
+    }
+
+    function _refreshCachedNonces() internal override {
+        cachedNonceByAddress[defaultAccount.owner] = hub.nonces(defaultAccount.owner);
+        cachedNonceByAddress[publisher.owner] = hub.nonces(publisher.owner);
     }
 }

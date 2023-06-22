@@ -21,12 +21,19 @@ contract ActTest is ReferralSystemTest {
         actionParams.actorProfileId = actor.profileId;
         actionParams.referrerProfileIds = _toUint256Array(referralPub.profileId);
         actionParams.referrerPubIds = _toUint256Array(referralPub.pubId);
+        _refreshCachedNonces();
     }
 
     function _referralSystem_ExpectRevertsIfNeeded(
         TestPublication memory target,
         TestPublication memory referralPub
-    ) internal virtual override {}
+    ) internal virtual override returns (bool) {
+        if (_isV1LegacyPub(hub.getPublication(target.profileId, target.pubId))) {
+            vm.expectRevert(Errors.ActionNotAllowed.selector);
+            return true;
+        }
+        return false;
+    }
 
     function _referralSystem_ExecutePreparedOperation(
         TestPublication memory target,
@@ -34,12 +41,6 @@ contract ActTest is ReferralSystemTest {
     ) internal virtual override {
         console.log('ACTING on %s, %s', vm.toString(target.profileId), vm.toString(target.pubId));
         console.log('    with referral: %s, %s', vm.toString(referralPub.profileId), vm.toString(referralPub.pubId));
-
-        // TODO:
-        // we do some action on target while passing reference as referral and expect it to be called,
-        // so expectCall should check that the reference was passed as referral and it didn't revert.
-
-        // TODO TLDR: should do vm.expectCall /* */();
 
         vm.prank(actor.owner);
         hub.act(actionParams);

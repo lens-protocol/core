@@ -279,8 +279,8 @@ contract BaseTest is TestSetup {
                 profileId: mirrorParams.profileId,
                 pointedProfileId: mirrorParams.pointedProfileId,
                 pointedPubId: mirrorParams.pointedPubId,
-                referrerProfileIds: _emptyUint256Array(),
-                referrerPubIds: _emptyUint256Array(),
+                referrerProfileIds: mirrorParams.referrerProfileIds,
+                referrerPubIds: mirrorParams.referrerPubIds,
                 referenceModuleData: mirrorParams.referenceModuleData,
                 nonce: nonce,
                 deadline: deadline
