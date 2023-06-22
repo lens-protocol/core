@@ -4,6 +4,7 @@ pragma solidity ^0.8.13;
 import 'test/mocks/MockModule.sol';
 import 'test/base/BaseTest.t.sol';
 import {MockDeprecatedCollectModule} from 'test/mocks/MockDeprecatedCollectModule.sol';
+import {MockDeprecatedReferenceModule} from 'test/mocks/MockDeprecatedReferenceModule.sol';
 
 /*
 This kind of tree is created:
@@ -31,7 +32,15 @@ This kind of tree is created:
 abstract contract ReferralSystemTest is BaseTest {
     uint256 testAccountId;
 
+    address mockDeprecatedReferenceModule = address(new MockDeprecatedReferenceModule());
+    address mockDeprecatedCollectModule = address(new MockDeprecatedCollectModule());
+
     function _referralSystem_PrepareOperation(
+        TestPublication memory target,
+        TestPublication memory referralPub
+    ) internal virtual;
+
+    function _referralSystem_ExpectRevertsIfNeeded(
         TestPublication memory target,
         TestPublication memory referralPub
     ) internal virtual;
@@ -43,6 +52,7 @@ abstract contract ReferralSystemTest is BaseTest {
 
     function _executeOperation(TestPublication memory target, TestPublication memory referralPub) private {
         _referralSystem_PrepareOperation(target, referralPub);
+        _referralSystem_ExpectRevertsIfNeeded(target, referralPub);
         _referralSystem_ExecutePreparedOperation(target, referralPub);
     }
 
@@ -112,60 +122,119 @@ abstract contract ReferralSystemTest is BaseTest {
         }
     }
 
-    // function testV1_TargetPost_ReferralComment(uint256 v1FuzzBitmap) public virtual {
-    //     vm.assume(v1FuzzBitmap < 2 ** 11);
-    //     uint256 commentQuoteFuzzBitmap = 0;
-    //     Tree memory treeV1 = _createV1Tree(commentQuoteFuzzBitmap, v1FuzzBitmap);
+    function testV1_TargetPost_ReferralComment(uint256 v1FuzzBitmap) public virtual {
+        vm.assume(v1FuzzBitmap < 2 ** 11);
+        Tree memory treeV1 = _createV1Tree(v1FuzzBitmap);
 
-    //     // Target a post with quote/comment as referrals
-    //     TestPublication memory target = treeV1.post;
-    //     for (uint256 i = 0; i < treeV1.references.length; i++) {
-    //         TestPublication memory referralPub = treeV1.references[i];
-    //         // should revert because only mirros are allowed as referrals on V1 pubs
-    //         _executeOperationV1(target, referralPub, true);
-    //     }
-    // }
+        // Target a post with quote/comment as referrals
+        TestPublication memory target = treeV1.post;
+        for (uint256 i = 0; i < treeV1.references.length; i++) {
+            TestPublication memory referralPub = treeV1.references[i];
+            _executeOperation(target, referralPub);
+        }
+    }
 
-    // function testV1_TargetPost_ReferralMirror(uint256 v1FuzzBitmap) public virtual {
-    //     vm.assume(v1FuzzBitmap < 2 ** 11);
-    //     uint256 commentQuoteFuzzBitmap = 0;
-    //     Tree memory treeV1 = _createV1Tree(commentQuoteFuzzBitmap, v1FuzzBitmap);
+    function testV1_TargetPost_ReferralMirror(uint256 v1FuzzBitmap) public virtual {
+        vm.assume(v1FuzzBitmap < 2 ** 11);
+        uint256 commentQuoteFuzzBitmap = 0;
+        Tree memory treeV1 = _createV1Tree(v1FuzzBitmap);
 
-    //     // Target a post with quote/comment as referrals
-    //     TestPublication memory target = treeV1.post;
-    //     for (uint256 i = 0; i < treeV1.mirrors.length; i++) {
-    //         TestPublication memory referralPub = treeV1.mirrors[i];
-    //         Types.Publication memory publication = hub.getPublication(referralPub.profileId, referralPub.pubId);
-    //         if (publication.pointedProfileId == target.profileId && publication.pointedPubId == target.pubId) {
-    //             _executeOperationV1(target, referralPub, false);
-    //         } else {
-    //             // should revert as only mirrors pointing to the target are allowed as referrals on V1 pubs
-    //             _executeOperationV1(target, referralPub, true);
-    //         }
-    //     }
-    // }
+        // Target a post with mirrors as referrals
+        TestPublication memory target = treeV1.post;
+        for (uint256 i = 0; i < treeV1.mirrors.length; i++) {
+            TestPublication memory referralPub = treeV1.mirrors[i];
+            _executeOperation(target, referralPub);
+        }
+    }
 
-    // function testV1_TargetComment_ReferralPost(uint256 v1FuzzBitmap) public virtual {
-    //     vm.assume(v1FuzzBitmap < 2 ** 11);
-    //     uint256 commentQuoteFuzzBitmap = 0;
-    //     Tree memory treeV1 = _createV1Tree(commentQuoteFuzzBitmap, v1FuzzBitmap);
+    function testV1_TargetComment_ReferralV1Post(uint256 v1FuzzBitmap) public virtual {
+        vm.assume(v1FuzzBitmap < 2 ** 11);
+        Tree memory treeV1 = _createV1Tree(v1FuzzBitmap);
 
-    //     // Target comment with post as a referral
-    //     TestPublication memory referralPub = treeV1.post;
-    //     for (uint256 i = 0; i < treeV1.references.length; i++) {
-    //         TestPublication memory target = treeV1.references[i];
+        // Target comment with post as a referral
+        TestPublication memory referralPub = treeV1.post;
+        for (uint256 i = 0; i < treeV1.references.length; i++) {
+            TestPublication memory target = treeV1.references[i];
 
-    //         // check if target is V2 or V1
-    //         Types.Publication memory targetPublication = hub.getPublication(target.profileId, target.pubId);
-    //         if (_isV1LegacyPub(targetPublication)) {
-    //             // Shoule revert as V1-contaminated trees don't have a root and only allow downwards referrals
-    //             _executeOperationV1(target, referralPub, true);
-    //         } else {
-    //             // Shoule revert as V1-contaminated trees don't have a root and only allow downwards referrals
-    //             _executeOperationV2(target, referralPub, true);
-    //         }
-    //     }
-    // }
+            // check if target is V2 or V1
+            Types.Publication memory targetPublication = hub.getPublication(target.profileId, target.pubId);
+            // Shoule revert as V1-contaminated trees don't have a root and only allow downwards referrals
+
+            _referralSystem_PrepareOperation(target, referralPub);
+            vm.expectRevert(Errors.InvalidReferrer.selector);
+            _referralSystem_ExecutePreparedOperation(target, referralPub);
+        }
+    }
+
+    function testV1_TargetComment_ReferralComment(uint256 v1FuzzBitmap) public virtual {
+        vm.assume(v1FuzzBitmap < 2 ** 11);
+        Tree memory treeV1 = _createV1Tree(v1FuzzBitmap);
+
+        // Target as a comment node and pass another comments as referral
+        for (uint256 i = 0; i < treeV1.references.length; i++) {
+            TestPublication memory target = treeV1.references[i];
+            for (uint256 j = 0; j < treeV1.references.length; j++) {
+                TestPublication memory referralPub = treeV1.references[j];
+                if (i == j) continue; // skip self
+
+                _referralSystem_PrepareOperation(target, referralPub);
+
+                Types.Publication memory targetPublication = hub.getPublication(target.profileId, target.pubId);
+
+                Types.Publication memory referralPublication = hub.getPublication(
+                    referralPub.profileId,
+                    referralPub.pubId
+                );
+
+                if (
+                    _isV1LegacyPub(targetPublication) ||
+                    referralPublication.pointedProfileId != target.profileId ||
+                    referralPublication.pointedPubId != target.pubId
+                ) {
+                    vm.expectRevert(Errors.InvalidReferrer.selector);
+                } else {
+                    _referralSystem_ExpectRevertsIfNeeded(target, referralPub);
+                }
+
+                _referralSystem_ExecutePreparedOperation(target, referralPub);
+            }
+        }
+    }
+
+    function testV1_TargetComment_ReferralMirror(uint256 v1FuzzBitmap) public virtual {
+        vm.assume(v1FuzzBitmap < 2 ** 11);
+        Tree memory treeV1 = _createV1Tree(v1FuzzBitmap);
+
+        // Target as a comment node and pass mirror as referral
+        for (uint256 i = 0; i < treeV1.references.length; i++) {
+            TestPublication memory target = treeV1.references[i];
+            for (uint256 j = 0; j < treeV1.mirrors.length; j++) {
+                TestPublication memory referralPub = treeV1.mirrors[j];
+                if (i == j) continue; // skip self
+
+                _referralSystem_PrepareOperation(target, referralPub);
+
+                Types.Publication memory targetPublication = hub.getPublication(target.profileId, target.pubId);
+
+                Types.Publication memory referralPublication = hub.getPublication(
+                    referralPub.profileId,
+                    referralPub.pubId
+                );
+
+                if (
+                    _isV1LegacyPub(targetPublication) ||
+                    referralPublication.pointedProfileId != target.profileId ||
+                    referralPublication.pointedPubId != target.pubId
+                ) {
+                    vm.expectRevert(Errors.InvalidReferrer.selector);
+                } else {
+                    _referralSystem_ExpectRevertsIfNeeded(target, referralPub);
+                }
+
+                _referralSystem_ExecutePreparedOperation(target, referralPub);
+            }
+        }
+    }
 
     function _createV2Tree(uint256 commentQuoteFuzzBitmap) internal returns (Tree memory) {
         Tree memory tree;
@@ -191,10 +260,6 @@ abstract contract ReferralSystemTest is BaseTest {
         return tree;
     }
 
-    function _isV1LegacyPub(Types.Publication memory pub) internal pure returns (bool) {
-        return uint8(pub.pubType) == 0;
-    }
-
     function _convertToV1(TestPublication memory pub, uint256 v1FuzzBitmap, uint256 v1FuzzBitmapIndex) internal {
         Types.Publication memory publication = hub.getPublication(pub.profileId, pub.pubId);
         Types.Publication memory pointedPub = hub.getPublication(
@@ -204,80 +269,71 @@ abstract contract ReferralSystemTest is BaseTest {
         if (_isV1LegacyPub(pointedPub)) {
             bool shouldConvertToV1 = ((v1FuzzBitmap >> (v1FuzzBitmapIndex)) & 1) != 0;
             if (shouldConvertToV1) {
-                console.log('Converted (%s, %s) to V1', pub.profileId, pub.pubId);
+                console.log(
+                    'Converted (%s, %s) to V1 %s referenceModule',
+                    pub.profileId,
+                    pub.pubId,
+                    uint256(keccak256(abi.encodePacked(v1FuzzBitmap))) % 2 == 0 ? 'without' : 'with'
+                );
                 _toLegacyV1Pub(
                     pub.profileId,
                     pub.pubId,
-                    publication.referenceModule,
-                    publication.pubType == Types.PublicationType.Mirror ? address(0) : address(69)
+                    uint256(keccak256(abi.encodePacked(v1FuzzBitmap))) % 2 == 0
+                        ? address(0)
+                        : mockDeprecatedReferenceModule,
+                    publication.pubType == Types.PublicationType.Mirror ? address(0) : mockDeprecatedCollectModule
                 );
             }
         }
     }
 
     function _convertPostToV1(TestPublication memory pub) internal {
-        Types.Publication memory publication = hub.getPublication(pub.profileId, pub.pubId);
         console.log('Converted (%s, %s) to V1', pub.profileId, pub.pubId);
-        address mockDeprecatedCollectModule = address(new MockDeprecatedCollectModule());
-        _toLegacyV1Pub(pub.profileId, pub.pubId, publication.referenceModule, mockDeprecatedCollectModule);
+        if (pub.pubId % 2 == 0) {
+            _toLegacyV1Pub(pub.profileId, pub.pubId, mockDeprecatedReferenceModule, mockDeprecatedCollectModule);
+        } else {
+            _toLegacyV1Pub(pub.profileId, pub.pubId, address(0), mockDeprecatedCollectModule);
+        }
     }
 
-    // function _createV1Tree(uint256 commentQuoteFuzzBitmap, uint256 v1FuzzBitmap) internal returns (Tree memory) {
-    //     /*
-    //         Post_1 [Always V1]
-    //         |
-    //         |-- Comment/Quote_0 -- Mirror_0 (mirror of a direct reference)
-    //         |        |
-    //         |        |-- Comment/Quote_1 -- Mirror_1 (mirror of a 1st level reference)
-    //         |                 |
-    //         |                 |-- Comment/Quote_2 -- Mirror_2 (mirror of a 2nd level reference)
-    //         |                           |
-    //         |                           |-- Comment/Quote_3 -- Mirror_3 (mirror of a 3rd level reference)
+    function _createV1Tree(uint256 v1FuzzBitmap) internal returns (Tree memory) {
+        Tree memory tree;
+        tree.references = new TestPublication[](5);
+        tree.mirrors = new TestPublication[](6);
 
-    //         |
-    //         |-- Comment/Quote_4 -- Mirror_4 (a different branch)
-    //         |
-    //         |
-    //         |-- Mirror_5 (direct post mirror)
-    //     */
+        tree.post = _post();
+        _convertPostToV1(tree.post);
 
-    //     Tree memory tree;
-    //     tree.references = new TestPublication[](5);
-    //     tree.mirrors = new TestPublication[](6);
+        tree.references[0] = _comment(tree.post);
+        tree.mirrors[0] = _mirror(tree.references[0]);
+        tree.references[1] = _comment(tree.references[0]);
+        tree.mirrors[1] = _mirror(tree.references[1]);
+        tree.references[2] = _comment(tree.references[1]);
+        tree.mirrors[2] = _mirror(tree.references[2]);
+        tree.references[3] = _comment(tree.references[2]);
+        tree.mirrors[3] = _mirror(tree.references[3]);
 
-    //     tree.post = post();
-    //     _convertPostToV1(tree.post);
+        tree.references[4] = _comment(tree.post);
+        tree.mirrors[4] = _mirror(tree.references[4]);
 
-    //     tree.references[0] = _commentOrQuote(tree.post, commentQuoteFuzzBitmap, 0);
-    //     tree.mirrors[0] = mirror(tree.references[0]);
-    //     tree.references[1] = _commentOrQuote(tree.references[0], commentQuoteFuzzBitmap, 1);
-    //     tree.mirrors[1] = mirror(tree.references[1]);
-    //     tree.references[2] = _commentOrQuote(tree.references[1], commentQuoteFuzzBitmap, 2);
-    //     tree.mirrors[2] = mirror(tree.references[2]);
-    //     tree.references[3] = _commentOrQuote(tree.references[2], commentQuoteFuzzBitmap, 3);
-    //     tree.mirrors[3] = mirror(tree.references[3]);
+        tree.mirrors[5] = _mirror(tree.post);
 
-    //     tree.references[4] = _commentOrQuote(tree.post, commentQuoteFuzzBitmap, 4);
-    //     tree.mirrors[4] = mirror(tree.references[4]);
+        _convertToV1(tree.references[0], v1FuzzBitmap, 0);
+        _convertToV1(tree.mirrors[0], v1FuzzBitmap, 1);
+        _convertToV1(tree.references[1], v1FuzzBitmap, 2);
+        _convertToV1(tree.mirrors[1], v1FuzzBitmap, 3);
+        _convertToV1(tree.references[2], v1FuzzBitmap, 4);
+        _convertToV1(tree.mirrors[2], v1FuzzBitmap, 5);
+        _convertToV1(tree.references[3], v1FuzzBitmap, 6);
+        _convertToV1(tree.mirrors[3], v1FuzzBitmap, 7);
 
-    //     tree.mirrors[5] = mirror(tree.post);
+        _convertToV1(tree.references[4], v1FuzzBitmap, 8);
+        _convertToV1(tree.mirrors[4], v1FuzzBitmap, 9);
 
-    //     _convertToV1(tree.references[0], v1FuzzBitmap, 0);
-    //     _convertToV1(tree.mirrors[0], v1FuzzBitmap, 1);
-    //     _convertToV1(tree.references[1], v1FuzzBitmap, 2);
-    //     _convertToV1(tree.mirrors[1], v1FuzzBitmap, 3);
-    //     _convertToV1(tree.references[2], v1FuzzBitmap, 4);
-    //     _convertToV1(tree.mirrors[2], v1FuzzBitmap, 5);
-    //     _convertToV1(tree.references[3], v1FuzzBitmap, 6);
-    //     _convertToV1(tree.mirrors[3], v1FuzzBitmap, 7);
+        _convertToV1(tree.mirrors[5], v1FuzzBitmap, 10);
 
-    //     _convertToV1(tree.references[4], v1FuzzBitmap, 8);
-    //     _convertToV1(tree.mirrors[4], v1FuzzBitmap, 9);
-
-    //     _convertToV1(tree.mirrors[5], v1FuzzBitmap, 10);
-
-    //     return tree;
-    // }
+        return tree;
+    }
 
     function _commentOrQuote(
         TestPublication memory testPub,
@@ -298,6 +354,11 @@ abstract contract ReferralSystemTest is BaseTest {
         Types.PostParams memory postParams = _getDefaultPostParams();
         postParams.profileId = publisher.profileId;
 
+        if (testAccountId % 2 == 0) {
+            postParams.referenceModule = address(mockReferenceModule);
+            postParams.referenceModuleInitData = abi.encode(true);
+        }
+
         vm.prank(publisher.owner);
         uint256 pubId = hub.post(postParams);
 
@@ -312,6 +373,7 @@ abstract contract ReferralSystemTest is BaseTest {
         mirrorParams.profileId = publisher.profileId;
         mirrorParams.pointedPubId = testPub.pubId;
         mirrorParams.pointedProfileId = testPub.profileId;
+        mirrorParams.referenceModuleData = abi.encode(true);
 
         vm.prank(publisher.owner);
         uint256 pubId = hub.mirror(mirrorParams);
@@ -333,6 +395,12 @@ abstract contract ReferralSystemTest is BaseTest {
         commentParams.profileId = publisher.profileId;
         commentParams.pointedPubId = testPub.pubId;
         commentParams.pointedProfileId = testPub.profileId;
+        commentParams.referenceModuleData = abi.encode(true);
+
+        if (testAccountId % 2 == 0) {
+            commentParams.referenceModule = address(mockReferenceModule);
+            commentParams.referenceModuleInitData = abi.encode(true);
+        }
 
         vm.prank(publisher.owner);
         uint256 pubId = hub.comment(commentParams);
@@ -354,6 +422,12 @@ abstract contract ReferralSystemTest is BaseTest {
         quoteParams.profileId = publisher.profileId;
         quoteParams.pointedPubId = testPub.pubId;
         quoteParams.pointedProfileId = testPub.profileId;
+        quoteParams.referenceModuleData = abi.encode(true);
+
+        if (testAccountId % 2 == 0) {
+            quoteParams.referenceModule = address(mockReferenceModule);
+            quoteParams.referenceModuleInitData = abi.encode(true);
+        }
 
         vm.prank(publisher.owner);
         uint256 pubId = hub.quote(quoteParams);

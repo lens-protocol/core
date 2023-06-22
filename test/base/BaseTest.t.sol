@@ -406,4 +406,8 @@ contract BaseTest is TestSetup {
             vm.store({target: address(hub), slot: bytes32(publicationSlot + offset), value: 0});
         }
     }
+
+    function _isV1LegacyPub(Types.Publication memory pub) internal pure returns (bool) {
+        return uint8(pub.pubType) == 0;
+    }
 }

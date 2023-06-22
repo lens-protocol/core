@@ -23,6 +23,11 @@ contract ActTest is ReferralSystemTest {
         actionParams.referrerPubIds = _toUint256Array(referralPub.pubId);
     }
 
+    function _referralSystem_ExpectRevertsIfNeeded(
+        TestPublication memory target,
+        TestPublication memory referralPub
+    ) internal virtual override {}
+
     function _referralSystem_ExecutePreparedOperation(
         TestPublication memory target,
         TestPublication memory referralPub

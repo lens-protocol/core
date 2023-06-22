@@ -6,6 +6,7 @@ import {PublicationTest, ReferencePublicationTest, ActionablePublicationTest} fr
 import {MetaTxNegatives} from 'test/MetaTxNegatives.t.sol';
 import {ReferralSystemTest} from 'test/ReferralSystem.t.sol';
 import 'forge-std/console.sol';
+import {Errors} from 'contracts/libraries/constants/Errors.sol';
 
 contract CommentTest is ReferencePublicationTest, ActionablePublicationTest, ReferralSystemTest {
     Types.CommentParams commentParams;
@@ -64,6 +65,30 @@ contract CommentTest is ReferencePublicationTest, ActionablePublicationTest, Ref
     ) internal virtual override {
         _setPointedPub(target.profileId, target.pubId);
         _setReferrers(_toUint256Array(referralPub.profileId), _toUint256Array(referralPub.pubId));
+
+        Types.Publication memory targetPublication = hub.getPublication(target.profileId, target.pubId);
+        if (targetPublication.referenceModule != address(0)) {
+            commentParams.referenceModuleData = abi.encode(true);
+        }
+    }
+
+    function _referralSystem_ExpectRevertsIfNeeded(
+        TestPublication memory target,
+        TestPublication memory referralPub
+    ) internal virtual override {
+        Types.Publication memory targetPublication = hub.getPublication(target.profileId, target.pubId);
+
+        if (commentParams.referrerProfileIds.length > 0 || commentParams.referrerPubIds.length > 0) {
+            if (_isV1LegacyPub(targetPublication)) {
+                // V1 should not accept referrers for comments
+                vm.expectRevert(Errors.InvalidReferrer.selector);
+            } else {
+                // V2 without referenceModule should not accept referrers
+                if (targetPublication.referenceModule == address(0)) {
+                    vm.expectRevert(Errors.InvalidReferrer.selector);
+                }
+            }
+        }
     }
 
     function _referralSystem_ExecutePreparedOperation(
