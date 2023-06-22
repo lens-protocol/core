@@ -334,6 +334,11 @@ library PublicationLib {
                     commentParams.referenceModuleData
                 );
             }
+        } else {
+            if (commentParams.referrerProfileIds.length > 0 || commentParams.referrerPubIds.length > 0) {
+                // We don't allow referrers if the reference module is not set.
+                revert Errors.InvalidReferrer();
+            }
         }
         return '';
     }
@@ -382,6 +387,11 @@ library PublicationLib {
                     quoteParams.referenceModuleData
                 );
             }
+        } else {
+            if (quoteParams.referrerProfileIds.length > 0 || quoteParams.referrerPubIds.length > 0) {
+                // We don't allow referrers if the reference module is not set.
+                revert Errors.InvalidReferrer();
+            }
         }
         return '';
     }
@@ -429,6 +439,11 @@ library PublicationLib {
                     mirrorParams.pointedPubId,
                     mirrorParams.referenceModuleData
                 );
+            }
+        } else {
+            if (mirrorParams.referrerProfileIds.length > 0 || mirrorParams.referrerPubIds.length > 0) {
+                // We don't allow referrers if the reference module is not set.
+                revert Errors.InvalidReferrer();
             }
         }
         return '';
