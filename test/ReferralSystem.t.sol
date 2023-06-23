@@ -122,11 +122,11 @@ abstract contract ReferralSystemTest is BaseTest {
                 for (uint256 i = 0; i < treeV2.references.length; i++) {
                     TestPublication memory target = treeV2.references[i];
                     for (uint256 j = 0; j < treeV2.references.length; j++) {
-                        TestPublication memory referralPub = treeV2.references[j];
+                        TestPublication memory quoteOrCommentAsReferralPub = treeV2.references[j];
                         if (i == j) continue; // skip self
                         // vm.expectCall /* */();
 
-                        _executeOperation(target, referralPub);
+                        _executeOperation(target, quoteOrCommentAsReferralPub);
                     }
 
                     // One special case is a post as referal for reference node
@@ -166,7 +166,6 @@ abstract contract ReferralSystemTest is BaseTest {
 
     function testV1_TargetPost_ReferralMirror(uint256 v1FuzzBitmap) public virtual {
         vm.assume(v1FuzzBitmap < 2 ** 11);
-        uint256 commentQuoteFuzzBitmap = 0;
         Tree memory treeV1 = _createV1Tree(v1FuzzBitmap);
 
         // Target a post with mirrors as referrals
@@ -185,9 +184,6 @@ abstract contract ReferralSystemTest is BaseTest {
         TestPublication memory referralPub = treeV1.post;
         for (uint256 i = 0; i < treeV1.references.length; i++) {
             TestPublication memory target = treeV1.references[i];
-
-            // check if target is V2 or V1
-            Types.Publication memory targetPublication = hub.getPublication(target.profileId, target.pubId);
 
             _referralSystem_PrepareOperation(target, referralPub);
 
@@ -475,7 +471,7 @@ abstract contract ReferralSystemTest is BaseTest {
         return TestPublication(publisher.profileId, pubId);
     }
 
-    function testCannotExecuteOperationIf_ReferralProfileIdsPassedQty_DiffersFromPubIdsQty() public {
+    function testCannotExecuteOperationIf_ReferralProfileIdsPassedQty_DiffersFromPubIdsQty() public virtual {
         Types.PostParams memory postParams = _getDefaultPostParams();
         postParams.referenceModule = address(mockReferenceModule);
         postParams.referenceModuleInitData = abi.encode(true);
@@ -493,7 +489,7 @@ abstract contract ReferralSystemTest is BaseTest {
         _referralSystem_ExecutePreparedOperation();
     }
 
-    function testCannotPass_TargetedPublication_AsReferrer() public {
+    function testCannotPass_TargetedPublication_AsReferrer() public virtual {
         Types.PostParams memory postParams = _getDefaultPostParams();
         postParams.referenceModule = address(mockReferenceModule);
         postParams.referenceModuleInitData = abi.encode(true);
@@ -505,7 +501,7 @@ abstract contract ReferralSystemTest is BaseTest {
         _referralSystem_ExecutePreparedOperation();
     }
 
-    function testCannotPass_UnexistentProfile_AsReferrer(uint256 unexistentProfileId, uint8 pubId) public {
+    function testCannotPass_UnexistentProfile_AsReferrer(uint256 unexistentProfileId, uint8 pubId) public virtual {
         Types.PostParams memory postParams = _getDefaultPostParams();
         postParams.referenceModule = address(mockReferenceModule);
         postParams.referenceModuleInitData = abi.encode(true);
@@ -519,7 +515,7 @@ abstract contract ReferralSystemTest is BaseTest {
         _referralSystem_ExecutePreparedOperation();
     }
 
-    function testCannotPass_UnexistentPublication_AsReferrer(uint256 unexistentPubId) public {
+    function testCannotPass_UnexistentPublication_AsReferrer(uint256 unexistentPubId) public virtual {
         Types.PostParams memory postParams = _getDefaultPostParams();
         postParams.referenceModule = address(mockReferenceModule);
         postParams.referenceModuleInitData = abi.encode(true);
