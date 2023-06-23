@@ -154,7 +154,7 @@ library ValidationLib {
         } else {
             // Checked/Verified referral. Publication referrer.
             if (
-                // Cannot pass itself as a referrer.
+                // Cannot pass the targeted publication as a referrer.
                 referrerProfileId == targetedProfileId && referrerPubId == targetedPubId
             ) {
                 revert Errors.InvalidReferrer();
