@@ -13,20 +13,22 @@ contract ActTest is ReferralSystemTest {
 
     function _referralSystem_PrepareOperation(
         TestPublication memory target,
-        TestPublication memory referralPub
+        uint256[] memory referrerProfileIds,
+        uint256[] memory referrerPubIds
     ) internal virtual override {
         actionParams = _getDefaultPublicationActionParams();
         actionParams.publicationActedProfileId = target.profileId;
         actionParams.publicationActedId = target.pubId;
         actionParams.actorProfileId = actor.profileId;
-        actionParams.referrerProfileIds = _toUint256Array(referralPub.profileId);
-        actionParams.referrerPubIds = _toUint256Array(referralPub.pubId);
+        actionParams.referrerProfileIds = referrerProfileIds;
+        actionParams.referrerPubIds = referrerPubIds;
         _refreshCachedNonces();
     }
 
     function _referralSystem_ExpectRevertsIfNeeded(
         TestPublication memory target,
-        TestPublication memory referralPub
+        uint256[] memory /* referrerProfileIds */,
+        uint256[] memory /* referrerPubIds */
     ) internal virtual override returns (bool) {
         if (_isV1LegacyPub(hub.getPublication(target.profileId, target.pubId))) {
             vm.expectRevert(Errors.ActionNotAllowed.selector);
@@ -35,15 +37,20 @@ contract ActTest is ReferralSystemTest {
         return false;
     }
 
-    function _referralSystem_ExecutePreparedOperation(
-        TestPublication memory target,
-        TestPublication memory referralPub
-    ) internal virtual override {
-        console.log('ACTING on %s, %s', vm.toString(target.profileId), vm.toString(target.pubId));
-        console.log('    with referral: %s, %s', vm.toString(referralPub.profileId), vm.toString(referralPub.pubId));
+    function _referralSystem_ExecutePreparedOperation() internal virtual override {
+        _act(actor.ownerPk, actionParams);
+    }
 
-        vm.prank(actor.owner);
-        hub.act(actionParams);
+    function _act(
+        uint256 pk,
+        Types.PublicationActionParams memory publicationActionParams
+    ) internal virtual returns (bytes memory) {
+        vm.prank(vm.addr(pk));
+        return hub.act(publicationActionParams);
+    }
+
+    function _refreshCachedNonces() internal virtual {
+        // Nothing to do there.
     }
 
     function setUp() public virtual override {
@@ -148,18 +155,6 @@ contract ActTest is ReferralSystemTest {
         hub.setState(Types.ProtocolState.PublishingPaused);
 
         testAct();
-    }
-
-    function _act(
-        uint256 pk,
-        Types.PublicationActionParams memory publicationActionParams
-    ) internal virtual returns (bytes memory) {
-        vm.prank(vm.addr(pk));
-        return hub.act(publicationActionParams);
-    }
-
-    function _refreshCachedNonces() internal virtual {
-        // Nothing to do there.
     }
 
     function testGetActionModuleById(address secondActionModule) public {

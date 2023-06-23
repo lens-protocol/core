@@ -37,25 +37,54 @@ abstract contract ReferralSystemTest is BaseTest {
 
     function _referralSystem_PrepareOperation(
         TestPublication memory target,
-        TestPublication memory referralPub
+        uint256[] memory referrerProfileIds,
+        uint256[] memory referrerPubIds
     ) internal virtual;
 
     // Returns true if expectRevert was added, so we avoid a dobule expectRevert scenario.
     function _referralSystem_ExpectRevertsIfNeeded(
         TestPublication memory target,
-        TestPublication memory referralPub
+        uint256[] memory referrerProfileIds,
+        uint256[] memory referrerPubIds
     ) internal virtual returns (bool);
 
-    function _referralSystem_ExecutePreparedOperation(
+    function _referralSystem_ExecutePreparedOperation() internal virtual;
+
+    /////////////////////////////////
+    // Internal helpers
+    /////////////////////////////////
+
+    function _referralSystem_PrepareOperation(
         TestPublication memory target,
         TestPublication memory referralPub
-    ) internal virtual;
+    ) private {
+        _referralSystem_PrepareOperation(
+            target,
+            _toUint256Array(referralPub.profileId),
+            _toUint256Array(referralPub.pubId)
+        );
+    }
+
+    // Returns true if expectRevert was added, so we avoid a dobule expectRevert scenario.
+    function _referralSystem_ExpectRevertsIfNeeded(
+        TestPublication memory target,
+        TestPublication memory referralPub
+    ) private returns (bool) {
+        return
+            _referralSystem_ExpectRevertsIfNeeded(
+                target,
+                _toUint256Array(referralPub.profileId),
+                _toUint256Array(referralPub.pubId)
+            );
+    }
 
     function _executeOperation(TestPublication memory target, TestPublication memory referralPub) private {
         _referralSystem_PrepareOperation(target, referralPub);
         _referralSystem_ExpectRevertsIfNeeded(target, referralPub);
-        _referralSystem_ExecutePreparedOperation(target, referralPub);
+        _referralSystem_ExecutePreparedOperation();
     }
+
+    /////////////////////////////////
 
     function setUp() public virtual override {
         super.setUp();
@@ -167,7 +196,7 @@ abstract contract ReferralSystemTest is BaseTest {
                 vm.expectRevert(Errors.InvalidReferrer.selector);
             }
 
-            _referralSystem_ExecutePreparedOperation(target, referralPub);
+            _referralSystem_ExecutePreparedOperation();
         }
     }
 
@@ -201,7 +230,7 @@ abstract contract ReferralSystemTest is BaseTest {
                     vm.expectRevert(Errors.InvalidReferrer.selector);
                 }
 
-                _referralSystem_ExecutePreparedOperation(target, referralPub);
+                _referralSystem_ExecutePreparedOperation();
             }
         }
     }
@@ -236,7 +265,7 @@ abstract contract ReferralSystemTest is BaseTest {
                     vm.expectRevert(Errors.InvalidReferrer.selector);
                 }
 
-                _referralSystem_ExecutePreparedOperation(target, referralPub);
+                _referralSystem_ExecutePreparedOperation();
             }
         }
     }
@@ -446,27 +475,6 @@ abstract contract ReferralSystemTest is BaseTest {
         return TestPublication(publisher.profileId, pubId);
     }
 
-    ////// setup////
-    /// create a big tree with all possible situations (V2 posts)
-    /// We can use some custom data structure to simplify the tree handling, or just rely on "pointedTo" in pubs.
-    ///
-    ////// function replaceV1(depth) ///
-    /// function that will convert a given depth of the V2 tree into V1 (starting from the root Post)
-    ///
-    ////// function testReferralsWorkV2() ///
-    /// a function that takes each node of the V2 tree as target (except mirrors), and permutates with all possible referrers
-    /// (or makes an array of all other nodes as referrers and passes then all together).
-    /// Then it checks that the referral system works as expected (i.e. modules are called with the same array of referrals).
-    ///
-    ////// function testReferralsV1() ///
-    /// a function that takes a V2 tree, and converts it to V1 tree gradually, starting with root Post, then level 1 from it, level 2, etc.
-    /// At each step, it checks that you can only refer the direct link (pointing to), as this is the only thing possible in V1
-    /// It does this by picking a random node from the tree as target, and then picking the rest of the nodes as referrers,
-    /// and expecting them to be passed or failed, depending if they're direct or complex.
-    ///
-
-    // Negatives
-
     function testCannotExecuteOperationIf_ReferralProfileIdsPassedQty_DiffersFromPubIdsQty() public {
         // TODO - Errors.ArrayMismatch();
     }
@@ -494,8 +502,6 @@ abstract contract ReferralSystemTest is BaseTest {
     function testCannotPass_AComment_AsReferrer_IfNotPointingToTheTargetPublication() public {
         // TODO
     }
-
-    // Scenarios
 
     // This test might fail at some point when we check for duplicates!
     function testPassingDuplicatedReferralsIsAllowed() public {

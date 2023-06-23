@@ -61,10 +61,11 @@ contract QuoteTest is ReferencePublicationTest, ActionablePublicationTest, Refer
 
     function _referralSystem_PrepareOperation(
         TestPublication memory target,
-        TestPublication memory referralPub
+        uint256[] memory referrerProfileIds,
+        uint256[] memory referrerPubIds
     ) internal virtual override {
         _setPointedPub(target.profileId, target.pubId);
-        _setReferrers(_toUint256Array(referralPub.profileId), _toUint256Array(referralPub.pubId));
+        _setReferrers(referrerProfileIds, referrerPubIds);
 
         Types.Publication memory targetPublication = hub.getPublication(target.profileId, target.pubId);
         if (targetPublication.referenceModule != address(0)) {
@@ -75,7 +76,8 @@ contract QuoteTest is ReferencePublicationTest, ActionablePublicationTest, Refer
 
     function _referralSystem_ExpectRevertsIfNeeded(
         TestPublication memory target,
-        TestPublication memory referralPub
+        uint256[] memory /* referrerProfileIds */,
+        uint256[] memory /* referrerPubIds */
     ) internal virtual override returns (bool) {
         Types.Publication memory targetPublication = hub.getPublication(target.profileId, target.pubId);
 
@@ -95,12 +97,7 @@ contract QuoteTest is ReferencePublicationTest, ActionablePublicationTest, Refer
         return false;
     }
 
-    function _referralSystem_ExecutePreparedOperation(
-        TestPublication memory target,
-        TestPublication memory referralPub
-    ) internal virtual override {
-        console.log('QUOTING on %s, %s', vm.toString(target.profileId), vm.toString(target.pubId));
-        console.log('    with referral: %s, %s', vm.toString(referralPub.profileId), vm.toString(referralPub.pubId));
+    function _referralSystem_ExecutePreparedOperation() internal virtual override {
         _publish(publisher.ownerPk, publisher.profileId);
     }
 
