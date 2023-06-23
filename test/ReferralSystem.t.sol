@@ -476,35 +476,83 @@ abstract contract ReferralSystemTest is BaseTest {
     }
 
     function testCannotExecuteOperationIf_ReferralProfileIdsPassedQty_DiffersFromPubIdsQty() public {
-        // TODO - Errors.ArrayMismatch();
+        Types.PostParams memory postParams = _getDefaultPostParams();
+        postParams.referenceModule = address(mockReferenceModule);
+        postParams.referenceModuleInitData = abi.encode(true);
+        vm.prank(defaultAccount.owner);
+        TestPublication memory targetPub = TestPublication(defaultAccount.profileId, hub.post(postParams));
+
+        TestPublication memory referralPub = _comment(targetPub);
+
+        _referralSystem_PrepareOperation(targetPub, _toUint256Array(referralPub.profileId), _emptyUint256Array());
+        vm.expectRevert(Errors.ArrayMismatch.selector);
+        _referralSystem_ExecutePreparedOperation();
+
+        _referralSystem_PrepareOperation(targetPub, _emptyUint256Array(), _toUint256Array(referralPub.pubId));
+        vm.expectRevert(Errors.ArrayMismatch.selector);
+        _referralSystem_ExecutePreparedOperation();
     }
 
-    function testCannotPass_APublicationDoneByItself_AsReferrer() public {
-        // TODO - Errors.InvalidReferrer();
+    function testCannotPass_TargetedPublication_AsReferrer() public {
+        Types.PostParams memory postParams = _getDefaultPostParams();
+        postParams.referenceModule = address(mockReferenceModule);
+        postParams.referenceModuleInitData = abi.encode(true);
+        vm.prank(defaultAccount.owner);
+        TestPublication memory targetPub = TestPublication(defaultAccount.profileId, hub.post(postParams));
+
+        _referralSystem_PrepareOperation(targetPub, targetPub);
+        vm.expectRevert(Errors.InvalidReferrer.selector);
+        _referralSystem_ExecutePreparedOperation();
     }
 
-    function testCannotPass_Itself_AsReferrer() public {
-        // TODO - Errors.InvalidReferrer();
+    function testCannotPass_UnexistentProfile_AsReferrer(uint256 unexistentProfileId, uint8 pubId) public {
+        Types.PostParams memory postParams = _getDefaultPostParams();
+        postParams.referenceModule = address(mockReferenceModule);
+        postParams.referenceModuleInitData = abi.encode(true);
+        vm.prank(defaultAccount.owner);
+        TestPublication memory targetPub = TestPublication(defaultAccount.profileId, hub.post(postParams));
+
+        vm.assume(!hub.exists(unexistentProfileId));
+        vm.assume(pubId != 0);
+        _referralSystem_PrepareOperation(targetPub, _toUint256Array(unexistentProfileId), _toUint256Array(pubId));
+        vm.expectRevert(Errors.InvalidReferrer.selector);
+        _referralSystem_ExecutePreparedOperation();
     }
 
-    function testCannotPass_UnexistentProfile_AsReferrer() public {
-        // TODO - Errors.InvalidReferrer();
-    }
+    function testCannotPass_UnexistentPublication_AsReferrer(uint256 unexistentPubId) public {
+        Types.PostParams memory postParams = _getDefaultPostParams();
+        postParams.referenceModule = address(mockReferenceModule);
+        postParams.referenceModuleInitData = abi.encode(true);
+        vm.prank(defaultAccount.owner);
+        TestPublication memory targetPub = TestPublication(defaultAccount.profileId, hub.post(postParams));
 
-    function testCannotPass_UnexistentPublication_AsReferrer() public {
-        // TODO
-    }
+        TestPublication memory pub = _comment(targetPub);
+        uint256 existentProfileId = pub.profileId;
+        vm.assume(unexistentPubId > pub.pubId);
 
-    function testCannotPass_AMirror_AsReferrer_IfNotPointingToTheTargetPublication() public {
-        // TODO
-    }
-
-    function testCannotPass_AComment_AsReferrer_IfNotPointingToTheTargetPublication() public {
-        // TODO
+        _referralSystem_PrepareOperation(
+            targetPub,
+            _toUint256Array(existentProfileId),
+            _toUint256Array(unexistentPubId)
+        );
+        vm.expectRevert(Errors.InvalidReferrer.selector);
+        _referralSystem_ExecutePreparedOperation();
     }
 
     // This test might fail at some point when we check for duplicates!
     function testPassingDuplicatedReferralsIsAllowed() public {
-        // TODO
+        Types.PostParams memory postParams = _getDefaultPostParams();
+        postParams.referenceModule = address(mockReferenceModule);
+        postParams.referenceModuleInitData = abi.encode(true);
+        vm.prank(defaultAccount.owner);
+        TestPublication memory targetPub = TestPublication(defaultAccount.profileId, hub.post(postParams));
+
+        TestPublication memory referralPub = _comment(targetPub);
+        _referralSystem_PrepareOperation(
+            targetPub,
+            _toUint256Array(referralPub.profileId, referralPub.profileId),
+            _toUint256Array(referralPub.pubId, referralPub.pubId)
+        );
+        _referralSystem_ExecutePreparedOperation();
     }
 }
