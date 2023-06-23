@@ -7,12 +7,14 @@ import {MockDeprecatedCollectModule} from 'test/mocks/MockDeprecatedCollectModul
 import {ICollectNFT} from 'contracts/interfaces/ICollectNFT.sol';
 import {LegacyCollectLib} from 'contracts/libraries/LegacyCollectLib.sol';
 import {ILegacyCollectModule} from 'contracts/interfaces/ILegacyCollectModule.sol';
+import {ReferralSystemTest} from 'test/ReferralSystem.t.sol';
 
-contract LegacyCollectTest is BaseTest {
+contract LegacyCollectTest is BaseTest, ReferralSystemTest {
     uint256 pubId;
     Types.CollectParams defaultCollectParams;
-    MockDeprecatedCollectModule mockDeprecatedCollectModule;
     TestAccount blockedProfile;
+
+    bool skipTest;
 
     event Transfer(address indexed from, address indexed to, uint256 indexed tokenId);
 
@@ -26,12 +28,10 @@ contract LegacyCollectTest is BaseTest {
         uint256 timestamp
     );
 
-    function setUp() public virtual override {
-        super.setUp();
+    function setUp() public virtual override(BaseTest, ReferralSystemTest) {
+        ReferralSystemTest.setUp();
 
         blockedProfile = _loadAccountAs('BLOCKED_PROFILE');
-
-        mockDeprecatedCollectModule = new MockDeprecatedCollectModule();
 
         // Create a V1 pub
         vm.prank(defaultAccount.owner);
@@ -195,6 +195,93 @@ contract LegacyCollectTest is BaseTest {
     function _collect(uint256 pk, Types.CollectParams memory collectParams) internal virtual returns (uint256) {
         vm.prank(vm.addr(pk));
         return hub.collect(collectParams);
+    }
+
+    function _referralSystem_PrepareOperation(
+        TestPublication memory target,
+        uint256[] memory referrerProfileIds,
+        uint256[] memory referrerPubIds
+    ) internal virtual override {
+        if (referrerProfileIds.length == 0 && referrerPubIds.length == 0) {
+            defaultCollectParams.referrerProfileId = 0;
+            defaultCollectParams.referrerPubId = 0;
+        } else if (referrerProfileIds.length == 1 && referrerPubIds.length == 1) {
+            defaultCollectParams.referrerProfileId = referrerProfileIds[0];
+            defaultCollectParams.referrerPubId = referrerPubIds[0];
+        } else {
+            skipTest = true;
+        }
+        defaultCollectParams.publicationCollectedProfileId = target.profileId;
+        defaultCollectParams.publicationCollectedId = target.pubId;
+        _refreshCachedNonces();
+    }
+
+    function _referralSystem_ExpectRevertsIfNeeded(
+        TestPublication memory target,
+        uint256[] memory referrerProfileIds,
+        uint256[] memory referrerPubIds
+    ) internal virtual override returns (bool) {
+        if (skipTest) {
+            return true;
+        }
+
+        Types.Publication memory targetPublication = hub.getPublication(target.profileId, target.pubId);
+
+        if (defaultCollectParams.referrerPubId == 0) {
+            // Cannot pass unverified referrer for LegacyCollect
+            vm.expectRevert(Errors.InvalidReferrer.selector);
+            return true;
+        }
+
+        if (defaultCollectParams.referrerProfileId != 0 && defaultCollectParams.referrerPubId != 0) {
+            if (!_isV1LegacyPub(targetPublication)) {
+                // Cannot collect V2 publications
+                vm.expectRevert(Errors.CollectNotAllowed.selector);
+                return true;
+            } else {
+                if (
+                    hub.getPublicationType(
+                        defaultCollectParams.referrerProfileId,
+                        defaultCollectParams.referrerPubId
+                    ) != Types.PublicationType.Mirror
+                ) {
+                    vm.expectRevert(Errors.InvalidReferrer.selector);
+                    return true;
+                }
+                Types.Publication memory referrerPublication = hub.getPublication(
+                    defaultCollectParams.referrerProfileId,
+                    defaultCollectParams.referrerPubId
+                );
+
+                // A mirror can only be a referrer of a legacy publication if it is pointing to it.
+                if (
+                    referrerPublication.pointedProfileId != target.profileId ||
+                    referrerPublication.pointedPubId != target.pubId
+                ) {
+                    vm.expectRevert(Errors.InvalidReferrer.selector);
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    function _referralSystem_ExecutePreparedOperation() internal virtual override {
+        console.log(
+            'LEGACY COLLECTING: (%s, %s)',
+            defaultCollectParams.publicationCollectedProfileId,
+            defaultCollectParams.publicationCollectedId
+        );
+        console.log(
+            '    with referrer: (%s, %s)',
+            defaultCollectParams.referrerProfileId,
+            defaultCollectParams.referrerPubId
+        );
+        if (skipTest) {
+            console.log('   ^^^ SKIPPED ^^^');
+            return;
+        }
+        _collect(defaultAccount.ownerPk, defaultCollectParams);
     }
 
     function _refreshCachedNonces() internal virtual {
