@@ -73,7 +73,7 @@ library ValidationLib {
     }
 
     function validateProfileExists(uint256 profileId) internal view {
-        if (StorageLib.getTokenData(profileId).owner == address(0)) {
+        if (!ProfileLib.exists(profileId)) {
             revert Errors.TokenDoesNotExist();
         }
     }
@@ -124,7 +124,10 @@ library ValidationLib {
         uint256 publicationCollectedProfileId,
         uint256 publicationCollectedId
     ) external view {
-        if (PublicationLib.getPublicationType(referrerProfileId, referrerPubId) != Types.PublicationType.Mirror) {
+        if (
+            !ProfileLib.exists(referrerProfileId) ||
+            PublicationLib.getPublicationType(referrerProfileId, referrerPubId) != Types.PublicationType.Mirror
+        ) {
             revert Errors.InvalidReferrer();
         }
         Types.Publication storage _referrerMirror = StorageLib.getPublication(referrerProfileId, referrerPubId);
@@ -145,9 +148,7 @@ library ValidationLib {
     ) private view returns (Types.PublicationType) {
         if (referrerPubId == 0) {
             // Unchecked/Unverified referral. Profile referrer, not attached to a publication.
-            if (
-                StorageLib.getTokenData(referrerProfileId).owner == address(0) || referrerProfileId == targetedProfileId
-            ) {
+            if (!ProfileLib.exists(referrerProfileId) || referrerProfileId == targetedProfileId) {
                 revert Errors.InvalidReferrer();
             }
             return Types.PublicationType.Nonexistent;
