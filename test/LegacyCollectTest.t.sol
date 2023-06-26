@@ -49,6 +49,31 @@ contract LegacyCollectTest is BaseTest, ReferralSystemTest {
         });
     }
 
+    function testV2UnverifiedReferrals() public virtual override {
+        // ReferralSystem inherited test that does not apply to this file.
+        // This case is tested at `testCannot_PassV2UnverifiedReferrals`.
+    }
+
+    function testCannot_PassV2UnverifiedReferral_SameAsTargetAuthor() public virtual override {
+        // Note: The following publication is converted to Legacy V1 in this test's setUp.
+        TestPublication memory targetPub = TestPublication(defaultAccount.profileId, pubId);
+
+        _referralSystem_PrepareOperation(targetPub, _toUint256Array(targetPub.profileId), _toUint256Array(0));
+        vm.expectRevert(Errors.InvalidReferrer.selector);
+        _referralSystem_ExecutePreparedOperation();
+    }
+
+    function testCannot_PassV2UnverifiedReferrals(address referrerProfileOwner) public {
+        uint256 referrerProfileId = _createProfile(referrerProfileOwner);
+
+        // Set unverified referral
+        defaultCollectParams.referrerProfileId = referrerProfileId;
+        defaultCollectParams.referrerPubId = 0;
+
+        vm.expectRevert(Errors.InvalidReferrer.selector);
+        _collect(defaultAccount.ownerPk, defaultCollectParams);
+    }
+
     function testCannotCollectIfPaused() public {
         vm.prank(governance);
         hub.setState(Types.ProtocolState.Paused);
@@ -139,6 +164,51 @@ contract LegacyCollectTest is BaseTest, ReferralSystemTest {
             _toUint256Array(existentProfileId),
             _toUint256Array(unexistentPubId)
         );
+        vm.expectRevert(Errors.InvalidReferrer.selector);
+        _referralSystem_ExecutePreparedOperation();
+    }
+
+    function testCannotPass_UnexistentProfile_AsUnverifiedReferrer(uint256 unexistentProfileId) public override {
+        // Note: The following publication is converted to Legacy V1 in this test's setUp.
+        TestPublication memory targetPub = TestPublication(defaultAccount.profileId, pubId);
+        // We need unexistentProfileId to be non-zero, otherwise referral = (0, 0) means no referrals were passed.
+        vm.assume(unexistentProfileId != 0);
+        vm.assume(!hub.exists(unexistentProfileId));
+        _referralSystem_PrepareOperation(targetPub, _toUint256Array(unexistentProfileId), _toUint256Array(0));
+        vm.expectRevert(Errors.InvalidReferrer.selector);
+        _referralSystem_ExecutePreparedOperation();
+    }
+
+    function testCannotPass_BurntProfile_AsReferrer() public {
+        // Note: The following publication is converted to Legacy V1 in this test's setUp.
+        TestPublication memory targetPub = TestPublication(defaultAccount.profileId, pubId);
+
+        TestPublication memory referrerMirrorPub = _mirror(targetPub);
+        address referrerMirrorOwner = hub.ownerOf(referrerMirrorPub.profileId);
+
+        vm.prank(referrerMirrorOwner);
+        hub.burn(referrerMirrorPub.profileId);
+
+        _referralSystem_PrepareOperation(
+            targetPub,
+            _toUint256Array(referrerMirrorPub.profileId),
+            _toUint256Array(referrerMirrorPub.pubId)
+        );
+        vm.expectRevert(Errors.InvalidReferrer.selector);
+        _referralSystem_ExecutePreparedOperation();
+    }
+
+    function testCannotPass_BurntProfile_AsUnverifiedReferrer() public override {
+        // Note: The following publication is converted to Legacy V1 in this test's setUp.
+        TestPublication memory targetPub = TestPublication(defaultAccount.profileId, pubId);
+
+        TestPublication memory referralPub = _mirror(targetPub);
+        address referralOwner = hub.ownerOf(referralPub.profileId);
+
+        vm.prank(referralOwner);
+        hub.burn(referralPub.profileId);
+
+        _referralSystem_PrepareOperation(targetPub, _toUint256Array(referralPub.profileId), _toUint256Array(0));
         vm.expectRevert(Errors.InvalidReferrer.selector);
         _referralSystem_ExecutePreparedOperation();
     }

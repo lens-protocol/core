@@ -96,6 +96,59 @@ abstract contract ReferralSystemTest is BaseTest {
         TestPublication[] mirrors;
     }
 
+    function testV2UnverifiedReferrals() public virtual {
+        TestAccount memory profileReferral = _loadAccountAs('PROFILE_REFERRAL');
+        TestPublication memory referralPub = TestPublication(profileReferral.profileId, 0);
+
+        for (uint256 commentQuoteFuzzBitmap = 0; commentQuoteFuzzBitmap < 32; commentQuoteFuzzBitmap++) {
+            Tree memory treeV2 = _createV2Tree(commentQuoteFuzzBitmap);
+
+            {
+                TestPublication memory target = treeV2.post;
+                _executeOperation(target, referralPub);
+            }
+
+            {
+                for (uint256 i = 0; i < treeV2.references.length; i++) {
+                    TestPublication memory target = treeV2.references[i];
+                    _executeOperation(target, referralPub);
+                }
+            }
+        }
+    }
+
+    function testCannot_PassV2UnverifiedReferral_SameAsTargetAuthor() public virtual {
+        for (uint256 commentQuoteFuzzBitmap = 0; commentQuoteFuzzBitmap < 32; commentQuoteFuzzBitmap++) {
+            Tree memory treeV2 = _createV2Tree(commentQuoteFuzzBitmap);
+
+            {
+                TestPublication memory target = treeV2.post;
+                TestPublication memory referralPub = TestPublication(target.profileId, 0);
+                _referralSystem_PrepareOperation(target, referralPub);
+
+                if (!_referralSystem_ExpectRevertsIfNeeded(target, referralPub)) {
+                    vm.expectRevert(Errors.InvalidReferrer.selector);
+                }
+
+                _referralSystem_ExecutePreparedOperation();
+            }
+
+            {
+                for (uint256 i = 0; i < treeV2.references.length; i++) {
+                    TestPublication memory target = treeV2.references[i];
+                    TestPublication memory referralPub = TestPublication(target.profileId, 0);
+                    _referralSystem_PrepareOperation(target, referralPub);
+
+                    if (!_referralSystem_ExpectRevertsIfNeeded(target, referralPub)) {
+                        vm.expectRevert(Errors.InvalidReferrer.selector);
+                    }
+
+                    _referralSystem_ExecutePreparedOperation();
+                }
+            }
+        }
+    }
+
     function testV2Referrals() public virtual {
         for (uint256 commentQuoteFuzzBitmap = 0; commentQuoteFuzzBitmap < 32; commentQuoteFuzzBitmap++) {
             Tree memory treeV2 = _createV2Tree(commentQuoteFuzzBitmap);
@@ -531,6 +584,37 @@ abstract contract ReferralSystemTest is BaseTest {
             _toUint256Array(existentProfileId),
             _toUint256Array(unexistentPubId)
         );
+        vm.expectRevert(Errors.InvalidReferrer.selector);
+        _referralSystem_ExecutePreparedOperation();
+    }
+
+    function testCannotPass_UnexistentProfile_AsUnverifiedReferrer(uint256 unexistentProfileId) public virtual {
+        Types.PostParams memory postParams = _getDefaultPostParams();
+        postParams.referenceModule = address(mockReferenceModule);
+        postParams.referenceModuleInitData = abi.encode(true);
+        vm.prank(defaultAccount.owner);
+        TestPublication memory targetPub = TestPublication(defaultAccount.profileId, hub.post(postParams));
+
+        vm.assume(!hub.exists(unexistentProfileId));
+        _referralSystem_PrepareOperation(targetPub, _toUint256Array(unexistentProfileId), _toUint256Array(0));
+        vm.expectRevert(Errors.InvalidReferrer.selector);
+        _referralSystem_ExecutePreparedOperation();
+    }
+
+    function testCannotPass_BurntProfile_AsUnverifiedReferrer() public virtual {
+        Types.PostParams memory postParams = _getDefaultPostParams();
+        postParams.referenceModule = address(mockReferenceModule);
+        postParams.referenceModuleInitData = abi.encode(true);
+        vm.prank(defaultAccount.owner);
+        TestPublication memory targetPub = TestPublication(defaultAccount.profileId, hub.post(postParams));
+
+        TestPublication memory referralPub = _comment(targetPub);
+        address referralOwner = hub.ownerOf(referralPub.profileId);
+
+        vm.prank(referralOwner);
+        hub.burn(referralPub.profileId);
+
+        _referralSystem_PrepareOperation(targetPub, _toUint256Array(referralPub.profileId), _toUint256Array(0));
         vm.expectRevert(Errors.InvalidReferrer.selector);
         _referralSystem_ExecutePreparedOperation();
     }
