@@ -21,6 +21,10 @@ library ProfileLib {
         return profileOwner;
     }
 
+    function exists(uint256 profileId) internal view returns (bool) {
+        return StorageLib.getTokenData(profileId).owner != address(0);
+    }
+
     /**
      * @notice Creates a profile with the given parameters to the given address. Minting happens
      * in the hub.

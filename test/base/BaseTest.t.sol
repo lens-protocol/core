@@ -279,8 +279,8 @@ contract BaseTest is TestSetup {
                 profileId: mirrorParams.profileId,
                 pointedProfileId: mirrorParams.pointedProfileId,
                 pointedPubId: mirrorParams.pointedPubId,
-                referrerProfileIds: _emptyUint256Array(),
-                referrerPubIds: _emptyUint256Array(),
+                referrerProfileIds: mirrorParams.referrerProfileIds,
+                referrerPubIds: mirrorParams.referrerPubIds,
                 referenceModuleData: mirrorParams.referenceModuleData,
                 nonce: nonce,
                 deadline: deadline
@@ -363,9 +363,11 @@ contract BaseTest is TestSetup {
     }
 
     function _toLegacyV1Pub(uint256 profileId, uint256 pubId, address referenceModule, address collectModule) internal {
+        // NOTE: Quotes are converted into V1 comments.
+
         Types.PublicationType pubType = hub.getPublicationType(profileId, pubId);
-        if (pubType == Types.PublicationType.Nonexistent || pubType == Types.PublicationType.Quote) {
-            revert('Cannot convert quotes or unexistent publications to legacy V1 publication.');
+        if (pubType == Types.PublicationType.Nonexistent) {
+            revert('Cannot convert unexistent or already V1 publications.');
         } else if (pubType == Types.PublicationType.Mirror && collectModule != address(0)) {
             revert('Legacy V1 mirrors cannot have collect module.');
         } else if (pubType != Types.PublicationType.Mirror && collectModule == address(0)) {
@@ -403,5 +405,9 @@ contract BaseTest is TestSetup {
         for (uint256 offset = firstSlotOffsetToWipe; offset <= lastSlotOffsetToWipe; offset++) {
             vm.store({target: address(hub), slot: bytes32(publicationSlot + offset), value: 0});
         }
+    }
+
+    function _isV1LegacyPub(Types.Publication memory pub) internal pure returns (bool) {
+        return uint8(pub.pubType) == 0;
     }
 }

@@ -73,7 +73,7 @@ library ValidationLib {
     }
 
     function validateProfileExists(uint256 profileId) internal view {
-        if (StorageLib.getTokenData(profileId).owner == address(0)) {
+        if (!ProfileLib.exists(profileId)) {
             revert Errors.TokenDoesNotExist();
         }
     }
@@ -124,7 +124,10 @@ library ValidationLib {
         uint256 publicationCollectedProfileId,
         uint256 publicationCollectedId
     ) external view {
-        if (PublicationLib.getPublicationType(referrerProfileId, referrerPubId) != Types.PublicationType.Mirror) {
+        if (
+            !ProfileLib.exists(referrerProfileId) ||
+            PublicationLib.getPublicationType(referrerProfileId, referrerPubId) != Types.PublicationType.Mirror
+        ) {
             revert Errors.InvalidReferrer();
         }
         Types.Publication storage _referrerMirror = StorageLib.getPublication(referrerProfileId, referrerPubId);
@@ -145,16 +148,14 @@ library ValidationLib {
     ) private view returns (Types.PublicationType) {
         if (referrerPubId == 0) {
             // Unchecked/Unverified referral. Profile referrer, not attached to a publication.
-            if (
-                StorageLib.getTokenData(referrerProfileId).owner == address(0) || referrerProfileId == targetedProfileId
-            ) {
+            if (!ProfileLib.exists(referrerProfileId) || referrerProfileId == targetedProfileId) {
                 revert Errors.InvalidReferrer();
             }
             return Types.PublicationType.Nonexistent;
         } else {
             // Checked/Verified referral. Publication referrer.
             if (
-                // Cannot pass itself as a referrer.
+                // Cannot pass the targeted publication as a referrer.
                 referrerProfileId == targetedProfileId && referrerPubId == targetedPubId
             ) {
                 revert Errors.InvalidReferrer();
@@ -208,26 +209,19 @@ library ValidationLib {
         Types.Publication storage _referrerPub = StorageLib.getPublication(referrerProfileId, referrerPubId);
         // A mirror/quote/comment is allowed to be a referrer of a publication if it is pointing to it...
         if (_referrerPub.pointedProfileId != targetedProfileId || _referrerPub.pointedPubId != targetedPubId) {
-            Types.Publication storage _pubPointedByReferrerPub = StorageLib.getPublication(
-                _referrerPub.pointedProfileId,
-                _referrerPub.pointedPubId
-            );
-            // ...or if the pointed pub's root is the target pub (i.e. target pub is a Lens V2 post)...
-            if (
-                _pubPointedByReferrerPub.rootProfileId != targetedProfileId ||
-                _pubPointedByReferrerPub.rootPubId != targetedPubId
-            ) {
+            // ...or if the referrer pub's root is the target pub (i.e. target pub is a Lens V2 post)...
+            if (_referrerPub.rootProfileId != targetedProfileId || _referrerPub.rootPubId != targetedPubId) {
                 Types.Publication storage _targetedPub = StorageLib.getPublication(targetedProfileId, targetedPubId);
-                // ...or if the pointed pub shares the root with the target pub.
+                // ...or if the referrer pub shares the root with the target pub.
                 if (
                     // Here the target pub must be a "pure" Lens V2 comment/quote, which means there is no
                     // Lens V1 Legacy comment or post on its tree of interactions, and its root pub is filled.
                     // Otherwise, two Lens V2 "non-pure" publications could be passed as a referrer to each other,
                     // even without having any interaction in common, as they would share the root as zero.
-                    _pubPointedByReferrerPub.rootPubId == 0 ||
+                    _referrerPub.rootPubId == 0 ||
                     // The referrer publication and the target publication must share the same root.
-                    _pubPointedByReferrerPub.rootProfileId != _targetedPub.rootProfileId ||
-                    _pubPointedByReferrerPub.rootPubId != _targetedPub.rootPubId
+                    _referrerPub.rootProfileId != _targetedPub.rootProfileId ||
+                    _referrerPub.rootPubId != _targetedPub.rootPubId
                 ) {
                     revert Errors.InvalidReferrer();
                 }
