@@ -3,4 +3,6 @@ cache
 node_modules
 coverage
 typechain-types
+lib
+out
 contracts/libraries/constants/Typehash.sol
