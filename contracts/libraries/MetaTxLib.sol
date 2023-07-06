@@ -448,27 +448,6 @@ library MetaTxLib {
         );
     }
 
-    function validatePermitSignature(
-        Types.EIP712Signature calldata signature,
-        address spender,
-        uint256 tokenId
-    ) external {
-        _validateRecoveredAddress(
-            _calculateDigest(
-                keccak256(
-                    abi.encode(
-                        Typehash.PERMIT,
-                        spender,
-                        tokenId,
-                        _getAndIncrementNonce(signature.signer),
-                        signature.deadline
-                    )
-                )
-            ),
-            signature
-        );
-    }
-
     function calculateDomainSeparator() internal view returns (bytes32) {
         if (address(this) == LENS_HUB_ADDRESS) {
             return LENS_HUB_CACHED_POLYGON_DOMAIN_SEPARATOR;
