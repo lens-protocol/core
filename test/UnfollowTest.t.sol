@@ -59,6 +59,8 @@ contract UnfollowTest is BaseTest {
     }
 
     function testCannotUnfollowIfUnfollowerProfileDoesNotExist() public {
+        _disableGuardianForWallet(testUnfollowerProfileOwner);
+
         vm.prank(testUnfollowerProfileOwner);
         hub.burn(testUnfollowerProfileId);
 

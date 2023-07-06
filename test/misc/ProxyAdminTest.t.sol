@@ -20,7 +20,6 @@ contract ProxyAdminTest is BaseTest {
     ProxyAdmin proxyAdminContract;
     address proxyAdminContractOwner = makeAddr('PROXY_ADMIN_CONTRACT_OWNER');
     address controllerContract = makeAddr('CONTROLLER_CONTRACT');
-    bytes32 PROXY_IMPLEMENTATION_STORAGE_SLOT = bytes32(uint256(keccak256('eip1967.proxy.implementation')) - 1);
 
     function setUp() public override {
         super.setUp();

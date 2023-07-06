@@ -186,6 +186,8 @@ contract LegacyCollectTest is BaseTest, ReferralSystemTest {
         TestPublication memory referrerMirrorPub = _mirror(targetPub);
         address referrerMirrorOwner = hub.ownerOf(referrerMirrorPub.profileId);
 
+        _disableGuardianForWallet(referrerMirrorOwner);
+
         vm.prank(referrerMirrorOwner);
         hub.burn(referrerMirrorPub.profileId);
 
@@ -204,6 +206,8 @@ contract LegacyCollectTest is BaseTest, ReferralSystemTest {
 
         TestPublication memory referralPub = _mirror(targetPub);
         address referralOwner = hub.ownerOf(referralPub.profileId);
+
+        _disableGuardianForWallet(referralOwner);
 
         vm.prank(referralOwner);
         hub.burn(referralPub.profileId);

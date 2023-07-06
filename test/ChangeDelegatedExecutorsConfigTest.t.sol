@@ -111,6 +111,8 @@ contract ChangeDelegatedExecutorsConfigTest_CurrentConfig is BaseTest {
 
         uint64 maxConfigSetBeforeTranster = hub.getDelegatedExecutorsMaxConfigNumberSet(testDelegatorProfileId);
 
+        _disableGuardianForWallet(testDelegatorProfileOwner);
+
         vm.prank(testDelegatorProfileOwner);
         hub.transferFrom(testDelegatorProfileOwner, newProfileOwner, testDelegatorProfileId);
 

@@ -59,6 +59,8 @@ contract SetBlockStatusTest is BaseTest {
     }
 
     function testCannotSetBlockStatusIfSetterProfileDoesNotExist() public {
+        _disableGuardianForWallet(statusSetterProfileOwner);
+
         vm.prank(statusSetterProfileOwner);
         hub.burn(statusSetterProfileId);
 
@@ -112,6 +114,8 @@ contract SetBlockStatusTest is BaseTest {
     }
 
     function testCannotSetBlockStatusIfBlockeeProfileDoesNotExist() public {
+        _disableGuardianForWallet(blockeeProfileOwner);
+
         vm.prank(blockeeProfileOwner);
         hub.burn(blockeeProfileId);
 

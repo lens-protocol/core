@@ -28,6 +28,8 @@ abstract contract LensBaseERC721Test is Test {
 
     function _burnERC721(uint256 tokenId) internal virtual;
 
+    function _disableGuardian(address wallet) internal virtual {}
+
     function _getNotOwnerError() internal virtual returns (bytes4) {
         return Errors.NotOwnerOrApproved.selector;
     }
@@ -57,6 +59,8 @@ abstract contract LensBaseERC721Test is Test {
 
         uint256 currentBalance = _LensERC721().balanceOf(owner);
 
+        _disableGuardian(owner);
+
         vm.prank(owner);
         _burnERC721(tokenId);
 
@@ -74,6 +78,8 @@ abstract contract LensBaseERC721Test is Test {
         vm.assume(owner != to);
 
         uint256 tokenId = _mintERC721(owner);
+
+        _disableGuardian(owner);
 
         vm.prank(owner);
         _LensERC721().approve(to, tokenId);
@@ -95,6 +101,9 @@ abstract contract LensBaseERC721Test is Test {
         vm.assume(to != address(0));
 
         _assumeNotProxyAdmin(msgSender);
+
+        _disableGuardian(msgSender);
+
         vm.prank(msgSender);
         _LensERC721().setApprovalForAll(to, true);
 
@@ -103,6 +112,8 @@ abstract contract LensBaseERC721Test is Test {
 
     function testCannot_ApproveForAll_IfOperatorIsTheSender(address operatorAndSender, bool approved) public {
         _assumeNotProxyAdmin(operatorAndSender);
+
+        _disableGuardian(operatorAndSender);
 
         vm.expectRevert(Errors.InvalidParameter.selector);
 
@@ -118,6 +129,8 @@ abstract contract LensBaseERC721Test is Test {
 
         uint256 tokenId = _mintERC721(owner);
 
+        _disableGuardian(owner);
+
         vm.prank(owner);
         _LensERC721().approve(approvedTo, tokenId);
 
@@ -125,6 +138,9 @@ abstract contract LensBaseERC721Test is Test {
         uint256 toBalanceBefore = _LensERC721().balanceOf(to);
 
         _assumeNotProxyAdmin(approvedTo);
+
+        _disableGuardian(approvedTo);
+
         vm.prank(approvedTo);
         _LensERC721().transferFrom(owner, to, tokenId);
 
@@ -149,6 +165,8 @@ abstract contract LensBaseERC721Test is Test {
         uint256 ownerBalanceBefore = _LensERC721().balanceOf(owner);
         uint256 toBalanceBefore = _LensERC721().balanceOf(to);
 
+        _disableGuardian(owner);
+
         vm.prank(owner);
         _LensERC721().transferFrom(owner, to, tokenId);
 
@@ -172,6 +190,8 @@ abstract contract LensBaseERC721Test is Test {
 
         uint256 tokenId = _mintERC721(owner);
 
+        _disableGuardian(owner);
+
         vm.prank(owner);
         _LensERC721().setApprovalForAll(approvedTo, true);
 
@@ -179,6 +199,9 @@ abstract contract LensBaseERC721Test is Test {
         uint256 toBalanceBefore = _LensERC721().balanceOf(to);
 
         _assumeNotProxyAdmin(approvedTo);
+
+        _disableGuardian(approvedTo);
+
         vm.prank(approvedTo);
         _LensERC721().transferFrom(owner, to, tokenId);
 
@@ -202,6 +225,8 @@ abstract contract LensBaseERC721Test is Test {
 
         uint256 tokenId = _mintERC721(owner);
 
+        _disableGuardian(owner);
+
         vm.prank(owner);
         _LensERC721().setApprovalForAll(approvedTo, true);
 
@@ -209,6 +234,9 @@ abstract contract LensBaseERC721Test is Test {
         uint256 toBalanceBefore = _LensERC721().balanceOf(to);
 
         _assumeNotProxyAdmin(approvedTo);
+
+        _disableGuardian(approvedTo);
+
         vm.prank(approvedTo);
         _LensERC721().safeTransferFrom(owner, to, tokenId);
 
@@ -234,6 +262,8 @@ abstract contract LensBaseERC721Test is Test {
 
         uint256 tokenId = _mintERC721(owner);
 
+        _disableGuardian(owner);
+
         vm.prank(owner);
         _LensERC721().setApprovalForAll(approvedTo, true);
 
@@ -241,6 +271,9 @@ abstract contract LensBaseERC721Test is Test {
         uint256 recipientBalanceBefore = _LensERC721().balanceOf(erc721recipient);
 
         _assumeNotProxyAdmin(approvedTo);
+
+        _disableGuardian(approvedTo);
+
         vm.prank(approvedTo);
         _LensERC721().safeTransferFrom(owner, erc721recipient, tokenId);
 
@@ -264,6 +297,8 @@ abstract contract LensBaseERC721Test is Test {
 
         uint256 tokenId = _mintERC721(owner);
 
+        _disableGuardian(owner);
+
         vm.prank(owner);
         _LensERC721().setApprovalForAll(approvedTo, true);
 
@@ -271,6 +306,9 @@ abstract contract LensBaseERC721Test is Test {
         uint256 recipientBalanceBefore = _LensERC721().balanceOf(erc721recipient);
 
         _assumeNotProxyAdmin(approvedTo);
+
+        _disableGuardian(approvedTo);
+
         vm.prank(approvedTo);
         _LensERC721().safeTransferFrom(owner, erc721recipient, tokenId, abi.encode(false));
 
@@ -358,6 +396,8 @@ abstract contract LensBaseERC721Test is Test {
 
         uint256 tokenId = _mintERC721(to);
 
+        _disableGuardian(to);
+
         vm.prank(to);
         _burnERC721(tokenId);
 
@@ -385,6 +425,8 @@ abstract contract LensBaseERC721Test is Test {
 
         _assumeNotProxyAdmin(unauthorizedCaller);
 
+        _disableGuardian(unauthorizedCaller);
+
         vm.expectRevert(Errors.NotOwnerOrApproved.selector);
         vm.prank(unauthorizedCaller);
         _LensERC721().approve(approveTo, tokenId);
@@ -394,6 +436,8 @@ abstract contract LensBaseERC721Test is Test {
         vm.assume(to != address(0));
 
         uint256 tokenId = _mintERC721(to);
+
+        _disableGuardian(to);
 
         vm.expectRevert(Errors.InvalidParameter.selector);
 
@@ -458,6 +502,8 @@ abstract contract LensBaseERC721Test is Test {
 
         address nonERC721Recipient = address(new MockNonERC721Recipient());
 
+        _disableGuardian(owner);
+
         vm.expectRevert(Errors.NonERC721ReceiverImplementer.selector);
 
         vm.prank(owner);
@@ -469,6 +515,8 @@ abstract contract LensBaseERC721Test is Test {
         uint256 tokenId = _mintERC721(owner);
 
         address nonERC721Recipient = address(new MockNonERC721Recipient());
+
+        _disableGuardian(owner);
 
         vm.expectRevert(Errors.NonERC721ReceiverImplementer.selector);
 
@@ -483,6 +531,8 @@ abstract contract LensBaseERC721Test is Test {
         address revertingERC721Recipient = address(new MockERC721RecipientWithRevertFlag());
         MockERC721RecipientWithRevertFlag(revertingERC721Recipient).revertOnNextCall();
 
+        _disableGuardian(owner);
+
         vm.expectRevert(MockERC721RecipientWithRevertFlag.MockERC721RecipientReverted.selector);
 
         vm.prank(owner);
@@ -495,6 +545,8 @@ abstract contract LensBaseERC721Test is Test {
 
         address revertingERC721Recipient = address(new MockERC721RecipientWithRevertFlag());
         bytes memory shouldRevertFlag = abi.encode(true);
+
+        _disableGuardian(owner);
 
         vm.expectRevert(MockERC721RecipientWithRevertFlag.MockERC721RecipientReverted.selector);
 
@@ -514,6 +566,8 @@ abstract contract LensBaseERC721Test is Test {
             new MockWrongReturnDataERC721Recipient(bytes4(wrongReturnData))
         );
 
+        _disableGuardian(owner);
+
         vm.expectRevert(Errors.NonERC721ReceiverImplementer.selector);
 
         vm.prank(owner);
@@ -532,6 +586,8 @@ abstract contract LensBaseERC721Test is Test {
         address wrongReturnDataERC721Recipient = address(
             new MockWrongReturnDataERC721Recipient(bytes4(wrongReturnData))
         );
+
+        _disableGuardian(owner);
 
         vm.expectRevert(Errors.NonERC721ReceiverImplementer.selector);
 
@@ -622,6 +678,8 @@ abstract contract LensBaseERC721Test is Test {
         uint256 tokenId = _mintERC721(to);
         uint256 totalSupplyAfterMint = _LensERC721().totalSupply();
         assertEq(totalSupplyAfterMint, currentTotalSupply + 1);
+
+        _disableGuardian(to);
 
         vm.prank(to);
         _burnERC721(tokenId);

@@ -75,9 +75,10 @@ contract LensHub is
         address tokenHandleRegistryAddress,
         address legacyFeeFollowModule,
         address legacyProfileFollowModule,
-        address newFeeFollowModule
+        address newFeeFollowModule,
+        uint256 profileGuardianCooldown
     )
-        LensProfiles(moduleGlobals)
+        LensProfiles(moduleGlobals, profileGuardianCooldown)
         LensV2Migration(
             legacyFeeFollowModule,
             legacyProfileFollowModule,

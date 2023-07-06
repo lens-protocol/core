@@ -611,6 +611,8 @@ abstract contract ReferralSystemTest is BaseTest {
         TestPublication memory referralPub = _comment(targetPub);
         address referralOwner = hub.ownerOf(referralPub.profileId);
 
+        _disableGuardianForWallet(referralOwner);
+
         vm.prank(referralOwner);
         hub.burn(referralPub.profileId);
 

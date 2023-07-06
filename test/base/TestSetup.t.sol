@@ -99,8 +99,6 @@ contract TestSetup is Test, ForkManagement, ArrayHelpers {
     }
 
     function loadBaseAddresses(string memory targetEnv) internal virtual {
-        bytes32 PROXY_IMPLEMENTATION_STORAGE_SLOT = bytes32(uint256(keccak256('eip1967.proxy.implementation')) - 1);
-
         console.log('targetEnv:', targetEnv);
 
         hubProxyAddr = json.readAddress(string(abi.encodePacked('.', targetEnv, '.LensHubProxy')));
@@ -175,7 +173,8 @@ contract TestSetup is Test, ForkManagement, ArrayHelpers {
             tokenHandleRegistryAddress: tokenHandleRegistryProxyAddr,
             legacyFeeFollowModule: address(0),
             legacyProfileFollowModule: address(0),
-            newFeeFollowModule: address(0)
+            newFeeFollowModule: address(0),
+            profileGuardianCooldown: PROFILE_GUARDIAN_COOLDOWN
         });
         followNFT = new FollowNFT(hubProxyAddr);
         legacyCollectNFT = new LegacyCollectNFT(hubProxyAddr);
@@ -292,8 +291,11 @@ contract TestSetup is Test, ForkManagement, ArrayHelpers {
             // If profile was loaded from .env, we transfer it to the generated account. This is needed as otherwise we
             // won't have the private key of the owner, which is needed for signing meta-tx in some tests.
             address currentProfileOwner = hub.ownerOf(accountProfileId);
-            vm.prank(currentProfileOwner);
+            vm.startPrank(currentProfileOwner);
+            hub.DANGER__disableProfileGuardian();
+            vm.warp(hub.getProfileGuardianDisablingTimestamp(currentProfileOwner));
             hub.transferFrom(currentProfileOwner, accountOwner, accountProfileId);
+            vm.stopPrank();
         } else {
             // If profile was not loaded yet, we create a fresh one.
             accountProfileId = _createProfile(accountOwner);

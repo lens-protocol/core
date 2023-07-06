@@ -13,16 +13,13 @@ import {TokenHandleRegistry} from 'contracts/namespaces/TokenHandleRegistry.sol'
 import {Types} from 'contracts/libraries/constants/Types.sol';
 import {IERC721} from '@openzeppelin/contracts/token/ERC721/IERC721.sol';
 import {IERC721Enumerable} from '@openzeppelin/contracts/token/ERC721/extensions/IERC721Enumerable.sol';
+import 'test/Constants.sol';
 
 contract MigrationsTest is Test, ForkManagement {
     using stdJson for string;
 
     uint256 internal constant LENS_PROTOCOL_PROFILE_ID = 1;
     uint256 internal constant ENUMERABLE_GET_FIRST_PROFILE = 0;
-
-    bytes32 constant PROXY_IMPLEMENTATION_STORAGE_SLOT =
-        bytes32(uint256(keccak256('eip1967.proxy.implementation')) - 1);
-    bytes32 constant ADMIN_SLOT = bytes32(uint256(keccak256('eip1967.proxy.admin')) - 1);
 
     address owner = address(0x087E4);
     address deployer = address(1);
@@ -99,7 +96,8 @@ contract MigrationsTest is Test, ForkManagement {
             tokenHandleRegistryAddress: tokenHandleRegistryAddress,
             legacyFeeFollowModule: address(0),
             legacyProfileFollowModule: address(0),
-            newFeeFollowModule: address(0)
+            newFeeFollowModule: address(0),
+            profileGuardianCooldown: PROFILE_GUARDIAN_COOLDOWN
         });
 
         vm.stopPrank();

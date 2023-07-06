@@ -6,9 +6,11 @@ import 'contracts/libraries/constants/Types.sol';
 import {Typehash} from 'contracts/libraries/constants/Typehash.sol';
 import {Strings} from '@openzeppelin/contracts/utils/Strings.sol';
 import {StorageLib} from 'contracts/libraries/StorageLib.sol';
+import {Address} from '@openzeppelin/contracts/utils/Address.sol';
 
 contract BaseTest is TestSetup {
     using Strings for string;
+    using Address for address;
 
     function testBaseTest() public {
         // Prevents being counted in Foundry Coverage
@@ -17,6 +19,26 @@ contract BaseTest is TestSetup {
     // Empty setUp for easier overriding in other tests, otherwise you need to override from TestSetup and is confusing.
     function setUp() public virtual override {
         super.setUp();
+    }
+
+    function _disableGuardianForProfile(uint256 profileId) internal {
+        address profileOwner = hub.ownerOf(profileId);
+        _disableGuardianForWallet(profileOwner);
+    }
+
+    function _disableGuardianForWallet(address wallet) internal {
+        if (_isProfileGuardianEnabled(wallet)) {
+            vm.prank(wallet);
+            hub.DANGER__disableProfileGuardian();
+            vm.warp(hub.getProfileGuardianDisablingTimestamp(wallet));
+        }
+    }
+
+    function _isProfileGuardianEnabled(address wallet) internal view returns (bool) {
+        return
+            !wallet.isContract() &&
+            (hub.getProfileGuardianDisablingTimestamp(wallet) == 0 ||
+                block.timestamp < hub.getProfileGuardianDisablingTimestamp(wallet));
     }
 
     function _boundPk(uint256 fuzzedUint256) internal view returns (uint256 fuzzedPk) {

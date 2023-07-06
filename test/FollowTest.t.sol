@@ -186,6 +186,8 @@ contract FollowTest is BaseTest {
     }
 
     function testCannotFollowIfFollowerProfileDoesNotExist() public {
+        _disableGuardianForWallet(testFollowerProfileOwner);
+
         vm.prank(testFollowerProfileOwner);
         hub.burn(testFollowerProfileId);
 
@@ -213,6 +215,8 @@ contract FollowTest is BaseTest {
     }
 
     function testCannotFollowIfProfileBeingFollowedDoesNotExist() public {
+        _disableGuardianForWallet(targetProfileOwner);
+
         vm.prank(targetProfileOwner);
         hub.burn(targetProfileId);
 

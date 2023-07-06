@@ -21,6 +21,10 @@ contract ProfileNFTTest is BaseTest, LensBaseERC721Test {
     using stdJson for string;
     using Strings for uint256;
 
+    function _disableGuardian(address wallet) internal override {
+        _disableGuardianForWallet(wallet);
+    }
+
     function testProfileNFTTest() public {
         // Prevents being counted in Foundry Coverage
     }
