@@ -181,9 +181,10 @@ contract LensHandlesTest is BaseTest {
     }
 
     function testConstructionImmutables(address owner, address hub) public {
-        LensHandles newLensHandles = new LensHandles(owner, hub);
+        LensHandles newLensHandles = new LensHandles(owner, hub, HANDLE_GUARDIAN_COOLDOWN);
         assertEq(newLensHandles.OWNER(), owner);
         assertEq(newLensHandles.LENS_HUB(), hub);
+        // TODO: Test HANDLE_GUARDIAN_COOLDOWN
     }
 
     // TODO: Should we revert if it doesn't exist?
@@ -280,6 +281,8 @@ contract LensHandlesTest is BaseTest {
 
         assertTrue(lensHandles.exists(handleId));
         assertEq(lensHandles.ownerOf(handleId), owner);
+
+        _disableGuardianForWallet(address(lensHandles), owner);
 
         vm.prank(owner);
         lensHandles.burn(handleId);

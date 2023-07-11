@@ -25,11 +25,11 @@ abstract contract LensProfiles is LensBaseERC721, ERC2981CollectionRoyalties {
 
     IModuleGlobals immutable MODULE_GLOBALS;
 
-    uint256 internal immutable PROFILE_GUARDIAN_COOLDOWN;
+    uint256 internal immutable TOKEN_GUARDIAN_COOLDOWN;
 
-    constructor(address moduleGlobals, uint256 profileGuardianCooldown) {
+    constructor(address moduleGlobals, uint256 tokenGuardianCooldown) {
         MODULE_GLOBALS = IModuleGlobals(moduleGlobals);
-        PROFILE_GUARDIAN_COOLDOWN = profileGuardianCooldown;
+        TOKEN_GUARDIAN_COOLDOWN = tokenGuardianCooldown;
     }
 
     modifier whenNotPaused() {
@@ -81,7 +81,7 @@ abstract contract LensProfiles is LensBaseERC721, ERC2981CollectionRoyalties {
     }
 
     function _beforeTokenTransfer(address from, address to, uint256 tokenId) internal override whenNotPaused {
-        if (from != address(0) && _hasProfileGuardianEnabled(from)) {
+        if (from != address(0) && _hasTokenGuardianEnabled(from)) {
             // Cannot transfer profile if the guardian is enabled, except at minting time.
             revert Errors.GuardianEnabled();
         }
@@ -104,68 +104,68 @@ abstract contract LensProfiles is LensBaseERC721, ERC2981CollectionRoyalties {
 
     // TODO: We cannot do inheritdoc here, can we?
     /**
-     * @notice Returns the timestamp at which the Profile Guardian will become effectively disabled.
+     * @notice Returns the timestamp at which the Token Guardian will become effectively disabled.
      *
      * @param wallet The address to check the timestamp for.
      *
-     * @return uint256 The timestamp at which the Profile Guardian will become effectively disabled. Zero if enabled.
+     * @return uint256 The timestamp at which the Token Guardian will become effectively disabled. Zero if enabled.
      */
-    function getProfileGuardianDisablingTimestamp(address wallet) external view returns (uint256) {
-        return StorageLib.profileGuardianDisablingTimestamp()[wallet];
+    function getTokenGuardianDisablingTimestamp(address wallet) external view returns (uint256) {
+        return StorageLib.tokenGuardianDisablingTimestamp()[wallet];
     }
 
     /// ************************************
-    /// ****PROFILE PROTECTION FUNCTIONS****
+    /// ****  TOKEN GUARDIAN FUNCTIONS  ****
     /// ************************************
 
     // TODO: @inheritdoc ILensHub
-    function DANGER__disableProfileGuardian() external onlyEOA {
-        if (StorageLib.profileGuardianDisablingTimestamp()[msg.sender] != 0) {
+    function DANGER__disableTokenGuardian() external onlyEOA {
+        if (StorageLib.tokenGuardianDisablingTimestamp()[msg.sender] != 0) {
             revert Errors.DisablingAlreadyTriggered();
         }
-        StorageLib.profileGuardianDisablingTimestamp()[msg.sender] = block.timestamp + PROFILE_GUARDIAN_COOLDOWN;
-        emit Events.ProfileGuardianStateChanged({
+        StorageLib.tokenGuardianDisablingTimestamp()[msg.sender] = block.timestamp + TOKEN_GUARDIAN_COOLDOWN;
+        emit Events.TokenGuardianStateChanged({
             wallet: msg.sender,
             enabled: false,
-            profileGuardianDisablingTimestamp: block.timestamp + PROFILE_GUARDIAN_COOLDOWN,
+            tokenGuardianDisablingTimestamp: block.timestamp + TOKEN_GUARDIAN_COOLDOWN,
             timestamp: block.timestamp
         });
     }
 
     // TODO: @inheritdoc ILensHub
-    function enableProfileGuardian() external onlyEOA {
-        if (StorageLib.profileGuardianDisablingTimestamp()[msg.sender] == 0) {
+    function enableTokenGuardian() external onlyEOA {
+        if (StorageLib.tokenGuardianDisablingTimestamp()[msg.sender] == 0) {
             revert Errors.AlreadyEnabled();
         }
-        StorageLib.profileGuardianDisablingTimestamp()[msg.sender] = 0;
-        emit Events.ProfileGuardianStateChanged({
+        StorageLib.tokenGuardianDisablingTimestamp()[msg.sender] = 0;
+        emit Events.TokenGuardianStateChanged({
             wallet: msg.sender,
             enabled: true,
-            profileGuardianDisablingTimestamp: 0,
+            tokenGuardianDisablingTimestamp: 0,
             timestamp: block.timestamp
         });
     }
 
     function approve(address to, uint256 tokenId) public override {
-        // We allow removing approvals even if the wallet has the profile guardian enabled
-        if (to != address(0) && _hasProfileGuardianEnabled(msg.sender)) {
+        // We allow removing approvals even if the wallet has the token guardian enabled
+        if (to != address(0) && _hasTokenGuardianEnabled(msg.sender)) {
             revert Errors.GuardianEnabled();
         }
         super.approve(to, tokenId);
     }
 
     function setApprovalForAll(address operator, bool approved) public override {
-        // We allow removing approvals even if the wallet has the profile guardian enabled
-        if (approved && _hasProfileGuardianEnabled(msg.sender)) {
+        // We allow removing approvals even if the wallet has the token guardian enabled
+        if (approved && _hasTokenGuardianEnabled(msg.sender)) {
             revert Errors.GuardianEnabled();
         }
         super.setApprovalForAll(operator, approved);
     }
 
-    function _hasProfileGuardianEnabled(address wallet) internal view returns (bool) {
+    function _hasTokenGuardianEnabled(address wallet) internal view returns (bool) {
         return
             !wallet.isContract() &&
-            (StorageLib.profileGuardianDisablingTimestamp()[wallet] == 0 ||
-                block.timestamp < StorageLib.profileGuardianDisablingTimestamp()[wallet]);
+            (StorageLib.tokenGuardianDisablingTimestamp()[wallet] == 0 ||
+                block.timestamp < StorageLib.tokenGuardianDisablingTimestamp()[wallet]);
     }
 }

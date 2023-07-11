@@ -6,3 +6,4 @@ bytes32 constant ADMIN_SLOT = bytes32(uint256(keccak256('eip1967.proxy.admin')) 
 bytes32 constant PROXY_IMPLEMENTATION_STORAGE_SLOT = bytes32(uint256(keccak256('eip1967.proxy.implementation')) - 1);
 
 uint256 constant PROFILE_GUARDIAN_COOLDOWN = 7 days;
+uint256 constant HANDLE_GUARDIAN_COOLDOWN = 7 days;

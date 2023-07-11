@@ -18,4 +18,8 @@ library HandlesErrors {
     error NotOwnerNorWhitelisted();
     error NotOwner();
     error DoesNotExist();
+    error NotEOA();
+    error DisablingAlreadyTriggered();
+    error GuardianEnabled();
+    error AlreadyEnabled();
 }

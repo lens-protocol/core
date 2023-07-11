@@ -34,7 +34,7 @@ library StorageLib {
     //////////////////////////////////
     ///  Introduced in Lens V1.3:  ///
     //////////////////////////////////
-    uint256 constant PROFILE_GUARDIAN_DISABLING_TIMESTAMP_MAPPING_SLOT = 25;
+    uint256 constant TOKEN_GUARDIAN_DISABLING_TIMESTAMP_MAPPING_SLOT = 25;
     //////////////////////////////////
     ///   Introduced in Lens V2:   ///
     //////////////////////////////////
@@ -77,13 +77,13 @@ library StorageLib {
         }
     }
 
-    function profileGuardianDisablingTimestamp()
+    function tokenGuardianDisablingTimestamp()
         internal
         pure
-        returns (mapping(address => uint256) storage _profileGuardianDisablingTimestamp)
+        returns (mapping(address => uint256) storage _tokenGuardianDisablingTimestamp)
     {
         assembly {
-            _profileGuardianDisablingTimestamp.slot := PROFILE_GUARDIAN_DISABLING_TIMESTAMP_MAPPING_SLOT
+            _tokenGuardianDisablingTimestamp.slot := TOKEN_GUARDIAN_DISABLING_TIMESTAMP_MAPPING_SLOT
         }
     }
 

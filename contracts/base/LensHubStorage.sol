@@ -48,7 +48,7 @@ abstract contract LensHubStorage {
     ////////////////////////////////////////////
     // Slots introduced by Lens V1.3 upgrade. //
     ////////////////////////////////////////////
-    mapping(address => uint256) internal _profileGuardianDisablingTimestamp; // Slot 25
+    mapping(address => uint256) internal _tokenGuardianDisablingTimestamp; // Slot 25
 
     ////////////////////////////////////////////
     //  Slots introduced by Lens V2 upgrade.  //

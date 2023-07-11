@@ -21,24 +21,24 @@ contract BaseTest is TestSetup {
         super.setUp();
     }
 
-    function _disableGuardianForProfile(uint256 profileId) internal {
-        address profileOwner = hub.ownerOf(profileId);
-        _disableGuardianForWallet(profileOwner);
+    function _disableGuardianForWallet(address wallet) internal {
+        _disableGuardianForWallet(address(hub), wallet);
     }
 
-    function _disableGuardianForWallet(address wallet) internal {
+    function _disableGuardianForWallet(address nft, address wallet) internal {
         if (_isProfileGuardianEnabled(wallet)) {
             vm.prank(wallet);
-            hub.DANGER__disableProfileGuardian();
-            vm.warp(hub.getProfileGuardianDisablingTimestamp(wallet));
+            // TODO: Fix this if we move disableTokenGuardian to its own interface
+            LensHub(nft).DANGER__disableTokenGuardian();
+            vm.warp(LensHub(nft).getTokenGuardianDisablingTimestamp(wallet));
         }
     }
 
     function _isProfileGuardianEnabled(address wallet) internal view returns (bool) {
         return
             !wallet.isContract() &&
-            (hub.getProfileGuardianDisablingTimestamp(wallet) == 0 ||
-                block.timestamp < hub.getProfileGuardianDisablingTimestamp(wallet));
+            (hub.getTokenGuardianDisablingTimestamp(wallet) == 0 ||
+                block.timestamp < hub.getTokenGuardianDisablingTimestamp(wallet));
     }
 
     function _boundPk(uint256 fuzzedUint256) internal view returns (uint256 fuzzedPk) {

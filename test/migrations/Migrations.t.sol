@@ -79,7 +79,7 @@ contract MigrationsTest is Test, ForkManagement {
 
         vm.startPrank(deployer);
 
-        lensHandles = new LensHandles(owner, address(hub));
+        lensHandles = new LensHandles(owner, address(hub), HANDLE_GUARDIAN_COOLDOWN);
         assertEq(address(lensHandles), lensHandlesAddress);
 
         tokenHandleRegistry = new TokenHandleRegistry(address(hub), lensHandlesAddress);
@@ -97,7 +97,7 @@ contract MigrationsTest is Test, ForkManagement {
             legacyFeeFollowModule: address(0),
             legacyProfileFollowModule: address(0),
             newFeeFollowModule: address(0),
-            profileGuardianCooldown: PROFILE_GUARDIAN_COOLDOWN
+            tokenGuardianCooldown: PROFILE_GUARDIAN_COOLDOWN
         });
 
         vm.stopPrank();
