@@ -109,7 +109,10 @@ contract FeeFollowModuleTest is BaseTest {
         vm.assume(followerProfileId != 0);
         vm.assume(targetProfileId != 0);
         (, uint16 treasuryFee) = moduleGlobals.getTreasuryData();
-        vm.assume(amount != 0 && amount < type(uint256).max / uint256(treasuryFee));
+        // Overflow protection (cause treasuryAmount = amount * treasuryFee / BPS_MAX)
+        vm.assume(
+            amount != 0 && amount <= (treasuryFee == 0 ? type(uint256).max : type(uint256).max / uint256(treasuryFee))
+        );
         vm.assume(transactionExecutor != address(0));
 
         FeeConfig memory feeConfig = FeeConfig({currency: address(currency), amount: amount, recipient: recipient});
@@ -145,7 +148,11 @@ contract FeeFollowModuleTest is BaseTest {
         vm.assume(followerProfileId != 0);
         vm.assume(targetProfileId != 0);
         (, uint16 treasuryFee) = moduleGlobals.getTreasuryData();
-        vm.assume(amount != 0 && amount < type(uint256).max / uint256(treasuryFee));
+        // Overflow protection (cause treasuryAmount = amount * treasuryFee / BPS_MAX)
+        vm.assume(
+            amount != 0 && amount <= (treasuryFee == 0 ? type(uint256).max : type(uint256).max / uint256(treasuryFee))
+        );
+
         vm.assume(transactionExecutor != address(0));
 
         FeeConfig memory feeConfig = FeeConfig({currency: address(currency), amount: amount, recipient: recipient});
@@ -222,6 +229,7 @@ contract FeeFollowModuleTest is BaseTest {
     ) public {
         vm.assume(followerProfileId != 0);
         vm.assume(targetProfileId != 0);
+        vm.assume(transactionExecutor != treasury);
         treasuryFee = uint16(bound(uint256(treasuryFee), 0, (BPS_MAX / 2) - 1));
         vm.prank(modulesGovernance);
         moduleGlobals.setTreasuryFee(treasuryFee);

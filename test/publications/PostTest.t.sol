@@ -2,10 +2,10 @@
 pragma solidity ^0.8.13;
 
 import {Types} from 'contracts/libraries/constants/Types.sol';
-import {PublicationTest} from 'test/publications/PublicationTest.t.sol';
+import {PublicationTest, ActionablePublicationTest} from 'test/publications/PublicationTest.t.sol';
 import {MetaTxNegatives} from 'test/MetaTxNegatives.t.sol';
 
-contract PostTest is PublicationTest {
+contract PostTest is ActionablePublicationTest {
     Types.PostParams postParams;
 
     function testPostTest() public {
@@ -25,6 +25,18 @@ contract PostTest is PublicationTest {
 
     function _pubType() internal virtual override returns (Types.PublicationType) {
         return Types.PublicationType.Post;
+    }
+
+    function _contentURI() internal virtual override returns (string memory contentURI) {
+        return postParams.contentURI;
+    }
+
+    function _setActionModules(
+        address[] memory actionModules,
+        bytes[] memory actionModulesInitDatas
+    ) internal virtual override {
+        postParams.actionModules = actionModules;
+        postParams.actionModulesInitDatas = actionModulesInitDatas;
     }
 }
 

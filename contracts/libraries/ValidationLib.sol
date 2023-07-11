@@ -73,7 +73,7 @@ library ValidationLib {
     }
 
     function validateProfileExists(uint256 profileId) internal view {
-        if (StorageLib.getTokenData(profileId).owner == address(0)) {
+        if (!ProfileLib.exists(profileId)) {
             revert Errors.TokenDoesNotExist();
         }
     }
@@ -124,15 +124,20 @@ library ValidationLib {
         uint256 publicationCollectedProfileId,
         uint256 publicationCollectedId
     ) external view {
-        if (PublicationLib.getPublicationType(referrerProfileId, referrerPubId) != Types.PublicationType.Mirror) {
+        if (
+            !ProfileLib.exists(referrerProfileId) ||
+            PublicationLib.getPublicationType(referrerProfileId, referrerPubId) != Types.PublicationType.Mirror
+        ) {
             revert Errors.InvalidReferrer();
         }
-        _validateReferrerAsMirror(
-            referrerProfileId,
-            referrerPubId,
-            publicationCollectedProfileId,
-            publicationCollectedId
-        );
+        Types.Publication storage _referrerMirror = StorageLib.getPublication(referrerProfileId, referrerPubId);
+        // A mirror can only be a referrer of a legacy publication if it is pointing to it.
+        if (
+            _referrerMirror.pointedProfileId != publicationCollectedProfileId ||
+            _referrerMirror.pointedPubId != publicationCollectedId
+        ) {
+            revert Errors.InvalidReferrer();
+        }
     }
 
     function _validateReferrerAndGetReferrerPubType(
@@ -143,31 +148,31 @@ library ValidationLib {
     ) private view returns (Types.PublicationType) {
         if (referrerPubId == 0) {
             // Unchecked/Unverified referral. Profile referrer, not attached to a publication.
-            if (
-                StorageLib.getTokenData(referrerProfileId).owner == address(0) || referrerProfileId == targetedProfileId
-            ) {
+            if (!ProfileLib.exists(referrerProfileId) || referrerProfileId == targetedProfileId) {
                 revert Errors.InvalidReferrer();
             }
             return Types.PublicationType.Nonexistent;
         } else {
             // Checked/Verified referral. Publication referrer.
             if (
-                // Cannot pass itself as a referrer.
+                // Cannot pass the targeted publication as a referrer.
                 referrerProfileId == targetedProfileId && referrerPubId == targetedPubId
             ) {
                 revert Errors.InvalidReferrer();
             }
             Types.PublicationType referrerPubType = PublicationLib.getPublicationType(referrerProfileId, referrerPubId);
-            if (referrerPubType == Types.PublicationType.Mirror) {
-                _validateReferrerAsMirror(referrerProfileId, referrerPubId, targetedProfileId, targetedPubId);
-            } else if (
-                referrerPubType == Types.PublicationType.Comment || referrerPubType == Types.PublicationType.Quote
-            ) {
-                _validateReferrerAsCommentOrQuote(referrerProfileId, referrerPubId, targetedProfileId, targetedPubId);
-            } else if (referrerPubType == Types.PublicationType.Post) {
+            if (referrerPubType == Types.PublicationType.Nonexistent) {
+                revert Errors.InvalidReferrer();
+            }
+            if (referrerPubType == Types.PublicationType.Post) {
                 _validateReferrerAsPost(referrerProfileId, referrerPubId, targetedProfileId, targetedPubId);
             } else {
-                revert Errors.InvalidReferrer();
+                _validateReferrerAsMirrorOrCommentOrQuote(
+                    referrerProfileId,
+                    referrerPubId,
+                    targetedProfileId,
+                    targetedPubId
+                );
             }
             return referrerPubType;
         }
@@ -187,21 +192,6 @@ library ValidationLib {
         }
     }
 
-    function _validateReferrerAsMirror(
-        uint256 referrerProfileId,
-        uint256 referrerPubId,
-        uint256 targetedProfileId,
-        uint256 targetedPubId
-    ) private view {
-        Types.Publication storage _referrerMirror = StorageLib.getPublication(referrerProfileId, referrerPubId);
-        if (
-            // A mirror can only be a referrer of a publication if it is pointing to it.
-            _referrerMirror.pointedProfileId != targetedProfileId || _referrerMirror.pointedPubId != targetedPubId
-        ) {
-            revert Errors.InvalidReferrer();
-        }
-    }
-
     /**
      * @dev Validates that the referrer publication and the interacted publication are linked.
      *
@@ -210,34 +200,31 @@ library ValidationLib {
      * @param targetedProfileId The ID of the profile who authored the publication being acted or referenced.
      * @param targetedPubId The pub ID being acted or referenced.
      */
-    function _validateReferrerAsCommentOrQuote(
+    function _validateReferrerAsMirrorOrCommentOrQuote(
         uint256 referrerProfileId,
         uint256 referrerPubId,
         uint256 targetedProfileId,
         uint256 targetedPubId
     ) private view {
         Types.Publication storage _referrerPub = StorageLib.getPublication(referrerProfileId, referrerPubId);
-        Types.PublicationType typeOfTargetedPub = PublicationLib.getPublicationType(targetedProfileId, targetedPubId);
-        // We already know that the publication being acted/referenced is not a mirror nor a non-existent one.
-        if (typeOfTargetedPub == Types.PublicationType.Post) {
-            // If the publication acted/referenced is a post, the referrer comment/quote must have it as the root.
+        // A mirror/quote/comment is allowed to be a referrer of a publication if it is pointing to it...
+        if (_referrerPub.pointedProfileId != targetedProfileId || _referrerPub.pointedPubId != targetedPubId) {
+            // ...or if the referrer pub's root is the target pub (i.e. target pub is a Lens V2 post)...
             if (_referrerPub.rootProfileId != targetedProfileId || _referrerPub.rootPubId != targetedPubId) {
-                revert Errors.InvalidReferrer();
-            }
-        } else {
-            // The publication acted/referenced is a comment or a quote.
-            Types.Publication storage _targetedPub = StorageLib.getPublication(targetedProfileId, targetedPubId);
-            if (
-                // Targeted pub must be a "pure" Lens V2 comment/quote, which means there is no Lens V1 Legacy comment
-                // or post on its tree of interactions, and its root pub is filled.
-                // Otherwise, two Lens V2 "non-pure" publications could be passed as a referrer to each other,
-                // even without having any interaction in common.
-                _targetedPub.rootPubId == 0 ||
-                // The referrer publication and the acted/referenced publication must share the same root.
-                _referrerPub.rootProfileId != _targetedPub.rootProfileId ||
-                _referrerPub.rootPubId != _targetedPub.rootPubId
-            ) {
-                revert Errors.InvalidReferrer();
+                Types.Publication storage _targetedPub = StorageLib.getPublication(targetedProfileId, targetedPubId);
+                // ...or if the referrer pub shares the root with the target pub.
+                if (
+                    // Here the target pub must be a "pure" Lens V2 comment/quote, which means there is no
+                    // Lens V1 Legacy comment or post on its tree of interactions, and its root pub is filled.
+                    // Otherwise, two Lens V2 "non-pure" publications could be passed as a referrer to each other,
+                    // even without having any interaction in common, as they would share the root as zero.
+                    _referrerPub.rootPubId == 0 ||
+                    // The referrer publication and the target publication must share the same root.
+                    _referrerPub.rootProfileId != _targetedPub.rootProfileId ||
+                    _referrerPub.rootPubId != _targetedPub.rootPubId
+                ) {
+                    revert Errors.InvalidReferrer();
+                }
             }
         }
     }

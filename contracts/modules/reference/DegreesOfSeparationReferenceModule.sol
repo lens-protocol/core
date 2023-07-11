@@ -54,7 +54,7 @@ contract DegreesOfSeparationReferenceModule is HubRestricted, IReferenceModule {
      * If we also take into account the gas cost of performing the validations on-chain, and the cost of off-chain
      * computation of the path, makes sense to only support up to 3 degrees of separation.
      */
-    uint8 constant MAX_DEGREES_OF_SEPARATION = 3;
+    uint8 public constant MAX_DEGREES_OF_SEPARATION = 3;
 
     mapping(uint256 profileId => mapping(uint256 pubId => ModuleConfig config)) internal _moduleConfig;
 
@@ -211,11 +211,14 @@ contract DegreesOfSeparationReferenceModule is HubRestricted, IReferenceModule {
         uint8 degreesOfSeparation,
         uint256[] memory profilePath
     ) internal view {
-        // If `degreesOfSeparation` was set to zero, only `sourceProfile` is allowed to interact.
-        if (degreesOfSeparation == 0 && profileId != sourceProfile) {
-            revert OperationDisabled();
-        }
-        if (profilePath.length > degreesOfSeparation - 1) {
+        if (degreesOfSeparation == 0) {
+            // If `degreesOfSeparation` was set to zero, only `sourceProfile` is allowed to interact.
+            if (profileId == sourceProfile) {
+                return;
+            } else {
+                revert OperationDisabled();
+            }
+        } else if (profilePath.length > degreesOfSeparation - 1) {
             revert ProfilePathExceedsDegreesOfSeparation();
         }
         if (profilePath.length > 0) {
@@ -268,7 +271,7 @@ contract DegreesOfSeparationReferenceModule is HubRestricted, IReferenceModule {
         uint256 profileId
     ) internal view {
         // We are processing profileId's last publication, so we get the ID from his publication counter.
-        uint256 pubId = ILensHub(HUB).getPubCount(profileId);
+        uint256 pubId = ILensHub(HUB).getProfile(profileId).pubCount;
         // We only care about inheritance of the comment restrictions.
         if (
             !_moduleConfig[profileId][pubId].setUp ||

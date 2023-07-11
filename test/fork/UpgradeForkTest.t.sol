@@ -145,8 +145,7 @@ contract UpgradeForkTest is BaseTest {
                 to: address(this),
                 imageURI: MOCK_URI,
                 followModule: address(0),
-                followModuleInitData: abi.encode(true),
-                followNFTURI: MOCK_URI
+                followModuleInitData: abi.encode(true)
             });
 
             OldCreateProfileParams memory oldCreateProfileParams = OldCreateProfileParams(
@@ -155,7 +154,7 @@ contract UpgradeForkTest is BaseTest {
                 createProfileParams.imageURI,
                 mockDeprecatedFollowModule,
                 createProfileParams.followModuleInitData,
-                createProfileParams.followNFTURI
+                MOCK_URI
             );
 
             oldCreateProfileParams.followModule = mockDeprecatedFollowModule;
@@ -191,7 +190,7 @@ contract UpgradeForkTest is BaseTest {
 
             // Validate post.
             assertEq(postId, 1);
-            Types.Publication memory pub = hub.getPub(profileId, postId);
+            Types.Publication memory pub = hub.getPublication(profileId, postId);
             assertEq(pub.pointedProfileId, 0);
             assertEq(pub.pointedPubId, 0);
             assertEq(pub.contentURI, postParams.contentURI);
@@ -204,7 +203,7 @@ contract UpgradeForkTest is BaseTest {
 
             // Validate comment.
             assertEq(commentId, 2);
-            pub = hub.getPub(profileId, commentId);
+            pub = hub.getPublication(profileId, commentId);
             assertEq(pub.pointedProfileId, commentParams.pointedProfileId);
             assertEq(pub.pointedPubId, commentParams.pointedPubId);
             assertEq(pub.contentURI, commentParams.contentURI);
@@ -217,7 +216,7 @@ contract UpgradeForkTest is BaseTest {
 
             // Validate mirror.
             assertEq(mirrorId, 3);
-            pub = hub.getPub(profileId, mirrorId);
+            pub = hub.getPublication(profileId, mirrorId);
             assertEq(pub.pointedProfileId, mirrorParams.pointedProfileId);
             assertEq(pub.pointedPubId, mirrorParams.pointedPubId);
             assertEq(pub.contentURI, '');
@@ -242,7 +241,7 @@ contract UpgradeForkTest is BaseTest {
 
             // Validate post.
             assertEq(postId, 1);
-            Types.Publication memory pub = hub.getPub(profileId, postId);
+            Types.Publication memory pub = hub.getPublication(profileId, postId);
             assertEq(pub.pointedProfileId, 0);
             assertEq(pub.pointedPubId, 0);
             assertEq(pub.contentURI, postParams.contentURI);
@@ -257,7 +256,7 @@ contract UpgradeForkTest is BaseTest {
 
             // Validate comment.
             assertEq(commentId, 2);
-            pub = hub.getPub(profileId, commentId);
+            pub = hub.getPublication(profileId, commentId);
             assertEq(pub.pointedProfileId, commentParams.pointedProfileId);
             assertEq(pub.pointedPubId, commentParams.pointedPubId);
             assertEq(pub.contentURI, commentParams.contentURI);
@@ -279,7 +278,7 @@ contract UpgradeForkTest is BaseTest {
 
             // Validate mirror.
             assertEq(mirrorId, 3);
-            pub = hub.getPub(profileId, mirrorId);
+            pub = hub.getPublication(profileId, mirrorId);
             assertEq(pub.pointedProfileId, mirrorParams.pointedProfileId);
             assertEq(pub.pointedPubId, mirrorParams.pointedPubId);
             assertEq(pub.contentURI, '');

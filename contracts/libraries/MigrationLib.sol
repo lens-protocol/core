@@ -65,8 +65,8 @@ library MigrationLib {
         address profileOwner = StorageLib.getTokenData(profileId).owner;
         // We check if the profile exists by checking owner != address(0).
         if (profileOwner != address(0)) {
-            // We check if the profile has already been migrated by checking handleDeprecated != "".
-            string memory handle = StorageLib.getProfile(profileId).handleDeprecated;
+            // We check if the profile has already been migrated by checking __DEPRECATED__handle != "".
+            string memory handle = StorageLib.getProfile(profileId).__DEPRECATED__handle;
             if (bytes(handle).length == 0) {
                 return; // Already migrated
             }
@@ -84,7 +84,7 @@ library MigrationLib {
             // We link it to the profile in the TokenHandleRegistry contract.
             tokenHandleRegistry.migrationLink(handleId, profileId);
             emit ProfileMigrated(profileId, profileOwner, handle, handleId);
-            delete StorageLib.getProfile(profileId).handleDeprecated;
+            delete StorageLib.getProfile(profileId).__DEPRECATED__handle;
             delete StorageLib.profileIdByHandleHash()[handleHash];
         }
     }

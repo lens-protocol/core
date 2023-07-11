@@ -46,6 +46,8 @@ library Types {
      * @param Paused The fully paused state.
      */
     enum ProtocolState {
+        // TODO: Reverse order, so Paused becomes 0 and the default. This will get rid of the initializer needs.
+        // It needs to be done carefully, as it might pause the protocol in the Lens V2 upgrade.
         Unpaused,
         PublishingPaused,
         Paused
@@ -89,22 +91,51 @@ library Types {
      * @notice A struct containing profile data.
      *
      * @param pubCount The number of publications made to this profile.
-     * @param followModule The address of the current follow module in use by this profile, can be empty.
-     * @param followNFT The address of the followNFT associated with this profile, can be empty.
-     * @param handleDeprecated The deprecated handle slot, is no longer used.
+     * @param followModule The address of the current follow module in use by this profile, can be address(0) in none.
+     * @param followNFT The address of the followNFT associated with this profile. It can be address(0) if the
+     * profile has not been followed yet, as the collection is lazy-deployed upon the first follow.
+     * @param __DEPRECATED__handle DEPRECATED in V2: handle slot, was replaced with LensHandles.
      * @param imageURI The URI to be used for the profile's image.
-     * @param followNFTURI The URI to be used for the follow NFT.
+     * @param __DEPRECATED__followNFTURI DEPRECATED in V2: The UR
+     * @param metadataURI MetadataURI is used to store the profile's metadata, for example: displayed name, description,
+     * interests, etc.
+     * @param metadataURI The URI to be used for the profile's metadata.
      */
     struct Profile {
         uint256 pubCount; // offset 0
         address followModule; // offset 1
         address followNFT; // offset 2
-        string handleDeprecated; // offset 3
+        string __DEPRECATED__handle; // offset 3
         string imageURI; // offset 4
-        string followNFTURI; // offset 5
+        string __DEPRECATED__followNFTURI; // Deprecated in V2 as we have a common tokenURI for all Follows, offset 5
         string metadataURI; // offset 6
     }
 
+    /**
+     * @notice A struct containing publication data.
+     *
+     * @param pointedProfileId The profile token ID to point the publication to.
+     * @param pointedPubId The publication ID to point the publication to.
+     * These are used to implement the "reference" feature of the platform and is used in:
+     * - Mirrors
+     * - Comments
+     * - Quotes
+     * There are (0,0) if the publication is not pointing to any other publication (i.e. the publication is a Post).
+     * @param contentURI The URI to set for the content of publication (can be ipfs, arweave, http, etc).
+     * @param referenceModule Reference module associated with this profile, if any.
+     * @param __DEPRECATED__collectModule Collect module associated with this publication, if any. Deprecated in V2.
+     * @param __DEPRECATED__collectNFT Collect NFT associated with this publication, if any. Deprecated in V2.
+     * @param pubType The type of publication, can be Nonexistent, Post, Comment, Mirror or Quote.
+     * @param rootProfileId The profile ID of the root post (to determine if comments/quotes and mirrors come from it).
+     * Posts, V1 publications and publications rooted in V1 publications don't have it set.
+     * @param rootPubId The publication ID of the root post (to determine if comments/quotes and mirrors come from it).
+     * Posts, V1 publications and publications rooted in V1 publications don't have it set.
+     * @param enabledActionModulesBitmap The action modules enabled in a given publication as a bitmap.
+     * The bitmap is a uint256 where each bit represents an action module: 1 if the publication uses it, 0 if not.
+     * You can use getActionModuleById() to get the address of the action module associated with a given bit.
+     * In the future this can be replaced with a getter that allows to query the bitmap by index, if there are more
+     * than 256 action modules.
+     */
     struct Publication {
         uint256 pointedProfileId;
         uint256 pointedPubId;
@@ -126,14 +157,12 @@ library Types {
      * @param imageURI The URI to set for the profile image.
      * @param followModule The follow module to use, can be the zero address.
      * @param followModuleInitData The follow module initialization data, if any.
-     * @param followNFTURI The URI to use for the follow NFT.
      */
     struct CreateProfileParams {
         address to;
         string imageURI;
         address followModule;
         bytes followModuleInitData;
-        string followNFTURI;
     }
 
     /**

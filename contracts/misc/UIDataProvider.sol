@@ -8,12 +8,12 @@ import {Types} from 'contracts/libraries/constants/Types.sol';
 /**
  * @dev This struct contains both a `Profile` and a `Publication`.
  *
- * @param Profile A standard profile struct.
- * @param Publication A standard Publication.
+ * @param profile A standard profile struct.
+ * @param publication A standard Publication.
  */
 struct LatestData {
-    Types.Profile Profile;
-    Types.Publication Publication;
+    Types.Profile profile;
+    Types.Publication publication;
 }
 
 /**
@@ -38,8 +38,8 @@ contract UIDataProvider {
      * @return LensData A struct containing the `Profile` and the `Publication` queried.
      */
     function getLatestDataByProfile(uint256 profileId) external view returns (LatestData memory) {
-        Types.Profile memory Profile = HUB.getProfile(profileId);
-        uint256 pubCount = Profile.pubCount;
-        return LatestData(Profile, HUB.getPub(profileId, pubCount));
+        Types.Profile memory profile = HUB.getProfile(profileId);
+        uint256 pubCount = profile.pubCount;
+        return LatestData(profile, HUB.getPublication(profileId, pubCount));
     }
 }

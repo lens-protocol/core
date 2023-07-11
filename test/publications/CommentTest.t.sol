@@ -2,18 +2,21 @@
 pragma solidity ^0.8.13;
 
 import {Types} from 'contracts/libraries/constants/Types.sol';
-import {PublicationTest, ReferencePublicationTest} from 'test/publications/PublicationTest.t.sol';
+import {PublicationTest, ReferencePublicationTest, ActionablePublicationTest} from 'test/publications/PublicationTest.t.sol';
 import {MetaTxNegatives} from 'test/MetaTxNegatives.t.sol';
+import {ReferralSystemTest} from 'test/ReferralSystem.t.sol';
+import {Errors} from 'contracts/libraries/constants/Errors.sol';
+import 'forge-std/console.sol';
 
-contract CommentTest is ReferencePublicationTest {
+contract CommentTest is ReferencePublicationTest, ActionablePublicationTest, ReferralSystemTest {
     Types.CommentParams commentParams;
 
     function testCommentTest() public {
         // Prevents being counted in Foundry Coverage
     }
 
-    function setUp() public virtual override {
-        super.setUp();
+    function setUp() public virtual override(PublicationTest, ReferralSystemTest) {
+        PublicationTest.setUp();
         commentParams = _getDefaultCommentParams();
     }
 
@@ -32,6 +35,10 @@ contract CommentTest is ReferencePublicationTest {
         return Types.PublicationType.Comment;
     }
 
+    function _contentURI() internal virtual override returns (string memory contentURI) {
+        return commentParams.contentURI;
+    }
+
     function _setReferrers(
         uint256[] memory referrerProfileIds,
         uint256[] memory referrerPubIds
@@ -42,6 +49,60 @@ contract CommentTest is ReferencePublicationTest {
 
     function _setReferenceModuleData(bytes memory referenceModuleData) internal virtual override {
         commentParams.referenceModuleData = referenceModuleData;
+    }
+
+    function _setActionModules(
+        address[] memory actionModules,
+        bytes[] memory actionModulesInitDatas
+    ) internal virtual override {
+        commentParams.actionModules = actionModules;
+        commentParams.actionModulesInitDatas = actionModulesInitDatas;
+    }
+
+    function _referralSystem_PrepareOperation(
+        TestPublication memory target,
+        uint256[] memory referrerProfileIds,
+        uint256[] memory referrerPubIds
+    ) internal virtual override {
+        _setPointedPub(target.profileId, target.pubId);
+        _setReferrers(referrerProfileIds, referrerPubIds);
+
+        Types.Publication memory targetPublication = hub.getPublication(target.profileId, target.pubId);
+        if (targetPublication.referenceModule != address(0)) {
+            commentParams.referenceModuleData = abi.encode(true);
+        }
+        _refreshCachedNonces();
+    }
+
+    function _referralSystem_ExpectRevertsIfNeeded(
+        TestPublication memory target,
+        uint256[] memory /*referrerProfileIds */,
+        uint256[] memory /*referrerPubIds */
+    ) internal virtual override returns (bool) {
+        Types.Publication memory targetPublication = hub.getPublication(target.profileId, target.pubId);
+
+        if (commentParams.referrerProfileIds.length > 0 || commentParams.referrerPubIds.length > 0) {
+            if (_isV1LegacyPub(targetPublication)) {
+                // V1 should not accept referrers for comments
+                vm.expectRevert(Errors.InvalidReferrer.selector);
+                return true;
+            } else {
+                // V2 without referenceModule should not accept referrers
+                if (targetPublication.referenceModule == address(0)) {
+                    vm.expectRevert(Errors.InvalidReferrer.selector);
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    function _referralSystem_ExecutePreparedOperation() internal virtual override {
+        _publish(publisher.ownerPk, publisher.profileId);
+    }
+
+    function _refreshCachedNonces() internal virtual {
+        // Nothing to do there.
     }
 }
 
@@ -92,5 +153,10 @@ contract CommentMetaTxTest is CommentTest, MetaTxNegatives {
 
     function _getDefaultMetaTxSignerPk() internal virtual override returns (uint256) {
         return publisher.ownerPk;
+    }
+
+    function _refreshCachedNonces() internal override {
+        cachedNonceByAddress[defaultAccount.owner] = hub.nonces(defaultAccount.owner);
+        cachedNonceByAddress[publisher.owner] = hub.nonces(publisher.owner);
     }
 }

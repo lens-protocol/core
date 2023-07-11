@@ -2,6 +2,7 @@
 pragma solidity ^0.8.15;
 
 import {IERC1271} from '@openzeppelin/contracts/interfaces/IERC1271.sol';
+import {ILensERC721} from 'contracts/interfaces/ILensERC721.sol';
 import {Types} from 'contracts/libraries/constants/Types.sol';
 import {Errors} from 'contracts/libraries/constants/Errors.sol';
 import {Typehash} from 'contracts/libraries/constants/Typehash.sol';
@@ -476,7 +477,7 @@ library MetaTxLib {
             keccak256(
                 abi.encode(
                     Typehash.EIP712_DOMAIN,
-                    keccak256(bytes(StorageLib.getName())),
+                    keccak256(bytes(ILensERC721(address(this)).name())),
                     EIP712_DOMAIN_VERSION_HASH,
                     block.chainid,
                     address(this)

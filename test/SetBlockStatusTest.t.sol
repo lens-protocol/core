@@ -37,7 +37,7 @@ contract SetBlockStatusTest is BaseTest {
         vm.prank(blockeeProfileOwner);
         hub.follow(blockeeProfileId, _toUint256Array(statusSetterProfileId), _toUint256Array(0), _toBytesArray(''));
 
-        followNFTAddress = hub.getFollowNFT(statusSetterProfileId);
+        followNFTAddress = hub.getProfile(statusSetterProfileId).followNFT;
         followNFT = FollowNFT(followNFTAddress);
     }
 
@@ -209,7 +209,7 @@ contract SetBlockStatusTest is BaseTest {
 
         // As the Follow NFT has not been deployed yet, the address is zero, so if a `followNFT.processBlock(...)` call
         // is performed to it, this test must revert.
-        assertEq(hub.getFollowNFT(statusSetterProfileId), address(0));
+        assertEq(hub.getProfile(statusSetterProfileId).followNFT, address(0));
 
         vm.expectEmit(true, false, false, true, address(hub));
         emit Events.Blocked(statusSetterProfileId, blockeeProfileId, block.timestamp);

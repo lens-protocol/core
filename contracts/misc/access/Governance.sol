@@ -78,7 +78,14 @@ contract Governance is ControllableByContract {
             revert Unauthorized();
         }
         (bool success, bytes memory returnData) = target.call{gas: gasleft(), value: msg.value}(data);
-        require(success, string(returnData));
+
+        if (!success) {
+            uint256 len = returnData.length;
+            assembly {
+                revert(add(returnData, 32), len)
+            }
+        }
+
         return returnData;
     }
 }

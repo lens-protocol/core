@@ -10,7 +10,7 @@ import {LensHubInitializable} from 'contracts/misc/LensHubInitializable.sol';
 import {FollowNFT} from 'contracts/FollowNFT.sol';
 import {LegacyCollectNFT} from 'contracts/misc/LegacyCollectNFT.sol';
 import {ModuleGlobals} from 'contracts/misc/ModuleGlobals.sol';
-import {TransparentUpgradeableProxy} from 'contracts/base/upgradeability/TransparentUpgradeableProxy.sol';
+import {TransparentUpgradeableProxy} from '@openzeppelin/contracts/proxy/transparent/TransparentUpgradeableProxy.sol';
 import {Types} from 'contracts/libraries/constants/Types.sol';
 import {Errors} from 'contracts/libraries/constants/Errors.sol';
 import {Events} from 'contracts/libraries/constants/Events.sol';
@@ -23,6 +23,8 @@ import {Typehash} from 'contracts/libraries/constants/Typehash.sol';
 import {MetaTxLib} from 'contracts/libraries/MetaTxLib.sol';
 import {StorageLib} from 'contracts/libraries/StorageLib.sol';
 import 'test/Constants.sol';
+import {LensHandles} from 'contracts/namespaces/LensHandles.sol';
+import {TokenHandleRegistry} from 'contracts/namespaces/TokenHandleRegistry.sol';
 
 contract TestSetup is Test, ForkManagement, ArrayHelpers {
     using stdJson for string;
@@ -72,7 +74,10 @@ contract TestSetup is Test, ForkManagement, ArrayHelpers {
     MockActionModule mockActionModule;
     MockReferenceModule mockReferenceModule;
     ModuleGlobals moduleGlobals;
+    LensHandles lensHandles;
+    TokenHandleRegistry tokenHandleRegistry;
 
+    // TODO: Avoid constructors in favour of setUp function - Failing asserts in constructor won't make the test fail!
     constructor() {
         if (bytes(forkEnv).length > 0) {
             loadBaseAddresses(forkEnv);
@@ -115,6 +120,10 @@ contract TestSetup is Test, ForkManagement, ArrayHelpers {
         legacyCollectNFT = LegacyCollectNFT(legacyCollectNFTAddr);
         hubAsProxy = TransparentUpgradeableProxy(payable(address(hub)));
         moduleGlobals = ModuleGlobals(json.readAddress(string(abi.encodePacked('.', targetEnv, '.ModuleGlobals'))));
+        lensHandles = LensHandles(json.readAddress(string(abi.encodePacked('.', targetEnv, '.LensHandles'))));
+        tokenHandleRegistry = TokenHandleRegistry(
+            json.readAddress(string(abi.encodePacked('.', targetEnv, '.TokenHandleRegistry')))
+        );
 
         deployer = _loadAddressAs('DEPLOYER');
 
@@ -138,26 +147,32 @@ contract TestSetup is Test, ForkManagement, ArrayHelpers {
         governance = _loadAddressAs('GOVERNANCE');
         treasury = _loadAddressAs('TREASURY');
         modulesGovernance = _loadAddressAs('MODULES_GOVERNANCE');
-        vm.label(proxyAdmin, 'HUB_PROXY_ADMIN');
 
         TREASURY_FEE_BPS = 50;
+
+        moduleGlobals = new ModuleGlobals(modulesGovernance, treasury, TREASURY_FEE_BPS);
+        vm.label(address(moduleGlobals), 'MODULE_GLOBALS');
 
         ///////////////////////////////////////// Start deployments.
         vm.startPrank(deployer);
 
         // Precompute needed addresses.
-        address followNFTAddr = computeCreateAddress(deployer, 1);
-        address legacyCollectNFTAddr = computeCreateAddress(deployer, 2);
-        hubProxyAddr = computeCreateAddress(deployer, 3);
+        address followNFTAddr = computeCreateAddress(deployer, vm.getNonce(deployer) + 1);
+        address legacyCollectNFTAddr = computeCreateAddress(deployer, vm.getNonce(deployer) + 2);
+        hubProxyAddr = computeCreateAddress(deployer, vm.getNonce(deployer) + 3);
+        address lensHandlesImplAddr = computeCreateAddress(deployer, vm.getNonce(deployer) + 4);
+        address lensHandlesProxyAddr = computeCreateAddress(deployer, vm.getNonce(deployer) + 5);
+        address tokenHandleRegistryImplAddr = computeCreateAddress(deployer, vm.getNonce(deployer) + 6);
+        address tokenHandleRegistryProxyAddr = computeCreateAddress(deployer, vm.getNonce(deployer) + 7);
 
         // Deploy implementation contracts.
         // TODO: Last 3 addresses are for the follow modules for migration purposes.
         hubImpl = new LensHubInitializable({
-            moduleGlobals: address(0),
+            moduleGlobals: address(moduleGlobals),
             followNFTImpl: followNFTAddr,
             collectNFTImpl: legacyCollectNFTAddr,
-            lensHandlesAddress: address(0),
-            tokenHandleRegistryAddress: address(0),
+            lensHandlesAddress: lensHandlesProxyAddr,
+            tokenHandleRegistryAddress: tokenHandleRegistryProxyAddr,
             legacyFeeFollowModule: address(0),
             legacyProfileFollowModule: address(0),
             newFeeFollowModule: address(0)
@@ -167,7 +182,30 @@ contract TestSetup is Test, ForkManagement, ArrayHelpers {
 
         // Deploy and initialize proxy.
         bytes memory initData = abi.encodeCall(hubImpl.initialize, ('Lens Protocol Profiles', 'LPP', governance));
+        // TODO: Replace deployer owner with proxyAdmin.
         hubAsProxy = new TransparentUpgradeableProxy(address(hubImpl), deployer, initData);
+
+        // Deploy LensHandles implementation.
+        address lensHandlesImpl = address(new LensHandles(governance, address(hubAsProxy)));
+        assertEq(lensHandlesImpl, lensHandlesImplAddr);
+        vm.label(lensHandlesImpl, 'LENS_HANDLES_IMPL');
+
+        // TODO: Replace deployer owner with proxyAdmin.
+        lensHandles = LensHandles(address(new TransparentUpgradeableProxy(lensHandlesImpl, deployer, '')));
+        assertEq(address(lensHandles), lensHandlesProxyAddr);
+        vm.label(address(lensHandles), 'LENS_HANDLES');
+
+        // Deploy TokenHandleRegistry implementation.
+        address tokenHandleRegistryImpl = address(new TokenHandleRegistry(address(hubAsProxy), lensHandlesProxyAddr));
+        assertEq(tokenHandleRegistryImpl, tokenHandleRegistryImplAddr);
+        vm.label(tokenHandleRegistryImpl, 'TOKEN_HANDLE_REGISTRY_IMPL');
+
+        // TODO: Replace deployer owner with proxyAdmin.
+        tokenHandleRegistry = TokenHandleRegistry(
+            address(new TransparentUpgradeableProxy(tokenHandleRegistryImpl, deployer, ''))
+        );
+        assertEq(address(tokenHandleRegistry), tokenHandleRegistryProxyAddr);
+        vm.label(address(tokenHandleRegistry), 'TOKEN_HANDLE_REGISTRY');
 
         // Cast proxy to LensHub interface.
         hub = LensHub(address(hubAsProxy));
@@ -183,9 +221,6 @@ contract TestSetup is Test, ForkManagement, ArrayHelpers {
         // Deploy the MockReferenceModule.
         mockReferenceModule = new MockReferenceModule();
         vm.label(address(mockReferenceModule), 'MOCK_REFERENCE_MODULE');
-
-        moduleGlobals = new ModuleGlobals(modulesGovernance, treasury, TREASURY_FEE_BPS);
-        vm.label(address(moduleGlobals), 'MODULE_GLOBALS');
 
         vm.stopPrank();
         ///////////////////////////////////////// End deployments.
@@ -312,8 +347,7 @@ contract TestSetup is Test, ForkManagement, ArrayHelpers {
                 to: defaultAccount.owner,
                 imageURI: MOCK_URI,
                 followModule: address(0),
-                followModuleInitData: '',
-                followNFTURI: MOCK_URI
+                followModuleInitData: ''
             });
     }
 

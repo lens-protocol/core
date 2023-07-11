@@ -15,6 +15,8 @@ abstract contract PublicationTest is BaseTest {
 
     function _pubType() internal virtual returns (Types.PublicationType);
 
+    function _contentURI() internal virtual returns (string memory contentURI);
+
     function setUp() public virtual override {
         super.setUp();
         publisher = _loadAccountAs('PUBLISHER');
@@ -54,15 +56,15 @@ abstract contract PublicationTest is BaseTest {
     // Scenarios
 
     function testPublisherPubCountIs_IncrementedByOne_AfterPublishing() public {
-        uint256 pubCountBeforePublishing = hub.getPubCount(publisher.profileId);
+        uint256 pubCountBeforePublishing = hub.getProfile(publisher.profileId).pubCount;
         _publish({signerPk: publisher.ownerPk, publisherProfileId: publisher.profileId});
-        uint256 pubCountAfterPublishing = hub.getPubCount(publisher.profileId);
+        uint256 pubCountAfterPublishing = hub.getProfile(publisher.profileId).pubCount;
         assertEq(pubCountAfterPublishing, pubCountBeforePublishing + 1);
     }
 
     function testPubIdAssignedIs_EqualsToPubCount_AfterPublishing() public {
         uint256 pubIdAssigned = _publish({signerPk: publisher.ownerPk, publisherProfileId: publisher.profileId});
-        uint256 pubCountAfterPublishing = hub.getPubCount(publisher.profileId);
+        uint256 pubCountAfterPublishing = hub.getProfile(publisher.profileId).pubCount;
         assertEq(pubIdAssigned, pubCountAfterPublishing);
     }
 
@@ -93,6 +95,15 @@ abstract contract PublicationTest is BaseTest {
         Types.PublicationType expectedPubType = _pubType();
         assertTrue(assignedPubType == expectedPubType, 'Assigned publication type is different than the expected one');
     }
+
+    function testContentURI_IsCorrect() public {
+        uint256 publicationIdAssigned = _publish({
+            signerPk: publisher.ownerPk,
+            publisherProfileId: publisher.profileId
+        });
+
+        assertEq(hub.getContentURI(publisher.profileId, publicationIdAssigned), _contentURI());
+    }
 }
 
 /**
@@ -100,6 +111,34 @@ abstract contract PublicationTest is BaseTest {
  */
 abstract contract ActionablePublicationTest is PublicationTest {
     function _setActionModules(address[] memory actionModules, bytes[] memory actionModulesInitDatas) internal virtual;
+
+    function testCannotInitializeActionModule_AmountOfModulesMismatchAmountOfModulesData() public {
+        _setActionModules({
+            actionModules: _toAddressArray(address(mockActionModule), address(mockActionModule)),
+            actionModulesInitDatas: _toBytesArray(abi.encode(true))
+        });
+        vm.expectRevert(Errors.ArrayMismatch.selector);
+        _publish({signerPk: publisher.ownerPk, publisherProfileId: publisher.profileId});
+    }
+
+    function testCannot_InitializeActionModule_IfNotWhitelisted(address nonwhitelistedModule) public {
+        vm.assume(hub.getActionModuleWhitelistData(nonwhitelistedModule).isWhitelisted == false);
+        _setActionModules({
+            actionModules: _toAddressArray(nonwhitelistedModule),
+            actionModulesInitDatas: _toBytesArray('')
+        });
+        vm.expectRevert(Errors.NotWhitelisted.selector);
+        _publish({signerPk: publisher.ownerPk, publisherProfileId: publisher.profileId});
+    }
+
+    function testCannot_InitializeActionModule_IfDuplicated() public {
+        _setActionModules({
+            actionModules: _toAddressArray(address(mockActionModule), address(mockActionModule)),
+            actionModulesInitDatas: _toBytesArray(abi.encode(true), abi.encode(true))
+        });
+        vm.expectRevert(Errors.AlreadyEnabled.selector);
+        _publish({signerPk: publisher.ownerPk, publisherProfileId: publisher.profileId});
+    }
 }
 
 /**
@@ -111,6 +150,39 @@ abstract contract ReferencePublicationTest is PublicationTest {
     function _setReferenceModuleData(bytes memory referenceModuleData) internal virtual;
 
     function _setPointedPub(uint256 pointedProfileId, uint256 pointedPubId) internal virtual;
+
+    function testGetPubPointer() public {
+        Types.PostParams memory postParams = _getDefaultPostParams();
+        postParams.profileId = anotherPublisher.profileId;
+        postParams.referenceModule = address(mockReferenceModule);
+        postParams.referenceModuleInitData = abi.encode(true);
+
+        vm.prank(anotherPublisher.owner);
+        uint256 pointedPubId = hub.post(postParams);
+
+        _setPointedPub(anotherPublisher.profileId, pointedPubId);
+        _setReferenceModuleData(abi.encode(true));
+
+        uint256 pubId = _publish({signerPk: publisher.ownerPk, publisherProfileId: publisher.profileId});
+
+        Types.Publication memory publication = hub.getPublication(publisher.profileId, pubId);
+        uint256 actualPointedProfileId = publication.pointedProfileId;
+        uint256 actualPointedPubId = publication.pointedPubId;
+        assertEq(actualPointedProfileId, anotherPublisher.profileId);
+        assertEq(actualPointedPubId, pointedPubId);
+    }
+
+    function testGetReferenceModule() public {
+        address referenceModule = address(mockReferenceModule);
+        Types.PostParams memory postParams = _getDefaultPostParams();
+        postParams.referenceModule = referenceModule;
+        postParams.referenceModuleInitData = abi.encode(true);
+
+        vm.prank(defaultAccount.owner);
+        uint256 pubId = hub.post(postParams);
+
+        assertEq(hub.getPublication(defaultAccount.profileId, pubId).referenceModule, referenceModule);
+    }
 
     function testCannotReferenceA_Post_IfReferenceModule_RejectsIt() public {
         Types.PostParams memory postParams = _getDefaultPostParams();
@@ -124,6 +196,18 @@ abstract contract ReferencePublicationTest is PublicationTest {
         _setReferenceModuleData(abi.encode(false));
 
         vm.expectRevert(MockModule.MockModuleReverted.selector);
+        _publish({signerPk: publisher.ownerPk, publisherProfileId: publisher.profileId});
+    }
+
+    function testCannotReferenceA_Publication_IfBlocked_ByTheAuthorOfThePointedPub() public {
+        vm.prank(defaultAccount.owner);
+        hub.setBlockStatus({
+            byProfileId: defaultAccount.profileId,
+            idsOfProfilesToSetBlockStatus: _toUint256Array(publisher.profileId),
+            blockStatus: _toBoolArray(true)
+        });
+
+        vm.expectRevert(Errors.Blocked.selector);
         _publish({signerPk: publisher.ownerPk, publisherProfileId: publisher.profileId});
     }
 
@@ -191,7 +275,7 @@ abstract contract ReferencePublicationTest is PublicationTest {
     }
 
     function testCannotReference_Itself() public {
-        uint256 nextPubId = hub.getPubCount(publisher.profileId) + 1;
+        uint256 nextPubId = hub.getProfile(publisher.profileId).pubCount + 1;
 
         _setPointedPub(publisher.profileId, nextPubId);
 

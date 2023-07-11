@@ -21,6 +21,10 @@ library ProfileLib {
         return profileOwner;
     }
 
+    function exists(uint256 profileId) internal view returns (bool) {
+        return StorageLib.getTokenData(profileId).owner != address(0);
+    }
+
     /**
      * @notice Creates a profile with the given parameters to the given address. Minting happens
      * in the hub.
@@ -30,7 +34,6 @@ library ProfileLib {
      *      imageURI: The URI to set for the profile image.
      *      followModule: The follow module to use, can be the zero address.
      *      followModuleInitData: The follow module initialization data, if any
-     *      followNFTURI: The URI to set for the follow NFT.
      * @param profileId The profile ID to associate with this profile NFT (token ID).
      */
     function createProfile(Types.CreateProfileParams calldata createProfileParams, uint256 profileId) external {
@@ -40,7 +43,6 @@ library ProfileLib {
 
         Types.Profile storage _profile = StorageLib.getProfile(profileId);
         _profile.imageURI = createProfileParams.imageURI;
-        _profile.followNFTURI = createProfileParams.followNFTURI;
 
         bytes memory followModuleReturnData;
         if (createProfileParams.followModule != address(0)) {
@@ -51,12 +53,12 @@ library ProfileLib {
 
             // We don't need to check for deprecated modules here because deprecated ones are no longer whitelisted.
             // Initialize the follow module.
-            followModuleReturnData = _initFollowModule(
-                profileId,
-                createProfileParams.to,
-                createProfileParams.followModule,
-                createProfileParams.followModuleInitData
-            );
+            followModuleReturnData = _initFollowModule({
+                profileId: profileId,
+                transactionExecutor: msg.sender,
+                followModule: createProfileParams.followModule,
+                followModuleInitData: createProfileParams.followModuleInitData
+            });
         }
         emit Events.ProfileCreated(
             profileId,
@@ -65,7 +67,6 @@ library ProfileLib {
             createProfileParams.imageURI,
             createProfileParams.followModule,
             followModuleReturnData,
-            createProfileParams.followNFTURI,
             block.timestamp
         );
     }
@@ -79,16 +80,6 @@ library ProfileLib {
      */
     function setProfileImageURI(uint256 profileId, string calldata imageURI) external {
         _setProfileImageURI(profileId, imageURI);
-    }
-
-    /**
-     * @notice Sets the follow NFT URI for a given profile.
-     *
-     * @param profileId The profile ID.
-     * @param followNFTURI The follow NFT URI to set.
-     */
-    function setFollowNFTURI(uint256 profileId, string calldata followNFTURI) external {
-        _setFollowNFTURI(profileId, followNFTURI);
     }
 
     /**
@@ -128,11 +119,6 @@ library ProfileLib {
         }
         StorageLib.getProfile(profileId).imageURI = imageURI;
         emit Events.ProfileImageURISet(profileId, imageURI, block.timestamp);
-    }
-
-    function _setFollowNFTURI(uint256 profileId, string calldata followNFTURI) private {
-        StorageLib.getProfile(profileId).followNFTURI = followNFTURI;
-        emit Events.FollowNFTURISet(profileId, followNFTURI, block.timestamp);
     }
 
     function setBlockStatus(

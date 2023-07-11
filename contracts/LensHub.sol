@@ -385,12 +385,11 @@ contract LensHub is
         uint256 unfollowerProfileId,
         uint256[] calldata idsOfProfilesToUnfollow
     ) external override whenNotPaused onlyProfileOwnerOrDelegatedExecutor(msg.sender, unfollowerProfileId) {
-        return
-            FollowLib.unfollow({
-                unfollowerProfileId: unfollowerProfileId,
-                idsOfProfilesToUnfollow: idsOfProfilesToUnfollow,
-                transactionExecutor: msg.sender
-            });
+        FollowLib.unfollow({
+            unfollowerProfileId: unfollowerProfileId,
+            idsOfProfilesToUnfollow: idsOfProfilesToUnfollow,
+            transactionExecutor: msg.sender
+        });
     }
 
     /// @inheritdoc ILensProtocol
@@ -401,12 +400,11 @@ contract LensHub is
     ) external override whenNotPaused onlyProfileOwnerOrDelegatedExecutor(signature.signer, unfollowerProfileId) {
         MetaTxLib.validateUnfollowSignature(signature, unfollowerProfileId, idsOfProfilesToUnfollow);
 
-        return
-            FollowLib.unfollow({
-                unfollowerProfileId: unfollowerProfileId,
-                idsOfProfilesToUnfollow: idsOfProfilesToUnfollow,
-                transactionExecutor: signature.signer
-            });
+        FollowLib.unfollow({
+            unfollowerProfileId: unfollowerProfileId,
+            idsOfProfilesToUnfollow: idsOfProfilesToUnfollow,
+            transactionExecutor: signature.signer
+        });
     }
 
     /// @inheritdoc ILensProtocol
@@ -555,46 +553,6 @@ contract LensHub is
     }
 
     /// @inheritdoc ILensProtocol
-    function getProfileMetadataURI(uint256 profileId) external view override returns (string memory) {
-        return StorageLib.getProfile(profileId).metadataURI;
-    }
-
-    /// @inheritdoc ILensProtocol
-    function getPubCount(uint256 profileId) external view override returns (uint256) {
-        return _profiles[profileId].pubCount;
-    }
-
-    /// @inheritdoc ILensProtocol
-    function getProfileImageURI(uint256 profileId) external view override returns (string memory) {
-        return _profiles[profileId].imageURI;
-    }
-
-    /// @inheritdoc ILensProtocol
-    function getFollowNFT(uint256 profileId) external view override returns (address) {
-        return _profiles[profileId].followNFT;
-    }
-
-    /// @inheritdoc ILensProtocol
-    function getFollowModule(uint256 profileId) external view override returns (address) {
-        return _profiles[profileId].followModule;
-    }
-
-    /// @inheritdoc ILensProtocol
-    function getReferenceModule(uint256 profileId, uint256 pubId) external view override returns (address) {
-        return _publications[profileId][pubId].referenceModule;
-    }
-
-    /// @inheritdoc ILensProtocol
-    function getEnabledActionModulesBitmap(uint256 profileId, uint256 pubId) external view override returns (uint256) {
-        return _publications[profileId][pubId].enabledActionModulesBitmap;
-    }
-
-    /// @inheritdoc ILensProtocol
-    function getPubPointer(uint256 profileId, uint256 pubId) external view override returns (uint256, uint256) {
-        return (_publications[profileId][pubId].pointedProfileId, _publications[profileId][pubId].pointedPubId);
-    }
-
-    /// @inheritdoc ILensProtocol
     function getContentURI(uint256 profileId, uint256 pubId) external view override returns (string memory) {
         // This function is used by the Collect NFTs' tokenURI function.
         return PublicationLib.getContentURI(profileId, pubId);
@@ -606,7 +564,10 @@ contract LensHub is
     }
 
     /// @inheritdoc ILensProtocol
-    function getPub(uint256 profileId, uint256 pubId) external view override returns (Types.Publication memory) {
+    function getPublication(
+        uint256 profileId,
+        uint256 pubId
+    ) external view override returns (Types.Publication memory) {
         return _publications[profileId][pubId];
     }
 

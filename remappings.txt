@@ -1,6 +1,7 @@
 ds-test/=lib/forge-std/lib/ds-test/src/
 forge-std/=lib/forge-std/src/
 @seadrop/=lib/seadrop/src/
+@openzeppelin/=lib/openzeppelin-contracts/
 
 ERC721A/=lib/seadrop/lib/ERC721A/contracts/
 ERC721A-Upgradeable/=lib/seadrop/lib/ERC721A-Upgradeable/contracts/
@@ -11,3 +12,5 @@ operator-filter-registry/=lib/seadrop/lib/operator-filter-registry/src/
 solmate/=lib/seadrop/lib/solmate/src/
 utility-contracts/=lib/seadrop/lib/utility-contracts/src/
 create2-scripts/=lib/seadrop/lib/create2-helpers/script/
+
+solady/=lib/solady/src/

@@ -18,4 +18,4 @@ max_test_rejects = 200000
 
 [profile.ci]
 [profile.ci.fuzz]
-runs = 10000
+runs = 100

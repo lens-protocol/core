@@ -39,26 +39,14 @@ contract TokenHandleRegistry is ITokenHandleRegistry {
         _;
     }
 
-    modifier onlyHandleOrTokenOwner(
-        uint256 handleId,
-        uint256 tokenId,
-        address transactionExecutor
-    ) {
-        if (
-            IERC721(LENS_HANDLES).ownerOf(handleId) != transactionExecutor &&
-            IERC721(LENS_HUB).ownerOf(tokenId) != transactionExecutor
-        ) {
-            revert RegistryErrors.NotHandleNorTokenOwner();
-        }
-        _;
-    }
-
     constructor(address lensHub, address lensHandles) {
         LENS_HUB = lensHub;
         LENS_HANDLES = lensHandles;
     }
 
     // Lens V1 to Lens V2 migration function
+    // WARNING: It is able to link the Token and Handle even if they're not in the same wallet.
+    //          But it is designed to be only called from LensHub migration function, which assures that they are.
     function migrationLink(uint256 handleId, uint256 tokenId) external {
         if (msg.sender != LENS_HUB) {
             revert RegistryErrors.OnlyLensHub();
@@ -81,9 +69,21 @@ contract TokenHandleRegistry is ITokenHandleRegistry {
     }
 
     /// @inheritdoc ITokenHandleRegistry
-    function unlink(uint256 handleId, uint256 tokenId) external onlyHandleOrTokenOwner(handleId, tokenId, msg.sender) {
+    function unlink(uint256 handleId, uint256 tokenId) external {
+        // We revert here only in the case if both tokens exists and the caller is not the owner of any of them
+        if (
+            ILensHandles(LENS_HANDLES).exists(handleId) &&
+            ILensHandles(LENS_HANDLES).ownerOf(handleId) != msg.sender &&
+            ILensHub(LENS_HUB).exists(tokenId) &&
+            ILensHub(LENS_HUB).ownerOf(tokenId) != msg.sender
+        ) {
+            revert RegistryErrors.NotHandleNorTokenOwner();
+        }
+
         RegistryTypes.Handle memory handle = RegistryTypes.Handle({collection: LENS_HANDLES, id: handleId});
         RegistryTypes.Token memory tokenPointedByHandle = handleToToken[_handleHash(handle)];
+
+        // We check if the tokens are (were) linked for the case if some of them doesn't exist
         if (tokenPointedByHandle.id != tokenId) {
             revert RegistryErrors.NotLinked();
         }

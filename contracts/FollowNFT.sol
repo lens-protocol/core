@@ -47,7 +47,9 @@ contract FollowNFT is HubRestricted, LensBaseERC721, ERC2981CollectionRoyalties,
     /// @inheritdoc IFollowNFT
     function initialize(uint256 profileId) external override {
         // This is called right after deployment by the LensHub, so we can skip the onlyHub check.
-        if (_initialized) revert Errors.Initialized();
+        if (_initialized) {
+            revert Errors.Initialized();
+        }
         _initialized = true;
         _followedProfileId = profileId;
         _setRoyalty(1000); // 10% of royalties
@@ -252,7 +254,8 @@ contract FollowNFT is HubRestricted, LensBaseERC721, ERC2981CollectionRoyalties,
     function supportsInterface(
         bytes4 interfaceId
     ) public view virtual override(LensBaseERC721, ERC2981CollectionRoyalties) returns (bool) {
-        return ERC2981CollectionRoyalties.supportsInterface(interfaceId);
+        return
+            LensBaseERC721.supportsInterface(interfaceId) || ERC2981CollectionRoyalties.supportsInterface(interfaceId);
     }
 
     function name() public view override returns (string memory) {
