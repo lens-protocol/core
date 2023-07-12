@@ -7,7 +7,6 @@
     "coverage": "forge coverage --report lcov && genhtml lcov.info -o report --branch-coverage",
     "test": "forge test",
     "test:gas": "forge test -vvv --gas-report",
-    "postinstall": "forge install",
     "deploy:local": "hardhat full-deploy --network localhost",
     "deploy:mumbai": "hardhat full-deploy --network mumbai"
   },
