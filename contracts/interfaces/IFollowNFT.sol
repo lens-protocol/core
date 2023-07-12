@@ -94,6 +94,18 @@ interface IFollowNFT {
     function wrap(uint256 followTokenId) external;
 
     /**
+     * @notice Unties the follow token from the follower's profile one, and wraps it into the ERC-721 untied follow
+     * tokens collection. Untied follow tokens will NOT be automatically transferred with their follower profile.
+     * @custom:permissions Follower profile owner.
+     *
+     * @dev Only on unwrapped follow tokens.
+     *
+     * @param followTokenId The ID of the follow token to untie and wrap.
+     * @param to The address where the follow token is minted to when being wrapped as ERC-721.
+     */
+    function wrap(uint256 followTokenId, address to) external;
+
+    /**
      * @notice Unwraps the follow token from the ERC-721 untied follow tokens collection, and ties it to the follower's
      * profile token. Tokens that are tied to the follower profile will be automatically transferred with it.
      *
