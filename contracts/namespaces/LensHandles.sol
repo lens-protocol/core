@@ -27,11 +27,18 @@ contract LensHandles is ERC721, ImmutableOwnable, ILensHandles {
     uint256 internal constant SEPARATOR_LENGTH = 1; // bytes('.').length;
     bytes32 internal constant NAMESPACE_HASH = keccak256(bytes(NAMESPACE));
 
-    modifier onlyOwnerOrHubOrWhitelistedProfileCreator() {
+    modifier onlyOwnerNorWhitelistedProfileCreator() {
         if (
-            msg.sender != OWNER && msg.sender != LENS_HUB && !ILensHub(LENS_HUB).isProfileCreatorWhitelisted(msg.sender)
+            msg.sender != OWNER && !ILensHub(LENS_HUB).isProfileCreatorWhitelisted(msg.sender)
         ) {
             revert HandlesErrors.NotOwnerNorWhitelisted();
+        }
+        _;
+    }
+
+    modifier onlyHub() {
+        if (msg.sender != LENS_HUB) {
+            revert HandlesErrors.NotHub();
         }
         _;
     }
@@ -57,16 +64,18 @@ contract LensHandles is ERC721, ImmutableOwnable, ILensHandles {
     }
 
     /// @inheritdoc ILensHandles
-    function mintHandle(
-        address to,
-        string calldata localName
-    ) external onlyOwnerOrHubOrWhitelistedProfileCreator returns (uint256) {
+    function mintHandle(address to, string calldata localName)
+        external
+        onlyOwnerNorWhitelistedProfileCreator
+        returns (uint256)
+    {
         _validateLocalName(localName);
-        uint256 tokenId = getTokenId(localName);
-        _mint(to, tokenId);
-        _localNames[tokenId] = localName;
-        emit HandlesEvents.HandleMinted(localName, NAMESPACE, tokenId, to, block.timestamp);
-        return tokenId;
+        return _mintHandle(to, localName);
+    }
+
+    function migrateHandle(address to, string calldata localName) external onlyHub returns (uint256) {
+        _validateLocalNameMigration(localName);
+        return _mintHandle(to, localName);
     }
 
     function burn(uint256 tokenId) external {
@@ -112,7 +121,15 @@ contract LensHandles is ERC721, ImmutableOwnable, ILensHandles {
     ///        INTERNAL FUNCTIONS      ///
     //////////////////////////////////////
 
-    function _validateLocalName(string memory localName) internal view {
+    function _mintHandle(address to, string calldata localName) internal returns (uint256) {
+        uint256 tokenId = getTokenId(localName);
+        _mint(to, tokenId);
+        _localNames[tokenId] = localName;
+        emit HandlesEvents.HandleMinted(localName, NAMESPACE, tokenId, to, block.timestamp);
+        return tokenId;
+    }
+
+    function _validateLocalNameMigration(string memory localName) internal view {
         bytes memory localNameAsBytes = bytes(localName);
         uint256 localNameLength = localNameAsBytes.length;
 
@@ -128,6 +145,30 @@ contract LensHandles is ERC721, ImmutableOwnable, ILensHandles {
         uint256 i;
         while (i < localNameLength) {
             if (!_isAlphaNumeric(localNameAsBytes[i]) && localNameAsBytes[i] != '-' && localNameAsBytes[i] != '_') {
+                revert HandlesErrors.HandleContainsInvalidCharacters();
+            }
+            unchecked {
+                ++i;
+            }
+        }
+    }
+
+    function _validateLocalName(string memory localName) internal view {
+        bytes memory localNameAsBytes = bytes(localName);
+        uint256 localNameLength = localNameAsBytes.length;
+
+        if (localNameLength == 0 || localNameLength + SEPARATOR_LENGTH + NAMESPACE_LENGTH > MAX_HANDLE_LENGTH) {
+            revert HandlesErrors.HandleLengthInvalid();
+        }
+
+        bytes1 firstByte = localNameAsBytes[0];
+        if (firstByte == '-' || firstByte == '_') {
+            revert HandlesErrors.HandleFirstCharInvalid();
+        }
+
+        uint256 i;
+        while (i < localNameLength) {
+            if (!_isAlphaNumeric(localNameAsBytes[i]) && localNameAsBytes[i] != '_') {
                 revert HandlesErrors.HandleContainsInvalidCharacters();
             }
             unchecked {
