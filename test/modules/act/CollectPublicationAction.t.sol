@@ -5,7 +5,7 @@ import 'test/base/BaseTest.t.sol';
 import {IPublicationActionModule} from 'contracts/interfaces/IPublicationActionModule.sol';
 import {ICollectModule} from 'contracts/interfaces/ICollectModule.sol';
 import {CollectPublicationAction} from 'contracts/modules/act/collect/CollectPublicationAction.sol';
-import {CollectNFT} from 'contracts/CollectNFT.sol';
+import {CollectNFT} from 'contracts/modules/act/collect/CollectNFT.sol';
 import {MockCollectModule} from 'test/mocks/MockCollectModule.sol';
 import {Events} from 'contracts/libraries/constants/Events.sol';
 import {IERC721} from '@openzeppelin/contracts/token/ERC721/IERC721.sol';
