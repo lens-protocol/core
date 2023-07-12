@@ -27,7 +27,7 @@ contract LensHandles is ERC721, ImmutableOwnable, ILensHandles {
     uint256 internal constant SEPARATOR_LENGTH = 1; // bytes('.').length;
     bytes32 internal constant NAMESPACE_HASH = keccak256(bytes(NAMESPACE));
 
-    modifier onlyOwnerNorWhitelistedProfileCreator() {
+    modifier onlyOwnerOrWhitelistedProfileCreator() {
         if (
             msg.sender != OWNER && !ILensHub(LENS_HUB).isProfileCreatorWhitelisted(msg.sender)
         ) {
@@ -66,7 +66,7 @@ contract LensHandles is ERC721, ImmutableOwnable, ILensHandles {
     /// @inheritdoc ILensHandles
     function mintHandle(address to, string calldata localName)
         external
-        onlyOwnerNorWhitelistedProfileCreator
+        onlyOwnerOrWhitelistedProfileCreator
         returns (uint256)
     {
         _validateLocalName(localName);
@@ -161,8 +161,7 @@ contract LensHandles is ERC721, ImmutableOwnable, ILensHandles {
             revert HandlesErrors.HandleLengthInvalid();
         }
 
-        bytes1 firstByte = localNameAsBytes[0];
-        if (firstByte == '-' || firstByte == '_') {
+        if (localNameAsBytes[0] == '_') {
             revert HandlesErrors.HandleFirstCharInvalid();
         }
 
