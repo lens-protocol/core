@@ -351,23 +351,6 @@ library Events {
     event Unblocked(uint256 indexed byProfileId, uint256 idOfProfileUnblocked, uint256 timestamp);
 
     /**
-     * @dev Emitted via callback when a followNFT is transferred.
-     *
-     * @param profileId The token ID of the profile associated with the followNFT being transferred.
-     * @param followNFTId The followNFT being transferred's token ID.
-     * @param from The address the followNFT is being transferred from.
-     * @param to The address the followNFT is being transferred to.
-     * @param timestamp The current block timestamp.
-     */
-    event FollowNFTTransferred(
-        uint256 indexed profileId,
-        uint256 indexed followNFTId,
-        address from,
-        address to,
-        uint256 timestamp
-    );
-
-    /**
      * @dev Emitted via callback when a collectNFT is transferred.
      *
      * @param profileId The token ID of the profile associated with the collectNFT being transferred.
@@ -425,24 +408,6 @@ library Events {
         address indexed currency,
         bool indexed prevWhitelisted,
         bool indexed whitelisted,
-        uint256 timestamp
-    );
-
-    /**
-     * @notice Emitted when one or multiple addresses are approved (or disapproved) for following in
-     * the `ApprovalFollowModule`.
-     *
-     * @param owner The profile owner who executed the approval.
-     * @param profileId The profile ID that the follow approvals are granted/revoked for.
-     * @param addresses The addresses that have had the follow approvals granted/revoked.
-     * @param approved Whether each corresponding address is now approved or disapproved.
-     * @param timestamp The current block timestamp.
-     */
-    event FollowsApproved(
-        address indexed owner,
-        uint256 indexed profileId,
-        address[] addresses,
-        bool[] approved,
         uint256 timestamp
     );
 
