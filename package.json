@@ -1,15 +1,15 @@
 {
   "name": "@aave/lens-protocol",
-  "version": "1.0.2",
+  "version": "2.0.0",
   "description": "Composable and decentralized social graph",
-  "main": "index.js",
   "scripts": {
-    "full-deploy-local": "hardhat full-deploy --network localhost",
-    "full-deploy-mumbai": "hardhat full-deploy --network mumbai",
-    "run-env": "npm i && tail -f /dev/null",
-    "compile": "SKIP_LOAD=true hardhat clean && SKIP_LOAD=true hardhat compile",
-    "format": "prettier --write .",
-    "lint": "eslint ."
+    "build": "forge build --sizes",
+    "coverage": "forge coverage --report lcov && genhtml lcov.info -o report --branch-coverage",
+    "test": "forge test",
+    "test:gas": "forge test -vvv --gas-report",
+    "postinstall": "forge install",
+    "deploy:local": "hardhat full-deploy --network localhost",
+    "deploy:mumbai": "hardhat full-deploy --network mumbai"
   },
   "repository": {
     "type": "git",
@@ -63,13 +63,14 @@
   "author": "Lens",
   "contributors": [
     "Alan Donoso Naumczuk",
+    "Victor Naumik",
+    "Josh Stevens",
+    "Peter Michael (Zer0dot)",
     "David Racero",
     "Emilio Frangella",
     "Lasse Herskind",
     "Miguel Martinez",
-    "Peter Michael (Zer0dot)",
-    "Steven Valeri",
-    "Victor Naumik"
+    "Steven Valeri"
   ],
   "license": "MIT",
   "keywords": [
