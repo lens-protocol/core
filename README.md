@@ -37,48 +37,42 @@
 
 The Lens Protocol is a decentralized, non-custodial social graph. Lens implements unique, on-chain social interaction mechanisms analogous to commonly understood Web2 social media interactions, but significantly expanded with unique functionality that empower communities to form and participants to own their own social graph.
 
+## Cloning
+
+You must clone the repo using SSH:
+
+```bash
+git clone git@github.com:lens-protocol/core-private.git
+```
+
 ## Setup
 
-> For now only Linux and macOS are known to work
->
-> We are now figuring out what works for Windows, instructions will be updated soon
->
-> (feel free to experiment and submit PR's)
+1. Install Foundry by following the instructions from [their repository](https://book.getfoundry.sh/getting-started/installation).
+   - curl -L https://foundry.paradigm.xyz | bash
+   - foundryup
+   - done
+2. Install the dependencies by running : `npm i && forge install`
 
-The environment is built using Docker Compose, note that your `.env` file must have the RPC URL of the network you want to use, and an optional `MNEMONIC` and `BLOCK_EXPLORER_KEY`, defined like so, assuming you choose to use Mumbai network:
-
-```
-MNEMONIC="MNEMONIC YOU WANT TO DERIVE WALLETS FROM HERE"
-MUMBAI_RPC_URL="YOUR RPC URL HERE"
-BLOCK_EXPLORER_KEY="YOUR BLOCK EXPLORER API KEY HERE"
-```
-
-With the environment file set up, you can move on to using Docker:
+You can now build it using:
 
 ```bash
-export USERID=$UID && docker-compose build && docker-compose run --name lens contracts-env bash
+npm run build
 ```
 
-If you need additional terminals:
+## Testing
 
-```bash
-docker exec -it lens bash
-```
-
-From there, have fun!
-
-Here are a few self-explanatory scripts:
+You can run unit tests using
 
 ```bash
 npm run test
-npm run coverage
-npm run compile
 ```
 
-Cleanup leftover Docker containers:
+## Coverage
+
+You can run coverage using
 
 ```bash
-USERID=$UID docker-compose down
+npm run coverage
 ```
 
 ## Protocol Overview
