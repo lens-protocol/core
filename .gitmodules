@@ -1,6 +1,6 @@
 [submodule "lib/seadrop"]
 	path = lib/seadrop
-	url = https://github.com/donosonaumczuk/seadrop
+	url = https://github.com/lens-protocol/seadrop.git
 [submodule "lib/forge-std"]
 	path = lib/forge-std
 	url = https://github.com/foundry-rs/forge-std
