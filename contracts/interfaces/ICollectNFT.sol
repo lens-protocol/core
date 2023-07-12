@@ -17,10 +17,8 @@ interface ICollectNFT {
      *
      * @param profileId The token ID of the profile in the hub that this Collect NFT points to.
      * @param pubId The profile publication ID in the hub that this Collect NFT points to.
-     * @param name The name to set for this NFT.
-     * @param symbol The symbol to set for this NFT.
      */
-    function initialize(uint256 profileId, uint256 pubId, string calldata name, string calldata symbol) external;
+    function initialize(uint256 profileId, uint256 pubId) external;
 
     /**
      * @notice Mints a collect NFT to the specified address. This can only be called by the hub and is called

@@ -288,18 +288,6 @@ contract CollectPublicationActionTest is BaseTest {
         uint256 contractNonce = vm.getNonce(address(collectPublicationAction));
         address collectNFT = computeCreateAddress(address(collectPublicationAction), contractNonce);
 
-        string memory expectedCollectNftName = string.concat(
-            profileId.toString(),
-            COLLECT_NFT_NAME_INFIX,
-            pubId.toString()
-        );
-
-        string memory expectedCollectNftSymbol = string.concat(
-            profileId.toString(),
-            COLLECT_NFT_SYMBOL_INFIX,
-            pubId.toString()
-        );
-
         vm.expectEmit(true, true, true, true, address(collectPublicationAction));
         emit Events.CollectNFTDeployed(profileId, pubId, collectNFT, block.timestamp);
 
@@ -316,17 +304,22 @@ contract CollectPublicationActionTest is BaseTest {
             timestamp: block.timestamp
         });
 
-        vm.expectCall(
-            collectNFT,
-            abi.encodeCall(CollectNFT.initialize, (profileId, pubId, expectedCollectNftName, expectedCollectNftSymbol)),
-            1
-        );
+        vm.expectCall(collectNFT, abi.encodeCall(CollectNFT.initialize, (profileId, pubId)), 1);
 
         vm.prank(address(hub));
         bytes memory returnData = collectPublicationAction.processPublicationAction(processActionParams);
         (uint256 tokenId, bytes memory collectActionResult) = abi.decode(returnData, (uint256, bytes));
         assertEq(tokenId, 1, 'Invalid tokenId');
         assertEq(collectActionResult, abi.encode(true), 'Invalid collectActionResult data');
+
+        string memory expectedCollectNftName = string.concat(
+            'Lens Collect - Profile #',
+            profileId.toString(),
+            ' - Publication #',
+            pubId.toString()
+        );
+
+        string memory expectedCollectNftSymbol = string.concat('LENS#', profileId.toString(), '-COLLECT-NFT');
 
         assertEq(CollectNFT(collectNFT).name(), expectedCollectNftName, 'Invalid collect NFT name');
         assertEq(CollectNFT(collectNFT).symbol(), expectedCollectNftSymbol, 'Invalid collect NFT symbol');
