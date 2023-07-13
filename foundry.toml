@@ -16,7 +16,11 @@ polygon = "${POLYGON_RPC_URL}"
 runs = 50
 max_test_rejects = 200000
 
-[profile.ci]
+[profile.cibuild]
 via_ir = true
-[profile.ci.fuzz]
+
+[profile.citest]
+via_ir = false
+ignored_error_codes = ["license", "code-size"]
+[profile.citest.fuzz]
 runs = 100
