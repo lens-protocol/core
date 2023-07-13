@@ -23,10 +23,9 @@ contract ChangeDelegatedExecutorsConfigTest_CurrentConfig is BaseTest {
     // changeDelegatedExecutorsConfig - Current config - Negatives
     //////////////////////////////////////////////////////////////////////
 
-    function testCannotChangeDelegatedExecutorsConfig_WhenProtocolIsPaused(
-        address delegatedExecutor,
-        bool approval
-    ) public {
+    function testCannotChangeDelegatedExecutorsConfig_WhenProtocolIsPaused(address delegatedExecutor, bool approval)
+        public
+    {
         vm.prank(governance);
 
         hub.setState(Types.ProtocolState.Paused);
@@ -111,7 +110,7 @@ contract ChangeDelegatedExecutorsConfigTest_CurrentConfig is BaseTest {
 
         uint64 maxConfigSetBeforeTranster = hub.getDelegatedExecutorsMaxConfigNumberSet(testDelegatorProfileId);
 
-        _disableGuardianForWallet(testDelegatorProfileOwner);
+        _effectivelyDisableProfileGuardian(testDelegatorProfileOwner);
 
         vm.prank(testDelegatorProfileOwner);
         hub.transferFrom(testDelegatorProfileOwner, newProfileOwner, testDelegatorProfileId);
@@ -170,7 +169,7 @@ contract ChangeDelegatedExecutorsConfigTest_CurrentConfig is BaseTest {
         uint256 delegatorProfileId,
         address[] memory delegatedExecutors,
         bool[] memory approvals,
-        uint64 /* configNumber */,
+        uint64, /* configNumber */
         bool /* switchToGivenConfig */
     ) internal virtual {
         vm.prank(vm.addr(pk));
@@ -370,10 +369,9 @@ contract ChangeDelegatedExecutorsConfigTest_GivenConfig is ChangeDelegatedExecut
         assertEq(secondConfigNumberSet, hub.getDelegatedExecutorsConfigNumber(testDelegatorProfileId));
     }
 
-    function testEmitsConfigSwitchedAsFalseWhenPassingCurrentConfigNumber(
-        address delegatedExecutor,
-        bool approval
-    ) public {
+    function testEmitsConfigSwitchedAsFalseWhenPassingCurrentConfigNumber(address delegatedExecutor, bool approval)
+        public
+    {
         uint64 currentConfigNumber = hub.getDelegatedExecutorsConfigNumber(testDelegatorProfileId);
 
         vm.expectEmit(true, true, true, true, address(hub));
@@ -491,7 +489,11 @@ contract ChangeDelegatedExecutorsConfigTest_MetaTx is ChangeDelegatedExecutorsCo
             );
     }
 
-    function _executeMetaTx(uint256 signerPk, uint256 nonce, uint256 deadline) internal override {
+    function _executeMetaTx(
+        uint256 signerPk,
+        uint256 nonce,
+        uint256 deadline
+    ) internal override {
         bytes32 digest = _calculateChangeDelegatedExecutorsConfigWithSigDigest(
             testDelegatorProfileId,
             _toAddressArray(address(0xC0FFEE)),

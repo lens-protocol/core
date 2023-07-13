@@ -466,7 +466,7 @@ contract FollowNFTTest is BaseTest, LensBaseERC721Test {
 
         uint256 followerCountBefore = followNFT.getFollowerCount();
 
-        _disableGuardianForWallet(alreadyFollowingProfileOwner);
+        _effectivelyDisableProfileGuardian(alreadyFollowingProfileOwner);
 
         vm.prank(alreadyFollowingProfileOwner);
         hub.burn(alreadyFollowingProfileId);
@@ -501,7 +501,7 @@ contract FollowNFTTest is BaseTest, LensBaseERC721Test {
 
         uint256 followerCountBefore = followNFT.getFollowerCount();
 
-        _disableGuardianForWallet(alreadyFollowingProfileOwner);
+        _effectivelyDisableProfileGuardian(alreadyFollowingProfileOwner);
 
         vm.prank(alreadyFollowingProfileOwner);
         hub.burn(alreadyFollowingProfileId);
@@ -1109,7 +1109,7 @@ contract FollowNFTTest is BaseTest, LensBaseERC721Test {
 
         assertEq(followNFT.getProfileIdAllowedToRecover(followTokenId), alreadyFollowingProfileId);
 
-        _disableGuardianForWallet(alreadyFollowingProfileOwner);
+        _effectivelyDisableProfileGuardian(alreadyFollowingProfileOwner);
 
         vm.prank(alreadyFollowingProfileOwner);
         hub.burn(alreadyFollowingProfileId);
@@ -1135,7 +1135,7 @@ contract FollowNFTTest is BaseTest, LensBaseERC721Test {
 
         assertEq(followNFT.getProfileIdAllowedToRecover(followTokenId), alreadyFollowingProfileId);
 
-        _disableGuardianForWallet(alreadyFollowingProfileOwner);
+        _effectivelyDisableProfileGuardian(alreadyFollowingProfileOwner);
 
         vm.prank(alreadyFollowingProfileOwner);
         hub.transferFrom({
@@ -1185,7 +1185,7 @@ contract FollowNFTTest is BaseTest, LensBaseERC721Test {
         uint256 followerProfileIdSet = followNFT.getFollowerProfileId(assignedTokenId);
         assertEq(followerProfileIdSet, followerProfileId);
 
-        _disableGuardianForWallet(followerProfileOwner);
+        _effectivelyDisableProfileGuardian(followerProfileOwner);
 
         vm.prank(followerProfileOwner);
         hub.transferFrom(followerProfileOwner, newFollowerProfileOwner, followerProfileId);
@@ -1231,7 +1231,7 @@ contract FollowNFTTest is BaseTest, LensBaseERC721Test {
 
         assertEq(followNFT.getProfileIdAllowedToRecover(followTokenId), alreadyFollowingProfileId);
 
-        _disableGuardianForWallet(alreadyFollowingProfileOwner);
+        _effectivelyDisableProfileGuardian(alreadyFollowingProfileOwner);
 
         vm.prank(alreadyFollowingProfileOwner);
         hub.transferFrom({
@@ -1306,6 +1306,8 @@ contract FollowNFTTest is BaseTest, LensBaseERC721Test {
 
         assertEq(followNFT.getProfileIdAllowedToRecover(followTokenId), alreadyFollowingProfileId);
 
+        _effectivelyDisableProfileGuardian(alreadyFollowingProfileOwner);
+
         vm.prank(alreadyFollowingProfileOwner);
         hub.burn(alreadyFollowingProfileId);
 
@@ -1331,6 +1333,8 @@ contract FollowNFTTest is BaseTest, LensBaseERC721Test {
         });
 
         assertEq(followNFT.getProfileIdAllowedToRecover(followTokenId), alreadyFollowingProfileId);
+
+        _effectivelyDisableProfileGuardian(alreadyFollowingProfileOwner);
 
         vm.prank(alreadyFollowingProfileOwner);
         hub.transferFrom({
@@ -1429,6 +1433,8 @@ contract FollowNFTTest is BaseTest, LensBaseERC721Test {
         });
 
         assertEq(followNFT.getProfileIdAllowedToRecover(followTokenId), alreadyFollowingProfileId);
+
+        _effectivelyDisableProfileGuardian(alreadyFollowingProfileOwner);
 
         vm.prank(alreadyFollowingProfileOwner);
         hub.transferFrom({
@@ -1558,7 +1564,7 @@ contract FollowNFTTest is BaseTest, LensBaseERC721Test {
         uint256 followerProfileIdSet = followNFT.getFollowerProfileId(assignedTokenId);
         assertEq(followerProfileIdSet, followerProfileId);
 
-        _disableGuardianForWallet(followerProfileOwner);
+        _effectivelyDisableProfileGuardian(followerProfileOwner);
 
         vm.prank(followerProfileOwner);
         hub.transferFrom(followerProfileOwner, newFollowerProfileOwner, followerProfileId);

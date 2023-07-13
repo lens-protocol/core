@@ -273,7 +273,7 @@ contract LensHandlesTest is BaseTest {
         assertTrue(lensHandles.exists(handleId));
         assertEq(lensHandles.ownerOf(handleId), owner);
 
-        _disableGuardianForWallet(address(lensHandles), owner);
+        _effectivelyDisableGuardian(address(lensHandles), owner);
 
         vm.prank(owner);
         lensHandles.burn(handleId);

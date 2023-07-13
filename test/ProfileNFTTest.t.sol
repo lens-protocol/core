@@ -22,7 +22,7 @@ contract ProfileNFTTest is BaseTest, LensBaseERC721Test {
     using Strings for uint256;
 
     function _disableGuardian(address wallet) internal override {
-        _disableGuardianForWallet(wallet);
+        _effectivelyDisableProfileGuardian(wallet);
     }
 
     function testProfileNFTTest() public {
@@ -133,7 +133,11 @@ contract ProfileNFTTest is BaseTest, LensBaseERC721Test {
         assertEq(royalties, 0);
     }
 
-    function testSetRoyalties(uint256 royaltiesInBasisPoints, uint256 tokenId, uint256 salePrice) public {
+    function testSetRoyalties(
+        uint256 royaltiesInBasisPoints,
+        uint256 tokenId,
+        uint256 salePrice
+    ) public {
         uint256 basisPoints = 10000;
         royaltiesInBasisPoints = bound(royaltiesInBasisPoints, 0, basisPoints);
         uint256 salePriceTimesRoyalties;
@@ -156,10 +160,9 @@ contract ProfileNFTTest is BaseTest, LensBaseERC721Test {
     // ERC-2981 Royalties - Negatives
     //////////////////////////////////////////////////////////
 
-    function testCannotSetRoyaltiesIf_NotGovernance(
-        address nonGovernanceAddress,
-        uint256 royaltiesInBasisPoints
-    ) public {
+    function testCannotSetRoyaltiesIf_NotGovernance(address nonGovernanceAddress, uint256 royaltiesInBasisPoints)
+        public
+    {
         uint256 basisPoints = 10000;
         royaltiesInBasisPoints = bound(royaltiesInBasisPoints, 0, basisPoints);
         vm.assume(nonGovernanceAddress != governance);

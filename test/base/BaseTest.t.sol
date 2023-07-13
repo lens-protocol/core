@@ -21,11 +21,11 @@ contract BaseTest is TestSetup {
         super.setUp();
     }
 
-    function _disableGuardianForWallet(address wallet) internal {
-        _disableGuardianForWallet(address(hub), wallet);
+    function _effectivelyDisableProfileGuardian(address wallet) internal {
+        _effectivelyDisableGuardian(address(hub), wallet);
     }
 
-    function _disableGuardianForWallet(address nft, address wallet) internal {
+    function _effectivelyDisableGuardian(address nft, address wallet) internal {
         if (_isProfileGuardianEnabled(wallet)) {
             vm.prank(wallet);
             // TODO: Fix this if we move disableTokenGuardian to its own interface
@@ -118,7 +118,11 @@ contract BaseTest is TestSetup {
         return _calculateDigest(structHash);
     }
 
-    function _getBurnTypedDataHash(uint256 profileId, uint256 nonce, uint256 deadline) internal view returns (bytes32) {
+    function _getBurnTypedDataHash(
+        uint256 profileId,
+        uint256 nonce,
+        uint256 deadline
+    ) internal view returns (bytes32) {
         bytes32 structHash = keccak256(abi.encode(Typehash.BURN, profileId, nonce, deadline));
         return _calculateDigest(structHash);
     }
@@ -197,9 +201,11 @@ contract BaseTest is TestSetup {
         uint256 deadline;
     }
 
-    function _abiEncode(
-        ReferenceParamsForAbiEncode memory referenceParamsForAbiEncode
-    ) private pure returns (bytes memory) {
+    function _abiEncode(ReferenceParamsForAbiEncode memory referenceParamsForAbiEncode)
+        private
+        pure
+        returns (bytes memory)
+    {
         bytes memory encodedStruct = abi.encode(referenceParamsForAbiEncode);
         assembly {
             let lengthWithoutOffset := sub(mload(encodedStruct), 32) // Calculates length without offset.
@@ -384,7 +390,12 @@ contract BaseTest is TestSetup {
         return Types.EIP712Signature(signer, v, r, s, deadline);
     }
 
-    function _toLegacyV1Pub(uint256 profileId, uint256 pubId, address referenceModule, address collectModule) internal {
+    function _toLegacyV1Pub(
+        uint256 profileId,
+        uint256 pubId,
+        address referenceModule,
+        address collectModule
+    ) internal {
         // NOTE: Quotes are converted into V1 comments.
 
         Types.PublicationType pubType = hub.getPublicationType(profileId, pubId);

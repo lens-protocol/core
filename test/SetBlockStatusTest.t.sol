@@ -59,7 +59,7 @@ contract SetBlockStatusTest is BaseTest {
     }
 
     function testCannotSetBlockStatusIfSetterProfileDoesNotExist() public {
-        _disableGuardianForWallet(statusSetterProfileOwner);
+        _effectivelyDisableProfileGuardian(statusSetterProfileOwner);
 
         vm.prank(statusSetterProfileOwner);
         hub.burn(statusSetterProfileId);
@@ -114,7 +114,7 @@ contract SetBlockStatusTest is BaseTest {
     }
 
     function testCannotSetBlockStatusIfBlockeeProfileDoesNotExist() public {
-        _disableGuardianForWallet(blockeeProfileOwner);
+        _effectivelyDisableProfileGuardian(blockeeProfileOwner);
 
         vm.prank(blockeeProfileOwner);
         hub.burn(blockeeProfileId);
@@ -287,7 +287,11 @@ contract SetBlockStatusMetaTxTest is SetBlockStatusTest, MetaTxNegatives {
         });
     }
 
-    function _executeMetaTx(uint256 signerPk, uint256 nonce, uint256 deadline) internal override {
+    function _executeMetaTx(
+        uint256 signerPk,
+        uint256 nonce,
+        uint256 deadline
+    ) internal override {
         hub.setBlockStatusWithSig({
             byProfileId: statusSetterProfileId,
             idsOfProfilesToSetBlockStatus: _toUint256Array(blockeeProfileId),

@@ -59,7 +59,7 @@ contract UnfollowTest is BaseTest {
     }
 
     function testCannotUnfollowIfUnfollowerProfileDoesNotExist() public {
-        _disableGuardianForWallet(testUnfollowerProfileOwner);
+        _effectivelyDisableProfileGuardian(testUnfollowerProfileOwner);
 
         vm.prank(testUnfollowerProfileOwner);
         hub.burn(testUnfollowerProfileId);
@@ -238,7 +238,11 @@ contract UnfollowMetaTxTest is UnfollowTest, MetaTxNegatives {
         });
     }
 
-    function _executeMetaTx(uint256 signerPk, uint256 nonce, uint256 deadline) internal virtual override {
+    function _executeMetaTx(
+        uint256 signerPk,
+        uint256 nonce,
+        uint256 deadline
+    ) internal virtual override {
         hub.unfollowWithSig({
             unfollowerProfileId: testUnfollowerProfileId,
             idsOfProfilesToUnfollow: _toUint256Array(targetProfileId),
