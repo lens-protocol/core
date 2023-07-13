@@ -101,9 +101,9 @@ interface IFollowNFT {
      * @dev Only on unwrapped follow tokens.
      *
      * @param followTokenId The ID of the follow token to untie and wrap.
-     * @param to The address where the follow token is minted to when being wrapped as ERC-721.
+     * @param wrappedTokenReceiver The address where the follow token is minted to when being wrapped as ERC-721.
      */
-    function wrap(uint256 followTokenId, address to) external;
+    function wrap(uint256 followTokenId, address wrappedTokenReceiver) external;
 
     /**
      * @notice Unwraps the follow token from the ERC-721 untied follow tokens collection, and ties it to the follower's
