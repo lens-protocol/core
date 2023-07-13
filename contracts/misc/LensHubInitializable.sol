@@ -27,7 +27,8 @@ contract LensHubInitializable is LensHub, VersionedInitializable, ILensHubInitia
         address tokenHandleRegistryAddress,
         address legacyFeeFollowModule,
         address legacyProfileFollowModule,
-        address newFeeFollowModule
+        address newFeeFollowModule,
+        uint256 tokenGuardianCooldown
     )
         LensHub(
             moduleGlobals,
@@ -37,7 +38,8 @@ contract LensHubInitializable is LensHub, VersionedInitializable, ILensHubInitia
             tokenHandleRegistryAddress,
             legacyFeeFollowModule,
             legacyProfileFollowModule,
-            newFeeFollowModule
+            newFeeFollowModule,
+            tokenGuardianCooldown
         )
     {}
 

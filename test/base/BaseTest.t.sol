@@ -6,9 +6,11 @@ import 'contracts/libraries/constants/Types.sol';
 import {Typehash} from 'contracts/libraries/constants/Typehash.sol';
 import {Strings} from '@openzeppelin/contracts/utils/Strings.sol';
 import {StorageLib} from 'contracts/libraries/StorageLib.sol';
+import {Address} from '@openzeppelin/contracts/utils/Address.sol';
 
 contract BaseTest is TestSetup {
     using Strings for string;
+    using Address for address;
 
     function testBaseTest() public {
         // Prevents being counted in Foundry Coverage
@@ -17,6 +19,26 @@ contract BaseTest is TestSetup {
     // Empty setUp for easier overriding in other tests, otherwise you need to override from TestSetup and is confusing.
     function setUp() public virtual override {
         super.setUp();
+    }
+
+    function _effectivelyDisableProfileGuardian(address wallet) internal {
+        _effectivelyDisableGuardian(address(hub), wallet);
+    }
+
+    function _effectivelyDisableGuardian(address nft, address wallet) internal {
+        if (_isProfileGuardianEnabled(wallet)) {
+            vm.prank(wallet);
+            // TODO: Fix this if we move disableTokenGuardian to its own interface
+            LensHub(nft).DANGER__disableTokenGuardian();
+            vm.warp(LensHub(nft).getTokenGuardianDisablingTimestamp(wallet));
+        }
+    }
+
+    function _isProfileGuardianEnabled(address wallet) internal view returns (bool) {
+        return
+            !wallet.isContract() &&
+            (hub.getTokenGuardianDisablingTimestamp(wallet) == 0 ||
+                block.timestamp < hub.getTokenGuardianDisablingTimestamp(wallet));
     }
 
     function _boundPk(uint256 fuzzedUint256) internal view returns (uint256 fuzzedPk) {
@@ -96,7 +118,11 @@ contract BaseTest is TestSetup {
         return _calculateDigest(structHash);
     }
 
-    function _getBurnTypedDataHash(uint256 profileId, uint256 nonce, uint256 deadline) internal view returns (bytes32) {
+    function _getBurnTypedDataHash(
+        uint256 profileId,
+        uint256 nonce,
+        uint256 deadline
+    ) internal view returns (bytes32) {
         bytes32 structHash = keccak256(abi.encode(Typehash.BURN, profileId, nonce, deadline));
         return _calculateDigest(structHash);
     }
@@ -175,9 +201,11 @@ contract BaseTest is TestSetup {
         uint256 deadline;
     }
 
-    function _abiEncode(
-        ReferenceParamsForAbiEncode memory referenceParamsForAbiEncode
-    ) private pure returns (bytes memory) {
+    function _abiEncode(ReferenceParamsForAbiEncode memory referenceParamsForAbiEncode)
+        private
+        pure
+        returns (bytes memory)
+    {
         bytes memory encodedStruct = abi.encode(referenceParamsForAbiEncode);
         assembly {
             let lengthWithoutOffset := sub(mload(encodedStruct), 32) // Calculates length without offset.
@@ -362,7 +390,12 @@ contract BaseTest is TestSetup {
         return Types.EIP712Signature(signer, v, r, s, deadline);
     }
 
-    function _toLegacyV1Pub(uint256 profileId, uint256 pubId, address referenceModule, address collectModule) internal {
+    function _toLegacyV1Pub(
+        uint256 profileId,
+        uint256 pubId,
+        address referenceModule,
+        address collectModule
+    ) internal {
         // NOTE: Quotes are converted into V1 comments.
 
         Types.PublicationType pubType = hub.getPublicationType(profileId, pubId);

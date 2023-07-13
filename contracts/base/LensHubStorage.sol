@@ -46,16 +46,21 @@ abstract contract LensHubStorage {
     address internal _emergencyAdmin; // Slot 24
 
     ////////////////////////////////////////////
+    // Slots introduced by Lens V1.3 upgrade. //
+    ////////////////////////////////////////////
+    mapping(address => uint256) internal _tokenGuardianDisablingTimestamp; // Slot 25
+
+    ////////////////////////////////////////////
     //  Slots introduced by Lens V2 upgrade.  //
     ////////////////////////////////////////////
 
-    mapping(uint256 profileId => Types.DelegatedExecutorsConfig config) internal _delegatedExecutorsConfigs; // Slot 25
+    mapping(uint256 profileId => Types.DelegatedExecutorsConfig config) internal _delegatedExecutorsConfigs; // Slot 26
 
-    mapping(uint256 blockerProfileId => mapping(uint256 blockedProfileId => bool isBlocked)) internal _blockedStatus; // Slot 26
+    mapping(uint256 blockerProfileId => mapping(uint256 blockedProfileId => bool isBlocked)) internal _blockedStatus; // Slot 27
 
-    mapping(uint256 id => address actionModule) internal _actionModules; // Slot 27
+    mapping(uint256 id => address actionModule) internal _actionModules; // Slot 28
 
-    uint256 internal _maxActionModuleIdUsed; // Slot 28
+    uint256 internal _maxActionModuleIdUsed; // Slot 29
 
-    uint256 internal _profileRoyaltiesBps; // Slot 29
+    uint256 internal _profileRoyaltiesBps; // Slot 30
 }

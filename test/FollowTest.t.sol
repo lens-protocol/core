@@ -94,9 +94,9 @@ contract FollowTest is BaseTest {
         });
     }
 
-    function testCannotFollowIfTransactionExecutorIsNotTheProfileOwnerOrApprovedExecutor(
-        uint256 transactionExecutorPk
-    ) public {
+    function testCannotFollowIfTransactionExecutorIsNotTheProfileOwnerOrApprovedExecutor(uint256 transactionExecutorPk)
+        public
+    {
         transactionExecutorPk = _boundPk(transactionExecutorPk);
         address transactionExecutor = vm.addr(transactionExecutorPk);
         vm.assume(transactionExecutor != address(0));
@@ -186,6 +186,8 @@ contract FollowTest is BaseTest {
     }
 
     function testCannotFollowIfFollowerProfileDoesNotExist() public {
+        _effectivelyDisableProfileGuardian(testFollowerProfileOwner);
+
         vm.prank(testFollowerProfileOwner);
         hub.burn(testFollowerProfileId);
 
@@ -213,6 +215,8 @@ contract FollowTest is BaseTest {
     }
 
     function testCannotFollowIfProfileBeingFollowedDoesNotExist() public {
+        _effectivelyDisableProfileGuardian(targetProfileOwner);
+
         vm.prank(targetProfileOwner);
         hub.burn(targetProfileId);
 
@@ -434,7 +438,11 @@ contract FollowMetaTxTest is FollowTest, MetaTxNegatives {
             });
     }
 
-    function _executeMetaTx(uint256 signerPk, uint256 nonce, uint256 deadline) internal virtual override {
+    function _executeMetaTx(
+        uint256 signerPk,
+        uint256 nonce,
+        uint256 deadline
+    ) internal virtual override {
         hub.followWithSig({
             followerProfileId: testFollowerProfileId,
             idsOfProfilesToFollow: _toUint256Array(targetProfileId),

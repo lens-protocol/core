@@ -20,8 +20,6 @@ library Typehash {
 
     bytes32 constant MIRROR = keccak256('Mirror(uint256 profileId,uint256 pointedProfileId,uint256 pointedPubId,uint256[] referrerProfileId,uint256[] referrerPubId,bytes referenceModuleData,uint256 nonce,uint256 deadline)');
 
-    bytes32 constant PERMIT = keccak256('Permit(address spender,uint256 tokenId,uint256 nonce,uint256 deadline)');
-
     bytes32 constant POST = keccak256('Post(uint256 profileId,string contentURI,address collectModule,bytes collectModuleInitData,address referenceModule,bytes referenceModuleInitData,uint256 nonce,uint256 deadline)');
 
     bytes32 constant QUOTE = keccak256('Quote(uint256 profileId,string contentURI,uint256 pointedProfileId,uint256 pointedPubId,uint256[] referrerProfileIds,uint256[] referrerPubIds,bytes referenceModuleData,address collectModule,bytes collectModuleInitData,address referenceModule,bytes referenceModuleInitData,uint256 nonce,uint256 deadline)');

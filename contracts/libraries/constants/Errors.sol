@@ -44,4 +44,9 @@ library Errors {
     // MultiState Errors
     error Paused();
     error PublishingPaused();
+
+    // Profile Guardian Errors
+    error GuardianEnabled();
+    error NotEOA();
+    error DisablingAlreadyTriggered();
 }

@@ -54,10 +54,9 @@ abstract contract ReferralSystemTest is BaseTest {
     // Internal helpers
     /////////////////////////////////
 
-    function _referralSystem_PrepareOperation(
-        TestPublication memory target,
-        TestPublication memory referralPub
-    ) private {
+    function _referralSystem_PrepareOperation(TestPublication memory target, TestPublication memory referralPub)
+        private
+    {
         _referralSystem_PrepareOperation(
             target,
             _toUint256Array(referralPub.profileId),
@@ -66,10 +65,10 @@ abstract contract ReferralSystemTest is BaseTest {
     }
 
     // Returns true if expectRevert was added, so we avoid a dobule expectRevert scenario.
-    function _referralSystem_ExpectRevertsIfNeeded(
-        TestPublication memory target,
-        TestPublication memory referralPub
-    ) private returns (bool) {
+    function _referralSystem_ExpectRevertsIfNeeded(TestPublication memory target, TestPublication memory referralPub)
+        private
+        returns (bool)
+    {
         return
             _referralSystem_ExpectRevertsIfNeeded(
                 target,
@@ -206,7 +205,7 @@ abstract contract ReferralSystemTest is BaseTest {
     }
 
     function testV1_TargetPost_ReferralComment(uint256 v1FuzzBitmap) public virtual {
-        vm.assume(v1FuzzBitmap < 2 ** 11);
+        vm.assume(v1FuzzBitmap < 2**11);
         Tree memory treeV1 = _createV1Tree(v1FuzzBitmap);
 
         // Target a post with quote/comment as referrals
@@ -218,7 +217,7 @@ abstract contract ReferralSystemTest is BaseTest {
     }
 
     function testV1_TargetPost_ReferralMirror(uint256 v1FuzzBitmap) public virtual {
-        vm.assume(v1FuzzBitmap < 2 ** 11);
+        vm.assume(v1FuzzBitmap < 2**11);
         Tree memory treeV1 = _createV1Tree(v1FuzzBitmap);
 
         // Target a post with mirrors as referrals
@@ -230,7 +229,7 @@ abstract contract ReferralSystemTest is BaseTest {
     }
 
     function testV1_TargetComment_ReferralV1Post(uint256 v1FuzzBitmap) public virtual {
-        vm.assume(v1FuzzBitmap < 2 ** 11);
+        vm.assume(v1FuzzBitmap < 2**11);
         Tree memory treeV1 = _createV1Tree(v1FuzzBitmap);
 
         // Target comment with post as a referral
@@ -250,7 +249,7 @@ abstract contract ReferralSystemTest is BaseTest {
     }
 
     function testV1_TargetComment_ReferralComment(uint256 v1FuzzBitmap) public virtual {
-        vm.assume(v1FuzzBitmap < 2 ** 11);
+        vm.assume(v1FuzzBitmap < 2**11);
         Tree memory treeV1 = _createV1Tree(v1FuzzBitmap);
 
         // Target as a comment node and pass another comments as referral
@@ -285,7 +284,7 @@ abstract contract ReferralSystemTest is BaseTest {
     }
 
     function testV1_TargetComment_ReferralMirror(uint256 v1FuzzBitmap) public virtual {
-        vm.assume(v1FuzzBitmap < 2 ** 11);
+        vm.assume(v1FuzzBitmap < 2**11);
         Tree memory treeV1 = _createV1Tree(v1FuzzBitmap);
 
         // Target as a comment node and pass mirror as referral
@@ -343,7 +342,11 @@ abstract contract ReferralSystemTest is BaseTest {
         return tree;
     }
 
-    function _convertToV1(TestPublication memory pub, uint256 v1FuzzBitmap, uint256 v1FuzzBitmapIndex) internal {
+    function _convertToV1(
+        TestPublication memory pub,
+        uint256 v1FuzzBitmap,
+        uint256 v1FuzzBitmapIndex
+    ) internal {
         Types.Publication memory publication = hub.getPublication(pub.profileId, pub.pubId);
         Types.Publication memory pointedPub = hub.getPublication(
             publication.pointedProfileId,
@@ -610,6 +613,8 @@ abstract contract ReferralSystemTest is BaseTest {
 
         TestPublication memory referralPub = _comment(targetPub);
         address referralOwner = hub.ownerOf(referralPub.profileId);
+
+        _effectivelyDisableProfileGuardian(referralOwner);
 
         vm.prank(referralOwner);
         hub.burn(referralPub.profileId);

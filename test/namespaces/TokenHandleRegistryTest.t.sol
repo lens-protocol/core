@@ -38,6 +38,7 @@ contract TokenHandleRegistryTest is BaseTest {
         vm.assume(otherAddress != address(0));
         vm.assume(!_isLensHubProxyAdmin(otherAddress));
 
+        _effectivelyDisableGuardian(address(lensHandles), initialHandleHolder);
         vm.prank(initialHandleHolder);
         lensHandles.transferFrom(initialHandleHolder, otherAddress, handleId);
 
@@ -51,6 +52,8 @@ contract TokenHandleRegistryTest is BaseTest {
         vm.assume(otherAddress != lensHandles.ownerOf(handleId));
         vm.assume(otherAddress != address(0));
         vm.assume(!_isLensHubProxyAdmin(otherAddress));
+
+        _effectivelyDisableProfileGuardian(initialProfileHolder);
 
         vm.prank(initialProfileHolder);
         hub.transferFrom(initialProfileHolder, otherAddress, profileId);
@@ -108,16 +111,20 @@ contract TokenHandleRegistryTest is BaseTest {
         address newProfileHolder = makeAddr('NEW_PROFILE_HOLDER');
         address newHandleHolder = makeAddr('NEW_HANDLE_HOLDER');
 
-        vm.prank(address(initialProfileHolder));
+        _effectivelyDisableProfileGuardian(initialProfileHolder);
+
+        vm.prank(initialProfileHolder);
         hub.transferFrom(initialProfileHolder, newProfileHolder, profileId);
 
-        vm.prank(address(initialHandleHolder));
+        _effectivelyDisableGuardian(address(lensHandles), initialHandleHolder);
+
+        vm.prank(initialHandleHolder);
         lensHandles.transferFrom(initialHandleHolder, newHandleHolder, handleId);
 
         // Still resolves after both tokens were moved to new owners.
         assertEq(tokenHandleRegistry.resolve(handleId), profileId);
 
-        vm.prank(address(newProfileHolder));
+        vm.prank(newProfileHolder);
         tokenHandleRegistry.unlink(handleId, profileId);
 
         assertEq(tokenHandleRegistry.resolve(handleId), 0);
@@ -134,10 +141,14 @@ contract TokenHandleRegistryTest is BaseTest {
         address newProfileHolder = makeAddr('NEW_PROFILE_HOLDER');
         address newHandleHolder = makeAddr('NEW_HANDLE_HOLDER');
 
-        vm.prank(address(initialProfileHolder));
+        _effectivelyDisableProfileGuardian(initialProfileHolder);
+
+        vm.prank(initialProfileHolder);
         hub.transferFrom(initialProfileHolder, newProfileHolder, profileId);
 
-        vm.prank(address(initialHandleHolder));
+        _effectivelyDisableGuardian(address(lensHandles), initialHandleHolder);
+
+        vm.prank(initialHandleHolder);
         lensHandles.transferFrom(initialHandleHolder, newHandleHolder, handleId);
 
         // Still gets default handle after both tokens were moved to new owners.
@@ -170,7 +181,9 @@ contract TokenHandleRegistryTest is BaseTest {
         assertEq(tokenHandleRegistry.resolve(handleId), profileId);
         assertEq(tokenHandleRegistry.getDefaultHandle(profileId), handleId);
 
-        vm.prank(address(initialProfileHolder));
+        _effectivelyDisableProfileGuardian(initialProfileHolder);
+
+        vm.prank(initialProfileHolder);
         hub.burn(profileId);
 
         assertEq(tokenHandleRegistry.resolve(handleId), 0);
@@ -185,7 +198,9 @@ contract TokenHandleRegistryTest is BaseTest {
 
         assertEq(tokenHandleRegistry.getDefaultHandle(profileId), handleId);
 
-        vm.prank(address(initialHandleHolder));
+        _effectivelyDisableGuardian(address(lensHandles), initialHandleHolder);
+
+        vm.prank(initialHandleHolder);
         lensHandles.burn(handleId);
 
         assertEq(tokenHandleRegistry.getDefaultHandle(profileId), 0);
@@ -202,9 +217,11 @@ contract TokenHandleRegistryTest is BaseTest {
         vm.assume(holder != address(0));
         vm.assume(!_isLensHubProxyAdmin(holder));
 
+        _effectivelyDisableGuardian(address(lensHandles), initialHandleHolder);
         vm.prank(initialHandleHolder);
         lensHandles.transferFrom(initialHandleHolder, holder, handleId);
 
+        _effectivelyDisableProfileGuardian(initialProfileHolder);
         vm.prank(initialProfileHolder);
         hub.transferFrom(initialProfileHolder, holder, profileId);
 
@@ -234,15 +251,18 @@ contract TokenHandleRegistryTest is BaseTest {
 
         vm.assume(newHolder != firstHolder);
 
+        _effectivelyDisableGuardian(address(lensHandles), initialHandleHolder);
         vm.prank(initialHandleHolder);
         lensHandles.transferFrom(initialHandleHolder, firstHolder, handleId);
 
+        _effectivelyDisableProfileGuardian(initialProfileHolder);
         vm.prank(initialProfileHolder);
         hub.transferFrom(initialProfileHolder, firstHolder, profileId);
 
         vm.prank(firstHolder);
         tokenHandleRegistry.link(handleId, profileId);
 
+        _effectivelyDisableGuardian(address(lensHandles), firstHolder);
         vm.prank(firstHolder);
         lensHandles.transferFrom(firstHolder, newHolder, handleId);
 
@@ -280,15 +300,18 @@ contract TokenHandleRegistryTest is BaseTest {
 
         vm.assume(newHolder != firstHolder);
 
+        _effectivelyDisableGuardian(address(lensHandles), initialHandleHolder);
         vm.prank(initialHandleHolder);
         lensHandles.transferFrom(initialHandleHolder, firstHolder, handleId);
 
+        _effectivelyDisableProfileGuardian(initialProfileHolder);
         vm.prank(initialProfileHolder);
         hub.transferFrom(initialProfileHolder, firstHolder, profileId);
 
         vm.prank(firstHolder);
         tokenHandleRegistry.link(handleId, profileId);
 
+        _effectivelyDisableProfileGuardian(firstHolder);
         vm.prank(firstHolder);
         hub.transferFrom(firstHolder, newHolder, profileId);
 
@@ -333,15 +356,18 @@ contract TokenHandleRegistryTest is BaseTest {
         vm.assume(newHolder != firstHolder);
         vm.assume(newHolder != thirdHolder);
 
+        _effectivelyDisableGuardian(address(lensHandles), initialHandleHolder);
         vm.prank(initialHandleHolder);
         lensHandles.transferFrom(initialHandleHolder, firstHolder, handleId);
 
+        _effectivelyDisableProfileGuardian(initialProfileHolder);
         vm.prank(initialProfileHolder);
         hub.transferFrom(initialProfileHolder, firstHolder, profileId);
 
         vm.prank(firstHolder);
         tokenHandleRegistry.link(handleId, profileId);
 
+        _effectivelyDisableProfileGuardian(firstHolder);
         vm.prank(firstHolder);
         hub.transferFrom(firstHolder, newHolder, profileId);
 
@@ -351,6 +377,7 @@ contract TokenHandleRegistryTest is BaseTest {
         vm.prank(thirdHolder);
         tokenHandleRegistry.link(newHandleId, newProfileId);
 
+        _effectivelyDisableGuardian(address(lensHandles), thirdHolder);
         vm.prank(thirdHolder);
         lensHandles.transferFrom(thirdHolder, newHolder, newHandleId);
 
@@ -388,9 +415,11 @@ contract TokenHandleRegistryTest is BaseTest {
         vm.assume(holder != initialProfileHolder);
         vm.assume(holder != initialHandleHolder);
 
+        _effectivelyDisableGuardian(address(lensHandles), initialHandleHolder);
         vm.prank(initialHandleHolder);
         lensHandles.transferFrom(initialHandleHolder, holder, handleId);
 
+        _effectivelyDisableProfileGuardian(initialProfileHolder);
         vm.prank(initialProfileHolder);
         hub.transferFrom(initialProfileHolder, holder, profileId);
 
@@ -426,15 +455,18 @@ contract TokenHandleRegistryTest is BaseTest {
 
         vm.assume(newHolder != firstHolder);
 
+        _effectivelyDisableGuardian(address(lensHandles), initialHandleHolder);
         vm.prank(initialHandleHolder);
         lensHandles.transferFrom(initialHandleHolder, firstHolder, handleId);
 
+        _effectivelyDisableProfileGuardian(initialProfileHolder);
         vm.prank(initialProfileHolder);
         hub.transferFrom(initialProfileHolder, firstHolder, profileId);
 
         vm.prank(firstHolder);
         tokenHandleRegistry.link(handleId, profileId);
 
+        _effectivelyDisableGuardian(address(lensHandles), firstHolder);
         vm.prank(firstHolder);
         lensHandles.transferFrom(firstHolder, newHolder, handleId);
 
@@ -464,15 +496,18 @@ contract TokenHandleRegistryTest is BaseTest {
 
         vm.assume(newHolder != firstHolder);
 
+        _effectivelyDisableGuardian(address(lensHandles), initialHandleHolder);
         vm.prank(initialHandleHolder);
         lensHandles.transferFrom(initialHandleHolder, firstHolder, handleId);
 
+        _effectivelyDisableProfileGuardian(initialProfileHolder);
         vm.prank(initialProfileHolder);
         hub.transferFrom(initialProfileHolder, firstHolder, profileId);
 
         vm.prank(firstHolder);
         tokenHandleRegistry.link(handleId, profileId);
 
+        _effectivelyDisableGuardian(address(lensHandles), firstHolder);
         vm.prank(firstHolder);
         lensHandles.transferFrom(firstHolder, newHolder, handleId);
 
@@ -502,15 +537,18 @@ contract TokenHandleRegistryTest is BaseTest {
 
         vm.assume(newHolder != firstHolder);
 
+        _effectivelyDisableGuardian(address(lensHandles), initialHandleHolder);
         vm.prank(initialHandleHolder);
         lensHandles.transferFrom(initialHandleHolder, firstHolder, handleId);
 
+        _effectivelyDisableProfileGuardian(initialProfileHolder);
         vm.prank(initialProfileHolder);
         hub.transferFrom(initialProfileHolder, firstHolder, profileId);
 
         vm.prank(firstHolder);
         tokenHandleRegistry.link(handleId, profileId);
 
+        _effectivelyDisableProfileGuardian(firstHolder);
         vm.prank(firstHolder);
         hub.transferFrom(firstHolder, newHolder, profileId);
 
@@ -540,15 +578,18 @@ contract TokenHandleRegistryTest is BaseTest {
 
         vm.assume(newHolder != firstHolder);
 
+        _effectivelyDisableGuardian(address(lensHandles), initialHandleHolder);
         vm.prank(initialHandleHolder);
         lensHandles.transferFrom(initialHandleHolder, firstHolder, handleId);
 
+        _effectivelyDisableProfileGuardian(initialProfileHolder);
         vm.prank(initialProfileHolder);
         hub.transferFrom(initialProfileHolder, firstHolder, profileId);
 
         vm.prank(firstHolder);
         tokenHandleRegistry.link(handleId, profileId);
 
+        _effectivelyDisableProfileGuardian(firstHolder);
         vm.prank(firstHolder);
         hub.transferFrom(firstHolder, newHolder, profileId);
 
@@ -571,9 +612,11 @@ contract TokenHandleRegistryTest is BaseTest {
         vm.assume(holder != initialProfileHolder);
         vm.assume(holder != initialHandleHolder);
 
+        _effectivelyDisableGuardian(address(lensHandles), initialHandleHolder);
         vm.prank(initialHandleHolder);
         lensHandles.transferFrom(initialHandleHolder, holder, handleId);
 
+        _effectivelyDisableProfileGuardian(initialProfileHolder);
         vm.prank(initialProfileHolder);
         hub.transferFrom(initialProfileHolder, holder, profileId);
 
@@ -583,6 +626,7 @@ contract TokenHandleRegistryTest is BaseTest {
         assertEq(tokenHandleRegistry.resolve(handleId), profileId);
         assertEq(tokenHandleRegistry.getDefaultHandle(profileId), handleId);
 
+        _effectivelyDisableGuardian(address(lensHandles), holder);
         vm.prank(holder);
         lensHandles.burn(handleId);
 
@@ -607,9 +651,11 @@ contract TokenHandleRegistryTest is BaseTest {
         vm.assume(holder != initialProfileHolder);
         vm.assume(holder != initialHandleHolder);
 
+        _effectivelyDisableGuardian(address(lensHandles), initialHandleHolder);
         vm.prank(initialHandleHolder);
         lensHandles.transferFrom(initialHandleHolder, holder, handleId);
 
+        _effectivelyDisableProfileGuardian(initialProfileHolder);
         vm.prank(initialProfileHolder);
         hub.transferFrom(initialProfileHolder, holder, profileId);
 
@@ -619,6 +665,7 @@ contract TokenHandleRegistryTest is BaseTest {
         assertEq(tokenHandleRegistry.resolve(handleId), profileId);
         assertEq(tokenHandleRegistry.getDefaultHandle(profileId), handleId);
 
+        _effectivelyDisableProfileGuardian(holder);
         vm.prank(holder);
         hub.burn(profileId);
 
@@ -643,9 +690,11 @@ contract TokenHandleRegistryTest is BaseTest {
         vm.assume(holder != initialProfileHolder);
         vm.assume(holder != initialHandleHolder);
 
+        _effectivelyDisableGuardian(address(lensHandles), initialHandleHolder);
         vm.prank(initialHandleHolder);
         lensHandles.transferFrom(initialHandleHolder, holder, handleId);
 
+        _effectivelyDisableProfileGuardian(initialProfileHolder);
         vm.prank(initialProfileHolder);
         hub.transferFrom(initialProfileHolder, holder, profileId);
 
@@ -655,6 +704,7 @@ contract TokenHandleRegistryTest is BaseTest {
         assertEq(tokenHandleRegistry.resolve(handleId), profileId);
         assertEq(tokenHandleRegistry.getDefaultHandle(profileId), handleId);
 
+        _effectivelyDisableGuardian(address(lensHandles), holder);
         vm.prank(holder);
         lensHandles.burn(handleId);
 
@@ -680,9 +730,11 @@ contract TokenHandleRegistryTest is BaseTest {
         vm.assume(holder != initialProfileHolder);
         vm.assume(holder != initialHandleHolder);
 
+        _effectivelyDisableGuardian(address(lensHandles), initialHandleHolder);
         vm.prank(initialHandleHolder);
         lensHandles.transferFrom(initialHandleHolder, holder, handleId);
 
+        _effectivelyDisableProfileGuardian(initialProfileHolder);
         vm.prank(initialProfileHolder);
         hub.transferFrom(initialProfileHolder, holder, profileId);
 
@@ -692,6 +744,7 @@ contract TokenHandleRegistryTest is BaseTest {
         assertEq(tokenHandleRegistry.resolve(handleId), profileId);
         assertEq(tokenHandleRegistry.getDefaultHandle(profileId), handleId);
 
+        _effectivelyDisableProfileGuardian(holder);
         vm.prank(holder);
         hub.burn(profileId);
 

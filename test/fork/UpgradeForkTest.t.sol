@@ -358,7 +358,8 @@ contract UpgradeForkTest is BaseTest {
             tokenHandleRegistryAddress: address(0),
             legacyFeeFollowModule: address(0),
             legacyProfileFollowModule: address(0),
-            newFeeFollowModule: address(0)
+            newFeeFollowModule: address(0),
+            tokenGuardianCooldown: PROFILE_GUARDIAN_COOLDOWN
         });
         followNFT = new FollowNFT(hubProxyAddr);
         legacyCollectNFT = new LegacyCollectNFT(hubProxyAddr);

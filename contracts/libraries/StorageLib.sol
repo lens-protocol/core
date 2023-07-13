@@ -32,13 +32,17 @@ library StorageLib {
     uint256 constant GOVERNANCE_SLOT = 23;
     uint256 constant EMERGENCY_ADMIN_SLOT = 24;
     //////////////////////////////////
+    ///  Introduced in Lens V1.3:  ///
+    //////////////////////////////////
+    uint256 constant TOKEN_GUARDIAN_DISABLING_TIMESTAMP_MAPPING_SLOT = 25;
+    //////////////////////////////////
     ///   Introduced in Lens V2:   ///
     //////////////////////////////////
-    uint256 constant DELEGATED_EXECUTOR_CONFIG_MAPPING_SLOT = 25;
-    uint256 constant BLOCKED_STATUS_MAPPING_SLOT = 26;
-    uint256 constant ACTION_MODULES_SLOT = 27;
-    uint256 constant MAX_ACTION_MODULE_ID_USED_SLOT = 28;
-    uint256 constant PROFILE_ROYALTIES_BPS_SLOT = 29;
+    uint256 constant DELEGATED_EXECUTOR_CONFIG_MAPPING_SLOT = 26;
+    uint256 constant BLOCKED_STATUS_MAPPING_SLOT = 27;
+    uint256 constant ACTION_MODULES_SLOT = 28;
+    uint256 constant MAX_ACTION_MODULE_ID_USED_SLOT = 29;
+    uint256 constant PROFILE_ROYALTIES_BPS_SLOT = 30;
 
     uint256 constant MAX_ACTION_MODULE_ID_SUPPORTED = 255;
 
@@ -70,6 +74,16 @@ library StorageLib {
             mstore(0, delegatorProfileId)
             mstore(32, DELEGATED_EXECUTOR_CONFIG_MAPPING_SLOT)
             _delegatedExecutorsConfig.slot := keccak256(0, 64)
+        }
+    }
+
+    function tokenGuardianDisablingTimestamp()
+        internal
+        pure
+        returns (mapping(address => uint256) storage _tokenGuardianDisablingTimestamp)
+    {
+        assembly {
+            _tokenGuardianDisablingTimestamp.slot := TOKEN_GUARDIAN_DISABLING_TIMESTAMP_MAPPING_SLOT
         }
     }
 

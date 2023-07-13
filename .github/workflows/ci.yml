@@ -32,12 +32,12 @@ jobs:
       - name: Run Forge build
         run: |
           forge --version
-          forge build --deny-warnings --skip test
+          FOUNDRY_PROFILE=cibuild forge build --deny-warnings --skip test
       - name: Run Forge tests
         run: |
           cp .env.example .env
           source .env
-          FOUNDRY_PROFILE=ci forge test -vvv
+          FOUNDRY_PROFILE=citest forge test -vvv
 
   # foundry_coverage:
   #   strategy:
