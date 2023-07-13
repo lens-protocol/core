@@ -58,10 +58,10 @@ interface IBaseFeeCollectModule is ICollectModule {
      *
      * @return The BaseProfilePublicationData struct mapped to that publication.
      */
-    function getBasePublicationData(
-        uint256 profileId,
-        uint256 pubId
-    ) external view returns (BaseProfilePublicationData memory);
+    function getBasePublicationData(uint256 profileId, uint256 pubId)
+        external
+        view
+        returns (BaseProfilePublicationData memory);
 
     /**
      * @notice Calculates and returns the collect fee of a publication.

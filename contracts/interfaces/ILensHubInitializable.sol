@@ -2,8 +2,6 @@
 
 pragma solidity >=0.6.0;
 
-import {Types} from 'contracts/libraries/constants/Types.sol';
-
 /**
  * @title ILensHub
  * @author Lens Protocol
@@ -22,5 +20,9 @@ interface ILensHubInitializable {
      * @param symbol The symbol of the Profile NFT.
      * @param newGovernance The governance address to set.
      */
-    function initialize(string calldata name, string calldata symbol, address newGovernance) external;
+    function initialize(
+        string calldata name,
+        string calldata symbol,
+        address newGovernance
+    ) external;
 }

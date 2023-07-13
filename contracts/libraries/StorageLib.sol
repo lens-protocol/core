@@ -46,10 +46,11 @@ library StorageLib {
 
     uint256 constant MAX_ACTION_MODULE_ID_SUPPORTED = 255;
 
-    function getPublication(
-        uint256 profileId,
-        uint256 pubId
-    ) internal pure returns (Types.Publication storage _publication) {
+    function getPublication(uint256 profileId, uint256 pubId)
+        internal
+        pure
+        returns (Types.Publication storage _publication)
+    {
         assembly {
             mstore(0, profileId)
             mstore(32, PUBLICATIONS_MAPPING_SLOT)
@@ -67,9 +68,11 @@ library StorageLib {
         }
     }
 
-    function getDelegatedExecutorsConfig(
-        uint256 delegatorProfileId
-    ) internal pure returns (Types.DelegatedExecutorsConfig storage _delegatedExecutorsConfig) {
+    function getDelegatedExecutorsConfig(uint256 delegatorProfileId)
+        internal
+        pure
+        returns (Types.DelegatedExecutorsConfig storage _delegatedExecutorsConfig)
+    {
         assembly {
             mstore(0, delegatorProfileId)
             mstore(32, DELEGATED_EXECUTOR_CONFIG_MAPPING_SLOT)
@@ -95,9 +98,11 @@ library StorageLib {
         }
     }
 
-    function blockedStatus(
-        uint256 blockerProfileId
-    ) internal pure returns (mapping(uint256 => bool) storage _blockedStatus) {
+    function blockedStatus(uint256 blockerProfileId)
+        internal
+        pure
+        returns (mapping(uint256 => bool) storage _blockedStatus)
+    {
         assembly {
             mstore(0, blockerProfileId)
             mstore(32, BLOCKED_STATUS_MAPPING_SLOT)

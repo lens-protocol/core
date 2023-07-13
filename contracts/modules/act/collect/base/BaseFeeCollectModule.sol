@@ -6,7 +6,6 @@ import {Errors} from 'contracts/modules/constants/Errors.sol';
 import {FeeModuleBase} from 'contracts/modules/FeeModuleBase.sol';
 import {ICollectModule} from 'contracts/interfaces/ICollectModule.sol';
 import {ActionRestricted} from 'contracts/modules/ActionRestricted.sol';
-import {ILensHub} from 'contracts/interfaces/ILensHub.sol';
 
 import {Types} from 'contracts/libraries/constants/Types.sol';
 
@@ -52,9 +51,12 @@ abstract contract BaseFeeCollectModule is FeeModuleBase, ActionRestricted, IBase
      *
      * @param processCollectParams Collect action parameters (see Types.ProcessCollectParams struct)
      */
-    function processCollect(
-        Types.ProcessCollectParams calldata processCollectParams
-    ) external virtual onlyActionModule returns (bytes memory) {
+    function processCollect(Types.ProcessCollectParams calldata processCollectParams)
+        external
+        virtual
+        onlyActionModule
+        returns (bytes memory)
+    {
         _validateAndStoreCollect(processCollectParams);
 
         if (processCollectParams.referrerProfileIds.length == 0) {
@@ -66,17 +68,22 @@ abstract contract BaseFeeCollectModule is FeeModuleBase, ActionRestricted, IBase
     }
 
     /// @inheritdoc IBaseFeeCollectModule
-    function getBasePublicationData(
-        uint256 profileId,
-        uint256 pubId
-    ) public view virtual returns (BaseProfilePublicationData memory) {
+    function getBasePublicationData(uint256 profileId, uint256 pubId)
+        public
+        view
+        virtual
+        returns (BaseProfilePublicationData memory)
+    {
         return _dataByPublicationByProfile[profileId][pubId];
     }
 
     /// @inheritdoc IBaseFeeCollectModule
-    function calculateFee(
-        Types.ProcessCollectParams calldata processCollectParams
-    ) public view virtual returns (uint160) {
+    function calculateFee(Types.ProcessCollectParams calldata processCollectParams)
+        public
+        view
+        virtual
+        returns (uint160)
+    {
         return
             _dataByPublicationByProfile[processCollectParams.publicationCollectedProfileId][
                 processCollectParams.publicationCollectedId

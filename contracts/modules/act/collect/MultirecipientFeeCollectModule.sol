@@ -88,7 +88,7 @@ contract MultirecipientFeeCollectModule is BaseFeeCollectModule {
     function initializePublicationCollectModule(
         uint256 profileId,
         uint256 pubId,
-        address /* transactionExecutor */,
+        address, /* transactionExecutor */
         bytes calldata data
     ) external override onlyActionModule returns (bytes memory) {
         MultirecipientFeeCollectModuleInitData memory initData = abi.decode(
@@ -122,7 +122,11 @@ contract MultirecipientFeeCollectModule is BaseFeeCollectModule {
      * @param profileId The profile ID who is publishing the publication.
      * @param pubId The associated publication's LensHub publication ID.
      */
-    function _validateAndStoreRecipients(RecipientData[] memory recipients, uint256 profileId, uint256 pubId) internal {
+    function _validateAndStoreRecipients(
+        RecipientData[] memory recipients,
+        uint256 profileId,
+        uint256 pubId
+    ) internal {
         uint256 len = recipients.length;
 
         // Check number of recipients is supported
@@ -201,10 +205,11 @@ contract MultirecipientFeeCollectModule is BaseFeeCollectModule {
      *
      * @return The BaseProfilePublicationData struct mapped to that publication.
      */
-    function getPublicationData(
-        uint256 profileId,
-        uint256 pubId
-    ) external view returns (MultirecipientFeeCollectProfilePublicationData memory) {
+    function getPublicationData(uint256 profileId, uint256 pubId)
+        external
+        view
+        returns (MultirecipientFeeCollectProfilePublicationData memory)
+    {
         BaseProfilePublicationData memory baseData = getBasePublicationData(profileId, pubId);
         RecipientData[] memory recipients = _recipientsByPublicationByProfile[profileId][pubId];
 

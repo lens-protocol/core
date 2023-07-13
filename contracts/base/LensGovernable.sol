@@ -3,7 +3,6 @@
 pragma solidity ^0.8.15;
 
 import {ILensGovernable} from 'contracts/interfaces/ILensGovernable.sol';
-import {Errors} from 'contracts/libraries/constants/Errors.sol';
 import {GovernanceLib} from 'contracts/libraries/GovernanceLib.sol';
 import {ValidationLib} from 'contracts/libraries/ValidationLib.sol';
 import {StorageLib} from 'contracts/libraries/StorageLib.sol';
@@ -95,9 +94,12 @@ abstract contract LensGovernable is ILensGovernable {
     }
 
     /// @inheritdoc ILensGovernable
-    function getActionModuleWhitelistData(
-        address actionModule
-    ) external view override returns (Types.ActionModuleWhitelistData memory) {
+    function getActionModuleWhitelistData(address actionModule)
+        external
+        view
+        override
+        returns (Types.ActionModuleWhitelistData memory)
+    {
         return StorageLib.actionModuleWhitelistData()[actionModule];
     }
 }

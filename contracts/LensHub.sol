@@ -5,15 +5,12 @@ pragma solidity ^0.8.15;
 // Interfaces
 import {ILensProtocol} from 'contracts/interfaces/ILensProtocol.sol';
 import {IFollowNFT} from 'contracts/interfaces/IFollowNFT.sol';
-// import {ILensHub} from 'contracts/interfaces/ILensHub.sol';
 
 // Constants
-import {Events} from 'contracts/libraries/constants/Events.sol';
 import {Types} from 'contracts/libraries/constants/Types.sol';
 import {Errors} from 'contracts/libraries/constants/Errors.sol';
 
 // Lens Hub Components
-import {LensBaseERC721} from 'contracts/base/LensBaseERC721.sol';
 import {LensHubStorage} from 'contracts/base/LensHubStorage.sol';
 import {LensImplGetters} from 'contracts/base/LensImplGetters.sol';
 import {LensGovernable} from 'contracts/base/LensGovernable.sol';
@@ -24,7 +21,6 @@ import {LensHubEventHooks} from 'contracts/base/LensHubEventHooks.sol';
 import {ActionLib} from 'contracts/libraries/ActionLib.sol';
 import {LegacyCollectLib} from 'contracts/libraries/LegacyCollectLib.sol';
 import {FollowLib} from 'contracts/libraries/FollowLib.sol';
-import {GovernanceLib} from 'contracts/libraries/GovernanceLib.sol';
 import {MetaTxLib} from 'contracts/libraries/MetaTxLib.sol';
 import {ProfileLib} from 'contracts/libraries/ProfileLib.sol';
 import {PublicationLib} from 'contracts/libraries/PublicationLib.sol';
@@ -90,9 +86,12 @@ contract LensHub is
     {}
 
     /// @inheritdoc ILensProtocol
-    function createProfile(
-        Types.CreateProfileParams calldata createProfileParams
-    ) external override whenNotPaused returns (uint256) {
+    function createProfile(Types.CreateProfileParams calldata createProfileParams)
+        external
+        override
+        whenNotPaused
+        returns (uint256)
+    {
         ValidationLib.validateProfileCreatorWhitelisted(msg.sender);
         unchecked {
             uint256 profileId = ++_profileCounter;
@@ -107,10 +106,12 @@ contract LensHub is
     ///////////////////////////////////////////
 
     /// @inheritdoc ILensProtocol
-    function setProfileMetadataURI(
-        uint256 profileId,
-        string calldata metadataURI
-    ) external override whenNotPaused onlyProfileOwnerOrDelegatedExecutor(msg.sender, profileId) {
+    function setProfileMetadataURI(uint256 profileId, string calldata metadataURI)
+        external
+        override
+        whenNotPaused
+        onlyProfileOwnerOrDelegatedExecutor(msg.sender, profileId)
+    {
         ProfileLib.setProfileMetadataURI(profileId, metadataURI);
     }
 
@@ -196,10 +197,12 @@ contract LensHub is
     }
 
     /// @inheritdoc ILensProtocol
-    function setProfileImageURI(
-        uint256 profileId,
-        string calldata imageURI
-    ) external override whenNotPaused onlyProfileOwnerOrDelegatedExecutor(msg.sender, profileId) {
+    function setProfileImageURI(uint256 profileId, string calldata imageURI)
+        external
+        override
+        whenNotPaused
+        onlyProfileOwnerOrDelegatedExecutor(msg.sender, profileId)
+    {
         ProfileLib.setProfileImageURI(profileId, imageURI);
     }
 
@@ -218,9 +221,7 @@ contract LensHub is
     ////////////////////////////////////////
 
     /// @inheritdoc ILensProtocol
-    function post(
-        Types.PostParams calldata postParams
-    )
+    function post(Types.PostParams calldata postParams)
         external
         override
         whenPublishingEnabled
@@ -231,10 +232,7 @@ contract LensHub is
     }
 
     /// @inheritdoc ILensProtocol
-    function postWithSig(
-        Types.PostParams calldata postParams,
-        Types.EIP712Signature calldata signature
-    )
+    function postWithSig(Types.PostParams calldata postParams, Types.EIP712Signature calldata signature)
         external
         override
         whenPublishingEnabled
@@ -246,9 +244,7 @@ contract LensHub is
     }
 
     /// @inheritdoc ILensProtocol
-    function comment(
-        Types.CommentParams calldata commentParams
-    )
+    function comment(Types.CommentParams calldata commentParams)
         external
         override
         whenPublishingEnabled
@@ -259,10 +255,7 @@ contract LensHub is
     }
 
     /// @inheritdoc ILensProtocol
-    function commentWithSig(
-        Types.CommentParams calldata commentParams,
-        Types.EIP712Signature calldata signature
-    )
+    function commentWithSig(Types.CommentParams calldata commentParams, Types.EIP712Signature calldata signature)
         external
         override
         whenPublishingEnabled
@@ -274,9 +267,7 @@ contract LensHub is
     }
 
     /// @inheritdoc ILensProtocol
-    function mirror(
-        Types.MirrorParams calldata mirrorParams
-    )
+    function mirror(Types.MirrorParams calldata mirrorParams)
         external
         override
         whenPublishingEnabled
@@ -287,10 +278,7 @@ contract LensHub is
     }
 
     /// @inheritdoc ILensProtocol
-    function mirrorWithSig(
-        Types.MirrorParams calldata mirrorParams,
-        Types.EIP712Signature calldata signature
-    )
+    function mirrorWithSig(Types.MirrorParams calldata mirrorParams, Types.EIP712Signature calldata signature)
         external
         override
         whenPublishingEnabled
@@ -302,9 +290,7 @@ contract LensHub is
     }
 
     /// @inheritdoc ILensProtocol
-    function quote(
-        Types.QuoteParams calldata quoteParams
-    )
+    function quote(Types.QuoteParams calldata quoteParams)
         external
         override
         whenPublishingEnabled
@@ -315,10 +301,7 @@ contract LensHub is
     }
 
     /// @inheritdoc ILensProtocol
-    function quoteWithSig(
-        Types.QuoteParams calldata quoteParams,
-        Types.EIP712Signature calldata signature
-    )
+    function quoteWithSig(Types.QuoteParams calldata quoteParams, Types.EIP712Signature calldata signature)
         external
         override
         whenPublishingEnabled
@@ -382,10 +365,12 @@ contract LensHub is
     }
 
     /// @inheritdoc ILensProtocol
-    function unfollow(
-        uint256 unfollowerProfileId,
-        uint256[] calldata idsOfProfilesToUnfollow
-    ) external override whenNotPaused onlyProfileOwnerOrDelegatedExecutor(msg.sender, unfollowerProfileId) {
+    function unfollow(uint256 unfollowerProfileId, uint256[] calldata idsOfProfilesToUnfollow)
+        external
+        override
+        whenNotPaused
+        onlyProfileOwnerOrDelegatedExecutor(msg.sender, unfollowerProfileId)
+    {
         FollowLib.unfollow({
             unfollowerProfileId: unfollowerProfileId,
             idsOfProfilesToUnfollow: idsOfProfilesToUnfollow,
@@ -429,9 +414,7 @@ contract LensHub is
     }
 
     /// @inheritdoc ILensProtocol
-    function collect(
-        Types.CollectParams calldata collectParams
-    )
+    function collect(Types.CollectParams calldata collectParams)
         external
         override
         whenNotPaused
@@ -448,10 +431,7 @@ contract LensHub is
     }
 
     /// @inheritdoc ILensProtocol
-    function collectWithSig(
-        Types.CollectParams calldata collectParams,
-        Types.EIP712Signature calldata signature
-    )
+    function collectWithSig(Types.CollectParams calldata collectParams, Types.EIP712Signature calldata signature)
         external
         override
         whenNotPaused
@@ -469,9 +449,7 @@ contract LensHub is
     }
 
     /// @inheritdoc ILensProtocol
-    function act(
-        Types.PublicationActionParams calldata publicationActionParams
-    )
+    function act(Types.PublicationActionParams calldata publicationActionParams)
         external
         override
         whenNotPaused
@@ -526,10 +504,11 @@ contract LensHub is
     }
 
     /// @inheritdoc ILensProtocol
-    function isDelegatedExecutorApproved(
-        uint256 delegatorProfileId,
-        address delegatedExecutor
-    ) external view returns (bool) {
+    function isDelegatedExecutorApproved(uint256 delegatorProfileId, address delegatedExecutor)
+        external
+        view
+        returns (bool)
+    {
         return ProfileLib.isExecutorApproved(delegatorProfileId, delegatedExecutor);
     }
 
@@ -565,18 +544,22 @@ contract LensHub is
     }
 
     /// @inheritdoc ILensProtocol
-    function getPublication(
-        uint256 profileId,
-        uint256 pubId
-    ) external view override returns (Types.Publication memory) {
+    function getPublication(uint256 profileId, uint256 pubId)
+        external
+        view
+        override
+        returns (Types.Publication memory)
+    {
         return _publications[profileId][pubId];
     }
 
     /// @inheritdoc ILensProtocol
-    function getPublicationType(
-        uint256 profileId,
-        uint256 pubId
-    ) external view override returns (Types.PublicationType) {
+    function getPublicationType(uint256 profileId, uint256 pubId)
+        external
+        view
+        override
+        returns (Types.PublicationType)
+    {
         return PublicationLib.getPublicationType(profileId, pubId);
     }
 

@@ -62,10 +62,11 @@ library ActionLib {
         return actionModuleReturnData;
     }
 
-    function _isActionEnabled(
-        Types.Publication storage _publication,
-        uint256 actionModuleId
-    ) private view returns (bool) {
+    function _isActionEnabled(Types.Publication storage _publication, uint256 actionModuleId)
+        private
+        view
+        returns (bool)
+    {
         if (actionModuleId == 0) {
             return false;
         }

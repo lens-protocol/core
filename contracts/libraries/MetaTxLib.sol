@@ -134,10 +134,9 @@ library MetaTxLib {
         );
     }
 
-    function validatePostSignature(
-        Types.EIP712Signature calldata signature,
-        Types.PostParams calldata postParams
-    ) external {
+    function validatePostSignature(Types.EIP712Signature calldata signature, Types.PostParams calldata postParams)
+        external
+    {
         _validateRecoveredAddress(
             _calculateDigest(
                 keccak256(
@@ -188,9 +187,11 @@ library MetaTxLib {
         uint256 deadline;
     }
 
-    function _abiEncode(
-        ReferenceParamsForAbiEncode memory referenceParamsForAbiEncode
-    ) private pure returns (bytes memory) {
+    function _abiEncode(ReferenceParamsForAbiEncode memory referenceParamsForAbiEncode)
+        private
+        pure
+        returns (bytes memory)
+    {
         // This assembly workaround allows us to avoid Stack Too Deep error when encoding all the params of the struct.
         // We remove the first 32 bytes of the encoded struct, which is the offset of the struct.
         // The rest of the encoding is the same, so we can just return it.
@@ -252,10 +253,9 @@ library MetaTxLib {
         _validateRecoveredAddress(_calculateDigest(keccak256(encodedAbi)), signature);
     }
 
-    function validateQuoteSignature(
-        Types.EIP712Signature calldata signature,
-        Types.QuoteParams calldata quoteParams
-    ) external {
+    function validateQuoteSignature(Types.EIP712Signature calldata signature, Types.QuoteParams calldata quoteParams)
+        external
+    {
         bytes32 contentURIHash = keccak256(bytes(quoteParams.contentURI));
         bytes32 referenceModuleDataHash = keccak256(quoteParams.referenceModuleData);
         bytes32 actionModulesInitDataHash = _hashActionModulesInitDatas(quoteParams.actionModulesInitDatas);
@@ -283,10 +283,9 @@ library MetaTxLib {
         _validateRecoveredAddress(_calculateDigest(keccak256(encodedAbi)), signature);
     }
 
-    function validateMirrorSignature(
-        Types.EIP712Signature calldata signature,
-        Types.MirrorParams calldata mirrorParams
-    ) external {
+    function validateMirrorSignature(Types.EIP712Signature calldata signature, Types.MirrorParams calldata mirrorParams)
+        external
+    {
         _validateRecoveredAddress(
             _calculateDigest(
                 keccak256(

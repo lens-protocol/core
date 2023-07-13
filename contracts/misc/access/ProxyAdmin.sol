@@ -44,10 +44,10 @@ contract ProxyAdmin is ControllableByContract {
         delete controllerContract;
     }
 
-    function proxy_upgradeAndCall(
-        address newImplementation,
-        bytes calldata data
-    ) external onlyOwnerOrControllerContract {
+    function proxy_upgradeAndCall(address newImplementation, bytes calldata data)
+        external
+        onlyOwnerOrControllerContract
+    {
         previousImplementation = LENS_HUB_PROXY.implementation();
         LENS_HUB_PROXY.upgradeToAndCall(newImplementation, data);
         delete controllerContract;

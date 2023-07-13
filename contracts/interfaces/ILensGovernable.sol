@@ -126,7 +126,8 @@ interface ILensGovernable {
      *
      * @return ActionModuleWhitelistData The data containing the ID and whitelist status of the given module.
      */
-    function getActionModuleWhitelistData(
-        address actionModule
-    ) external view returns (Types.ActionModuleWhitelistData memory);
+    function getActionModuleWhitelistData(address actionModule)
+        external
+        view
+        returns (Types.ActionModuleWhitelistData memory);
 }

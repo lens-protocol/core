@@ -47,7 +47,7 @@ interface IPublicationActionModule {
      * @return bytes Any custom ABI-encoded data. This will be a LensHub event params that can be used by
      * indexers or UIs.
      */
-    function processPublicationAction(
-        Types.ProcessActionParams calldata processActionParams
-    ) external returns (bytes memory);
+    function processPublicationAction(Types.ProcessActionParams calldata processActionParams)
+        external
+        returns (bytes memory);
 }

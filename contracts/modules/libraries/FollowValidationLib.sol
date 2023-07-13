@@ -12,7 +12,11 @@ import {Errors} from 'contracts/libraries/constants/Errors.sol';
  * @notice A library contract that verifies that a user is following another user and reverts if not.
  */
 library FollowValidationLib {
-    function validateIsFollowing(address hub, uint256 followerProfileId, uint256 followedProfileId) internal view {
+    function validateIsFollowing(
+        address hub,
+        uint256 followerProfileId,
+        uint256 followedProfileId
+    ) internal view {
         if (!ILensHub(hub).isFollowing(followerProfileId, followedProfileId)) {
             revert Errors.NotFollowing();
         }

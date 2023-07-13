@@ -20,7 +20,12 @@ interface ILegacyCollectNFT {
      * @param name The name to set for this NFT.
      * @param symbol The symbol to set for this NFT.
      */
-    function initialize(uint256 profileId, uint256 pubId, string calldata name, string calldata symbol) external;
+    function initialize(
+        uint256 profileId,
+        uint256 pubId,
+        string calldata name,
+        string calldata symbol
+    ) external;
 
     /**
      * @notice Mints a collect NFT to the specified address.

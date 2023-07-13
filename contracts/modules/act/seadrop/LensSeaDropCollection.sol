@@ -27,7 +27,11 @@ contract LensSeaDropCollection is ERC721SeaDropCloneable {
         _;
     }
 
-    constructor(address seaDropActionModule, address moduleGlobals, address defaultSeaDrop) {
+    constructor(
+        address seaDropActionModule,
+        address moduleGlobals,
+        address defaultSeaDrop
+    ) {
         SEADROP_ACTION_MODULE = seaDropActionModule;
         MODULE_GLOBALS = IModuleGlobals(moduleGlobals);
         DEFAULT_SEADROP = defaultSeaDrop;
@@ -52,10 +56,10 @@ contract LensSeaDropCollection is ERC721SeaDropCloneable {
         _transferOwnership(owner);
     }
 
-    function _validateInitializationData(
-        address[] calldata allowedSeaDrops,
-        MultiConfigureStruct calldata config
-    ) internal view {
+    function _validateInitializationData(address[] calldata allowedSeaDrops, MultiConfigureStruct calldata config)
+        internal
+        view
+    {
         // Makes sure that the default used SeaDrop is allowed as the first element of the array.
         if (allowedSeaDrops.length == 0 || allowedSeaDrops[0] != DEFAULT_SEADROP) {
             revert InvalidParams();
@@ -145,7 +149,11 @@ contract LensSeaDropCollection is ERC721SeaDropCloneable {
      * @param payer       The payer to update.
      * @param allowed     Whether the payer is allowed.
      */
-    function updatePayer(address seaDropImpl, address payer, bool allowed) external virtual override {
+    function updatePayer(
+        address seaDropImpl,
+        address payer,
+        bool allowed
+    ) external virtual override {
         // We only enforce the SeaDropMintPublicationAction to be enabled as a payer when using the default SeaDrop.
         if (seaDropImpl == DEFAULT_SEADROP && !allowed && payer == SEADROP_ACTION_MODULE) {
             revert InvalidParams();

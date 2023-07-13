@@ -3,11 +3,7 @@
 pragma solidity ^0.8.19;
 
 import {Types} from 'contracts/libraries/constants/Types.sol';
-import {EIP712} from '@openzeppelin/contracts/utils/cryptography/draft-EIP712.sol';
 import {Errors} from 'contracts/libraries/constants/Errors.sol';
-import {Events} from 'contracts/libraries/constants/Events.sol';
-import {IERC721} from '@openzeppelin/contracts/token/ERC721/IERC721.sol';
-import {IFollowModule} from 'contracts/interfaces/IFollowModule.sol';
 import {ILensHub} from 'contracts/interfaces/ILensHub.sol';
 import {IERC721Timestamped} from 'contracts/interfaces/IERC721Timestamped.sol';
 import {IReferenceModule} from 'contracts/interfaces/IReferenceModule.sol';

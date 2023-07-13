@@ -6,7 +6,6 @@ import {Base64} from '@openzeppelin/contracts/utils/Base64.sol';
 import {Strings} from '@openzeppelin/contracts/utils/Strings.sol';
 import {TokenURIMainFontLib} from 'contracts/libraries/token-uris/TokenURIMainFontLib.sol';
 import {TokenURISecondaryFontLib} from 'contracts/libraries/token-uris/TokenURISecondaryFontLib.sol';
-import {StorageLib} from 'contracts/libraries/StorageLib.sol';
 
 library FollowTokenURILib {
     using Strings for uint96;
@@ -46,10 +45,11 @@ library FollowTokenURILib {
             );
     }
 
-    function _getSVGImageBase64Encoded(
-        string memory followTokenIdAsString,
-        string memory followedProfileIdAsString
-    ) private pure returns (string memory) {
+    function _getSVGImageBase64Encoded(string memory followTokenIdAsString, string memory followedProfileIdAsString)
+        private
+        pure
+        returns (string memory)
+    {
         return
             Base64.encode(
                 abi.encodePacked(

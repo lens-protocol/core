@@ -14,8 +14,8 @@ import {IFollowModule} from 'contracts/interfaces/IFollowModule.sol';
 contract RevertFollowModule is IFollowModule {
     /// @inheritdoc IFollowModule
     function initializeFollowModule(
-        uint256 /* profileId */,
-        address /* transactionExecutor */,
+        uint256, /* profileId */
+        address, /* transactionExecutor */
         bytes calldata /* data */
     ) external pure override returns (bytes memory) {
         return '';
@@ -26,10 +26,10 @@ contract RevertFollowModule is IFollowModule {
      * @notice Processes a follow by rejecting it, reverting the transaction. Parameters are ignored.
      */
     function processFollow(
-        uint256 /* followerProfileId */,
-        uint256 /* followTokenId */,
-        address /* transactionExecutor */,
-        uint256 /* profileId */,
+        uint256, /* followerProfileId */
+        uint256, /* followTokenId */
+        address, /* transactionExecutor */
+        uint256, /* profileId */
         bytes calldata /* data */
     ) external pure override returns (bytes memory) {
         revert Errors.FollowInvalid();

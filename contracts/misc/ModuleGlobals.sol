@@ -36,7 +36,11 @@ contract ModuleGlobals is IModuleGlobals {
      * @param treasury The treasury address to direct fees to.
      * @param treasuryFee The treasury fee in BPS to levy on collects.
      */
-    constructor(address governance, address treasury, uint16 treasuryFee) {
+    constructor(
+        address governance,
+        address treasury,
+        uint16 treasuryFee
+    ) {
         _setGovernance(governance);
         _setTreasury(treasury);
         _setTreasuryFee(treasuryFee);

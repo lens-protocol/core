@@ -39,7 +39,7 @@ contract SimpleFeeCollectModule is BaseFeeCollectModule {
     function initializePublicationCollectModule(
         uint256 profileId,
         uint256 pubId,
-        address /* transactionExecutor */,
+        address, /* transactionExecutor */
         bytes calldata data
     ) external override onlyActionModule returns (bytes memory) {
         BaseFeeCollectModuleInitData memory baseInitData = abi.decode(data, (BaseFeeCollectModuleInitData));
@@ -57,10 +57,12 @@ contract SimpleFeeCollectModule is BaseFeeCollectModule {
      *
      * @return The BaseProfilePublicationData struct mapped to that publication.
      */
-    function getPublicationData(
-        uint256 profileId,
-        uint256 pubId
-    ) external view virtual returns (BaseProfilePublicationData memory) {
+    function getPublicationData(uint256 profileId, uint256 pubId)
+        external
+        view
+        virtual
+        returns (BaseProfilePublicationData memory)
+    {
         return getBasePublicationData(profileId, pubId);
     }
 }

@@ -89,7 +89,11 @@ library ProfileLib {
      * @param followModule The follow module to set for the given profile, if any.
      * @param followModuleInitData The data to pass to the follow module for profile initialization.
      */
-    function setFollowModule(uint256 profileId, address followModule, bytes calldata followModuleInitData) external {
+    function setFollowModule(
+        uint256 profileId,
+        address followModule,
+        bytes calldata followModuleInitData
+    ) external {
         StorageLib.getProfile(profileId).followModule = followModule;
         bytes memory followModuleReturnData;
         if (followModule != address(0)) {

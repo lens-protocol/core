@@ -39,10 +39,10 @@ library ValidationLib {
         }
     }
 
-    function validateAddressIsDelegatedExecutor(
-        address expectedDelegatedExecutor,
-        uint256 delegatorProfileId
-    ) internal view {
+    function validateAddressIsDelegatedExecutor(address expectedDelegatedExecutor, uint256 delegatorProfileId)
+        internal
+        view
+    {
         if (!ProfileLib.isExecutorApproved(delegatorProfileId, expectedDelegatedExecutor)) {
             revert Errors.ExecutorInvalid();
         }

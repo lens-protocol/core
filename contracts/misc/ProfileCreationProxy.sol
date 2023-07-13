@@ -30,16 +30,19 @@ contract ProfileCreationProxy is ImmutableOwnable {
         TOKEN_HANDLE_REGISTRY = ITokenHandleRegistry(tokenHandleRegistry);
     }
 
-    function proxyCreateProfile(
-        Types.CreateProfileParams calldata createProfileParams
-    ) external onlyOwner returns (uint256) {
+    function proxyCreateProfile(Types.CreateProfileParams calldata createProfileParams)
+        external
+        onlyOwner
+        returns (uint256)
+    {
         return ILensHub(LENS_HUB).createProfile(createProfileParams);
     }
 
-    function proxyCreateProfileWithHandle(
-        Types.CreateProfileParams memory createProfileParams,
-        string calldata handle
-    ) external onlyOwner returns (uint256, uint256) {
+    function proxyCreateProfileWithHandle(Types.CreateProfileParams memory createProfileParams, string calldata handle)
+        external
+        onlyOwner
+        returns (uint256, uint256)
+    {
         // We mint the handle & profile to this contract first, then link it to the profile
         // This will not allow to initialize follow modules that require funds from the msg.sender,
         // but we assume only simple follow modules should be set during profile creation.
