@@ -6,6 +6,7 @@ import 'test/LensBaseERC721Test.t.sol';
 import {Base64} from 'solady/utils/Base64.sol';
 import {LibString} from 'solady/utils/LibString.sol';
 import {ProfileTokenURILib} from 'contracts/libraries/token-uris/ProfileTokenURILib.sol';
+import {TokenGuardianTest, IGuardedToken} from 'test/TokenGuardian.t.sol';
 
 contract ProfileTokenURILibMock {
     function testProfileTokenURILibMock() public {
@@ -17,9 +18,19 @@ contract ProfileTokenURILibMock {
     }
 }
 
-contract ProfileNFTTest is BaseTest, LensBaseERC721Test {
+contract ProfileNFTTest is LensBaseERC721Test, TokenGuardianTest {
     using stdJson for string;
     using Strings for uint256;
+
+    function _TOKEN_GUARDIAN_COOLDOWN() internal pure override returns (uint256) {
+        // TODO: Handle the case when we must get it from the contract
+        return PROFILE_GUARDIAN_COOLDOWN;
+    }
+
+    function setUp() public override(BaseTest, TokenGuardianTest) {
+        BaseTest.setUp();
+        TokenGuardianTest.setUp();
+    }
 
     function _disableGuardian(address wallet) internal override {
         _effectivelyDisableProfileGuardian(wallet);

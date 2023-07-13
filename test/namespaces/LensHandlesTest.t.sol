@@ -6,11 +6,31 @@ import {LibString} from 'solady/utils/LibString.sol';
 import {Base64} from 'solady/utils/Base64.sol';
 import {HandlesErrors} from 'contracts/namespaces/constants/Errors.sol';
 import {HandlesEvents} from 'contracts/namespaces/constants/Events.sol';
+import {TokenGuardianTest, IGuardedToken} from 'test/TokenGuardian.t.sol';
 
-contract LensHandlesTest is BaseTest {
+contract LensHandlesTest is TokenGuardianTest {
     using stdJson for string;
 
     uint256 constant MAX_HANDLE_LENGTH = 26;
+    uint256 uniqueHandleCounter;
+
+    function _TOKEN_GUARDIAN_COOLDOWN() internal pure override returns (uint256) {
+        // TODO: Handle the case when we must get it from the contract
+        return HANDLE_GUARDIAN_COOLDOWN;
+    }
+
+    function _getERC721TokenAddress() internal view virtual override returns (address) {
+        return address(lensHandles);
+    }
+
+    function _mintERC721(address to) internal override returns (uint256) {
+        vm.prank(lensHandles.OWNER());
+        uint256 handleId = lensHandles.mintHandle(
+            to,
+            string.concat('newminthandle', vm.toString(uniqueHandleCounter++))
+        );
+        return handleId;
+    }
 
     function setUp() public override {
         super.setUp();
