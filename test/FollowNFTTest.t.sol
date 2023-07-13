@@ -1060,7 +1060,7 @@ contract FollowNFTTest is BaseTest, LensBaseERC721Test {
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
     //////////////////////////////////////////////////////////
-    // Wrap - Negatives
+    // Wrap (tokenId) - Negatives
     //////////////////////////////////////////////////////////
 
     function testCannotWrapIfAlreadyWrapped() public {
@@ -1113,9 +1113,9 @@ contract FollowNFTTest is BaseTest, LensBaseERC721Test {
         followNFT.wrap(followTokenId);
     }
 
-    function testCannotWrapRecoveringWhenTheSenderDoesNotOwnTheProfileAllowedToRecover(
-        address unrelatedAddress
-    ) public {
+    function testCannotWrapRecoveringWhenTheSenderDoesNotOwnTheProfileAllowedToRecover(address unrelatedAddress)
+        public
+    {
         vm.assume(unrelatedAddress != address(0));
         vm.assume(unrelatedAddress != alreadyFollowingProfileOwner);
 
@@ -1142,7 +1142,7 @@ contract FollowNFTTest is BaseTest, LensBaseERC721Test {
     }
 
     //////////////////////////////////////////////////////////
-    // Wrap - Scenarios
+    // Wrap (tokenId) - Scenarios
     //////////////////////////////////////////////////////////
 
     function testWrappedTokenOwnerIsFollowerProfileOwnerAfterUntyingAndWrapping() public {
@@ -1205,9 +1205,9 @@ contract FollowNFTTest is BaseTest, LensBaseERC721Test {
         assertEq(followNFT.getProfileIdAllowedToRecover(followTokenId), 0);
     }
 
-    function testRecoveringTokenThroughWrappingItAfterProfileAllowedToRecoverWasTransferred(
-        address unrelatedAddress
-    ) public {
+    function testRecoveringTokenThroughWrappingItAfterProfileAllowedToRecoverWasTransferred(address unrelatedAddress)
+        public
+    {
         vm.assume(unrelatedAddress != address(0));
         vm.assume(unrelatedAddress != alreadyFollowingProfileOwner);
 
@@ -1232,6 +1232,203 @@ contract FollowNFTTest is BaseTest, LensBaseERC721Test {
         followNFT.wrap(followTokenId);
 
         assertEq(followNFT.ownerOf(followTokenId), unrelatedAddress);
+        assertEq(followNFT.getProfileIdAllowedToRecover(followTokenId), 0);
+    }
+
+    //////////////////////////////////////////////////////////
+    // Wrap (tokenId, receiver) - Negatives
+    //////////////////////////////////////////////////////////
+
+    function testCannotWrapIfTokenReceiverIsAddressZero() public {
+        uint256 followTokenId = followNFT.getFollowTokenId(alreadyFollowingProfileId);
+
+        vm.expectRevert(Errors.InvalidParameter.selector);
+
+        vm.prank(alreadyFollowingProfileOwner);
+        followNFT.wrap(followTokenId, address(0));
+    }
+
+    function testCannotWrapIfAlreadyWrapped(address receiver) public {
+        vm.assume(receiver != address(0));
+        uint256 followTokenId = followNFT.getFollowTokenId(alreadyFollowingProfileId);
+        vm.prank(alreadyFollowingProfileOwner);
+        followNFT.wrap(followTokenId, receiver);
+
+        vm.prank(alreadyFollowingProfileOwner);
+
+        vm.expectRevert(IFollowNFT.AlreadyWrapped.selector);
+        followNFT.wrap(followTokenId, receiver);
+    }
+
+    function testCannotWrapIfTokenDoesNotExist(uint256 unexistentTokenId, address receiver) public {
+        vm.assume(receiver != address(0));
+        vm.assume(followNFT.getFollowerProfileId(unexistentTokenId) == 0);
+        vm.assume(!followNFT.exists(unexistentTokenId));
+
+        vm.expectRevert(IFollowNFT.FollowTokenDoesNotExist.selector);
+        followNFT.wrap(unexistentTokenId, receiver);
+    }
+
+    function testCannotWrapIfSenderIsNotFollowerOwner(address notFollowerOwner, address receiver) public {
+        vm.assume(receiver != address(0));
+        vm.assume(notFollowerOwner != alreadyFollowingProfileOwner);
+        vm.assume(notFollowerOwner != address(0));
+
+        uint256 followTokenId = followNFT.getFollowTokenId(alreadyFollowingProfileId);
+
+        vm.prank(notFollowerOwner);
+
+        vm.expectRevert(IFollowNFT.DoesNotHavePermissions.selector);
+        followNFT.wrap(followTokenId, receiver);
+    }
+
+    function testCannotWrapRecoveringWhenTheProfileAllowedToRecoverDoesNotExistAnymore(address receiver) public {
+        vm.assume(receiver != address(0));
+        uint256 followTokenId = followNFT.getFollowTokenId(alreadyFollowingProfileId);
+
+        vm.prank(address(hub));
+        followNFT.unfollow({
+            unfollowerProfileId: alreadyFollowingProfileId,
+            transactionExecutor: alreadyFollowingProfileOwner
+        });
+
+        assertEq(followNFT.getProfileIdAllowedToRecover(followTokenId), alreadyFollowingProfileId);
+
+        vm.prank(alreadyFollowingProfileOwner);
+        hub.burn(alreadyFollowingProfileId);
+
+        vm.prank(alreadyFollowingProfileOwner);
+        vm.expectRevert(Errors.TokenDoesNotExist.selector);
+        followNFT.wrap(followTokenId, receiver);
+    }
+
+    function testCannotWrapRecoveringWhenTheSenderDoesNotOwnTheProfileAllowedToRecover(
+        address unrelatedAddress,
+        address receiver
+    ) public {
+        vm.assume(receiver != address(0));
+        vm.assume(unrelatedAddress != address(0));
+        vm.assume(unrelatedAddress != alreadyFollowingProfileOwner);
+
+        uint256 followTokenId = followNFT.getFollowTokenId(alreadyFollowingProfileId);
+
+        vm.prank(address(hub));
+        followNFT.unfollow({
+            unfollowerProfileId: alreadyFollowingProfileId,
+            transactionExecutor: alreadyFollowingProfileOwner
+        });
+
+        assertEq(followNFT.getProfileIdAllowedToRecover(followTokenId), alreadyFollowingProfileId);
+
+        vm.prank(alreadyFollowingProfileOwner);
+        hub.transferFrom({
+            from: alreadyFollowingProfileOwner,
+            to: unrelatedAddress,
+            tokenId: alreadyFollowingProfileId
+        });
+
+        vm.prank(alreadyFollowingProfileOwner);
+        vm.expectRevert(IFollowNFT.DoesNotHavePermissions.selector);
+        followNFT.wrap(followTokenId, receiver);
+    }
+
+    //////////////////////////////////////////////////////////
+    // Wrap (tokenId, receiver) - Scenarios
+    //////////////////////////////////////////////////////////
+
+    function testWrappedTokenOwnerIsReceiverProfileOwnerAfterUntyingAndWrapping(address receiver) public {
+        vm.assume(receiver != address(0));
+        uint256 followTokenId = followNFT.getFollowTokenId(alreadyFollowingProfileId);
+
+        vm.prank(alreadyFollowingProfileOwner);
+        followNFT.wrap(followTokenId, receiver);
+
+        assertEq(followNFT.ownerOf(followTokenId), receiver);
+    }
+
+    function testWrappedTokenStillHeldByPreviousFollowerOwnerAfterAFollowerProfileTransfer(
+        address receiver,
+        address newFollowerProfileOwner
+    ) public {
+        vm.assume(receiver != address(0));
+        vm.assume(newFollowerProfileOwner != followerProfileOwner);
+        vm.assume(newFollowerProfileOwner != address(0));
+
+        vm.prank(address(hub));
+
+        uint256 assignedTokenId = followNFT.follow({
+            followerProfileId: followerProfileId,
+            transactionExecutor: followerProfileOwner,
+            followTokenId: MINT_NEW_TOKEN
+        });
+
+        vm.prank(followerProfileOwner);
+        followNFT.wrap(assignedTokenId, receiver);
+
+        assertEq(followNFT.ownerOf(assignedTokenId), receiver);
+
+        assertTrue(followNFT.isFollowing(followerProfileId));
+        uint256 followerProfileIdSet = followNFT.getFollowerProfileId(assignedTokenId);
+        assertEq(followerProfileIdSet, followerProfileId);
+
+        vm.prank(followerProfileOwner);
+        hub.transferFrom(followerProfileOwner, newFollowerProfileOwner, followerProfileId);
+
+        assertEq(hub.ownerOf(followerProfileId), newFollowerProfileOwner);
+        assertEq(followNFT.ownerOf(assignedTokenId), receiver);
+
+        assertTrue(followNFT.isFollowing(followerProfileId));
+        assertEq(followerProfileIdSet, followNFT.getFollowerProfileId(assignedTokenId));
+    }
+
+    function testRecoveringTokenThroughWrappingIt(address receiver) public {
+        vm.assume(receiver != address(0));
+        uint256 followTokenId = followNFT.getFollowTokenId(alreadyFollowingProfileId);
+
+        vm.prank(address(hub));
+        followNFT.unfollow({
+            unfollowerProfileId: alreadyFollowingProfileId,
+            transactionExecutor: alreadyFollowingProfileOwner
+        });
+
+        assertEq(followNFT.getProfileIdAllowedToRecover(followTokenId), alreadyFollowingProfileId);
+
+        vm.prank(alreadyFollowingProfileOwner);
+        followNFT.wrap(followTokenId, receiver);
+
+        assertEq(followNFT.ownerOf(followTokenId), receiver);
+        assertEq(followNFT.getProfileIdAllowedToRecover(followTokenId), 0);
+    }
+
+    function testRecoveringTokenThroughWrappingItAfterProfileAllowedToRecoverWasTransferred(
+        address unrelatedAddress,
+        address receiver
+    ) public {
+        vm.assume(receiver != address(0));
+        vm.assume(unrelatedAddress != address(0));
+        vm.assume(unrelatedAddress != alreadyFollowingProfileOwner);
+
+        uint256 followTokenId = followNFT.getFollowTokenId(alreadyFollowingProfileId);
+
+        vm.prank(address(hub));
+        followNFT.unfollow({
+            unfollowerProfileId: alreadyFollowingProfileId,
+            transactionExecutor: alreadyFollowingProfileOwner
+        });
+
+        assertEq(followNFT.getProfileIdAllowedToRecover(followTokenId), alreadyFollowingProfileId);
+
+        vm.prank(alreadyFollowingProfileOwner);
+        hub.transferFrom({
+            from: alreadyFollowingProfileOwner,
+            to: unrelatedAddress,
+            tokenId: alreadyFollowingProfileId
+        });
+
+        vm.prank(unrelatedAddress);
+        followNFT.wrap(followTokenId, receiver);
+
+        assertEq(followNFT.ownerOf(followTokenId), receiver);
         assertEq(followNFT.getProfileIdAllowedToRecover(followTokenId), 0);
     }
 
@@ -1331,9 +1528,9 @@ contract FollowNFTTest is BaseTest, LensBaseERC721Test {
         assertFalse(followNFT.exists(followTokenId));
     }
 
-    function testUnwrappedTokenStillTiedToFollowerProfileAfterAFollowerProfileTransfer(
-        address newFollowerProfileOwner
-    ) public {
+    function testUnwrappedTokenStillTiedToFollowerProfileAfterAFollowerProfileTransfer(address newFollowerProfileOwner)
+        public
+    {
         vm.assume(newFollowerProfileOwner != followerProfileOwner);
         vm.assume(newFollowerProfileOwner != address(0));
 
@@ -1627,7 +1824,11 @@ contract FollowNFTTest is BaseTest, LensBaseERC721Test {
         assertEq(royalties, expectedRoyalties);
     }
 
-    function testSetRoyalties(uint256 royaltiesInBasisPoints, uint256 tokenId, uint256 salePrice) public {
+    function testSetRoyalties(
+        uint256 royaltiesInBasisPoints,
+        uint256 tokenId,
+        uint256 salePrice
+    ) public {
         uint256 basisPoints = 10000;
         royaltiesInBasisPoints = bound(royaltiesInBasisPoints, 0, basisPoints);
         uint256 salePriceTimesRoyalties;
