@@ -137,7 +137,7 @@ contract LegacyCollectNFTTest is BaseTest, LensBaseERC721Test {
 
     function testCannotInitializeTwoTimes(uint256 profileId, uint256 pubId) public {
         vm.expectRevert(Errors.Initialized.selector);
-        collectNFT.initialize(profileId, pubId, 'someName', 'someSymbol');
+        collectNFT.initialize(profileId, pubId);
     }
 
     function testTokenURI() public {
@@ -170,7 +170,7 @@ contract LegacyCollectNFTTest is BaseTest, LensBaseERC721Test {
         collectNFT = LegacyCollectNFT(Clones.clone(collectNFTImpl));
 
         // Initializes the clone
-        collectNFT.initialize(profileId, pubId, 'Name', 'SYMBOL');
+        collectNFT.initialize(profileId, pubId);
 
         (uint256 sourceProfileId, uint256 sourcePubId) = collectNFT.getSourcePublicationPointer();
 

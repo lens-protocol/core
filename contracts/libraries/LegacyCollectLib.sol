@@ -22,9 +22,6 @@ import {PublicationLib} from 'contracts/libraries/PublicationLib.sol';
 library LegacyCollectLib {
     using Strings for uint256;
 
-    string constant COLLECT_NFT_NAME_INFIX = '-Collect-';
-    string constant COLLECT_NFT_SYMBOL_INFIX = '-Cl-';
-
     /**
      * @dev Emitted upon a successful legacy collect action.
      *
@@ -143,14 +140,7 @@ library LegacyCollectLib {
     function _deployCollectNFT(uint256 profileId, uint256 pubId, address collectNFTImpl) private returns (address) {
         address collectNFT = Clones.clone(collectNFTImpl);
 
-        string memory collectNFTName = string(
-            abi.encodePacked(profileId.toString(), COLLECT_NFT_NAME_INFIX, pubId.toString())
-        );
-        string memory collectNFTSymbol = string(
-            abi.encodePacked(profileId.toString(), COLLECT_NFT_SYMBOL_INFIX, pubId.toString())
-        );
-
-        ICollectNFT(collectNFT).initialize(profileId, pubId, collectNFTName, collectNFTSymbol);
+        ICollectNFT(collectNFT).initialize(profileId, pubId);
         emit Events.CollectNFTDeployed(profileId, pubId, collectNFT, block.timestamp);
 
         return collectNFT;

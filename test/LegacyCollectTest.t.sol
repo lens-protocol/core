@@ -10,6 +10,7 @@ import {ILegacyCollectModule} from 'contracts/interfaces/ILegacyCollectModule.so
 import {ReferralSystemTest} from 'test/ReferralSystem.t.sol';
 
 contract LegacyCollectTest is BaseTest, ReferralSystemTest {
+    using Strings for uint256;
     uint256 pubId;
     Types.CollectParams defaultCollectParams;
     TestAccount blockedProfile;
@@ -218,16 +219,6 @@ contract LegacyCollectTest is BaseTest, ReferralSystemTest {
         assertTrue(pub.__DEPRECATED__collectNFT == address(0));
 
         address predictedCollectNFT = computeCreateAddress(address(hub), vm.getNonce(address(hub)));
-        string memory predictedCollectNFTName = string.concat(
-            vm.toString(defaultAccount.profileId),
-            LegacyCollectLib.COLLECT_NFT_NAME_INFIX,
-            vm.toString(pubId)
-        );
-        string memory predictedCollectNFTSymbol = string.concat(
-            vm.toString(defaultAccount.profileId),
-            LegacyCollectLib.COLLECT_NFT_SYMBOL_INFIX,
-            vm.toString(pubId)
-        );
 
         vm.expectEmit(true, true, true, true, address(hub));
         emit Events.CollectNFTDeployed(defaultAccount.profileId, pubId, predictedCollectNFT, block.timestamp);
@@ -236,12 +227,7 @@ contract LegacyCollectTest is BaseTest, ReferralSystemTest {
             predictedCollectNFT,
             abi.encodeCall(
                 ICollectNFT.initialize,
-                (
-                    defaultCollectParams.publicationCollectedProfileId,
-                    defaultCollectParams.publicationCollectedId,
-                    predictedCollectNFTName,
-                    predictedCollectNFTSymbol
-                )
+                (defaultCollectParams.publicationCollectedProfileId, defaultCollectParams.publicationCollectedId)
             ),
             1
         );
@@ -283,6 +269,22 @@ contract LegacyCollectTest is BaseTest, ReferralSystemTest {
 
         uint256 collectTokenId = _collect(defaultAccount.ownerPk, defaultCollectParams);
         assertEq(collectTokenId, 1);
+
+        string memory expectedCollectNftName = string.concat(
+            'Lens Collect | Profile #',
+            defaultCollectParams.publicationCollectedProfileId.toString(),
+            ' - Publication #',
+            defaultCollectParams.publicationCollectedId.toString()
+        );
+
+        string memory expectedCollectNftSymbol = 'LENS-COLLECT';
+
+        assertEq(LegacyCollectNFT(predictedCollectNFT).name(), expectedCollectNftName, 'Invalid collect NFT name');
+        assertEq(
+            LegacyCollectNFT(predictedCollectNFT).symbol(),
+            expectedCollectNftSymbol,
+            'Invalid collect NFT symbol'
+        );
 
         _refreshCachedNonces();
 
@@ -333,7 +335,7 @@ contract LegacyCollectTest is BaseTest, ReferralSystemTest {
 
     function _referralSystem_ExpectRevertsIfNeeded(
         TestPublication memory target,
-        uint256[] memory /* referrerProfileIds */,
+        uint256[] memory, /* referrerProfileIds */
         uint256[] memory /* referrerPubIds */
     ) internal virtual override returns (bool) {
         if (skipTest) {
@@ -418,10 +420,12 @@ contract LegacyCollectMetaTxTest is LegacyCollectTest, MetaTxNegatives {
         _refreshCachedNonces();
     }
 
-    function _collect(
-        uint256 pk,
-        Types.CollectParams memory collectParams
-    ) internal virtual override returns (uint256) {
+    function _collect(uint256 pk, Types.CollectParams memory collectParams)
+        internal
+        virtual
+        override
+        returns (uint256)
+    {
         address signer = vm.addr(pk);
 
         return
@@ -439,7 +443,11 @@ contract LegacyCollectMetaTxTest is LegacyCollectTest, MetaTxNegatives {
             );
     }
 
-    function _executeMetaTx(uint256 signerPk, uint256 nonce, uint256 deadline) internal virtual override {
+    function _executeMetaTx(
+        uint256 signerPk,
+        uint256 nonce,
+        uint256 deadline
+    ) internal virtual override {
         hub.collectWithSig(
             defaultCollectParams,
             _getSigStruct({

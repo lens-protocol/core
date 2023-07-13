@@ -65,7 +65,7 @@ contract TokenGatedReferenceModule is HubRestricted, IReferenceModule {
         (bool success, bytes memory result) = gateParams.tokenAddress.staticcall(
             abi.encodeWithSelector(IToken.balanceOf.selector, address(this))
         );
-        // We don't check if the contract exists cause we expect the return data anyway.
+        // We don't check if the contract exists because we expect the return data anyway.
         if (gateParams.minThreshold == 0 || !success || result.length != UINT256_BYTES) {
             revert Errors.InitParamsInvalid();
         }

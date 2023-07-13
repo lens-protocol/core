@@ -223,7 +223,11 @@ contract CollectPublicationActionTest is BaseTest {
         );
     }
 
-    function testInitializePublicationAction(uint256 profileId, uint256 pubId, address transactionExecutor) public {
+    function testInitializePublicationAction(
+        uint256 profileId,
+        uint256 pubId,
+        address transactionExecutor
+    ) public {
         vm.assume(profileId != 0);
         vm.assume(pubId != 0);
         vm.assume(transactionExecutor != address(0));
@@ -250,9 +254,6 @@ contract CollectPublicationActionTest is BaseTest {
         assertEq(returnData, initData, 'Return data mismatch');
         assertEq(collectPublicationAction.getCollectData(profileId, pubId).collectModule, mockCollectModule);
     }
-
-    string constant COLLECT_NFT_NAME_INFIX = '-Collect-';
-    string constant COLLECT_NFT_SYMBOL_INFIX = '-Cl-';
 
     function testProcessPublicationAction_firstCollect(
         uint256 profileId,
@@ -288,18 +289,6 @@ contract CollectPublicationActionTest is BaseTest {
         uint256 contractNonce = vm.getNonce(address(collectPublicationAction));
         address collectNFT = computeCreateAddress(address(collectPublicationAction), contractNonce);
 
-        string memory expectedCollectNftName = string.concat(
-            profileId.toString(),
-            COLLECT_NFT_NAME_INFIX,
-            pubId.toString()
-        );
-
-        string memory expectedCollectNftSymbol = string.concat(
-            profileId.toString(),
-            COLLECT_NFT_SYMBOL_INFIX,
-            pubId.toString()
-        );
-
         vm.expectEmit(true, true, true, true, address(collectPublicationAction));
         emit Events.CollectNFTDeployed(profileId, pubId, collectNFT, block.timestamp);
 
@@ -316,17 +305,22 @@ contract CollectPublicationActionTest is BaseTest {
             timestamp: block.timestamp
         });
 
-        vm.expectCall(
-            collectNFT,
-            abi.encodeCall(CollectNFT.initialize, (profileId, pubId, expectedCollectNftName, expectedCollectNftSymbol)),
-            1
-        );
+        vm.expectCall(collectNFT, abi.encodeCall(CollectNFT.initialize, (profileId, pubId)), 1);
 
         vm.prank(address(hub));
         bytes memory returnData = collectPublicationAction.processPublicationAction(processActionParams);
         (uint256 tokenId, bytes memory collectActionResult) = abi.decode(returnData, (uint256, bytes));
         assertEq(tokenId, 1, 'Invalid tokenId');
         assertEq(collectActionResult, abi.encode(true), 'Invalid collectActionResult data');
+
+        string memory expectedCollectNftName = string.concat(
+            'Lens Collect | Profile #',
+            profileId.toString(),
+            ' - Publication #',
+            pubId.toString()
+        );
+
+        string memory expectedCollectNftSymbol = 'LENS-COLLECT';
 
         assertEq(CollectNFT(collectNFT).name(), expectedCollectNftName, 'Invalid collect NFT name');
         assertEq(CollectNFT(collectNFT).symbol(), expectedCollectNftSymbol, 'Invalid collect NFT symbol');
