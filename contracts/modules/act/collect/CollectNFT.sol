@@ -80,33 +80,25 @@ contract CollectNFT is LensBaseERC721, ERC2981CollectionRoyalties, ActionRestric
     /**
      * @dev See {IERC721Metadata-symbol}.
      */
-    function symbol() public view override returns (string memory) {
+    function symbol() public pure override returns (string memory) {
         return 'LENS-COLLECT';
     }
 
     /**
      * @dev See {IERC165-supportsInterface}.
      */
-    function supportsInterface(bytes4 interfaceId)
-        public
-        view
-        virtual
-        override(ERC2981CollectionRoyalties, LensBaseERC721)
-        returns (bool)
-    {
+    function supportsInterface(
+        bytes4 interfaceId
+    ) public view virtual override(ERC2981CollectionRoyalties, LensBaseERC721) returns (bool) {
         return
             ERC2981CollectionRoyalties.supportsInterface(interfaceId) || LensBaseERC721.supportsInterface(interfaceId);
     }
 
-    function _getReceiver(
-        uint256 /* tokenId */
-    ) internal view override returns (address) {
+    function _getReceiver(uint256 /* tokenId */) internal view override returns (address) {
         return IERC721(HUB).ownerOf(_profileId);
     }
 
-    function _beforeRoyaltiesSet(
-        uint256 /* royaltiesInBasisPoints */
-    ) internal view override {
+    function _beforeRoyaltiesSet(uint256 /* royaltiesInBasisPoints */) internal view override {
         if (IERC721(HUB).ownerOf(_profileId) != msg.sender) {
             revert Errors.NotProfileOwner();
         }
