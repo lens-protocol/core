@@ -17,6 +17,7 @@ library HandlesErrors {
     error HandleFirstCharInvalid();
     error NotOwnerNorWhitelisted();
     error NotOwner();
+    error NotHub();
     error DoesNotExist();
     error NotEOA();
     error DisablingAlreadyTriggered();

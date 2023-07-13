@@ -10,7 +10,7 @@ import {IERC721} from '@openzeppelin/contracts/token/ERC721/IERC721.sol';
  *
  * @notice This is the interface for the LensHandles contract that is responsible for minting and burning handle NFTs.
  * A handle is composed of a local name and a namespace, separated by a dot.
- * Example: `john.lens` is a handle composed of the local name `john` and the namespace `lens`.
+ * Example: `satoshi.lens` is a handle composed of the local name `satoshi` and the namespace `lens`.
  */
 interface ILensHandles is IERC721 {
     /**

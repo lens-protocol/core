@@ -4,7 +4,7 @@ pragma solidity ^0.8.13;
 import 'test/base/BaseTest.t.sol';
 import 'test/LensBaseERC721Test.t.sol';
 import {CollectPublicationAction} from 'contracts/modules/act/collect/CollectPublicationAction.sol';
-import {CollectNFT} from 'contracts/CollectNFT.sol';
+import {CollectNFT} from 'contracts/modules/act/collect/CollectNFT.sol';
 import {MockCollectModule} from 'test/mocks/MockCollectModule.sol';
 import {Clones} from '@openzeppelin/contracts/proxy/Clones.sol';
 import {Errors as ModulesErrors} from 'contracts/modules/constants/Errors.sol';
@@ -199,7 +199,7 @@ contract CollectNFTTest is BaseTest, LensBaseERC721Test {
 
     function testCannotInitializeTwoTimes(uint256 profileId, uint256 pubId) public {
         vm.expectRevert(Errors.Initialized.selector);
-        collectNFT.initialize(profileId, pubId, 'someName', 'someSymbol');
+        collectNFT.initialize(profileId, pubId);
     }
 
     function testTokenURI() public {
@@ -236,7 +236,7 @@ contract CollectNFTTest is BaseTest, LensBaseERC721Test {
         collectNFT = CollectNFT(Clones.clone(collectNFTImpl));
 
         // Initializes the clone
-        collectNFT.initialize(profileId, pubId, 'Name', 'SYMBOL');
+        collectNFT.initialize(profileId, pubId);
 
         (uint256 sourceProfileId, uint256 sourcePubId) = collectNFT.getSourcePublicationPointer();
 

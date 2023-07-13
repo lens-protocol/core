@@ -51,7 +51,7 @@ contract FeeFollowModule is FeeModuleBase, HubRestricted, IFollowModule {
         // We allow address(0) to allow burning the currency. But the token has to support transfers to address(0).
         //
         // We don't introduce the upper limit to the amount, even though it might overflow if the amount * treasuryFee
-        // during processFollow. But this is a safe behavior, and a case that should never happen, cause amounts close
+        // during processFollow. But this is a safe behavior, and a case that should never happen, because amounts close
         // to type(uint256).max don't make any sense from the economic standpoint.
         if (!_currencyWhitelisted(feeConfig.currency) || feeConfig.amount == 0) {
             revert Errors.InitParamsInvalid();

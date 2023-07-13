@@ -33,7 +33,7 @@ contract LensHandlesTest is BaseTest {
 
         string memory handle = 'handle';
 
-        vm.prank(address(hub));
+        vm.prank(lensHandles.OWNER());
         uint256 handleId = lensHandles.mintHandle(owner, handle);
 
         assertTrue(lensHandles.exists(handleId));
@@ -61,28 +61,28 @@ contract LensHandlesTest is BaseTest {
     }
 
     function testCannot_MintHandle_WithZeroLength() public {
-        vm.expectRevert(HandlesErrors.HandleLengthInvalid.selector);
+        vm.prank(lensHandles.OWNER());
 
-        vm.prank(address(hub));
+        vm.expectRevert(HandlesErrors.HandleLengthInvalid.selector);
         lensHandles.mintHandle(address(this), '');
     }
 
     function testCannot_MintHandle_WithNonUniqueLocalName() public {
-        vm.prank(address(hub));
+        vm.prank(lensHandles.OWNER());
         lensHandles.mintHandle(address(this), 'handle');
 
-        vm.expectRevert('ERC721: token already minted');
+        vm.prank(lensHandles.OWNER());
 
-        vm.prank(address(hub));
+        vm.expectRevert('ERC721: token already minted');
         lensHandles.mintHandle(makeAddr('ANOTHER_ADDRESS'), 'handle');
     }
 
     function testCannot_MintHandle_WithLengthMoreThanMax(uint256 randomFuzz) public {
         string memory randomHandle = _randomAlphanumericString(MAX_HANDLE_LENGTH + 1, randomFuzz);
 
-        vm.expectRevert(HandlesErrors.HandleLengthInvalid.selector);
+        vm.prank(lensHandles.OWNER());
 
-        vm.prank(address(hub));
+        vm.expectRevert(HandlesErrors.HandleLengthInvalid.selector);
         lensHandles.mintHandle(address(this), randomHandle);
     }
 
@@ -93,17 +93,10 @@ contract LensHandlesTest is BaseTest {
 
         string memory invalidUnderscoreHandle = string.concat('_', randomHandle);
 
-        vm.expectRevert(HandlesErrors.HandleFirstCharInvalid.selector);
+        vm.prank(lensHandles.OWNER());
 
-        vm.prank(address(hub));
+        vm.expectRevert(HandlesErrors.HandleFirstCharInvalid.selector);
         lensHandles.mintHandle(address(this), invalidUnderscoreHandle);
-
-        string memory invalidDashHandle = string.concat('-', randomHandle);
-
-        vm.expectRevert(HandlesErrors.HandleFirstCharInvalid.selector);
-
-        vm.prank(address(hub));
-        lensHandles.mintHandle(address(this), invalidDashHandle);
     }
 
     function testCannot_MintHandle_WithInvalidChar(
@@ -118,9 +111,7 @@ contract LensHandlesTest is BaseTest {
         vm.assume(
             (invalidCharCode < 48 || // '0'
                 invalidCharCode > 122 || // 'z'
-                (invalidCharCode > 57 && invalidCharCode < 97)) && // '9' and 'a'
-                invalidCharCode != 45 && // '-'
-                invalidCharCode != 95 // '_'
+                (invalidCharCode > 57 && invalidCharCode < 97)) && invalidCharCode != 95 // '9' and 'a' // '_'
         );
 
         string memory randomHandle = _randomAlphanumericString(length, randomFuzz);
@@ -136,8 +127,8 @@ contract LensHandlesTest is BaseTest {
 
         console.log('invalidHandle', invalidHandle);
 
+        vm.prank(lensHandles.OWNER());
         vm.expectRevert(HandlesErrors.HandleContainsInvalidCharacters.selector);
-        vm.prank(address(hub));
         lensHandles.mintHandle(address(this), invalidHandle);
     }
 
@@ -154,12 +145,12 @@ contract LensHandlesTest is BaseTest {
     }
 
     function testExists(uint256 number) public {
-        number = bound(number, 1, 10 ** (MAX_HANDLE_LENGTH) - 1);
+        number = bound(number, 1, 10**(MAX_HANDLE_LENGTH) - 1);
         string memory numbersHandle = vm.toString(number);
         uint256 expectedTokenId = lensHandles.getTokenId(numbersHandle);
         vm.assume(!lensHandles.exists(expectedTokenId));
 
-        vm.prank(address(hub));
+        vm.prank(lensHandles.OWNER());
         uint256 handleId = lensHandles.mintHandle(address(this), numbersHandle);
 
         assertEq(handleId, expectedTokenId);
@@ -189,7 +180,7 @@ contract LensHandlesTest is BaseTest {
 
     // TODO: Should we revert if it doesn't exist?
     function testGetLocalName(uint256 number) public {
-        number = bound(number, 1, 10 ** (MAX_HANDLE_LENGTH) - 1);
+        number = bound(number, 1, 10**(MAX_HANDLE_LENGTH) - 1);
         string memory numbersHandle = vm.toString(number);
         uint256 expectedTokenId = lensHandles.getTokenId(numbersHandle);
         vm.assume(!lensHandles.exists(expectedTokenId));
@@ -197,7 +188,7 @@ contract LensHandlesTest is BaseTest {
         vm.expectRevert(HandlesErrors.DoesNotExist.selector);
         lensHandles.getLocalName(expectedTokenId);
 
-        vm.prank(address(hub));
+        vm.prank(lensHandles.OWNER());
         uint256 handleId = lensHandles.mintHandle(address(this), numbersHandle);
 
         assertEq(handleId, expectedTokenId);
@@ -213,7 +204,7 @@ contract LensHandlesTest is BaseTest {
 
     // TODO: Should we revert if it doesn't exist?
     function testGetHandle(uint256 number) public {
-        number = bound(number, 1, 10 ** (MAX_HANDLE_LENGTH) - 1);
+        number = bound(number, 1, 10**(MAX_HANDLE_LENGTH) - 1);
         string memory numbersHandle = vm.toString(number);
         uint256 expectedTokenId = lensHandles.getTokenId(numbersHandle);
         vm.assume(!lensHandles.exists(expectedTokenId));
@@ -221,7 +212,7 @@ contract LensHandlesTest is BaseTest {
         vm.expectRevert(HandlesErrors.DoesNotExist.selector);
         lensHandles.getHandle(expectedTokenId);
 
-        vm.prank(address(hub));
+        vm.prank(lensHandles.OWNER());
         uint256 handleId = lensHandles.mintHandle(address(this), numbersHandle);
 
         assertEq(handleId, expectedTokenId);
@@ -237,7 +228,7 @@ contract LensHandlesTest is BaseTest {
     }
 
     function testGetTokenId(uint256 number) public {
-        number = bound(number, 1, 10 ** (MAX_HANDLE_LENGTH) - 1);
+        number = bound(number, 1, 10**(MAX_HANDLE_LENGTH) - 1);
         string memory numbersHandle = vm.toString(number);
 
         uint256 expectedTokenId = uint256(keccak256(bytes(numbersHandle)));
@@ -245,13 +236,13 @@ contract LensHandlesTest is BaseTest {
     }
 
     function testTokenURI() public {
-        string memory handleTemplate = 'abcdefghijklmnopqrstuvwx-_';
+        string memory handleTemplate = 'abcdefghijklmnopqrstuvwx_';
 
-        for (uint length = 1; length <= bytes(handleTemplate).length; length++) {
+        for (uint256 length = 1; length <= bytes(handleTemplate).length; length++) {
             string memory handle = LibString.slice(handleTemplate, 0, length);
             console.log(handle);
 
-            vm.prank(address(hub));
+            vm.prank(lensHandles.OWNER());
             uint256 handleId = lensHandles.mintHandle(address(this), handle);
 
             string memory tokenURI = lensHandles.tokenURI(handleId);
@@ -276,7 +267,7 @@ contract LensHandlesTest is BaseTest {
 
         string memory handle = 'handle';
 
-        vm.prank(address(hub));
+        vm.prank(lensHandles.OWNER());
         uint256 handleId = lensHandles.mintHandle(owner, handle);
 
         assertTrue(lensHandles.exists(handleId));
@@ -293,12 +284,12 @@ contract LensHandlesTest is BaseTest {
         lensHandles.getLocalName(handleId);
     }
 
-    function testMintHandle_IfOwner(address to, uint256 length, uint256 randomFuzz) public {
+    function testMintHandle_IfOwner(
+        address to,
+        uint256 length,
+        uint256 randomFuzz
+    ) public {
         _mintHandle(lensHandles.OWNER(), to, length, randomFuzz);
-    }
-
-    function testMintHandle_ifHub(address to, uint256 length, uint256 randomFuzz) public {
-        _mintHandle(address(hub), to, length, randomFuzz);
     }
 
     function testMintHandle_ifWhitelistedProfileCreator(
@@ -317,7 +308,12 @@ contract LensHandlesTest is BaseTest {
         _mintHandle(whitelistedProfileCreator, to, length, randomFuzz);
     }
 
-    function _mintHandle(address minter, address to, uint256 length, uint256 randomFuzz) internal {
+    function _mintHandle(
+        address minter,
+        address to,
+        uint256 length,
+        uint256 randomFuzz
+    ) internal {
         vm.assume(to != address(0));
         length = bound(length, 1, MAX_HANDLE_LENGTH);
 
@@ -343,13 +339,13 @@ contract LensHandlesTest is BaseTest {
     }
 
     function _randomAlphanumericString(uint256 length, uint256 randomFuzz) internal view returns (string memory) {
-        bytes memory allowedChars = '0123456789abcdefghijklmnopqrstuvwxyz_-';
+        bytes memory allowedChars = '0123456789abcdefghijklmnopqrstuvwxyz_';
 
         string memory str = '';
         for (uint256 i = 0; i < length; i++) {
             uint8 charCode = uint8((randomFuzz >> (i * 8)) & 0xff);
             charCode = uint8(bound(charCode, 0, allowedChars.length - 1));
-            if (i == 0 && (allowedChars[charCode] == '_' || allowedChars[charCode] == '-')) {
+            if (i == 0 && (allowedChars[charCode] == '_')) {
                 charCode /= 2;
             }
             string memory char = string(abi.encodePacked(allowedChars[charCode]));

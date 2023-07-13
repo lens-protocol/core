@@ -8,14 +8,11 @@ import {ICollectNFT} from 'contracts/interfaces/ICollectNFT.sol';
 import {Types} from 'contracts/libraries/constants/Types.sol';
 import {Events} from 'contracts/libraries/constants/Events.sol';
 import {Clones} from '@openzeppelin/contracts/proxy/Clones.sol';
-import {Strings} from '@openzeppelin/contracts/utils/Strings.sol';
 import {Errors} from 'contracts/libraries/constants/Errors.sol';
 import {HubRestricted} from 'contracts/base/HubRestricted.sol';
 import {IModuleGlobals} from 'contracts/interfaces/IModuleGlobals.sol';
 
 contract CollectPublicationAction is HubRestricted, IPublicationActionModule {
-    using Strings for uint256;
-
     struct CollectData {
         address collectModule;
         address collectNFT;
@@ -25,9 +22,6 @@ contract CollectPublicationAction is HubRestricted, IPublicationActionModule {
 
     address public immutable COLLECT_NFT_IMPL;
     address public immutable MODULE_GLOBALS;
-
-    string constant COLLECT_NFT_NAME_INFIX = '-Collect-';
-    string constant COLLECT_NFT_SYMBOL_INFIX = '-Cl-';
 
     mapping(address collectModule => bool isWhitelisted) internal _collectModuleWhitelisted;
     mapping(uint256 profileId => mapping(uint256 pubId => CollectData collectData)) internal _collectDataByPub;
@@ -135,14 +129,7 @@ contract CollectPublicationAction is HubRestricted, IPublicationActionModule {
     function _deployCollectNFT(uint256 profileId, uint256 pubId, address collectNFTImpl) private returns (address) {
         address collectNFT = Clones.clone(collectNFTImpl);
 
-        string memory collectNFTName = string(
-            abi.encodePacked(profileId.toString(), COLLECT_NFT_NAME_INFIX, pubId.toString())
-        );
-        string memory collectNFTSymbol = string(
-            abi.encodePacked(profileId.toString(), COLLECT_NFT_SYMBOL_INFIX, pubId.toString())
-        );
-
-        ICollectNFT(collectNFT).initialize(profileId, pubId, collectNFTName, collectNFTSymbol);
+        ICollectNFT(collectNFT).initialize(profileId, pubId);
         emit Events.CollectNFTDeployed(profileId, pubId, collectNFT, block.timestamp);
 
         return collectNFT;

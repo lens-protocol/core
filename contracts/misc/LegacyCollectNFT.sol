@@ -8,6 +8,7 @@ import {ICollectNFT} from 'contracts/interfaces/ICollectNFT.sol';
 import {IERC721} from '@openzeppelin/contracts/token/ERC721/IERC721.sol';
 import {ILensHub} from 'contracts/interfaces/ILensHub.sol';
 import {LensBaseERC721} from 'contracts/base/LensBaseERC721.sol';
+import {Strings} from '@openzeppelin/contracts/utils/Strings.sol';
 
 /**
  * @title CollectNFT
@@ -20,6 +21,8 @@ import {LensBaseERC721} from 'contracts/base/LensBaseERC721.sol';
  * the first collect for a given publication, and the token URI points to the original publication's contentURI.
  */
 contract LegacyCollectNFT is LensBaseERC721, ERC2981CollectionRoyalties, ICollectNFT {
+    using Strings for uint256;
+
     address public immutable HUB;
 
     uint256 internal _profileId;
@@ -39,18 +42,13 @@ contract LegacyCollectNFT is LensBaseERC721, ERC2981CollectionRoyalties, ICollec
     }
 
     /// @inheritdoc ICollectNFT
-    function initialize(
-        uint256 profileId,
-        uint256 pubId,
-        string calldata name,
-        string calldata symbol
-    ) external override {
+    function initialize(uint256 profileId, uint256 pubId) external override {
         if (_initialized) revert Errors.Initialized();
         _initialized = true;
         _setRoyalty(1000); // 10% of royalties
         _profileId = profileId;
         _pubId = pubId;
-        super._initialize(name, symbol);
+        // _name and _symbol remain uninitialized because we override the getters below
     }
 
     /// @inheritdoc ICollectNFT
@@ -71,6 +69,20 @@ contract LegacyCollectNFT is LensBaseERC721, ERC2981CollectionRoyalties, ICollec
     function tokenURI(uint256 tokenId) public view override returns (string memory) {
         if (!_exists(tokenId)) revert Errors.TokenDoesNotExist();
         return ILensHub(HUB).getContentURI(_profileId, _pubId);
+    }
+
+    /**
+     * @dev See {IERC721Metadata-name}.
+     */
+    function name() public view override returns (string memory) {
+        return string.concat('Lens Collect | Profile #', _profileId.toString(), ' - Publication #', _pubId.toString());
+    }
+
+    /**
+     * @dev See {IERC721Metadata-symbol}.
+     */
+    function symbol() public pure override returns (string memory) {
+        return 'LENS-COLLECT';
     }
 
     /**

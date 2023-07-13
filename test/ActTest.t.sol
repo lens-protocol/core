@@ -27,7 +27,7 @@ contract ActTest is ReferralSystemTest {
 
     function _referralSystem_ExpectRevertsIfNeeded(
         TestPublication memory target,
-        uint256[] memory /* referrerProfileIds */,
+        uint256[] memory, /* referrerProfileIds */
         uint256[] memory /* referrerPubIds */
     ) internal virtual override returns (bool) {
         if (_isV1LegacyPub(hub.getPublication(target.profileId, target.pubId))) {
@@ -41,10 +41,11 @@ contract ActTest is ReferralSystemTest {
         _act(actor.ownerPk, actionParams);
     }
 
-    function _act(
-        uint256 pk,
-        Types.PublicationActionParams memory publicationActionParams
-    ) internal virtual returns (bytes memory) {
+    function _act(uint256 pk, Types.PublicationActionParams memory publicationActionParams)
+        internal
+        virtual
+        returns (bytes memory)
+    {
         vm.prank(vm.addr(pk));
         return hub.act(publicationActionParams);
     }
@@ -183,7 +184,7 @@ contract ActTest is ReferralSystemTest {
         assertEq(hub.getActionModuleById(secondActionModuleId), secondActionModule);
     }
 
-    // Will not work on fork with more complicated action modules cause we don't know how to initialize them
+    // Will not work on fork with more complicated action modules because we don't know how to initialize them
     function testGetEnabledActionModulesBitmap(uint8 enabledActionModulesBitmap) public {
         vm.assume(enabledActionModulesBitmap != 0);
 
@@ -251,10 +252,11 @@ contract ActMetaTxTest is ActTest, MetaTxNegatives {
         cachedNonceByAddress[actor.owner] = hub.nonces(actor.owner);
     }
 
-    function _act(
-        uint256 pk,
-        Types.PublicationActionParams memory publicationActionParams
-    ) internal override returns (bytes memory) {
+    function _act(uint256 pk, Types.PublicationActionParams memory publicationActionParams)
+        internal
+        override
+        returns (bytes memory)
+    {
         address signer = vm.addr(pk);
         return
             hub.actWithSig({
@@ -271,7 +273,11 @@ contract ActMetaTxTest is ActTest, MetaTxNegatives {
             });
     }
 
-    function _executeMetaTx(uint256 signerPk, uint256 nonce, uint256 deadline) internal virtual override {
+    function _executeMetaTx(
+        uint256 signerPk,
+        uint256 nonce,
+        uint256 deadline
+    ) internal virtual override {
         hub.actWithSig({
             publicationActionParams: actionParams,
             signature: _getSigStruct({

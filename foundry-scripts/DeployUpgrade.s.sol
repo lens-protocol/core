@@ -5,7 +5,7 @@ import 'forge-std/console2.sol';
 
 import 'contracts/LensHub.sol';
 import 'contracts/FollowNFT.sol';
-import 'contracts/CollectNFT.sol';
+import 'contracts/modules/act/collect/CollectNFT.sol';
 
 import 'contracts/misc/migrations/ProfileMigration.sol';
 import {LensHandles} from 'contracts/misc/namespaces/LensHandles.sol';

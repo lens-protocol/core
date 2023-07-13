@@ -80,7 +80,7 @@ library MigrationLib {
                 }
             }
             // We mint a new handle on the LensHandles contract. The resulting handle NFT is sent to the profile owner.
-            uint256 handleId = lensHandles.mintHandle(profileOwner, handle);
+            uint256 handleId = lensHandles.migrateHandle(profileOwner, handle);
             // We link it to the profile in the TokenHandleRegistry contract.
             tokenHandleRegistry.migrationLink(handleId, profileId);
             emit ProfileMigrated(profileId, profileOwner, handle, handleId);
