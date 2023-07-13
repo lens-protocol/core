@@ -340,6 +340,7 @@ abstract contract TokenGuardianTest is ERC721Test {
     ////////////////// Protection effectively disabled
 
     function testCanApprove_ifEOA_onlyAfterTokenGuardianIs_EffectivelyDisabled(address addressToApprove) public {
+        vm.assume(addressToApprove != defaultAccount.owner);
         _effectivelyDisableGuardian(address(_guardedToken()), defaultAccount.owner);
 
         vm.prank(defaultAccount.owner);
@@ -351,6 +352,7 @@ abstract contract TokenGuardianTest is ERC721Test {
     function testCanSetApprovalForAll_ifEOA_onlyAfterTokenGuardianIs_EffectivelyDisabled(address addressToApprove)
         public
     {
+        vm.assume(addressToApprove != defaultAccount.owner);
         _effectivelyDisableGuardian(address(_guardedToken()), defaultAccount.owner);
 
         vm.prank(defaultAccount.owner);
@@ -404,6 +406,8 @@ abstract contract TokenGuardianTest is ERC721Test {
     }
 
     function testCanRemoveSetApprovalForAll_ifEOA_evenIfProtectionEnabled(address addressToRevokeApproval) public {
+        vm.assume(addressToRevokeApproval != defaultAccount.owner);
+
         assertEq(_guardedToken().getTokenGuardianDisablingTimestamp(defaultAccount.owner), 0);
 
         vm.prank(defaultAccount.owner);
@@ -414,6 +418,7 @@ abstract contract TokenGuardianTest is ERC721Test {
 
     function testApprovalStateDoesNotChange_afterProtectionStateChanges(address anotherAddress) public {
         vm.assume(anotherAddress != address(0));
+        vm.assume(anotherAddress != defaultAccount.owner);
 
         // Disable protection
         _effectivelyDisableGuardian(address(_guardedToken()), defaultAccount.owner);
@@ -440,6 +445,7 @@ abstract contract TokenGuardianTest is ERC721Test {
 
     function testApproveForAllState_DoesNotChange_AfterGuardianStateChanges(address anotherAddress) public {
         vm.assume(anotherAddress != address(0));
+        vm.assume(anotherAddress != defaultAccount.owner);
 
         // Disable protection
         _effectivelyDisableGuardian(address(_guardedToken()), defaultAccount.owner);
@@ -466,6 +472,7 @@ abstract contract TokenGuardianTest is ERC721Test {
 
     function testTransfersDoesNotAffectProtectionState_InboundTransfer(address anotherAddress) public {
         vm.assume(anotherAddress != address(0));
+        vm.assume(anotherAddress != defaultAccount.owner);
 
         // User disables protection, so it can perform a transfer later
         _effectivelyDisableGuardian(address(_guardedToken()), defaultAccount.owner);
@@ -496,6 +503,7 @@ abstract contract TokenGuardianTest is ERC721Test {
 
     function testTransfersDoNotAffectProtectionState_OutboundTransfer(address anotherAddress) public {
         vm.assume(anotherAddress != address(0));
+        vm.assume(anotherAddress != defaultAccount.owner);
 
         // Disables protection
         _effectivelyDisableGuardian(address(_guardedToken()), defaultAccount.owner);
