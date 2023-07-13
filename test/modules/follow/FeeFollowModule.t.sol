@@ -35,7 +35,12 @@ contract FeeFollowModuleTest is BaseTest {
 
     // Initialization - Negatives
 
-    function testCannotInitialize_NotHub(address from, uint256 profileId, uint256 amount, address recipient) public {
+    function testCannotInitialize_NotHub(
+        address from,
+        uint256 profileId,
+        uint256 amount,
+        address recipient
+    ) public {
         vm.assume(profileId != 0);
         vm.assume(amount != 0);
         vm.assume(from != address(hub));
@@ -84,7 +89,11 @@ contract FeeFollowModuleTest is BaseTest {
 
     // Initialization - Scenarios
 
-    function testInitialize(uint256 profileId, uint256 amount, address recipient) public {
+    function testInitialize(
+        uint256 profileId,
+        uint256 amount,
+        address recipient
+    ) public {
         vm.assume(profileId != 0);
         vm.assume(amount != 0);
         assertTrue(moduleGlobals.isCurrencyWhitelisted(address(currency)));
@@ -109,7 +118,7 @@ contract FeeFollowModuleTest is BaseTest {
         vm.assume(followerProfileId != 0);
         vm.assume(targetProfileId != 0);
         (, uint16 treasuryFee) = moduleGlobals.getTreasuryData();
-        // Overflow protection (cause treasuryAmount = amount * treasuryFee / BPS_MAX)
+        // Overflow protection (because treasuryAmount = amount * treasuryFee / BPS_MAX)
         vm.assume(
             amount != 0 && amount <= (treasuryFee == 0 ? type(uint256).max : type(uint256).max / uint256(treasuryFee))
         );
@@ -148,7 +157,7 @@ contract FeeFollowModuleTest is BaseTest {
         vm.assume(followerProfileId != 0);
         vm.assume(targetProfileId != 0);
         (, uint16 treasuryFee) = moduleGlobals.getTreasuryData();
-        // Overflow protection (cause treasuryAmount = amount * treasuryFee / BPS_MAX)
+        // Overflow protection (because treasuryAmount = amount * treasuryFee / BPS_MAX)
         vm.assume(
             amount != 0 && amount <= (treasuryFee == 0 ? type(uint256).max : type(uint256).max / uint256(treasuryFee))
         );
@@ -234,7 +243,7 @@ contract FeeFollowModuleTest is BaseTest {
         vm.prank(modulesGovernance);
         moduleGlobals.setTreasuryFee(treasuryFee);
 
-        // Overflow protection (cause treasuryAmount = amount * treasuryFee / BPS_MAX)
+        // Overflow protection (because treasuryAmount = amount * treasuryFee / BPS_MAX)
         vm.assume(
             amount != 0 && amount <= (treasuryFee == 0 ? type(uint256).max : type(uint256).max / uint256(treasuryFee))
         );

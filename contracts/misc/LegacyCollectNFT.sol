@@ -48,7 +48,7 @@ contract LegacyCollectNFT is LensBaseERC721, ERC2981CollectionRoyalties, ICollec
         _setRoyalty(1000); // 10% of royalties
         _profileId = profileId;
         _pubId = pubId;
-        // _name and _symbol remain uninitialized cause we override the getters below
+        // _name and _symbol remain uninitialized because we override the getters below
     }
 
     /// @inheritdoc ICollectNFT
