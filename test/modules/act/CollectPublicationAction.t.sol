@@ -223,7 +223,11 @@ contract CollectPublicationActionTest is BaseTest {
         );
     }
 
-    function testInitializePublicationAction(uint256 profileId, uint256 pubId, address transactionExecutor) public {
+    function testInitializePublicationAction(
+        uint256 profileId,
+        uint256 pubId,
+        address transactionExecutor
+    ) public {
         vm.assume(profileId != 0);
         vm.assume(pubId != 0);
         vm.assume(transactionExecutor != address(0));
@@ -250,9 +254,6 @@ contract CollectPublicationActionTest is BaseTest {
         assertEq(returnData, initData, 'Return data mismatch');
         assertEq(collectPublicationAction.getCollectData(profileId, pubId).collectModule, mockCollectModule);
     }
-
-    string constant COLLECT_NFT_NAME_INFIX = '-Collect-';
-    string constant COLLECT_NFT_SYMBOL_INFIX = '-Cl-';
 
     function testProcessPublicationAction_firstCollect(
         uint256 profileId,
@@ -313,13 +314,13 @@ contract CollectPublicationActionTest is BaseTest {
         assertEq(collectActionResult, abi.encode(true), 'Invalid collectActionResult data');
 
         string memory expectedCollectNftName = string.concat(
-            'Lens Collect - Profile #',
+            'Lens Collect | Profile #',
             profileId.toString(),
             ' - Publication #',
             pubId.toString()
         );
 
-        string memory expectedCollectNftSymbol = string.concat('LENS#', profileId.toString(), '-COLLECT-NFT');
+        string memory expectedCollectNftSymbol = 'LENS-COLLECT';
 
         assertEq(CollectNFT(collectNFT).name(), expectedCollectNftName, 'Invalid collect NFT name');
         assertEq(CollectNFT(collectNFT).symbol(), expectedCollectNftSymbol, 'Invalid collect NFT symbol');

@@ -271,17 +271,13 @@ contract LegacyCollectTest is BaseTest, ReferralSystemTest {
         assertEq(collectTokenId, 1);
 
         string memory expectedCollectNftName = string.concat(
-            'Lens Collect - Profile #',
+            'Lens Collect | Profile #',
             defaultCollectParams.publicationCollectedProfileId.toString(),
             ' - Publication #',
             defaultCollectParams.publicationCollectedId.toString()
         );
 
-        string memory expectedCollectNftSymbol = string.concat(
-            'LENS#',
-            defaultCollectParams.publicationCollectedProfileId.toString(),
-            '-COLLECT-NFT'
-        );
+        string memory expectedCollectNftSymbol = 'LENS-COLLECT';
 
         assertEq(LegacyCollectNFT(predictedCollectNFT).name(), expectedCollectNftName, 'Invalid collect NFT name');
         assertEq(
@@ -339,7 +335,7 @@ contract LegacyCollectTest is BaseTest, ReferralSystemTest {
 
     function _referralSystem_ExpectRevertsIfNeeded(
         TestPublication memory target,
-        uint256[] memory /* referrerProfileIds */,
+        uint256[] memory, /* referrerProfileIds */
         uint256[] memory /* referrerPubIds */
     ) internal virtual override returns (bool) {
         if (skipTest) {
@@ -424,10 +420,12 @@ contract LegacyCollectMetaTxTest is LegacyCollectTest, MetaTxNegatives {
         _refreshCachedNonces();
     }
 
-    function _collect(
-        uint256 pk,
-        Types.CollectParams memory collectParams
-    ) internal virtual override returns (uint256) {
+    function _collect(uint256 pk, Types.CollectParams memory collectParams)
+        internal
+        virtual
+        override
+        returns (uint256)
+    {
         address signer = vm.addr(pk);
 
         return
@@ -445,7 +443,11 @@ contract LegacyCollectMetaTxTest is LegacyCollectTest, MetaTxNegatives {
             );
     }
 
-    function _executeMetaTx(uint256 signerPk, uint256 nonce, uint256 deadline) internal virtual override {
+    function _executeMetaTx(
+        uint256 signerPk,
+        uint256 nonce,
+        uint256 deadline
+    ) internal virtual override {
         hub.collectWithSig(
             defaultCollectParams,
             _getSigStruct({

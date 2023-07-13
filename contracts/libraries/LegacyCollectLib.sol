@@ -22,9 +22,6 @@ import {PublicationLib} from 'contracts/libraries/PublicationLib.sol';
 library LegacyCollectLib {
     using Strings for uint256;
 
-    string constant COLLECT_NFT_NAME_INFIX = '-Collect-';
-    string constant COLLECT_NFT_SYMBOL_INFIX = '-Cl-';
-
     /**
      * @dev Emitted upon a successful legacy collect action.
      *
