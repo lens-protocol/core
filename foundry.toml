@@ -17,5 +17,6 @@ runs = 50
 max_test_rejects = 200000
 
 [profile.ci]
+via_ir = true
 [profile.ci.fuzz]
 runs = 10000
