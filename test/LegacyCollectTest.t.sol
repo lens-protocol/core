@@ -65,6 +65,7 @@ contract LegacyCollectTest is BaseTest, ReferralSystemTest {
     }
 
     function testCannot_PassV2UnverifiedReferrals(address referrerProfileOwner) public {
+        vm.assume(referrerProfileOwner != address(0));
         uint256 referrerProfileId = _createProfile(referrerProfileOwner);
 
         // Set unverified referral

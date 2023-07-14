@@ -483,7 +483,7 @@ contract FollowNFT is HubRestricted, LensBaseERC721, ERC2981CollectionRoyalties,
         uint256 idOfProfileFollowed,
         uint256 followTokenId
     ) external onlyHub returns (uint48) {
-        // FollowNFT should have `originalFollowTimestamp` set
+        // Migrated FollowNFTs should have `originalFollowTimestamp` set
         if (_followDataByFollowTokenId[followTokenId].originalFollowTimestamp != 0) {
             return 0; // Already migrated
         }

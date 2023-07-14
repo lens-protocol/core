@@ -94,19 +94,17 @@ library MigrationLib {
     function batchMigrateFollows(
         uint256[] calldata followerProfileIds,
         uint256[] calldata idsOfProfileFollowed,
-        address[] calldata followNFTAddresses,
         uint256[] calldata followTokenIds
     ) external {
         if (
             followerProfileIds.length != idsOfProfileFollowed.length ||
-            followerProfileIds.length != followNFTAddresses.length ||
             followerProfileIds.length != followTokenIds.length
         ) {
             revert Errors.ArrayMismatch();
         }
         uint256 i;
         while (i < followerProfileIds.length) {
-            _migrateFollow(followerProfileIds[i], idsOfProfileFollowed[i], followNFTAddresses[i], followTokenIds[i]);
+            _migrateFollow(followerProfileIds[i], idsOfProfileFollowed[i], followTokenIds[i]);
             unchecked {
                 ++i;
             }
@@ -116,10 +114,9 @@ library MigrationLib {
     function _migrateFollow(
         uint256 followerProfileId,
         uint256 idOfProfileFollowed,
-        address followNFTAddress,
         uint256 followTokenId
     ) private {
-        uint48 mintTimestamp = FollowNFT(followNFTAddress).tryMigrate({
+        uint48 mintTimestamp = FollowNFT(StorageLib.getProfile(idOfProfileFollowed).followNFT).tryMigrate({
             followerProfileId: followerProfileId,
             followerProfileOwner: StorageLib.getTokenData(followerProfileId).owner,
             idOfProfileFollowed: idOfProfileFollowed,

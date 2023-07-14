@@ -131,19 +131,15 @@ contract MigrationsTest is Test, ForkManagement {
     function testFollowMigration() public onlyFork {
         uint256 idOfProfileFollowed = 8;
 
-        address followNFTAddress = hub.getProfile(idOfProfileFollowed).followNFT;
-
         uint256[] memory idsOfProfileFollowed = new uint256[](10);
-        address[] memory followNFTAddresses = new address[](10);
         uint256[] memory followTokenIds = new uint256[](10);
         for (uint256 i = 0; i < 10; i++) {
             uint256 followTokenId = i + 1;
 
             idsOfProfileFollowed[i] = idOfProfileFollowed;
-            followNFTAddresses[i] = followNFTAddress;
             followTokenIds[i] = followTokenId;
         }
 
-        hub.batchMigrateFollows(followerProfileIds, idsOfProfileFollowed, followNFTAddresses, followTokenIds);
+        hub.batchMigrateFollows(followerProfileIds, idsOfProfileFollowed, followTokenIds);
     }
 }
