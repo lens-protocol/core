@@ -14,60 +14,22 @@ jobs:
     strategy:
       fail-fast: true
 
-    name: Foundry Tests
+    name: Lens Protocol CI
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
         with:
-          submodules: recursive
-      - uses: actions/setup-node@v3
-        with:
-          node-version: 16
-      - name: Install dependencies
-        run: npm ci
+          submodules: recursive # This replaces `forge install` for dependencies
       - name: Install Foundry
         uses: foundry-rs/foundry-toolchain@v1
         with:
           version: nightly
-      - name: Run Forge build
+      - name: Compile Project
         run: |
           forge --version
           FOUNDRY_PROFILE=cibuild forge build --deny-warnings --skip test
-      - name: Run Forge tests
+      - name: Run Tests
         run: |
           cp .env.example .env
           source .env
           FOUNDRY_PROFILE=citest forge test -vvv
-
-  # foundry_coverage:
-  #   strategy:
-  #     fail-fast: true
-
-  #   name: Foundry Merged with Hardhat
-  #   runs-on: ubuntu-latest
-  #   steps:
-  #     - uses: actions/checkout@v3
-  #       with:
-  #         submodules: recursive
-  #     - uses: actions/setup-node@v3
-  #       with:
-  #         node-version: 16
-  #     - name: Install dependencies
-  #       run: npm ci
-  #     - name: Install LCOV
-  #       run: sudo apt-get -y install lcov
-  #     - name: Install Foundry
-  #       uses: foundry-rs/foundry-toolchain@v1
-  #       with:
-  #         version: nightly
-  #     - name: Run Forge build
-  #       run: |
-  #         forge --version
-  #         forge build
-  #     - name: Run Forge tests
-  #       run: |
-  #         cp .env.example .env
-  #         source .env
-  #         forge test -vvv
-  #     - name: Run Full Merged Coverage
-  #       run: npm run coverage
