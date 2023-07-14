@@ -37,10 +37,9 @@ contract LensV2Migration {
     function batchMigrateFollows(
         uint256[] calldata followerProfileIds,
         uint256[] calldata idsOfProfileFollowed,
-        address[] calldata followNFTAddresses,
         uint256[] calldata followTokenIds
     ) external {
-        MigrationLib.batchMigrateFollows(followerProfileIds, idsOfProfileFollowed, followNFTAddresses, followTokenIds);
+        MigrationLib.batchMigrateFollows(followerProfileIds, idsOfProfileFollowed, followTokenIds);
     }
 
     function batchMigrateFollowModules(uint256[] calldata profileIds) external {
