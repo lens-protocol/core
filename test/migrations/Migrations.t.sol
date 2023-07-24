@@ -15,6 +15,19 @@ import {IERC721} from '@openzeppelin/contracts/token/ERC721/IERC721.sol';
 import {IERC721Enumerable} from '@openzeppelin/contracts/token/ERC721/extensions/IERC721Enumerable.sol';
 import 'test/Constants.sol';
 
+interface OldLensHub {
+    struct ProfileStruct {
+        uint256 pubCount;
+        address followModule;
+        address followNFT;
+        string handle;
+        string imageURI;
+        string followNFTURI;
+    }
+
+    function getProfile(uint256 profileId) external view returns (ProfileStruct memory);
+}
+
 contract MigrationsTest is Test, ForkManagement {
     using stdJson for string;
 
@@ -104,7 +117,7 @@ contract MigrationsTest is Test, ForkManagement {
 
         // TODO: This can be moved and split
         uint256 idOfProfileFollowed = 8;
-        address followNFTAddress = hub.getProfile(idOfProfileFollowed).followNFT;
+        address followNFTAddress = OldLensHub(address(hub)).getProfile(idOfProfileFollowed).followNFT;
         for (uint256 i = 0; i < 10; i++) {
             uint256 followTokenId = i + 1;
             address followerOwner = IERC721(followNFTAddress).ownerOf(followTokenId);

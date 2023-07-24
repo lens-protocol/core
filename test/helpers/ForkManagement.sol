@@ -11,6 +11,7 @@ contract ForkManagement is Script {
     }
 
     string forkEnv;
+    uint256 forkVersion;
     bool fork;
     string network;
     string json;
@@ -22,34 +23,34 @@ contract ForkManagement is Script {
     }
 
     // TODO: Move somewhere else
-    function isEnvSet(string memory key) internal view returns (bool) {
-        try vm.envString(key) {
+    // TODO: Replace with forge-std/StdJson.sol::keyExists(...) when/if this PR is approved:
+    //       https://github.com/foundry-rs/forge-std/pull/226
+    function keyExists(string memory key) internal returns (bool) {
+        try vm.parseJsonString(json, key) {
             return true;
-        } catch {
+        } catch (bytes memory reason) {
             return false;
         }
     }
 
-    // TODO: Move somewhere else
-    // TODO: Replace with forge-std/StdJson.sol::keyExists(...) when/if this PR is approved:
-    //       https://github.com/foundry-rs/forge-std/pull/226
-    function keyExists(string memory key) internal view returns (bool) {
-        return json.parseRaw(key).length > 0;
-    }
-
     constructor() {
         // TODO: Replace with envOr when it's released
-        forkEnv = isEnvSet('TESTING_FORK') ? vm.envString('TESTING_FORK') : '';
+        forkEnv = vm.envOr({name: string('TESTING_FORK'), defaultValue: string('')});
+        forkVersion = vm.envOr({name: string('TESTING_FORK_CURRENT_VERSION'), defaultValue: uint256(0)});
 
         if (bytes(forkEnv).length > 0) {
             fork = true;
+            if (forkVersion == 0) {
+                console.log('TESTING_FORK_CURRENT_VERSION not set');
+                revert('TESTING_FORK_CURRENT_VERSION not set');
+            }
             console.log('\n\n Testing using %s fork', forkEnv);
             loadJson();
 
             network = getNetwork();
 
-            if (isEnvSet('FORK_BLOCK')) {
-                forkBlockNumber = vm.envUint('FORK_BLOCK');
+            forkBlockNumber = vm.envOr({name: string('FORK_BLOCK'), defaultValue: uint256(0)});
+            if (forkBlockNumber != 0) {
                 vm.createSelectFork(network, forkBlockNumber);
                 console.log('Fork Block number (FIXED BLOCK):', forkBlockNumber);
             } else {

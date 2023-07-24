@@ -3,6 +3,7 @@
 pragma solidity ^0.8.15;
 
 import {MigrationLib} from 'contracts/libraries/MigrationLib.sol';
+import {StorageLib} from 'contracts/libraries/StorageLib.sol';
 
 // Handles
 import {LensHandles} from 'contracts/namespaces/LensHandles.sol';
@@ -49,5 +50,9 @@ contract LensV2Migration {
             PROFILE_FOLLOW_MODULE,
             NEW_FEE_FOLLOW_MODULE
         );
+    }
+
+    function getProfileIdByHandleHash(bytes32 handleHash) external view returns (uint256) {
+        return StorageLib.profileIdByHandleHash()[handleHash];
     }
 }

@@ -25,6 +25,7 @@ import {StorageLib} from 'contracts/libraries/StorageLib.sol';
 import 'test/Constants.sol';
 import {LensHandles} from 'contracts/namespaces/LensHandles.sol';
 import {TokenHandleRegistry} from 'contracts/namespaces/TokenHandleRegistry.sol';
+import {LensV2UpgradeContract} from 'contracts/misc/LensV2UpgradeContract.sol';
 
 contract TestSetup is Test, ForkManagement, ArrayHelpers {
     using stdJson for string;
@@ -76,6 +77,7 @@ contract TestSetup is Test, ForkManagement, ArrayHelpers {
     ModuleGlobals moduleGlobals;
     LensHandles lensHandles;
     TokenHandleRegistry tokenHandleRegistry;
+    LensV2UpgradeContract lensV2UpgradeContract;
 
     // TODO: Avoid constructors in favour of setUp function - Failing asserts in constructor won't make the test fail!
     constructor() {
@@ -117,19 +119,16 @@ contract TestSetup is Test, ForkManagement, ArrayHelpers {
         followNFT = FollowNFT(followNFTAddr);
         legacyCollectNFT = LegacyCollectNFT(legacyCollectNFTAddr);
         hubAsProxy = TransparentUpgradeableProxy(payable(address(hub)));
-        moduleGlobals = ModuleGlobals(json.readAddress(string(abi.encodePacked('.', targetEnv, '.ModuleGlobals'))));
-        lensHandles = LensHandles(json.readAddress(string(abi.encodePacked('.', targetEnv, '.LensHandles'))));
-        tokenHandleRegistry = TokenHandleRegistry(
-            json.readAddress(string(abi.encodePacked('.', targetEnv, '.TokenHandleRegistry')))
-        );
-
-        deployer = _loadAddressAs('DEPLOYER');
 
         governance = hub.getGovernance();
         vm.label(governance, 'GOVERNANCE');
 
+        moduleGlobals = ModuleGlobals(json.readAddress(string(abi.encodePacked('.', targetEnv, '.ModuleGlobals'))));
+
         modulesGovernance = moduleGlobals.getGovernance();
         vm.label(governance, 'MODULES_GOVERNANCE');
+
+        deployer = _loadAddressAs('DEPLOYER');
 
         treasury = moduleGlobals.getTreasury();
         vm.label(governance, 'TREASURY');
@@ -138,7 +137,63 @@ contract TestSetup is Test, ForkManagement, ArrayHelpers {
         vm.label(proxyAdmin, 'HUB_PROXY_ADMIN');
 
         TREASURY_FEE_BPS = moduleGlobals.getTreasuryFee();
+
+        if (keyExists(string(abi.encodePacked('.', targetEnv, '.LensHandles')))) {
+            console.log('LensHandles key does exist');
+            lensHandles = LensHandles(json.readAddress(string(abi.encodePacked('.', targetEnv, '.LensHandles'))));
+        } else {
+            console.log('LensHandles key does not exist');
+            if (forkVersion == 1) {
+                console.log('No LensHandles address found - deploying new one');
+                address lensHandlesImpl = address(new LensHandles(governance, address(hubAsProxy)));
+                vm.label(lensHandlesImpl, 'LENS_HANDLES_IMPL');
+
+                // TODO: Replace deployer owner with proxyAdmin.
+                lensHandles = LensHandles(address(new TransparentUpgradeableProxy(lensHandlesImpl, deployer, '')));
+                vm.label(address(lensHandles), 'LENS_HANDLES');
+            } else {
+                console.log('No LensHandles address found in addressBook, which is required for V2');
+                revert('No LensHandles address found in addressBook, which is required for V2');
+            }
+        }
+
+        if (keyExists(string(abi.encodePacked('.', targetEnv, '.TokenHandleRegistry')))) {
+            console.log('TokenHandleRegistry key does exist');
+            tokenHandleRegistry = TokenHandleRegistry(
+                json.readAddress(string(abi.encodePacked('.', targetEnv, '.TokenHandleRegistry')))
+            );
+        } else {
+            console.log('TokenHandleRegistry key does not exist');
+            if (forkVersion == 1) {
+                address tokenHandleRegistryImpl = address(
+                    new TokenHandleRegistry(address(hubAsProxy), address(lensHandles))
+                );
+                vm.label(tokenHandleRegistryImpl, 'TOKEN_HANDLE_REGISTRY_IMPL');
+
+                // TODO: Replace deployer owner with proxyAdmin.
+                tokenHandleRegistry = TokenHandleRegistry(
+                    address(new TransparentUpgradeableProxy(tokenHandleRegistryImpl, deployer, ''))
+                );
+                vm.label(address(tokenHandleRegistry), 'TOKEN_HANDLE_REGISTRY');
+            } else {
+                console.log('No TokenHandleRegistry address found in addressBook, which is required for V2');
+                revert('No TokenHandleRegistry address found in addressBook, which is required for V2');
+            }
+        }
+
+        // LensV2UpgradeContract
+        if (keyExists(string(abi.encodePacked('.', targetEnv, '.LensV2UpgradeContract')))) {
+            lensV2UpgradeContract = LensV2UpgradeContract(
+                json.readAddress(string(abi.encodePacked('.', targetEnv, '.LensV2UpgradeContract')))
+            );
+        } else {
+            // TODO: Replace deployer with Proxy Upgrade Contract owner - whoever it is
+            lensV2UpgradeContract = new LensV2UpgradeContract(proxyAdmin, governance, deployer, address(hubAsProxy));
+            vm.label(lensV2UpgradeContractImpl, 'LENS_V2_UPGRADE_CONTRACT_IMPL');
+        }
     }
+
+    function upgradeToV2() internal {}
 
     function deployBaseContracts() internal {
         deployer = _loadAddressAs('DEPLOYER');
@@ -254,17 +309,18 @@ contract TestSetup is Test, ForkManagement, ArrayHelpers {
     function _createProfile(address profileOwner) internal returns (uint256) {
         Types.CreateProfileParams memory createProfileParams = _getDefaultCreateProfileParams();
         createProfileParams.to = profileOwner;
+        console.log('TRYING TO CREATE PROFILE');
         return hub.createProfile(createProfileParams);
     }
 
     function _loadAccountAs(string memory accountLabel) internal returns (TestAccount memory) {
-        return _loadAccountAs({accountLabel: accountLabel, requireCustomProfileOnFork: true});
+        return _loadAccountAs({accountLabel: accountLabel, requireCustomProfileOnFork: false});
     }
 
-    function _loadAccountAs(
-        string memory accountLabel,
-        bool requireCustomProfileOnFork
-    ) internal returns (TestAccount memory) {
+    function _loadAccountAs(string memory accountLabel, bool requireCustomProfileOnFork)
+        internal
+        returns (TestAccount memory)
+    {
         // We derive a new account from the given label.
         (address accountOwner, uint256 accountOwnerPk) = makeAddrAndKey(accountLabel);
         uint256 accountProfileId;
