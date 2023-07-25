@@ -80,7 +80,12 @@ contract MigrationsTest is Test, ForkManagement {
         modulesGovernance = moduleGlobals.getGovernance();
     }
 
-    function setUp() public onlyFork {
+    function setUp() public override {
+        super.setUp();
+
+        // This should be tested only on Fork
+        if (!fork) return;
+
         loadBaseAddresses(forkEnv);
 
         // Precompute needed addresses.

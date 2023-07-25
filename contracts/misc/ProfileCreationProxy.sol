@@ -33,16 +33,19 @@ contract ProfileCreationProxy is ImmutableOwnable {
         TOKEN_HANDLE_REGISTRY = ITokenHandleRegistry(tokenHandleRegistry);
     }
 
-    function proxyCreateProfile(
-        Types.CreateProfileParams calldata createProfileParams
-    ) external onlyOwner returns (uint256) {
+    function proxyCreateProfile(Types.CreateProfileParams calldata createProfileParams)
+        external
+        onlyOwner
+        returns (uint256)
+    {
         return ILensHub(LENS_HUB).createProfile(createProfileParams);
     }
 
-    function proxyCreateProfileWithHandle(
-        Types.CreateProfileParams memory createProfileParams,
-        string calldata handle
-    ) external onlyOwner returns (uint256, uint256) {
+    function proxyCreateProfileWithHandle(Types.CreateProfileParams memory createProfileParams, string calldata handle)
+        external
+        onlyOwner
+        returns (uint256, uint256)
+    {
         // Check if LensHubV1 already has a profile with this handle that was not migrated yet:
         bytes32 handleHash = keccak256(bytes(string.concat(handle, '.lens')));
         if (LensV2Migration(LENS_HUB).getProfileIdByHandleHash(handleHash) != 0) {
@@ -71,28 +74,3 @@ contract ProfileCreationProxy is ImmutableOwnable {
         return LENS_HANDLES.mintHandle(to, handle);
     }
 }
-
-/*
-    APPROACH #1: Fork LensV1 from existing chain, deploy LensV2, upgrade, and test the migrations
-    - It's not clean, controllable by us, unless we create new profiles in V1 and new follows (non deterministic)
-    APPROACH #2: Deploy LensV1, add some profiles (then some follows too), deploy LensV2, upgrade, and test the migrations
-    - We need a repo of V1 (which we already import)
-
-    in TestSetup setup() we need:
-    - if fork: we get Lens V1 addresses
-    - if not fork: we deploy Lens V1 addresses
-
-
-
-    ONE APPROACH:
-        onV2 modifier:
-        - do an upgrade from Lens V1 to V2
-
-        without onV2 modifier we test on V1:
-        - Upgrade (we try to upgrade V1 -> V2 in test)
-        - Migrations (we do what we need on V1, and then upgrade to V2)
-
-    ANOTHER APPROACH:
-        BaseTest function upgradeToV2():
-        - will upgrade the V1 contracts to V2 whenever we need
-*/

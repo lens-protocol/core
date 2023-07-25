@@ -25,7 +25,6 @@ import {StorageLib} from 'contracts/libraries/StorageLib.sol';
 import 'test/Constants.sol';
 import {LensHandles} from 'contracts/namespaces/LensHandles.sol';
 import {TokenHandleRegistry} from 'contracts/namespaces/TokenHandleRegistry.sol';
-import {LensV2UpgradeContract} from 'contracts/misc/LensV2UpgradeContract.sol';
 
 contract TestSetup is Test, ForkManagement, ArrayHelpers {
     using stdJson for string;
@@ -77,28 +76,6 @@ contract TestSetup is Test, ForkManagement, ArrayHelpers {
     ModuleGlobals moduleGlobals;
     LensHandles lensHandles;
     TokenHandleRegistry tokenHandleRegistry;
-    LensV2UpgradeContract lensV2UpgradeContract;
-
-    // TODO: Avoid constructors in favour of setUp function - Failing asserts in constructor won't make the test fail!
-    constructor() {
-        if (bytes(forkEnv).length > 0) {
-            loadBaseAddresses(forkEnv);
-        } else {
-            deployBaseContracts();
-        }
-        ///////////////////////////////////////// Start governance actions.
-        vm.startPrank(governance);
-
-        if (hub.getState() != Types.ProtocolState.Unpaused) {
-            hub.setState(Types.ProtocolState.Unpaused);
-        }
-
-        // Whitelist the test contract as a profile creator
-        hub.whitelistProfileCreator(address(this), true);
-
-        vm.stopPrank();
-        ///////////////////////////////////////// End governance actions.
-    }
 
     function loadBaseAddresses(string memory targetEnv) internal virtual {
         console.log('targetEnv:', targetEnv);
@@ -145,7 +122,9 @@ contract TestSetup is Test, ForkManagement, ArrayHelpers {
             console.log('LensHandles key does not exist');
             if (forkVersion == 1) {
                 console.log('No LensHandles address found - deploying new one');
-                address lensHandlesImpl = address(new LensHandles(governance, address(hubAsProxy)));
+                address lensHandlesImpl = address(
+                    new LensHandles(governance, address(hubAsProxy), HANDLE_GUARDIAN_COOLDOWN)
+                );
                 vm.label(lensHandlesImpl, 'LENS_HANDLES_IMPL');
 
                 // TODO: Replace deployer owner with proxyAdmin.
@@ -181,19 +160,66 @@ contract TestSetup is Test, ForkManagement, ArrayHelpers {
             }
         }
 
-        // LensV2UpgradeContract
-        if (keyExists(string(abi.encodePacked('.', targetEnv, '.LensV2UpgradeContract')))) {
-            lensV2UpgradeContract = LensV2UpgradeContract(
-                json.readAddress(string(abi.encodePacked('.', targetEnv, '.LensV2UpgradeContract')))
-            );
-        } else {
-            // TODO: Replace deployer with Proxy Upgrade Contract owner - whoever it is
-            lensV2UpgradeContract = new LensV2UpgradeContract(proxyAdmin, governance, deployer, address(hubAsProxy));
-            vm.label(lensV2UpgradeContractImpl, 'LENS_V2_UPGRADE_CONTRACT_IMPL');
+        if (forkVersion == 1) {
+            upgradeToV2();
         }
+
+        vm.startPrank(deployer);
+
+        // Deploy the MockActionModule.
+        mockActionModule = new MockActionModule();
+        vm.label(address(mockActionModule), 'MOCK_ACTION_MODULE');
+
+        // Deploy the MockReferenceModule.
+        mockReferenceModule = new MockReferenceModule();
+        vm.label(address(mockReferenceModule), 'MOCK_REFERENCE_MODULE');
+
+        vm.stopPrank();
+        ///////////////////////////////////////// End deployments.
+
+        // Start governance actions.
+        vm.startPrank(governance);
+
+        // Whitelist the MockActionModule.
+        hub.whitelistActionModule(address(mockActionModule), true);
+
+        // Whitelist the MockReferenceModule.
+        hub.whitelistReferenceModule(address(mockReferenceModule), true);
+
+        // End governance actions.
+        vm.stopPrank();
+
+        console.log('ChainId in TestSetup.loadBaseAddresses: ', block.chainid);
     }
 
-    function upgradeToV2() internal {}
+    function upgradeToV2() internal virtual {
+        // Precompute needed addresses.
+        address followNFTImplAddr = computeCreateAddress(deployer, vm.getNonce(deployer) + 1);
+        address legacyCollectNFTImplAddr = computeCreateAddress(deployer, vm.getNonce(deployer) + 2);
+
+        vm.startPrank(deployer);
+        // Deploy implementation contracts.
+        // TODO: Last 3 addresses are for the follow modules for migration purposes.
+        hubImpl = new LensHubInitializable({ // TODO: Should we use the usual LensHub, not Initializable?rf
+            moduleGlobals: address(moduleGlobals),
+            followNFTImpl: followNFTImplAddr,
+            collectNFTImpl: legacyCollectNFTImplAddr,
+            lensHandlesAddress: address(lensHandles),
+            tokenHandleRegistryAddress: address(tokenHandleRegistry),
+            legacyFeeFollowModule: address(0), // TODO: Fill this in
+            legacyProfileFollowModule: address(0), // TODO: Fill this in
+            newFeeFollowModule: address(0), // TODO: Fill this in
+            tokenGuardianCooldown: PROFILE_GUARDIAN_COOLDOWN
+        });
+        followNFT = new FollowNFT(hubProxyAddr);
+        legacyCollectNFT = new LegacyCollectNFT(hubProxyAddr);
+        vm.stopPrank();
+
+        // Upgrade the hub.
+        TransparentUpgradeableProxy oldHubAsProxy = TransparentUpgradeableProxy(payable(hubProxyAddr));
+        vm.prank(proxyAdmin);
+        oldHubAsProxy.upgradeTo(address(hubImpl));
+    }
 
     function deployBaseContracts() internal {
         deployer = _loadAddressAs('DEPLOYER');
@@ -210,8 +236,8 @@ contract TestSetup is Test, ForkManagement, ArrayHelpers {
         vm.startPrank(deployer);
 
         // Precompute needed addresses.
-        address followNFTAddr = computeCreateAddress(deployer, vm.getNonce(deployer) + 1);
-        address legacyCollectNFTAddr = computeCreateAddress(deployer, vm.getNonce(deployer) + 2);
+        address followNFTImplAddr = computeCreateAddress(deployer, vm.getNonce(deployer) + 1);
+        address legacyCollectNFTImplAddr = computeCreateAddress(deployer, vm.getNonce(deployer) + 2);
         hubProxyAddr = computeCreateAddress(deployer, vm.getNonce(deployer) + 3);
         address lensHandlesImplAddr = computeCreateAddress(deployer, vm.getNonce(deployer) + 4);
         address lensHandlesProxyAddr = computeCreateAddress(deployer, vm.getNonce(deployer) + 5);
@@ -222,8 +248,8 @@ contract TestSetup is Test, ForkManagement, ArrayHelpers {
         // TODO: Last 3 addresses are for the follow modules for migration purposes.
         hubImpl = new LensHubInitializable({
             moduleGlobals: address(moduleGlobals),
-            followNFTImpl: followNFTAddr,
-            collectNFTImpl: legacyCollectNFTAddr,
+            followNFTImpl: followNFTImplAddr,
+            collectNFTImpl: legacyCollectNFTImplAddr,
             lensHandlesAddress: lensHandlesProxyAddr,
             tokenHandleRegistryAddress: tokenHandleRegistryProxyAddr,
             legacyFeeFollowModule: address(0),
@@ -292,7 +318,27 @@ contract TestSetup is Test, ForkManagement, ArrayHelpers {
         vm.stopPrank();
     }
 
-    function setUp() public virtual {
+    function setUp() public virtual override {
+        super.setUp();
+
+        if (bytes(forkEnv).length > 0) {
+            loadBaseAddresses(forkEnv);
+        } else {
+            deployBaseContracts();
+        }
+        ///////////////////////////////////////// Start governance actions.
+        vm.startPrank(governance);
+
+        if (hub.getState() != Types.ProtocolState.Unpaused) {
+            hub.setState(Types.ProtocolState.Unpaused);
+        }
+
+        // Whitelist the test contract as a profile creator
+        hub.whitelistProfileCreator(address(this), true);
+
+        vm.stopPrank();
+        ///////////////////////////////////////// End governance actions.
+
         domainSeparator = keccak256(
             abi.encode(
                 Typehash.EIP712_DOMAIN,

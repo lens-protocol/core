@@ -28,12 +28,12 @@ contract ForkManagement is Script {
     function keyExists(string memory key) internal returns (bool) {
         try vm.parseJsonString(json, key) {
             return true;
-        } catch (bytes memory reason) {
+        } catch (bytes memory) {
             return false;
         }
     }
 
-    constructor() {
+    function setUp() public virtual {
         // TODO: Replace with envOr when it's released
         forkEnv = vm.envOr({name: string('TESTING_FORK'), defaultValue: string('')});
         forkVersion = vm.envOr({name: string('TESTING_FORK_CURRENT_VERSION'), defaultValue: uint256(0)});
@@ -76,7 +76,7 @@ contract ForkManagement is Script {
         console.log('\nTarget environment:', forkEnv);
         console.log('Network:', network);
         if (block.chainid != chainId) revert('Wrong chainId');
-        console.log('ChainId:', chainId);
+        console.log('ChainId:', block.chainid);
     }
 
     function getNetwork() internal returns (string memory) {
