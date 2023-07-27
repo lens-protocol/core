@@ -17,6 +17,7 @@ contract CommentTest is ReferencePublicationTest, ActionablePublicationTest, Ref
 
     function setUp() public virtual override(PublicationTest, ReferralSystemTest) {
         PublicationTest.setUp();
+        ReferralSystemTest.setUp();
         commentParams = _getDefaultCommentParams();
     }
 

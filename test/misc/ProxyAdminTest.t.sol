@@ -25,9 +25,20 @@ contract ProxyAdminTest is BaseTest {
         super.setUp();
 
         if (fork) {
-            proxyAdminContract = ProxyAdmin(
-                json.readAddress(string(abi.encodePacked('.', forkEnv, '.ProxyAdminContract')))
-            );
+            if (keyExists(string(abi.encodePacked('.', forkEnv, '.ProxyAdminContract')))) {
+                proxyAdminContract = ProxyAdmin(
+                    json.readAddress(string(abi.encodePacked('.', forkEnv, '.ProxyAdminContract')))
+                );
+            } else {
+                console.log('ProxyAdminContract key does not exist');
+                if (forkVersion == 1) {
+                    console.log('No ProxyAdminContract address found - deploying new one');
+                    proxyAdminContract = new ProxyAdmin(address(hub), address(hubImpl), proxyAdminContractOwner);
+                } else {
+                    console.log('No ProxyAdminContract address found in addressBook, which is required for V2');
+                    revert('No ProxyAdminContract address found in addressBook, which is required for V2');
+                }
+            }
         } else {
             proxyAdminContract = new ProxyAdmin(address(hub), address(hubImpl), proxyAdminContractOwner);
         }

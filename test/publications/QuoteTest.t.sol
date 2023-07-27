@@ -17,6 +17,7 @@ contract QuoteTest is ReferencePublicationTest, ActionablePublicationTest, Refer
 
     function setUp() public virtual override(PublicationTest, ReferralSystemTest) {
         PublicationTest.setUp();
+        ReferralSystemTest.setUp();
         quoteParams = _getDefaultQuoteParams();
     }
 

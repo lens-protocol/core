@@ -5,7 +5,7 @@ import 'test/base/BaseTest.t.sol';
 import {ProfileCreationProxy} from 'contracts/misc/ProfileCreationProxy.sol';
 import {Types} from 'contracts/libraries/constants/Types.sol';
 
-contract ProxyAdminTest is BaseTest {
+contract ProfileCreationProxyTest is BaseTest {
     using stdJson for string;
 
     error OnlyOwner();
@@ -17,10 +17,26 @@ contract ProxyAdminTest is BaseTest {
         super.setUp();
 
         if (fork) {
-            profileCreationProxy = ProfileCreationProxy(
-                json.readAddress(string(abi.encodePacked('.', forkEnv, '.ProfileCreationProxy')))
-            );
-            profileCreationProxyOwner = profileCreationProxy.OWNER();
+            if (keyExists(string(abi.encodePacked('.', forkEnv, '.ProfileCreationProxy')))) {
+                profileCreationProxy = ProfileCreationProxy(
+                    json.readAddress(string(abi.encodePacked('.', forkEnv, '.ProfileCreationProxy')))
+                );
+                profileCreationProxyOwner = profileCreationProxy.OWNER();
+            } else {
+                console.log('ProfileCreationProxy key does not exist');
+                if (forkVersion == 1) {
+                    console.log('No ProfileCreationProxy address found - deploying new one');
+                    profileCreationProxy = new ProfileCreationProxy(
+                        profileCreationProxyOwner,
+                        address(hub),
+                        address(lensHandles),
+                        address(tokenHandleRegistry)
+                    );
+                } else {
+                    console.log('No ProfileCreationProxy address found in addressBook, which is required for V2');
+                    revert('No ProfileCreationProxy address found in addressBook, which is required for V2');
+                }
+            }
         } else {
             profileCreationProxy = new ProfileCreationProxy(
                 profileCreationProxyOwner,
@@ -116,7 +132,7 @@ contract ProxyAdminTest is BaseTest {
             followModule: address(0),
             followModuleInitData: ''
         });
-        string memory handle = 'handle';
+        string memory handle = 'handle98123791824';
 
         uint256 predictedProfileId = uint256(vm.load(address(hub), bytes32(StorageLib.PROFILE_COUNTER_SLOT))) + 1;
         uint256 predictedHandleId = lensHandles.getTokenId(handle);

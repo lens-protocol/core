@@ -17,9 +17,20 @@ contract UIDataProviderTest is BaseTest {
         hub.post(postParams);
 
         if (fork) {
-            uiDataProvider = UIDataProvider(
-                json.readAddress(string(abi.encodePacked('.', forkEnv, '.UIDataProvider')))
-            );
+            if (keyExists(string(abi.encodePacked('.', forkEnv, '.UIDataProvider')))) {
+                uiDataProvider = UIDataProvider(
+                    json.readAddress(string(abi.encodePacked('.', forkEnv, '.UIDataProvider')))
+                );
+            } else {
+                console.log('UIDataProvider key does not exist');
+                if (forkVersion == 1) {
+                    console.log('No UIDataProvider address found - deploying new one');
+                    uiDataProvider = new UIDataProvider(ILensHub(address(hub)));
+                } else {
+                    console.log('No UIDataProvider address found in addressBook, which is required for V2');
+                    revert('No UIDataProvider address found in addressBook, which is required for V2');
+                }
+            }
         } else {
             uiDataProvider = new UIDataProvider(ILensHub(address(hub)));
         }

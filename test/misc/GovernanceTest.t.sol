@@ -55,10 +55,22 @@ contract GovernanceTest is BaseTest {
 
     function setUp() public override {
         super.setUp();
+
         if (fork) {
-            governanceContract = Governance(
-                json.readAddress(string(abi.encodePacked('.', forkEnv, '.GovernanceContract')))
-            );
+            if (keyExists(string(abi.encodePacked('.', forkEnv, '.GovernanceContract')))) {
+                governanceContract = Governance(
+                    json.readAddress(string(abi.encodePacked('.', forkEnv, '.GovernanceContract')))
+                );
+            } else {
+                console.log('GovernanceContract key does not exist');
+                if (forkVersion == 1) {
+                    console.log('No GovernanceContract address found - deploying new one');
+                    governanceContract = new Governance(address(hub), governanceOwner);
+                } else {
+                    console.log('No GovernanceContract address found in addressBook, which is required for V2');
+                    revert('No GovernanceContract address found in addressBook, which is required for V2');
+                }
+            }
         } else {
             governanceContract = new Governance(address(hub), governanceOwner);
         }
