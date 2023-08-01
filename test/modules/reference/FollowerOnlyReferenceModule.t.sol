@@ -3,7 +3,6 @@ pragma solidity ^0.8.10;
 
 import 'test/base/BaseTest.t.sol';
 import {FollowerOnlyReferenceModule} from 'contracts/modules/reference/FollowerOnlyReferenceModule.sol';
-import {FollowValidationLib} from 'contracts/modules/libraries/FollowValidationLib.sol';
 import {Errors} from 'contracts/libraries/constants/Errors.sol';
 
 contract FollowerOnlyReferenceModuleTest is BaseTest {
@@ -19,6 +18,18 @@ contract FollowerOnlyReferenceModuleTest is BaseTest {
 
     function setUp() public virtual override {
         super.setUp();
+
+        // Deploy & Whitelist FollowerOnlyReferenceModule
+        if (fork && keyExists(string(abi.encodePacked('.', forkEnv, '.FollowerOnlyReferenceModule')))) {
+            followerOnlyReferenceModule = FollowerOnlyReferenceModule(
+                json.readAddress(string(abi.encodePacked('.', forkEnv, '.FollowerOnlyReferenceModule')))
+            );
+            console.log('Testing against already deployed module at:', address(followerOnlyReferenceModule));
+        } else {
+            vm.prank(deployer);
+            followerOnlyReferenceModule = new FollowerOnlyReferenceModule(hubProxyAddr);
+        }
+
         profileId = _createProfile(defaultAccount.owner);
 
         followerProfileId = _createProfile(followerProfileOwner);
@@ -30,22 +41,13 @@ contract FollowerOnlyReferenceModuleTest is BaseTest {
         assertFalse(hub.isFollowing(notFollowerProfileId, profileId));
     }
 
-    // Deploy & Whitelist FollowerOnlyReferenceModule
-    constructor() TestSetup() {
-        if (fork && keyExists(string(abi.encodePacked('.', forkEnv, '.FollowerOnlyReferenceModule')))) {
-            followerOnlyReferenceModule = FollowerOnlyReferenceModule(
-                json.readAddress(string(abi.encodePacked('.', forkEnv, '.FollowerOnlyReferenceModule')))
-            );
-            console.log('Testing against already deployed module at:', address(followerOnlyReferenceModule));
-        } else {
-            vm.prank(deployer);
-            followerOnlyReferenceModule = new FollowerOnlyReferenceModule(hubProxyAddr);
-        }
-    }
-
     // FollowerOnlyReferenceModule doesn't need initialization, so this always returns an empty bytes array and is
     // callable by anyone
-    function testInitialize(address from, uint256 fuzzProfileId, uint256 fuzzPubId) public {
+    function testInitialize(
+        address from,
+        uint256 fuzzProfileId,
+        uint256 fuzzPubId
+    ) public {
         vm.prank(from);
         followerOnlyReferenceModule.initializeReferenceModule(fuzzProfileId, fuzzPubId, address(0), '');
     }

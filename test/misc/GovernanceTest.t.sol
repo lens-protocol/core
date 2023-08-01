@@ -6,6 +6,7 @@ import {ILensGovernable} from 'contracts/interfaces/ILensGovernable.sol';
 import {Governance, ILensHub_V1} from 'contracts/misc/access/Governance.sol';
 import {StorageLib} from 'contracts/libraries/StorageLib.sol';
 
+// TODO: Move to mocks/
 contract MockNonLensHubGoverned {
     function testMockNonLensHubGoverned() public {
         // Prevents being counted in Foundry Coverage

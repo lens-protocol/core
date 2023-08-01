@@ -20,8 +20,6 @@ contract MultirecipientCollectModule_Initialization is
         MultirecipientCollectModuleBase.setUp();
     }
 
-    constructor() BaseFeeCollectModule_Initialization() {}
-
     function getEncodedInitData()
         internal
         override(MultirecipientCollectModuleBase, BaseFeeCollectModuleBase)
@@ -51,7 +49,11 @@ contract MultirecipientCollectModule_Initialization is
         );
     }
 
-    function testCannotPostWithoutRecipients(uint256 profileId, uint256 pubId, address transactionExecutor) public {
+    function testCannotPostWithoutRecipients(
+        uint256 profileId,
+        uint256 pubId,
+        address transactionExecutor
+    ) public {
         vm.assume(profileId != 0);
         vm.assume(pubId != 0);
         vm.assume(transactionExecutor != address(0));
@@ -302,14 +304,11 @@ contract MultirecipientCollectModule_ProcessCollect is
     MultirecipientCollectModuleBase,
     BaseFeeCollectModule_ProcessCollect
 {
-    constructor() BaseFeeCollectModule_ProcessCollect() {}
-
     function testMultirecipientCollectModule_Collect() public {
         // Prevents being counted in Foundry Coverage
     }
 
-    function setUp() public override(MultirecipientCollectModuleBase, BaseFeeCollectModule_ProcessCollect) {
-        BaseFeeCollectModule_ProcessCollect.setUp();
+    function setUp() public override(MultirecipientCollectModuleBase, BaseFeeCollectModuleBase) {
         MultirecipientCollectModuleBase.setUp();
     }
 
@@ -410,8 +409,6 @@ contract MultirecipientCollectModule_FeeDistribution is MultirecipientCollectMod
     Balances balancesBefore;
     Balances balancesAfter;
     Balances balancesChange;
-
-    constructor() MultirecipientCollectModuleBase() {}
 
     function setUp() public override(MultirecipientCollectModuleBase) {
         MultirecipientCollectModuleBase.setUp();
@@ -649,9 +646,11 @@ contract MultirecipientCollectModule_FeeDistribution is MultirecipientCollectMod
         return result;
     }
 
-    function _referralPubTypesToMemoryArray(
-        uint256 numberOfReferrals
-    ) private pure returns (Types.PublicationType[] memory) {
+    function _referralPubTypesToMemoryArray(uint256 numberOfReferrals)
+        private
+        pure
+        returns (Types.PublicationType[] memory)
+    {
         Types.PublicationType[] memory result = new Types.PublicationType[](numberOfReferrals);
         for (uint256 i = 0; i < numberOfReferrals; i++) {
             result[i] = Types.PublicationType.Comment;

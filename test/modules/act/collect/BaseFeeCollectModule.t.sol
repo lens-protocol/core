@@ -2,8 +2,7 @@
 pragma solidity ^0.8.10;
 
 import {BaseFeeCollectModuleBase} from 'test/modules/act/collect/BaseFeeCollectModule.base.sol';
-import {IBaseFeeCollectModule, BaseProfilePublicationData, BaseFeeCollectModuleInitData} from 'contracts/modules/interfaces/IBaseFeeCollectModule.sol';
-import {SimpleFeeCollectModule} from 'contracts/modules/act/collect/SimpleFeeCollectModule.sol';
+import {IBaseFeeCollectModule, BaseProfilePublicationData} from 'contracts/modules/interfaces/IBaseFeeCollectModule.sol';
 import {Types} from 'contracts/libraries/constants/Types.sol';
 import {Errors as ModuleErrors} from 'contracts/modules/constants/Errors.sol';
 import {Errors} from 'contracts/libraries/constants/Errors.sol';
@@ -14,8 +13,6 @@ uint16 constant BPS_MAX = 10000;
 // Initialization with BaseFeeCollectModule
 //
 contract BaseFeeCollectModule_Initialization is BaseFeeCollectModuleBase {
-    constructor() BaseFeeCollectModuleBase() {}
-
     // Negatives
     function testCannotInitializeWithNonWhitelistedCurrency(
         uint256 profileId,
@@ -187,12 +184,6 @@ contract BaseFeeCollectModule_Initialization is BaseFeeCollectModuleBase {
 // Collect with BaseFeeCollectModule
 //
 contract BaseFeeCollectModule_ProcessCollect is BaseFeeCollectModuleBase {
-    constructor() BaseFeeCollectModuleBase() {}
-
-    function setUp() public virtual override {
-        super.setUp();
-    }
-
     // Negatives
 
     function testCannotProcessCollect_IfCalledFrom_NonActionModuleAddress(
@@ -755,9 +746,11 @@ contract BaseFeeCollectModule_FeeDistribution is BaseFeeCollectModuleBase {
         return result;
     }
 
-    function _referralPubTypesToMemoryArray(
-        uint256 numberOfReferrals
-    ) private pure returns (Types.PublicationType[] memory) {
+    function _referralPubTypesToMemoryArray(uint256 numberOfReferrals)
+        private
+        pure
+        returns (Types.PublicationType[] memory)
+    {
         Types.PublicationType[] memory result = new Types.PublicationType[](numberOfReferrals);
         for (uint256 i = 0; i < numberOfReferrals; i++) {
             result[i] = Types.PublicationType.Comment;

@@ -4,6 +4,7 @@ pragma solidity ^0.8.13;
 import 'test/base/BaseTest.t.sol';
 import {ControllableByContract} from 'contracts/misc/access/ControllableByContract.sol';
 
+// TODO: Move to mocks/
 contract MockControllableByContract is ControllableByContract {
     function testMockControllableByContract() public {
         // Prevents being counted in Foundry Coverage
@@ -51,10 +52,9 @@ contract ControllableByContractTest is BaseTest {
         mockControllableByContract.modifierRestricted();
     }
 
-    function testCannotClearController_IfNotOwnerOrControllerContract(
-        address controllerContract,
-        address otherAddress
-    ) public {
+    function testCannotClearController_IfNotOwnerOrControllerContract(address controllerContract, address otherAddress)
+        public
+    {
         vm.assume(otherAddress != address(0));
         vm.assume(otherAddress != owner);
         vm.assume(otherAddress != controllerContract);

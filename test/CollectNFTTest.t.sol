@@ -25,8 +25,10 @@ contract CollectNFTTest is BaseTest, LensBaseERC721Test {
 
     Types.PublicationActionParams collectActionParams;
 
-    // Deploy CollectPublicationAction
-    constructor() TestSetup() {
+    function setUp() public override {
+        super.setUp();
+
+        // Deploy CollectPublicationAction
         if (fork && keyExists(string(abi.encodePacked('.', forkEnv, '.CollectNFTImpl')))) {
             collectNFTImpl = json.readAddress(string(abi.encodePacked('.', forkEnv, '.CollectNFTImpl')));
             console.log('Found CollectNFTImpl deployed at:', address(collectNFTImpl));
@@ -73,10 +75,6 @@ contract CollectNFTTest is BaseTest, LensBaseERC721Test {
 
         vm.label(address(collectPublicationAction), 'CollectPublicationAction');
         vm.label(collectNFTImpl, 'CollectNFTImpl');
-    }
-
-    function setUp() public override {
-        super.setUp();
 
         // Deploy & Whitelist MockCollectModule
         mockCollectModule = address(new MockCollectModule());
@@ -150,7 +148,11 @@ contract CollectNFTTest is BaseTest, LensBaseERC721Test {
         assertEq(royalties, expectedRoyalties);
     }
 
-    function testSetRoyalties(uint256 royaltiesInBasisPoints, uint256 tokenId, uint256 salePrice) public {
+    function testSetRoyalties(
+        uint256 royaltiesInBasisPoints,
+        uint256 tokenId,
+        uint256 salePrice
+    ) public {
         uint256 basisPoints = 10000;
         royaltiesInBasisPoints = bound(royaltiesInBasisPoints, 0, basisPoints);
         uint256 salePriceTimesRoyalties;

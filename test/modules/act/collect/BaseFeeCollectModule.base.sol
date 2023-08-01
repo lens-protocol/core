@@ -24,17 +24,8 @@ contract BaseFeeCollectModuleBase is BaseTest {
 
     function setUp() public virtual override {
         super.setUp();
-        exampleInitData.amount = 1 ether;
-        exampleInitData.collectLimit = 0;
-        exampleInitData.currency = address(currency);
-        exampleInitData.referralFee = 0;
-        exampleInitData.followerOnly = false;
-        exampleInitData.endTimestamp = 0;
-        exampleInitData.recipient = defaultAccount.owner;
-    }
 
-    // Deploy & Whitelist BaseFeeCollectModule
-    constructor() BaseTest() {
+        // Deploy & Whitelist BaseFeeCollectModule
         if (fork && keyExists(string(abi.encodePacked('.', forkEnv, '.SimpleFeeCollectModule')))) {
             baseFeeCollectModule = address(
                 SimpleFeeCollectModule(
@@ -51,6 +42,14 @@ contract BaseFeeCollectModuleBase is BaseTest {
         currency = new MockCurrency();
         vm.prank(modulesGovernance);
         moduleGlobals.whitelistCurrency(address(currency), true);
+
+        exampleInitData.amount = 1 ether;
+        exampleInitData.collectLimit = 0;
+        exampleInitData.currency = address(currency);
+        exampleInitData.referralFee = 0;
+        exampleInitData.followerOnly = false;
+        exampleInitData.endTimestamp = 0;
+        exampleInitData.recipient = defaultAccount.owner;
     }
 
     function getEncodedInitData() internal virtual returns (bytes memory) {

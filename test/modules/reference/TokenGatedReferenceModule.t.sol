@@ -29,13 +29,8 @@ contract TokenGatedReferenceModuleBase is BaseTest {
 
     function setUp() public override {
         super.setUp();
-        currency = new MockCurrency();
-        nft = new MockNFT();
-        profileId = _createProfile(defaultAccount.owner);
-    }
 
-    // Deploy & Whitelist TokenGatedReferenceModule
-    constructor() TestSetup() {
+        // Deploy & Whitelist TokenGatedReferenceModule
         if (fork && keyExists(string(abi.encodePacked('.', forkEnv, '.TokenGatedReferenceModule')))) {
             tokenGatedReferenceModule = TokenGatedReferenceModule(
                 json.readAddress(string(abi.encodePacked('.', forkEnv, '.TokenGatedReferenceModule')))
@@ -45,6 +40,10 @@ contract TokenGatedReferenceModuleBase is BaseTest {
             vm.prank(deployer);
             tokenGatedReferenceModule = new TokenGatedReferenceModule(hubProxyAddr);
         }
+
+        currency = new MockCurrency();
+        nft = new MockNFT();
+        profileId = _createProfile(defaultAccount.owner);
     }
 }
 
@@ -52,8 +51,6 @@ contract TokenGatedReferenceModuleBase is BaseTest {
 // Publication Creation with TokenGatedReferenceModule
 //
 contract TokenGatedReferenceModule_Publication is TokenGatedReferenceModuleBase {
-    constructor() TokenGatedReferenceModuleBase() {}
-
     // Negatives
     function testCannotPostWithZeroTokenAddress() public {
         vm.expectRevert(Errors.InitParamsInvalid.selector);
@@ -144,7 +141,11 @@ contract TokenGatedReferenceModule_Publication is TokenGatedReferenceModuleBase 
     }
 
     // Scenarios
-    function testCanInitializeTokenGatedReferenceModule(uint256 profileId, uint256 pubId, uint256 minThreshold) public {
+    function testCanInitializeTokenGatedReferenceModule(
+        uint256 profileId,
+        uint256 pubId,
+        uint256 minThreshold
+    ) public {
         vm.assume(profileId != 0);
         vm.assume(pubId != 0);
         vm.assume(minThreshold != 0);
@@ -183,7 +184,11 @@ contract TokenGatedReferenceModule_Publication is TokenGatedReferenceModuleBase 
 // ERC20-Gated Reference
 //
 contract TokenGatedReferenceModule_ERC20_Gated is TokenGatedReferenceModuleBase {
-    function _initialize(uint256 publisherProfileId, uint256 publisherPubId, uint256 minThreshold) internal {
+    function _initialize(
+        uint256 publisherProfileId,
+        uint256 publisherPubId,
+        uint256 minThreshold
+    ) internal {
         vm.assume(publisherProfileId != 0);
         vm.assume(publisherPubId != 0);
         vm.assume(minThreshold != 0);
@@ -195,8 +200,6 @@ contract TokenGatedReferenceModule_ERC20_Gated is TokenGatedReferenceModuleBase 
             abi.encode(GateParams({tokenAddress: address(currency), minThreshold: minThreshold}))
         );
     }
-
-    constructor() TokenGatedReferenceModuleBase() {}
 
     // Negatives
     function testCannotProcessComment_IfNotEnoughBalance(
@@ -369,8 +372,6 @@ contract TokenGatedReferenceModule_ERC721_Gated is TokenGatedReferenceModuleBase
             abi.encode(GateParams({tokenAddress: address(nft), minThreshold: minThreshold}))
         );
     }
-
-    constructor() TokenGatedReferenceModuleBase() {}
 
     // Negatives
     function testCannotProcessComment_IfNotEnoughBalance(uint256 publisherProfileId, uint256 publisherPubId) public {

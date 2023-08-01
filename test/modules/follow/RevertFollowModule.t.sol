@@ -9,8 +9,10 @@ contract RevertFollowModuleTest is BaseTest {
     using stdJson for string;
     RevertFollowModule revertFollowModule;
 
-    // Deploy & Whitelist RevertFollowModule
-    constructor() TestSetup() {
+    function setUp() public virtual override {
+        super.setUp();
+
+        // Deploy & Whitelist RevertFollowModule
         if (fork && keyExists(string(abi.encodePacked('.', forkEnv, '.RevertFollowModule')))) {
             revertFollowModule = RevertFollowModule(
                 json.readAddress(string(abi.encodePacked('.', forkEnv, '.RevertFollowModule')))

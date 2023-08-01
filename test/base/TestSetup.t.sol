@@ -29,6 +29,9 @@ import {TokenHandleRegistry} from 'contracts/namespaces/TokenHandleRegistry.sol'
 contract TestSetup is Test, ForkManagement, ArrayHelpers {
     using stdJson for string;
 
+    // Avoid setUp to be run more than once.
+    bool private __setUpDone;
+
     function testTestSetup() public {
         // Prevents being counted in Foundry Coverage
     }
@@ -319,6 +322,11 @@ contract TestSetup is Test, ForkManagement, ArrayHelpers {
     }
 
     function setUp() public virtual override {
+        if (__setUpDone) {
+            // Avoid setUp to be run more than once.
+            return;
+        }
+
         super.setUp();
 
         if (bytes(forkEnv).length > 0) {
@@ -350,6 +358,9 @@ contract TestSetup is Test, ForkManagement, ArrayHelpers {
         );
         defaultAccount = _loadAccountAs('DEFAULT_ACCOUNT');
         defaultPub = _loadDefaultPublication();
+
+        // Avoid setUp to be run more than once.
+        __setUpDone = true;
     }
 
     function _createProfile(address profileOwner) internal returns (uint256) {

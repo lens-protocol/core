@@ -2,13 +2,11 @@
 pragma solidity ^0.8.19;
 
 import 'test/base/BaseTest.t.sol';
-import {IPublicationActionModule} from 'contracts/interfaces/IPublicationActionModule.sol';
 import {ICollectModule} from 'contracts/interfaces/ICollectModule.sol';
 import {CollectPublicationAction} from 'contracts/modules/act/collect/CollectPublicationAction.sol';
 import {CollectNFT} from 'contracts/modules/act/collect/CollectNFT.sol';
 import {MockCollectModule} from 'test/mocks/MockCollectModule.sol';
 import {Events} from 'contracts/libraries/constants/Events.sol';
-import {IERC721} from '@openzeppelin/contracts/token/ERC721/IERC721.sol';
 import {Strings} from '@openzeppelin/contracts/utils/Strings.sol';
 
 contract CollectPublicationActionTest is BaseTest {
@@ -25,14 +23,7 @@ contract CollectPublicationActionTest is BaseTest {
     function setUp() public override {
         super.setUp();
 
-        // Deploy & Whitelist MockCollectModule
-        mockCollectModule = address(new MockCollectModule());
-        vm.prank(moduleGlobals.getGovernance());
-        collectPublicationAction.whitelistCollectModule(mockCollectModule, true);
-    }
-
-    // Deploy CollectPublicationAction
-    constructor() TestSetup() {
+        // Deploy CollectPublicationAction
         if (fork && keyExists(string(abi.encodePacked('.', forkEnv, '.CollectNFTImpl')))) {
             collectNFTImpl = json.readAddress(string(abi.encodePacked('.', forkEnv, '.CollectNFTImpl')));
             console.log('Found CollectNFTImpl deployed at:', address(collectNFTImpl));
@@ -76,6 +67,11 @@ contract CollectPublicationActionTest is BaseTest {
 
         vm.label(address(collectPublicationAction), 'CollectPublicationAction');
         vm.label(collectNFTImpl, 'CollectNFTImpl');
+
+        // Deploy & Whitelist MockCollectModule
+        mockCollectModule = address(new MockCollectModule());
+        vm.prank(moduleGlobals.getGovernance());
+        collectPublicationAction.whitelistCollectModule(mockCollectModule, true);
     }
 
     // Negatives

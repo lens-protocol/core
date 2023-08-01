@@ -14,14 +14,7 @@ contract FeeFollowModuleTest is BaseTest {
     function setUp() public override {
         super.setUp();
 
-        // Create & Whitelist mock currency
-        currency = new MockCurrency();
-        vm.prank(modulesGovernance);
-        moduleGlobals.whitelistCurrency(address(currency), true);
-    }
-
-    // Deploy FeeFollowModule
-    constructor() TestSetup() {
+        // Deploy FeeFollowModule
         if (fork && keyExists(string(abi.encodePacked('.', forkEnv, '.FeeFollowModule')))) {
             feeFollowModule = FeeFollowModule(
                 json.readAddress(string(abi.encodePacked('.', forkEnv, '.FeeFollowModule')))
@@ -31,6 +24,11 @@ contract FeeFollowModuleTest is BaseTest {
             vm.prank(deployer);
             feeFollowModule = new FeeFollowModule(address(hub), address(moduleGlobals));
         }
+
+        // Create & Whitelist mock currency
+        currency = new MockCurrency();
+        vm.prank(modulesGovernance);
+        moduleGlobals.whitelistCurrency(address(currency), true);
     }
 
     // Initialization - Negatives

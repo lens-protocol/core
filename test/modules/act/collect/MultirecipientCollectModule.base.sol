@@ -19,10 +19,8 @@ contract MultirecipientCollectModuleBase is BaseFeeCollectModuleBase {
 
     function setUp() public virtual override {
         super.setUp();
-    }
 
-    // Deploy & Whitelist MultirecipientFeeCollectModule
-    constructor() BaseTest() {
+        // Deploy & Whitelist MultirecipientFeeCollectModule
         if (fork && keyExists(string(abi.encodePacked('.', forkEnv, '.MultirecipientFeeCollectModule')))) {
             multirecipientFeeCollectModule = MultirecipientFeeCollectModule(
                 json.readAddress(string(abi.encodePacked('.', forkEnv, '.MultirecipientFeeCollectModule')))
