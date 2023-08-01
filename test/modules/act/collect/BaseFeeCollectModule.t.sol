@@ -361,7 +361,7 @@ contract BaseFeeCollectModule_ProcessCollect is BaseFeeCollectModuleBase {
         vm.assume(profileId != 0);
         vm.assume(pubId != 0);
         vm.assume(transactionExecutor != address(0));
-        vm.assume(endTimestamp > 0 && endTimestamp < type(uint72).max);
+        vm.assume(endTimestamp > block.timestamp && endTimestamp < type(uint72).max);
 
         exampleInitData.endTimestamp = endTimestamp;
 
@@ -475,6 +475,7 @@ contract BaseFeeCollectModule_ProcessCollect is BaseFeeCollectModuleBase {
             vm.assume(collectorProfileOwner != address(0));
             vm.assume(recipient != address(0));
             vm.assume(!_isLensHubProxyAdmin(collectorProfileOwner));
+            vm.assume(endTimestamp == 0 || endTimestamp >= block.timestamp);
         }
 
         exampleInitData.amount = amount;

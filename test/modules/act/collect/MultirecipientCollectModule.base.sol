@@ -35,9 +35,11 @@ contract MultirecipientCollectModuleBase is BaseFeeCollectModuleBase {
             );
         }
         baseFeeCollectModule = address(multirecipientFeeCollectModule);
-        currency = new MockCurrency();
-        vm.prank(modulesGovernance);
-        moduleGlobals.whitelistCurrency(address(currency), true);
+        if (address(currency) == address(0)) {
+            currency = new MockCurrency();
+            vm.prank(modulesGovernance);
+            moduleGlobals.whitelistCurrency(address(currency), true);
+        }
     }
 
     function getEncodedInitData() internal virtual override returns (bytes memory) {
