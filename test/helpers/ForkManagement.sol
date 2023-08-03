@@ -18,7 +18,9 @@ contract ForkManagement is Script {
     uint256 forkBlockNumber;
 
     modifier onlyFork() {
-        if (bytes(forkEnv).length == 0) return;
+        if (bytes(forkEnv).length == 0) {
+            return;
+        }
         _;
     }
 

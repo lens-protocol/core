@@ -25,12 +25,79 @@ import {StorageLib} from 'contracts/libraries/StorageLib.sol';
 import 'test/Constants.sol';
 import {LensHandles} from 'contracts/namespaces/LensHandles.sol';
 import {TokenHandleRegistry} from 'contracts/namespaces/TokenHandleRegistry.sol';
+import {LibString} from 'solady/utils/LibString.sol';
+
+// TODO: Move these to Interface file in test folder.
+struct OldCreateProfileParams {
+    address to;
+    string handle;
+    string imageURI;
+    address followModule;
+    bytes followModuleInitData;
+    string followNFTURI;
+}
+
+struct OldMirrorData {
+    uint256 profileId;
+    uint256 pointedProfileId;
+    uint256 pointedPubId;
+    bytes referenceModuleData;
+    address referenceModule;
+    bytes referenceModuleInitData;
+}
+
+struct OldPostData {
+    uint256 profileId;
+    string contentURI;
+    address collectModule;
+    bytes collectModuleInitData;
+    address referenceModule;
+    bytes referenceModuleInitData;
+}
+
+struct OldCommentData {
+    uint256 profileId;
+    string contentURI;
+    uint256 profileIdPointed;
+    uint256 pubIdPointed;
+    bytes referenceModuleData;
+    address collectModule;
+    bytes collectModuleInitData;
+    address referenceModule;
+    bytes referenceModuleInitData;
+}
+
+struct OldProfileStruct {
+    uint256 pubCount;
+    address followModule;
+    address followNFT;
+    string handle;
+    string imageURI;
+    string followNFTURI;
+}
+
+interface IOldHub {
+    function createProfile(OldCreateProfileParams memory createProfileParams) external returns (uint256);
+
+    function follow(uint256[] calldata profileIds, bytes[] calldata datas) external returns (uint256[] memory);
+
+    function collect(uint256 profileId, uint256 pubId, bytes calldata data) external returns (uint256);
+
+    function post(OldPostData calldata vars) external returns (uint256);
+
+    function comment(OldCommentData calldata vars) external returns (uint256);
+
+    function mirror(OldMirrorData memory createProfileParams) external returns (uint256);
+
+    function getProfile(uint256 profileId) external view returns (OldProfileStruct memory);
+}
 
 contract TestSetup is Test, ForkManagement, ArrayHelpers {
     using stdJson for string;
 
     // Avoid setUp to be run more than once.
     bool private __setUpDone;
+    uint256 private lensVersion;
 
     function testTestSetup() public {
         // Prevents being counted in Foundry Coverage
@@ -79,6 +146,11 @@ contract TestSetup is Test, ForkManagement, ArrayHelpers {
     ModuleGlobals moduleGlobals;
     LensHandles lensHandles;
     TokenHandleRegistry tokenHandleRegistry;
+
+    struct Module {
+        string name;
+        address addy;
+    }
 
     function loadBaseAddresses(string memory targetEnv) internal virtual {
         console.log('targetEnv:', targetEnv);
@@ -164,6 +236,7 @@ contract TestSetup is Test, ForkManagement, ArrayHelpers {
         }
 
         if (forkVersion == 1) {
+            lensVersion = 1;
             upgradeToV2();
         }
 
@@ -180,19 +253,19 @@ contract TestSetup is Test, ForkManagement, ArrayHelpers {
         vm.stopPrank();
         ///////////////////////////////////////// End deployments.
 
-        // Start governance actions.
-        vm.startPrank(governance);
+        if (lensVersion == 2) {
+            // Start governance actions.
+            vm.startPrank(governance);
 
-        // Whitelist the MockActionModule.
-        hub.whitelistActionModule(address(mockActionModule), true);
+            // Whitelist the MockActionModule.
+            hub.whitelistActionModule(address(mockActionModule), true);
 
-        // Whitelist the MockReferenceModule.
-        hub.whitelistReferenceModule(address(mockReferenceModule), true);
+            // Whitelist the MockReferenceModule.
+            hub.whitelistReferenceModule(address(mockReferenceModule), true);
 
-        // End governance actions.
-        vm.stopPrank();
-
-        console.log('ChainId in TestSetup.loadBaseAddresses: ', block.chainid);
+            // End governance actions.
+            vm.stopPrank();
+        }
     }
 
     function upgradeToV2() internal virtual {
@@ -222,6 +295,7 @@ contract TestSetup is Test, ForkManagement, ArrayHelpers {
         TransparentUpgradeableProxy oldHubAsProxy = TransparentUpgradeableProxy(payable(hubProxyAddr));
         vm.prank(proxyAdmin);
         oldHubAsProxy.upgradeTo(address(hubImpl));
+        lensVersion = 2;
     }
 
     function deployBaseContracts() internal {
@@ -319,6 +393,8 @@ contract TestSetup is Test, ForkManagement, ArrayHelpers {
 
         // End governance actions.
         vm.stopPrank();
+
+        lensVersion = 2;
     }
 
     function setUp() public virtual override {
@@ -356,28 +432,51 @@ contract TestSetup is Test, ForkManagement, ArrayHelpers {
                 hubProxyAddr
             )
         );
-        defaultAccount = _loadAccountAs('DEFAULT_ACCOUNT');
-        defaultPub = _loadDefaultPublication();
+
+        if (lensVersion == 2) {
+            defaultAccount = _loadAccountAs('DEFAULT_ACCOUNT');
+            defaultPub = _loadDefaultPublication();
+        }
+
+        if (lensVersion == 0) {
+            console.log("LensVersion is 0 - something's not right");
+            revert("LensVersion is 0 - something's not right");
+        }
 
         // Avoid setUp to be run more than once.
         __setUpDone = true;
+        console.log("TestSetup's setUp() done");
     }
 
     function _createProfile(address profileOwner) internal returns (uint256) {
         Types.CreateProfileParams memory createProfileParams = _getDefaultCreateProfileParams();
         createProfileParams.to = profileOwner;
-        console.log('TRYING TO CREATE PROFILE');
+        console.log('CREATING PROFILE');
         return hub.createProfile(createProfileParams);
+    }
+
+    function _createProfile(address profileOwner, string memory handle) internal returns (uint256) {
+        OldCreateProfileParams memory oldCreateProfileParams = OldCreateProfileParams({
+            to: profileOwner,
+            handle: LibString.lower(handle),
+            imageURI: string.concat(MOCK_URI, '/imageURI/', LibString.lower(handle)),
+            followModule: address(0),
+            followModuleInitData: '',
+            followNFTURI: string.concat(MOCK_URI, '/followNFTURI/', LibString.lower(handle))
+        });
+        uint256 profileId = IOldHub(address(hub)).createProfile(oldCreateProfileParams);
+        console.log('CREATING V1 PROFILE: %s (Profile#%s)', LibString.lower(handle), profileId);
+        return profileId;
     }
 
     function _loadAccountAs(string memory accountLabel) internal returns (TestAccount memory) {
         return _loadAccountAs({accountLabel: accountLabel, requireCustomProfileOnFork: false});
     }
 
-    function _loadAccountAs(string memory accountLabel, bool requireCustomProfileOnFork)
-        internal
-        returns (TestAccount memory)
-    {
+    function _loadAccountAs(
+        string memory accountLabel,
+        bool requireCustomProfileOnFork
+    ) internal returns (TestAccount memory) {
         // We derive a new account from the given label.
         (address accountOwner, uint256 accountOwnerPk) = makeAddrAndKey(accountLabel);
         uint256 accountProfileId;
@@ -411,7 +510,14 @@ contract TestSetup is Test, ForkManagement, ArrayHelpers {
             vm.stopPrank();
         } else {
             // If profile was not loaded yet, we create a fresh one.
-            accountProfileId = _createProfile(accountOwner);
+            if (lensVersion == 1) {
+                accountProfileId = _createProfile(accountOwner, accountLabel);
+            } else if (lensVersion == 2) {
+                accountProfileId = _createProfile(accountOwner);
+            } else {
+                console.log('Lens version %s is not supported', lensVersion);
+                revert('Lens version not supported');
+            }
         }
         return TestAccount({ownerPk: accountOwnerPk, owner: accountOwner, profileId: accountProfileId});
     }
