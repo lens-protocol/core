@@ -85,6 +85,7 @@ library MigrationLib {
             tokenHandleRegistry.migrationLink(handleId, profileId);
             emit ProfileMigrated(profileId, profileOwner, handle, handleId);
             delete StorageLib.getProfile(profileId).__DEPRECATED__handle;
+            delete StorageLib.getProfile(profileId).__DEPRECATED__followNFTURI;
             delete StorageLib.profileIdByHandleHash()[handleHash];
         }
     }
