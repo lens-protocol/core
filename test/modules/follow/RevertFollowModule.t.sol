@@ -13,7 +13,7 @@ contract RevertFollowModuleTest is BaseTest {
         super.setUp();
 
         // Deploy & Whitelist RevertFollowModule
-        if (fork && keyExists(string(abi.encodePacked('.', forkEnv, '.RevertFollowModule')))) {
+        if (fork && keyExists(json, string(abi.encodePacked('.', forkEnv, '.RevertFollowModule')))) {
             revertFollowModule = RevertFollowModule(
                 json.readAddress(string(abi.encodePacked('.', forkEnv, '.RevertFollowModule')))
             );

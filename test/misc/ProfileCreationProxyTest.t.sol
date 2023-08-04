@@ -17,7 +17,7 @@ contract ProfileCreationProxyTest is BaseTest {
         super.setUp();
 
         if (fork) {
-            if (keyExists(string(abi.encodePacked('.', forkEnv, '.ProfileCreationProxy')))) {
+            if (keyExists(json, string(abi.encodePacked('.', forkEnv, '.ProfileCreationProxy')))) {
                 profileCreationProxy = ProfileCreationProxy(
                     json.readAddress(string(abi.encodePacked('.', forkEnv, '.ProfileCreationProxy')))
                 );

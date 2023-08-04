@@ -306,32 +306,32 @@ contract UpgradeForkTest is BaseTest {
 
         // Load V2 modules addresses
 
-        Module[] memory actionModules = abi.decode(
-            vm.parseJson(json, string(abi.encodePacked('.', forkEnv, '.Modules.v2.action'))),
-            (Module[])
-        );
-        address[] memory newActionModulesToWhitelist = new address[](actionModules.length);
-        for (uint i = 0; i < actionModules.length; i++) {
-            newActionModulesToWhitelist[i] = actionModules[i].addy;
-        }
+        // Module[] memory actionModules = abi.decode(
+        //     vm.parseJson(json, string(abi.encodePacked('.', forkEnv, '.Modules.v2.action'))),
+        //     (Module[])
+        // );
+        // address[] memory newActionModulesToWhitelist = new address[](actionModules.length);
+        // for (uint i = 0; i < actionModules.length; i++) {
+        //     newActionModulesToWhitelist[i] = actionModules[i].addy;
+        // }
 
-        Module[] memory referenceModulesV2 = abi.decode(
-            vm.parseJson(json, string(abi.encodePacked('.', forkEnv, '.Modules.v2.reference'))),
-            (Module[])
-        );
-        address[] memory newReferenceModulesToWhitelist = new address[](referenceModulesV2.length);
-        for (uint i = 0; i < referenceModulesV2.length; i++) {
-            newReferenceModulesToWhitelist[i] = referenceModulesV2[i].addy;
-        }
+        // Module[] memory referenceModulesV2 = abi.decode(
+        //     vm.parseJson(json, string(abi.encodePacked('.', forkEnv, '.Modules.v2.reference'))),
+        //     (Module[])
+        // );
+        // address[] memory newReferenceModulesToWhitelist = new address[](referenceModulesV2.length);
+        // for (uint i = 0; i < referenceModulesV2.length; i++) {
+        //     newReferenceModulesToWhitelist[i] = referenceModulesV2[i].addy;
+        // }
 
-        Module[] memory followModulesV2 = abi.decode(
-            vm.parseJson(json, string(abi.encodePacked('.', forkEnv, '.Modules.v2.follow'))),
-            (Module[])
-        );
-        address[] memory newFollowModulesToWhitelist = new address[](followModulesV2.length);
-        for (uint i = 0; i < followModulesV2.length; i++) {
-            newFollowModulesToWhitelist[i] = followModulesV2[i].addy;
-        }
+        // Module[] memory followModulesV2 = abi.decode(
+        //     vm.parseJson(json, string(abi.encodePacked('.', forkEnv, '.Modules.v2.follow'))),
+        //     (Module[])
+        // );
+        // address[] memory newFollowModulesToWhitelist = new address[](followModulesV2.length);
+        // for (uint i = 0; i < followModulesV2.length; i++) {
+        //     newFollowModulesToWhitelist[i] = followModulesV2[i].addy;
+        // }
 
         lensV2UpgradeContract = address(
             new LensV2UpgradeContract({
@@ -341,11 +341,11 @@ contract UpgradeForkTest is BaseTest {
                 lensHub: address(hub),
                 newImplementationAddress: address(0), // TODO!
                 oldFollowModulesToUnwhitelist_: oldFollowModulesToUnwhitelist,
-                newFollowModulesToWhitelist_: newFollowModulesToWhitelist,
+                newFollowModulesToWhitelist_: _emptyAddressArray(),
                 oldReferenceModulesToUnwhitelist_: oldReferenceModulesToUnwhitelist,
-                newReferenceModulesToWhitelist_: newReferenceModulesToWhitelist,
+                newReferenceModulesToWhitelist_: _emptyAddressArray(),
                 oldCollectModulesToUnwhitelist_: oldCollectModulesToUnwhitelist,
-                newActionModulesToWhitelist_: newActionModulesToWhitelist
+                newActionModulesToWhitelist_: _emptyAddressArray()
             })
         );
     }

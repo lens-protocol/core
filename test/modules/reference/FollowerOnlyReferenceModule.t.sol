@@ -20,7 +20,7 @@ contract FollowerOnlyReferenceModuleTest is BaseTest {
         super.setUp();
 
         // Deploy & Whitelist FollowerOnlyReferenceModule
-        if (fork && keyExists(string(abi.encodePacked('.', forkEnv, '.FollowerOnlyReferenceModule')))) {
+        if (fork && keyExists(json, string(abi.encodePacked('.', forkEnv, '.FollowerOnlyReferenceModule')))) {
             followerOnlyReferenceModule = FollowerOnlyReferenceModule(
                 json.readAddress(string(abi.encodePacked('.', forkEnv, '.FollowerOnlyReferenceModule')))
             );

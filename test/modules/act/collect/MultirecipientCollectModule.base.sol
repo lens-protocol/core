@@ -21,7 +21,7 @@ contract MultirecipientCollectModuleBase is BaseFeeCollectModuleBase {
         super.setUp();
 
         // Deploy & Whitelist MultirecipientFeeCollectModule
-        if (fork && keyExists(string(abi.encodePacked('.', forkEnv, '.MultirecipientFeeCollectModule')))) {
+        if (fork && keyExists(json, string(abi.encodePacked('.', forkEnv, '.MultirecipientFeeCollectModule')))) {
             multirecipientFeeCollectModule = MultirecipientFeeCollectModule(
                 json.readAddress(string(abi.encodePacked('.', forkEnv, '.MultirecipientFeeCollectModule')))
             );

@@ -2,8 +2,10 @@
 pragma solidity ^0.8.13;
 
 import 'forge-std/Script.sol';
+import 'test/helpers/KeyExists.sol';
+import 'test/helpers/ContractAddresses.sol';
 
-contract ForkManagement is Script {
+contract ForkManagement is Script, KeyExists, ContractAddresses {
     using stdJson for string;
 
     function testForkManagement() public {
@@ -22,17 +24,6 @@ contract ForkManagement is Script {
             return;
         }
         _;
-    }
-
-    // TODO: Move somewhere else
-    // TODO: Replace with forge-std/StdJson.sol::keyExists(...) when/if this PR is approved:
-    //       https://github.com/foundry-rs/forge-std/pull/226
-    function keyExists(string memory key) internal returns (bool) {
-        try vm.parseJsonString(json, key) {
-            return true;
-        } catch (bytes memory) {
-            return false;
-        }
     }
 
     function setUp() public virtual {

@@ -15,7 +15,7 @@ contract FeeFollowModuleTest is BaseTest {
         super.setUp();
 
         // Deploy FeeFollowModule
-        if (fork && keyExists(string(abi.encodePacked('.', forkEnv, '.FeeFollowModule')))) {
+        if (fork && keyExists(json, string(abi.encodePacked('.', forkEnv, '.FeeFollowModule')))) {
             feeFollowModule = FeeFollowModule(
                 json.readAddress(string(abi.encodePacked('.', forkEnv, '.FeeFollowModule')))
             );
@@ -87,11 +87,7 @@ contract FeeFollowModuleTest is BaseTest {
 
     // Initialization - Scenarios
 
-    function testInitialize(
-        uint256 profileId,
-        uint256 amount,
-        address recipient
-    ) public {
+    function testInitialize(uint256 profileId, uint256 amount, address recipient) public {
         vm.assume(profileId != 0);
         vm.assume(amount != 0);
         assertTrue(moduleGlobals.isCurrencyWhitelisted(address(currency)));

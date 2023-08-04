@@ -5,27 +5,28 @@ import 'forge-std/Test.sol';
 
 // Deployments
 import {ILensHub} from 'contracts/interfaces/ILensHub.sol';
-import {LensHub} from 'contracts/LensHub.sol';
-import {LensHubInitializable} from 'contracts/misc/LensHubInitializable.sol';
-import {FollowNFT} from 'contracts/FollowNFT.sol';
-import {LegacyCollectNFT} from 'contracts/misc/LegacyCollectNFT.sol';
-import {ModuleGlobals} from 'contracts/misc/ModuleGlobals.sol';
-import {TransparentUpgradeableProxy} from '@openzeppelin/contracts/proxy/transparent/TransparentUpgradeableProxy.sol';
 import {Types} from 'contracts/libraries/constants/Types.sol';
 import {Errors} from 'contracts/libraries/constants/Errors.sol';
 import {Events} from 'contracts/libraries/constants/Events.sol';
 import {ProfileTokenURILib} from 'contracts/libraries/token-uris/ProfileTokenURILib.sol';
-import {MockActionModule} from 'test/mocks/MockActionModule.sol';
-import {MockReferenceModule} from 'test/mocks/MockReferenceModule.sol';
-import {ForkManagement} from 'test/helpers/ForkManagement.sol';
 import {ArrayHelpers} from 'test/helpers/ArrayHelpers.sol';
 import {Typehash} from 'contracts/libraries/constants/Typehash.sol';
 import {MetaTxLib} from 'contracts/libraries/MetaTxLib.sol';
 import {StorageLib} from 'contracts/libraries/StorageLib.sol';
 import 'test/Constants.sol';
+import {LibString} from 'solady/utils/LibString.sol';
+import {ModulesLoader} from 'test/modules/ModulesLoader.t.sol';
+
+import {LensHub} from 'contracts/LensHub.sol';
+import {LensHubInitializable} from 'contracts/misc/LensHubInitializable.sol';
+import {FollowNFT} from 'contracts/FollowNFT.sol';
+import {LegacyCollectNFT} from 'contracts/misc/LegacyCollectNFT.sol';
+import {TransparentUpgradeableProxy} from '@openzeppelin/contracts/proxy/transparent/TransparentUpgradeableProxy.sol';
+import {ModuleGlobals} from 'contracts/misc/ModuleGlobals.sol';
 import {LensHandles} from 'contracts/namespaces/LensHandles.sol';
 import {TokenHandleRegistry} from 'contracts/namespaces/TokenHandleRegistry.sol';
-import {LibString} from 'solady/utils/LibString.sol';
+import {MockActionModule} from 'test/mocks/MockActionModule.sol';
+import {MockReferenceModule} from 'test/mocks/MockReferenceModule.sol';
 
 // TODO: Move these to Interface file in test folder.
 struct OldCreateProfileParams {
@@ -92,64 +93,11 @@ interface IOldHub {
     function getProfile(uint256 profileId) external view returns (OldProfileStruct memory);
 }
 
-contract TestSetup is Test, ForkManagement, ArrayHelpers {
+contract TestSetup is Test, ModulesLoader, ArrayHelpers {
     using stdJson for string;
-
-    // Avoid setUp to be run more than once.
-    bool private __setUpDone;
-    uint256 private lensVersion;
 
     function testTestSetup() public {
         // Prevents being counted in Foundry Coverage
-    }
-
-    ////////////////////////////////// Types
-    struct TestAccount {
-        uint256 ownerPk;
-        address owner;
-        uint256 profileId;
-    }
-
-    struct TestPublication {
-        uint256 profileId;
-        uint256 pubId;
-    }
-
-    ////////////////////////////////// Accounts
-    TestAccount defaultAccount;
-
-    ////////////////////////////////// Publications
-    TestPublication defaultPub;
-
-    ////////////////////////////////// Relevant actors' addresses
-    address deployer;
-    address governance;
-    address treasury;
-    address modulesGovernance;
-    address proxyAdmin;
-
-    ////////////////////////////////// Relevant values or constants
-    uint16 TREASURY_FEE_BPS;
-    uint16 constant TREASURY_FEE_MAX_BPS = 10000; // TODO: This should be a constant in 'contracts/libraries/constants/'
-    string constant MOCK_URI = 'ipfs://QmUXfQWe43RKx31VzA2BnbwhSMW8WuaJvszFWChD59m76U';
-    bytes32 domainSeparator;
-
-    ////////////////////////////////// Deployed addresses
-    address hubProxyAddr;
-    LegacyCollectNFT legacyCollectNFT;
-    FollowNFT followNFT;
-    LensHubInitializable hubImpl;
-    TransparentUpgradeableProxy hubAsProxy;
-    LensHub hub;
-    MockActionModule mockActionModule;
-    MockReferenceModule mockReferenceModule;
-    ModuleGlobals moduleGlobals;
-    LensHandles lensHandles;
-    TokenHandleRegistry tokenHandleRegistry;
-
-    struct Module {
-        string name;
-        address addy;
     }
 
     function loadBaseAddresses(string memory targetEnv) internal virtual {
@@ -190,7 +138,7 @@ contract TestSetup is Test, ForkManagement, ArrayHelpers {
 
         TREASURY_FEE_BPS = moduleGlobals.getTreasuryFee();
 
-        if (keyExists(string(abi.encodePacked('.', targetEnv, '.LensHandles')))) {
+        if (keyExists(json, string(abi.encodePacked('.', targetEnv, '.LensHandles')))) {
             console.log('LensHandles key does exist');
             lensHandles = LensHandles(json.readAddress(string(abi.encodePacked('.', targetEnv, '.LensHandles'))));
         } else {
@@ -211,7 +159,7 @@ contract TestSetup is Test, ForkManagement, ArrayHelpers {
             }
         }
 
-        if (keyExists(string(abi.encodePacked('.', targetEnv, '.TokenHandleRegistry')))) {
+        if (keyExists(json, string(abi.encodePacked('.', targetEnv, '.TokenHandleRegistry')))) {
             console.log('TokenHandleRegistry key does exist');
             tokenHandleRegistry = TokenHandleRegistry(
                 json.readAddress(string(abi.encodePacked('.', targetEnv, '.TokenHandleRegistry')))

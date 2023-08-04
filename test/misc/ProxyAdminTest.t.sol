@@ -25,7 +25,7 @@ contract ProxyAdminTest is BaseTest {
         super.setUp();
 
         if (fork) {
-            if (keyExists(string(abi.encodePacked('.', forkEnv, '.ProxyAdminContract')))) {
+            if (keyExists(json, string(abi.encodePacked('.', forkEnv, '.ProxyAdminContract')))) {
                 proxyAdminContract = ProxyAdmin(
                     json.readAddress(string(abi.encodePacked('.', forkEnv, '.ProxyAdminContract')))
                 );

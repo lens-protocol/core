@@ -58,7 +58,7 @@ contract GovernanceTest is BaseTest {
         super.setUp();
 
         if (fork) {
-            if (keyExists(string(abi.encodePacked('.', forkEnv, '.GovernanceContract')))) {
+            if (keyExists(json, string(abi.encodePacked('.', forkEnv, '.GovernanceContract')))) {
                 governanceContract = Governance(
                     json.readAddress(string(abi.encodePacked('.', forkEnv, '.GovernanceContract')))
                 );

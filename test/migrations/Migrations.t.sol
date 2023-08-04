@@ -35,22 +35,6 @@ contract MigrationsTest is Test, ForkManagement {
     uint256 internal constant ENUMERABLE_GET_FIRST_PROFILE = 0;
 
     address owner = address(0x087E4);
-    address deployer = address(1);
-    address governance;
-    address modulesGovernance;
-    address treasury;
-    address hubProxyAddr;
-    address proxyAdmin;
-
-    LensHandles lensHandles;
-    TokenHandleRegistry tokenHandleRegistry;
-
-    LegacyCollectNFT legacyCollectNFT;
-    FollowNFT followNFT;
-    LensHub hubImpl;
-    TransparentUpgradeableProxy hubAsProxy;
-    LensHub hub;
-    ModuleGlobals moduleGlobals;
 
     uint256[] followerProfileIds = new uint256[](10);
 

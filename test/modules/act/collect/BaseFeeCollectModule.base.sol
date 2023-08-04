@@ -26,7 +26,7 @@ contract BaseFeeCollectModuleBase is BaseTest {
         super.setUp();
 
         // Deploy & Whitelist BaseFeeCollectModule
-        if (fork && keyExists(string(abi.encodePacked('.', forkEnv, '.SimpleFeeCollectModule')))) {
+        if (fork && keyExists(json, string(abi.encodePacked('.', forkEnv, '.SimpleFeeCollectModule')))) {
             baseFeeCollectModule = address(
                 SimpleFeeCollectModule(
                     json.readAddress(string(abi.encodePacked('.', forkEnv, '.SimpleFeeCollectModule')))

@@ -31,7 +31,7 @@ contract TokenGatedReferenceModuleBase is BaseTest {
         super.setUp();
 
         // Deploy & Whitelist TokenGatedReferenceModule
-        if (fork && keyExists(string(abi.encodePacked('.', forkEnv, '.TokenGatedReferenceModule')))) {
+        if (fork && keyExists(json, string(abi.encodePacked('.', forkEnv, '.TokenGatedReferenceModule')))) {
             tokenGatedReferenceModule = TokenGatedReferenceModule(
                 json.readAddress(string(abi.encodePacked('.', forkEnv, '.TokenGatedReferenceModule')))
             );
