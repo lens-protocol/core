@@ -7,11 +7,16 @@ import {CollectNFT} from 'contracts/modules/act/collect/CollectNFT.sol';
 import {ForkManagement} from 'test/helpers/ForkManagement.sol';
 import {LensHub} from 'contracts/LensHub.sol';
 import {ModuleGlobals} from 'contracts/misc/ModuleGlobals.sol';
+import {FeeFollowModule} from 'contracts/modules/follow/FeeFollowModule.sol';
+import {RevertFollowModule} from 'contracts/modules/follow/RevertFollowModule.sol';
+import {DegreesOfSeparationReferenceModule} from 'contracts/modules/reference/DegreesOfSeparationReferenceModule.sol';
+import {FollowerOnlyReferenceModule} from 'contracts/modules/reference/FollowerOnlyReferenceModule.sol';
+import {TokenGatedReferenceModule} from 'contracts/modules/reference/TokenGatedReferenceModule.sol';
 
 contract ModulesLoader is Test, ForkManagement {
     using stdJson for string;
 
-    function loadOrDeploy_CollectPublicationAction() internal returns (address, CollectPublicationAction) {
+    function loadOrDeploy_CollectPublicationAction() internal returns (address, address) {
         address collectNFTImpl;
         CollectPublicationAction collectPublicationAction;
 
@@ -32,7 +37,7 @@ contract ModulesLoader is Test, ForkManagement {
         if (collectNFTImpl != address(0) && address(collectPublicationAction) != address(0)) {
             if (CollectNFT(collectNFTImpl).ACTION_MODULE() == address(collectPublicationAction)) {
                 console.log('CollectNFTImpl and CollectPublicationAction already deployed and linked');
-                return (collectNFTImpl, collectPublicationAction);
+                return (collectNFTImpl, address(collectPublicationAction));
             }
         }
 
@@ -60,7 +65,7 @@ contract ModulesLoader is Test, ForkManagement {
         vm.label(address(collectPublicationAction), 'CollectPublicationAction');
         vm.label(collectNFTImpl, 'CollectNFTImpl');
 
-        return (collectNFTImpl, collectPublicationAction);
+        return (collectNFTImpl, address(collectPublicationAction));
     }
 
     // function loadOrDeploy_SeaDropMintPublicationAction() internal returns (address) {}
@@ -68,13 +73,11 @@ contract ModulesLoader is Test, ForkManagement {
     function loadOrDeploy_FeeFollowModule() internal returns (address) {
         address feeFollowModule;
         if (fork && keyExists(json, string(abi.encodePacked('.', forkEnv, '.FeeFollowModule')))) {
-            feeFollowModule = FeeFollowModule(
-                json.readAddress(string(abi.encodePacked('.', forkEnv, '.FeeFollowModule')))
-            );
-            console.log('Testing against already deployed module at:', address(feeFollowModule));
+            feeFollowModule = json.readAddress(string(abi.encodePacked('.', forkEnv, '.FeeFollowModule')));
+            console.log('Testing against already deployed module at:', feeFollowModule);
         } else {
             vm.prank(deployer);
-            feeFollowModule = new FeeFollowModule(address(hub), address(moduleGlobals));
+            feeFollowModule = address(new FeeFollowModule(address(hub), address(moduleGlobals)));
         }
         return feeFollowModule;
     }
@@ -82,13 +85,11 @@ contract ModulesLoader is Test, ForkManagement {
     function loadOrDeploy_RevertFollowModule() internal returns (address) {
         address revertFollowModule;
         if (fork && keyExists(json, string(abi.encodePacked('.', forkEnv, '.RevertFollowModule')))) {
-            revertFollowModule = RevertFollowModule(
-                json.readAddress(string(abi.encodePacked('.', forkEnv, '.RevertFollowModule')))
-            );
-            console.log('Testing against already deployed module at:', address(revertFollowModule));
+            revertFollowModule = json.readAddress(string(abi.encodePacked('.', forkEnv, '.RevertFollowModule')));
+            console.log('Testing against already deployed module at:', revertFollowModule);
         } else {
             vm.prank(deployer);
-            revertFollowModule = new RevertFollowModule();
+            revertFollowModule = address(new RevertFollowModule());
         }
         return revertFollowModule;
     }
@@ -96,13 +97,13 @@ contract ModulesLoader is Test, ForkManagement {
     function loadOrDeploy_DegreesOfSeparationReferenceModule() internal returns (address) {
         address degreesOfSeparationReferenceModule;
         if (fork && keyExists(json, string(abi.encodePacked('.', forkEnv, '.DegreesOfSeparationReferenceModule')))) {
-            degreesOfSeparationReferenceModule = DegreesOfSeparationReferenceModule(
-                json.readAddress(string(abi.encodePacked('.', forkEnv, '.DegreesOfSeparationReferenceModule')))
+            degreesOfSeparationReferenceModule = json.readAddress(
+                string(abi.encodePacked('.', forkEnv, '.DegreesOfSeparationReferenceModule'))
             );
-            console.log('Testing against already deployed module at:', address(degreesOfSeparationReferenceModule));
+            console.log('Testing against already deployed module at:', degreesOfSeparationReferenceModule);
         } else {
             vm.prank(deployer);
-            degreesOfSeparationReferenceModule = new DegreesOfSeparationReferenceModule(hubProxyAddr);
+            degreesOfSeparationReferenceModule = address(new DegreesOfSeparationReferenceModule(hubProxyAddr));
         }
         return degreesOfSeparationReferenceModule;
     }
@@ -110,13 +111,13 @@ contract ModulesLoader is Test, ForkManagement {
     function loadOrDeploy_FollowerOnlyReferenceModule() internal returns (address) {
         address followerOnlyReferenceModule;
         if (fork && keyExists(json, string(abi.encodePacked('.', forkEnv, '.FollowerOnlyReferenceModule')))) {
-            followerOnlyReferenceModule = FollowerOnlyReferenceModule(
-                json.readAddress(string(abi.encodePacked('.', forkEnv, '.FollowerOnlyReferenceModule')))
+            followerOnlyReferenceModule = json.readAddress(
+                string(abi.encodePacked('.', forkEnv, '.FollowerOnlyReferenceModule'))
             );
-            console.log('Testing against already deployed module at:', address(followerOnlyReferenceModule));
+            console.log('Testing against already deployed module at:', followerOnlyReferenceModule);
         } else {
             vm.prank(deployer);
-            followerOnlyReferenceModule = new FollowerOnlyReferenceModule(hubProxyAddr);
+            followerOnlyReferenceModule = address(new FollowerOnlyReferenceModule(hubProxyAddr));
         }
         return followerOnlyReferenceModule;
     }
@@ -124,13 +125,13 @@ contract ModulesLoader is Test, ForkManagement {
     function loadOrDeploy_TokenGatedReferenceModule() internal returns (address) {
         address tokenGatedReferenceModule;
         if (fork && keyExists(json, string(abi.encodePacked('.', forkEnv, '.TokenGatedReferenceModule')))) {
-            tokenGatedReferenceModule = TokenGatedReferenceModule(
-                json.readAddress(string(abi.encodePacked('.', forkEnv, '.TokenGatedReferenceModule')))
+            tokenGatedReferenceModule = json.readAddress(
+                string(abi.encodePacked('.', forkEnv, '.TokenGatedReferenceModule'))
             );
-            console.log('Testing against already deployed module at:', address(tokenGatedReferenceModule));
+            console.log('Testing against already deployed module at:', tokenGatedReferenceModule);
         } else {
             vm.prank(deployer);
-            tokenGatedReferenceModule = new TokenGatedReferenceModule(hubProxyAddr);
+            tokenGatedReferenceModule = address(new TokenGatedReferenceModule(hubProxyAddr));
         }
         return tokenGatedReferenceModule;
     }

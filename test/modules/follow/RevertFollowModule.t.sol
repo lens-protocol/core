@@ -12,7 +12,7 @@ contract RevertFollowModuleTest is BaseTest {
     function setUp() public virtual override {
         super.setUp();
 
-        revertFollowModule = loadOrDeploy_RevertFollowModule();
+        revertFollowModule = RevertFollowModule(loadOrDeploy_RevertFollowModule());
     }
 
     // RevertFollowModule doesn't need initialization, so this always returns an empty bytes array and is

@@ -13,6 +13,7 @@ import {TokenHandleRegistry} from 'contracts/namespaces/TokenHandleRegistry.sol'
 import {Types} from 'contracts/libraries/constants/Types.sol';
 import {IERC721} from '@openzeppelin/contracts/token/ERC721/IERC721.sol';
 import {IERC721Enumerable} from '@openzeppelin/contracts/token/ERC721/extensions/IERC721Enumerable.sol';
+import {LensHubInitializable} from 'contracts/misc/LensHubInitializable.sol';
 import 'test/Constants.sol';
 
 interface OldLensHub {
@@ -90,7 +91,7 @@ contract MigrationsTest is Test, ForkManagement {
         followNFT = new FollowNFT(address(hub));
 
         // TODO: Last 3 addresses are for the follow modules for migration purposes.
-        hubImpl = new LensHub({
+        hubImpl = new LensHubInitializable({
             moduleGlobals: address(0),
             followNFTImpl: address(followNFT),
             collectNFTImpl: address(legacyCollectNFT),

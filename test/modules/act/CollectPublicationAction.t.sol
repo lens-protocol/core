@@ -23,7 +23,9 @@ contract CollectPublicationActionTest is BaseTest {
     function setUp() public override {
         super.setUp();
 
-        (collectNFTImpl, collectPublicationAction) = loadOrDeploy_CollectPublicationAction();
+        address collectPublicationActionAddr;
+        (collectNFTImpl, collectPublicationActionAddr) = loadOrDeploy_CollectPublicationAction();
+        collectPublicationAction = CollectPublicationAction(collectPublicationActionAddr);
 
         // Deploy & Whitelist MockCollectModule
         mockCollectModule = address(new MockCollectModule());
@@ -176,11 +178,7 @@ contract CollectPublicationActionTest is BaseTest {
         );
     }
 
-    function testInitializePublicationAction(
-        uint256 profileId,
-        uint256 pubId,
-        address transactionExecutor
-    ) public {
+    function testInitializePublicationAction(uint256 profileId, uint256 pubId, address transactionExecutor) public {
         vm.assume(profileId != 0);
         vm.assume(pubId != 0);
         vm.assume(transactionExecutor != address(0));
