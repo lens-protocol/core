@@ -30,16 +30,7 @@ contract TokenGatedReferenceModuleBase is BaseTest {
     function setUp() public override {
         super.setUp();
 
-        // Deploy & Whitelist TokenGatedReferenceModule
-        if (fork && keyExists(json, string(abi.encodePacked('.', forkEnv, '.TokenGatedReferenceModule')))) {
-            tokenGatedReferenceModule = TokenGatedReferenceModule(
-                json.readAddress(string(abi.encodePacked('.', forkEnv, '.TokenGatedReferenceModule')))
-            );
-            console.log('Testing against already deployed module at:', address(tokenGatedReferenceModule));
-        } else {
-            vm.prank(deployer);
-            tokenGatedReferenceModule = new TokenGatedReferenceModule(hubProxyAddr);
-        }
+        tokenGatedReferenceModule = loadOrDeploy_TokenGatedReferenceModule();
 
         currency = new MockCurrency();
         nft = new MockNFT();

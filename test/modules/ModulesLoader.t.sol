@@ -65,13 +65,73 @@ contract ModulesLoader is Test, ForkManagement {
 
     // function loadOrDeploy_SeaDropMintPublicationAction() internal returns (address) {}
 
-    function loadOrDeploy_FeeFollowModule() internal returns (address) {}
+    function loadOrDeploy_FeeFollowModule() internal returns (address) {
+        address feeFollowModule;
+        if (fork && keyExists(json, string(abi.encodePacked('.', forkEnv, '.FeeFollowModule')))) {
+            feeFollowModule = FeeFollowModule(
+                json.readAddress(string(abi.encodePacked('.', forkEnv, '.FeeFollowModule')))
+            );
+            console.log('Testing against already deployed module at:', address(feeFollowModule));
+        } else {
+            vm.prank(deployer);
+            feeFollowModule = new FeeFollowModule(address(hub), address(moduleGlobals));
+        }
+        return feeFollowModule;
+    }
 
-    function loadOrDeploy_RevertFollowModule() internal returns (address) {}
+    function loadOrDeploy_RevertFollowModule() internal returns (address) {
+        address revertFollowModule;
+        if (fork && keyExists(json, string(abi.encodePacked('.', forkEnv, '.RevertFollowModule')))) {
+            revertFollowModule = RevertFollowModule(
+                json.readAddress(string(abi.encodePacked('.', forkEnv, '.RevertFollowModule')))
+            );
+            console.log('Testing against already deployed module at:', address(revertFollowModule));
+        } else {
+            vm.prank(deployer);
+            revertFollowModule = new RevertFollowModule();
+        }
+        return revertFollowModule;
+    }
 
-    function loadOrDeploy_DegreesOfSeparationReferenceModule() internal returns (address) {}
+    function loadOrDeploy_DegreesOfSeparationReferenceModule() internal returns (address) {
+        address degreesOfSeparationReferenceModule;
+        if (fork && keyExists(json, string(abi.encodePacked('.', forkEnv, '.DegreesOfSeparationReferenceModule')))) {
+            degreesOfSeparationReferenceModule = DegreesOfSeparationReferenceModule(
+                json.readAddress(string(abi.encodePacked('.', forkEnv, '.DegreesOfSeparationReferenceModule')))
+            );
+            console.log('Testing against already deployed module at:', address(degreesOfSeparationReferenceModule));
+        } else {
+            vm.prank(deployer);
+            degreesOfSeparationReferenceModule = new DegreesOfSeparationReferenceModule(hubProxyAddr);
+        }
+        return degreesOfSeparationReferenceModule;
+    }
 
-    function loadOrDeploy_FollowerOnlyReferenceModule() internal returns (address) {}
+    function loadOrDeploy_FollowerOnlyReferenceModule() internal returns (address) {
+        address followerOnlyReferenceModule;
+        if (fork && keyExists(json, string(abi.encodePacked('.', forkEnv, '.FollowerOnlyReferenceModule')))) {
+            followerOnlyReferenceModule = FollowerOnlyReferenceModule(
+                json.readAddress(string(abi.encodePacked('.', forkEnv, '.FollowerOnlyReferenceModule')))
+            );
+            console.log('Testing against already deployed module at:', address(followerOnlyReferenceModule));
+        } else {
+            vm.prank(deployer);
+            followerOnlyReferenceModule = new FollowerOnlyReferenceModule(hubProxyAddr);
+        }
+        return followerOnlyReferenceModule;
+    }
 
-    function loadOrDeploy_TokenGatedReferenceModule() internal returns (address) {}
+    function loadOrDeploy_TokenGatedReferenceModule() internal returns (address) {
+        address tokenGatedReferenceModule;
+        if (fork && keyExists(json, string(abi.encodePacked('.', forkEnv, '.TokenGatedReferenceModule')))) {
+            tokenGatedReferenceModule = TokenGatedReferenceModule(
+                json.readAddress(string(abi.encodePacked('.', forkEnv, '.TokenGatedReferenceModule')))
+            );
+            console.log('Testing against already deployed module at:', address(tokenGatedReferenceModule));
+        } else {
+            vm.prank(deployer);
+            tokenGatedReferenceModule = new TokenGatedReferenceModule(hubProxyAddr);
+        }
+        return tokenGatedReferenceModule;
+    }
 }

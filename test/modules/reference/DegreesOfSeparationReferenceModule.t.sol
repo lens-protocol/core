@@ -38,7 +38,9 @@ contract DegreesOfSeparationReferenceModuleTest is BaseTest {
         thirdAccount = _loadAccountAs('THIRD_ACCOUNT');
 
         hubAddress = address(hub);
-        module = new DegreesOfSeparationReferenceModule(hubAddress);
+
+        module = loadOrDeploy_DegreesOfSeparationReferenceModule();
+
         MAX_DEGREES_OF_SEPARATION = module.MAX_DEGREES_OF_SEPARATION();
     }
 
@@ -1564,9 +1566,10 @@ contract DegreesOfSeparationReferenceModuleTest is BaseTest {
         return path;
     }
 
-    function _buildPathWhereOriginalPublisherDoesNotFollowFirstNode(
-        uint256 degrees
-    ) internal returns (uint256[] memory) {
+    function _buildPathWhereOriginalPublisherDoesNotFollowFirstNode(uint256 degrees)
+        internal
+        returns (uint256[] memory)
+    {
         uint256[] memory path = new uint256[](degrees - 1);
         if (degrees == 1) {
             return path;
@@ -1584,9 +1587,10 @@ contract DegreesOfSeparationReferenceModuleTest is BaseTest {
         return path;
     }
 
-    function _buildPathWhereLastPathNodeDoesNotFollowCurrentPublisher(
-        uint256 degrees
-    ) internal returns (uint256[] memory) {
+    function _buildPathWhereLastPathNodeDoesNotFollowCurrentPublisher(uint256 degrees)
+        internal
+        returns (uint256[] memory)
+    {
         uint256[] memory path = new uint256[](degrees - 1);
         if (degrees == 1) {
             return path;

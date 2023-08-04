@@ -19,16 +19,7 @@ contract FollowerOnlyReferenceModuleTest is BaseTest {
     function setUp() public virtual override {
         super.setUp();
 
-        // Deploy & Whitelist FollowerOnlyReferenceModule
-        if (fork && keyExists(json, string(abi.encodePacked('.', forkEnv, '.FollowerOnlyReferenceModule')))) {
-            followerOnlyReferenceModule = FollowerOnlyReferenceModule(
-                json.readAddress(string(abi.encodePacked('.', forkEnv, '.FollowerOnlyReferenceModule')))
-            );
-            console.log('Testing against already deployed module at:', address(followerOnlyReferenceModule));
-        } else {
-            vm.prank(deployer);
-            followerOnlyReferenceModule = new FollowerOnlyReferenceModule(hubProxyAddr);
-        }
+        followerOnlyReferenceModule = loadOrDeploy_FollowerOnlyReferenceModule();
 
         profileId = _createProfile(defaultAccount.owner);
 
