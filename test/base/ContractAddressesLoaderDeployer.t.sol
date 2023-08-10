@@ -12,9 +12,53 @@ import {RevertFollowModule} from 'contracts/modules/follow/RevertFollowModule.so
 import {DegreesOfSeparationReferenceModule} from 'contracts/modules/reference/DegreesOfSeparationReferenceModule.sol';
 import {FollowerOnlyReferenceModule} from 'contracts/modules/reference/FollowerOnlyReferenceModule.sol';
 import {TokenGatedReferenceModule} from 'contracts/modules/reference/TokenGatedReferenceModule.sol';
+import {Governance} from 'contracts/misc/access/Governance.sol';
+import {ProxyAdmin} from 'contracts/misc/access/ProxyAdmin.sol';
 
-contract ModulesLoader is Test, ForkManagement {
+contract ContractAddressesLoaderDeployer is Test, ForkManagement {
     using stdJson for string;
+
+    function loadOrDeploy_GovernanceContract() internal {
+        if (fork) {
+            if (keyExists(json, string(abi.encodePacked('.', forkEnv, '.GovernanceContract')))) {
+                governanceContract = Governance(
+                    json.readAddress(string(abi.encodePacked('.', forkEnv, '.GovernanceContract')))
+                );
+            } else {
+                console.log('GovernanceContract key does not exist');
+                if (forkVersion == 1) {
+                    console.log('No GovernanceContract address found - deploying new one');
+                    governanceContract = new Governance(address(hub), governanceMultisig);
+                } else {
+                    console.log('No GovernanceContract address found in addressBook, which is required for V2');
+                    revert('No GovernanceContract address found in addressBook, which is required for V2');
+                }
+            }
+        } else {
+            governanceContract = new Governance(address(hub), governanceMultisig);
+        }
+    }
+
+    function loadOrDeploy_ProxyAdminContract() internal {
+        if (fork) {
+            if (keyExists(json, string(abi.encodePacked('.', forkEnv, '.ProxyAdminContract')))) {
+                proxyAdminContract = ProxyAdmin(
+                    json.readAddress(string(abi.encodePacked('.', forkEnv, '.ProxyAdminContract')))
+                );
+            } else {
+                console.log('ProxyAdminContract key does not exist');
+                if (forkVersion == 1) {
+                    console.log('No ProxyAdminContract address found - deploying new one');
+                    proxyAdminContract = new ProxyAdmin(address(hub), address(hubImpl), proxyAdmin);
+                } else {
+                    console.log('No ProxyAdminContract address found in addressBook, which is required for V2');
+                    revert('No ProxyAdminContract address found in addressBook, which is required for V2');
+                }
+            }
+        } else {
+            proxyAdminContract = new ProxyAdmin(address(hub), address(hubImpl), proxyAdmin);
+        }
+    }
 
     function loadOrDeploy_CollectPublicationAction() internal returns (address, address) {
         address collectNFTImpl;

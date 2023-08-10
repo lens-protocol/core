@@ -3,7 +3,7 @@
     "chainId": 137,
     "network": "polygon",
     "LensHubProxy": "0xDb46d1Dc155634FbC732f92E853b10B288AD5a1d",
-    "LensHubImplementation": "0x96f1ba24294ffe0dfcd832d8376da4a4645a4cd6",
+    "LensHubImplementation": "0xBA97fc9137b7cbBBC7fcB70a87DA645d917C902F",
     "ModuleGlobals": "0x3Df697FF746a60CBe9ee8D47555c88CB66f03BB9",
     "PoolAddressesProvider": "0xa97684ead0e402dC232d5A977953DF7ECBaB3CDb",
     "Modules": {
@@ -30,7 +30,11 @@
             "addy": "0xa94713d0688c8a483c3352635cec4e0ce88d6a29"
           }
         ],
-        "follow": [],
+        "follow": [
+          { "name": "FeeFollowModule", "addy": "0x80ae0e6048d6e295Ee6520b07Eb6EC4485193FD6" },
+          { "name": "ProfileFollowModule", "addy": "0x057ccDf5153bE1081830a6C3D507C9dfE1ac8e4E" },
+          { "name": "RevertFollowModule", "addy": "0x6640e4Fb3fd56a6d7DfF3C351dFd9Ab7E57fb769" }
+        ],
         "reference": [
           {
             "name": "TokenGatedReferenceModule",
@@ -45,7 +49,7 @@
     "chainId": 80001,
     "network": "mumbai",
     "LensHubProxy": "0x60Ae865ee4C725cd04353b5AAb364553f56ceF82",
-    "LensHubImplementation": "0x45cf9Ba12b43F6c8B7148E06A6f84c5B9ad3Dd44",
+    "LensHubImplementation": "0xFe623ae170804cA0ABdCF9848e3418b4f308d282",
     "ModuleGlobals": "0x1353aAdfE5FeD85382826757A95DE908bd21C4f9",
     "InteractionLogic": "0x845242e2Cd249af8D4f0D7085DefEAc3381815E3",
     "PoolAddressesProvider": "0x5343b5bA672Ae99d627A1C87866b8E53F47Db2E6",
@@ -73,7 +77,11 @@
             "addy": "0x912860ed4ed6160c48a52d52fcab5c059d34fe5a"
           }
         ],
-        "follow": [],
+        "follow": [
+          { "name": "FeeFollowModule", "addy": "0xe7AB9BA11b97EAC820DbCc861869092b52B65C06" },
+          { "name": "ProfileFollowModule", "addy": "0x8c32203df6b1A04E25145346e2DaAD0B4712C20D" },
+          { "name": "RevertFollowModule", "addy": "0x8c822Fc029EBdE62Da1Ed1072534c5e112dAE48c" }
+        ],
         "reference": [
           {
             "name": "TokenGatedReferenceModule",
@@ -88,7 +96,7 @@
     "chainId": 80001,
     "network": "mumbai",
     "LensHubProxy": "0x7582177F9E536aB0b6c721e11f383C326F2Ad1D5",
-    "LensHubImplementation": "0x1b30F214c192EF4B7F8c9926c47C4161016955DA",
+    "LensHubImplementation": "0x7836c7cb79b7f3d53e92c95bf43798ada212fe4e",
     "ModuleGlobals": "0xcbCC5b9611d22d11403373432642Df9Ef7Dd81AD",
     "PoolAddressesProvider": "0x5343b5bA672Ae99d627A1C87866b8E53F47Db2E6",
     "MockSandboxGovernance": "0x1677d9cC4861f1C85ac7009d5F06f49c928CA2AD",
@@ -116,7 +124,11 @@
             "addy": "0x666e06215747879ee68b3e5a317dcd8411de1897"
           }
         ],
-        "follow": [],
+        "follow": [
+          { "name": "FeeFollowModule", "addy": "0xE98a40DB1170B3A46ffa7bA84335A0A0e9A65C2d" },
+          { "name": "ProfileFollowModule", "addy": "0x62D0EcAB45428087d91a94EE33E141B7496Ad7c3" },
+          { "name": "RevertFollowModule", "addy": "0x65004331Ae1c3D35DF81aEC6E8C259167Bbe64E2" }
+        ],
         "reference": [
           {
             "name": "TokenGatedReferenceModule",

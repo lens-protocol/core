@@ -23,7 +23,7 @@ contract UpgradeForkTest is BaseTest {
     IOldHub legacyHub;
 
     address freeCollectModule;
-    address lensV2UpgradeContract;
+    LensV2UpgradeContract lensV2UpgradeContract;
 
     uint256 follow1;
     uint256 follow2;
@@ -79,7 +79,24 @@ contract UpgradeForkTest is BaseTest {
     function setUp() public override {
         super.setUp();
         legacyHub = IOldHub(address(hub));
-        freeCollectModule = json.readAddress(string(abi.encodePacked('.', forkEnv, '.Modules.v1.FreeCollectModule')));
+
+        Module[] memory collectModules = abi.decode(
+            vm.parseJson(json, string(abi.encodePacked('.', forkEnv, '.Modules.v1.collect'))),
+            (Module[])
+        );
+
+        freeCollectModule = findModuleHelper(collectModules, 'FreeCollectModule').addy;
+    }
+
+    function findModuleHelper(Module[] memory modules, string memory moduleNameToFind)
+        internal
+        returns (Module memory)
+    {
+        for (uint256 i = 0; i < modules.length; i++) {
+            if (LibString.eq(modules[i].name, moduleNameToFind)) {
+                return modules[i];
+            }
+        }
     }
 
     function upgradeToV2() internal override {
@@ -87,6 +104,7 @@ contract UpgradeForkTest is BaseTest {
     }
 
     function _prepareV1State() internal {
+        console.log('Preparing V1 state');
         // Create two profiles
         // TODO: fetch existing profiles from ENV
 
@@ -275,6 +293,7 @@ contract UpgradeForkTest is BaseTest {
     }
 
     function _prepareUpgradeContract() internal {
+        console.log('Preparing upgrade contract');
         // Load V1 modules addresses
 
         Module[] memory collectModules = abi.decode(
@@ -282,7 +301,7 @@ contract UpgradeForkTest is BaseTest {
             (Module[])
         );
         address[] memory oldCollectModulesToUnwhitelist = new address[](collectModules.length);
-        for (uint i = 0; i < collectModules.length; i++) {
+        for (uint256 i = 0; i < collectModules.length; i++) {
             oldCollectModulesToUnwhitelist[i] = collectModules[i].addy;
         }
 
@@ -291,7 +310,7 @@ contract UpgradeForkTest is BaseTest {
             (Module[])
         );
         address[] memory oldReferenceModulesToUnwhitelist = new address[](referenceModules.length);
-        for (uint i = 0; i < referenceModules.length; i++) {
+        for (uint256 i = 0; i < referenceModules.length; i++) {
             oldReferenceModulesToUnwhitelist[i] = referenceModules[i].addy;
         }
 
@@ -300,7 +319,7 @@ contract UpgradeForkTest is BaseTest {
             (Module[])
         );
         address[] memory oldFollowModulesToUnwhitelist = new address[](followModules.length);
-        for (uint i = 0; i < followModules.length; i++) {
+        for (uint256 i = 0; i < followModules.length; i++) {
             oldFollowModulesToUnwhitelist[i] = followModules[i].addy;
         }
 
@@ -333,24 +352,77 @@ contract UpgradeForkTest is BaseTest {
         //     newFollowModulesToWhitelist[i] = followModulesV2[i].addy;
         // }
 
-        lensV2UpgradeContract = address(
-            new LensV2UpgradeContract({
-                proxyAdminAddress: address(0), // TODO!
-                governanceAddress: address(0), // TODO!
-                owner: governance,
-                lensHub: address(hub),
-                newImplementationAddress: address(0), // TODO!
-                oldFollowModulesToUnwhitelist_: oldFollowModulesToUnwhitelist,
-                newFollowModulesToWhitelist_: _emptyAddressArray(),
-                oldReferenceModulesToUnwhitelist_: oldReferenceModulesToUnwhitelist,
-                newReferenceModulesToWhitelist_: _emptyAddressArray(),
-                oldCollectModulesToUnwhitelist_: oldCollectModulesToUnwhitelist,
-                newActionModulesToWhitelist_: _emptyAddressArray()
-            })
-        );
+        // Precompute needed addresses.
+        address followNFTImplAddr = computeCreateAddress(deployer, vm.getNonce(deployer) + 1);
+        address legacyCollectNFTImplAddr = computeCreateAddress(deployer, vm.getNonce(deployer) + 2);
+
+        vm.startPrank(deployer);
+        // Deploy implementation contracts.
+        // TODO: Last 3 addresses are for the follow modules for migration purposes.
+        hubImpl = new LensHubInitializable({ // TODO: Should we use the usual LensHub, not Initializable?
+            moduleGlobals: address(moduleGlobals),
+            followNFTImpl: followNFTImplAddr,
+            collectNFTImpl: legacyCollectNFTImplAddr,
+            lensHandlesAddress: address(lensHandles),
+            tokenHandleRegistryAddress: address(tokenHandleRegistry),
+            legacyFeeFollowModule: address(0), // TODO: Fill this in
+            legacyProfileFollowModule: address(0), // TODO: Fill this in
+            newFeeFollowModule: address(0), // TODO: Fill this in
+            tokenGuardianCooldown: PROFILE_GUARDIAN_COOLDOWN
+        });
+        followNFT = new FollowNFT(hubProxyAddr);
+        legacyCollectNFT = new LegacyCollectNFT(hubProxyAddr);
+        vm.stopPrank();
+
+        // TODO: Make this use a LoadOrDeploy pattern to load it from addresses if it already exists, and then don't set
+        // it as a controller in governance
+        lensV2UpgradeContract = new LensV2UpgradeContract({
+            proxyAdminAddress: address(proxyAdminContract),
+            governanceAddress: address(governanceContract),
+            owner: governanceMultisig,
+            lensHub: address(hub),
+            newImplementationAddress: address(hubImpl),
+            oldFollowModulesToUnwhitelist_: oldFollowModulesToUnwhitelist,
+            newFollowModulesToWhitelist_: _emptyAddressArray(), // TODO!
+            oldReferenceModulesToUnwhitelist_: oldReferenceModulesToUnwhitelist,
+            newReferenceModulesToWhitelist_: _emptyAddressArray(), // TODO!
+            oldCollectModulesToUnwhitelist_: oldCollectModulesToUnwhitelist,
+            newActionModulesToWhitelist_: _toAddressArray(freeCollectModule)
+        });
+        vm.label(address(lensV2UpgradeContract), 'LensV2UpgradeContract');
+
+        vm.prank(hub.getGovernance());
+        hub.setGovernance(address(governanceContract));
+
+        vm.prank(governanceMultisig);
+        governanceContract.setControllerContract(address(lensV2UpgradeContract));
+
+        proxyAdminMultisig = proxyAdmin; // TODO: Probably. Look at ContractAddresses TODO for clues.
+
+        vm.prank(proxyAdmin);
+        proxyAdminContract.setControllerContract(address(lensV2UpgradeContract));
+
+        vm.prank(proxyAdmin);
+        hubAsProxy.changeAdmin(address(proxyAdminContract));
+
+        proxyAdmin = address(proxyAdminContract);
+    }
+
+    function _upgradeV1toV2() internal {
+        console.log('Trying to Upgrade to V2 using LensV2UpgradeContract...');
+        vm.prank(governanceMultisig);
+        lensV2UpgradeContract.executeLensV2Upgrade();
+        lensVersion = 2;
+    }
+
+    function _migrateProfile1() internal {
+        console.log('Migrating Profile1...');
+        // Migrate Profile1
+        hub.batchMigrateProfiles(_toUint256Array(profileOne.profileId));
     }
 
     function _doSomeStuffOnV2() internal {
+        console.log('Doing some stuff on V2');
         // Same stuff as we done on V1, but with the new interface
         // Create two profiles
 
@@ -617,7 +689,7 @@ contract UpgradeForkTest is BaseTest {
         vm.stopPrank();
 
         // Mixed publications between Profile4 and Profile2:
-        vm.startPrank(profileFour.owner);
+        vm.prank(profileFour.owner);
         // Profile4: Comment#9 on Profile2.Post#2
         comment9 = hub.comment(
             Types.CommentParams({
@@ -635,7 +707,8 @@ contract UpgradeForkTest is BaseTest {
             })
         );
 
-        // Profile1: Quote#5 on Profile2.Comment#2
+        vm.prank(profileFour.owner);
+        // Profile4: Quote#5 on Profile2.Comment#2
         quote5 = hub.quote(
             Types.QuoteParams({
                 profileId: profileFour.profileId,
@@ -651,8 +724,8 @@ contract UpgradeForkTest is BaseTest {
                 referenceModuleInitData: ''
             })
         );
-        profile1NewPubs++;
 
+        vm.startPrank(profileTwo.owner);
         // Profile2: Post#5
         post5 = hub.post(
             Types.PostParams({
@@ -683,6 +756,7 @@ contract UpgradeForkTest is BaseTest {
             })
         );
         profile2NewPubs++;
+        vm.stopPrank();
 
         // V2 profile collects from V1 profile
         // Profile3: Collect#2 on Profile2.Post#2
@@ -705,34 +779,44 @@ contract UpgradeForkTest is BaseTest {
         // Using V2 interface, verify that the data is the same as before for:
         // V1 Profile1 was migrated, so has to conform to new after-migration data:
         Types.Profile memory profile1 = hub.getProfile(profileOne.profileId);
-        assertEq(profile1.pubCount, profile1PubCount + profile1NewPubs);
-        assertEq(profile1.followModule, address(0));
-        assertEq(profile1.__DEPRECATED__handle, '');
-        assertEq(profile1.imageURI, string.concat(MOCK_URI, '/imageURI/', LibString.lower('UPGRADE_PROFILE_1')));
-        assertEq(profile1.__DEPRECATED__followNFTURI, '');
+        assertEq(profile1.pubCount, profile1PubCount + profile1NewPubs, 'pubCount of profile1 is wrong');
+        assertEq(profile1.followModule, address(0), 'followModule of profile1 is wrong');
+        assertEq(profile1.__DEPRECATED__handle, '', 'handle of profile1 is wrong');
+        assertEq(
+            profile1.imageURI,
+            string.concat(MOCK_URI, '/imageURI/', LibString.lower('UPGRADE_PROFILE_1')),
+            'imageURI of profile1 is wrong'
+        );
+        assertEq(profile1.__DEPRECATED__followNFTURI, '', 'followNFTURI of profile1 is wrong');
 
         // V1 Profile2 was not migrated, so still has to have the old data:
         Types.Profile memory profile2 = hub.getProfile(profileTwo.profileId);
-        assertEq(profile2.pubCount, profile2PubCount + profile2NewPubs);
-        assertEq(profile2.followModule, address(0));
-        assertEq(profile2.__DEPRECATED__handle, LibString.lower('UPGRADE_PROFILE_2'));
-        assertEq(profile2.imageURI, string.concat(MOCK_URI, '/imageURI/', LibString.lower('UPGRADE_PROFILE_2')));
+        assertEq(profile2.pubCount, profile2PubCount + profile2NewPubs, 'pubCount of profile2 is wrong');
+        assertEq(profile2.followModule, address(0), 'followModule of profile2 is wrong');
+        assertEq(profile2.__DEPRECATED__handle, LibString.lower('UPGRADE_PROFILE_2'), 'handle of profile2 is wrong');
+        assertEq(
+            profile2.imageURI,
+            string.concat(MOCK_URI, '/imageURI/', LibString.lower('UPGRADE_PROFILE_2')),
+            'imageURI of profile2 is wrong'
+        );
         assertEq(
             profile2.__DEPRECATED__followNFTURI,
-            string.concat(MOCK_URI, '/followNFTURI/', LibString.lower('UPGRADE_PROFILE_2'))
+            string.concat(MOCK_URI, '/followNFTURI/', LibString.lower('UPGRADE_PROFILE_2')),
+            'followNFTURI of profile2 is wrong'
         );
 
         // - 2 Posts V1
+        console.log('Checking V1 posts...');
         Types.Publication memory post1Pub = hub.getPublication(profileOne.profileId, post1);
-        assertEq(post1Pub.pointedProfileId, 0);
-        assertEq(post1Pub.pointedPubId, 0);
-        assertEq(post1Pub.contentURI, 'https://post1');
-        assertEq(post1Pub.referenceModule, address(0));
-        assertEq(post1Pub.__DEPRECATED__collectModule, freeCollectModule);
-        assertEq(uint256(post1Pub.pubType), uint256(Types.PublicationType.Post));
-        assertEq(post1Pub.rootProfileId, 0); // V1 posts don't have root
-        assertEq(post1Pub.rootPubId, 0); // V1 posts don't have root
-        assertEq(post1Pub.enabledActionModulesBitmap, 0); // V1 posts don't have action modules
+        assertEq(post1Pub.pointedProfileId, 0, 'pointedProfileId of post1 is wrong');
+        assertEq(post1Pub.pointedPubId, 0, 'pointedPubId of post1 is wrong');
+        assertEq(post1Pub.contentURI, 'https://post1', 'contentURI of post1 is wrong');
+        assertEq(post1Pub.referenceModule, address(0), 'referenceModule of post1 is wrong');
+        assertEq(post1Pub.__DEPRECATED__collectModule, freeCollectModule, 'collectModule of post1 is wrong');
+        assertEq(uint256(post1Pub.pubType), 0, 'pubType of post1 is wrong'); // V1 posts pubType was always 0
+        assertEq(post1Pub.rootProfileId, 0, 'rootProfileId of post1 is wrong'); // V1 posts don't have root
+        assertEq(post1Pub.rootPubId, 0, 'rootPubId of post1 is wrong'); // V1 posts don't have root
+        assertEq(post1Pub.enabledActionModulesBitmap, 0, 'enabledActionModulesBitmap of post1 is wrong'); // V1 posts don't have action modules
 
         Types.Publication memory post2Pub = hub.getPublication(profileTwo.profileId, post2);
         assertEq(post2Pub.pointedProfileId, 0);
@@ -740,12 +824,13 @@ contract UpgradeForkTest is BaseTest {
         assertEq(post2Pub.contentURI, 'https://post2');
         assertEq(post2Pub.referenceModule, address(0));
         assertEq(post2Pub.__DEPRECATED__collectModule, freeCollectModule);
-        assertEq(uint256(post2Pub.pubType), uint256(Types.PublicationType.Post));
+        assertEq(uint256(post2Pub.pubType), 0); // V1 posts pubType was always 0
         assertEq(post2Pub.rootProfileId, 0); // V1 posts don't have root
         assertEq(post2Pub.rootPubId, 0); // V1 posts don't have root
         assertEq(post2Pub.enabledActionModulesBitmap, 0); // V1 posts don't have action modules
 
         // - 2 Posts V2
+        console.log('Checking V2 posts...');
         Types.Publication memory post3Pub = hub.getPublication(profileThree.profileId, post3);
         assertEq(post3Pub.pointedProfileId, 0);
         assertEq(post3Pub.pointedPubId, 0);
@@ -769,6 +854,7 @@ contract UpgradeForkTest is BaseTest {
         assertEq(post4Pub.enabledActionModulesBitmap, 0); // We didn't set action modules in this V2 post
 
         // - 1 V2 Post from V1 non-migrated Profile 2:
+        console.log('Checking V2 posts from V1 non-migrated profile...');
         Types.Publication memory post5Pub = hub.getPublication(profileTwo.profileId, post5);
         assertEq(post5Pub.pointedProfileId, 0);
         assertEq(post5Pub.pointedPubId, 0);
@@ -781,13 +867,14 @@ contract UpgradeForkTest is BaseTest {
         assertEq(post5Pub.enabledActionModulesBitmap, 0); // We didn't set action modules in this V2 post
 
         // - 4 Comments V1
+        console.log('Checking V1 comments...');
         Types.Publication memory comment1Pub = hub.getPublication(profileOne.profileId, comment1);
         assertEq(comment1Pub.pointedProfileId, profileOne.profileId);
         assertEq(comment1Pub.pointedPubId, post1);
         assertEq(comment1Pub.contentURI, 'https://comment1');
         assertEq(comment1Pub.referenceModule, address(0));
         assertEq(comment1Pub.__DEPRECATED__collectModule, freeCollectModule);
-        assertEq(uint256(comment1Pub.pubType), uint256(Types.PublicationType.Comment));
+        assertEq(uint256(comment1Pub.pubType), 0); // V1 publications pubType was always 0
         assertEq(comment1Pub.rootProfileId, 0); // V1 comments don't have root
         assertEq(comment1Pub.rootPubId, 0); // V1 comments don't have root
         assertEq(comment1Pub.enabledActionModulesBitmap, 0); // V1 comments don't have action modules
@@ -798,7 +885,7 @@ contract UpgradeForkTest is BaseTest {
         assertEq(comment2Pub.contentURI, 'https://comment2');
         assertEq(comment2Pub.referenceModule, address(0));
         assertEq(comment2Pub.__DEPRECATED__collectModule, freeCollectModule);
-        assertEq(uint256(comment2Pub.pubType), uint256(Types.PublicationType.Comment));
+        assertEq(uint256(comment2Pub.pubType), 0); // V1 publications pubType was always 0
         assertEq(comment2Pub.rootProfileId, 0); // V1 comments don't have root
         assertEq(comment2Pub.rootPubId, 0); // V1 comments don't have root
         assertEq(comment2Pub.enabledActionModulesBitmap, 0); // V1 comments don't have action modules
@@ -809,7 +896,7 @@ contract UpgradeForkTest is BaseTest {
         assertEq(comment3Pub.contentURI, 'https://comment3');
         assertEq(comment3Pub.referenceModule, address(0));
         assertEq(comment3Pub.__DEPRECATED__collectModule, freeCollectModule);
-        assertEq(uint256(comment3Pub.pubType), uint256(Types.PublicationType.Comment));
+        assertEq(uint256(comment3Pub.pubType), 0); // V1 publications pubType was always 0
         assertEq(comment3Pub.rootProfileId, 0); // V1 comments don't have root
         assertEq(comment3Pub.rootPubId, 0); // V1 comments don't have root
         assertEq(comment3Pub.enabledActionModulesBitmap, 0); // V1 comments don't have action modules
@@ -820,19 +907,20 @@ contract UpgradeForkTest is BaseTest {
         assertEq(comment4Pub.contentURI, 'https://comment4');
         assertEq(comment4Pub.referenceModule, address(0));
         assertEq(comment4Pub.__DEPRECATED__collectModule, freeCollectModule);
-        assertEq(uint256(comment4Pub.pubType), uint256(Types.PublicationType.Comment));
+        assertEq(uint256(comment4Pub.pubType), 0); // V1 publications pubType was always 0
         assertEq(comment4Pub.rootProfileId, 0); // V1 comments don't have root
         assertEq(comment4Pub.rootPubId, 0); // V1 comments don't have root
         assertEq(comment4Pub.enabledActionModulesBitmap, 0); // V1 comments don't have action modules
 
         // - 4 Mirrors V1
+        console.log('Checking V1 mirrors...');
         Types.Publication memory mirror1Pub = hub.getPublication(profileOne.profileId, mirror1);
         assertEq(mirror1Pub.pointedProfileId, profileOne.profileId);
         assertEq(mirror1Pub.pointedPubId, post1);
         assertEq(mirror1Pub.contentURI, '');
         assertEq(mirror1Pub.referenceModule, address(0));
         assertEq(mirror1Pub.__DEPRECATED__collectModule, address(0)); // V1 mirrors don't have collect module
-        assertEq(uint256(mirror1Pub.pubType), uint256(Types.PublicationType.Mirror));
+        assertEq(uint256(mirror1Pub.pubType), 0); // V1 publications pubType was always 0
         assertEq(mirror1Pub.rootProfileId, 0); // V1 mirrors don't have root
         assertEq(mirror1Pub.rootPubId, 0); // V1 mirrors don't have root
         assertEq(mirror1Pub.enabledActionModulesBitmap, 0); // V1 mirrors don't have action modules
@@ -843,7 +931,7 @@ contract UpgradeForkTest is BaseTest {
         assertEq(mirror2Pub.contentURI, '');
         assertEq(mirror2Pub.referenceModule, address(0));
         assertEq(mirror2Pub.__DEPRECATED__collectModule, address(0)); // V1 mirrors don't have collect module
-        assertEq(uint256(mirror2Pub.pubType), uint256(Types.PublicationType.Mirror));
+        assertEq(uint256(mirror2Pub.pubType), 0); // V1 publications pubType was always 0
         assertEq(mirror2Pub.rootProfileId, 0); // V1 mirrors don't have root
         assertEq(mirror2Pub.rootPubId, 0); // V1 mirrors don't have root
         assertEq(mirror2Pub.enabledActionModulesBitmap, 0); // V1 mirrors don't have action modules
@@ -854,7 +942,7 @@ contract UpgradeForkTest is BaseTest {
         assertEq(mirror3Pub.contentURI, '');
         assertEq(mirror3Pub.referenceModule, address(0));
         assertEq(mirror3Pub.__DEPRECATED__collectModule, address(0)); // V1 mirrors don't have collect module
-        assertEq(uint256(mirror3Pub.pubType), uint256(Types.PublicationType.Mirror));
+        assertEq(uint256(mirror3Pub.pubType), 0); // V1 publications pubType was always 0
         assertEq(mirror3Pub.rootProfileId, 0); // V1 mirrors don't have root
         assertEq(mirror3Pub.rootPubId, 0); // V1 mirrors don't have root
         assertEq(mirror3Pub.enabledActionModulesBitmap, 0); // V1 mirrors don't have action modules
@@ -865,12 +953,13 @@ contract UpgradeForkTest is BaseTest {
         assertEq(mirror4Pub.contentURI, '');
         assertEq(mirror4Pub.referenceModule, address(0));
         assertEq(mirror4Pub.__DEPRECATED__collectModule, address(0)); // V1 mirrors don't have collect module
-        assertEq(uint256(mirror4Pub.pubType), uint256(Types.PublicationType.Mirror));
+        assertEq(uint256(mirror4Pub.pubType), 0); // V1 publications pubType was always 0
         assertEq(mirror4Pub.rootProfileId, 0); // V1 mirrors don't have root
         assertEq(mirror4Pub.rootPubId, 0); // V1 mirrors don't have root
         assertEq(mirror4Pub.enabledActionModulesBitmap, 0); // V1 mirrors don't have action modules
 
         // - 4 Comments V2
+        console.log('Checking V2 comments...');
         Types.Publication memory comment5Pub = hub.getPublication(profileThree.profileId, comment5);
         assertEq(comment5Pub.pointedProfileId, profileThree.profileId);
         assertEq(comment5Pub.pointedPubId, post3);
@@ -938,6 +1027,8 @@ contract UpgradeForkTest is BaseTest {
         assertEq(comment10Pub.enabledActionModulesBitmap, 0); // We didn't set action modules in this V2 comment
 
         // - 4 Mirrors V2
+        console.log('Checking V2 mirrors...');
+        console.log('   ...checking mirror5');
         Types.Publication memory mirror5Pub = hub.getPublication(profileThree.profileId, mirror5);
         assertEq(mirror5Pub.pointedProfileId, profileThree.profileId);
         assertEq(mirror5Pub.pointedPubId, post3);
@@ -949,6 +1040,7 @@ contract UpgradeForkTest is BaseTest {
         assertEq(mirror5Pub.rootPubId, post3);
         assertEq(mirror5Pub.enabledActionModulesBitmap, 0); // We didn't set action modules in this V2 mirror
 
+        console.log('   ...checking mirror6');
         Types.Publication memory mirror6Pub = hub.getPublication(profileFour.profileId, mirror6);
         assertEq(mirror6Pub.pointedProfileId, profileFour.profileId);
         assertEq(mirror6Pub.pointedPubId, post4);
@@ -960,17 +1052,19 @@ contract UpgradeForkTest is BaseTest {
         assertEq(mirror6Pub.rootPubId, post4);
         assertEq(mirror6Pub.enabledActionModulesBitmap, 0); // We didn't set action modules in this V2 mirror
 
+        console.log('   ...checking mirror7');
         Types.Publication memory mirror7Pub = hub.getPublication(profileThree.profileId, mirror7);
-        assertEq(mirror7Pub.pointedProfileId, profileFour.profileId);
-        assertEq(mirror7Pub.pointedPubId, quote2);
-        assertEq(mirror7Pub.contentURI, '');
-        assertEq(mirror7Pub.referenceModule, address(0));
-        assertEq(mirror7Pub.__DEPRECATED__collectModule, address(0)); // V2 mirrors don't have collect module
-        assertEq(uint256(mirror7Pub.pubType), uint256(Types.PublicationType.Mirror));
-        assertEq(mirror7Pub.rootProfileId, profileFour.profileId);
-        assertEq(mirror7Pub.rootPubId, quote2);
-        assertEq(mirror7Pub.enabledActionModulesBitmap, 0); // We didn't set action modules in this V2 mirror
+        assertEq(mirror7Pub.pointedProfileId, profileFour.profileId, 'pointedProfileId of mirror7 is wrong');
+        assertEq(mirror7Pub.pointedPubId, quote2, 'pointedPubId of mirror7 is wrong');
+        assertEq(mirror7Pub.contentURI, '', 'contentURI of mirror7 is wrong');
+        assertEq(mirror7Pub.referenceModule, address(0), 'referenceModule of mirror7 is wrong');
+        assertEq(mirror7Pub.__DEPRECATED__collectModule, address(0), 'collectModule of mirror7 is wrong'); // V2 mirrors don't have collect module
+        assertEq(uint256(mirror7Pub.pubType), uint256(Types.PublicationType.Mirror), 'pubType of mirror7 is wrong');
+        assertEq(mirror7Pub.rootProfileId, profileFour.profileId, 'rootProfileId of mirror7 is wrong');
+        assertEq(mirror7Pub.rootPubId, post4, 'rootPubId of mirror7 is wrong');
+        assertEq(mirror7Pub.enabledActionModulesBitmap, 0, 'enabledActionModulesBitmap of mirror7 is wrong'); // We didn't set action modules in this V2 mirror
 
+        console.log('   ...checking mirror8');
         Types.Publication memory mirror8Pub = hub.getPublication(profileThree.profileId, mirror8);
         assertEq(mirror8Pub.pointedProfileId, profileOne.profileId);
         assertEq(mirror8Pub.pointedPubId, post1);
@@ -983,6 +1077,7 @@ contract UpgradeForkTest is BaseTest {
         assertEq(mirror8Pub.enabledActionModulesBitmap, 0); // We didn't set action modules in this V2 mirror
 
         // - 2 Quotes V2
+        console.log('Checking V2 quotes...');
         Types.Publication memory quote1Pub = hub.getPublication(profileThree.profileId, quote1);
         assertEq(quote1Pub.pointedProfileId, profileThree.profileId);
         assertEq(quote1Pub.pointedPubId, post3);
@@ -1045,330 +1140,17 @@ contract UpgradeForkTest is BaseTest {
     function testUpgradeV1toV2() public onlyFork {
         _prepareV1State();
         _prepareUpgradeContract();
-        // _upgradeV1toV2();
-        // _migrateProfile1();
+        _upgradeV1toV2();
+        _migrateProfile1();
         _doSomeStuffOnV2();
         _verifyDataAfterUpgrade();
     }
-
-    function testUpgrade() public onlyFork {
-        ILensHub hub = ILensHub(hubProxyAddr);
-        address proxyAdmin = address(uint160(uint256(vm.load(hubProxyAddr, ADMIN_SLOT))));
-        address gov = hub.getGovernance();
-
-        // Set up the new deployment and helper memory structs.
-        _forkSetup(hubProxyAddr, gov);
-
-        // Create a profile on the old hub, set the default profile.
-        uint256 profileId = _fullCreateProfileSequence(gov, hub);
-
-        // Post, comment, mirror.
-        _fullPublishSequence(profileId, gov, hub);
-
-        // Follow, Collect.
-        _fullFollowCollectSequence(profileId, gov, hub);
-
-        // Get the profile.
-        Types.Profile memory Profile = hub.getProfile(profileId);
-        bytes memory encodedProfile = abi.encode(Profile);
-
-        // Upgrade the hub.
-        TransparentUpgradeableProxy oldHubAsProxy = TransparentUpgradeableProxy(payable(hubProxyAddr));
-        vm.prank(proxyAdmin);
-        oldHubAsProxy.upgradeTo(address(hubImpl));
-
-        // Ensure governance is the same.
-        assertEq(hub.getGovernance(), gov);
-
-        // Ensure profile is the same.
-        Profile = hub.getProfile(profileId);
-        bytes memory postUpgradeEncodedProfile = abi.encode(Profile);
-        assertEq(postUpgradeEncodedProfile, encodedProfile);
-
-        // Create a profile on the new hub, set the default profile.
-        profileId = _fullCreateProfileSequence(gov, hub);
-
-        // Post, comment, mirror.
-        _fullPublishSequence(profileId, gov, hub);
-
-        // Follow, Collect.
-        _fullFollowCollectSequence(profileId, gov, hub);
-
-        // Fourth, set new data and ensure getters return the new data (proper slots set).
-        vm.prank(gov);
-        hub.setGovernance(address(this));
-        assertEq(hub.getGovernance(), address(this));
-    }
-
-    function _fullCreateProfileSequence(address gov, ILensHub hub) private returns (uint256) {
-        // To make this test suite evergreen, we must try setting a modern follow module since we don't know
-        // which version of the hub we're working with, if this fails, then we should use a deprecated one.
-
-        Types.CreateProfileParams memory createProfileParams = _getDefaultCreateProfileParams();
-        createProfileParams.followModule = mockFollowModuleAddr;
-
-        uint256 profileId;
-        try hub.createProfile(createProfileParams) returns (uint256 retProfileId) {
-            profileId = retProfileId;
-            console2.log('Profile created with modern follow module.');
-        } catch {
-            console2.log('Profile creation with modern follow module failed. Attempting with deprecated module.');
-
-            address mockDeprecatedFollowModule = address(new MockDeprecatedFollowModule());
-
-            vm.prank(gov);
-            hub.whitelistFollowModule(mockDeprecatedFollowModule, true);
-
-            // precompute basic profile creaton data.
-            createProfileParams = Types.CreateProfileParams({
-                to: address(this),
-                imageURI: MOCK_URI,
-                followModule: address(0),
-                followModuleInitData: abi.encode(true)
-            });
-
-            OldCreateProfileParams memory oldCreateProfileParams = OldCreateProfileParams(
-                createProfileParams.to,
-                vm.toString((IERC721Enumerable(address(hub)).totalSupply())),
-                createProfileParams.imageURI,
-                mockDeprecatedFollowModule,
-                createProfileParams.followModuleInitData,
-                MOCK_URI
-            );
-
-            oldCreateProfileParams.followModule = mockDeprecatedFollowModule;
-            profileId = IOldHub(address(hub)).createProfile(oldCreateProfileParams);
-        }
-        return profileId;
-    }
-
-    function _fullPublishSequence(uint256 profileId, address gov, ILensHub hub) private {
-        // First check if the new interface works, if not, use the old interface.
-
-        Types.PostParams memory postParams = _getDefaultPostParams();
-        postParams.profileId = profileId;
-        postParams.referenceModule = mockReferenceModuleAddr;
-
-        Types.CommentParams memory commentParams = _getDefaultCommentParams();
-        commentParams.profileId = profileId;
-        commentParams.pointedProfileId = profileId;
-
-        Types.MirrorParams memory mirrorParams = _getDefaultMirrorParams();
-        mirrorParams.profileId = profileId;
-        mirrorParams.pointedProfileId = profileId;
-
-        // Set the modern reference module, the modern collect module is already set by default.
-        postParams.referenceModule = mockReferenceModuleAddr;
-
-        try hub.post(postParams) returns (uint256 retPubId) {
-            console2.log('Post published with modern collect and reference module, continuing with modern modules.');
-            uint256 postId = retPubId;
-            assertEq(postId, 1);
-
-            commentParams.referenceModule = mockReferenceModuleAddr;
-
-            // Validate post.
-            assertEq(postId, 1);
-            Types.Publication memory pub = hub.getPublication(profileId, postId);
-            assertEq(pub.pointedProfileId, 0);
-            assertEq(pub.pointedPubId, 0);
-            assertEq(pub.contentURI, postParams.contentURI);
-            assertEq(pub.referenceModule, postParams.referenceModule);
-            // assertEq(pub.collectModule, postParams.collectModule); // TODO: Proper test
-            // assertEq(pub.collectNFT, address(0));
-
-            // Comment.
-            uint256 commentId = hub.comment(commentParams);
-
-            // Validate comment.
-            assertEq(commentId, 2);
-            pub = hub.getPublication(profileId, commentId);
-            assertEq(pub.pointedProfileId, commentParams.pointedProfileId);
-            assertEq(pub.pointedPubId, commentParams.pointedPubId);
-            assertEq(pub.contentURI, commentParams.contentURI);
-            assertEq(pub.referenceModule, commentParams.referenceModule);
-            // assertEq(pub.collectModule, commentParams.collectModule); // TODO: Proper test
-            // assertEq(pub.collectNFT, address(0));
-
-            // Mirror.
-            uint256 mirrorId = hub.mirror(mirrorParams);
-
-            // Validate mirror.
-            assertEq(mirrorId, 3);
-            pub = hub.getPublication(profileId, mirrorId);
-            assertEq(pub.pointedProfileId, mirrorParams.pointedProfileId);
-            assertEq(pub.pointedPubId, mirrorParams.pointedPubId);
-            assertEq(pub.contentURI, '');
-            assertEq(pub.referenceModule, address(0));
-            // assertEq(pub.collectModule, address(0)); // TODO: Proper tests
-            // assertEq(pub.collectNFT, address(0));
-        } catch {
-            console2.log('Post with modern collect and reference module failed, Attempting with deprecated modules');
-
-            // address mockDeprecatedCollectModule = address(new MockDeprecatedCollectModule()); // TODO: Proper test
-            address mockDeprecatedReferenceModule = address(new MockDeprecatedReferenceModule());
-
-            vm.startPrank(gov);
-            // hub.whitelistCollectModule(mockDeprecatedCollectModule, true); // TODO: Proper test
-            hub.whitelistReferenceModule(mockDeprecatedReferenceModule, true);
-            vm.stopPrank();
-
-            // Post.
-            // postParams.collectModule = mockDeprecatedCollectModule; // TODO: Proper test
-            postParams.referenceModule = mockDeprecatedReferenceModule;
-            uint256 postId = hub.post(postParams);
-
-            // Validate post.
-            assertEq(postId, 1);
-            Types.Publication memory pub = hub.getPublication(profileId, postId);
-            assertEq(pub.pointedProfileId, 0);
-            assertEq(pub.pointedPubId, 0);
-            assertEq(pub.contentURI, postParams.contentURI);
-            assertEq(pub.referenceModule, postParams.referenceModule);
-            // assertEq(pub.collectModule, postParams.collectModule); // TODO: Proper test
-            // assertEq(pub.collectNFT, address(0));
-
-            // Comment.
-            // commentParams.collectModule = mockDeprecatedCollectModule; // TODO: Proper test
-            commentParams.referenceModule = mockDeprecatedReferenceModule;
-            uint256 commentId = hub.comment(commentParams);
-
-            // Validate comment.
-            assertEq(commentId, 2);
-            pub = hub.getPublication(profileId, commentId);
-            assertEq(pub.pointedProfileId, commentParams.pointedProfileId);
-            assertEq(pub.pointedPubId, commentParams.pointedPubId);
-            assertEq(pub.contentURI, commentParams.contentURI);
-            assertEq(pub.referenceModule, commentParams.referenceModule);
-            // assertEq(pub.collectModule, commentParams.collectModule); // TODO: Proper test
-            // assertEq(pub.collectNFT, address(0));
-
-            // Mirror.
-            OldMirrorData memory oldMirrorData = OldMirrorData({
-                profileId: mirrorParams.profileId,
-                pointedProfileId: mirrorParams.pointedProfileId,
-                pointedPubId: mirrorParams.pointedPubId,
-                referenceModuleData: mirrorParams.referenceModuleData,
-                referenceModule: mockDeprecatedReferenceModule,
-                referenceModuleInitData: commentParams.referenceModuleInitData
-            });
-
-            uint256 mirrorId = IOldHub(address(hub)).mirror(oldMirrorData);
-
-            // Validate mirror.
-            assertEq(mirrorId, 3);
-            pub = hub.getPublication(profileId, mirrorId);
-            assertEq(pub.pointedProfileId, mirrorParams.pointedProfileId);
-            assertEq(pub.pointedPubId, mirrorParams.pointedPubId);
-            assertEq(pub.contentURI, '');
-            assertEq(pub.referenceModule, mockDeprecatedReferenceModule);
-            // assertEq(pub.collectModule, address(0)); // TODO: Proper test
-            // assertEq(pub.collectNFT, address(0));
-        }
-    }
-
-    function _fullFollowCollectSequence(uint256 profileId, address gov, ILensHub hub) private {
-        // First check if the new interface works, if not, use the old interface.
-        uint256[] memory profileIds = new uint256[](1);
-        profileIds[0] = profileId;
-        uint256[] memory followTokenIds = new uint256[](1);
-        followTokenIds[0] = 0;
-        bytes[] memory datas = new bytes[](1);
-        datas[0] = '';
-
-        uint256 secondProfileId = _fullCreateProfileSequence(gov, hub);
-
-        try hub.follow(secondProfileId, profileIds, followTokenIds, datas) {
-            console2.log('Follow with modern interface succeeded, continuing with modern interface.');
-            hub.collect(
-                Types.CollectParams({
-                    publicationCollectedProfileId: profileId,
-                    publicationCollectedId: 1,
-                    collectorProfileId: profileId,
-                    referrerProfileId: 0,
-                    referrerPubId: 0,
-                    collectModuleData: ''
-                })
-            );
-            hub.collect(
-                Types.CollectParams({
-                    publicationCollectedProfileId: profileId,
-                    publicationCollectedId: 2,
-                    collectorProfileId: profileId,
-                    referrerProfileId: 0,
-                    referrerPubId: 0,
-                    collectModuleData: ''
-                })
-            );
-            hub.collect(
-                Types.CollectParams({
-                    publicationCollectedProfileId: profileId,
-                    publicationCollectedId: 3,
-                    collectorProfileId: profileId,
-                    referrerProfileId: 0,
-                    referrerPubId: 0,
-                    collectModuleData: ''
-                })
-            );
-        } catch {
-            console2.log('Follow with modern interface failed, proceeding with deprecated interface.');
-            IOldHub(address(hub)).follow(profileIds, datas);
-            IOldHub(address(hub)).collect(profileId, 1, '');
-            IOldHub(address(hub)).collect(profileId, 2, '');
-            IOldHub(address(hub)).collect(profileId, 3, '');
-        }
-    }
-
-    function _forkSetup(address hubProxyAddr, address gov) private {
-        // Start deployments.
-        vm.startPrank(deployer);
-
-        // Precompute needed addresss.
-        address followNFTAddr = computeCreateAddress(deployer, 1);
-        address legacyCollectNFTAddr = computeCreateAddress(deployer, 2);
-
-        // Deploy implementation contracts.
-        // TODO: Last 3 addresses are for the follow modules for migration purposes.
-        hubImpl = new LensHubInitializable({
-            moduleGlobals: address(0),
-            followNFTImpl: followNFTAddr,
-            collectNFTImpl: legacyCollectNFTAddr,
-            lensHandlesAddress: address(0),
-            tokenHandleRegistryAddress: address(0),
-            legacyFeeFollowModule: address(0),
-            legacyProfileFollowModule: address(0),
-            newFeeFollowModule: address(0),
-            tokenGuardianCooldown: PROFILE_GUARDIAN_COOLDOWN
-        });
-        followNFT = new FollowNFT(hubProxyAddr);
-        legacyCollectNFT = new LegacyCollectNFT(hubProxyAddr);
-
-        // Deploy the mock modules.
-        mockReferenceModuleAddr = address(new MockReferenceModule());
-        mockFollowModuleAddr = address(new MockFollowModule());
-
-        // End deployments.
-        vm.stopPrank();
-
-        hub = LensHub(hubProxyAddr);
-        // Start gov actions.
-        vm.startPrank(gov);
-        hub.whitelistProfileCreator(address(this), true);
-        hub.whitelistFollowModule(mockFollowModuleAddr, true);
-        hub.whitelistReferenceModule(mockReferenceModuleAddr, true);
-
-        // End gov actions.
-        vm.stopPrank();
-
-        // Compute the domain separator.
-        domainSeparator = keccak256(
-            abi.encode(
-                Typehash.EIP712_DOMAIN,
-                keccak256('Lens Protocol Profiles'),
-                MetaTxLib.EIP712_DOMAIN_VERSION_HASH,
-                block.chainid,
-                hubProxyAddr
-            )
-        );
-    }
 }
+
+// MegaTODO:
+/*
+    -- We don't verify Collects (how?)
+    -- We don't verify Follows (how?)
+    -- We have somebody follow somebody, but we don't migrate the follows yet
+    
+*/

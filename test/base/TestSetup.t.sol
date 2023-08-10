@@ -15,7 +15,7 @@ import {MetaTxLib} from 'contracts/libraries/MetaTxLib.sol';
 import {StorageLib} from 'contracts/libraries/StorageLib.sol';
 import 'test/Constants.sol';
 import {LibString} from 'solady/utils/LibString.sol';
-import {ModulesLoader} from 'test/modules/ModulesLoader.t.sol';
+import {ContractAddressesLoaderDeployer} from 'test/base/ContractAddressesLoaderDeployer.t.sol';
 
 import {LensHub} from 'contracts/LensHub.sol';
 import {LensHubInitializable} from 'contracts/misc/LensHubInitializable.sol';
@@ -82,7 +82,11 @@ interface IOldHub {
 
     function follow(uint256[] calldata profileIds, bytes[] calldata datas) external returns (uint256[] memory);
 
-    function collect(uint256 profileId, uint256 pubId, bytes calldata data) external returns (uint256);
+    function collect(
+        uint256 profileId,
+        uint256 pubId,
+        bytes calldata data
+    ) external returns (uint256);
 
     function post(OldPostData calldata vars) external returns (uint256);
 
@@ -93,7 +97,7 @@ interface IOldHub {
     function getProfile(uint256 profileId) external view returns (OldProfileStruct memory);
 }
 
-contract TestSetup is Test, ModulesLoader, ArrayHelpers {
+contract TestSetup is Test, ContractAddressesLoaderDeployer, ArrayHelpers {
     using stdJson for string;
 
     function testTestSetup() public {
@@ -104,6 +108,7 @@ contract TestSetup is Test, ModulesLoader, ArrayHelpers {
         console.log('targetEnv:', targetEnv);
 
         hubProxyAddr = json.readAddress(string(abi.encodePacked('.', targetEnv, '.LensHubProxy')));
+        vm.label(hubProxyAddr, 'LENS_HUB');
         console.log('hubProxyAddr:', hubProxyAddr);
 
         hub = LensHub(hubProxyAddr);
@@ -120,18 +125,20 @@ contract TestSetup is Test, ModulesLoader, ArrayHelpers {
         legacyCollectNFT = LegacyCollectNFT(legacyCollectNFTAddr);
         hubAsProxy = TransparentUpgradeableProxy(payable(address(hub)));
 
-        governance = hub.getGovernance();
-        vm.label(governance, 'GOVERNANCE');
+        governanceMultisig = hub.getGovernance();
+        vm.label(governanceMultisig, 'GOVERNANCE_MULTISIG');
+
+        governance = governanceMultisig; // TODO: Temporary, look at ContractAddresses.sol for context
 
         moduleGlobals = ModuleGlobals(json.readAddress(string(abi.encodePacked('.', targetEnv, '.ModuleGlobals'))));
 
         modulesGovernance = moduleGlobals.getGovernance();
-        vm.label(governance, 'MODULES_GOVERNANCE');
+        vm.label(modulesGovernance, 'MODULES_GOVERNANCE');
 
         deployer = _loadAddressAs('DEPLOYER');
 
         treasury = moduleGlobals.getTreasury();
-        vm.label(governance, 'TREASURY');
+        vm.label(treasury, 'TREASURY');
 
         proxyAdmin = address(uint160(uint256(vm.load(hubProxyAddr, ADMIN_SLOT))));
         vm.label(proxyAdmin, 'HUB_PROXY_ADMIN');
@@ -146,7 +153,7 @@ contract TestSetup is Test, ModulesLoader, ArrayHelpers {
             if (forkVersion == 1) {
                 console.log('No LensHandles address found - deploying new one');
                 address lensHandlesImpl = address(
-                    new LensHandles(governance, address(hubAsProxy), HANDLE_GUARDIAN_COOLDOWN)
+                    new LensHandles(governanceMultisig, address(hubAsProxy), HANDLE_GUARDIAN_COOLDOWN)
                 );
                 vm.label(lensHandlesImpl, 'LENS_HANDLES_IMPL');
 
@@ -183,6 +190,10 @@ contract TestSetup is Test, ModulesLoader, ArrayHelpers {
             }
         }
 
+        loadOrDeploy_GovernanceContract();
+
+        loadOrDeploy_ProxyAdminContract();
+
         if (forkVersion == 1) {
             lensVersion = 1;
             upgradeToV2();
@@ -203,7 +214,7 @@ contract TestSetup is Test, ModulesLoader, ArrayHelpers {
 
         if (lensVersion == 2) {
             // Start governance actions.
-            vm.startPrank(governance);
+            vm.startPrank(governanceMultisig);
 
             // Whitelist the MockActionModule.
             hub.whitelistActionModule(address(mockActionModule), true);
@@ -224,7 +235,7 @@ contract TestSetup is Test, ModulesLoader, ArrayHelpers {
         vm.startPrank(deployer);
         // Deploy implementation contracts.
         // TODO: Last 3 addresses are for the follow modules for migration purposes.
-        hubImpl = new LensHubInitializable({ // TODO: Should we use the usual LensHub, not Initializable?rf
+        hubImpl = new LensHubInitializable({ // TODO: Should we use the usual LensHub, not Initializable?
             moduleGlobals: address(moduleGlobals),
             followNFTImpl: followNFTImplAddr,
             collectNFTImpl: legacyCollectNFTImplAddr,
@@ -248,7 +259,8 @@ contract TestSetup is Test, ModulesLoader, ArrayHelpers {
 
     function deployBaseContracts() internal {
         deployer = _loadAddressAs('DEPLOYER');
-        governance = _loadAddressAs('GOVERNANCE');
+        governanceMultisig = _loadAddressAs('GOVERNANCE_MULTISIG');
+        governance = governanceMultisig; // TODO: Temporary, look at ContractAddresses.sol for context
         treasury = _loadAddressAs('TREASURY');
         modulesGovernance = _loadAddressAs('MODULES_GOVERNANCE');
 
@@ -286,12 +298,17 @@ contract TestSetup is Test, ModulesLoader, ArrayHelpers {
         legacyCollectNFT = new LegacyCollectNFT(hubProxyAddr);
 
         // Deploy and initialize proxy.
-        bytes memory initData = abi.encodeCall(hubImpl.initialize, ('Lens Protocol Profiles', 'LPP', governance));
+        bytes memory initData = abi.encodeCall(
+            hubImpl.initialize,
+            ('Lens Protocol Profiles', 'LPP', governanceMultisig) // TODO: Replace this with GovernanceContract
+        );
         // TODO: Replace deployer owner with proxyAdmin.
         hubAsProxy = new TransparentUpgradeableProxy(address(hubImpl), deployer, initData);
 
         // Deploy LensHandles implementation.
-        address lensHandlesImpl = address(new LensHandles(governance, address(hubAsProxy), HANDLE_GUARDIAN_COOLDOWN));
+        address lensHandlesImpl = address(
+            new LensHandles(governanceMultisig, address(hubAsProxy), HANDLE_GUARDIAN_COOLDOWN)
+        );
         assertEq(lensHandlesImpl, lensHandlesImplAddr);
         vm.label(lensHandlesImpl, 'LENS_HANDLES_IMPL');
 
@@ -331,7 +348,7 @@ contract TestSetup is Test, ModulesLoader, ArrayHelpers {
         ///////////////////////////////////////// End deployments.
 
         // Start governance actions.
-        vm.startPrank(governance);
+        vm.startPrank(governanceMultisig);
 
         // Whitelist the MockActionModule.
         hub.whitelistActionModule(address(mockActionModule), true);
@@ -359,7 +376,7 @@ contract TestSetup is Test, ModulesLoader, ArrayHelpers {
             deployBaseContracts();
         }
         ///////////////////////////////////////// Start governance actions.
-        vm.startPrank(governance);
+        vm.startPrank(governanceMultisig);
 
         if (hub.getState() != Types.ProtocolState.Unpaused) {
             hub.setState(Types.ProtocolState.Unpaused);
@@ -421,10 +438,10 @@ contract TestSetup is Test, ModulesLoader, ArrayHelpers {
         return _loadAccountAs({accountLabel: accountLabel, requireCustomProfileOnFork: false});
     }
 
-    function _loadAccountAs(
-        string memory accountLabel,
-        bool requireCustomProfileOnFork
-    ) internal returns (TestAccount memory) {
+    function _loadAccountAs(string memory accountLabel, bool requireCustomProfileOnFork)
+        internal
+        returns (TestAccount memory)
+    {
         // We derive a new account from the given label.
         (address accountOwner, uint256 accountOwnerPk) = makeAddrAndKey(accountLabel);
         uint256 accountProfileId;

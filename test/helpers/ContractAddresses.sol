@@ -11,6 +11,8 @@ import {MockReferenceModule} from 'test/mocks/MockReferenceModule.sol';
 import {ModuleGlobals} from 'contracts/misc/ModuleGlobals.sol';
 import {LensHandles} from 'contracts/namespaces/LensHandles.sol';
 import {TokenHandleRegistry} from 'contracts/namespaces/TokenHandleRegistry.sol';
+import {Governance} from 'contracts/misc/access/Governance.sol';
+import {ProxyAdmin} from 'contracts/misc/access/ProxyAdmin.sol';
 
 contract ContractAddresses {
     ////////////////////////////////// Types
@@ -25,9 +27,10 @@ contract ContractAddresses {
         uint256 pubId;
     }
 
+    // JSON Parsing Library will sort the object fields alphabetically, that's why we need to keep this order.
     struct Module {
-        string name;
         address addy;
+        string name;
     }
 
     // Avoid setUp to be run more than once.
@@ -42,10 +45,12 @@ contract ContractAddresses {
 
     ////////////////////////////////// Relevant actors' addresses
     address deployer;
-    address governance;
+    address governance; // TODO: We need to make this lensHubGovernance (maybe even a function that will return it dynamically)
+    address governanceMultisig;
     address treasury;
     address modulesGovernance;
-    address proxyAdmin;
+    address proxyAdmin; // TODO: This needs to be a function that goes to lensHub and gets it.
+    address proxyAdminMultisig; // TODO: and ProxyAdminMultisig - load it from addresses.json or .env
 
     ////////////////////////////////// Relevant values or constants
     uint16 TREASURY_FEE_BPS;
@@ -65,4 +70,7 @@ contract ContractAddresses {
     ModuleGlobals moduleGlobals;
     LensHandles lensHandles;
     TokenHandleRegistry tokenHandleRegistry;
+
+    Governance governanceContract;
+    ProxyAdmin proxyAdminContract;
 }
