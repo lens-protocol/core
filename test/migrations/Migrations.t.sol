@@ -145,4 +145,25 @@ contract MigrationsTest is Test, ForkManagement {
 
         hub.batchMigrateFollows(followerProfileIds, idsOfProfileFollowed, followTokenIds);
     }
+
+    function testFollowMigration_byHubFollow() public onlyFork {
+        uint256 followerProfileId = 8;
+
+        uint256[] memory idsOfProfilesToFollow = new uint256[](1);
+        idsOfProfilesToFollow[0] = 92973;
+
+        bytes[] memory datas = new bytes[](1);
+        datas[0] = '';
+
+        uint256[] memory followTokenIds = new uint256[](1);
+        followTokenIds[0] = 1;
+
+        vm.prank(hub.ownerOf(followerProfileId));
+        hub.follow(followerProfileId, idsOfProfilesToFollow, followTokenIds, datas);
+
+        address targetFollowNFT = hub.getProfile(idsOfProfilesToFollow[0]).followNFT;
+
+        vm.prank(hub.ownerOf(followerProfileId));
+        FollowNFT(targetFollowNFT).unwrap(followTokenIds[0]);
+    }
 }
