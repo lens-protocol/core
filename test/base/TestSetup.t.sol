@@ -196,6 +196,9 @@ contract TestSetup is Test, ContractAddressesLoaderDeployer, ArrayHelpers {
 
         if (forkVersion == 1) {
             lensVersion = 1;
+            vm.prank(governance);
+            hub.whitelistProfileCreator(address(this), true);
+            beforeUpgrade();
             upgradeToV2();
         }
 
@@ -225,6 +228,10 @@ contract TestSetup is Test, ContractAddressesLoaderDeployer, ArrayHelpers {
             // End governance actions.
             vm.stopPrank();
         }
+    }
+
+    function beforeUpgrade() internal virtual {
+        // Override to execute Lens V1 state setup.
     }
 
     function upgradeToV2() internal virtual {

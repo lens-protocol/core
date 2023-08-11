@@ -15,21 +15,65 @@ import {IERC721} from '@openzeppelin/contracts/token/ERC721/IERC721.sol';
 import {IERC721Enumerable} from '@openzeppelin/contracts/token/ERC721/extensions/IERC721Enumerable.sol';
 import {LensHubInitializable} from 'contracts/misc/LensHubInitializable.sol';
 import 'test/Constants.sol';
+import 'test/base/BaseTest.t.sol';
 
-interface OldLensHub {
-    struct ProfileStruct {
-        uint256 pubCount;
-        address followModule;
-        address followNFT;
-        string handle;
-        string imageURI;
-        string followNFTURI;
+contract MigrationsTest is BaseTest {
+    TestAccount firstAccount;
+
+    TestAccount secondAccount;
+
+    uint256 followTokenIdV1;
+
+    function beforeUpgrade() internal override {
+        firstAccount = _loadAccountAs('FIRST_ACCOUNT');
+
+        secondAccount = _loadAccountAs('SECOND_ACCOUNT');
+
+        vm.prank(firstAccount.owner);
+        followTokenIdV1 = IOldHub(address(hub)).follow(_toUint256Array(secondAccount.profileId), _toBytesArray(''))[0];
     }
 
-    function getProfile(uint256 profileId) external view returns (ProfileStruct memory);
+    function testCannotMigrateFollowIfAlreadyFollowing() public {
+        vm.prank(firstAccount.owner);
+        uint256 followTokenIdV2 = hub.follow(
+            firstAccount.profileId,
+            _toUint256Array(secondAccount.profileId),
+            _toUint256Array(0),
+            _toBytesArray('')
+        )[0];
+
+        assertTrue(hub.isFollowing(firstAccount.profileId, secondAccount.profileId));
+
+        FollowNFT followNFT = FollowNFT(hub.getProfile(secondAccount.profileId).followNFT);
+
+        uint256 followTokenV1FollowerProfileId = followNFT.getFollowerProfileId(followTokenIdV1);
+        uint256 followTokenV2FollowerProfileId = followNFT.getFollowerProfileId(followTokenIdV2);
+        uint256 followTokenIdUsedByFirstAccount = followNFT.getFollowTokenId(firstAccount.profileId);
+        uint256 originalFollowTimestampTokenV1 = followNFT.getOriginalFollowTimestamp(followTokenIdV1);
+        uint256 originalFollowTimestampTokenV2 = followNFT.getOriginalFollowTimestamp(followTokenIdV2);
+
+        assertEq(followTokenV1FollowerProfileId, 0);
+        assertEq(followTokenV2FollowerProfileId, firstAccount.profileId);
+        assertEq(followTokenIdUsedByFirstAccount, followTokenIdV2);
+        assertEq(originalFollowTimestampTokenV1, 0);
+        assertEq(originalFollowTimestampTokenV2, block.timestamp);
+
+        hub.batchMigrateFollows({
+            followerProfileIds: _toUint256Array(firstAccount.profileId),
+            idsOfProfileFollowed: _toUint256Array(secondAccount.profileId),
+            followTokenIds: _toUint256Array(followTokenIdV1)
+        });
+
+        // Migration did not take effect as it was already following, values are the same as before.
+        assertEq(followNFT.getFollowerProfileId(followTokenIdV1), followTokenV1FollowerProfileId);
+        assertEq(followNFT.getFollowerProfileId(followTokenIdV2), followTokenV2FollowerProfileId);
+        assertEq(followNFT.getFollowTokenId(firstAccount.profileId), followTokenIdUsedByFirstAccount);
+        assertEq(followNFT.getOriginalFollowTimestamp(followTokenIdV1), originalFollowTimestampTokenV1);
+        assertEq(followNFT.getOriginalFollowTimestamp(followTokenIdV2), originalFollowTimestampTokenV2);
+    }
 }
 
-contract MigrationsTest is Test, ForkManagement {
+contract MigrationsTestHardcoded is Test, ForkManagement {
     using stdJson for string;
 
     uint256 internal constant LENS_PROTOCOL_PROFILE_ID = 1;
@@ -107,7 +151,7 @@ contract MigrationsTest is Test, ForkManagement {
 
         // TODO: This can be moved and split
         uint256 idOfProfileFollowed = 8;
-        address followNFTAddress = OldLensHub(address(hub)).getProfile(idOfProfileFollowed).followNFT;
+        address followNFTAddress = IOldHub(address(hub)).getProfile(idOfProfileFollowed).followNFT;
         for (uint256 i = 0; i < 10; i++) {
             uint256 followTokenId = i + 1;
             address followerOwner = IERC721(followNFTAddress).ownerOf(followTokenId);
