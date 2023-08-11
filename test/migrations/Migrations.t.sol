@@ -71,6 +71,58 @@ contract MigrationsTest is BaseTest {
         assertEq(followNFT.getOriginalFollowTimestamp(followTokenIdV1), originalFollowTimestampTokenV1);
         assertEq(followNFT.getOriginalFollowTimestamp(followTokenIdV2), originalFollowTimestampTokenV2);
     }
+
+    function testCannotMigrateFollowIfBlocked() public {
+        vm.prank(secondAccount.owner);
+        hub.setBlockStatus(secondAccount.profileId, _toUint256Array(firstAccount.profileId), _toBoolArray(true));
+
+        FollowNFT followNFT = FollowNFT(hub.getProfile(secondAccount.profileId).followNFT);
+
+        uint256 followTokenV1FollowerProfileId = followNFT.getFollowerProfileId(followTokenIdV1);
+        uint256 followTokenIdUsedByFirstAccount = followNFT.getFollowTokenId(firstAccount.profileId);
+        uint256 originalFollowTimestampTokenV1 = followNFT.getOriginalFollowTimestamp(followTokenIdV1);
+
+        assertEq(followTokenV1FollowerProfileId, 0);
+        assertEq(followTokenIdUsedByFirstAccount, 0);
+        assertEq(originalFollowTimestampTokenV1, 0);
+
+        hub.batchMigrateFollows({
+            followerProfileIds: _toUint256Array(firstAccount.profileId),
+            idsOfProfileFollowed: _toUint256Array(secondAccount.profileId),
+            followTokenIds: _toUint256Array(followTokenIdV1)
+        });
+
+        // Migration did not take effect as it was already following, values are the same as before.
+        assertEq(followNFT.getFollowerProfileId(followTokenIdV1), followTokenV1FollowerProfileId);
+        assertEq(followNFT.getFollowTokenId(firstAccount.profileId), followTokenIdUsedByFirstAccount);
+        assertEq(followNFT.getOriginalFollowTimestamp(followTokenIdV1), originalFollowTimestampTokenV1);
+    }
+
+    function testCannotMigrateFollowIfSelfFollow() public {
+        FollowNFT followNFT = FollowNFT(hub.getProfile(secondAccount.profileId).followNFT);
+        vm.prank(firstAccount.owner);
+        followNFT.transferFrom(firstAccount.owner, secondAccount.owner, followTokenIdV1);
+        assertEq(followNFT.ownerOf(followTokenIdV1), secondAccount.owner);
+
+        uint256 followTokenV1FollowerProfileId = followNFT.getFollowerProfileId(followTokenIdV1);
+        uint256 followTokenIdUsedByFirstAccount = followNFT.getFollowTokenId(firstAccount.profileId);
+        uint256 originalFollowTimestampTokenV1 = followNFT.getOriginalFollowTimestamp(followTokenIdV1);
+
+        assertEq(followTokenV1FollowerProfileId, 0);
+        assertEq(followTokenIdUsedByFirstAccount, 0);
+        assertEq(originalFollowTimestampTokenV1, 0);
+
+        hub.batchMigrateFollows({
+            followerProfileIds: _toUint256Array(secondAccount.profileId),
+            idsOfProfileFollowed: _toUint256Array(secondAccount.profileId),
+            followTokenIds: _toUint256Array(followTokenIdV1)
+        });
+
+        // Migration did not take effect as it was already following, values are the same as before.
+        assertEq(followNFT.getFollowerProfileId(followTokenIdV1), followTokenV1FollowerProfileId);
+        assertEq(followNFT.getFollowTokenId(firstAccount.profileId), followTokenIdUsedByFirstAccount);
+        assertEq(followNFT.getOriginalFollowTimestamp(followTokenIdV1), originalFollowTimestampTokenV1);
+    }
 }
 
 contract MigrationsTestHardcoded is Test, ForkManagement {

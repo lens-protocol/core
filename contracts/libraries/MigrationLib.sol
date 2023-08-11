@@ -114,8 +114,12 @@ library MigrationLib {
 
     function _migrateFollow(uint256 followerProfileId, uint256 idOfProfileFollowed, uint256 followTokenId) private {
         if (StorageLib.blockedStatus(idOfProfileFollowed)[followerProfileId]) {
-            return;
+            return; // Cannot follow if blocked
         }
+        if (followerProfileId == idOfProfileFollowed) {
+            return; // Cannot self-follow
+        }
+
         uint48 mintTimestamp = FollowNFT(StorageLib.getProfile(idOfProfileFollowed).followNFT).tryMigrate({
             followerProfileId: followerProfileId,
             followerProfileOwner: StorageLib.getTokenData(followerProfileId).owner,
