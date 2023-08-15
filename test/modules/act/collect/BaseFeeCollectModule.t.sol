@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity ^0.8.10;
 
-import {BaseFeeCollectModuleBase} from 'test/modules/act/collect/BaseFeeCollectModule.base.sol';
+import {BaseFeeCollectModuleBase} from 'test/modules/act/collect/BaseFeeCollectModule.base.t.sol';
 import {IBaseFeeCollectModule, BaseProfilePublicationData} from 'contracts/modules/interfaces/IBaseFeeCollectModule.sol';
 import {Types} from 'contracts/libraries/constants/Types.sol';
 import {Errors as ModuleErrors} from 'contracts/modules/constants/Errors.sol';
