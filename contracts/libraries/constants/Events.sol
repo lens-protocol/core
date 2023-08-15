@@ -110,9 +110,6 @@ library Events {
      * @param creator The profile creator, who created the token with the given profile ID.
      * @param to The address receiving the profile with the given profile ID.
      * @param imageURI The image URI set for the profile.
-     * @param followModule The profile's newly set follow module. This CAN be the zero address.
-     * @param followModuleReturnData The data returned from the follow module's initialization. This is ABI-encoded
-     * and totally depends on the follow module chosen.
      * @param timestamp The current block timestamp.
      */
     event ProfileCreated(
@@ -120,8 +117,6 @@ library Events {
         address indexed creator,
         address indexed to,
         string imageURI,
-        address followModule,
-        bytes followModuleReturnData,
         uint256 timestamp
     );
 
