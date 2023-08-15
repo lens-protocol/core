@@ -14,6 +14,7 @@ import {LensBaseERC721} from 'contracts/base/LensBaseERC721.sol';
 import {Strings} from '@openzeppelin/contracts/utils/Strings.sol';
 import {StorageLib} from 'contracts/libraries/StorageLib.sol';
 import {FollowTokenURILib} from 'contracts/libraries/token-uris/FollowTokenURILib.sol';
+import {Types} from 'contracts/libraries/constants/Types.sol';
 
 contract FollowNFT is HubRestricted, LensBaseERC721, ERC2981CollectionRoyalties, IFollowNFT {
     using Strings for uint256;
@@ -480,7 +481,6 @@ contract FollowNFT is HubRestricted, LensBaseERC721, ERC2981CollectionRoyalties,
     function tryMigrate(
         uint256 followerProfileId,
         address followerProfileOwner,
-        uint256 idOfProfileFollowed,
         uint256 followTokenId
     ) external onlyHub returns (uint48) {
         // Migrated FollowNFTs should have `originalFollowTimestamp` set
@@ -492,15 +492,14 @@ contract FollowNFT is HubRestricted, LensBaseERC721, ERC2981CollectionRoyalties,
             return 0; // Already following
         }
 
-        if (_followedProfileId != idOfProfileFollowed) {
-            revert Errors.InvalidParameter(); // Wrong FollowNFT
-        }
+        // TODO: try storage and see if it optimizes better (with via-IR probably not)
+        Types.TokenData memory tokenData = StorageLib.getTokenData(followTokenId);
 
-        if (!_exists(followTokenId)) {
+        address followTokenOwner = tokenData.owner;
+
+        if (followTokenOwner == address(0)) {
             return 0; // Doesn't exist
         }
-
-        address followTokenOwner = ownerOf(followTokenId);
 
         // ProfileNFT and FollowNFT should be in the same account
         if (followerProfileOwner != followTokenOwner) {
@@ -513,13 +512,11 @@ contract FollowNFT is HubRestricted, LensBaseERC721, ERC2981CollectionRoyalties,
 
         _followTokenIdByFollowerProfileId[followerProfileId] = followTokenId;
 
-        uint48 mintTimestamp = uint48(StorageLib.getTokenData(followTokenId).mintTimestamp);
-
         _followDataByFollowTokenId[followTokenId].followerProfileId = uint160(followerProfileId);
-        _followDataByFollowTokenId[followTokenId].originalFollowTimestamp = mintTimestamp;
-        _followDataByFollowTokenId[followTokenId].followTimestamp = mintTimestamp;
+        _followDataByFollowTokenId[followTokenId].originalFollowTimestamp = uint48(tokenData.mintTimestamp);
+        _followDataByFollowTokenId[followTokenId].followTimestamp = uint48(tokenData.mintTimestamp);
 
         super._burn(followTokenId);
-        return mintTimestamp;
+        return uint48(tokenData.mintTimestamp);
     }
 }
