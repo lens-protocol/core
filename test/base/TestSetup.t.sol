@@ -4,11 +4,9 @@ pragma solidity ^0.8.13;
 import 'forge-std/Test.sol';
 
 // Deployments
-import {ILensHub} from 'contracts/interfaces/ILensHub.sol';
 import {Types} from 'contracts/libraries/constants/Types.sol';
 import {Errors} from 'contracts/libraries/constants/Errors.sol';
 import {Events} from 'contracts/libraries/constants/Events.sol';
-import {ProfileTokenURILib} from 'contracts/libraries/token-uris/ProfileTokenURILib.sol';
 import {ArrayHelpers} from 'test/helpers/ArrayHelpers.sol';
 import {Typehash} from 'contracts/libraries/constants/Typehash.sol';
 import {MetaTxLib} from 'contracts/libraries/MetaTxLib.sol';
@@ -137,6 +135,8 @@ contract TestSetup is Test, ContractAddressesLoaderDeployer, ArrayHelpers {
 
         deployer = _loadAddressAs('DEPLOYER');
 
+        migrationAdmin = _loadAddressAs('MIGRATION_ADMIN');
+
         treasury = moduleGlobals.getTreasury();
         vm.label(treasury, 'TREASURY');
 
@@ -246,12 +246,15 @@ contract TestSetup is Test, ContractAddressesLoaderDeployer, ArrayHelpers {
             moduleGlobals: address(moduleGlobals),
             followNFTImpl: followNFTImplAddr,
             collectNFTImpl: legacyCollectNFTImplAddr,
-            lensHandlesAddress: address(lensHandles),
-            tokenHandleRegistryAddress: address(tokenHandleRegistry),
-            legacyFeeFollowModule: address(0), // TODO: Fill this in
-            legacyProfileFollowModule: address(0), // TODO: Fill this in
-            newFeeFollowModule: address(0), // TODO: Fill this in
-            tokenGuardianCooldown: PROFILE_GUARDIAN_COOLDOWN
+            tokenGuardianCooldown: PROFILE_GUARDIAN_COOLDOWN,
+            migrationParams: Types.MigrationParams({
+                lensHandlesAddress: address(lensHandles),
+                tokenHandleRegistryAddress: address(tokenHandleRegistry),
+                legacyFeeFollowModule: address(0), // TODO: Fill this in
+                legacyProfileFollowModule: address(0), // TODO: Fill this in
+                newFeeFollowModule: address(0), // TODO: Fill this in
+                migrationAdmin: migrationAdmin
+            })
         });
         followNFT = new FollowNFT(hubProxyAddr);
         legacyCollectNFT = new LegacyCollectNFT(hubProxyAddr);
@@ -270,6 +273,7 @@ contract TestSetup is Test, ContractAddressesLoaderDeployer, ArrayHelpers {
         governance = governanceMultisig; // TODO: Temporary, look at ContractAddresses.sol for context
         treasury = _loadAddressAs('TREASURY');
         modulesGovernance = _loadAddressAs('MODULES_GOVERNANCE');
+        migrationAdmin = _loadAddressAs('MIGRATION_ADMIN');
 
         TREASURY_FEE_BPS = 50;
 
@@ -294,12 +298,15 @@ contract TestSetup is Test, ContractAddressesLoaderDeployer, ArrayHelpers {
             moduleGlobals: address(moduleGlobals),
             followNFTImpl: followNFTImplAddr,
             collectNFTImpl: legacyCollectNFTImplAddr,
-            lensHandlesAddress: lensHandlesProxyAddr,
-            tokenHandleRegistryAddress: tokenHandleRegistryProxyAddr,
-            legacyFeeFollowModule: address(0),
-            legacyProfileFollowModule: address(0),
-            newFeeFollowModule: address(0),
-            tokenGuardianCooldown: PROFILE_GUARDIAN_COOLDOWN
+            tokenGuardianCooldown: PROFILE_GUARDIAN_COOLDOWN,
+            migrationParams: Types.MigrationParams({
+                lensHandlesAddress: lensHandlesProxyAddr,
+                tokenHandleRegistryAddress: tokenHandleRegistryProxyAddr,
+                legacyFeeFollowModule: address(0),
+                legacyProfileFollowModule: address(0),
+                newFeeFollowModule: address(0),
+                migrationAdmin: migrationAdmin
+            })
         });
         followNFT = new FollowNFT(hubProxyAddr);
         legacyCollectNFT = new LegacyCollectNFT(hubProxyAddr);

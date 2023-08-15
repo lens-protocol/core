@@ -49,4 +49,7 @@ library Errors {
     error GuardianEnabled();
     error NotEOA();
     error DisablingAlreadyTriggered();
+
+    // Migration Errors
+    error NotMigrationAdmin();
 }

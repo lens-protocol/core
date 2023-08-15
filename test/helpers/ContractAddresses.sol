@@ -73,4 +73,5 @@ contract ContractAddresses {
 
     Governance governanceContract;
     ProxyAdmin proxyAdminContract;
+    address migrationAdmin;
 }

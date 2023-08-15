@@ -407,4 +407,13 @@ library Types {
         uint248 id;
         bool isWhitelisted;
     }
+
+    struct MigrationParams {
+        address lensHandlesAddress;
+        address tokenHandleRegistryAddress;
+        address legacyFeeFollowModule;
+        address legacyProfileFollowModule;
+        address newFeeFollowModule;
+        address migrationAdmin;
+    }
 }

@@ -2,16 +2,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.13;
 
-import '@openzeppelin/contracts/token/ERC721/extensions/IERC721Enumerable.sol';
-import '@openzeppelin/contracts/token/ERC721/IERC721.sol';
-import 'forge-std/console2.sol';
 import 'test/base/BaseTest.t.sol';
-import 'test/mocks/MockReferenceModule.sol';
-import 'test/mocks/MockDeprecatedReferenceModule.sol';
-import 'test/mocks/MockDeprecatedCollectModule.sol';
-import 'test/mocks/MockFollowModule.sol';
-import 'test/mocks/MockDeprecatedFollowModule.sol';
-import {Typehash} from 'contracts/libraries/constants/Typehash.sol';
 import {LensV2UpgradeContract} from 'contracts/misc/LensV2UpgradeContract.sol';
 
 contract UpgradeForkTest is BaseTest {
@@ -78,6 +69,12 @@ contract UpgradeForkTest is BaseTest {
 
     function setUp() public override {
         super.setUp();
+
+        if (!fork) {
+            // We only want to run this test on a fork
+            return;
+        }
+
         legacyHub = IOldHub(address(hub));
 
         Module[] memory collectModules = abi.decode(
@@ -90,6 +87,7 @@ contract UpgradeForkTest is BaseTest {
 
     function findModuleHelper(Module[] memory modules, string memory moduleNameToFind)
         internal
+        pure
         returns (Module memory)
     {
         for (uint256 i = 0; i < modules.length; i++) {
@@ -97,6 +95,7 @@ contract UpgradeForkTest is BaseTest {
                 return modules[i];
             }
         }
+        revert('Module not found');
     }
 
     function upgradeToV2() internal override {
@@ -363,12 +362,15 @@ contract UpgradeForkTest is BaseTest {
             moduleGlobals: address(moduleGlobals),
             followNFTImpl: followNFTImplAddr,
             collectNFTImpl: legacyCollectNFTImplAddr,
-            lensHandlesAddress: address(lensHandles),
-            tokenHandleRegistryAddress: address(tokenHandleRegistry),
-            legacyFeeFollowModule: address(0), // TODO: Fill this in
-            legacyProfileFollowModule: address(0), // TODO: Fill this in
-            newFeeFollowModule: address(0), // TODO: Fill this in
-            tokenGuardianCooldown: PROFILE_GUARDIAN_COOLDOWN
+            tokenGuardianCooldown: PROFILE_GUARDIAN_COOLDOWN,
+            migrationParams: Types.MigrationParams({
+                lensHandlesAddress: address(lensHandles),
+                tokenHandleRegistryAddress: address(tokenHandleRegistry),
+                legacyFeeFollowModule: address(0), // TODO: Fill this in
+                legacyProfileFollowModule: address(0), // TODO: Fill this in
+                newFeeFollowModule: address(0), // TODO: Fill this in
+                migrationAdmin: migrationAdmin
+            })
         });
         followNFT = new FollowNFT(hubProxyAddr);
         legacyCollectNFT = new LegacyCollectNFT(hubProxyAddr);

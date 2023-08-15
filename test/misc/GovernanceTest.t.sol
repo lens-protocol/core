@@ -56,6 +56,8 @@ contract GovernanceTest is BaseTest {
     function setUp() public override {
         super.setUp();
 
+        loadOrDeploy_GovernanceContract();
+
         vm.prank(governanceMultisig);
         governanceContract.setControllerContract(controllerContract);
 
