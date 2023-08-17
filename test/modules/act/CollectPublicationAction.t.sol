@@ -23,50 +23,9 @@ contract CollectPublicationActionTest is BaseTest {
     function setUp() public override {
         super.setUp();
 
-        // Deploy CollectPublicationAction
-        if (fork && keyExists(string(abi.encodePacked('.', forkEnv, '.CollectNFTImpl')))) {
-            collectNFTImpl = json.readAddress(string(abi.encodePacked('.', forkEnv, '.CollectNFTImpl')));
-            console.log('Found CollectNFTImpl deployed at:', address(collectNFTImpl));
-        }
-
-        if (fork && keyExists(string(abi.encodePacked('.', forkEnv, '.CollectPublicationAction')))) {
-            collectPublicationAction = CollectPublicationAction(
-                json.readAddress(string(abi.encodePacked('.', forkEnv, '.CollectPublicationAction')))
-            );
-            console.log('Found collectPublicationAction deployed at:', address(collectPublicationAction));
-        }
-
-        // Both deployed - need to verify if they are linked
-        if (collectNFTImpl != address(0) && address(collectPublicationAction) != address(0)) {
-            if (CollectNFT(collectNFTImpl).ACTION_MODULE() == address(collectPublicationAction)) {
-                console.log('CollectNFTImpl and CollectPublicationAction already deployed and linked');
-                return;
-            }
-        }
-
-        uint256 deployerNonce = vm.getNonce(deployer);
-
-        address predictedCollectPublicationAction = computeCreateAddress(deployer, deployerNonce);
-        address predictedCollectNFTImpl = computeCreateAddress(deployer, deployerNonce + 1);
-
-        vm.startPrank(deployer);
-        collectPublicationAction = new CollectPublicationAction(
-            address(hub),
-            predictedCollectNFTImpl,
-            address(moduleGlobals)
-        );
-        collectNFTImpl = address(new CollectNFT(address(hub), address(collectPublicationAction)));
-        vm.stopPrank();
-
-        assertEq(
-            address(collectPublicationAction),
-            predictedCollectPublicationAction,
-            'CollectPublicationAction deployed address mismatch'
-        );
-        assertEq(collectNFTImpl, predictedCollectNFTImpl, 'CollectNFTImpl deployed address mismatch');
-
-        vm.label(address(collectPublicationAction), 'CollectPublicationAction');
-        vm.label(collectNFTImpl, 'CollectNFTImpl');
+        address collectPublicationActionAddr;
+        (collectNFTImpl, collectPublicationActionAddr) = loadOrDeploy_CollectPublicationAction();
+        collectPublicationAction = CollectPublicationAction(collectPublicationActionAddr);
 
         // Deploy & Whitelist MockCollectModule
         mockCollectModule = address(new MockCollectModule());
@@ -219,11 +178,7 @@ contract CollectPublicationActionTest is BaseTest {
         );
     }
 
-    function testInitializePublicationAction(
-        uint256 profileId,
-        uint256 pubId,
-        address transactionExecutor
-    ) public {
+    function testInitializePublicationAction(uint256 profileId, uint256 pubId, address transactionExecutor) public {
         vm.assume(profileId != 0);
         vm.assume(pubId != 0);
         vm.assume(transactionExecutor != address(0));

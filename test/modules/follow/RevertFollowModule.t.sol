@@ -12,16 +12,7 @@ contract RevertFollowModuleTest is BaseTest {
     function setUp() public virtual override {
         super.setUp();
 
-        // Deploy & Whitelist RevertFollowModule
-        if (fork && keyExists(string(abi.encodePacked('.', forkEnv, '.RevertFollowModule')))) {
-            revertFollowModule = RevertFollowModule(
-                json.readAddress(string(abi.encodePacked('.', forkEnv, '.RevertFollowModule')))
-            );
-            console.log('Testing against already deployed module at:', address(revertFollowModule));
-        } else {
-            vm.prank(deployer);
-            revertFollowModule = new RevertFollowModule();
-        }
+        revertFollowModule = RevertFollowModule(loadOrDeploy_RevertFollowModule());
     }
 
     // RevertFollowModule doesn't need initialization, so this always returns an empty bytes array and is

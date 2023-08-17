@@ -14,16 +14,7 @@ contract FeeFollowModuleTest is BaseTest {
     function setUp() public override {
         super.setUp();
 
-        // Deploy FeeFollowModule
-        if (fork && keyExists(string(abi.encodePacked('.', forkEnv, '.FeeFollowModule')))) {
-            feeFollowModule = FeeFollowModule(
-                json.readAddress(string(abi.encodePacked('.', forkEnv, '.FeeFollowModule')))
-            );
-            console.log('Testing against already deployed module at:', address(feeFollowModule));
-        } else {
-            vm.prank(deployer);
-            feeFollowModule = new FeeFollowModule(address(hub), address(moduleGlobals));
-        }
+        feeFollowModule = FeeFollowModule(loadOrDeploy_FeeFollowModule());
 
         // Create & Whitelist mock currency
         currency = new MockCurrency();
@@ -33,12 +24,7 @@ contract FeeFollowModuleTest is BaseTest {
 
     // Initialization - Negatives
 
-    function testCannotInitialize_NotHub(
-        address from,
-        uint256 profileId,
-        uint256 amount,
-        address recipient
-    ) public {
+    function testCannotInitialize_NotHub(address from, uint256 profileId, uint256 amount, address recipient) public {
         vm.assume(profileId != 0);
         vm.assume(amount != 0);
         vm.assume(from != address(hub));
@@ -87,11 +73,7 @@ contract FeeFollowModuleTest is BaseTest {
 
     // Initialization - Scenarios
 
-    function testInitialize(
-        uint256 profileId,
-        uint256 amount,
-        address recipient
-    ) public {
+    function testInitialize(uint256 profileId, uint256 amount, address recipient) public {
         vm.assume(profileId != 0);
         vm.assume(amount != 0);
         assertTrue(moduleGlobals.isCurrencyWhitelisted(address(currency)));

@@ -29,12 +29,12 @@ contract CollectNFTTest is BaseTest, LensBaseERC721Test {
         super.setUp();
 
         // Deploy CollectPublicationAction
-        if (fork && keyExists(string(abi.encodePacked('.', forkEnv, '.CollectNFTImpl')))) {
+        if (fork && keyExists(json, string(abi.encodePacked('.', forkEnv, '.CollectNFTImpl')))) {
             collectNFTImpl = json.readAddress(string(abi.encodePacked('.', forkEnv, '.CollectNFTImpl')));
             console.log('Found CollectNFTImpl deployed at:', address(collectNFTImpl));
         }
 
-        if (fork && keyExists(string(abi.encodePacked('.', forkEnv, '.CollectPublicationAction')))) {
+        if (fork && keyExists(json, string(abi.encodePacked('.', forkEnv, '.CollectPublicationAction')))) {
             collectPublicationAction = CollectPublicationAction(
                 json.readAddress(string(abi.encodePacked('.', forkEnv, '.CollectPublicationAction')))
             );

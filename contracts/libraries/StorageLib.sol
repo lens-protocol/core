@@ -43,6 +43,7 @@ library StorageLib {
     uint256 constant ACTION_MODULES_SLOT = 28;
     uint256 constant MAX_ACTION_MODULE_ID_USED_SLOT = 29;
     uint256 constant PROFILE_ROYALTIES_BPS_SLOT = 30;
+    uint256 constant MIGRATION_ADMINS_WHITELISTED_MAPPING_SLOT = 31;
 
     uint256 constant MAX_ACTION_MODULE_ID_SUPPORTED = 255;
 
@@ -143,6 +144,16 @@ library StorageLib {
     {
         assembly {
             _followModuleWhitelisted.slot := FOLLOW_MODULE_WHITELIST_MAPPING_SLOT
+        }
+    }
+
+    function migrationAdminWhitelisted()
+        internal
+        pure
+        returns (mapping(address => bool) storage _migrationAdminWhitelisted)
+    {
+        assembly {
+            _migrationAdminWhitelisted.slot := MIGRATION_ADMINS_WHITELISTED_MAPPING_SLOT
         }
     }
 

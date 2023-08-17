@@ -4,86 +4,109 @@ pragma solidity ^0.8.13;
 import 'forge-std/Test.sol';
 
 // Deployments
-import {ILensHub} from 'contracts/interfaces/ILensHub.sol';
-import {LensHub} from 'contracts/LensHub.sol';
-import {LensHubInitializable} from 'contracts/misc/LensHubInitializable.sol';
-import {FollowNFT} from 'contracts/FollowNFT.sol';
-import {LegacyCollectNFT} from 'contracts/misc/LegacyCollectNFT.sol';
-import {ModuleGlobals} from 'contracts/misc/ModuleGlobals.sol';
-import {TransparentUpgradeableProxy} from '@openzeppelin/contracts/proxy/transparent/TransparentUpgradeableProxy.sol';
 import {Types} from 'contracts/libraries/constants/Types.sol';
 import {Errors} from 'contracts/libraries/constants/Errors.sol';
 import {Events} from 'contracts/libraries/constants/Events.sol';
-import {ProfileTokenURILib} from 'contracts/libraries/token-uris/ProfileTokenURILib.sol';
-import {MockActionModule} from 'test/mocks/MockActionModule.sol';
-import {MockReferenceModule} from 'test/mocks/MockReferenceModule.sol';
-import {ForkManagement} from 'test/helpers/ForkManagement.sol';
 import {ArrayHelpers} from 'test/helpers/ArrayHelpers.sol';
 import {Typehash} from 'contracts/libraries/constants/Typehash.sol';
 import {MetaTxLib} from 'contracts/libraries/MetaTxLib.sol';
 import {StorageLib} from 'contracts/libraries/StorageLib.sol';
 import 'test/Constants.sol';
+import {LibString} from 'solady/utils/LibString.sol';
+import {ContractAddressesLoaderDeployer} from 'test/base/ContractAddressesLoaderDeployer.t.sol';
+
+import {LensHub} from 'contracts/LensHub.sol';
+import {LensHubInitializable} from 'contracts/misc/LensHubInitializable.sol';
+import {FollowNFT} from 'contracts/FollowNFT.sol';
+import {LegacyCollectNFT} from 'contracts/misc/LegacyCollectNFT.sol';
+import {TransparentUpgradeableProxy} from '@openzeppelin/contracts/proxy/transparent/TransparentUpgradeableProxy.sol';
+import {ModuleGlobals} from 'contracts/misc/ModuleGlobals.sol';
 import {LensHandles} from 'contracts/namespaces/LensHandles.sol';
 import {TokenHandleRegistry} from 'contracts/namespaces/TokenHandleRegistry.sol';
+import {MockActionModule} from 'test/mocks/MockActionModule.sol';
+import {MockReferenceModule} from 'test/mocks/MockReferenceModule.sol';
 
-contract TestSetup is Test, ForkManagement, ArrayHelpers {
+// TODO: Move these to Interface file in test folder.
+struct OldCreateProfileParams {
+    address to;
+    string handle;
+    string imageURI;
+    address followModule;
+    bytes followModuleInitData;
+    string followNFTURI;
+}
+
+struct OldMirrorData {
+    uint256 profileId;
+    uint256 pointedProfileId;
+    uint256 pointedPubId;
+    bytes referenceModuleData;
+    address referenceModule;
+    bytes referenceModuleInitData;
+}
+
+struct OldPostData {
+    uint256 profileId;
+    string contentURI;
+    address collectModule;
+    bytes collectModuleInitData;
+    address referenceModule;
+    bytes referenceModuleInitData;
+}
+
+struct OldCommentData {
+    uint256 profileId;
+    string contentURI;
+    uint256 profileIdPointed;
+    uint256 pubIdPointed;
+    bytes referenceModuleData;
+    address collectModule;
+    bytes collectModuleInitData;
+    address referenceModule;
+    bytes referenceModuleInitData;
+}
+
+struct OldProfileStruct {
+    uint256 pubCount;
+    address followModule;
+    address followNFT;
+    string handle;
+    string imageURI;
+    string followNFTURI;
+}
+
+interface IOldHub {
+    function createProfile(OldCreateProfileParams memory createProfileParams) external returns (uint256);
+
+    function follow(uint256[] calldata profileIds, bytes[] calldata datas) external returns (uint256[] memory);
+
+    function collect(
+        uint256 profileId,
+        uint256 pubId,
+        bytes calldata data
+    ) external returns (uint256);
+
+    function post(OldPostData calldata vars) external returns (uint256);
+
+    function comment(OldCommentData calldata vars) external returns (uint256);
+
+    function mirror(OldMirrorData memory createProfileParams) external returns (uint256);
+
+    function getProfile(uint256 profileId) external view returns (OldProfileStruct memory);
+}
+
+contract TestSetup is Test, ContractAddressesLoaderDeployer, ArrayHelpers {
     using stdJson for string;
-
-    // Avoid setUp to be run more than once.
-    bool private __setUpDone;
 
     function testTestSetup() public {
         // Prevents being counted in Foundry Coverage
     }
 
-    ////////////////////////////////// Types
-    struct TestAccount {
-        uint256 ownerPk;
-        address owner;
-        uint256 profileId;
-    }
-
-    struct TestPublication {
-        uint256 profileId;
-        uint256 pubId;
-    }
-
-    ////////////////////////////////// Accounts
-    TestAccount defaultAccount;
-
-    ////////////////////////////////// Publications
-    TestPublication defaultPub;
-
-    ////////////////////////////////// Relevant actors' addresses
-    address deployer;
-    address governance;
-    address treasury;
-    address modulesGovernance;
-    address proxyAdmin;
-
-    ////////////////////////////////// Relevant values or constants
-    uint16 TREASURY_FEE_BPS;
-    uint16 constant TREASURY_FEE_MAX_BPS = 10000; // TODO: This should be a constant in 'contracts/libraries/constants/'
-    string constant MOCK_URI = 'ipfs://QmUXfQWe43RKx31VzA2BnbwhSMW8WuaJvszFWChD59m76U';
-    bytes32 domainSeparator;
-
-    ////////////////////////////////// Deployed addresses
-    address hubProxyAddr;
-    LegacyCollectNFT legacyCollectNFT;
-    FollowNFT followNFT;
-    LensHubInitializable hubImpl;
-    TransparentUpgradeableProxy hubAsProxy;
-    LensHub hub;
-    MockActionModule mockActionModule;
-    MockReferenceModule mockReferenceModule;
-    ModuleGlobals moduleGlobals;
-    LensHandles lensHandles;
-    TokenHandleRegistry tokenHandleRegistry;
-
     function loadBaseAddresses(string memory targetEnv) internal virtual {
         console.log('targetEnv:', targetEnv);
 
         hubProxyAddr = json.readAddress(string(abi.encodePacked('.', targetEnv, '.LensHubProxy')));
+        vm.label(hubProxyAddr, 'LENS_HUB');
         console.log('hubProxyAddr:', hubProxyAddr);
 
         hub = LensHub(hubProxyAddr);
@@ -100,25 +123,29 @@ contract TestSetup is Test, ForkManagement, ArrayHelpers {
         legacyCollectNFT = LegacyCollectNFT(legacyCollectNFTAddr);
         hubAsProxy = TransparentUpgradeableProxy(payable(address(hub)));
 
-        governance = hub.getGovernance();
-        vm.label(governance, 'GOVERNANCE');
+        governanceMultisig = hub.getGovernance();
+        vm.label(governanceMultisig, 'GOVERNANCE_MULTISIG');
+
+        governance = governanceMultisig; // TODO: Temporary, look at ContractAddresses.sol for context
 
         moduleGlobals = ModuleGlobals(json.readAddress(string(abi.encodePacked('.', targetEnv, '.ModuleGlobals'))));
 
         modulesGovernance = moduleGlobals.getGovernance();
-        vm.label(governance, 'MODULES_GOVERNANCE');
+        vm.label(modulesGovernance, 'MODULES_GOVERNANCE');
 
         deployer = _loadAddressAs('DEPLOYER');
 
+        migrationAdmin = _loadAddressAs('MIGRATION_ADMIN');
+
         treasury = moduleGlobals.getTreasury();
-        vm.label(governance, 'TREASURY');
+        vm.label(treasury, 'TREASURY');
 
         proxyAdmin = address(uint160(uint256(vm.load(hubProxyAddr, ADMIN_SLOT))));
         vm.label(proxyAdmin, 'HUB_PROXY_ADMIN');
 
         TREASURY_FEE_BPS = moduleGlobals.getTreasuryFee();
 
-        if (keyExists(string(abi.encodePacked('.', targetEnv, '.LensHandles')))) {
+        if (keyExists(json, string(abi.encodePacked('.', targetEnv, '.LensHandles')))) {
             console.log('LensHandles key does exist');
             lensHandles = LensHandles(json.readAddress(string(abi.encodePacked('.', targetEnv, '.LensHandles'))));
         } else {
@@ -126,7 +153,7 @@ contract TestSetup is Test, ForkManagement, ArrayHelpers {
             if (forkVersion == 1) {
                 console.log('No LensHandles address found - deploying new one');
                 address lensHandlesImpl = address(
-                    new LensHandles(governance, address(hubAsProxy), HANDLE_GUARDIAN_COOLDOWN)
+                    new LensHandles(governanceMultisig, address(hubAsProxy), HANDLE_GUARDIAN_COOLDOWN)
                 );
                 vm.label(lensHandlesImpl, 'LENS_HANDLES_IMPL');
 
@@ -139,7 +166,7 @@ contract TestSetup is Test, ForkManagement, ArrayHelpers {
             }
         }
 
-        if (keyExists(string(abi.encodePacked('.', targetEnv, '.TokenHandleRegistry')))) {
+        if (keyExists(json, string(abi.encodePacked('.', targetEnv, '.TokenHandleRegistry')))) {
             console.log('TokenHandleRegistry key does exist');
             tokenHandleRegistry = TokenHandleRegistry(
                 json.readAddress(string(abi.encodePacked('.', targetEnv, '.TokenHandleRegistry')))
@@ -163,7 +190,15 @@ contract TestSetup is Test, ForkManagement, ArrayHelpers {
             }
         }
 
+        loadOrDeploy_GovernanceContract();
+
+        loadOrDeploy_ProxyAdminContract();
+
         if (forkVersion == 1) {
+            lensVersion = 1;
+            vm.prank(governance);
+            hub.whitelistProfileCreator(address(this), true);
+            beforeUpgrade();
             upgradeToV2();
         }
 
@@ -180,19 +215,23 @@ contract TestSetup is Test, ForkManagement, ArrayHelpers {
         vm.stopPrank();
         ///////////////////////////////////////// End deployments.
 
-        // Start governance actions.
-        vm.startPrank(governance);
+        if (lensVersion == 2) {
+            // Start governance actions.
+            vm.startPrank(governanceMultisig);
 
-        // Whitelist the MockActionModule.
-        hub.whitelistActionModule(address(mockActionModule), true);
+            // Whitelist the MockActionModule.
+            hub.whitelistActionModule(address(mockActionModule), true);
 
-        // Whitelist the MockReferenceModule.
-        hub.whitelistReferenceModule(address(mockReferenceModule), true);
+            // Whitelist the MockReferenceModule.
+            hub.whitelistReferenceModule(address(mockReferenceModule), true);
 
-        // End governance actions.
-        vm.stopPrank();
+            // End governance actions.
+            vm.stopPrank();
+        }
+    }
 
-        console.log('ChainId in TestSetup.loadBaseAddresses: ', block.chainid);
+    function beforeUpgrade() internal virtual {
+        // Override to execute Lens V1 state setup.
     }
 
     function upgradeToV2() internal virtual {
@@ -203,16 +242,19 @@ contract TestSetup is Test, ForkManagement, ArrayHelpers {
         vm.startPrank(deployer);
         // Deploy implementation contracts.
         // TODO: Last 3 addresses are for the follow modules for migration purposes.
-        hubImpl = new LensHubInitializable({ // TODO: Should we use the usual LensHub, not Initializable?rf
+        hubImpl = new LensHubInitializable({ // TODO: Should we use the usual LensHub, not Initializable?
             moduleGlobals: address(moduleGlobals),
             followNFTImpl: followNFTImplAddr,
             collectNFTImpl: legacyCollectNFTImplAddr,
-            lensHandlesAddress: address(lensHandles),
-            tokenHandleRegistryAddress: address(tokenHandleRegistry),
-            legacyFeeFollowModule: address(0), // TODO: Fill this in
-            legacyProfileFollowModule: address(0), // TODO: Fill this in
-            newFeeFollowModule: address(0), // TODO: Fill this in
-            tokenGuardianCooldown: PROFILE_GUARDIAN_COOLDOWN
+            tokenGuardianCooldown: PROFILE_GUARDIAN_COOLDOWN,
+            migrationParams: Types.MigrationParams({
+                lensHandlesAddress: address(lensHandles),
+                tokenHandleRegistryAddress: address(tokenHandleRegistry),
+                legacyFeeFollowModule: address(0), // TODO: Fill this in
+                legacyProfileFollowModule: address(0), // TODO: Fill this in
+                newFeeFollowModule: address(0), // TODO: Fill this in
+                migrationAdmin: migrationAdmin
+            })
         });
         followNFT = new FollowNFT(hubProxyAddr);
         legacyCollectNFT = new LegacyCollectNFT(hubProxyAddr);
@@ -222,13 +264,16 @@ contract TestSetup is Test, ForkManagement, ArrayHelpers {
         TransparentUpgradeableProxy oldHubAsProxy = TransparentUpgradeableProxy(payable(hubProxyAddr));
         vm.prank(proxyAdmin);
         oldHubAsProxy.upgradeTo(address(hubImpl));
+        lensVersion = 2;
     }
 
     function deployBaseContracts() internal {
         deployer = _loadAddressAs('DEPLOYER');
-        governance = _loadAddressAs('GOVERNANCE');
+        governanceMultisig = _loadAddressAs('GOVERNANCE_MULTISIG');
+        governance = governanceMultisig; // TODO: Temporary, look at ContractAddresses.sol for context
         treasury = _loadAddressAs('TREASURY');
         modulesGovernance = _loadAddressAs('MODULES_GOVERNANCE');
+        migrationAdmin = _loadAddressAs('MIGRATION_ADMIN');
 
         TREASURY_FEE_BPS = 50;
 
@@ -253,23 +298,31 @@ contract TestSetup is Test, ForkManagement, ArrayHelpers {
             moduleGlobals: address(moduleGlobals),
             followNFTImpl: followNFTImplAddr,
             collectNFTImpl: legacyCollectNFTImplAddr,
-            lensHandlesAddress: lensHandlesProxyAddr,
-            tokenHandleRegistryAddress: tokenHandleRegistryProxyAddr,
-            legacyFeeFollowModule: address(0),
-            legacyProfileFollowModule: address(0),
-            newFeeFollowModule: address(0),
-            tokenGuardianCooldown: PROFILE_GUARDIAN_COOLDOWN
+            tokenGuardianCooldown: PROFILE_GUARDIAN_COOLDOWN,
+            migrationParams: Types.MigrationParams({
+                lensHandlesAddress: lensHandlesProxyAddr,
+                tokenHandleRegistryAddress: tokenHandleRegistryProxyAddr,
+                legacyFeeFollowModule: address(0),
+                legacyProfileFollowModule: address(0),
+                newFeeFollowModule: address(0),
+                migrationAdmin: migrationAdmin
+            })
         });
         followNFT = new FollowNFT(hubProxyAddr);
         legacyCollectNFT = new LegacyCollectNFT(hubProxyAddr);
 
         // Deploy and initialize proxy.
-        bytes memory initData = abi.encodeCall(hubImpl.initialize, ('Lens Protocol Profiles', 'LPP', governance));
+        bytes memory initData = abi.encodeCall(
+            hubImpl.initialize,
+            ('Lens Protocol Profiles', 'LPP', governanceMultisig) // TODO: Replace this with GovernanceContract
+        );
         // TODO: Replace deployer owner with proxyAdmin.
         hubAsProxy = new TransparentUpgradeableProxy(address(hubImpl), deployer, initData);
 
         // Deploy LensHandles implementation.
-        address lensHandlesImpl = address(new LensHandles(governance, address(hubAsProxy), HANDLE_GUARDIAN_COOLDOWN));
+        address lensHandlesImpl = address(
+            new LensHandles(governanceMultisig, address(hubAsProxy), HANDLE_GUARDIAN_COOLDOWN)
+        );
         assertEq(lensHandlesImpl, lensHandlesImplAddr);
         vm.label(lensHandlesImpl, 'LENS_HANDLES_IMPL');
 
@@ -309,7 +362,7 @@ contract TestSetup is Test, ForkManagement, ArrayHelpers {
         ///////////////////////////////////////// End deployments.
 
         // Start governance actions.
-        vm.startPrank(governance);
+        vm.startPrank(governanceMultisig);
 
         // Whitelist the MockActionModule.
         hub.whitelistActionModule(address(mockActionModule), true);
@@ -319,6 +372,8 @@ contract TestSetup is Test, ForkManagement, ArrayHelpers {
 
         // End governance actions.
         vm.stopPrank();
+
+        lensVersion = 2;
     }
 
     function setUp() public virtual override {
@@ -335,7 +390,7 @@ contract TestSetup is Test, ForkManagement, ArrayHelpers {
             deployBaseContracts();
         }
         ///////////////////////////////////////// Start governance actions.
-        vm.startPrank(governance);
+        vm.startPrank(governanceMultisig);
 
         if (hub.getState() != Types.ProtocolState.Unpaused) {
             hub.setState(Types.ProtocolState.Unpaused);
@@ -356,18 +411,41 @@ contract TestSetup is Test, ForkManagement, ArrayHelpers {
                 hubProxyAddr
             )
         );
-        defaultAccount = _loadAccountAs('DEFAULT_ACCOUNT');
-        defaultPub = _loadDefaultPublication();
+
+        if (lensVersion == 2) {
+            defaultAccount = _loadAccountAs('DEFAULT_ACCOUNT');
+            defaultPub = _loadDefaultPublication();
+        }
+
+        if (lensVersion == 0) {
+            console.log("LensVersion is 0 - something's not right");
+            revert("LensVersion is 0 - something's not right");
+        }
 
         // Avoid setUp to be run more than once.
         __setUpDone = true;
+        console.log("TestSetup's setUp() done");
     }
 
     function _createProfile(address profileOwner) internal returns (uint256) {
         Types.CreateProfileParams memory createProfileParams = _getDefaultCreateProfileParams();
         createProfileParams.to = profileOwner;
-        console.log('TRYING TO CREATE PROFILE');
+        console.log('CREATING PROFILE');
         return hub.createProfile(createProfileParams);
+    }
+
+    function _createProfile(address profileOwner, string memory handle) internal returns (uint256) {
+        OldCreateProfileParams memory oldCreateProfileParams = OldCreateProfileParams({
+            to: profileOwner,
+            handle: LibString.lower(handle),
+            imageURI: string.concat(MOCK_URI, '/imageURI/', LibString.lower(handle)),
+            followModule: address(0),
+            followModuleInitData: '',
+            followNFTURI: string.concat(MOCK_URI, '/followNFTURI/', LibString.lower(handle))
+        });
+        uint256 profileId = IOldHub(address(hub)).createProfile(oldCreateProfileParams);
+        console.log('CREATING V1 PROFILE: %s (Profile#%s)', LibString.lower(handle), profileId);
+        return profileId;
     }
 
     function _loadAccountAs(string memory accountLabel) internal returns (TestAccount memory) {
@@ -411,7 +489,14 @@ contract TestSetup is Test, ForkManagement, ArrayHelpers {
             vm.stopPrank();
         } else {
             // If profile was not loaded yet, we create a fresh one.
-            accountProfileId = _createProfile(accountOwner);
+            if (lensVersion == 1) {
+                accountProfileId = _createProfile(accountOwner, accountLabel);
+            } else if (lensVersion == 2) {
+                accountProfileId = _createProfile(accountOwner);
+            } else {
+                console.log('Lens version %s is not supported', lensVersion);
+                revert('Lens version not supported');
+            }
         }
         return TestAccount({ownerPk: accountOwnerPk, owner: accountOwner, profileId: accountProfileId});
     }

@@ -48,37 +48,22 @@ contract GovernanceTest is BaseTest {
 
     error Unauthorized();
 
-    Governance governanceContract;
     MockNonLensHubGoverned mockNonLensHubGoverned;
 
-    address governanceOwner = makeAddr('GOVERNANCE_OWNER');
     address controllerContract = makeAddr('CONTROLLER_CONTRACT');
+    address governanceOwner;
 
     function setUp() public override {
         super.setUp();
 
-        if (fork) {
-            if (keyExists(string(abi.encodePacked('.', forkEnv, '.GovernanceContract')))) {
-                governanceContract = Governance(
-                    json.readAddress(string(abi.encodePacked('.', forkEnv, '.GovernanceContract')))
-                );
-            } else {
-                console.log('GovernanceContract key does not exist');
-                if (forkVersion == 1) {
-                    console.log('No GovernanceContract address found - deploying new one');
-                    governanceContract = new Governance(address(hub), governanceOwner);
-                } else {
-                    console.log('No GovernanceContract address found in addressBook, which is required for V2');
-                    revert('No GovernanceContract address found in addressBook, which is required for V2');
-                }
-            }
-        } else {
-            governanceContract = new Governance(address(hub), governanceOwner);
-        }
-        vm.prank(governanceOwner);
+        loadOrDeploy_GovernanceContract();
+
+        vm.prank(governanceMultisig);
         governanceContract.setControllerContract(controllerContract);
 
-        vm.prank(governance);
+        governanceOwner = governanceContract.owner();
+
+        vm.prank(hub.getGovernance());
         hub.setGovernance(address(governanceContract));
 
         mockNonLensHubGoverned = new MockNonLensHubGoverned(address(governanceContract));

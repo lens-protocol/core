@@ -17,36 +17,20 @@ contract ProxyAdminTest is BaseTest {
 
     error Unauthorized();
 
-    ProxyAdmin proxyAdminContract;
-    address proxyAdminContractOwner = makeAddr('PROXY_ADMIN_CONTRACT_OWNER');
     address controllerContract = makeAddr('CONTROLLER_CONTRACT');
+    address proxyAdminContractOwner;
 
     function setUp() public override {
         super.setUp();
 
-        if (fork) {
-            if (keyExists(string(abi.encodePacked('.', forkEnv, '.ProxyAdminContract')))) {
-                proxyAdminContract = ProxyAdmin(
-                    json.readAddress(string(abi.encodePacked('.', forkEnv, '.ProxyAdminContract')))
-                );
-            } else {
-                console.log('ProxyAdminContract key does not exist');
-                if (forkVersion == 1) {
-                    console.log('No ProxyAdminContract address found - deploying new one');
-                    proxyAdminContract = new ProxyAdmin(address(hub), address(hubImpl), proxyAdminContractOwner);
-                } else {
-                    console.log('No ProxyAdminContract address found in addressBook, which is required for V2');
-                    revert('No ProxyAdminContract address found in addressBook, which is required for V2');
-                }
-            }
-        } else {
-            proxyAdminContract = new ProxyAdmin(address(hub), address(hubImpl), proxyAdminContractOwner);
-        }
+        loadOrDeploy_ProxyAdminContract();
 
         vm.prank(proxyAdmin);
         hubAsProxy.changeAdmin(address(proxyAdminContract));
 
-        vm.prank(proxyAdminContractOwner);
+        proxyAdminContractOwner = proxyAdminContract.owner();
+
+        vm.prank(proxyAdmin);
         proxyAdminContract.setControllerContract(controllerContract);
     }
 

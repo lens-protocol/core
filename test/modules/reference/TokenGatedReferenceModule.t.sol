@@ -30,16 +30,7 @@ contract TokenGatedReferenceModuleBase is BaseTest {
     function setUp() public override {
         super.setUp();
 
-        // Deploy & Whitelist TokenGatedReferenceModule
-        if (fork && keyExists(string(abi.encodePacked('.', forkEnv, '.TokenGatedReferenceModule')))) {
-            tokenGatedReferenceModule = TokenGatedReferenceModule(
-                json.readAddress(string(abi.encodePacked('.', forkEnv, '.TokenGatedReferenceModule')))
-            );
-            console.log('Testing against already deployed module at:', address(tokenGatedReferenceModule));
-        } else {
-            vm.prank(deployer);
-            tokenGatedReferenceModule = new TokenGatedReferenceModule(hubProxyAddr);
-        }
+        tokenGatedReferenceModule = TokenGatedReferenceModule(loadOrDeploy_TokenGatedReferenceModule());
 
         currency = new MockCurrency();
         nft = new MockNFT();
@@ -141,11 +132,7 @@ contract TokenGatedReferenceModule_Publication is TokenGatedReferenceModuleBase 
     }
 
     // Scenarios
-    function testCanInitializeTokenGatedReferenceModule(
-        uint256 profileId,
-        uint256 pubId,
-        uint256 minThreshold
-    ) public {
+    function testCanInitializeTokenGatedReferenceModule(uint256 profileId, uint256 pubId, uint256 minThreshold) public {
         vm.assume(profileId != 0);
         vm.assume(pubId != 0);
         vm.assume(minThreshold != 0);
@@ -184,11 +171,7 @@ contract TokenGatedReferenceModule_Publication is TokenGatedReferenceModuleBase 
 // ERC20-Gated Reference
 //
 contract TokenGatedReferenceModule_ERC20_Gated is TokenGatedReferenceModuleBase {
-    function _initialize(
-        uint256 publisherProfileId,
-        uint256 publisherPubId,
-        uint256 minThreshold
-    ) internal {
+    function _initialize(uint256 publisherProfileId, uint256 publisherPubId, uint256 minThreshold) internal {
         vm.assume(publisherProfileId != 0);
         vm.assume(publisherPubId != 0);
         vm.assume(minThreshold != 0);

@@ -17,7 +17,7 @@ contract UIDataProviderTest is BaseTest {
         hub.post(postParams);
 
         if (fork) {
-            if (keyExists(string(abi.encodePacked('.', forkEnv, '.UIDataProvider')))) {
+            if (keyExists(json, string(abi.encodePacked('.', forkEnv, '.UIDataProvider')))) {
                 uiDataProvider = UIDataProvider(
                     json.readAddress(string(abi.encodePacked('.', forkEnv, '.UIDataProvider')))
                 );

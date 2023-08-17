@@ -2,8 +2,11 @@
 
 pragma solidity ^0.8.15;
 
+import {Types} from 'contracts/libraries/constants/Types.sol';
 import {MigrationLib} from 'contracts/libraries/MigrationLib.sol';
 import {StorageLib} from 'contracts/libraries/StorageLib.sol';
+import {ValidationLib} from 'contracts/libraries/ValidationLib.sol';
+import {Errors} from 'contracts/libraries/constants/Errors.sol';
 
 // Handles
 import {LensHandles} from 'contracts/namespaces/LensHandles.sol';
@@ -17,30 +20,40 @@ contract LensV2Migration {
     LensHandles internal immutable lensHandles;
     TokenHandleRegistry internal immutable tokenHandleRegistry;
 
-    constructor(
-        address legacyFeeFollowModule,
-        address legacyProfileFollowModule,
-        address newFeeFollowModule,
-        address lensHandlesAddress,
-        address tokenHandleRegistryAddress
-    ) {
-        FEE_FOLLOW_MODULE = legacyFeeFollowModule;
-        PROFILE_FOLLOW_MODULE = legacyProfileFollowModule;
-        NEW_FEE_FOLLOW_MODULE = newFeeFollowModule;
-        lensHandles = LensHandles(lensHandlesAddress);
-        tokenHandleRegistry = TokenHandleRegistry(tokenHandleRegistryAddress);
+    constructor(Types.MigrationParams memory migrationParams) {
+        FEE_FOLLOW_MODULE = migrationParams.legacyFeeFollowModule;
+        PROFILE_FOLLOW_MODULE = migrationParams.legacyProfileFollowModule;
+        NEW_FEE_FOLLOW_MODULE = migrationParams.newFeeFollowModule;
+        lensHandles = LensHandles(migrationParams.lensHandlesAddress);
+        tokenHandleRegistry = TokenHandleRegistry(migrationParams.tokenHandleRegistryAddress);
     }
 
     function batchMigrateProfiles(uint256[] calldata profileIds) external {
         MigrationLib.batchMigrateProfiles(profileIds, lensHandles, tokenHandleRegistry);
     }
 
+    // This is for public migration by themselves (so we only check the ownership of profile once)
     function batchMigrateFollows(
-        uint256[] calldata followerProfileIds,
+        uint256 followerProfileId,
         uint256[] calldata idsOfProfileFollowed,
         uint256[] calldata followTokenIds
     ) external {
-        MigrationLib.batchMigrateFollows(followerProfileIds, idsOfProfileFollowed, followTokenIds);
+        ValidationLib.validateAddressIsProfileOwnerOrDelegatedExecutor(msg.sender, followerProfileId);
+
+        MigrationLib.batchMigrateFollows(followerProfileId, idsOfProfileFollowed, followTokenIds);
+    }
+
+    // This is for Whitelisted MigrationAdmin (so we only read the FollowNFT once)
+    function batchMigrateFollowers(
+        uint256[] calldata followerProfileIds,
+        uint256 idOfProfileFollowed,
+        uint256[] calldata followTokenIds
+    ) external {
+        if (!StorageLib.migrationAdminWhitelisted()[msg.sender]) {
+            revert Errors.NotMigrationAdmin();
+        }
+
+        MigrationLib.batchMigrateFollowers(followerProfileIds, idOfProfileFollowed, followTokenIds);
     }
 
     function batchMigrateFollowModules(uint256[] calldata profileIds) external {
@@ -54,5 +67,16 @@ contract LensV2Migration {
 
     function getProfileIdByHandleHash(bytes32 handleHash) external view returns (uint256) {
         return StorageLib.profileIdByHandleHash()[handleHash];
+    }
+
+    function setMigrationAdmins(address[] memory migrationAdmins, bool whitelisted) external {
+        ValidationLib.validateCallerIsGovernance();
+        uint256 i;
+        while (i < migrationAdmins.length) {
+            StorageLib.migrationAdminWhitelisted()[migrationAdmins[i]] = whitelisted;
+            unchecked {
+                ++i;
+            }
+        }
     }
 }

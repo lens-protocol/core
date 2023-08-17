@@ -85,6 +85,7 @@ library MigrationLib {
             tokenHandleRegistry.migrationLink(handleId, profileId);
             emit ProfileMigrated(profileId, profileOwner, handle, handleId);
             delete StorageLib.getProfile(profileId).__DEPRECATED__handle;
+            delete StorageLib.getProfile(profileId).__DEPRECATED__followNFTURI;
             delete StorageLib.profileIdByHandleHash()[handleHash];
         }
     }
@@ -92,19 +93,45 @@ library MigrationLib {
     // FollowNFT Migration:
 
     function batchMigrateFollows(
-        uint256[] calldata followerProfileIds,
+        uint256 followerProfileIds,
         uint256[] calldata idsOfProfileFollowed,
         uint256[] calldata followTokenIds
     ) external {
-        if (
-            followerProfileIds.length != idsOfProfileFollowed.length ||
-            followerProfileIds.length != followTokenIds.length
-        ) {
+        if (idsOfProfileFollowed.length != followTokenIds.length) {
             revert Errors.ArrayMismatch();
         }
         uint256 i;
-        while (i < followerProfileIds.length) {
-            _migrateFollow(followerProfileIds[i], idsOfProfileFollowed[i], followTokenIds[i]);
+        while (i < idsOfProfileFollowed.length) {
+            _migrateFollow(
+                StorageLib.getProfile(idsOfProfileFollowed[i]).followNFT,
+                followerProfileIds, // one follower for all the follows
+                idsOfProfileFollowed[i],
+                followTokenIds[i]
+            );
+            unchecked {
+                ++i;
+            }
+        }
+    }
+
+    function batchMigrateFollowers(
+        uint256[] calldata followerProfileIds,
+        uint256 idOfProfileFollowed,
+        uint256[] calldata followTokenIds
+    ) external {
+        if (followerProfileIds.length != followTokenIds.length) {
+            revert Errors.ArrayMismatch();
+        }
+        address followNFT = StorageLib.getProfile(idOfProfileFollowed).followNFT;
+        uint256 i;
+        while (i < followTokenIds.length) {
+            _migrateFollow(
+                followNFT,
+                followerProfileIds[i],
+                idOfProfileFollowed, // one profile followed -> one FollowNFT
+                followTokenIds[i]
+            );
+
             unchecked {
                 ++i;
             }
@@ -112,14 +139,21 @@ library MigrationLib {
     }
 
     function _migrateFollow(
+        address followNFT,
         uint256 followerProfileId,
         uint256 idOfProfileFollowed,
         uint256 followTokenId
     ) private {
-        uint48 mintTimestamp = FollowNFT(StorageLib.getProfile(idOfProfileFollowed).followNFT).tryMigrate({
+        if (StorageLib.blockedStatus(idOfProfileFollowed)[followerProfileId]) {
+            return; // Cannot follow if blocked
+        }
+        if (followerProfileId == idOfProfileFollowed) {
+            return; // Cannot self-follow
+        }
+
+        uint48 mintTimestamp = FollowNFT(followNFT).tryMigrate({
             followerProfileId: followerProfileId,
             followerProfileOwner: StorageLib.getTokenData(followerProfileId).owner,
-            idOfProfileFollowed: idOfProfileFollowed,
             followTokenId: followTokenId
         });
         // `mintTimestamp` will be 0 if:
