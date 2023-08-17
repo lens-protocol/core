@@ -44,31 +44,15 @@ library ProfileLib {
         Types.Profile storage _profile = StorageLib.getProfile(profileId);
         _profile.imageURI = createProfileParams.imageURI;
 
-        bytes memory followModuleReturnData;
-        if (createProfileParams.followModule != address(0)) {
-            // Load the follow module to be used in the next assembly block.
-            address followModule = createProfileParams.followModule;
-
-            StorageLib.getProfile(profileId).followModule = followModule;
-
-            // We don't need to check for deprecated modules here because deprecated ones are no longer whitelisted.
-            // Initialize the follow module.
-            followModuleReturnData = _initFollowModule({
-                profileId: profileId,
-                transactionExecutor: msg.sender,
-                followModule: createProfileParams.followModule,
-                followModuleInitData: createProfileParams.followModuleInitData
-            });
-        }
         emit Events.ProfileCreated(
             profileId,
             msg.sender,
             createProfileParams.to,
             createProfileParams.imageURI,
-            createProfileParams.followModule,
-            followModuleReturnData,
             block.timestamp
         );
+
+        _setFollowModule(profileId, createProfileParams.followModule, createProfileParams.followModuleInitData);
     }
 
     /**
@@ -94,12 +78,7 @@ library ProfileLib {
         address followModule,
         bytes calldata followModuleInitData
     ) external {
-        StorageLib.getProfile(profileId).followModule = followModule;
-        bytes memory followModuleReturnData;
-        if (followModule != address(0)) {
-            followModuleReturnData = _initFollowModule(profileId, msg.sender, followModule, followModuleInitData);
-        }
-        emit Events.FollowModuleSet(profileId, followModule, followModuleReturnData, block.timestamp);
+        _setFollowModule(profileId, followModule, followModuleInitData);
     }
 
     function setProfileMetadataURI(uint256 profileId, string calldata metadataURI) external {
@@ -286,5 +265,18 @@ library ProfileLib {
             }
         }
         return configSwitched;
+    }
+
+    function _setFollowModule(
+        uint256 profileId,
+        address followModule,
+        bytes calldata followModuleInitData
+    ) private {
+        StorageLib.getProfile(profileId).followModule = followModule;
+        bytes memory followModuleReturnData;
+        if (followModule != address(0)) {
+            followModuleReturnData = _initFollowModule(profileId, msg.sender, followModule, followModuleInitData);
+        }
+        emit Events.FollowModuleSet(profileId, followModule, followModuleReturnData, block.timestamp);
     }
 }

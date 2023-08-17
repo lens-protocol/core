@@ -2,7 +2,7 @@
 pragma solidity ^0.8.10;
 
 import 'forge-std/Test.sol';
-import 'test/modules/act/collect/BaseFeeCollectModule.base.sol';
+import 'test/modules/act/collect/BaseFeeCollectModule.base.t.sol';
 import {MultirecipientFeeCollectModule, MultirecipientFeeCollectModuleInitData, RecipientData} from 'contracts/modules/act/collect/MultirecipientFeeCollectModule.sol';
 
 contract MultirecipientCollectModuleBase is BaseFeeCollectModuleBase {
@@ -19,11 +19,9 @@ contract MultirecipientCollectModuleBase is BaseFeeCollectModuleBase {
 
     function setUp() public virtual override {
         super.setUp();
-    }
 
-    // Deploy & Whitelist MultirecipientFeeCollectModule
-    constructor() BaseTest() {
-        if (fork && keyExists(string(abi.encodePacked('.', forkEnv, '.MultirecipientFeeCollectModule')))) {
+        // Deploy & Whitelist MultirecipientFeeCollectModule
+        if (fork && keyExists(json, string(abi.encodePacked('.', forkEnv, '.MultirecipientFeeCollectModule')))) {
             multirecipientFeeCollectModule = MultirecipientFeeCollectModule(
                 json.readAddress(string(abi.encodePacked('.', forkEnv, '.MultirecipientFeeCollectModule')))
             );
@@ -37,9 +35,11 @@ contract MultirecipientCollectModuleBase is BaseFeeCollectModuleBase {
             );
         }
         baseFeeCollectModule = address(multirecipientFeeCollectModule);
-        currency = new MockCurrency();
-        vm.prank(modulesGovernance);
-        moduleGlobals.whitelistCurrency(address(currency), true);
+        if (address(currency) == address(0)) {
+            currency = new MockCurrency();
+            vm.prank(modulesGovernance);
+            moduleGlobals.whitelistCurrency(address(currency), true);
+        }
     }
 
     function getEncodedInitData() internal virtual override returns (bytes memory) {

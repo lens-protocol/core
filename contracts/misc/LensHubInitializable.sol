@@ -23,25 +23,9 @@ contract LensHubInitializable is LensHub, VersionedInitializable, ILensHubInitia
         address moduleGlobals,
         address followNFTImpl,
         address collectNFTImpl,
-        address lensHandlesAddress,
-        address tokenHandleRegistryAddress,
-        address legacyFeeFollowModule,
-        address legacyProfileFollowModule,
-        address newFeeFollowModule,
-        uint256 tokenGuardianCooldown
-    )
-        LensHub(
-            moduleGlobals,
-            followNFTImpl,
-            collectNFTImpl,
-            lensHandlesAddress,
-            tokenHandleRegistryAddress,
-            legacyFeeFollowModule,
-            legacyProfileFollowModule,
-            newFeeFollowModule,
-            tokenGuardianCooldown
-        )
-    {}
+        uint256 tokenGuardianCooldown,
+        Types.MigrationParams memory migrationParams
+    ) LensHub(moduleGlobals, followNFTImpl, collectNFTImpl, tokenGuardianCooldown, migrationParams) {}
 
     /**
      * @inheritdoc ILensHubInitializable

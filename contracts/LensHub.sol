@@ -67,21 +67,11 @@ contract LensHub is
         address moduleGlobals,
         address followNFTImpl,
         address collectNFTImpl, // We still pass the deprecated CollectNFTImpl for legacy Collects to work
-        address lensHandlesAddress,
-        address tokenHandleRegistryAddress,
-        address legacyFeeFollowModule,
-        address legacyProfileFollowModule,
-        address newFeeFollowModule,
-        uint256 tokenGuardianCooldown
+        uint256 tokenGuardianCooldown,
+        Types.MigrationParams memory migrationParams
     )
+        LensV2Migration(migrationParams)
         LensProfiles(moduleGlobals, tokenGuardianCooldown)
-        LensV2Migration(
-            legacyFeeFollowModule,
-            legacyProfileFollowModule,
-            newFeeFollowModule,
-            lensHandlesAddress,
-            tokenHandleRegistryAddress
-        )
         LensImplGetters(followNFTImpl, collectNFTImpl)
     {}
 

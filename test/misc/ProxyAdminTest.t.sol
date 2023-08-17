@@ -17,25 +17,20 @@ contract ProxyAdminTest is BaseTest {
 
     error Unauthorized();
 
-    ProxyAdmin proxyAdminContract;
-    address proxyAdminContractOwner = makeAddr('PROXY_ADMIN_CONTRACT_OWNER');
     address controllerContract = makeAddr('CONTROLLER_CONTRACT');
+    address proxyAdminContractOwner;
 
     function setUp() public override {
         super.setUp();
 
-        if (fork) {
-            proxyAdminContract = ProxyAdmin(
-                json.readAddress(string(abi.encodePacked('.', forkEnv, '.ProxyAdminContract')))
-            );
-        } else {
-            proxyAdminContract = new ProxyAdmin(address(hub), address(hubImpl), proxyAdminContractOwner);
-        }
+        loadOrDeploy_ProxyAdminContract();
 
         vm.prank(proxyAdmin);
         hubAsProxy.changeAdmin(address(proxyAdminContract));
 
-        vm.prank(proxyAdminContractOwner);
+        proxyAdminContractOwner = proxyAdminContract.owner();
+
+        vm.prank(proxyAdmin);
         proxyAdminContract.setControllerContract(controllerContract);
     }
 

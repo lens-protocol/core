@@ -6,6 +6,7 @@ import {ILensGovernable} from 'contracts/interfaces/ILensGovernable.sol';
 import {Governance, ILensHub_V1} from 'contracts/misc/access/Governance.sol';
 import {StorageLib} from 'contracts/libraries/StorageLib.sol';
 
+// TODO: Move to mocks/
 contract MockNonLensHubGoverned {
     function testMockNonLensHubGoverned() public {
         // Prevents being counted in Foundry Coverage
@@ -47,25 +48,22 @@ contract GovernanceTest is BaseTest {
 
     error Unauthorized();
 
-    Governance governanceContract;
     MockNonLensHubGoverned mockNonLensHubGoverned;
 
-    address governanceOwner = makeAddr('GOVERNANCE_OWNER');
     address controllerContract = makeAddr('CONTROLLER_CONTRACT');
+    address governanceOwner;
 
     function setUp() public override {
         super.setUp();
-        if (fork) {
-            governanceContract = Governance(
-                json.readAddress(string(abi.encodePacked('.', forkEnv, '.GovernanceContract')))
-            );
-        } else {
-            governanceContract = new Governance(address(hub), governanceOwner);
-        }
-        vm.prank(governanceOwner);
+
+        loadOrDeploy_GovernanceContract();
+
+        vm.prank(governanceMultisig);
         governanceContract.setControllerContract(controllerContract);
 
-        vm.prank(governance);
+        governanceOwner = governanceContract.owner();
+
+        vm.prank(hub.getGovernance());
         hub.setGovernance(address(governanceContract));
 
         mockNonLensHubGoverned = new MockNonLensHubGoverned(address(governanceContract));

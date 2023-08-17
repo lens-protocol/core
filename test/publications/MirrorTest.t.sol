@@ -17,6 +17,7 @@ contract MirrorTest is ReferencePublicationTest, ReferralSystemTest {
 
     function setUp() public virtual override(PublicationTest, ReferralSystemTest) {
         PublicationTest.setUp();
+        ReferralSystemTest.setUp();
         mirrorParams = _getDefaultMirrorParams();
     }
 

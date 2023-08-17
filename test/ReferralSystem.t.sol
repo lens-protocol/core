@@ -1,7 +1,6 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.13;
 
-import 'test/mocks/MockModule.sol';
 import 'test/base/BaseTest.t.sol';
 import {MockDeprecatedCollectModule} from 'test/mocks/MockDeprecatedCollectModule.sol';
 import {MockDeprecatedReferenceModule} from 'test/mocks/MockDeprecatedReferenceModule.sol';
@@ -32,8 +31,8 @@ This kind of tree is created:
 abstract contract ReferralSystemTest is BaseTest {
     uint256 testAccountId;
 
-    address mockDeprecatedReferenceModule = address(new MockDeprecatedReferenceModule());
-    address mockDeprecatedCollectModule = address(new MockDeprecatedCollectModule());
+    address mockDeprecatedReferenceModule;
+    address mockDeprecatedCollectModule;
 
     function _referralSystem_PrepareOperation(
         TestPublication memory target,
@@ -85,8 +84,11 @@ abstract contract ReferralSystemTest is BaseTest {
 
     /////////////////////////////////
 
+    // TODO: Move this to TestSetup? And get rid of this setUp
     function setUp() public virtual override {
         super.setUp();
+        mockDeprecatedReferenceModule = address(new MockDeprecatedReferenceModule());
+        mockDeprecatedCollectModule = address(new MockDeprecatedCollectModule());
     }
 
     struct Tree {

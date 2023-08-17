@@ -63,4 +63,6 @@ abstract contract LensHubStorage {
     uint256 internal _maxActionModuleIdUsed; // Slot 29
 
     uint256 internal _profileRoyaltiesBps; // Slot 30
+
+    mapping(address migrationAdmin => bool allowed) internal _migrationAdminWhitelisted; // Slot 31
 }

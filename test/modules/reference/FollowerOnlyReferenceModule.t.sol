@@ -3,7 +3,6 @@ pragma solidity ^0.8.10;
 
 import 'test/base/BaseTest.t.sol';
 import {FollowerOnlyReferenceModule} from 'contracts/modules/reference/FollowerOnlyReferenceModule.sol';
-import {FollowValidationLib} from 'contracts/modules/libraries/FollowValidationLib.sol';
 import {Errors} from 'contracts/libraries/constants/Errors.sol';
 
 contract FollowerOnlyReferenceModuleTest is BaseTest {
@@ -19,6 +18,9 @@ contract FollowerOnlyReferenceModuleTest is BaseTest {
 
     function setUp() public virtual override {
         super.setUp();
+
+        followerOnlyReferenceModule = FollowerOnlyReferenceModule(loadOrDeploy_FollowerOnlyReferenceModule());
+
         profileId = _createProfile(defaultAccount.owner);
 
         followerProfileId = _createProfile(followerProfileOwner);
@@ -28,19 +30,6 @@ contract FollowerOnlyReferenceModuleTest is BaseTest {
         hub.follow(followerProfileId, _toUint256Array(profileId), _toUint256Array(0), _toBytesArray(''));
         assertTrue(hub.isFollowing(followerProfileId, profileId));
         assertFalse(hub.isFollowing(notFollowerProfileId, profileId));
-    }
-
-    // Deploy & Whitelist FollowerOnlyReferenceModule
-    constructor() TestSetup() {
-        if (fork && keyExists(string(abi.encodePacked('.', forkEnv, '.FollowerOnlyReferenceModule')))) {
-            followerOnlyReferenceModule = FollowerOnlyReferenceModule(
-                json.readAddress(string(abi.encodePacked('.', forkEnv, '.FollowerOnlyReferenceModule')))
-            );
-            console.log('Testing against already deployed module at:', address(followerOnlyReferenceModule));
-        } else {
-            vm.prank(deployer);
-            followerOnlyReferenceModule = new FollowerOnlyReferenceModule(hubProxyAddr);
-        }
     }
 
     // FollowerOnlyReferenceModule doesn't need initialization, so this always returns an empty bytes array and is

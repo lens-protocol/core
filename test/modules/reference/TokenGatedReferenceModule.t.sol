@@ -29,22 +29,12 @@ contract TokenGatedReferenceModuleBase is BaseTest {
 
     function setUp() public override {
         super.setUp();
+
+        tokenGatedReferenceModule = TokenGatedReferenceModule(loadOrDeploy_TokenGatedReferenceModule());
+
         currency = new MockCurrency();
         nft = new MockNFT();
         profileId = _createProfile(defaultAccount.owner);
-    }
-
-    // Deploy & Whitelist TokenGatedReferenceModule
-    constructor() TestSetup() {
-        if (fork && keyExists(string(abi.encodePacked('.', forkEnv, '.TokenGatedReferenceModule')))) {
-            tokenGatedReferenceModule = TokenGatedReferenceModule(
-                json.readAddress(string(abi.encodePacked('.', forkEnv, '.TokenGatedReferenceModule')))
-            );
-            console.log('Testing against already deployed module at:', address(tokenGatedReferenceModule));
-        } else {
-            vm.prank(deployer);
-            tokenGatedReferenceModule = new TokenGatedReferenceModule(hubProxyAddr);
-        }
     }
 }
 
@@ -52,8 +42,6 @@ contract TokenGatedReferenceModuleBase is BaseTest {
 // Publication Creation with TokenGatedReferenceModule
 //
 contract TokenGatedReferenceModule_Publication is TokenGatedReferenceModuleBase {
-    constructor() TokenGatedReferenceModuleBase() {}
-
     // Negatives
     function testCannotPostWithZeroTokenAddress() public {
         vm.expectRevert(Errors.InitParamsInvalid.selector);
@@ -195,8 +183,6 @@ contract TokenGatedReferenceModule_ERC20_Gated is TokenGatedReferenceModuleBase 
             abi.encode(GateParams({tokenAddress: address(currency), minThreshold: minThreshold}))
         );
     }
-
-    constructor() TokenGatedReferenceModuleBase() {}
 
     // Negatives
     function testCannotProcessComment_IfNotEnoughBalance(
@@ -369,8 +355,6 @@ contract TokenGatedReferenceModule_ERC721_Gated is TokenGatedReferenceModuleBase
             abi.encode(GateParams({tokenAddress: address(nft), minThreshold: minThreshold}))
         );
     }
-
-    constructor() TokenGatedReferenceModuleBase() {}
 
     // Negatives
     function testCannotProcessComment_IfNotEnoughBalance(uint256 publisherProfileId, uint256 publisherPubId) public {

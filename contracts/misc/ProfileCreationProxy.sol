@@ -3,6 +3,7 @@
 pragma solidity ^0.8.15;
 
 import {ILensHub} from 'contracts/interfaces/ILensHub.sol';
+import {LensV2Migration} from 'contracts/misc/LensV2Migration.sol';
 import {Types} from 'contracts/libraries/constants/Types.sol';
 import {ImmutableOwnable} from 'contracts/misc/ImmutableOwnable.sol';
 
@@ -19,6 +20,8 @@ import {ITokenHandleRegistry} from 'contracts/interfaces/ITokenHandleRegistry.so
 contract ProfileCreationProxy is ImmutableOwnable {
     ILensHandles immutable LENS_HANDLES;
     ITokenHandleRegistry immutable TOKEN_HANDLE_REGISTRY;
+
+    error ProfileAlreadyExists();
 
     constructor(
         address owner,
@@ -43,6 +46,12 @@ contract ProfileCreationProxy is ImmutableOwnable {
         onlyOwner
         returns (uint256, uint256)
     {
+        // Check if LensHubV1 already has a profile with this handle that was not migrated yet:
+        bytes32 handleHash = keccak256(bytes(string.concat(handle, '.lens')));
+        if (LensV2Migration(LENS_HUB).getProfileIdByHandleHash(handleHash) != 0) {
+            revert ProfileAlreadyExists(); // TODO: Should we move this to some Errors library? so we can test it easier
+        }
+
         // We mint the handle & profile to this contract first, then link it to the profile
         // This will not allow to initialize follow modules that require funds from the msg.sender,
         // but we assume only simple follow modules should be set during profile creation.

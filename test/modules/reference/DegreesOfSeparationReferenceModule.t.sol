@@ -38,7 +38,9 @@ contract DegreesOfSeparationReferenceModuleTest is BaseTest {
         thirdAccount = _loadAccountAs('THIRD_ACCOUNT');
 
         hubAddress = address(hub);
-        module = new DegreesOfSeparationReferenceModule(hubAddress);
+
+        module = DegreesOfSeparationReferenceModule(loadOrDeploy_DegreesOfSeparationReferenceModule());
+
         MAX_DEGREES_OF_SEPARATION = module.MAX_DEGREES_OF_SEPARATION();
     }
 

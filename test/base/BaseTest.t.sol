@@ -5,7 +5,6 @@ import 'test/base/TestSetup.t.sol';
 import 'contracts/libraries/constants/Types.sol';
 import {Typehash} from 'contracts/libraries/constants/Typehash.sol';
 import {Strings} from '@openzeppelin/contracts/utils/Strings.sol';
-import {StorageLib} from 'contracts/libraries/StorageLib.sol';
 import {Address} from '@openzeppelin/contracts/utils/Address.sol';
 
 contract BaseTest is TestSetup {

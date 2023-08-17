@@ -2,8 +2,10 @@
 pragma solidity ^0.8.13;
 
 import 'forge-std/Script.sol';
+import 'test/helpers/KeyExists.sol';
+import 'test/helpers/ContractAddresses.sol';
 
-contract ForkManagement is Script {
+contract ForkManagement is Script, KeyExists, ContractAddresses {
     using stdJson for string;
 
     function testForkManagement() public {
@@ -11,45 +13,37 @@ contract ForkManagement is Script {
     }
 
     string forkEnv;
+    uint256 forkVersion;
     bool fork;
     string network;
     string json;
     uint256 forkBlockNumber;
 
     modifier onlyFork() {
-        if (bytes(forkEnv).length == 0) return;
+        if (bytes(forkEnv).length == 0) {
+            return;
+        }
         _;
     }
 
-    // TODO: Move somewhere else
-    function isEnvSet(string memory key) internal view returns (bool) {
-        try vm.envString(key) {
-            return true;
-        } catch {
-            return false;
-        }
-    }
-
-    // TODO: Move somewhere else
-    // TODO: Replace with forge-std/StdJson.sol::keyExists(...) when/if this PR is approved:
-    //       https://github.com/foundry-rs/forge-std/pull/226
-    function keyExists(string memory key) internal view returns (bool) {
-        return json.parseRaw(key).length > 0;
-    }
-
-    constructor() {
+    function setUp() public virtual {
         // TODO: Replace with envOr when it's released
-        forkEnv = isEnvSet('TESTING_FORK') ? vm.envString('TESTING_FORK') : '';
+        forkEnv = vm.envOr({name: string('TESTING_FORK'), defaultValue: string('')});
+        forkVersion = vm.envOr({name: string('TESTING_FORK_CURRENT_VERSION'), defaultValue: uint256(0)});
 
         if (bytes(forkEnv).length > 0) {
             fork = true;
+            if (forkVersion == 0) {
+                console.log('TESTING_FORK_CURRENT_VERSION not set');
+                revert('TESTING_FORK_CURRENT_VERSION not set');
+            }
             console.log('\n\n Testing using %s fork', forkEnv);
             loadJson();
 
             network = getNetwork();
 
-            if (isEnvSet('FORK_BLOCK')) {
-                forkBlockNumber = vm.envUint('FORK_BLOCK');
+            forkBlockNumber = vm.envOr({name: string('FORK_BLOCK'), defaultValue: uint256(0)});
+            if (forkBlockNumber != 0) {
                 vm.createSelectFork(network, forkBlockNumber);
                 console.log('Fork Block number (FIXED BLOCK):', forkBlockNumber);
             } else {
@@ -75,7 +69,7 @@ contract ForkManagement is Script {
         console.log('\nTarget environment:', forkEnv);
         console.log('Network:', network);
         if (block.chainid != chainId) revert('Wrong chainId');
-        console.log('ChainId:', chainId);
+        console.log('ChainId:', block.chainid);
     }
 
     function getNetwork() internal returns (string memory) {
