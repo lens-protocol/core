@@ -52,6 +52,8 @@ library ProfileLib {
             block.timestamp
         );
 
+        emit Events.DelegatedExecutorsConfigApplied(profileId, 0, block.timestamp);
+
         _setFollowModule(profileId, createProfileParams.followModule, createProfileParams.followModuleInitData);
     }
 
@@ -226,9 +228,11 @@ library ProfileLib {
             configNumber,
             delegatedExecutors,
             approvals,
-            configSwitched,
             block.timestamp
         );
+        if (configSwitched) {
+            emit Events.DelegatedExecutorsConfigApplied(delegatorProfileId, configNumber, block.timestamp);
+        }
     }
 
     function _prepareStorageToApplyChangesUnderGivenConfig(
