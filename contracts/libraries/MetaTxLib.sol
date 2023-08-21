@@ -145,7 +145,7 @@ library MetaTxLib {
                         postParams.profileId,
                         keccak256(bytes(postParams.contentURI)),
                         postParams.actionModules,
-                        _hashActionModulesInitDatas(postParams.actionModulesInitDatas),
+                        _encodeUsingEip712Rules(postParams.actionModulesInitDatas),
                         postParams.referenceModule,
                         keccak256(postParams.referenceModuleInitData),
                         _getAndIncrementNonce(signature.signer),
@@ -157,32 +157,34 @@ library MetaTxLib {
         );
     }
 
-    function _hashActionModulesInitDatas(bytes[] memory actionModulesInitDatas) private pure returns (bytes32) {
-        bytes32[] memory actionModulesInitDatasHashes = new bytes32[](actionModulesInitDatas.length);
+    function _encodeUsingEip712Rules(bytes[] memory bytesArray) private pure returns (bytes32) {
+        bytes32[] memory bytesArrayEncodedElements = new bytes32[](bytesArray.length);
         uint256 i;
-        while (i < actionModulesInitDatas.length) {
-            actionModulesInitDatasHashes[i] = keccak256(abi.encode(actionModulesInitDatas[i]));
+        while (i < bytesArray.length) {
+            // A `bytes` type is encoded as its keccak256 hash.
+            bytesArrayEncodedElements[i] = keccak256(bytesArray[i]);
             unchecked {
                 ++i;
             }
         }
-        return keccak256(abi.encodePacked(actionModulesInitDatasHashes));
+        // An array is encoded as the keccak256 hash of the concatenation of their encoded elements.
+        return keccak256(abi.encodePacked(bytesArrayEncodedElements));
     }
 
     // We need this to deal with stack too deep:
     struct ReferenceParamsForAbiEncode {
         bytes32 typehash;
         uint256 profileId;
-        bytes32 contentURIHash;
+        bytes32 contentURIEncoded;
         uint256 pointedProfileId;
         uint256 pointedPubId;
         uint256[] referrerProfileIds;
         uint256[] referrerPubIds;
-        bytes32 referenceModuleDataHash;
+        bytes32 referenceModuleDataEncoded;
         address[] actionModules;
-        bytes32 actionModulesInitDataHash;
+        bytes32 actionModulesInitDataEncoded;
         address referenceModule;
-        bytes32 referenceModuleInitDataHash;
+        bytes32 referenceModuleInitDataEncoded;
         uint256 nonce;
         uint256 deadline;
     }
@@ -207,16 +209,16 @@ library MetaTxLib {
         // return abi.encode(
         //     referenceParamsForAbiEncode.typehash,
         //     referenceParamsForAbiEncode.profileId,
-        //     referenceParamsForAbiEncode.contentURIHash,
+        //     referenceParamsForAbiEncode.contentURIEncoded,
         //     referenceParamsForAbiEncode.pointedProfileId,
         //     referenceParamsForAbiEncode.pointedPubId,
         //     referenceParamsForAbiEncode.referrerProfileIds,
         //     referenceParamsForAbiEncode.referrerPubIds,
-        //     referenceParamsForAbiEncode.referenceModuleDataHash,
+        //     referenceParamsForAbiEncode.referenceModuleDataEncoded,
         //     referenceParamsForAbiEncode.actionModules,
-        //     referenceParamsForAbiEncode.actionModulesInitDataHash,
+        //     referenceParamsForAbiEncode.actionModulesInitDataEncoded,
         //     referenceParamsForAbiEncode.referenceModule,
-        //     referenceParamsForAbiEncode.referenceModuleInitDataHash,
+        //     referenceParamsForAbiEncode.referenceModuleInitDataEncoded,
         //     referenceParamsForAbiEncode.nonce,
         //     referenceParamsForAbiEncode.deadline
         // );
@@ -226,26 +228,26 @@ library MetaTxLib {
         Types.EIP712Signature calldata signature,
         Types.CommentParams calldata commentParams
     ) external {
-        bytes32 contentURIHash = keccak256(bytes(commentParams.contentURI));
-        bytes32 referenceModuleDataHash = keccak256(commentParams.referenceModuleData);
-        bytes32 actionModulesInitDataHash = _hashActionModulesInitDatas(commentParams.actionModulesInitDatas);
-        bytes32 referenceModuleInitDataHash = keccak256(commentParams.referenceModuleInitData);
+        bytes32 contentURIEncoded = keccak256(bytes(commentParams.contentURI));
+        bytes32 referenceModuleDataEncoded = keccak256(commentParams.referenceModuleData);
+        bytes32 actionModulesInitDataEncoded = _encodeUsingEip712Rules(commentParams.actionModulesInitDatas);
+        bytes32 referenceModuleInitDataEncoded = keccak256(commentParams.referenceModuleInitData);
         uint256 nonce = _getAndIncrementNonce(signature.signer);
         uint256 deadline = signature.deadline;
         bytes memory encodedAbi = _abiEncode(
             ReferenceParamsForAbiEncode(
                 Typehash.COMMENT,
                 commentParams.profileId,
-                contentURIHash,
+                contentURIEncoded,
                 commentParams.pointedProfileId,
                 commentParams.pointedPubId,
                 commentParams.referrerProfileIds,
                 commentParams.referrerPubIds,
-                referenceModuleDataHash,
+                referenceModuleDataEncoded,
                 commentParams.actionModules,
-                actionModulesInitDataHash,
+                actionModulesInitDataEncoded,
                 commentParams.referenceModule,
-                referenceModuleInitDataHash,
+                referenceModuleInitDataEncoded,
                 nonce,
                 deadline
             )
@@ -256,26 +258,26 @@ library MetaTxLib {
     function validateQuoteSignature(Types.EIP712Signature calldata signature, Types.QuoteParams calldata quoteParams)
         external
     {
-        bytes32 contentURIHash = keccak256(bytes(quoteParams.contentURI));
-        bytes32 referenceModuleDataHash = keccak256(quoteParams.referenceModuleData);
-        bytes32 actionModulesInitDataHash = _hashActionModulesInitDatas(quoteParams.actionModulesInitDatas);
-        bytes32 referenceModuleInitDataHash = keccak256(quoteParams.referenceModuleInitData);
+        bytes32 contentURIEncoded = keccak256(bytes(quoteParams.contentURI));
+        bytes32 referenceModuleDataEncoded = keccak256(quoteParams.referenceModuleData);
+        bytes32 actionModulesInitDataEncoded = _encodeUsingEip712Rules(quoteParams.actionModulesInitDatas);
+        bytes32 referenceModuleInitDataEncoded = keccak256(quoteParams.referenceModuleInitData);
         uint256 nonce = _getAndIncrementNonce(signature.signer);
         uint256 deadline = signature.deadline;
         bytes memory encodedAbi = _abiEncode(
             ReferenceParamsForAbiEncode(
                 Typehash.QUOTE,
                 quoteParams.profileId,
-                contentURIHash,
+                contentURIEncoded,
                 quoteParams.pointedProfileId,
                 quoteParams.pointedPubId,
                 quoteParams.referrerProfileIds,
                 quoteParams.referrerPubIds,
-                referenceModuleDataHash,
+                referenceModuleDataEncoded,
                 quoteParams.actionModules,
-                actionModulesInitDataHash,
+                actionModulesInitDataEncoded,
                 quoteParams.referenceModule,
-                referenceModuleInitDataHash,
+                referenceModuleInitDataEncoded,
                 nonce,
                 deadline
             )
@@ -306,17 +308,6 @@ library MetaTxLib {
         );
     }
 
-    function validateBurnSignature(Types.EIP712Signature calldata signature, uint256 tokenId) external {
-        _validateRecoveredAddress(
-            _calculateDigest(
-                keccak256(
-                    abi.encode(Typehash.BURN, tokenId, _getAndIncrementNonce(signature.signer), signature.deadline)
-                )
-            ),
-            signature
-        );
-    }
-
     function validateFollowSignature(
         Types.EIP712Signature calldata signature,
         uint256 followerProfileId,
@@ -324,18 +315,8 @@ library MetaTxLib {
         uint256[] calldata followTokenIds,
         bytes[] calldata datas
     ) external {
-        uint256 dataLength = datas.length;
-        bytes32[] memory dataHashes = new bytes32[](dataLength);
-        uint256 i;
-        while (i < dataLength) {
-            dataHashes[i] = keccak256(datas[i]);
-            unchecked {
-                ++i;
-            }
-        }
         uint256 nonce = _getAndIncrementNonce(signature.signer);
         uint256 deadline = signature.deadline;
-
         _validateRecoveredAddress(
             _calculateDigest(
                 keccak256(
@@ -344,7 +325,7 @@ library MetaTxLib {
                         followerProfileId,
                         keccak256(abi.encodePacked(idsOfProfilesToFollow)),
                         keccak256(abi.encodePacked(followTokenIds)),
-                        keccak256(abi.encodePacked(dataHashes)),
+                        _encodeUsingEip712Rules(datas),
                         nonce,
                         deadline
                     )
