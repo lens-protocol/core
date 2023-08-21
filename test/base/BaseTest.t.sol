@@ -117,15 +117,6 @@ contract BaseTest is TestSetup {
         return _calculateDigest(structHash);
     }
 
-    function _getBurnTypedDataHash(
-        uint256 profileId,
-        uint256 nonce,
-        uint256 deadline
-    ) internal view returns (bytes32) {
-        bytes32 structHash = keccak256(abi.encode(Typehash.BURN, profileId, nonce, deadline));
-        return _calculateDigest(structHash);
-    }
-
     function _getPostTypedDataHash(
         uint256 profileId,
         string memory contentURI,
@@ -142,7 +133,7 @@ contract BaseTest is TestSetup {
                 profileId,
                 keccak256(bytes(contentURI)),
                 actionModules,
-                _hashActionModulesInitDatas(actionModulesInitDatas),
+                _encodeUsingEip712Rules(actionModulesInitDatas),
                 referenceModule,
                 keccak256(referenceModuleInitData),
                 nonce,
@@ -152,16 +143,18 @@ contract BaseTest is TestSetup {
         return _calculateDigest(structHash);
     }
 
-    function _hashActionModulesInitDatas(bytes[] memory actionModulesInitDatas) private pure returns (bytes32) {
-        bytes32[] memory actionModulesInitDatasHashes = new bytes32[](actionModulesInitDatas.length);
+    function _encodeUsingEip712Rules(bytes[] memory bytesArray) private pure returns (bytes32) {
+        bytes32[] memory bytesArrayEncodedElements = new bytes32[](bytesArray.length);
         uint256 i;
-        while (i < actionModulesInitDatas.length) {
-            actionModulesInitDatasHashes[i] = keccak256(abi.encode(actionModulesInitDatas[i]));
+        while (i < bytesArray.length) {
+            // A `bytes` type is encoded as its keccak256 hash.
+            bytesArrayEncodedElements[i] = keccak256(bytesArray[i]);
             unchecked {
                 ++i;
             }
         }
-        return keccak256(abi.encodePacked(actionModulesInitDatasHashes));
+        // An array is encoded as the keccak256 hash of the concatenation of their encoded elements.
+        return keccak256(abi.encodePacked(bytesArrayEncodedElements));
     }
 
     function _getPostTypedDataHash(
@@ -231,7 +224,7 @@ contract BaseTest is TestSetup {
                     commentParams.referrerPubIds,
                     keccak256(commentParams.referenceModuleData),
                     commentParams.actionModules,
-                    _hashActionModulesInitDatas(commentParams.actionModulesInitDatas),
+                    _encodeUsingEip712Rules(commentParams.actionModulesInitDatas),
                     commentParams.referenceModule,
                     keccak256(commentParams.referenceModuleInitData),
                     nonce,
@@ -259,7 +252,7 @@ contract BaseTest is TestSetup {
                     quoteParams.referrerPubIds,
                     keccak256(quoteParams.referenceModuleData),
                     quoteParams.actionModules,
-                    _hashActionModulesInitDatas(quoteParams.actionModulesInitDatas),
+                    _encodeUsingEip712Rules(quoteParams.actionModulesInitDatas),
                     quoteParams.referenceModule,
                     keccak256(quoteParams.referenceModuleInitData),
                     nonce,
@@ -322,22 +315,13 @@ contract BaseTest is TestSetup {
         uint256 nonce,
         uint256 deadline
     ) internal view returns (bytes32) {
-        uint256 dataLength = datas.length;
-        bytes32[] memory dataHashes = new bytes32[](dataLength);
-        for (uint256 i = 0; i < dataLength; ) {
-            dataHashes[i] = keccak256(datas[i]);
-            unchecked {
-                ++i;
-            }
-        }
-
         bytes32 structHash = keccak256(
             abi.encode(
                 Typehash.FOLLOW,
                 followerProfileId,
                 keccak256(abi.encodePacked(idsOfProfilesToFollow)),
                 keccak256(abi.encodePacked(followTokenIds)),
-                keccak256(abi.encodePacked(dataHashes)),
+                _encodeUsingEip712Rules(datas),
                 nonce,
                 deadline
             )
