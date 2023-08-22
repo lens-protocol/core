@@ -16,6 +16,11 @@ interface ILensHubEventHooks {
      *
      * @param unfollowerProfileId The ID of the profile that executed the unfollow.
      * @param idOfProfileUnfollowed The ID of the profile that was unfollowed.
+     * @param transactionExecutor The address of the account executing the unfollow operation.
      */
-    function emitUnfollowedEvent(uint256 unfollowerProfileId, uint256 idOfProfileUnfollowed) external;
+    function emitUnfollowedEvent(
+        uint256 unfollowerProfileId,
+        uint256 idOfProfileUnfollowed,
+        address transactionExecutor
+    ) external;
 }

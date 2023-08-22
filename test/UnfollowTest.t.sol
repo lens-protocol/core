@@ -142,7 +142,7 @@ contract UnfollowTest is BaseTest {
 
     function testUnfollowAsUnfollowerOwner() public {
         vm.expectEmit(true, false, false, true, address(hub));
-        emit Events.Unfollowed(testUnfollowerProfileId, targetProfileId, block.timestamp);
+        emit Events.Unfollowed(testUnfollowerProfileId, targetProfileId, testUnfollowerProfileOwner, block.timestamp);
 
         vm.expectCall(
             targetFollowNFT,
@@ -173,7 +173,7 @@ contract UnfollowTest is BaseTest {
         });
 
         vm.expectEmit(true, false, false, true, address(hub));
-        emit Events.Unfollowed(testUnfollowerProfileId, targetProfileId, block.timestamp);
+        emit Events.Unfollowed(testUnfollowerProfileId, targetProfileId, approvedDelegatedExecutor, block.timestamp);
 
         vm.expectCall(
             targetFollowNFT,

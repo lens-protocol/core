@@ -91,7 +91,8 @@ contract FollowNFT is HubRestricted, LensBaseERC721, ERC2981CollectionRoyalties,
                 _followWithUnwrappedTokenFromBurnedProfile({
                     followerProfileId: followerProfileId,
                     followTokenId: followTokenId,
-                    currentFollowerProfileId: currentFollowerProfileId
+                    currentFollowerProfileId: currentFollowerProfileId,
+                    transactionExecutor: transactionExecutor
                 });
         }
 
@@ -132,7 +133,7 @@ contract FollowNFT is HubRestricted, LensBaseERC721, ERC2981CollectionRoyalties,
     function removeFollower(uint256 followTokenId) external override {
         address followTokenOwner = ownerOf(followTokenId);
         if (followTokenOwner == msg.sender || isApprovedForAll(followTokenOwner, msg.sender)) {
-            _unfollowIfHasFollower(followTokenId);
+            _unfollowIfHasFollower(followTokenId, msg.sender);
         } else {
             revert DoesNotHavePermissions();
         }
@@ -254,7 +255,7 @@ contract FollowNFT is HubRestricted, LensBaseERC721, ERC2981CollectionRoyalties,
     }
 
     function burn(uint256 followTokenId) public override {
-        _unfollowIfHasFollower(followTokenId);
+        _unfollowIfHasFollower(followTokenId, msg.sender);
         super.burn(followTokenId);
     }
 
@@ -334,7 +335,8 @@ contract FollowNFT is HubRestricted, LensBaseERC721, ERC2981CollectionRoyalties,
         _replaceFollower({
             currentFollowerProfileId: _followDataByFollowTokenId[followTokenId].followerProfileId,
             newFollowerProfileId: followerProfileId,
-            followTokenId: followTokenId
+            followTokenId: followTokenId,
+            transactionExecutor: transactionExecutor
         });
         return followTokenId;
     }
@@ -342,7 +344,8 @@ contract FollowNFT is HubRestricted, LensBaseERC721, ERC2981CollectionRoyalties,
     function _followWithUnwrappedTokenFromBurnedProfile(
         uint256 followerProfileId,
         uint256 followTokenId,
-        uint256 currentFollowerProfileId
+        uint256 currentFollowerProfileId,
+        address transactionExecutor
     ) internal returns (uint256) {
         if (IERC721Timestamped(HUB).exists(currentFollowerProfileId)) {
             revert DoesNotHavePermissions();
@@ -350,7 +353,8 @@ contract FollowNFT is HubRestricted, LensBaseERC721, ERC2981CollectionRoyalties,
         _replaceFollower({
             currentFollowerProfileId: currentFollowerProfileId,
             newFollowerProfileId: followerProfileId,
-            followTokenId: followTokenId
+            followTokenId: followTokenId,
+            transactionExecutor: transactionExecutor
         });
         return followTokenId;
     }
@@ -369,12 +373,13 @@ contract FollowNFT is HubRestricted, LensBaseERC721, ERC2981CollectionRoyalties,
     function _replaceFollower(
         uint256 currentFollowerProfileId,
         uint256 newFollowerProfileId,
-        uint256 followTokenId
+        uint256 followTokenId,
+        address transactionExecutor
     ) internal {
         if (currentFollowerProfileId != 0) {
             // As it has a follower, unfollow first, removing the current follower.
             delete _followTokenIdByFollowerProfileId[currentFollowerProfileId];
-            ILensHub(HUB).emitUnfollowedEvent(currentFollowerProfileId, _followedProfileId);
+            ILensHub(HUB).emitUnfollowedEvent(currentFollowerProfileId, _followedProfileId, transactionExecutor);
         } else {
             unchecked {
                 _followerCount++;
@@ -406,11 +411,11 @@ contract FollowNFT is HubRestricted, LensBaseERC721, ERC2981CollectionRoyalties,
         }
     }
 
-    function _unfollowIfHasFollower(uint256 followTokenId) internal {
+    function _unfollowIfHasFollower(uint256 followTokenId, address transactionExecutor) internal {
         uint256 followerProfileId = _followDataByFollowTokenId[followTokenId].followerProfileId;
         if (followerProfileId != 0) {
             _unfollow(followerProfileId, followTokenId);
-            ILensHub(HUB).emitUnfollowedEvent(followerProfileId, _followedProfileId);
+            ILensHub(HUB).emitUnfollowedEvent(followerProfileId, _followedProfileId, transactionExecutor);
         }
     }
 

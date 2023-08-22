@@ -103,7 +103,7 @@ contract ActTest is ReferralSystemTest {
 
     function testAct() public {
         vm.expectEmit(true, true, true, true, address(hub));
-        emit Events.Acted(actionParams, abi.encode(true), block.timestamp);
+        emit Events.Acted(actionParams, abi.encode(true), actor.owner, block.timestamp);
 
         Types.ProcessActionParams memory processActionParams = Types.ProcessActionParams({
             publicationActedProfileId: actionParams.publicationActedProfileId,

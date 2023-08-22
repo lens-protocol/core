@@ -47,6 +47,7 @@ library PublicationLib {
             pubIdAssigned,
             actionModulesReturnDatas,
             referenceModuleReturnData,
+            transactionExecutor,
             block.timestamp
         );
 
@@ -87,6 +88,7 @@ library PublicationLib {
             referenceModuleReturnData,
             actionModulesInitReturnDatas,
             referenceModuleInitReturnData,
+            transactionExecutor,
             block.timestamp
         );
 
@@ -125,7 +127,13 @@ library PublicationLib {
             referrerPubTypes
         );
 
-        emit Events.MirrorCreated(mirrorParams, pubIdAssigned, referenceModuleReturnData, block.timestamp);
+        emit Events.MirrorCreated(
+            mirrorParams,
+            pubIdAssigned,
+            referenceModuleReturnData,
+            transactionExecutor,
+            block.timestamp
+        );
 
         return pubIdAssigned;
     }
@@ -161,6 +169,7 @@ library PublicationLib {
             referenceModuleReturnData,
             actionModulesReturnDatas,
             referenceModuleInitReturnData,
+            transactionExecutor,
             block.timestamp
         );
 

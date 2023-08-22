@@ -9,12 +9,16 @@ import {Events} from 'contracts/libraries/constants/Events.sol';
 
 abstract contract LensHubEventHooks is ILensHubEventHooks {
     /// @inheritdoc ILensHubEventHooks
-    function emitUnfollowedEvent(uint256 unfollowerProfileId, uint256 idOfProfileUnfollowed) external override {
+    function emitUnfollowedEvent(
+        uint256 unfollowerProfileId,
+        uint256 idOfProfileUnfollowed,
+        address transactionExecutor
+    ) external override {
         address expectedFollowNFT = StorageLib.getProfile(idOfProfileUnfollowed).followNFT;
         if (msg.sender != expectedFollowNFT) {
             revert Errors.CallerNotFollowNFT();
         }
-        emit Events.Unfollowed(unfollowerProfileId, idOfProfileUnfollowed, block.timestamp);
+        emit Events.Unfollowed(unfollowerProfileId, idOfProfileUnfollowed, transactionExecutor, block.timestamp);
     }
 
     //////////////////////////////////////

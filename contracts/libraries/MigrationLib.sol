@@ -174,6 +174,7 @@ library MigrationLib {
                 followTokenIdAssigned: followTokenId,
                 followModuleData: '',
                 processFollowModuleReturnData: '',
+                transactionExecutor: address(0), // For migrations, we use this special value as transaction executor.
                 timestamp: mintTimestamp // The only case where this won't match block.timestamp is during the migration
             });
         }
@@ -197,7 +198,7 @@ library MigrationLib {
                 ).getProfileData(profileIds[i]);
                 IFollowModule(newFeeFollowModule).initializeFollowModule({
                     profileId: profileIds[i],
-                    transactionExecutor: msg.sender,
+                    transactionExecutor: msg.sender, // TODO: Review
                     data: abi.encode(
                         feeFollowModuleData.currency,
                         feeFollowModuleData.amount,
