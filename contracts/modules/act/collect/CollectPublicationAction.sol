@@ -83,6 +83,7 @@ contract CollectPublicationAction is HubRestricted, IPublicationActionModule {
             collectNFT: collectNFT,
             tokenId: tokenId,
             collectActionResult: collectActionResult,
+            transactionExecutor: processActionParams.transactionExecutor,
             timestamp: block.timestamp
         });
 

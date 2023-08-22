@@ -178,7 +178,11 @@ contract CollectPublicationActionTest is BaseTest {
         );
     }
 
-    function testInitializePublicationAction(uint256 profileId, uint256 pubId, address transactionExecutor) public {
+    function testInitializePublicationAction(
+        uint256 profileId,
+        uint256 pubId,
+        address transactionExecutor
+    ) public {
         vm.assume(profileId != 0);
         vm.assume(pubId != 0);
         vm.assume(transactionExecutor != address(0));
@@ -253,6 +257,7 @@ contract CollectPublicationActionTest is BaseTest {
             collectNFT: collectNFT,
             tokenId: 1,
             collectActionResult: abi.encode(true),
+            transactionExecutor: transactionExecutor,
             timestamp: block.timestamp
         });
 
@@ -326,6 +331,7 @@ contract CollectPublicationActionTest is BaseTest {
             collectNFT: collectNFT,
             tokenId: 2,
             collectActionResult: abi.encode(true),
+            transactionExecutor: transactionExecutor,
             timestamp: block.timestamp
         });
 

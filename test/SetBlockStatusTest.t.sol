@@ -148,10 +148,10 @@ contract SetBlockStatusTest is BaseTest {
         assertFalse(hub.isBlocked(anotherBlockeeProfileId, statusSetterProfileId));
 
         vm.expectEmit(true, false, false, true, address(hub));
-        emit Events.Blocked(statusSetterProfileId, blockeeProfileId, block.timestamp);
+        emit Events.Blocked(statusSetterProfileId, blockeeProfileId, statusSetterProfileOwner, block.timestamp);
 
         vm.expectEmit(true, false, false, true, address(hub));
-        emit Events.Blocked(statusSetterProfileId, anotherBlockeeProfileId, block.timestamp);
+        emit Events.Blocked(statusSetterProfileId, anotherBlockeeProfileId, statusSetterProfileOwner, block.timestamp);
 
         vm.expectCall(followNFTAddress, abi.encodeCall(followNFT.processBlock, (blockeeProfileId)), 2);
         vm.expectCall(followNFTAddress, abi.encodeCall(followNFT.processBlock, (anotherBlockeeProfileId)), 1);
@@ -169,10 +169,15 @@ contract SetBlockStatusTest is BaseTest {
         _refreshCachedNonces();
 
         vm.expectEmit(true, false, false, true, address(hub));
-        emit Events.Blocked(statusSetterProfileId, blockeeProfileId, block.timestamp);
+        emit Events.Blocked(statusSetterProfileId, blockeeProfileId, statusSetterProfileOwner, block.timestamp);
 
         vm.expectEmit(true, false, false, true, address(hub));
-        emit Events.Unblocked(statusSetterProfileId, anotherBlockeeProfileId, block.timestamp);
+        emit Events.Unblocked(
+            statusSetterProfileId,
+            anotherBlockeeProfileId,
+            statusSetterProfileOwner,
+            block.timestamp
+        );
 
         _setBlockStatus({
             pk: statusSetterProfileOwnerPk,
@@ -189,10 +194,10 @@ contract SetBlockStatusTest is BaseTest {
         assertTrue(hub.isFollowing(blockeeProfileId, statusSetterProfileId));
 
         vm.expectEmit(true, false, false, true, address(hub));
-        emit Events.Unfollowed(blockeeProfileId, statusSetterProfileId, block.timestamp);
+        emit Events.Unfollowed(blockeeProfileId, statusSetterProfileId, statusSetterProfileOwner, block.timestamp);
 
         vm.expectEmit(true, false, false, true, address(hub));
-        emit Events.Blocked(statusSetterProfileId, blockeeProfileId, block.timestamp);
+        emit Events.Blocked(statusSetterProfileId, blockeeProfileId, statusSetterProfileOwner, block.timestamp);
 
         vm.expectCall(followNFTAddress, abi.encodeCall(followNFT.processBlock, (blockeeProfileId)), 1);
 
@@ -216,7 +221,7 @@ contract SetBlockStatusTest is BaseTest {
         assertEq(hub.getProfile(statusSetterProfileId).followNFT, address(0));
 
         vm.expectEmit(true, false, false, true, address(hub));
-        emit Events.Blocked(statusSetterProfileId, blockeeProfileId, block.timestamp);
+        emit Events.Blocked(statusSetterProfileId, blockeeProfileId, statusSetterProfileOwner, block.timestamp);
 
         _setBlockStatus({
             pk: statusSetterProfileOwnerPk,

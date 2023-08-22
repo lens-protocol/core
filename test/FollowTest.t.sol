@@ -289,6 +289,7 @@ contract FollowTest is BaseTest {
             expectedFollowTokenIdAssigned,
             followModuleData,
             '',
+            testFollowerProfileOwner,
             block.timestamp
         );
 
@@ -347,6 +348,7 @@ contract FollowTest is BaseTest {
             expectedFollowTokenIdAssigned,
             followModuleData,
             '',
+            approvedDelegatedExecutor,
             block.timestamp
         );
 

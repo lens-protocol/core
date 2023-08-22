@@ -47,7 +47,10 @@ contract LensHubEventHooksTest is BaseTest {
         hub.collect(defaultCollectParams);
     }
 
-    function testCannot_EmitUnfollowedEvent_ifNotFollowNFTOfFollowedProfile(address randomAddress) public {
+    function testCannot_EmitUnfollowedEvent_ifNotFollowNFTOfFollowedProfile(
+        address randomAddress,
+        address transactionExecutor
+    ) public {
         vm.assume(randomAddress != address(0));
         address followNFT = hub.getProfile(defaultAccount.profileId).followNFT;
         vm.assume(randomAddress != followNFT);
@@ -57,20 +60,24 @@ contract LensHubEventHooksTest is BaseTest {
         vm.expectRevert(Errors.CallerNotFollowNFT.selector);
 
         vm.prank(randomAddress);
-        hub.emitUnfollowedEvent(follower.profileId, defaultAccount.profileId);
+        hub.emitUnfollowedEvent(follower.profileId, defaultAccount.profileId, transactionExecutor);
     }
 
-    function testEmitUnfollowedEvent_ifFollowNFTOfFollowedProfile() public {
+    function testEmitUnfollowedEvent_ifFollowNFTOfFollowedProfile(address transactionExecutor) public {
         address followNFT = hub.getProfile(defaultAccount.profileId).followNFT;
 
         vm.expectEmit(true, true, true, true, address(hub));
-        emit Events.Unfollowed(follower.profileId, defaultAccount.profileId, block.timestamp);
+        emit Events.Unfollowed(follower.profileId, defaultAccount.profileId, transactionExecutor, block.timestamp);
 
         vm.prank(followNFT);
-        hub.emitUnfollowedEvent(follower.profileId, defaultAccount.profileId);
+        hub.emitUnfollowedEvent(follower.profileId, defaultAccount.profileId, transactionExecutor);
     }
 
-    function testEmitCollectNFTTransferEvent_ForRealThisTime(uint256 collectNFTId, address from, address to) public {
+    function testEmitCollectNFTTransferEvent_ForRealThisTime(
+        uint256 collectNFTId,
+        address from,
+        address to
+    ) public {
         address collectNFT = hub.getPublication(defaultAccount.profileId, defaultPubId).__DEPRECATED__collectNFT;
 
         vm.expectEmit(true, true, true, true, address(hub));

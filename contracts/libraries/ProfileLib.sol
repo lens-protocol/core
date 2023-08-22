@@ -54,9 +54,13 @@ library ProfileLib {
         _setFollowModule(profileId, followModule, followModuleInitData);
     }
 
-    function setProfileMetadataURI(uint256 profileId, string calldata metadataURI) external {
+    function setProfileMetadataURI(
+        uint256 profileId,
+        string calldata metadataURI,
+        address transactionExecutor
+    ) external {
         StorageLib.getProfile(profileId).metadataURI = metadataURI;
-        emit Events.ProfileMetadataSet(profileId, metadataURI, block.timestamp);
+        emit Events.ProfileMetadataSet(profileId, metadataURI, transactionExecutor, block.timestamp);
     }
 
     function _initFollowModule(
@@ -72,7 +76,8 @@ library ProfileLib {
     function setBlockStatus(
         uint256 byProfileId,
         uint256[] calldata idsOfProfilesToSetBlockStatus,
-        bool[] calldata blockStatus
+        bool[] calldata blockStatus,
+        address transactionExecutor
     ) external {
         if (idsOfProfilesToSetBlockStatus.length != blockStatus.length) {
             revert Errors.ArrayMismatch();
@@ -92,14 +97,19 @@ library ProfileLib {
             if (followNFT != address(0) && blockedStatus) {
                 bool hasUnfollowed = IFollowNFT(followNFT).processBlock(idOfProfileToSetBlockStatus);
                 if (hasUnfollowed) {
-                    emit Events.Unfollowed(idOfProfileToSetBlockStatus, byProfileId, block.timestamp);
+                    emit Events.Unfollowed(
+                        idOfProfileToSetBlockStatus,
+                        byProfileId,
+                        transactionExecutor,
+                        block.timestamp
+                    );
                 }
             }
             _blockedStatus[idOfProfileToSetBlockStatus] = blockedStatus;
             if (blockedStatus) {
-                emit Events.Blocked(byProfileId, idOfProfileToSetBlockStatus, block.timestamp);
+                emit Events.Blocked(byProfileId, idOfProfileToSetBlockStatus, transactionExecutor, block.timestamp);
             } else {
-                emit Events.Unblocked(byProfileId, idOfProfileToSetBlockStatus, block.timestamp);
+                emit Events.Unblocked(byProfileId, idOfProfileToSetBlockStatus, transactionExecutor, block.timestamp);
             }
             unchecked {
                 ++i;
