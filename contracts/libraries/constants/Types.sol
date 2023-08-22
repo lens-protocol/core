@@ -95,8 +95,8 @@ library Types {
      * @param followNFT The address of the followNFT associated with this profile. It can be address(0) if the
      * profile has not been followed yet, as the collection is lazy-deployed upon the first follow.
      * @param __DEPRECATED__handle DEPRECATED in V2: handle slot, was replaced with LensHandles.
-     * @param imageURI The URI to be used for the profile's image.
-     * @param __DEPRECATED__followNFTURI DEPRECATED in V2: The UR
+     * @param __DEPRECATED__imageURI DEPRECATED in V2: The URI to be used for the profile image.
+     * @param __DEPRECATED__followNFTURI DEPRECATED in V2: The URI used for the follow NFT image.
      * @param metadataURI MetadataURI is used to store the profile's metadata, for example: displayed name, description,
      * interests, etc.
      * @param metadataURI The URI to be used for the profile's metadata.
@@ -106,7 +106,7 @@ library Types {
         address followModule; // offset 1
         address followNFT; // offset 2
         string __DEPRECATED__handle; // offset 3
-        string imageURI; // offset 4
+        string __DEPRECATED__imageURI; // offset 4
         string __DEPRECATED__followNFTURI; // Deprecated in V2 as we have a common tokenURI for all Follows, offset 5
         string metadataURI; // offset 6
     }
@@ -154,13 +154,11 @@ library Types {
      * @notice A struct containing the parameters required for the `createProfile()` function.
      *
      * @param to The address receiving the profile.
-     * @param imageURI The URI to set for the profile image.
      * @param followModule The follow module to use, can be the zero address.
      * @param followModuleInitData The follow module initialization data, if any.
      */
     struct CreateProfileParams {
         address to;
-        string imageURI;
         address followModule;
         bytes followModuleInitData;
     }

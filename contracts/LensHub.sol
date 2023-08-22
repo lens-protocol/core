@@ -186,26 +186,6 @@ contract LensHub is
         );
     }
 
-    /// @inheritdoc ILensProtocol
-    function setProfileImageURI(uint256 profileId, string calldata imageURI)
-        external
-        override
-        whenNotPaused
-        onlyProfileOwnerOrDelegatedExecutor(msg.sender, profileId)
-    {
-        ProfileLib.setProfileImageURI(profileId, imageURI);
-    }
-
-    /// @inheritdoc ILensProtocol
-    function setProfileImageURIWithSig(
-        uint256 profileId,
-        string calldata imageURI,
-        Types.EIP712Signature calldata signature
-    ) external override whenNotPaused onlyProfileOwnerOrDelegatedExecutor(signature.signer, profileId) {
-        MetaTxLib.validateSetProfileImageURISignature(signature, profileId, imageURI);
-        ProfileLib.setProfileImageURI(profileId, imageURI);
-    }
-
     ////////////////////////////////////////
     ///        PUBLISHING FUNCTIONS      ///
     ////////////////////////////////////////

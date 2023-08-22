@@ -543,12 +543,7 @@ contract TestSetup is Test, ContractAddressesLoaderDeployer, ArrayHelpers {
 
     function _getDefaultCreateProfileParams() internal view returns (Types.CreateProfileParams memory) {
         return
-            Types.CreateProfileParams({
-                to: defaultAccount.owner,
-                imageURI: MOCK_URI,
-                followModule: address(0),
-                followModuleInitData: ''
-            });
+            Types.CreateProfileParams({to: defaultAccount.owner, followModule: address(0), followModuleInitData: ''});
     }
 
     function _getDefaultPostParams() internal view returns (Types.PostParams memory) {

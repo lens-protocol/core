@@ -105,18 +105,6 @@ contract BaseTest is TestSetup {
         return _calculateDigest(structHash);
     }
 
-    function _getSetProfileImageURITypedDataHash(
-        uint256 profileId,
-        string memory imageURI,
-        uint256 nonce,
-        uint256 deadline
-    ) internal view returns (bytes32) {
-        bytes32 structHash = keccak256(
-            abi.encode(Typehash.SET_PROFILE_IMAGE_URI, profileId, keccak256(bytes(imageURI)), nonce, deadline)
-        );
-        return _calculateDigest(structHash);
-    }
-
     function _getPostTypedDataHash(
         uint256 profileId,
         string memory contentURI,

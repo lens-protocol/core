@@ -109,16 +109,9 @@ library Events {
      * @param profileId The newly created profile's token ID.
      * @param creator The profile creator, who created the token with the given profile ID.
      * @param to The address receiving the profile with the given profile ID.
-     * @param imageURI The image URI set for the profile.
      * @param timestamp The current block timestamp.
      */
-    event ProfileCreated(
-        uint256 indexed profileId,
-        address indexed creator,
-        address indexed to,
-        string imageURI,
-        uint256 timestamp
-    );
+    event ProfileCreated(uint256 indexed profileId, address indexed creator, address indexed to, uint256 timestamp);
 
     /**
      * @dev Emitted when a delegated executors configuration is changed.
@@ -149,15 +142,6 @@ library Events {
         uint256 indexed configNumber,
         uint256 timestamp
     );
-
-    /**
-     * @dev Emitted when a profile's URI is set.
-     *
-     * @param profileId The token ID of the profile for which the URI is set.
-     * @param imageURI The URI set for the given profile.
-     * @param timestamp The current block timestamp.
-     */
-    event ProfileImageURISet(uint256 indexed profileId, string imageURI, uint256 timestamp);
 
     /**
      * @dev Emitted when a profile's follow module is set.
