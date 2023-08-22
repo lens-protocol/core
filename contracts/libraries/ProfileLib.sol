@@ -11,8 +11,6 @@ import {IFollowModule} from 'contracts/interfaces/IFollowModule.sol';
 import {IFollowNFT} from 'contracts/interfaces/IFollowNFT.sol';
 
 library ProfileLib {
-    uint16 constant MAX_PROFILE_IMAGE_URI_LENGTH = 6000;
-
     function ownerOf(uint256 profileId) internal view returns (address) {
         address profileOwner = StorageLib.getTokenData(profileId).owner;
         if (profileOwner == address(0)) {
@@ -31,41 +29,14 @@ library ProfileLib {
      *
      * @param createProfileParams The CreateProfileParams struct containing the following parameters:
      *      to: The address receiving the profile.
-     *      imageURI: The URI to set for the profile image.
      *      followModule: The follow module to use, can be the zero address.
      *      followModuleInitData: The follow module initialization data, if any
      * @param profileId The profile ID to associate with this profile NFT (token ID).
      */
     function createProfile(Types.CreateProfileParams calldata createProfileParams, uint256 profileId) external {
-        if (bytes(createProfileParams.imageURI).length > MAX_PROFILE_IMAGE_URI_LENGTH) {
-            revert Errors.ProfileImageURILengthInvalid();
-        }
-
-        Types.Profile storage _profile = StorageLib.getProfile(profileId);
-        _profile.imageURI = createProfileParams.imageURI;
-
-        emit Events.ProfileCreated(
-            profileId,
-            msg.sender,
-            createProfileParams.to,
-            createProfileParams.imageURI,
-            block.timestamp
-        );
-
+        emit Events.ProfileCreated(profileId, msg.sender, createProfileParams.to, block.timestamp);
         emit Events.DelegatedExecutorsConfigApplied(profileId, 0, block.timestamp);
-
         _setFollowModule(profileId, createProfileParams.followModule, createProfileParams.followModuleInitData);
-    }
-
-    /**
-     * @notice Sets the profile image URI for a given profile.
-     *
-     * @param profileId The profile ID.
-     * @param imageURI The image URI to set.
-
-     */
-    function setProfileImageURI(uint256 profileId, string calldata imageURI) external {
-        _setProfileImageURI(profileId, imageURI);
     }
 
     /**
@@ -96,14 +67,6 @@ library ProfileLib {
     ) private returns (bytes memory) {
         ValidationLib.validateFollowModuleWhitelisted(followModule);
         return IFollowModule(followModule).initializeFollowModule(profileId, transactionExecutor, followModuleInitData);
-    }
-
-    function _setProfileImageURI(uint256 profileId, string calldata imageURI) private {
-        if (bytes(imageURI).length > MAX_PROFILE_IMAGE_URI_LENGTH) {
-            revert Errors.ProfileImageURILengthInvalid();
-        }
-        StorageLib.getProfile(profileId).imageURI = imageURI;
-        emit Events.ProfileImageURISet(profileId, imageURI, block.timestamp);
     }
 
     function setBlockStatus(
