@@ -273,21 +273,27 @@ library Events {
     /**
      * @dev Emitted upon a successful collect action.
      *
-     * @param collectActionParams The parameters passed to collect a publication.
-     * @param collectModule The collect module that was used to collect the publication.
-     * @param collectNFT The collect NFT that was used to collect the publication.
-     * @param tokenId The token ID of the collect NFT that was minted as a collect of the publication.
+     * @param collectedProfileId The token ID of the profile that published the collected publication.
+     * @param collectedPubId The ID of the collected publication.
+     * @param collectorProfileId The token ID of the profile that collected the publication.
+     * @param nftRecipient The address that received the collect NFT.
+     * @param collectActionData The custom data passed to the collect module, if any.
      * @param collectActionResult The data returned from the collect module's collect action. This is ABI-encoded
      * and depends on the collect module chosen.
+     * @param collectNFT The address of the NFT collection where the minted collect NFT belongs to.
+     * @param tokenId The token ID of the collect NFT that was minted as a collect of the publication.
      * @param transactionExecutor The address of the account that executed this operation.
      * @param timestamp The current block timestamp.
      */
     event Collected(
-        Types.ProcessActionParams collectActionParams,
-        address collectModule,
+        uint256 indexed collectedProfileId,
+        uint256 indexed collectedPubId,
+        uint256 indexed collectorProfileId,
+        address nftRecipient,
+        bytes collectActionData,
+        bytes collectActionResult,
         address collectNFT,
         uint256 tokenId,
-        bytes collectActionResult,
         address transactionExecutor,
         uint256 timestamp
     );
