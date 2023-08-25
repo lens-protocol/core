@@ -42,7 +42,7 @@ contract TokenHandleRegistryTest is BaseTest {
         vm.prank(initialHandleHolder);
         lensHandles.transferFrom(initialHandleHolder, otherAddress, handleId);
 
-        vm.expectRevert(RegistryErrors.NotTokenOwner.selector);
+        vm.expectRevert(RegistryErrors.DoesNotHavePermissions.selector);
 
         vm.prank(otherAddress);
         tokenHandleRegistry.link(handleId, profileId);
@@ -58,7 +58,7 @@ contract TokenHandleRegistryTest is BaseTest {
         vm.prank(initialProfileHolder);
         hub.transferFrom(initialProfileHolder, otherAddress, profileId);
 
-        vm.expectRevert(RegistryErrors.NotHandleOwner.selector);
+        vm.expectRevert(RegistryErrors.DoesNotHavePermissions.selector);
 
         vm.prank(otherAddress);
         tokenHandleRegistry.link(handleId, profileId);

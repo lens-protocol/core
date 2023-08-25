@@ -21,15 +21,16 @@ interface ITokenHandleRegistry {
      * @custom:permissions LensHub
      *
      * @param handleId ID of the .lens namespace handle NFT
-     * @param tokenId ID of the Lens Protocol Profile NFT
+     * @param profileId ID of the Lens Protocol Profile NFT
      */
-    function migrationLink(uint256 handleId, uint256 tokenId) external;
+    function migrationLink(uint256 handleId, uint256 profileId) external;
 
     /**
      * @notice Links a handle NFT with a profile NFT.
      * Linking means a connection between the two NFTs is created, and the handle NFT can be used to resolve the profile
      * NFT or vice versa.
-     * @custom:permissions Caller must own both NFTs.
+     * @custom:permissions Both NFTs must be owned by the same address, and caller must be the owner of profile or its
+     * approved DelegatedExecutor.
      *
      * @dev In the first version of the registry, the NFT contracts are hard-coded:
      *  - Handle is hard-coded to be of the .lens namespace
@@ -38,13 +39,13 @@ interface ITokenHandleRegistry {
      * function might be deprecated and replaced with a new one accepting addresses of the handle and token contracts.
      *
      * @param handleId ID of the .lens namespace handle NFT
-     * @param tokenId ID of the Lens Protocol Profile NFT
+     * @param profileId ID of the Lens Protocol Profile NFT
      */
-    function link(uint256 handleId, uint256 tokenId) external;
+    function link(uint256 handleId, uint256 profileId) external;
 
     /**
      * @notice Unlinks a handle NFT from a profile NFT.
-     * @custom:permissions Called can be the owner of either of the NFTs.
+     * @custom:permissions Caller can be the owner of either of the NFTs.
      *
      * @dev In the first version of the registry, the contracts are hard-coded:
      *  - Handle is hard-coded to be of the .lens namespace
@@ -53,9 +54,9 @@ interface ITokenHandleRegistry {
      * function might be deprecated and replaced with a new one accepting addresses of the handle and token contracts.
      *
      * @param handleId ID of the .lens namespace handle NFT
-     * @param tokenId ID of the Lens Protocol Profile NFT
+     * @param profileId ID of the Lens Protocol Profile NFT
      */
-    function unlink(uint256 handleId, uint256 tokenId) external;
+    function unlink(uint256 handleId, uint256 profileId) external;
 
     /**
      * @notice Resolves a handle NFT to a profile NFT.

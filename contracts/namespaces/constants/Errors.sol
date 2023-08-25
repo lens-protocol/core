@@ -3,12 +3,13 @@
 pragma solidity >=0.6.0;
 
 library RegistryErrors {
-    error NotHandleOwner();
-    error NotTokenOwner();
     error NotHandleNorTokenOwner();
     error OnlyLensHub();
     error NotLinked();
     error DoesNotExist();
+    error DoesNotHavePermissions();
+    error HandleAndTokenNotInSameWallet();
+    error SignatureInvalid();
 }
 
 library HandlesErrors {

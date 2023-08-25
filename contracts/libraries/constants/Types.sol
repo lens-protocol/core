@@ -73,7 +73,7 @@ library Types {
     /**
      * @notice A struct containing the necessary information to reconstruct an EIP-712 typed data signature.
      *
-     * @param signer The address of the signer.
+     * @param signer The address of the signer. Specially needed as a parameter to support EIP-1271.
      * @param v The signature's recovery parameter.
      * @param r The signature's r parameter.
      * @param s The signature's s parameter.

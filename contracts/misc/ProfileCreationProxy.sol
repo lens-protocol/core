@@ -61,7 +61,7 @@ contract ProfileCreationProxy is ImmutableOwnable {
         uint256 profileId = ILensHub(LENS_HUB).createProfile(createProfileParams);
         uint256 handleId = LENS_HANDLES.mintHandle(address(this), handle);
 
-        TOKEN_HANDLE_REGISTRY.link({handleId: handleId, tokenId: profileId});
+        TOKEN_HANDLE_REGISTRY.link({handleId: handleId, profileId: profileId});
 
         // Transfer the handle & profile to the destination
         LENS_HANDLES.transferFrom(address(this), destination, handleId);

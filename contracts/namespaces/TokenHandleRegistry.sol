@@ -2,13 +2,16 @@
 
 pragma solidity ^0.8.18;
 
-import {IERC721} from '@openzeppelin/contracts/token/ERC721/IERC721.sol';
+import {IERC1271} from '@openzeppelin/contracts/interfaces/IERC1271.sol';
 import {ITokenHandleRegistry} from 'contracts/interfaces/ITokenHandleRegistry.sol';
 import {RegistryTypes} from 'contracts/namespaces/constants/Types.sol';
+import {Types} from 'contracts/libraries/constants/Types.sol';
+import {Errors} from 'contracts/libraries/constants/Errors.sol';
 import {RegistryErrors} from 'contracts/namespaces/constants/Errors.sol';
 import {RegistryEvents} from 'contracts/namespaces/constants/Events.sol';
 import {ILensHub} from 'contracts/interfaces/ILensHub.sol';
 import {ILensHandles} from 'contracts/interfaces/ILensHandles.sol';
+import {Typehash} from 'contracts/namespaces/constants/Typehash.sol';
 
 /**
  * @title TokenHandleRegistry
@@ -20,24 +23,13 @@ contract TokenHandleRegistry is ITokenHandleRegistry {
     // First version of TokenHandleRegistry only works with Lens Profiles and .lens namespace.
     address immutable LENS_HUB;
     address immutable LENS_HANDLES;
+    bytes4 internal constant EIP1271_MAGIC_VALUE = 0x1626ba7e;
 
     // Using _handleHash(Handle) and _tokenHash(Token) as keys given that structs cannot be used as them.
     mapping(bytes32 handle => RegistryTypes.Token token) handleToToken;
     mapping(bytes32 token => RegistryTypes.Handle handle) tokenToHandle;
 
-    modifier onlyHandleOwner(uint256 handleId, address transactionExecutor) {
-        if (IERC721(LENS_HANDLES).ownerOf(handleId) != transactionExecutor) {
-            revert RegistryErrors.NotHandleOwner();
-        }
-        _;
-    }
-
-    modifier onlyTokenOwner(uint256 tokenId, address transactionExecutor) {
-        if (IERC721(LENS_HUB).ownerOf(tokenId) != transactionExecutor) {
-            revert RegistryErrors.NotTokenOwner();
-        }
-        _;
-    }
+    mapping(address signer => uint256 nonce) public nonces;
 
     constructor(address lensHub, address lensHandles) {
         LENS_HUB = lensHub;
@@ -47,47 +39,145 @@ contract TokenHandleRegistry is ITokenHandleRegistry {
     // Lens V1 to Lens V2 migration function
     // WARNING: It is able to link the Token and Handle even if they're not in the same wallet.
     //          But it is designed to be only called from LensHub migration function, which assures that they are.
-    function migrationLink(uint256 handleId, uint256 tokenId) external {
+    function migrationLink(uint256 handleId, uint256 profileId) external {
         if (msg.sender != LENS_HUB) {
             revert RegistryErrors.OnlyLensHub();
         }
-        _link(
+        _executeLinkage(
             RegistryTypes.Handle({collection: LENS_HANDLES, id: handleId}),
-            RegistryTypes.Token({collection: LENS_HUB, id: tokenId})
+            RegistryTypes.Token({collection: LENS_HUB, id: profileId})
         );
     }
 
     /// @inheritdoc ITokenHandleRegistry
-    function link(
+    function link(uint256 handleId, uint256 profileId) external {
+        _link(handleId, profileId, msg.sender);
+    }
+
+    function linkWithSig(uint256 handleId, uint256 profileId, Types.EIP712Signature calldata signature) external {
+        _validateLinkSignature(signature, handleId, profileId);
+        _link(handleId, profileId, signature.signer);
+    }
+
+    function _link(uint256 handleId, uint256 profileId, address transactionExecutor) private {
+        // Handle and profile must be owned by the same address.
+        // Caller should be the owner of the profile or one of its approved delegated executors.
+        address profileOwner = ILensHub(LENS_HUB).ownerOf(profileId);
+        if (profileOwner != ILensHandles(LENS_HANDLES).ownerOf(handleId)) {
+            revert RegistryErrors.HandleAndTokenNotInSameWallet();
+        }
+        if (
+            transactionExecutor != profileOwner ||
+            !ILensHub(LENS_HUB).isDelegatedExecutorApproved(profileId, transactionExecutor)
+        ) {
+            revert RegistryErrors.DoesNotHavePermissions();
+        }
+        _executeLinkage(
+            RegistryTypes.Handle({collection: LENS_HANDLES, id: handleId}),
+            RegistryTypes.Token({collection: LENS_HUB, id: profileId})
+        );
+    }
+
+    function _validateLinkSignature(
+        Types.EIP712Signature calldata signature,
         uint256 handleId,
-        uint256 tokenId
-    ) external onlyTokenOwner(tokenId, msg.sender) onlyHandleOwner(handleId, msg.sender) {
-        _link(
-            RegistryTypes.Handle({collection: LENS_HANDLES, id: handleId}),
-            RegistryTypes.Token({collection: LENS_HUB, id: tokenId})
+        uint256 profileId
+    ) internal {
+        _validateRecoveredAddress(
+            _calculateDigest(
+                keccak256(
+                    abi.encode(Typehash.LINK, handleId, profileId, nonces[signature.signer]++, signature.deadline)
+                )
+            ),
+            signature
         );
     }
 
+    function _validateUnlinkSignature(
+        Types.EIP712Signature calldata signature,
+        uint256 handleId,
+        uint256 profileId
+    ) internal {
+        _validateRecoveredAddress(
+            _calculateDigest(
+                keccak256(
+                    abi.encode(Typehash.UNLINK, handleId, profileId, nonces[signature.signer]++, signature.deadline)
+                )
+            ),
+            signature
+        );
+    }
+
+    /**
+     * @dev Wrapper for ecrecover to reduce code size, used in meta-tx specific functions.
+     */
+    function _validateRecoveredAddress(bytes32 digest, Types.EIP712Signature calldata signature) private view {
+        if (signature.deadline < block.timestamp) revert Errors.SignatureExpired();
+        // If the expected address is a contract, check the signature there.
+        if (signature.signer.code.length != 0) {
+            bytes memory concatenatedSig = abi.encodePacked(signature.r, signature.s, signature.v);
+            if (IERC1271(signature.signer).isValidSignature(digest, concatenatedSig) != EIP1271_MAGIC_VALUE) {
+                revert Errors.SignatureInvalid();
+            }
+        } else {
+            address recoveredAddress = ecrecover(digest, signature.v, signature.r, signature.s);
+            if (recoveredAddress == address(0) || recoveredAddress != signature.signer) {
+                revert Errors.SignatureInvalid();
+            }
+        }
+    }
+
+    /**
+     * @dev Calculates EIP712 digest based on the current DOMAIN_SEPARATOR.
+     *
+     * @param hashedMessage The message hash from which the digest should be calculated.
+     *
+     * @return bytes32 A 32-byte output representing the EIP712 digest.
+     */
+    function _calculateDigest(bytes32 hashedMessage) private view returns (bytes32) {
+        return keccak256(abi.encodePacked('\x19\x01', calculateDomainSeparator(), hashedMessage));
+    }
+
+    function calculateDomainSeparator() internal view returns (bytes32) {
+        return
+            keccak256(
+                abi.encode(
+                    Typehash.EIP712_DOMAIN,
+                    keccak256('TokenHandleRegistry'),
+                    keccak256('1'),
+                    block.chainid,
+                    address(this)
+                )
+            );
+    }
+
     /// @inheritdoc ITokenHandleRegistry
-    function unlink(uint256 handleId, uint256 tokenId) external {
-        // We revert here only in the case if both tokens exists and the caller is not the owner of any of them
+    function unlink(uint256 handleId, uint256 profileId) external {
+        _unlink(handleId, profileId, msg.sender);
+    }
+
+    function unlinkWithSig(uint256 handleId, uint256 profileId, Types.EIP712Signature calldata signature) external {
+        _validateUnlinkSignature(signature, handleId, profileId);
+        _unlink(handleId, profileId, signature.signer);
+    }
+
+    function _unlink(uint256 handleId, uint256 profileId, address transactionExecutor) private {
         if (
             ILensHandles(LENS_HANDLES).exists(handleId) &&
-            ILensHandles(LENS_HANDLES).ownerOf(handleId) != msg.sender &&
-            ILensHub(LENS_HUB).exists(tokenId) &&
-            ILensHub(LENS_HUB).ownerOf(tokenId) != msg.sender
+            ILensHandles(LENS_HANDLES).ownerOf(handleId) != transactionExecutor &&
+            ILensHub(LENS_HUB).exists(profileId) &&
+            (ILensHub(LENS_HUB).ownerOf(profileId) != transactionExecutor ||
+                !ILensHub(LENS_HUB).isDelegatedExecutorApproved(profileId, transactionExecutor))
         ) {
             revert RegistryErrors.NotHandleNorTokenOwner();
         }
-
         RegistryTypes.Handle memory handle = RegistryTypes.Handle({collection: LENS_HANDLES, id: handleId});
         RegistryTypes.Token memory tokenPointedByHandle = handleToToken[_handleHash(handle)];
-
         // We check if the tokens are (were) linked for the case if some of them doesn't exist
-        if (tokenPointedByHandle.id != tokenId) {
+        if (tokenPointedByHandle.id != profileId) {
             revert RegistryErrors.NotLinked();
         }
-        _unlink(handle, tokenPointedByHandle);
+        _executeUnlinkage(handle, tokenPointedByHandle);
     }
 
     /// @inheritdoc ITokenHandleRegistry
@@ -104,11 +194,11 @@ contract TokenHandleRegistry is ITokenHandleRegistry {
     }
 
     /// @inheritdoc ITokenHandleRegistry
-    function getDefaultHandle(uint256 tokenId) external view returns (uint256) {
-        if (!ILensHub(LENS_HUB).exists(tokenId)) {
+    function getDefaultHandle(uint256 profileId) external view returns (uint256) {
+        if (!ILensHub(LENS_HUB).exists(profileId)) {
             revert RegistryErrors.DoesNotExist();
         }
-        uint256 defaultHandleId = _resolveTokenToHandle(RegistryTypes.Token({collection: LENS_HUB, id: tokenId})).id;
+        uint256 defaultHandleId = _resolveTokenToHandle(RegistryTypes.Token({collection: LENS_HUB, id: profileId})).id;
         if (defaultHandleId == 0 || !ILensHandles(LENS_HANDLES).exists(defaultHandleId)) {
             return 0;
         }
@@ -131,7 +221,7 @@ contract TokenHandleRegistry is ITokenHandleRegistry {
         return tokenToHandle[_tokenHash(token)];
     }
 
-    function _link(RegistryTypes.Handle memory handle, RegistryTypes.Token memory token) internal {
+    function _executeLinkage(RegistryTypes.Handle memory handle, RegistryTypes.Token memory token) internal {
         _deleteTokenToHandleLinkageIfAny(handle);
         handleToToken[_handleHash(handle)] = token;
 
@@ -157,7 +247,7 @@ contract TokenHandleRegistry is ITokenHandleRegistry {
         }
     }
 
-    function _unlink(RegistryTypes.Handle memory handle, RegistryTypes.Token memory token) internal {
+    function _executeUnlinkage(RegistryTypes.Handle memory handle, RegistryTypes.Token memory token) internal {
         delete handleToToken[_handleHash(handle)];
         // tokenToHandle is removed too, as the first version linkage is one-to-one.
         delete tokenToHandle[_tokenHash(token)];
