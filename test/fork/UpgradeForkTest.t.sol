@@ -785,7 +785,7 @@ contract UpgradeForkTest is BaseTest {
         assertEq(profile1.followModule, address(0), 'followModule of profile1 is wrong');
         assertEq(profile1.__DEPRECATED__handle, '', 'handle of profile1 is wrong');
         assertEq(
-            profile1.imageURI,
+            profile1.__DEPRECATED__imageURI,
             string.concat(MOCK_URI, '/imageURI/', LibString.lower('UPGRADE_PROFILE_1')),
             'imageURI of profile1 is wrong'
         );
@@ -797,7 +797,7 @@ contract UpgradeForkTest is BaseTest {
         assertEq(profile2.followModule, address(0), 'followModule of profile2 is wrong');
         assertEq(profile2.__DEPRECATED__handle, LibString.lower('UPGRADE_PROFILE_2'), 'handle of profile2 is wrong');
         assertEq(
-            profile2.imageURI,
+            profile2.__DEPRECATED__imageURI,
             string.concat(MOCK_URI, '/imageURI/', LibString.lower('UPGRADE_PROFILE_2')),
             'imageURI of profile2 is wrong'
         );

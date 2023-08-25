@@ -36,16 +36,6 @@ contract LensHubTest is BaseTest {
         hub.createProfile(createProfileParams);
     }
 
-    function testCannot_CreateProfile_IfImageURILengthIsGreaterThanMax() public {
-        Types.CreateProfileParams memory createProfileParams = _getDefaultCreateProfileParams();
-
-        bytes memory imageURI = new bytes(ProfileLib.MAX_PROFILE_IMAGE_URI_LENGTH + 1);
-        createProfileParams.imageURI = string(imageURI);
-
-        vm.expectRevert(Errors.ProfileImageURILengthInvalid.selector);
-        hub.createProfile(createProfileParams);
-    }
-
     function testCannot_CreateProfile_IfRecepientIsZero() public {
         Types.CreateProfileParams memory createProfileParams = _getDefaultCreateProfileParams();
 
@@ -71,12 +61,10 @@ contract LensHubTest is BaseTest {
         vm.assume(to != address(0));
 
         address followModule = address(0);
-        string memory imageURI = 'ipfs://randomImageUri1234567890';
         bytes memory followModuleInitData = '';
 
         Types.CreateProfileParams memory createProfileParams = Types.CreateProfileParams({
             to: to,
-            imageURI: imageURI,
             followModule: followModule,
             followModuleInitData: followModuleInitData
         });
@@ -87,7 +75,7 @@ contract LensHubTest is BaseTest {
         emit Transfer(address(0), to, expectedProfileId);
 
         vm.expectEmit(true, true, true, true, address(hub));
-        emit Events.ProfileCreated(expectedProfileId, address(this), to, imageURI, block.timestamp);
+        emit Events.ProfileCreated(expectedProfileId, address(this), to, block.timestamp);
 
         vm.expectEmit(true, true, true, true, address(hub));
         emit Events.FollowModuleSet(expectedProfileId, followModule, '', block.timestamp);
@@ -99,7 +87,6 @@ contract LensHubTest is BaseTest {
 
         Types.Profile memory profile = hub.getProfile(profileId);
 
-        assertEq(profile.imageURI, imageURI);
         assertEq(profile.followModule, followModule);
         assertEq(profile.pubCount, 0);
     }
@@ -112,12 +99,10 @@ contract LensHubTest is BaseTest {
         vm.prank(governance);
         hub.whitelistFollowModule(followModule, true);
 
-        string memory imageURI = 'ipfs://randomImageUri1234567890';
         bytes memory followModuleInitData = abi.encode(false);
 
         Types.CreateProfileParams memory createProfileParams = Types.CreateProfileParams({
             to: to,
-            imageURI: imageURI,
             followModule: followModule,
             followModuleInitData: followModuleInitData
         });
@@ -128,7 +113,7 @@ contract LensHubTest is BaseTest {
         emit Transfer(address(0), to, expectedProfileId);
 
         vm.expectEmit(true, true, true, true, address(hub));
-        emit Events.ProfileCreated(expectedProfileId, address(this), to, imageURI, block.timestamp);
+        emit Events.ProfileCreated(expectedProfileId, address(this), to, block.timestamp);
 
         vm.expectEmit(true, true, true, true, address(hub));
         emit Events.FollowModuleSet(expectedProfileId, followModule, '', block.timestamp);
@@ -149,7 +134,6 @@ contract LensHubTest is BaseTest {
 
         Types.Profile memory profile = hub.getProfile(profileId);
 
-        assertEq(profile.imageURI, imageURI);
         assertEq(profile.followModule, followModule);
         assertEq(profile.pubCount, 0);
 

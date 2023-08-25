@@ -164,7 +164,6 @@ contract LensHandles is ERC721, ImmutableOwnable, ILensHandles {
         return NAMESPACE_HASH;
     }
 
-    // TODO: Should we revert if it doesn't exist?
     function getLocalName(uint256 tokenId) public view returns (string memory) {
         string memory localName = _localNames[tokenId];
         if (bytes(localName).length == 0) {
@@ -173,7 +172,6 @@ contract LensHandles is ERC721, ImmutableOwnable, ILensHandles {
         return _localNames[tokenId];
     }
 
-    // TODO: Should we revert if it doesn't exist?
     function getHandle(uint256 tokenId) public view returns (string memory) {
         string memory localName = getLocalName(tokenId);
         return string.concat(localName, '.', NAMESPACE);

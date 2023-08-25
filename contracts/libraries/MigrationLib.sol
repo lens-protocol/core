@@ -87,6 +87,13 @@ library MigrationLib {
             delete StorageLib.getProfile(profileId).__DEPRECATED__handle;
             delete StorageLib.getProfile(profileId).__DEPRECATED__followNFTURI;
             delete StorageLib.profileIdByHandleHash()[handleHash];
+
+            if (StorageLib.getDelegatedExecutorsConfig(profileId).configNumber == 0) {
+                // This event can be duplicated, and then redundant, if the profile has already configured the Delegated
+                // Executors before being migrated. Given that this is an edge case, we exceptionally accept this
+                // redundancy considering that the event is still consistent with the state.
+                emit Events.DelegatedExecutorsConfigApplied(profileId, 0, block.timestamp);
+            }
         }
     }
 
@@ -167,6 +174,7 @@ library MigrationLib {
                 followTokenIdAssigned: followTokenId,
                 followModuleData: '',
                 processFollowModuleReturnData: '',
+                transactionExecutor: address(0), // For migrations, we use this special value as transaction executor.
                 timestamp: mintTimestamp // The only case where this won't match block.timestamp is during the migration
             });
         }
@@ -190,7 +198,7 @@ library MigrationLib {
                 ).getProfileData(profileIds[i]);
                 IFollowModule(newFeeFollowModule).initializeFollowModule({
                     profileId: profileIds[i],
-                    transactionExecutor: msg.sender,
+                    transactionExecutor: msg.sender, // TODO: Review
                     data: abi.encode(
                         feeFollowModuleData.currency,
                         feeFollowModuleData.amount,

@@ -72,7 +72,7 @@ library FollowLib {
                 transactionExecutor: transactionExecutor
             });
 
-            emit Events.Unfollowed(unfollowerProfileId, idOfProfileToUnfollow, block.timestamp);
+            emit Events.Unfollowed(unfollowerProfileId, idOfProfileToUnfollow, transactionExecutor, block.timestamp);
 
             unchecked {
                 ++i;
@@ -110,30 +110,56 @@ library FollowLib {
             _profileToFollow.followNFT = followNFT;
         }
 
-        uint256 followTokenIdAssigned = IFollowNFT(followNFT).follow({
-            followerProfileId: followerProfileId,
-            transactionExecutor: transactionExecutor,
-            followTokenId: followTokenId
+        return
+            _processFollow(
+                ProcessFollowParams({
+                    followNFT: followNFT,
+                    followerProfileId: followerProfileId,
+                    transactionExecutor: transactionExecutor,
+                    idOfProfileToFollow: idOfProfileToFollow,
+                    followTokenId: followTokenId,
+                    followModule: _profileToFollow.followModule,
+                    followModuleData: followModuleData
+                })
+            );
+    }
+
+    // Struct defined for the sole purpose of avoiding 'stack too deep' error.
+    struct ProcessFollowParams {
+        address followNFT;
+        uint256 followerProfileId;
+        address transactionExecutor;
+        uint256 idOfProfileToFollow;
+        uint256 followTokenId;
+        address followModule;
+        bytes followModuleData;
+    }
+
+    function _processFollow(ProcessFollowParams memory processFollowParams) private returns (uint256) {
+        uint256 followTokenIdAssigned = IFollowNFT(processFollowParams.followNFT).follow({
+            followerProfileId: processFollowParams.followerProfileId,
+            transactionExecutor: processFollowParams.transactionExecutor,
+            followTokenId: processFollowParams.followTokenId
         });
 
         bytes memory processFollowModuleReturnData;
-        address followModule = _profileToFollow.followModule;
-        if (followModule != address(0)) {
-            processFollowModuleReturnData = IFollowModule(followModule).processFollow(
-                followerProfileId,
-                followTokenId,
-                transactionExecutor,
-                idOfProfileToFollow,
-                followModuleData
+        if (processFollowParams.followModule != address(0)) {
+            processFollowModuleReturnData = IFollowModule(processFollowParams.followModule).processFollow(
+                processFollowParams.followerProfileId,
+                processFollowParams.followTokenId,
+                processFollowParams.transactionExecutor,
+                processFollowParams.idOfProfileToFollow,
+                processFollowParams.followModuleData
             );
         }
 
         emit Events.Followed(
-            followerProfileId,
-            idOfProfileToFollow,
+            processFollowParams.followerProfileId,
+            processFollowParams.idOfProfileToFollow,
             followTokenIdAssigned,
-            followModuleData,
+            processFollowParams.followModuleData,
             processFollowModuleReturnData,
+            processFollowParams.transactionExecutor,
             block.timestamp
         );
 

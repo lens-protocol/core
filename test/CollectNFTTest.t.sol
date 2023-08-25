@@ -95,7 +95,7 @@ contract CollectNFTTest is BaseTest, LensBaseERC721Test {
             referrerProfileIds: _emptyUint256Array(),
             referrerPubIds: _emptyUint256Array(),
             actionModuleAddress: address(collectPublicationAction),
-            actionModuleData: abi.encode(true)
+            actionModuleData: abi.encode(defaultAccount.owner, abi.encode(true))
         });
 
         vm.prank(defaultAccount.owner);
@@ -109,9 +109,8 @@ contract CollectNFTTest is BaseTest, LensBaseERC721Test {
     }
 
     function _mintERC721(address to) internal virtual override returns (uint256) {
-        vm.assume(!_isLensHubProxyAdmin(to));
-        collectActionParams.actorProfileId = _createProfile(to);
-        vm.prank(to);
+        collectActionParams.actionModuleData = abi.encode(to, abi.encode(true));
+        vm.prank(defaultAccount.owner);
         bytes memory actResult = hub.act(collectActionParams);
         (uint256 tokenId, ) = abi.decode(actResult, (uint256, bytes));
         return tokenId;

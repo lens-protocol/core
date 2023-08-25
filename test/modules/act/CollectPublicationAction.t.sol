@@ -178,7 +178,11 @@ contract CollectPublicationActionTest is BaseTest {
         );
     }
 
-    function testInitializePublicationAction(uint256 profileId, uint256 pubId, address transactionExecutor) public {
+    function testInitializePublicationAction(
+        uint256 profileId,
+        uint256 pubId,
+        address transactionExecutor
+    ) public {
         vm.assume(profileId != 0);
         vm.assume(pubId != 0);
         vm.assume(transactionExecutor != address(0));
@@ -211,7 +215,8 @@ contract CollectPublicationActionTest is BaseTest {
         uint256 pubId,
         uint256 actorProfileId,
         address actorProfileOwner,
-        address transactionExecutor
+        address transactionExecutor,
+        address collectNftRecipient
     ) public {
         vm.assume(profileId != 0);
         vm.assume(pubId != 0);
@@ -224,6 +229,7 @@ contract CollectPublicationActionTest is BaseTest {
         bytes memory initData = abi.encode(mockCollectModule, abi.encode(true));
         vm.prank(address(hub));
         collectPublicationAction.initializePublicationAction(profileId, pubId, transactionExecutor, initData);
+        bytes memory collectModuleData = abi.encode(true);
 
         Types.ProcessActionParams memory processActionParams = Types.ProcessActionParams({
             publicationActedProfileId: profileId,
@@ -234,7 +240,7 @@ contract CollectPublicationActionTest is BaseTest {
             referrerProfileIds: _emptyUint256Array(),
             referrerPubIds: _emptyUint256Array(),
             referrerPubTypes: _emptyPubTypesArray(),
-            actionModuleData: abi.encode(true)
+            actionModuleData: abi.encode(collectNftRecipient, collectModuleData)
         });
 
         uint256 contractNonce = vm.getNonce(address(collectPublicationAction));
@@ -244,15 +250,19 @@ contract CollectPublicationActionTest is BaseTest {
         emit Events.CollectNFTDeployed(profileId, pubId, collectNFT, block.timestamp);
 
         vm.expectEmit(true, true, true, true, address(collectNFT));
-        emit Transfer({from: address(0), to: actorProfileOwner, tokenId: 1});
+        emit Transfer({from: address(0), to: collectNftRecipient, tokenId: 1});
 
         vm.expectEmit(true, true, true, true, address(collectPublicationAction));
         emit Events.Collected({
-            collectActionParams: processActionParams,
-            collectModule: mockCollectModule,
+            collectedProfileId: processActionParams.publicationActedProfileId,
+            collectedPubId: processActionParams.publicationActedId,
+            collectorProfileId: processActionParams.actorProfileId,
+            nftRecipient: collectNftRecipient,
+            collectActionData: collectModuleData,
+            collectActionResult: collectModuleData,
             collectNFT: collectNFT,
             tokenId: 1,
-            collectActionResult: abi.encode(true),
+            transactionExecutor: transactionExecutor,
             timestamp: block.timestamp
         });
 
@@ -262,7 +272,7 @@ contract CollectPublicationActionTest is BaseTest {
         bytes memory returnData = collectPublicationAction.processPublicationAction(processActionParams);
         (uint256 tokenId, bytes memory collectActionResult) = abi.decode(returnData, (uint256, bytes));
         assertEq(tokenId, 1, 'Invalid tokenId');
-        assertEq(collectActionResult, abi.encode(true), 'Invalid collectActionResult data');
+        assertEq(collectActionResult, collectModuleData, 'Invalid collectActionResult data');
 
         string memory expectedCollectNftName = string.concat(
             'Lens Collect | Profile #',
@@ -276,7 +286,7 @@ contract CollectPublicationActionTest is BaseTest {
         assertEq(CollectNFT(collectNFT).name(), expectedCollectNftName, 'Invalid collect NFT name');
         assertEq(CollectNFT(collectNFT).symbol(), expectedCollectNftSymbol, 'Invalid collect NFT symbol');
 
-        assertEq(CollectNFT(collectNFT).ownerOf(1), actorProfileOwner, 'Invalid collect NFT owner');
+        assertEq(CollectNFT(collectNFT).ownerOf(1), collectNftRecipient, 'Invalid collect NFT owner');
     }
 
     function testProcessPublicationAction_nonFirstCollect(
@@ -284,7 +294,8 @@ contract CollectPublicationActionTest is BaseTest {
         uint256 pubId,
         uint256 actorProfileId,
         address actorProfileOwner,
-        address transactionExecutor
+        address transactionExecutor,
+        address collectNftRecipient
     ) public {
         vm.assume(profileId != 0);
         vm.assume(pubId != 0);
@@ -297,12 +308,15 @@ contract CollectPublicationActionTest is BaseTest {
             pubId,
             actorProfileId,
             actorProfileOwner,
-            transactionExecutor
+            transactionExecutor,
+            collectNftRecipient
         );
 
         assertTrue(collectPublicationAction.getCollectData(profileId, pubId).collectModule != address(0));
         address collectNFT = collectPublicationAction.getCollectData(profileId, pubId).collectNFT;
         assertTrue(collectNFT != address(0));
+
+        bytes memory collectModuleData = abi.encode(true);
 
         Types.ProcessActionParams memory processActionParams = Types.ProcessActionParams({
             publicationActedProfileId: profileId,
@@ -313,19 +327,23 @@ contract CollectPublicationActionTest is BaseTest {
             referrerProfileIds: _emptyUint256Array(),
             referrerPubIds: _emptyUint256Array(),
             referrerPubTypes: _emptyPubTypesArray(),
-            actionModuleData: abi.encode(true)
+            actionModuleData: abi.encode(collectNftRecipient, collectModuleData)
         });
 
         vm.expectEmit(true, true, true, true, address(collectNFT));
-        emit Transfer({from: address(0), to: actorProfileOwner, tokenId: 2});
+        emit Transfer({from: address(0), to: collectNftRecipient, tokenId: 2});
 
         vm.expectEmit(true, true, true, true, address(collectPublicationAction));
         emit Events.Collected({
-            collectActionParams: processActionParams,
-            collectModule: mockCollectModule,
+            collectedProfileId: processActionParams.publicationActedProfileId,
+            collectedPubId: processActionParams.publicationActedId,
+            collectorProfileId: processActionParams.actorProfileId,
+            nftRecipient: collectNftRecipient,
+            collectActionData: collectModuleData,
+            collectActionResult: collectModuleData,
             collectNFT: collectNFT,
             tokenId: 2,
-            collectActionResult: abi.encode(true),
+            transactionExecutor: transactionExecutor,
             timestamp: block.timestamp
         });
 
@@ -333,9 +351,9 @@ contract CollectPublicationActionTest is BaseTest {
         bytes memory returnData = collectPublicationAction.processPublicationAction(processActionParams);
         (uint256 tokenId, bytes memory collectActionResult) = abi.decode(returnData, (uint256, bytes));
         assertEq(tokenId, 2, 'Invalid tokenId');
-        assertEq(collectActionResult, abi.encode(true), 'Invalid collectActionResult data');
+        assertEq(collectActionResult, collectModuleData, 'Invalid collectActionResult data');
 
-        assertEq(CollectNFT(collectNFT).ownerOf(2), actorProfileOwner, 'Invalid collect NFT owner');
+        assertEq(CollectNFT(collectNFT).ownerOf(2), collectNftRecipient, 'Invalid collect NFT owner');
     }
 
     // TODO: Should we test for mockActionModule reverts processCollect - and NFT is not minted then?

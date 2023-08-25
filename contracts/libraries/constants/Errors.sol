@@ -16,7 +16,6 @@ library Errors {
     error EmergencyAdminCanOnlyPauseFurther();
     error NotProfileOwner();
     error PublicationDoesNotExist();
-    error ProfileImageURILengthInvalid();
     error CallerNotFollowNFT();
     error CallerNotCollectNFT(); // Legacy
     error ArrayMismatch();

@@ -11,8 +11,6 @@ import {IFollowModule} from 'contracts/interfaces/IFollowModule.sol';
 import {IFollowNFT} from 'contracts/interfaces/IFollowNFT.sol';
 
 library ProfileLib {
-    uint16 constant MAX_PROFILE_IMAGE_URI_LENGTH = 6000;
-
     function ownerOf(uint256 profileId) internal view returns (address) {
         address profileOwner = StorageLib.getTokenData(profileId).owner;
         if (profileOwner == address(0)) {
@@ -31,39 +29,14 @@ library ProfileLib {
      *
      * @param createProfileParams The CreateProfileParams struct containing the following parameters:
      *      to: The address receiving the profile.
-     *      imageURI: The URI to set for the profile image.
      *      followModule: The follow module to use, can be the zero address.
      *      followModuleInitData: The follow module initialization data, if any
      * @param profileId The profile ID to associate with this profile NFT (token ID).
      */
     function createProfile(Types.CreateProfileParams calldata createProfileParams, uint256 profileId) external {
-        if (bytes(createProfileParams.imageURI).length > MAX_PROFILE_IMAGE_URI_LENGTH) {
-            revert Errors.ProfileImageURILengthInvalid();
-        }
-
-        Types.Profile storage _profile = StorageLib.getProfile(profileId);
-        _profile.imageURI = createProfileParams.imageURI;
-
-        emit Events.ProfileCreated(
-            profileId,
-            msg.sender,
-            createProfileParams.to,
-            createProfileParams.imageURI,
-            block.timestamp
-        );
-
+        emit Events.ProfileCreated(profileId, msg.sender, createProfileParams.to, block.timestamp);
+        emit Events.DelegatedExecutorsConfigApplied(profileId, 0, block.timestamp);
         _setFollowModule(profileId, createProfileParams.followModule, createProfileParams.followModuleInitData);
-    }
-
-    /**
-     * @notice Sets the profile image URI for a given profile.
-     *
-     * @param profileId The profile ID.
-     * @param imageURI The image URI to set.
-
-     */
-    function setProfileImageURI(uint256 profileId, string calldata imageURI) external {
-        _setProfileImageURI(profileId, imageURI);
     }
 
     /**
@@ -81,9 +54,13 @@ library ProfileLib {
         _setFollowModule(profileId, followModule, followModuleInitData);
     }
 
-    function setProfileMetadataURI(uint256 profileId, string calldata metadataURI) external {
+    function setProfileMetadataURI(
+        uint256 profileId,
+        string calldata metadataURI,
+        address transactionExecutor
+    ) external {
         StorageLib.getProfile(profileId).metadataURI = metadataURI;
-        emit Events.ProfileMetadataSet(profileId, metadataURI, block.timestamp);
+        emit Events.ProfileMetadataSet(profileId, metadataURI, transactionExecutor, block.timestamp);
     }
 
     function _initFollowModule(
@@ -96,18 +73,11 @@ library ProfileLib {
         return IFollowModule(followModule).initializeFollowModule(profileId, transactionExecutor, followModuleInitData);
     }
 
-    function _setProfileImageURI(uint256 profileId, string calldata imageURI) private {
-        if (bytes(imageURI).length > MAX_PROFILE_IMAGE_URI_LENGTH) {
-            revert Errors.ProfileImageURILengthInvalid();
-        }
-        StorageLib.getProfile(profileId).imageURI = imageURI;
-        emit Events.ProfileImageURISet(profileId, imageURI, block.timestamp);
-    }
-
     function setBlockStatus(
         uint256 byProfileId,
         uint256[] calldata idsOfProfilesToSetBlockStatus,
-        bool[] calldata blockStatus
+        bool[] calldata blockStatus,
+        address transactionExecutor
     ) external {
         if (idsOfProfilesToSetBlockStatus.length != blockStatus.length) {
             revert Errors.ArrayMismatch();
@@ -127,14 +97,19 @@ library ProfileLib {
             if (followNFT != address(0) && blockedStatus) {
                 bool hasUnfollowed = IFollowNFT(followNFT).processBlock(idOfProfileToSetBlockStatus);
                 if (hasUnfollowed) {
-                    emit Events.Unfollowed(idOfProfileToSetBlockStatus, byProfileId, block.timestamp);
+                    emit Events.Unfollowed(
+                        idOfProfileToSetBlockStatus,
+                        byProfileId,
+                        transactionExecutor,
+                        block.timestamp
+                    );
                 }
             }
             _blockedStatus[idOfProfileToSetBlockStatus] = blockedStatus;
             if (blockedStatus) {
-                emit Events.Blocked(byProfileId, idOfProfileToSetBlockStatus, block.timestamp);
+                emit Events.Blocked(byProfileId, idOfProfileToSetBlockStatus, transactionExecutor, block.timestamp);
             } else {
-                emit Events.Unblocked(byProfileId, idOfProfileToSetBlockStatus, block.timestamp);
+                emit Events.Unblocked(byProfileId, idOfProfileToSetBlockStatus, transactionExecutor, block.timestamp);
             }
             unchecked {
                 ++i;
@@ -226,9 +201,11 @@ library ProfileLib {
             configNumber,
             delegatedExecutors,
             approvals,
-            configSwitched,
             block.timestamp
         );
+        if (configSwitched) {
+            emit Events.DelegatedExecutorsConfigApplied(delegatorProfileId, configNumber, block.timestamp);
+        }
     }
 
     function _prepareStorageToApplyChangesUnderGivenConfig(

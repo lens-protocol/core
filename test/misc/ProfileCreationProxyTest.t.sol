@@ -57,7 +57,6 @@ contract ProfileCreationProxyTest is BaseTest {
 
         Types.CreateProfileParams memory createProfileParams = Types.CreateProfileParams({
             to: otherAddress,
-            imageURI: '',
             followModule: address(0),
             followModuleInitData: ''
         });
@@ -80,7 +79,6 @@ contract ProfileCreationProxyTest is BaseTest {
 
         Types.CreateProfileParams memory createProfileParams = Types.CreateProfileParams({
             to: otherAddress,
-            imageURI: '',
             followModule: address(0),
             followModuleInitData: ''
         });
@@ -97,7 +95,6 @@ contract ProfileCreationProxyTest is BaseTest {
 
         Types.CreateProfileParams memory createProfileParams = Types.CreateProfileParams({
             to: profileOwner,
-            imageURI: '',
             followModule: address(0),
             followModuleInitData: ''
         });
@@ -128,7 +125,6 @@ contract ProfileCreationProxyTest is BaseTest {
 
         Types.CreateProfileParams memory createProfileParams = Types.CreateProfileParams({
             to: profileOwner,
-            imageURI: '',
             followModule: address(0),
             followModuleInitData: ''
         });
@@ -139,7 +135,6 @@ contract ProfileCreationProxyTest is BaseTest {
 
         Types.CreateProfileParams memory calledCreateProfileParams = Types.CreateProfileParams({
             to: address(profileCreationProxy),
-            imageURI: createProfileParams.imageURI,
             followModule: createProfileParams.followModule,
             followModuleInitData: createProfileParams.followModuleInitData
         });

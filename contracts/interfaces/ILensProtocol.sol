@@ -109,24 +109,6 @@ interface ILensProtocol {
     ) external;
 
     /**
-     * @notice Sets a profile's image URI, which is reflected in the `tokenURI()` function.
-     * @custom:permissions Profile Owner or Delegated Executor.
-     *
-     * @param profileId The token ID of the profile to set the URI for.
-     * @param imageURI The URI to set for the given profile.
-     */
-    function setProfileImageURI(uint256 profileId, string calldata imageURI) external;
-
-    /**
-     * @custom:meta-tx setProfileImageURI.
-     */
-    function setProfileImageURIWithSig(
-        uint256 profileId,
-        string calldata imageURI,
-        Types.EIP712Signature calldata signature
-    ) external;
-
-    /**
      * @notice Publishes a post.
      * Post is the most basic publication type, and can be used to publish any kind of content.
      * Posts can have these types of modules initialized:

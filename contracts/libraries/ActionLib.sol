@@ -57,7 +57,7 @@ library ActionLib {
                 actionModuleData: publicationActionParams.actionModuleData
             })
         );
-        emit Events.Acted(publicationActionParams, actionModuleReturnData, block.timestamp);
+        emit Events.Acted(publicationActionParams, actionModuleReturnData, transactionExecutor, block.timestamp);
 
         return actionModuleReturnData;
     }

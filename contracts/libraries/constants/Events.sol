@@ -109,16 +109,9 @@ library Events {
      * @param profileId The newly created profile's token ID.
      * @param creator The profile creator, who created the token with the given profile ID.
      * @param to The address receiving the profile with the given profile ID.
-     * @param imageURI The image URI set for the profile.
      * @param timestamp The current block timestamp.
      */
-    event ProfileCreated(
-        uint256 indexed profileId,
-        address indexed creator,
-        address indexed to,
-        string imageURI,
-        uint256 timestamp
-    );
+    event ProfileCreated(uint256 indexed profileId, address indexed creator, address indexed to, uint256 timestamp);
 
     /**
      * @dev Emitted when a delegated executors configuration is changed.
@@ -127,8 +120,6 @@ library Events {
      * @param configNumber The number of the configuration where the executor approval state was set.
      * @param delegatedExecutors The array of delegated executors whose approval was set for.
      * @param approvals The array of booleans indicating the corresponding executor new approval status.
-     * @param configSwitched A boolean indicating if the configuration was switched to the one emitted in the
-     * `configNumber` parameter.
      * @param timestamp The current block timestamp.
      */
     event DelegatedExecutorsConfigChanged(
@@ -136,18 +127,21 @@ library Events {
         uint256 indexed configNumber,
         address[] delegatedExecutors,
         bool[] approvals,
-        bool indexed configSwitched,
         uint256 timestamp
     );
 
     /**
-     * @dev Emitted when a profile's URI is set.
+     * @dev Emitted when a delegated executors configuration is applied.
      *
-     * @param profileId The token ID of the profile for which the URI is set.
-     * @param imageURI The URI set for the given profile.
+     * @param delegatorProfileId The ID of the profile applying the configuration.
+     * @param configNumber The number of the configuration applied.
      * @param timestamp The current block timestamp.
      */
-    event ProfileImageURISet(uint256 indexed profileId, string imageURI, uint256 timestamp);
+    event DelegatedExecutorsConfigApplied(
+        uint256 indexed delegatorProfileId,
+        uint256 indexed configNumber,
+        uint256 timestamp
+    );
 
     /**
      * @dev Emitted when a profile's follow module is set.
@@ -174,6 +168,7 @@ library Events {
      * publication. This is ABI-encoded and depends on the action module chosen.
      * @param referenceModuleInitReturnData The data returned from the reference module at initialization. This is
      * ABI-encoded and depends on the reference module chosen.
+     * @param transactionExecutor The address of the account that executed this operation.
      * @param timestamp The current block timestamp.
      */
     event PostCreated(
@@ -181,6 +176,7 @@ library Events {
         uint256 indexed pubId,
         bytes[] actionModulesInitReturnDatas,
         bytes referenceModuleInitReturnData,
+        address transactionExecutor,
         uint256 timestamp
     );
 
@@ -195,6 +191,7 @@ library Events {
      * publication. This is ABI-encoded and depends on the action module chosen.
      * @param referenceModuleInitReturnData The data returned from the reference module at initialization. This is
      * ABI-encoded and depends on the reference module chosen.
+     * @param transactionExecutor The address of the account that executed this operation.
      * @param timestamp The current block timestamp.
      */
     event CommentCreated(
@@ -203,6 +200,7 @@ library Events {
         bytes referenceModuleReturnData,
         bytes[] actionModulesInitReturnDatas,
         bytes referenceModuleInitReturnData,
+        address transactionExecutor,
         uint256 timestamp
     );
 
@@ -213,12 +211,14 @@ library Events {
      * @param pubId The publication ID assigned to the created mirror.
      * @param referenceModuleReturnData The data returned by the mirrored publication reference module's
      * processMirror function, if the mirrored publication has a reference module set.
+     * @param transactionExecutor The address of the account that executed this operation.
      * @param timestamp The current block timestamp.
      */
     event MirrorCreated(
         Types.MirrorParams mirrorParams,
         uint256 indexed pubId,
         bytes referenceModuleReturnData,
+        address transactionExecutor,
         uint256 timestamp
     );
 
@@ -233,6 +233,7 @@ library Events {
      * publication. This is ABI-encoded and depends on the action module chosen.
      * @param referenceModuleInitReturnData The data returned from the reference module at initialization. This is
      * ABI-encoded and depends on the reference module chosen.
+     * @param transactionExecutor The address of the account that executed this operation.
      * @param timestamp The current block timestamp.
      */
     event QuoteCreated(
@@ -241,6 +242,7 @@ library Events {
         bytes referenceModuleReturnData,
         bytes[] actionModulesInitReturnDatas,
         bytes referenceModuleInitReturnData,
+        address transactionExecutor,
         uint256 timestamp
     );
 
@@ -271,20 +273,28 @@ library Events {
     /**
      * @dev Emitted upon a successful collect action.
      *
-     * @param collectActionParams The parameters passed to collect a publication.
-     * @param collectModule The collect module that was used to collect the publication.
-     * @param collectNFT The collect NFT that was used to collect the publication.
-     * @param tokenId The token ID of the collect NFT that was minted as a collect of the publication.
+     * @param collectedProfileId The token ID of the profile that published the collected publication.
+     * @param collectedPubId The ID of the collected publication.
+     * @param collectorProfileId The token ID of the profile that collected the publication.
+     * @param nftRecipient The address that received the collect NFT.
+     * @param collectActionData The custom data passed to the collect module, if any.
      * @param collectActionResult The data returned from the collect module's collect action. This is ABI-encoded
      * and depends on the collect module chosen.
+     * @param collectNFT The address of the NFT collection where the minted collect NFT belongs to.
+     * @param tokenId The token ID of the collect NFT that was minted as a collect of the publication.
+     * @param transactionExecutor The address of the account that executed this operation.
      * @param timestamp The current block timestamp.
      */
     event Collected(
-        Types.ProcessActionParams collectActionParams,
-        address collectModule,
+        uint256 indexed collectedProfileId,
+        uint256 indexed collectedPubId,
+        uint256 indexed collectorProfileId,
+        address nftRecipient,
+        bytes collectActionData,
+        bytes collectActionResult,
         address collectNFT,
         uint256 tokenId,
-        bytes collectActionResult,
+        address transactionExecutor,
         uint256 timestamp
     );
 
@@ -294,9 +304,15 @@ library Events {
      * @param publicationActionParams The parameters passed to act on a publication.
      * @param actionModuleReturnData The data returned from the action modules. This is ABI-encoded and the format
      * depends on the action module chosen.
+     * @param transactionExecutor The address of the account that executed this operation.
      * @param timestamp The current block timestamp.
      */
-    event Acted(Types.PublicationActionParams publicationActionParams, bytes actionModuleReturnData, uint256 timestamp);
+    event Acted(
+        Types.PublicationActionParams publicationActionParams,
+        bytes actionModuleReturnData,
+        address transactionExecutor,
+        uint256 timestamp
+    );
 
     /**
      * @dev Emitted upon a successful follow operation.
@@ -307,6 +323,7 @@ library Events {
      * @param followModuleData The data to passed to the follow module, if any.
      * @param processFollowModuleReturnData The data returned by the followed profile follow module's processFollow
      * function, if the followed profile has a reference module set.
+     * @param transactionExecutor The address of the account that executed this operation.
      * @param timestamp The timestamp of the follow operation.
      */
     event Followed(
@@ -315,6 +332,7 @@ library Events {
         uint256 followTokenIdAssigned,
         bytes followModuleData,
         bytes processFollowModuleReturnData,
+        address transactionExecutor,
         uint256 timestamp
     );
 
@@ -323,27 +341,45 @@ library Events {
      *
      * @param unfollowerProfileId The ID of the profile that executed the unfollow.
      * @param idOfProfileUnfollowed The ID of the profile that was unfollowed.
+     * @param transactionExecutor The address of the account that executed this operation.
      * @param timestamp The timestamp of the unfollow operation.
      */
-    event Unfollowed(uint256 indexed unfollowerProfileId, uint256 idOfProfileUnfollowed, uint256 timestamp);
+    event Unfollowed(
+        uint256 indexed unfollowerProfileId,
+        uint256 idOfProfileUnfollowed,
+        address transactionExecutor,
+        uint256 timestamp
+    );
 
     /**
      * @dev Emitted upon a successful block, through a block status setting operation.
      *
      * @param byProfileId The ID of the profile that executed the block status change.
      * @param idOfProfileBlocked The ID of the profile whose block status have been set to blocked.
+     * @param transactionExecutor The address of the account that executed this operation.
      * @param timestamp The timestamp of the block operation.
      */
-    event Blocked(uint256 indexed byProfileId, uint256 idOfProfileBlocked, uint256 timestamp);
+    event Blocked(
+        uint256 indexed byProfileId,
+        uint256 idOfProfileBlocked,
+        address transactionExecutor,
+        uint256 timestamp
+    );
 
     /**
      * @dev Emitted upon a successful unblock, through a block status setting operation.
      *
      * @param byProfileId The ID of the profile that executed the block status change.
      * @param idOfProfileUnblocked The ID of the profile whose block status have been set to unblocked.
+     * @param transactionExecutor The address of the account that executed this operation.
      * @param timestamp The timestamp of the unblock operation.
      */
-    event Unblocked(uint256 indexed byProfileId, uint256 idOfProfileUnblocked, uint256 timestamp);
+    event Unblocked(
+        uint256 indexed byProfileId,
+        uint256 idOfProfileUnblocked,
+        address transactionExecutor,
+        uint256 timestamp
+    );
 
     /**
      * @dev Emitted via callback when a collectNFT is transferred.
@@ -411,9 +447,15 @@ library Events {
      *
      * @param profileId The profile ID the metadata is set for.
      * @param metadata The metadata set for the profile and user.
+     * @param transactionExecutor The address of the account that executed this operation.
      * @param timestamp The current block timestamp.
      */
-    event ProfileMetadataSet(uint256 indexed profileId, string metadata, uint256 timestamp);
+    event ProfileMetadataSet(
+        uint256 indexed profileId,
+        string metadata,
+        address transactionExecutor,
+        uint256 timestamp
+    );
 
     /**
      * @dev Emitted when an address' Profile Guardian state change is triggered.

@@ -74,19 +74,43 @@ contract CollectPublicationAction is HubRestricted, IPublicationActionModule {
             publicationCollectedId: processActionParams.publicationActedId,
             collectNFTImpl: COLLECT_NFT_IMPL
         });
-        uint256 tokenId = ICollectNFT(collectNFT).mint(processActionParams.actorProfileOwner);
-        bytes memory collectActionResult = _processCollect(collectModule, processActionParams);
+        (address collectNftRecipient, bytes memory collectData) = abi.decode(
+            processActionParams.actionModuleData,
+            (address, bytes)
+        );
+        uint256 tokenId = ICollectNFT(collectNFT).mint(collectNftRecipient);
+        bytes memory collectActionResult = _processCollect(collectModule, collectData, processActionParams);
+        _emitCollectedEvent(
+            processActionParams,
+            collectNftRecipient,
+            collectData,
+            collectActionResult,
+            collectNFT,
+            tokenId
+        );
+        return abi.encode(tokenId, collectActionResult);
+    }
 
+    function _emitCollectedEvent(
+        Types.ProcessActionParams calldata processActionParams,
+        address collectNftRecipient,
+        bytes memory collectData,
+        bytes memory collectActionResult,
+        address collectNFT,
+        uint256 tokenId
+    ) private {
         emit Events.Collected({
-            collectActionParams: processActionParams,
-            collectModule: collectModule,
+            collectedProfileId: processActionParams.publicationActedProfileId,
+            collectedPubId: processActionParams.publicationActedId,
+            collectorProfileId: processActionParams.actorProfileId,
+            nftRecipient: collectNftRecipient,
+            collectActionData: collectData,
+            collectActionResult: collectActionResult,
             collectNFT: collectNFT,
             tokenId: tokenId,
-            collectActionResult: collectActionResult,
+            transactionExecutor: processActionParams.transactionExecutor,
             timestamp: block.timestamp
         });
-
-        return abi.encode(tokenId, collectActionResult);
     }
 
     function getCollectData(uint256 profileId, uint256 pubId) external view returns (CollectData memory) {
@@ -108,6 +132,7 @@ contract CollectPublicationAction is HubRestricted, IPublicationActionModule {
 
     function _processCollect(
         address collectModule,
+        bytes memory collectData,
         Types.ProcessActionParams calldata processActionParams
     ) private returns (bytes memory) {
         return
@@ -121,7 +146,7 @@ contract CollectPublicationAction is HubRestricted, IPublicationActionModule {
                     referrerProfileIds: processActionParams.referrerProfileIds,
                     referrerPubIds: processActionParams.referrerPubIds,
                     referrerPubTypes: processActionParams.referrerPubTypes,
-                    data: processActionParams.actionModuleData
+                    data: collectData
                 })
             );
     }
