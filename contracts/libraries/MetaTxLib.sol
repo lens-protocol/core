@@ -7,6 +7,7 @@ import {Types} from 'contracts/libraries/constants/Types.sol';
 import {Errors} from 'contracts/libraries/constants/Errors.sol';
 import {Typehash} from 'contracts/libraries/constants/Typehash.sol';
 import {StorageLib} from 'contracts/libraries/StorageLib.sol';
+import {Events} from 'contracts/libraries/constants/Events.sol';
 
 /**
  * @title MetaTxLib
@@ -52,7 +53,7 @@ library MetaTxLib {
                         Typehash.SET_PROFILE_METADATA_URI,
                         profileId,
                         keccak256(bytes(metadataURI)),
-                        _getAndIncrementNonce(signature.signer),
+                        _getNonceIncrementAndEmitEvent(signature.signer),
                         signature.deadline
                     )
                 )
@@ -75,7 +76,7 @@ library MetaTxLib {
                         profileId,
                         followModule,
                         keccak256(followModuleInitData),
-                        _getAndIncrementNonce(signature.signer),
+                        _getNonceIncrementAndEmitEvent(signature.signer),
                         signature.deadline
                     )
                 )
@@ -92,7 +93,7 @@ library MetaTxLib {
         uint64 configNumber,
         bool switchToGivenConfig
     ) external {
-        uint256 nonce = _getAndIncrementNonce(signature.signer);
+        uint256 nonce = _getNonceIncrementAndEmitEvent(signature.signer);
         uint256 deadline = signature.deadline;
         _validateRecoveredAddress(
             _calculateDigest(
@@ -127,7 +128,7 @@ library MetaTxLib {
                         _encodeUsingEip712Rules(postParams.actionModulesInitDatas),
                         postParams.referenceModule,
                         keccak256(postParams.referenceModuleInitData),
-                        _getAndIncrementNonce(signature.signer),
+                        _getNonceIncrementAndEmitEvent(signature.signer),
                         signature.deadline
                     )
                 )
@@ -211,7 +212,7 @@ library MetaTxLib {
         bytes32 referenceModuleDataEncoded = keccak256(commentParams.referenceModuleData);
         bytes32 actionModulesInitDataEncoded = _encodeUsingEip712Rules(commentParams.actionModulesInitDatas);
         bytes32 referenceModuleInitDataEncoded = keccak256(commentParams.referenceModuleInitData);
-        uint256 nonce = _getAndIncrementNonce(signature.signer);
+        uint256 nonce = _getNonceIncrementAndEmitEvent(signature.signer);
         uint256 deadline = signature.deadline;
         bytes memory encodedAbi = _abiEncode(
             ReferenceParamsForAbiEncode(
@@ -241,7 +242,7 @@ library MetaTxLib {
         bytes32 referenceModuleDataEncoded = keccak256(quoteParams.referenceModuleData);
         bytes32 actionModulesInitDataEncoded = _encodeUsingEip712Rules(quoteParams.actionModulesInitDatas);
         bytes32 referenceModuleInitDataEncoded = keccak256(quoteParams.referenceModuleInitData);
-        uint256 nonce = _getAndIncrementNonce(signature.signer);
+        uint256 nonce = _getNonceIncrementAndEmitEvent(signature.signer);
         uint256 deadline = signature.deadline;
         bytes memory encodedAbi = _abiEncode(
             ReferenceParamsForAbiEncode(
@@ -278,7 +279,7 @@ library MetaTxLib {
                         mirrorParams.referrerProfileIds,
                         mirrorParams.referrerPubIds,
                         keccak256(mirrorParams.referenceModuleData),
-                        _getAndIncrementNonce(signature.signer),
+                        _getNonceIncrementAndEmitEvent(signature.signer),
                         signature.deadline
                     )
                 )
@@ -294,7 +295,7 @@ library MetaTxLib {
         uint256[] calldata followTokenIds,
         bytes[] calldata datas
     ) external {
-        uint256 nonce = _getAndIncrementNonce(signature.signer);
+        uint256 nonce = _getNonceIncrementAndEmitEvent(signature.signer);
         uint256 deadline = signature.deadline;
         _validateRecoveredAddress(
             _calculateDigest(
@@ -326,7 +327,7 @@ library MetaTxLib {
                         Typehash.UNFOLLOW,
                         unfollowerProfileId,
                         keccak256(abi.encodePacked(idsOfProfilesToUnfollow)),
-                        _getAndIncrementNonce(signature.signer),
+                        _getNonceIncrementAndEmitEvent(signature.signer),
                         signature.deadline
                     )
                 )
@@ -349,7 +350,7 @@ library MetaTxLib {
                         byProfileId,
                         keccak256(abi.encodePacked(idsOfProfilesToSetBlockStatus)),
                         keccak256(abi.encodePacked(blockStatus)),
-                        _getAndIncrementNonce(signature.signer),
+                        _getNonceIncrementAndEmitEvent(signature.signer),
                         signature.deadline
                     )
                 )
@@ -373,7 +374,7 @@ library MetaTxLib {
                         collectParams.referrerProfileId,
                         collectParams.referrerPubId,
                         keccak256(collectParams.collectModuleData),
-                        _getAndIncrementNonce(signature.signer),
+                        _getNonceIncrementAndEmitEvent(signature.signer),
                         signature.deadline
                     )
                 )
@@ -398,7 +399,7 @@ library MetaTxLib {
                         publicationActionParams.referrerPubIds,
                         publicationActionParams.actionModuleAddress,
                         keccak256(publicationActionParams.actionModuleData),
-                        _getAndIncrementNonce(signature.signer),
+                        _getNonceIncrementAndEmitEvent(signature.signer),
                         signature.deadline
                     )
                 )
@@ -454,15 +455,19 @@ library MetaTxLib {
     }
 
     /**
-     * @dev This fetches a user's signing nonce and increments it, akin to `sigNonces++`.
+     * @dev This fetches a signer's current nonce and increments it so it's ready for the next meta-tx. Also emits
+     * the `NonceUpdated` event.
      *
-     * @param user The user address to fetch and post-increment the signing nonce for.
+     * @param signer The address to get and increment the nonce for.
      *
-     * @return uint256 The signing nonce for the given user prior to being incremented.
+     * @return uint256 The current nonce for the given signer prior to being incremented.
      */
-    function _getAndIncrementNonce(address user) private returns (uint256) {
+    function _getNonceIncrementAndEmitEvent(address signer) private returns (uint256) {
+        uint256 currentNonce;
         unchecked {
-            return StorageLib.nonces()[user]++;
+            currentNonce = StorageLib.nonces()[signer]++;
         }
+        emit Events.NonceUpdated(signer, currentNonce + 1, block.timestamp);
+        return currentNonce;
     }
 }

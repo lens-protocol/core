@@ -33,4 +33,13 @@ library RegistryEvents {
      * The `resolveHandle` and `resolveToken` functions will properly reflect the unlink in any case.
      */
     event HandleUnlinked(RegistryTypes.Handle handle, RegistryTypes.Token token, uint256 timestamp);
+
+    /**
+     * @dev Emitted when a signer's nonce is used and, as a consequence, the next available nonce is updated.
+     *
+     * @param signer The signer whose next available nonce was updated.
+     * @param nonce The next available nonce that can be used to execute a meta-tx successfully.
+     * @param timestamp The UNIX timestamp of the nonce being used.
+     */
+    event NonceUpdated(address indexed signer, uint256 nonce, uint256 timestamp);
 }

@@ -86,7 +86,13 @@ contract TokenHandleRegistry is ITokenHandleRegistry {
         _validateRecoveredAddress(
             _calculateDigest(
                 keccak256(
-                    abi.encode(Typehash.LINK, handleId, profileId, nonces[signature.signer]++, signature.deadline)
+                    abi.encode(
+                        Typehash.LINK,
+                        handleId,
+                        profileId,
+                        _getNonceIncrementAndEmitEvent(signature.signer),
+                        signature.deadline
+                    )
                 )
             ),
             signature
@@ -101,7 +107,13 @@ contract TokenHandleRegistry is ITokenHandleRegistry {
         _validateRecoveredAddress(
             _calculateDigest(
                 keccak256(
-                    abi.encode(Typehash.UNLINK, handleId, profileId, nonces[signature.signer]++, signature.deadline)
+                    abi.encode(
+                        Typehash.UNLINK,
+                        handleId,
+                        profileId,
+                        _getNonceIncrementAndEmitEvent(signature.signer),
+                        signature.deadline
+                    )
                 )
             ),
             signature
@@ -260,5 +272,22 @@ contract TokenHandleRegistry is ITokenHandleRegistry {
 
     function _tokenHash(RegistryTypes.Token memory token) internal pure returns (bytes32) {
         return keccak256(abi.encode(token.collection, token.id));
+    }
+
+    /**
+     * @dev This fetches a signer's current nonce and increments it so it's ready for the next meta-tx. Also emits
+     * the `NonceUpdated` event.
+     *
+     * @param signer The address to get and increment the nonce for.
+     *
+     * @return uint256 The current nonce for the given signer prior to being incremented.
+     */
+    function _getNonceIncrementAndEmitEvent(address signer) private returns (uint256) {
+        uint256 currentNonce;
+        unchecked {
+            currentNonce = nonces[signer]++;
+        }
+        emit RegistryEvents.NonceUpdated(signer, currentNonce + 1, block.timestamp);
+        return currentNonce;
     }
 }
