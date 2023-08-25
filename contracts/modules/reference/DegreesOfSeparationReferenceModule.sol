@@ -50,7 +50,7 @@ contract DegreesOfSeparationReferenceModule is HubRestricted, IReferenceModule {
      * If we also take into account the gas cost of performing the validations on-chain, and the cost of off-chain
      * computation of the path, makes sense to only support up to 3 degrees of separation.
      */
-    uint8 public constant MAX_DEGREES_OF_SEPARATION = 3;
+    uint8 public constant MAX_DEGREES_OF_SEPARATION = 2;
 
     mapping(uint256 profileId => mapping(uint256 pubId => ModuleConfig config)) internal _moduleConfig;
 
