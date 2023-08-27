@@ -150,12 +150,14 @@ library Events {
      * @param followModule The profile's newly set follow module. This CAN be the zero address.
      * @param followModuleReturnData The data returned from the follow module's initialization. This is ABI-encoded
      * and depends on the follow module chosen.
+     * @param transactionExecutor The address of the account that executed this operation.
      * @param timestamp The current block timestamp.
      */
     event FollowModuleSet(
         uint256 indexed profileId,
         address followModule,
         bytes followModuleReturnData,
+        address transactionExecutor,
         uint256 timestamp
     );
 

@@ -36,7 +36,12 @@ library ProfileLib {
     function createProfile(Types.CreateProfileParams calldata createProfileParams, uint256 profileId) external {
         emit Events.ProfileCreated(profileId, msg.sender, createProfileParams.to, block.timestamp);
         emit Events.DelegatedExecutorsConfigApplied(profileId, 0, block.timestamp);
-        _setFollowModule(profileId, createProfileParams.followModule, createProfileParams.followModuleInitData);
+        _setFollowModule(
+            profileId,
+            createProfileParams.followModule,
+            createProfileParams.followModuleInitData,
+            msg.sender
+        );
     }
 
     /**
@@ -49,9 +54,10 @@ library ProfileLib {
     function setFollowModule(
         uint256 profileId,
         address followModule,
-        bytes calldata followModuleInitData
+        bytes calldata followModuleInitData,
+        address transactionExecutor
     ) external {
-        _setFollowModule(profileId, followModule, followModuleInitData);
+        _setFollowModule(profileId, followModule, followModuleInitData, transactionExecutor);
     }
 
     function setProfileMetadataURI(
@@ -247,13 +253,20 @@ library ProfileLib {
     function _setFollowModule(
         uint256 profileId,
         address followModule,
-        bytes calldata followModuleInitData
+        bytes calldata followModuleInitData,
+        address transactionExecutor
     ) private {
         StorageLib.getProfile(profileId).followModule = followModule;
         bytes memory followModuleReturnData;
         if (followModule != address(0)) {
             followModuleReturnData = _initFollowModule(profileId, msg.sender, followModule, followModuleInitData);
         }
-        emit Events.FollowModuleSet(profileId, followModule, followModuleReturnData, block.timestamp);
+        emit Events.FollowModuleSet(
+            profileId,
+            followModule,
+            followModuleReturnData,
+            transactionExecutor,
+            block.timestamp
+        );
     }
 }
