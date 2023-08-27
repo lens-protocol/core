@@ -67,7 +67,7 @@ contract TokenHandleRegistry is ITokenHandleRegistry {
             revert RegistryErrors.HandleAndTokenNotInSameWallet();
         }
         if (
-            transactionExecutor != profileOwner ||
+            transactionExecutor != profileOwner &&
             !ILensHub(LENS_HUB).isDelegatedExecutorApproved(profileId, transactionExecutor)
         ) {
             revert RegistryErrors.DoesNotHavePermissions();
