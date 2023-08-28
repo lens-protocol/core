@@ -229,7 +229,7 @@ contract TokenHandleRegistryTest is BaseTest {
         RegistryTypes.Token memory token = RegistryTypes.Token({collection: address(hub), id: profileId});
 
         vm.expectEmit(true, true, true, true, address(tokenHandleRegistry));
-        emit RegistryEvents.HandleLinked(handle, token, block.timestamp);
+        emit RegistryEvents.HandleLinked(handle, token, holder, block.timestamp);
 
         vm.prank(holder);
         tokenHandleRegistry.link(handleId, profileId);
@@ -272,12 +272,12 @@ contract TokenHandleRegistryTest is BaseTest {
         RegistryTypes.Token memory token = RegistryTypes.Token({collection: address(hub), id: profileId});
 
         vm.expectEmit(true, true, true, true, address(tokenHandleRegistry));
-        emit RegistryEvents.HandleUnlinked(handle, token, block.timestamp);
+        emit RegistryEvents.HandleUnlinked(handle, token, newHolder, block.timestamp);
 
         RegistryTypes.Token memory newToken = RegistryTypes.Token({collection: address(hub), id: newProfileId});
 
         vm.expectEmit(true, true, true, true, address(tokenHandleRegistry));
-        emit RegistryEvents.HandleLinked(handle, newToken, block.timestamp);
+        emit RegistryEvents.HandleLinked(handle, newToken, newHolder, block.timestamp);
 
         vm.prank(newHolder);
         tokenHandleRegistry.link(handleId, newProfileId);
@@ -321,7 +321,7 @@ contract TokenHandleRegistryTest is BaseTest {
         RegistryTypes.Token memory token = RegistryTypes.Token({collection: address(hub), id: profileId});
 
         vm.expectEmit(true, true, true, true, address(tokenHandleRegistry));
-        emit RegistryEvents.HandleUnlinked(handle, token, block.timestamp);
+        emit RegistryEvents.HandleUnlinked(handle, token, newHolder, block.timestamp);
 
         RegistryTypes.Handle memory newHandle = RegistryTypes.Handle({
             collection: address(lensHandles),
@@ -329,7 +329,7 @@ contract TokenHandleRegistryTest is BaseTest {
         });
 
         vm.expectEmit(true, true, true, true, address(tokenHandleRegistry));
-        emit RegistryEvents.HandleLinked(newHandle, token, block.timestamp);
+        emit RegistryEvents.HandleLinked(newHandle, token, newHolder, block.timestamp);
 
         vm.prank(newHolder);
         tokenHandleRegistry.link(newHandleId, profileId);
@@ -391,13 +391,13 @@ contract TokenHandleRegistryTest is BaseTest {
         RegistryTypes.Token memory newToken = RegistryTypes.Token({collection: address(hub), id: newProfileId});
 
         vm.expectEmit(true, true, true, true, address(tokenHandleRegistry));
-        emit RegistryEvents.HandleUnlinked(newHandle, newToken, block.timestamp);
+        emit RegistryEvents.HandleUnlinked(newHandle, newToken, newHolder, block.timestamp);
 
         vm.expectEmit(true, true, true, true, address(tokenHandleRegistry));
-        emit RegistryEvents.HandleUnlinked(oldHandle, oldToken, block.timestamp);
+        emit RegistryEvents.HandleUnlinked(oldHandle, oldToken, newHolder, block.timestamp);
 
         vm.expectEmit(true, true, true, true, address(tokenHandleRegistry));
-        emit RegistryEvents.HandleLinked(newHandle, oldToken, block.timestamp);
+        emit RegistryEvents.HandleLinked(newHandle, oldToken, newHolder, block.timestamp);
 
         vm.prank(newHolder);
         tokenHandleRegistry.link(newHandleId, profileId);
@@ -433,7 +433,7 @@ contract TokenHandleRegistryTest is BaseTest {
         RegistryTypes.Token memory token = RegistryTypes.Token({collection: address(hub), id: profileId});
 
         vm.expectEmit(true, true, true, true, address(tokenHandleRegistry));
-        emit RegistryEvents.HandleUnlinked(handle, token, block.timestamp);
+        emit RegistryEvents.HandleUnlinked(handle, token, holder, block.timestamp);
 
         vm.prank(holder);
         tokenHandleRegistry.unlink(handleId, profileId);
@@ -474,7 +474,7 @@ contract TokenHandleRegistryTest is BaseTest {
         RegistryTypes.Token memory token = RegistryTypes.Token({collection: address(hub), id: profileId});
 
         vm.expectEmit(true, true, true, true, address(tokenHandleRegistry));
-        emit RegistryEvents.HandleUnlinked(handle, token, block.timestamp);
+        emit RegistryEvents.HandleUnlinked(handle, token, firstHolder, block.timestamp);
 
         vm.prank(firstHolder);
         tokenHandleRegistry.unlink(handleId, profileId);
@@ -515,7 +515,7 @@ contract TokenHandleRegistryTest is BaseTest {
         RegistryTypes.Token memory token = RegistryTypes.Token({collection: address(hub), id: profileId});
 
         vm.expectEmit(true, true, true, true, address(tokenHandleRegistry));
-        emit RegistryEvents.HandleUnlinked(handle, token, block.timestamp);
+        emit RegistryEvents.HandleUnlinked(handle, token, newHolder, block.timestamp);
 
         vm.prank(newHolder);
         tokenHandleRegistry.unlink(handleId, profileId);
@@ -556,7 +556,7 @@ contract TokenHandleRegistryTest is BaseTest {
         RegistryTypes.Token memory token = RegistryTypes.Token({collection: address(hub), id: profileId});
 
         vm.expectEmit(true, true, true, true, address(tokenHandleRegistry));
-        emit RegistryEvents.HandleUnlinked(handle, token, block.timestamp);
+        emit RegistryEvents.HandleUnlinked(handle, token, firstHolder, block.timestamp);
 
         vm.prank(firstHolder);
         tokenHandleRegistry.unlink(handleId, profileId);
@@ -597,7 +597,7 @@ contract TokenHandleRegistryTest is BaseTest {
         RegistryTypes.Token memory token = RegistryTypes.Token({collection: address(hub), id: profileId});
 
         vm.expectEmit(true, true, true, true, address(tokenHandleRegistry));
-        emit RegistryEvents.HandleUnlinked(handle, token, block.timestamp);
+        emit RegistryEvents.HandleUnlinked(handle, token, newHolder, block.timestamp);
 
         vm.prank(newHolder);
         tokenHandleRegistry.unlink(handleId, profileId);
@@ -634,7 +634,7 @@ contract TokenHandleRegistryTest is BaseTest {
         RegistryTypes.Token memory token = RegistryTypes.Token({collection: address(hub), id: profileId});
 
         vm.expectEmit(true, true, true, true, address(tokenHandleRegistry));
-        emit RegistryEvents.HandleUnlinked(handle, token, block.timestamp);
+        emit RegistryEvents.HandleUnlinked(handle, token, holder, block.timestamp);
 
         vm.prank(holder);
         tokenHandleRegistry.unlink(handleId, profileId);
@@ -673,7 +673,7 @@ contract TokenHandleRegistryTest is BaseTest {
         RegistryTypes.Token memory token = RegistryTypes.Token({collection: address(hub), id: profileId});
 
         vm.expectEmit(true, true, true, true, address(tokenHandleRegistry));
-        emit RegistryEvents.HandleUnlinked(handle, token, block.timestamp);
+        emit RegistryEvents.HandleUnlinked(handle, token, holder, block.timestamp);
 
         vm.prank(holder);
         tokenHandleRegistry.unlink(handleId, profileId);
@@ -711,10 +711,11 @@ contract TokenHandleRegistryTest is BaseTest {
         RegistryTypes.Handle memory handle = RegistryTypes.Handle({collection: address(lensHandles), id: handleId});
         RegistryTypes.Token memory token = RegistryTypes.Token({collection: address(hub), id: profileId});
 
-        vm.expectEmit(true, true, true, true, address(tokenHandleRegistry));
-        emit RegistryEvents.HandleUnlinked(handle, token, block.timestamp);
-
         address otherAddress = makeAddr('OTHER_ADDRESS');
+
+        vm.expectEmit(true, true, true, true, address(tokenHandleRegistry));
+        emit RegistryEvents.HandleUnlinked(handle, token, otherAddress, block.timestamp);
+
         vm.prank(otherAddress);
         tokenHandleRegistry.unlink(handleId, profileId);
 
@@ -751,10 +752,11 @@ contract TokenHandleRegistryTest is BaseTest {
         RegistryTypes.Handle memory handle = RegistryTypes.Handle({collection: address(lensHandles), id: handleId});
         RegistryTypes.Token memory token = RegistryTypes.Token({collection: address(hub), id: profileId});
 
-        vm.expectEmit(true, true, true, true, address(tokenHandleRegistry));
-        emit RegistryEvents.HandleUnlinked(handle, token, block.timestamp);
-
         address otherAddress = makeAddr('OTHER_ADDRESS');
+
+        vm.expectEmit(true, true, true, true, address(tokenHandleRegistry));
+        emit RegistryEvents.HandleUnlinked(handle, token, otherAddress, block.timestamp);
+
         vm.prank(otherAddress);
         tokenHandleRegistry.unlink(handleId, profileId);
 

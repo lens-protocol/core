@@ -45,7 +45,8 @@ contract TokenHandleRegistry is ITokenHandleRegistry {
         }
         _executeLinkage(
             RegistryTypes.Handle({collection: LENS_HANDLES, id: handleId}),
-            RegistryTypes.Token({collection: LENS_HUB, id: profileId})
+            RegistryTypes.Token({collection: LENS_HUB, id: profileId}),
+            msg.sender
         );
     }
 
@@ -74,7 +75,8 @@ contract TokenHandleRegistry is ITokenHandleRegistry {
         }
         _executeLinkage(
             RegistryTypes.Handle({collection: LENS_HANDLES, id: handleId}),
-            RegistryTypes.Token({collection: LENS_HUB, id: profileId})
+            RegistryTypes.Token({collection: LENS_HUB, id: profileId}),
+            transactionExecutor
         );
     }
 
@@ -189,7 +191,7 @@ contract TokenHandleRegistry is ITokenHandleRegistry {
         if (tokenPointedByHandle.id != profileId) {
             revert RegistryErrors.NotLinked();
         }
-        _executeUnlinkage(handle, tokenPointedByHandle);
+        _executeUnlinkage(handle, tokenPointedByHandle, transactionExecutor);
     }
 
     /// @inheritdoc ITokenHandleRegistry
@@ -233,37 +235,48 @@ contract TokenHandleRegistry is ITokenHandleRegistry {
         return tokenToHandle[_tokenHash(token)];
     }
 
-    function _executeLinkage(RegistryTypes.Handle memory handle, RegistryTypes.Token memory token) internal {
-        _deleteTokenToHandleLinkageIfAny(handle);
+    function _executeLinkage(
+        RegistryTypes.Handle memory handle,
+        RegistryTypes.Token memory token,
+        address transactionExecutor
+    ) internal {
+        _deleteTokenToHandleLinkageIfAny(handle, transactionExecutor);
         handleToToken[_handleHash(handle)] = token;
 
-        _deleteHandleToTokenLinkageIfAny(token);
+        _deleteHandleToTokenLinkageIfAny(token, transactionExecutor);
         tokenToHandle[_tokenHash(token)] = handle;
 
-        emit RegistryEvents.HandleLinked(handle, token, block.timestamp);
+        emit RegistryEvents.HandleLinked(handle, token, transactionExecutor, block.timestamp);
     }
 
-    function _deleteTokenToHandleLinkageIfAny(RegistryTypes.Handle memory handle) internal {
+    function _deleteTokenToHandleLinkageIfAny(
+        RegistryTypes.Handle memory handle,
+        address transactionExecutor
+    ) internal {
         RegistryTypes.Token memory tokenPointedByHandle = handleToToken[_handleHash(handle)];
         if (tokenPointedByHandle.collection != address(0) || tokenPointedByHandle.id != 0) {
             delete tokenToHandle[_tokenHash(tokenPointedByHandle)];
-            emit RegistryEvents.HandleUnlinked(handle, tokenPointedByHandle, block.timestamp);
+            emit RegistryEvents.HandleUnlinked(handle, tokenPointedByHandle, transactionExecutor, block.timestamp);
         }
     }
 
-    function _deleteHandleToTokenLinkageIfAny(RegistryTypes.Token memory token) internal {
+    function _deleteHandleToTokenLinkageIfAny(RegistryTypes.Token memory token, address transactionExecutor) internal {
         RegistryTypes.Handle memory handlePointedByToken = tokenToHandle[_tokenHash(token)];
         if (handlePointedByToken.collection != address(0) || handlePointedByToken.id != 0) {
             delete handleToToken[_handleHash(handlePointedByToken)];
-            emit RegistryEvents.HandleUnlinked(handlePointedByToken, token, block.timestamp);
+            emit RegistryEvents.HandleUnlinked(handlePointedByToken, token, transactionExecutor, block.timestamp);
         }
     }
 
-    function _executeUnlinkage(RegistryTypes.Handle memory handle, RegistryTypes.Token memory token) internal {
+    function _executeUnlinkage(
+        RegistryTypes.Handle memory handle,
+        RegistryTypes.Token memory token,
+        address transactionExecutor
+    ) internal {
         delete handleToToken[_handleHash(handle)];
         // tokenToHandle is removed too, as the first version linkage is one-to-one.
         delete tokenToHandle[_tokenHash(token)];
-        emit RegistryEvents.HandleUnlinked(handle, token, block.timestamp);
+        emit RegistryEvents.HandleUnlinked(handle, token, transactionExecutor, block.timestamp);
     }
 
     function _handleHash(RegistryTypes.Handle memory handle) internal pure returns (bytes32) {

@@ -25,14 +25,24 @@ library HandlesEvents {
 }
 
 library RegistryEvents {
-    event HandleLinked(RegistryTypes.Handle handle, RegistryTypes.Token token, uint256 timestamp);
+    event HandleLinked(
+        RegistryTypes.Handle handle,
+        RegistryTypes.Token token,
+        address transactionExecutor,
+        uint256 timestamp
+    );
 
     /**
      * WARNING: If a linked handle or token is burnt, this event will not be emitted.
      * Indexers should also take into account token burns through ERC-721 Transfer events to track all unlink actions.
      * The `resolveHandle` and `resolveToken` functions will properly reflect the unlink in any case.
      */
-    event HandleUnlinked(RegistryTypes.Handle handle, RegistryTypes.Token token, uint256 timestamp);
+    event HandleUnlinked(
+        RegistryTypes.Handle handle,
+        RegistryTypes.Token token,
+        address transactionExecutor,
+        uint256 timestamp
+    );
 
     /**
      * @dev Emitted when a signer's nonce is used and, as a consequence, the next available nonce is updated.
