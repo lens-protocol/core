@@ -197,6 +197,9 @@ contract LensHandles is ERC721, ImmutableOwnable, ILensHandles {
         return tokenId;
     }
 
+    /// @dev This function is used to validate the local name when migrating from V1 to V2.
+    ///      As in V1 we also allowed the Hyphen '-' character, we need to allow it here as well and use a separate
+    ///      validation function for migration VS newly created handles.
     function _validateLocalNameMigration(string memory localName) internal view {
         bytes memory localNameAsBytes = bytes(localName);
         uint256 localNameLength = localNameAsBytes.length;
@@ -221,6 +224,8 @@ contract LensHandles is ERC721, ImmutableOwnable, ILensHandles {
         }
     }
 
+    /// @dev In V2 we only accept the following characters: [a-z0-9_] to be used in newly created handles.
+    ///      We also disallow the first character to be an underscore '_'.
     function _validateLocalName(string memory localName) internal view {
         bytes memory localNameAsBytes = bytes(localName);
         uint256 localNameLength = localNameAsBytes.length;
@@ -244,6 +249,9 @@ contract LensHandles is ERC721, ImmutableOwnable, ILensHandles {
         }
     }
 
+    /// @dev We only accept lowercase characters to avoid confusion.
+    /// @param char The character to check.
+    /// @return True if the character is alphanumeric, false otherwise.
     function _isAlphaNumeric(bytes1 char) internal pure returns (bool) {
         return (char >= '0' && char <= '9') || (char >= 'a' && char <= 'z');
     }
