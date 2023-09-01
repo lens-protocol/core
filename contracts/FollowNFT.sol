@@ -127,6 +127,8 @@ contract FollowNFT is HubRestricted, LensBaseERC721, ERC2981CollectionRoyalties,
             if (
                 (followTokenOwner != unfollowerProfileOwner) &&
                 (followTokenOwner != transactionExecutor) &&
+                (transactionExecutor != unfollowerProfileOwner) &&
+                !ILensHub(HUB).isDelegatedExecutorApproved(unfollowerProfileId, transactionExecutor) &&
                 !isApprovedForAll(followTokenOwner, transactionExecutor) &&
                 !isApprovedForAll(followTokenOwner, unfollowerProfileOwner)
             ) {
