@@ -41,6 +41,13 @@ contract FollowNFT is HubRestricted, LensBaseERC721, ERC2981CollectionRoyalties,
 
     event FollowApproval(uint256 indexed followerProfileId, uint256 indexed followTokenId);
 
+    modifier whenNotPaused() {
+        if (ILensHub(HUB).getState() == Types.ProtocolState.Paused) {
+            revert Errors.Paused();
+        }
+        _;
+    }
+
     constructor(address hub) HubRestricted(hub) {
         _initialized = true;
     }
@@ -130,7 +137,7 @@ contract FollowNFT is HubRestricted, LensBaseERC721, ERC2981CollectionRoyalties,
     }
 
     /// @inheritdoc IFollowNFT
-    function removeFollower(uint256 followTokenId) external override {
+    function removeFollower(uint256 followTokenId) external override whenNotPaused {
         address followTokenOwner = ownerOf(followTokenId);
         if (followTokenOwner == msg.sender || isApprovedForAll(followTokenOwner, msg.sender)) {
             _unfollowIfHasFollower(followTokenId, msg.sender);
@@ -155,7 +162,7 @@ contract FollowNFT is HubRestricted, LensBaseERC721, ERC2981CollectionRoyalties,
     }
 
     /// @inheritdoc IFollowNFT
-    function wrap(uint256 followTokenId, address wrappedTokenReceiver) external override {
+    function wrap(uint256 followTokenId, address wrappedTokenReceiver) external override whenNotPaused {
         if (wrappedTokenReceiver == address(0)) {
             revert Errors.InvalidParameter();
         }
@@ -163,7 +170,7 @@ contract FollowNFT is HubRestricted, LensBaseERC721, ERC2981CollectionRoyalties,
     }
 
     /// @inheritdoc IFollowNFT
-    function wrap(uint256 followTokenId) external override {
+    function wrap(uint256 followTokenId) external override whenNotPaused {
         _wrap(followTokenId, address(0));
     }
 
@@ -187,7 +194,7 @@ contract FollowNFT is HubRestricted, LensBaseERC721, ERC2981CollectionRoyalties,
     }
 
     /// @inheritdoc IFollowNFT
-    function unwrap(uint256 followTokenId) external override {
+    function unwrap(uint256 followTokenId) external override whenNotPaused {
         if (_followDataByFollowTokenId[followTokenId].followerProfileId == 0) {
             revert NotFollowing();
         }
@@ -254,7 +261,7 @@ contract FollowNFT is HubRestricted, LensBaseERC721, ERC2981CollectionRoyalties,
         return _followerCount;
     }
 
-    function burn(uint256 followTokenId) public override {
+    function burn(uint256 followTokenId) public override whenNotPaused {
         _unfollowIfHasFollower(followTokenId, msg.sender);
         super.burn(followTokenId);
     }
@@ -443,7 +450,7 @@ contract FollowNFT is HubRestricted, LensBaseERC721, ERC2981CollectionRoyalties,
         address from,
         address to,
         uint256 followTokenId
-    ) internal override {
+    ) internal override whenNotPaused {
         if (from != address(0)) {
             // It is cleared on unwrappings and transfers, and it can not be set on unwrapped tokens.
             // As a consequence, there is no need to clear it on wrappings.
