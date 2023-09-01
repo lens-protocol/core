@@ -111,7 +111,7 @@ abstract contract LensProfiles is LensBaseERC721, ERC2981CollectionRoyalties, IL
 
     function approve(address to, uint256 tokenId) public override(LensBaseERC721, IERC721) {
         // We allow removing approvals even if the wallet has the token guardian enabled
-        if (to != address(0) && _hasTokenGuardianEnabled(msg.sender)) {
+        if (to != address(0) && _hasTokenGuardianEnabled(ownerOf(tokenId))) {
             revert Errors.GuardianEnabled();
         }
         super.approve(to, tokenId);

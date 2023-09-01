@@ -138,7 +138,7 @@ contract LensHandles is ERC721, ImmutableOwnable, ILensHandles {
 
     function approve(address to, uint256 tokenId) public override(IERC721, ERC721) {
         // We allow removing approvals even if the wallet has the token guardian enabled
-        if (to != address(0) && _hasTokenGuardianEnabled(msg.sender)) {
+        if (to != address(0) && _hasTokenGuardianEnabled(ownerOf(tokenId))) {
             revert HandlesErrors.GuardianEnabled();
         }
         super.approve(to, tokenId);
