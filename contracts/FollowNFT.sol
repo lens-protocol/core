@@ -462,6 +462,9 @@ contract FollowNFT is HubRestricted, LensBaseERC721, ERC2981CollectionRoyalties,
     function _getReceiver(
         uint256 /* followTokenId */
     ) internal view override returns (address) {
+        if (!ILensHub(HUB).exists(_followedProfileId)) {
+            return address(0);
+        }
         return IERC721(HUB).ownerOf(_followedProfileId);
     }
 

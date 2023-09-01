@@ -101,6 +101,9 @@ contract CollectNFT is LensBaseERC721, ERC2981CollectionRoyalties, ActionRestric
     function _getReceiver(
         uint256 /* tokenId */
     ) internal view override returns (address) {
+        if (!ILensHub(HUB).exists(_profileId)) {
+            return address(0);
+        }
         return IERC721(HUB).ownerOf(_profileId);
     }
 
