@@ -136,78 +136,25 @@ library MetaTxLib {
         );
     }
 
-    // We need this to deal with stack too deep:
-    struct ReferenceParamsEncodedForEIP712 {
-        bytes32 typehash;
-        uint256 profileId;
-        bytes32 contentURIEncoded;
-        uint256 pointedProfileId;
-        uint256 pointedPubId;
-        bytes32 referrerProfileIdsEncoded;
-        bytes32 referrerPubIdsEncoded;
-        bytes32 referenceModuleDataEncoded;
-        bytes32 actionModulesEncoded;
-        bytes32 actionModulesInitDataEncoded;
-        address referenceModule;
-        bytes32 referenceModuleInitDataEncoded;
-        uint256 nonce;
-        uint256 deadline;
-    }
-
-    function _abiEncode(
-        ReferenceParamsEncodedForEIP712 memory referenceParamsEncodedForEIP712
-    ) private pure returns (bytes memory) {
-        // This assembly workaround allows us to avoid Stack Too Deep error when encoding all the params of the struct.
-        // We remove the first 32 bytes of the encoded struct, which is the offset of the struct.
-        // The rest of the encoding is the same, so we can just return it.
-        bytes memory encodedStruct = abi.encode(referenceParamsEncodedForEIP712);
-        assembly {
-            let lengthWithoutOffset := sub(mload(encodedStruct), 32) // Calculates length without offset.
-            encodedStruct := add(encodedStruct, 32) // Skips the offset by shifting the memory pointer.
-            mstore(encodedStruct, lengthWithoutOffset) // Stores new length, which now excludes the offset.
-        }
-        return encodedStruct;
-        // The code above is the equivalent of:
-        //
-        // return abi.encode(
-        //     referenceParamsEncodedForEIP712.typehash,
-        //     referenceParamsEncodedForEIP712.profileId,
-        //     referenceParamsEncodedForEIP712.contentURIEncoded,
-        //     referenceParamsEncodedForEIP712.pointedProfileId,
-        //     referenceParamsEncodedForEIP712.pointedPubId,
-        //     referenceParamsEncodedForEIP712.referrerProfileIdsEncoded,
-        //     referenceParamsEncodedForEIP712.referrerPubIdsEncoded,
-        //     referenceParamsEncodedForEIP712.referenceModuleDataEncoded,
-        //     referenceParamsEncodedForEIP712.actionModulesEncoded,
-        //     referenceParamsEncodedForEIP712.actionModulesInitDataEncoded,
-        //     referenceParamsEncodedForEIP712.referenceModule,
-        //     referenceParamsEncodedForEIP712.referenceModuleInitDataEncoded,
-        //     referenceParamsEncodedForEIP712.nonce,
-        //     referenceParamsEncodedForEIP712.deadline
-        // );
-    }
-
     function validateCommentSignature(
         Types.EIP712Signature calldata signature,
         Types.CommentParams calldata commentParams
     ) external {
-        bytes memory encodedAbi = _abiEncode(
-            ReferenceParamsEncodedForEIP712(
-                Typehash.COMMENT,
-                commentParams.profileId,
-                _encodeUsingEip712Rules(commentParams.contentURI),
-                commentParams.pointedProfileId,
-                commentParams.pointedPubId,
-                _encodeUsingEip712Rules(commentParams.referrerProfileIds),
-                _encodeUsingEip712Rules(commentParams.referrerPubIds),
-                _encodeUsingEip712Rules(commentParams.referenceModuleData),
-                _encodeUsingEip712Rules(commentParams.actionModules),
-                _encodeUsingEip712Rules(commentParams.actionModulesInitDatas),
-                commentParams.referenceModule,
-                _encodeUsingEip712Rules(commentParams.referenceModuleInitData),
-                _getNonceIncrementAndEmitEvent(signature.signer),
-                signature.deadline
-            )
+        bytes memory encodedAbi = abi.encode(
+            Typehash.COMMENT,
+            commentParams.profileId,
+            _encodeUsingEip712Rules(commentParams.contentURI),
+            commentParams.pointedProfileId,
+            commentParams.pointedPubId,
+            _encodeUsingEip712Rules(commentParams.referrerProfileIds),
+            _encodeUsingEip712Rules(commentParams.referrerPubIds),
+            _encodeUsingEip712Rules(commentParams.referenceModuleData),
+            _encodeUsingEip712Rules(commentParams.actionModules),
+            _encodeUsingEip712Rules(commentParams.actionModulesInitDatas),
+            commentParams.referenceModule,
+            _encodeUsingEip712Rules(commentParams.referenceModuleInitData),
+            _getNonceIncrementAndEmitEvent(signature.signer),
+            signature.deadline
         );
         _validateRecoveredAddress(_calculateDigest(keccak256(encodedAbi)), signature);
     }
@@ -216,23 +163,21 @@ library MetaTxLib {
         Types.EIP712Signature calldata signature,
         Types.QuoteParams calldata quoteParams
     ) external {
-        bytes memory encodedAbi = _abiEncode(
-            ReferenceParamsEncodedForEIP712(
-                Typehash.QUOTE,
-                quoteParams.profileId,
-                _encodeUsingEip712Rules(quoteParams.contentURI),
-                quoteParams.pointedProfileId,
-                quoteParams.pointedPubId,
-                _encodeUsingEip712Rules(quoteParams.referrerProfileIds),
-                _encodeUsingEip712Rules(quoteParams.referrerPubIds),
-                _encodeUsingEip712Rules(quoteParams.referenceModuleData),
-                _encodeUsingEip712Rules(quoteParams.actionModules),
-                _encodeUsingEip712Rules(quoteParams.actionModulesInitDatas),
-                quoteParams.referenceModule,
-                _encodeUsingEip712Rules(quoteParams.referenceModuleInitData),
-                _getNonceIncrementAndEmitEvent(signature.signer),
-                signature.deadline
-            )
+        bytes memory encodedAbi = abi.encode(
+            Typehash.QUOTE,
+            quoteParams.profileId,
+            _encodeUsingEip712Rules(quoteParams.contentURI),
+            quoteParams.pointedProfileId,
+            quoteParams.pointedPubId,
+            _encodeUsingEip712Rules(quoteParams.referrerProfileIds),
+            _encodeUsingEip712Rules(quoteParams.referrerPubIds),
+            _encodeUsingEip712Rules(quoteParams.referenceModuleData),
+            _encodeUsingEip712Rules(quoteParams.actionModules),
+            _encodeUsingEip712Rules(quoteParams.actionModulesInitDatas),
+            quoteParams.referenceModule,
+            _encodeUsingEip712Rules(quoteParams.referenceModuleInitData),
+            _getNonceIncrementAndEmitEvent(signature.signer),
+            signature.deadline
         );
         _validateRecoveredAddress(_calculateDigest(keccak256(encodedAbi)), signature);
     }
