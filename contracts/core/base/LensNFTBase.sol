@@ -19,16 +19,16 @@ import {ERC721Enumerable} from './ERC721Enumerable.sol';
  * constructor with an initializer.
  */
 abstract contract LensNFTBase is ERC721Enumerable, ILensNFTBase {
-    bytes32 internal constant EIP712_REVISION_HASH = keccak256('1');
-    bytes32 internal constant PERMIT_TYPEHASH =
+    bytes32 internal immutable EIP712_REVISION_HASH = keccak256('1');
+    bytes32 internal immutable PERMIT_TYPEHASH =
         keccak256('Permit(address spender,uint256 tokenId,uint256 nonce,uint256 deadline)');
-    bytes32 internal constant PERMIT_FOR_ALL_TYPEHASH =
+    bytes32 internal immutable PERMIT_FOR_ALL_TYPEHASH =
         keccak256(
             'PermitForAll(address owner,address operator,bool approved,uint256 nonce,uint256 deadline)'
         );
-    bytes32 internal constant BURN_WITH_SIG_TYPEHASH =
+    bytes32 internal immutable BURN_WITH_SIG_TYPEHASH =
         keccak256('BurnWithSig(uint256 tokenId,uint256 nonce,uint256 deadline)');
-    bytes32 internal constant EIP712_DOMAIN_TYPEHASH =
+    bytes32 internal immutable EIP712_DOMAIN_TYPEHASH =
         keccak256(
             'EIP712Domain(string name,string version,uint256 chainId,address verifyingContract)'
         );
@@ -42,7 +42,7 @@ abstract contract LensNFTBase is ERC721Enumerable, ILensNFTBase {
      * inherited ERC721 contract.
      *
      * @param name The name to set in the ERC721 contract.
-     * @param symbol The symbol to set in the ERC721 contract.
+     * @param symbol The symbol to be set in the ERC721 contract.
      */
     function _initialize(string calldata name, string calldata symbol) internal {
         ERC721Time.__ERC721_Init(name, symbol);
