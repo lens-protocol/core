@@ -142,7 +142,7 @@ contract FollowNFT is LensNFTBase, IFollowNFT {
         uint256 snapshotCount
     ) internal view returns (uint256) {
         unchecked {
-            uint256 lower = 0;
+            uint256 lower;
             uint256 upper = snapshotCount - 1;
 
             // First check most recent snapshot
