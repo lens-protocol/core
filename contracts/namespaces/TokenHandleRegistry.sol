@@ -180,7 +180,7 @@ contract TokenHandleRegistry is ITokenHandleRegistry {
             ILensHandles(LENS_HANDLES).exists(handleId) &&
             ILensHandles(LENS_HANDLES).ownerOf(handleId) != transactionExecutor &&
             ILensHub(LENS_HUB).exists(profileId) &&
-            (ILensHub(LENS_HUB).ownerOf(profileId) != transactionExecutor ||
+            (ILensHub(LENS_HUB).ownerOf(profileId) != transactionExecutor &&
                 !ILensHub(LENS_HUB).isDelegatedExecutorApproved(profileId, transactionExecutor))
         ) {
             revert RegistryErrors.NotHandleNorTokenOwner();
