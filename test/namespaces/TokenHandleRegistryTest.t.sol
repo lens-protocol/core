@@ -100,6 +100,32 @@ contract TokenHandleRegistryTest is BaseTest {
         tokenHandleRegistry.unlink(handleId, profileId);
     }
 
+    function testCannot_Unlink_WithPassingZero(address otherAddress) public {
+        vm.assume(otherAddress != lensHandles.ownerOf(handleId));
+        vm.assume(otherAddress != hub.ownerOf(profileId));
+        vm.assume(otherAddress != address(0));
+        vm.assume(!_isLensHubProxyAdmin(otherAddress));
+
+        vm.prank(address(hub));
+        tokenHandleRegistry.migrationLink(handleId, profileId);
+
+        assertEq(tokenHandleRegistry.resolve(handleId), profileId);
+        assertEq(tokenHandleRegistry.getDefaultHandle(profileId), handleId);
+
+        vm.expectRevert(RegistryErrors.NotLinked.selector);
+        vm.prank(otherAddress);
+        tokenHandleRegistry.unlink(handleId, 0);
+
+        vm.expectRevert(RegistryErrors.NotLinked.selector);
+        vm.prank(otherAddress);
+        tokenHandleRegistry.unlink(0, profileId);
+
+        console.log('0, 0');
+        vm.expectRevert(RegistryErrors.NotLinked.selector);
+        vm.prank(otherAddress);
+        tokenHandleRegistry.unlink(0, 0);
+    }
+
     function testResolve() public {
         assertEq(tokenHandleRegistry.resolve(handleId), 0);
 
