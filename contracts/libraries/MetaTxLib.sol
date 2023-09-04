@@ -93,6 +93,8 @@ library MetaTxLib {
         uint64 configNumber,
         bool switchToGivenConfig
     ) external {
+        address signer = signature.signer;
+        uint256 deadline = signature.deadline;
         _validateRecoveredAddress(
             _calculateDigest(
                 keccak256(
@@ -103,8 +105,8 @@ library MetaTxLib {
                         _encodeUsingEip712Rules(approvals),
                         configNumber,
                         switchToGivenConfig,
-                        _getNonceIncrementAndEmitEvent(signature.signer),
-                        signature.deadline
+                        _getNonceIncrementAndEmitEvent(signer),
+                        deadline
                     )
                 )
             ),

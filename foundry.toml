@@ -8,12 +8,10 @@ fs_permissions = [{ access = "read-write", path = "./"}]
 optimizer = true
 optimizer_runs = 10
 ignored_error_codes = []
-via_ir = true
 
 [rpc_endpoints]
 polygon = "${POLYGON_RPC_URL}"
 mumbai = "${MUMBAI_RPC_URL}"
-# mumbai = "http://127.0.0.1:8545"
 
 [fuzz]
 runs = 50
