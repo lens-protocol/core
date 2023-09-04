@@ -41,6 +41,8 @@ library MetaTxLib {
 
     address constant LENS_HUB_ADDRESS = 0xDb46d1Dc155634FbC732f92E853b10B288AD5a1d;
 
+    uint256 constant POLYGON_CHAIN_ID = 137;
+
     function validateSetProfileMetadataURISignature(
         Types.EIP712Signature calldata signature,
         uint256 profileId,
@@ -327,7 +329,7 @@ library MetaTxLib {
     }
 
     function calculateDomainSeparator() internal view returns (bytes32) {
-        if (address(this) == LENS_HUB_ADDRESS) {
+        if (address(this) == LENS_HUB_ADDRESS && block.chainid == POLYGON_CHAIN_ID) {
             return LENS_HUB_CACHED_POLYGON_DOMAIN_SEPARATOR;
         }
         return
