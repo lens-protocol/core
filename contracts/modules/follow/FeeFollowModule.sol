@@ -53,8 +53,14 @@ contract FeeFollowModule is FeeModuleBase, HubRestricted, IFollowModule {
         // We don't introduce the upper limit to the amount, even though it might overflow if the amount * treasuryFee
         // during processFollow. But this is a safe behavior, and a case that should never happen, because amounts close
         // to type(uint256).max don't make any sense from the economic standpoint.
-        if (!_currencyWhitelisted(feeConfig.currency) || feeConfig.amount == 0) {
-            revert Errors.InitParamsInvalid();
+        if (feeConfig.amount == 0) {
+            if (feeConfig.currency != address(0)) {
+                revert Errors.InitParamsInvalid();
+            }
+        } else {
+            if (!_currencyWhitelisted(feeConfig.currency)) {
+                revert Errors.InitParamsInvalid();
+            }
         }
         _feeConfig[profileId] = feeConfig;
         return data;

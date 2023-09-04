@@ -51,12 +51,9 @@ abstract contract BaseFeeCollectModule is FeeModuleBase, ActionRestricted, IBase
      *
      * @param processCollectParams Collect action parameters (see Types.ProcessCollectParams struct)
      */
-    function processCollect(Types.ProcessCollectParams calldata processCollectParams)
-        external
-        virtual
-        onlyActionModule
-        returns (bytes memory)
-    {
+    function processCollect(
+        Types.ProcessCollectParams calldata processCollectParams
+    ) external virtual onlyActionModule returns (bytes memory) {
         _validateAndStoreCollect(processCollectParams);
 
         if (processCollectParams.referrerProfileIds.length == 0) {
@@ -68,22 +65,17 @@ abstract contract BaseFeeCollectModule is FeeModuleBase, ActionRestricted, IBase
     }
 
     /// @inheritdoc IBaseFeeCollectModule
-    function getBasePublicationData(uint256 profileId, uint256 pubId)
-        public
-        view
-        virtual
-        returns (BaseProfilePublicationData memory)
-    {
+    function getBasePublicationData(
+        uint256 profileId,
+        uint256 pubId
+    ) public view virtual returns (BaseProfilePublicationData memory) {
         return _dataByPublicationByProfile[profileId][pubId];
     }
 
     /// @inheritdoc IBaseFeeCollectModule
-    function calculateFee(Types.ProcessCollectParams calldata processCollectParams)
-        public
-        view
-        virtual
-        returns (uint160)
-    {
+    function calculateFee(
+        Types.ProcessCollectParams calldata processCollectParams
+    ) public view virtual returns (uint160) {
         return
             _dataByPublicationByProfile[processCollectParams.publicationCollectedProfileId][
                 processCollectParams.publicationCollectedId
@@ -102,7 +94,8 @@ abstract contract BaseFeeCollectModule is FeeModuleBase, ActionRestricted, IBase
      */
     function _validateBaseInitData(BaseFeeCollectModuleInitData memory baseInitData) internal virtual {
         if (
-            !_currencyWhitelisted(baseInitData.currency) ||
+            (baseInitData.amount == 0 && baseInitData.currency != address(0)) ||
+            (baseInitData.amount != 0 && !_currencyWhitelisted(baseInitData.currency)) ||
             baseInitData.referralFee > BPS_MAX ||
             (baseInitData.endTimestamp != 0 && baseInitData.endTimestamp < block.timestamp)
         ) revert Errors.InitParamsInvalid();
