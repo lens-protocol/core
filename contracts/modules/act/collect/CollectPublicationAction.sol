@@ -88,7 +88,7 @@ contract CollectPublicationAction is HubRestricted, IPublicationActionModule {
             collectNFT,
             tokenId
         );
-        return abi.encode(tokenId, collectActionResult);
+        return abi.encode(collectNFT, tokenId, collectModule, collectActionResult);
     }
 
     function _emitCollectedEvent(
