@@ -176,6 +176,9 @@ contract TokenHandleRegistry is ITokenHandleRegistry {
     }
 
     function _unlink(uint256 handleId, uint256 profileId, address transactionExecutor) private {
+        if (handleId == 0 || profileId == 0) {
+            revert RegistryErrors.DoesNotExist();
+        }
         if (
             ILensHandles(LENS_HANDLES).exists(handleId) &&
             ILensHandles(LENS_HANDLES).ownerOf(handleId) != transactionExecutor &&

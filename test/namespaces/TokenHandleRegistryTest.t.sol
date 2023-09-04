@@ -112,16 +112,16 @@ contract TokenHandleRegistryTest is BaseTest {
         assertEq(tokenHandleRegistry.resolve(handleId), profileId);
         assertEq(tokenHandleRegistry.getDefaultHandle(profileId), handleId);
 
-        vm.expectRevert(RegistryErrors.NotLinked.selector);
+        vm.expectRevert(RegistryErrors.DoesNotExist.selector);
         vm.prank(otherAddress);
         tokenHandleRegistry.unlink(handleId, 0);
 
-        vm.expectRevert(RegistryErrors.NotLinked.selector);
+        vm.expectRevert(RegistryErrors.DoesNotExist.selector);
         vm.prank(otherAddress);
         tokenHandleRegistry.unlink(0, profileId);
 
         console.log('0, 0');
-        vm.expectRevert(RegistryErrors.NotLinked.selector);
+        vm.expectRevert(RegistryErrors.DoesNotExist.selector);
         vm.prank(otherAddress);
         tokenHandleRegistry.unlink(0, 0);
     }
