@@ -52,7 +52,7 @@ library MetaTxLib {
                     abi.encode(
                         Typehash.SET_PROFILE_METADATA_URI,
                         profileId,
-                        keccak256(bytes(metadataURI)),
+                        _encodeUsingEip712Rules(metadataURI),
                         _getNonceIncrementAndEmitEvent(signature.signer),
                         signature.deadline
                     )
@@ -75,7 +75,7 @@ library MetaTxLib {
                         Typehash.SET_FOLLOW_MODULE,
                         profileId,
                         followModule,
-                        keccak256(followModuleInitData),
+                        _encodeUsingEip712Rules(followModuleInitData),
                         _getNonceIncrementAndEmitEvent(signature.signer),
                         signature.deadline
                     )
@@ -93,41 +93,16 @@ library MetaTxLib {
         uint64 configNumber,
         bool switchToGivenConfig
     ) external {
-        uint256 nonce = _getNonceIncrementAndEmitEvent(signature.signer);
-        uint256 deadline = signature.deadline;
         _validateRecoveredAddress(
             _calculateDigest(
                 keccak256(
                     abi.encode(
                         Typehash.CHANGE_DELEGATED_EXECUTORS_CONFIG,
                         delegatorProfileId,
-                        abi.encodePacked(delegatedExecutors),
-                        abi.encodePacked(approvals),
+                        _encodeUsingEip712Rules(delegatedExecutors),
+                        _encodeUsingEip712Rules(approvals),
                         configNumber,
                         switchToGivenConfig,
-                        nonce,
-                        deadline
-                    )
-                )
-            ),
-            signature
-        );
-    }
-
-    function validatePostSignature(Types.EIP712Signature calldata signature, Types.PostParams calldata postParams)
-        external
-    {
-        _validateRecoveredAddress(
-            _calculateDigest(
-                keccak256(
-                    abi.encode(
-                        Typehash.POST,
-                        postParams.profileId,
-                        keccak256(bytes(postParams.contentURI)),
-                        postParams.actionModules,
-                        _encodeUsingEip712Rules(postParams.actionModulesInitDatas),
-                        postParams.referenceModule,
-                        keccak256(postParams.referenceModuleInitData),
                         _getNonceIncrementAndEmitEvent(signature.signer),
                         signature.deadline
                     )
@@ -137,31 +112,41 @@ library MetaTxLib {
         );
     }
 
-    function _encodeUsingEip712Rules(bytes[] memory bytesArray) private pure returns (bytes32) {
-        bytes32[] memory bytesArrayEncodedElements = new bytes32[](bytesArray.length);
-        uint256 i;
-        while (i < bytesArray.length) {
-            // A `bytes` type is encoded as its keccak256 hash.
-            bytesArrayEncodedElements[i] = keccak256(bytesArray[i]);
-            unchecked {
-                ++i;
-            }
-        }
-        // An array is encoded as the keccak256 hash of the concatenation of their encoded elements.
-        return keccak256(abi.encodePacked(bytesArrayEncodedElements));
+    function validatePostSignature(
+        Types.EIP712Signature calldata signature,
+        Types.PostParams calldata postParams
+    ) external {
+        _validateRecoveredAddress(
+            _calculateDigest(
+                keccak256(
+                    abi.encode(
+                        Typehash.POST,
+                        postParams.profileId,
+                        _encodeUsingEip712Rules(postParams.contentURI),
+                        _encodeUsingEip712Rules(postParams.actionModules),
+                        _encodeUsingEip712Rules(postParams.actionModulesInitDatas),
+                        postParams.referenceModule,
+                        _encodeUsingEip712Rules(postParams.referenceModuleInitData),
+                        _getNonceIncrementAndEmitEvent(signature.signer),
+                        signature.deadline
+                    )
+                )
+            ),
+            signature
+        );
     }
 
     // We need this to deal with stack too deep:
-    struct ReferenceParamsForAbiEncode {
+    struct ReferenceParamsEncodedForEIP712 {
         bytes32 typehash;
         uint256 profileId;
         bytes32 contentURIEncoded;
         uint256 pointedProfileId;
         uint256 pointedPubId;
-        uint256[] referrerProfileIds;
-        uint256[] referrerPubIds;
+        bytes32 referrerProfileIdsEncoded;
+        bytes32 referrerPubIdsEncoded;
         bytes32 referenceModuleDataEncoded;
-        address[] actionModules;
+        bytes32 actionModulesEncoded;
         bytes32 actionModulesInitDataEncoded;
         address referenceModule;
         bytes32 referenceModuleInitDataEncoded;
@@ -169,15 +154,13 @@ library MetaTxLib {
         uint256 deadline;
     }
 
-    function _abiEncode(ReferenceParamsForAbiEncode memory referenceParamsForAbiEncode)
-        private
-        pure
-        returns (bytes memory)
-    {
+    function _abiEncode(
+        ReferenceParamsEncodedForEIP712 memory referenceParamsEncodedForEIP712
+    ) private pure returns (bytes memory) {
         // This assembly workaround allows us to avoid Stack Too Deep error when encoding all the params of the struct.
         // We remove the first 32 bytes of the encoded struct, which is the offset of the struct.
         // The rest of the encoding is the same, so we can just return it.
-        bytes memory encodedStruct = abi.encode(referenceParamsForAbiEncode);
+        bytes memory encodedStruct = abi.encode(referenceParamsEncodedForEIP712);
         assembly {
             let lengthWithoutOffset := sub(mload(encodedStruct), 32) // Calculates length without offset.
             encodedStruct := add(encodedStruct, 32) // Skips the offset by shifting the memory pointer.
@@ -187,20 +170,20 @@ library MetaTxLib {
         // The code above is the equivalent of:
         //
         // return abi.encode(
-        //     referenceParamsForAbiEncode.typehash,
-        //     referenceParamsForAbiEncode.profileId,
-        //     referenceParamsForAbiEncode.contentURIEncoded,
-        //     referenceParamsForAbiEncode.pointedProfileId,
-        //     referenceParamsForAbiEncode.pointedPubId,
-        //     referenceParamsForAbiEncode.referrerProfileIds,
-        //     referenceParamsForAbiEncode.referrerPubIds,
-        //     referenceParamsForAbiEncode.referenceModuleDataEncoded,
-        //     referenceParamsForAbiEncode.actionModules,
-        //     referenceParamsForAbiEncode.actionModulesInitDataEncoded,
-        //     referenceParamsForAbiEncode.referenceModule,
-        //     referenceParamsForAbiEncode.referenceModuleInitDataEncoded,
-        //     referenceParamsForAbiEncode.nonce,
-        //     referenceParamsForAbiEncode.deadline
+        //     referenceParamsEncodedForEIP712.typehash,
+        //     referenceParamsEncodedForEIP712.profileId,
+        //     referenceParamsEncodedForEIP712.contentURIEncoded,
+        //     referenceParamsEncodedForEIP712.pointedProfileId,
+        //     referenceParamsEncodedForEIP712.pointedPubId,
+        //     referenceParamsEncodedForEIP712.referrerProfileIdsEncoded,
+        //     referenceParamsEncodedForEIP712.referrerPubIdsEncoded,
+        //     referenceParamsEncodedForEIP712.referenceModuleDataEncoded,
+        //     referenceParamsEncodedForEIP712.actionModulesEncoded,
+        //     referenceParamsEncodedForEIP712.actionModulesInitDataEncoded,
+        //     referenceParamsEncodedForEIP712.referenceModule,
+        //     referenceParamsEncodedForEIP712.referenceModuleInitDataEncoded,
+        //     referenceParamsEncodedForEIP712.nonce,
+        //     referenceParamsEncodedForEIP712.deadline
         // );
     }
 
@@ -208,66 +191,56 @@ library MetaTxLib {
         Types.EIP712Signature calldata signature,
         Types.CommentParams calldata commentParams
     ) external {
-        bytes32 contentURIEncoded = keccak256(bytes(commentParams.contentURI));
-        bytes32 referenceModuleDataEncoded = keccak256(commentParams.referenceModuleData);
-        bytes32 actionModulesInitDataEncoded = _encodeUsingEip712Rules(commentParams.actionModulesInitDatas);
-        bytes32 referenceModuleInitDataEncoded = keccak256(commentParams.referenceModuleInitData);
-        uint256 nonce = _getNonceIncrementAndEmitEvent(signature.signer);
-        uint256 deadline = signature.deadline;
         bytes memory encodedAbi = _abiEncode(
-            ReferenceParamsForAbiEncode(
+            ReferenceParamsEncodedForEIP712(
                 Typehash.COMMENT,
                 commentParams.profileId,
-                contentURIEncoded,
+                _encodeUsingEip712Rules(commentParams.contentURI),
                 commentParams.pointedProfileId,
                 commentParams.pointedPubId,
-                commentParams.referrerProfileIds,
-                commentParams.referrerPubIds,
-                referenceModuleDataEncoded,
-                commentParams.actionModules,
-                actionModulesInitDataEncoded,
+                _encodeUsingEip712Rules(commentParams.referrerProfileIds),
+                _encodeUsingEip712Rules(commentParams.referrerPubIds),
+                _encodeUsingEip712Rules(commentParams.referenceModuleData),
+                _encodeUsingEip712Rules(commentParams.actionModules),
+                _encodeUsingEip712Rules(commentParams.actionModulesInitDatas),
                 commentParams.referenceModule,
-                referenceModuleInitDataEncoded,
-                nonce,
-                deadline
+                _encodeUsingEip712Rules(commentParams.referenceModuleInitData),
+                _getNonceIncrementAndEmitEvent(signature.signer),
+                signature.deadline
             )
         );
         _validateRecoveredAddress(_calculateDigest(keccak256(encodedAbi)), signature);
     }
 
-    function validateQuoteSignature(Types.EIP712Signature calldata signature, Types.QuoteParams calldata quoteParams)
-        external
-    {
-        bytes32 contentURIEncoded = keccak256(bytes(quoteParams.contentURI));
-        bytes32 referenceModuleDataEncoded = keccak256(quoteParams.referenceModuleData);
-        bytes32 actionModulesInitDataEncoded = _encodeUsingEip712Rules(quoteParams.actionModulesInitDatas);
-        bytes32 referenceModuleInitDataEncoded = keccak256(quoteParams.referenceModuleInitData);
-        uint256 nonce = _getNonceIncrementAndEmitEvent(signature.signer);
-        uint256 deadline = signature.deadline;
+    function validateQuoteSignature(
+        Types.EIP712Signature calldata signature,
+        Types.QuoteParams calldata quoteParams
+    ) external {
         bytes memory encodedAbi = _abiEncode(
-            ReferenceParamsForAbiEncode(
+            ReferenceParamsEncodedForEIP712(
                 Typehash.QUOTE,
                 quoteParams.profileId,
-                contentURIEncoded,
+                _encodeUsingEip712Rules(quoteParams.contentURI),
                 quoteParams.pointedProfileId,
                 quoteParams.pointedPubId,
-                quoteParams.referrerProfileIds,
-                quoteParams.referrerPubIds,
-                referenceModuleDataEncoded,
-                quoteParams.actionModules,
-                actionModulesInitDataEncoded,
+                _encodeUsingEip712Rules(quoteParams.referrerProfileIds),
+                _encodeUsingEip712Rules(quoteParams.referrerPubIds),
+                _encodeUsingEip712Rules(quoteParams.referenceModuleData),
+                _encodeUsingEip712Rules(quoteParams.actionModules),
+                _encodeUsingEip712Rules(quoteParams.actionModulesInitDatas),
                 quoteParams.referenceModule,
-                referenceModuleInitDataEncoded,
-                nonce,
-                deadline
+                _encodeUsingEip712Rules(quoteParams.referenceModuleInitData),
+                _getNonceIncrementAndEmitEvent(signature.signer),
+                signature.deadline
             )
         );
         _validateRecoveredAddress(_calculateDigest(keccak256(encodedAbi)), signature);
     }
 
-    function validateMirrorSignature(Types.EIP712Signature calldata signature, Types.MirrorParams calldata mirrorParams)
-        external
-    {
+    function validateMirrorSignature(
+        Types.EIP712Signature calldata signature,
+        Types.MirrorParams calldata mirrorParams
+    ) external {
         _validateRecoveredAddress(
             _calculateDigest(
                 keccak256(
@@ -276,9 +249,9 @@ library MetaTxLib {
                         mirrorParams.profileId,
                         mirrorParams.pointedProfileId,
                         mirrorParams.pointedPubId,
-                        mirrorParams.referrerProfileIds,
-                        mirrorParams.referrerPubIds,
-                        keccak256(mirrorParams.referenceModuleData),
+                        _encodeUsingEip712Rules(mirrorParams.referrerProfileIds),
+                        _encodeUsingEip712Rules(mirrorParams.referrerPubIds),
+                        _encodeUsingEip712Rules(mirrorParams.referenceModuleData),
                         _getNonceIncrementAndEmitEvent(signature.signer),
                         signature.deadline
                     )
@@ -295,19 +268,17 @@ library MetaTxLib {
         uint256[] calldata followTokenIds,
         bytes[] calldata datas
     ) external {
-        uint256 nonce = _getNonceIncrementAndEmitEvent(signature.signer);
-        uint256 deadline = signature.deadline;
         _validateRecoveredAddress(
             _calculateDigest(
                 keccak256(
                     abi.encode(
                         Typehash.FOLLOW,
                         followerProfileId,
-                        keccak256(abi.encodePacked(idsOfProfilesToFollow)),
-                        keccak256(abi.encodePacked(followTokenIds)),
+                        _encodeUsingEip712Rules(idsOfProfilesToFollow),
+                        _encodeUsingEip712Rules(followTokenIds),
                         _encodeUsingEip712Rules(datas),
-                        nonce,
-                        deadline
+                        _getNonceIncrementAndEmitEvent(signature.signer),
+                        signature.deadline
                     )
                 )
             ),
@@ -326,7 +297,7 @@ library MetaTxLib {
                     abi.encode(
                         Typehash.UNFOLLOW,
                         unfollowerProfileId,
-                        keccak256(abi.encodePacked(idsOfProfilesToUnfollow)),
+                        _encodeUsingEip712Rules(idsOfProfilesToUnfollow),
                         _getNonceIncrementAndEmitEvent(signature.signer),
                         signature.deadline
                     )
@@ -348,8 +319,8 @@ library MetaTxLib {
                     abi.encode(
                         Typehash.SET_BLOCK_STATUS,
                         byProfileId,
-                        keccak256(abi.encodePacked(idsOfProfilesToSetBlockStatus)),
-                        keccak256(abi.encodePacked(blockStatus)),
+                        _encodeUsingEip712Rules(idsOfProfilesToSetBlockStatus),
+                        _encodeUsingEip712Rules(blockStatus),
                         _getNonceIncrementAndEmitEvent(signature.signer),
                         signature.deadline
                     )
@@ -373,7 +344,7 @@ library MetaTxLib {
                         collectParams.collectorProfileId,
                         collectParams.referrerProfileId,
                         collectParams.referrerPubId,
-                        keccak256(collectParams.collectModuleData),
+                        _encodeUsingEip712Rules(collectParams.collectModuleData),
                         _getNonceIncrementAndEmitEvent(signature.signer),
                         signature.deadline
                     )
@@ -395,10 +366,10 @@ library MetaTxLib {
                         publicationActionParams.publicationActedProfileId,
                         publicationActionParams.publicationActedId,
                         publicationActionParams.actorProfileId,
-                        publicationActionParams.referrerProfileIds,
-                        publicationActionParams.referrerPubIds,
+                        _encodeUsingEip712Rules(publicationActionParams.referrerProfileIds),
+                        _encodeUsingEip712Rules(publicationActionParams.referrerPubIds),
                         publicationActionParams.actionModuleAddress,
-                        keccak256(publicationActionParams.actionModuleData),
+                        _encodeUsingEip712Rules(publicationActionParams.actionModuleData),
                         _getNonceIncrementAndEmitEvent(signature.signer),
                         signature.deadline
                     )
@@ -469,5 +440,43 @@ library MetaTxLib {
         }
         emit Events.NonceUpdated(signer, currentNonce + 1, block.timestamp);
         return currentNonce;
+    }
+
+    function _encodeUsingEip712Rules(bytes[] memory bytesArray) private pure returns (bytes32) {
+        bytes32[] memory bytesArrayEncodedElements = new bytes32[](bytesArray.length);
+        uint256 i;
+        while (i < bytesArray.length) {
+            // A `bytes` type is encoded as its keccak256 hash.
+            bytesArrayEncodedElements[i] = keccak256(bytesArray[i]);
+            unchecked {
+                ++i;
+            }
+        }
+        // An array is encoded as the keccak256 hash of the concatenation of their encoded elements.
+        return _encodeUsingEip712Rules(bytesArrayEncodedElements);
+    }
+
+    function _encodeUsingEip712Rules(bool[] memory boolArray) private pure returns (bytes32) {
+        return keccak256(abi.encodePacked(boolArray));
+    }
+
+    function _encodeUsingEip712Rules(address[] memory addressArray) private pure returns (bytes32) {
+        return keccak256(abi.encodePacked(addressArray));
+    }
+
+    function _encodeUsingEip712Rules(uint256[] memory uint256Array) private pure returns (bytes32) {
+        return keccak256(abi.encodePacked(uint256Array));
+    }
+
+    function _encodeUsingEip712Rules(bytes32[] memory bytes32Array) private pure returns (bytes32) {
+        return keccak256(abi.encodePacked(bytes32Array));
+    }
+
+    function _encodeUsingEip712Rules(string memory stringValue) private pure returns (bytes32) {
+        return keccak256(bytes(stringValue));
+    }
+
+    function _encodeUsingEip712Rules(bytes memory bytesValue) private pure returns (bytes32) {
+        return keccak256(bytesValue);
     }
 }

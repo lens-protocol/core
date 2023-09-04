@@ -139,7 +139,7 @@ contract CollectPublicationAction is HubRestricted, IPublicationActionModule {
             ICollectModule(collectModule).processCollect(
                 Types.ProcessCollectParams({
                     publicationCollectedProfileId: processActionParams.publicationActedProfileId,
-                    publicationCollectedId: processActionParams.publicationActedProfileId,
+                    publicationCollectedId: processActionParams.publicationActedId,
                     collectorProfileId: processActionParams.actorProfileId,
                     collectorProfileOwner: processActionParams.actorProfileOwner,
                     transactionExecutor: processActionParams.transactionExecutor,
