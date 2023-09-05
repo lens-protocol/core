@@ -14,9 +14,9 @@ import {IERC721} from '@openzeppelin/contracts/token/ERC721/IERC721.sol';
 
 /**
  * A handle is defined as a local name inside a namespace context. A handle is represented as the local name with its
- * namespace applied as a suffix, using the dot symbol as separator.
+ * namespace applied as a prefix, using the slash symbol as separator.
  *
- *      handle = ${localName}.${namespace}
+ *      handle = /${namespace}/${localName}
  *
  * Handle and local name can be used interchangeably once you are in a context of a namespace, as it became redundant.
  *
@@ -25,21 +25,20 @@ import {IERC721} from '@openzeppelin/contracts/token/ERC721/IERC721.sol';
 contract LensHandles is ERC721, ImmutableOwnable, ILensHandles {
     using Address for address;
 
-    uint256 internal constant MAX_HANDLE_LENGTH = 31;
+    // We used 31 to fit the handle in a single slot, with `.lens` that restricted localName to use 26 characters.
+    // Can be extended later if needed.
+    uint256 internal constant MAX_LOCAL_NAME_LENGTH = 26;
     string internal constant NAMESPACE = 'lens';
     uint256 internal immutable NAMESPACE_LENGTH = bytes(NAMESPACE).length;
-    uint256 internal constant SEPARATOR_LENGTH = 1; // bytes('.').length;
+    uint256 internal constant SEPARATOR_LENGTH = 1; // bytes('/').length;
     bytes32 internal constant NAMESPACE_HASH = keccak256(bytes(NAMESPACE));
     uint256 internal immutable TOKEN_GUARDIAN_COOLDOWN;
-
     mapping(address => uint256) internal _tokenGuardianDisablingTimestamp;
 
     mapping(uint256 tokenId => string localName) internal _localNames;
 
     modifier onlyOwnerOrWhitelistedProfileCreator() {
-        if (
-            msg.sender != OWNER && !ILensHub(LENS_HUB).isProfileCreatorWhitelisted(msg.sender)
-        ) {
+        if (msg.sender != OWNER && !ILensHub(LENS_HUB).isProfileCreatorWhitelisted(msg.sender)) {
             revert HandlesErrors.NotOwnerNorWhitelisted();
         }
         _;
@@ -72,7 +71,7 @@ contract LensHandles is ERC721, ImmutableOwnable, ILensHandles {
     }
 
     function symbol() public pure override returns (string memory) {
-        return string.concat('.', NAMESPACE);
+        return string.concat('/', NAMESPACE);
     }
 
     /**
@@ -84,11 +83,10 @@ contract LensHandles is ERC721, ImmutableOwnable, ILensHandles {
     }
 
     /// @inheritdoc ILensHandles
-    function mintHandle(address to, string calldata localName)
-        external
-        onlyOwnerOrWhitelistedProfileCreator
-        returns (uint256)
-    {
+    function mintHandle(
+        address to,
+        string calldata localName
+    ) external onlyOwnerOrWhitelistedProfileCreator returns (uint256) {
         _validateLocalName(localName);
         return _mintHandle(to, localName);
     }
@@ -174,7 +172,7 @@ contract LensHandles is ERC721, ImmutableOwnable, ILensHandles {
 
     function getHandle(uint256 tokenId) public view returns (string memory) {
         string memory localName = getLocalName(tokenId);
-        return string.concat(localName, '.', NAMESPACE);
+        return string.concat('/', NAMESPACE, '/', localName);
     }
 
     function getTokenId(string memory localName) public pure returns (uint256) {
@@ -200,11 +198,11 @@ contract LensHandles is ERC721, ImmutableOwnable, ILensHandles {
     /// @dev This function is used to validate the local name when migrating from V1 to V2.
     ///      As in V1 we also allowed the Hyphen '-' character, we need to allow it here as well and use a separate
     ///      validation function for migration VS newly created handles.
-    function _validateLocalNameMigration(string memory localName) internal view {
+    function _validateLocalNameMigration(string memory localName) internal pure {
         bytes memory localNameAsBytes = bytes(localName);
         uint256 localNameLength = localNameAsBytes.length;
 
-        if (localNameLength == 0 || localNameLength + SEPARATOR_LENGTH + NAMESPACE_LENGTH > MAX_HANDLE_LENGTH) {
+        if (localNameLength == 0 || localNameLength > MAX_LOCAL_NAME_LENGTH) {
             revert HandlesErrors.HandleLengthInvalid();
         }
 
@@ -226,11 +224,11 @@ contract LensHandles is ERC721, ImmutableOwnable, ILensHandles {
 
     /// @dev In V2 we only accept the following characters: [a-z0-9_] to be used in newly created handles.
     ///      We also disallow the first character to be an underscore '_'.
-    function _validateLocalName(string memory localName) internal view {
+    function _validateLocalName(string memory localName) internal pure {
         bytes memory localNameAsBytes = bytes(localName);
         uint256 localNameLength = localNameAsBytes.length;
 
-        if (localNameLength == 0 || localNameLength + SEPARATOR_LENGTH + NAMESPACE_LENGTH > MAX_HANDLE_LENGTH) {
+        if (localNameLength == 0 || localNameLength > MAX_LOCAL_NAME_LENGTH) {
             revert HandlesErrors.HandleLengthInvalid();
         }
 

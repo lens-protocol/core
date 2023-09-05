@@ -11,7 +11,7 @@ import {TokenGuardianTest, IGuardedToken} from 'test/TokenGuardian.t.sol';
 contract LensHandlesTest is TokenGuardianTest {
     using stdJson for string;
 
-    uint256 constant MAX_HANDLE_LENGTH = 26;
+    uint256 constant MAX_LOCAL_NAME_LENGTH = 26;
     uint256 uniqueHandleCounter;
 
     function _TOKEN_GUARDIAN_COOLDOWN() internal pure override returns (uint256) {
@@ -98,7 +98,7 @@ contract LensHandlesTest is TokenGuardianTest {
     }
 
     function testCannot_MintHandle_WithLengthMoreThanMax(uint256 randomFuzz) public {
-        string memory randomHandle = _randomAlphanumericString(MAX_HANDLE_LENGTH + 1, randomFuzz);
+        string memory randomHandle = _randomAlphanumericString(MAX_LOCAL_NAME_LENGTH + 1, randomFuzz);
 
         vm.prank(lensHandles.OWNER());
 
@@ -107,7 +107,7 @@ contract LensHandlesTest is TokenGuardianTest {
     }
 
     function testCannot_MintHandle_WithInvalidFirstChar(uint256 length, uint256 randomFuzz) public {
-        length = bound(length, 0, MAX_HANDLE_LENGTH - 1); // we will add 1 char at the start, so length is shorter by 1
+        length = bound(length, 0, MAX_LOCAL_NAME_LENGTH - 1); // we will add 1 char at the start, so length is shorter by 1
 
         string memory randomHandle = _randomAlphanumericString(length, randomFuzz);
 
@@ -125,7 +125,7 @@ contract LensHandlesTest is TokenGuardianTest {
         uint256 randomFuzz,
         uint256 invalidCharCode
     ) public {
-        length = bound(length, 1, MAX_HANDLE_LENGTH);
+        length = bound(length, 1, MAX_LOCAL_NAME_LENGTH);
         insertionPosition = bound(insertionPosition, 0, length - 1);
         invalidCharCode = bound(invalidCharCode, 0x00, 0xFF);
         vm.assume(
@@ -156,16 +156,16 @@ contract LensHandlesTest is TokenGuardianTest {
 
     function testName() public {
         string memory name = lensHandles.name();
-        assertEq(name, '.lens Handles');
+        assertEq(name, '/lens Handles');
     }
 
     function testSymbol() public {
         string memory symbol = lensHandles.symbol();
-        assertEq(symbol, '.lens');
+        assertEq(symbol, '/lens');
     }
 
     function testExists(uint256 number) public {
-        number = bound(number, 1, 10**(MAX_HANDLE_LENGTH) - 1);
+        number = bound(number, 1, 10 ** (MAX_LOCAL_NAME_LENGTH) - 1);
         string memory numbersHandle = vm.toString(number);
         uint256 expectedTokenId = lensHandles.getTokenId(numbersHandle);
         vm.assume(!lensHandles.exists(expectedTokenId));
@@ -200,7 +200,7 @@ contract LensHandlesTest is TokenGuardianTest {
 
     // TODO: Should we revert if it doesn't exist?
     function testGetLocalName(uint256 number) public {
-        number = bound(number, 1, 10**(MAX_HANDLE_LENGTH) - 1);
+        number = bound(number, 1, 10 ** (MAX_LOCAL_NAME_LENGTH) - 1);
         string memory numbersHandle = vm.toString(number);
         uint256 expectedTokenId = lensHandles.getTokenId(numbersHandle);
         vm.assume(!lensHandles.exists(expectedTokenId));
@@ -224,7 +224,7 @@ contract LensHandlesTest is TokenGuardianTest {
 
     // TODO: Should we revert if it doesn't exist?
     function testGetHandle(uint256 number) public {
-        number = bound(number, 1, 10**(MAX_HANDLE_LENGTH) - 1);
+        number = bound(number, 1, 10 ** (MAX_LOCAL_NAME_LENGTH) - 1);
         string memory numbersHandle = vm.toString(number);
         uint256 expectedTokenId = lensHandles.getTokenId(numbersHandle);
         vm.assume(!lensHandles.exists(expectedTokenId));
@@ -237,9 +237,9 @@ contract LensHandlesTest is TokenGuardianTest {
 
         assertEq(handleId, expectedTokenId);
 
-        string memory namespaceSuffix = string.concat('.', lensHandles.getNamespace());
+        string memory namespacePrefix = string.concat('/', lensHandles.getNamespace(), '/');
         string memory handle = lensHandles.getHandle(handleId);
-        assertEq(handle, string.concat(numbersHandle, namespaceSuffix));
+        assertEq(handle, string.concat(namespacePrefix, numbersHandle));
 
         lensHandles.burn(handleId);
 
@@ -248,7 +248,7 @@ contract LensHandlesTest is TokenGuardianTest {
     }
 
     function testGetTokenId(uint256 number) public {
-        number = bound(number, 1, 10**(MAX_HANDLE_LENGTH) - 1);
+        number = bound(number, 1, 10 ** (MAX_LOCAL_NAME_LENGTH) - 1);
         string memory numbersHandle = vm.toString(number);
 
         uint256 expectedTokenId = uint256(keccak256(bytes(numbersHandle)));
@@ -304,11 +304,7 @@ contract LensHandlesTest is TokenGuardianTest {
         lensHandles.getLocalName(handleId);
     }
 
-    function testMintHandle_IfOwner(
-        address to,
-        uint256 length,
-        uint256 randomFuzz
-    ) public {
+    function testMintHandle_IfOwner(address to, uint256 length, uint256 randomFuzz) public {
         _mintHandle(lensHandles.OWNER(), to, length, randomFuzz);
     }
 
@@ -328,14 +324,9 @@ contract LensHandlesTest is TokenGuardianTest {
         _mintHandle(whitelistedProfileCreator, to, length, randomFuzz);
     }
 
-    function _mintHandle(
-        address minter,
-        address to,
-        uint256 length,
-        uint256 randomFuzz
-    ) internal {
+    function _mintHandle(address minter, address to, uint256 length, uint256 randomFuzz) internal {
         vm.assume(to != address(0));
-        length = bound(length, 1, MAX_HANDLE_LENGTH);
+        length = bound(length, 1, MAX_LOCAL_NAME_LENGTH);
 
         string memory randomHandle = _randomAlphanumericString(length, randomFuzz);
         uint256 expectedHandleId = lensHandles.getTokenId(randomHandle);

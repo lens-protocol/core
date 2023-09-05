@@ -25,7 +25,7 @@ library HandleTokenURILib {
                             _getSVGImageBase64Encoded(localName),
                             '","attributes":[{"display_type": "number", "trait_type":"ID","value":"',
                             tokenId.toString(),
-                            '"},{"trait_type":"NAMESPACE","value":".lens"},{"trait_type":"LENGTH","value":"',
+                            '"},{"trait_type":"NAMESPACE","value":"/lens"},{"trait_type":"LENGTH","value":"',
                             bytes(localName).length.toString(),
                             '"}]}'
                         )
