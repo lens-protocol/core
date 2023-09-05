@@ -71,39 +71,6 @@ library Events {
     event ProfileCreatorWhitelisted(address indexed profileCreator, bool indexed whitelisted, uint256 timestamp);
 
     /**
-     * @dev Emitted when a follow module is added to or removed from the whitelist.
-     *
-     * @param followModule The address of the follow module.
-     * @param whitelisted Whether or not the follow module is being added to the whitelist.
-     * @param timestamp The current block timestamp.
-     */
-    event FollowModuleWhitelisted(address indexed followModule, bool indexed whitelisted, uint256 timestamp);
-
-    /**
-     * @dev Emitted when a reference module is added to or removed from the whitelist.
-     *
-     * @param referenceModule The address of the reference module.
-     * @param whitelisted Whether or not the reference module is being added to the whitelist.
-     * @param timestamp The current block timestamp.
-     */
-    event ReferenceModuleWhitelisted(address indexed referenceModule, bool indexed whitelisted, uint256 timestamp);
-
-    /**
-     * @dev Emitted when an action module is added to or removed from the whitelist.
-     *
-     * @param actionModule The address of the action module.
-     * @param id Id of the whitelisted action module.
-     * @param whitelisted Whether or not the action module is being added to the whitelist.
-     * @param timestamp The current block timestamp.
-     */
-    event ActionModuleWhitelisted(
-        address indexed actionModule,
-        uint256 indexed id,
-        bool indexed whitelisted,
-        uint256 timestamp
-    );
-
-    /**
      * @dev Emitted when a profile is created.
      *
      * @param profileId The newly created profile's token ID.

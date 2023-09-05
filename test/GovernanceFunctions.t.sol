@@ -98,48 +98,6 @@ contract GovernanceFunctionsTest is BaseTest {
         hub.whitelistProfileCreator(addressToWhitelist, shouldWhitelist);
     }
 
-    function testCannot_WhitelistFollowModule_IfNotGovernance(
-        address nonGovernanceCaller,
-        address addressToWhitelist,
-        bool shouldWhitelist
-    ) public {
-        vm.assume(nonGovernanceCaller != governance);
-        vm.assume(nonGovernanceCaller != address(0));
-        vm.assume(!_isLensHubProxyAdmin(nonGovernanceCaller));
-
-        vm.expectRevert(Errors.NotGovernance.selector);
-        vm.prank(nonGovernanceCaller);
-        hub.whitelistFollowModule(addressToWhitelist, shouldWhitelist);
-    }
-
-    function testCannot_WhitelistReferenceModule_IfNotGovernance(
-        address nonGovernanceCaller,
-        address addressToWhitelist,
-        bool shouldWhitelist
-    ) public {
-        vm.assume(nonGovernanceCaller != governance);
-        vm.assume(nonGovernanceCaller != address(0));
-        vm.assume(!_isLensHubProxyAdmin(nonGovernanceCaller));
-
-        vm.expectRevert(Errors.NotGovernance.selector);
-        vm.prank(nonGovernanceCaller);
-        hub.whitelistReferenceModule(addressToWhitelist, shouldWhitelist);
-    }
-
-    function testCannot_WhitelistActionModule_IfNotGovernance(
-        address nonGovernanceCaller,
-        address addressToWhitelist,
-        bool shouldWhitelist
-    ) public {
-        vm.assume(nonGovernanceCaller != governance);
-        vm.assume(nonGovernanceCaller != address(0));
-        vm.assume(!_isLensHubProxyAdmin(nonGovernanceCaller));
-
-        vm.expectRevert(Errors.NotGovernance.selector);
-        vm.prank(nonGovernanceCaller);
-        hub.whitelistActionModule(addressToWhitelist, shouldWhitelist);
-    }
-
     // SCENARIOS
 
     function testSetEmergencyAdmin_IfGovernance(address newEmergencyAdmin) public {
@@ -179,87 +137,53 @@ contract GovernanceFunctionsTest is BaseTest {
         assertEq(hub.isProfileCreatorWhitelisted(profileCreator), shouldWhitelist);
     }
 
-    function testWhitelistFollowModule(address followModule, bool shouldWhitelist) public {
-        vm.prank(governance);
-        hub.whitelistFollowModule(followModule, shouldWhitelist);
+    function testRegisterFollowModule(address followModule) public {
+        hub.registerFollowModule(followModule);
 
-        assertEq(hub.isFollowModuleWhitelisted(followModule), shouldWhitelist);
+        assertEq(hub.isFollowModuleRegistered(followModule), true);
     }
 
-    function testWhitelistReferenceModule(address referenceModule, bool shouldWhitelist) public {
-        vm.prank(governance);
-        hub.whitelistReferenceModule(referenceModule, shouldWhitelist);
+    function testRegisterReferenceModule(address referenceModule) public {
+        hub.registerReferenceModule(referenceModule);
 
-        assertEq(hub.isReferenceModuleWhitelisted(referenceModule), shouldWhitelist);
+        assertEq(hub.isReferenceModuleRegistered(referenceModule), true);
     }
 
     function testWhitelistActionModule_initially(address actionModule) public {
-        Types.ActionModuleWhitelistData memory whitelistData = hub.getActionModuleWhitelistData(actionModule);
+        Types.ActionModuleRegisterData memory whitelistData = hub.getActionModuleRegisterData(actionModule);
         vm.assume(whitelistData.id == 0);
-        vm.assume(whitelistData.isWhitelisted == false);
+        vm.assume(whitelistData.isRegistered == false);
 
-        vm.prank(governance);
-        hub.whitelistActionModule(actionModule, true);
+        hub.registerActionModule(actionModule);
 
-        whitelistData = hub.getActionModuleWhitelistData(actionModule);
+        whitelistData = hub.getActionModuleRegisterData(actionModule);
 
-        assertTrue(whitelistData.isWhitelisted);
+        assertTrue(whitelistData.isRegistered);
     }
 
-    function testWhitelistActionModule_unwhitelist(address actionModule) public {
-        Types.ActionModuleWhitelistData memory whitelistData = hub.getActionModuleWhitelistData(actionModule);
-        vm.assume(whitelistData.id == 0);
-        vm.assume(whitelistData.isWhitelisted == false);
-
-        vm.prank(governance);
-        hub.whitelistActionModule(actionModule, true);
-
-        whitelistData = hub.getActionModuleWhitelistData(actionModule);
-        assertTrue(whitelistData.isWhitelisted);
-
-        vm.prank(governance);
-        hub.whitelistActionModule(actionModule, false);
-
-        whitelistData = hub.getActionModuleWhitelistData(actionModule);
-        assertFalse(whitelistData.isWhitelisted);
-    }
-
-    function testCannotWhitelistActionModule_withInitialFalse(address actionModule) public {
-        Types.ActionModuleWhitelistData memory whitelistData = hub.getActionModuleWhitelistData(actionModule);
-        vm.assume(whitelistData.id == 0);
-        vm.assume(whitelistData.isWhitelisted == false);
-
-        vm.expectRevert(Errors.NotWhitelisted.selector);
-
-        vm.prank(governance);
-        hub.whitelistActionModule(actionModule, false);
-    }
-
-    function testGetActionModuleWhitelistData(address secondActionModule) public {
+    function testGetActionModuleRegisterData(address secondActionModule) public {
         address firstActionModule = makeAddr('FIRST_ACTION_MODULE');
         vm.assume(firstActionModule != secondActionModule);
 
-        Types.ActionModuleWhitelistData memory whitelistData = hub.getActionModuleWhitelistData(secondActionModule);
-        vm.assume(whitelistData.id == 0);
-        vm.assume(whitelistData.isWhitelisted == false);
+        Types.ActionModuleRegisterData memory registerData = hub.getActionModuleRegisterData(secondActionModule);
+        vm.assume(registerData.id == 0);
+        vm.assume(registerData.isRegistered == false);
 
-        whitelistData = hub.getActionModuleWhitelistData(firstActionModule);
-        assertEq(whitelistData.id, 0);
-        assertFalse(whitelistData.isWhitelisted);
+        registerData = hub.getActionModuleRegisterData(firstActionModule);
+        assertEq(registerData.id, 0);
+        assertFalse(registerData.isRegistered);
 
-        vm.prank(governance);
-        hub.whitelistActionModule(firstActionModule, true);
+        hub.registerActionModule(firstActionModule);
 
-        whitelistData = hub.getActionModuleWhitelistData(firstActionModule);
-        uint256 firstActionModuleId = whitelistData.id;
-        assertTrue(whitelistData.isWhitelisted);
+        registerData = hub.getActionModuleRegisterData(firstActionModule);
+        uint256 firstActionModuleId = registerData.id;
+        assertTrue(registerData.isRegistered);
 
-        vm.prank(governance);
-        hub.whitelistActionModule(secondActionModule, true);
+        hub.registerActionModule(secondActionModule);
 
-        whitelistData = hub.getActionModuleWhitelistData(secondActionModule);
-        uint256 secondActionModuleId = whitelistData.id;
-        assertTrue(whitelistData.isWhitelisted);
+        registerData = hub.getActionModuleRegisterData(secondActionModule);
+        uint256 secondActionModuleId = registerData.id;
+        assertTrue(registerData.isRegistered);
 
         assertEq(secondActionModuleId, firstActionModuleId + 1);
     }

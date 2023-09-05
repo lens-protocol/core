@@ -401,11 +401,6 @@ library Types {
         uint64 maxConfigNumberSet;
     }
 
-    struct ActionModuleWhitelistData {
-        uint248 id;
-        bool isWhitelisted;
-    }
-
     struct MigrationParams {
         address lensHandlesAddress;
         address tokenHandleRegistryAddress;

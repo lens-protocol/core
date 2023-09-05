@@ -18,12 +18,12 @@ contract CollectPublicationAction is HubRestricted, IPublicationActionModule {
         address collectNFT;
     }
 
-    event CollectModuleWhitelisted(address collectModule, bool whitelist, uint256 timestamp);
+    event CollectModuleRegistered(address collectModule, uint256 timestamp);
 
     address public immutable COLLECT_NFT_IMPL;
     address public immutable MODULE_GLOBALS;
 
-    mapping(address collectModule => bool isWhitelisted) internal _collectModuleWhitelisted;
+    mapping(address collectModule => bool isWhitelisted) internal _collectModuleRegistered;
     mapping(uint256 profileId => mapping(uint256 pubId => CollectData collectData)) internal _collectDataByPub;
 
     constructor(address hub, address collectNFTImpl, address moduleGlobals) HubRestricted(hub) {
@@ -31,13 +31,9 @@ contract CollectPublicationAction is HubRestricted, IPublicationActionModule {
         MODULE_GLOBALS = moduleGlobals;
     }
 
-    function whitelistCollectModule(address collectModule, bool whitelist) external {
-        address governance = IModuleGlobals(MODULE_GLOBALS).getGovernance();
-        if (msg.sender != governance) {
-            revert Errors.NotGovernance();
-        }
-        _collectModuleWhitelisted[collectModule] = whitelist;
-        emit CollectModuleWhitelisted(collectModule, whitelist, block.timestamp);
+    function registerCollectModule(address collectModule) external {
+        _collectModuleRegistered[collectModule] = true;
+        emit CollectModuleRegistered(collectModule, block.timestamp);
     }
 
     function initializePublicationAction(
@@ -47,8 +43,8 @@ contract CollectPublicationAction is HubRestricted, IPublicationActionModule {
         bytes calldata data
     ) external override onlyHub returns (bytes memory) {
         (address collectModule, bytes memory collectModuleInitData) = abi.decode(data, (address, bytes));
-        if (!_collectModuleWhitelisted[collectModule]) {
-            revert Errors.NotWhitelisted();
+        if (!_collectModuleRegistered[collectModule]) {
+            revert Errors.NotRegistered();
         }
         _collectDataByPub[profileId][pubId].collectModule = collectModule;
         ICollectModule(collectModule).initializePublicationCollectModule(
@@ -160,7 +156,7 @@ contract CollectPublicationAction is HubRestricted, IPublicationActionModule {
         return collectNFT;
     }
 
-    function isCollectModuleWhitelisted(address collectModule) external view returns (bool) {
-        return _collectModuleWhitelisted[collectModule];
+    function isCollectModuleRegistered(address collectModule) external view returns (bool) {
+        return _collectModuleRegistered[collectModule];
     }
 }

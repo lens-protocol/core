@@ -17,7 +17,7 @@ contract CollectPublicationActionTest is BaseTest {
     address collectNFTImpl;
     address mockCollectModule;
 
-    event CollectModuleWhitelisted(address collectModule, bool whitelist, uint256 timestamp);
+    event CollectModuleRegistered(address collectModule, uint256 timestamp);
     event Transfer(address indexed from, address indexed to, uint256 indexed tokenId);
 
     function setUp() public override {
@@ -29,19 +29,10 @@ contract CollectPublicationActionTest is BaseTest {
 
         // Deploy & Whitelist MockCollectModule
         mockCollectModule = address(new MockCollectModule());
-        vm.prank(moduleGlobals.getGovernance());
-        collectPublicationAction.whitelistCollectModule(mockCollectModule, true);
+        collectPublicationAction.registerCollectModule(mockCollectModule);
     }
 
     // Negatives
-
-    function testCannotWhitelistCollectModule_IfNotModulesGovernance(address collectModule, bool whitelist) public {
-        vm.assume(collectModule != address(0));
-        vm.assume(collectModule != moduleGlobals.getGovernance());
-
-        vm.expectRevert(Errors.NotGovernance.selector);
-        collectPublicationAction.whitelistCollectModule(collectModule, whitelist);
-    }
 
     function testCannotInitializePublicationAction_ifNotHub(
         uint256 profileId,
@@ -68,20 +59,20 @@ contract CollectPublicationActionTest is BaseTest {
         uint256 profileId,
         uint256 pubId,
         address transactionExecutor,
-        address nonWhitelistedCollectModule
+        address nonRegisteredCollectModule
     ) public {
         vm.assume(profileId != 0);
         vm.assume(pubId != 0);
         vm.assume(transactionExecutor != address(0));
-        vm.assume(!collectPublicationAction.isCollectModuleWhitelisted(nonWhitelistedCollectModule));
+        vm.assume(!collectPublicationAction.isCollectModuleRegistered(nonRegisteredCollectModule));
 
         vm.prank(address(hub));
-        vm.expectRevert(Errors.NotWhitelisted.selector);
+        vm.expectRevert(Errors.NotRegistered.selector);
         collectPublicationAction.initializePublicationAction(
             profileId,
             pubId,
             transactionExecutor,
-            abi.encode(nonWhitelistedCollectModule, '')
+            abi.encode(nonRegisteredCollectModule, '')
         );
     }
 
@@ -153,36 +144,21 @@ contract CollectPublicationActionTest is BaseTest {
     }
 
     // Scenarios
-    function testWhitelistCollectModule(address collectModule) public {
+    function testRegisterCollectModule(address collectModule) public {
         vm.assume(collectModule != address(0));
-        vm.assume(!collectPublicationAction.isCollectModuleWhitelisted(collectModule));
+        vm.assume(!collectPublicationAction.isCollectModuleRegistered(collectModule));
 
         vm.expectEmit(true, true, true, true, address(collectPublicationAction));
-        emit CollectModuleWhitelisted(collectModule, true, block.timestamp);
-        vm.prank(moduleGlobals.getGovernance());
-        collectPublicationAction.whitelistCollectModule(collectModule, true);
+        emit CollectModuleRegistered(collectModule, block.timestamp);
+        collectPublicationAction.registerCollectModule(collectModule);
 
         assertTrue(
-            collectPublicationAction.isCollectModuleWhitelisted(collectModule),
-            'Collect module was not whitelisted'
-        );
-
-        vm.expectEmit(true, true, true, true, address(collectPublicationAction));
-        emit CollectModuleWhitelisted(collectModule, false, block.timestamp);
-        vm.prank(moduleGlobals.getGovernance());
-        collectPublicationAction.whitelistCollectModule(collectModule, false);
-
-        assertFalse(
-            collectPublicationAction.isCollectModuleWhitelisted(collectModule),
-            'Collect module was not removed from whitelist'
+            collectPublicationAction.isCollectModuleRegistered(collectModule),
+            'Collect module was not registered'
         );
     }
 
-    function testInitializePublicationAction(
-        uint256 profileId,
-        uint256 pubId,
-        address transactionExecutor
-    ) public {
+    function testInitializePublicationAction(uint256 profileId, uint256 pubId, address transactionExecutor) public {
         vm.assume(profileId != 0);
         vm.assume(pubId != 0);
         vm.assume(transactionExecutor != address(0));

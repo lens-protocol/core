@@ -61,10 +61,10 @@ library PublicationLib {
      *
      * @return uint256 The created publication's pubId.
      */
-    function comment(Types.CommentParams calldata commentParams, address transactionExecutor)
-        external
-        returns (uint256)
-    {
+    function comment(
+        Types.CommentParams calldata commentParams,
+        address transactionExecutor
+    ) external returns (uint256) {
         (
             uint256 pubIdAssigned,
             bytes[] memory actionModulesInitReturnDatas,
@@ -209,22 +209,18 @@ library PublicationLib {
         }
     }
 
-    function _asReferencePubParams(Types.QuoteParams calldata quoteParams)
-        private
-        pure
-        returns (Types.ReferencePubParams calldata referencePubParams)
-    {
+    function _asReferencePubParams(
+        Types.QuoteParams calldata quoteParams
+    ) private pure returns (Types.ReferencePubParams calldata referencePubParams) {
         // We use assembly to cast the types keeping the params in calldata, as they match the fields.
         assembly {
             referencePubParams := quoteParams
         }
     }
 
-    function _asReferencePubParams(Types.CommentParams calldata commentParams)
-        private
-        pure
-        returns (Types.ReferencePubParams calldata referencePubParams)
-    {
+    function _asReferencePubParams(
+        Types.CommentParams calldata commentParams
+    ) private pure returns (Types.ReferencePubParams calldata referencePubParams) {
         // We use assembly to cast the types keeping the params in calldata, as they match the fields.
         assembly {
             referencePubParams := commentParams
@@ -235,15 +231,7 @@ library PublicationLib {
         Types.ReferencePubParams calldata referencePubParams,
         address transactionExecutor,
         Types.PublicationType referencePubType
-    )
-        private
-        returns (
-            uint256,
-            bytes[] memory,
-            bytes memory,
-            Types.PublicationType[] memory
-        )
-    {
+    ) private returns (uint256, bytes[] memory, bytes memory, Types.PublicationType[] memory) {
         ValidationLib.validatePointedPub(referencePubParams.pointedProfileId, referencePubParams.pointedPubId);
         ValidationLib.validateNotBlocked({
             profile: referencePubParams.profileId,
@@ -494,15 +482,15 @@ library PublicationLib {
 
         uint256 i;
         while (i < actionModules.length) {
-            Types.ActionModuleWhitelistData memory actionModuleWhitelistData = StorageLib.actionModuleWhitelistData()[
+            Types.ActionModuleRegisterData memory actionModuleRegisterData = StorageLib.actionModuleRegisterData()[
                 actionModules[i]
             ];
 
-            if (!actionModuleWhitelistData.isWhitelisted) {
-                revert Errors.NotWhitelisted();
+            if (!actionModuleRegisterData.isRegistered) {
+                revert Errors.NotRegistered();
             }
 
-            uint256 actionModuleIdBitmapMask = 1 << (actionModuleWhitelistData.id - 1);
+            uint256 actionModuleIdBitmapMask = 1 << (actionModuleRegisterData.id - 1);
 
             if (enabledActionModulesBitmap & actionModuleIdBitmapMask != 0) {
                 revert Errors.AlreadyEnabled();
@@ -537,7 +525,7 @@ library PublicationLib {
         if (referenceModule == address(0)) {
             return new bytes(0);
         }
-        ValidationLib.validateReferenceModuleWhitelisted(referenceModule);
+        ValidationLib.validateReferenceModuleRegistered(referenceModule);
         StorageLib.getPublication(profileId, pubId).referenceModule = referenceModule;
         return
             IReferenceModule(referenceModule).initializeReferenceModule(

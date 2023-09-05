@@ -20,14 +20,11 @@ abstract contract LensHubStorage {
 
     mapping(address profileCreator => bool isWhitelisted) internal _profileCreatorWhitelisted; // Slot 13
 
-    mapping(address => bool isWhitelisted) internal _followModuleWhitelisted; // Slot 14
+    mapping(address => bool isWhitelisted) internal __DEPRECATED__followModuleWhitelisted; // Slot 14
 
-    // `_collectModuleWhitelisted` slot replaced by `_actionModuleWhitelistData` in Lens V2.
-    // All the old modules need to be unwhitelisted before V2 upgrade to avoid dirty storage.
-    // mapping(address collectModule => bool isWhitelisted) internal __DEPRECATED__collectModuleWhitelisted;
-    mapping(address actionModule => Types.ActionModuleWhitelistData whitelistData) internal _actionModuleWhitelistData; // Slot 15
+    mapping(address collectModule => bool isWhitelisted) internal __DEPRECATED__collectModuleWhitelisted; // Slot 15
 
-    mapping(address referenceModule => bool isWhitelisted) internal _referenceModuleWhitelisted; // Slot 16
+    mapping(address referenceModule => bool isWhitelisted) internal __DEPRECATED__referenceModuleWhitelisted; // Slot 16
 
     mapping(uint256 profileId => address dispatcher) internal __DEPRECATED__dispatcherByProfile; // Slot 17
 

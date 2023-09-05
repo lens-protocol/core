@@ -20,9 +20,9 @@ library StorageLib {
     uint256 constant LAST_INITIALIZED_REVISION_SLOT = 11; // VersionedInitializable's `lastInitializedRevision` field.
     uint256 constant PROTOCOL_STATE_SLOT = 12;
     uint256 constant PROFILE_CREATOR_WHITELIST_MAPPING_SLOT = 13;
-    uint256 constant FOLLOW_MODULE_WHITELIST_MAPPING_SLOT = 14;
-    uint256 constant ACTION_MODULE_WHITELIST_DATA_MAPPING_SLOT = 15;
-    uint256 constant REFERENCE_MODULE_WHITELIST_MAPPING_SLOT = 16;
+    // Slot 14 is deprecated in Lens V2. In V1 it was used for the follow module address whitelist.
+    // Slot 15 is deprecated in Lens V2. In V1 it was used for the collect module address whitelist.
+    // Slot 16 is deprecated in Lens V2. In V1 it was used for the reference module address whitelist.
     // Slot 17 is deprecated in Lens V2. In V1 it was used for the dispatcher address by profile ID.
     uint256 constant PROFILE_ID_BY_HANDLE_HASH_MAPPING_SLOT = 18; // Deprecated slot, but still needed for V2 migration.
     uint256 constant PROFILES_MAPPING_SLOT = 19;
@@ -47,11 +47,10 @@ library StorageLib {
 
     uint256 constant MAX_ACTION_MODULE_ID_SUPPORTED = 255;
 
-    function getPublication(uint256 profileId, uint256 pubId)
-        internal
-        pure
-        returns (Types.Publication storage _publication)
-    {
+    function getPublication(
+        uint256 profileId,
+        uint256 pubId
+    ) internal pure returns (Types.Publication storage _publication) {
         assembly {
             mstore(0, profileId)
             mstore(32, PUBLICATIONS_MAPPING_SLOT)
@@ -69,11 +68,9 @@ library StorageLib {
         }
     }
 
-    function getDelegatedExecutorsConfig(uint256 delegatorProfileId)
-        internal
-        pure
-        returns (Types.DelegatedExecutorsConfig storage _delegatedExecutorsConfig)
-    {
+    function getDelegatedExecutorsConfig(
+        uint256 delegatorProfileId
+    ) internal pure returns (Types.DelegatedExecutorsConfig storage _delegatedExecutorsConfig) {
         assembly {
             mstore(0, delegatorProfileId)
             mstore(32, DELEGATED_EXECUTOR_CONFIG_MAPPING_SLOT)
@@ -99,11 +96,9 @@ library StorageLib {
         }
     }
 
-    function blockedStatus(uint256 blockerProfileId)
-        internal
-        pure
-        returns (mapping(uint256 => bool) storage _blockedStatus)
-    {
+    function blockedStatus(
+        uint256 blockerProfileId
+    ) internal pure returns (mapping(uint256 => bool) storage _blockedStatus) {
         assembly {
             mstore(0, blockerProfileId)
             mstore(32, BLOCKED_STATUS_MAPPING_SLOT)
@@ -137,16 +132,6 @@ library StorageLib {
         }
     }
 
-    function followModuleWhitelisted()
-        internal
-        pure
-        returns (mapping(address => bool) storage _followModuleWhitelisted)
-    {
-        assembly {
-            _followModuleWhitelisted.slot := FOLLOW_MODULE_WHITELIST_MAPPING_SLOT
-        }
-    }
-
     function migrationAdminWhitelisted()
         internal
         pure
@@ -154,16 +139,6 @@ library StorageLib {
     {
         assembly {
             _migrationAdminWhitelisted.slot := MIGRATION_ADMINS_WHITELISTED_MAPPING_SLOT
-        }
-    }
-
-    function actionModuleWhitelistData()
-        internal
-        pure
-        returns (mapping(address => Types.ActionModuleWhitelistData) storage _actionModuleWhitelistData)
-    {
-        assembly {
-            _actionModuleWhitelistData.slot := ACTION_MODULE_WHITELIST_DATA_MAPPING_SLOT
         }
     }
 
@@ -183,16 +158,6 @@ library StorageLib {
             revert Errors.MaxActionModuleIdReached();
         }
         return incrementedId;
-    }
-
-    function referenceModuleWhitelisted()
-        internal
-        pure
-        returns (mapping(address => bool) storage _referenceModuleWhitelisted)
-    {
-        assembly {
-            _referenceModuleWhitelisted.slot := REFERENCE_MODULE_WHITELIST_MAPPING_SLOT
-        }
     }
 
     function getGovernance() internal view returns (address _governance) {

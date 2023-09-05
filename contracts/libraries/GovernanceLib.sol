@@ -72,40 +72,4 @@ library GovernanceLib {
         StorageLib.profileCreatorWhitelisted()[profileCreator] = whitelist;
         emit Events.ProfileCreatorWhitelisted(profileCreator, whitelist, block.timestamp);
     }
-
-    function whitelistFollowModule(address followModule, bool whitelist) external {
-        StorageLib.followModuleWhitelisted()[followModule] = whitelist;
-        emit Events.FollowModuleWhitelisted(followModule, whitelist, block.timestamp);
-    }
-
-    function whitelistReferenceModule(address referenceModule, bool whitelist) external {
-        StorageLib.referenceModuleWhitelisted()[referenceModule] = whitelist;
-        emit Events.ReferenceModuleWhitelisted(referenceModule, whitelist, block.timestamp);
-    }
-
-    function whitelistActionModule(address actionModule, bool whitelist) external {
-        Types.ActionModuleWhitelistData memory actionModuleWhitelistData = StorageLib.actionModuleWhitelistData()[
-            actionModule
-        ];
-
-        uint256 id;
-        if (actionModuleWhitelistData.id == 0) {
-            // The action module with the given address wasn't whitelisted before, a new ID is assigned to it.
-            if (!whitelist) {
-                revert Errors.NotWhitelisted();
-            }
-            id = StorageLib.incrementMaxActionModuleIdUsed();
-
-            StorageLib.actionModuleWhitelistData()[actionModule] = Types.ActionModuleWhitelistData(
-                uint248(id),
-                whitelist
-            );
-            StorageLib.actionModuleById()[id] = actionModule;
-        } else {
-            // The action module with the given address was already whitelisted before, it has an ID already assigned.
-            StorageLib.actionModuleWhitelistData()[actionModule].isWhitelisted = whitelist;
-            id = actionModuleWhitelistData.id;
-        }
-        emit Events.ActionModuleWhitelisted(actionModule, id, whitelist, block.timestamp);
-    }
 }

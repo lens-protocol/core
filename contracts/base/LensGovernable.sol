@@ -42,21 +42,6 @@ abstract contract LensGovernable is ILensGovernable {
         GovernanceLib.whitelistProfileCreator(profileCreator, whitelist);
     }
 
-    /// @inheritdoc ILensGovernable
-    function whitelistFollowModule(address followModule, bool whitelist) external override onlyGov {
-        GovernanceLib.whitelistFollowModule(followModule, whitelist);
-    }
-
-    /// @inheritdoc ILensGovernable
-    function whitelistReferenceModule(address referenceModule, bool whitelist) external override onlyGov {
-        GovernanceLib.whitelistReferenceModule(referenceModule, whitelist);
-    }
-
-    /// @inheritdoc ILensGovernable
-    function whitelistActionModule(address actionModule, bool whitelist) external override onlyGov {
-        GovernanceLib.whitelistActionModule(actionModule, whitelist);
-    }
-
     ///////////////////////////////////////////
     ///        EXTERNAL VIEW FUNCTIONS      ///
     ///////////////////////////////////////////
@@ -81,25 +66,5 @@ abstract contract LensGovernable is ILensGovernable {
     /// @inheritdoc ILensGovernable
     function isProfileCreatorWhitelisted(address profileCreator) external view override returns (bool) {
         return StorageLib.profileCreatorWhitelisted()[profileCreator];
-    }
-
-    /// @inheritdoc ILensGovernable
-    function isFollowModuleWhitelisted(address followModule) external view override returns (bool) {
-        return StorageLib.followModuleWhitelisted()[followModule];
-    }
-
-    /// @inheritdoc ILensGovernable
-    function isReferenceModuleWhitelisted(address referenceModule) external view override returns (bool) {
-        return StorageLib.referenceModuleWhitelisted()[referenceModule];
-    }
-
-    /// @inheritdoc ILensGovernable
-    function getActionModuleWhitelistData(address actionModule)
-        external
-        view
-        override
-        returns (Types.ActionModuleWhitelistData memory)
-    {
-        return StorageLib.actionModuleWhitelistData()[actionModule];
     }
 }

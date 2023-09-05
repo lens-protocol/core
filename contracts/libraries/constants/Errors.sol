@@ -20,6 +20,7 @@ library Errors {
     error CallerNotCollectNFT(); // Legacy
     error ArrayMismatch();
     error NotWhitelisted();
+    error NotRegistered();
     error InvalidParameter();
     error ExecutorInvalid();
     error Blocked();

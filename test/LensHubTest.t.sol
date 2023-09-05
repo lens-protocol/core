@@ -45,15 +45,15 @@ contract LensHubTest is BaseTest {
         hub.createProfile(createProfileParams);
     }
 
-    function testCannot_CreateProfile_IfFollowModuleNotWhitelisted(address followModule) public {
+    function testCannot_CreateProfile_IfFollowModuleNotRegistered(address followModule) public {
         vm.assume(followModule != address(0));
-        vm.assume(hub.isFollowModuleWhitelisted(followModule) == false);
+        vm.assume(hub.isFollowModuleRegistered(followModule) == false);
 
         Types.CreateProfileParams memory createProfileParams = _getDefaultCreateProfileParams();
 
         createProfileParams.followModule = followModule;
 
-        vm.expectRevert(Errors.NotWhitelisted.selector);
+        vm.expectRevert(Errors.NotRegistered.selector);
         hub.createProfile(createProfileParams);
     }
 
@@ -96,8 +96,7 @@ contract LensHubTest is BaseTest {
 
         address followModule = address(new MockFollowModuleWithRevertFlag());
 
-        vm.prank(governance);
-        hub.whitelistFollowModule(followModule, true);
+        hub.registerFollowModule(followModule);
 
         bytes memory followModuleInitData = abi.encode(false);
 

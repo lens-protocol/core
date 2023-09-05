@@ -26,7 +26,7 @@ library ActionLib {
         );
 
         address actionModuleAddress = publicationActionParams.actionModuleAddress;
-        uint256 actionModuleId = StorageLib.actionModuleWhitelistData()[actionModuleAddress].id;
+        uint256 actionModuleId = StorageLib.actionModuleRegisterData()[actionModuleAddress].id;
 
         if (!_isActionEnabled(_actedOnPublication, actionModuleId)) {
             // This will also revert for:
@@ -62,11 +62,10 @@ library ActionLib {
         return actionModuleReturnData;
     }
 
-    function _isActionEnabled(Types.Publication storage _publication, uint256 actionModuleId)
-        private
-        view
-        returns (bool)
-    {
+    function _isActionEnabled(
+        Types.Publication storage _publication,
+        uint256 actionModuleId
+    ) private view returns (bool) {
         if (actionModuleId == 0) {
             return false;
         }

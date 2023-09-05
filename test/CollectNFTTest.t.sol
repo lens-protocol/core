@@ -63,8 +63,7 @@ contract CollectNFTTest is BaseTest, LensBaseERC721Test {
         collectNFTImpl = address(new CollectNFT(address(hub), address(collectPublicationAction)));
         vm.stopPrank();
 
-        vm.prank(governance);
-        hub.whitelistActionModule(address(collectPublicationAction), true);
+        hub.registerActionModule(address(collectPublicationAction));
 
         assertEq(
             address(collectPublicationAction),
@@ -78,8 +77,7 @@ contract CollectNFTTest is BaseTest, LensBaseERC721Test {
 
         // Deploy & Whitelist MockCollectModule
         mockCollectModule = address(new MockCollectModule());
-        vm.prank(moduleGlobals.getGovernance());
-        collectPublicationAction.whitelistCollectModule(mockCollectModule, true);
+        collectPublicationAction.registerCollectModule(mockCollectModule);
 
         Types.PostParams memory postParams = _getDefaultPostParams();
         postParams.actionModules[0] = address(collectPublicationAction);
@@ -147,11 +145,7 @@ contract CollectNFTTest is BaseTest, LensBaseERC721Test {
         assertEq(royalties, expectedRoyalties);
     }
 
-    function testSetRoyalties(
-        uint256 royaltiesInBasisPoints,
-        uint256 tokenId,
-        uint256 salePrice
-    ) public {
+    function testSetRoyalties(uint256 royaltiesInBasisPoints, uint256 tokenId, uint256 salePrice) public {
         uint256 basisPoints = 10000;
         royaltiesInBasisPoints = bound(royaltiesInBasisPoints, 0, basisPoints);
         uint256 salePriceTimesRoyalties;

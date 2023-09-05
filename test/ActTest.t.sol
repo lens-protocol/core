@@ -26,7 +26,7 @@ contract ActTest is ReferralSystemTest {
 
     function _referralSystem_ExpectRevertsIfNeeded(
         TestPublication memory target,
-        uint256[] memory, /* referrerProfileIds */
+        uint256[] memory /* referrerProfileIds */,
         uint256[] memory /* referrerPubIds */
     ) internal virtual override returns (bool) {
         if (_isV1LegacyPub(hub.getPublication(target.profileId, target.pubId))) {
@@ -40,11 +40,10 @@ contract ActTest is ReferralSystemTest {
         _act(actor.ownerPk, actionParams);
     }
 
-    function _act(uint256 pk, Types.PublicationActionParams memory publicationActionParams)
-        internal
-        virtual
-        returns (bytes memory)
-    {
+    function _act(
+        uint256 pk,
+        Types.PublicationActionParams memory publicationActionParams
+    ) internal virtual returns (bytes memory) {
         vm.prank(vm.addr(pk));
         return hub.act(publicationActionParams);
     }
@@ -143,13 +142,6 @@ contract ActTest is ReferralSystemTest {
         testAct();
     }
 
-    function testCanAct_evenIfActionWasUnwhitelisted() public {
-        vm.prank(governance);
-        hub.whitelistActionModule(actionParams.actionModuleAddress, false);
-
-        testAct();
-    }
-
     function testCanAct_evenIfPublishingPaused() public {
         vm.prank(governance);
         hub.setState(Types.ProtocolState.PublishingPaused);
@@ -161,23 +153,21 @@ contract ActTest is ReferralSystemTest {
         address firstActionModule = makeAddr('FIRST_ACTION_MODULE');
         vm.assume(firstActionModule != secondActionModule);
 
-        Types.ActionModuleWhitelistData memory whitelistData = hub.getActionModuleWhitelistData(secondActionModule);
+        Types.ActionModuleRegisterData memory whitelistData = hub.getActionModuleRegisterData(secondActionModule);
         vm.assume(whitelistData.id == 0);
-        vm.assume(whitelistData.isWhitelisted == false);
+        vm.assume(whitelistData.isRegistered == false);
 
-        vm.prank(governance);
-        hub.whitelistActionModule(firstActionModule, true);
+        hub.registerActionModule(firstActionModule);
 
-        whitelistData = hub.getActionModuleWhitelistData(firstActionModule);
+        whitelistData = hub.getActionModuleRegisterData(firstActionModule);
         uint256 firstActionModuleId = whitelistData.id;
-        assertTrue(whitelistData.isWhitelisted);
+        assertTrue(whitelistData.isRegistered);
 
-        vm.prank(governance);
-        hub.whitelistActionModule(secondActionModule, true);
+        hub.registerActionModule(secondActionModule);
 
-        whitelistData = hub.getActionModuleWhitelistData(secondActionModule);
+        whitelistData = hub.getActionModuleRegisterData(secondActionModule);
         uint256 secondActionModuleId = whitelistData.id;
-        assertTrue(whitelistData.isWhitelisted);
+        assertTrue(whitelistData.isRegistered);
 
         assertEq(hub.getActionModuleById(firstActionModuleId), firstActionModule);
         assertEq(hub.getActionModuleById(secondActionModuleId), secondActionModule);
@@ -188,17 +178,15 @@ contract ActTest is ReferralSystemTest {
         vm.assume(enabledActionModulesBitmap != 0);
 
         address[] memory actionModules = new address[](9);
-        vm.startPrank(governance);
         for (uint256 i = 1; i < actionModules.length; i++) {
             if (hub.getActionModuleById(i) == address(0)) {
                 actionModules[i] = makeAddr(string.concat('ACTION_MODULE_', vm.toString(i)));
                 vm.etch(actionModules[i], address(mockActionModule).code);
-                hub.whitelistActionModule(actionModules[i], true);
+                hub.registerActionModule(actionModules[i]);
             } else {
                 actionModules[i] = hub.getActionModuleById(i);
             }
         }
-        vm.stopPrank();
 
         // Count enabledActionModules from a bitmap
         uint8 enabledActionModulesCount = 0;
@@ -251,11 +239,10 @@ contract ActMetaTxTest is ActTest, MetaTxNegatives {
         cachedNonceByAddress[actor.owner] = hub.nonces(actor.owner);
     }
 
-    function _act(uint256 pk, Types.PublicationActionParams memory publicationActionParams)
-        internal
-        override
-        returns (bytes memory)
-    {
+    function _act(
+        uint256 pk,
+        Types.PublicationActionParams memory publicationActionParams
+    ) internal override returns (bytes memory) {
         address signer = vm.addr(pk);
         return
             hub.actWithSig({
@@ -272,11 +259,7 @@ contract ActMetaTxTest is ActTest, MetaTxNegatives {
             });
     }
 
-    function _executeMetaTx(
-        uint256 signerPk,
-        uint256 nonce,
-        uint256 deadline
-    ) internal virtual override {
+    function _executeMetaTx(uint256 signerPk, uint256 nonce, uint256 deadline) internal virtual override {
         hub.actWithSig({
             publicationActionParams: actionParams,
             signature: _getSigStruct({

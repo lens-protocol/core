@@ -75,7 +75,7 @@ library ProfileLib {
         address followModule,
         bytes memory followModuleInitData
     ) private returns (bytes memory) {
-        ValidationLib.validateFollowModuleWhitelisted(followModule);
+        ValidationLib.validateFollowModuleRegistered(followModule);
         return IFollowModule(followModule).initializeFollowModule(profileId, transactionExecutor, followModuleInitData);
     }
 

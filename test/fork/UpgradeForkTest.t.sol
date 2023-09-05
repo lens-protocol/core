@@ -85,11 +85,10 @@ contract UpgradeForkTest is BaseTest {
         freeCollectModule = findModuleHelper(collectModules, 'FreeCollectModule').addy;
     }
 
-    function findModuleHelper(Module[] memory modules, string memory moduleNameToFind)
-        internal
-        pure
-        returns (Module memory)
-    {
+    function findModuleHelper(
+        Module[] memory modules,
+        string memory moduleNameToFind
+    ) internal pure returns (Module memory) {
         for (uint256 i = 0; i < modules.length; i++) {
             if (LibString.eq(modules[i].name, moduleNameToFind)) {
                 return modules[i];
@@ -383,13 +382,7 @@ contract UpgradeForkTest is BaseTest {
             governanceAddress: address(governanceContract),
             owner: governanceMultisig,
             lensHub: address(hub),
-            newImplementationAddress: address(hubImpl),
-            oldFollowModulesToUnwhitelist_: oldFollowModulesToUnwhitelist,
-            newFollowModulesToWhitelist_: _emptyAddressArray(), // TODO!
-            oldReferenceModulesToUnwhitelist_: oldReferenceModulesToUnwhitelist,
-            newReferenceModulesToWhitelist_: _emptyAddressArray(), // TODO!
-            oldCollectModulesToUnwhitelist_: oldCollectModulesToUnwhitelist,
-            newActionModulesToWhitelist_: _toAddressArray(freeCollectModule)
+            newImplementationAddress: address(hubImpl)
         });
         vm.label(address(lensV2UpgradeContract), 'LensV2UpgradeContract');
 
@@ -1154,5 +1147,5 @@ contract UpgradeForkTest is BaseTest {
     -- We don't verify Collects (how?)
     -- We don't verify Follows (how?)
     -- We have somebody follow somebody, but we don't migrate the follows yet
-    
+
 */

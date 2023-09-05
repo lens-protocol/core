@@ -39,24 +39,24 @@ library ValidationLib {
         }
     }
 
-    function validateAddressIsDelegatedExecutor(address expectedDelegatedExecutor, uint256 delegatorProfileId)
-        internal
-        view
-    {
+    function validateAddressIsDelegatedExecutor(
+        address expectedDelegatedExecutor,
+        uint256 delegatorProfileId
+    ) internal view {
         if (!ProfileLib.isExecutorApproved(delegatorProfileId, expectedDelegatedExecutor)) {
             revert Errors.ExecutorInvalid();
         }
     }
 
-    function validateReferenceModuleWhitelisted(address referenceModule) internal view {
-        if (!StorageLib.referenceModuleWhitelisted()[referenceModule]) {
-            revert Errors.NotWhitelisted();
+    function validateReferenceModuleRegistered(address referenceModule) internal view {
+        if (!StorageLib.referenceModuleRegistered()[referenceModule]) {
+            revert Errors.NotRegistered();
         }
     }
 
-    function validateFollowModuleWhitelisted(address followModule) internal view {
-        if (!StorageLib.followModuleWhitelisted()[followModule]) {
-            revert Errors.NotWhitelisted();
+    function validateFollowModuleRegistered(address followModule) internal view {
+        if (!StorageLib.followModuleRegistered()[followModule]) {
+            revert Errors.NotRegistered();
         }
     }
 

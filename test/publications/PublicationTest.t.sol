@@ -121,13 +121,13 @@ abstract contract ActionablePublicationTest is PublicationTest {
         _publish({signerPk: publisher.ownerPk, publisherProfileId: publisher.profileId});
     }
 
-    function testCannot_InitializeActionModule_IfNotWhitelisted(address nonwhitelistedModule) public {
-        vm.assume(hub.getActionModuleWhitelistData(nonwhitelistedModule).isWhitelisted == false);
+    function testCannot_InitializeActionModule_IfNotRegistered(address nonwhitelistedModule) public {
+        vm.assume(hub.getActionModuleRegisterData(nonwhitelistedModule).isRegistered == false);
         _setActionModules({
             actionModules: _toAddressArray(nonwhitelistedModule),
             actionModulesInitDatas: _toBytesArray('')
         });
-        vm.expectRevert(Errors.NotWhitelisted.selector);
+        vm.expectRevert(Errors.NotRegistered.selector);
         _publish({signerPk: publisher.ownerPk, publisherProfileId: publisher.profileId});
     }
 
