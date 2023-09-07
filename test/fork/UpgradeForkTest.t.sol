@@ -85,11 +85,10 @@ contract UpgradeForkTest is BaseTest {
         freeCollectModule = findModuleHelper(collectModules, 'FreeCollectModule').addy;
     }
 
-    function findModuleHelper(Module[] memory modules, string memory moduleNameToFind)
-        internal
-        pure
-        returns (Module memory)
-    {
+    function findModuleHelper(
+        Module[] memory modules,
+        string memory moduleNameToFind
+    ) internal pure returns (Module memory) {
         for (uint256 i = 0; i < modules.length; i++) {
             if (LibString.eq(modules[i].name, moduleNameToFind)) {
                 return modules[i];
@@ -763,8 +762,8 @@ contract UpgradeForkTest is BaseTest {
         // V2 profile collects from V1 profile
         // Profile3: Collect#2 on Profile2.Post#2
         vm.prank(profileThree.owner);
-        collect2 = hub.collect(
-            Types.CollectParams({
+        collect2 = hub.collectLegacy(
+            Types.LegacyCollectParams({
                 publicationCollectedProfileId: profileTwo.profileId,
                 publicationCollectedId: post2,
                 collectorProfileId: profileThree.profileId,

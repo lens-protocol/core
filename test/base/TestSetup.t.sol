@@ -80,11 +80,7 @@ interface IOldHub {
 
     function follow(uint256[] calldata profileIds, bytes[] calldata datas) external returns (uint256[] memory);
 
-    function collect(
-        uint256 profileId,
-        uint256 pubId,
-        bytes calldata data
-    ) external returns (uint256);
+    function collect(uint256 profileId, uint256 pubId, bytes calldata data) external returns (uint256);
 
     function post(OldPostData calldata vars) external returns (uint256);
 
@@ -114,7 +110,7 @@ contract TestSetup is Test, ContractAddressesLoaderDeployer, ArrayHelpers {
         console.log('Hub:', address(hub));
 
         address followNFTAddr = hub.getFollowNFTImpl();
-        address legacyCollectNFTAddr = hub.getCollectNFTImpl();
+        address legacyCollectNFTAddr = hub.getLegacyCollectNFTImpl();
 
         address hubImplAddr = address(uint160(uint256(vm.load(hubProxyAddr, PROXY_IMPLEMENTATION_STORAGE_SLOT))));
         console.log('Found hubImplAddr:', hubImplAddr);
@@ -452,10 +448,10 @@ contract TestSetup is Test, ContractAddressesLoaderDeployer, ArrayHelpers {
         return _loadAccountAs({accountLabel: accountLabel, requireCustomProfileOnFork: false});
     }
 
-    function _loadAccountAs(string memory accountLabel, bool requireCustomProfileOnFork)
-        internal
-        returns (TestAccount memory)
-    {
+    function _loadAccountAs(
+        string memory accountLabel,
+        bool requireCustomProfileOnFork
+    ) internal returns (TestAccount memory) {
         // We derive a new account from the given label.
         (address accountOwner, uint256 accountOwnerPk) = makeAddrAndKey(accountLabel);
         uint256 accountProfileId;

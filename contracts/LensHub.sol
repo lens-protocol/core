@@ -66,13 +66,13 @@ contract LensHub is
     constructor(
         address moduleGlobals,
         address followNFTImpl,
-        address collectNFTImpl, // We still pass the deprecated CollectNFTImpl for legacy Collects to work
+        address legacyCollectNFTImpl, // We still pass the deprecated CollectNFTImpl for legacy Collects to work
         uint256 tokenGuardianCooldown,
         Types.MigrationParams memory migrationParams
     )
         LensV2Migration(migrationParams)
         LensProfiles(moduleGlobals, tokenGuardianCooldown)
-        LensImplGetters(followNFTImpl, collectNFTImpl)
+        LensImplGetters(followNFTImpl, legacyCollectNFTImpl)
     {}
 
     /// @inheritdoc ILensProtocol
@@ -397,8 +397,8 @@ contract LensHub is
     }
 
     /// @inheritdoc ILensProtocol
-    function collect(
-        Types.CollectParams calldata collectParams
+    function collectLegacy(
+        Types.LegacyCollectParams calldata collectParams
     )
         external
         override
@@ -411,13 +411,13 @@ contract LensHub is
                 collectParams: collectParams,
                 transactionExecutor: msg.sender,
                 collectorProfileOwner: ownerOf(collectParams.collectorProfileId),
-                collectNFTImpl: this.getCollectNFTImpl()
+                collectNFTImpl: this.getLegacyCollectNFTImpl()
             });
     }
 
     /// @inheritdoc ILensProtocol
-    function collectWithSig(
-        Types.CollectParams calldata collectParams,
+    function collectLegacyWithSig(
+        Types.LegacyCollectParams calldata collectParams,
         Types.EIP712Signature calldata signature
     )
         external
@@ -432,7 +432,7 @@ contract LensHub is
                 collectParams: collectParams,
                 transactionExecutor: signature.signer,
                 collectorProfileOwner: ownerOf(collectParams.collectorProfileId),
-                collectNFTImpl: this.getCollectNFTImpl()
+                collectNFTImpl: this.getLegacyCollectNFTImpl()
             });
     }
 

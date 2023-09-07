@@ -26,7 +26,7 @@ contract DeployUpgradeScript is Script {
 
         LensHub hub = LensHub(hubProxyAddr);
         address followNFTAddress = hub.getFollowNFTImpl();
-        address collectNFTAddress = hub.getCollectNFTImpl();
+        address collectNFTAddress = hub.getLegacyCollectNFTImpl();
 
         uint256 deployerNonce = vm.getNonce(deployer);
 

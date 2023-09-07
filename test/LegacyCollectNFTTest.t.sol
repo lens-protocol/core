@@ -14,7 +14,7 @@ contract LegacyCollectNFTTest is BaseTest, LensBaseERC721Test {
         // Prevents being counted in Foundry Coverage
     }
 
-    Types.CollectParams defaultCollectParams;
+    Types.LegacyCollectParams defaultCollectParams;
     address mockDeprecatedCollectModule;
     LegacyCollectNFT collectNFT;
     address collectNFTImpl;
@@ -32,7 +32,7 @@ contract LegacyCollectNFTTest is BaseTest, LensBaseERC721Test {
 
         _toLegacyV1Pub(defaultAccount.profileId, defaultPubId, address(0), mockDeprecatedCollectModule);
 
-        defaultCollectParams = Types.CollectParams({
+        defaultCollectParams = Types.LegacyCollectParams({
             publicationCollectedProfileId: defaultAccount.profileId,
             publicationCollectedId: defaultPubId,
             collectorProfileId: defaultAccount.profileId,
@@ -42,7 +42,7 @@ contract LegacyCollectNFTTest is BaseTest, LensBaseERC721Test {
         });
 
         vm.prank(defaultAccount.owner);
-        firstCollectTokenId = hub.collect(defaultCollectParams);
+        firstCollectTokenId = hub.collectLegacy(defaultCollectParams);
 
         collectNFT = LegacyCollectNFT(
             hub.getPublication(defaultAccount.profileId, defaultPubId).__DEPRECATED__collectNFT
@@ -53,7 +53,7 @@ contract LegacyCollectNFTTest is BaseTest, LensBaseERC721Test {
         vm.assume(!_isLensHubProxyAdmin(to));
         defaultCollectParams.collectorProfileId = _createProfile(to);
         vm.prank(to);
-        uint256 tokenId = hub.collect(defaultCollectParams);
+        uint256 tokenId = hub.collectLegacy(defaultCollectParams);
         return tokenId;
     }
 

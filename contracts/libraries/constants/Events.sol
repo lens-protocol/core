@@ -256,7 +256,6 @@ library Events {
      * @param timestamp The current block timestamp.
      */
     event FollowNFTDeployed(uint256 indexed profileId, address indexed followNFT, uint256 timestamp);
-
     /**
      * @dev Emitted when a collectNFT clone is deployed using a lazy deployment pattern.
      *
@@ -265,41 +264,12 @@ library Events {
      * @param collectNFT The address of the newly deployed collectNFT clone.
      * @param timestamp The current block timestamp.
      */
-    event CollectNFTDeployed(
+    event LegacyCollectNFTDeployed(
         uint256 indexed profileId,
         uint256 indexed pubId,
         address indexed collectNFT,
         uint256 timestamp
     );
-
-    /**
-     * @dev Emitted upon a successful collect action.
-     *
-     * @param collectedProfileId The token ID of the profile that published the collected publication.
-     * @param collectedPubId The ID of the collected publication.
-     * @param collectorProfileId The token ID of the profile that collected the publication.
-     * @param nftRecipient The address that received the collect NFT.
-     * @param collectActionData The custom data passed to the collect module, if any.
-     * @param collectActionResult The data returned from the collect module's collect action. This is ABI-encoded
-     * and depends on the collect module chosen.
-     * @param collectNFT The address of the NFT collection where the minted collect NFT belongs to.
-     * @param tokenId The token ID of the collect NFT that was minted as a collect of the publication.
-     * @param transactionExecutor The address of the account that executed this operation.
-     * @param timestamp The current block timestamp.
-     */
-    event Collected(
-        uint256 indexed collectedProfileId,
-        uint256 indexed collectedPubId,
-        uint256 indexed collectorProfileId,
-        address nftRecipient,
-        bytes collectActionData,
-        bytes collectActionResult,
-        address collectNFT,
-        uint256 tokenId,
-        address transactionExecutor,
-        uint256 timestamp
-    );
-
     /**
      * @dev Emitted upon a successful action.
      *

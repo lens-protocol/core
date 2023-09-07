@@ -281,13 +281,13 @@ library MetaTxLib {
 
     function validateLegacyCollectSignature(
         Types.EIP712Signature calldata signature,
-        Types.CollectParams calldata collectParams
+        Types.LegacyCollectParams calldata collectParams
     ) external {
         _validateRecoveredAddress(
             _calculateDigest(
                 keccak256(
                     abi.encode(
-                        Typehash.LEGACY_COLLECT,
+                        Typehash.COLLECT_LEGACY,
                         collectParams.publicationCollectedProfileId,
                         collectParams.publicationCollectedId,
                         collectParams.collectorProfileId,

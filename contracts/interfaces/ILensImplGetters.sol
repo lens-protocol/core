@@ -23,5 +23,5 @@ interface ILensImplGetters {
      *
      * @return address The Collect NFT implementation address.
      */
-    function getCollectNFTImpl() external view returns (address);
+    function getLegacyCollectNFTImpl() external view returns (address);
 }
