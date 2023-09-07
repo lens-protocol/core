@@ -63,7 +63,7 @@ contract FeeFollowModule is FeeModuleBase, HubRestricted, IFollowModule {
             }
         }
         _feeConfig[profileId] = feeConfig;
-        return data;
+        return '';
     }
 
     /**
@@ -99,7 +99,7 @@ contract FeeFollowModule is FeeModuleBase, HubRestricted, IFollowModule {
                 revert Errors.InvalidParams();
             }
         }
-        return data;
+        return '';
     }
 
     /**
