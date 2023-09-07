@@ -73,8 +73,9 @@ library ValidationLib {
 
     function validateNotBlocked(uint256 profile, uint256 byProfile, bool unidirectionalCheck) internal view {
         if (
-            StorageLib.blockedStatus(byProfile)[profile] ||
-            (!unidirectionalCheck && StorageLib.blockedStatus(profile)[byProfile])
+            profile != byProfile &&
+            (StorageLib.blockedStatus(byProfile)[profile] ||
+                (!unidirectionalCheck && StorageLib.blockedStatus(profile)[byProfile]))
         ) {
             revert Errors.Blocked();
         }
