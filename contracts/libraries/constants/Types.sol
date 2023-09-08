@@ -273,12 +273,14 @@ library Types {
      * @notice A struct containing the parameters required for the `mirror()` function.
      *
      * @param profileId The token ID of the profile to publish to.
+     * @param metadataURI the URI containing metadata attributes to attach to this mirror publication.
      * @param pointedProfileId The profile token ID to point the mirror to.
      * @param pointedPubId The publication ID to point the mirror to.
      * @param referenceModuleData The data passed to the reference module.
      */
     struct MirrorParams {
         uint256 profileId;
+        string metadataURI;
         uint256 pointedProfileId;
         uint256 pointedPubId;
         uint256[] referrerProfileIds;

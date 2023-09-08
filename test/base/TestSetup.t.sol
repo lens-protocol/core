@@ -575,6 +575,7 @@ contract TestSetup is Test, ContractAddressesLoaderDeployer, ArrayHelpers {
         return
             Types.MirrorParams({
                 profileId: defaultAccount.profileId,
+                metadataURI: '',
                 pointedProfileId: defaultPub.profileId,
                 pointedPubId: defaultPub.pubId,
                 referrerProfileIds: _emptyUint256Array(),

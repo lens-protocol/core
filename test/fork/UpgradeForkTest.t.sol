@@ -521,6 +521,7 @@ contract UpgradeForkTest is BaseTest {
         mirror5 = hub.mirror(
             Types.MirrorParams({
                 profileId: profileThree.profileId,
+                metadataURI: '',
                 pointedProfileId: profileThree.profileId,
                 pointedPubId: post3,
                 referrerProfileIds: _emptyUint256Array(),
@@ -583,6 +584,7 @@ contract UpgradeForkTest is BaseTest {
         mirror6 = hub.mirror(
             Types.MirrorParams({
                 profileId: profileFour.profileId,
+                metadataURI: '',
                 pointedProfileId: profileFour.profileId,
                 pointedPubId: post4,
                 referrerProfileIds: _emptyUint256Array(),
@@ -633,6 +635,7 @@ contract UpgradeForkTest is BaseTest {
         mirror7 = hub.mirror(
             Types.MirrorParams({
                 profileId: profileThree.profileId,
+                metadataURI: '',
                 pointedProfileId: profileFour.profileId,
                 pointedPubId: quote2,
                 referrerProfileIds: _emptyUint256Array(),
@@ -679,6 +682,7 @@ contract UpgradeForkTest is BaseTest {
         mirror8 = hub.mirror(
             Types.MirrorParams({
                 profileId: profileThree.profileId,
+                metadataURI: '',
                 pointedProfileId: profileOne.profileId,
                 pointedPubId: post1,
                 referrerProfileIds: _emptyUint256Array(),
