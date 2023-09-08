@@ -19,6 +19,24 @@ contract CollectPublicationActionTest is BaseTest {
 
     event CollectModuleRegistered(address collectModule, uint256 timestamp);
     event Transfer(address indexed from, address indexed to, uint256 indexed tokenId);
+    event CollectNFTDeployed(
+        uint256 indexed profileId,
+        uint256 indexed pubId,
+        address indexed collectNFT,
+        uint256 timestamp
+    );
+    event Collected(
+        uint256 indexed collectedProfileId,
+        uint256 indexed collectedPubId,
+        uint256 indexed collectorProfileId,
+        address nftRecipient,
+        bytes collectActionData,
+        bytes collectActionResult,
+        address collectNFT,
+        uint256 tokenId,
+        address transactionExecutor,
+        uint256 timestamp
+    );
 
     function setUp() public override {
         super.setUp();
@@ -223,13 +241,13 @@ contract CollectPublicationActionTest is BaseTest {
         address collectNFT = computeCreateAddress(address(collectPublicationAction), contractNonce);
 
         vm.expectEmit(true, true, true, true, address(collectPublicationAction));
-        emit Events.CollectNFTDeployed(profileId, pubId, collectNFT, block.timestamp);
+        emit CollectNFTDeployed(profileId, pubId, collectNFT, block.timestamp);
 
         vm.expectEmit(true, true, true, true, address(collectNFT));
         emit Transfer({from: address(0), to: collectNftRecipient, tokenId: 1});
 
         vm.expectEmit(true, true, true, true, address(collectPublicationAction));
-        emit Events.Collected({
+        emit Collected({
             collectedProfileId: processActionParams.publicationActedProfileId,
             collectedPubId: processActionParams.publicationActedId,
             collectorProfileId: processActionParams.actorProfileId,
@@ -310,7 +328,7 @@ contract CollectPublicationActionTest is BaseTest {
         emit Transfer({from: address(0), to: collectNftRecipient, tokenId: 2});
 
         vm.expectEmit(true, true, true, true, address(collectPublicationAction));
-        emit Events.Collected({
+        emit Collected({
             collectedProfileId: processActionParams.publicationActedProfileId,
             collectedPubId: processActionParams.publicationActedId,
             collectorProfileId: processActionParams.actorProfileId,

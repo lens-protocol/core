@@ -298,7 +298,7 @@ library Types {
      * @param referrerPubId The ID of the mirror that helped discovering the collected pub.
      * @param collectModuleData The arbitrary data to pass to the collectModule if needed.
      */
-    struct CollectParams {
+    struct LegacyCollectParams {
         uint256 publicationCollectedProfileId;
         uint256 publicationCollectedId;
         uint256 collectorProfileId;

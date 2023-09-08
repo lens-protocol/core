@@ -30,7 +30,11 @@ library FollowLib {
         while (i < idsOfProfilesToFollow.length) {
             ValidationLib.validateProfileExists({profileId: idsOfProfilesToFollow[i]});
 
-            ValidationLib.validateNotBlocked({profile: followerProfileId, byProfile: idsOfProfilesToFollow[i]});
+            ValidationLib.validateNotBlocked({
+                profile: followerProfileId,
+                byProfile: idsOfProfilesToFollow[i],
+                unidirectionalCheck: true // We allow to follow a blocked profile. Rest of interactions are restricted.
+            });
 
             if (followerProfileId == idsOfProfilesToFollow[i]) {
                 revert Errors.SelfFollow();

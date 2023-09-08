@@ -110,7 +110,7 @@ contract TestSetup is Test, ContractAddressesLoaderDeployer, ArrayHelpers {
         console.log('Hub:', address(hub));
 
         address followNFTAddr = hub.getFollowNFTImpl();
-        address legacyCollectNFTAddr = hub.getCollectNFTImpl();
+        address legacyCollectNFTAddr = hub.getLegacyCollectNFTImpl();
 
         address hubImplAddr = address(uint160(uint256(vm.load(hubProxyAddr, PROXY_IMPLEMENTATION_STORAGE_SLOT))));
         console.log('Found hubImplAddr:', hubImplAddr);

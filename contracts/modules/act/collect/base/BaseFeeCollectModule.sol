@@ -98,7 +98,9 @@ abstract contract BaseFeeCollectModule is FeeModuleBase, ActionRestricted, IBase
             (baseInitData.amount != 0 && !_currencyWhitelisted(baseInitData.currency)) ||
             baseInitData.referralFee > BPS_MAX ||
             (baseInitData.endTimestamp != 0 && baseInitData.endTimestamp < block.timestamp)
-        ) revert Errors.InitParamsInvalid();
+        ) {
+            revert Errors.InitParamsInvalid();
+        }
     }
 
     /**

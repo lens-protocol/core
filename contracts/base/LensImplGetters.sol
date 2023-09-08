@@ -19,7 +19,7 @@ contract LensImplGetters is ILensImplGetters {
     }
 
     /// @inheritdoc ILensImplGetters
-    function getCollectNFTImpl() external view override returns (address) {
+    function getLegacyCollectNFTImpl() external view override returns (address) {
         return __LEGACY__COLLECT_NFT_IMPL; // LEGACY support: Used only for compatibility with V1 collectible posts.
     }
 }

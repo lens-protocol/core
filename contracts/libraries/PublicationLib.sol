@@ -27,19 +27,23 @@ library PublicationLib {
         _post.pubType = Types.PublicationType.Post;
 
         bytes[] memory actionModulesReturnDatas = _initPubActionModules(
-            postParams.profileId,
-            transactionExecutor,
-            pubIdAssigned,
-            postParams.actionModules,
-            postParams.actionModulesInitDatas
+            InitActionModuleParams(
+                postParams.profileId,
+                transactionExecutor,
+                pubIdAssigned,
+                postParams.actionModules,
+                postParams.actionModulesInitDatas
+            )
         );
 
         bytes memory referenceModuleReturnData = _initPubReferenceModule(
-            postParams.profileId,
-            transactionExecutor,
-            pubIdAssigned,
-            postParams.referenceModule,
-            postParams.referenceModuleInitData
+            InitReferenceModuleParams(
+                postParams.profileId,
+                transactionExecutor,
+                pubIdAssigned,
+                postParams.referenceModule,
+                postParams.referenceModuleInitData
+            )
         );
 
         emit Events.PostCreated(
@@ -245,22 +249,34 @@ library PublicationLib {
             referencePubParams.pointedPubId
         );
 
-        uint256 pubIdAssigned = _fillReferencePublicationStorage(referencePubParams, referencePubType);
+        (uint256 pubIdAssigned, uint256 rootProfileId) = _fillReferencePublicationStorage(
+            referencePubParams,
+            referencePubType
+        );
+
+        if (rootProfileId != referencePubParams.pointedProfileId) {
+            // We check the block state between the profile commenting/quoting and the root publication's author.
+            ValidationLib.validateNotBlocked({profile: referencePubParams.profileId, byProfile: rootProfileId});
+        }
 
         bytes[] memory actionModulesReturnDatas = _initPubActionModules(
-            referencePubParams.profileId,
-            transactionExecutor,
-            pubIdAssigned,
-            referencePubParams.actionModules,
-            referencePubParams.actionModulesInitDatas
+            InitActionModuleParams(
+                referencePubParams.profileId,
+                transactionExecutor,
+                pubIdAssigned,
+                referencePubParams.actionModules,
+                referencePubParams.actionModulesInitDatas
+            )
         );
 
         bytes memory referenceModuleReturnData = _initPubReferenceModule(
-            referencePubParams.profileId,
-            transactionExecutor,
-            pubIdAssigned,
-            referencePubParams.referenceModule,
-            referencePubParams.referenceModuleInitData
+            InitReferenceModuleParams(
+                referencePubParams.profileId,
+                transactionExecutor,
+                pubIdAssigned,
+                referencePubParams.referenceModule,
+                referencePubParams.referenceModuleInitData
+            )
         );
 
         return (pubIdAssigned, actionModulesReturnDatas, referenceModuleReturnData, referrerPubTypes);
@@ -269,7 +285,7 @@ library PublicationLib {
     function _fillReferencePublicationStorage(
         Types.ReferencePubParams calldata referencePubParams,
         Types.PublicationType referencePubType
-    ) private returns (uint256) {
+    ) private returns (uint256, uint256) {
         uint256 pubIdAssigned = ++StorageLib.getProfile(referencePubParams.profileId).pubCount;
         Types.Publication storage _referencePub;
         _referencePub = StorageLib.getPublication(referencePubParams.profileId, pubIdAssigned);
@@ -277,34 +293,35 @@ library PublicationLib {
         _referencePub.pointedPubId = referencePubParams.pointedPubId;
         _referencePub.contentURI = referencePubParams.contentURI;
         _referencePub.pubType = referencePubType;
-        _fillRootOfPublicationInStorage(
+        uint256 rootProfileId = _fillRootOfPublicationInStorage(
             _referencePub,
             referencePubParams.pointedProfileId,
             referencePubParams.pointedPubId
         );
-        return pubIdAssigned;
+        return (pubIdAssigned, rootProfileId);
     }
 
     function _fillRootOfPublicationInStorage(
         Types.Publication storage _publication,
         uint256 pointedProfileId,
         uint256 pointedPubId
-    ) internal {
+    ) internal returns (uint256) {
         Types.Publication storage _pubPointed = StorageLib.getPublication(pointedProfileId, pointedPubId);
         Types.PublicationType pubPointedType = _pubPointed.pubType;
         if (pubPointedType == Types.PublicationType.Post) {
             // The publication pointed is a Lens V2 post.
-            _publication.rootProfileId = pointedProfileId;
             _publication.rootPubId = pointedPubId;
+            return _publication.rootProfileId = pointedProfileId;
         } else if (pubPointedType == Types.PublicationType.Comment || pubPointedType == Types.PublicationType.Quote) {
             // The publication pointed is either a Lens V2 comment or a Lens V2 quote.
             // Note that even when the publication pointed is a V2 one, it will lack `rootProfileId` and `rootPubId` if
             // there is a Lens V1 Legacy publication in the thread of interactions (including the root post itself).
-            _publication.rootProfileId = _pubPointed.rootProfileId;
             _publication.rootPubId = _pubPointed.rootPubId;
+            return _publication.rootProfileId = _pubPointed.rootPubId;
         }
         // Otherwise the root is not filled, as the pointed publication is a Lens V1 Legacy publication, which does not
         // support Lens V2 referral system.
+        return 0;
     }
 
     function _processCommentIfNeeded(
@@ -466,24 +483,27 @@ library PublicationLib {
         return '';
     }
 
-    function _initPubActionModules(
-        uint256 profileId,
-        address transactionExecutor,
-        uint256 pubId,
-        address[] calldata actionModules,
-        bytes[] calldata actionModulesInitDatas
-    ) private returns (bytes[] memory) {
-        if (actionModules.length != actionModulesInitDatas.length) {
+    // Needed to avoid 'stack too deep' issue.
+    struct InitActionModuleParams {
+        uint256 profileId;
+        address transactionExecutor;
+        uint256 pubId;
+        address[] actionModules;
+        bytes[] actionModulesInitDatas;
+    }
+
+    function _initPubActionModules(InitActionModuleParams memory params) private returns (bytes[] memory) {
+        if (params.actionModules.length != params.actionModulesInitDatas.length) {
             revert Errors.ArrayMismatch();
         }
 
-        bytes[] memory actionModuleInitResults = new bytes[](actionModules.length);
+        bytes[] memory actionModuleInitResults = new bytes[](params.actionModules.length);
         uint256 enabledActionModulesBitmap;
 
         uint256 i;
-        while (i < actionModules.length) {
-            Types.ActionModuleRegisterData memory actionModuleRegisterData = StorageLib.actionModuleRegisterData()[
-                actionModules[i]
+        while (i < params.actionModules.length) {
+            Types.ActionModuleWhitelistData memory actionModuleWhitelistData = StorageLib.actionModuleRegisterData()[
+                params.actionModules[i]
             ];
 
             if (!actionModuleRegisterData.isRegistered) {
@@ -498,11 +518,11 @@ library PublicationLib {
 
             enabledActionModulesBitmap |= actionModuleIdBitmapMask;
 
-            actionModuleInitResults[i] = IPublicationActionModule(actionModules[i]).initializePublicationAction(
-                profileId,
-                pubId,
-                transactionExecutor,
-                actionModulesInitDatas[i]
+            actionModuleInitResults[i] = IPublicationActionModule(params.actionModules[i]).initializePublicationAction(
+                params.profileId,
+                params.pubId,
+                params.transactionExecutor,
+                params.actionModulesInitDatas[i]
             );
 
             unchecked {
@@ -510,29 +530,34 @@ library PublicationLib {
             }
         }
 
-        StorageLib.getPublication(profileId, pubId).enabledActionModulesBitmap = enabledActionModulesBitmap;
+        StorageLib
+            .getPublication(params.profileId, params.pubId)
+            .enabledActionModulesBitmap = enabledActionModulesBitmap;
 
         return actionModuleInitResults;
     }
 
-    function _initPubReferenceModule(
-        uint256 profileId,
-        address transactionExecutor,
-        uint256 pubId,
-        address referenceModule,
-        bytes memory referenceModuleInitData
-    ) private returns (bytes memory) {
-        if (referenceModule == address(0)) {
+    // Needed to avoid 'stack too deep' issue.
+    struct InitReferenceModuleParams {
+        uint256 profileId;
+        address transactionExecutor;
+        uint256 pubId;
+        address referenceModule;
+        bytes referenceModuleInitData;
+    }
+
+    function _initPubReferenceModule(InitReferenceModuleParams memory params) private returns (bytes memory) {
+        if (params.referenceModule == address(0)) {
             return new bytes(0);
         }
-        ValidationLib.validateReferenceModuleRegistered(referenceModule);
-        StorageLib.getPublication(profileId, pubId).referenceModule = referenceModule;
+        ValidationLib.validateReferenceModuleRegistered(params.referenceModule);
+        StorageLib.getPublication(params.profileId, params.pubId).referenceModule = params.referenceModule;
         return
-            IReferenceModule(referenceModule).initializeReferenceModule(
-                profileId,
-                pubId,
-                transactionExecutor,
-                referenceModuleInitData
+            IReferenceModule(params.referenceModule).initializeReferenceModule(
+                params.profileId,
+                params.pubId,
+                params.transactionExecutor,
+                params.referenceModuleInitData
             );
     }
 }

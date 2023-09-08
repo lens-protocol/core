@@ -12,22 +12,12 @@ import {ReferralSystemTest} from 'test/ReferralSystem.t.sol';
 contract LegacyCollectTest is BaseTest, ReferralSystemTest {
     using Strings for uint256;
     uint256 pubId;
-    Types.CollectParams defaultCollectParams;
+    Types.LegacyCollectParams defaultCollectParams;
     TestAccount blockedProfile;
 
     bool skipTest;
 
     event Transfer(address indexed from, address indexed to, uint256 indexed tokenId);
-
-    event CollectedLegacy(
-        uint256 indexed publicationCollectedProfileId,
-        uint256 indexed publicationCollectedId,
-        address transactionExecutor,
-        uint256 referrerProfileId,
-        uint256 referrerPubId,
-        bytes collectModuleData,
-        uint256 timestamp
-    );
 
     function setUp() public virtual override(BaseTest, ReferralSystemTest) {
         ReferralSystemTest.setUp();
@@ -40,7 +30,7 @@ contract LegacyCollectTest is BaseTest, ReferralSystemTest {
 
         _toLegacyV1Pub(defaultAccount.profileId, pubId, address(0), address(mockDeprecatedCollectModule));
 
-        defaultCollectParams = Types.CollectParams({
+        defaultCollectParams = Types.LegacyCollectParams({
             publicationCollectedProfileId: defaultAccount.profileId,
             publicationCollectedId: pubId,
             collectorProfileId: defaultAccount.profileId,
@@ -226,7 +216,7 @@ contract LegacyCollectTest is BaseTest, ReferralSystemTest {
         address predictedCollectNFT = computeCreateAddress(address(hub), vm.getNonce(address(hub)));
 
         vm.expectEmit(true, true, true, true, address(hub));
-        emit Events.CollectNFTDeployed(defaultAccount.profileId, pubId, predictedCollectNFT, block.timestamp);
+        emit Events.LegacyCollectNFTDeployed(defaultAccount.profileId, pubId, predictedCollectNFT, block.timestamp);
 
         vm.expectCall(
             predictedCollectNFT,
@@ -262,7 +252,7 @@ contract LegacyCollectTest is BaseTest, ReferralSystemTest {
         emit Transfer(address(0), hub.ownerOf(defaultCollectParams.collectorProfileId), 1);
 
         vm.expectEmit(true, true, true, true, address(hub));
-        emit CollectedLegacy({
+        emit LegacyCollectLib.CollectedLegacy({
             publicationCollectedProfileId: defaultCollectParams.publicationCollectedProfileId,
             publicationCollectedId: defaultCollectParams.publicationCollectedId,
             transactionExecutor: defaultAccount.owner,
@@ -300,7 +290,7 @@ contract LegacyCollectTest is BaseTest, ReferralSystemTest {
         emit Transfer(address(0), hub.ownerOf(defaultCollectParams.collectorProfileId), collectTokenId + 1);
 
         vm.expectEmit(true, true, true, true, address(hub));
-        emit CollectedLegacy({
+        emit LegacyCollectLib.CollectedLegacy({
             publicationCollectedProfileId: defaultCollectParams.publicationCollectedProfileId,
             publicationCollectedId: defaultCollectParams.publicationCollectedId,
             transactionExecutor: defaultAccount.owner,
@@ -314,9 +304,9 @@ contract LegacyCollectTest is BaseTest, ReferralSystemTest {
         assertEq(secondCollectTokenId, collectTokenId + 1);
     }
 
-    function _collect(uint256 pk, Types.CollectParams memory collectParams) internal virtual returns (uint256) {
+    function _collect(uint256 pk, Types.LegacyCollectParams memory collectParams) internal virtual returns (uint256) {
         vm.prank(vm.addr(pk));
-        return hub.collect(collectParams);
+        return hub.collectLegacy(collectParams);
     }
 
     function _referralSystem_PrepareOperation(
@@ -340,7 +330,7 @@ contract LegacyCollectTest is BaseTest, ReferralSystemTest {
 
     function _referralSystem_ExpectRevertsIfNeeded(
         TestPublication memory target,
-        uint256[] memory, /* referrerProfileIds */
+        uint256[] memory /* referrerProfileIds */,
         uint256[] memory /* referrerPubIds */
     ) internal virtual override returns (bool) {
         if (skipTest) {
@@ -425,16 +415,14 @@ contract LegacyCollectMetaTxTest is LegacyCollectTest, MetaTxNegatives {
         _refreshCachedNonces();
     }
 
-    function _collect(uint256 pk, Types.CollectParams memory collectParams)
-        internal
-        virtual
-        override
-        returns (uint256)
-    {
+    function _collect(
+        uint256 pk,
+        Types.LegacyCollectParams memory collectParams
+    ) internal virtual override returns (uint256) {
         address signer = vm.addr(pk);
 
         return
-            hub.collectWithSig(
+            hub.collectLegacyWithSig(
                 collectParams,
                 _getSigStruct({
                     pKey: pk,
@@ -448,12 +436,8 @@ contract LegacyCollectMetaTxTest is LegacyCollectTest, MetaTxNegatives {
             );
     }
 
-    function _executeMetaTx(
-        uint256 signerPk,
-        uint256 nonce,
-        uint256 deadline
-    ) internal virtual override {
-        hub.collectWithSig(
+    function _executeMetaTx(uint256 signerPk, uint256 nonce, uint256 deadline) internal virtual override {
+        hub.collectLegacyWithSig(
             defaultCollectParams,
             _getSigStruct({
                 signer: vm.addr(_getDefaultMetaTxSignerPk()),
@@ -473,7 +457,7 @@ contract LegacyCollectMetaTxTest is LegacyCollectTest, MetaTxNegatives {
     }
 
     function _calculateCollectWithSigDigest(
-        Types.CollectParams memory collectParams,
+        Types.LegacyCollectParams memory collectParams,
         uint256 nonce,
         uint256 deadline
     ) internal view returns (bytes32) {
@@ -481,7 +465,7 @@ contract LegacyCollectMetaTxTest is LegacyCollectTest, MetaTxNegatives {
             _calculateDigest(
                 keccak256(
                     abi.encode(
-                        Typehash.LEGACY_COLLECT,
+                        Typehash.COLLECT_LEGACY,
                         collectParams.publicationCollectedProfileId,
                         collectParams.publicationCollectedId,
                         collectParams.collectorProfileId,

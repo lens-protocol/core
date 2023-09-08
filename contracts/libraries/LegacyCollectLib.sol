@@ -43,7 +43,7 @@ library LegacyCollectLib {
     );
 
     function collect(
-        Types.CollectParams calldata collectParams,
+        Types.LegacyCollectParams calldata collectParams,
         address transactionExecutor,
         address collectorProfileOwner,
         address collectNFTImpl
@@ -139,7 +139,7 @@ library LegacyCollectLib {
         address collectNFT = Clones.clone(collectNFTImpl);
 
         ICollectNFT(collectNFT).initialize(profileId, pubId);
-        emit Events.CollectNFTDeployed(profileId, pubId, collectNFT, block.timestamp);
+        emit Events.LegacyCollectNFTDeployed(profileId, pubId, collectNFT, block.timestamp);
 
         return collectNFT;
     }

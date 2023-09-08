@@ -40,7 +40,7 @@ library ProfileLib {
             profileId,
             createProfileParams.followModule,
             createProfileParams.followModuleInitData,
-            msg.sender
+            msg.sender // Sender accounts for any initialization requirements (e.g. pay fees, stake asset, etc.).
         );
     }
 
@@ -259,7 +259,12 @@ library ProfileLib {
         StorageLib.getProfile(profileId).followModule = followModule;
         bytes memory followModuleReturnData;
         if (followModule != address(0)) {
-            followModuleReturnData = _initFollowModule(profileId, msg.sender, followModule, followModuleInitData);
+            followModuleReturnData = _initFollowModule(
+                profileId,
+                transactionExecutor,
+                followModule,
+                followModuleInitData
+            );
         }
         emit Events.FollowModuleSet(
             profileId,

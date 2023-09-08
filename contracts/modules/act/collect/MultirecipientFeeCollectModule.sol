@@ -88,7 +88,7 @@ contract MultirecipientFeeCollectModule is BaseFeeCollectModule {
     function initializePublicationCollectModule(
         uint256 profileId,
         uint256 pubId,
-        address, /* transactionExecutor */
+        address /* transactionExecutor */,
         bytes calldata data
     ) external override onlyActionModule returns (bytes memory) {
         MultirecipientFeeCollectModuleInitData memory initData = abi.decode(
@@ -108,7 +108,9 @@ contract MultirecipientFeeCollectModule is BaseFeeCollectModule {
 
         // Zero amount for collect doesn't make sense here (in a module with 5 recipients)
         // Better use SimpleFeeCollect module instead which allows 0 amount
-        if (baseInitData.amount == 0) revert Errors.InitParamsInvalid();
+        if (baseInitData.amount == 0) {
+            revert Errors.InitParamsInvalid();
+        }
         _validateBaseInitData(baseInitData);
         _validateAndStoreRecipients(initData.recipients, profileId, pubId);
         _storeBasePublicationCollectParameters(profileId, pubId, baseInitData);
@@ -122,19 +124,19 @@ contract MultirecipientFeeCollectModule is BaseFeeCollectModule {
      * @param profileId The profile ID who is publishing the publication.
      * @param pubId The associated publication's LensHub publication ID.
      */
-    function _validateAndStoreRecipients(
-        RecipientData[] memory recipients,
-        uint256 profileId,
-        uint256 pubId
-    ) internal {
+    function _validateAndStoreRecipients(RecipientData[] memory recipients, uint256 profileId, uint256 pubId) internal {
         uint256 len = recipients.length;
 
         // Check number of recipients is supported
-        if (len == 0) revert Errors.InitParamsInvalid();
+        if (len == 0) {
+            revert Errors.InitParamsInvalid();
+        }
 
         // Skip loop check if only 1 recipient in the array
         if (len == 1) {
-            if (recipients[0].split != BPS_MAX) revert InvalidRecipientSplits();
+            if (recipients[0].split != BPS_MAX) {
+                revert InvalidRecipientSplits();
+            }
 
             // If single recipient passes check above, store and return
             _recipientsByPublicationByProfile[profileId][pubId].push(recipients[0]);
@@ -153,7 +155,9 @@ contract MultirecipientFeeCollectModule is BaseFeeCollectModule {
                 }
             }
 
-            if (totalSplits != BPS_MAX) revert InvalidRecipientSplits();
+            if (totalSplits != BPS_MAX) {
+                revert InvalidRecipientSplits();
+            }
         }
     }
 
@@ -205,14 +209,12 @@ contract MultirecipientFeeCollectModule is BaseFeeCollectModule {
      *
      * @return The BaseProfilePublicationData struct mapped to that publication.
      */
-    function getPublicationData(uint256 profileId, uint256 pubId)
-        external
-        view
-        returns (MultirecipientFeeCollectProfilePublicationData memory)
-    {
+    function getPublicationData(
+        uint256 profileId,
+        uint256 pubId
+    ) external view returns (MultirecipientFeeCollectProfilePublicationData memory) {
         BaseProfilePublicationData memory baseData = getBasePublicationData(profileId, pubId);
         RecipientData[] memory recipients = _recipientsByPublicationByProfile[profileId][pubId];
-
         return
             MultirecipientFeeCollectProfilePublicationData({
                 amount: baseData.amount,

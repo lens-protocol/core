@@ -756,8 +756,8 @@ contract UpgradeForkTest is BaseTest {
         // V2 profile collects from V1 profile
         // Profile3: Collect#2 on Profile2.Post#2
         vm.prank(profileThree.owner);
-        collect2 = hub.collect(
-            Types.CollectParams({
+        collect2 = hub.collectLegacy(
+            Types.LegacyCollectParams({
                 publicationCollectedProfileId: profileTwo.profileId,
                 publicationCollectedId: post2,
                 collectorProfileId: profileThree.profileId,

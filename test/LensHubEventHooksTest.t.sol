@@ -34,7 +34,7 @@ contract LensHubEventHooksTest is BaseTest {
 
         _toLegacyV1Pub(defaultAccount.profileId, defaultPubId, address(0), address(mockDeprecatedCollectModule));
 
-        Types.CollectParams memory defaultCollectParams = Types.CollectParams({
+        Types.LegacyCollectParams memory defaultCollectParams = Types.LegacyCollectParams({
             publicationCollectedProfileId: defaultAccount.profileId,
             publicationCollectedId: defaultPubId,
             collectorProfileId: defaultAccount.profileId,
@@ -44,7 +44,7 @@ contract LensHubEventHooksTest is BaseTest {
         });
 
         vm.prank(defaultAccount.owner);
-        hub.collect(defaultCollectParams);
+        hub.collectLegacy(defaultCollectParams);
     }
 
     function testCannot_EmitUnfollowedEvent_ifNotFollowNFTOfFollowedProfile(
@@ -73,11 +73,7 @@ contract LensHubEventHooksTest is BaseTest {
         hub.emitUnfollowedEvent(follower.profileId, defaultAccount.profileId, transactionExecutor);
     }
 
-    function testEmitCollectNFTTransferEvent_ForRealThisTime(
-        uint256 collectNFTId,
-        address from,
-        address to
-    ) public {
+    function testEmitCollectNFTTransferEvent_ForRealThisTime(uint256 collectNFTId, address from, address to) public {
         address collectNFT = hub.getPublication(defaultAccount.profileId, defaultPubId).__DEPRECATED__collectNFT;
 
         vm.expectEmit(true, true, true, true, address(hub));

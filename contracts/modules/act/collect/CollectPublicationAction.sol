@@ -6,7 +6,6 @@ import {IPublicationActionModule} from 'contracts/interfaces/IPublicationActionM
 import {ICollectModule} from 'contracts/interfaces/ICollectModule.sol';
 import {ICollectNFT} from 'contracts/interfaces/ICollectNFT.sol';
 import {Types} from 'contracts/libraries/constants/Types.sol';
-import {Events} from 'contracts/libraries/constants/Events.sol';
 import {Clones} from '@openzeppelin/contracts/proxy/Clones.sol';
 import {Errors} from 'contracts/libraries/constants/Errors.sol';
 import {HubRestricted} from 'contracts/base/HubRestricted.sol';
@@ -19,6 +18,49 @@ contract CollectPublicationAction is HubRestricted, IPublicationActionModule {
     }
 
     event CollectModuleRegistered(address collectModule, uint256 timestamp);
+
+    /**
+     * @dev Emitted when a collectNFT clone is deployed using a lazy deployment pattern.
+     *
+     * @param profileId The publisher's profile token ID.
+     * @param pubId The publication associated with the newly deployed collectNFT clone's ID.
+     * @param collectNFT The address of the newly deployed collectNFT clone.
+     * @param timestamp The current block timestamp.
+     */
+    event CollectNFTDeployed(
+        uint256 indexed profileId,
+        uint256 indexed pubId,
+        address indexed collectNFT,
+        uint256 timestamp
+    );
+
+    /**
+     * @dev Emitted upon a successful collect action.
+     *
+     * @param collectedProfileId The token ID of the profile that published the collected publication.
+     * @param collectedPubId The ID of the collected publication.
+     * @param collectorProfileId The token ID of the profile that collected the publication.
+     * @param nftRecipient The address that received the collect NFT.
+     * @param collectActionData The custom data passed to the collect module, if any.
+     * @param collectActionResult The data returned from the collect module's collect action. This is ABI-encoded
+     * and depends on the collect module chosen.
+     * @param collectNFT The address of the NFT collection where the minted collect NFT belongs to.
+     * @param tokenId The token ID of the collect NFT that was minted as a collect of the publication.
+     * @param transactionExecutor The address of the account that executed this operation.
+     * @param timestamp The current block timestamp.
+     */
+    event Collected(
+        uint256 indexed collectedProfileId,
+        uint256 indexed collectedPubId,
+        uint256 indexed collectorProfileId,
+        address nftRecipient,
+        bytes collectActionData,
+        bytes collectActionResult,
+        address collectNFT,
+        uint256 tokenId,
+        address transactionExecutor,
+        uint256 timestamp
+    );
 
     address public immutable COLLECT_NFT_IMPL;
     address public immutable MODULE_GLOBALS;
@@ -53,7 +95,7 @@ contract CollectPublicationAction is HubRestricted, IPublicationActionModule {
             transactionExecutor,
             collectModuleInitData
         );
-        return data;
+        return '';
     }
 
     function processPublicationAction(
@@ -95,7 +137,7 @@ contract CollectPublicationAction is HubRestricted, IPublicationActionModule {
         address collectNFT,
         uint256 tokenId
     ) private {
-        emit Events.Collected({
+        emit Collected({
             collectedProfileId: processActionParams.publicationActedProfileId,
             collectedPubId: processActionParams.publicationActedId,
             collectorProfileId: processActionParams.actorProfileId,
@@ -151,7 +193,7 @@ contract CollectPublicationAction is HubRestricted, IPublicationActionModule {
         address collectNFT = Clones.clone(collectNFTImpl);
 
         ICollectNFT(collectNFT).initialize(profileId, pubId);
-        emit Events.CollectNFTDeployed(profileId, pubId, collectNFT, block.timestamp);
+        emit CollectNFTDeployed(profileId, pubId, collectNFT, block.timestamp);
 
         return collectNFT;
     }

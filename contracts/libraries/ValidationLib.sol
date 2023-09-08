@@ -67,7 +67,16 @@ library ValidationLib {
     }
 
     function validateNotBlocked(uint256 profile, uint256 byProfile) internal view {
-        if (StorageLib.blockedStatus(byProfile)[profile]) {
+        // By default, block validation is bidirectional, meaning interactions are restricted in both ways.
+        validateNotBlocked({profile: profile, byProfile: byProfile, unidirectionalCheck: false});
+    }
+
+    function validateNotBlocked(uint256 profile, uint256 byProfile, bool unidirectionalCheck) internal view {
+        if (
+            profile != byProfile &&
+            (StorageLib.blockedStatus(byProfile)[profile] ||
+                (!unidirectionalCheck && StorageLib.blockedStatus(profile)[byProfile]))
+        ) {
             revert Errors.Blocked();
         }
     }

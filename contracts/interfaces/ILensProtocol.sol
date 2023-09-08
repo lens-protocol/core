@@ -46,11 +46,7 @@ interface ILensProtocol {
      * @param followModule The follow module to set for the given profile, must be whitelisted.
      * @param followModuleInitData The data to be passed to the follow module for initialization.
      */
-    function setFollowModule(
-        uint256 profileId,
-        address followModule,
-        bytes calldata followModuleInitData
-    ) external;
+    function setFollowModule(uint256 profileId, address followModule, bytes calldata followModuleInitData) external;
 
     /**
      * @custom:meta-tx setFollowModule.
@@ -125,9 +121,10 @@ interface ILensProtocol {
     /**
      * @custom:meta-tx post.
      */
-    function postWithSig(Types.PostParams calldata postParams, Types.EIP712Signature calldata signature)
-        external
-        returns (uint256);
+    function postWithSig(
+        Types.PostParams calldata postParams,
+        Types.EIP712Signature calldata signature
+    ) external returns (uint256);
 
     /**
      * @notice Publishes a comment on the given publication.
@@ -147,9 +144,10 @@ interface ILensProtocol {
     /**
      * @custom:meta-tx comment.
      */
-    function commentWithSig(Types.CommentParams calldata commentParams, Types.EIP712Signature calldata signature)
-        external
-        returns (uint256);
+    function commentWithSig(
+        Types.CommentParams calldata commentParams,
+        Types.EIP712Signature calldata signature
+    ) external returns (uint256);
 
     /**
      * @notice Publishes a mirror of the given publication.
@@ -168,9 +166,10 @@ interface ILensProtocol {
     /**
      * @custom:meta-tx mirror.
      */
-    function mirrorWithSig(Types.MirrorParams calldata mirrorParams, Types.EIP712Signature calldata signature)
-        external
-        returns (uint256);
+    function mirrorWithSig(
+        Types.MirrorParams calldata mirrorParams,
+        Types.EIP712Signature calldata signature
+    ) external returns (uint256);
 
     /**
      * @notice Publishes a quote of the given publication.
@@ -191,9 +190,10 @@ interface ILensProtocol {
     /**
      * @custom:meta-tx quote.
      */
-    function quoteWithSig(Types.QuoteParams calldata quoteParams, Types.EIP712Signature calldata signature)
-        external
-        returns (uint256);
+    function quoteWithSig(
+        Types.QuoteParams calldata quoteParams,
+        Types.EIP712Signature calldata signature
+    ) external returns (uint256);
 
     /**
      * @notice Follows given profiles, executing each profile's follow module logic (if any).
@@ -285,15 +285,16 @@ interface ILensProtocol {
      *
      * @return uint256 An integer representing the minted token ID.
      */
-    function collect(Types.CollectParams calldata collectParams) external returns (uint256);
+    function collectLegacy(Types.LegacyCollectParams calldata collectParams) external returns (uint256);
 
     /**
      * @custom:meta-tx collect.
      * @custom:pending-deprecation
      */
-    function collectWithSig(Types.CollectParams calldata collectParams, Types.EIP712Signature calldata signature)
-        external
-        returns (uint256);
+    function collectLegacyWithSig(
+        Types.LegacyCollectParams calldata collectParams,
+        Types.EIP712Signature calldata signature
+    ) external returns (uint256);
 
     /**
      * @notice Acts on a given publication with the specified parameters.
@@ -356,10 +357,10 @@ interface ILensProtocol {
      * @return bool True if the address is approved as a delegated executor to act on behalf of the profile in the
      * current configuration, false otherwise.
      */
-    function isDelegatedExecutorApproved(uint256 delegatorProfileId, address delegatedExecutor)
-        external
-        view
-        returns (bool);
+    function isDelegatedExecutorApproved(
+        uint256 delegatorProfileId,
+        address delegatedExecutor
+    ) external view returns (bool);
 
     /**
      * @notice Returns the current delegated executor config number for the given profile.
