@@ -68,7 +68,7 @@ contract QuoteTest is ReferencePublicationTest, ActionablePublicationTest, Refer
         _setPointedPub(target.profileId, target.pubId);
         _setReferrers(referrerProfileIds, referrerPubIds);
 
-        Types.Publication memory targetPublication = hub.getPublication(target.profileId, target.pubId);
+        Types.PublicationMemory memory targetPublication = hub.getPublication(target.profileId, target.pubId);
         if (targetPublication.referenceModule != address(0)) {
             quoteParams.referenceModuleData = abi.encode(true);
         }
@@ -80,7 +80,7 @@ contract QuoteTest is ReferencePublicationTest, ActionablePublicationTest, Refer
         uint256[] memory /* referrerProfileIds */,
         uint256[] memory /* referrerPubIds */
     ) internal virtual override returns (bool) {
-        Types.Publication memory targetPublication = hub.getPublication(target.profileId, target.pubId);
+        Types.PublicationMemory memory targetPublication = hub.getPublication(target.profileId, target.pubId);
 
         if (quoteParams.referrerProfileIds.length > 0 || quoteParams.referrerPubIds.length > 0) {
             if (_isV1LegacyPub(targetPublication)) {

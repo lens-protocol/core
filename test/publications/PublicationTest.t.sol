@@ -121,16 +121,6 @@ abstract contract ActionablePublicationTest is PublicationTest {
         _publish({signerPk: publisher.ownerPk, publisherProfileId: publisher.profileId});
     }
 
-    function testCannot_InitializeActionModule_IfNotRegistered(address nonwhitelistedModule) public {
-        vm.assume(hub.getActionModuleRegisterData(nonwhitelistedModule).isRegistered == false);
-        _setActionModules({
-            actionModules: _toAddressArray(nonwhitelistedModule),
-            actionModulesInitDatas: _toBytesArray('')
-        });
-        vm.expectRevert(Errors.NotRegistered.selector);
-        _publish({signerPk: publisher.ownerPk, publisherProfileId: publisher.profileId});
-    }
-
     function testCannot_InitializeActionModule_IfDuplicated() public {
         _setActionModules({
             actionModules: _toAddressArray(address(mockActionModule), address(mockActionModule)),
@@ -165,7 +155,7 @@ abstract contract ReferencePublicationTest is PublicationTest {
 
         uint256 pubId = _publish({signerPk: publisher.ownerPk, publisherProfileId: publisher.profileId});
 
-        Types.Publication memory publication = hub.getPublication(publisher.profileId, pubId);
+        Types.PublicationMemory memory publication = hub.getPublication(publisher.profileId, pubId);
         uint256 actualPointedProfileId = publication.pointedProfileId;
         uint256 actualPointedPubId = publication.pointedPubId;
         assertEq(actualPointedProfileId, anotherPublisher.profileId);

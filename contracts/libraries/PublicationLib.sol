@@ -537,7 +537,10 @@ library PublicationLib {
         if (params.referenceModule == address(0)) {
             return new bytes(0);
         }
-        ValidationLib.validateReferenceModuleRegistered(params.referenceModule);
+        IModuleRegistry(MODULE_REGISTRY).registerModule(
+            params.referenceModule,
+            uint256(IModuleRegistry.ModuleType.REFERENCE_MODULE)
+        );
         StorageLib.getPublication(params.profileId, params.pubId).referenceModule = params.referenceModule;
         return
             IReferenceModule(params.referenceModule).initializeReferenceModule(

@@ -136,16 +136,4 @@ contract GovernanceFunctionsTest is BaseTest {
 
         assertEq(hub.isProfileCreatorWhitelisted(profileCreator), shouldWhitelist);
     }
-
-    function testRegisterFollowModule(address followModule) public {
-        hub.registerFollowModule(followModule);
-
-        assertEq(hub.isFollowModuleRegistered(followModule), true);
-    }
-
-    function testRegisterReferenceModule(address referenceModule) public {
-        hub.registerReferenceModule(referenceModule);
-
-        assertEq(hub.isReferenceModuleRegistered(referenceModule), true);
-    }
 }

@@ -45,18 +45,6 @@ contract LensHubTest is BaseTest {
         hub.createProfile(createProfileParams);
     }
 
-    function testCannot_CreateProfile_IfFollowModuleNotRegistered(address followModule) public {
-        vm.assume(followModule != address(0));
-        vm.assume(hub.isFollowModuleRegistered(followModule) == false);
-
-        Types.CreateProfileParams memory createProfileParams = _getDefaultCreateProfileParams();
-
-        createProfileParams.followModule = followModule;
-
-        vm.expectRevert(Errors.NotRegistered.selector);
-        hub.createProfile(createProfileParams);
-    }
-
     function testCreateProfile_WithNoFollowModule(address to) public {
         vm.assume(to != address(0));
 
@@ -95,8 +83,6 @@ contract LensHubTest is BaseTest {
         vm.assume(to != address(0));
 
         address followModule = address(new MockFollowModuleWithRevertFlag());
-
-        hub.registerFollowModule(followModule);
 
         bytes memory followModuleInitData = abi.encode(false);
 

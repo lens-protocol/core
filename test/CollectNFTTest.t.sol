@@ -63,8 +63,6 @@ contract CollectNFTTest is BaseTest, LensBaseERC721Test {
         collectNFTImpl = address(new CollectNFT(address(hub), address(collectPublicationAction)));
         vm.stopPrank();
 
-        hub.registerActionModule(address(collectPublicationAction));
-
         assertEq(
             address(collectPublicationAction),
             predictedCollectPublicationAction,

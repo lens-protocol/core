@@ -11,7 +11,6 @@ contract SetFollowModuleTest is BaseTest {
     function setUp() public virtual override(BaseTest) {
         BaseTest.setUp();
         mockFollowModule = address(new MockFollowModule());
-        hub.registerFollowModule(mockFollowModule);
     }
 
     // Negatives
@@ -44,19 +43,6 @@ contract SetFollowModuleTest is BaseTest {
             pk: notDelegatedExecutorPk,
             profileId: defaultAccount.profileId,
             followModule: address(0),
-            followModuleInitData: ''
-        });
-    }
-
-    function testCannot_SetFollowModule_IfNotRegistered(address followModule) public {
-        vm.assume(followModule != address(0));
-        vm.assume(hub.isFollowModuleRegistered(followModule) == false);
-
-        vm.expectRevert(Errors.NotRegistered.selector);
-        _setFollowModule({
-            pk: defaultAccount.ownerPk,
-            profileId: defaultAccount.profileId,
-            followModule: followModule,
             followModuleInitData: ''
         });
     }
@@ -109,7 +95,6 @@ contract SetFollowModuleTest is BaseTest {
         });
 
         mockFollowModule = address(new MockFollowModule());
-        hub.registerFollowModule(mockFollowModule);
 
         _setFollowModule({
             pk: delegatedExecutorPk,

@@ -60,7 +60,7 @@ contract MirrorTest is ReferencePublicationTest, ReferralSystemTest {
         _setPointedPub(target.profileId, target.pubId);
         _setReferrers(referrerProfileIds, referrerPubIds);
 
-        Types.Publication memory targetPublication = hub.getPublication(target.profileId, target.pubId);
+        Types.PublicationMemory memory targetPublication = hub.getPublication(target.profileId, target.pubId);
         if (targetPublication.referenceModule != address(0)) {
             mirrorParams.referenceModuleData = abi.encode(true);
         }
@@ -72,7 +72,7 @@ contract MirrorTest is ReferencePublicationTest, ReferralSystemTest {
         uint256[] memory /* referrerProfileIds */,
         uint256[] memory /* referrerPubIds */
     ) internal virtual override returns (bool) {
-        Types.Publication memory targetPublication = hub.getPublication(target.profileId, target.pubId);
+        Types.PublicationMemory memory targetPublication = hub.getPublication(target.profileId, target.pubId);
 
         if (mirrorParams.referrerProfileIds.length > 0 || mirrorParams.referrerPubIds.length > 0) {
             if (_isV1LegacyPub(targetPublication)) {

@@ -56,6 +56,25 @@ library StorageLib {
         }
     }
 
+    function getPublicationMemory(
+        uint256 profileId,
+        uint256 pubId
+    ) internal pure returns (Types.PublicationMemory memory) {
+        Types.PublicationMemory storage _publicationStorage;
+        assembly {
+            mstore(0, profileId)
+            mstore(32, PUBLICATIONS_MAPPING_SLOT)
+            mstore(32, keccak256(0, 64))
+            mstore(0, pubId)
+            _publicationStorage.slot := keccak256(0, 64)
+        }
+
+        Types.PublicationMemory memory _publicationMemory;
+        _publicationMemory = _publicationStorage;
+
+        return _publicationMemory;
+    }
+
     function getProfile(uint256 profileId) internal pure returns (Types.Profile storage _profiles) {
         assembly {
             mstore(0, profileId)

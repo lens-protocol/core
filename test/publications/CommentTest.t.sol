@@ -68,7 +68,7 @@ contract CommentTest is ReferencePublicationTest, ActionablePublicationTest, Ref
         _setPointedPub(target.profileId, target.pubId);
         _setReferrers(referrerProfileIds, referrerPubIds);
 
-        Types.Publication memory targetPublication = hub.getPublication(target.profileId, target.pubId);
+        Types.PublicationMemory memory targetPublication = hub.getPublication(target.profileId, target.pubId);
         if (targetPublication.referenceModule != address(0)) {
             commentParams.referenceModuleData = abi.encode(true);
         }
@@ -80,7 +80,7 @@ contract CommentTest is ReferencePublicationTest, ActionablePublicationTest, Ref
         uint256[] memory /*referrerProfileIds */,
         uint256[] memory /*referrerPubIds */
     ) internal virtual override returns (bool) {
-        Types.Publication memory targetPublication = hub.getPublication(target.profileId, target.pubId);
+        Types.PublicationMemory memory targetPublication = hub.getPublication(target.profileId, target.pubId);
 
         if (commentParams.referrerProfileIds.length > 0 || commentParams.referrerPubIds.length > 0) {
             if (_isV1LegacyPub(targetPublication)) {

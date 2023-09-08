@@ -210,14 +210,6 @@ contract TestSetup is Test, ContractAddressesLoaderDeployer, ArrayHelpers {
 
         vm.stopPrank();
         ///////////////////////////////////////// End deployments.
-
-        if (lensVersion == 2) {
-            // Register the MockActionModule.
-            hub.registerActionModule(address(mockActionModule));
-
-            // Register the MockReferenceModule.
-            hub.registerReferenceModule(address(mockReferenceModule));
-        }
     }
 
     function beforeUpgrade() internal virtual {
@@ -350,12 +342,6 @@ contract TestSetup is Test, ContractAddressesLoaderDeployer, ArrayHelpers {
 
         vm.stopPrank();
         ///////////////////////////////////////// End deployments.
-
-        // Register the MockActionModule.
-        hub.registerActionModule(address(mockActionModule));
-
-        // Register the MockReferenceModule.
-        hub.registerReferenceModule(address(mockReferenceModule));
 
         lensVersion = 2;
     }

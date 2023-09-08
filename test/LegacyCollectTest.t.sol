@@ -210,7 +210,7 @@ contract LegacyCollectTest is BaseTest, ReferralSystemTest {
     }
 
     function testCollect() public {
-        Types.Publication memory pub = hub.getPublication(defaultAccount.profileId, pubId);
+        Types.PublicationMemory memory pub = hub.getPublication(defaultAccount.profileId, pubId);
         assertTrue(pub.__DEPRECATED__collectNFT == address(0));
 
         address predictedCollectNFT = computeCreateAddress(address(hub), vm.getNonce(address(hub)));
@@ -337,7 +337,7 @@ contract LegacyCollectTest is BaseTest, ReferralSystemTest {
             return true;
         }
 
-        Types.Publication memory targetPublication = hub.getPublication(target.profileId, target.pubId);
+        Types.PublicationMemory memory targetPublication = hub.getPublication(target.profileId, target.pubId);
 
         if (defaultCollectParams.referrerPubId == 0) {
             // Cannot pass unverified referrer for LegacyCollect
@@ -360,7 +360,7 @@ contract LegacyCollectTest is BaseTest, ReferralSystemTest {
                     vm.expectRevert(Errors.InvalidReferrer.selector);
                     return true;
                 }
-                Types.Publication memory referrerPublication = hub.getPublication(
+                Types.PublicationMemory memory referrerPublication = hub.getPublication(
                     defaultCollectParams.referrerProfileId,
                     defaultCollectParams.referrerPubId
                 );
