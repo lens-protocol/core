@@ -73,9 +73,14 @@ contract CollectPublicationAction is HubRestricted, IPublicationActionModule {
         MODULE_GLOBALS = moduleGlobals;
     }
 
-    function registerCollectModule(address collectModule) external {
-        _collectModuleRegistered[collectModule] = true;
+    function registerCollectModule(address collectModule) public returns (bool) {
+        bool isAlreadyRegistered = _collectModuleRegistered[collectModule];
+        if (isAlreadyRegistered) {
+            return false;
+        }
         emit CollectModuleRegistered(collectModule, block.timestamp);
+        _collectModuleRegistered[collectModule] = true;
+        return true;
     }
 
     function initializePublicationAction(
@@ -85,9 +90,11 @@ contract CollectPublicationAction is HubRestricted, IPublicationActionModule {
         bytes calldata data
     ) external override onlyHub returns (bytes memory) {
         (address collectModule, bytes memory collectModuleInitData) = abi.decode(data, (address, bytes));
-        if (!_collectModuleRegistered[collectModule]) {
-            revert Errors.NotRegistered();
-        }
+        registerCollectModule(collectModule);
+        // TODO
+        // if (_collectDataByPub[profileId][pubId].collectModule != address(0)) {
+        //     revert Errors.AlreadyInitialized();
+        // }
         _collectDataByPub[profileId][pubId].collectModule = collectModule;
         ICollectModule(collectModule).initializePublicationCollectModule(
             profileId,

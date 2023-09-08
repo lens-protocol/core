@@ -55,11 +55,7 @@ abstract contract LensHubStorage {
 
     mapping(uint256 blockerProfileId => mapping(uint256 blockedProfileId => bool isBlocked)) internal _blockedStatus; // Slot 27
 
-    mapping(uint256 id => address actionModule) internal _actionModules; // Slot 28
+    uint256 internal _profileRoyaltiesBps; // Slot 28
 
-    uint256 internal _maxActionModuleIdUsed; // Slot 29
-
-    uint256 internal _profileRoyaltiesBps; // Slot 30
-
-    mapping(address migrationAdmin => bool allowed) internal _migrationAdminWhitelisted; // Slot 31
+    mapping(address migrationAdmin => bool allowed) internal _migrationAdminWhitelisted; // Slot 29
 }

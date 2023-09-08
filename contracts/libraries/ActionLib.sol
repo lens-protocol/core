@@ -25,10 +25,7 @@ library ActionLib {
             publicationActionParams.publicationActedId
         );
 
-        address actionModuleAddress = publicationActionParams.actionModuleAddress;
-        uint256 actionModuleId = StorageLib.actionModuleRegisterData()[actionModuleAddress].id;
-
-        if (!_isActionEnabled(_actedOnPublication, actionModuleId)) {
+        if (!_isActionEnabled(_actedOnPublication, publicationActionParams.actionModuleAddress)) {
             // This will also revert for:
             //   - Non-existent action modules
             //   - Non-existent publications
@@ -44,19 +41,20 @@ library ActionLib {
             publicationActionParams.publicationActedId
         );
 
-        bytes memory actionModuleReturnData = IPublicationActionModule(actionModuleAddress).processPublicationAction(
-            Types.ProcessActionParams({
-                publicationActedProfileId: publicationActionParams.publicationActedProfileId,
-                publicationActedId: publicationActionParams.publicationActedId,
-                actorProfileId: publicationActionParams.actorProfileId,
-                actorProfileOwner: actorProfileOwner,
-                transactionExecutor: transactionExecutor,
-                referrerProfileIds: publicationActionParams.referrerProfileIds,
-                referrerPubIds: publicationActionParams.referrerPubIds,
-                referrerPubTypes: referrerPubTypes,
-                actionModuleData: publicationActionParams.actionModuleData
-            })
-        );
+        bytes memory actionModuleReturnData = IPublicationActionModule(publicationActionParams.actionModuleAddress)
+            .processPublicationAction(
+                Types.ProcessActionParams({
+                    publicationActedProfileId: publicationActionParams.publicationActedProfileId,
+                    publicationActedId: publicationActionParams.publicationActedId,
+                    actorProfileId: publicationActionParams.actorProfileId,
+                    actorProfileOwner: actorProfileOwner,
+                    transactionExecutor: transactionExecutor,
+                    referrerProfileIds: publicationActionParams.referrerProfileIds,
+                    referrerPubIds: publicationActionParams.referrerPubIds,
+                    referrerPubTypes: referrerPubTypes,
+                    actionModuleData: publicationActionParams.actionModuleData
+                })
+            );
         emit Events.Acted(publicationActionParams, actionModuleReturnData, transactionExecutor, block.timestamp);
 
         return actionModuleReturnData;
@@ -64,12 +62,8 @@ library ActionLib {
 
     function _isActionEnabled(
         Types.Publication storage _publication,
-        uint256 actionModuleId
+        address actionModuleAddress
     ) private view returns (bool) {
-        if (actionModuleId == 0) {
-            return false;
-        }
-        uint256 actionModuleIdBitmapMask = 1 << (actionModuleId - 1);
-        return actionModuleIdBitmapMask & _publication.enabledActionModulesBitmap != 0;
+        return _publication.actionModuleEnabled[actionModuleAddress];
     }
 }

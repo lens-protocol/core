@@ -406,15 +406,6 @@ interface ILensProtocol {
     function isBlocked(uint256 profileId, uint256 byProfileId) external view returns (bool);
 
     /**
-     * @notice Returns the address of the action module associated with the given whitelist ID, address(0) if none.
-     *
-     * @param id The ID of the module whose address wants to be queried.
-     *
-     * @return address The address of the action module associated with the given ID.
-     */
-    function getActionModuleById(uint256 id) external view returns (address);
-
-    /**
      * @notice Returns the URI associated with a given publication.
      * This is used to store the publication's metadata, e.g.: content, images, etc.
      *
@@ -442,7 +433,7 @@ interface ILensProtocol {
      *
      * @return Publication The publication struct associated with the queried publication.
      */
-    function getPublication(uint256 profileId, uint256 pubId) external view returns (Types.Publication memory);
+    function getPublication(uint256 profileId, uint256 pubId) external view returns (Types.PublicationMemory memory);
 
     /**
      * @notice Returns the type of a given publication.

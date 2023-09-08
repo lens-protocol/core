@@ -148,43 +148,4 @@ contract GovernanceFunctionsTest is BaseTest {
 
         assertEq(hub.isReferenceModuleRegistered(referenceModule), true);
     }
-
-    function testWhitelistActionModule_initially(address actionModule) public {
-        Types.ActionModuleRegisterData memory whitelistData = hub.getActionModuleRegisterData(actionModule);
-        vm.assume(whitelistData.id == 0);
-        vm.assume(whitelistData.isRegistered == false);
-
-        hub.registerActionModule(actionModule);
-
-        whitelistData = hub.getActionModuleRegisterData(actionModule);
-
-        assertTrue(whitelistData.isRegistered);
-    }
-
-    function testGetActionModuleRegisterData(address secondActionModule) public {
-        address firstActionModule = makeAddr('FIRST_ACTION_MODULE');
-        vm.assume(firstActionModule != secondActionModule);
-
-        Types.ActionModuleRegisterData memory registerData = hub.getActionModuleRegisterData(secondActionModule);
-        vm.assume(registerData.id == 0);
-        vm.assume(registerData.isRegistered == false);
-
-        registerData = hub.getActionModuleRegisterData(firstActionModule);
-        assertEq(registerData.id, 0);
-        assertFalse(registerData.isRegistered);
-
-        hub.registerActionModule(firstActionModule);
-
-        registerData = hub.getActionModuleRegisterData(firstActionModule);
-        uint256 firstActionModuleId = registerData.id;
-        assertTrue(registerData.isRegistered);
-
-        hub.registerActionModule(secondActionModule);
-
-        registerData = hub.getActionModuleRegisterData(secondActionModule);
-        uint256 secondActionModuleId = registerData.id;
-        assertTrue(registerData.isRegistered);
-
-        assertEq(secondActionModuleId, firstActionModuleId + 1);
-    }
 }

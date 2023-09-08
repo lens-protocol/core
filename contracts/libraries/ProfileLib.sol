@@ -9,6 +9,7 @@ import {Events} from 'contracts/libraries/constants/Events.sol';
 import {StorageLib} from 'contracts/libraries/StorageLib.sol';
 import {IFollowModule} from 'contracts/interfaces/IFollowModule.sol';
 import {IFollowNFT} from 'contracts/interfaces/IFollowNFT.sol';
+import {IModuleRegistry} from 'contracts/interfaces/IModuleRegistry.sol';
 
 library ProfileLib {
     function ownerOf(uint256 profileId) internal view returns (address) {
@@ -75,7 +76,7 @@ library ProfileLib {
         address followModule,
         bytes memory followModuleInitData
     ) private returns (bytes memory) {
-        ValidationLib.validateFollowModuleRegistered(followModule);
+        IModuleRegistry(StorageLib.getModuleRegistry()).registerModule(followModule, IModuleRegistry.ModuleType.Follow);
         return IFollowModule(followModule).initializeFollowModule(profileId, transactionExecutor, followModuleInitData);
     }
 

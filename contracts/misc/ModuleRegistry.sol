@@ -2,67 +2,71 @@
 
 pragma solidity ^0.8.15;
 
-contract ModuleRegistry {
-    event ModuleRegistered(
-        address indexed moduleAddress,
-        ModuleType indexed moduleType,
-        address registrar,
+import {IModuleRegistry} from 'contracts/interfaces/IModuleRegistry.sol';
+import {IERC20Metadata} from '@openzeppelin/contracts/token/ERC20/extensions/IERC20Metadata.sol';
+
+contract ModuleRegistry is IModuleRegistry {
+    event ModuleRegistered(address indexed moduleAddress, uint256 indexed moduleType, uint256 timestamp);
+
+    event erc20CurrencyRegistered(
+        address indexed erc20CurrencyAddress,
+        string name,
+        string symbol,
+        uint8 decimals,
         uint256 timestamp
     );
 
-    struct Module {
-        address registrar;
-        bool isPublicationActionModule;
-        bool isReferenceModule;
-        bool isFollowModule;
-    }
+    mapping(address moduleAddress => uint256 moduleTypesBitmap) internal registeredModules;
 
-    enum ModuleType {
-        NOT_REGISTERED,
-        PUBLICATION_ACTION_MODULE,
-        REFERENCE_MODULE,
-        FOLLOW_MODULE
-    }
+    mapping(address erc20CurrencyAddress => bool) internal registeredErc20Currencies;
 
-    mapping(address => Module) public modules;
+    // Modules
 
-    /// @dev This is frontrunnable, so...
-    function register(address moduleAddress, ModuleType moduleType) public {
-        if (moduleType == ModuleType.NOT_REGISTERED) {
-            revert('Module type cannot be NOT_REGISTERED');
+    function registerModule(address moduleAddress, uint256 moduleType) public returns (bool registrationWasPerformed) {
+        // This will fail if moduleType is out of range for `IModuleRegistry.ModuleType`
+        require(moduleType > 0 && moduleType < uint256(type(IModuleRegistry.ModuleType).max));
+
+        bool isAlreadyRegisteredAsThatType = registeredModules[moduleAddress] & (1 << moduleType) != 0;
+        if (isAlreadyRegisteredAsThatType) {
+            return false;
+        } else {
+            emit ModuleRegistered(moduleAddress, moduleType, block.timestamp);
+            registeredModules[moduleAddress] |= (1 << moduleType);
+            return true;
         }
-        if (modules[moduleAddress].moduleType != ModuleType.NOT_REGISTERED) {
-            revert('Module already registered');
+    }
+
+    function getModuleTypes(address moduleAddress) public view returns (uint256) {
+        return registeredModules[moduleAddress];
+    }
+
+    function isModuleRegistered(address moduleAddress) external view returns (bool) {
+        return registeredModules[moduleAddress] != 0;
+    }
+
+    function isModuleRegisteredAs(address moduleAddress, uint256 moduleType) public view returns (bool) {
+        require(moduleType <= type(uint8).max);
+        return registeredModules[moduleAddress] & (1 << moduleType) != 0;
+    }
+
+    // Currencies
+
+    function registerErc20Currency(address currencyAddress) public returns (bool registrationWasPerformed) {
+        bool isAlreadyRegistered = registeredErc20Currencies[currencyAddress];
+        if (isAlreadyRegistered) {
+            return false;
+        } else {
+            uint8 decimals = IERC20Metadata(currencyAddress).decimals();
+            string memory name = IERC20Metadata(currencyAddress).name();
+            string memory symbol = IERC20Metadata(currencyAddress).symbol();
+
+            emit erc20CurrencyRegistered(currencyAddress, name, symbol, decimals, block.timestamp);
+            registeredErc20Currencies[currencyAddress] = true;
+            return true;
         }
-        if (moduleAddress.code.length == 0) {
-            revert('Module address is not a contract');
-        }
-        modules[moduleAddress] = Module(msg.sender, moduleType);
-        emit ModuleRegistered(moduleAddress, moduleType, msg.sender, block.timestamp);
     }
 
-    function getModuleType(address moduleAddress) public view returns (ModuleType) {
-        return modules[moduleAddress].moduleType;
-    }
-
-    function getModuleRegistrar(address moduleAddress) public view returns (address) {
-        return modules[moduleAddress].registrar;
-    }
-
-    function isRegistered(address moduleAddress) public view returns (bool) {
-        return modules[moduleAddress].moduleType != ModuleType.NOT_REGISTERED;
-    }
-
-    function areRegistered(address[] calldata moduleAddresses) public view returns (bool) {
-        uint256 i;
-        while (i < moduleAddresses.length) {
-            if (modules[moduleAddresses[i]].moduleType == ModuleType.NOT_REGISTERED) {
-                return false;
-            }
-            unchecked {
-                ++i;
-            }
-        }
-        return true;
+    function isErc20CurrencyRegistered(address currencyAddress) external view returns (bool) {
+        return registeredErc20Currencies[currencyAddress];
     }
 }

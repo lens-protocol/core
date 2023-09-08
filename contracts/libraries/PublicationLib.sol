@@ -10,8 +10,11 @@ import {IReferenceModule} from 'contracts/interfaces/IReferenceModule.sol';
 import {ILegacyReferenceModule} from 'contracts/interfaces/ILegacyReferenceModule.sol';
 import {StorageLib} from 'contracts/libraries/StorageLib.sol';
 import {IPublicationActionModule} from 'contracts/interfaces/IPublicationActionModule.sol';
+import {IModuleRegistry} from 'contracts/interfaces/IModuleRegistry.sol';
 
 library PublicationLib {
+    address constant MODULE_REGISTRY = address(0xC0FFEE); // TODO: Pass constant or make libs contracts and manually DELEGATECALL to them
+
     /**
      * @notice Publishes a post to a given profile.
      *
@@ -498,25 +501,13 @@ library PublicationLib {
         }
 
         bytes[] memory actionModuleInitResults = new bytes[](params.actionModules.length);
-        uint256 enabledActionModulesBitmap;
 
         uint256 i;
         while (i < params.actionModules.length) {
-            Types.ActionModuleWhitelistData memory actionModuleWhitelistData = StorageLib.actionModuleRegisterData()[
-                params.actionModules[i]
-            ];
-
-            if (!actionModuleRegisterData.isRegistered) {
-                revert Errors.NotRegistered();
-            }
-
-            uint256 actionModuleIdBitmapMask = 1 << (actionModuleRegisterData.id - 1);
-
-            if (enabledActionModulesBitmap & actionModuleIdBitmapMask != 0) {
-                revert Errors.AlreadyEnabled();
-            }
-
-            enabledActionModulesBitmap |= actionModuleIdBitmapMask;
+            IModuleRegistry(MODULE_REGISTRY).registerModule(
+                params.actionModules[i],
+                uint256(IModuleRegistry.ModuleType.PUBLICATION_ACTION_MODULE)
+            );
 
             actionModuleInitResults[i] = IPublicationActionModule(params.actionModules[i]).initializePublicationAction(
                 params.profileId,
@@ -529,10 +520,6 @@ library PublicationLib {
                 ++i;
             }
         }
-
-        StorageLib
-            .getPublication(params.profileId, params.pubId)
-            .enabledActionModulesBitmap = enabledActionModulesBitmap;
 
         return actionModuleInitResults;
     }

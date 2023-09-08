@@ -40,12 +40,8 @@ library StorageLib {
     //////////////////////////////////
     uint256 constant DELEGATED_EXECUTOR_CONFIG_MAPPING_SLOT = 26;
     uint256 constant BLOCKED_STATUS_MAPPING_SLOT = 27;
-    uint256 constant ACTION_MODULES_SLOT = 28;
-    uint256 constant MAX_ACTION_MODULE_ID_USED_SLOT = 29;
-    uint256 constant PROFILE_ROYALTIES_BPS_SLOT = 30;
-    uint256 constant MIGRATION_ADMINS_WHITELISTED_MAPPING_SLOT = 31;
-
-    uint256 constant MAX_ACTION_MODULE_ID_SUPPORTED = 255;
+    uint256 constant PROFILE_ROYALTIES_BPS_SLOT = 28;
+    uint256 constant MIGRATION_ADMINS_WHITELISTED_MAPPING_SLOT = 29;
 
     function getPublication(
         uint256 profileId,
@@ -140,24 +136,6 @@ library StorageLib {
         assembly {
             _migrationAdminWhitelisted.slot := MIGRATION_ADMINS_WHITELISTED_MAPPING_SLOT
         }
-    }
-
-    function actionModuleById() internal pure returns (mapping(uint256 => address) storage _actionModules) {
-        assembly {
-            _actionModules.slot := ACTION_MODULES_SLOT
-        }
-    }
-
-    function incrementMaxActionModuleIdUsed() internal returns (uint256) {
-        uint256 incrementedId;
-        assembly {
-            incrementedId := add(sload(MAX_ACTION_MODULE_ID_USED_SLOT), 1)
-            sstore(MAX_ACTION_MODULE_ID_USED_SLOT, incrementedId)
-        }
-        if (incrementedId > MAX_ACTION_MODULE_ID_SUPPORTED) {
-            revert Errors.MaxActionModuleIdReached();
-        }
-        return incrementedId;
     }
 
     function getGovernance() internal view returns (address _governance) {

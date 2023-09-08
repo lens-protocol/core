@@ -32,9 +32,6 @@ library Errors {
     error NonERC721ReceiverImplementer();
     error AlreadyEnabled();
 
-    // Internal Errors
-    error MaxActionModuleIdReached(); // This means we need an upgrade
-
     // Module Errors
     error InitParamsInvalid();
     error ActionNotAllowed();

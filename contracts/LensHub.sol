@@ -536,8 +536,9 @@ contract LensHub is
     function getPublication(
         uint256 profileId,
         uint256 pubId
-    ) external view override returns (Types.Publication memory) {
-        return _publications[profileId][pubId];
+    ) external view override returns (Types.PublicationMemory memory) {
+        // TODO: Maybe we need to add some assembly here if this doesn't work
+        return Types.PublicationMemory(_publications[profileId][pubId]);
     }
 
     /// @inheritdoc ILensProtocol
@@ -546,9 +547,5 @@ contract LensHub is
         uint256 pubId
     ) external view override returns (Types.PublicationType) {
         return PublicationLib.getPublicationType(profileId, pubId);
-    }
-
-    function getActionModuleById(uint256 id) external view override returns (address) {
-        return _actionModules[id];
     }
 }

@@ -130,11 +130,7 @@ library Types {
      * Posts, V1 publications and publications rooted in V1 publications don't have it set.
      * @param rootPubId The publication ID of the root post (to determine if comments/quotes and mirrors come from it).
      * Posts, V1 publications and publications rooted in V1 publications don't have it set.
-     * @param enabledActionModulesBitmap The action modules enabled in a given publication as a bitmap.
-     * The bitmap is a uint256 where each bit represents an action module: 1 if the publication uses it, 0 if not.
-     * You can use getActionModuleById() to get the address of the action module associated with a given bit.
-     * In the future this can be replaced with a getter that allows to query the bitmap by index, if there are more
-     * than 256 action modules.
+     * @param actionModuleEnabled The action modules enabled in a given publication.
      */
     struct Publication {
         uint256 pointedProfileId;
@@ -147,7 +143,21 @@ library Types {
         PublicationType pubType;
         uint256 rootProfileId;
         uint256 rootPubId;
-        uint256 enabledActionModulesBitmap; // In future this can be (uint256 => uint256) mapping if we need >256 modules
+        mapping(address => bool) actionModuleEnabled;
+    }
+
+    struct PublicationMemory {
+        uint256 pointedProfileId;
+        uint256 pointedPubId;
+        string contentURI;
+        address referenceModule;
+        address __DEPRECATED__collectModule; // Deprecated in V2
+        address __DEPRECATED__collectNFT; // Deprecated in V2
+        // Added in Lens V2, so these will be zero for old publications:
+        PublicationType pubType;
+        uint256 rootProfileId;
+        uint256 rootPubId;
+        // bytes32 __ACTION_MODULE_ENABLED_MAPPING; // Mappings are not supported in memory.
     }
 
     /**

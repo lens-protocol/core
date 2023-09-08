@@ -48,18 +48,6 @@ library ValidationLib {
         }
     }
 
-    function validateReferenceModuleRegistered(address referenceModule) internal view {
-        if (!StorageLib.referenceModuleRegistered()[referenceModule]) {
-            revert Errors.NotRegistered();
-        }
-    }
-
-    function validateFollowModuleRegistered(address followModule) internal view {
-        if (!StorageLib.followModuleRegistered()[followModule]) {
-            revert Errors.NotRegistered();
-        }
-    }
-
     function validateProfileCreatorWhitelisted(address profileCreator) internal view {
         if (!StorageLib.profileCreatorWhitelisted()[profileCreator]) {
             revert Errors.NotWhitelisted();
