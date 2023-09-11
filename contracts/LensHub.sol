@@ -541,6 +541,15 @@ contract LensHub is
     }
 
     /// @inheritdoc ILensProtocol
+    function isActionModuleEnabledInPublication(
+        uint256 profileId,
+        uint256 pubId,
+        address module
+    ) external view returns (bool) {
+        return StorageLib.getPublication(profileId, pubId).actionModuleEnabled[module];
+    }
+
+    /// @inheritdoc ILensProtocol
     function getPublicationType(
         uint256 profileId,
         uint256 pubId

@@ -450,4 +450,19 @@ interface ILensProtocol {
      * @return PublicationType The publication type of the queried publication.
      */
     function getPublicationType(uint256 profileId, uint256 pubId) external view returns (Types.PublicationType);
+
+    /**
+     * @notice Returns wether a given Action Module is enabled for a given publication.
+     *
+     * @param profileId The token ID of the profile that published the publication to query.
+     * @param pubId The publication ID of the publication to query.
+     * @param module The address of the Action Module to query.
+     *
+     * @return bool True if the Action Module is enabled for the queried publication, false if not.
+     */
+    function isActionModuleEnabledInPublication(
+        uint256 profileId,
+        uint256 pubId,
+        address module
+    ) external view returns (bool);
 }
