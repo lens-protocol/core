@@ -64,15 +64,15 @@ contract LensHub is
     }
 
     constructor(
-        address moduleGlobals,
         address followNFTImpl,
         address legacyCollectNFTImpl, // We still pass the deprecated CollectNFTImpl for legacy Collects to work
+        address moduleRegistry,
         uint256 tokenGuardianCooldown,
         Types.MigrationParams memory migrationParams
     )
         LensV2Migration(migrationParams)
-        LensProfiles(moduleGlobals, tokenGuardianCooldown)
-        LensImplGetters(followNFTImpl, legacyCollectNFTImpl)
+        LensProfiles(tokenGuardianCooldown)
+        LensImplGetters(followNFTImpl, legacyCollectNFTImpl, moduleRegistry)
     {}
 
     /// @inheritdoc ILensProtocol
@@ -536,8 +536,8 @@ contract LensHub is
     function getPublication(
         uint256 profileId,
         uint256 pubId
-    ) external view override returns (Types.Publication memory) {
-        return _publications[profileId][pubId];
+    ) external pure override returns (Types.PublicationMemory memory) {
+        return StorageLib.getPublicationMemory(profileId, pubId);
     }
 
     /// @inheritdoc ILensProtocol
@@ -546,9 +546,5 @@ contract LensHub is
         uint256 pubId
     ) external view override returns (Types.PublicationType) {
         return PublicationLib.getPublicationType(profileId, pubId);
-    }
-
-    function getActionModuleById(uint256 id) external view override returns (address) {
-        return _actionModules[id];
     }
 }

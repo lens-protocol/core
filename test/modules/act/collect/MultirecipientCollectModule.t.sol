@@ -49,11 +49,7 @@ contract MultirecipientCollectModule_Initialization is
         );
     }
 
-    function testCannotPostWithoutRecipients(
-        uint256 profileId,
-        uint256 pubId,
-        address transactionExecutor
-    ) public {
+    function testCannotPostWithoutRecipients(uint256 profileId, uint256 pubId, address transactionExecutor) public {
         vm.assume(profileId != 0);
         vm.assume(pubId != 0);
         vm.assume(transactionExecutor != address(0));
@@ -227,9 +223,6 @@ contract MultirecipientCollectModule_Initialization is
         vm.assume(amount != 0);
         vm.assume(transactionExecutor != address(0));
         vm.assume(whitelistedCurrency != address(0));
-
-        vm.prank(modulesGovernance);
-        moduleGlobals.whitelistCurrency(whitelistedCurrency, true);
 
         if (endTimestamp > 0) {
             currentTimestamp = uint72(bound(uint256(currentTimestamp), 0, uint256(endTimestamp) - 1));
@@ -478,8 +471,8 @@ contract MultirecipientCollectModule_FeeDistribution is MultirecipientCollectMod
         treasuryFee = uint16(bound(uint256(treasuryFee), 0, (BPS_MAX / 2) - 1));
         // console.log('Treasury fee: %s', treasuryFee);
 
-        vm.prank(modulesGovernance);
-        moduleGlobals.setTreasuryFee(treasuryFee);
+        vm.prank(governance);
+        hub.setTreasuryFee(treasuryFee);
 
         referralFee = uint16(bound(referralFee, 0, BPS_MAX));
         // console.log('Referral fee: %s', referralFee);
@@ -646,11 +639,9 @@ contract MultirecipientCollectModule_FeeDistribution is MultirecipientCollectMod
         return result;
     }
 
-    function _referralPubTypesToMemoryArray(uint256 numberOfReferrals)
-        private
-        pure
-        returns (Types.PublicationType[] memory)
-    {
+    function _referralPubTypesToMemoryArray(
+        uint256 numberOfReferrals
+    ) private pure returns (Types.PublicationType[] memory) {
         Types.PublicationType[] memory result = new Types.PublicationType[](numberOfReferrals);
         for (uint256 i = 0; i < numberOfReferrals; i++) {
             result[i] = Types.PublicationType.Comment;

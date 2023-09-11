@@ -3,7 +3,8 @@
 pragma solidity ^0.8.10;
 
 import {Errors} from 'contracts/modules/constants/Errors.sol';
-import {IModuleGlobals} from 'contracts/interfaces/IModuleGlobals.sol';
+import {ILensHub} from 'contracts/interfaces/ILensHub.sol';
+import {IModuleRegistry} from 'contracts/interfaces/IModuleRegistry.sol';
 
 /**
  * @title FeeModuleBase
@@ -15,25 +16,25 @@ import {IModuleGlobals} from 'contracts/interfaces/IModuleGlobals.sol';
 abstract contract FeeModuleBase {
     uint16 internal constant BPS_MAX = 10000;
 
-    IModuleGlobals public immutable MODULE_GLOBALS;
+    ILensHub private immutable HUB;
+    IModuleRegistry public immutable MODULE_REGISTRY;
 
-    constructor(address moduleGlobals) {
-        MODULE_GLOBALS = IModuleGlobals(moduleGlobals);
+    constructor(address hub) {
+        HUB = ILensHub(hub);
+        MODULE_REGISTRY = IModuleRegistry(ILensHub(hub).getModuleRegistry());
     }
 
-    function _currencyWhitelisted(address currency) internal view returns (bool) {
-        return MODULE_GLOBALS.isCurrencyWhitelisted(currency);
+    // TODO: Rename this to _currencyRegistered or smth
+    function _currencyWhitelisted(address currency) internal returns (bool) {
+        MODULE_REGISTRY.registerErc20Currency(currency);
+        return true;
     }
 
     function _treasuryData() internal view returns (address, uint16) {
-        return MODULE_GLOBALS.getTreasuryData();
+        return HUB.getTreasuryData();
     }
 
-    function _validateDataIsExpected(
-        bytes calldata data,
-        address currency,
-        uint256 amount
-    ) internal pure {
+    function _validateDataIsExpected(bytes calldata data, address currency, uint256 amount) internal pure {
         (address decodedCurrency, uint256 decodedAmount) = abi.decode(data, (address, uint256));
         if (decodedAmount != amount || decodedCurrency != currency) {
             revert Errors.ModuleDataMismatch();

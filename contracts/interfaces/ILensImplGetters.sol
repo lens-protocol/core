@@ -24,4 +24,11 @@ interface ILensImplGetters {
      * @return address The Collect NFT implementation address.
      */
     function getLegacyCollectNFTImpl() external view returns (address);
+
+    /**
+     * @notice Returns the address of the registry that stores all modules that are used by the Lens Protocol.
+     *
+     * @return address The address of the Module Registry contract.
+     */
+    function getModuleRegistry() external view returns (address);
 }

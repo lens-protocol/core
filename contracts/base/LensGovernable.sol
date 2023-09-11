@@ -37,24 +37,19 @@ abstract contract LensGovernable is ILensGovernable {
         GovernanceLib.setState(newState);
     }
 
+    /// @inheritdoc ILensGovernable
+    function setTreasury(address newTreasury) external override onlyGov {
+        GovernanceLib.setTreasury(newTreasury);
+    }
+
+    /// @inheritdoc ILensGovernable
+    function setTreasuryFee(uint16 newTreasuryFee) external override onlyGov {
+        GovernanceLib.setTreasuryFee(newTreasuryFee);
+    }
+
     ///@inheritdoc ILensGovernable
     function whitelistProfileCreator(address profileCreator, bool whitelist) external override onlyGov {
         GovernanceLib.whitelistProfileCreator(profileCreator, whitelist);
-    }
-
-    /// @inheritdoc ILensGovernable
-    function whitelistFollowModule(address followModule, bool whitelist) external override onlyGov {
-        GovernanceLib.whitelistFollowModule(followModule, whitelist);
-    }
-
-    /// @inheritdoc ILensGovernable
-    function whitelistReferenceModule(address referenceModule, bool whitelist) external override onlyGov {
-        GovernanceLib.whitelistReferenceModule(referenceModule, whitelist);
-    }
-
-    /// @inheritdoc ILensGovernable
-    function whitelistActionModule(address actionModule, bool whitelist) external override onlyGov {
-        GovernanceLib.whitelistActionModule(actionModule, whitelist);
     }
 
     ///////////////////////////////////////////
@@ -84,22 +79,18 @@ abstract contract LensGovernable is ILensGovernable {
     }
 
     /// @inheritdoc ILensGovernable
-    function isFollowModuleWhitelisted(address followModule) external view override returns (bool) {
-        return StorageLib.followModuleWhitelisted()[followModule];
+    function getTreasury() external view override returns (address) {
+        return StorageLib.getTreasuryData().treasury;
     }
 
     /// @inheritdoc ILensGovernable
-    function isReferenceModuleWhitelisted(address referenceModule) external view override returns (bool) {
-        return StorageLib.referenceModuleWhitelisted()[referenceModule];
+    function getTreasuryFee() external view override returns (uint16) {
+        return StorageLib.getTreasuryData().treasuryFeeBPS;
     }
 
     /// @inheritdoc ILensGovernable
-    function getActionModuleWhitelistData(address actionModule)
-        external
-        view
-        override
-        returns (Types.ActionModuleWhitelistData memory)
-    {
-        return StorageLib.actionModuleWhitelistData()[actionModule];
+    function getTreasuryData() external view override returns (address, uint16) {
+        Types.TreasuryData storage treasuryData = StorageLib.getTreasuryData();
+        return (treasuryData.treasury, treasuryData.treasuryFeeBPS);
     }
 }

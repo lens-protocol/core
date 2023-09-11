@@ -358,9 +358,9 @@ contract UpgradeForkTest is BaseTest {
         // Deploy implementation contracts.
         // TODO: Last 3 addresses are for the follow modules for migration purposes.
         hubImpl = new LensHubInitializable({ // TODO: Should we use the usual LensHub, not Initializable?
-            moduleGlobals: address(moduleGlobals),
             followNFTImpl: followNFTImplAddr,
             collectNFTImpl: legacyCollectNFTImplAddr,
+            moduleRegistry: address(moduleRegistry),
             tokenGuardianCooldown: PROFILE_GUARDIAN_COOLDOWN,
             migrationParams: Types.MigrationParams({
                 lensHandlesAddress: address(lensHandles),
@@ -382,13 +382,7 @@ contract UpgradeForkTest is BaseTest {
             governanceAddress: address(governanceContract),
             owner: governanceMultisig,
             lensHub: address(hub),
-            newImplementationAddress: address(hubImpl),
-            oldFollowModulesToUnwhitelist_: oldFollowModulesToUnwhitelist,
-            newFollowModulesToWhitelist_: _emptyAddressArray(), // TODO!
-            oldReferenceModulesToUnwhitelist_: oldReferenceModulesToUnwhitelist,
-            newReferenceModulesToWhitelist_: _emptyAddressArray(), // TODO!
-            oldCollectModulesToUnwhitelist_: oldCollectModulesToUnwhitelist,
-            newActionModulesToWhitelist_: _toAddressArray(freeCollectModule)
+            newImplementationAddress: address(hubImpl)
         });
         vm.label(address(lensV2UpgradeContract), 'LensV2UpgradeContract');
 
@@ -808,7 +802,7 @@ contract UpgradeForkTest is BaseTest {
 
         // - 2 Posts V1
         console.log('Checking V1 posts...');
-        Types.Publication memory post1Pub = hub.getPublication(profileOne.profileId, post1);
+        Types.PublicationMemory memory post1Pub = hub.getPublication(profileOne.profileId, post1);
         assertEq(post1Pub.pointedProfileId, 0, 'pointedProfileId of post1 is wrong');
         assertEq(post1Pub.pointedPubId, 0, 'pointedPubId of post1 is wrong');
         assertEq(post1Pub.contentURI, 'https://post1', 'contentURI of post1 is wrong');
@@ -817,9 +811,8 @@ contract UpgradeForkTest is BaseTest {
         assertEq(uint256(post1Pub.pubType), 0, 'pubType of post1 is wrong'); // V1 posts pubType was always 0
         assertEq(post1Pub.rootProfileId, 0, 'rootProfileId of post1 is wrong'); // V1 posts don't have root
         assertEq(post1Pub.rootPubId, 0, 'rootPubId of post1 is wrong'); // V1 posts don't have root
-        assertEq(post1Pub.enabledActionModulesBitmap, 0, 'enabledActionModulesBitmap of post1 is wrong'); // V1 posts don't have action modules
 
-        Types.Publication memory post2Pub = hub.getPublication(profileTwo.profileId, post2);
+        Types.PublicationMemory memory post2Pub = hub.getPublication(profileTwo.profileId, post2);
         assertEq(post2Pub.pointedProfileId, 0);
         assertEq(post2Pub.pointedPubId, 0);
         assertEq(post2Pub.contentURI, 'https://post2');
@@ -828,11 +821,10 @@ contract UpgradeForkTest is BaseTest {
         assertEq(uint256(post2Pub.pubType), 0); // V1 posts pubType was always 0
         assertEq(post2Pub.rootProfileId, 0); // V1 posts don't have root
         assertEq(post2Pub.rootPubId, 0); // V1 posts don't have root
-        assertEq(post2Pub.enabledActionModulesBitmap, 0); // V1 posts don't have action modules
 
         // - 2 Posts V2
         console.log('Checking V2 posts...');
-        Types.Publication memory post3Pub = hub.getPublication(profileThree.profileId, post3);
+        Types.PublicationMemory memory post3Pub = hub.getPublication(profileThree.profileId, post3);
         assertEq(post3Pub.pointedProfileId, 0);
         assertEq(post3Pub.pointedPubId, 0);
         assertEq(post3Pub.contentURI, 'https://post3');
@@ -841,9 +833,8 @@ contract UpgradeForkTest is BaseTest {
         assertEq(uint256(post3Pub.pubType), uint256(Types.PublicationType.Post));
         assertEq(post3Pub.rootProfileId, 0); // V2 posts don't have root
         assertEq(post3Pub.rootPubId, 0); // V2 posts don't have root
-        assertEq(post3Pub.enabledActionModulesBitmap, 0); // We didn't set action modules in this V2 post
 
-        Types.Publication memory post4Pub = hub.getPublication(profileFour.profileId, post4);
+        Types.PublicationMemory memory post4Pub = hub.getPublication(profileFour.profileId, post4);
         assertEq(post4Pub.pointedProfileId, 0);
         assertEq(post4Pub.pointedPubId, 0);
         assertEq(post4Pub.contentURI, 'https://post4');
@@ -852,11 +843,10 @@ contract UpgradeForkTest is BaseTest {
         assertEq(uint256(post4Pub.pubType), uint256(Types.PublicationType.Post));
         assertEq(post4Pub.rootProfileId, 0); // V2 posts don't have root
         assertEq(post4Pub.rootPubId, 0); // V2 posts don't have root
-        assertEq(post4Pub.enabledActionModulesBitmap, 0); // We didn't set action modules in this V2 post
 
         // - 1 V2 Post from V1 non-migrated Profile 2:
         console.log('Checking V2 posts from V1 non-migrated profile...');
-        Types.Publication memory post5Pub = hub.getPublication(profileTwo.profileId, post5);
+        Types.PublicationMemory memory post5Pub = hub.getPublication(profileTwo.profileId, post5);
         assertEq(post5Pub.pointedProfileId, 0);
         assertEq(post5Pub.pointedPubId, 0);
         assertEq(post5Pub.contentURI, 'https://post5');
@@ -865,11 +855,10 @@ contract UpgradeForkTest is BaseTest {
         assertEq(uint256(post5Pub.pubType), uint256(Types.PublicationType.Post));
         assertEq(post5Pub.rootProfileId, 0); // V2 posts don't have root
         assertEq(post5Pub.rootPubId, 0); // V2 posts don't have root
-        assertEq(post5Pub.enabledActionModulesBitmap, 0); // We didn't set action modules in this V2 post
 
         // - 4 Comments V1
         console.log('Checking V1 comments...');
-        Types.Publication memory comment1Pub = hub.getPublication(profileOne.profileId, comment1);
+        Types.PublicationMemory memory comment1Pub = hub.getPublication(profileOne.profileId, comment1);
         assertEq(comment1Pub.pointedProfileId, profileOne.profileId);
         assertEq(comment1Pub.pointedPubId, post1);
         assertEq(comment1Pub.contentURI, 'https://comment1');
@@ -878,9 +867,8 @@ contract UpgradeForkTest is BaseTest {
         assertEq(uint256(comment1Pub.pubType), 0); // V1 publications pubType was always 0
         assertEq(comment1Pub.rootProfileId, 0); // V1 comments don't have root
         assertEq(comment1Pub.rootPubId, 0); // V1 comments don't have root
-        assertEq(comment1Pub.enabledActionModulesBitmap, 0); // V1 comments don't have action modules
 
-        Types.Publication memory comment2Pub = hub.getPublication(profileTwo.profileId, comment2);
+        Types.PublicationMemory memory comment2Pub = hub.getPublication(profileTwo.profileId, comment2);
         assertEq(comment2Pub.pointedProfileId, profileTwo.profileId);
         assertEq(comment2Pub.pointedPubId, post2);
         assertEq(comment2Pub.contentURI, 'https://comment2');
@@ -889,9 +877,8 @@ contract UpgradeForkTest is BaseTest {
         assertEq(uint256(comment2Pub.pubType), 0); // V1 publications pubType was always 0
         assertEq(comment2Pub.rootProfileId, 0); // V1 comments don't have root
         assertEq(comment2Pub.rootPubId, 0); // V1 comments don't have root
-        assertEq(comment2Pub.enabledActionModulesBitmap, 0); // V1 comments don't have action modules
 
-        Types.Publication memory comment3Pub = hub.getPublication(profileOne.profileId, comment3);
+        Types.PublicationMemory memory comment3Pub = hub.getPublication(profileOne.profileId, comment3);
         assertEq(comment3Pub.pointedProfileId, profileTwo.profileId);
         assertEq(comment3Pub.pointedPubId, post2);
         assertEq(comment3Pub.contentURI, 'https://comment3');
@@ -900,9 +887,8 @@ contract UpgradeForkTest is BaseTest {
         assertEq(uint256(comment3Pub.pubType), 0); // V1 publications pubType was always 0
         assertEq(comment3Pub.rootProfileId, 0); // V1 comments don't have root
         assertEq(comment3Pub.rootPubId, 0); // V1 comments don't have root
-        assertEq(comment3Pub.enabledActionModulesBitmap, 0); // V1 comments don't have action modules
 
-        Types.Publication memory comment4Pub = hub.getPublication(profileTwo.profileId, comment4);
+        Types.PublicationMemory memory comment4Pub = hub.getPublication(profileTwo.profileId, comment4);
         assertEq(comment4Pub.pointedProfileId, profileOne.profileId);
         assertEq(comment4Pub.pointedPubId, post1);
         assertEq(comment4Pub.contentURI, 'https://comment4');
@@ -911,11 +897,10 @@ contract UpgradeForkTest is BaseTest {
         assertEq(uint256(comment4Pub.pubType), 0); // V1 publications pubType was always 0
         assertEq(comment4Pub.rootProfileId, 0); // V1 comments don't have root
         assertEq(comment4Pub.rootPubId, 0); // V1 comments don't have root
-        assertEq(comment4Pub.enabledActionModulesBitmap, 0); // V1 comments don't have action modules
 
         // - 4 Mirrors V1
         console.log('Checking V1 mirrors...');
-        Types.Publication memory mirror1Pub = hub.getPublication(profileOne.profileId, mirror1);
+        Types.PublicationMemory memory mirror1Pub = hub.getPublication(profileOne.profileId, mirror1);
         assertEq(mirror1Pub.pointedProfileId, profileOne.profileId);
         assertEq(mirror1Pub.pointedPubId, post1);
         assertEq(mirror1Pub.contentURI, '');
@@ -924,9 +909,8 @@ contract UpgradeForkTest is BaseTest {
         assertEq(uint256(mirror1Pub.pubType), 0); // V1 publications pubType was always 0
         assertEq(mirror1Pub.rootProfileId, 0); // V1 mirrors don't have root
         assertEq(mirror1Pub.rootPubId, 0); // V1 mirrors don't have root
-        assertEq(mirror1Pub.enabledActionModulesBitmap, 0); // V1 mirrors don't have action modules
 
-        Types.Publication memory mirror2Pub = hub.getPublication(profileTwo.profileId, mirror2);
+        Types.PublicationMemory memory mirror2Pub = hub.getPublication(profileTwo.profileId, mirror2);
         assertEq(mirror2Pub.pointedProfileId, profileTwo.profileId);
         assertEq(mirror2Pub.pointedPubId, post2);
         assertEq(mirror2Pub.contentURI, '');
@@ -935,9 +919,8 @@ contract UpgradeForkTest is BaseTest {
         assertEq(uint256(mirror2Pub.pubType), 0); // V1 publications pubType was always 0
         assertEq(mirror2Pub.rootProfileId, 0); // V1 mirrors don't have root
         assertEq(mirror2Pub.rootPubId, 0); // V1 mirrors don't have root
-        assertEq(mirror2Pub.enabledActionModulesBitmap, 0); // V1 mirrors don't have action modules
 
-        Types.Publication memory mirror3Pub = hub.getPublication(profileOne.profileId, mirror3);
+        Types.PublicationMemory memory mirror3Pub = hub.getPublication(profileOne.profileId, mirror3);
         assertEq(mirror3Pub.pointedProfileId, profileTwo.profileId);
         assertEq(mirror3Pub.pointedPubId, comment2);
         assertEq(mirror3Pub.contentURI, '');
@@ -946,9 +929,8 @@ contract UpgradeForkTest is BaseTest {
         assertEq(uint256(mirror3Pub.pubType), 0); // V1 publications pubType was always 0
         assertEq(mirror3Pub.rootProfileId, 0); // V1 mirrors don't have root
         assertEq(mirror3Pub.rootPubId, 0); // V1 mirrors don't have root
-        assertEq(mirror3Pub.enabledActionModulesBitmap, 0); // V1 mirrors don't have action modules
 
-        Types.Publication memory mirror4Pub = hub.getPublication(profileTwo.profileId, mirror4);
+        Types.PublicationMemory memory mirror4Pub = hub.getPublication(profileTwo.profileId, mirror4);
         assertEq(mirror4Pub.pointedProfileId, profileOne.profileId);
         assertEq(mirror4Pub.pointedPubId, comment1);
         assertEq(mirror4Pub.contentURI, '');
@@ -957,11 +939,10 @@ contract UpgradeForkTest is BaseTest {
         assertEq(uint256(mirror4Pub.pubType), 0); // V1 publications pubType was always 0
         assertEq(mirror4Pub.rootProfileId, 0); // V1 mirrors don't have root
         assertEq(mirror4Pub.rootPubId, 0); // V1 mirrors don't have root
-        assertEq(mirror4Pub.enabledActionModulesBitmap, 0); // V1 mirrors don't have action modules
 
         // - 4 Comments V2
         console.log('Checking V2 comments...');
-        Types.Publication memory comment5Pub = hub.getPublication(profileThree.profileId, comment5);
+        Types.PublicationMemory memory comment5Pub = hub.getPublication(profileThree.profileId, comment5);
         assertEq(comment5Pub.pointedProfileId, profileThree.profileId);
         assertEq(comment5Pub.pointedPubId, post3);
         assertEq(comment5Pub.contentURI, 'https://comment5');
@@ -970,9 +951,8 @@ contract UpgradeForkTest is BaseTest {
         assertEq(uint256(comment5Pub.pubType), uint256(Types.PublicationType.Comment));
         assertEq(comment5Pub.rootProfileId, profileThree.profileId);
         assertEq(comment5Pub.rootPubId, post3);
-        assertEq(comment5Pub.enabledActionModulesBitmap, 0); // We didn't set action modules in this V2 comment
 
-        Types.Publication memory comment6Pub = hub.getPublication(profileFour.profileId, comment6);
+        Types.PublicationMemory memory comment6Pub = hub.getPublication(profileFour.profileId, comment6);
         assertEq(comment6Pub.pointedProfileId, profileFour.profileId);
         assertEq(comment6Pub.pointedPubId, post4);
         assertEq(comment6Pub.contentURI, 'https://comment6');
@@ -981,9 +961,8 @@ contract UpgradeForkTest is BaseTest {
         assertEq(uint256(comment6Pub.pubType), uint256(Types.PublicationType.Comment));
         assertEq(comment6Pub.rootProfileId, profileFour.profileId);
         assertEq(comment6Pub.rootPubId, post4);
-        assertEq(comment6Pub.enabledActionModulesBitmap, 0); // We didn't set action modules in this V2 comment
 
-        Types.Publication memory comment7Pub = hub.getPublication(profileThree.profileId, comment7);
+        Types.PublicationMemory memory comment7Pub = hub.getPublication(profileThree.profileId, comment7);
         assertEq(comment7Pub.pointedProfileId, profileFour.profileId);
         assertEq(comment7Pub.pointedPubId, post4);
         assertEq(comment7Pub.contentURI, 'https://comment7');
@@ -992,9 +971,8 @@ contract UpgradeForkTest is BaseTest {
         assertEq(uint256(comment7Pub.pubType), uint256(Types.PublicationType.Comment));
         assertEq(comment7Pub.rootProfileId, profileFour.profileId);
         assertEq(comment7Pub.rootPubId, post4);
-        assertEq(comment7Pub.enabledActionModulesBitmap, 0); // We didn't set action modules in this V2 comment
 
-        Types.Publication memory comment8Pub = hub.getPublication(profileThree.profileId, comment8);
+        Types.PublicationMemory memory comment8Pub = hub.getPublication(profileThree.profileId, comment8);
         assertEq(comment8Pub.pointedProfileId, profileOne.profileId);
         assertEq(comment8Pub.pointedPubId, post1);
         assertEq(comment8Pub.contentURI, 'https://comment8');
@@ -1003,9 +981,8 @@ contract UpgradeForkTest is BaseTest {
         assertEq(uint256(comment8Pub.pubType), uint256(Types.PublicationType.Comment));
         assertEq(comment8Pub.rootProfileId, 0); // V2 comments on V1 posts don't have a root
         assertEq(comment8Pub.rootPubId, 0); // V2 comments on V1 posts don't have a root
-        assertEq(comment8Pub.enabledActionModulesBitmap, 0); // We didn't set action modules in this V2 comment
 
-        Types.Publication memory comment9Pub = hub.getPublication(profileFour.profileId, comment9);
+        Types.PublicationMemory memory comment9Pub = hub.getPublication(profileFour.profileId, comment9);
         assertEq(comment9Pub.pointedProfileId, profileTwo.profileId);
         assertEq(comment9Pub.pointedPubId, post2);
         assertEq(comment9Pub.contentURI, 'https://comment9');
@@ -1014,9 +991,8 @@ contract UpgradeForkTest is BaseTest {
         assertEq(uint256(comment9Pub.pubType), uint256(Types.PublicationType.Comment));
         assertEq(comment9Pub.rootProfileId, 0); // V2 comments on V1 posts don't have a root
         assertEq(comment9Pub.rootPubId, 0); // V2 comments on V1 posts don't have a root
-        assertEq(comment9Pub.enabledActionModulesBitmap, 0); // We didn't set action modules in this V2 comment
 
-        Types.Publication memory comment10Pub = hub.getPublication(profileTwo.profileId, comment10);
+        Types.PublicationMemory memory comment10Pub = hub.getPublication(profileTwo.profileId, comment10);
         assertEq(comment10Pub.pointedProfileId, profileThree.profileId);
         assertEq(comment10Pub.pointedPubId, post3);
         assertEq(comment10Pub.contentURI, 'https://comment10');
@@ -1025,12 +1001,11 @@ contract UpgradeForkTest is BaseTest {
         assertEq(uint256(comment10Pub.pubType), uint256(Types.PublicationType.Comment));
         assertEq(comment10Pub.rootProfileId, profileThree.profileId);
         assertEq(comment10Pub.rootPubId, post3);
-        assertEq(comment10Pub.enabledActionModulesBitmap, 0); // We didn't set action modules in this V2 comment
 
         // - 4 Mirrors V2
         console.log('Checking V2 mirrors...');
         console.log('   ...checking mirror5');
-        Types.Publication memory mirror5Pub = hub.getPublication(profileThree.profileId, mirror5);
+        Types.PublicationMemory memory mirror5Pub = hub.getPublication(profileThree.profileId, mirror5);
         assertEq(mirror5Pub.pointedProfileId, profileThree.profileId);
         assertEq(mirror5Pub.pointedPubId, post3);
         assertEq(mirror5Pub.contentURI, '');
@@ -1039,10 +1014,9 @@ contract UpgradeForkTest is BaseTest {
         assertEq(uint256(mirror5Pub.pubType), uint256(Types.PublicationType.Mirror));
         assertEq(mirror5Pub.rootProfileId, profileThree.profileId);
         assertEq(mirror5Pub.rootPubId, post3);
-        assertEq(mirror5Pub.enabledActionModulesBitmap, 0); // We didn't set action modules in this V2 mirror
 
         console.log('   ...checking mirror6');
-        Types.Publication memory mirror6Pub = hub.getPublication(profileFour.profileId, mirror6);
+        Types.PublicationMemory memory mirror6Pub = hub.getPublication(profileFour.profileId, mirror6);
         assertEq(mirror6Pub.pointedProfileId, profileFour.profileId);
         assertEq(mirror6Pub.pointedPubId, post4);
         assertEq(mirror6Pub.contentURI, '');
@@ -1051,10 +1025,9 @@ contract UpgradeForkTest is BaseTest {
         assertEq(uint256(mirror6Pub.pubType), uint256(Types.PublicationType.Mirror));
         assertEq(mirror6Pub.rootProfileId, profileFour.profileId);
         assertEq(mirror6Pub.rootPubId, post4);
-        assertEq(mirror6Pub.enabledActionModulesBitmap, 0); // We didn't set action modules in this V2 mirror
 
         console.log('   ...checking mirror7');
-        Types.Publication memory mirror7Pub = hub.getPublication(profileThree.profileId, mirror7);
+        Types.PublicationMemory memory mirror7Pub = hub.getPublication(profileThree.profileId, mirror7);
         assertEq(mirror7Pub.pointedProfileId, profileFour.profileId, 'pointedProfileId of mirror7 is wrong');
         assertEq(mirror7Pub.pointedPubId, quote2, 'pointedPubId of mirror7 is wrong');
         assertEq(mirror7Pub.contentURI, '', 'contentURI of mirror7 is wrong');
@@ -1063,10 +1036,9 @@ contract UpgradeForkTest is BaseTest {
         assertEq(uint256(mirror7Pub.pubType), uint256(Types.PublicationType.Mirror), 'pubType of mirror7 is wrong');
         assertEq(mirror7Pub.rootProfileId, profileFour.profileId, 'rootProfileId of mirror7 is wrong');
         assertEq(mirror7Pub.rootPubId, post4, 'rootPubId of mirror7 is wrong');
-        assertEq(mirror7Pub.enabledActionModulesBitmap, 0, 'enabledActionModulesBitmap of mirror7 is wrong'); // We didn't set action modules in this V2 mirror
 
         console.log('   ...checking mirror8');
-        Types.Publication memory mirror8Pub = hub.getPublication(profileThree.profileId, mirror8);
+        Types.PublicationMemory memory mirror8Pub = hub.getPublication(profileThree.profileId, mirror8);
         assertEq(mirror8Pub.pointedProfileId, profileOne.profileId);
         assertEq(mirror8Pub.pointedPubId, post1);
         assertEq(mirror8Pub.contentURI, '');
@@ -1075,11 +1047,10 @@ contract UpgradeForkTest is BaseTest {
         assertEq(uint256(mirror8Pub.pubType), uint256(Types.PublicationType.Mirror));
         assertEq(mirror8Pub.rootProfileId, 0); // V2 mirrors on V1 posts don't have a root
         assertEq(mirror8Pub.rootPubId, 0); // V2 mirrors on V1 posts don't have a root
-        assertEq(mirror8Pub.enabledActionModulesBitmap, 0); // We didn't set action modules in this V2 mirror
 
         // - 2 Quotes V2
         console.log('Checking V2 quotes...');
-        Types.Publication memory quote1Pub = hub.getPublication(profileThree.profileId, quote1);
+        Types.PublicationMemory memory quote1Pub = hub.getPublication(profileThree.profileId, quote1);
         assertEq(quote1Pub.pointedProfileId, profileThree.profileId);
         assertEq(quote1Pub.pointedPubId, post3);
         assertEq(quote1Pub.contentURI, 'https://quote1');
@@ -1088,9 +1059,8 @@ contract UpgradeForkTest is BaseTest {
         assertEq(uint256(quote1Pub.pubType), uint256(Types.PublicationType.Quote));
         assertEq(quote1Pub.rootProfileId, profileThree.profileId);
         assertEq(quote1Pub.rootPubId, post3);
-        assertEq(quote1Pub.enabledActionModulesBitmap, 0); // We didn't set action modules in this V2 quote
 
-        Types.Publication memory quote2Pub = hub.getPublication(profileFour.profileId, quote2);
+        Types.PublicationMemory memory quote2Pub = hub.getPublication(profileFour.profileId, quote2);
         assertEq(quote2Pub.pointedProfileId, profileFour.profileId);
         assertEq(quote2Pub.pointedPubId, post4);
         assertEq(quote2Pub.contentURI, 'https://quote2');
@@ -1099,9 +1069,8 @@ contract UpgradeForkTest is BaseTest {
         assertEq(uint256(quote2Pub.pubType), uint256(Types.PublicationType.Quote));
         assertEq(quote2Pub.rootProfileId, profileFour.profileId);
         assertEq(quote2Pub.rootPubId, post4);
-        assertEq(quote2Pub.enabledActionModulesBitmap, 0); // We didn't set action modules in this V2 quote
 
-        Types.Publication memory quote3Pub = hub.getPublication(profileThree.profileId, quote3);
+        Types.PublicationMemory memory quote3Pub = hub.getPublication(profileThree.profileId, quote3);
         assertEq(quote3Pub.pointedProfileId, profileFour.profileId);
         assertEq(quote3Pub.pointedPubId, comment6);
         assertEq(quote3Pub.contentURI, 'https://quote3');
@@ -1110,9 +1079,8 @@ contract UpgradeForkTest is BaseTest {
         assertEq(uint256(quote3Pub.pubType), uint256(Types.PublicationType.Quote));
         assertEq(quote3Pub.rootProfileId, profileFour.profileId);
         assertEq(quote3Pub.rootPubId, post4);
-        assertEq(quote3Pub.enabledActionModulesBitmap, 0); // We didn't set action modules in this V2 quote
 
-        Types.Publication memory quote4Pub = hub.getPublication(profileThree.profileId, quote4);
+        Types.PublicationMemory memory quote4Pub = hub.getPublication(profileThree.profileId, quote4);
         assertEq(quote4Pub.pointedProfileId, profileOne.profileId);
         assertEq(quote4Pub.pointedPubId, comment1);
         assertEq(quote4Pub.contentURI, 'https://quote4');
@@ -1121,9 +1089,8 @@ contract UpgradeForkTest is BaseTest {
         assertEq(uint256(quote4Pub.pubType), uint256(Types.PublicationType.Quote));
         assertEq(quote4Pub.rootProfileId, 0); // V2 quotes on V1 posts don't have a root
         assertEq(quote4Pub.rootPubId, 0); // V2 quotes on V1 posts don't have a root
-        assertEq(quote4Pub.enabledActionModulesBitmap, 0); // We didn't set action modules in this V2 quote
 
-        Types.Publication memory quote5Pub = hub.getPublication(profileFour.profileId, quote5);
+        Types.PublicationMemory memory quote5Pub = hub.getPublication(profileFour.profileId, quote5);
         assertEq(quote5Pub.pointedProfileId, profileTwo.profileId);
         assertEq(quote5Pub.pointedPubId, comment2);
         assertEq(quote5Pub.contentURI, 'https://quote5');
@@ -1132,7 +1099,9 @@ contract UpgradeForkTest is BaseTest {
         assertEq(uint256(quote5Pub.pubType), uint256(Types.PublicationType.Quote));
         assertEq(quote5Pub.rootProfileId, 0); // V2 quotes on V1 posts don't have a root
         assertEq(quote5Pub.rootPubId, 0); // V2 quotes on V1 posts don't have a root
-        assertEq(quote5Pub.enabledActionModulesBitmap, 0); // We didn't set action modules in this V2 quote
+
+        // TODO: Add this check but with the new actionModulesEnabled mapping
+        // assertEq(quote5Pub.enabledActionModulesBitmap, 0); // We didn't set action modules in this V2 quote
 
         // - 1 Collect V1
         // - 1 Collect V2
@@ -1153,5 +1122,5 @@ contract UpgradeForkTest is BaseTest {
     -- We don't verify Collects (how?)
     -- We don't verify Follows (how?)
     -- We have somebody follow somebody, but we don't migrate the follows yet
-    
+
 */

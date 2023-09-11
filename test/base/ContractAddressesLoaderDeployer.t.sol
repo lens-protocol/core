@@ -6,7 +6,6 @@ import {CollectPublicationAction} from 'contracts/modules/act/collect/CollectPub
 import {CollectNFT} from 'contracts/modules/act/collect/CollectNFT.sol';
 import {ForkManagement} from 'test/helpers/ForkManagement.sol';
 import {LensHub} from 'contracts/LensHub.sol';
-import {ModuleGlobals} from 'contracts/misc/ModuleGlobals.sol';
 import {FeeFollowModule} from 'contracts/modules/follow/FeeFollowModule.sol';
 import {RevertFollowModule} from 'contracts/modules/follow/RevertFollowModule.sol';
 import {DegreesOfSeparationReferenceModule} from 'contracts/modules/reference/DegreesOfSeparationReferenceModule.sol';
@@ -14,6 +13,7 @@ import {FollowerOnlyReferenceModule} from 'contracts/modules/reference/FollowerO
 import {TokenGatedReferenceModule} from 'contracts/modules/reference/TokenGatedReferenceModule.sol';
 import {Governance} from 'contracts/misc/access/Governance.sol';
 import {ProxyAdmin} from 'contracts/misc/access/ProxyAdmin.sol';
+import {ModuleRegistry} from 'contracts/misc/ModuleRegistry.sol';
 
 contract ContractAddressesLoaderDeployer is Test, ForkManagement {
     using stdJson for string;
@@ -60,6 +60,27 @@ contract ContractAddressesLoaderDeployer is Test, ForkManagement {
         }
     }
 
+    function loadOrDeploy_ModuleRegistryContract() internal {
+        if (fork) {
+            if (keyExists(json, string(abi.encodePacked('.', forkEnv, '.ModuleRegistry')))) {
+                moduleRegistry = ModuleRegistry(
+                    json.readAddress(string(abi.encodePacked('.', forkEnv, '.ModuleRegistry')))
+                );
+            } else {
+                console.log('ModuleRegistry key does not exist');
+                if (forkVersion == 1) {
+                    console.log('No ModuleRegistry address found - deploying new one');
+                    moduleRegistry = new ModuleRegistry();
+                } else {
+                    console.log('No ModuleRegistry address found in addressBook, which is required for V2');
+                    revert('No ModuleRegistry address found in addressBook, which is required for V2');
+                }
+            }
+        } else {
+            moduleRegistry = new ModuleRegistry(); // TODO: Maybe make it upgradeable if needed
+        }
+    }
+
     function loadOrDeploy_CollectPublicationAction() internal returns (address, address) {
         address collectNFTImpl;
         CollectPublicationAction collectPublicationAction;
@@ -91,11 +112,7 @@ contract ContractAddressesLoaderDeployer is Test, ForkManagement {
         address predictedCollectNFTImpl = computeCreateAddress(deployer, deployerNonce + 1);
 
         vm.startPrank(deployer);
-        collectPublicationAction = new CollectPublicationAction(
-            address(hub),
-            predictedCollectNFTImpl,
-            address(moduleGlobals)
-        );
+        collectPublicationAction = new CollectPublicationAction(address(hub), predictedCollectNFTImpl);
         collectNFTImpl = address(new CollectNFT(address(hub), address(collectPublicationAction)));
         vm.stopPrank();
 
@@ -121,7 +138,7 @@ contract ContractAddressesLoaderDeployer is Test, ForkManagement {
             console.log('Testing against already deployed module at:', feeFollowModule);
         } else {
             vm.prank(deployer);
-            feeFollowModule = address(new FeeFollowModule(address(hub), address(moduleGlobals)));
+            feeFollowModule = address(new FeeFollowModule(address(hub)));
         }
         return feeFollowModule;
     }

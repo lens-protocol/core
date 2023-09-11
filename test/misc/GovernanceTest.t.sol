@@ -3,7 +3,7 @@ pragma solidity ^0.8.13;
 
 import 'test/base/BaseTest.t.sol';
 import {ILensGovernable} from 'contracts/interfaces/ILensGovernable.sol';
-import {Governance, ILensHub_V1} from 'contracts/misc/access/Governance.sol';
+import {Governance} from 'contracts/misc/access/Governance.sol';
 import {StorageLib} from 'contracts/libraries/StorageLib.sol';
 
 // TODO: Move to mocks/
@@ -102,58 +102,6 @@ contract GovernanceTest is BaseTest {
         governanceContract.lensHub_whitelistProfileCreator(profileCreator, whitelist);
     }
 
-    function testCannotWhitelistFollowModule_ifNotOwnerOrControllerContract(
-        address followModule,
-        bool whitelist,
-        address otherAddress
-    ) public {
-        vm.assume(otherAddress != governanceOwner && otherAddress != controllerContract);
-
-        vm.expectRevert(Unauthorized.selector);
-
-        vm.prank(otherAddress);
-        governanceContract.lensHub_whitelistFollowModule(followModule, whitelist);
-    }
-
-    function testCannotWhitelistReferenceModule_ifNotOwnerOrControllerContract(
-        address referenceModule,
-        bool whitelist,
-        address otherAddress
-    ) public {
-        vm.assume(otherAddress != governanceOwner && otherAddress != controllerContract);
-
-        vm.expectRevert(Unauthorized.selector);
-
-        vm.prank(otherAddress);
-        governanceContract.lensHub_whitelistReferenceModule(referenceModule, whitelist);
-    }
-
-    function testCannotWhitelistActionModule_ifNotOwnerOrControllerContract(
-        address actionModule,
-        bool whitelist,
-        address otherAddress
-    ) public {
-        vm.assume(otherAddress != governanceOwner && otherAddress != controllerContract);
-
-        vm.expectRevert(Unauthorized.selector);
-
-        vm.prank(otherAddress);
-        governanceContract.lensHub_whitelistActionModule(actionModule, whitelist);
-    }
-
-    function testCannotWhitelistCollectModule_ifNotOwnerOrControllerContract(
-        address collectModule,
-        bool whitelist,
-        address otherAddress
-    ) public {
-        vm.assume(otherAddress != governanceOwner && otherAddress != controllerContract);
-
-        vm.expectRevert(Unauthorized.selector);
-
-        vm.prank(otherAddress);
-        governanceContract.lensHub_whitelistCollectModule(collectModule, whitelist);
-    }
-
     function testCannotExecuteAsGovernance_ifNotOwnerOrControllerContract(
         address target,
         bytes memory data,
@@ -229,100 +177,6 @@ contract GovernanceTest is BaseTest {
         governanceContract.lensHub_whitelistProfileCreator(profileCreator, whitelist);
 
         assertEq(hub.isProfileCreatorWhitelisted(profileCreator), whitelist);
-    }
-
-    function testWhitelistFollowModule_IfOwner(address followModule, bool whitelist) public {
-        vm.expectCall(
-            address(hub),
-            abi.encodeCall(ILensGovernable.whitelistFollowModule, (followModule, whitelist)),
-            1
-        );
-
-        vm.prank(governanceOwner);
-        governanceContract.lensHub_whitelistFollowModule(followModule, whitelist);
-
-        assertEq(hub.isFollowModuleWhitelisted(followModule), whitelist);
-    }
-
-    function testWhitelistFollowModule_IfControllerContract(address followModule, bool whitelist) public {
-        vm.expectCall(
-            address(hub),
-            abi.encodeCall(ILensGovernable.whitelistFollowModule, (followModule, whitelist)),
-            1
-        );
-
-        vm.prank(controllerContract);
-        governanceContract.lensHub_whitelistFollowModule(followModule, whitelist);
-
-        assertEq(hub.isFollowModuleWhitelisted(followModule), whitelist);
-    }
-
-    function testWhitelistReferenceModule_ifOwner(address referenceModule, bool whitelist) public {
-        vm.expectCall(
-            address(hub),
-            abi.encodeCall(ILensGovernable.whitelistReferenceModule, (referenceModule, whitelist)),
-            1
-        );
-
-        vm.prank(governanceOwner);
-        governanceContract.lensHub_whitelistReferenceModule(referenceModule, whitelist);
-
-        assertEq(hub.isReferenceModuleWhitelisted(referenceModule), whitelist);
-    }
-
-    function testWhitelistReferenceModule_ifControllerContract(address referenceModule, bool whitelist) public {
-        vm.expectCall(
-            address(hub),
-            abi.encodeCall(ILensGovernable.whitelistReferenceModule, (referenceModule, whitelist)),
-            1
-        );
-
-        vm.prank(controllerContract);
-        governanceContract.lensHub_whitelistReferenceModule(referenceModule, whitelist);
-
-        assertEq(hub.isReferenceModuleWhitelisted(referenceModule), whitelist);
-    }
-
-    function testWhitelistActionModule_ifOwner(address actionModule) public {
-        vm.expectCall(address(hub), abi.encodeCall(ILensGovernable.whitelistActionModule, (actionModule, true)), 1);
-
-        vm.prank(governanceOwner);
-        governanceContract.lensHub_whitelistActionModule(actionModule, true);
-
-        assertTrue(hub.getActionModuleWhitelistData(actionModule).isWhitelisted);
-    }
-
-    function testWhitelistActionModule_ifControllerContract(address actionModule) public {
-        vm.expectCall(address(hub), abi.encodeCall(ILensGovernable.whitelistActionModule, (actionModule, true)), 1);
-
-        vm.prank(controllerContract);
-        governanceContract.lensHub_whitelistActionModule(actionModule, true);
-
-        assertTrue(hub.getActionModuleWhitelistData(actionModule).isWhitelisted);
-    }
-
-    function testUnwhitelistActionModule_ifOwner(address actionModule) public {
-        vm.prank(governanceOwner);
-        governanceContract.lensHub_whitelistActionModule(actionModule, true);
-
-        vm.expectCall(address(hub), abi.encodeCall(ILensGovernable.whitelistActionModule, (actionModule, false)), 1);
-
-        vm.prank(governanceOwner);
-        governanceContract.lensHub_whitelistActionModule(actionModule, false);
-
-        assertFalse(hub.getActionModuleWhitelistData(actionModule).isWhitelisted);
-    }
-
-    function testUnwhitelistActionModule_ifControllerContract(address actionModule) public {
-        vm.prank(controllerContract);
-        governanceContract.lensHub_whitelistActionModule(actionModule, true);
-
-        vm.expectCall(address(hub), abi.encodeCall(ILensGovernable.whitelistActionModule, (actionModule, false)), 1);
-
-        vm.prank(controllerContract);
-        governanceContract.lensHub_whitelistActionModule(actionModule, false);
-
-        assertFalse(hub.getActionModuleWhitelistData(actionModule).isWhitelisted);
     }
 
     function testExecuteAsGovernance_ifOwner(address newGovernance) public {
@@ -423,29 +277,5 @@ contract GovernanceTest is BaseTest {
             address(mockNonLensHubGoverned),
             abi.encodeCall(MockNonLensHubGoverned.failWithNoErrorData, ())
         );
-    }
-
-    // V1 functions for upgrade
-
-    function testWhitelistCollectModule_ifOwner(address collectModule, bool whitelist) public {
-        vm.expectCall(address(hub), abi.encodeCall(ILensHub_V1.whitelistCollectModule, (collectModule, whitelist)), 1);
-
-        // Lens V2 does not support collect module whitelisting as top level feature.
-        // But we still test that Governance contract allows and does such a call to V1 implementation interface.
-        vm.expectRevert();
-
-        vm.prank(governanceOwner);
-        governanceContract.lensHub_whitelistCollectModule(collectModule, whitelist);
-    }
-
-    function testWhitelistCollectModule_ifControllerContract(address collectModule, bool whitelist) public {
-        vm.expectCall(address(hub), abi.encodeCall(ILensHub_V1.whitelistCollectModule, (collectModule, whitelist)), 1);
-
-        // Lens V2 does not support collect module whitelisting as top level feature.
-        // But we still test that Governance contract allows and does such a call to V1 implementation interface.
-        vm.expectRevert();
-
-        vm.prank(controllerContract);
-        governanceContract.lensHub_whitelistCollectModule(collectModule, whitelist);
     }
 }

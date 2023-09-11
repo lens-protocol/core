@@ -8,6 +8,8 @@ import {StorageLib} from 'contracts/libraries/StorageLib.sol';
 import {Events} from 'contracts/libraries/constants/Events.sol';
 
 library GovernanceLib {
+    uint16 internal constant BPS_MAX = 10000;
+
     /**
      * @notice Sets the governance address.
      *
@@ -73,39 +75,29 @@ library GovernanceLib {
         emit Events.ProfileCreatorWhitelisted(profileCreator, whitelist, block.timestamp);
     }
 
-    function whitelistFollowModule(address followModule, bool whitelist) external {
-        StorageLib.followModuleWhitelisted()[followModule] = whitelist;
-        emit Events.FollowModuleWhitelisted(followModule, whitelist, block.timestamp);
-    }
-
-    function whitelistReferenceModule(address referenceModule, bool whitelist) external {
-        StorageLib.referenceModuleWhitelisted()[referenceModule] = whitelist;
-        emit Events.ReferenceModuleWhitelisted(referenceModule, whitelist, block.timestamp);
-    }
-
-    function whitelistActionModule(address actionModule, bool whitelist) external {
-        Types.ActionModuleWhitelistData memory actionModuleWhitelistData = StorageLib.actionModuleWhitelistData()[
-            actionModule
-        ];
-
-        uint256 id;
-        if (actionModuleWhitelistData.id == 0) {
-            // The action module with the given address wasn't whitelisted before, a new ID is assigned to it.
-            if (!whitelist) {
-                revert Errors.NotWhitelisted();
-            }
-            id = StorageLib.incrementMaxActionModuleIdUsed();
-
-            StorageLib.actionModuleWhitelistData()[actionModule] = Types.ActionModuleWhitelistData(
-                uint248(id),
-                whitelist
-            );
-            StorageLib.actionModuleById()[id] = actionModule;
-        } else {
-            // The action module with the given address was already whitelisted before, it has an ID already assigned.
-            StorageLib.actionModuleWhitelistData()[actionModule].isWhitelisted = whitelist;
-            id = actionModuleWhitelistData.id;
+    function setTreasury(address newTreasury) internal {
+        if (newTreasury == address(0)) {
+            revert Errors.InitParamsInvalid();
         }
-        emit Events.ActionModuleWhitelisted(actionModule, id, whitelist, block.timestamp);
+        Types.TreasuryData memory treasuryData = StorageLib.getTreasuryData();
+
+        address prevTreasury = treasuryData.treasury;
+        treasuryData.treasury = newTreasury;
+
+        StorageLib.setTreasuryData(treasuryData);
+        emit Events.TreasurySet(prevTreasury, newTreasury, block.timestamp);
+    }
+
+    function setTreasuryFee(uint16 newTreasuryFee) internal {
+        if (newTreasuryFee >= BPS_MAX / 2) {
+            revert Errors.InitParamsInvalid();
+        }
+        Types.TreasuryData memory treasuryData = StorageLib.getTreasuryData();
+
+        uint16 prevTreasuryFee = treasuryData.treasuryFeeBPS;
+        treasuryData.treasuryFeeBPS = newTreasuryFee;
+
+        StorageLib.setTreasuryData(treasuryData);
+        emit Events.TreasuryFeeSet(prevTreasuryFee, newTreasuryFee, block.timestamp);
     }
 }

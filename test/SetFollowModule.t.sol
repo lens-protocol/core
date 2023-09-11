@@ -11,8 +11,6 @@ contract SetFollowModuleTest is BaseTest {
     function setUp() public virtual override(BaseTest) {
         BaseTest.setUp();
         mockFollowModule = address(new MockFollowModule());
-        vm.prank(governance);
-        hub.whitelistFollowModule(mockFollowModule, true);
     }
 
     // Negatives
@@ -45,19 +43,6 @@ contract SetFollowModuleTest is BaseTest {
             pk: notDelegatedExecutorPk,
             profileId: defaultAccount.profileId,
             followModule: address(0),
-            followModuleInitData: ''
-        });
-    }
-
-    function testCannot_SetFollowModule_IfNotWhitelisted(address followModule) public {
-        vm.assume(followModule != address(0));
-        vm.assume(hub.isFollowModuleWhitelisted(followModule) == false);
-
-        vm.expectRevert(Errors.NotWhitelisted.selector);
-        _setFollowModule({
-            pk: defaultAccount.ownerPk,
-            profileId: defaultAccount.profileId,
-            followModule: followModule,
             followModuleInitData: ''
         });
     }
@@ -110,8 +95,6 @@ contract SetFollowModuleTest is BaseTest {
         });
 
         mockFollowModule = address(new MockFollowModule());
-        vm.prank(governance);
-        hub.whitelistFollowModule(mockFollowModule, true);
 
         _setFollowModule({
             pk: delegatedExecutorPk,

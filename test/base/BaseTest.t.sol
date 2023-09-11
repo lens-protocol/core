@@ -181,11 +181,9 @@ contract BaseTest is TestSetup {
         uint256 deadline;
     }
 
-    function _abiEncode(ReferenceParamsForAbiEncode memory referenceParamsForAbiEncode)
-        private
-        pure
-        returns (bytes memory)
-    {
+    function _abiEncode(
+        ReferenceParamsForAbiEncode memory referenceParamsForAbiEncode
+    ) private pure returns (bytes memory) {
         bytes memory encodedStruct = abi.encode(referenceParamsForAbiEncode);
         assembly {
             let lengthWithoutOffset := sub(mload(encodedStruct), 32) // Calculates length without offset.
@@ -361,12 +359,7 @@ contract BaseTest is TestSetup {
         return Types.EIP712Signature(signer, v, r, s, deadline);
     }
 
-    function _toLegacyV1Pub(
-        uint256 profileId,
-        uint256 pubId,
-        address referenceModule,
-        address collectModule
-    ) internal {
+    function _toLegacyV1Pub(uint256 profileId, uint256 pubId, address referenceModule, address collectModule) internal {
         // NOTE: Quotes are converted into V1 comments.
 
         Types.PublicationType pubType = hub.getPublicationType(profileId, pubId);
@@ -411,7 +404,7 @@ contract BaseTest is TestSetup {
         }
     }
 
-    function _isV1LegacyPub(Types.Publication memory pub) internal pure returns (bool) {
+    function _isV1LegacyPub(Types.PublicationMemory memory pub) internal pure returns (bool) {
         return uint8(pub.pubType) == 0;
     }
 }

@@ -20,11 +20,11 @@ import {LensHubInitializable} from 'contracts/misc/LensHubInitializable.sol';
 import {FollowNFT} from 'contracts/FollowNFT.sol';
 import {LegacyCollectNFT} from 'contracts/misc/LegacyCollectNFT.sol';
 import {TransparentUpgradeableProxy} from '@openzeppelin/contracts/proxy/transparent/TransparentUpgradeableProxy.sol';
-import {ModuleGlobals} from 'contracts/misc/ModuleGlobals.sol';
 import {LensHandles} from 'contracts/namespaces/LensHandles.sol';
 import {TokenHandleRegistry} from 'contracts/namespaces/TokenHandleRegistry.sol';
 import {MockActionModule} from 'test/mocks/MockActionModule.sol';
 import {MockReferenceModule} from 'test/mocks/MockReferenceModule.sol';
+import {ModuleRegistry} from 'contracts/misc/ModuleRegistry.sol';
 
 // TODO: Move these to Interface file in test folder.
 struct OldCreateProfileParams {
@@ -124,22 +124,17 @@ contract TestSetup is Test, ContractAddressesLoaderDeployer, ArrayHelpers {
 
         governance = governanceMultisig; // TODO: Temporary, look at ContractAddresses.sol for context
 
-        moduleGlobals = ModuleGlobals(json.readAddress(string(abi.encodePacked('.', targetEnv, '.ModuleGlobals'))));
-
-        modulesGovernance = moduleGlobals.getGovernance();
-        vm.label(modulesGovernance, 'MODULES_GOVERNANCE');
-
         deployer = _loadAddressAs('DEPLOYER');
 
         migrationAdmin = _loadAddressAs('MIGRATION_ADMIN');
 
-        treasury = moduleGlobals.getTreasury();
+        treasury = hub.getTreasury();
         vm.label(treasury, 'TREASURY');
 
         proxyAdmin = address(uint160(uint256(vm.load(hubProxyAddr, ADMIN_SLOT))));
         vm.label(proxyAdmin, 'HUB_PROXY_ADMIN');
 
-        TREASURY_FEE_BPS = moduleGlobals.getTreasuryFee();
+        TREASURY_FEE_BPS = hub.getTreasuryFee();
 
         if (keyExists(json, string(abi.encodePacked('.', targetEnv, '.LensHandles')))) {
             console.log('LensHandles key does exist');
@@ -190,6 +185,8 @@ contract TestSetup is Test, ContractAddressesLoaderDeployer, ArrayHelpers {
 
         loadOrDeploy_ProxyAdminContract();
 
+        loadOrDeploy_ModuleRegistryContract();
+
         if (forkVersion == 1) {
             lensVersion = 1;
             vm.prank(governance);
@@ -210,20 +207,6 @@ contract TestSetup is Test, ContractAddressesLoaderDeployer, ArrayHelpers {
 
         vm.stopPrank();
         ///////////////////////////////////////// End deployments.
-
-        if (lensVersion == 2) {
-            // Start governance actions.
-            vm.startPrank(governanceMultisig);
-
-            // Whitelist the MockActionModule.
-            hub.whitelistActionModule(address(mockActionModule), true);
-
-            // Whitelist the MockReferenceModule.
-            hub.whitelistReferenceModule(address(mockReferenceModule), true);
-
-            // End governance actions.
-            vm.stopPrank();
-        }
     }
 
     function beforeUpgrade() internal virtual {
@@ -239,9 +222,9 @@ contract TestSetup is Test, ContractAddressesLoaderDeployer, ArrayHelpers {
         // Deploy implementation contracts.
         // TODO: Last 3 addresses are for the follow modules for migration purposes.
         hubImpl = new LensHubInitializable({ // TODO: Should we use the usual LensHub, not Initializable?
-            moduleGlobals: address(moduleGlobals),
             followNFTImpl: followNFTImplAddr,
             collectNFTImpl: legacyCollectNFTImplAddr,
+            moduleRegistry: address(moduleRegistry),
             tokenGuardianCooldown: PROFILE_GUARDIAN_COOLDOWN,
             migrationParams: Types.MigrationParams({
                 lensHandlesAddress: address(lensHandles),
@@ -268,16 +251,19 @@ contract TestSetup is Test, ContractAddressesLoaderDeployer, ArrayHelpers {
         governanceMultisig = _loadAddressAs('GOVERNANCE_MULTISIG');
         governance = governanceMultisig; // TODO: Temporary, look at ContractAddresses.sol for context
         treasury = _loadAddressAs('TREASURY');
-        modulesGovernance = _loadAddressAs('MODULES_GOVERNANCE');
         migrationAdmin = _loadAddressAs('MIGRATION_ADMIN');
 
         TREASURY_FEE_BPS = 50;
 
-        moduleGlobals = new ModuleGlobals(modulesGovernance, treasury, TREASURY_FEE_BPS);
-        vm.label(address(moduleGlobals), 'MODULE_GLOBALS');
-
         ///////////////////////////////////////// Start deployments.
         vm.startPrank(deployer);
+
+        // Deploy ModuleRegistry implementation and proxy.
+        address moduleRegistryImpl = address(new ModuleRegistry());
+        vm.label(moduleRegistryImpl, 'MODULE_REGISTRY_IMPL');
+
+        moduleRegistry = ModuleRegistry(address(new TransparentUpgradeableProxy(moduleRegistryImpl, deployer, '')));
+        vm.label(address(moduleRegistry), 'MODULE_REGISTRY');
 
         // Precompute needed addresses.
         address followNFTImplAddr = computeCreateAddress(deployer, vm.getNonce(deployer) + 1);
@@ -291,9 +277,9 @@ contract TestSetup is Test, ContractAddressesLoaderDeployer, ArrayHelpers {
         // Deploy implementation contracts.
         // TODO: Last 3 addresses are for the follow modules for migration purposes.
         hubImpl = new LensHubInitializable({
-            moduleGlobals: address(moduleGlobals),
             followNFTImpl: followNFTImplAddr,
             collectNFTImpl: legacyCollectNFTImplAddr,
+            moduleRegistry: address(moduleRegistry),
             tokenGuardianCooldown: PROFILE_GUARDIAN_COOLDOWN,
             migrationParams: Types.MigrationParams({
                 lensHandlesAddress: lensHandlesProxyAddr,
@@ -356,18 +342,6 @@ contract TestSetup is Test, ContractAddressesLoaderDeployer, ArrayHelpers {
 
         vm.stopPrank();
         ///////////////////////////////////////// End deployments.
-
-        // Start governance actions.
-        vm.startPrank(governanceMultisig);
-
-        // Whitelist the MockActionModule.
-        hub.whitelistActionModule(address(mockActionModule), true);
-
-        // Whitelist the MockReferenceModule.
-        hub.whitelistReferenceModule(address(mockReferenceModule), true);
-
-        // End governance actions.
-        vm.stopPrank();
 
         lensVersion = 2;
     }

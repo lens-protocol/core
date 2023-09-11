@@ -16,11 +16,7 @@ import {ICollectModule} from 'contracts/interfaces/ICollectModule.sol';
  * functionality along with getPublicationData function.
  */
 contract SimpleFeeCollectModule is BaseFeeCollectModule {
-    constructor(
-        address hub,
-        address actionModule,
-        address moduleGlobals
-    ) BaseFeeCollectModule(hub, actionModule, moduleGlobals) {}
+    constructor(address hub, address actionModule) BaseFeeCollectModule(hub, actionModule) {}
 
     /**
      * @inheritdoc ICollectModule

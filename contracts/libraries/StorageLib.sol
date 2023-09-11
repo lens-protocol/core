@@ -20,9 +20,9 @@ library StorageLib {
     uint256 constant LAST_INITIALIZED_REVISION_SLOT = 11; // VersionedInitializable's `lastInitializedRevision` field.
     uint256 constant PROTOCOL_STATE_SLOT = 12;
     uint256 constant PROFILE_CREATOR_WHITELIST_MAPPING_SLOT = 13;
-    uint256 constant FOLLOW_MODULE_WHITELIST_MAPPING_SLOT = 14;
-    uint256 constant ACTION_MODULE_WHITELIST_DATA_MAPPING_SLOT = 15;
-    uint256 constant REFERENCE_MODULE_WHITELIST_MAPPING_SLOT = 16;
+    // Slot 14 is deprecated in Lens V2. In V1 it was used for the follow module address whitelist.
+    // Slot 15 is deprecated in Lens V2. In V1 it was used for the collect module address whitelist.
+    // Slot 16 is deprecated in Lens V2. In V1 it was used for the reference module address whitelist.
     // Slot 17 is deprecated in Lens V2. In V1 it was used for the dispatcher address by profile ID.
     uint256 constant PROFILE_ID_BY_HANDLE_HASH_MAPPING_SLOT = 18; // Deprecated slot, but still needed for V2 migration.
     uint256 constant PROFILES_MAPPING_SLOT = 19;
@@ -40,18 +40,14 @@ library StorageLib {
     //////////////////////////////////
     uint256 constant DELEGATED_EXECUTOR_CONFIG_MAPPING_SLOT = 26;
     uint256 constant BLOCKED_STATUS_MAPPING_SLOT = 27;
-    uint256 constant ACTION_MODULES_SLOT = 28;
-    uint256 constant MAX_ACTION_MODULE_ID_USED_SLOT = 29;
-    uint256 constant PROFILE_ROYALTIES_BPS_SLOT = 30;
-    uint256 constant MIGRATION_ADMINS_WHITELISTED_MAPPING_SLOT = 31;
+    uint256 constant PROFILE_ROYALTIES_BPS_SLOT = 28;
+    uint256 constant MIGRATION_ADMINS_WHITELISTED_MAPPING_SLOT = 29;
+    uint256 constant TREASURY_DATA_SLOT = 30;
 
-    uint256 constant MAX_ACTION_MODULE_ID_SUPPORTED = 255;
-
-    function getPublication(uint256 profileId, uint256 pubId)
-        internal
-        pure
-        returns (Types.Publication storage _publication)
-    {
+    function getPublication(
+        uint256 profileId,
+        uint256 pubId
+    ) internal pure returns (Types.Publication storage _publication) {
         assembly {
             mstore(0, profileId)
             mstore(32, PUBLICATIONS_MAPPING_SLOT)
@@ -59,6 +55,25 @@ library StorageLib {
             mstore(0, pubId)
             _publication.slot := keccak256(0, 64)
         }
+    }
+
+    function getPublicationMemory(
+        uint256 profileId,
+        uint256 pubId
+    ) internal pure returns (Types.PublicationMemory memory) {
+        Types.PublicationMemory storage _publicationStorage;
+        assembly {
+            mstore(0, profileId)
+            mstore(32, PUBLICATIONS_MAPPING_SLOT)
+            mstore(32, keccak256(0, 64))
+            mstore(0, pubId)
+            _publicationStorage.slot := keccak256(0, 64)
+        }
+
+        Types.PublicationMemory memory _publicationMemory;
+        _publicationMemory = _publicationStorage;
+
+        return _publicationMemory;
     }
 
     function getProfile(uint256 profileId) internal pure returns (Types.Profile storage _profiles) {
@@ -69,11 +84,9 @@ library StorageLib {
         }
     }
 
-    function getDelegatedExecutorsConfig(uint256 delegatorProfileId)
-        internal
-        pure
-        returns (Types.DelegatedExecutorsConfig storage _delegatedExecutorsConfig)
-    {
+    function getDelegatedExecutorsConfig(
+        uint256 delegatorProfileId
+    ) internal pure returns (Types.DelegatedExecutorsConfig storage _delegatedExecutorsConfig) {
         assembly {
             mstore(0, delegatorProfileId)
             mstore(32, DELEGATED_EXECUTOR_CONFIG_MAPPING_SLOT)
@@ -99,11 +112,9 @@ library StorageLib {
         }
     }
 
-    function blockedStatus(uint256 blockerProfileId)
-        internal
-        pure
-        returns (mapping(uint256 => bool) storage _blockedStatus)
-    {
+    function blockedStatus(
+        uint256 blockerProfileId
+    ) internal pure returns (mapping(uint256 => bool) storage _blockedStatus) {
         assembly {
             mstore(0, blockerProfileId)
             mstore(32, BLOCKED_STATUS_MAPPING_SLOT)
@@ -137,16 +148,6 @@ library StorageLib {
         }
     }
 
-    function followModuleWhitelisted()
-        internal
-        pure
-        returns (mapping(address => bool) storage _followModuleWhitelisted)
-    {
-        assembly {
-            _followModuleWhitelisted.slot := FOLLOW_MODULE_WHITELIST_MAPPING_SLOT
-        }
-    }
-
     function migrationAdminWhitelisted()
         internal
         pure
@@ -154,44 +155,6 @@ library StorageLib {
     {
         assembly {
             _migrationAdminWhitelisted.slot := MIGRATION_ADMINS_WHITELISTED_MAPPING_SLOT
-        }
-    }
-
-    function actionModuleWhitelistData()
-        internal
-        pure
-        returns (mapping(address => Types.ActionModuleWhitelistData) storage _actionModuleWhitelistData)
-    {
-        assembly {
-            _actionModuleWhitelistData.slot := ACTION_MODULE_WHITELIST_DATA_MAPPING_SLOT
-        }
-    }
-
-    function actionModuleById() internal pure returns (mapping(uint256 => address) storage _actionModules) {
-        assembly {
-            _actionModules.slot := ACTION_MODULES_SLOT
-        }
-    }
-
-    function incrementMaxActionModuleIdUsed() internal returns (uint256) {
-        uint256 incrementedId;
-        assembly {
-            incrementedId := add(sload(MAX_ACTION_MODULE_ID_USED_SLOT), 1)
-            sstore(MAX_ACTION_MODULE_ID_USED_SLOT, incrementedId)
-        }
-        if (incrementedId > MAX_ACTION_MODULE_ID_SUPPORTED) {
-            revert Errors.MaxActionModuleIdReached();
-        }
-        return incrementedId;
-    }
-
-    function referenceModuleWhitelisted()
-        internal
-        pure
-        returns (mapping(address => bool) storage _referenceModuleWhitelisted)
-    {
-        assembly {
-            _referenceModuleWhitelisted.slot := REFERENCE_MODULE_WHITELIST_MAPPING_SLOT
         }
     }
 
@@ -240,6 +203,18 @@ library StorageLib {
     function setLastInitializedRevision(uint256 newLastInitializedRevision) internal {
         assembly {
             sstore(LAST_INITIALIZED_REVISION_SLOT, newLastInitializedRevision)
+        }
+    }
+
+    function getTreasuryData() internal pure returns (Types.TreasuryData storage _treasuryData) {
+        assembly {
+            _treasuryData.slot := TREASURY_DATA_SLOT
+        }
+    }
+
+    function setTreasuryData(Types.TreasuryData memory newTreasuryData) internal {
+        assembly {
+            sstore(TREASURY_DATA_SLOT, newTreasuryData)
         }
     }
 }

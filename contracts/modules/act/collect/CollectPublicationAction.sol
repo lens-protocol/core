@@ -7,9 +7,8 @@ import {ICollectModule} from 'contracts/interfaces/ICollectModule.sol';
 import {ICollectNFT} from 'contracts/interfaces/ICollectNFT.sol';
 import {Types} from 'contracts/libraries/constants/Types.sol';
 import {Clones} from '@openzeppelin/contracts/proxy/Clones.sol';
-import {Errors} from 'contracts/libraries/constants/Errors.sol';
+import {Errors} from 'contracts/modules/constants/Errors.sol';
 import {HubRestricted} from 'contracts/base/HubRestricted.sol';
-import {IModuleGlobals} from 'contracts/interfaces/IModuleGlobals.sol';
 
 contract CollectPublicationAction is HubRestricted, IPublicationActionModule {
     struct CollectData {
@@ -17,7 +16,7 @@ contract CollectPublicationAction is HubRestricted, IPublicationActionModule {
         address collectNFT;
     }
 
-    event CollectModuleWhitelisted(address collectModule, bool whitelist, uint256 timestamp);
+    event CollectModuleRegistered(address collectModule, uint256 timestamp);
 
     /**
      * @dev Emitted when a collectNFT clone is deployed using a lazy deployment pattern.
@@ -63,23 +62,22 @@ contract CollectPublicationAction is HubRestricted, IPublicationActionModule {
     );
 
     address public immutable COLLECT_NFT_IMPL;
-    address public immutable MODULE_GLOBALS;
 
-    mapping(address collectModule => bool isWhitelisted) internal _collectModuleWhitelisted;
+    mapping(address collectModule => bool isWhitelisted) internal _collectModuleRegistered;
     mapping(uint256 profileId => mapping(uint256 pubId => CollectData collectData)) internal _collectDataByPub;
 
-    constructor(address hub, address collectNFTImpl, address moduleGlobals) HubRestricted(hub) {
+    constructor(address hub, address collectNFTImpl) HubRestricted(hub) {
         COLLECT_NFT_IMPL = collectNFTImpl;
-        MODULE_GLOBALS = moduleGlobals;
     }
 
-    function whitelistCollectModule(address collectModule, bool whitelist) external {
-        address governance = IModuleGlobals(MODULE_GLOBALS).getGovernance();
-        if (msg.sender != governance) {
-            revert Errors.NotGovernance();
+    function registerCollectModule(address collectModule) public returns (bool) {
+        if (_collectModuleRegistered[collectModule]) {
+            return false;
+        } else {
+            emit CollectModuleRegistered(collectModule, block.timestamp);
+            _collectModuleRegistered[collectModule] = true;
+            return true;
         }
-        _collectModuleWhitelisted[collectModule] = whitelist;
-        emit CollectModuleWhitelisted(collectModule, whitelist, block.timestamp);
     }
 
     function initializePublicationAction(
@@ -89,9 +87,10 @@ contract CollectPublicationAction is HubRestricted, IPublicationActionModule {
         bytes calldata data
     ) external override onlyHub returns (bytes memory) {
         (address collectModule, bytes memory collectModuleInitData) = abi.decode(data, (address, bytes));
-        if (!_collectModuleWhitelisted[collectModule]) {
-            revert Errors.NotWhitelisted();
+        if (_collectDataByPub[profileId][pubId].collectModule != address(0)) {
+            revert Errors.AlreadyInitialized();
         }
+        registerCollectModule(collectModule);
         _collectDataByPub[profileId][pubId].collectModule = collectModule;
         ICollectModule(collectModule).initializePublicationCollectModule(
             profileId,
@@ -202,7 +201,7 @@ contract CollectPublicationAction is HubRestricted, IPublicationActionModule {
         return collectNFT;
     }
 
-    function isCollectModuleWhitelisted(address collectModule) external view returns (bool) {
-        return _collectModuleWhitelisted[collectModule];
+    function isCollectModuleRegistered(address collectModule) external view returns (bool) {
+        return _collectModuleRegistered[collectModule];
     }
 }

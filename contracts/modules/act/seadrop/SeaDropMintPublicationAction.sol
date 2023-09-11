@@ -3,7 +3,7 @@
 pragma solidity ^0.8.19;
 
 import {IPublicationActionModule} from 'contracts/interfaces/IPublicationActionModule.sol';
-import {IModuleGlobals} from 'contracts/interfaces/IModuleGlobals.sol';
+import {IModuleRegistry} from 'contracts/interfaces/IModuleRegistry.sol';
 import {HubRestricted} from 'contracts/base/HubRestricted.sol';
 import {Errors} from 'contracts/libraries/constants/Errors.sol';
 import {Types} from 'contracts/libraries/constants/Types.sol';
@@ -15,6 +15,7 @@ import {ISeaDrop} from '@seadrop/interfaces/ISeaDrop.sol';
 import {Clones} from 'openzeppelin-contracts/proxy/Clones.sol';
 import {PublicDrop} from '@seadrop/lib/SeaDropStructs.sol';
 import {LensSeaDropCollection} from 'contracts/modules/act/seadrop/LensSeaDropCollection.sol';
+import {ILensHub} from 'contracts/interfaces/ILensHub.sol';
 
 contract SeaDropMintPublicationAction is HubRestricted, IPublicationActionModule {
     uint256 constant MAX_BPS = 10_000;
@@ -22,7 +23,7 @@ contract SeaDropMintPublicationAction is HubRestricted, IPublicationActionModule
     ISeaDrop public immutable SEADROP;
     IWMATIC public immutable WMATIC;
 
-    IModuleGlobals public immutable MODULE_GLOBALS;
+    IModuleRegistry public immutable MODULE_REGISTRY;
 
     struct CollectionData {
         address nftCollectionAddress;
@@ -50,11 +51,9 @@ contract SeaDropMintPublicationAction is HubRestricted, IPublicationActionModule
 
     address public lensSeaDropCollectionImpl;
 
-    constructor(address hub, address moduleGlobals, address seaDrop, address wmatic) HubRestricted(hub) {
-        MODULE_GLOBALS = IModuleGlobals(moduleGlobals);
-        if (!MODULE_GLOBALS.isCurrencyWhitelisted(wmatic)) {
-            revert Errors.InitParamsInvalid();
-        }
+    constructor(address hub, address moduleRegistry, address seaDrop, address wmatic) HubRestricted(hub) {
+        MODULE_REGISTRY = IModuleRegistry(moduleRegistry);
+        MODULE_REGISTRY.registerErc20Currency(wmatic);
         WMATIC = IWMATIC(wmatic);
         SEADROP = ISeaDrop(seaDrop);
     }
@@ -75,7 +74,7 @@ contract SeaDropMintPublicationAction is HubRestricted, IPublicationActionModule
     }
 
     function setLensSeaDropCollectionImpl(address newLensSeaDropCollectionImpl) external {
-        if (msg.sender != MODULE_GLOBALS.getGovernance()) {
+        if (msg.sender != ILensHub(HUB).getGovernance()) {
             revert Unauthorized();
         }
         lensSeaDropCollectionImpl = newLensSeaDropCollectionImpl;
@@ -87,7 +86,7 @@ contract SeaDropMintPublicationAction is HubRestricted, IPublicationActionModule
         address /* transactionExecutor */,
         bytes calldata data
     ) external override onlyHub returns (bytes memory) {
-        uint16 lensTreasuryFeeBps = MODULE_GLOBALS.getTreasuryFee();
+        uint16 lensTreasuryFeeBps = ILensHub(HUB).getTreasuryFee();
         CollectionData memory collectionData = abi.decode(data, (CollectionData));
 
         PublicDrop memory publicDrop = SEADROP.getPublicDrop(collectionData.nftCollectionAddress);
@@ -123,7 +122,7 @@ contract SeaDropMintPublicationAction is HubRestricted, IPublicationActionModule
     // A function to allow withdrawing dust, and rogue native currency,
     // and ERC20 tokens left in this contract to the treasury.
     function withdrawToTreasury(address currency) external {
-        address lensTreasuryAddress = MODULE_GLOBALS.getTreasury();
+        address lensTreasuryAddress = ILensHub(HUB).getTreasury();
         if (currency == address(0)) {
             payable(lensTreasuryAddress).transfer(address(this).balance);
         } else {
@@ -138,7 +137,7 @@ contract SeaDropMintPublicationAction is HubRestricted, IPublicationActionModule
         CollectionData memory collectionData = _collectionDataByPub[processActionParams.publicationActedProfileId][
             processActionParams.publicationActedId
         ];
-        (address lensTreasuryAddress, uint16 lensTreasuryFeeBps) = MODULE_GLOBALS.getTreasuryData();
+        (address lensTreasuryAddress, uint16 lensTreasuryFeeBps) = ILensHub(HUB).getTreasuryData();
         PublicDrop memory publicDrop = SEADROP.getPublicDrop(collectionData.nftCollectionAddress);
 
         uint256 expectedFees;
@@ -196,7 +195,7 @@ contract SeaDropMintPublicationAction is HubRestricted, IPublicationActionModule
     }
 
     function rescaleFees(uint256 profileId, uint256 pubId) public {
-        uint16 lensTreasuryFeeBps = MODULE_GLOBALS.getTreasuryFee();
+        uint16 lensTreasuryFeeBps = ILensHub(HUB).getTreasuryFee();
         PublicDrop memory publicDrop = SEADROP.getPublicDrop(
             _collectionDataByPub[profileId][pubId].nftCollectionAddress
         );

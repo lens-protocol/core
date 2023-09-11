@@ -20,6 +20,7 @@ library Errors {
     error CallerNotCollectNFT(); // Legacy
     error ArrayMismatch();
     error NotWhitelisted();
+    error NotRegistered();
     error InvalidParameter();
     error ExecutorInvalid();
     error Blocked();
@@ -30,9 +31,6 @@ library Errors {
     error InvalidPointedPub();
     error NonERC721ReceiverImplementer();
     error AlreadyEnabled();
-
-    // Internal Errors
-    error MaxActionModuleIdReached(); // This means we need an upgrade
 
     // Module Errors
     error InitParamsInvalid();

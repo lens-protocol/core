@@ -7,7 +7,6 @@ import {IERC721Metadata} from '@openzeppelin/contracts/token/ERC721/extensions/I
 import {IERC165} from '@openzeppelin/contracts/utils/introspection/IERC165.sol';
 import {ILensProfiles} from 'contracts/interfaces/ILensProfiles.sol';
 import {IERC721Burnable} from 'contracts/interfaces/IERC721Burnable.sol';
-import {IModuleGlobals} from 'contracts/interfaces/IModuleGlobals.sol';
 
 import {LensBaseERC721} from 'contracts/base/LensBaseERC721.sol';
 import {ProfileLib} from 'contracts/libraries/ProfileLib.sol';
@@ -26,12 +25,9 @@ import {Address} from '@openzeppelin/contracts/utils/Address.sol';
 abstract contract LensProfiles is LensBaseERC721, ERC2981CollectionRoyalties, ILensProfiles {
     using Address for address;
 
-    IModuleGlobals immutable MODULE_GLOBALS;
-
     uint256 internal immutable TOKEN_GUARDIAN_COOLDOWN;
 
-    constructor(address moduleGlobals, uint256 tokenGuardianCooldown) {
-        MODULE_GLOBALS = IModuleGlobals(moduleGlobals);
+    constructor(uint256 tokenGuardianCooldown) {
         TOKEN_GUARDIAN_COOLDOWN = tokenGuardianCooldown;
     }
 
@@ -90,12 +86,9 @@ abstract contract LensProfiles is LensBaseERC721, ERC2981CollectionRoyalties, IL
     /**
      * @notice Burns a profile, this maintains the profile data struct.
      */
-    function burn(uint256 tokenId)
-        public
-        override(LensBaseERC721, IERC721Burnable)
-        whenNotPaused
-        onlyProfileOwner(msg.sender, tokenId)
-    {
+    function burn(
+        uint256 tokenId
+    ) public override(LensBaseERC721, IERC721Burnable) whenNotPaused onlyProfileOwner(msg.sender, tokenId) {
         _burn(tokenId);
     }
 
@@ -128,13 +121,9 @@ abstract contract LensProfiles is LensBaseERC721, ERC2981CollectionRoyalties, IL
     /**
      * @dev See {IERC165-supportsInterface}.
      */
-    function supportsInterface(bytes4 interfaceId)
-        public
-        view
-        virtual
-        override(LensBaseERC721, ERC2981CollectionRoyalties, IERC165)
-        returns (bool)
-    {
+    function supportsInterface(
+        bytes4 interfaceId
+    ) public view virtual override(LensBaseERC721, ERC2981CollectionRoyalties, IERC165) returns (bool) {
         return
             LensBaseERC721.supportsInterface(interfaceId) || ERC2981CollectionRoyalties.supportsInterface(interfaceId);
     }
@@ -150,23 +139,15 @@ abstract contract LensProfiles is LensBaseERC721, ERC2981CollectionRoyalties, IL
         return StorageLib.PROFILE_ROYALTIES_BPS_SLOT;
     }
 
-    function _getReceiver(
-        uint256 /* tokenId */
-    ) internal view override returns (address) {
-        return MODULE_GLOBALS.getTreasury();
+    function _getReceiver(uint256 /* tokenId */) internal view override returns (address) {
+        return StorageLib.getTreasuryData().treasury;
     }
 
-    function _beforeRoyaltiesSet(
-        uint256 /* royaltiesInBasisPoints */
-    ) internal view override {
+    function _beforeRoyaltiesSet(uint256 /* royaltiesInBasisPoints */) internal view override {
         ValidationLib.validateCallerIsGovernance();
     }
 
-    function _beforeTokenTransfer(
-        address from,
-        address to,
-        uint256 tokenId
-    ) internal override whenNotPaused {
+    function _beforeTokenTransfer(address from, address to, uint256 tokenId) internal override whenNotPaused {
         if (from != address(0) && _hasTokenGuardianEnabled(from)) {
             // Cannot transfer profile if the guardian is enabled, except at minting time.
             revert Errors.GuardianEnabled();

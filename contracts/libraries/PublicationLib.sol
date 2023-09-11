@@ -10,8 +10,14 @@ import {IReferenceModule} from 'contracts/interfaces/IReferenceModule.sol';
 import {ILegacyReferenceModule} from 'contracts/interfaces/ILegacyReferenceModule.sol';
 import {StorageLib} from 'contracts/libraries/StorageLib.sol';
 import {IPublicationActionModule} from 'contracts/interfaces/IPublicationActionModule.sol';
+import {IModuleRegistry} from 'contracts/interfaces/IModuleRegistry.sol';
+import {ILensHub} from 'contracts/interfaces/ILensHub.sol';
 
 library PublicationLib {
+    function MODULE_REGISTRY() internal view returns (IModuleRegistry) {
+        return IModuleRegistry(ILensHub(address(this)).getModuleRegistry());
+    }
+
     /**
      * @notice Publishes a post to a given profile.
      *
@@ -498,25 +504,13 @@ library PublicationLib {
         }
 
         bytes[] memory actionModuleInitResults = new bytes[](params.actionModules.length);
-        uint256 enabledActionModulesBitmap;
 
         uint256 i;
         while (i < params.actionModules.length) {
-            Types.ActionModuleWhitelistData memory actionModuleWhitelistData = StorageLib.actionModuleWhitelistData()[
-                params.actionModules[i]
-            ];
-
-            if (!actionModuleWhitelistData.isWhitelisted) {
-                revert Errors.NotWhitelisted();
-            }
-
-            uint256 actionModuleIdBitmapMask = 1 << (actionModuleWhitelistData.id - 1);
-
-            if (enabledActionModulesBitmap & actionModuleIdBitmapMask != 0) {
-                revert Errors.AlreadyEnabled();
-            }
-
-            enabledActionModulesBitmap |= actionModuleIdBitmapMask;
+            MODULE_REGISTRY().registerModule(
+                params.actionModules[i],
+                uint256(IModuleRegistry.ModuleType.PUBLICATION_ACTION_MODULE)
+            );
 
             actionModuleInitResults[i] = IPublicationActionModule(params.actionModules[i]).initializePublicationAction(
                 params.profileId,
@@ -529,10 +523,6 @@ library PublicationLib {
                 ++i;
             }
         }
-
-        StorageLib
-            .getPublication(params.profileId, params.pubId)
-            .enabledActionModulesBitmap = enabledActionModulesBitmap;
 
         return actionModuleInitResults;
     }
@@ -550,7 +540,7 @@ library PublicationLib {
         if (params.referenceModule == address(0)) {
             return new bytes(0);
         }
-        ValidationLib.validateReferenceModuleWhitelisted(params.referenceModule);
+        MODULE_REGISTRY().registerModule(params.referenceModule, uint256(IModuleRegistry.ModuleType.REFERENCE_MODULE));
         StorageLib.getPublication(params.profileId, params.pubId).referenceModule = params.referenceModule;
         return
             IReferenceModule(params.referenceModule).initializeReferenceModule(

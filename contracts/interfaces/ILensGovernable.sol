@@ -48,32 +48,20 @@ interface ILensGovernable {
     function whitelistProfileCreator(address profileCreator, bool whitelist) external;
 
     /**
-     * @notice Adds or removes a follow module from the whitelist.
-     * @custom:permissions Governance.
+     * @notice Sets the treasury address.
+     * @custom:permissions Governance
      *
-     * @param followModule The follow module contract address to add or remove from the whitelist.
-     * @param whitelist Whether or not the follow module should be whitelisted.
+     * @param newTreasury The new treasury address to set.
      */
-    function whitelistFollowModule(address followModule, bool whitelist) external;
+    function setTreasury(address newTreasury) external;
 
     /**
-     * @notice Adds or removes a reference module from the whitelist.
-     * @custom:permissions Governance.
+     * @notice Sets the treasury fee.
+     * @custom:permissions Governance
      *
-     * @param referenceModule The reference module contract to add or remove from the whitelist.
-     * @param whitelist Whether or not the reference module should be whitelisted.
+     * @param newTreasuryFee The new treasury fee to set.
      */
-    function whitelistReferenceModule(address referenceModule, bool whitelist) external;
-
-    /**
-     * @notice Adds or removes an action module from the whitelist. This function can only be called by the current
-     * governance address.
-     * @custom:permissions Governance.
-     *
-     * @param actionModule The action module contract address to add or remove from the whitelist.
-     * @param whitelist True if the action module should be whitelisted, false if it should be unwhitelisted.
-     */
-    function whitelistActionModule(address actionModule, bool whitelist) external;
+    function setTreasuryFee(uint16 newTreasuryFee) external;
 
     /**
      * @notice Returns the currently configured governance address.
@@ -101,33 +89,23 @@ interface ILensGovernable {
     function isProfileCreatorWhitelisted(address profileCreator) external view returns (bool);
 
     /**
-     * @notice Returns whether or not a follow module is whitelisted.
+     * @notice Returns the treasury address.
      *
-     * @param followModule The address of the follow module to check.
-     *
-     * @return bool True if the follow module is whitelisted, false otherwise.
+     * @return address The treasury address.
      */
-    function isFollowModuleWhitelisted(address followModule) external view returns (bool);
+    function getTreasury() external view returns (address);
 
     /**
-     * @notice Returns whether or not a reference module is whitelisted.
+     * @notice Returns the treasury fee.
      *
-     * @param referenceModule The address of the reference module to check.
-     *
-     * @return bool True if the reference module is whitelisted, false otherwise.
+     * @return uint16 The treasury fee.
      */
-    function isReferenceModuleWhitelisted(address referenceModule) external view returns (bool);
+    function getTreasuryFee() external view returns (uint16);
 
     /**
-     * @notice Returns whether or not an action module is whitelisted, and its ID assigned.
-     * @dev If the ID is zero, it means the module has never been whitelisted, so no ID assigned to it yet.
+     * @notice Returns the treasury address and treasury fee in a single call.
      *
-     * @param actionModule The address of the action module to get whitelist data of.
-     *
-     * @return ActionModuleWhitelistData The data containing the ID and whitelist status of the given module.
+     * @return tuple First, the treasury address, second, the treasury fee.
      */
-    function getActionModuleWhitelistData(address actionModule)
-        external
-        view
-        returns (Types.ActionModuleWhitelistData memory);
+    function getTreasuryData() external view returns (address, uint16);
 }

@@ -7,7 +7,6 @@ import {LegacyCollectNFT} from 'contracts/misc/LegacyCollectNFT.sol';
 import {LensHub} from 'contracts/LensHub.sol';
 import {FollowNFT} from 'contracts/FollowNFT.sol';
 import {TransparentUpgradeableProxy} from '@openzeppelin/contracts/proxy/transparent/TransparentUpgradeableProxy.sol';
-import {ModuleGlobals} from 'contracts/misc/ModuleGlobals.sol';
 import {LensHandles} from 'contracts/namespaces/LensHandles.sol';
 import {TokenHandleRegistry} from 'contracts/namespaces/TokenHandleRegistry.sol';
 import {IERC721} from '@openzeppelin/contracts/token/ERC721/IERC721.sol';
