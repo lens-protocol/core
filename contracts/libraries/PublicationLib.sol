@@ -324,7 +324,7 @@ library PublicationLib {
             // Note that even when the publication pointed is a V2 one, it will lack `rootProfileId` and `rootPubId` if
             // there is a Lens V1 Legacy publication in the thread of interactions (including the root post itself).
             _publication.rootPubId = _pubPointed.rootPubId;
-            return _publication.rootProfileId = _pubPointed.rootPubId;
+            return _publication.rootProfileId = _pubPointed.rootProfileId;
         }
         // Otherwise the root is not filled, as the pointed publication is a Lens V1 Legacy publication, which does not
         // support Lens V2 referral system.
@@ -512,6 +512,10 @@ library PublicationLib {
                 params.actionModules[i],
                 uint256(IModuleRegistry.ModuleType.PUBLICATION_ACTION_MODULE)
             );
+
+            StorageLib.getPublication(params.profileId, params.pubId).actionModuleEnabled[
+                params.actionModules[i]
+            ] = true;
 
             actionModuleInitResults[i] = IPublicationActionModule(params.actionModules[i]).initializePublicationAction(
                 params.profileId,
