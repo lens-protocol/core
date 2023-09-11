@@ -196,6 +196,7 @@ library MetaTxLib {
                     abi.encode(
                         Typehash.MIRROR,
                         mirrorParams.profileId,
+                        _encodeUsingEip712Rules(mirrorParams.metadataURI),
                         mirrorParams.pointedProfileId,
                         mirrorParams.pointedPubId,
                         _encodeUsingEip712Rules(mirrorParams.referrerProfileIds),

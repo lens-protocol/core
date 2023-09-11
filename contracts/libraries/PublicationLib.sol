@@ -128,6 +128,7 @@ library PublicationLib {
         Types.Publication storage _publication = StorageLib.getPublication(mirrorParams.profileId, pubIdAssigned);
         _publication.pointedProfileId = mirrorParams.pointedProfileId;
         _publication.pointedPubId = mirrorParams.pointedPubId;
+        _publication.contentURI = mirrorParams.metadataURI;
         _publication.pubType = Types.PublicationType.Mirror;
         _fillRootOfPublicationInStorage(_publication, mirrorParams.pointedProfileId, mirrorParams.pointedPubId);
 
