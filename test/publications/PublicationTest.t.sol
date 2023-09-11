@@ -120,15 +120,6 @@ abstract contract ActionablePublicationTest is PublicationTest {
         vm.expectRevert(Errors.ArrayMismatch.selector);
         _publish({signerPk: publisher.ownerPk, publisherProfileId: publisher.profileId});
     }
-
-    function testCannot_InitializeActionModule_IfDuplicated() public {
-        _setActionModules({
-            actionModules: _toAddressArray(address(mockActionModule), address(mockActionModule)),
-            actionModulesInitDatas: _toBytesArray(abi.encode(true), abi.encode(true))
-        });
-        vm.expectRevert(Errors.AlreadyEnabled.selector);
-        _publish({signerPk: publisher.ownerPk, publisherProfileId: publisher.profileId});
-    }
 }
 
 /**

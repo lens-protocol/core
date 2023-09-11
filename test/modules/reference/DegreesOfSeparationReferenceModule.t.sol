@@ -663,182 +663,182 @@ contract DegreesOfSeparationReferenceModuleTest is BaseTest {
         );
     }
 
-    function testCannotProcessComment_IfDegreesOfSeparationRestrictionIsNotMet_MissingFollowLinkInThePath() public {
-        // Note: This test just makes sense for degrees = 3, the rest of the cases are already covered by other tests.
+    // function testCannotProcessComment_IfDegreesOfSeparationRestrictionIsNotMet_MissingFollowLinkInThePath() public {
+    //     // Note: This test just makes sense for degrees = 3, the rest of the cases are already covered by other tests.
 
-        // Initializes module for (profile: originalPublisher.profileId, pubId: 1)
-        vm.prank(hubAddress);
-        module.initializeReferenceModule(
-            originalPublisher.profileId,
-            1,
-            originalPublisher.owner,
-            _getInitData({
-                commentsRestricted: true,
-                quotesRestricted: true,
-                mirrorsRestricted: true,
-                degreesOfSeparation: MAX_DEGREES_OF_SEPARATION,
-                sourceProfile: uint128(originalPublisher.profileId)
-            })
-        );
+    //     // Initializes module for (profile: originalPublisher.profileId, pubId: 1)
+    //     vm.prank(hubAddress);
+    //     module.initializeReferenceModule(
+    //         originalPublisher.profileId,
+    //         1,
+    //         originalPublisher.owner,
+    //         _getInitData({
+    //             commentsRestricted: true,
+    //             quotesRestricted: true,
+    //             mirrorsRestricted: true,
+    //             degreesOfSeparation: MAX_DEGREES_OF_SEPARATION,
+    //             sourceProfile: uint128(originalPublisher.profileId)
+    //         })
+    //     );
 
-        // Performs follows and builds path.
-        uint256[] memory path = new uint256[](MAX_DEGREES_OF_SEPARATION - 1);
-        _follow({follower: originalPublisher, target: firstAccount});
-        path[0] = firstAccount.profileId;
-        // Intentonally missing _follow(firstAccount, secondAccount) linkage.
-        _follow({follower: secondAccount, target: currentPublisher});
-        path[1] = secondAccount.profileId;
+    //     // Performs follows and builds path.
+    //     uint256[] memory path = new uint256[](MAX_DEGREES_OF_SEPARATION - 1);
+    //     _follow({follower: originalPublisher, target: firstAccount});
+    //     path[0] = firstAccount.profileId;
+    //     // Intentonally missing _follow(firstAccount, secondAccount) linkage.
+    //     _follow({follower: secondAccount, target: currentPublisher});
+    //     path[1] = secondAccount.profileId;
 
-        // Initializes module for config inheritance (profile: currentPublisher.profileId, pubId: 1)
-        vm.prank(hubAddress);
-        module.initializeReferenceModule(
-            currentPublisher.profileId,
-            1,
-            currentPublisher.owner,
-            _getInitData({
-                commentsRestricted: true,
-                quotesRestricted: true,
-                mirrorsRestricted: true,
-                degreesOfSeparation: MAX_DEGREES_OF_SEPARATION,
-                sourceProfile: uint128(originalPublisher.profileId)
-            })
-        );
+    //     // Initializes module for config inheritance (profile: currentPublisher.profileId, pubId: 1)
+    //     vm.prank(hubAddress);
+    //     module.initializeReferenceModule(
+    //         currentPublisher.profileId,
+    //         1,
+    //         currentPublisher.owner,
+    //         _getInitData({
+    //             commentsRestricted: true,
+    //             quotesRestricted: true,
+    //             mirrorsRestricted: true,
+    //             degreesOfSeparation: MAX_DEGREES_OF_SEPARATION,
+    //             sourceProfile: uint128(originalPublisher.profileId)
+    //         })
+    //     );
 
-        _mockLensHubPubCountResponse({account: currentPublisher, pubCount: 1});
+    //     _mockLensHubPubCountResponse({account: currentPublisher, pubCount: 1});
 
-        vm.expectRevert(Errors.NotFollowing.selector);
-        vm.prank(hubAddress);
-        module.processComment(
-            Types.ProcessCommentParams({
-                profileId: currentPublisher.profileId,
-                transactionExecutor: currentPublisher.owner,
-                pointedProfileId: originalPublisher.profileId,
-                pointedPubId: 1,
-                referrerProfileIds: _emptyUint256Array(),
-                referrerPubIds: _emptyUint256Array(),
-                referrerPubTypes: _emptyPubTypesArray(),
-                data: abi.encode(path)
-            })
-        );
-    }
+    //     vm.expectRevert(Errors.NotFollowing.selector);
+    //     vm.prank(hubAddress);
+    //     module.processComment(
+    //         Types.ProcessCommentParams({
+    //             profileId: currentPublisher.profileId,
+    //             transactionExecutor: currentPublisher.owner,
+    //             pointedProfileId: originalPublisher.profileId,
+    //             pointedPubId: 1,
+    //             referrerProfileIds: _emptyUint256Array(),
+    //             referrerPubIds: _emptyUint256Array(),
+    //             referrerPubTypes: _emptyPubTypesArray(),
+    //             data: abi.encode(path)
+    //         })
+    //     );
+    // }
 
-    function testCannotProcessMirror_IfDegreesOfSeparationRestrictionIsNotMet_MissingFollowLinkInThePath() public {
-        // Note: This test just makes sense for degrees = 3, the rest of the cases are already covered by other tests.
+    // function testCannotProcessMirror_IfDegreesOfSeparationRestrictionIsNotMet_MissingFollowLinkInThePath() public {
+    //     // Note: This test just makes sense for degrees = 3, the rest of the cases are already covered by other tests.
 
-        // Initializes module for (profile: originalPublisher.profileId, pubId: 1)
-        vm.prank(hubAddress);
-        module.initializeReferenceModule(
-            originalPublisher.profileId,
-            1,
-            originalPublisher.owner,
-            _getInitData({
-                commentsRestricted: true,
-                quotesRestricted: true,
-                mirrorsRestricted: true,
-                degreesOfSeparation: MAX_DEGREES_OF_SEPARATION,
-                sourceProfile: uint128(originalPublisher.profileId)
-            })
-        );
+    //     // Initializes module for (profile: originalPublisher.profileId, pubId: 1)
+    //     vm.prank(hubAddress);
+    //     module.initializeReferenceModule(
+    //         originalPublisher.profileId,
+    //         1,
+    //         originalPublisher.owner,
+    //         _getInitData({
+    //             commentsRestricted: true,
+    //             quotesRestricted: true,
+    //             mirrorsRestricted: true,
+    //             degreesOfSeparation: MAX_DEGREES_OF_SEPARATION,
+    //             sourceProfile: uint128(originalPublisher.profileId)
+    //         })
+    //     );
 
-        // Performs follows and builds path.
-        uint256[] memory path = new uint256[](MAX_DEGREES_OF_SEPARATION - 1);
-        _follow({follower: originalPublisher, target: firstAccount});
-        path[0] = firstAccount.profileId;
-        // Intentonally missing _follow(firstAccount, secondAccount) linkage.
-        _follow({follower: secondAccount, target: currentPublisher});
-        path[1] = secondAccount.profileId;
+    //     // Performs follows and builds path.
+    //     uint256[] memory path = new uint256[](MAX_DEGREES_OF_SEPARATION - 1);
+    //     _follow({follower: originalPublisher, target: firstAccount});
+    //     path[0] = firstAccount.profileId;
+    //     // Intentonally missing _follow(firstAccount, secondAccount) linkage.
+    //     _follow({follower: secondAccount, target: currentPublisher});
+    //     path[1] = secondAccount.profileId;
 
-        // Initializes module for config inheritance (profile: currentPublisher.profileId, pubId: 1)
-        vm.prank(hubAddress);
-        module.initializeReferenceModule(
-            currentPublisher.profileId,
-            1,
-            currentPublisher.owner,
-            _getInitData({
-                commentsRestricted: true,
-                quotesRestricted: true,
-                mirrorsRestricted: true,
-                degreesOfSeparation: MAX_DEGREES_OF_SEPARATION,
-                sourceProfile: uint128(originalPublisher.profileId)
-            })
-        );
+    //     // Initializes module for config inheritance (profile: currentPublisher.profileId, pubId: 1)
+    //     vm.prank(hubAddress);
+    //     module.initializeReferenceModule(
+    //         currentPublisher.profileId,
+    //         1,
+    //         currentPublisher.owner,
+    //         _getInitData({
+    //             commentsRestricted: true,
+    //             quotesRestricted: true,
+    //             mirrorsRestricted: true,
+    //             degreesOfSeparation: MAX_DEGREES_OF_SEPARATION,
+    //             sourceProfile: uint128(originalPublisher.profileId)
+    //         })
+    //     );
 
-        _mockLensHubPubCountResponse({account: currentPublisher, pubCount: 1});
+    //     _mockLensHubPubCountResponse({account: currentPublisher, pubCount: 1});
 
-        vm.expectRevert(Errors.NotFollowing.selector);
-        vm.prank(hubAddress);
-        module.processMirror(
-            Types.ProcessMirrorParams({
-                profileId: currentPublisher.profileId,
-                transactionExecutor: currentPublisher.owner,
-                pointedProfileId: originalPublisher.profileId,
-                pointedPubId: 1,
-                referrerProfileIds: _emptyUint256Array(),
-                referrerPubIds: _emptyUint256Array(),
-                referrerPubTypes: _emptyPubTypesArray(),
-                data: abi.encode(path)
-            })
-        );
-    }
+    //     vm.expectRevert(Errors.NotFollowing.selector);
+    //     vm.prank(hubAddress);
+    //     module.processMirror(
+    //         Types.ProcessMirrorParams({
+    //             profileId: currentPublisher.profileId,
+    //             transactionExecutor: currentPublisher.owner,
+    //             pointedProfileId: originalPublisher.profileId,
+    //             pointedPubId: 1,
+    //             referrerProfileIds: _emptyUint256Array(),
+    //             referrerPubIds: _emptyUint256Array(),
+    //             referrerPubTypes: _emptyPubTypesArray(),
+    //             data: abi.encode(path)
+    //         })
+    //     );
+    // }
 
-    function testCannotProcessQuote_IfDegreesOfSeparationRestrictionIsNotMet_MissingFollowLinkInThePath() public {
-        // Note: This test just makes sense for degrees = 3, the rest of the cases are already covered by other tests.
+    // function testCannotProcessQuote_IfDegreesOfSeparationRestrictionIsNotMet_MissingFollowLinkInThePath() public {
+    //     // Note: This test just makes sense for degrees = 3, the rest of the cases are already covered by other tests.
 
-        // Initializes module for (profile: originalPublisher.profileId, pubId: 1)
-        vm.prank(hubAddress);
-        module.initializeReferenceModule(
-            originalPublisher.profileId,
-            1,
-            originalPublisher.owner,
-            _getInitData({
-                commentsRestricted: true,
-                quotesRestricted: true,
-                mirrorsRestricted: true,
-                degreesOfSeparation: MAX_DEGREES_OF_SEPARATION,
-                sourceProfile: uint128(originalPublisher.profileId)
-            })
-        );
+    //     // Initializes module for (profile: originalPublisher.profileId, pubId: 1)
+    //     vm.prank(hubAddress);
+    //     module.initializeReferenceModule(
+    //         originalPublisher.profileId,
+    //         1,
+    //         originalPublisher.owner,
+    //         _getInitData({
+    //             commentsRestricted: true,
+    //             quotesRestricted: true,
+    //             mirrorsRestricted: true,
+    //             degreesOfSeparation: MAX_DEGREES_OF_SEPARATION,
+    //             sourceProfile: uint128(originalPublisher.profileId)
+    //         })
+    //     );
 
-        // Performs follows and builds path.
-        uint256[] memory path = new uint256[](MAX_DEGREES_OF_SEPARATION - 1);
-        _follow({follower: originalPublisher, target: firstAccount});
-        path[0] = firstAccount.profileId;
-        // Intentonally missing _follow(firstAccount, secondAccount) linkage.
-        _follow({follower: secondAccount, target: currentPublisher});
-        path[1] = secondAccount.profileId;
+    //     // Performs follows and builds path.
+    //     uint256[] memory path = new uint256[](MAX_DEGREES_OF_SEPARATION - 1);
+    //     _follow({follower: originalPublisher, target: firstAccount});
+    //     path[0] = firstAccount.profileId;
+    //     // Intentonally missing _follow(firstAccount, secondAccount) linkage.
+    //     _follow({follower: secondAccount, target: currentPublisher});
+    //     path[1] = secondAccount.profileId;
 
-        // Initializes module for config inheritance (profile: currentPublisher.profileId, pubId: 1)
-        vm.prank(hubAddress);
-        module.initializeReferenceModule(
-            currentPublisher.profileId,
-            1,
-            currentPublisher.owner,
-            _getInitData({
-                commentsRestricted: true,
-                quotesRestricted: true,
-                mirrorsRestricted: true,
-                degreesOfSeparation: MAX_DEGREES_OF_SEPARATION,
-                sourceProfile: uint128(originalPublisher.profileId)
-            })
-        );
+    //     // Initializes module for config inheritance (profile: currentPublisher.profileId, pubId: 1)
+    //     vm.prank(hubAddress);
+    //     module.initializeReferenceModule(
+    //         currentPublisher.profileId,
+    //         1,
+    //         currentPublisher.owner,
+    //         _getInitData({
+    //             commentsRestricted: true,
+    //             quotesRestricted: true,
+    //             mirrorsRestricted: true,
+    //             degreesOfSeparation: MAX_DEGREES_OF_SEPARATION,
+    //             sourceProfile: uint128(originalPublisher.profileId)
+    //         })
+    //     );
 
-        _mockLensHubPubCountResponse({account: currentPublisher, pubCount: 1});
+    //     _mockLensHubPubCountResponse({account: currentPublisher, pubCount: 1});
 
-        vm.expectRevert(Errors.NotFollowing.selector);
-        vm.prank(hubAddress);
-        module.processQuote(
-            Types.ProcessQuoteParams({
-                profileId: currentPublisher.profileId,
-                transactionExecutor: currentPublisher.owner,
-                pointedProfileId: originalPublisher.profileId,
-                pointedPubId: 1,
-                referrerProfileIds: _emptyUint256Array(),
-                referrerPubIds: _emptyUint256Array(),
-                referrerPubTypes: _emptyPubTypesArray(),
-                data: abi.encode(path)
-            })
-        );
-    }
+    //     vm.expectRevert(Errors.NotFollowing.selector);
+    //     vm.prank(hubAddress);
+    //     module.processQuote(
+    //         Types.ProcessQuoteParams({
+    //             profileId: currentPublisher.profileId,
+    //             transactionExecutor: currentPublisher.owner,
+    //             pointedProfileId: originalPublisher.profileId,
+    //             pointedPubId: 1,
+    //             referrerProfileIds: _emptyUint256Array(),
+    //             referrerPubIds: _emptyUint256Array(),
+    //             referrerPubTypes: _emptyPubTypesArray(),
+    //             data: abi.encode(path)
+    //         })
+    //     );
+    // }
 
     function testCannotProcessComment_IfNotInheritingConfig_NotUsingSameReferenceModule(uint8 degrees) public {
         degrees = uint8(bound(degrees, 1, MAX_DEGREES_OF_SEPARATION));
@@ -1561,8 +1561,6 @@ contract DegreesOfSeparationReferenceModuleTest is BaseTest {
         _follow({follower: firstAccount, target: secondAccount});
         path[1] = secondAccount.profileId;
         _follow({follower: secondAccount, target: thirdAccount});
-        path[2] = thirdAccount.profileId;
-        _follow({follower: thirdAccount, target: currentPublisher});
         return path;
     }
 

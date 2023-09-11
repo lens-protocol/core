@@ -154,8 +154,11 @@ abstract contract ReferralSystemTest is BaseTest {
     function testV2Referrals() public virtual {
         for (uint256 commentQuoteFuzzBitmap = 0; commentQuoteFuzzBitmap < 32; commentQuoteFuzzBitmap++) {
             Tree memory treeV2 = _createV2Tree(commentQuoteFuzzBitmap);
+
+            console.log('Created a tree. Executing operations...');
             {
                 // Target a post with quote/comment as referrals
+                console.log('Target a post with quote/comment as referrals');
                 TestPublication memory target = treeV2.post;
                 for (uint256 i = 0; i < treeV2.references.length; i++) {
                     TestPublication memory referralPub = treeV2.references[i];
@@ -165,6 +168,7 @@ abstract contract ReferralSystemTest is BaseTest {
 
             {
                 // Target a post with mirrors as referrals
+                console.log('Target a post with mirrors as referrals');
                 TestPublication memory target = treeV2.post;
                 for (uint256 i = 0; i < treeV2.mirrors.length; i++) {
                     TestPublication memory referralPub = treeV2.mirrors[i];
@@ -174,6 +178,7 @@ abstract contract ReferralSystemTest is BaseTest {
 
             {
                 // Target as a quote/comment node and pass another quote/comments as referral
+                console.log('Target as a quote/comment node and pass another quote/comments as referral');
                 for (uint256 i = 0; i < treeV2.references.length; i++) {
                     TestPublication memory target = treeV2.references[i];
                     for (uint256 j = 0; j < treeV2.references.length; j++) {
@@ -181,10 +186,17 @@ abstract contract ReferralSystemTest is BaseTest {
                         if (i == j) continue; // skip self
                         // vm.expectCall /* */();
 
+                        console.log('Target Quote/Comment: %s %s', target.profileId, target.pubId);
+                        console.log(
+                            'Referral Quote/Comment: %s %s',
+                            quoteOrCommentAsReferralPub.profileId,
+                            quoteOrCommentAsReferralPub.pubId
+                        );
                         _executeOperation(target, quoteOrCommentAsReferralPub);
                     }
 
                     // One special case is a post as referal for reference node
+                    console.log('Special case: Target as a quote/comment node and pass post as referral');
                     TestPublication memory referralPub = treeV2.post;
                     // vm.expectCall /* */();
                     _executeOperation(target, referralPub);
@@ -193,6 +205,7 @@ abstract contract ReferralSystemTest is BaseTest {
 
             {
                 // Target as a quote/comment node and pass mirror as referral
+                console.log('Target as a quote/comment node and pass mirror as referral');
                 for (uint256 i = 0; i < treeV2.references.length; i++) {
                     TestPublication memory target = treeV2.references[i];
                     for (uint256 j = 0; j < treeV2.mirrors.length; j++) {
@@ -240,6 +253,7 @@ abstract contract ReferralSystemTest is BaseTest {
         for (uint256 i = 0; i < treeV1.references.length; i++) {
             TestPublication memory target = treeV1.references[i];
 
+            console.log('Preparing operation...');
             _referralSystem_PrepareOperation(target, referralPub);
 
             // Shoule revert as V1-contaminated trees don't have a root and only allow downwards referrals
@@ -247,6 +261,7 @@ abstract contract ReferralSystemTest is BaseTest {
                 vm.expectRevert(Errors.InvalidReferrer.selector);
             }
 
+            console.log('Trying to execute operation...');
             _referralSystem_ExecutePreparedOperation();
         }
     }

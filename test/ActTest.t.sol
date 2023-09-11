@@ -30,6 +30,7 @@ contract ActTest is ReferralSystemTest {
         uint256[] memory /* referrerPubIds */
     ) internal virtual override returns (bool) {
         if (_isV1LegacyPub(hub.getPublication(target.profileId, target.pubId))) {
+            console.log('Publication is V1 legacy, expecting a revert');
             vm.expectRevert(Errors.ActionNotAllowed.selector);
             return true;
         }
@@ -116,6 +117,16 @@ contract ActTest is ReferralSystemTest {
             actionModuleData: actionParams.actionModuleData
         });
 
+        console.log(
+            'Is publication %s action module enabled? %s',
+            address(mockActionModule),
+            hub.isActionModuleEnabledInPublication(
+                actionParams.publicationActedProfileId,
+                actionParams.publicationActedId,
+                address(mockActionModule)
+            )
+        );
+
         vm.expectCall(
             address(mockActionModule),
             abi.encodeWithSelector(mockActionModule.processPublicationAction.selector, (processActionParams))
@@ -174,7 +185,7 @@ contract ActMetaTxTest is ActTest, MetaTxNegatives {
                 publicationActionParams: publicationActionParams,
                 signature: _getSigStruct({
                     pKey: pk,
-                    digest: _calculateActWithSigDigest(
+                    digest: _getActTypedDataHash(
                         publicationActionParams,
                         cachedNonceByAddress[signer],
                         type(uint256).max
@@ -190,7 +201,7 @@ contract ActMetaTxTest is ActTest, MetaTxNegatives {
             signature: _getSigStruct({
                 signer: vm.addr(_getDefaultMetaTxSignerPk()),
                 pKey: signerPk,
-                digest: _calculateActWithSigDigest(actionParams, nonce, deadline),
+                digest: _getActTypedDataHash(actionParams, nonce, deadline),
                 deadline: deadline
             })
         });
@@ -198,30 +209,6 @@ contract ActMetaTxTest is ActTest, MetaTxNegatives {
 
     function _getDefaultMetaTxSignerPk() internal virtual override returns (uint256) {
         return actor.ownerPk;
-    }
-
-    function _calculateActWithSigDigest(
-        Types.PublicationActionParams memory publicationActionParams,
-        uint256 nonce,
-        uint256 deadline
-    ) internal view returns (bytes32) {
-        return
-            _calculateDigest(
-                keccak256(
-                    abi.encode(
-                        Typehash.ACT,
-                        publicationActionParams.publicationActedProfileId,
-                        publicationActionParams.publicationActedId,
-                        publicationActionParams.actorProfileId,
-                        publicationActionParams.referrerProfileIds,
-                        publicationActionParams.referrerPubIds,
-                        publicationActionParams.actionModuleAddress,
-                        keccak256(publicationActionParams.actionModuleData),
-                        nonce,
-                        deadline
-                    )
-                )
-            );
     }
 
     function _refreshCachedNonces() internal override {

@@ -56,7 +56,13 @@ contract BaseTest is TestSetup {
         uint256 deadline
     ) internal view returns (bytes32) {
         bytes32 structHash = keccak256(
-            abi.encode(Typehash.SET_PROFILE_METADATA_URI, profileId, keccak256(bytes(metadataURI)), nonce, deadline)
+            abi.encode(
+                Typehash.SET_PROFILE_METADATA_URI,
+                profileId,
+                _encodeUsingEip712Rules(metadataURI),
+                nonce,
+                deadline
+            )
         );
         return _calculateDigest(structHash);
     }
@@ -73,7 +79,7 @@ contract BaseTest is TestSetup {
                 Typehash.SET_FOLLOW_MODULE,
                 profileId,
                 followModule,
-                keccak256(followModuleInitData),
+                _encodeUsingEip712Rules(followModuleInitData),
                 nonce,
                 deadline
             )
@@ -94,8 +100,8 @@ contract BaseTest is TestSetup {
             abi.encode(
                 Typehash.CHANGE_DELEGATED_EXECUTORS_CONFIG,
                 delegatorProfileId,
-                abi.encodePacked(delegatedExecutors),
-                abi.encodePacked(approvals),
+                _encodeUsingEip712Rules(delegatedExecutors),
+                _encodeUsingEip712Rules(approvals),
                 configNumber,
                 switchToGivenConfig,
                 nonce,
@@ -119,30 +125,16 @@ contract BaseTest is TestSetup {
             abi.encode(
                 Typehash.POST,
                 profileId,
-                keccak256(bytes(contentURI)),
-                actionModules,
+                _encodeUsingEip712Rules(contentURI),
+                _encodeUsingEip712Rules(actionModules),
                 _encodeUsingEip712Rules(actionModulesInitDatas),
                 referenceModule,
-                keccak256(referenceModuleInitData),
+                _encodeUsingEip712Rules(referenceModuleInitData),
                 nonce,
                 deadline
             )
         );
         return _calculateDigest(structHash);
-    }
-
-    function _encodeUsingEip712Rules(bytes[] memory bytesArray) private pure returns (bytes32) {
-        bytes32[] memory bytesArrayEncodedElements = new bytes32[](bytesArray.length);
-        uint256 i;
-        while (i < bytesArray.length) {
-            // A `bytes` type is encoded as its keccak256 hash.
-            bytesArrayEncodedElements[i] = keccak256(bytesArray[i]);
-            unchecked {
-                ++i;
-            }
-        }
-        // An array is encoded as the keccak256 hash of the concatenation of their encoded elements.
-        return keccak256(abi.encodePacked(bytesArrayEncodedElements));
     }
 
     function _getPostTypedDataHash(
@@ -170,10 +162,10 @@ contract BaseTest is TestSetup {
         bytes32 contentURIHash;
         uint256 pointedProfileId;
         uint256 pointedPubId;
-        uint256[] referrerProfileIds;
-        uint256[] referrerPubIds;
+        bytes32 referrerProfileIds;
+        bytes32 referrerPubIds;
         bytes32 referenceModuleDataHash;
-        address[] actionModules;
+        bytes32 actionModules;
         bytes32 actionModulesInitDataHash;
         address referenceModule;
         bytes32 referenceModuleInitDataHash;
@@ -184,13 +176,7 @@ contract BaseTest is TestSetup {
     function _abiEncode(
         ReferenceParamsForAbiEncode memory referenceParamsForAbiEncode
     ) private pure returns (bytes memory) {
-        bytes memory encodedStruct = abi.encode(referenceParamsForAbiEncode);
-        assembly {
-            let lengthWithoutOffset := sub(mload(encodedStruct), 32) // Calculates length without offset.
-            encodedStruct := add(encodedStruct, 32) // Skips the offset by shifting the memory pointer.
-            mstore(encodedStruct, lengthWithoutOffset) // Stores new length, which now excludes the offset.
-        }
-        return encodedStruct;
+        return abi.encode(referenceParamsForAbiEncode);
     }
 
     function _getCommentTypedDataHash(
@@ -203,16 +189,16 @@ contract BaseTest is TestSetup {
                 ReferenceParamsForAbiEncode(
                     Typehash.COMMENT,
                     commentParams.profileId,
-                    keccak256(bytes(commentParams.contentURI)),
+                    _encodeUsingEip712Rules(commentParams.contentURI),
                     commentParams.pointedProfileId,
                     commentParams.pointedPubId,
-                    commentParams.referrerProfileIds,
-                    commentParams.referrerPubIds,
-                    keccak256(commentParams.referenceModuleData),
-                    commentParams.actionModules,
+                    _encodeUsingEip712Rules(commentParams.referrerProfileIds),
+                    _encodeUsingEip712Rules(commentParams.referrerPubIds),
+                    _encodeUsingEip712Rules(commentParams.referenceModuleData),
+                    _encodeUsingEip712Rules(commentParams.actionModules),
                     _encodeUsingEip712Rules(commentParams.actionModulesInitDatas),
                     commentParams.referenceModule,
-                    keccak256(commentParams.referenceModuleInitData),
+                    _encodeUsingEip712Rules(commentParams.referenceModuleInitData),
                     nonce,
                     deadline
                 )
@@ -231,45 +217,19 @@ contract BaseTest is TestSetup {
                 ReferenceParamsForAbiEncode(
                     Typehash.QUOTE,
                     quoteParams.profileId,
-                    keccak256(bytes(quoteParams.contentURI)),
+                    _encodeUsingEip712Rules(quoteParams.contentURI),
                     quoteParams.pointedProfileId,
                     quoteParams.pointedPubId,
-                    quoteParams.referrerProfileIds,
-                    quoteParams.referrerPubIds,
-                    keccak256(quoteParams.referenceModuleData),
-                    quoteParams.actionModules,
+                    _encodeUsingEip712Rules(quoteParams.referrerProfileIds),
+                    _encodeUsingEip712Rules(quoteParams.referrerPubIds),
+                    _encodeUsingEip712Rules(quoteParams.referenceModuleData),
+                    _encodeUsingEip712Rules(quoteParams.actionModules),
                     _encodeUsingEip712Rules(quoteParams.actionModulesInitDatas),
                     quoteParams.referenceModule,
-                    keccak256(quoteParams.referenceModuleInitData),
+                    _encodeUsingEip712Rules(quoteParams.referenceModuleInitData),
                     nonce,
                     deadline
                 )
-            )
-        );
-        return _calculateDigest(structHash);
-    }
-
-    function _getMirrorTypedDataHash(
-        uint256 profileId,
-        uint256 pointedProfileId,
-        uint256 pointedPubId,
-        uint256[] memory referrerProfileIds,
-        uint256[] memory referrerPubIds,
-        bytes memory referenceModuleData,
-        uint256 nonce,
-        uint256 deadline
-    ) internal view returns (bytes32) {
-        bytes32 structHash = keccak256(
-            abi.encode(
-                Typehash.MIRROR,
-                profileId,
-                pointedProfileId,
-                pointedPubId,
-                referrerProfileIds,
-                referrerPubIds,
-                keccak256(referenceModuleData),
-                nonce,
-                deadline
             )
         );
         return _calculateDigest(structHash);
@@ -280,17 +240,21 @@ contract BaseTest is TestSetup {
         uint256 nonce,
         uint256 deadline
     ) internal view returns (bytes32) {
-        return
-            _getMirrorTypedDataHash({
-                profileId: mirrorParams.profileId,
-                pointedProfileId: mirrorParams.pointedProfileId,
-                pointedPubId: mirrorParams.pointedPubId,
-                referrerProfileIds: mirrorParams.referrerProfileIds,
-                referrerPubIds: mirrorParams.referrerPubIds,
-                referenceModuleData: mirrorParams.referenceModuleData,
-                nonce: nonce,
-                deadline: deadline
-            });
+        bytes32 structHash = keccak256(
+            abi.encode(
+                Typehash.MIRROR,
+                mirrorParams.profileId,
+                _encodeUsingEip712Rules(mirrorParams.metadataURI),
+                mirrorParams.pointedProfileId,
+                mirrorParams.pointedPubId,
+                _encodeUsingEip712Rules(mirrorParams.referrerProfileIds),
+                _encodeUsingEip712Rules(mirrorParams.referrerPubIds),
+                _encodeUsingEip712Rules(mirrorParams.referenceModuleData),
+                nonce,
+                deadline
+            )
+        );
+        return _calculateDigest(structHash);
     }
 
     function _getFollowTypedDataHash(
@@ -305,8 +269,8 @@ contract BaseTest is TestSetup {
             abi.encode(
                 Typehash.FOLLOW,
                 followerProfileId,
-                keccak256(abi.encodePacked(idsOfProfilesToFollow)),
-                keccak256(abi.encodePacked(followTokenIds)),
+                _encodeUsingEip712Rules(idsOfProfilesToFollow),
+                _encodeUsingEip712Rules(followTokenIds),
                 _encodeUsingEip712Rules(datas),
                 nonce,
                 deadline
@@ -326,10 +290,10 @@ contract BaseTest is TestSetup {
                 publicationActionParams.publicationActedProfileId,
                 publicationActionParams.publicationActedId,
                 publicationActionParams.actorProfileId,
-                publicationActionParams.referrerProfileIds,
-                publicationActionParams.referrerPubIds,
+                _encodeUsingEip712Rules(publicationActionParams.referrerProfileIds),
+                _encodeUsingEip712Rules(publicationActionParams.referrerPubIds),
                 publicationActionParams.actionModuleAddress,
-                keccak256(publicationActionParams.actionModuleData),
+                _encodeUsingEip712Rules(publicationActionParams.actionModuleData),
                 nonce,
                 deadline
             )
@@ -360,51 +324,126 @@ contract BaseTest is TestSetup {
     }
 
     function _toLegacyV1Pub(uint256 profileId, uint256 pubId, address referenceModule, address collectModule) internal {
-        // NOTE: Quotes are converted into V1 comments.
-
-        Types.PublicationType pubType = hub.getPublicationType(profileId, pubId);
-        if (pubType == Types.PublicationType.Nonexistent) {
-            revert('Cannot convert unexistent or already V1 publications.');
-        } else if (pubType == Types.PublicationType.Mirror && collectModule != address(0)) {
-            revert('Legacy V1 mirrors cannot have collect module.');
-        } else if (pubType != Types.PublicationType.Mirror && collectModule == address(0)) {
-            revert('Legacy V1 non-mirror publications requires a non-zero collect module.');
-        }
-
         uint256 PUBLICATIONS_MAPPING_SLOT = 20;
         uint256 publicationSlot;
+
+        {
+            // NOTE: Quotes are converted into V1 comments.
+            Types.PublicationType pubType = hub.getPublicationType(profileId, pubId);
+            if (pubType == Types.PublicationType.Nonexistent) {
+                revert('Cannot convert unexistent or already V1 publications.');
+            } else if (pubType == Types.PublicationType.Mirror && collectModule != address(0)) {
+                revert('Legacy V1 mirrors cannot have collect module.');
+            } else if (pubType != Types.PublicationType.Mirror && collectModule == address(0)) {
+                revert('Legacy V1 non-mirror publications requires a non-zero collect module.');
+            }
+
+            assembly {
+                mstore(0, profileId)
+                mstore(32, PUBLICATIONS_MAPPING_SLOT)
+                mstore(32, keccak256(0, 64))
+                mstore(0, pubId)
+                publicationSlot := keccak256(0, 64)
+            }
+
+            uint256 REFERENCE_MODULE_OFFSET = 3;
+            uint256 referenceModuleSlot = publicationSlot + REFERENCE_MODULE_OFFSET;
+            vm.store({
+                target: address(hub),
+                slot: bytes32(referenceModuleSlot),
+                value: bytes32(uint256(uint160(referenceModule)))
+            });
+
+            uint256 COLLECT_MODULE_OFFSET = 4;
+            uint256 collectModuleSlot = publicationSlot + COLLECT_MODULE_OFFSET;
+            vm.store({
+                target: address(hub),
+                slot: bytes32(collectModuleSlot),
+                value: bytes32(uint256(uint160(collectModule)))
+            });
+
+            uint256 firstSlotOffsetToWipe = 5;
+            uint256 lastSlotOffsetToWipe = 8;
+            for (uint256 offset = firstSlotOffsetToWipe; offset <= lastSlotOffsetToWipe; offset++) {
+                vm.store({target: address(hub), slot: bytes32(publicationSlot + offset), value: 0});
+            }
+        }
+
+        {
+            uint256 ACTION_MODULES_OFFSET = 8;
+            uint256 ACTION_MODULES_MAPPING_SLOT = publicationSlot + ACTION_MODULES_OFFSET;
+
+            _setActionModuleInPublicationStorage(
+                ACTION_MODULES_MAPPING_SLOT,
+                _getDefaultPostParams().actionModules[0],
+                false
+            );
+            _setActionModuleInPublicationStorage(
+                ACTION_MODULES_MAPPING_SLOT,
+                _getDefaultCommentParams().actionModules[0],
+                false
+            );
+            _setActionModuleInPublicationStorage(
+                ACTION_MODULES_MAPPING_SLOT,
+                _getDefaultQuoteParams().actionModules[0],
+                false
+            );
+        }
+    }
+
+    function _setActionModuleInPublicationStorage(
+        uint256 actionModuleMappingSlot,
+        address module,
+        bool isEnabled
+    ) internal {
+        bytes32 slot;
         assembly {
-            mstore(0, profileId)
-            mstore(32, PUBLICATIONS_MAPPING_SLOT)
-            mstore(32, keccak256(0, 64))
-            mstore(0, pubId)
-            publicationSlot := keccak256(0, 64)
+            mstore(0, module)
+            mstore(32, actionModuleMappingSlot)
+            slot := keccak256(0, 64)
         }
-
-        uint256 REFERENCE_MODULE_OFFSET = 3;
-        uint256 referenceModuleSlot = publicationSlot + REFERENCE_MODULE_OFFSET;
-        vm.store({
-            target: address(hub),
-            slot: bytes32(referenceModuleSlot),
-            value: bytes32(uint256(uint160(referenceModule)))
-        });
-
-        uint256 COLLECT_MODULE_OFFSET = 4;
-        uint256 collectModuleSlot = publicationSlot + COLLECT_MODULE_OFFSET;
-        vm.store({
-            target: address(hub),
-            slot: bytes32(collectModuleSlot),
-            value: bytes32(uint256(uint160(collectModule)))
-        });
-
-        uint256 firstSlotOffsetToWipe = 5;
-        uint256 lastSlotOffsetToWipe = 8;
-        for (uint256 offset = firstSlotOffsetToWipe; offset <= lastSlotOffsetToWipe; offset++) {
-            vm.store({target: address(hub), slot: bytes32(publicationSlot + offset), value: 0});
-        }
+        vm.store({target: address(hub), slot: slot, value: bytes32(uint256(isEnabled ? 1 : 0))});
     }
 
     function _isV1LegacyPub(Types.PublicationMemory memory pub) internal pure returns (bool) {
         return uint8(pub.pubType) == 0;
+    }
+
+    function _encodeUsingEip712Rules(bytes[] memory bytesArray) private pure returns (bytes32) {
+        bytes32[] memory bytesArrayEncodedElements = new bytes32[](bytesArray.length);
+        uint256 i;
+        while (i < bytesArray.length) {
+            // A `bytes` type is encoded as its keccak256 hash.
+            bytesArrayEncodedElements[i] = keccak256(bytesArray[i]);
+            unchecked {
+                ++i;
+            }
+        }
+        // An array is encoded as the keccak256 hash of the concatenation of their encoded elements.
+        return _encodeUsingEip712Rules(bytesArrayEncodedElements);
+    }
+
+    function _encodeUsingEip712Rules(bool[] memory boolArray) private pure returns (bytes32) {
+        return keccak256(abi.encodePacked(boolArray));
+    }
+
+    function _encodeUsingEip712Rules(address[] memory addressArray) private pure returns (bytes32) {
+        return keccak256(abi.encodePacked(addressArray));
+    }
+
+    function _encodeUsingEip712Rules(uint256[] memory uint256Array) private pure returns (bytes32) {
+        return keccak256(abi.encodePacked(uint256Array));
+    }
+
+    function _encodeUsingEip712Rules(bytes32[] memory bytes32Array) private pure returns (bytes32) {
+        return keccak256(abi.encodePacked(bytes32Array));
+    }
+
+    function _encodeUsingEip712Rules(string memory stringValue) private pure returns (bytes32) {
+        return keccak256(bytes(stringValue));
+    }
+
+    function _encodeUsingEip712Rules(bytes memory bytesValue) private pure returns (bytes32) {
+        return keccak256(bytesValue);
     }
 }
