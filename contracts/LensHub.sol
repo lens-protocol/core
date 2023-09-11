@@ -64,15 +64,15 @@ contract LensHub is
     }
 
     constructor(
-        address moduleGlobals,
         address followNFTImpl,
         address legacyCollectNFTImpl, // We still pass the deprecated CollectNFTImpl for legacy Collects to work
+        address moduleRegistry,
         uint256 tokenGuardianCooldown,
         Types.MigrationParams memory migrationParams
     )
         LensV2Migration(migrationParams)
-        LensProfiles(moduleGlobals, tokenGuardianCooldown)
-        LensImplGetters(followNFTImpl, legacyCollectNFTImpl)
+        LensProfiles(tokenGuardianCooldown)
+        LensImplGetters(followNFTImpl, legacyCollectNFTImpl, moduleRegistry)
     {}
 
     /// @inheritdoc ILensProtocol

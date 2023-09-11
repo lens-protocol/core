@@ -37,6 +37,16 @@ abstract contract LensGovernable is ILensGovernable {
         GovernanceLib.setState(newState);
     }
 
+    /// @inheritdoc ILensGovernable
+    function setTreasury(address newTreasury) external override onlyGov {
+        GovernanceLib.setTreasury(newTreasury);
+    }
+
+    /// @inheritdoc ILensGovernable
+    function setTreasuryFee(uint16 newTreasuryFee) external override onlyGov {
+        GovernanceLib.setTreasuryFee(newTreasuryFee);
+    }
+
     ///@inheritdoc ILensGovernable
     function whitelistProfileCreator(address profileCreator, bool whitelist) external override onlyGov {
         GovernanceLib.whitelistProfileCreator(profileCreator, whitelist);
@@ -66,5 +76,21 @@ abstract contract LensGovernable is ILensGovernable {
     /// @inheritdoc ILensGovernable
     function isProfileCreatorWhitelisted(address profileCreator) external view override returns (bool) {
         return StorageLib.profileCreatorWhitelisted()[profileCreator];
+    }
+
+    /// @inheritdoc ILensGovernable
+    function getTreasury() external view override returns (address) {
+        return StorageLib.getTreasuryData().treasury;
+    }
+
+    /// @inheritdoc ILensGovernable
+    function getTreasuryFee() external view override returns (uint16) {
+        return StorageLib.getTreasuryData().treasuryFeeBPS;
+    }
+
+    /// @inheritdoc ILensGovernable
+    function getTreasuryData() external view override returns (address, uint16) {
+        Types.TreasuryData storage treasuryData = StorageLib.getTreasuryData();
+        return (treasuryData.treasury, treasuryData.treasuryFeeBPS);
     }
 }

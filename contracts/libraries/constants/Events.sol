@@ -340,46 +340,22 @@ library Events {
     );
 
     /**
-     * @notice Emitted when the ModuleGlobals governance address is set.
-     *
-     * @param prevGovernance The previous governance address.
-     * @param newGovernance The new governance address set.
-     * @param timestamp The current block timestamp.
-     */
-    event ModuleGlobalsGovernanceSet(address indexed prevGovernance, address indexed newGovernance, uint256 timestamp);
-
-    /**
-     * @notice Emitted when the ModuleGlobals treasury address is set.
+     * @notice Emitted when the treasury address is set.
      *
      * @param prevTreasury The previous treasury address.
      * @param newTreasury The new treasury address set.
      * @param timestamp The current block timestamp.
      */
-    event ModuleGlobalsTreasurySet(address indexed prevTreasury, address indexed newTreasury, uint256 timestamp);
+    event TreasurySet(address indexed prevTreasury, address indexed newTreasury, uint256 timestamp);
 
     /**
-     * @notice Emitted when the ModuleGlobals treasury fee is set.
+     * @notice Emitted when the treasury fee is set.
      *
      * @param prevTreasuryFee The previous treasury fee in BPS.
      * @param newTreasuryFee The new treasury fee in BPS.
      * @param timestamp The current block timestamp.
      */
-    event ModuleGlobalsTreasuryFeeSet(uint16 indexed prevTreasuryFee, uint16 indexed newTreasuryFee, uint256 timestamp);
-
-    /**
-     * @notice Emitted when a currency is added to or removed from the ModuleGlobals whitelist.
-     *
-     * @param currency The currency address.
-     * @param prevWhitelisted Whether or not the currency was previously whitelisted.
-     * @param whitelisted Whether or not the currency is whitelisted.
-     * @param timestamp The current block timestamp.
-     */
-    event ModuleGlobalsCurrencyWhitelisted(
-        address indexed currency,
-        bool indexed prevWhitelisted,
-        bool indexed whitelisted,
-        uint256 timestamp
-    );
+    event TreasuryFeeSet(uint16 indexed prevTreasuryFee, uint16 indexed newTreasuryFee, uint256 timestamp);
 
     /**
      * @dev Emitted when the metadata associated with a profile is set in the `LensPeriphery`.

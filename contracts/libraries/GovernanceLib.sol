@@ -8,6 +8,8 @@ import {StorageLib} from 'contracts/libraries/StorageLib.sol';
 import {Events} from 'contracts/libraries/constants/Events.sol';
 
 library GovernanceLib {
+    uint16 internal constant BPS_MAX = 10000;
+
     /**
      * @notice Sets the governance address.
      *
@@ -71,5 +73,31 @@ library GovernanceLib {
     function whitelistProfileCreator(address profileCreator, bool whitelist) external {
         StorageLib.profileCreatorWhitelisted()[profileCreator] = whitelist;
         emit Events.ProfileCreatorWhitelisted(profileCreator, whitelist, block.timestamp);
+    }
+
+    function setTreasury(address newTreasury) internal {
+        if (newTreasury == address(0)) {
+            revert Errors.InitParamsInvalid();
+        }
+        Types.TreasuryData memory treasuryData = StorageLib.getTreasuryData();
+
+        address prevTreasury = treasuryData.treasury;
+        treasuryData.treasury = newTreasury;
+
+        StorageLib.setTreasuryData(treasuryData);
+        emit Events.TreasurySet(prevTreasury, newTreasury, block.timestamp);
+    }
+
+    function setTreasuryFee(uint16 newTreasuryFee) internal {
+        if (newTreasuryFee >= BPS_MAX / 2) {
+            revert Errors.InitParamsInvalid();
+        }
+        Types.TreasuryData memory treasuryData = StorageLib.getTreasuryData();
+
+        uint16 prevTreasuryFee = treasuryData.treasuryFeeBPS;
+        treasuryData.treasuryFeeBPS = newTreasuryFee;
+
+        StorageLib.setTreasuryData(treasuryData);
+        emit Events.TreasuryFeeSet(prevTreasuryFee, newTreasuryFee, block.timestamp);
     }
 }

@@ -14,29 +14,6 @@ uint16 constant BPS_MAX = 10000;
 //
 contract BaseFeeCollectModule_Initialization is BaseFeeCollectModuleBase {
     // Negatives
-    function testCannotInitializeWithNonWhitelistedCurrency(
-        uint256 profileId,
-        uint256 pubId,
-        address transactionExecutor,
-        address nonWhitelistedCurrency
-    ) public {
-        vm.assume(profileId != 0);
-        vm.assume(pubId != 0);
-        vm.assume(transactionExecutor != address(0));
-        vm.assume(!moduleGlobals.isCurrencyWhitelisted(nonWhitelistedCurrency));
-
-        exampleInitData.currency = nonWhitelistedCurrency;
-
-        vm.expectRevert(ModuleErrors.InitParamsInvalid.selector);
-        vm.prank(collectPublicationAction);
-        IBaseFeeCollectModule(baseFeeCollectModule).initializePublicationCollectModule(
-            profileId,
-            pubId,
-            transactionExecutor,
-            getEncodedInitData()
-        );
-    }
-
     function testCannotInitializeWithReferralFeeGreaterThanMaxBPS(
         uint256 profileId,
         uint256 pubId,
@@ -143,9 +120,6 @@ contract BaseFeeCollectModule_Initialization is BaseFeeCollectModuleBase {
         vm.assume(pubId != 0);
         vm.assume(transactionExecutor != address(0));
         vm.assume(whitelistedCurrency != address(0));
-
-        vm.prank(modulesGovernance);
-        moduleGlobals.whitelistCurrency(whitelistedCurrency, true);
 
         if (endTimestamp > 0) {
             currentTimestamp = uint72(bound(uint256(currentTimestamp), 0, uint256(endTimestamp) - 1));
@@ -275,7 +249,7 @@ contract BaseFeeCollectModule_ProcessCollect is BaseFeeCollectModuleBase {
         vm.assume(profileId != 0);
         vm.assume(pubId != 0);
         vm.assume(transactionExecutor != address(0));
-        vm.assume(!moduleGlobals.isCurrencyWhitelisted(passedCurrency));
+        // vm.assume(!moduleGlobals.isCurrencyWhitelisted(passedCurrency)); // TODO: Verify that's right
         vm.assume(collectorProfileId != 0);
         vm.assume(collectorProfileOwner != address(0));
 
@@ -620,8 +594,8 @@ contract BaseFeeCollectModule_FeeDistribution is BaseFeeCollectModuleBase {
         numberOfReferrals = bound(numberOfReferrals, 0, 5);
 
         treasuryFee = uint16(bound(uint256(treasuryFee), 0, (BPS_MAX / 2) - 1));
-        vm.prank(modulesGovernance);
-        moduleGlobals.setTreasuryFee(treasuryFee);
+        vm.prank(governance);
+        hub.setTreasuryFee(treasuryFee);
 
         referralFee = uint16(bound(referralFee, 0, BPS_MAX));
 
@@ -747,11 +721,9 @@ contract BaseFeeCollectModule_FeeDistribution is BaseFeeCollectModuleBase {
         return result;
     }
 
-    function _referralPubTypesToMemoryArray(uint256 numberOfReferrals)
-        private
-        pure
-        returns (Types.PublicationType[] memory)
-    {
+    function _referralPubTypesToMemoryArray(
+        uint256 numberOfReferrals
+    ) private pure returns (Types.PublicationType[] memory) {
         Types.PublicationType[] memory result = new Types.PublicationType[](numberOfReferrals);
         for (uint256 i = 0; i < numberOfReferrals; i++) {
             result[i] = Types.PublicationType.Comment;

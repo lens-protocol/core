@@ -42,6 +42,7 @@ library StorageLib {
     uint256 constant BLOCKED_STATUS_MAPPING_SLOT = 27;
     uint256 constant PROFILE_ROYALTIES_BPS_SLOT = 28;
     uint256 constant MIGRATION_ADMINS_WHITELISTED_MAPPING_SLOT = 29;
+    uint256 constant TREASURY_DATA_SLOT = 30;
 
     function getPublication(
         uint256 profileId,
@@ -202,6 +203,18 @@ library StorageLib {
     function setLastInitializedRevision(uint256 newLastInitializedRevision) internal {
         assembly {
             sstore(LAST_INITIALIZED_REVISION_SLOT, newLastInitializedRevision)
+        }
+    }
+
+    function getTreasuryData() internal pure returns (Types.TreasuryData storage _treasuryData) {
+        assembly {
+            _treasuryData.slot := TREASURY_DATA_SLOT
+        }
+    }
+
+    function setTreasuryData(Types.TreasuryData memory newTreasuryData) internal {
+        assembly {
+            sstore(TREASURY_DATA_SLOT, newTreasuryData)
         }
     }
 }

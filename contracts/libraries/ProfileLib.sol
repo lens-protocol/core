@@ -10,9 +10,12 @@ import {StorageLib} from 'contracts/libraries/StorageLib.sol';
 import {IFollowModule} from 'contracts/interfaces/IFollowModule.sol';
 import {IFollowNFT} from 'contracts/interfaces/IFollowNFT.sol';
 import {IModuleRegistry} from 'contracts/interfaces/IModuleRegistry.sol';
+import {ILensHub} from 'contracts/interfaces/ILensHub.sol';
 
 library ProfileLib {
-    address constant MODULE_REGISTRY = address(0xC0FFEE); // TODO: Pass constant or make libs contracts and manually DELEGATECALL to them
+    function MODULE_REGISTRY() internal view returns (IModuleRegistry) {
+        return IModuleRegistry(ILensHub(address(this)).getModuleRegistry());
+    }
 
     function ownerOf(uint256 profileId) internal view returns (address) {
         address profileOwner = StorageLib.getTokenData(profileId).owner;
@@ -78,10 +81,7 @@ library ProfileLib {
         address followModule,
         bytes memory followModuleInitData
     ) private returns (bytes memory) {
-        IModuleRegistry(MODULE_REGISTRY).registerModule(
-            followModule,
-            uint256(IModuleRegistry.ModuleType.FOLLOW_MODULE)
-        );
+        MODULE_REGISTRY().registerModule(followModule, uint256(IModuleRegistry.ModuleType.FOLLOW_MODULE));
         return IFollowModule(followModule).initializeFollowModule(profileId, transactionExecutor, followModuleInitData);
     }
 

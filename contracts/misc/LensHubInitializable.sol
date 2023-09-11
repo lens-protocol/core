@@ -20,12 +20,12 @@ contract LensHubInitializable is LensHub, VersionedInitializable, ILensHubInitia
     uint256 internal constant REVISION = 1;
 
     constructor(
-        address moduleGlobals,
         address followNFTImpl,
         address collectNFTImpl,
+        address moduleRegistry,
         uint256 tokenGuardianCooldown,
         Types.MigrationParams memory migrationParams
-    ) LensHub(moduleGlobals, followNFTImpl, collectNFTImpl, tokenGuardianCooldown, migrationParams) {}
+    ) LensHub(followNFTImpl, collectNFTImpl, moduleRegistry, tokenGuardianCooldown, migrationParams) {}
 
     /**
      * @inheritdoc ILensHubInitializable

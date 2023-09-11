@@ -7,9 +7,8 @@ import {ICollectModule} from 'contracts/interfaces/ICollectModule.sol';
 import {ICollectNFT} from 'contracts/interfaces/ICollectNFT.sol';
 import {Types} from 'contracts/libraries/constants/Types.sol';
 import {Clones} from '@openzeppelin/contracts/proxy/Clones.sol';
-import {Errors} from 'contracts/libraries/constants/Errors.sol';
+import {Errors} from 'contracts/modules/constants/Errors.sol';
 import {HubRestricted} from 'contracts/base/HubRestricted.sol';
-import {IModuleGlobals} from 'contracts/interfaces/IModuleGlobals.sol';
 
 contract CollectPublicationAction is HubRestricted, IPublicationActionModule {
     struct CollectData {
@@ -63,24 +62,22 @@ contract CollectPublicationAction is HubRestricted, IPublicationActionModule {
     );
 
     address public immutable COLLECT_NFT_IMPL;
-    address public immutable MODULE_GLOBALS;
 
     mapping(address collectModule => bool isWhitelisted) internal _collectModuleRegistered;
     mapping(uint256 profileId => mapping(uint256 pubId => CollectData collectData)) internal _collectDataByPub;
 
-    constructor(address hub, address collectNFTImpl, address moduleGlobals) HubRestricted(hub) {
+    constructor(address hub, address collectNFTImpl) HubRestricted(hub) {
         COLLECT_NFT_IMPL = collectNFTImpl;
-        MODULE_GLOBALS = moduleGlobals;
     }
 
     function registerCollectModule(address collectModule) public returns (bool) {
-        bool isAlreadyRegistered = _collectModuleRegistered[collectModule];
-        if (isAlreadyRegistered) {
+        if (_collectModuleRegistered[collectModule]) {
             return false;
+        } else {
+            emit CollectModuleRegistered(collectModule, block.timestamp);
+            _collectModuleRegistered[collectModule] = true;
+            return true;
         }
-        emit CollectModuleRegistered(collectModule, block.timestamp);
-        _collectModuleRegistered[collectModule] = true;
-        return true;
     }
 
     function initializePublicationAction(
@@ -90,11 +87,10 @@ contract CollectPublicationAction is HubRestricted, IPublicationActionModule {
         bytes calldata data
     ) external override onlyHub returns (bytes memory) {
         (address collectModule, bytes memory collectModuleInitData) = abi.decode(data, (address, bytes));
+        if (_collectDataByPub[profileId][pubId].collectModule != address(0)) {
+            revert Errors.AlreadyInitialized();
+        }
         registerCollectModule(collectModule);
-        // TODO
-        // if (_collectDataByPub[profileId][pubId].collectModule != address(0)) {
-        //     revert Errors.AlreadyInitialized();
-        // }
         _collectDataByPub[profileId][pubId].collectModule = collectModule;
         ICollectModule(collectModule).initializePublicationCollectModule(
             profileId,

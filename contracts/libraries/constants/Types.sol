@@ -411,6 +411,11 @@ library Types {
         uint64 maxConfigNumberSet;
     }
 
+    struct TreasuryData {
+        address treasury;
+        uint16 treasuryFeeBPS;
+    }
+
     struct MigrationParams {
         address lensHandlesAddress;
         address tokenHandleRegistryAddress;

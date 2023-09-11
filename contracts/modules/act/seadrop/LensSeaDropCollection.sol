@@ -4,7 +4,7 @@ pragma solidity ^0.8.19;
 import {ERC721SeaDropCloneable} from '@seadrop/clones/ERC721SeaDropCloneable.sol';
 import {ISeaDrop} from '@seadrop/interfaces/ISeaDrop.sol';
 import {PublicDrop} from '@seadrop/lib/SeaDropStructs.sol';
-import {IModuleGlobals} from 'contracts/interfaces/IModuleGlobals.sol';
+import {ILensHub} from 'contracts/interfaces/ILensHub.sol';
 
 contract LensSeaDropCollection is ERC721SeaDropCloneable {
     error OnlySeaDropActionModule();
@@ -13,7 +13,7 @@ contract LensSeaDropCollection is ERC721SeaDropCloneable {
 
     uint16 private constant ROYALTIES_BPS = 1_000;
 
-    IModuleGlobals immutable MODULE_GLOBALS;
+    address immutable HUB;
 
     address immutable SEADROP_ACTION_MODULE;
 
@@ -27,13 +27,9 @@ contract LensSeaDropCollection is ERC721SeaDropCloneable {
         _;
     }
 
-    constructor(
-        address seaDropActionModule,
-        address moduleGlobals,
-        address defaultSeaDrop
-    ) {
+    constructor(address lensHub, address seaDropActionModule, address defaultSeaDrop) {
+        HUB = lensHub;
         SEADROP_ACTION_MODULE = seaDropActionModule;
-        MODULE_GLOBALS = IModuleGlobals(moduleGlobals);
         DEFAULT_SEADROP = defaultSeaDrop;
     }
 
@@ -56,10 +52,10 @@ contract LensSeaDropCollection is ERC721SeaDropCloneable {
         _transferOwnership(owner);
     }
 
-    function _validateInitializationData(address[] calldata allowedSeaDrops, MultiConfigureStruct calldata config)
-        internal
-        view
-    {
+    function _validateInitializationData(
+        address[] calldata allowedSeaDrops,
+        MultiConfigureStruct calldata config
+    ) internal view {
         // Makes sure that the default used SeaDrop is allowed as the first element of the array.
         if (allowedSeaDrops.length == 0 || allowedSeaDrops[0] != DEFAULT_SEADROP) {
             revert InvalidParams();
@@ -100,7 +96,7 @@ contract LensSeaDropCollection is ERC721SeaDropCloneable {
     function updatePublicDrop(address seaDropImpl, PublicDrop calldata publicDrop) external virtual override {
         // We only enforce the fees to cover the Lens Treasury fees when using the default SeaDrop, as it is the SeaDrop
         // chosen by Lens.
-        if (seaDropImpl == DEFAULT_SEADROP && publicDrop.feeBps < MODULE_GLOBALS.getTreasuryFee()) {
+        if (seaDropImpl == DEFAULT_SEADROP && publicDrop.feeBps < ILensHub(HUB).getTreasuryFee()) {
             revert FeesDoNotCoverLensTreasury();
         }
         // Ensure the sender is only the owner or this contract itself.
@@ -149,11 +145,7 @@ contract LensSeaDropCollection is ERC721SeaDropCloneable {
      * @param payer       The payer to update.
      * @param allowed     Whether the payer is allowed.
      */
-    function updatePayer(
-        address seaDropImpl,
-        address payer,
-        bool allowed
-    ) external virtual override {
+    function updatePayer(address seaDropImpl, address payer, bool allowed) external virtual override {
         // We only enforce the SeaDropMintPublicationAction to be enabled as a payer when using the default SeaDrop.
         if (seaDropImpl == DEFAULT_SEADROP && !allowed && payer == SEADROP_ACTION_MODULE) {
             revert InvalidParams();

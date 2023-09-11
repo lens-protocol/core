@@ -358,9 +358,9 @@ contract UpgradeForkTest is BaseTest {
         // Deploy implementation contracts.
         // TODO: Last 3 addresses are for the follow modules for migration purposes.
         hubImpl = new LensHubInitializable({ // TODO: Should we use the usual LensHub, not Initializable?
-            moduleGlobals: address(moduleGlobals),
             followNFTImpl: followNFTImplAddr,
             collectNFTImpl: legacyCollectNFTImplAddr,
+            moduleRegistry: address(moduleRegistry),
             tokenGuardianCooldown: PROFILE_GUARDIAN_COOLDOWN,
             migrationParams: Types.MigrationParams({
                 lensHandlesAddress: address(lensHandles),

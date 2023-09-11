@@ -55,11 +55,7 @@ contract CollectNFTTest is BaseTest, LensBaseERC721Test {
         address predictedCollectNFTImpl = computeCreateAddress(deployer, deployerNonce + 1);
 
         vm.startPrank(deployer);
-        collectPublicationAction = new CollectPublicationAction(
-            address(hub),
-            predictedCollectNFTImpl,
-            address(moduleGlobals)
-        );
+        collectPublicationAction = new CollectPublicationAction(address(hub), predictedCollectNFTImpl);
         collectNFTImpl = address(new CollectNFT(address(hub), address(collectPublicationAction)));
         vm.stopPrank();
 

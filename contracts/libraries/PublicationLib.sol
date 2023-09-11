@@ -11,9 +11,12 @@ import {ILegacyReferenceModule} from 'contracts/interfaces/ILegacyReferenceModul
 import {StorageLib} from 'contracts/libraries/StorageLib.sol';
 import {IPublicationActionModule} from 'contracts/interfaces/IPublicationActionModule.sol';
 import {IModuleRegistry} from 'contracts/interfaces/IModuleRegistry.sol';
+import {ILensHub} from 'contracts/interfaces/ILensHub.sol';
 
 library PublicationLib {
-    address constant MODULE_REGISTRY = address(0xC0FFEE); // TODO: Pass constant or make libs contracts and manually DELEGATECALL to them
+    function MODULE_REGISTRY() internal view returns (IModuleRegistry) {
+        return IModuleRegistry(ILensHub(address(this)).getModuleRegistry());
+    }
 
     /**
      * @notice Publishes a post to a given profile.
@@ -504,7 +507,7 @@ library PublicationLib {
 
         uint256 i;
         while (i < params.actionModules.length) {
-            IModuleRegistry(MODULE_REGISTRY).registerModule(
+            MODULE_REGISTRY().registerModule(
                 params.actionModules[i],
                 uint256(IModuleRegistry.ModuleType.PUBLICATION_ACTION_MODULE)
             );
@@ -537,10 +540,7 @@ library PublicationLib {
         if (params.referenceModule == address(0)) {
             return new bytes(0);
         }
-        IModuleRegistry(MODULE_REGISTRY).registerModule(
-            params.referenceModule,
-            uint256(IModuleRegistry.ModuleType.REFERENCE_MODULE)
-        );
+        MODULE_REGISTRY().registerModule(params.referenceModule, uint256(IModuleRegistry.ModuleType.REFERENCE_MODULE));
         StorageLib.getPublication(params.profileId, params.pubId).referenceModule = params.referenceModule;
         return
             IReferenceModule(params.referenceModule).initializeReferenceModule(

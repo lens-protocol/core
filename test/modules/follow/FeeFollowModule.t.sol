@@ -18,8 +18,6 @@ contract FeeFollowModuleTest is BaseTest {
 
         // Create & Whitelist mock currency
         currency = new MockCurrency();
-        vm.prank(modulesGovernance);
-        moduleGlobals.whitelistCurrency(address(currency), true);
     }
 
     // Initialization - Negatives
@@ -28,7 +26,6 @@ contract FeeFollowModuleTest is BaseTest {
         vm.assume(profileId != 0);
         vm.assume(amount != 0);
         vm.assume(from != address(hub));
-        assertTrue(moduleGlobals.isCurrencyWhitelisted(address(currency)));
 
         vm.expectRevert(Errors.NotHub.selector);
         vm.prank(from);
@@ -39,28 +36,8 @@ contract FeeFollowModuleTest is BaseTest {
         );
     }
 
-    function testCannotInitialize_UnwhitelistedCurrency(
-        uint256 profileId,
-        uint256 amount,
-        address unwhitelistedCurrency,
-        address recipient
-    ) public {
-        vm.assume(profileId != 0);
-        vm.assume(amount != 0);
-        vm.assume(!moduleGlobals.isCurrencyWhitelisted(address(unwhitelistedCurrency)));
-
-        vm.expectRevert(Errors.InitParamsInvalid.selector);
-        vm.prank(address(hub));
-        feeFollowModule.initializeFollowModule(
-            profileId,
-            address(0),
-            abi.encode(FeeConfig({currency: address(unwhitelistedCurrency), amount: amount, recipient: recipient}))
-        );
-    }
-
     function testCannotInitialize_ZeroAmount(uint256 profileId, address recipient) public {
         vm.assume(profileId != 0);
-        assertTrue(moduleGlobals.isCurrencyWhitelisted(address(currency)));
 
         vm.expectRevert(Errors.InitParamsInvalid.selector);
         vm.prank(address(hub));
@@ -76,7 +53,6 @@ contract FeeFollowModuleTest is BaseTest {
     function testInitialize(uint256 profileId, uint256 amount, address recipient) public {
         vm.assume(profileId != 0);
         vm.assume(amount != 0);
-        assertTrue(moduleGlobals.isCurrencyWhitelisted(address(currency)));
 
         FeeConfig memory feeConfig = FeeConfig({currency: address(currency), amount: amount, recipient: recipient});
 
@@ -97,7 +73,7 @@ contract FeeFollowModuleTest is BaseTest {
     ) public {
         vm.assume(followerProfileId != 0);
         vm.assume(targetProfileId != 0);
-        (, uint16 treasuryFee) = moduleGlobals.getTreasuryData();
+        (, uint16 treasuryFee) = hub.getTreasuryData();
         // Overflow protection (because treasuryAmount = amount * treasuryFee / BPS_MAX)
         vm.assume(
             amount != 0 && amount <= (treasuryFee == 0 ? type(uint256).max : type(uint256).max / uint256(treasuryFee))
@@ -136,7 +112,7 @@ contract FeeFollowModuleTest is BaseTest {
     ) public {
         vm.assume(followerProfileId != 0);
         vm.assume(targetProfileId != 0);
-        (, uint16 treasuryFee) = moduleGlobals.getTreasuryData();
+        (, uint16 treasuryFee) = hub.getTreasuryData();
         // Overflow protection (because treasuryAmount = amount * treasuryFee / BPS_MAX)
         vm.assume(
             amount != 0 && amount <= (treasuryFee == 0 ? type(uint256).max : type(uint256).max / uint256(treasuryFee))
@@ -220,8 +196,8 @@ contract FeeFollowModuleTest is BaseTest {
         vm.assume(targetProfileId != 0);
         vm.assume(transactionExecutor != treasury);
         treasuryFee = uint16(bound(uint256(treasuryFee), 0, (BPS_MAX / 2) - 1));
-        vm.prank(modulesGovernance);
-        moduleGlobals.setTreasuryFee(treasuryFee);
+        vm.prank(governance);
+        hub.setTreasuryFee(treasuryFee);
 
         // Overflow protection (because treasuryAmount = amount * treasuryFee / BPS_MAX)
         vm.assume(

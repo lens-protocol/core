@@ -8,11 +8,11 @@ import {TransparentUpgradeableProxy} from '@openzeppelin/contracts/proxy/transpa
 import {LensHub} from 'contracts/LensHub.sol';
 import {MockActionModule} from 'test/mocks/MockActionModule.sol';
 import {MockReferenceModule} from 'test/mocks/MockReferenceModule.sol';
-import {ModuleGlobals} from 'contracts/misc/ModuleGlobals.sol';
 import {LensHandles} from 'contracts/namespaces/LensHandles.sol';
 import {TokenHandleRegistry} from 'contracts/namespaces/TokenHandleRegistry.sol';
 import {Governance} from 'contracts/misc/access/Governance.sol';
 import {ProxyAdmin} from 'contracts/misc/access/ProxyAdmin.sol';
+import {ModuleRegistry} from 'contracts/misc/ModuleRegistry.sol';
 
 contract ContractAddresses {
     ////////////////////////////////// Types
@@ -48,7 +48,6 @@ contract ContractAddresses {
     address governance; // TODO: We need to make this lensHubGovernance (maybe even a function that will return it dynamically)
     address governanceMultisig;
     address treasury;
-    address modulesGovernance;
     address proxyAdmin; // TODO: This needs to be a function that goes to lensHub and gets it.
     address proxyAdminMultisig; // TODO: and ProxyAdminMultisig - load it from addresses.json or .env
 
@@ -67,9 +66,9 @@ contract ContractAddresses {
     LensHub hub;
     MockActionModule mockActionModule;
     MockReferenceModule mockReferenceModule;
-    ModuleGlobals moduleGlobals;
     LensHandles lensHandles;
     TokenHandleRegistry tokenHandleRegistry;
+    ModuleRegistry moduleRegistry;
 
     Governance governanceContract;
     ProxyAdmin proxyAdminContract;

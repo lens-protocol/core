@@ -11,4 +11,6 @@ library Errors {
     error MintLimitExceeded();
     error CollectExpired();
     error NotActionModule();
+    error CollectNotAllowed();
+    error AlreadyInitialized();
 }

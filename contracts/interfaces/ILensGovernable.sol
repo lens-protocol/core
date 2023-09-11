@@ -48,6 +48,22 @@ interface ILensGovernable {
     function whitelistProfileCreator(address profileCreator, bool whitelist) external;
 
     /**
+     * @notice Sets the treasury address.
+     * @custom:permissions Governance
+     *
+     * @param newTreasury The new treasury address to set.
+     */
+    function setTreasury(address newTreasury) external;
+
+    /**
+     * @notice Sets the treasury fee.
+     * @custom:permissions Governance
+     *
+     * @param newTreasuryFee The new treasury fee to set.
+     */
+    function setTreasuryFee(uint16 newTreasuryFee) external;
+
+    /**
      * @notice Returns the currently configured governance address.
      *
      * @return address The address of the currently configured governance.
@@ -71,4 +87,25 @@ interface ILensGovernable {
      * @return bool True if the profile creator is whitelisted, false otherwise.
      */
     function isProfileCreatorWhitelisted(address profileCreator) external view returns (bool);
+
+    /**
+     * @notice Returns the treasury address.
+     *
+     * @return address The treasury address.
+     */
+    function getTreasury() external view returns (address);
+
+    /**
+     * @notice Returns the treasury fee.
+     *
+     * @return uint16 The treasury fee.
+     */
+    function getTreasuryFee() external view returns (uint16);
+
+    /**
+     * @notice Returns the treasury address and treasury fee in a single call.
+     *
+     * @return tuple First, the treasury address, second, the treasury fee.
+     */
+    function getTreasuryData() external view returns (address, uint16);
 }

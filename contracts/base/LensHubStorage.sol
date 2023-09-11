@@ -58,4 +58,6 @@ abstract contract LensHubStorage {
     uint256 internal _profileRoyaltiesBps; // Slot 28
 
     mapping(address migrationAdmin => bool allowed) internal _migrationAdminWhitelisted; // Slot 29
+
+    Types.TreasuryData internal _treasuryData; // Slot 30
 }

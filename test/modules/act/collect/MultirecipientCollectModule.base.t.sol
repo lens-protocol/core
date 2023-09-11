@@ -28,17 +28,11 @@ contract MultirecipientCollectModuleBase is BaseFeeCollectModuleBase {
             console.log('Testing against already deployed module at:', address(multirecipientFeeCollectModule));
         } else {
             vm.prank(deployer);
-            multirecipientFeeCollectModule = new MultirecipientFeeCollectModule(
-                hubProxyAddr,
-                collectPublicationAction,
-                address(moduleGlobals)
-            );
+            multirecipientFeeCollectModule = new MultirecipientFeeCollectModule(hubProxyAddr, collectPublicationAction);
         }
         baseFeeCollectModule = address(multirecipientFeeCollectModule);
         if (address(currency) == address(0)) {
             currency = new MockCurrency();
-            vm.prank(modulesGovernance);
-            moduleGlobals.whitelistCurrency(address(currency), true);
         }
     }
 

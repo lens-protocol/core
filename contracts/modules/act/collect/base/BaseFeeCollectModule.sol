@@ -35,11 +35,7 @@ abstract contract BaseFeeCollectModule is FeeModuleBase, ActionRestricted, IBase
 
     mapping(uint256 => mapping(uint256 => BaseProfilePublicationData)) internal _dataByPublicationByProfile;
 
-    constructor(
-        address hub,
-        address actionModule,
-        address moduleGlobals
-    ) ActionRestricted(actionModule) FeeModuleBase(moduleGlobals) {
+    constructor(address hub, address actionModule) ActionRestricted(actionModule) FeeModuleBase(hub) {
         HUB = hub;
     }
 
