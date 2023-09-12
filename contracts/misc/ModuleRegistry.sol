@@ -24,7 +24,10 @@ contract ModuleRegistry is IModuleRegistry {
 
     function registerModule(address moduleAddress, uint256 moduleType) public returns (bool registrationWasPerformed) {
         // This will fail if moduleType is out of range for `IModuleRegistry.ModuleType`
-        require(moduleType > 0 && moduleType < uint256(type(IModuleRegistry.ModuleType).max));
+        require(
+            moduleType > 0 && moduleType <= uint256(type(IModuleRegistry.ModuleType).max),
+            'Module Type out of bounds'
+        );
 
         bool isAlreadyRegisteredAsThatType = registeredModules[moduleAddress] & (1 << moduleType) != 0;
         if (isAlreadyRegisteredAsThatType) {
