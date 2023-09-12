@@ -73,27 +73,6 @@ contract CollectPublicationActionTest is BaseTest {
         );
     }
 
-    function testCannotInitializePublicationAction_ifCollectModuleNotWhitelisted(
-        uint256 profileId,
-        uint256 pubId,
-        address transactionExecutor,
-        address nonRegisteredCollectModule
-    ) public {
-        vm.assume(profileId != 0);
-        vm.assume(pubId != 0);
-        vm.assume(transactionExecutor != address(0));
-        vm.assume(!collectPublicationAction.isCollectModuleRegistered(nonRegisteredCollectModule));
-
-        vm.prank(address(hub));
-        vm.expectRevert(Errors.NotRegistered.selector);
-        collectPublicationAction.initializePublicationAction(
-            profileId,
-            pubId,
-            transactionExecutor,
-            abi.encode(nonRegisteredCollectModule, '')
-        );
-    }
-
     function testCannotProcessPublicationAction_ifNotHub(
         uint256 publicationActedProfileId,
         uint256 publicationActedId,
@@ -200,7 +179,7 @@ contract CollectPublicationActionTest is BaseTest {
             initData
         );
 
-        assertEq(returnData, initData, 'Return data mismatch');
+        assertEq(returnData, '', 'Return data should be empty');
         assertEq(collectPublicationAction.getCollectData(profileId, pubId).collectModule, mockCollectModule);
     }
 
@@ -262,11 +241,20 @@ contract CollectPublicationActionTest is BaseTest {
 
         vm.expectCall(collectNFT, abi.encodeCall(CollectNFT.initialize, (profileId, pubId)), 1);
 
-        vm.prank(address(hub));
-        bytes memory returnData = collectPublicationAction.processPublicationAction(processActionParams);
-        (uint256 tokenId, bytes memory collectActionResult) = abi.decode(returnData, (uint256, bytes));
-        assertEq(tokenId, 1, 'Invalid tokenId');
-        assertEq(collectActionResult, collectModuleData, 'Invalid collectActionResult data');
+        {
+            vm.prank(address(hub));
+            bytes memory returnData = collectPublicationAction.processPublicationAction(processActionParams);
+            (
+                address returnedCollectNFT,
+                uint256 tokenId,
+                address returnedCollectModule,
+                bytes memory collectActionResult
+            ) = abi.decode(returnData, (address, uint256, address, bytes));
+            assertEq(returnedCollectNFT, collectNFT, 'Invalid collectNFT address');
+            assertEq(tokenId, 1, 'Invalid tokenId');
+            assertEq(returnedCollectModule, mockCollectModule, 'Invalid collectModule address');
+            assertEq(collectActionResult, collectModuleData, 'Invalid collectActionResult data');
+        }
 
         string memory expectedCollectNftName = string.concat(
             'Lens Collect | Profile #',
@@ -343,8 +331,15 @@ contract CollectPublicationActionTest is BaseTest {
 
         vm.prank(address(hub));
         bytes memory returnData = collectPublicationAction.processPublicationAction(processActionParams);
-        (uint256 tokenId, bytes memory collectActionResult) = abi.decode(returnData, (uint256, bytes));
+        (
+            address returnedCollectNFT,
+            uint256 tokenId,
+            address returnedCollectModule,
+            bytes memory collectActionResult
+        ) = abi.decode(returnData, (address, uint256, address, bytes));
+        assertEq(returnedCollectNFT, collectNFT, 'Invalid collectNFT address');
         assertEq(tokenId, 2, 'Invalid tokenId');
+        assertEq(returnedCollectModule, mockCollectModule, 'Invalid collectModule address');
         assertEq(collectActionResult, collectModuleData, 'Invalid collectActionResult data');
 
         assertEq(CollectNFT(collectNFT).ownerOf(2), collectNftRecipient, 'Invalid collect NFT owner');

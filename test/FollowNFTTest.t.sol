@@ -882,7 +882,8 @@ contract FollowNFTTest is BaseTest, LensBaseERC721Test {
         followNFT.unfollow({unfollowerProfileId: followerProfileId, transactionExecutor: followerProfileOwner});
     }
 
-    function testCannotUnfollowIfTokenIsWrappedAndUnfollowerOwnerOrTransactionExecutorDontHoldTheTokenOrApprovedForAll(
+    // TODO: Move to positives, because now it's possible to unfollow even if the token is wrapped and not owned.
+    function testCanUnfollowIfTokenIsWrappedAndUnfollowerOwnerOrTransactionExecutorDontHoldTheTokenOrApprovedForAll(
         address unrelatedAddress
     ) public {
         vm.assume(unrelatedAddress != address(0));
@@ -898,8 +899,6 @@ contract FollowNFTTest is BaseTest, LensBaseERC721Test {
         followNFT.transferFrom(alreadyFollowingProfileOwner, unrelatedAddress, followTokenId);
 
         vm.prank(address(hub));
-
-        vm.expectRevert(IFollowNFT.DoesNotHavePermissions.selector);
         followNFT.unfollow({
             unfollowerProfileId: alreadyFollowingProfileId,
             transactionExecutor: alreadyFollowingProfileOwner
@@ -1119,9 +1118,9 @@ contract FollowNFTTest is BaseTest, LensBaseERC721Test {
         followNFT.wrap(followTokenId);
     }
 
-    function testCannotWrapRecoveringWhenTheSenderDoesNotOwnTheProfileAllowedToRecover(address unrelatedAddress)
-        public
-    {
+    function testCannotWrapRecoveringWhenTheSenderDoesNotOwnTheProfileAllowedToRecover(
+        address unrelatedAddress
+    ) public {
         vm.assume(unrelatedAddress != address(0));
         vm.assume(unrelatedAddress != alreadyFollowingProfileOwner);
 
@@ -1215,9 +1214,9 @@ contract FollowNFTTest is BaseTest, LensBaseERC721Test {
         assertEq(followNFT.getProfileIdAllowedToRecover(followTokenId), 0);
     }
 
-    function testRecoveringTokenThroughWrappingItAfterProfileAllowedToRecoverWasTransferred(address unrelatedAddress)
-        public
-    {
+    function testRecoveringTokenThroughWrappingItAfterProfileAllowedToRecoverWasTransferred(
+        address unrelatedAddress
+    ) public {
         vm.assume(unrelatedAddress != address(0));
         vm.assume(unrelatedAddress != alreadyFollowingProfileOwner);
 
@@ -1546,9 +1545,9 @@ contract FollowNFTTest is BaseTest, LensBaseERC721Test {
         assertFalse(followNFT.exists(followTokenId));
     }
 
-    function testUnwrappedTokenStillTiedToFollowerProfileAfterAFollowerProfileTransfer(address newFollowerProfileOwner)
-        public
-    {
+    function testUnwrappedTokenStillTiedToFollowerProfileAfterAFollowerProfileTransfer(
+        address newFollowerProfileOwner
+    ) public {
         vm.assume(newFollowerProfileOwner != followerProfileOwner);
         vm.assume(newFollowerProfileOwner != address(0));
 
@@ -1844,11 +1843,7 @@ contract FollowNFTTest is BaseTest, LensBaseERC721Test {
         assertEq(royalties, expectedRoyalties);
     }
 
-    function testSetRoyalties(
-        uint256 royaltiesInBasisPoints,
-        uint256 tokenId,
-        uint256 salePrice
-    ) public {
+    function testSetRoyalties(uint256 royaltiesInBasisPoints, uint256 tokenId, uint256 salePrice) public {
         uint256 basisPoints = 10000;
         royaltiesInBasisPoints = bound(royaltiesInBasisPoints, 0, basisPoints);
         uint256 salePriceTimesRoyalties;

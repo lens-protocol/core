@@ -92,7 +92,8 @@ contract CollectNFTTest is BaseTest, LensBaseERC721Test {
 
         vm.prank(defaultAccount.owner);
         bytes memory result = hub.act(collectActionParams);
-        (uint256 tokenId, ) = abi.decode(result, (uint256, bytes));
+        console.logBytes(result);
+        (, uint256 tokenId, , ) = abi.decode(result, (address, uint256, address, bytes));
         firstCollectTokenId = tokenId;
 
         collectNFT = CollectNFT(
@@ -104,7 +105,7 @@ contract CollectNFTTest is BaseTest, LensBaseERC721Test {
         collectActionParams.actionModuleData = abi.encode(to, abi.encode(true));
         vm.prank(defaultAccount.owner);
         bytes memory actResult = hub.act(collectActionParams);
-        (uint256 tokenId, ) = abi.decode(actResult, (uint256, bytes));
+        (, uint256 tokenId, , ) = abi.decode(actResult, (address, uint256, address, bytes));
         return tokenId;
     }
 

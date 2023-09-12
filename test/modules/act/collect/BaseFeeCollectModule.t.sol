@@ -6,6 +6,7 @@ import {IBaseFeeCollectModule, BaseProfilePublicationData} from 'contracts/modul
 import {Types} from 'contracts/libraries/constants/Types.sol';
 import {Errors as ModuleErrors} from 'contracts/modules/constants/Errors.sol';
 import {Errors} from 'contracts/libraries/constants/Errors.sol';
+import {MockCurrency} from 'test/mocks/MockCurrency.sol';
 
 uint16 constant BPS_MAX = 10000;
 
@@ -119,7 +120,14 @@ contract BaseFeeCollectModule_Initialization is BaseFeeCollectModuleBase {
         vm.assume(profileId != 0);
         vm.assume(pubId != 0);
         vm.assume(transactionExecutor != address(0));
-        vm.assume(whitelistedCurrency != address(0));
+
+        vm.assume(
+            (amount != 0 && whitelistedCurrency != address(0)) || (amount == 0 && whitelistedCurrency == address(0))
+        );
+
+        if (whitelistedCurrency != address(0)) {
+            vm.etch(whitelistedCurrency, address(new MockCurrency()).code);
+        }
 
         if (endTimestamp > 0) {
             currentTimestamp = uint72(bound(uint256(currentTimestamp), 0, uint256(endTimestamp) - 1));
@@ -208,6 +216,7 @@ contract BaseFeeCollectModule_ProcessCollect is BaseFeeCollectModuleBase {
         vm.assume(passedAmount != amount);
         vm.assume(collectorProfileId != 0);
         vm.assume(collectorProfileOwner != address(0));
+        vm.assume(amount != 0); // TODO: Have a test for zero case also
 
         exampleInitData.amount = amount;
 
@@ -252,6 +261,7 @@ contract BaseFeeCollectModule_ProcessCollect is BaseFeeCollectModuleBase {
         // vm.assume(!moduleGlobals.isCurrencyWhitelisted(passedCurrency)); // TODO: Verify that's right
         vm.assume(collectorProfileId != 0);
         vm.assume(collectorProfileOwner != address(0));
+        vm.assume(amount != 0);
 
         exampleInitData.amount = amount;
 
@@ -459,6 +469,11 @@ contract BaseFeeCollectModule_ProcessCollect is BaseFeeCollectModuleBase {
         exampleInitData.endTimestamp = endTimestamp;
         exampleInitData.recipient = recipient;
 
+        if (amount == 0) {
+            exampleInitData.currency = address(0);
+            currency = MockCurrency(address(0));
+        }
+
         vm.prank(collectPublicationAction);
         IBaseFeeCollectModule(baseFeeCollectModule).initializePublicationCollectModule(
             profileId,
@@ -590,6 +605,7 @@ contract BaseFeeCollectModule_FeeDistribution is BaseFeeCollectModuleBase {
         vm.assume(collectorProfileOwner != recipient);
         vm.assume(collectorProfileOwner != treasury);
         vm.assume(recipient != treasury);
+        vm.assume(amount != 0); // TODO: Maybe have a proper test with amount 0
 
         numberOfReferrals = bound(numberOfReferrals, 0, 5);
 

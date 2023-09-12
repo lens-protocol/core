@@ -409,7 +409,7 @@ contract BaseTest is TestSetup {
         return uint8(pub.pubType) == 0;
     }
 
-    function _encodeUsingEip712Rules(bytes[] memory bytesArray) private pure returns (bytes32) {
+    function _encodeUsingEip712Rules(bytes[] memory bytesArray) internal pure returns (bytes32) {
         bytes32[] memory bytesArrayEncodedElements = new bytes32[](bytesArray.length);
         uint256 i;
         while (i < bytesArray.length) {
@@ -423,27 +423,27 @@ contract BaseTest is TestSetup {
         return _encodeUsingEip712Rules(bytesArrayEncodedElements);
     }
 
-    function _encodeUsingEip712Rules(bool[] memory boolArray) private pure returns (bytes32) {
+    function _encodeUsingEip712Rules(bool[] memory boolArray) internal pure returns (bytes32) {
         return keccak256(abi.encodePacked(boolArray));
     }
 
-    function _encodeUsingEip712Rules(address[] memory addressArray) private pure returns (bytes32) {
+    function _encodeUsingEip712Rules(address[] memory addressArray) internal pure returns (bytes32) {
         return keccak256(abi.encodePacked(addressArray));
     }
 
-    function _encodeUsingEip712Rules(uint256[] memory uint256Array) private pure returns (bytes32) {
+    function _encodeUsingEip712Rules(uint256[] memory uint256Array) internal pure returns (bytes32) {
         return keccak256(abi.encodePacked(uint256Array));
     }
 
-    function _encodeUsingEip712Rules(bytes32[] memory bytes32Array) private pure returns (bytes32) {
+    function _encodeUsingEip712Rules(bytes32[] memory bytes32Array) internal pure returns (bytes32) {
         return keccak256(abi.encodePacked(bytes32Array));
     }
 
-    function _encodeUsingEip712Rules(string memory stringValue) private pure returns (bytes32) {
+    function _encodeUsingEip712Rules(string memory stringValue) internal pure returns (bytes32) {
         return keccak256(bytes(stringValue));
     }
 
-    function _encodeUsingEip712Rules(bytes memory bytesValue) private pure returns (bytes32) {
+    function _encodeUsingEip712Rules(bytes memory bytesValue) internal pure returns (bytes32) {
         return keccak256(bytesValue);
     }
 }

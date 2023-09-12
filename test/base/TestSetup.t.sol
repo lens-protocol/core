@@ -243,6 +243,12 @@ contract TestSetup is Test, ContractAddressesLoaderDeployer, ArrayHelpers {
         TransparentUpgradeableProxy oldHubAsProxy = TransparentUpgradeableProxy(payable(hubProxyAddr));
         vm.prank(proxyAdmin);
         oldHubAsProxy.upgradeTo(address(hubImpl));
+
+        vm.startPrank(governance);
+        hub.setTreasury(treasury);
+        hub.setTreasuryFee(TREASURY_FEE_BPS);
+        vm.stopPrank();
+
         lensVersion = 2;
     }
 
@@ -342,6 +348,11 @@ contract TestSetup is Test, ContractAddressesLoaderDeployer, ArrayHelpers {
 
         vm.stopPrank();
         ///////////////////////////////////////// End deployments.
+
+        vm.startPrank(governance);
+        hub.setTreasury(treasury);
+        hub.setTreasuryFee(TREASURY_FEE_BPS);
+        vm.stopPrank();
 
         lensVersion = 2;
     }

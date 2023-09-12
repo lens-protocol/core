@@ -31,9 +31,7 @@ abstract contract LensBaseERC721Test is ERC721Test {
         return Errors.NotOwnerOrApproved.selector;
     }
 
-    function _assumeNotProxyAdmin(
-        address /* account */
-    ) internal view virtual {}
+    function _assumeNotProxyAdmin(address /* account */) internal view virtual {}
 
     function _LensERC721() private view returns (ILensERC721) {
         return ILensERC721(_getERC721TokenAddress());
@@ -120,11 +118,7 @@ abstract contract LensBaseERC721Test is ERC721Test {
         _LensERC721().setApprovalForAll(operatorAndSender, approved);
     }
 
-    function testTransferFrom_SenderIsApproved(
-        address owner,
-        address approvedTo,
-        address to
-    ) public {
+    function testTransferFrom_SenderIsApproved(address owner, address approvedTo, address to) public {
         vm.assume(owner != address(0));
         vm.assume(approvedTo != address(0));
         vm.assume(owner != approvedTo);
@@ -185,11 +179,7 @@ abstract contract LensBaseERC721Test is ERC721Test {
         }
     }
 
-    function testTransferFrom_SenderIsApprovedForAll(
-        address owner,
-        address approvedTo,
-        address to
-    ) public {
+    function testTransferFrom_SenderIsApprovedForAll(address owner, address approvedTo, address to) public {
         vm.assume(owner != address(0));
         vm.assume(approvedTo != address(0));
         vm.assume(owner != approvedTo);
@@ -223,11 +213,7 @@ abstract contract LensBaseERC721Test is ERC721Test {
         }
     }
 
-    function testSafeTransferFromToEOA(
-        address owner,
-        address approvedTo,
-        address to
-    ) public {
+    function testSafeTransferFromToEOA(address owner, address approvedTo, address to) public {
         vm.assume(owner != address(0));
         vm.assume(to != address(0));
         vm.assume(approvedTo != address(0));
@@ -352,11 +338,7 @@ abstract contract LensBaseERC721Test is ERC721Test {
         _LensERC721().safeTransferFrom(owner, to, tokenId);
     }
 
-    function testCannotSafeTransferFrom_WrongFromParameter_SenderOwner(
-        address owner,
-        address from,
-        address to
-    ) public {
+    function testCannotSafeTransferFrom_WrongFromParameter_SenderOwner(address owner, address from, address to) public {
         _assumeNotProxyAdmin(owner);
         vm.assume(owner != to);
         vm.assume(owner != from);
@@ -429,11 +411,7 @@ abstract contract LensBaseERC721Test is ERC721Test {
         _LensERC721().approve(to, tokenId);
     }
 
-    function testCannot_Approve_Unauthorized(
-        address to,
-        address unauthorizedCaller,
-        address approveTo
-    ) public {
+    function testCannot_Approve_Unauthorized(address to, address unauthorizedCaller, address approveTo) public {
         vm.assume(to != unauthorizedCaller);
         vm.assume(to != approveTo);
         vm.assume(to != address(0));
@@ -444,7 +422,7 @@ abstract contract LensBaseERC721Test is ERC721Test {
 
         _assumeNotProxyAdmin(unauthorizedCaller);
 
-        _disableGuardian(unauthorizedCaller);
+        _disableGuardian(to);
 
         vm.expectRevert(Errors.NotOwnerOrApproved.selector);
         vm.prank(unauthorizedCaller);
@@ -464,11 +442,7 @@ abstract contract LensBaseERC721Test is ERC721Test {
         _LensERC721().approve(to, tokenId);
     }
 
-    function testCannot_TransferFrom_NotOwner(
-        address owner,
-        address to,
-        address otherAddress
-    ) public {
+    function testCannot_TransferFrom_NotOwner(address owner, address to, address otherAddress) public {
         vm.assume(owner != to);
         vm.assume(owner != otherAddress);
         vm.assume(to != address(0));
@@ -484,11 +458,7 @@ abstract contract LensBaseERC721Test is ERC721Test {
         _LensERC721().transferFrom(owner, to, tokenId);
     }
 
-    function testCannotTransferFrom_WrongFromParameter_SenderOwner(
-        address owner,
-        address from,
-        address to
-    ) public {
+    function testCannotTransferFrom_WrongFromParameter_SenderOwner(address owner, address from, address to) public {
         _assumeNotProxyAdmin(owner);
         vm.assume(owner != to);
         vm.assume(owner != from);
@@ -503,11 +473,7 @@ abstract contract LensBaseERC721Test is ERC721Test {
         _LensERC721().transferFrom(from, to, tokenId);
     }
 
-    function testCannot_TransferFrom_NonexistingToken(
-        uint256 tokenId,
-        address from,
-        address to
-    ) public {
+    function testCannot_TransferFrom_NonexistingToken(uint256 tokenId, address from, address to) public {
         vm.assume(from != address(0));
         vm.assume(to != address(0));
 
@@ -585,9 +551,10 @@ abstract contract LensBaseERC721Test is ERC721Test {
         _LensERC721().safeTransferFrom(owner, revertingERC721Recipient, tokenId, shouldRevertFlag);
     }
 
-    function testCannot_SafeTransferFrom_ToERC721Recipient_WithWrongReturnData(address owner, uint32 wrongReturnData)
-        public
-    {
+    function testCannot_SafeTransferFrom_ToERC721Recipient_WithWrongReturnData(
+        address owner,
+        uint32 wrongReturnData
+    ) public {
         vm.assume(owner != address(0));
         uint256 tokenId = _mintERC721(owner);
         vm.assume(bytes4(wrongReturnData) != IERC721Receiver.onERC721Received.selector);

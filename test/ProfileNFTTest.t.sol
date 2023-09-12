@@ -144,11 +144,7 @@ contract ProfileNFTTest is LensBaseERC721Test, TokenGuardianTest {
         assertEq(royalties, 0);
     }
 
-    function testSetRoyalties(
-        uint256 royaltiesInBasisPoints,
-        uint256 tokenId,
-        uint256 salePrice
-    ) public {
+    function testSetRoyalties(uint256 royaltiesInBasisPoints, uint256 tokenId, uint256 salePrice) public {
         uint256 basisPoints = 10000;
         royaltiesInBasisPoints = bound(royaltiesInBasisPoints, 0, basisPoints);
         uint256 salePriceTimesRoyalties;
@@ -171,9 +167,10 @@ contract ProfileNFTTest is LensBaseERC721Test, TokenGuardianTest {
     // ERC-2981 Royalties - Negatives
     //////////////////////////////////////////////////////////
 
-    function testCannotSetRoyaltiesIf_NotGovernance(address nonGovernanceAddress, uint256 royaltiesInBasisPoints)
-        public
-    {
+    function testCannotSetRoyaltiesIf_NotGovernance(
+        address nonGovernanceAddress,
+        uint256 royaltiesInBasisPoints
+    ) public {
         uint256 basisPoints = 10000;
         royaltiesInBasisPoints = bound(royaltiesInBasisPoints, 0, basisPoints);
         vm.assume(nonGovernanceAddress != governance);

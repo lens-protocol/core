@@ -23,9 +23,10 @@ contract ChangeDelegatedExecutorsConfigTest_CurrentConfig is BaseTest {
     // changeDelegatedExecutorsConfig - Current config - Negatives
     //////////////////////////////////////////////////////////////////////
 
-    function testCannotChangeDelegatedExecutorsConfig_WhenProtocolIsPaused(address delegatedExecutor, bool approval)
-        public
-    {
+    function testCannotChangeDelegatedExecutorsConfig_WhenProtocolIsPaused(
+        address delegatedExecutor,
+        bool approval
+    ) public {
         vm.prank(governance);
 
         hub.setState(Types.ProtocolState.Paused);
@@ -169,7 +170,7 @@ contract ChangeDelegatedExecutorsConfigTest_CurrentConfig is BaseTest {
         uint256 delegatorProfileId,
         address[] memory delegatedExecutors,
         bool[] memory approvals,
-        uint64, /* configNumber */
+        uint64 /* configNumber */,
         bool /* switchToGivenConfig */
     ) internal virtual {
         vm.prank(vm.addr(pk));
@@ -429,7 +430,7 @@ contract ChangeDelegatedExecutorsConfigTest_GivenConfig is ChangeDelegatedExecut
     function testDelegatedExecutorsConfigAppliedEventIsNotEmitedWhenPassingCurrentConfigNumber(
         address delegatedExecutor,
         bool approval
-    ) public {
+    ) public virtual {
         uint64 currentConfigNumber = hub.getDelegatedExecutorsConfigNumber(testDelegatorProfileId);
 
         vm.expectEmit(true, true, true, true, address(hub));
@@ -490,6 +491,37 @@ contract ChangeDelegatedExecutorsConfigTest_MetaTx is ChangeDelegatedExecutorsCo
         cachedNonceByAddress[testDelegatorProfileOwner] = hub.nonces(testDelegatorProfileOwner);
     }
 
+    function testDelegatedExecutorsConfigAppliedEventIsNotEmitedWhenPassingCurrentConfigNumber(
+        address delegatedExecutor,
+        bool approval
+    ) public override {
+        uint64 currentConfigNumber = hub.getDelegatedExecutorsConfigNumber(testDelegatorProfileId);
+
+        // TODO: Expect NonceUpdated event too
+
+        vm.expectEmit(true, true, true, true, address(hub));
+        emit Events.DelegatedExecutorsConfigChanged({
+            delegatorProfileId: testDelegatorProfileId,
+            configNumber: currentConfigNumber,
+            delegatedExecutors: _toAddressArray(delegatedExecutor),
+            approvals: _toBoolArray(approval),
+            timestamp: block.timestamp
+        });
+
+        vm.recordLogs();
+
+        _changeDelegatedExecutorsConfig({
+            pk: testDelegatorProfileOwnerPk,
+            delegatorProfileId: testDelegatorProfileId,
+            delegatedExecutors: _toAddressArray(delegatedExecutor),
+            approvals: _toBoolArray(approval),
+            configNumber: currentConfigNumber,
+            switchToGivenConfig: true
+        });
+
+        assertEq(vm.getRecordedLogs().length, 2);
+    }
+
     //////////////////////////////////////////////////////////////////////
 
     function _refreshCachedNonce(address signer) internal override {
@@ -539,8 +571,8 @@ contract ChangeDelegatedExecutorsConfigTest_MetaTx is ChangeDelegatedExecutorsCo
                     abi.encode(
                         Typehash.CHANGE_DELEGATED_EXECUTORS_CONFIG,
                         delegatorProfileId,
-                        abi.encodePacked(delegatedExecutors),
-                        abi.encodePacked(approvals),
+                        _encodeUsingEip712Rules(delegatedExecutors),
+                        _encodeUsingEip712Rules(approvals),
                         configNumber,
                         switchToGivenConfig,
                         nonce,
@@ -550,11 +582,7 @@ contract ChangeDelegatedExecutorsConfigTest_MetaTx is ChangeDelegatedExecutorsCo
             );
     }
 
-    function _executeMetaTx(
-        uint256 signerPk,
-        uint256 nonce,
-        uint256 deadline
-    ) internal override {
+    function _executeMetaTx(uint256 signerPk, uint256 nonce, uint256 deadline) internal override {
         bytes32 digest = _calculateChangeDelegatedExecutorsConfigWithSigDigest(
             testDelegatorProfileId,
             _toAddressArray(address(0xC0FFEE)),
