@@ -91,11 +91,14 @@ abstract contract BaseFeeCollectModule is FeeModuleBase, ActionRestricted, IBase
     function _validateBaseInitData(BaseFeeCollectModuleInitData memory baseInitData) internal virtual {
         if (
             (baseInitData.amount == 0 && baseInitData.currency != address(0)) ||
-            (baseInitData.amount != 0 && !_currencyWhitelisted(baseInitData.currency)) ||
+            (baseInitData.amount != 0 && baseInitData.currency == address(0)) ||
             baseInitData.referralFee > BPS_MAX ||
             (baseInitData.endTimestamp != 0 && baseInitData.endTimestamp < block.timestamp)
         ) {
             revert Errors.InitParamsInvalid();
+        }
+        if (baseInitData.currency != address(0)) {
+            _currencyWhitelisted(baseInitData.currency);
         }
     }
 
