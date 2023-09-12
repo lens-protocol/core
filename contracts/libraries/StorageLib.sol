@@ -211,10 +211,4 @@ library StorageLib {
             _treasuryData.slot := TREASURY_DATA_SLOT
         }
     }
-
-    function setTreasuryData(Types.TreasuryData memory newTreasuryData) internal {
-        assembly {
-            sstore(TREASURY_DATA_SLOT, newTreasuryData)
-        }
-    }
 }

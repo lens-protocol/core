@@ -79,12 +79,11 @@ library GovernanceLib {
         if (newTreasury == address(0)) {
             revert Errors.InitParamsInvalid();
         }
-        Types.TreasuryData memory treasuryData = StorageLib.getTreasuryData();
+        Types.TreasuryData storage _treasuryData = StorageLib.getTreasuryData();
 
-        address prevTreasury = treasuryData.treasury;
-        treasuryData.treasury = newTreasury;
+        address prevTreasury = _treasuryData.treasury;
+        _treasuryData.treasury = newTreasury;
 
-        StorageLib.setTreasuryData(treasuryData);
         emit Events.TreasurySet(prevTreasury, newTreasury, block.timestamp);
     }
 
@@ -92,12 +91,11 @@ library GovernanceLib {
         if (newTreasuryFee >= BPS_MAX / 2) {
             revert Errors.InitParamsInvalid();
         }
-        Types.TreasuryData memory treasuryData = StorageLib.getTreasuryData();
+        Types.TreasuryData storage _treasuryData = StorageLib.getTreasuryData();
 
-        uint16 prevTreasuryFee = treasuryData.treasuryFeeBPS;
-        treasuryData.treasuryFeeBPS = newTreasuryFee;
+        uint16 prevTreasuryFee = _treasuryData.treasuryFeeBPS;
+        _treasuryData.treasuryFeeBPS = newTreasuryFee;
 
-        StorageLib.setTreasuryData(treasuryData);
         emit Events.TreasuryFeeSet(prevTreasuryFee, newTreasuryFee, block.timestamp);
     }
 }
