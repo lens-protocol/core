@@ -8,6 +8,23 @@ fs_permissions = [{ access = "read-write", path = "./"}]
 optimizer = true
 optimizer_runs = 10
 ignored_error_codes = []
+via_ir = true
+libraries = [
+        "contracts/libraries/ActionLib.sol:ActionLib:0x26a9fa0bbbbcd1596b08dc7e9a6f9b437c1ad735",
+        "contracts/libraries/FollowLib.sol:FollowLib:0x002415dbc60caea8ced1de154ed64df5734ac339",
+        "contracts/libraries/GovernanceLib.sol:GovernanceLib:0xda8bf37ef63460d9867e4c5e2990e738c89d4b1b",
+        "contracts/libraries/LegacyCollectLib.sol:LegacyCollectLib:0xa54dfd4e2cf1398db71c250d201f3071e2ce582b",
+        "contracts/libraries/MetaTxLib.sol:MetaTxLib:0xeb7f340ff7a090bccf0d24829681f248e863e7eb",
+        "contracts/libraries/MigrationLib.sol:MigrationLib:0x7ba5304ecce85441a7da6ead150e51322faa607b",
+        "contracts/libraries/ProfileLib.sol:ProfileLib:0x6486ce46fd092c7ffaa55ea4fc733a997892207f",
+        "contracts/libraries/PublicationLib.sol:PublicationLib:0x4c7be49a0317ad72ae1c180a1be3710ba6fc0c56",
+        "contracts/libraries/ValidationLib.sol:ValidationLib:0xa2b9c96ff3337962f8dd9fafe260a95168854ef7",
+        "contracts/libraries/token-uris/FollowTokenURILib.sol:FollowTokenURILib:0xc83fd6feb6c35e99a77441660f4f1215c1d138bd",
+        "contracts/libraries/token-uris/HandleTokenURILib.sol:HandleTokenURILib:0xe63da517c5202db5a9f8951090ae6c0ef84c80e5",
+        "contracts/libraries/token-uris/ProfileTokenURILib.sol:ProfileTokenURILib:0xd546a4dc0efc68e49000a26ec5c7f8c6ba32e2ed",
+        "contracts/libraries/token-uris/TokenURIMainFontLib.sol:TokenURIMainFontLib:0x7a7ebf5194e36b76e68610a469d6b6c03a1b05f0",
+        "contracts/libraries/token-uris/TokenURISecondaryFontLib.sol:TokenURISecondaryFontLib:0x4f1a85154af212eb146b459f477c89e873b479fb",
+]
 
 [rpc_endpoints]
 polygon = "${POLYGON_RPC_URL}"
