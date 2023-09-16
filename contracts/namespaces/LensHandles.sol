@@ -71,7 +71,7 @@ contract LensHandles is ERC721, ImmutableOwnable, ILensHandles {
     }
 
     function symbol() public pure override returns (string memory) {
-        return string.concat('/', NAMESPACE);
+        return string.concat(NAMESPACE);
     }
 
     /**

@@ -156,12 +156,12 @@ contract LensHandlesTest is TokenGuardianTest {
 
     function testName() public {
         string memory name = lensHandles.name();
-        assertEq(name, '/lens Handles');
+        assertEq(name, 'lens Handles');
     }
 
     function testSymbol() public {
         string memory symbol = lensHandles.symbol();
-        assertEq(symbol, '/lens');
+        assertEq(symbol, 'lens');
     }
 
     function testExists(uint256 number) public {
@@ -237,7 +237,7 @@ contract LensHandlesTest is TokenGuardianTest {
 
         assertEq(handleId, expectedTokenId);
 
-        string memory namespacePrefix = string.concat('/', lensHandles.getNamespace(), '/');
+        string memory namespacePrefix = string.concat(lensHandles.getNamespace(), '/@');
         string memory handle = lensHandles.getHandle(handleId);
         assertEq(handle, string.concat(namespacePrefix, numbersHandle));
 
