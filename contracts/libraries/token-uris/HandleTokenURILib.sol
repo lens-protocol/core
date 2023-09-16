@@ -10,13 +10,17 @@ import {TokenURISecondaryFontLib} from 'contracts/libraries/token-uris/TokenURIS
 library HandleTokenURILib {
     using Strings for uint256;
 
-    function getTokenURI(uint256 tokenId, string memory localName) external pure returns (string memory) {
+    function getTokenURI(
+        uint256 tokenId,
+        string memory localName,
+        string memory namespace
+    ) external pure returns (string memory) {
         return
-            string(
-                abi.encodePacked(
-                    'data:application/json;base64,',
-                    Base64.encode(
-                        abi.encodePacked(
+            string.concat(
+                'data:application/json;base64,',
+                Base64.encode(
+                    bytes(
+                        string.concat(
                             '{"name":"@',
                             localName,
                             '","description":"Lens Protocol - @',
@@ -25,7 +29,9 @@ library HandleTokenURILib {
                             _getSVGImageBase64Encoded(localName),
                             '","attributes":[{"display_type": "number", "trait_type":"ID","value":"',
                             tokenId.toString(),
-                            '"},{"trait_type":"NAMESPACE","value":"/lens"},{"trait_type":"LENGTH","value":"',
+                            '"},{"trait_type":"NAMESPACE","value":"',
+                            namespace,
+                            '"},{"trait_type":"LENGTH","value":"',
                             bytes(localName).length.toString(),
                             '"}]}'
                         )

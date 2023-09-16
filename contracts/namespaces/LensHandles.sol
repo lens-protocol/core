@@ -79,7 +79,7 @@ contract LensHandles is ERC721, ImmutableOwnable, ILensHandles {
      */
     function tokenURI(uint256 tokenId) public view override returns (string memory) {
         _requireMinted(tokenId);
-        return HandleTokenURILib.getTokenURI(tokenId, _localNames[tokenId]);
+        return HandleTokenURILib.getTokenURI(tokenId, _localNames[tokenId], NAMESPACE);
     }
 
     /// @inheritdoc ILensHandles
@@ -172,7 +172,7 @@ contract LensHandles is ERC721, ImmutableOwnable, ILensHandles {
 
     function getHandle(uint256 tokenId) public view returns (string memory) {
         string memory localName = getLocalName(tokenId);
-        return string.concat('/', NAMESPACE, '/', localName);
+        return string.concat(NAMESPACE, '/@', localName);
     }
 
     function getTokenId(string memory localName) public pure returns (uint256) {
