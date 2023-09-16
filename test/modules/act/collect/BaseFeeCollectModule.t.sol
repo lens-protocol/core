@@ -259,6 +259,7 @@ contract BaseFeeCollectModule_ProcessCollect is BaseFeeCollectModuleBase {
         vm.assume(pubId != 0);
         vm.assume(transactionExecutor != address(0));
         // vm.assume(!moduleGlobals.isCurrencyWhitelisted(passedCurrency)); // TODO: Verify that's right
+        vm.assume(passedCurrency != exampleInitData.currency);
         vm.assume(collectorProfileId != 0);
         vm.assume(collectorProfileOwner != address(0));
         vm.assume(amount != 0);
