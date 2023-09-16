@@ -30,7 +30,6 @@ contract LensHandles is ERC721, ImmutableOwnable, ILensHandles {
     uint256 internal constant MAX_LOCAL_NAME_LENGTH = 26;
     string internal constant NAMESPACE = 'lens';
     uint256 internal immutable NAMESPACE_LENGTH = bytes(NAMESPACE).length;
-    uint256 internal constant SEPARATOR_LENGTH = 1; // bytes('/').length;
     bytes32 internal constant NAMESPACE_HASH = keccak256(bytes(NAMESPACE));
     uint256 internal immutable TOKEN_GUARDIAN_COOLDOWN;
     mapping(address => uint256) internal _tokenGuardianDisablingTimestamp;
