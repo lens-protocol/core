@@ -13,7 +13,7 @@ import {MetaTxLib} from 'contracts/libraries/MetaTxLib.sol';
 /// @title PublicActProxy
 /// @author LensProtocol
 /// @notice This contract allows anyone to Act on a publication without holding a profile
-/// @dev This contract holds a profile and acts on behalf of the caller
+/// @dev This contract holds a profile (or is a DE of that profile) and acts on behalf of the caller
 contract PublicActProxy {
     using SafeERC20 for IERC20;
 
@@ -37,7 +37,7 @@ contract PublicActProxy {
             referrerPubIds: ---
             actionModuleAddress: ---
             actionModuleData: {
-                collectNftRecipient: msg.sender
+                collectNftRecipient: who shall receive the NFT
                 collectData: {
                     expectedCurrency: should match what's stored in CollectModule
                     expectedAmount: should match what's stored in CollectModule
@@ -46,12 +46,12 @@ contract PublicActProxy {
         }
     */
 
-    // This contract should be the owner of the publicationActionParams.actorProfileId
+    // This contract should be the owner/DE of the publicationActionParams.actorProfileId
     // This contract should be set as publicationActionParams.transactionExecutor
     // Correct collectNftRecipient should be passed in the publicationActionParams.actionModuleData
 
     // This is pretty simple, but should follow the rules above:
-    function publicFreeCollect(Types.PublicationActionParams calldata publicationActionParams) external {
+    function publicFreeAct(Types.PublicationActionParams calldata publicationActionParams) external {
         HUB.act(publicationActionParams);
     }
 
@@ -70,7 +70,6 @@ contract PublicActProxy {
         // TODO: Consider moving this MetaTxLib out of LensHub domain somehow (because of nonces conflict)
         // Reason: someone can use these signatures again to Act on behalf of this profile again on LensHub
         MetaTxLib.validateActSignature(signature, publicationActionParams);
-        HUB.act(publicationActionParams);
         _publicCollect(publicationActionParams, signature.signer);
     }
 
@@ -105,5 +104,10 @@ contract PublicActProxy {
         if (collectData.amount > 0) {
             IERC20(collectData.currency).approve(collectModule, 0);
         }
+    }
+
+    // TODO: This is needed for MetaTxLib to work - might need to remove after MetaTxLib functions are moved here
+    function name() external pure returns (string memory) {
+        return 'PublicActProxy';
     }
 }
