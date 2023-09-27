@@ -63,8 +63,6 @@ library GovernanceLib {
                 revert Errors.NotGovernanceOrEmergencyAdmin();
             }
         }
-
-        emit Events.StateSet(msg.sender, prevState, newState, block.timestamp);
     }
 
     function _setState(Types.ProtocolState newState) private returns (Types.ProtocolState) {
