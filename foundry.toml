@@ -5,25 +5,27 @@ libs = ['node_modules', 'lib']
 test = 'test'
 cache_path  = 'forge-cache'
 fs_permissions = [{ access = "read-write", path = "./"}]
+solc_version = '0.8.19'
 optimizer = true
 optimizer_runs = 10
 ignored_error_codes = []
 via_ir = true
+
 libraries = [
-        "contracts/libraries/ActionLib.sol:ActionLib:0x26a9fa0bbbbcd1596b08dc7e9a6f9b437c1ad735",
-        "contracts/libraries/FollowLib.sol:FollowLib:0x002415dbc60caea8ced1de154ed64df5734ac339",
-        "contracts/libraries/GovernanceLib.sol:GovernanceLib:0xda8bf37ef63460d9867e4c5e2990e738c89d4b1b",
-        "contracts/libraries/LegacyCollectLib.sol:LegacyCollectLib:0xa54dfd4e2cf1398db71c250d201f3071e2ce582b",
-        "contracts/libraries/MetaTxLib.sol:MetaTxLib:0xeb7f340ff7a090bccf0d24829681f248e863e7eb",
-        "contracts/libraries/MigrationLib.sol:MigrationLib:0x7ba5304ecce85441a7da6ead150e51322faa607b",
-        "contracts/libraries/ProfileLib.sol:ProfileLib:0x6486ce46fd092c7ffaa55ea4fc733a997892207f",
-        "contracts/libraries/PublicationLib.sol:PublicationLib:0x4c7be49a0317ad72ae1c180a1be3710ba6fc0c56",
-        "contracts/libraries/ValidationLib.sol:ValidationLib:0xa2b9c96ff3337962f8dd9fafe260a95168854ef7",
-        "contracts/libraries/token-uris/FollowTokenURILib.sol:FollowTokenURILib:0xc83fd6feb6c35e99a77441660f4f1215c1d138bd",
-        "contracts/libraries/token-uris/HandleTokenURILib.sol:HandleTokenURILib:0xe63da517c5202db5a9f8951090ae6c0ef84c80e5",
-        "contracts/libraries/token-uris/ProfileTokenURILib.sol:ProfileTokenURILib:0xd546a4dc0efc68e49000a26ec5c7f8c6ba32e2ed",
-        "contracts/libraries/token-uris/TokenURIMainFontLib.sol:TokenURIMainFontLib:0x7a7ebf5194e36b76e68610a469d6b6c03a1b05f0",
-        "contracts/libraries/token-uris/TokenURISecondaryFontLib.sol:TokenURISecondaryFontLib:0x4f1a85154af212eb146b459f477c89e873b479fb",
+        "contracts/libraries/ActionLib.sol:ActionLib:0x8de25afc4b37e0adbb58caf3df06faf419455404",
+        "contracts/libraries/FollowLib.sol:FollowLib:0xd5fb386bc55966d4cff7a8ef6eb292f537eeb7a4",
+        "contracts/libraries/GovernanceLib.sol:GovernanceLib:0xc946e6807472f8ceef87cfa0253e78e921f16773",
+        "contracts/libraries/LegacyCollectLib.sol:LegacyCollectLib:0xa0528a82fccbe1c871336d0fa09cf3acf0d3946a",
+        "contracts/libraries/MetaTxLib.sol:MetaTxLib:0x6d3671d37252d27f03efb01c1995a73162473571",
+        "contracts/libraries/MigrationLib.sol:MigrationLib:0x20a0201951b4a67c70b2aa7af5c6e3e322d81388",
+        "contracts/libraries/ProfileLib.sol:ProfileLib:0xc806cd6d9723b195c8ee758f110df224735d1d53",
+        "contracts/libraries/PublicationLib.sol:PublicationLib:0x7d723ad98553b7245b686a3a744758faf62a5333",
+        "contracts/libraries/ValidationLib.sol:ValidationLib:0x9f98f838e3db42830ef488a92c8ed9671268000e",
+        "contracts/libraries/token-uris/FollowTokenURILib.sol:FollowTokenURILib:0xb9711f2edf7d8f901af4becbf39d0bd802e9eb0c",
+        "contracts/libraries/token-uris/HandleTokenURILib.sol:HandleTokenURILib:0x7e34ec095a1a8ada535d90bb3cbabd8740fe5a44",
+        "contracts/libraries/token-uris/ProfileTokenURILib.sol:ProfileTokenURILib:0x8bad75519110c3161b472a0d18151ec00ac7d69a",
+        "contracts/libraries/token-uris/TokenURIMainFontLib.sol:TokenURIMainFontLib:0x56174f7ff96c82004d3cec42e9a99b5a44e76c77",
+        "contracts/libraries/token-uris/TokenURISecondaryFontLib.sol:TokenURISecondaryFontLib:0x17a9874d7a40dbd76a609d4c24fef13f4347fecc",
 ]
 
 [rpc_endpoints]
