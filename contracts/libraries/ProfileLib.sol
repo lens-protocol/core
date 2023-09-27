@@ -275,6 +275,7 @@ library ProfileLib {
         emit Events.FollowModuleSet(
             profileId,
             followModule,
+            followModuleInitData,
             followModuleReturnData,
             transactionExecutor,
             block.timestamp

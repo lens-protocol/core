@@ -48,7 +48,7 @@ contract DegreesOfSeparationReferenceModule is HubRestricted, IReferenceModule {
      * @dev Because of the "Six degrees of separation" theory, in the long term, setting up 5, 6 or more degrees of
      * separation will be almost equivalent to turning off the restriction.
      * If we also take into account the gas cost of performing the validations on-chain, and the cost of off-chain
-     * computation of the path, makes sense to only support up to 3 degrees of separation.
+     * computation of the path, makes sense to only support up to 2 degrees of separation.
      */
     uint8 public constant MAX_DEGREES_OF_SEPARATION = 2;
 
