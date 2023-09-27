@@ -349,7 +349,7 @@ library MetaTxLib {
      * @dev Wrapper for ecrecover to reduce code size, used in meta-tx specific functions.
      */
     function _validateRecoveredAddress(bytes32 digest, Types.EIP712Signature calldata signature) private view {
-        if (signature.deadline < block.timestamp) revert Errors.SignatureExpired();
+        if (block.timestamp > signature.deadline) revert Errors.SignatureExpired();
         // If the expected address is a contract, check the signature there.
         if (signature.signer.code.length != 0) {
             bytes memory concatenatedSig = abi.encodePacked(signature.r, signature.s, signature.v);
