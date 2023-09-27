@@ -196,6 +196,7 @@ contract CollectPublicationActionTest is BaseTest {
         vm.assume(actorProfileId != 0);
         vm.assume(actorProfileOwner != address(0));
         vm.assume(transactionExecutor != address(0));
+        vm.assume(collectNftRecipient != address(0));
 
         vm.assume(collectPublicationAction.getCollectData(profileId, pubId).collectModule == address(0));
 

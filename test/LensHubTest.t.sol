@@ -66,7 +66,14 @@ contract LensHubTest is BaseTest {
         emit Events.ProfileCreated(expectedProfileId, address(this), to, block.timestamp);
 
         vm.expectEmit(true, true, true, true, address(hub));
-        emit Events.FollowModuleSet(expectedProfileId, followModule, '', address(this), block.timestamp);
+        emit Events.FollowModuleSet(
+            expectedProfileId,
+            followModule,
+            followModuleInitData,
+            '',
+            address(this),
+            block.timestamp
+        );
 
         uint256 profileId = hub.createProfile(createProfileParams);
 
@@ -101,7 +108,14 @@ contract LensHubTest is BaseTest {
         emit Events.ProfileCreated(expectedProfileId, address(this), to, block.timestamp);
 
         vm.expectEmit(true, true, true, true, address(hub));
-        emit Events.FollowModuleSet(expectedProfileId, followModule, '', address(this), block.timestamp);
+        emit Events.FollowModuleSet(
+            expectedProfileId,
+            followModule,
+            followModuleInitData,
+            '',
+            address(this),
+            block.timestamp
+        );
 
         vm.expectCall(
             address(followModule),

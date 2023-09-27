@@ -30,7 +30,6 @@ contract LensHandles is ERC721, ImmutableOwnable, ILensHandles {
     uint256 internal constant MAX_LOCAL_NAME_LENGTH = 26;
     string internal constant NAMESPACE = 'lens';
     uint256 internal immutable NAMESPACE_LENGTH = bytes(NAMESPACE).length;
-    uint256 internal constant SEPARATOR_LENGTH = 1; // bytes('/').length;
     bytes32 internal constant NAMESPACE_HASH = keccak256(bytes(NAMESPACE));
     uint256 internal immutable TOKEN_GUARDIAN_COOLDOWN;
     mapping(address => uint256) internal _tokenGuardianDisablingTimestamp;
@@ -71,7 +70,7 @@ contract LensHandles is ERC721, ImmutableOwnable, ILensHandles {
     }
 
     function symbol() public pure override returns (string memory) {
-        return string.concat('/', NAMESPACE);
+        return string.concat(NAMESPACE);
     }
 
     /**
@@ -79,7 +78,7 @@ contract LensHandles is ERC721, ImmutableOwnable, ILensHandles {
      */
     function tokenURI(uint256 tokenId) public view override returns (string memory) {
         _requireMinted(tokenId);
-        return HandleTokenURILib.getTokenURI(tokenId, _localNames[tokenId]);
+        return HandleTokenURILib.getTokenURI(tokenId, _localNames[tokenId], NAMESPACE);
     }
 
     /// @inheritdoc ILensHandles
@@ -172,7 +171,7 @@ contract LensHandles is ERC721, ImmutableOwnable, ILensHandles {
 
     function getHandle(uint256 tokenId) public view returns (string memory) {
         string memory localName = getLocalName(tokenId);
-        return string.concat('/', NAMESPACE, '/', localName);
+        return string.concat(NAMESPACE, '/@', localName);
     }
 
     function getTokenId(string memory localName) public pure returns (uint256) {

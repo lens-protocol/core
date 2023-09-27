@@ -100,7 +100,7 @@ library MigrationLib {
     // FollowNFT Migration:
 
     function batchMigrateFollows(
-        uint256 followerProfileIds,
+        uint256 followerProfileId,
         uint256[] calldata idsOfProfileFollowed,
         uint256[] calldata followTokenIds
     ) external {
@@ -111,7 +111,7 @@ library MigrationLib {
         while (i < idsOfProfileFollowed.length) {
             _migrateFollow(
                 StorageLib.getProfile(idsOfProfileFollowed[i]).followNFT,
-                followerProfileIds, // one follower for all the follows
+                followerProfileId, // one follower for all the follows
                 idsOfProfileFollowed[i],
                 followTokenIds[i]
             );

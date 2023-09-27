@@ -42,7 +42,7 @@ contract ForkManagement is Script, KeyExists, ContractAddresses {
 
             network = getNetwork();
 
-            forkBlockNumber = vm.envOr({name: string('FORK_BLOCK'), defaultValue: uint256(0)});
+            forkBlockNumber = vm.envOr({name: string('TESTING_FORK_BLOCK'), defaultValue: uint256(0)});
             if (forkBlockNumber != 0) {
                 vm.createSelectFork(network, forkBlockNumber);
                 console.log('Fork Block number (FIXED BLOCK):', forkBlockNumber);
