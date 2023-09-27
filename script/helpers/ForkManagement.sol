@@ -35,7 +35,7 @@ contract ForkManagement is Script {
     }
 
     function initFork() internal {
-        targetEnv = isEnvSet('TESTING_FORK') ? vm.envString('TESTING_FORK') : '';
+        targetEnv = vm.envOr('TESTING_FORK', string(''));
 
         if (bytes(targetEnv).length > 0) {
             fork = true;
@@ -43,7 +43,7 @@ contract ForkManagement is Script {
             loadJson();
             network = getNetwork();
             vm.createSelectFork(network);
-            forkBlockNumber = block.number;
+            forkBlockNumber = vm.envOr('TESTING_FORK_BLOCK', block.number);
             console.log('Fork Block number:', forkBlockNumber);
             checkNetworkParams();
             loadBaseAddresses();
