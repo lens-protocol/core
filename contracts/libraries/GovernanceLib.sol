@@ -52,14 +52,18 @@ library GovernanceLib {
     function setState(Types.ProtocolState newState) external {
         // NOTE: This does not follow the CEI-pattern, but there is no interaction and this allows to abstract `_setState` logic.
         Types.ProtocolState prevState = _setState(newState);
-        // If the sender is the emergency admin, prevent them from reducing restrictions.
-        if (msg.sender == StorageLib.getEmergencyAdmin()) {
-            if (newState <= prevState) {
-                revert Errors.EmergencyAdminCanOnlyPauseFurther();
+
+        if (msg.sender != StorageLib.getGovernance()) {
+            // If the sender is the emergency admin, prevent them from reducing restrictions.
+            if (msg.sender == StorageLib.getEmergencyAdmin()) {
+                if (newState <= prevState) {
+                    revert Errors.EmergencyAdminCanOnlyPauseFurther();
+                }
+            } else {
+                revert Errors.NotGovernanceOrEmergencyAdmin();
             }
-        } else if (msg.sender != StorageLib.getGovernance()) {
-            revert Errors.NotGovernanceOrEmergencyAdmin();
         }
+
         emit Events.StateSet(msg.sender, prevState, newState, block.timestamp);
     }
 
