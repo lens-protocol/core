@@ -47,8 +47,8 @@ contract LitAccessControlDeployment is Script, ForkManagement {
 
     function deploy() internal {
         vm.startBroadcast(deployer.ownerPk);
-        address lensHub = 0x7620135962A2Ab6bfE153159Dcdb50F06Bbf97fC;
-        address collectPublicationAction = 0xE18F310D8b5221dCCD24c4E54E3AA23ff7cda1b4;
+        address lensHub = 0xC1E77eE73403B8a7478884915aA599932A677870; // TODO: Replace with reading from Addressbook
+        address collectPublicationAction = 0x5FE7918C3Ef48E6C5Fd79dD22A3120a3C4967aC2; // TODO: Replace with reading from Addressbook
 
         address litAccessControlImpl = address(new LitAccessControl(lensHub, collectPublicationAction));
 

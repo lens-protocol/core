@@ -193,6 +193,8 @@ contract TestSetup is Test, ContractAddressesLoaderDeployer, ArrayHelpers {
             hub.whitelistProfileCreator(address(this), true);
             beforeUpgrade();
             upgradeToV2();
+        } else {
+            lensVersion = forkVersion;
         }
 
         vm.startPrank(deployer);
