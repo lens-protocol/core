@@ -16,6 +16,7 @@ import {LensImplGetters} from 'contracts/base/LensImplGetters.sol';
 import {LensGovernable} from 'contracts/base/LensGovernable.sol';
 import {LensProfiles} from 'contracts/base/LensProfiles.sol';
 import {LensHubEventHooks} from 'contracts/base/LensHubEventHooks.sol';
+import {LensVersion} from 'contracts/base/LensVersion.sol';
 
 // Libraries
 import {ActionLib} from 'contracts/libraries/ActionLib.sol';
@@ -49,6 +50,7 @@ contract LensHub is
     LensImplGetters,
     LensHubEventHooks,
     LensHubStorage,
+    LensVersion,
     ILensProtocol
 {
     modifier onlyProfileOwnerOrDelegatedExecutor(address expectedOwnerOrDelegatedExecutor, uint256 profileId) {

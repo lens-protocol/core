@@ -7,5 +7,13 @@ import {ILensGovernable} from 'contracts/interfaces/ILensGovernable.sol';
 import {ILensHubEventHooks} from 'contracts/interfaces/ILensHubEventHooks.sol';
 import {ILensImplGetters} from 'contracts/interfaces/ILensImplGetters.sol';
 import {ILensProfiles} from 'contracts/interfaces/ILensProfiles.sol';
+import {ILensVersion} from 'contracts/interfaces/ILensVersion.sol';
 
-interface ILensHub is ILensProfiles, ILensProtocol, ILensGovernable, ILensHubEventHooks, ILensImplGetters {}
+interface ILensHub is
+    ILensProfiles,
+    ILensProtocol,
+    ILensGovernable,
+    ILensHubEventHooks,
+    ILensImplGetters,
+    ILensVersion
+{}

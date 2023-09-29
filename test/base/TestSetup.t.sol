@@ -89,6 +89,8 @@ interface IOldHub {
     function mirror(OldMirrorData memory createProfileParams) external returns (uint256);
 
     function getProfile(uint256 profileId) external view returns (OldProfileStruct memory);
+
+    function getCollectNFTImpl() external view returns (address);
 }
 
 contract TestSetup is Test, ContractAddressesLoaderDeployer, ArrayHelpers {
@@ -110,7 +112,13 @@ contract TestSetup is Test, ContractAddressesLoaderDeployer, ArrayHelpers {
         console.log('Hub:', address(hub));
 
         address followNFTAddr = hub.getFollowNFTImpl();
-        address legacyCollectNFTAddr = hub.getLegacyCollectNFTImpl();
+
+        address legacyCollectNFTAddr;
+        if (lensVersion == 2) {
+            legacyCollectNFTAddr = hub.getLegacyCollectNFTImpl();
+        } else {
+            legacyCollectNFTAddr = IOldHub(address(hub)).getCollectNFTImpl();
+        }
 
         address hubImplAddr = address(uint160(uint256(vm.load(hubProxyAddr, PROXY_IMPLEMENTATION_STORAGE_SLOT))));
         console.log('Found hubImplAddr:', hubImplAddr);
@@ -128,13 +136,17 @@ contract TestSetup is Test, ContractAddressesLoaderDeployer, ArrayHelpers {
 
         migrationAdmin = _loadAddressAs('MIGRATION_ADMIN');
 
-        treasury = hub.getTreasury();
-        vm.label(treasury, 'TREASURY');
+        if (lensVersion == 2) {
+            treasury = hub.getTreasury();
+            vm.label(treasury, 'TREASURY');
+
+            TREASURY_FEE_BPS = hub.getTreasuryFee();
+        } else {
+            console.log("Can't get treasury on Lens V1");
+        }
 
         proxyAdmin = address(uint160(uint256(vm.load(hubProxyAddr, ADMIN_SLOT))));
         vm.label(proxyAdmin, 'HUB_PROXY_ADMIN');
-
-        TREASURY_FEE_BPS = hub.getTreasuryFee();
 
         if (keyExists(json, string(abi.encodePacked('.', targetEnv, '.LensHandles')))) {
             console.log('LensHandles key does exist');
