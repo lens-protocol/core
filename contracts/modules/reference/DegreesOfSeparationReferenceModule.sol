@@ -94,7 +94,7 @@ contract DegreesOfSeparationReferenceModule is HubRestricted, IReferenceModule {
             degreesOfSeparation,
             sourceProfile
         );
-        return '';
+        return data;
     }
 
     /**
