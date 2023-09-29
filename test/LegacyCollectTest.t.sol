@@ -251,6 +251,8 @@ contract LegacyCollectTest is BaseTest, ReferralSystemTest {
         vm.expectEmit(true, true, true, true, predictedCollectNFT);
         emit Transfer(address(0), hub.ownerOf(defaultCollectParams.collectorProfileId), 1);
 
+        uint256 expectedTokenId = 1; // TODO: fix this if needed
+
         vm.expectEmit(true, true, true, true, address(hub));
         emit LegacyCollectLib.CollectedLegacy({
             publicationCollectedProfileId: defaultCollectParams.publicationCollectedProfileId,
@@ -259,11 +261,13 @@ contract LegacyCollectTest is BaseTest, ReferralSystemTest {
             referrerProfileId: defaultCollectParams.referrerProfileId,
             referrerPubId: defaultCollectParams.referrerPubId,
             collectModuleData: defaultCollectParams.collectModuleData,
+            tokenId: expectedTokenId,
+            nftRecipient: hub.ownerOf(defaultCollectParams.collectorProfileId),
             timestamp: block.timestamp
         });
 
         uint256 collectTokenId = _collect(defaultAccount.ownerPk, defaultCollectParams);
-        assertEq(collectTokenId, 1);
+        assertEq(collectTokenId, expectedTokenId);
 
         string memory expectedCollectNftName = string.concat(
             'Lens Collect | Profile #',
@@ -297,6 +301,8 @@ contract LegacyCollectTest is BaseTest, ReferralSystemTest {
             referrerProfileId: defaultCollectParams.referrerProfileId,
             referrerPubId: defaultCollectParams.referrerPubId,
             collectModuleData: defaultCollectParams.collectModuleData,
+            tokenId: collectTokenId + 1,
+            nftRecipient: hub.ownerOf(defaultCollectParams.collectorProfileId),
             timestamp: block.timestamp
         });
 
