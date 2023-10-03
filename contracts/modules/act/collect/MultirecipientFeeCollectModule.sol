@@ -76,7 +76,11 @@ contract MultirecipientFeeCollectModule is BaseFeeCollectModule {
 
     mapping(uint256 => mapping(uint256 => RecipientData[])) internal _recipientsByPublicationByProfile;
 
-    constructor(address hub, address actionModule) BaseFeeCollectModule(hub, actionModule) {}
+    constructor(
+        address hub,
+        address actionModule,
+        address moduleRegistry
+    ) BaseFeeCollectModule(hub, actionModule, moduleRegistry) {}
 
     /**
      * @inheritdoc ICollectModule

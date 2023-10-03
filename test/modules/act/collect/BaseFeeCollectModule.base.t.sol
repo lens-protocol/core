@@ -35,7 +35,9 @@ contract BaseFeeCollectModuleBase is BaseTest {
             console.log('Testing against already deployed module at:', baseFeeCollectModule);
         } else {
             vm.prank(deployer);
-            baseFeeCollectModule = address(new SimpleFeeCollectModule(address(hub), collectPublicationAction));
+            baseFeeCollectModule = address(
+                new SimpleFeeCollectModule(address(hub), collectPublicationAction, address(moduleRegistry))
+            );
         }
         currency = new MockCurrency();
 

@@ -19,9 +19,9 @@ abstract contract FeeModuleBase {
     ILensHub private immutable HUB;
     IModuleRegistry public immutable MODULE_REGISTRY;
 
-    constructor(address hub) {
+    constructor(address hub, address moduleRegistry) {
         HUB = ILensHub(hub);
-        MODULE_REGISTRY = IModuleRegistry(ILensHub(hub).getModuleRegistry());
+        MODULE_REGISTRY = IModuleRegistry(moduleRegistry);
     }
 
     // TODO: Rename this to _currencyRegistered or smth

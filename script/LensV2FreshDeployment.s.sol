@@ -262,7 +262,8 @@ contract LensV2FreshDeployment is Script, ForkManagement, ArrayHelpers {
 
         simpleFeeCollectModule = new SimpleFeeCollectModule({
             hub: address(hub),
-            actionModule: address(collectPublicationActionProxy)
+            actionModule: address(collectPublicationActionProxy),
+            moduleRegistry: address(moduleRegistry)
         });
         console.log('\n+ + + SimpleFeeCollectModule: %s', address(simpleFeeCollectModule));
         vm.writeLine(
@@ -272,7 +273,8 @@ contract LensV2FreshDeployment is Script, ForkManagement, ArrayHelpers {
 
         multirecipientFeeCollectModule = new MultirecipientFeeCollectModule({
             hub: address(hub),
-            actionModule: address(collectPublicationActionProxy)
+            actionModule: address(collectPublicationActionProxy),
+            moduleRegistry: address(moduleRegistry)
         });
         console.log('\n+ + + MultirecipientFeeCollectModule: %s', address(multirecipientFeeCollectModule));
         vm.writeLine(
@@ -280,7 +282,7 @@ contract LensV2FreshDeployment is Script, ForkManagement, ArrayHelpers {
             string.concat('MultirecipientFeeCollectModule: ', vm.toString(address(multirecipientFeeCollectModule)))
         );
 
-        feeFollowModule = new FeeFollowModule({hub: address(hub)});
+        feeFollowModule = new FeeFollowModule({hub: address(hub), moduleRegistry: address(moduleRegistry)});
         console.log('\n+ + + FeeFollowModule: %s', address(feeFollowModule));
         vm.writeLine(addressesFile, string.concat('FeeFollowModule: ', vm.toString(address(feeFollowModule))));
 

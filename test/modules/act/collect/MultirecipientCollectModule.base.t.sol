@@ -28,7 +28,11 @@ contract MultirecipientCollectModuleBase is BaseFeeCollectModuleBase {
             console.log('Testing against already deployed module at:', address(multirecipientFeeCollectModule));
         } else {
             vm.prank(deployer);
-            multirecipientFeeCollectModule = new MultirecipientFeeCollectModule(hubProxyAddr, collectPublicationAction);
+            multirecipientFeeCollectModule = new MultirecipientFeeCollectModule(
+                hubProxyAddr,
+                collectPublicationAction,
+                address(moduleRegistry)
+            );
         }
         baseFeeCollectModule = address(multirecipientFeeCollectModule);
         if (address(currency) == address(0)) {
