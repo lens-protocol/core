@@ -4,7 +4,7 @@ pragma solidity ^0.8.13;
 import {ForkManagement} from 'script/helpers/ForkManagement.sol';
 import 'forge-std/Script.sol';
 import {LensHub as LegacyLensHub} from './../lib/core-private/contracts/core/LensHub.sol';
-import {LensHub as LensHubV2} from 'contracts/LensHub.sol';
+import {LensHubInitializable} from 'contracts/misc/LensHubInitializable.sol';
 import {LensV2UpgradeContract} from 'contracts/misc/LensV2UpgradeContract.sol';
 import {FollowNFT} from 'contracts/FollowNFT.sol';
 import {LensHandles} from 'contracts/namespaces/LensHandles.sol';
@@ -24,6 +24,9 @@ contract LensV2UpgradeDeployment is Script, ForkManagement, ArrayHelpers {
     using stdJson for string;
 
     bytes32 constant ADMIN_SLOT = bytes32(uint256(keccak256('eip1967.proxy.admin')) - 1);
+    bytes32 constant PROXY_IMPLEMENTATION_STORAGE_SLOT =
+        bytes32(uint256(keccak256('eip1967.proxy.implementation')) - 1);
+
     uint256 constant PROFILE_GUARDIAN_COOLDOWN = 7 days;
     uint256 constant HANDLE_GUARDIAN_COOLDOWN = 0;
 
@@ -50,12 +53,14 @@ contract LensV2UpgradeDeployment is Script, ForkManagement, ArrayHelpers {
     address legacyFeeFollowModule;
     address legacyProfileFollowModule;
     address feeFollowModule;
+    address moduleRegistryImpl;
     address moduleRegistry;
 
     LensAccount _deployer;
     address governance;
     address proxyAdmin;
     address migrationAdmin;
+    address lensHandlesOwner;
 
     ProxyAdmin proxyAdminContract;
 
@@ -65,7 +70,7 @@ contract LensV2UpgradeDeployment is Script, ForkManagement, ArrayHelpers {
         vm.label(lensHub, 'LensHub');
         console.log('Lens Hub Proxy: %s', address(legacyLensHub));
 
-        legacyLensHubImpl = json.readAddress(string(abi.encodePacked('.', targetEnv, '.LensHubImplementation')));
+        legacyLensHubImpl = address(uint160(uint256(vm.load(lensHub, PROXY_IMPLEMENTATION_STORAGE_SLOT))));
         vm.label(legacyLensHubImpl, 'LensHubImplementation');
         console.log('Legacy Lens Hub Impl: %s', address(legacyLensHubImpl));
 
@@ -91,6 +96,18 @@ contract LensV2UpgradeDeployment is Script, ForkManagement, ArrayHelpers {
         // json.readAddress(string(abi.encodePacked('.', targetEnv, '.MigrationAdmin')));
         vm.label(migrationAdmin, 'MigrationAdmin');
         console.log('Migration Admin: %s', migrationAdmin);
+
+        // Get Legacy CollectNFTImpl address
+        legacyCollectNFTImpl = legacyLensHub.getCollectNFTImpl();
+        vm.label(legacyCollectNFTImpl, 'LegacyCollectNFTImpl');
+        console.log('Legacy CollectNFTImpl: %s', legacyCollectNFTImpl);
+
+        // TODO: Who should be the owner of LensHandles? Setting it for LensHub governance
+        lensHandlesOwner = legacyLensHub.getGovernance();
+        vm.label(lensHandlesOwner, 'LensHandlesOwner');
+        console.log('LensHandlesOwner: %s', lensHandlesOwner);
+
+        console.log('Address this:', address(this));
     }
 
     function loadPrivateKeys() internal {
@@ -122,20 +139,22 @@ contract LensV2UpgradeDeployment is Script, ForkManagement, ArrayHelpers {
         deploy();
     }
 
+    function saveContractAddress(string memory contractName, address deployedAddress) internal {
+        console.log('Saving %s (%s) into addresses under %s environment', contractName, deployedAddress, targetEnv);
+        string[] memory inputs = new string[](5);
+        inputs[0] = 'node';
+        inputs[1] = 'script/helpers/saveAddress.js';
+        inputs[2] = targetEnv;
+        inputs[3] = contractName;
+        inputs[4] = vm.toString(deployedAddress);
+        // bytes memory res =
+        vm.ffi(inputs);
+        // string memory output = abi.decode(res, (string));
+        // console.log(output);
+    }
+
     function deploy() internal {
         string memory addressesFile = 'addressesV2.txt';
-
-        console.log('Address this:', address(this));
-
-        // Get Legacy CollectNFTImpl address
-        legacyCollectNFTImpl = legacyLensHub.getCollectNFTImpl();
-        vm.label(legacyCollectNFTImpl, 'LegacyCollectNFTImpl');
-        console.log('Legacy CollectNFTImpl: %s', legacyCollectNFTImpl);
-
-        // Who should be the owner of LensHandles? Setting it for LensHub governance
-        address lensHandlesOwner = legacyLensHub.getGovernance();
-        vm.label(lensHandlesOwner, 'LensHandlesOwner');
-        console.log('LensHandlesOwner: %s', lensHandlesOwner);
 
         ///////Broadcasting transactions///////
         vm.startBroadcast(_deployer.ownerPk);
@@ -143,31 +162,43 @@ contract LensV2UpgradeDeployment is Script, ForkManagement, ArrayHelpers {
         // Deploy FollowNFTImpl(hub)
         followNFTImpl = address(new FollowNFT(lensHub));
         vm.writeLine(addressesFile, string.concat('FollowNFTImpl: ', vm.toString(followNFTImpl)));
+        saveContractAddress('FollowNFTImpl', followNFTImpl);
         console.log('FollowNFTImpl: %s', followNFTImpl);
 
         // Deploy LensHandles(owner, hub) implementation
         lensHandlesImpl = address(new LensHandles(lensHandlesOwner, lensHub, HANDLE_GUARDIAN_COOLDOWN));
         vm.writeLine(addressesFile, string.concat('LensHandlesImpl: ', vm.toString(lensHandlesImpl)));
+        saveContractAddress('LensHandlesImpl', lensHandlesImpl);
         console.log('LensHandlesImpl: %s', lensHandlesImpl);
 
         // Make LensHandles a transparentUpgradeableProxy
         lensHandles = address(new TransparentUpgradeableProxy(lensHandlesImpl, proxyAdmin, ''));
         vm.writeLine(addressesFile, string.concat('LensHandles: ', vm.toString(lensHandles)));
+        saveContractAddress('LensHandles', lensHandles);
         console.log('LensHandles: %s', lensHandles);
 
         // Deploy TokenHandleRegistry(hub, lensHandles) implementation
         tokenHandleRegistryImpl = address(new TokenHandleRegistry(lensHub, lensHandles));
         vm.writeLine(addressesFile, string.concat('TokenHandleRegistryImpl: ', vm.toString(tokenHandleRegistryImpl)));
+        saveContractAddress('TokenHandleRegistryImpl', tokenHandleRegistryImpl);
         console.log('TokenHandleRegistryImpl: %s', tokenHandleRegistryImpl);
 
         // Make TokenHandleRegistry a transparentUpgradeableProxy
         tokenHandleRegistry = address(new TransparentUpgradeableProxy(tokenHandleRegistryImpl, proxyAdmin, ''));
         vm.writeLine(addressesFile, string.concat('TokenHandleRegistry: ', vm.toString(tokenHandleRegistry)));
+        saveContractAddress('TokenHandleRegistry', tokenHandleRegistry);
         console.log('TokenHandleRegistry: %s', tokenHandleRegistry);
 
         // Deploy ModuleRegistry
-        moduleRegistry = address(new ModuleRegistry());
+        moduleRegistryImpl = address(new ModuleRegistry());
+        vm.writeLine(addressesFile, string.concat('ModuleRegistryImpl: ', vm.toString(moduleRegistryImpl)));
+        saveContractAddress('ModuleRegistryImpl', moduleRegistryImpl);
+        console.log('ModuleRegistryImpl: %s', moduleRegistryImpl);
+
+        // Make ModuleRegistry a transparentUpgradeableProxy
+        moduleRegistry = address(new TransparentUpgradeableProxy(moduleRegistryImpl, proxyAdmin, ''));
         vm.writeLine(addressesFile, string.concat('ModuleRegistry: ', vm.toString(moduleRegistry)));
+        saveContractAddress('ModuleRegistry', moduleRegistry);
         console.log('ModuleRegistry: %s', moduleRegistry);
 
         console.log('PROFILE_GUARDIAN_COOLDOWN: %s', PROFILE_GUARDIAN_COOLDOWN);
@@ -175,11 +206,12 @@ contract LensV2UpgradeDeployment is Script, ForkManagement, ArrayHelpers {
         // Deploy new FeeFollowModule(hub, moduleGlobals)
         feeFollowModule = address(new FeeFollowModule(lensHub, moduleRegistry));
         vm.writeLine(addressesFile, string.concat('FeeFollowModule: ', vm.toString(feeFollowModule)));
+        saveContractAddress('FeeFollowModule', feeFollowModule);
         console.log('FeeFollowModule: %s', feeFollowModule);
 
         // Pass all the fucking shit and deploy LensHub V2 Impl with:
         lensHubV2Impl = address(
-            new LensHubV2(
+            new LensHubInitializable(
                 followNFTImpl,
                 legacyCollectNFTImpl,
                 moduleRegistry,
@@ -194,15 +226,51 @@ contract LensV2UpgradeDeployment is Script, ForkManagement, ArrayHelpers {
                 })
             )
         );
+
+        //   "arguments": [
+        //     "0x072E491679Ed6f4fF4d419Ba909D5789116f2182",
+        //     "0x0000000000000000000000000000000000000000",
+        //     "0x36a6aDc2cE99F3b3dcEDe8508Be7A6aCC61B5655",
+        //     "300",
+        //     "(0x0000000000000000000000000000000000000000, 0x0000000000000000000000000000000000000000, 0x0000000000000000000000000000000000000000, 0x0000000000000000000000000000000000000000, 0x0000000000000000000000000000000000000000, 0x0000000000000000000000000000000000000000)"
+        //   ],
+        console.log('"arguments": [');
+        console.log('\t"%s"', followNFTImpl);
+        console.log('\t"%s"', legacyCollectNFTImpl);
+        console.log('\t"%s"', moduleRegistry);
+        console.log('\t"%s"', PROFILE_GUARDIAN_COOLDOWN);
+        console.log(
+            '\t"%s"',
+            string.concat(
+                '(',
+                vm.toString(lensHandles),
+                ', ',
+                vm.toString(tokenHandleRegistry),
+                ', ',
+                vm.toString(legacyFeeFollowModule),
+                ', ',
+                vm.toString(legacyProfileFollowModule),
+                ', ',
+                vm.toString(feeFollowModule),
+                ', ',
+                vm.toString(migrationAdmin),
+                ')'
+            )
+        );
+        console.log(']');
+
         vm.writeLine(addressesFile, string.concat('LensHubV2Impl: ', vm.toString(lensHubV2Impl)));
+        saveContractAddress('LensHubV2Impl', lensHubV2Impl);
         console.log('LensHubV2Impl: %s', lensHubV2Impl);
 
         Governance governanceContract = new Governance(address(legacyLensHub), governance);
         vm.writeLine(addressesFile, string.concat('GovernanceContract: ', vm.toString(address(governanceContract))));
+        saveContractAddress('GovernanceContract', address(governanceContract));
         console.log('GovernanceContract: %s', address(governanceContract));
 
         proxyAdminContract = new ProxyAdmin(address(legacyLensHub), legacyLensHubImpl, proxyAdmin);
         vm.writeLine(addressesFile, string.concat('ProxyAdminContract: ', vm.toString(address(proxyAdminContract))));
+        saveContractAddress('ProxyAdminContract', address(proxyAdminContract));
         console.log('ProxyAdminContract: %s', address(proxyAdminContract));
 
         address lensV2UpgradeContract = address(
@@ -214,8 +282,17 @@ contract LensV2UpgradeDeployment is Script, ForkManagement, ArrayHelpers {
                 newImplementationAddress: lensHubV2Impl
             })
         );
+
         vm.writeLine(addressesFile, string.concat('LensV2UpgradeContract: ', vm.toString(lensV2UpgradeContract)));
+        saveContractAddress('LensV2UpgradeContract', lensV2UpgradeContract);
         console.log('LensV2UpgradeContract: %s', lensV2UpgradeContract);
+        console.log('"arguments": [');
+        console.log('\t"%s"', address(proxyAdminContract));
+        console.log('\t"%s"', address(governanceContract));
+        console.log('\t"%s"', governance);
+        console.log('\t"%s"', address(legacyLensHub));
+        console.log('\t"%s"', lensHubV2Impl);
+        console.log(']');
 
         vm.stopBroadcast();
     }
