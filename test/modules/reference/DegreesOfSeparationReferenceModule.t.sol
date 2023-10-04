@@ -49,7 +49,7 @@ contract DegreesOfSeparationReferenceModuleTest is BaseTest {
         bool quotesRestricted,
         bool mirrorsRestricted,
         uint8 degreesOfSeparation,
-        uint128 sourceProfile
+        uint96 sourceProfile
     ) private pure returns (bytes memory) {
         return abi.encode(commentsRestricted, quotesRestricted, mirrorsRestricted, degreesOfSeparation, sourceProfile);
     }
@@ -70,7 +70,7 @@ contract DegreesOfSeparationReferenceModuleTest is BaseTest {
                 quotesRestricted: true,
                 mirrorsRestricted: true,
                 degreesOfSeparation: MAX_DEGREES_OF_SEPARATION,
-                sourceProfile: uint128(originalPublisher.profileId)
+                sourceProfile: uint96(originalPublisher.profileId)
             })
         );
     }
@@ -90,7 +90,7 @@ contract DegreesOfSeparationReferenceModuleTest is BaseTest {
                 quotesRestricted: true,
                 mirrorsRestricted: true,
                 degreesOfSeparation: unallowedDegreesValue,
-                sourceProfile: uint128(originalPublisher.profileId)
+                sourceProfile: uint96(originalPublisher.profileId)
             })
         );
     }
@@ -104,7 +104,7 @@ contract DegreesOfSeparationReferenceModuleTest is BaseTest {
         module.initializeReferenceModule(originalPublisher.profileId, 1, originalPublisher.owner, wrongData);
     }
 
-    function testCannotInitialize_IfSourceProfileDoesNotExist(uint128 unexistentProfileId) public {
+    function testCannotInitialize_IfSourceProfileDoesNotExist(uint96 unexistentProfileId) public {
         vm.assume(!hub.exists(unexistentProfileId));
 
         vm.expectRevert(Errors.TokenDoesNotExist.selector);
@@ -142,7 +142,7 @@ contract DegreesOfSeparationReferenceModuleTest is BaseTest {
                 quotesRestricted: quotesRestricted,
                 mirrorsRestricted: mirrorsRestricted,
                 degreesOfSeparation: degrees,
-                sourceProfile: uint128(originalPublisher.profileId)
+                sourceProfile: uint96(originalPublisher.profileId)
             })
         );
 
@@ -153,7 +153,7 @@ contract DegreesOfSeparationReferenceModuleTest is BaseTest {
         assertEq(config.quotesRestricted, quotesRestricted);
         assertEq(config.mirrorsRestricted, mirrorsRestricted);
         assertEq(config.degreesOfSeparation, degrees);
-        assertEq(config.sourceProfile, uint128(originalPublisher.profileId));
+        assertEq(config.sourceProfile, uint96(originalPublisher.profileId));
     }
 
     function testCannotProcessComment_IfDegreesOfSeparationRestrictionIsNotMet_PathLength(uint8 degrees) public {
@@ -171,7 +171,7 @@ contract DegreesOfSeparationReferenceModuleTest is BaseTest {
                 quotesRestricted: false,
                 mirrorsRestricted: false,
                 degreesOfSeparation: degrees,
-                sourceProfile: uint128(originalPublisher.profileId)
+                sourceProfile: uint96(originalPublisher.profileId)
             })
         );
 
@@ -189,7 +189,7 @@ contract DegreesOfSeparationReferenceModuleTest is BaseTest {
                 quotesRestricted: true,
                 mirrorsRestricted: true,
                 degreesOfSeparation: degrees,
-                sourceProfile: uint128(originalPublisher.profileId)
+                sourceProfile: uint96(originalPublisher.profileId)
             })
         );
 
@@ -226,7 +226,7 @@ contract DegreesOfSeparationReferenceModuleTest is BaseTest {
                 quotesRestricted: false,
                 mirrorsRestricted: true,
                 degreesOfSeparation: degrees,
-                sourceProfile: uint128(originalPublisher.profileId)
+                sourceProfile: uint96(originalPublisher.profileId)
             })
         );
 
@@ -244,7 +244,7 @@ contract DegreesOfSeparationReferenceModuleTest is BaseTest {
                 quotesRestricted: true,
                 mirrorsRestricted: true,
                 degreesOfSeparation: degrees,
-                sourceProfile: uint128(originalPublisher.profileId)
+                sourceProfile: uint96(originalPublisher.profileId)
             })
         );
 
@@ -281,7 +281,7 @@ contract DegreesOfSeparationReferenceModuleTest is BaseTest {
                 quotesRestricted: true,
                 mirrorsRestricted: false,
                 degreesOfSeparation: degrees,
-                sourceProfile: uint128(originalPublisher.profileId)
+                sourceProfile: uint96(originalPublisher.profileId)
             })
         );
 
@@ -299,7 +299,7 @@ contract DegreesOfSeparationReferenceModuleTest is BaseTest {
                 quotesRestricted: false,
                 mirrorsRestricted: false,
                 degreesOfSeparation: degrees,
-                sourceProfile: uint128(originalPublisher.profileId)
+                sourceProfile: uint96(originalPublisher.profileId)
             })
         );
 
@@ -338,7 +338,7 @@ contract DegreesOfSeparationReferenceModuleTest is BaseTest {
                 quotesRestricted: true,
                 mirrorsRestricted: true,
                 degreesOfSeparation: degrees,
-                sourceProfile: uint128(originalPublisher.profileId)
+                sourceProfile: uint96(originalPublisher.profileId)
             })
         );
 
@@ -356,7 +356,7 @@ contract DegreesOfSeparationReferenceModuleTest is BaseTest {
                 quotesRestricted: true,
                 mirrorsRestricted: true,
                 degreesOfSeparation: degrees,
-                sourceProfile: uint128(originalPublisher.profileId)
+                sourceProfile: uint96(originalPublisher.profileId)
             })
         );
 
@@ -395,7 +395,7 @@ contract DegreesOfSeparationReferenceModuleTest is BaseTest {
                 quotesRestricted: true,
                 mirrorsRestricted: true,
                 degreesOfSeparation: degrees,
-                sourceProfile: uint128(originalPublisher.profileId)
+                sourceProfile: uint96(originalPublisher.profileId)
             })
         );
 
@@ -413,7 +413,7 @@ contract DegreesOfSeparationReferenceModuleTest is BaseTest {
                 quotesRestricted: true,
                 mirrorsRestricted: true,
                 degreesOfSeparation: degrees,
-                sourceProfile: uint128(originalPublisher.profileId)
+                sourceProfile: uint96(originalPublisher.profileId)
             })
         );
 
@@ -452,7 +452,7 @@ contract DegreesOfSeparationReferenceModuleTest is BaseTest {
                 quotesRestricted: true,
                 mirrorsRestricted: true,
                 degreesOfSeparation: degrees,
-                sourceProfile: uint128(originalPublisher.profileId)
+                sourceProfile: uint96(originalPublisher.profileId)
             })
         );
 
@@ -470,7 +470,7 @@ contract DegreesOfSeparationReferenceModuleTest is BaseTest {
                 quotesRestricted: true,
                 mirrorsRestricted: true,
                 degreesOfSeparation: degrees,
-                sourceProfile: uint128(originalPublisher.profileId)
+                sourceProfile: uint96(originalPublisher.profileId)
             })
         );
 
@@ -509,7 +509,7 @@ contract DegreesOfSeparationReferenceModuleTest is BaseTest {
                 quotesRestricted: true,
                 mirrorsRestricted: true,
                 degreesOfSeparation: degrees,
-                sourceProfile: uint128(originalPublisher.profileId)
+                sourceProfile: uint96(originalPublisher.profileId)
             })
         );
 
@@ -527,7 +527,7 @@ contract DegreesOfSeparationReferenceModuleTest is BaseTest {
                 quotesRestricted: true,
                 mirrorsRestricted: true,
                 degreesOfSeparation: degrees,
-                sourceProfile: uint128(originalPublisher.profileId)
+                sourceProfile: uint96(originalPublisher.profileId)
             })
         );
 
@@ -566,7 +566,7 @@ contract DegreesOfSeparationReferenceModuleTest is BaseTest {
                 quotesRestricted: true,
                 mirrorsRestricted: true,
                 degreesOfSeparation: degrees,
-                sourceProfile: uint128(originalPublisher.profileId)
+                sourceProfile: uint96(originalPublisher.profileId)
             })
         );
 
@@ -584,7 +584,7 @@ contract DegreesOfSeparationReferenceModuleTest is BaseTest {
                 quotesRestricted: true,
                 mirrorsRestricted: true,
                 degreesOfSeparation: degrees,
-                sourceProfile: uint128(originalPublisher.profileId)
+                sourceProfile: uint96(originalPublisher.profileId)
             })
         );
 
@@ -623,7 +623,7 @@ contract DegreesOfSeparationReferenceModuleTest is BaseTest {
                 quotesRestricted: true,
                 mirrorsRestricted: true,
                 degreesOfSeparation: degrees,
-                sourceProfile: uint128(originalPublisher.profileId)
+                sourceProfile: uint96(originalPublisher.profileId)
             })
         );
 
@@ -641,7 +641,7 @@ contract DegreesOfSeparationReferenceModuleTest is BaseTest {
                 quotesRestricted: true,
                 mirrorsRestricted: true,
                 degreesOfSeparation: degrees,
-                sourceProfile: uint128(originalPublisher.profileId)
+                sourceProfile: uint96(originalPublisher.profileId)
             })
         );
 
@@ -677,7 +677,7 @@ contract DegreesOfSeparationReferenceModuleTest is BaseTest {
     //             quotesRestricted: true,
     //             mirrorsRestricted: true,
     //             degreesOfSeparation: MAX_DEGREES_OF_SEPARATION,
-    //             sourceProfile: uint128(originalPublisher.profileId)
+    //             sourceProfile: uint96(originalPublisher.profileId)
     //         })
     //     );
 
@@ -700,7 +700,7 @@ contract DegreesOfSeparationReferenceModuleTest is BaseTest {
     //             quotesRestricted: true,
     //             mirrorsRestricted: true,
     //             degreesOfSeparation: MAX_DEGREES_OF_SEPARATION,
-    //             sourceProfile: uint128(originalPublisher.profileId)
+    //             sourceProfile: uint96(originalPublisher.profileId)
     //         })
     //     );
 
@@ -736,7 +736,7 @@ contract DegreesOfSeparationReferenceModuleTest is BaseTest {
     //             quotesRestricted: true,
     //             mirrorsRestricted: true,
     //             degreesOfSeparation: MAX_DEGREES_OF_SEPARATION,
-    //             sourceProfile: uint128(originalPublisher.profileId)
+    //             sourceProfile: uint96(originalPublisher.profileId)
     //         })
     //     );
 
@@ -759,7 +759,7 @@ contract DegreesOfSeparationReferenceModuleTest is BaseTest {
     //             quotesRestricted: true,
     //             mirrorsRestricted: true,
     //             degreesOfSeparation: MAX_DEGREES_OF_SEPARATION,
-    //             sourceProfile: uint128(originalPublisher.profileId)
+    //             sourceProfile: uint96(originalPublisher.profileId)
     //         })
     //     );
 
@@ -795,7 +795,7 @@ contract DegreesOfSeparationReferenceModuleTest is BaseTest {
     //             quotesRestricted: true,
     //             mirrorsRestricted: true,
     //             degreesOfSeparation: MAX_DEGREES_OF_SEPARATION,
-    //             sourceProfile: uint128(originalPublisher.profileId)
+    //             sourceProfile: uint96(originalPublisher.profileId)
     //         })
     //     );
 
@@ -818,7 +818,7 @@ contract DegreesOfSeparationReferenceModuleTest is BaseTest {
     //             quotesRestricted: true,
     //             mirrorsRestricted: true,
     //             degreesOfSeparation: MAX_DEGREES_OF_SEPARATION,
-    //             sourceProfile: uint128(originalPublisher.profileId)
+    //             sourceProfile: uint96(originalPublisher.profileId)
     //         })
     //     );
 
@@ -854,7 +854,7 @@ contract DegreesOfSeparationReferenceModuleTest is BaseTest {
                 quotesRestricted: true,
                 mirrorsRestricted: true,
                 degreesOfSeparation: degrees,
-                sourceProfile: uint128(originalPublisher.profileId)
+                sourceProfile: uint96(originalPublisher.profileId)
             })
         );
 
@@ -893,7 +893,7 @@ contract DegreesOfSeparationReferenceModuleTest is BaseTest {
                 quotesRestricted: true,
                 mirrorsRestricted: true,
                 degreesOfSeparation: degrees,
-                sourceProfile: uint128(originalPublisher.profileId)
+                sourceProfile: uint96(originalPublisher.profileId)
             })
         );
 
@@ -910,7 +910,7 @@ contract DegreesOfSeparationReferenceModuleTest is BaseTest {
                 quotesRestricted: true,
                 mirrorsRestricted: true,
                 degreesOfSeparation: degrees,
-                sourceProfile: uint128(originalPublisher.profileId)
+                sourceProfile: uint96(originalPublisher.profileId)
             })
         );
 
@@ -934,11 +934,11 @@ contract DegreesOfSeparationReferenceModuleTest is BaseTest {
 
     function testCannotProcessComment_IfNotInheritingConfig_WrongSourceProfile(
         uint8 degrees,
-        uint128 wrongSourceProfile
+        uint96 wrongSourceProfile
     ) public {
         degrees = uint8(bound(degrees, 1, MAX_DEGREES_OF_SEPARATION));
         vm.assume(hub.exists(wrongSourceProfile));
-        vm.assume(wrongSourceProfile != uint128(originalPublisher.profileId));
+        vm.assume(wrongSourceProfile != uint96(originalPublisher.profileId));
 
         // Initializes module for (profile: originalPublisher.profileId, pubId: 1)
         vm.prank(hubAddress);
@@ -951,7 +951,7 @@ contract DegreesOfSeparationReferenceModuleTest is BaseTest {
                 quotesRestricted: true,
                 mirrorsRestricted: true,
                 degreesOfSeparation: degrees,
-                sourceProfile: uint128(originalPublisher.profileId)
+                sourceProfile: uint96(originalPublisher.profileId)
             })
         );
 
@@ -1006,7 +1006,7 @@ contract DegreesOfSeparationReferenceModuleTest is BaseTest {
                 quotesRestricted: true,
                 mirrorsRestricted: true,
                 degreesOfSeparation: degrees,
-                sourceProfile: uint128(originalPublisher.profileId)
+                sourceProfile: uint96(originalPublisher.profileId)
             })
         );
 
@@ -1023,7 +1023,7 @@ contract DegreesOfSeparationReferenceModuleTest is BaseTest {
                 quotesRestricted: true,
                 mirrorsRestricted: true,
                 degreesOfSeparation: wrongDegrees,
-                sourceProfile: uint128(originalPublisher.profileId)
+                sourceProfile: uint96(originalPublisher.profileId)
             })
         );
 
@@ -1059,7 +1059,7 @@ contract DegreesOfSeparationReferenceModuleTest is BaseTest {
                 quotesRestricted: true,
                 mirrorsRestricted: true,
                 degreesOfSeparation: degrees,
-                sourceProfile: uint128(originalPublisher.profileId)
+                sourceProfile: uint96(originalPublisher.profileId)
             })
         );
 
@@ -1098,7 +1098,7 @@ contract DegreesOfSeparationReferenceModuleTest is BaseTest {
                 quotesRestricted: true,
                 mirrorsRestricted: true,
                 degreesOfSeparation: degrees,
-                sourceProfile: uint128(originalPublisher.profileId)
+                sourceProfile: uint96(originalPublisher.profileId)
             })
         );
 
@@ -1137,7 +1137,7 @@ contract DegreesOfSeparationReferenceModuleTest is BaseTest {
                 quotesRestricted: true,
                 mirrorsRestricted: true,
                 degreesOfSeparation: degrees,
-                sourceProfile: uint128(originalPublisher.profileId)
+                sourceProfile: uint96(originalPublisher.profileId)
             })
         );
 
@@ -1176,7 +1176,7 @@ contract DegreesOfSeparationReferenceModuleTest is BaseTest {
                 quotesRestricted: true,
                 mirrorsRestricted: false,
                 degreesOfSeparation: degrees,
-                sourceProfile: uint128(originalPublisher.profileId)
+                sourceProfile: uint96(originalPublisher.profileId)
             })
         );
 
@@ -1215,7 +1215,7 @@ contract DegreesOfSeparationReferenceModuleTest is BaseTest {
                 quotesRestricted: false,
                 mirrorsRestricted: true,
                 degreesOfSeparation: degrees,
-                sourceProfile: uint128(originalPublisher.profileId)
+                sourceProfile: uint96(originalPublisher.profileId)
             })
         );
 
@@ -1252,7 +1252,7 @@ contract DegreesOfSeparationReferenceModuleTest is BaseTest {
                 quotesRestricted: true,
                 mirrorsRestricted: true,
                 degreesOfSeparation: 0,
-                sourceProfile: uint128(originalPublisher.profileId)
+                sourceProfile: uint96(originalPublisher.profileId)
             })
         );
 
@@ -1267,7 +1267,55 @@ contract DegreesOfSeparationReferenceModuleTest is BaseTest {
                 quotesRestricted: true,
                 mirrorsRestricted: true,
                 degreesOfSeparation: 0,
-                sourceProfile: uint128(originalPublisher.profileId)
+                sourceProfile: uint96(originalPublisher.profileId)
+            })
+        );
+
+        _mockLensHubPubCountResponse({account: originalPublisher, pubCount: 2});
+
+        vm.prank(hubAddress);
+        module.processComment(
+            Types.ProcessCommentParams({
+                profileId: originalPublisher.profileId,
+                transactionExecutor: originalPublisher.owner,
+                pointedProfileId: originalPublisher.profileId,
+                pointedPubId: 1,
+                referrerProfileIds: _emptyUint256Array(),
+                referrerPubIds: _emptyUint256Array(),
+                referrerPubTypes: _emptyPubTypesArray(),
+                data: abi.encode(_emptyUint256Array())
+            })
+        );
+    }
+
+    function testProcessComment_WhenRestricted_ButCurrentPublisherIsSourceProfile() public {
+        // Initializes module for (profile: originalPublisher.profileId, pubId: 1)
+        vm.prank(hubAddress);
+        module.initializeReferenceModule(
+            originalPublisher.profileId,
+            1,
+            originalPublisher.owner,
+            _getInitData({
+                commentsRestricted: true,
+                quotesRestricted: true,
+                mirrorsRestricted: true,
+                degreesOfSeparation: 2,
+                sourceProfile: uint96(originalPublisher.profileId)
+            })
+        );
+
+        // Initializes module for (profile: originalPublisher.profileId, pubId: 2)
+        vm.prank(hubAddress);
+        module.initializeReferenceModule(
+            originalPublisher.profileId,
+            2,
+            originalPublisher.owner,
+            _getInitData({
+                commentsRestricted: true,
+                quotesRestricted: true,
+                mirrorsRestricted: true,
+                degreesOfSeparation: 2,
+                sourceProfile: uint96(originalPublisher.profileId)
             })
         );
 
@@ -1300,7 +1348,7 @@ contract DegreesOfSeparationReferenceModuleTest is BaseTest {
                 quotesRestricted: true,
                 mirrorsRestricted: true,
                 degreesOfSeparation: 0,
-                sourceProfile: uint128(originalPublisher.profileId)
+                sourceProfile: uint96(originalPublisher.profileId)
             })
         );
 
@@ -1315,7 +1363,55 @@ contract DegreesOfSeparationReferenceModuleTest is BaseTest {
                 quotesRestricted: true,
                 mirrorsRestricted: true,
                 degreesOfSeparation: 0,
-                sourceProfile: uint128(originalPublisher.profileId)
+                sourceProfile: uint96(originalPublisher.profileId)
+            })
+        );
+
+        _mockLensHubPubCountResponse({account: originalPublisher, pubCount: 2});
+
+        vm.prank(hubAddress);
+        module.processMirror(
+            Types.ProcessMirrorParams({
+                profileId: originalPublisher.profileId,
+                transactionExecutor: originalPublisher.owner,
+                pointedProfileId: originalPublisher.profileId,
+                pointedPubId: 1,
+                referrerProfileIds: _emptyUint256Array(),
+                referrerPubIds: _emptyUint256Array(),
+                referrerPubTypes: _emptyPubTypesArray(),
+                data: abi.encode(_emptyUint256Array())
+            })
+        );
+    }
+
+    function testProcessMirror_WhenRestricted_ButCurrentPublisherIsSourceProfile() public {
+        // Initializes module for (profile: originalPublisher.profileId, pubId: 1)
+        vm.prank(hubAddress);
+        module.initializeReferenceModule(
+            originalPublisher.profileId,
+            1,
+            originalPublisher.owner,
+            _getInitData({
+                commentsRestricted: true,
+                quotesRestricted: true,
+                mirrorsRestricted: true,
+                degreesOfSeparation: 2,
+                sourceProfile: uint96(originalPublisher.profileId)
+            })
+        );
+
+        // Initializes module for (profile: originalPublisher.profileId, pubId: 2)
+        vm.prank(hubAddress);
+        module.initializeReferenceModule(
+            originalPublisher.profileId,
+            2,
+            originalPublisher.owner,
+            _getInitData({
+                commentsRestricted: true,
+                quotesRestricted: true,
+                mirrorsRestricted: true,
+                degreesOfSeparation: 2,
+                sourceProfile: uint96(originalPublisher.profileId)
             })
         );
 
@@ -1348,7 +1444,7 @@ contract DegreesOfSeparationReferenceModuleTest is BaseTest {
                 quotesRestricted: true,
                 mirrorsRestricted: true,
                 degreesOfSeparation: 0,
-                sourceProfile: uint128(originalPublisher.profileId)
+                sourceProfile: uint96(originalPublisher.profileId)
             })
         );
 
@@ -1363,7 +1459,55 @@ contract DegreesOfSeparationReferenceModuleTest is BaseTest {
                 quotesRestricted: true,
                 mirrorsRestricted: true,
                 degreesOfSeparation: 0,
-                sourceProfile: uint128(originalPublisher.profileId)
+                sourceProfile: uint96(originalPublisher.profileId)
+            })
+        );
+
+        _mockLensHubPubCountResponse({account: originalPublisher, pubCount: 2});
+
+        vm.prank(hubAddress);
+        module.processQuote(
+            Types.ProcessQuoteParams({
+                profileId: originalPublisher.profileId,
+                transactionExecutor: originalPublisher.owner,
+                pointedProfileId: originalPublisher.profileId,
+                pointedPubId: 1,
+                referrerProfileIds: _emptyUint256Array(),
+                referrerPubIds: _emptyUint256Array(),
+                referrerPubTypes: _emptyPubTypesArray(),
+                data: abi.encode(_emptyUint256Array())
+            })
+        );
+    }
+
+    function testProcessQuote_WhenRestricted_ButCurrentPublisherIsSourceProfile() public {
+        // Initializes module for (profile: originalPublisher.profileId, pubId: 1)
+        vm.prank(hubAddress);
+        module.initializeReferenceModule(
+            originalPublisher.profileId,
+            1,
+            originalPublisher.owner,
+            _getInitData({
+                commentsRestricted: true,
+                quotesRestricted: true,
+                mirrorsRestricted: true,
+                degreesOfSeparation: 2,
+                sourceProfile: uint96(originalPublisher.profileId)
+            })
+        );
+
+        // Initializes module for (profile: originalPublisher.profileId, pubId: 2)
+        vm.prank(hubAddress);
+        module.initializeReferenceModule(
+            originalPublisher.profileId,
+            2,
+            originalPublisher.owner,
+            _getInitData({
+                commentsRestricted: true,
+                quotesRestricted: true,
+                mirrorsRestricted: true,
+                degreesOfSeparation: 2,
+                sourceProfile: uint96(originalPublisher.profileId)
             })
         );
 
@@ -1396,7 +1540,7 @@ contract DegreesOfSeparationReferenceModuleTest is BaseTest {
                 quotesRestricted: true,
                 mirrorsRestricted: true,
                 degreesOfSeparation: 0,
-                sourceProfile: uint128(originalPublisher.profileId)
+                sourceProfile: uint96(originalPublisher.profileId)
             })
         );
 
@@ -1414,7 +1558,7 @@ contract DegreesOfSeparationReferenceModuleTest is BaseTest {
                 quotesRestricted: true,
                 mirrorsRestricted: true,
                 degreesOfSeparation: 0,
-                sourceProfile: uint128(originalPublisher.profileId)
+                sourceProfile: uint96(originalPublisher.profileId)
             })
         );
 
@@ -1448,7 +1592,7 @@ contract DegreesOfSeparationReferenceModuleTest is BaseTest {
                 quotesRestricted: true,
                 mirrorsRestricted: true,
                 degreesOfSeparation: 0,
-                sourceProfile: uint128(originalPublisher.profileId)
+                sourceProfile: uint96(originalPublisher.profileId)
             })
         );
 
@@ -1466,7 +1610,7 @@ contract DegreesOfSeparationReferenceModuleTest is BaseTest {
                 quotesRestricted: true,
                 mirrorsRestricted: true,
                 degreesOfSeparation: 0,
-                sourceProfile: uint128(originalPublisher.profileId)
+                sourceProfile: uint96(originalPublisher.profileId)
             })
         );
 
@@ -1500,7 +1644,7 @@ contract DegreesOfSeparationReferenceModuleTest is BaseTest {
                 quotesRestricted: true,
                 mirrorsRestricted: true,
                 degreesOfSeparation: 0,
-                sourceProfile: uint128(originalPublisher.profileId)
+                sourceProfile: uint96(originalPublisher.profileId)
             })
         );
 
@@ -1518,7 +1662,7 @@ contract DegreesOfSeparationReferenceModuleTest is BaseTest {
                 quotesRestricted: true,
                 mirrorsRestricted: true,
                 degreesOfSeparation: 0,
-                sourceProfile: uint128(originalPublisher.profileId)
+                sourceProfile: uint96(originalPublisher.profileId)
             })
         );
 
@@ -1539,6 +1683,11 @@ contract DegreesOfSeparationReferenceModuleTest is BaseTest {
             })
         );
     }
+
+    // TODO - test the new logic:
+    // - if the current publisher is the originalAuthor or source profile, then it can reply without restrictions
+    // - you cannot init degrees on a comment, only on post and quote
+    // etc
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
