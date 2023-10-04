@@ -31,9 +31,18 @@
           }
         ],
         "follow": [
-          { "name": "FeeFollowModule", "addy": "0x80ae0e6048d6e295Ee6520b07Eb6EC4485193FD6" },
-          { "name": "ProfileFollowModule", "addy": "0x057ccDf5153bE1081830a6C3D507C9dfE1ac8e4E" },
-          { "name": "RevertFollowModule", "addy": "0x6640e4Fb3fd56a6d7DfF3C351dFd9Ab7E57fb769" }
+          {
+            "name": "FeeFollowModule",
+            "addy": "0x80ae0e6048d6e295Ee6520b07Eb6EC4485193FD6"
+          },
+          {
+            "name": "ProfileFollowModule",
+            "addy": "0x057ccDf5153bE1081830a6C3D507C9dfE1ac8e4E"
+          },
+          {
+            "name": "RevertFollowModule",
+            "addy": "0x6640e4Fb3fd56a6d7DfF3C351dFd9Ab7E57fb769"
+          }
         ],
         "reference": [
           {
@@ -49,10 +58,6 @@
     "chainId": 80001,
     "network": "mumbai",
     "LensHubProxy": "0x60Ae865ee4C725cd04353b5AAb364553f56ceF82",
-    "LensHubImplementation": "0xFe623ae170804cA0ABdCF9848e3418b4f308d282",
-    "ModuleGlobals": "0x1353aAdfE5FeD85382826757A95DE908bd21C4f9",
-    "InteractionLogic": "0x845242e2Cd249af8D4f0D7085DefEAc3381815E3",
-    "PoolAddressesProvider": "0x5343b5bA672Ae99d627A1C87866b8E53F47Db2E6",
     "Modules": {
       "v1": {
         "collect": [
@@ -78,9 +83,18 @@
           }
         ],
         "follow": [
-          { "name": "FeeFollowModule", "addy": "0xe7AB9BA11b97EAC820DbCc861869092b52B65C06" },
-          { "name": "ProfileFollowModule", "addy": "0x8c32203df6b1A04E25145346e2DaAD0B4712C20D" },
-          { "name": "RevertFollowModule", "addy": "0x8c822Fc029EBdE62Da1Ed1072534c5e112dAE48c" }
+          {
+            "name": "FeeFollowModule",
+            "addy": "0xe7AB9BA11b97EAC820DbCc861869092b52B65C06"
+          },
+          {
+            "name": "ProfileFollowModule",
+            "addy": "0x8c32203df6b1A04E25145346e2DaAD0B4712C20D"
+          },
+          {
+            "name": "RevertFollowModule",
+            "addy": "0x8c822Fc029EBdE62Da1Ed1072534c5e112dAE48c"
+          }
         ],
         "reference": [
           {
