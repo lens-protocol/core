@@ -57,6 +57,9 @@ contract LensV2UpgradeDeployment is Script, ForkManagement, ArrayHelpers {
     address moduleRegistry;
 
     LensAccount _deployer;
+    LensAccount _proxyAdmin;
+    LensAccount _governance;
+
     address governance;
     address proxyAdmin;
     address migrationAdmin;
@@ -87,9 +90,36 @@ contract LensV2UpgradeDeployment is Script, ForkManagement, ArrayHelpers {
         vm.label(legacyProfileFollowModule, 'LegacyProfileFollowModule');
         console.log('Legacy Profile Follow Module: %s', legacyProfileFollowModule);
 
-        proxyAdmin = address(uint160(uint256(vm.load(lensHub, ADMIN_SLOT))));
+        console.log('\n');
+
+        if (isEnvSet('DEPLOYMENT_ENVIRONMENT')) {
+            if (LibString.eq(vm.envString('DEPLOYMENT_ENVIRONMENT'), 'production')) {} else {
+                console.log('DEPLOYMENT_ENVIRONMENT is not production');
+                revert();
+            }
+            console.log('DEPLOYMENT_ENVIRONMENT is production');
+            console.log('Using governance and proxy admin from the LensHub to set as admins of contracts:');
+            governance = legacyLensHub.getGovernance();
+            console.log('\tReal Governance: %s', governance);
+
+            proxyAdmin = address(uint160(uint256(vm.load(lensHub, ADMIN_SLOT))));
+            console.log('Real ProxyAdmin: %s', proxyAdmin);
+        } else {
+            console.log('Using governance and proxy admin from test mnemonic:');
+
+            (_governance.owner, _governance.ownerPk) = deriveRememberKey(mnemonic, 1);
+            console.log('\tMock Governance: %s', _governance.owner);
+            governance = _governance.owner;
+
+            (_proxyAdmin.owner, _proxyAdmin.ownerPk) = deriveRememberKey(mnemonic, 2);
+            console.log('\tMock ProxyAdmin: %s', _proxyAdmin.owner);
+            proxyAdmin = _proxyAdmin.owner;
+        }
+        console.log('\n');
+
         vm.label(proxyAdmin, 'ProxyAdmin');
-        console.log('Proxy Admin: %s', proxyAdmin);
+
+        vm.label(governance, 'Governance');
 
         migrationAdmin = proxyAdmin;
         // TODO: change this to the real migration admin
@@ -129,18 +159,14 @@ contract LensV2UpgradeDeployment is Script, ForkManagement, ArrayHelpers {
         targetEnv = targetEnv_;
         loadJson();
         checkNetworkParams();
-        loadBaseAddresses();
         loadPrivateKeys();
-
-        governance = legacyLensHub.getGovernance();
-        vm.label(governance, 'Governance');
-        console.log('Governance: %s', governance);
+        loadBaseAddresses();
 
         deploy();
     }
 
     function saveContractAddress(string memory contractName, address deployedAddress) internal {
-        console.log('Saving %s (%s) into addresses under %s environment', contractName, deployedAddress, targetEnv);
+        // console.log('Saving %s (%s) into addresses under %s environment', contractName, deployedAddress, targetEnv);
         string[] memory inputs = new string[](5);
         inputs[0] = 'node';
         inputs[1] = 'script/helpers/saveAddress.js';
@@ -226,6 +252,7 @@ contract LensV2UpgradeDeployment is Script, ForkManagement, ArrayHelpers {
                 })
             )
         );
+        saveContractAddress('migrationAdmin', migrationAdmin);
 
         //   "arguments": [
         //     "0x072E491679Ed6f4fF4d419Ba909D5789116f2182",
@@ -267,10 +294,12 @@ contract LensV2UpgradeDeployment is Script, ForkManagement, ArrayHelpers {
         vm.writeLine(addressesFile, string.concat('GovernanceContract: ', vm.toString(address(governanceContract))));
         saveContractAddress('GovernanceContract', address(governanceContract));
         console.log('GovernanceContract: %s', address(governanceContract));
+        saveContractAddress('GovernanceContractAdmin', governance);
 
         proxyAdminContract = new ProxyAdmin(address(legacyLensHub), legacyLensHubImpl, proxyAdmin);
         vm.writeLine(addressesFile, string.concat('ProxyAdminContract: ', vm.toString(address(proxyAdminContract))));
         saveContractAddress('ProxyAdminContract', address(proxyAdminContract));
+        saveContractAddress('ProxyAdminContractAdmin', proxyAdmin);
         console.log('ProxyAdminContract: %s', address(proxyAdminContract));
 
         address lensV2UpgradeContract = address(
@@ -293,6 +322,20 @@ contract LensV2UpgradeDeployment is Script, ForkManagement, ArrayHelpers {
         console.log('\t"%s"', address(legacyLensHub));
         console.log('\t"%s"', lensHubV2Impl);
         console.log(']');
+
+        console.log('\n');
+        console.log('After running this script - change LensHub proxy admin and governance to:');
+        console.log(
+            'From: %s -> To: Governance contract: %s',
+            legacyLensHub.getGovernance(),
+            address(governanceContract)
+        );
+        console.log(
+            'From: %s -> To: ProxyAdmin contract: %s',
+            address(uint160(uint256(vm.load(lensHub, ADMIN_SLOT)))),
+            address(proxyAdminContract)
+        );
+        console.log('\n');
 
         vm.stopBroadcast();
     }
