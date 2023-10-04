@@ -122,7 +122,8 @@ contract BaseFeeCollectModule_Initialization is BaseFeeCollectModuleBase {
         vm.assume(transactionExecutor != address(0));
 
         vm.assume(
-            (amount != 0 && whitelistedCurrency != address(0)) || (amount == 0 && whitelistedCurrency == address(0))
+            (amount != 0 && whitelistedCurrency != address(0) && uint160(whitelistedCurrency) > 10) ||
+                (amount == 0 && whitelistedCurrency == address(0))
         );
 
         if (whitelistedCurrency != address(0)) {
