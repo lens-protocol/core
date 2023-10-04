@@ -6,12 +6,10 @@ import {ILensVersion} from 'contracts/interfaces/ILensVersion.sol';
 import {Errors} from 'contracts/libraries/constants/Errors.sol';
 import {TransparentUpgradeableProxy} from '@openzeppelin/contracts/proxy/transparent/TransparentUpgradeableProxy.sol';
 
-import 'forge-std/console.sol';
-
 contract LensVersion is ILensVersion {
-    string constant version = '2.0.0rc1';
+    string internal constant version = '2.0.0rc1';
 
-    bytes20 constant gitCommit = hex'03c5a06d284470dd897bd8e83eb87404224cce03';
+    bytes20 internal constant gitCommit = hex'03c5a06d284470dd897bd8e83eb87404224cce03';
 
     event LensUpgradeVersion(
         address implementation,
