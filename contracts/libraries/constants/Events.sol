@@ -261,7 +261,7 @@ library Events {
      * @param followerProfileId The ID of the profile that executed the follow.
      * @param idOfProfileFollowed The ID of the profile that was followed.
      * @param followTokenIdAssigned The ID of the follow token assigned to the follower.
-     * @param followModuleData The data to passed to the follow module, if any.
+     * @param followModuleData The data to pass to the follow module, if any.
      * @param processFollowModuleReturnData The data returned by the followed profile follow module's processFollow
      * function, if the followed profile has a reference module set.
      * @param transactionExecutor The address of the account that executed this operation.

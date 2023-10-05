@@ -384,7 +384,7 @@ contract LensHub is
         uint256[] calldata idsOfProfilesToSetBlockStatus,
         bool[] calldata blockStatus
     ) external override whenNotPaused onlyProfileOwnerOrDelegatedExecutor(msg.sender, byProfileId) {
-        return ProfileLib.setBlockStatus(byProfileId, idsOfProfilesToSetBlockStatus, blockStatus, msg.sender);
+        ProfileLib.setBlockStatus(byProfileId, idsOfProfilesToSetBlockStatus, blockStatus, msg.sender);
     }
 
     /// @inheritdoc ILensProtocol
@@ -395,7 +395,7 @@ contract LensHub is
         Types.EIP712Signature calldata signature
     ) external override whenNotPaused onlyProfileOwnerOrDelegatedExecutor(signature.signer, byProfileId) {
         MetaTxLib.validateSetBlockStatusSignature(signature, byProfileId, idsOfProfilesToSetBlockStatus, blockStatus);
-        return ProfileLib.setBlockStatus(byProfileId, idsOfProfilesToSetBlockStatus, blockStatus, signature.signer);
+        ProfileLib.setBlockStatus(byProfileId, idsOfProfilesToSetBlockStatus, blockStatus, signature.signer);
     }
 
     /// @inheritdoc ILensProtocol

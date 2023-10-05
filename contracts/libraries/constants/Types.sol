@@ -99,7 +99,6 @@ library Types {
      * @param __DEPRECATED__followNFTURI DEPRECATED in V2: The URI used for the follow NFT image.
      * @param metadataURI MetadataURI is used to store the profile's metadata, for example: displayed name, description,
      * interests, etc.
-     * @param metadataURI The URI to be used for the profile's metadata.
      */
     struct Profile {
         uint256 pubCount; // offset 0

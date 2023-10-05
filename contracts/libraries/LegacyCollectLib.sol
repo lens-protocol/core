@@ -39,6 +39,8 @@ library LegacyCollectLib {
         uint256 referrerProfileId,
         uint256 referrerPubId,
         bytes collectModuleData,
+        uint256 tokenId,
+        address nftRecipient,
         uint256 timestamp
     );
 
@@ -106,6 +108,8 @@ library LegacyCollectLib {
             referrerProfileId: collectParams.referrerProfileId,
             referrerPubId: collectParams.referrerPubId,
             collectModuleData: collectParams.collectModuleData,
+            tokenId: tokenId,
+            nftRecipient: collectorProfileOwner,
             timestamp: block.timestamp
         });
 
