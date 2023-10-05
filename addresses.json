@@ -58,6 +58,7 @@
     "chainId": 80001,
     "network": "mumbai",
     "LensHubProxy": "0x60Ae865ee4C725cd04353b5AAb364553f56ceF82",
+    "ProfileCreator": "0x6C1e1bC39b13f9E0Af9424D76De899203F47755F",
     "Modules": {
       "v1": {
         "collect": [

@@ -4,6 +4,7 @@ set -e
 
 SCRIPT_NAME=$1
 TARGET=$2
+CONFIRMATION_OVERRIDE=$3
 
 if [[ "$TARGET" == "" ]]
     then
@@ -27,7 +28,12 @@ echo "$CALLDATA"
 
 forge script script/$SCRIPT_NAME.s.sol:$SCRIPT_NAME -s $CALLDATA --rpc-url $NETWORK -vv --skip test --ffi
 
-read -p "Please verify the data and confirm the interactions logs (y/n):" CONFIRMATION
+if [[ "$CONFIRMATION_OVERRIDE" == "y" || "$CONFIRMATION_OVERRIDE" == "Y" || "$CONFIRMATION_OVERRIDE" == "n" || "$CONFIRMATION_OVERRIDE" == "N" ]]
+    then
+        CONFIRMATION="$CONFIRMATION_OVERRIDE"
+    else
+        read -p "Please verify the data and confirm the interactions logs (y/n):" CONFIRMATION
+fi
 
 if [[ "$CONFIRMATION" == "y" || "$CONFIRMATION" == "Y" ]]
     then

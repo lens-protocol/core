@@ -4,6 +4,7 @@ pragma solidity ^0.8.13;
 import {ForkManagement} from 'script/helpers/ForkManagement.sol';
 import 'forge-std/Script.sol';
 import {LensHub as LegacyLensHub} from './../lib/core-private/contracts/core/LensHub.sol';
+import {ModuleGlobals} from './../lib/core-private/contracts/core/modules/ModuleGlobals.sol';
 import {LensHubInitializable} from 'contracts/misc/LensHubInitializable.sol';
 import {LensV2UpgradeContract} from 'contracts/misc/LensV2UpgradeContract.sol';
 import {FollowNFT} from 'contracts/FollowNFT.sol';
@@ -44,6 +45,8 @@ contract LensV2UpgradeDeployment is Script, ForkManagement, ArrayHelpers {
     address legacyLensHubImpl;
     address lensHubV2Impl;
 
+    ModuleGlobals moduleGlobals;
+
     address followNFTImpl;
     address legacyCollectNFTImpl;
     address lensHandlesImpl;
@@ -59,11 +62,15 @@ contract LensV2UpgradeDeployment is Script, ForkManagement, ArrayHelpers {
     LensAccount _deployer;
     LensAccount _proxyAdmin;
     LensAccount _governance;
+    LensAccount _treasury;
 
+    address treasury;
     address governance;
     address proxyAdmin;
     address migrationAdmin;
     address lensHandlesOwner;
+
+    uint16 treasuryFee;
 
     ProxyAdmin proxyAdminContract;
 
@@ -76,6 +83,10 @@ contract LensV2UpgradeDeployment is Script, ForkManagement, ArrayHelpers {
         legacyLensHubImpl = address(uint160(uint256(vm.load(lensHub, PROXY_IMPLEMENTATION_STORAGE_SLOT))));
         vm.label(legacyLensHubImpl, 'LensHubImplementation');
         console.log('Legacy Lens Hub Impl: %s', address(legacyLensHubImpl));
+
+        moduleGlobals = ModuleGlobals(json.readAddress(string(abi.encodePacked('.', targetEnv, '.ModuleGlobals'))));
+        vm.label(address(moduleGlobals), 'ModuleGlobals');
+        console.log('ModuleGlobals: %s', address(moduleGlobals));
 
         Module[] memory followModules = abi.decode(
             vm.parseJson(json, string(abi.encodePacked('.', targetEnv, '.Modules.v1.follow'))),
@@ -104,6 +115,12 @@ contract LensV2UpgradeDeployment is Script, ForkManagement, ArrayHelpers {
 
             proxyAdmin = address(uint160(uint256(vm.load(lensHub, ADMIN_SLOT))));
             console.log('Real ProxyAdmin: %s', proxyAdmin);
+
+            treasury = moduleGlobals.getTreasury();
+            console.log('Real Treasury: %s', treasury);
+
+            treasuryFee = moduleGlobals.getTreasuryFee();
+            console.log('Real Treasury Fee: %s', treasuryFee);
         } else {
             console.log('Using governance and proxy admin from test mnemonic:');
 
@@ -114,12 +131,24 @@ contract LensV2UpgradeDeployment is Script, ForkManagement, ArrayHelpers {
             (_proxyAdmin.owner, _proxyAdmin.ownerPk) = deriveRememberKey(mnemonic, 2);
             console.log('\tMock ProxyAdmin: %s', _proxyAdmin.owner);
             proxyAdmin = _proxyAdmin.owner;
+
+            (_treasury.owner, _treasury.ownerPk) = deriveRememberKey(mnemonic, 3);
+            console.log('\tMock Treasury: %s', _treasury.owner);
+            treasury = _treasury.owner;
+
+            treasuryFee = 50;
+            console.log('\tMock Treasury Fee: %s', treasuryFee);
         }
         console.log('\n');
 
         vm.label(proxyAdmin, 'ProxyAdmin');
 
         vm.label(governance, 'Governance');
+
+        vm.label(treasury, 'Treasury');
+
+        saveContractAddress('Treasury', treasury);
+        saveValue('TreasuryFee', vm.toString(treasuryFee));
 
         migrationAdmin = proxyAdmin;
         // TODO: change this to the real migration admin
@@ -179,6 +208,20 @@ contract LensV2UpgradeDeployment is Script, ForkManagement, ArrayHelpers {
         // console.log(output);
     }
 
+    function saveValue(string memory contractName, string memory str) internal {
+        // console.log('Saving %s (%s) into addresses under %s environment', contractName, deployedAddress, targetEnv);
+        string[] memory inputs = new string[](5);
+        inputs[0] = 'node';
+        inputs[1] = 'script/helpers/saveAddress.js';
+        inputs[2] = targetEnv;
+        inputs[3] = contractName;
+        inputs[4] = str;
+        // bytes memory res =
+        vm.ffi(inputs);
+        // string memory output = abi.decode(res, (string));
+        // console.log(output);
+    }
+
     function deploy() internal {
         string memory addressesFile = 'addressesV2.txt';
 
@@ -229,7 +272,7 @@ contract LensV2UpgradeDeployment is Script, ForkManagement, ArrayHelpers {
 
         console.log('PROFILE_GUARDIAN_COOLDOWN: %s', PROFILE_GUARDIAN_COOLDOWN);
 
-        // Deploy new FeeFollowModule(hub, moduleGlobals)
+        // Deploy new FeeFollowModule(hub, moduleRegistry)
         feeFollowModule = address(new FeeFollowModule(lensHub, moduleRegistry));
         vm.writeLine(addressesFile, string.concat('FeeFollowModule: ', vm.toString(feeFollowModule)));
         saveContractAddress('FeeFollowModule', feeFollowModule);
@@ -308,7 +351,9 @@ contract LensV2UpgradeDeployment is Script, ForkManagement, ArrayHelpers {
                 governanceAddress: address(governanceContract),
                 owner: governance,
                 lensHub: address(legacyLensHub),
-                newImplementationAddress: lensHubV2Impl
+                newImplementationAddress: lensHubV2Impl,
+                treasury: treasury,
+                treasuryFee: treasuryFee
             })
         );
 
@@ -321,6 +366,8 @@ contract LensV2UpgradeDeployment is Script, ForkManagement, ArrayHelpers {
         console.log('\t"%s"', governance);
         console.log('\t"%s"', address(legacyLensHub));
         console.log('\t"%s"', lensHubV2Impl);
+        console.log('\t"%s"', treasury);
+        console.log('\t"%s"', treasuryFee);
         console.log(']');
 
         console.log('\n');
