@@ -100,7 +100,6 @@ contract PublicActProxy {
 
     }
 
-    // TODO: This is needed for MetaTxLib to work - might need to remove after MetaTxLib functions are moved here
     function name() external pure returns (string memory) {
         return 'PublicActProxy';
     }
