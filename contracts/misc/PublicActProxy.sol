@@ -98,10 +98,6 @@ contract PublicActProxy {
 
         HUB.act(publicationActionParams);
 
-        // TODO: This might not be needed
-        if (collectData.amount > 0) {
-            IERC20(collectData.currency).approve(collectModule, 0);
-        }
     }
 
     // TODO: This is needed for MetaTxLib to work - might need to remove after MetaTxLib functions are moved here
