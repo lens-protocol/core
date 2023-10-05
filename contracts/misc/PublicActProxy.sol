@@ -67,8 +67,6 @@ contract PublicActProxy {
         Types.PublicationActionParams calldata publicationActionParams,
         Types.EIP712Signature calldata signature
     ) external {
-        // TODO: Consider moving this MetaTxLib out of LensHub domain somehow (because of nonces conflict)
-        // Reason: someone can use these signatures again to Act on behalf of this profile again on LensHub
         MetaTxLib.validateActSignature(signature, publicationActionParams);
         _publicCollect(publicationActionParams, signature.signer);
     }
