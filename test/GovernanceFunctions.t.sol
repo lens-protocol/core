@@ -130,6 +130,18 @@ contract GovernanceFunctionsTest is BaseTest {
         assertEq(uint8(hub.getState()), newState);
     }
 
+    function testSetState_IfGovernance_AndItIsSameAsEmergencyAdmin(uint8 newState) public {
+        vm.prank(governance);
+        hub.setEmergencyAdmin(governance);
+
+        newState = uint8(bound(newState, uint8(Types.ProtocolState.Unpaused), uint8(Types.ProtocolState.Paused)));
+
+        vm.prank(governance);
+        hub.setState(Types.ProtocolState(newState));
+
+        assertEq(uint8(hub.getState()), newState);
+    }
+
     function testWhitelistProfileCreator(address profileCreator, bool shouldWhitelist) public {
         vm.prank(governance);
         hub.whitelistProfileCreator(profileCreator, shouldWhitelist);

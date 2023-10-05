@@ -18,8 +18,9 @@ import {FollowValidationLib} from 'contracts/modules/libraries/FollowValidationL
  * @param quotesRestricted Indicates if the quote operation is restricted or open to everyone.
  * @param mirrorsRestricted Indicates if the mirror operation is restricted or open to everyone.
  * @param degreesOfSeparation The max degrees of separation allowed for restricted operations.
- * @param sourceProfile The ID of the profile from where the follower path should be started. Expected to be set as the
- * author of the root publication.
+ * @param sourceProfile The ID of the profile from where the follower path should be started. Usually it will match the
+ * `originalAuthorProfile`.
+ * @param originalAuthorProfile Original author of the Post or Quote when the degrees restriction was first applied.
  */
 struct ModuleConfig {
     bool setUp;
@@ -27,7 +28,8 @@ struct ModuleConfig {
     bool quotesRestricted;
     bool mirrorsRestricted;
     uint8 degreesOfSeparation;
-    uint128 sourceProfile;
+    uint96 sourceProfile;
+    uint96 originalAuthorProfile;
 }
 
 /**
@@ -64,7 +66,7 @@ contract DegreesOfSeparationReferenceModule is HubRestricted, IReferenceModule {
      *  - bool quotesRestricted: Indicates if the quote operation is restricted or open to everyone.
      *  - bool mirrorsRestricted: Indicates if the mirror operation is restricted or open to everyone.
      *  - uint8 degreesOfSeparation: The max degrees of separation allowed for restricted operations.
-     *  - uint128 sourceProfile The ID of the profile from where the follower path should be started. Expected to be set
+     *  - uint96 sourceProfile: The ID of the profile from where the follower path should be started. Expected to be set
      *    as the author of the root publication.
      */
     function initializeReferenceModule(
@@ -78,23 +80,38 @@ contract DegreesOfSeparationReferenceModule is HubRestricted, IReferenceModule {
             bool quotesRestricted,
             bool mirrorsRestricted,
             uint8 degreesOfSeparation,
-            uint128 sourceProfile
-        ) = abi.decode(data, (bool, bool, bool, uint8, uint128));
+            uint96 sourceProfile
+        ) = abi.decode(data, (bool, bool, bool, uint8, uint96));
         if (degreesOfSeparation > MAX_DEGREES_OF_SEPARATION) {
             revert InvalidDegreesOfSeparation();
         }
         if (!IERC721Timestamped(HUB).exists(sourceProfile)) {
             revert Errors.TokenDoesNotExist();
         }
+
+        uint96 originalAuthorProfile;
+        Types.PublicationMemory memory pub = ILensHub(HUB).getPublication(profileId, pubId);
+        if (pub.pubType == Types.PublicationType.Comment) {
+            ModuleConfig memory parentConfig = _moduleConfig[pub.pointedProfileId][pub.pointedPubId];
+            if (!parentConfig.setUp) {
+                // Comments cannot restrict degrees of separation, unless the pointed publication has it enabled too.
+                revert OperationDisabled();
+            }
+            originalAuthorProfile = parentConfig.originalAuthorProfile;
+        } else {
+            originalAuthorProfile = uint96(profileId);
+        }
+
         _moduleConfig[profileId][pubId] = ModuleConfig(
             true,
             commentsRestricted,
             quotesRestricted,
             mirrorsRestricted,
             degreesOfSeparation,
-            sourceProfile
+            sourceProfile,
+            originalAuthorProfile
         );
-        return '';
+        return data;
     }
 
     /**
@@ -114,6 +131,7 @@ contract DegreesOfSeparationReferenceModule is HubRestricted, IReferenceModule {
         if (config.commentsRestricted) {
             _validateDegreesOfSeparationRestriction({
                 sourceProfile: config.sourceProfile,
+                originalAuthorProfile: config.originalAuthorProfile,
                 profileId: processCommentParams.profileId,
                 degreesOfSeparation: config.degreesOfSeparation,
                 profilePath: abi.decode(processCommentParams.data, (uint256[]))
@@ -136,13 +154,15 @@ contract DegreesOfSeparationReferenceModule is HubRestricted, IReferenceModule {
     function processQuote(
         Types.ProcessQuoteParams calldata processQuoteParams
     ) external view override onlyHub returns (bytes memory) {
-        if (_moduleConfig[processQuoteParams.pointedProfileId][processQuoteParams.pointedPubId].quotesRestricted) {
+        ModuleConfig memory config = _moduleConfig[processQuoteParams.pointedProfileId][
+            processQuoteParams.pointedPubId
+        ];
+        if (config.quotesRestricted) {
             _validateDegreesOfSeparationRestriction({
-                sourceProfile: _moduleConfig[processQuoteParams.pointedProfileId][processQuoteParams.pointedPubId]
-                    .sourceProfile,
+                sourceProfile: config.sourceProfile,
+                originalAuthorProfile: config.originalAuthorProfile,
                 profileId: processQuoteParams.profileId,
-                degreesOfSeparation: _moduleConfig[processQuoteParams.pointedProfileId][processQuoteParams.pointedPubId]
-                    .degreesOfSeparation,
+                degreesOfSeparation: config.degreesOfSeparation,
                 profilePath: abi.decode(processQuoteParams.data, (uint256[]))
             });
         }
@@ -159,14 +179,15 @@ contract DegreesOfSeparationReferenceModule is HubRestricted, IReferenceModule {
     function processMirror(
         Types.ProcessMirrorParams calldata processMirrorParams
     ) external view override onlyHub returns (bytes memory) {
-        if (_moduleConfig[processMirrorParams.pointedProfileId][processMirrorParams.pointedPubId].mirrorsRestricted) {
+        ModuleConfig memory config = _moduleConfig[processMirrorParams.pointedProfileId][
+            processMirrorParams.pointedPubId
+        ];
+        if (config.mirrorsRestricted) {
             _validateDegreesOfSeparationRestriction({
-                sourceProfile: _moduleConfig[processMirrorParams.pointedProfileId][processMirrorParams.pointedPubId]
-                    .sourceProfile,
+                sourceProfile: config.sourceProfile,
+                originalAuthorProfile: config.originalAuthorProfile,
                 profileId: processMirrorParams.profileId,
-                degreesOfSeparation: _moduleConfig[processMirrorParams.pointedProfileId][
-                    processMirrorParams.pointedPubId
-                ].degreesOfSeparation,
+                degreesOfSeparation: config.degreesOfSeparation,
                 profilePath: abi.decode(processMirrorParams.data, (uint256[]))
             });
         }
@@ -203,20 +224,24 @@ contract DegreesOfSeparationReferenceModule is HubRestricted, IReferenceModule {
      */
     function _validateDegreesOfSeparationRestriction(
         uint256 sourceProfile,
+        uint256 originalAuthorProfile,
         uint256 profileId,
         uint8 degreesOfSeparation,
         uint256[] memory profilePath
     ) internal view {
+        // Unrestricted if the profile authoring the publication is the source or the original author profile.
+        if (profileId == sourceProfile || profileId == originalAuthorProfile) {
+            return;
+        }
+
+        // Here we only have cases where the source profile is not the same as the profile authoring the new publication.
         if (degreesOfSeparation == 0) {
             // If `degreesOfSeparation` was set to zero, only `sourceProfile` is allowed to interact.
-            if (profileId == sourceProfile) {
-                return;
-            } else {
-                revert OperationDisabled();
-            }
+            revert OperationDisabled();
         } else if (profilePath.length > degreesOfSeparation - 1) {
             revert ProfilePathExceedsDegreesOfSeparation();
         }
+
         if (profilePath.length > 0) {
             // Checks that the source profile follows the first profile in the path.
             // In the previous notation: sourceProfile --> path[0]

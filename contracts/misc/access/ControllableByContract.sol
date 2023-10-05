@@ -18,8 +18,8 @@ contract ControllableByContract is Ownable {
         _;
     }
 
-    constructor(address owner) Ownable() {
-        _transferOwnership(owner);
+    constructor(address owner_) Ownable() {
+        _transferOwnership(owner_);
     }
 
     function clearControllerContract() external onlyOwnerOrControllerContract {

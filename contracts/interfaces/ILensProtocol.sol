@@ -132,7 +132,7 @@ interface ILensProtocol {
      * Comments can have these types of modules initialized:
      *  - Action modules: any number of publication actions (e.g. collect, tip, etc.)
      *  - Reference module: a module handling the rules when referencing this comment (e.g. token-gated mirrors)
-     * Comments can have referrers (e.g. publications or profiles that allowed to discover the pointed publication).
+     * Comments can have referrers (e.g. publications or profiles that helped to discover the pointed publication).
      * @custom:permissions Profile Owner or Delegated Executor.
      *
      * @param commentParams A CommentParams struct containing the needed parameters.

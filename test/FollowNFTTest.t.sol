@@ -1706,6 +1706,7 @@ contract FollowNFTTest is BaseTest, LensBaseERC721Test {
 
     function testCannotApproveFollowForWrappedTokenIfCallerIsNotItsOwnerOrApprovedForAllByHim(address sender) public {
         vm.assume(sender != alreadyFollowingProfileOwner);
+        vm.assume(sender != address(0));
         vm.assume(!followNFT.isApprovedForAll(alreadyFollowingProfileOwner, sender));
 
         uint256 followTokenId = followNFT.getFollowTokenId(alreadyFollowingProfileId);

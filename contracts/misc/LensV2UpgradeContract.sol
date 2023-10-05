@@ -5,6 +5,7 @@ pragma solidity ^0.8.19;
 import {ProxyAdmin} from 'contracts/misc/access/ProxyAdmin.sol';
 import {Governance} from 'contracts/misc/access/Governance.sol';
 import {ImmutableOwnable} from 'contracts/misc/ImmutableOwnable.sol';
+import {ILensVersion} from 'contracts/interfaces/ILensVersion.sol';
 
 contract LensV2UpgradeContract is ImmutableOwnable {
     ProxyAdmin public immutable PROXY_ADMIN;
@@ -36,7 +37,7 @@ contract LensV2UpgradeContract is ImmutableOwnable {
     }
 
     function _upgrade() internal {
-        PROXY_ADMIN.proxy_upgrade(newImplementation);
+        PROXY_ADMIN.proxy_upgradeAndCall(newImplementation, abi.encodeCall(ILensVersion.emitVersion, ()));
         GOVERNANCE.lensHub_setTreasuryParams(TREASURY, TREASURY_FEE);
         GOVERNANCE.clearControllerContract();
     }

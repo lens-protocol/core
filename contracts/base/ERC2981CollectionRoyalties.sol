@@ -43,15 +43,11 @@ abstract contract ERC2981CollectionRoyalties is IERC2981 {
     function _setRoyalty(uint256 royaltiesInBasisPoints) internal virtual {
         if (royaltiesInBasisPoints > BASIS_POINTS) {
             revert Errors.InvalidParameter();
-        } else {
-            _storeRoyaltiesInBasisPoints(royaltiesInBasisPoints);
         }
+        _storeRoyaltiesInBasisPoints(royaltiesInBasisPoints);
     }
 
-    function _getRoyaltyAmount(
-        uint256, /* tokenId */
-        uint256 salePrice
-    ) internal view virtual returns (uint256) {
+    function _getRoyaltyAmount(uint256 /* tokenId */, uint256 salePrice) internal view virtual returns (uint256) {
         return (salePrice * _loadRoyaltiesInBasisPoints()) / BASIS_POINTS;
     }
 

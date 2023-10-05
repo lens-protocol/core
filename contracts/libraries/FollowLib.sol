@@ -92,7 +92,7 @@ library FollowLib {
      * @return address The address of the deployed Follow NFT contract.
      */
     function _deployFollowNFT(uint256 profileId) private returns (address) {
-        bytes memory functionData = abi.encodeWithSelector(IFollowNFT.initialize.selector, profileId);
+        bytes memory functionData = abi.encodeCall(IFollowNFT.initialize, profileId);
         address followNFT = address(new FollowNFTProxy(functionData));
         emit Events.FollowNFTDeployed(profileId, followNFT, block.timestamp);
 

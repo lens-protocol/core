@@ -294,32 +294,32 @@ contract UpgradeForkTest is BaseTest {
         console.log('Preparing upgrade contract');
         // Load V1 modules addresses
 
-        Module[] memory collectModules = abi.decode(
-            vm.parseJson(json, string(abi.encodePacked('.', forkEnv, '.Modules.v1.collect'))),
-            (Module[])
-        );
-        address[] memory oldCollectModulesToUnwhitelist = new address[](collectModules.length);
-        for (uint256 i = 0; i < collectModules.length; i++) {
-            oldCollectModulesToUnwhitelist[i] = collectModules[i].addy;
-        }
+        // Module[] memory collectModules = abi.decode(
+        //     vm.parseJson(json, string(abi.encodePacked('.', forkEnv, '.Modules.v1.collect'))),
+        //     (Module[])
+        // );
+        // address[] memory oldCollectModulesToUnwhitelist = new address[](collectModules.length);
+        // for (uint256 i = 0; i < collectModules.length; i++) {
+        //     oldCollectModulesToUnwhitelist[i] = collectModules[i].addy;
+        // }
 
-        Module[] memory referenceModules = abi.decode(
-            vm.parseJson(json, string(abi.encodePacked('.', forkEnv, '.Modules.v1.reference'))),
-            (Module[])
-        );
-        address[] memory oldReferenceModulesToUnwhitelist = new address[](referenceModules.length);
-        for (uint256 i = 0; i < referenceModules.length; i++) {
-            oldReferenceModulesToUnwhitelist[i] = referenceModules[i].addy;
-        }
+        // Module[] memory referenceModules = abi.decode(
+        //     vm.parseJson(json, string(abi.encodePacked('.', forkEnv, '.Modules.v1.reference'))),
+        //     (Module[])
+        // );
+        // address[] memory oldReferenceModulesToUnwhitelist = new address[](referenceModules.length);
+        // for (uint256 i = 0; i < referenceModules.length; i++) {
+        //     oldReferenceModulesToUnwhitelist[i] = referenceModules[i].addy;
+        // }
 
-        Module[] memory followModules = abi.decode(
-            vm.parseJson(json, string(abi.encodePacked('.', forkEnv, '.Modules.v1.follow'))),
-            (Module[])
-        );
-        address[] memory oldFollowModulesToUnwhitelist = new address[](followModules.length);
-        for (uint256 i = 0; i < followModules.length; i++) {
-            oldFollowModulesToUnwhitelist[i] = followModules[i].addy;
-        }
+        // Module[] memory followModules = abi.decode(
+        //     vm.parseJson(json, string(abi.encodePacked('.', forkEnv, '.Modules.v1.follow'))),
+        //     (Module[])
+        // );
+        // address[] memory oldFollowModulesToUnwhitelist = new address[](followModules.length);
+        // for (uint256 i = 0; i < followModules.length; i++) {
+        //     oldFollowModulesToUnwhitelist[i] = followModules[i].addy;
+        // }
 
         // Load V2 modules addresses
 
@@ -1120,6 +1120,31 @@ contract UpgradeForkTest is BaseTest {
         _migrateProfile1();
         _doSomeStuffOnV2();
         _verifyDataAfterUpgrade();
+    }
+
+    event LensUpgradeVersion(
+        address implementation,
+        string version,
+        bytes20 gitCommit,
+        uint256 chainId,
+        uint256 blockNumber,
+        uint256 timestamp
+    );
+
+    function testLensUpgradeVersion() public onlyFork {
+        _prepareUpgradeContract();
+        vm.expectEmit(true, true, true, true, address(hub));
+        emit LensUpgradeVersion({
+            implementation: address(hubImpl),
+            version: hubImpl.getVersion(),
+            gitCommit: hubImpl.getGitCommit(),
+            chainId: block.chainid,
+            blockNumber: block.number,
+            timestamp: block.timestamp
+        });
+        _upgradeV1toV2();
+        assertEq(hub.getVersion(), hubImpl.getVersion(), "Hub version doesn't match after upgrade");
+        assertEq(hub.getGitCommit(), hubImpl.getGitCommit(), "Hub git commit doesn't match after upgrade");
     }
 }
 
