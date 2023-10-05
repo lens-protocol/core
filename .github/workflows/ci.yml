@@ -27,7 +27,7 @@ jobs:
       - name: Compile Project
         run: |
           forge --version
-          FOUNDRY_PROFILE=cibuild forge build --deny-warnings --skip test
+          FOUNDRY_PROFILE=cibuild forge build --deny-warnings --skip test script
       - name: Run Tests
         run: |
           cp .env.example .env

@@ -14,11 +14,11 @@ contract ForkManagement is Script {
 
     // TODO: Replace with forge-std/StdJson.sol::keyExists(...) when/if this PR is approved:
     //       https://github.com/foundry-rs/forge-std/pull/226
-    function keyExists(string memory key) internal returns (bool) {
+    function keyExists(string memory key) internal view returns (bool) {
         return json.parseRaw(key).length > 0;
     }
 
-    function isEnvSet(string memory key) internal returns (bool) {
+    function isEnvSet(string memory key) internal view returns (bool) {
         try vm.envString(key) {
             return true;
         } catch {

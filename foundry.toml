@@ -11,23 +11,6 @@ optimizer_runs = 10
 ignored_error_codes = []
 via_ir = true
 
-libraries = [
-        "contracts/libraries/ActionLib.sol:ActionLib:0x8de25afc4b37e0adbb58caf3df06faf419455404",
-        "contracts/libraries/FollowLib.sol:FollowLib:0xd5fb386bc55966d4cff7a8ef6eb292f537eeb7a4",
-        "contracts/libraries/GovernanceLib.sol:GovernanceLib:0xc946e6807472f8ceef87cfa0253e78e921f16773",
-        "contracts/libraries/LegacyCollectLib.sol:LegacyCollectLib:0xa0528a82fccbe1c871336d0fa09cf3acf0d3946a",
-        "contracts/libraries/MetaTxLib.sol:MetaTxLib:0x6d3671d37252d27f03efb01c1995a73162473571",
-        "contracts/libraries/MigrationLib.sol:MigrationLib:0x20a0201951b4a67c70b2aa7af5c6e3e322d81388",
-        "contracts/libraries/ProfileLib.sol:ProfileLib:0xc806cd6d9723b195c8ee758f110df224735d1d53",
-        "contracts/libraries/PublicationLib.sol:PublicationLib:0x7d723ad98553b7245b686a3a744758faf62a5333",
-        "contracts/libraries/ValidationLib.sol:ValidationLib:0x9f98f838e3db42830ef488a92c8ed9671268000e",
-        "contracts/libraries/token-uris/FollowTokenURILib.sol:FollowTokenURILib:0xb9711f2edf7d8f901af4becbf39d0bd802e9eb0c",
-        "contracts/libraries/token-uris/HandleTokenURILib.sol:HandleTokenURILib:0x7e34ec095a1a8ada535d90bb3cbabd8740fe5a44",
-        "contracts/libraries/token-uris/ProfileTokenURILib.sol:ProfileTokenURILib:0x8bad75519110c3161b472a0d18151ec00ac7d69a",
-        "contracts/libraries/token-uris/TokenURIMainFontLib.sol:TokenURIMainFontLib:0x56174f7ff96c82004d3cec42e9a99b5a44e76c77",
-        "contracts/libraries/token-uris/TokenURISecondaryFontLib.sol:TokenURISecondaryFontLib:0x17a9874d7a40dbd76a609d4c24fef13f4347fecc",
-]
-
 [rpc_endpoints]
 polygon = "${POLYGON_RPC_URL}"
 mumbai = "${MUMBAI_RPC_URL}"
