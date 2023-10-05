@@ -66,7 +66,12 @@ contract LensV1ChangeAdmins is Script, ForkManagement {
     }
 
     function _changeAdmins() internal {
-        castTransaction(governance, address(legacyLensHub), 'setGovernance(address)', vm.toString(address(this)));
+        castTransaction(
+            governance,
+            address(legacyLensHub),
+            'setGovernance(address)',
+            vm.toString(address(governanceContract))
+        );
 
         castTransaction(
             proxyAdmin,

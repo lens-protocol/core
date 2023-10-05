@@ -39,7 +39,7 @@ if [[ "$CONFIRMATION" == "y" || "$CONFIRMATION" == "Y" ]]
     then
         echo "Broadcasting on-chain..."
 
-        FORGE_OUTPUT=$(forge script script/$SCRIPT_NAME.s.sol:$SCRIPT_NAME -s $CALLDATA --rpc-url $NETWORK --broadcast --legacy --skip test --ffi --slow -vvvv)
+        FORGE_OUTPUT=$(forge script script/$SCRIPT_NAME.s.sol:$SCRIPT_NAME -s $CALLDATA --rpc-url $NETWORK --broadcast --legacy --skip test --ffi --slow -vv)
         echo "$FORGE_OUTPUT"
     else
         echo "Deployment cancelled. Execution terminated."

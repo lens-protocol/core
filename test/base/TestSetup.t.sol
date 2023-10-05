@@ -103,6 +103,8 @@ contract TestSetup is Test, ContractAddressesLoaderDeployer, ArrayHelpers {
     function loadBaseAddresses(string memory targetEnv) internal virtual {
         console.log('targetEnv:', targetEnv);
 
+        lensVersion = forkVersion;
+
         hubProxyAddr = json.readAddress(string(abi.encodePacked('.', targetEnv, '.LensHubProxy')));
         vm.label(hubProxyAddr, 'LENS_HUB');
         console.log('hubProxyAddr:', hubProxyAddr);
@@ -117,6 +119,7 @@ contract TestSetup is Test, ContractAddressesLoaderDeployer, ArrayHelpers {
         if (lensVersion == 2) {
             legacyCollectNFTAddr = hub.getLegacyCollectNFTImpl();
         } else {
+            console.log('lensVersion is: %s. Trying to getCollectNFTImpl...', lensVersion);
             legacyCollectNFTAddr = IOldHub(address(hub)).getCollectNFTImpl();
         }
 
@@ -199,14 +202,11 @@ contract TestSetup is Test, ContractAddressesLoaderDeployer, ArrayHelpers {
 
         loadOrDeploy_ModuleRegistryContract();
 
-        if (forkVersion == 1) {
-            lensVersion = 1;
+        if (lensVersion == 1) {
             vm.prank(governance);
             hub.whitelistProfileCreator(address(this), true);
             beforeUpgrade();
             upgradeToV2();
-        } else {
-            lensVersion = forkVersion;
         }
 
         vm.startPrank(deployer);
