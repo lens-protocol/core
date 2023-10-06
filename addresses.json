@@ -68,6 +68,30 @@
             "addy": "0x0BE6bD7092ee83D44a6eC1D949626FeE48caB30c"
           },
           {
+            "name": "FeeCollectModule",
+            "addy": "0xeb4f3EC9d01856Cec2413bA5338bF35CeF932D82"
+          },
+          {
+            "name": "LimitedFeeCollectModule",
+            "addy": "0xFCDA2801a31ba70dfe542793020a934F880D54aB"
+          },
+          {
+            "name": "TimedFeeCollectModule",
+            "addy": "0x36447b496ebc97DDA6d8c8113Fe30A30dC0126Db"
+          },
+          {
+            "name": "LimitedTimedFeeCollectModule",
+            "addy": "0xDa76E44775C441eF53B9c769d175fB2948F15e1C"
+          },
+          {
+            "name": "RevertCollectModule",
+            "addy": "0x5E70fFD2C6D04d65C3abeBa64E93082cfA348dF8"
+          },
+          {
+            "name": "SimpleFeeCollectModule",
+            "addy": "0xb4a9874adc790eec88fd086e43d329bbc9520efd"
+          },
+          {
             "name": "MultirecipientFeeCollectModule",
             "addy": "0x99d6c3eabf05435e851c067d2c3222716f7fcfe5"
           },
@@ -102,6 +126,14 @@
           {
             "name": "TokenGatedReferenceModule",
             "addy": "0xb4ba8dccd35bd3dcc5d58dbb9c7dff9c9268add9"
+          },
+          {
+            "name": "FollowerOnlyReferenceModule",
+            "addy": "0x7Ea109eC988a0200A1F79Ae9b78590F92D357a16"
+          },
+          {
+            "name": "DegreesOfSeparationReferenceModule",
+            "addy": "0xe20D64D25779D2Ae0d76711e5Aca23EE633f2E1E"
           }
         ]
       },

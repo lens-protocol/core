@@ -30,6 +30,7 @@ import {ModuleRegistry} from 'contracts/misc/ModuleRegistry.sol';
 import {IModuleRegistry} from 'contracts/interfaces/IModuleRegistry.sol';
 import {BaseFeeCollectModuleInitData} from 'contracts/modules/interfaces/IBaseFeeCollectModule.sol';
 import {Governance} from 'contracts/misc/access/Governance.sol';
+import {PublicActProxy} from 'contracts/misc/PublicActProxy.sol';
 
 import {ArrayHelpers} from 'test/helpers/ArrayHelpers.sol';
 
@@ -80,6 +81,8 @@ contract LensV2DeployPeriphery is Script, ForkManagement, ArrayHelpers {
     DegreesOfSeparationReferenceModule degreesOfSeparationReferenceModule;
     FollowerOnlyReferenceModule followerOnlyReferenceModule;
     TokenGatedReferenceModule tokenGatedReferenceModule;
+    PublicActProxy publicActProxy;
+    LitAccessControl litAccessControl;
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -91,6 +94,20 @@ contract LensV2DeployPeriphery is Script, ForkManagement, ArrayHelpers {
         inputs[2] = targetEnv;
         inputs[3] = contractName;
         inputs[4] = vm.toString(deployedAddress);
+        // bytes memory res =
+        vm.ffi(inputs);
+        // string memory output = abi.decode(res, (string));
+        // console.log(output);
+    }
+
+    function saveValue(string memory contractName, string memory str) internal {
+        // console.log('Saving %s (%s) into addresses under %s environment', contractName, deployedAddress, targetEnv);
+        string[] memory inputs = new string[](5);
+        inputs[0] = 'node';
+        inputs[1] = 'script/helpers/saveAddress.js';
+        inputs[2] = targetEnv;
+        inputs[3] = contractName;
+        inputs[4] = str;
         // bytes memory res =
         vm.ffi(inputs);
         // string memory output = abi.decode(res, (string));
@@ -197,6 +214,15 @@ contract LensV2DeployPeriphery is Script, ForkManagement, ArrayHelpers {
         );
         vm.label(address(profileCreationProxy), 'ProfileCreationProxy');
         saveContractAddress('ProfileCreationProxy', address(profileCreationProxy));
+
+        publicActProxy = new PublicActProxy({
+            lensHub: address(hub),
+            collectPublicationAction: address(collectPublicationAction)
+        });
+        console.log('\n+ + + PublicActProxy: %s', address(publicActProxy));
+        vm.writeLine(addressesFile, string.concat('PublicActProxy: ', vm.toString(address(publicActProxy))));
+        vm.label(address(publicActProxy), 'PublicActProxy');
+        saveContractAddress('PublicActProxy', address(publicActProxy));
 
         uint256 currentDeployerNonce = vm.getNonce(deployer.owner);
         /**
@@ -314,6 +340,20 @@ contract LensV2DeployPeriphery is Script, ForkManagement, ArrayHelpers {
         //     addressesFile,
         //     string.concat('TokenGatedReferenceModule: ', vm.toString(address(tokenGatedReferenceModule)))
         // );
+
+        address litAccessControlImpl = address(new LitAccessControl(address(hub), address(collectPublicationAction)));
+        console.log('\n+ + + LitAccessControlImpl: %s', litAccessControlImpl);
+        vm.writeLine(addressesFile, string.concat('LitAccessControlImpl: ', vm.toString(litAccessControlImpl)));
+        vm.label(litAccessControlImpl, 'LitAccessControlImpl');
+        saveContractAddress('LitAccessControlImpl', litAccessControlImpl);
+
+        litAccessControl = LitAccessControl(
+            new TransparentUpgradeableProxy({_logic: litAccessControlImpl, admin_: proxyAdmin, _data: ''})
+        );
+        console.log('\n+ + + LitAccessControl: %s', address(litAccessControl));
+        vm.writeLine(addressesFile, string.concat('LitAccessControl: ', vm.toString(address(litAccessControl))));
+        vm.label(address(litAccessControl), 'LitAccessControl');
+        saveContractAddress('LitAccessControl', address(litAccessControl));
 
         vm.stopBroadcast();
     }
@@ -435,6 +475,24 @@ contract LensV2DeployPeriphery is Script, ForkManagement, ArrayHelpers {
                 followModuleInitData: ''
             }),
             handle: 'secondprofile'
+        });
+
+        (uint256 anonymousProfileId, ) = temporarilyCreationProxy.proxyCreateProfileWithHandle({
+            createProfileParams: Types.CreateProfileParams({
+                to: deployer.owner,
+                followModule: address(0),
+                followModuleInitData: ''
+            }),
+            handle: 'annoymouse'
+        });
+
+        saveValue('AnonymousProfileId', vm.toString(anonymousProfileId));
+
+        // set DE to publicActProxy
+        hub.changeDelegatedExecutorsConfig({
+            delegatorProfileId: anonymousProfileId,
+            delegatedExecutors: _toAddressArray(address(publicActProxy)),
+            approvals: _toBoolArray(true)
         });
 
         hub.follow({
