@@ -24,6 +24,14 @@ contract Governance is ControllableByContract {
         LENS_HUB.setEmergencyAdmin(newEmergencyAdmin);
     }
 
+    function lensHub_setTreasuryParams(
+        address newTreasury,
+        uint16 newTreasuryFee
+    ) external onlyOwnerOrControllerContract {
+        LENS_HUB.setTreasury(newTreasury);
+        LENS_HUB.setTreasuryFee(newTreasuryFee);
+    }
+
     ////////////////////////////////////////////////////////
     ///   ONLY GOVERNANCE OWNER OR CONTROLLER CONTRACT   ///
     ////////////////////////////////////////////////////////

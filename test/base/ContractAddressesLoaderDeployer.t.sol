@@ -138,7 +138,7 @@ contract ContractAddressesLoaderDeployer is Test, ForkManagement {
             console.log('Testing against already deployed module at:', feeFollowModule);
         } else {
             vm.prank(deployer);
-            feeFollowModule = address(new FeeFollowModule(address(hub)));
+            feeFollowModule = address(new FeeFollowModule(address(hub), address(moduleRegistry)));
         }
         return feeFollowModule;
     }

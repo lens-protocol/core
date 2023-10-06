@@ -91,7 +91,7 @@ contract PublicActProxyTest is BaseTest {
     function testCanPublicCollect() public {
         vm.prank(deployer);
         address simpleFeeCollectModule = address(
-            new SimpleFeeCollectModule(address(hub), address(collectPublicationAction))
+            new SimpleFeeCollectModule(address(hub), address(collectPublicationAction), address(moduleRegistry))
         );
 
         collectPublicationAction.registerCollectModule(simpleFeeCollectModule);
@@ -142,7 +142,7 @@ contract PublicActProxyTest is BaseTest {
     function testCanPublicCollectWithSig() public {
         vm.prank(deployer);
         address simpleFeeCollectModule = address(
-            new SimpleFeeCollectModule(address(hub), address(collectPublicationAction))
+            new SimpleFeeCollectModule(address(hub), address(collectPublicationAction), address(moduleRegistry))
         );
 
         collectPublicationAction.registerCollectModule(simpleFeeCollectModule);

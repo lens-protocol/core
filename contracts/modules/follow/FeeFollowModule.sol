@@ -33,7 +33,7 @@ contract FeeFollowModule is FeeModuleBase, HubRestricted, IFollowModule {
 
     mapping(uint256 profileId => FeeConfig config) internal _feeConfig;
 
-    constructor(address hub) FeeModuleBase(hub) HubRestricted(hub) {}
+    constructor(address hub, address moduleRegistry) FeeModuleBase(hub, moduleRegistry) HubRestricted(hub) {}
 
     /**
      * @inheritdoc IFollowModule
