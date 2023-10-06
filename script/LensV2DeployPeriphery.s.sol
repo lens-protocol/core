@@ -31,6 +31,7 @@ import {IModuleRegistry} from 'contracts/interfaces/IModuleRegistry.sol';
 import {BaseFeeCollectModuleInitData} from 'contracts/modules/interfaces/IBaseFeeCollectModule.sol';
 import {Governance} from 'contracts/misc/access/Governance.sol';
 import {PublicActProxy} from 'contracts/misc/PublicActProxy.sol';
+import {LitAccessControl} from 'contracts/misc/access/LitAccessControl.sol';
 
 import {ArrayHelpers} from 'test/helpers/ArrayHelpers.sol';
 
@@ -82,7 +83,7 @@ contract LensV2DeployPeriphery is Script, ForkManagement, ArrayHelpers {
     FollowerOnlyReferenceModule followerOnlyReferenceModule;
     TokenGatedReferenceModule tokenGatedReferenceModule;
     PublicActProxy publicActProxy;
-    LitAccessControl litAccessControl;
+    address litAccessControl;
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -347,13 +348,13 @@ contract LensV2DeployPeriphery is Script, ForkManagement, ArrayHelpers {
         vm.label(litAccessControlImpl, 'LitAccessControlImpl');
         saveContractAddress('LitAccessControlImpl', litAccessControlImpl);
 
-        litAccessControl = LitAccessControl(
+        litAccessControl = address(
             new TransparentUpgradeableProxy({_logic: litAccessControlImpl, admin_: proxyAdmin, _data: ''})
         );
-        console.log('\n+ + + LitAccessControl: %s', address(litAccessControl));
-        vm.writeLine(addressesFile, string.concat('LitAccessControl: ', vm.toString(address(litAccessControl))));
-        vm.label(address(litAccessControl), 'LitAccessControl');
-        saveContractAddress('LitAccessControl', address(litAccessControl));
+        console.log('\n+ + + LitAccessControl: %s', litAccessControl);
+        vm.writeLine(addressesFile, string.concat('LitAccessControl: ', vm.toString(litAccessControl)));
+        vm.label(litAccessControl, 'LitAccessControl');
+        saveContractAddress('LitAccessControl', litAccessControl);
 
         vm.stopBroadcast();
     }
