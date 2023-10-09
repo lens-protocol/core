@@ -3,8 +3,8 @@ pragma solidity ^0.8.13;
 
 import {ForkManagement} from 'script/helpers/ForkManagement.sol';
 import 'forge-std/Script.sol';
-import {LensHub as LegacyLensHub} from './../lib/core-private/contracts/core/LensHub.sol';
-import {ModuleGlobals} from './../lib/core-private/contracts/core/modules/ModuleGlobals.sol';
+import {LensHub as LegacyLensHub} from '@lens-v1/contracts/core/LensHub.sol';
+import {ModuleGlobals} from '@lens-v1/contracts/core/modules/ModuleGlobals.sol';
 import {LensHubInitializable} from 'contracts/misc/LensHubInitializable.sol';
 import {LensV2UpgradeContract} from 'contracts/misc/LensV2UpgradeContract.sol';
 import {FollowNFT} from 'contracts/FollowNFT.sol';

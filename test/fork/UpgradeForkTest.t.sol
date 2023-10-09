@@ -383,8 +383,8 @@ contract UpgradeForkTest is BaseTest {
             owner: governanceMultisig,
             lensHub: address(hub),
             newImplementationAddress: address(hubImpl),
-            treasury: address(0), // TODO: Do we need to fill this in with previous values?
-            treasuryFee: 0 // TODO: Do we need to fill this in with previous values?
+            treasury: treasury,
+            treasuryFee: TREASURY_FEE_BPS
         });
         vm.label(address(lensV2UpgradeContract), 'LensV2UpgradeContract');
 

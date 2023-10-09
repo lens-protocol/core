@@ -25,6 +25,7 @@ import {TokenHandleRegistry} from 'contracts/namespaces/TokenHandleRegistry.sol'
 import {MockActionModule} from 'test/mocks/MockActionModule.sol';
 import {MockReferenceModule} from 'test/mocks/MockReferenceModule.sol';
 import {ModuleRegistry} from 'contracts/misc/ModuleRegistry.sol';
+import {ModuleGlobals} from '@lens-v1/contracts/core/modules/ModuleGlobals.sol';
 
 // TODO: Move these to Interface file in test folder.
 struct OldCreateProfileParams {
@@ -145,7 +146,17 @@ contract TestSetup is Test, ContractAddressesLoaderDeployer, ArrayHelpers {
 
             TREASURY_FEE_BPS = hub.getTreasuryFee();
         } else {
-            console.log("Can't get treasury on Lens V1");
+            ModuleGlobals moduleGlobals = ModuleGlobals(
+                json.readAddress(string(abi.encodePacked('.', targetEnv, '.ModuleGlobals')))
+            );
+            vm.label(address(moduleGlobals), 'ModuleGlobals');
+            console.log('ModuleGlobals: %s', address(moduleGlobals));
+
+            treasury = moduleGlobals.getTreasury();
+            console.log('Real Treasury: %s', treasury);
+
+            TREASURY_FEE_BPS = moduleGlobals.getTreasuryFee();
+            console.log('Real Treasury Fee: %s', TREASURY_FEE_BPS);
         }
 
         proxyAdmin = address(uint160(uint256(vm.load(hubProxyAddr, ADMIN_SLOT))));
