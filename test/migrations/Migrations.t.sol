@@ -22,16 +22,36 @@ contract MigrationsTest is BaseTest {
     uint256 followTokenIdV1;
 
     function beforeUpgrade() internal override {
-        firstAccount = _loadAccountAs('FIRST_ACCOUNT');
+        firstAccount = _loadAccountAs('FIRST_ACCOUNT', forkVersion == 2);
 
-        secondAccount = _loadAccountAs('SECOND_ACCOUNT');
+        secondAccount = _loadAccountAs('SECOND_ACCOUNT', forkVersion == 2);
 
         vm.prank(firstAccount.owner);
+        // TODO: What if already following...?
         followTokenIdV1 = IOldHub(address(hub)).follow(_toUint256Array(secondAccount.profileId), _toBytesArray(''))[0];
     }
 
     function setUp() public override {
         super.setUp();
+
+        if (firstAccount.profileId == 0) {
+            firstAccount = _loadAccountAs('FIRST_ACCOUNT', forkVersion == 2);
+        }
+
+        if (secondAccount.profileId == 0) {
+            secondAccount = _loadAccountAs('SECOND_ACCOUNT', forkVersion == 2);
+        }
+
+        // On V2 nobody follows nobody before migrations...
+        if (forkVersion != 2) {
+            bool isFollowing = hub.isFollowing(firstAccount.profileId, secondAccount.profileId);
+            assertTrue(isFollowing, 'First account is required to be following second account');
+        }
+
+        if (forkVersion == 2) {
+            followTokenIdV1 = vm.envOr({name: 'FORK_TEST__FIRST_ACCOUNT__FOLLOW_TOKEN_ID', defaultValue: uint256(0)});
+        }
+        assertTrue(followTokenIdV1 != 0, 'Follow token id v1 is still zero, after everything we tried........');
 
         vm.prank(governance);
         hub.setMigrationAdmins(_toAddressArray(migrationAdmin), true);
@@ -173,8 +193,10 @@ contract MigrationsTest is BaseTest {
 
     function testCannotMigrateFollowIfSelfFollow_byPublic() public onlyFork {
         FollowNFT followNFT = FollowNFT(hub.getProfile(secondAccount.profileId).followNFT);
-        vm.prank(firstAccount.owner);
-        followNFT.transferFrom(firstAccount.owner, secondAccount.owner, followTokenIdV1);
+
+        address followNFTOwner = followNFT.ownerOf(followTokenIdV1);
+        vm.prank(followNFTOwner);
+        followNFT.transferFrom(followNFTOwner, secondAccount.owner, followTokenIdV1);
         assertEq(followNFT.ownerOf(followTokenIdV1), secondAccount.owner);
 
         uint256 followTokenV1FollowerProfileId = followNFT.getFollowerProfileId(followTokenIdV1);
@@ -200,8 +222,9 @@ contract MigrationsTest is BaseTest {
 
     function testCannotMigrateFollowIfSelfFollow_byAdmin() public onlyFork {
         FollowNFT followNFT = FollowNFT(hub.getProfile(secondAccount.profileId).followNFT);
-        vm.prank(firstAccount.owner);
-        followNFT.transferFrom(firstAccount.owner, secondAccount.owner, followTokenIdV1);
+        address followNFTOwner = followNFT.ownerOf(followTokenIdV1);
+        vm.prank(followNFTOwner);
+        followNFT.transferFrom(followNFTOwner, secondAccount.owner, followTokenIdV1);
         assertEq(followNFT.ownerOf(followTokenIdV1), secondAccount.owner);
 
         uint256 followTokenV1FollowerProfileId = followNFT.getFollowerProfileId(followTokenIdV1);
@@ -310,6 +333,10 @@ contract MigrationsTestHardcoded is BaseTest {
     }
 
     function testProfileMigration() public onlyFork {
+        if (forkVersion == 2 || block.chainid != 137) {
+            return;
+        }
+
         uint256[] memory profileIds = new uint256[](10);
         for (uint256 i = 0; i < 10; i++) {
             profileIds[i] = i + 1;
@@ -318,6 +345,10 @@ contract MigrationsTestHardcoded is BaseTest {
     }
 
     function testFollowMigration() public onlyFork {
+        if (forkVersion == 2 || block.chainid != 137) {
+            return;
+        }
+
         uint256 idOfProfileFollowed = 8;
 
         uint256[] memory followTokenIds = new uint256[](10);
@@ -332,6 +363,10 @@ contract MigrationsTestHardcoded is BaseTest {
     }
 
     function testFollowMigration_byHubFollow() public onlyFork {
+        if (forkVersion == 2 || block.chainid != 137) {
+            return;
+        }
+
         uint256 followerProfileId = 8;
 
         uint256[] memory idsOfProfilesToFollow = new uint256[](1);

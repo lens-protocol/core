@@ -1114,6 +1114,9 @@ contract UpgradeForkTest is BaseTest {
     }
 
     function testUpgradeV1toV2() public onlyFork {
+        if (forkVersion == 2) {
+            return;
+        }
         _prepareV1State();
         _prepareUpgradeContract();
         _upgradeV1toV2();
@@ -1132,6 +1135,9 @@ contract UpgradeForkTest is BaseTest {
     );
 
     function testLensUpgradeVersion() public onlyFork {
+        if (forkVersion == 2) {
+            return;
+        }
         _prepareUpgradeContract();
         vm.expectEmit(true, true, true, true, address(hub));
         emit LensUpgradeVersion({

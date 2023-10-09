@@ -58,10 +58,10 @@ contract GovernanceTest is BaseTest {
 
         loadOrDeploy_GovernanceContract();
 
-        vm.prank(governanceMultisig);
-        governanceContract.setControllerContract(controllerContract);
-
         governanceOwner = governanceContract.owner();
+
+        vm.prank(governanceOwner);
+        governanceContract.setControllerContract(controllerContract);
 
         vm.prank(hub.getGovernance());
         hub.setGovernance(address(governanceContract));

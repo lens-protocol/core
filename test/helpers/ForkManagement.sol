@@ -26,6 +26,13 @@ contract ForkManagement is Script, KeyExists, ContractAddresses {
         _;
     }
 
+    modifier notFork() {
+        if (bytes(forkEnv).length != 0) {
+            return;
+        }
+        _;
+    }
+
     function setUp() public virtual {
         // TODO: Replace with envOr when it's released
         forkEnv = vm.envOr({name: string('TESTING_FORK'), defaultValue: string('')});

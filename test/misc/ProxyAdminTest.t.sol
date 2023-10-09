@@ -30,7 +30,7 @@ contract ProxyAdminTest is BaseTest {
 
         proxyAdminContractOwner = proxyAdminContract.owner();
 
-        vm.prank(proxyAdmin);
+        vm.prank(proxyAdminContractOwner);
         proxyAdminContract.setControllerContract(controllerContract);
     }
 
@@ -78,11 +78,15 @@ contract ProxyAdminTest is BaseTest {
 
     // Scenarios
 
-    function testContructor() public {
-        assertEq(address(proxyAdminContract.LENS_HUB_PROXY()), address(hub));
-        assertEq(proxyAdminContract.previousImplementation(), address(hubImpl));
-        assertEq(proxyAdminContract.owner(), proxyAdminContractOwner);
-        assertEq(proxyAdminContract.controllerContract(), controllerContract);
+    function testContructor() public notFork {
+        assertEq(address(proxyAdminContract.LENS_HUB_PROXY()), address(hub), 'Hub address is not set correctly');
+        assertEq(
+            proxyAdminContract.previousImplementation(),
+            address(hubImpl),
+            'Hub implementation is not set correctly'
+        );
+        assertEq(proxyAdminContract.owner(), proxyAdminContractOwner, 'Owner is not set correctly');
+        assertEq(proxyAdminContract.controllerContract(), controllerContract, 'Controller is not set correctly');
     }
 
     function testCurrentImplementation() public {
@@ -92,14 +96,20 @@ contract ProxyAdminTest is BaseTest {
     function testRollbackLastUpgrade() public {
         address hubImplV2 = address(new MockContract());
 
-        address prevImpl = address(uint160(uint256(vm.load(hubProxyAddr, PROXY_IMPLEMENTATION_STORAGE_SLOT))));
-        assertEq(prevImpl, proxyAdminContract.previousImplementation());
+        address prevImpl;
 
-        vm.prank(proxyAdminContractOwner);
-        proxyAdminContract.proxy_upgrade(hubImplV2);
+        if (forkVersion == 1) {
+            prevImpl = address(uint160(uint256(vm.load(hubProxyAddr, PROXY_IMPLEMENTATION_STORAGE_SLOT))));
+            assertEq(prevImpl, proxyAdminContract.previousImplementation());
 
-        address newImpl = address(uint160(uint256(vm.load(hubProxyAddr, PROXY_IMPLEMENTATION_STORAGE_SLOT))));
-        assertEq(newImpl, hubImplV2);
+            vm.prank(proxyAdminContractOwner);
+            proxyAdminContract.proxy_upgrade(hubImplV2);
+
+            address newImpl = address(uint160(uint256(vm.load(hubProxyAddr, PROXY_IMPLEMENTATION_STORAGE_SLOT))));
+            assertEq(newImpl, hubImplV2);
+        } else {
+            prevImpl = proxyAdminContract.previousImplementation();
+        }
 
         vm.expectCall(address(hubAsProxy), abi.encodeCall(hubAsProxy.upgradeTo, (prevImpl)));
 

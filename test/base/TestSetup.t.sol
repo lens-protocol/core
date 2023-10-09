@@ -488,9 +488,14 @@ contract TestSetup is Test, ContractAddressesLoaderDeployer, ArrayHelpers {
             // If profile was loaded from .env, we transfer it to the generated account. This is needed as otherwise we
             // won't have the private key of the owner, which is needed for signing meta-tx in some tests.
             address currentProfileOwner = hub.ownerOf(accountProfileId);
+
             vm.startPrank(currentProfileOwner);
-            hub.DANGER__disableTokenGuardian();
-            vm.warp(hub.getTokenGuardianDisablingTimestamp(currentProfileOwner));
+            if (hub.getTokenGuardianDisablingTimestamp(currentProfileOwner) == 0) {
+                hub.DANGER__disableTokenGuardian();
+            }
+            if (hub.getTokenGuardianDisablingTimestamp(currentProfileOwner) > block.timestamp) {
+                vm.warp(hub.getTokenGuardianDisablingTimestamp(currentProfileOwner));
+            }
             hub.transferFrom(currentProfileOwner, accountOwner, accountProfileId);
             vm.stopPrank();
         } else {
