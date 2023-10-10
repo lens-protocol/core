@@ -28,10 +28,10 @@ contract LensHandles is ERC721, ImmutableOwnable, ILensHandles {
     // We used 31 to fit the handle in a single slot, with `.lens` that restricted localName to use 26 characters.
     // Can be extended later if needed.
     uint256 internal constant MAX_LOCAL_NAME_LENGTH = 26;
-    string internal constant NAMESPACE = 'lens';
+    string public constant NAMESPACE = 'lens';
     uint256 internal immutable NAMESPACE_LENGTH = bytes(NAMESPACE).length;
-    bytes32 internal constant NAMESPACE_HASH = keccak256(bytes(NAMESPACE));
-    uint256 internal immutable TOKEN_GUARDIAN_COOLDOWN;
+    bytes32 public constant NAMESPACE_HASH = keccak256(bytes(NAMESPACE));
+    uint256 public immutable TOKEN_GUARDIAN_COOLDOWN;
     mapping(address => uint256) internal _tokenGuardianDisablingTimestamp;
 
     mapping(uint256 tokenId => string localName) internal _localNames;

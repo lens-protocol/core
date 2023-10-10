@@ -25,7 +25,7 @@ import {Address} from '@openzeppelin/contracts/utils/Address.sol';
 abstract contract LensProfiles is LensBaseERC721, ERC2981CollectionRoyalties, ILensProfiles {
     using Address for address;
 
-    uint256 internal immutable TOKEN_GUARDIAN_COOLDOWN;
+    uint256 public immutable TOKEN_GUARDIAN_COOLDOWN;
 
     constructor(uint256 tokenGuardianCooldown) {
         TOKEN_GUARDIAN_COOLDOWN = tokenGuardianCooldown;
