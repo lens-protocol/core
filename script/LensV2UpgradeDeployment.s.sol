@@ -18,6 +18,7 @@ import {ProxyAdmin} from 'contracts/misc/access/ProxyAdmin.sol';
 import {ModuleRegistry} from 'contracts/misc/ModuleRegistry.sol';
 import {Types} from 'contracts/libraries/constants/Types.sol';
 import {LibString} from 'solady/utils/LibString.sol';
+import {LegacyCollectNFT} from 'contracts/misc/LegacyCollectNFT.sol';
 
 import {ArrayHelpers} from 'test/helpers/ArrayHelpers.sol';
 
@@ -156,11 +157,6 @@ contract LensV2UpgradeDeployment is Script, ForkManagement, ArrayHelpers {
         vm.label(migrationAdmin, 'MigrationAdmin');
         console.log('Migration Admin: %s', migrationAdmin);
 
-        // Get Legacy CollectNFTImpl address
-        legacyCollectNFTImpl = legacyLensHub.getCollectNFTImpl();
-        vm.label(legacyCollectNFTImpl, 'LegacyCollectNFTImpl');
-        console.log('Legacy CollectNFTImpl: %s', legacyCollectNFTImpl);
-
         // TODO: Who should be the owner of LensHandles? Setting it for LensHub governance
         lensHandlesOwner = legacyLensHub.getGovernance();
         vm.label(lensHandlesOwner, 'LensHandlesOwner');
@@ -227,6 +223,11 @@ contract LensV2UpgradeDeployment is Script, ForkManagement, ArrayHelpers {
 
         ///////Broadcasting transactions///////
         vm.startBroadcast(_deployer.ownerPk);
+
+        // Deploy LegacyCollectNFTImpl
+        legacyCollectNFTImpl = address(new LegacyCollectNFT(lensHub));
+        vm.label(legacyCollectNFTImpl, 'LegacyCollectNFTImpl');
+        console.log('Legacy CollectNFTImpl: %s', legacyCollectNFTImpl);
 
         // Deploy FollowNFTImpl(hub)
         followNFTImpl = address(new FollowNFT(lensHub));
