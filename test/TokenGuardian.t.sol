@@ -25,7 +25,7 @@ abstract contract TokenGuardianTest is ERC721Test {
     uint256 tokenIdHeldByEOA;
     uint256 tokenIdHeldByNonEOA;
 
-    function _TOKEN_GUARDIAN_COOLDOWN() internal pure virtual returns (uint256);
+    function _TOKEN_GUARDIAN_COOLDOWN() internal view virtual returns (uint256);
 
     function _guardedToken() private view returns (IGuardedToken) {
         return IGuardedToken(_getERC721TokenAddress());
@@ -175,9 +175,9 @@ abstract contract TokenGuardianTest is ERC721Test {
 
     ////////////////// Protection disabled but have not taken effect yet
 
-    function testCannot_approve_ifEOA_andTokenGuardianDisabled_butNotTakenEffectYet(uint256 elapsedTimeAfterDisabling)
-        public
-    {
+    function testCannot_approve_ifEOA_andTokenGuardianDisabled_butNotTakenEffectYet(
+        uint256 elapsedTimeAfterDisabling
+    ) public {
         elapsedTimeAfterDisabling = bound(elapsedTimeAfterDisabling, 0, _TOKEN_GUARDIAN_COOLDOWN() - 1);
         assertEq(_guardedToken().getApproved(tokenIdHeldByEOA), address(0));
 
@@ -211,9 +211,9 @@ abstract contract TokenGuardianTest is ERC721Test {
         assertEq(_guardedToken().isApprovedForAll(defaultAccount.owner, address(this)), false);
     }
 
-    function testCannot_burn_ifEOA_andTokenGuardianDisabled_butNotTakenEffectYet(uint256 elapsedTimeAfterDisabling)
-        public
-    {
+    function testCannot_burn_ifEOA_andTokenGuardianDisabled_butNotTakenEffectYet(
+        uint256 elapsedTimeAfterDisabling
+    ) public {
         elapsedTimeAfterDisabling = bound(elapsedTimeAfterDisabling, 0, _TOKEN_GUARDIAN_COOLDOWN() - 1);
         vm.prank(defaultAccount.owner);
         _guardedToken().DANGER__disableTokenGuardian();
@@ -307,9 +307,9 @@ abstract contract TokenGuardianTest is ERC721Test {
         assertEq(_guardedToken().getTokenGuardianDisablingTimestamp(defaultAccount.owner), 0);
     }
 
-    function testEnableProtection_afterDisabling_ButNotBeforeEffectivelyDisabled(uint256 elapsedTimeAfterDisabling)
-        public
-    {
+    function testEnableProtection_afterDisabling_ButNotBeforeEffectivelyDisabled(
+        uint256 elapsedTimeAfterDisabling
+    ) public {
         elapsedTimeAfterDisabling = bound(elapsedTimeAfterDisabling, 0, _TOKEN_GUARDIAN_COOLDOWN() - 1);
         vm.prank(defaultAccount.owner);
         _guardedToken().DANGER__disableTokenGuardian();
@@ -349,9 +349,9 @@ abstract contract TokenGuardianTest is ERC721Test {
         assertEq(_guardedToken().getApproved(tokenIdHeldByEOA), addressToApprove);
     }
 
-    function testCanSetApprovalForAll_ifEOA_onlyAfterTokenGuardianIs_EffectivelyDisabled(address addressToApprove)
-        public
-    {
+    function testCanSetApprovalForAll_ifEOA_onlyAfterTokenGuardianIs_EffectivelyDisabled(
+        address addressToApprove
+    ) public {
         vm.assume(addressToApprove != defaultAccount.owner);
         _effectivelyDisableGuardian(address(_guardedToken()), defaultAccount.owner);
 

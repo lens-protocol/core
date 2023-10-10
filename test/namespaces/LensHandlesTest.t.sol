@@ -14,9 +14,8 @@ contract LensHandlesTest is TokenGuardianTest {
     uint256 constant MAX_LOCAL_NAME_LENGTH = 26;
     uint256 uniqueHandleCounter;
 
-    function _TOKEN_GUARDIAN_COOLDOWN() internal pure override returns (uint256) {
-        // TODO: Handle the case when we must get it from the contract
-        return HANDLE_GUARDIAN_COOLDOWN;
+    function _TOKEN_GUARDIAN_COOLDOWN() internal view override returns (uint256) {
+        return fork ? lensHandles.TOKEN_GUARDIAN_COOLDOWN() : HANDLE_GUARDIAN_COOLDOWN;
     }
 
     function _getERC721TokenAddress() internal view virtual override returns (address) {

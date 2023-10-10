@@ -22,9 +22,8 @@ contract ProfileNFTTest is LensBaseERC721Test, TokenGuardianTest {
     using stdJson for string;
     using Strings for uint256;
 
-    function _TOKEN_GUARDIAN_COOLDOWN() internal pure override returns (uint256) {
-        // TODO: Handle the case when we must get it from the contract
-        return PROFILE_GUARDIAN_COOLDOWN;
+    function _TOKEN_GUARDIAN_COOLDOWN() internal view override returns (uint256) {
+        return fork ? hub.TOKEN_GUARDIAN_COOLDOWN() : PROFILE_GUARDIAN_COOLDOWN;
     }
 
     function setUp() public override(BaseTest, TokenGuardianTest) {
