@@ -26,7 +26,7 @@ CALLDATA=$(cast calldata "run(string)" $TARGET)
 echo "Interactions calldata:"
 echo "$CALLDATA"
 
-forge script script/$SCRIPT_NAME.s.sol:$SCRIPT_NAME -s $CALLDATA --rpc-url $NETWORK -vv --skip test --ffi
+forge script script/$SCRIPT_NAME.s.sol:$SCRIPT_NAME -s $CALLDATA --rpc-url $NETWORK -vv --legacy --skip test --ffi
 
 if [[ "$CONFIRMATION_OVERRIDE" == "y" || "$CONFIRMATION_OVERRIDE" == "Y" || "$CONFIRMATION_OVERRIDE" == "n" || "$CONFIRMATION_OVERRIDE" == "N" ]]
     then
