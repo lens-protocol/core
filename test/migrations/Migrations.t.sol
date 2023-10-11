@@ -34,6 +34,10 @@ contract MigrationsTest is BaseTest {
     function setUp() public override {
         super.setUp();
 
+        if (!fork) {
+            return;
+        }
+
         if (firstAccount.profileId == 0) {
             firstAccount = _loadAccountAs('FIRST_ACCOUNT', forkVersion == 2);
         }
