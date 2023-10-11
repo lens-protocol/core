@@ -1,3 +1,5 @@
+set -e
+
 TARGET=$1
 
 echo "Running Full Lens V2 Deployment on $TARGET environment"
