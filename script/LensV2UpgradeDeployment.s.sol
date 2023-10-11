@@ -279,6 +279,8 @@ contract LensV2UpgradeDeployment is Script, ForkManagement, ArrayHelpers {
         saveContractAddress('FeeFollowModule', feeFollowModule);
         console.log('FeeFollowModule: %s', feeFollowModule);
 
+        saveContractAddress('migrationAdmin', migrationAdmin);
+
         // Pass all the fucking shit and deploy LensHub V2 Impl with:
         lensHubV2Impl = address(
             new LensHubInitializable(
@@ -296,7 +298,6 @@ contract LensV2UpgradeDeployment is Script, ForkManagement, ArrayHelpers {
                 })
             )
         );
-        saveContractAddress('migrationAdmin', migrationAdmin);
 
         //   "arguments": [
         //     "0x072E491679Ed6f4fF4d419Ba909D5789116f2182",

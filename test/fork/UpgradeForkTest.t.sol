@@ -1125,14 +1125,7 @@ contract UpgradeForkTest is BaseTest {
         _verifyDataAfterUpgrade();
     }
 
-    event LensUpgradeVersion(
-        address implementation,
-        string version,
-        bytes20 gitCommit,
-        uint256 chainId,
-        uint256 blockNumber,
-        uint256 timestamp
-    );
+    event LensUpgradeVersion(address implementation, string version, bytes20 gitCommit, uint256 timestamp);
 
     function testLensUpgradeVersion() public onlyFork {
         if (forkVersion == 2) {
@@ -1144,8 +1137,6 @@ contract UpgradeForkTest is BaseTest {
             implementation: address(hubImpl),
             version: hubImpl.getVersion(),
             gitCommit: hubImpl.getGitCommit(),
-            chainId: block.chainid,
-            blockNumber: block.number,
             timestamp: block.timestamp
         });
         _upgradeV1toV2();
