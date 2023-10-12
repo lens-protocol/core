@@ -46,7 +46,7 @@ contract TokenHandleRegistry is ITokenHandleRegistry {
         _executeLinkage(
             RegistryTypes.Handle({collection: LENS_HANDLES, id: handleId}),
             RegistryTypes.Token({collection: LENS_HUB, id: profileId}),
-            msg.sender
+            address(0)
         );
     }
 

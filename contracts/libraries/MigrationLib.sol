@@ -196,19 +196,29 @@ library MigrationLib {
                 ILegacyFeeFollowModule.ProfileData memory feeFollowModuleData = ILegacyFeeFollowModule(
                     legacyFeeFollowModule
                 ).getProfileData(profileIds[i]);
-                IFollowModule(newFeeFollowModule).initializeFollowModule({
+                bytes memory followModuleInitData = abi.encode(
+                    feeFollowModuleData.currency,
+                    feeFollowModuleData.amount,
+                    feeFollowModuleData.recipient
+                );
+                bytes memory followModuleReturnData = IFollowModule(newFeeFollowModule).initializeFollowModule({
                     profileId: profileIds[i],
                     transactionExecutor: msg.sender, // TODO: Review
-                    data: abi.encode(
-                        feeFollowModuleData.currency,
-                        feeFollowModuleData.amount,
-                        feeFollowModuleData.recipient
-                    )
+                    data: followModuleInitData
                 });
+                emit Events.FollowModuleSet(
+                    profileIds[i],
+                    newFeeFollowModule,
+                    followModuleInitData,
+                    followModuleReturnData,
+                    address(0),
+                    block.timestamp
+                );
             } else if (currentFollowModule == legacyProfileFollowModule) {
                 // If the profile had `ProfileFollowModule` set, we just remove the follow module, as in Lens V2
                 // you can only follow with a Lens profile.
                 delete StorageLib.getProfile(profileIds[i]).followModule;
+                emit Events.FollowModuleSet(profileIds[i], address(0), '', '', address(0), block.timestamp);
             }
             unchecked {
                 ++i;
