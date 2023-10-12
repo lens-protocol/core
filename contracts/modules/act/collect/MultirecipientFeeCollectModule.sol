@@ -108,7 +108,7 @@ contract MultirecipientFeeCollectModule is BaseFeeCollectModule {
 
         // Zero amount for collect doesn't make sense here (in a module with 5 recipients)
         // Better use SimpleFeeCollect module instead which allows 0 amount
-        if (baseInitData.amount == 0) {
+        if (baseInitData.amount == 0 || initData.currency == address(0)) {
             revert Errors.InitParamsInvalid();
         }
         _validateBaseInitData(baseInitData);
