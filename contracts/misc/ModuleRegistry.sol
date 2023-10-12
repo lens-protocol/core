@@ -5,6 +5,12 @@ pragma solidity ^0.8.15;
 import {IModuleRegistry} from 'contracts/interfaces/IModuleRegistry.sol';
 import {IERC20Metadata} from '@openzeppelin/contracts/token/ERC20/extensions/IERC20Metadata.sol';
 
+/**
+ * @title ModuleRegistry
+ * @author Lens Protocol
+ * @notice A registry for modules and currencies
+ * @custom:upgradeable Transparent upgradeable proxy without initializer.
+ */
 contract ModuleRegistry is IModuleRegistry {
     event ModuleRegistered(address indexed moduleAddress, uint256 indexed moduleType, uint256 timestamp);
 
