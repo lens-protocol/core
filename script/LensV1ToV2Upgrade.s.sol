@@ -37,7 +37,7 @@ contract LensV1ToV2Upgrade is Script, ForkManagement {
         address lensHubProxyAddress = json.readAddress(string(abi.encodePacked('.', targetEnv, '.LensHubProxy')));
         legacyLensHub = LegacyLensHub(lensHubProxyAddress);
         vm.label(lensHubProxyAddress, 'LensHub');
-        console.log('Legacy Lens Hub: %s', address(legacyLensHub));
+        console.log('Lens Hub Proxy: %s', address(legacyLensHub));
         lensHubAsProxy = TransparentUpgradeableProxy(payable(lensHubProxyAddress));
 
         address lensV2UpgradeContractAddress = json.readAddress(
@@ -56,7 +56,7 @@ contract LensV1ToV2Upgrade is Script, ForkManagement {
 
         proxyAdmin = address(uint160(uint256(vm.load(lensHubProxyAddress, ADMIN_SLOT))));
         vm.label(proxyAdmin, 'ProxyAdmin');
-        console.log('Proxy Admin: %s', proxyAdmin);
+        console.log('LensHubProxy Current Admin: %s', proxyAdmin);
 
         address proxyAdminContractAddress = json.readAddress(
             string(abi.encodePacked('.', targetEnv, '.ProxyAdminContract'))
@@ -81,10 +81,10 @@ contract LensV1ToV2Upgrade is Script, ForkManagement {
         console.log('Deployer address: %s', address(_deployer.owner));
 
         (_governance.owner, _governance.ownerPk) = deriveRememberKey(mnemonic, 1);
-        console.log('Governance address: %s', address(_governance.owner));
+        console.log('Governance mock owner address: %s', address(_governance.owner));
 
         (_proxyAdmin.owner, _proxyAdmin.ownerPk) = deriveRememberKey(mnemonic, 2);
-        console.log('ProxyAdmin address: %s', address(_proxyAdmin.owner));
+        console.log('ProxyAdmin mock owner address: %s', address(_proxyAdmin.owner));
 
         console.log('\n');
 
@@ -133,8 +133,8 @@ contract LensV1ToV2Upgrade is Script, ForkManagement {
 
         console.log('New Implementation: %s', lensV2UpgradeContract.newImplementation());
 
-        console.log('PROXY_ADMIN: %s', address(lensV2UpgradeContract.PROXY_ADMIN()));
-        console.log('GOVERNANCE: %s', address(lensV2UpgradeContract.GOVERNANCE()));
+        console.log('LensV2 Upgrade Contract PROXY_ADMIN: %s', address(lensV2UpgradeContract.PROXY_ADMIN()));
+        console.log('LensV2 Upgrade Contract GOVERNANCE: %s', address(lensV2UpgradeContract.GOVERNANCE()));
 
         vm.broadcast(_governance.ownerPk);
         lensV2UpgradeContract.executeLensV2Upgrade();
