@@ -14,6 +14,8 @@ contract LensHandlesTest is TokenGuardianTest {
     uint256 constant MAX_LOCAL_NAME_LENGTH = 26;
     uint256 uniqueHandleCounter;
 
+    error OnlyOwner();
+
     function _TOKEN_GUARDIAN_COOLDOWN() internal view override returns (uint256) {
         return fork ? lensHandles.TOKEN_GUARDIAN_COOLDOWN() : HANDLE_GUARDIAN_COOLDOWN;
     }
@@ -362,5 +364,80 @@ contract LensHandlesTest is TokenGuardianTest {
             str = string.concat(str, char);
         }
         return str;
+    }
+
+    //////////////////////////////////////////////////////////
+    // ERC-2981 Royalties - Scenarios
+    //////////////////////////////////////////////////////////
+
+    function testSupportsErc2981Interface() public {
+        assertTrue(lensHandles.supportsInterface(bytes4(keccak256('royaltyInfo(uint256,uint256)'))));
+    }
+
+    function testDefaultRoyaltiesAreSetToZero(uint256 tokenId, uint256 salePrice) public {
+        (address receiver, uint256 royalties) = lensHandles.royaltyInfo(tokenId, salePrice);
+
+        assertEq(receiver, treasury);
+        assertEq(royalties, 0);
+    }
+
+    function testSetRoyalties(uint256 royaltiesInBasisPoints, uint256 tokenId, uint256 salePrice) public {
+        uint256 basisPoints = 10000;
+        royaltiesInBasisPoints = bound(royaltiesInBasisPoints, 0, basisPoints);
+        uint256 salePriceTimesRoyalties;
+        unchecked {
+            salePriceTimesRoyalties = salePrice * royaltiesInBasisPoints;
+            // Fuzz prices that does not generate overflow, otherwise royaltyInfo will revert
+            vm.assume(salePrice == 0 || salePriceTimesRoyalties / salePrice == royaltiesInBasisPoints);
+        }
+
+        vm.prank(lensHandles.OWNER());
+        lensHandles.setRoyalty(royaltiesInBasisPoints);
+
+        (address receiver, uint256 royalties) = lensHandles.royaltyInfo(tokenId, salePrice);
+
+        assertEq(receiver, treasury);
+        assertEq(royalties, salePriceTimesRoyalties / basisPoints);
+    }
+
+    function testTotalSupply(address to) public {
+        vm.assume(to != address(0));
+        uint256 currentTotalSupply = lensHandles.totalSupply();
+
+        uint256 tokenId = _mintERC721(to);
+        uint256 totalSupplyAfterMint = lensHandles.totalSupply();
+        assertEq(totalSupplyAfterMint, currentTotalSupply + 1);
+
+        _effectivelyDisableGuardian(address(lensHandles), to);
+
+        vm.prank(to);
+        lensHandles.burn(tokenId);
+
+        uint256 totalSupplyAfterBurn = lensHandles.totalSupply();
+        assertEq(totalSupplyAfterBurn, totalSupplyAfterMint - 1);
+    }
+
+    //////////////////////////////////////////////////////////
+    // ERC-2981 Royalties - Negatives
+    //////////////////////////////////////////////////////////
+
+    function testCannotSetRoyaltiesIf_NotOwner(address nonOwnerAddress, uint256 royaltiesInBasisPoints) public {
+        uint256 basisPoints = 10000;
+        royaltiesInBasisPoints = bound(royaltiesInBasisPoints, 0, basisPoints);
+        vm.assume(nonOwnerAddress != lensHandles.OWNER());
+        vm.assume(!_isLensHubProxyAdmin(nonOwnerAddress));
+
+        vm.prank(nonOwnerAddress);
+        vm.expectRevert(OnlyOwner.selector);
+        lensHandles.setRoyalty(royaltiesInBasisPoints);
+    }
+
+    function testCannotSetRoyaltiesIf_ExceedsBasisPoints(uint256 royaltiesInBasisPoints) public {
+        uint256 basisPoints = 10000;
+        vm.assume(royaltiesInBasisPoints > basisPoints);
+
+        vm.prank(governance);
+        vm.expectRevert(Errors.InvalidParameter.selector);
+        lensHandles.setRoyalty(royaltiesInBasisPoints);
     }
 }
