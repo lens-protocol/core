@@ -28,11 +28,24 @@ echo "$CALLDATA"
 
 forge script script/$SCRIPT_NAME.s.sol:$SCRIPT_NAME -s $CALLDATA --rpc-url $NETWORK -vv --legacy --skip test --ffi
 
+# If the confirmation override is set to s or S - then we skip the rest of the script and exit with success
+if [[ "$CONFIRMATION_OVERRIDE" == "s" || "$CONFIRMATION_OVERRIDE" == "S" ]]
+    then
+        echo "Skipping confirmation and broadcast"
+        exit 0
+fi
+
 if [[ "$CONFIRMATION_OVERRIDE" == "y" || "$CONFIRMATION_OVERRIDE" == "Y" || "$CONFIRMATION_OVERRIDE" == "n" || "$CONFIRMATION_OVERRIDE" == "N" ]]
     then
         CONFIRMATION="$CONFIRMATION_OVERRIDE"
     else
         read -p "Please verify the data and confirm the interactions logs (y/n):" CONFIRMATION
+fi
+
+if [[ "$CONFIRMATION" == "s" || "$CONFIRMATION" == "S" ]]
+    then
+        echo "Skipping confirmation and broadcast"
+        exit 0
 fi
 
 if [[ "$CONFIRMATION" == "y" || "$CONFIRMATION" == "Y" ]]
