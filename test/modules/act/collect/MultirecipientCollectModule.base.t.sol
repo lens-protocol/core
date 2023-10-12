@@ -47,10 +47,14 @@ contract MultirecipientCollectModuleBase is BaseFeeCollectModuleBase {
         multirecipientExampleInitData.referralFee = exampleInitData.referralFee;
         multirecipientExampleInitData.followerOnly = exampleInitData.followerOnly;
         multirecipientExampleInitData.endTimestamp = exampleInitData.endTimestamp;
-        if (multirecipientExampleInitData.recipients.length == 0)
+        if (multirecipientExampleInitData.recipients.length == 0) {
             multirecipientExampleInitData.recipients.push(
-                RecipientData({recipient: exampleInitData.recipient, split: BPS_MAX})
+                RecipientData({recipient: exampleInitData.recipient, split: BPS_MAX / 2})
             );
+            multirecipientExampleInitData.recipients.push(
+                RecipientData({recipient: exampleInitData.recipient, split: BPS_MAX / 2})
+            );
+        }
 
         return abi.encode(multirecipientExampleInitData);
     }
