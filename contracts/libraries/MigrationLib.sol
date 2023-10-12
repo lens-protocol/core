@@ -26,7 +26,7 @@ library MigrationLib {
 
     // Profiles Handles Migration:
 
-    event ProfileMigrated(uint256 profileId, address profileDestination, string handle, uint256 handleId);
+    event ProfileMigrated(uint256 profileId);
 
     /**
      * @notice Migrates an array of profiles from V1 to V2. This function can be callable by anyone.
@@ -83,7 +83,7 @@ library MigrationLib {
             uint256 handleId = lensHandles.migrateHandle(profileOwner, handle);
             // We link it to the profile in the TokenHandleRegistry contract.
             tokenHandleRegistry.migrationLink(handleId, profileId);
-            emit ProfileMigrated(profileId, profileOwner, handle, handleId);
+            emit ProfileMigrated(profileId);
             delete StorageLib.getProfile(profileId).__DEPRECATED__handle;
             delete StorageLib.getProfile(profileId).__DEPRECATED__followNFTURI;
             delete StorageLib.profileIdByHandleHash()[handleHash];
