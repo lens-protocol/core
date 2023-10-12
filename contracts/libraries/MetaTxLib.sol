@@ -397,7 +397,7 @@ library MetaTxLib {
         uint256 i;
         while (i < bytesArray.length) {
             // A `bytes` type is encoded as its keccak256 hash.
-            bytesArrayEncodedElements[i] = keccak256(bytesArray[i]);
+            bytesArrayEncodedElements[i] = _encodeUsingEip712Rules(bytesArray[i]);
             unchecked {
                 ++i;
             }
