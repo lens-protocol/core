@@ -203,7 +203,7 @@ library MigrationLib {
                 );
                 bytes memory followModuleReturnData = IFollowModule(newFeeFollowModule).initializeFollowModule({
                     profileId: profileIds[i],
-                    transactionExecutor: msg.sender, // TODO: Review
+                    transactionExecutor: address(0),
                     data: followModuleInitData
                 });
                 emit Events.FollowModuleSet(
