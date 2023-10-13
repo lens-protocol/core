@@ -81,7 +81,13 @@ contract FeeFollowModule is FeeModuleBase, HubRestricted, IFollowModule {
         if (followTokenId == 0) {
             uint256 amount = _feeConfig[targetProfileId].amount;
             address currency = _feeConfig[targetProfileId].currency;
+
             _validateDataIsExpected(data, currency, amount);
+
+            if (amount == 0 || currency == address(0)) {
+                // If the amount is zero, we don't charge anything.
+                return '';
+            }
 
             (address treasury, uint16 treasuryFee) = _treasuryData();
             address recipient = _feeConfig[targetProfileId].recipient;
