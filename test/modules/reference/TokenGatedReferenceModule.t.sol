@@ -192,6 +192,7 @@ contract TokenGatedReferenceModule_ERC20_Gated is TokenGatedReferenceModuleBase 
     ) public {
         assertEq(currency.balanceOf(address(defaultAccount.owner)), 0);
 
+        vm.assume(publisherProfileId != profileId);
         _initialize(publisherProfileId, publisherPubId, minThreshold);
 
         vm.expectRevert(TokenGatedReferenceModule.NotEnoughBalance.selector);
@@ -218,6 +219,7 @@ contract TokenGatedReferenceModule_ERC20_Gated is TokenGatedReferenceModuleBase 
     ) public {
         assertEq(currency.balanceOf(address(defaultAccount.owner)), 0);
 
+        vm.assume(publisherProfileId != profileId);
         _initialize(publisherProfileId, publisherPubId, minThreshold);
 
         vm.expectRevert(TokenGatedReferenceModule.NotEnoughBalance.selector);
@@ -243,6 +245,7 @@ contract TokenGatedReferenceModule_ERC20_Gated is TokenGatedReferenceModuleBase 
     ) public {
         assertEq(currency.balanceOf(address(defaultAccount.owner)), 0);
 
+        vm.assume(publisherProfileId != profileId);
         _initialize(publisherProfileId, publisherPubId, minThreshold);
 
         vm.expectRevert(TokenGatedReferenceModule.NotEnoughBalance.selector);
@@ -360,6 +363,7 @@ contract TokenGatedReferenceModule_ERC721_Gated is TokenGatedReferenceModuleBase
     function testCannotProcessComment_IfNotEnoughBalance(uint256 publisherProfileId, uint256 publisherPubId) public {
         assertEq(nft.balanceOf(address(defaultAccount.owner)), 0);
 
+        vm.assume(publisherProfileId != profileId);
         _initialize(publisherProfileId, publisherPubId);
 
         vm.expectRevert(TokenGatedReferenceModule.NotEnoughBalance.selector);
@@ -381,6 +385,7 @@ contract TokenGatedReferenceModule_ERC721_Gated is TokenGatedReferenceModuleBase
     function testCannotProcessMirror_IfNotEnoughBalance(uint256 publisherProfileId, uint256 publisherPubId) public {
         assertEq(nft.balanceOf(address(defaultAccount.owner)), 0);
 
+        vm.assume(publisherProfileId != profileId);
         _initialize(publisherProfileId, publisherPubId);
 
         vm.expectRevert(TokenGatedReferenceModule.NotEnoughBalance.selector);
@@ -402,6 +407,7 @@ contract TokenGatedReferenceModule_ERC721_Gated is TokenGatedReferenceModuleBase
     function testCannotProcessQuote_IfNotEnoughBalance(uint256 publisherProfileId, uint256 publisherPubId) public {
         assertEq(nft.balanceOf(address(defaultAccount.owner)), 0);
 
+        vm.assume(publisherProfileId != profileId);
         _initialize(publisherProfileId, publisherPubId);
 
         vm.expectRevert(TokenGatedReferenceModule.NotEnoughBalance.selector);
