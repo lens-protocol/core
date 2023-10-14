@@ -80,7 +80,7 @@ contract FollowerOnlyReferenceModule is HubRestricted, IReferenceModule {
         uint256 followerProfileId,
         uint256 followedProfileId
     ) internal view returns (bytes memory) {
-        if (followedProfileId != followedProfileId) {
+        if (followerProfileId != followedProfileId) {
             FollowValidationLib.validateIsFollowing(HUB, followerProfileId, followedProfileId);
         }
         return '';
