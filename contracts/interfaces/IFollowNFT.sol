@@ -54,9 +54,8 @@ interface IFollowNFT {
      * @custom:permissions LensHub.
      *
      * @param unfollowerProfileId The ID of the profile that is performing the unfollow operation.
-     * @param transactionExecutor The address of the transaction executor (e.g. for any funds to transferFrom).
      */
-    function unfollow(uint256 unfollowerProfileId, address transactionExecutor) external;
+    function unfollow(uint256 unfollowerProfileId) external;
 
     /**
      * @notice Removes the follower from the given follow NFT.
