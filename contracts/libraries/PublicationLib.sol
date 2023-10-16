@@ -32,16 +32,6 @@ library PublicationLib {
         _post.contentURI = postParams.contentURI;
         _post.pubType = Types.PublicationType.Post;
 
-        bytes[] memory actionModulesReturnDatas = _initPubActionModules(
-            InitActionModuleParams(
-                postParams.profileId,
-                transactionExecutor,
-                pubIdAssigned,
-                postParams.actionModules,
-                postParams.actionModulesInitDatas
-            )
-        );
-
         bytes memory referenceModuleReturnData = _initPubReferenceModule(
             InitReferenceModuleParams(
                 postParams.profileId,
@@ -49,6 +39,16 @@ library PublicationLib {
                 pubIdAssigned,
                 postParams.referenceModule,
                 postParams.referenceModuleInitData
+            )
+        );
+
+        bytes[] memory actionModulesReturnDatas = _initPubActionModules(
+            InitActionModuleParams(
+                postParams.profileId,
+                transactionExecutor,
+                pubIdAssigned,
+                postParams.actionModules,
+                postParams.actionModulesInitDatas
             )
         );
 
@@ -266,16 +266,6 @@ library PublicationLib {
             ValidationLib.validateNotBlocked({profile: referencePubParams.profileId, byProfile: rootProfileId});
         }
 
-        bytes[] memory actionModulesReturnDatas = _initPubActionModules(
-            InitActionModuleParams(
-                referencePubParams.profileId,
-                transactionExecutor,
-                pubIdAssigned,
-                referencePubParams.actionModules,
-                referencePubParams.actionModulesInitDatas
-            )
-        );
-
         bytes memory referenceModuleReturnData = _initPubReferenceModule(
             InitReferenceModuleParams(
                 referencePubParams.profileId,
@@ -283,6 +273,16 @@ library PublicationLib {
                 pubIdAssigned,
                 referencePubParams.referenceModule,
                 referencePubParams.referenceModuleInitData
+            )
+        );
+
+        bytes[] memory actionModulesReturnDatas = _initPubActionModules(
+            InitActionModuleParams(
+                referencePubParams.profileId,
+                transactionExecutor,
+                pubIdAssigned,
+                referencePubParams.actionModules,
+                referencePubParams.actionModulesInitDatas
             )
         );
 
