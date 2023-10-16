@@ -58,9 +58,7 @@ contract FeeFollowModule is FeeModuleBase, HubRestricted, IFollowModule {
                 revert Errors.InitParamsInvalid();
             }
         } else {
-            if (!_currencyWhitelisted(feeConfig.currency)) {
-                revert Errors.InitParamsInvalid();
-            }
+            _verifyErc20Currency(feeConfig.currency);
         }
         _feeConfig[profileId] = feeConfig;
         return '';

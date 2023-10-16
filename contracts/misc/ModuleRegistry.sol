@@ -28,6 +28,11 @@ contract ModuleRegistry is IModuleRegistry {
 
     // Modules
 
+    function verifyModule(address moduleAddress, uint256 moduleType) external returns (bool) {
+        registerModule(moduleAddress, moduleType);
+        return true;
+    }
+
     function registerModule(address moduleAddress, uint256 moduleType) public returns (bool registrationWasPerformed) {
         // This will fail if moduleType is out of range for `IModuleRegistry.ModuleType`
         require(
@@ -59,6 +64,11 @@ contract ModuleRegistry is IModuleRegistry {
     }
 
     // Currencies
+
+    function verifyErc20Currency(address currencyAddress) external returns (bool) {
+        registerErc20Currency(currencyAddress);
+        return true;
+    }
 
     function registerErc20Currency(address currencyAddress) public returns (bool registrationWasPerformed) {
         bool isAlreadyRegistered = registeredErc20Currencies[currencyAddress];

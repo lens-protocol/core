@@ -508,7 +508,7 @@ library PublicationLib {
 
         uint256 i;
         while (i < params.actionModules.length) {
-            MODULE_REGISTRY().registerModule(
+            MODULE_REGISTRY().verifyModule(
                 params.actionModules[i],
                 uint256(IModuleRegistry.ModuleType.PUBLICATION_ACTION_MODULE)
             );
@@ -545,7 +545,7 @@ library PublicationLib {
         if (params.referenceModule == address(0)) {
             return new bytes(0);
         }
-        MODULE_REGISTRY().registerModule(params.referenceModule, uint256(IModuleRegistry.ModuleType.REFERENCE_MODULE));
+        MODULE_REGISTRY().verifyModule(params.referenceModule, uint256(IModuleRegistry.ModuleType.REFERENCE_MODULE));
         StorageLib.getPublication(params.profileId, params.pubId).referenceModule = params.referenceModule;
         return
             IReferenceModule(params.referenceModule).initializeReferenceModule(

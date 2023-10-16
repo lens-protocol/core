@@ -24,10 +24,10 @@ abstract contract FeeModuleBase {
         MODULE_REGISTRY = IModuleRegistry(moduleRegistry);
     }
 
-    // TODO: Rename this to _currencyRegistered or smth
-    function _currencyWhitelisted(address currency) internal returns (bool) {
-        MODULE_REGISTRY.registerErc20Currency(currency);
-        return true;
+    function _verifyErc20Currency(address currency) internal {
+        if (currency != address(0)) {
+            MODULE_REGISTRY.verifyErc20Currency(currency);
+        }
     }
 
     function _treasuryData() internal view returns (address, uint16) {
