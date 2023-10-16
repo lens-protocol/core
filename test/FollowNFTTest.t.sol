@@ -1643,6 +1643,7 @@ contract FollowNFTTest is BaseTest, LensBaseERC721Test {
     }
 
     function testCannotApproveFollowForUnexistentFollowToken(uint256 unexistentFollowTokenId) public {
+        vm.assume(unexistentFollowTokenId != 0);
         vm.assume(!followNFT.exists(unexistentFollowTokenId));
         vm.assume(followNFT.getFollowerProfileId(unexistentFollowTokenId) == 0);
 
