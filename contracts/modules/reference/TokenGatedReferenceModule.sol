@@ -149,7 +149,7 @@ contract TokenGatedReferenceModule is HubRestricted, IReferenceModule {
     ) internal view returns (uint256) {
         GateParams memory gateParams = _gateParams[pointedProfileId][pointedPubId];
         uint256 balance = IToken(gateParams.tokenAddress).balanceOf(IERC721(HUB).ownerOf(profileId));
-        if (balance < gateParams.minThreshold) {
+        if (profileId != pointedProfileId && balance < gateParams.minThreshold) {
             revert NotEnoughBalance();
         }
         return balance;
