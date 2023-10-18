@@ -20,6 +20,8 @@ abstract contract MetaTxNegatives is BaseTest {
 
     function _executeMetaTx(uint256 signerPk, uint256 nonce, uint256 deadline) internal virtual;
 
+    function _incrementNonce(uint8 increment) internal virtual;
+
     function _getDefaultMetaTxSignerPk() internal virtual returns (uint256);
 
     // Functions to override ONLY if the contract where to execute the MetaTx is not the LensHub.
@@ -63,6 +65,16 @@ abstract contract MetaTxNegatives is BaseTest {
             nonce: _defaultMetaTxSignerNonce + 69,
             deadline: NO_DEADLINE
         });
+    }
+
+    function testCannotExecuteMetaTx_WhenSignature_NonceWasIncremented() public {
+        domainSeparator = _getValidDomainSeparator();
+
+        // Increment nonce.
+        _incrementNonce(69);
+
+        vm.expectRevert(Errors.SignatureInvalid.selector);
+        _executeMetaTx({signerPk: _defaultMetaTxSignerPk, nonce: _defaultMetaTxSignerNonce, deadline: NO_DEADLINE});
     }
 
     function testCannotExecuteMetaTx_WhenSignature_SignerIsInvalid() public {

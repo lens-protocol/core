@@ -265,6 +265,12 @@ contract UnfollowMetaTxTest is UnfollowTest, MetaTxNegatives {
         });
     }
 
+    function _incrementNonce(uint8 increment) internal override {
+        vm.prank(vm.addr(_getDefaultMetaTxSignerPk()));
+        hub.incrementNonce(increment);
+        cachedNonceByAddress[vm.addr(_getDefaultMetaTxSignerPk())] = hub.nonces(vm.addr(_getDefaultMetaTxSignerPk()));
+    }
+
     function _getDefaultMetaTxSignerPk() internal virtual override returns (uint256) {
         return testUnfollowerProfileOwnerPk;
     }

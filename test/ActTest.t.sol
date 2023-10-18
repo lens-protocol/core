@@ -195,6 +195,12 @@ contract ActMetaTxTest is ActTest, MetaTxNegatives {
             });
     }
 
+    function _incrementNonce(uint8 increment) internal override {
+        vm.prank(actor.owner);
+        hub.incrementNonce(increment);
+        _refreshCachedNonces();
+    }
+
     function _executeMetaTx(uint256 signerPk, uint256 nonce, uint256 deadline) internal virtual override {
         hub.actWithSig({
             publicationActionParams: actionParams,

@@ -316,6 +316,12 @@ contract SetBlockStatusMetaTxTest is SetBlockStatusTest, MetaTxNegatives {
         });
     }
 
+    function _incrementNonce(uint8 increment) internal override {
+        vm.prank(vm.addr(_getDefaultMetaTxSignerPk()));
+        hub.incrementNonce(increment);
+        _refreshCachedNonces();
+    }
+
     function _getDefaultMetaTxSignerPk() internal pure override returns (uint256) {
         return statusSetterProfileOwnerPk;
     }

@@ -607,6 +607,12 @@ contract ChangeDelegatedExecutorsConfigTest_MetaTx is ChangeDelegatedExecutorsCo
         });
     }
 
+    function _incrementNonce(uint8 increment) internal override {
+        vm.prank(vm.addr(_getDefaultMetaTxSignerPk()));
+        hub.incrementNonce(increment);
+        _refreshCachedNonce(vm.addr(_getDefaultMetaTxSignerPk()));
+    }
+
     function _getDefaultMetaTxSignerPk() internal pure override returns (uint256) {
         return testDelegatorProfileOwnerPk;
     }

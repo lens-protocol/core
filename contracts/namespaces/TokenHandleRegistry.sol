@@ -103,6 +103,14 @@ contract TokenHandleRegistry is ITokenHandleRegistry {
         );
     }
 
+    /// @notice This function is used to invalidate signatures by incrementing the nonce
+    /// @param increment The amount to increment the nonce by
+    function incrementNonce(uint8 increment) external {
+        uint256 currentNonce = nonces[msg.sender];
+        nonces[msg.sender] = currentNonce + increment;
+        emit RegistryEvents.NonceUpdated(msg.sender, currentNonce + increment, block.timestamp);
+    }
+
     function _validateLinkSignature(
         Types.EIP712Signature calldata signature,
         uint256 handleId,
