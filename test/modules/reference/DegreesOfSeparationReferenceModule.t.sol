@@ -178,11 +178,13 @@ contract DegreesOfSeparationReferenceModuleTest is BaseTest {
         // Performs follows and builds path.
         uint256[] memory path = _buildWrongPathLengthPath();
 
-        // Initializes module for config inheritance (profile: currentPublisher.profileId, pubId: 1)
+        uint256 currentPublisherPubCount = hub.getProfile(currentPublisher.profileId).pubCount;
+
+        // Initializes module for config inheritance (profile: currentPublisher.profileId, pubId: currentPublisherPubCount)
         vm.prank(hubAddress);
         module.initializeReferenceModule(
             currentPublisher.profileId,
-            1,
+            currentPublisherPubCount,
             currentPublisher.owner,
             _getInitData({
                 commentsRestricted: true,
@@ -193,13 +195,12 @@ contract DegreesOfSeparationReferenceModuleTest is BaseTest {
             })
         );
 
-        _mockLensHubPubCountResponse({account: currentPublisher, pubCount: 1});
-
         vm.expectRevert(DegreesOfSeparationReferenceModule.ProfilePathExceedsDegreesOfSeparation.selector);
         vm.prank(hubAddress);
         module.processComment(
             Types.ProcessCommentParams({
                 profileId: currentPublisher.profileId,
+                pubId: currentPublisherPubCount,
                 transactionExecutor: currentPublisher.owner,
                 pointedProfileId: originalPublisher.profileId,
                 pointedPubId: 1,
@@ -233,11 +234,13 @@ contract DegreesOfSeparationReferenceModuleTest is BaseTest {
         // Performs follows and builds path.
         uint256[] memory path = _buildWrongPathLengthPath();
 
-        // Initializes module for config inheritance (profile: currentPublisher.profileId, pubId: 1)
+        uint256 currentPublisherPubCount = hub.getProfile(currentPublisher.profileId).pubCount;
+
+        // Initializes module for config inheritance (profile: currentPublisher.profileId, pubId: currentPublisherPubCount)
         vm.prank(hubAddress);
         module.initializeReferenceModule(
             currentPublisher.profileId,
-            1,
+            currentPublisherPubCount,
             currentPublisher.owner,
             _getInitData({
                 commentsRestricted: false,
@@ -248,13 +251,12 @@ contract DegreesOfSeparationReferenceModuleTest is BaseTest {
             })
         );
 
-        _mockLensHubPubCountResponse({account: currentPublisher, pubCount: 1});
-
         vm.expectRevert(DegreesOfSeparationReferenceModule.ProfilePathExceedsDegreesOfSeparation.selector);
         vm.prank(hubAddress);
         module.processMirror(
             Types.ProcessMirrorParams({
                 profileId: currentPublisher.profileId,
+                pubId: currentPublisherPubCount,
                 transactionExecutor: currentPublisher.owner,
                 pointedProfileId: originalPublisher.profileId,
                 pointedPubId: 1,
@@ -288,11 +290,13 @@ contract DegreesOfSeparationReferenceModuleTest is BaseTest {
         // Performs follows and builds path.
         uint256[] memory path = _buildWrongPathLengthPath();
 
-        // Initializes module for config inheritance (profile: currentPublisher.profileId, pubId: 1)
+        uint256 currentPublisherPubCount = hub.getProfile(currentPublisher.profileId).pubCount;
+
+        // Initializes module for config inheritance (profile: currentPublisher.profileId, pubId: currentPublisherPubCount)
         vm.prank(hubAddress);
         module.initializeReferenceModule(
             currentPublisher.profileId,
-            1,
+            currentPublisherPubCount,
             currentPublisher.owner,
             _getInitData({
                 commentsRestricted: false,
@@ -303,13 +307,12 @@ contract DegreesOfSeparationReferenceModuleTest is BaseTest {
             })
         );
 
-        _mockLensHubPubCountResponse({account: currentPublisher, pubCount: 1});
-
         vm.expectRevert(DegreesOfSeparationReferenceModule.ProfilePathExceedsDegreesOfSeparation.selector);
         vm.prank(hubAddress);
         module.processQuote(
             Types.ProcessQuoteParams({
                 profileId: currentPublisher.profileId,
+                pubId: currentPublisherPubCount,
                 transactionExecutor: currentPublisher.owner,
                 pointedProfileId: originalPublisher.profileId,
                 pointedPubId: 1,
@@ -345,11 +348,13 @@ contract DegreesOfSeparationReferenceModuleTest is BaseTest {
         // Performs follows and builds path.
         uint256[] memory path = _buildPathWhereOriginalPublisherDoesNotFollowFirstNode(degrees);
 
-        // Initializes module for config inheritance (profile: currentPublisher.profileId, pubId: 1)
+        uint256 currentPublisherPubCount = hub.getProfile(currentPublisher.profileId).pubCount;
+
+        // Initializes module for config inheritance (profile: currentPublisher.profileId, pubId: currentPublisherPubCount)
         vm.prank(hubAddress);
         module.initializeReferenceModule(
             currentPublisher.profileId,
-            1,
+            currentPublisherPubCount,
             currentPublisher.owner,
             _getInitData({
                 commentsRestricted: true,
@@ -360,13 +365,12 @@ contract DegreesOfSeparationReferenceModuleTest is BaseTest {
             })
         );
 
-        _mockLensHubPubCountResponse({account: currentPublisher, pubCount: 1});
-
         vm.expectRevert(Errors.NotFollowing.selector);
         vm.prank(hubAddress);
         module.processComment(
             Types.ProcessCommentParams({
                 profileId: currentPublisher.profileId,
+                pubId: currentPublisherPubCount,
                 transactionExecutor: currentPublisher.owner,
                 pointedProfileId: originalPublisher.profileId,
                 pointedPubId: 1,
@@ -402,11 +406,13 @@ contract DegreesOfSeparationReferenceModuleTest is BaseTest {
         // Performs follows and builds path.
         uint256[] memory path = _buildPathWhereOriginalPublisherDoesNotFollowFirstNode(degrees);
 
-        // Initializes module for config inheritance (profile: currentPublisher.profileId, pubId: 1)
+        uint256 currentPublisherPubCount = hub.getProfile(currentPublisher.profileId).pubCount;
+
+        // Initializes module for config inheritance (profile: currentPublisher.profileId, pubId: currentPublisherPubCount)
         vm.prank(hubAddress);
         module.initializeReferenceModule(
             currentPublisher.profileId,
-            1,
+            currentPublisherPubCount,
             currentPublisher.owner,
             _getInitData({
                 commentsRestricted: true,
@@ -417,13 +423,12 @@ contract DegreesOfSeparationReferenceModuleTest is BaseTest {
             })
         );
 
-        _mockLensHubPubCountResponse({account: currentPublisher, pubCount: 1});
-
         vm.expectRevert(Errors.NotFollowing.selector);
         vm.prank(hubAddress);
         module.processMirror(
             Types.ProcessMirrorParams({
                 profileId: currentPublisher.profileId,
+                pubId: currentPublisherPubCount,
                 transactionExecutor: currentPublisher.owner,
                 pointedProfileId: originalPublisher.profileId,
                 pointedPubId: 1,
@@ -459,11 +464,13 @@ contract DegreesOfSeparationReferenceModuleTest is BaseTest {
         // Performs follows and builds path.
         uint256[] memory path = _buildPathWhereOriginalPublisherDoesNotFollowFirstNode(degrees);
 
-        // Initializes module for config inheritance (profile: currentPublisher.profileId, pubId: 1)
+        uint256 currentPublisherPubCount = hub.getProfile(currentPublisher.profileId).pubCount;
+
+        // Initializes module for config inheritance (profile: currentPublisher.profileId, pubId: currentPublisherPubCount)
         vm.prank(hubAddress);
         module.initializeReferenceModule(
             currentPublisher.profileId,
-            1,
+            currentPublisherPubCount,
             currentPublisher.owner,
             _getInitData({
                 commentsRestricted: true,
@@ -474,13 +481,12 @@ contract DegreesOfSeparationReferenceModuleTest is BaseTest {
             })
         );
 
-        _mockLensHubPubCountResponse({account: currentPublisher, pubCount: 1});
-
         vm.expectRevert(Errors.NotFollowing.selector);
         vm.prank(hubAddress);
         module.processQuote(
             Types.ProcessQuoteParams({
                 profileId: currentPublisher.profileId,
+                pubId: currentPublisherPubCount,
                 transactionExecutor: currentPublisher.owner,
                 pointedProfileId: originalPublisher.profileId,
                 pointedPubId: 1,
@@ -516,11 +522,13 @@ contract DegreesOfSeparationReferenceModuleTest is BaseTest {
         // Performs follows and builds path.
         uint256[] memory path = _buildPathWhereLastPathNodeDoesNotFollowCurrentPublisher(degrees);
 
-        // Initializes module for config inheritance (profile: currentPublisher.profileId, pubId: 1)
+        uint256 currentPublisherPubCount = hub.getProfile(currentPublisher.profileId).pubCount;
+
+        // Initializes module for config inheritance (profile: currentPublisher.profileId, pubId: currentPublisherPubCount)
         vm.prank(hubAddress);
         module.initializeReferenceModule(
             currentPublisher.profileId,
-            1,
+            currentPublisherPubCount,
             currentPublisher.owner,
             _getInitData({
                 commentsRestricted: true,
@@ -531,13 +539,12 @@ contract DegreesOfSeparationReferenceModuleTest is BaseTest {
             })
         );
 
-        _mockLensHubPubCountResponse({account: currentPublisher, pubCount: 1});
-
         vm.expectRevert(Errors.NotFollowing.selector);
         vm.prank(hubAddress);
         module.processComment(
             Types.ProcessCommentParams({
                 profileId: currentPublisher.profileId,
+                pubId: currentPublisherPubCount,
                 transactionExecutor: currentPublisher.owner,
                 pointedProfileId: originalPublisher.profileId,
                 pointedPubId: 1,
@@ -573,11 +580,13 @@ contract DegreesOfSeparationReferenceModuleTest is BaseTest {
         // Performs follows and builds path.
         uint256[] memory path = _buildPathWhereLastPathNodeDoesNotFollowCurrentPublisher(degrees);
 
-        // Initializes module for config inheritance (profile: currentPublisher.profileId, pubId: 1)
+        uint256 currentPublisherPubCount = hub.getProfile(currentPublisher.profileId).pubCount;
+
+        // Initializes module for config inheritance (profile: currentPublisher.profileId, pubId: currentPublisherPubCount)
         vm.prank(hubAddress);
         module.initializeReferenceModule(
             currentPublisher.profileId,
-            1,
+            currentPublisherPubCount,
             currentPublisher.owner,
             _getInitData({
                 commentsRestricted: true,
@@ -588,13 +597,12 @@ contract DegreesOfSeparationReferenceModuleTest is BaseTest {
             })
         );
 
-        _mockLensHubPubCountResponse({account: currentPublisher, pubCount: 1});
-
         vm.expectRevert(Errors.NotFollowing.selector);
         vm.prank(hubAddress);
         module.processMirror(
             Types.ProcessMirrorParams({
                 profileId: currentPublisher.profileId,
+                pubId: currentPublisherPubCount,
                 transactionExecutor: currentPublisher.owner,
                 pointedProfileId: originalPublisher.profileId,
                 pointedPubId: 1,
@@ -630,11 +638,13 @@ contract DegreesOfSeparationReferenceModuleTest is BaseTest {
         // Performs follows and builds path.
         uint256[] memory path = _buildPathWhereLastPathNodeDoesNotFollowCurrentPublisher(degrees);
 
-        // Initializes module for config inheritance (profile: currentPublisher.profileId, pubId: 1)
+        uint256 currentPublisherPubCount = hub.getProfile(currentPublisher.profileId).pubCount;
+
+        // Initializes module for config inheritance (profile: currentPublisher.profileId, pubId: currentPublisherPubCount)
         vm.prank(hubAddress);
         module.initializeReferenceModule(
             currentPublisher.profileId,
-            1,
+            currentPublisherPubCount,
             currentPublisher.owner,
             _getInitData({
                 commentsRestricted: true,
@@ -645,13 +655,12 @@ contract DegreesOfSeparationReferenceModuleTest is BaseTest {
             })
         );
 
-        _mockLensHubPubCountResponse({account: currentPublisher, pubCount: 1});
-
         vm.expectRevert(Errors.NotFollowing.selector);
         vm.prank(hubAddress);
         module.processQuote(
             Types.ProcessQuoteParams({
                 profileId: currentPublisher.profileId,
+                pubId: currentPublisherPubCount,
                 transactionExecutor: currentPublisher.owner,
                 pointedProfileId: originalPublisher.profileId,
                 pointedPubId: 1,
@@ -861,13 +870,14 @@ contract DegreesOfSeparationReferenceModuleTest is BaseTest {
         // Makes current publisher to be one degree of separation from original publisher.
         _follow({follower: originalPublisher, target: currentPublisher});
 
-        _mockLensHubPubCountResponse({account: currentPublisher, pubCount: 1});
+        uint256 currentPublisherPubCount = hub.getProfile(currentPublisher.profileId).pubCount;
 
         vm.expectRevert(DegreesOfSeparationReferenceModule.NotInheritingPointedPubConfig.selector);
         vm.prank(hubAddress);
         module.processComment(
             Types.ProcessCommentParams({
                 profileId: currentPublisher.profileId,
+                pubId: currentPublisherPubCount,
                 transactionExecutor: currentPublisher.owner,
                 pointedProfileId: originalPublisher.profileId,
                 pointedPubId: 1,
@@ -900,10 +910,12 @@ contract DegreesOfSeparationReferenceModuleTest is BaseTest {
         // Makes current publisher to be one degree of separation from original publisher.
         _follow({follower: originalPublisher, target: currentPublisher});
 
+        uint256 currentPublisherPubCount = hub.getProfile(currentPublisher.profileId).pubCount;
+
         vm.prank(hubAddress);
         module.initializeReferenceModule(
             currentPublisher.profileId,
-            1,
+            currentPublisherPubCount,
             currentPublisher.owner,
             _getInitData({
                 commentsRestricted: false,
@@ -914,13 +926,12 @@ contract DegreesOfSeparationReferenceModuleTest is BaseTest {
             })
         );
 
-        _mockLensHubPubCountResponse({account: currentPublisher, pubCount: 1});
-
         vm.expectRevert(DegreesOfSeparationReferenceModule.NotInheritingPointedPubConfig.selector);
         vm.prank(hubAddress);
         module.processComment(
             Types.ProcessCommentParams({
                 profileId: currentPublisher.profileId,
+                pubId: currentPublisherPubCount,
                 transactionExecutor: currentPublisher.owner,
                 pointedProfileId: originalPublisher.profileId,
                 pointedPubId: 1,
@@ -958,10 +969,12 @@ contract DegreesOfSeparationReferenceModuleTest is BaseTest {
         // Makes current publisher to be one degree of separation from original publisher.
         _follow({follower: originalPublisher, target: currentPublisher});
 
+        uint256 currentPublisherPubCount = hub.getProfile(currentPublisher.profileId).pubCount;
+
         vm.prank(hubAddress);
         module.initializeReferenceModule(
             currentPublisher.profileId,
-            1,
+            currentPublisherPubCount,
             currentPublisher.owner,
             _getInitData({
                 commentsRestricted: true,
@@ -972,13 +985,12 @@ contract DegreesOfSeparationReferenceModuleTest is BaseTest {
             })
         );
 
-        _mockLensHubPubCountResponse({account: currentPublisher, pubCount: 1});
-
         vm.expectRevert(DegreesOfSeparationReferenceModule.NotInheritingPointedPubConfig.selector);
         vm.prank(hubAddress);
         module.processComment(
             Types.ProcessCommentParams({
                 profileId: currentPublisher.profileId,
+                pubId: currentPublisherPubCount,
                 transactionExecutor: currentPublisher.owner,
                 pointedProfileId: originalPublisher.profileId,
                 pointedPubId: 1,
@@ -1013,10 +1025,12 @@ contract DegreesOfSeparationReferenceModuleTest is BaseTest {
         // Makes current publisher to be one degree of separation from original publisher.
         _follow({follower: originalPublisher, target: currentPublisher});
 
+        uint256 currentPublisherPubCount = hub.getProfile(currentPublisher.profileId).pubCount;
+
         vm.prank(hubAddress);
         module.initializeReferenceModule(
             currentPublisher.profileId,
-            1,
+            currentPublisherPubCount,
             currentPublisher.owner,
             _getInitData({
                 commentsRestricted: true,
@@ -1027,13 +1041,12 @@ contract DegreesOfSeparationReferenceModuleTest is BaseTest {
             })
         );
 
-        _mockLensHubPubCountResponse({account: currentPublisher, pubCount: 1});
-
         vm.expectRevert(DegreesOfSeparationReferenceModule.NotInheritingPointedPubConfig.selector);
         vm.prank(hubAddress);
         module.processComment(
             Types.ProcessCommentParams({
                 profileId: currentPublisher.profileId,
+                pubId: currentPublisherPubCount,
                 transactionExecutor: currentPublisher.owner,
                 pointedProfileId: originalPublisher.profileId,
                 pointedPubId: 1,
@@ -1066,13 +1079,15 @@ contract DegreesOfSeparationReferenceModuleTest is BaseTest {
         // Makes current publisher to be one degree of separation from original publisher.
         _follow({follower: originalPublisher, target: currentPublisher});
 
+        uint256 currentPublisherPubCount = hub.getProfile(currentPublisher.profileId).pubCount;
+
         // NOTE: Quote is not even using the reference same module!
-        _mockLensHubPubCountResponse({account: currentPublisher, pubCount: 1});
 
         vm.prank(hubAddress);
         module.processQuote(
             Types.ProcessQuoteParams({
                 profileId: currentPublisher.profileId,
+                pubId: currentPublisherPubCount,
                 transactionExecutor: currentPublisher.owner,
                 pointedProfileId: originalPublisher.profileId,
                 pointedPubId: 1,
@@ -1105,13 +1120,15 @@ contract DegreesOfSeparationReferenceModuleTest is BaseTest {
         // Makes current publisher to be one degree of separation from original publisher.
         _follow({follower: originalPublisher, target: currentPublisher});
 
+        uint256 currentPublisherPubCount = hub.getProfile(currentPublisher.profileId).pubCount;
+
         // NOTE: Mirror is not even using the reference same module!
-        _mockLensHubPubCountResponse({account: currentPublisher, pubCount: 1});
 
         vm.prank(hubAddress);
         module.processMirror(
             Types.ProcessMirrorParams({
                 profileId: currentPublisher.profileId,
+                pubId: currentPublisherPubCount,
                 transactionExecutor: currentPublisher.owner,
                 pointedProfileId: originalPublisher.profileId,
                 pointedPubId: 1,
@@ -1144,13 +1161,15 @@ contract DegreesOfSeparationReferenceModuleTest is BaseTest {
         // Makes current publisher to be one degree of separation from original publisher.
         _follow({follower: originalPublisher, target: currentPublisher});
 
+        uint256 currentPublisherPubCount = hub.getProfile(currentPublisher.profileId).pubCount;
+
         // NOTE: Comment is not using the reference same module.
-        _mockLensHubPubCountResponse({account: currentPublisher, pubCount: 1});
 
         vm.prank(hubAddress);
         module.processComment(
             Types.ProcessCommentParams({
                 profileId: currentPublisher.profileId,
+                pubId: currentPublisherPubCount,
                 transactionExecutor: currentPublisher.owner,
                 pointedProfileId: originalPublisher.profileId,
                 pointedPubId: 1,
@@ -1183,13 +1202,15 @@ contract DegreesOfSeparationReferenceModuleTest is BaseTest {
         // Makes current publisher to be one degree of separation from original publisher.
         _follow({follower: originalPublisher, target: currentPublisher});
 
+        uint256 currentPublisherPubCount = hub.getProfile(currentPublisher.profileId).pubCount;
+
         // NOTE: Mirror is not using the reference same module.
-        _mockLensHubPubCountResponse({account: currentPublisher, pubCount: 1});
 
         vm.prank(hubAddress);
         module.processMirror(
             Types.ProcessMirrorParams({
                 profileId: currentPublisher.profileId,
+                pubId: currentPublisherPubCount,
                 transactionExecutor: currentPublisher.owner,
                 pointedProfileId: originalPublisher.profileId,
                 pointedPubId: 1,
@@ -1222,13 +1243,15 @@ contract DegreesOfSeparationReferenceModuleTest is BaseTest {
         // Makes current publisher to be one degree of separation from original publisher.
         _follow({follower: originalPublisher, target: currentPublisher});
 
+        uint256 currentPublisherPubCount = hub.getProfile(currentPublisher.profileId).pubCount;
+
         // NOTE: Quote is not using the reference same module.
-        _mockLensHubPubCountResponse({account: currentPublisher, pubCount: 1});
 
         vm.prank(hubAddress);
         module.processQuote(
             Types.ProcessQuoteParams({
                 profileId: currentPublisher.profileId,
+                pubId: currentPublisherPubCount,
                 transactionExecutor: currentPublisher.owner,
                 pointedProfileId: originalPublisher.profileId,
                 pointedPubId: 1,
@@ -1271,12 +1294,11 @@ contract DegreesOfSeparationReferenceModuleTest is BaseTest {
             })
         );
 
-        _mockLensHubPubCountResponse({account: originalPublisher, pubCount: 2});
-
         vm.prank(hubAddress);
         module.processComment(
             Types.ProcessCommentParams({
                 profileId: originalPublisher.profileId,
+                pubId: 2,
                 transactionExecutor: originalPublisher.owner,
                 pointedProfileId: originalPublisher.profileId,
                 pointedPubId: 1,
@@ -1319,12 +1341,11 @@ contract DegreesOfSeparationReferenceModuleTest is BaseTest {
             })
         );
 
-        _mockLensHubPubCountResponse({account: originalPublisher, pubCount: 2});
-
         vm.prank(hubAddress);
         module.processComment(
             Types.ProcessCommentParams({
                 profileId: originalPublisher.profileId,
+                pubId: 2,
                 transactionExecutor: originalPublisher.owner,
                 pointedProfileId: originalPublisher.profileId,
                 pointedPubId: 1,
@@ -1367,12 +1388,11 @@ contract DegreesOfSeparationReferenceModuleTest is BaseTest {
             })
         );
 
-        _mockLensHubPubCountResponse({account: originalPublisher, pubCount: 2});
-
         vm.prank(hubAddress);
         module.processMirror(
             Types.ProcessMirrorParams({
                 profileId: originalPublisher.profileId,
+                pubId: 2,
                 transactionExecutor: originalPublisher.owner,
                 pointedProfileId: originalPublisher.profileId,
                 pointedPubId: 1,
@@ -1415,12 +1435,11 @@ contract DegreesOfSeparationReferenceModuleTest is BaseTest {
             })
         );
 
-        _mockLensHubPubCountResponse({account: originalPublisher, pubCount: 2});
-
         vm.prank(hubAddress);
         module.processMirror(
             Types.ProcessMirrorParams({
                 profileId: originalPublisher.profileId,
+                pubId: 2,
                 transactionExecutor: originalPublisher.owner,
                 pointedProfileId: originalPublisher.profileId,
                 pointedPubId: 1,
@@ -1469,6 +1488,7 @@ contract DegreesOfSeparationReferenceModuleTest is BaseTest {
         module.processQuote(
             Types.ProcessQuoteParams({
                 profileId: originalPublisher.profileId,
+                pubId: 2,
                 transactionExecutor: originalPublisher.owner,
                 pointedProfileId: originalPublisher.profileId,
                 pointedPubId: 1,
@@ -1517,6 +1537,7 @@ contract DegreesOfSeparationReferenceModuleTest is BaseTest {
         module.processQuote(
             Types.ProcessQuoteParams({
                 profileId: originalPublisher.profileId,
+                pubId: 2,
                 transactionExecutor: originalPublisher.owner,
                 pointedProfileId: originalPublisher.profileId,
                 pointedPubId: 1,
@@ -1547,11 +1568,13 @@ contract DegreesOfSeparationReferenceModuleTest is BaseTest {
         // Makes current publisher to be one degree of separation from original publisher.
         _follow({follower: originalPublisher, target: currentPublisher});
 
+        uint256 currentPublisherPubCount = hub.getProfile(currentPublisher.profileId).pubCount;
+
         // Initializes module for (profile: originalPublisher.profileId, pubId: 2)
         vm.prank(hubAddress);
         module.initializeReferenceModule(
             currentPublisher.profileId,
-            1,
+            currentPublisherPubCount,
             originalPublisher.owner,
             _getInitData({
                 commentsRestricted: true,
@@ -1562,13 +1585,12 @@ contract DegreesOfSeparationReferenceModuleTest is BaseTest {
             })
         );
 
-        _mockLensHubPubCountResponse({account: currentPublisher, pubCount: 1});
-
         vm.expectRevert(DegreesOfSeparationReferenceModule.OperationDisabled.selector);
         vm.prank(hubAddress);
         module.processComment(
             Types.ProcessCommentParams({
                 profileId: currentPublisher.profileId,
+                pubId: currentPublisherPubCount,
                 transactionExecutor: originalPublisher.owner,
                 pointedProfileId: originalPublisher.profileId,
                 pointedPubId: 1,
@@ -1599,11 +1621,13 @@ contract DegreesOfSeparationReferenceModuleTest is BaseTest {
         // Makes current publisher to be one degree of separation from original publisher.
         _follow({follower: originalPublisher, target: currentPublisher});
 
+        uint256 currentPublisherPubCount = hub.getProfile(currentPublisher.profileId).pubCount;
+
         // Initializes module for (profile: originalPublisher.profileId, pubId: 2)
         vm.prank(hubAddress);
         module.initializeReferenceModule(
             currentPublisher.profileId,
-            1,
+            currentPublisherPubCount,
             originalPublisher.owner,
             _getInitData({
                 commentsRestricted: true,
@@ -1614,13 +1638,12 @@ contract DegreesOfSeparationReferenceModuleTest is BaseTest {
             })
         );
 
-        _mockLensHubPubCountResponse({account: currentPublisher, pubCount: 1});
-
         vm.expectRevert(DegreesOfSeparationReferenceModule.OperationDisabled.selector);
         vm.prank(hubAddress);
         module.processMirror(
             Types.ProcessMirrorParams({
                 profileId: currentPublisher.profileId,
+                pubId: currentPublisherPubCount,
                 transactionExecutor: originalPublisher.owner,
                 pointedProfileId: originalPublisher.profileId,
                 pointedPubId: 1,
@@ -1651,11 +1674,13 @@ contract DegreesOfSeparationReferenceModuleTest is BaseTest {
         // Makes current publisher to be one degree of separation from original publisher.
         _follow({follower: originalPublisher, target: currentPublisher});
 
+        uint256 currentPublisherPubCount = hub.getProfile(currentPublisher.profileId).pubCount;
+
         // Initializes module for (profile: originalPublisher.profileId, pubId: 2)
         vm.prank(hubAddress);
         module.initializeReferenceModule(
             currentPublisher.profileId,
-            1,
+            currentPublisherPubCount,
             originalPublisher.owner,
             _getInitData({
                 commentsRestricted: true,
@@ -1666,13 +1691,12 @@ contract DegreesOfSeparationReferenceModuleTest is BaseTest {
             })
         );
 
-        _mockLensHubPubCountResponse({account: currentPublisher, pubCount: 1});
-
         vm.expectRevert(DegreesOfSeparationReferenceModule.OperationDisabled.selector);
         vm.prank(hubAddress);
         module.processQuote(
             Types.ProcessQuoteParams({
                 profileId: currentPublisher.profileId,
+                pubId: currentPublisherPubCount,
                 transactionExecutor: originalPublisher.owner,
                 pointedProfileId: originalPublisher.profileId,
                 pointedPubId: 1,

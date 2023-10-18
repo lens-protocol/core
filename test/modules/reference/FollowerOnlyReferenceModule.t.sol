@@ -40,16 +40,17 @@ contract FollowerOnlyReferenceModuleTest is BaseTest {
     }
 
     // Negatives
-    function testCannotProcessComment_IfNotFollowing(uint256 pubId) public {
+    function testCannotProcessComment_IfNotFollowing(uint256 pubId, uint256 pointedPubId) public {
         vm.expectRevert(Errors.NotFollowing.selector);
 
         vm.prank(address(hub));
         followerOnlyReferenceModule.processComment(
             Types.ProcessCommentParams({
                 profileId: notFollowerProfileId,
+                pubId: pubId,
                 transactionExecutor: defaultAccount.owner,
                 pointedProfileId: profileId,
-                pointedPubId: pubId,
+                pointedPubId: pointedPubId,
                 referrerProfileIds: _emptyUint256Array(),
                 referrerPubIds: _emptyUint256Array(),
                 referrerPubTypes: _emptyPubTypesArray(),
@@ -58,16 +59,17 @@ contract FollowerOnlyReferenceModuleTest is BaseTest {
         );
     }
 
-    function testCannotProcessMirror_IfNotFollowing(uint256 pubId) public {
+    function testCannotProcessMirror_IfNotFollowing(uint256 pubId, uint256 pointedPubId) public {
         vm.expectRevert(Errors.NotFollowing.selector);
 
         vm.prank(address(hub));
         followerOnlyReferenceModule.processMirror(
             Types.ProcessMirrorParams({
                 profileId: notFollowerProfileId,
+                pubId: pubId,
                 transactionExecutor: defaultAccount.owner,
                 pointedProfileId: profileId,
-                pointedPubId: pubId,
+                pointedPubId: pointedPubId,
                 referrerProfileIds: _emptyUint256Array(),
                 referrerPubIds: _emptyUint256Array(),
                 referrerPubTypes: _emptyPubTypesArray(),
@@ -76,16 +78,17 @@ contract FollowerOnlyReferenceModuleTest is BaseTest {
         );
     }
 
-    function testCannotProcessQuote_IfNotFollowing(uint256 pubId) public {
+    function testCannotProcessQuote_IfNotFollowing(uint256 pubId, uint256 pointedPubId) public {
         vm.expectRevert(Errors.NotFollowing.selector);
 
         vm.prank(address(hub));
         followerOnlyReferenceModule.processQuote(
             Types.ProcessQuoteParams({
                 profileId: notFollowerProfileId,
+                pubId: pubId,
                 transactionExecutor: defaultAccount.owner,
                 pointedProfileId: profileId,
-                pointedPubId: pubId,
+                pointedPubId: pointedPubId,
                 referrerProfileIds: _emptyUint256Array(),
                 referrerPubIds: _emptyUint256Array(),
                 referrerPubTypes: _emptyPubTypesArray(),
@@ -94,14 +97,15 @@ contract FollowerOnlyReferenceModuleTest is BaseTest {
         );
     }
 
-    function testProcessComment_IfFollowing(uint256 pubId) public {
+    function testProcessComment_IfFollowing(uint256 pubId, uint256 pointedPubId) public {
         vm.prank(address(hub));
         followerOnlyReferenceModule.processComment(
             Types.ProcessCommentParams({
                 profileId: followerProfileId,
+                pubId: pubId,
                 transactionExecutor: defaultAccount.owner,
                 pointedProfileId: profileId,
-                pointedPubId: pubId,
+                pointedPubId: pointedPubId,
                 referrerProfileIds: _emptyUint256Array(),
                 referrerPubIds: _emptyUint256Array(),
                 referrerPubTypes: _emptyPubTypesArray(),
@@ -110,14 +114,15 @@ contract FollowerOnlyReferenceModuleTest is BaseTest {
         );
     }
 
-    function testProcessMirror_IfFollowing(uint256 pubId) public {
+    function testProcessMirror_IfFollowing(uint256 pubId, uint256 pointedPubId) public {
         vm.prank(address(hub));
         followerOnlyReferenceModule.processMirror(
             Types.ProcessMirrorParams({
                 profileId: followerProfileId,
+                pubId: pubId,
                 transactionExecutor: defaultAccount.owner,
                 pointedProfileId: profileId,
-                pointedPubId: pubId,
+                pointedPubId: pointedPubId,
                 referrerProfileIds: _emptyUint256Array(),
                 referrerPubIds: _emptyUint256Array(),
                 referrerPubTypes: _emptyPubTypesArray(),
@@ -126,14 +131,15 @@ contract FollowerOnlyReferenceModuleTest is BaseTest {
         );
     }
 
-    function testProcessQuote_IfFollowing(uint256 pubId) public {
+    function testProcessQuote_IfFollowing(uint256 pubId, uint256 pointedPubId) public {
         vm.prank(address(hub));
         followerOnlyReferenceModule.processQuote(
             Types.ProcessQuoteParams({
                 profileId: followerProfileId,
+                pubId: pubId,
                 transactionExecutor: defaultAccount.owner,
                 pointedProfileId: profileId,
-                pointedPubId: pubId,
+                pointedPubId: pointedPubId,
                 referrerProfileIds: _emptyUint256Array(),
                 referrerPubIds: _emptyUint256Array(),
                 referrerPubTypes: _emptyPubTypesArray(),

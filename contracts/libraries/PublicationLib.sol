@@ -88,6 +88,7 @@ library PublicationLib {
 
         bytes memory referenceModuleReturnData = _processCommentIfNeeded(
             commentParams,
+            pubIdAssigned,
             transactionExecutor,
             referrerPubTypes
         );
@@ -134,6 +135,7 @@ library PublicationLib {
 
         bytes memory referenceModuleReturnData = _processMirrorIfNeeded(
             mirrorParams,
+            pubIdAssigned,
             transactionExecutor,
             referrerPubTypes
         );
@@ -170,6 +172,7 @@ library PublicationLib {
 
         bytes memory referenceModuleReturnData = _processQuoteIfNeeded(
             quoteParams,
+            pubIdAssigned,
             transactionExecutor,
             referrerPubTypes
         );
@@ -333,6 +336,7 @@ library PublicationLib {
 
     function _processCommentIfNeeded(
         Types.CommentParams calldata commentParams,
+        uint256 pubIdAssigned,
         address transactionExecutor,
         Types.PublicationType[] memory referrerPubTypes
     ) private returns (bytes memory) {
@@ -344,6 +348,7 @@ library PublicationLib {
                 IReferenceModule(refModule).processComment(
                     Types.ProcessCommentParams({
                         profileId: commentParams.profileId,
+                        pubId: pubIdAssigned,
                         transactionExecutor: transactionExecutor,
                         pointedProfileId: commentParams.pointedProfileId,
                         pointedPubId: commentParams.pointedPubId,
@@ -386,6 +391,7 @@ library PublicationLib {
 
     function _processQuoteIfNeeded(
         Types.QuoteParams calldata quoteParams,
+        uint256 pubIdAssigned,
         address transactionExecutor,
         Types.PublicationType[] memory referrerPubTypes
     ) private returns (bytes memory) {
@@ -397,6 +403,7 @@ library PublicationLib {
                 IReferenceModule(refModule).processQuote(
                     Types.ProcessQuoteParams({
                         profileId: quoteParams.profileId,
+                        pubId: pubIdAssigned,
                         transactionExecutor: transactionExecutor,
                         pointedProfileId: quoteParams.pointedProfileId,
                         pointedPubId: quoteParams.pointedPubId,
@@ -439,6 +446,7 @@ library PublicationLib {
 
     function _processMirrorIfNeeded(
         Types.MirrorParams calldata mirrorParams,
+        uint256 pubIdAssigned,
         address transactionExecutor,
         Types.PublicationType[] memory referrerPubTypes
     ) private returns (bytes memory) {
@@ -450,6 +458,7 @@ library PublicationLib {
                 IReferenceModule(refModule).processMirror(
                     Types.ProcessMirrorParams({
                         profileId: mirrorParams.profileId,
+                        pubId: pubIdAssigned,
                         transactionExecutor: transactionExecutor,
                         pointedProfileId: mirrorParams.pointedProfileId,
                         pointedPubId: mirrorParams.pointedPubId,
