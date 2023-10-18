@@ -10,7 +10,19 @@ import {Clones} from '@openzeppelin/contracts/proxy/Clones.sol';
 import {Errors} from 'contracts/modules/constants/Errors.sol';
 import {HubRestricted} from 'contracts/base/HubRestricted.sol';
 
-contract CollectPublicationAction is HubRestricted, IPublicationActionModule {
+import {LensModule} from 'contracts/modules/LensModule.sol';
+
+/**
+ * @title CollectPublicationAction
+ * @author LensProtocol
+ * @notice An Publication Action module that allows users to collect publications.
+ * @custom:upgradeable Transparent upgradeable proxy without initializer.
+ */
+contract CollectPublicationAction is LensModule, HubRestricted, IPublicationActionModule {
+    function supportsInterface(bytes4 interfaceID) public pure override returns (bool) {
+        return interfaceID == type(IPublicationActionModule).interfaceId || super.supportsInterface(interfaceID);
+    }
+
     struct CollectData {
         address collectModule;
         address collectNFT;
@@ -203,5 +215,9 @@ contract CollectPublicationAction is HubRestricted, IPublicationActionModule {
 
     function isCollectModuleRegistered(address collectModule) external view returns (bool) {
         return _collectModuleRegistered[collectModule];
+    }
+
+    function getModuleMetadataURI() external pure returns (string memory) {
+        return 'https://docs.lens.xyz/';
     }
 }

@@ -17,7 +17,13 @@ import {PublicDrop} from '@seadrop/lib/SeaDropStructs.sol';
 import {LensSeaDropCollection} from 'contracts/modules/act/seadrop/LensSeaDropCollection.sol';
 import {ILensHub} from 'contracts/interfaces/ILensHub.sol';
 
-contract SeaDropMintPublicationAction is HubRestricted, IPublicationActionModule {
+import {LensModule} from 'contracts/modules/LensModule.sol';
+
+contract SeaDropMintPublicationAction is LensModule, HubRestricted, IPublicationActionModule {
+    function supportsInterface(bytes4 interfaceID) public pure override returns (bool) {
+        return interfaceID == type(IPublicationActionModule).interfaceId || super.supportsInterface(interfaceID);
+    }
+
     uint256 constant MAX_BPS = 10_000;
 
     ISeaDrop public immutable SEADROP;
@@ -273,5 +279,9 @@ contract SeaDropMintPublicationAction is HubRestricted, IPublicationActionModule
         if (publicDrop.mintPrice > 0 && publicDrop.feeBps != lensTreasuryFeeBps + referrersFeeBps) {
             _rescaleFees(profileId, pubId, lensTreasuryFeeBps, publicDrop);
         }
+    }
+
+    function getModuleMetadataURI() external pure returns (string memory) {
+        return 'https://docs.lens.xyz/';
     }
 }

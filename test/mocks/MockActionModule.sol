@@ -10,6 +10,10 @@ import {MockModule} from 'test/mocks/MockModule.sol';
  * @dev This is a simple mock Action module to be used for testing revert cases on processAction.
  */
 contract MockActionModule is MockModule, IPublicationActionModule {
+    function supportsInterface(bytes4 interfaceID) public pure override returns (bool) {
+        return interfaceID == type(IPublicationActionModule).interfaceId || super.supportsInterface(interfaceID);
+    }
+
     error MockActionModuleReverted();
 
     function testMockActionModule() public {
