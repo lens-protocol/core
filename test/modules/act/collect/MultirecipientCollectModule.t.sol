@@ -65,7 +65,7 @@ contract MultirecipientCollectModule_Initialization is
         );
     }
 
-    function testCannotPostWithOneRecipientAndSplitNotEqualToBPS_MAX(
+    function testCannotPostWithOneRecipient(
         uint256 profileId,
         uint256 pubId,
         address transactionExecutor,
@@ -76,12 +76,12 @@ contract MultirecipientCollectModule_Initialization is
         vm.assume(pubId != 0);
         vm.assume(transactionExecutor != address(0));
         vm.assume(recipient != address(0));
-        split = uint16(bound(split, 0, BPS_MAX - 1));
+        split = uint16(bound(split, 0, BPS_MAX));
 
         delete multirecipientExampleInitData.recipients;
         multirecipientExampleInitData.recipients.push(RecipientData({recipient: recipient, split: split}));
 
-        vm.expectRevert(InvalidRecipientSplits.selector);
+        vm.expectRevert(ModuleErrors.InitParamsInvalid.selector);
         vm.prank(collectPublicationAction);
         IBaseFeeCollectModule(baseFeeCollectModule).initializePublicationCollectModule(
             profileId,
@@ -430,7 +430,7 @@ contract MultirecipientCollectModule_FeeDistribution is MultirecipientCollectMod
         delete multirecipientExampleInitData.recipients;
         assertEq(multirecipientExampleInitData.recipients.length, 0);
 
-        numberOfRecipients = bound(numberOfRecipients, 1, MAX_RECIPIENTS);
+        numberOfRecipients = bound(numberOfRecipients, 2, MAX_RECIPIENTS);
         // console.log('Number of recipients: %s', numberOfRecipients);
         split1 = uint16(bound(split1, 1, BPS_MAX - numberOfRecipients));
         split2 = uint16(bound(split2, 1, BPS_MAX - numberOfRecipients));

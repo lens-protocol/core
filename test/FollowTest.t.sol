@@ -495,6 +495,12 @@ contract FollowMetaTxTest is FollowTest, MetaTxNegatives {
             );
     }
 
+    function _incrementNonce(uint8 increment) internal override {
+        vm.prank(vm.addr(_getDefaultMetaTxSignerPk()));
+        hub.incrementNonce(increment);
+        _refreshCachedNonces();
+    }
+
     function _refreshCachedNonces() internal override {
         cachedNonceByAddress[testFollowerProfileOwner] = hub.nonces(testFollowerProfileOwner);
         cachedNonceByAddress[alreadyFollowingProfileOwner] = hub.nonces(alreadyFollowingProfileOwner);

@@ -63,10 +63,11 @@ library FollowLib {
         uint256 i;
         while (i < idsOfProfilesToUnfollow.length) {
             uint256 idOfProfileToUnfollow = idsOfProfilesToUnfollow[i];
-            ValidationLib.validateProfileExists(idOfProfileToUnfollow);
 
             address followNFT = StorageLib.getProfile(idOfProfileToUnfollow).followNFT;
 
+            // We don't validate the profile exists because we want to allow unfollowing a burnt profile.
+            // Because, if the profile never existed, followNFT will be address(0) and the call will revert.
             if (followNFT == address(0)) {
                 revert Errors.NotFollowing();
             }

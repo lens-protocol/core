@@ -75,6 +75,10 @@ contract PublicActProxy {
         return _nonces[signer];
     }
 
+    function incrementNonce(uint8 increment) external {
+        MetaTxLib.incrementNonce(increment);
+    }
+
     function _publicCollect(
         Types.PublicationActionParams calldata publicationActionParams,
         address transactionExecutor
@@ -97,7 +101,6 @@ contract PublicActProxy {
         }
 
         HUB.act(publicationActionParams);
-
     }
 
     function name() external pure returns (string memory) {

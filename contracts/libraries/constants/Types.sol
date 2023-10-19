@@ -366,6 +366,7 @@ library Types {
 
     struct ProcessCommentParams {
         uint256 profileId;
+        uint256 pubId;
         address transactionExecutor;
         uint256 pointedProfileId;
         uint256 pointedPubId;
@@ -377,6 +378,7 @@ library Types {
 
     struct ProcessQuoteParams {
         uint256 profileId;
+        uint256 pubId;
         address transactionExecutor;
         uint256 pointedProfileId;
         uint256 pointedPubId;
@@ -388,6 +390,7 @@ library Types {
 
     struct ProcessMirrorParams {
         uint256 profileId;
+        uint256 pubId;
         address transactionExecutor;
         uint256 pointedProfileId;
         uint256 pointedPubId;

@@ -174,6 +174,30 @@ contract FeeFollowModuleTest is BaseTest {
         );
     }
 
+    function testCanStillProcessFollow_ZeroCurrency(
+        uint256 followerProfileId,
+        uint256 targetProfileId,
+        address recipient,
+        address transactionExecutor
+    ) public {
+        vm.assume(followerProfileId != 0);
+        vm.assume(targetProfileId != 0);
+        vm.assume(transactionExecutor != address(0));
+
+        FeeConfig memory feeConfig = FeeConfig({currency: address(0), amount: 0, recipient: recipient});
+        vm.prank(address(hub));
+        feeFollowModule.initializeFollowModule(targetProfileId, address(0), abi.encode(feeConfig));
+
+        vm.prank(address(hub));
+        feeFollowModule.processFollow(
+            followerProfileId,
+            0,
+            transactionExecutor,
+            targetProfileId,
+            abi.encode(address(0), 0) // @audit-info currency, amount
+        );
+    }
+
     struct Balances {
         uint256 treasury;
         uint256 follower;

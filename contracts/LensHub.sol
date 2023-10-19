@@ -476,6 +476,11 @@ contract LensHub is
             });
     }
 
+    /// @inheritdoc ILensProtocol
+    function incrementNonce(uint8 increment) external {
+        MetaTxLib.incrementNonce(increment);
+    }
+
     ///////////////////////////////////////////
     ///        EXTERNAL VIEW FUNCTIONS      ///
     ///////////////////////////////////////////

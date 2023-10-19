@@ -152,6 +152,12 @@ contract CommentMetaTxTest is CommentTest, MetaTxNegatives {
         );
     }
 
+    function _incrementNonce(uint8 increment) internal override {
+        vm.prank(vm.addr(_getDefaultMetaTxSignerPk()));
+        hub.incrementNonce(increment);
+        _refreshCachedNonces();
+    }
+
     function _getDefaultMetaTxSignerPk() internal virtual override returns (uint256) {
         return publisher.ownerPk;
     }

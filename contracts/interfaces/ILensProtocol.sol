@@ -316,6 +316,12 @@ interface ILensProtocol {
         Types.EIP712Signature calldata signature
     ) external returns (bytes memory);
 
+    /**
+     * @dev This function is used to invalidate signatures by incrementing the nonce of the signer.
+     * @param increment The amount to increment the nonce by (max 255).
+     */
+    function incrementNonce(uint8 increment) external;
+
     /////////////////////////////////
     ///       VIEW FUNCTIONS      ///
     /////////////////////////////////

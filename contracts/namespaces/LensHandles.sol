@@ -11,18 +11,20 @@ import {HandleTokenURILib} from 'contracts/libraries/token-uris/HandleTokenURILi
 import {ILensHub} from 'contracts/interfaces/ILensHub.sol';
 import {Address} from '@openzeppelin/contracts/utils/Address.sol';
 import {IERC721} from '@openzeppelin/contracts/token/ERC721/IERC721.sol';
+import {ERC2981CollectionRoyalties} from 'contracts/base/ERC2981CollectionRoyalties.sol';
+import {IERC165} from '@openzeppelin/contracts/utils/introspection/IERC165.sol';
 
 /**
  * A handle is defined as a local name inside a namespace context. A handle is represented as the local name with its
  * namespace applied as a prefix, using the slash symbol as separator.
  *
- *      handle = /${namespace}/${localName}
+ *      handle = namespace /@ localName
  *
  * Handle and local name can be used interchangeably once you are in a context of a namespace, as it became redundant.
  *
  *      handle === ${localName} ; inside some namespace.
  */
-contract LensHandles is ERC721, ImmutableOwnable, ILensHandles {
+contract LensHandles is ERC721, ERC2981CollectionRoyalties, ImmutableOwnable, ILensHandles {
     using Address for address;
 
     // We used 31 to fit the handle in a single slot, with `.lens` that restricted localName to use 26 characters.
@@ -33,6 +35,9 @@ contract LensHandles is ERC721, ImmutableOwnable, ILensHandles {
     bytes32 public constant NAMESPACE_HASH = keccak256(bytes(NAMESPACE));
     uint256 public immutable TOKEN_GUARDIAN_COOLDOWN;
     mapping(address => uint256) internal _tokenGuardianDisablingTimestamp;
+
+    uint256 internal _profileRoyaltiesBps; // Slot 7
+    uint256 private _totalSupply;
 
     mapping(uint256 tokenId => string localName) internal _localNames;
 
@@ -73,6 +78,10 @@ contract LensHandles is ERC721, ImmutableOwnable, ILensHandles {
         return string.concat(NAMESPACE);
     }
 
+    function totalSupply() external view virtual override returns (uint256) {
+        return _totalSupply;
+    }
+
     /**
      * @dev See {IERC721Metadata-tokenURI}.
      */
@@ -99,6 +108,7 @@ contract LensHandles is ERC721, ImmutableOwnable, ILensHandles {
         if (msg.sender != ownerOf(tokenId)) {
             revert HandlesErrors.NotOwner();
         }
+        --_totalSupply;
         _burn(tokenId);
         delete _localNames[tokenId];
     }
@@ -149,7 +159,7 @@ contract LensHandles is ERC721, ImmutableOwnable, ILensHandles {
         super.setApprovalForAll(operator, approved);
     }
 
-    function exists(uint256 tokenId) external view returns (bool) {
+    function exists(uint256 tokenId) external view override returns (bool) {
         return _exists(tokenId);
     }
 
@@ -182,12 +192,22 @@ contract LensHandles is ERC721, ImmutableOwnable, ILensHandles {
         return _tokenGuardianDisablingTimestamp[wallet];
     }
 
+    /**
+     * @dev See {IERC165-supportsInterface}.
+     */
+    function supportsInterface(
+        bytes4 interfaceId
+    ) public view virtual override(ERC721, ERC2981CollectionRoyalties, IERC165) returns (bool) {
+        return (ERC721.supportsInterface(interfaceId) || ERC2981CollectionRoyalties.supportsInterface(interfaceId));
+    }
+
     //////////////////////////////////////
     ///        INTERNAL FUNCTIONS      ///
     //////////////////////////////////////
 
     function _mintHandle(address to, string calldata localName) internal returns (uint256) {
         uint256 tokenId = getTokenId(localName);
+        ++_totalSupply;
         _mint(to, tokenId);
         _localNames[tokenId] = localName;
         emit HandlesEvents.HandleMinted(localName, NAMESPACE, tokenId, to, block.timestamp);
@@ -258,6 +278,23 @@ contract LensHandles is ERC721, ImmutableOwnable, ILensHandles {
             !wallet.isContract() &&
             (_tokenGuardianDisablingTimestamp[wallet] == 0 ||
                 block.timestamp < _tokenGuardianDisablingTimestamp[wallet]);
+    }
+
+    function _getRoyaltiesInBasisPointsSlot() internal pure override returns (uint256 slot) {
+        assembly {
+            slot := _profileRoyaltiesBps.slot
+        }
+    }
+
+    function _getReceiver(uint256 /* tokenId */) internal view override returns (address) {
+        return ILensHub(LENS_HUB).getTreasury();
+    }
+
+    function _beforeRoyaltiesSet(uint256 /* royaltiesInBasisPoints */) internal view override {
+        if (msg.sender != OWNER) {
+            // TODO: test this - and decide if we want a separate/shared governance here instead
+            revert OnlyOwner();
+        }
     }
 
     function _beforeTokenTransfer(

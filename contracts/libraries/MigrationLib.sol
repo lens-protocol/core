@@ -26,7 +26,7 @@ library MigrationLib {
 
     // Profiles Handles Migration:
 
-    event ProfileMigrated(uint256 profileId, address profileDestination, string handle, uint256 handleId);
+    event ProfileMigrated(uint256 profileId);
 
     /**
      * @notice Migrates an array of profiles from V1 to V2. This function can be callable by anyone.
@@ -83,7 +83,7 @@ library MigrationLib {
             uint256 handleId = lensHandles.migrateHandle(profileOwner, handle);
             // We link it to the profile in the TokenHandleRegistry contract.
             tokenHandleRegistry.migrationLink(handleId, profileId);
-            emit ProfileMigrated(profileId, profileOwner, handle, handleId);
+            emit ProfileMigrated(profileId);
             delete StorageLib.getProfile(profileId).__DEPRECATED__handle;
             delete StorageLib.getProfile(profileId).__DEPRECATED__followNFTURI;
             delete StorageLib.profileIdByHandleHash()[handleHash];
@@ -196,19 +196,29 @@ library MigrationLib {
                 ILegacyFeeFollowModule.ProfileData memory feeFollowModuleData = ILegacyFeeFollowModule(
                     legacyFeeFollowModule
                 ).getProfileData(profileIds[i]);
-                IFollowModule(newFeeFollowModule).initializeFollowModule({
+                bytes memory followModuleInitData = abi.encode(
+                    feeFollowModuleData.currency,
+                    feeFollowModuleData.amount,
+                    feeFollowModuleData.recipient
+                );
+                bytes memory followModuleReturnData = IFollowModule(newFeeFollowModule).initializeFollowModule({
                     profileId: profileIds[i],
-                    transactionExecutor: msg.sender, // TODO: Review
-                    data: abi.encode(
-                        feeFollowModuleData.currency,
-                        feeFollowModuleData.amount,
-                        feeFollowModuleData.recipient
-                    )
+                    transactionExecutor: address(0),
+                    data: followModuleInitData
                 });
+                emit Events.FollowModuleSet(
+                    profileIds[i],
+                    newFeeFollowModule,
+                    followModuleInitData,
+                    followModuleReturnData,
+                    address(0),
+                    block.timestamp
+                );
             } else if (currentFollowModule == legacyProfileFollowModule) {
                 // If the profile had `ProfileFollowModule` set, we just remove the follow module, as in Lens V2
                 // you can only follow with a Lens profile.
                 delete StorageLib.getProfile(profileIds[i]).followModule;
+                emit Events.FollowModuleSet(profileIds[i], address(0), '', '', address(0), block.timestamp);
             }
             unchecked {
                 ++i;

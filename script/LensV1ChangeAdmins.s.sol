@@ -35,10 +35,6 @@ contract LensV1ChangeAdmins is Script, ForkManagement {
         vm.label(governanceContractAddress, 'GovernanceContract');
         console.log('Governance Contract: %s', address(governanceContract));
 
-        proxyAdmin = address(uint160(uint256(vm.load(lensHubProxyAddress, ADMIN_SLOT))));
-        vm.label(proxyAdmin, 'ProxyAdmin');
-        console.log('LensHub Current Proxy Admin: %s', proxyAdmin);
-
         governance = legacyLensHub.getGovernance();
         console.log('LensHub Current governance: %s', address(governance));
 
@@ -48,6 +44,10 @@ contract LensV1ChangeAdmins is Script, ForkManagement {
         proxyAdminContract = ProxyAdmin(proxyAdminContractAddress);
         vm.label(proxyAdminContractAddress, 'ProxyAdmin');
         console.log('Proxy Admin Contract: %s', address(proxyAdminContract));
+
+        proxyAdmin = address(uint160(uint256(vm.load(lensHubProxyAddress, ADMIN_SLOT))));
+        vm.label(proxyAdmin, 'ProxyAdmin');
+        console.log('LensHub Current Proxy Admin: %s', proxyAdmin);
     }
 
     function castTransaction(address from, address to, string memory functionSignature, string memory params) internal {
@@ -62,6 +62,13 @@ contract LensV1ChangeAdmins is Script, ForkManagement {
         inputs[7] = vm.toString(to);
         inputs[8] = functionSignature;
         inputs[9] = params;
+
+        // Print inputs:
+        console.log('Inputs:');
+        for (uint256 i = 0; i < inputs.length; i++) {
+            console.log('\t%s', inputs[i]);
+        }
+
         vm.ffi(inputs);
     }
 

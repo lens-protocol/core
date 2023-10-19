@@ -30,7 +30,7 @@ contract LensV2UpgradeDeployment is Script, ForkManagement, ArrayHelpers {
         bytes32(uint256(keccak256('eip1967.proxy.implementation')) - 1);
 
     uint256 constant PROFILE_GUARDIAN_COOLDOWN = 7 days;
-    uint256 constant HANDLE_GUARDIAN_COOLDOWN = 0;
+    uint256 constant HANDLE_GUARDIAN_COOLDOWN = 5 minutes;
 
     string mnemonic;
 

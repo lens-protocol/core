@@ -10,6 +10,8 @@ import {IReferenceModule} from 'contracts/interfaces/IReferenceModule.sol';
 import {HubRestricted} from 'contracts/base/HubRestricted.sol';
 import {FollowValidationLib} from 'contracts/modules/libraries/FollowValidationLib.sol';
 
+import {LensModule} from 'contracts/modules/LensModule.sol';
+
 /**
  * @notice Struct representing the module configuration for certain publication.
  *
@@ -40,7 +42,11 @@ struct ModuleConfig {
  * only to profiles that are at most at `n` degrees of separation from the source profile, which is expected to be set
  * as the author of the root publication.
  */
-contract DegreesOfSeparationReferenceModule is HubRestricted, IReferenceModule {
+contract DegreesOfSeparationReferenceModule is LensModule, HubRestricted, IReferenceModule {
+    function supportsInterface(bytes4 interfaceID) public pure override returns (bool) {
+        return interfaceID == type(IReferenceModule).interfaceId || super.supportsInterface(interfaceID);
+    }
+
     error InvalidDegreesOfSeparation();
     error OperationDisabled();
     error ProfilePathExceedsDegreesOfSeparation();
@@ -138,7 +144,7 @@ contract DegreesOfSeparationReferenceModule is HubRestricted, IReferenceModule {
             });
             _validateCommentInheritedConfigFromPointedPub({
                 pointedPubConfig: config,
-                profileId: processCommentParams.profileId
+                newCommentPubConfig: _moduleConfig[processCommentParams.profileId][processCommentParams.pubId]
             });
         }
         return '';
@@ -285,22 +291,24 @@ contract DegreesOfSeparationReferenceModule is HubRestricted, IReferenceModule {
      * @notice Validates that the comment configuration is inherited from pointed publication.
      *
      * @param pointedPubConfig The pointed publication's degrees of separation module configuration.
-     * @param profileId The ID of the profile authoring the publication being processed.
+     * @param newCommentPubConfig The comment being processed's degrees of separation module configuration.
      */
     function _validateCommentInheritedConfigFromPointedPub(
         ModuleConfig memory pointedPubConfig,
-        uint256 profileId
-    ) internal view {
-        // We are processing profileId's last publication, so we get the ID from his publication counter.
-        uint256 pubId = ILensHub(HUB).getProfile(profileId).pubCount;
+        ModuleConfig memory newCommentPubConfig
+    ) internal pure {
         // We only care about inheritance of the comment restrictions.
         if (
-            !_moduleConfig[profileId][pubId].setUp ||
-            !_moduleConfig[profileId][pubId].commentsRestricted ||
-            _moduleConfig[profileId][pubId].sourceProfile != pointedPubConfig.sourceProfile ||
-            _moduleConfig[profileId][pubId].degreesOfSeparation != pointedPubConfig.degreesOfSeparation
+            !newCommentPubConfig.setUp ||
+            !newCommentPubConfig.commentsRestricted ||
+            newCommentPubConfig.sourceProfile != pointedPubConfig.sourceProfile ||
+            newCommentPubConfig.degreesOfSeparation != pointedPubConfig.degreesOfSeparation
         ) {
             revert NotInheritingPointedPubConfig();
         }
+    }
+
+    function getModuleMetadataURI() external pure returns (string memory) {
+        return 'https://docs.lens.xyz/';
     }
 }

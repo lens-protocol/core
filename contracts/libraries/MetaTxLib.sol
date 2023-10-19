@@ -329,6 +329,13 @@ library MetaTxLib {
         );
     }
 
+    /// @dev This function is used to invalidate signatures by incrementing the nonce
+    function incrementNonce(uint8 increment) external {
+        uint256 currentNonce = StorageLib.nonces()[msg.sender];
+        StorageLib.nonces()[msg.sender] = currentNonce + increment;
+        emit Events.NonceUpdated(msg.sender, currentNonce + increment, block.timestamp);
+    }
+
     function calculateDomainSeparator() internal view returns (bytes32) {
         if (address(this) == LENS_HUB_ADDRESS && block.chainid == POLYGON_CHAIN_ID) {
             return LENS_HUB_CACHED_POLYGON_DOMAIN_SEPARATOR;
@@ -397,7 +404,7 @@ library MetaTxLib {
         uint256 i;
         while (i < bytesArray.length) {
             // A `bytes` type is encoded as its keccak256 hash.
-            bytesArrayEncodedElements[i] = keccak256(bytesArray[i]);
+            bytesArrayEncodedElements[i] = _encodeUsingEip712Rules(bytesArray[i]);
             unchecked {
                 ++i;
             }

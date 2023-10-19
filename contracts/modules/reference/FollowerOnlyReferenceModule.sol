@@ -7,6 +7,8 @@ import {HubRestricted} from 'contracts/base/HubRestricted.sol';
 import {Types} from 'contracts/libraries/constants/Types.sol';
 import {FollowValidationLib} from 'contracts/modules/libraries/FollowValidationLib.sol';
 
+import {LensModule} from 'contracts/modules/LensModule.sol';
+
 /**
  * @title FollowerOnlyReferenceModule
  * @author Lens Protocol
@@ -14,7 +16,11 @@ import {FollowValidationLib} from 'contracts/modules/libraries/FollowValidationL
  * @notice A simple reference module that validates that comments, quotes or mirrors originate from a profile that
  * follows the profile of the original publication.
  */
-contract FollowerOnlyReferenceModule is HubRestricted, IReferenceModule {
+contract FollowerOnlyReferenceModule is LensModule, HubRestricted, IReferenceModule {
+    function supportsInterface(bytes4 interfaceID) public pure override returns (bool) {
+        return interfaceID == type(IReferenceModule).interfaceId || super.supportsInterface(interfaceID);
+    }
+
     constructor(address hub) HubRestricted(hub) {}
 
     /**
@@ -84,5 +90,9 @@ contract FollowerOnlyReferenceModule is HubRestricted, IReferenceModule {
             FollowValidationLib.validateIsFollowing(HUB, followerProfileId, followedProfileId);
         }
         return '';
+    }
+
+    function getModuleMetadataURI() external pure returns (string memory) {
+        return 'https://docs.lens.xyz/';
     }
 }

@@ -22,9 +22,10 @@ contract MigrationsTest is BaseTest {
     uint256 followTokenIdV1;
 
     function beforeUpgrade() internal override {
-        firstAccount = _loadAccountAs('FIRST_ACCOUNT', forkVersion == 2);
+        console.log('beforeUpgrade setup');
+        firstAccount = _loadAccountAs('FIRST_ACCOUNT');
 
-        secondAccount = _loadAccountAs('SECOND_ACCOUNT', forkVersion == 2);
+        secondAccount = _loadAccountAs('SECOND_ACCOUNT');
 
         vm.prank(firstAccount.owner);
         // TODO: What if already following...?
@@ -39,17 +40,11 @@ contract MigrationsTest is BaseTest {
         }
 
         if (firstAccount.profileId == 0) {
-            firstAccount = _loadAccountAs('FIRST_ACCOUNT', forkVersion == 2);
+            firstAccount = _loadAccountAs('FIRST_ACCOUNT');
         }
 
         if (secondAccount.profileId == 0) {
-            secondAccount = _loadAccountAs('SECOND_ACCOUNT', forkVersion == 2);
-        }
-
-        // On V2 nobody follows nobody before migrations...
-        if (forkVersion != 2) {
-            bool isFollowing = hub.isFollowing(firstAccount.profileId, secondAccount.profileId);
-            assertTrue(isFollowing, 'First account is required to be following second account');
+            secondAccount = _loadAccountAs('SECOND_ACCOUNT');
         }
 
         if (forkVersion == 2) {

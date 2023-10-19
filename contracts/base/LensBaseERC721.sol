@@ -331,10 +331,8 @@ abstract contract LensBaseERC721 is ERC165, ILensERC721 {
      * - `tokenId` must exist.
      */
     function _isApprovedOrOwner(address spender, uint256 tokenId) internal view virtual returns (bool) {
-        if (!_exists(tokenId)) {
-            revert Errors.TokenDoesNotExist();
-        }
         address owner = ownerOf(tokenId);
+        // We don't check owner for != address(0) cause it's done inside ownerOf()
         return (spender == owner || getApproved(tokenId) == spender || isApprovedForAll(owner, spender));
     }
 

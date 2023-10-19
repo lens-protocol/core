@@ -81,7 +81,7 @@ library ProfileLib {
         address followModule,
         bytes memory followModuleInitData
     ) private returns (bytes memory) {
-        MODULE_REGISTRY().registerModule(followModule, uint256(IModuleRegistry.ModuleType.FOLLOW_MODULE));
+        MODULE_REGISTRY().verifyModule(followModule, uint256(IModuleRegistry.ModuleType.FOLLOW_MODULE));
         return IFollowModule(followModule).initializeFollowModule(profileId, transactionExecutor, followModuleInitData);
     }
 

@@ -101,9 +101,7 @@ abstract contract BaseFeeCollectModule is FeeModuleBase, ActionRestricted, IBase
         ) {
             revert Errors.InitParamsInvalid();
         }
-        if (baseInitData.currency != address(0)) {
-            _currencyWhitelisted(baseInitData.currency);
-        }
+        _verifyErc20Currency(baseInitData.currency);
     }
 
     /**

@@ -78,7 +78,7 @@ contract UnfollowTest is BaseTest {
 
         assertTrue(hub.isFollowing(testUnfollowerProfileId, targetProfileId));
 
-        vm.expectRevert(Errors.TokenDoesNotExist.selector);
+        vm.expectRevert(Errors.NotFollowing.selector);
 
         _unfollow({
             pk: testUnfollowerProfileOwnerPk,
@@ -182,6 +182,23 @@ contract UnfollowTest is BaseTest {
         assertFalse(hub.isFollowing(testUnfollowerProfileId, targetProfileId));
     }
 
+    function testUnfollowIfTargetProfileWasBurned() public {
+        assertTrue(hub.isFollowing(testUnfollowerProfileId, targetProfileId));
+
+        _effectivelyDisableProfileGuardian(targetProfileOwner);
+        vm.prank(targetProfileOwner);
+        hub.burn(targetProfileId);
+
+        _unfollow({
+            pk: testUnfollowerProfileOwnerPk,
+            unfollowerProfileId: testUnfollowerProfileId,
+            idsOfProfilesToUnfollow: _toUint256Array(targetProfileId)
+        });
+
+        // Asserts that the unfollow operation was still a success.
+        assertFalse(hub.isFollowing(testUnfollowerProfileId, targetProfileId));
+    }
+
     function _unfollow(
         uint256 pk,
         uint256 unfollowerProfileId,
@@ -246,6 +263,12 @@ contract UnfollowMetaTxTest is UnfollowTest, MetaTxNegatives {
                 deadline: deadline
             })
         });
+    }
+
+    function _incrementNonce(uint8 increment) internal override {
+        vm.prank(vm.addr(_getDefaultMetaTxSignerPk()));
+        hub.incrementNonce(increment);
+        cachedNonceByAddress[vm.addr(_getDefaultMetaTxSignerPk())] = hub.nonces(vm.addr(_getDefaultMetaTxSignerPk()));
     }
 
     function _getDefaultMetaTxSignerPk() internal virtual override returns (uint256) {

@@ -10,6 +10,10 @@ import {MockModule} from 'test/mocks/MockModule.sol';
  * @dev This is a simple mock follow module to be used for testing.
  */
 contract MockReferenceModule is MockModule, IReferenceModule {
+    function supportsInterface(bytes4 interfaceID) public pure override returns (bool) {
+        return interfaceID == type(IReferenceModule).interfaceId || super.supportsInterface(interfaceID);
+    }
+
     function testMockReferenceModule() public {
         // Prevents being counted in Foundry Coverage
     }

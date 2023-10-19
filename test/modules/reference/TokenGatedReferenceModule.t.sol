@@ -84,6 +84,7 @@ contract TokenGatedReferenceModule_Publication is TokenGatedReferenceModuleBase 
         tokenGatedReferenceModule.processComment(
             Types.ProcessCommentParams({
                 profileId: profileId,
+                pubId: 2,
                 transactionExecutor: defaultAccount.owner,
                 pointedProfileId: profileId,
                 pointedPubId: 1,
@@ -102,6 +103,7 @@ contract TokenGatedReferenceModule_Publication is TokenGatedReferenceModuleBase 
         tokenGatedReferenceModule.processQuote(
             Types.ProcessQuoteParams({
                 profileId: profileId,
+                pubId: 2,
                 transactionExecutor: defaultAccount.owner,
                 pointedProfileId: profileId,
                 pointedPubId: 1,
@@ -120,6 +122,7 @@ contract TokenGatedReferenceModule_Publication is TokenGatedReferenceModuleBase 
         tokenGatedReferenceModule.processMirror(
             Types.ProcessMirrorParams({
                 profileId: profileId,
+                pubId: 2,
                 transactionExecutor: defaultAccount.owner,
                 pointedProfileId: profileId,
                 pointedPubId: 1,
@@ -201,6 +204,7 @@ contract TokenGatedReferenceModule_ERC20_Gated is TokenGatedReferenceModuleBase 
         tokenGatedReferenceModule.processComment(
             Types.ProcessCommentParams({
                 profileId: profileId,
+                pubId: 1,
                 transactionExecutor: defaultAccount.owner,
                 pointedProfileId: publisherProfileId,
                 pointedPubId: publisherPubId,
@@ -227,6 +231,7 @@ contract TokenGatedReferenceModule_ERC20_Gated is TokenGatedReferenceModuleBase 
         tokenGatedReferenceModule.processMirror(
             Types.ProcessMirrorParams({
                 profileId: profileId,
+                pubId: 1,
                 transactionExecutor: defaultAccount.owner,
                 pointedProfileId: publisherProfileId,
                 pointedPubId: publisherPubId,
@@ -253,6 +258,7 @@ contract TokenGatedReferenceModule_ERC20_Gated is TokenGatedReferenceModuleBase 
         tokenGatedReferenceModule.processQuote(
             Types.ProcessQuoteParams({
                 profileId: profileId,
+                pubId: 1,
                 transactionExecutor: defaultAccount.owner,
                 pointedProfileId: publisherProfileId,
                 pointedPubId: publisherPubId,
@@ -279,6 +285,7 @@ contract TokenGatedReferenceModule_ERC20_Gated is TokenGatedReferenceModuleBase 
         tokenGatedReferenceModule.processComment(
             Types.ProcessCommentParams({
                 profileId: profileId,
+                pubId: 1,
                 transactionExecutor: defaultAccount.owner,
                 pointedProfileId: publisherProfileId,
                 pointedPubId: publisherPubId,
@@ -304,6 +311,7 @@ contract TokenGatedReferenceModule_ERC20_Gated is TokenGatedReferenceModuleBase 
         tokenGatedReferenceModule.processMirror(
             Types.ProcessMirrorParams({
                 profileId: profileId,
+                pubId: 1,
                 transactionExecutor: defaultAccount.owner,
                 pointedProfileId: publisherProfileId,
                 pointedPubId: publisherPubId,
@@ -329,6 +337,7 @@ contract TokenGatedReferenceModule_ERC20_Gated is TokenGatedReferenceModuleBase 
         tokenGatedReferenceModule.processQuote(
             Types.ProcessQuoteParams({
                 profileId: profileId,
+                pubId: 1,
                 transactionExecutor: defaultAccount.owner,
                 pointedProfileId: publisherProfileId,
                 pointedPubId: publisherPubId,
@@ -371,6 +380,7 @@ contract TokenGatedReferenceModule_ERC721_Gated is TokenGatedReferenceModuleBase
         tokenGatedReferenceModule.processComment(
             Types.ProcessCommentParams({
                 profileId: profileId,
+                pubId: 1,
                 transactionExecutor: defaultAccount.owner,
                 pointedProfileId: publisherProfileId,
                 pointedPubId: publisherPubId,
@@ -393,6 +403,7 @@ contract TokenGatedReferenceModule_ERC721_Gated is TokenGatedReferenceModuleBase
         tokenGatedReferenceModule.processMirror(
             Types.ProcessMirrorParams({
                 profileId: profileId,
+                pubId: 1,
                 transactionExecutor: defaultAccount.owner,
                 pointedProfileId: publisherProfileId,
                 pointedPubId: publisherPubId,
@@ -415,6 +426,7 @@ contract TokenGatedReferenceModule_ERC721_Gated is TokenGatedReferenceModuleBase
         tokenGatedReferenceModule.processQuote(
             Types.ProcessQuoteParams({
                 profileId: profileId,
+                pubId: 1,
                 transactionExecutor: defaultAccount.owner,
                 pointedProfileId: publisherProfileId,
                 pointedPubId: publisherPubId,
@@ -437,6 +449,7 @@ contract TokenGatedReferenceModule_ERC721_Gated is TokenGatedReferenceModuleBase
         tokenGatedReferenceModule.processComment(
             Types.ProcessCommentParams({
                 profileId: profileId,
+                pubId: 1,
                 transactionExecutor: defaultAccount.owner,
                 pointedProfileId: publisherProfileId,
                 pointedPubId: publisherPubId,
@@ -458,6 +471,7 @@ contract TokenGatedReferenceModule_ERC721_Gated is TokenGatedReferenceModuleBase
         tokenGatedReferenceModule.processMirror(
             Types.ProcessMirrorParams({
                 profileId: profileId,
+                pubId: 1,
                 transactionExecutor: defaultAccount.owner,
                 pointedProfileId: publisherProfileId,
                 pointedPubId: publisherPubId,
@@ -479,6 +493,7 @@ contract TokenGatedReferenceModule_ERC721_Gated is TokenGatedReferenceModuleBase
         tokenGatedReferenceModule.processQuote(
             Types.ProcessQuoteParams({
                 profileId: profileId,
+                pubId: 1,
                 transactionExecutor: defaultAccount.owner,
                 pointedProfileId: publisherProfileId,
                 pointedPubId: publisherPubId,

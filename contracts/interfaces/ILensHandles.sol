@@ -55,4 +55,11 @@ interface ILensHandles is IERC721 {
      * @return bool Whether the token exists.
      */
     function exists(uint256 tokenId) external view returns (bool);
+
+    /**
+     * @notice Returns the amount of tokens in circulation.
+     *
+     * @return uint256 The current total supply of tokens.
+     */
+    function totalSupply() external view returns (uint256);
 }

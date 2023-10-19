@@ -9,6 +9,8 @@ import {IERC20} from '@openzeppelin/contracts/token/ERC20/IERC20.sol';
 import {SafeERC20} from '@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol';
 import {HubRestricted} from 'contracts/base/HubRestricted.sol';
 
+import {LensModule} from 'contracts/modules/LensModule.sol';
+
 /**
  * @notice A struct containing the necessary data to execute follow actions on a given profile.
  *
@@ -28,7 +30,11 @@ struct FeeConfig {
  *
  * @notice This follow module charges a fee for every follow.
  */
-contract FeeFollowModule is FeeModuleBase, HubRestricted, IFollowModule {
+contract FeeFollowModule is LensModule, FeeModuleBase, HubRestricted, IFollowModule {
+    function supportsInterface(bytes4 interfaceID) public pure override returns (bool) {
+        return interfaceID == type(IFollowModule).interfaceId || super.supportsInterface(interfaceID);
+    }
+
     using SafeERC20 for IERC20;
 
     mapping(uint256 profileId => FeeConfig config) internal _feeConfig;
@@ -58,9 +64,7 @@ contract FeeFollowModule is FeeModuleBase, HubRestricted, IFollowModule {
                 revert Errors.InitParamsInvalid();
             }
         } else {
-            if (!_currencyWhitelisted(feeConfig.currency)) {
-                revert Errors.InitParamsInvalid();
-            }
+            _verifyErc20Currency(feeConfig.currency);
         }
         _feeConfig[profileId] = feeConfig;
         return '';
@@ -81,7 +85,13 @@ contract FeeFollowModule is FeeModuleBase, HubRestricted, IFollowModule {
         if (followTokenId == 0) {
             uint256 amount = _feeConfig[targetProfileId].amount;
             address currency = _feeConfig[targetProfileId].currency;
+
             _validateDataIsExpected(data, currency, amount);
+
+            if (amount == 0 || currency == address(0)) {
+                // If the amount is zero, we don't charge anything.
+                return '';
+            }
 
             (address treasury, uint16 treasuryFee) = _treasuryData();
             address recipient = _feeConfig[targetProfileId].recipient;
@@ -111,5 +121,9 @@ contract FeeFollowModule is FeeModuleBase, HubRestricted, IFollowModule {
      */
     function getFeeConfig(uint256 profileId) external view returns (FeeConfig memory) {
         return _feeConfig[profileId];
+    }
+
+    function getModuleMetadataURI() external pure returns (string memory) {
+        return 'https://docs.lens.xyz/';
     }
 }

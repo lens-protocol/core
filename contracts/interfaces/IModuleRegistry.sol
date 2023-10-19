@@ -12,6 +12,8 @@ interface IModuleRegistry {
 
     // Modules functions
 
+    function verifyModule(address moduleAddress, uint256 moduleType) external returns (bool);
+
     function registerModule(address moduleAddress, uint256 moduleType) external returns (bool);
 
     function getModuleTypes(address moduleAddress) external view returns (uint256);
@@ -21,6 +23,8 @@ interface IModuleRegistry {
     function isModuleRegisteredAs(address moduleAddress, uint256 moduleType) external view returns (bool);
 
     // Currencies functions
+
+    function verifyErc20Currency(address currencyAddress) external returns (bool);
 
     function registerErc20Currency(address currencyAddress) external returns (bool);
 

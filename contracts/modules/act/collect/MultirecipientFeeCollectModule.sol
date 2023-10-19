@@ -108,7 +108,7 @@ contract MultirecipientFeeCollectModule is BaseFeeCollectModule {
 
         // Zero amount for collect doesn't make sense here (in a module with 5 recipients)
         // Better use SimpleFeeCollect module instead which allows 0 amount
-        if (baseInitData.amount == 0) {
+        if (baseInitData.amount == 0 || initData.currency == address(0)) {
             revert Errors.InitParamsInvalid();
         }
         _validateBaseInitData(baseInitData);
@@ -128,36 +128,27 @@ contract MultirecipientFeeCollectModule is BaseFeeCollectModule {
         uint256 len = recipients.length;
 
         // Check number of recipients is supported
-        if (len == 0) {
+        if (len < 2) {
             revert Errors.InitParamsInvalid();
         }
 
-        // Skip loop check if only 1 recipient in the array
-        if (len == 1) {
-            if (recipients[0].split != BPS_MAX) {
-                revert InvalidRecipientSplits();
+        // Check recipient splits sum to 10 000 BPS (100%)
+        uint256 totalSplits;
+        uint256 i;
+        while (i < len) {
+            if (recipients[i].split == 0) revert RecipientSplitCannotBeZero();
+            totalSplits += recipients[i].split;
+
+            // Store each recipient while looping - avoids extra gas costs in successful cases
+            _recipientsByPublicationByProfile[profileId][pubId].push(recipients[i]);
+
+            unchecked {
+                ++i;
             }
+        }
 
-            // If single recipient passes check above, store and return
-            _recipientsByPublicationByProfile[profileId][pubId].push(recipients[0]);
-        } else {
-            // Check recipient splits sum to 10 000 BPS (100%)
-            uint256 totalSplits;
-            for (uint256 i = 0; i < len; ) {
-                if (recipients[i].split == 0) revert RecipientSplitCannotBeZero();
-                totalSplits += recipients[i].split;
-
-                // Store each recipient while looping - avoids extra gas costs in successful cases
-                _recipientsByPublicationByProfile[profileId][pubId].push(recipients[i]);
-
-                unchecked {
-                    ++i;
-                }
-            }
-
-            if (totalSplits != BPS_MAX) {
-                revert InvalidRecipientSplits();
-            }
+        if (totalSplits != BPS_MAX) {
+            revert InvalidRecipientSplits();
         }
     }
 
@@ -176,26 +167,17 @@ contract MultirecipientFeeCollectModule is BaseFeeCollectModule {
         ][processCollectParams.publicationCollectedId];
         uint256 len = recipients.length;
 
-        // If only 1 recipient, transfer full amount and skip split calculations
-        if (len == 1) {
-            IERC20(currency).safeTransferFrom(
-                processCollectParams.transactionExecutor,
-                recipients[0].recipient,
-                amount
-            );
-        } else {
-            uint256 i;
-            while (i < len) {
-                uint256 amountForRecipient = (amount * recipients[i].split) / BPS_MAX;
-                if (amountForRecipient != 0)
-                    IERC20(currency).safeTransferFrom(
-                        processCollectParams.transactionExecutor,
-                        recipients[i].recipient,
-                        amountForRecipient
-                    );
-                unchecked {
-                    ++i;
-                }
+        uint256 i;
+        while (i < len) {
+            uint256 amountForRecipient = (amount * recipients[i].split) / BPS_MAX;
+            if (amountForRecipient != 0)
+                IERC20(currency).safeTransferFrom(
+                    processCollectParams.transactionExecutor,
+                    recipients[i].recipient,
+                    amountForRecipient
+                );
+            unchecked {
+                ++i;
             }
         }
     }

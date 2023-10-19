@@ -2,7 +2,9 @@
 
 pragma solidity ^0.8.15;
 
-abstract contract MockModule {
+import {LensModule} from 'contracts/modules/LensModule.sol';
+
+abstract contract MockModule is LensModule {
     error MockModuleReverted();
 
     function testMockModule() public {
@@ -16,5 +18,9 @@ abstract contract MockModule {
             revert MockModuleReverted();
         }
         return data;
+    }
+
+    function getModuleMetadataURI() external pure override returns (string memory) {
+        return 'https://docs.lens.xyz/';
     }
 }

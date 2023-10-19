@@ -88,6 +88,7 @@ library PublicationLib {
 
         bytes memory referenceModuleReturnData = _processCommentIfNeeded(
             commentParams,
+            pubIdAssigned,
             transactionExecutor,
             referrerPubTypes
         );
@@ -134,6 +135,7 @@ library PublicationLib {
 
         bytes memory referenceModuleReturnData = _processMirrorIfNeeded(
             mirrorParams,
+            pubIdAssigned,
             transactionExecutor,
             referrerPubTypes
         );
@@ -170,6 +172,7 @@ library PublicationLib {
 
         bytes memory referenceModuleReturnData = _processQuoteIfNeeded(
             quoteParams,
+            pubIdAssigned,
             transactionExecutor,
             referrerPubTypes
         );
@@ -333,6 +336,7 @@ library PublicationLib {
 
     function _processCommentIfNeeded(
         Types.CommentParams calldata commentParams,
+        uint256 pubIdAssigned,
         address transactionExecutor,
         Types.PublicationType[] memory referrerPubTypes
     ) private returns (bytes memory) {
@@ -340,10 +344,12 @@ library PublicationLib {
             .getPublication(commentParams.pointedProfileId, commentParams.pointedPubId)
             .referenceModule;
         if (refModule != address(0)) {
+            // TODO: Test this on a fork if old modules are still supported
             try
                 IReferenceModule(refModule).processComment(
                     Types.ProcessCommentParams({
                         profileId: commentParams.profileId,
+                        pubId: pubIdAssigned,
                         transactionExecutor: transactionExecutor,
                         pointedProfileId: commentParams.pointedProfileId,
                         pointedPubId: commentParams.pointedPubId,
@@ -386,6 +392,7 @@ library PublicationLib {
 
     function _processQuoteIfNeeded(
         Types.QuoteParams calldata quoteParams,
+        uint256 pubIdAssigned,
         address transactionExecutor,
         Types.PublicationType[] memory referrerPubTypes
     ) private returns (bytes memory) {
@@ -397,6 +404,7 @@ library PublicationLib {
                 IReferenceModule(refModule).processQuote(
                     Types.ProcessQuoteParams({
                         profileId: quoteParams.profileId,
+                        pubId: pubIdAssigned,
                         transactionExecutor: transactionExecutor,
                         pointedProfileId: quoteParams.pointedProfileId,
                         pointedPubId: quoteParams.pointedPubId,
@@ -439,6 +447,7 @@ library PublicationLib {
 
     function _processMirrorIfNeeded(
         Types.MirrorParams calldata mirrorParams,
+        uint256 pubIdAssigned,
         address transactionExecutor,
         Types.PublicationType[] memory referrerPubTypes
     ) private returns (bytes memory) {
@@ -450,6 +459,7 @@ library PublicationLib {
                 IReferenceModule(refModule).processMirror(
                     Types.ProcessMirrorParams({
                         profileId: mirrorParams.profileId,
+                        pubId: pubIdAssigned,
                         transactionExecutor: transactionExecutor,
                         pointedProfileId: mirrorParams.pointedProfileId,
                         pointedPubId: mirrorParams.pointedPubId,
@@ -508,7 +518,7 @@ library PublicationLib {
 
         uint256 i;
         while (i < params.actionModules.length) {
-            MODULE_REGISTRY().registerModule(
+            MODULE_REGISTRY().verifyModule(
                 params.actionModules[i],
                 uint256(IModuleRegistry.ModuleType.PUBLICATION_ACTION_MODULE)
             );
@@ -545,7 +555,7 @@ library PublicationLib {
         if (params.referenceModule == address(0)) {
             return new bytes(0);
         }
-        MODULE_REGISTRY().registerModule(params.referenceModule, uint256(IModuleRegistry.ModuleType.REFERENCE_MODULE));
+        MODULE_REGISTRY().verifyModule(params.referenceModule, uint256(IModuleRegistry.ModuleType.REFERENCE_MODULE));
         StorageLib.getPublication(params.profileId, params.pubId).referenceModule = params.referenceModule;
         return
             IReferenceModule(params.referenceModule).initializeReferenceModule(

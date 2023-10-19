@@ -20,10 +20,33 @@ import {Typehash} from 'contracts/namespaces/constants/Typehash.sol';
  * @custom:upgradeable Transparent upgradeable proxy without initializer.
  */
 contract TokenHandleRegistry is ITokenHandleRegistry {
+    string constant EIP712_DOMAIN_VERSION = '1';
+    bytes32 constant EIP712_DOMAIN_VERSION_HASH = keccak256(bytes(EIP712_DOMAIN_VERSION));
+    bytes4 internal constant EIP1271_MAGIC_VALUE = 0x1626ba7e;
+
+    /**
+     * @dev We store the domain separator and TokenHandleRegistry Proxy address as constants to save gas.
+     *
+     * keccak256(
+     *     abi.encode(
+     *         keccak256('EIP712Domain(string name,string version,uint256 chainId,address verifyingContract)'),
+     *         keccak256('TokenHandleRegistry'), // Contract Name
+     *         keccak256('1'), // Version Hash
+     *         137, // Polygon Chain ID
+     *         address(0) // TODO: Verifying Contract Address - TokenHandleRegistry proxy Address
+     *     )
+     * );
+     */
+    bytes32 constant TOKEN_HANDLE_REGISTRY_CACHED_POLYGON_DOMAIN_SEPARATOR =
+        0xbf9544cf7d7a0338fc4f071be35409a61e51e9caef559305410ad74e16a05f2d; // TODO: Find out the deployment address
+
+    address constant TOKEN_HANDLE_REGISTRY_ADDRESS = address(0); // TODO: Find out the deployment address
+
+    uint256 constant POLYGON_CHAIN_ID = 137;
+
     // First version of TokenHandleRegistry only works with Lens Profiles and .lens namespace.
     address immutable LENS_HUB;
     address immutable LENS_HANDLES;
-    bytes4 internal constant EIP1271_MAGIC_VALUE = 0x1626ba7e;
 
     // Using _handleHash(Handle) and _tokenHash(Token) as keys given that structs cannot be used as them.
     mapping(bytes32 handle => RegistryTypes.Token token) handleToToken;
@@ -46,7 +69,7 @@ contract TokenHandleRegistry is ITokenHandleRegistry {
         _executeLinkage(
             RegistryTypes.Handle({collection: LENS_HANDLES, id: handleId}),
             RegistryTypes.Token({collection: LENS_HUB, id: profileId}),
-            msg.sender
+            address(0)
         );
     }
 
@@ -78,6 +101,14 @@ contract TokenHandleRegistry is ITokenHandleRegistry {
             RegistryTypes.Token({collection: LENS_HUB, id: profileId}),
             transactionExecutor
         );
+    }
+
+    /// @notice This function is used to invalidate signatures by incrementing the nonce
+    /// @param increment The amount to increment the nonce by
+    function incrementNonce(uint8 increment) external {
+        uint256 currentNonce = nonces[msg.sender];
+        nonces[msg.sender] = currentNonce + increment;
+        emit RegistryEvents.NonceUpdated(msg.sender, currentNonce + increment, block.timestamp);
     }
 
     function _validateLinkSignature(
@@ -153,12 +184,15 @@ contract TokenHandleRegistry is ITokenHandleRegistry {
     }
 
     function calculateDomainSeparator() internal view returns (bytes32) {
+        if (address(this) == TOKEN_HANDLE_REGISTRY_ADDRESS && block.chainid == POLYGON_CHAIN_ID) {
+            return TOKEN_HANDLE_REGISTRY_CACHED_POLYGON_DOMAIN_SEPARATOR;
+        }
         return
             keccak256(
                 abi.encode(
                     Typehash.EIP712_DOMAIN,
                     keccak256('TokenHandleRegistry'),
-                    keccak256('1'),
+                    EIP712_DOMAIN_VERSION_HASH,
                     block.chainid,
                     address(this)
                 )
