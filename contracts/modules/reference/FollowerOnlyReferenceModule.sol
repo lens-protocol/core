@@ -86,9 +86,7 @@ contract FollowerOnlyReferenceModule is LensModule, HubRestricted, IReferenceMod
         uint256 followerProfileId,
         uint256 followedProfileId
     ) internal view returns (bytes memory) {
-        if (followerProfileId != followedProfileId) {
-            FollowValidationLib.validateIsFollowing(HUB, followerProfileId, followedProfileId);
-        }
+        FollowValidationLib.validateIsFollowingOrSelf(HUB, followerProfileId, followedProfileId);
         return '';
     }
 

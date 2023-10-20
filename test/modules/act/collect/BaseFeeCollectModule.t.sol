@@ -305,6 +305,7 @@ contract BaseFeeCollectModule_ProcessCollect is BaseFeeCollectModuleBase {
         vm.assume(collectorProfileOwner != address(0));
 
         uint256 notFollowerProfileId = _createProfile(collectorProfileOwner);
+        vm.assume(notFollowerProfileId != profileId);
         vm.assume(!hub.isFollowing(notFollowerProfileId, profileId));
 
         exampleInitData.followerOnly = true;

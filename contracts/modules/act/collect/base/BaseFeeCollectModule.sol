@@ -145,7 +145,7 @@ abstract contract BaseFeeCollectModule is FeeModuleBase, ActionRestricted, IBase
                 processCollectParams.publicationCollectedId
             ].followerOnly
         ) {
-            FollowValidationLib.validateIsFollowing({
+            FollowValidationLib.validateIsFollowingOrSelf({
                 hub: HUB,
                 followerProfileId: processCollectParams.collectorProfileId,
                 followedProfileId: processCollectParams.publicationCollectedProfileId
