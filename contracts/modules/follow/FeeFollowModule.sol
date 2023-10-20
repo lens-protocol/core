@@ -124,6 +124,6 @@ contract FeeFollowModule is LensModule, FeeModuleBase, HubRestricted, IFollowMod
     }
 
     function getModuleMetadataURI() external pure returns (string memory) {
-        return 'https://docs.lens.xyz/';
+        return 'https://docs.lens.xyz/'; // TODO: Return a proper data URI here
     }
 }

@@ -289,4 +289,8 @@ abstract contract BaseFeeCollectModule is FeeModuleBase, ActionRestricted, IBase
         }
         return amount - totalReferralsAmount;
     }
+
+    function getModuleMetadataURI() external pure returns (string memory) {
+        return 'https://docs.lens.xyz/'; // TODO: Return a proper data URI here
+    }
 }
