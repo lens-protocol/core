@@ -55,6 +55,7 @@ library MetaTxLib {
                         Typehash.SET_PROFILE_METADATA_URI,
                         profileId,
                         _encodeUsingEip712Rules(metadataURI),
+                        signature.signer,
                         _getNonceIncrementAndEmitEvent(signature.signer),
                         signature.deadline
                     )
@@ -78,6 +79,7 @@ library MetaTxLib {
                         profileId,
                         followModule,
                         _encodeUsingEip712Rules(followModuleInitData),
+                        signature.signer,
                         _getNonceIncrementAndEmitEvent(signature.signer),
                         signature.deadline
                     )
@@ -107,6 +109,7 @@ library MetaTxLib {
                         _encodeUsingEip712Rules(approvals),
                         configNumber,
                         switchToGivenConfig,
+                        signer,
                         _getNonceIncrementAndEmitEvent(signer),
                         deadline
                     )
@@ -131,6 +134,7 @@ library MetaTxLib {
                         _encodeUsingEip712Rules(postParams.actionModulesInitDatas),
                         postParams.referenceModule,
                         _encodeUsingEip712Rules(postParams.referenceModuleInitData),
+                        signature.signer,
                         _getNonceIncrementAndEmitEvent(signature.signer),
                         signature.deadline
                     )
@@ -144,7 +148,10 @@ library MetaTxLib {
         Types.EIP712Signature calldata signature,
         Types.CommentParams calldata commentParams
     ) external {
-        bytes memory encodedAbi = abi.encode(
+        bytes memory encodedAbi1;
+        bytes memory encodedAbi2;
+        // I sold my soul to the devil to make this compile without Stack Too Deep
+        encodedAbi1 = abi.encode(
             Typehash.COMMENT,
             commentParams.profileId,
             _encodeUsingEip712Rules(commentParams.contentURI),
@@ -152,14 +159,18 @@ library MetaTxLib {
             commentParams.pointedPubId,
             _encodeUsingEip712Rules(commentParams.referrerProfileIds),
             _encodeUsingEip712Rules(commentParams.referrerPubIds),
-            _encodeUsingEip712Rules(commentParams.referenceModuleData),
+            _encodeUsingEip712Rules(commentParams.referenceModuleData)
+        );
+        encodedAbi2 = abi.encode(
             _encodeUsingEip712Rules(commentParams.actionModules),
             _encodeUsingEip712Rules(commentParams.actionModulesInitDatas),
             commentParams.referenceModule,
             _encodeUsingEip712Rules(commentParams.referenceModuleInitData),
+            signature.signer,
             _getNonceIncrementAndEmitEvent(signature.signer),
             signature.deadline
         );
+        bytes memory encodedAbi = abi.encodePacked(encodedAbi1, encodedAbi2);
         _validateRecoveredAddress(_calculateDigest(keccak256(encodedAbi)), signature);
     }
 
@@ -167,7 +178,9 @@ library MetaTxLib {
         Types.EIP712Signature calldata signature,
         Types.QuoteParams calldata quoteParams
     ) external {
-        bytes memory encodedAbi = abi.encode(
+        bytes memory encodedAbi1;
+        bytes memory encodedAbi2;
+        encodedAbi1 = abi.encode(
             Typehash.QUOTE,
             quoteParams.profileId,
             _encodeUsingEip712Rules(quoteParams.contentURI),
@@ -175,14 +188,18 @@ library MetaTxLib {
             quoteParams.pointedPubId,
             _encodeUsingEip712Rules(quoteParams.referrerProfileIds),
             _encodeUsingEip712Rules(quoteParams.referrerPubIds),
-            _encodeUsingEip712Rules(quoteParams.referenceModuleData),
+            _encodeUsingEip712Rules(quoteParams.referenceModuleData)
+        );
+        encodedAbi2 = abi.encode(
             _encodeUsingEip712Rules(quoteParams.actionModules),
             _encodeUsingEip712Rules(quoteParams.actionModulesInitDatas),
             quoteParams.referenceModule,
             _encodeUsingEip712Rules(quoteParams.referenceModuleInitData),
+            signature.signer,
             _getNonceIncrementAndEmitEvent(signature.signer),
             signature.deadline
         );
+        bytes memory encodedAbi = abi.encodePacked(encodedAbi1, encodedAbi2);
         _validateRecoveredAddress(_calculateDigest(keccak256(encodedAbi)), signature);
     }
 
@@ -202,6 +219,7 @@ library MetaTxLib {
                         _encodeUsingEip712Rules(mirrorParams.referrerProfileIds),
                         _encodeUsingEip712Rules(mirrorParams.referrerPubIds),
                         _encodeUsingEip712Rules(mirrorParams.referenceModuleData),
+                        signature.signer,
                         _getNonceIncrementAndEmitEvent(signature.signer),
                         signature.deadline
                     )
@@ -218,6 +236,8 @@ library MetaTxLib {
         uint256[] calldata followTokenIds,
         bytes[] calldata datas
     ) external {
+        address signer = signature.signer;
+        uint256 deadline = signature.deadline;
         _validateRecoveredAddress(
             _calculateDigest(
                 keccak256(
@@ -227,8 +247,9 @@ library MetaTxLib {
                         _encodeUsingEip712Rules(idsOfProfilesToFollow),
                         _encodeUsingEip712Rules(followTokenIds),
                         _encodeUsingEip712Rules(datas),
-                        _getNonceIncrementAndEmitEvent(signature.signer),
-                        signature.deadline
+                        signer,
+                        _getNonceIncrementAndEmitEvent(signer),
+                        deadline
                     )
                 )
             ),
@@ -241,6 +262,8 @@ library MetaTxLib {
         uint256 unfollowerProfileId,
         uint256[] calldata idsOfProfilesToUnfollow
     ) external {
+        address signer = signature.signer;
+        uint256 deadline = signature.deadline;
         _validateRecoveredAddress(
             _calculateDigest(
                 keccak256(
@@ -248,8 +271,9 @@ library MetaTxLib {
                         Typehash.UNFOLLOW,
                         unfollowerProfileId,
                         _encodeUsingEip712Rules(idsOfProfilesToUnfollow),
-                        _getNonceIncrementAndEmitEvent(signature.signer),
-                        signature.deadline
+                        signer,
+                        _getNonceIncrementAndEmitEvent(signer),
+                        deadline
                     )
                 )
             ),
@@ -271,6 +295,7 @@ library MetaTxLib {
                         byProfileId,
                         _encodeUsingEip712Rules(idsOfProfilesToSetBlockStatus),
                         _encodeUsingEip712Rules(blockStatus),
+                        signature.signer,
                         _getNonceIncrementAndEmitEvent(signature.signer),
                         signature.deadline
                     )
@@ -295,6 +320,7 @@ library MetaTxLib {
                         collectParams.referrerProfileId,
                         collectParams.referrerPubId,
                         _encodeUsingEip712Rules(collectParams.collectModuleData),
+                        signature.signer,
                         _getNonceIncrementAndEmitEvent(signature.signer),
                         signature.deadline
                     )
@@ -320,6 +346,7 @@ library MetaTxLib {
                         _encodeUsingEip712Rules(publicationActionParams.referrerPubIds),
                         publicationActionParams.actionModuleAddress,
                         _encodeUsingEip712Rules(publicationActionParams.actionModuleData),
+                        signature.signer,
                         _getNonceIncrementAndEmitEvent(signature.signer),
                         signature.deadline
                     )

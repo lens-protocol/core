@@ -187,6 +187,7 @@ contract ActMetaTxTest is ActTest, MetaTxNegatives {
                     pKey: pk,
                     digest: _getActTypedDataHash(
                         publicationActionParams,
+                        signer,
                         cachedNonceByAddress[signer],
                         type(uint256).max
                     ),
@@ -207,7 +208,7 @@ contract ActMetaTxTest is ActTest, MetaTxNegatives {
             signature: _getSigStruct({
                 signer: vm.addr(_getDefaultMetaTxSignerPk()),
                 pKey: signerPk,
-                digest: _getActTypedDataHash(actionParams, nonce, deadline),
+                digest: _getActTypedDataHash(actionParams, vm.addr(_getDefaultMetaTxSignerPk()), nonce, deadline),
                 deadline: deadline
             })
         });

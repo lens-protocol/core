@@ -151,6 +151,7 @@ contract SetFollowModuleMetaTxTest is SetFollowModuleTest, MetaTxNegatives {
                     profileId,
                     followModule,
                     followModuleInitData,
+                    signer,
                     cachedNonceByAddress[signer],
                     type(uint256).max
                 ),
@@ -171,6 +172,7 @@ contract SetFollowModuleMetaTxTest is SetFollowModuleTest, MetaTxNegatives {
                     defaultAccount.profileId,
                     mockFollowModule,
                     abi.encode(true),
+                    vm.addr(_getDefaultMetaTxSignerPk()),
                     nonce,
                     deadline
                 ),

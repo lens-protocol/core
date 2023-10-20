@@ -10,11 +10,7 @@ contract ProfileMetadataURITest is BaseTest {
         super.setUp();
     }
 
-    function _setProfileMetadataURI(
-        uint256 pk,
-        uint256 profileId,
-        string memory metadataURI
-    ) internal virtual {
+    function _setProfileMetadataURI(uint256 pk, uint256 profileId, string memory metadataURI) internal virtual {
         vm.prank(vm.addr(pk));
         hub.setProfileMetadataURI(profileId, metadataURI);
     }
@@ -107,7 +103,13 @@ contract ProfileMetadataURITest_MetaTx is ProfileMetadataURITest, MetaTxNegative
         uint256 nonce = cachedNonceByAddress[signer];
         uint256 deadline = type(uint256).max;
 
-        bytes32 digest = _getSetProfileMetadataURITypedDataHash(defaultAccount.profileId, MOCK_URI, nonce, deadline);
+        bytes32 digest = _getSetProfileMetadataURITypedDataHash(
+            defaultAccount.profileId,
+            MOCK_URI,
+            signer,
+            nonce,
+            deadline
+        );
 
         hub.setProfileMetadataURIWithSig({
             profileId: defaultAccount.profileId,
@@ -116,12 +118,14 @@ contract ProfileMetadataURITest_MetaTx is ProfileMetadataURITest, MetaTxNegative
         });
     }
 
-    function _executeMetaTx(
-        uint256 signerPk,
-        uint256 nonce,
-        uint256 deadline
-    ) internal virtual override {
-        bytes32 digest = _getSetProfileMetadataURITypedDataHash(defaultAccount.profileId, MOCK_URI, nonce, deadline);
+    function _executeMetaTx(uint256 signerPk, uint256 nonce, uint256 deadline) internal virtual override {
+        bytes32 digest = _getSetProfileMetadataURITypedDataHash(
+            defaultAccount.profileId,
+            MOCK_URI,
+            vm.addr(_getDefaultMetaTxSignerPk()),
+            nonce,
+            deadline
+        );
 
         hub.setProfileMetadataURIWithSig({
             profileId: defaultAccount.profileId,

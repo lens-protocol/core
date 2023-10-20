@@ -131,6 +131,7 @@ contract CommentMetaTxTest is CommentTest, MetaTxNegatives {
                     pKey: signerPk,
                     digest: _getCommentTypedDataHash({
                         commentParams: commentParams,
+                        signer: signer,
                         nonce: cachedNonceByAddress[signer],
                         deadline: type(uint256).max
                     }),
@@ -146,7 +147,7 @@ contract CommentMetaTxTest is CommentTest, MetaTxNegatives {
             _getSigStruct({
                 signer: vm.addr(_getDefaultMetaTxSignerPk()),
                 pKey: signerPk,
-                digest: _getCommentTypedDataHash(commentParams, nonce, deadline),
+                digest: _getCommentTypedDataHash(commentParams, vm.addr(_getDefaultMetaTxSignerPk()), nonce, deadline),
                 deadline: deadline
             })
         );

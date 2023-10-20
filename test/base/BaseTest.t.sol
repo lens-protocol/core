@@ -52,6 +52,7 @@ contract BaseTest is TestSetup {
     function _getSetProfileMetadataURITypedDataHash(
         uint256 profileId,
         string memory metadataURI,
+        address signer,
         uint256 nonce,
         uint256 deadline
     ) internal view returns (bytes32) {
@@ -60,6 +61,7 @@ contract BaseTest is TestSetup {
                 Typehash.SET_PROFILE_METADATA_URI,
                 profileId,
                 _encodeUsingEip712Rules(metadataURI),
+                signer,
                 nonce,
                 deadline
             )
@@ -71,6 +73,7 @@ contract BaseTest is TestSetup {
         uint256 profileId,
         address followModule,
         bytes memory followModuleInitData,
+        address signer,
         uint256 nonce,
         uint256 deadline
     ) internal view returns (bytes32) {
@@ -80,6 +83,7 @@ contract BaseTest is TestSetup {
                 profileId,
                 followModule,
                 _encodeUsingEip712Rules(followModuleInitData),
+                signer,
                 nonce,
                 deadline
             )
@@ -93,6 +97,7 @@ contract BaseTest is TestSetup {
         address[] memory delegatedExecutors,
         bool[] memory approvals,
         bool switchToGivenConfig,
+        address signer,
         uint256 nonce,
         uint256 deadline
     ) internal view returns (bytes32) {
@@ -104,6 +109,7 @@ contract BaseTest is TestSetup {
                 _encodeUsingEip712Rules(approvals),
                 configNumber,
                 switchToGivenConfig,
+                signer,
                 nonce,
                 deadline
             )
@@ -118,6 +124,7 @@ contract BaseTest is TestSetup {
         bytes[] memory actionModulesInitDatas,
         address referenceModule,
         bytes memory referenceModuleInitData,
+        address signer,
         uint256 nonce,
         uint256 deadline
     ) internal view returns (bytes32) {
@@ -130,6 +137,7 @@ contract BaseTest is TestSetup {
                 _encodeUsingEip712Rules(actionModulesInitDatas),
                 referenceModule,
                 _encodeUsingEip712Rules(referenceModuleInitData),
+                signer,
                 nonce,
                 deadline
             )
@@ -139,6 +147,7 @@ contract BaseTest is TestSetup {
 
     function _getPostTypedDataHash(
         Types.PostParams memory postParams,
+        address signer,
         uint256 nonce,
         uint256 deadline
     ) internal view returns (bytes32) {
@@ -150,93 +159,77 @@ contract BaseTest is TestSetup {
                 actionModulesInitDatas: postParams.actionModulesInitDatas,
                 referenceModule: postParams.referenceModule,
                 referenceModuleInitData: postParams.referenceModuleInitData,
+                signer: signer,
                 nonce: nonce,
                 deadline: deadline
             });
     }
 
-    // We need this to deal with stack too deep:
-    struct ReferenceParamsForAbiEncode {
-        bytes32 typehash;
-        uint256 profileId;
-        bytes32 contentURIHash;
-        uint256 pointedProfileId;
-        uint256 pointedPubId;
-        bytes32 referrerProfileIds;
-        bytes32 referrerPubIds;
-        bytes32 referenceModuleDataHash;
-        bytes32 actionModules;
-        bytes32 actionModulesInitDataHash;
-        address referenceModule;
-        bytes32 referenceModuleInitDataHash;
-        uint256 nonce;
-        uint256 deadline;
-    }
-
-    function _abiEncode(
-        ReferenceParamsForAbiEncode memory referenceParamsForAbiEncode
-    ) private pure returns (bytes memory) {
-        return abi.encode(referenceParamsForAbiEncode);
-    }
-
     function _getCommentTypedDataHash(
         Types.CommentParams memory commentParams,
+        address signer,
         uint256 nonce,
         uint256 deadline
     ) internal view returns (bytes32) {
-        bytes32 structHash = keccak256(
-            _abiEncode(
-                ReferenceParamsForAbiEncode(
-                    Typehash.COMMENT,
-                    commentParams.profileId,
-                    _encodeUsingEip712Rules(commentParams.contentURI),
-                    commentParams.pointedProfileId,
-                    commentParams.pointedPubId,
-                    _encodeUsingEip712Rules(commentParams.referrerProfileIds),
-                    _encodeUsingEip712Rules(commentParams.referrerPubIds),
-                    _encodeUsingEip712Rules(commentParams.referenceModuleData),
-                    _encodeUsingEip712Rules(commentParams.actionModules),
-                    _encodeUsingEip712Rules(commentParams.actionModulesInitDatas),
-                    commentParams.referenceModule,
-                    _encodeUsingEip712Rules(commentParams.referenceModuleInitData),
-                    nonce,
-                    deadline
-                )
-            )
+        bytes memory encodedAbi1;
+        bytes memory encodedAbi2;
+        encodedAbi1 = abi.encode(
+            Typehash.COMMENT,
+            commentParams.profileId,
+            _encodeUsingEip712Rules(commentParams.contentURI),
+            commentParams.pointedProfileId,
+            commentParams.pointedPubId,
+            _encodeUsingEip712Rules(commentParams.referrerProfileIds)
         );
+        encodedAbi2 = abi.encode(
+            _encodeUsingEip712Rules(commentParams.referrerPubIds),
+            _encodeUsingEip712Rules(commentParams.referenceModuleData),
+            _encodeUsingEip712Rules(commentParams.actionModules),
+            _encodeUsingEip712Rules(commentParams.actionModulesInitDatas),
+            commentParams.referenceModule,
+            _encodeUsingEip712Rules(commentParams.referenceModuleInitData),
+            signer,
+            nonce,
+            deadline
+        );
+        bytes32 structHash = keccak256(abi.encodePacked(encodedAbi1, encodedAbi2));
         return _calculateDigest(structHash);
     }
 
     function _getQuoteTypedDataHash(
         Types.QuoteParams memory quoteParams,
+        address signer,
         uint256 nonce,
         uint256 deadline
     ) internal view returns (bytes32) {
-        bytes32 structHash = keccak256(
-            _abiEncode(
-                ReferenceParamsForAbiEncode(
-                    Typehash.QUOTE,
-                    quoteParams.profileId,
-                    _encodeUsingEip712Rules(quoteParams.contentURI),
-                    quoteParams.pointedProfileId,
-                    quoteParams.pointedPubId,
-                    _encodeUsingEip712Rules(quoteParams.referrerProfileIds),
-                    _encodeUsingEip712Rules(quoteParams.referrerPubIds),
-                    _encodeUsingEip712Rules(quoteParams.referenceModuleData),
-                    _encodeUsingEip712Rules(quoteParams.actionModules),
-                    _encodeUsingEip712Rules(quoteParams.actionModulesInitDatas),
-                    quoteParams.referenceModule,
-                    _encodeUsingEip712Rules(quoteParams.referenceModuleInitData),
-                    nonce,
-                    deadline
-                )
-            )
+        bytes memory encodedAbi1;
+        bytes memory encodedAbi2;
+        encodedAbi1 = abi.encode(
+            Typehash.QUOTE,
+            quoteParams.profileId,
+            _encodeUsingEip712Rules(quoteParams.contentURI),
+            quoteParams.pointedProfileId,
+            quoteParams.pointedPubId,
+            _encodeUsingEip712Rules(quoteParams.referrerProfileIds),
+            _encodeUsingEip712Rules(quoteParams.referrerPubIds)
         );
+        encodedAbi2 = abi.encode(
+            _encodeUsingEip712Rules(quoteParams.referenceModuleData),
+            _encodeUsingEip712Rules(quoteParams.actionModules),
+            _encodeUsingEip712Rules(quoteParams.actionModulesInitDatas),
+            quoteParams.referenceModule,
+            _encodeUsingEip712Rules(quoteParams.referenceModuleInitData),
+            signer,
+            nonce,
+            deadline
+        );
+        bytes32 structHash = keccak256(abi.encodePacked(encodedAbi1, encodedAbi2));
         return _calculateDigest(structHash);
     }
 
     function _getMirrorTypedDataHash(
         Types.MirrorParams memory mirrorParams,
+        address signer,
         uint256 nonce,
         uint256 deadline
     ) internal view returns (bytes32) {
@@ -250,6 +243,7 @@ contract BaseTest is TestSetup {
                 _encodeUsingEip712Rules(mirrorParams.referrerProfileIds),
                 _encodeUsingEip712Rules(mirrorParams.referrerPubIds),
                 _encodeUsingEip712Rules(mirrorParams.referenceModuleData),
+                signer,
                 nonce,
                 deadline
             )
@@ -262,6 +256,7 @@ contract BaseTest is TestSetup {
         uint256[] memory idsOfProfilesToFollow,
         uint256[] memory followTokenIds,
         bytes[] memory datas,
+        address signer,
         uint256 nonce,
         uint256 deadline
     ) internal view returns (bytes32) {
@@ -272,6 +267,7 @@ contract BaseTest is TestSetup {
                 _encodeUsingEip712Rules(idsOfProfilesToFollow),
                 _encodeUsingEip712Rules(followTokenIds),
                 _encodeUsingEip712Rules(datas),
+                signer,
                 nonce,
                 deadline
             )
@@ -281,6 +277,7 @@ contract BaseTest is TestSetup {
 
     function _getActTypedDataHash(
         Types.PublicationActionParams memory publicationActionParams,
+        address signer,
         uint256 nonce,
         uint256 deadline
     ) internal view returns (bytes32) {
@@ -294,6 +291,7 @@ contract BaseTest is TestSetup {
                 _encodeUsingEip712Rules(publicationActionParams.referrerPubIds),
                 publicationActionParams.actionModuleAddress,
                 _encodeUsingEip712Rules(publicationActionParams.actionModuleData),
+                signer,
                 nonce,
                 deadline
             )

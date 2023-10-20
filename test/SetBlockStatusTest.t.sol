@@ -284,6 +284,7 @@ contract SetBlockStatusMetaTxTest is SetBlockStatusTest, MetaTxNegatives {
                     byProfileId: byProfileId,
                     idsOfProfilesToSetBlockStatus: idsOfProfilesToSetBlockStatus,
                     blockStatus: blockStatus,
+                    signer: signer,
                     nonce: cachedNonceByAddress[signer],
                     deadline: type(uint256).max
                 }),
@@ -292,11 +293,7 @@ contract SetBlockStatusMetaTxTest is SetBlockStatusTest, MetaTxNegatives {
         });
     }
 
-    function _executeMetaTx(
-        uint256 signerPk,
-        uint256 nonce,
-        uint256 deadline
-    ) internal override {
+    function _executeMetaTx(uint256 signerPk, uint256 nonce, uint256 deadline) internal override {
         hub.setBlockStatusWithSig({
             byProfileId: statusSetterProfileId,
             idsOfProfilesToSetBlockStatus: _toUint256Array(blockeeProfileId),
@@ -308,6 +305,7 @@ contract SetBlockStatusMetaTxTest is SetBlockStatusTest, MetaTxNegatives {
                     byProfileId: statusSetterProfileId,
                     idsOfProfilesToSetBlockStatus: _toUint256Array(blockeeProfileId),
                     blockStatus: _toBoolArray(true),
+                    signer: vm.addr(_getDefaultMetaTxSignerPk()),
                     nonce: nonce,
                     deadline: deadline
                 }),
@@ -330,6 +328,7 @@ contract SetBlockStatusMetaTxTest is SetBlockStatusTest, MetaTxNegatives {
         uint256 byProfileId,
         uint256[] memory idsOfProfilesToSetBlockStatus,
         bool[] memory blockStatus,
+        address signer,
         uint256 nonce,
         uint256 deadline
     ) internal view returns (bytes32) {
@@ -341,6 +340,7 @@ contract SetBlockStatusMetaTxTest is SetBlockStatusTest, MetaTxNegatives {
                         byProfileId,
                         keccak256(abi.encodePacked(idsOfProfilesToSetBlockStatus)),
                         keccak256(abi.encodePacked(blockStatus)),
+                        signer,
                         nonce,
                         deadline
                     )
