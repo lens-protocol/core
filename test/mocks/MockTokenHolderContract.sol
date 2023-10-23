@@ -15,14 +15,17 @@ interface IGuardedToken is IERC721 {
 }
 
 contract MockTokenHolderContract is IERC721Receiver {
+    // add this to be excluded from coverage report
+    function testMockTokenHolderContract() public {}
+
     address _collection;
     uint256 _tokenId;
 
     ////////////////////// SETTERS & DEPOSIT FUNCTIONS ////////////
 
     function onERC721Received(
-        address, /* operator */
-        address, /* from */
+        address /* operator */,
+        address /* from */,
         uint256 tokenId,
         bytes calldata /* data */
     ) public virtual override returns (bytes4) {
@@ -31,11 +34,7 @@ contract MockTokenHolderContract is IERC721Receiver {
         return IERC721Receiver.onERC721Received.selector;
     }
 
-    function depositNft(
-        address collection,
-        address from,
-        uint256 tokenId
-    ) external {
+    function depositNft(address collection, address from, uint256 tokenId) external {
         _collection = collection;
         _tokenId = tokenId;
         IERC721(collection).transferFrom(from, address(this), tokenId);

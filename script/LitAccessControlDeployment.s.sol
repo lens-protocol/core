@@ -7,6 +7,9 @@ import {LitAccessControl} from 'contracts/misc/access/LitAccessControl.sol';
 import {TransparentUpgradeableProxy} from '@openzeppelin/contracts/proxy/transparent/TransparentUpgradeableProxy.sol';
 
 contract LitAccessControlDeployment is Script, ForkManagement {
+    // add this to be excluded from coverage report
+    function testLitAccessControlDeployment() public {}
+
     using stdJson for string;
 
     string mnemonic;

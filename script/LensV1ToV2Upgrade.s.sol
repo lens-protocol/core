@@ -10,6 +10,9 @@ import {ProxyAdmin} from 'contracts/misc/access/ProxyAdmin.sol';
 import {TransparentUpgradeableProxy} from '@openzeppelin/contracts/proxy/transparent/TransparentUpgradeableProxy.sol';
 
 contract LensV1ToV2Upgrade is Script, ForkManagement {
+    // add this to be excluded from coverage report
+    function testLensV1ToV2Upgrade() public {}
+
     using stdJson for string;
 
     bytes32 constant ADMIN_SLOT = bytes32(uint256(keccak256('eip1967.proxy.admin')) - 1);

@@ -4,6 +4,9 @@ pragma solidity ^0.8.10;
 import 'forge-std/Script.sol';
 
 contract ForkManagement is Script {
+    // add this to be excluded from coverage report
+    function testForkManagement() public {}
+
     using stdJson for string;
 
     string targetEnv;

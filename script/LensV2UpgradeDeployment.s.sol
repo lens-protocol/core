@@ -23,6 +23,9 @@ import {LegacyCollectNFT} from 'contracts/misc/LegacyCollectNFT.sol';
 import {ArrayHelpers} from 'test/helpers/ArrayHelpers.sol';
 
 contract LensV2UpgradeDeployment is Script, ForkManagement, ArrayHelpers {
+    // add this to be excluded from coverage report
+    function testLensV2UpgradeDeployment() public {}
+
     using stdJson for string;
 
     bytes32 constant ADMIN_SLOT = bytes32(uint256(keccak256('eip1967.proxy.admin')) - 1);

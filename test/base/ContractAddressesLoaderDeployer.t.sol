@@ -18,6 +18,9 @@ import {ModuleRegistry} from 'contracts/misc/ModuleRegistry.sol';
 contract ContractAddressesLoaderDeployer is Test, ForkManagement {
     using stdJson for string;
 
+    // add this to be excluded from coverage report
+    function testContractAddressesLoaderDeployer() public {}
+
     function loadOrDeploy_GovernanceContract() internal {
         if (fork) {
             if (keyExists(json, string(abi.encodePacked('.', forkEnv, '.GovernanceContract')))) {

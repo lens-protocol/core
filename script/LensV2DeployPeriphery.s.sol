@@ -36,6 +36,9 @@ import {LitAccessControl} from 'contracts/misc/access/LitAccessControl.sol';
 import {ArrayHelpers} from 'test/helpers/ArrayHelpers.sol';
 
 contract LensV2DeployPeriphery is Script, ForkManagement, ArrayHelpers {
+    // add this to be excluded from coverage report
+    function testLensV2DeployPeriphery() public {}
+
     using stdJson for string;
 
     string addressesFile = 'addressesV2.txt';
