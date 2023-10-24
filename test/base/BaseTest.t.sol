@@ -4,6 +4,7 @@ pragma solidity ^0.8.13;
 import 'test/base/TestSetup.t.sol';
 import 'contracts/libraries/constants/Types.sol';
 import {Typehash} from 'contracts/libraries/constants/Typehash.sol';
+import {Typehash as NamespacesTypehash} from 'contracts/namespaces/constants/Typehash.sol';
 import {Strings} from '@openzeppelin/contracts/utils/Strings.sol';
 import {Address} from '@openzeppelin/contracts/utils/Address.sol';
 
@@ -291,6 +292,26 @@ contract BaseTest is TestSetup {
                 _encodeUsingEip712Rules(publicationActionParams.referrerPubIds),
                 publicationActionParams.actionModuleAddress,
                 _encodeUsingEip712Rules(publicationActionParams.actionModuleData),
+                signer,
+                nonce,
+                deadline
+            )
+        );
+        return _calculateDigest(structHash);
+    }
+
+    function _getLinkTypedDataHash(
+        uint256 handleId,
+        uint256 profileId,
+        address signer,
+        uint256 nonce,
+        uint256 deadline
+    ) internal view returns (bytes32) {
+        bytes32 structHash = keccak256(
+            abi.encode(
+                NamespacesTypehash.LINK,
+                handleId,
+                profileId,
                 signer,
                 nonce,
                 deadline
