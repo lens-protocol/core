@@ -13,6 +13,7 @@ import {CollectPublicationAction} from 'contracts/modules/act/collect/CollectPub
  * @notice This contract enables additional access control for encrypted publications on Lens by reporting whether
  *      an address owns or has control over a given profile.
  *
+ * @custom:upgradeable Transparent upgradeable proxy without initializer.
  */
 contract LitAccessControl {
     address internal immutable LENS_HUB;

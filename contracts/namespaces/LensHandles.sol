@@ -23,6 +23,8 @@ import {IERC165} from '@openzeppelin/contracts/utils/introspection/IERC165.sol';
  * Handle and local name can be used interchangeably once you are in a context of a namespace, as it became redundant.
  *
  *      handle === ${localName} ; inside some namespace.
+ *
+ * @custom:upgradeable Transparent upgradeable proxy without initializer.
  */
 contract LensHandles is ERC721, ERC2981CollectionRoyalties, ImmutableOwnable, ILensHandles {
     using Address for address;
