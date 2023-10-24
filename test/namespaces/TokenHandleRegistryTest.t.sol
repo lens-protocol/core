@@ -274,6 +274,44 @@ contract TokenHandleRegistryTest is BaseTest {
         assertEq(tokenHandleRegistry.getDefaultHandle(profileId), handleId);
     }
 
+    function testFreshLinkWithSig() public {
+        uint256 holderPk = 0x401DE8;
+        address holder = vm.addr(holderPk);
+
+        _effectivelyDisableGuardian(address(lensHandles), initialHandleHolder);
+        vm.prank(initialHandleHolder);
+        lensHandles.transferFrom(initialHandleHolder, holder, handleId);
+
+        _effectivelyDisableProfileGuardian(initialProfileHolder);
+        vm.prank(initialProfileHolder);
+        hub.transferFrom(initialProfileHolder, holder, profileId);
+
+        RegistryTypes.Handle memory handle = RegistryTypes.Handle({collection: address(lensHandles), id: handleId});
+        RegistryTypes.Token memory token = RegistryTypes.Token({collection: address(hub), id: profileId});
+
+        vm.expectEmit(true, true, true, true, address(tokenHandleRegistry));
+        emit RegistryEvents.HandleLinked(handle, token, holder, block.timestamp);
+
+        Types.EIP712Signature memory sig = _getSigStruct({
+            signer: holder,
+            pKey: holderPk,
+            digest: _getLinkTypedDataHash({
+                handleId: handleId,
+                profileId: profileId,
+                signer: holder,
+                nonce: hub.nonces(holder),
+                deadline: type(uint256).max
+            }),
+            deadline: type(uint256).max
+        });
+
+        vm.prank(holder);
+        tokenHandleRegistry.linkWithSig(handleId, profileId, sig);
+
+        assertEq(tokenHandleRegistry.resolve(handleId), profileId);
+        assertEq(tokenHandleRegistry.getDefaultHandle(profileId), handleId);
+    }
+
     function testLink_AfterHandleWasMoved(address firstHolder, address newHolder) public {
         vm.assume(firstHolder != address(0));
         vm.assume(!_isLensHubProxyAdmin(firstHolder));
