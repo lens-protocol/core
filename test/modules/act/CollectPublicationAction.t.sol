@@ -2,11 +2,10 @@
 pragma solidity ^0.8.19;
 
 import 'test/base/BaseTest.t.sol';
-import {ICollectModule} from 'contracts/interfaces/ICollectModule.sol';
+import {ICollectModule} from 'contracts/modules/interfaces/ICollectModule.sol';
 import {CollectPublicationAction} from 'contracts/modules/act/collect/CollectPublicationAction.sol';
 import {CollectNFT} from 'contracts/modules/act/collect/CollectNFT.sol';
 import {MockCollectModule} from 'test/mocks/MockCollectModule.sol';
-import {Events} from 'contracts/libraries/constants/Events.sol';
 import {Strings} from '@openzeppelin/contracts/utils/Strings.sol';
 
 contract CollectPublicationActionTest is BaseTest {

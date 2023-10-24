@@ -3,7 +3,7 @@ pragma solidity ^0.8.10;
 
 import {BaseFeeCollectModule} from 'contracts/modules/act/collect/base/BaseFeeCollectModule.sol';
 import {BaseFeeCollectModuleInitData, BaseProfilePublicationData} from 'contracts/modules/interfaces/IBaseFeeCollectModule.sol';
-import {ICollectModule} from 'contracts/interfaces/ICollectModule.sol';
+import {ICollectModule} from 'contracts/modules/interfaces/ICollectModule.sol';
 
 /**
  * @title SimpleFeeCollectModule

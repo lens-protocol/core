@@ -33,23 +33,20 @@ contract ProfileCreationProxy is ImmutableOwnable {
         TOKEN_HANDLE_REGISTRY = ITokenHandleRegistry(tokenHandleRegistry);
     }
 
-    function proxyCreateProfile(Types.CreateProfileParams calldata createProfileParams)
-        external
-        onlyOwner
-        returns (uint256)
-    {
+    function proxyCreateProfile(
+        Types.CreateProfileParams calldata createProfileParams
+    ) external onlyOwner returns (uint256) {
         return ILensHub(LENS_HUB).createProfile(createProfileParams);
     }
 
-    function proxyCreateProfileWithHandle(Types.CreateProfileParams memory createProfileParams, string calldata handle)
-        external
-        onlyOwner
-        returns (uint256, uint256)
-    {
+    function proxyCreateProfileWithHandle(
+        Types.CreateProfileParams memory createProfileParams,
+        string calldata handle
+    ) external onlyOwner returns (uint256, uint256) {
         // Check if LensHubV1 already has a profile with this handle that was not migrated yet:
         bytes32 handleHash = keccak256(bytes(string.concat(handle, '.lens')));
         if (LensV2Migration(LENS_HUB).getProfileIdByHandleHash(handleHash) != 0) {
-            revert ProfileAlreadyExists(); // TODO: Should we move this to some Errors library? so we can test it easier
+            revert ProfileAlreadyExists();
         }
 
         // We mint the handle & profile to this contract first, then link it to the profile

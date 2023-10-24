@@ -2,8 +2,8 @@
 
 pragma solidity ^0.8.15;
 
-import {ICollectModule} from 'contracts/interfaces/ICollectModule.sol';
-import {Types} from 'contracts/libraries/constants/Types.sol';
+import {ICollectModule} from 'contracts/modules/interfaces/ICollectModule.sol';
+import {ModuleTypes} from 'contracts/modules/libraries/constants/ModuleTypes.sol';
 import {MockModule} from 'test/mocks/MockModule.sol';
 
 /**
@@ -36,7 +36,7 @@ contract MockCollectModule is MockModule, ICollectModule {
      *  1. Ensuring the collector is a follower, if needed
      */
     function processCollect(
-        Types.ProcessCollectParams calldata processCollectParams
+        ModuleTypes.ProcessCollectParams calldata processCollectParams
     ) external pure override returns (bytes memory) {
         return _decodeFlagAndRevertIfFalse(processCollectParams.data);
     }

@@ -1,8 +1,8 @@
 // SPDX-License-Identifier: MIT
 pragma solidity >=0.6.0;
 
-import {ICollectModule} from 'contracts/interfaces/ICollectModule.sol';
-import {Types} from 'contracts/libraries/constants/Types.sol';
+import {ICollectModule} from 'contracts/modules/interfaces/ICollectModule.sol';
+import {ModuleTypes} from 'contracts/modules/libraries/constants/ModuleTypes.sol';
 
 /**
  * @notice A struct containing the necessary data to execute collect actions on a publication.
@@ -58,10 +58,10 @@ interface IBaseFeeCollectModule is ICollectModule {
      *
      * @return The BaseProfilePublicationData struct mapped to that publication.
      */
-    function getBasePublicationData(uint256 profileId, uint256 pubId)
-        external
-        view
-        returns (BaseProfilePublicationData memory);
+    function getBasePublicationData(
+        uint256 profileId,
+        uint256 pubId
+    ) external view returns (BaseProfilePublicationData memory);
 
     /**
      * @notice Calculates and returns the collect fee of a publication.
@@ -69,5 +69,7 @@ interface IBaseFeeCollectModule is ICollectModule {
      *
      * @return The collect fee of the specified publication.
      */
-    function calculateFee(Types.ProcessCollectParams calldata processCollectParams) external view returns (uint160);
+    function calculateFee(
+        ModuleTypes.ProcessCollectParams calldata processCollectParams
+    ) external view returns (uint160);
 }

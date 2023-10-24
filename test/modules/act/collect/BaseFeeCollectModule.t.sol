@@ -4,6 +4,7 @@ pragma solidity ^0.8.10;
 import {BaseFeeCollectModuleBase} from 'test/modules/act/collect/BaseFeeCollectModule.base.t.sol';
 import {IBaseFeeCollectModule, BaseProfilePublicationData} from 'contracts/modules/interfaces/IBaseFeeCollectModule.sol';
 import {Types} from 'contracts/libraries/constants/Types.sol';
+import {ModuleTypes} from 'contracts/modules/libraries/constants/ModuleTypes.sol';
 import {Errors as ModuleErrors} from 'contracts/modules/constants/Errors.sol';
 import {Errors} from 'contracts/libraries/constants/Errors.sol';
 import {MockCurrency} from 'test/mocks/MockCurrency.sol';
@@ -188,7 +189,7 @@ contract BaseFeeCollectModule_ProcessCollect is BaseFeeCollectModuleBase {
 
         vm.prank(nonActionModule);
         IBaseFeeCollectModule(baseFeeCollectModule).processCollect(
-            Types.ProcessCollectParams({
+            ModuleTypes.ProcessCollectParams({
                 publicationCollectedProfileId: publicationCollectedProfileId,
                 publicationCollectedId: publicationCollectedId,
                 collectorProfileId: collectorProfileId,
@@ -233,7 +234,7 @@ contract BaseFeeCollectModule_ProcessCollect is BaseFeeCollectModuleBase {
 
         vm.prank(address(collectPublicationAction));
         IBaseFeeCollectModule(baseFeeCollectModule).processCollect(
-            Types.ProcessCollectParams({
+            ModuleTypes.ProcessCollectParams({
                 publicationCollectedProfileId: profileId,
                 publicationCollectedId: pubId,
                 collectorProfileId: collectorProfileId,
@@ -279,7 +280,7 @@ contract BaseFeeCollectModule_ProcessCollect is BaseFeeCollectModuleBase {
 
         vm.prank(address(collectPublicationAction));
         IBaseFeeCollectModule(baseFeeCollectModule).processCollect(
-            Types.ProcessCollectParams({
+            ModuleTypes.ProcessCollectParams({
                 publicationCollectedProfileId: profileId,
                 publicationCollectedId: pubId,
                 collectorProfileId: collectorProfileId,
@@ -322,7 +323,7 @@ contract BaseFeeCollectModule_ProcessCollect is BaseFeeCollectModuleBase {
 
         vm.prank(address(collectPublicationAction));
         IBaseFeeCollectModule(baseFeeCollectModule).processCollect(
-            Types.ProcessCollectParams({
+            ModuleTypes.ProcessCollectParams({
                 publicationCollectedProfileId: profileId,
                 publicationCollectedId: pubId,
                 collectorProfileId: notFollowerProfileId,
@@ -366,7 +367,7 @@ contract BaseFeeCollectModule_ProcessCollect is BaseFeeCollectModuleBase {
         vm.startPrank(collectPublicationAction);
         vm.expectRevert(ModuleErrors.CollectExpired.selector);
         IBaseFeeCollectModule(baseFeeCollectModule).processCollect(
-            Types.ProcessCollectParams({
+            ModuleTypes.ProcessCollectParams({
                 publicationCollectedProfileId: profileId,
                 publicationCollectedId: pubId,
                 collectorProfileId: collectorProfileId,
@@ -410,7 +411,7 @@ contract BaseFeeCollectModule_ProcessCollect is BaseFeeCollectModuleBase {
         for (uint256 i = 0; i < exampleInitData.collectLimit; i++) {
             vm.prank(collectPublicationAction);
             IBaseFeeCollectModule(baseFeeCollectModule).processCollect(
-                Types.ProcessCollectParams({
+                ModuleTypes.ProcessCollectParams({
                     publicationCollectedProfileId: profileId,
                     publicationCollectedId: pubId,
                     collectorProfileId: collectorProfileId,
@@ -427,7 +428,7 @@ contract BaseFeeCollectModule_ProcessCollect is BaseFeeCollectModuleBase {
         vm.expectRevert(ModuleErrors.MintLimitExceeded.selector);
         vm.prank(collectPublicationAction);
         IBaseFeeCollectModule(baseFeeCollectModule).processCollect(
-            Types.ProcessCollectParams({
+            ModuleTypes.ProcessCollectParams({
                 publicationCollectedProfileId: profileId,
                 publicationCollectedId: pubId,
                 collectorProfileId: collectorProfileId,
@@ -505,7 +506,7 @@ contract BaseFeeCollectModule_ProcessCollect is BaseFeeCollectModuleBase {
 
         vm.prank(collectPublicationAction);
         IBaseFeeCollectModule(baseFeeCollectModule).processCollect(
-            Types.ProcessCollectParams({
+            ModuleTypes.ProcessCollectParams({
                 publicationCollectedProfileId: profileId,
                 publicationCollectedId: pubId,
                 collectorProfileId: collectorProfileId,
@@ -551,7 +552,7 @@ contract BaseFeeCollectModule_ProcessCollect is BaseFeeCollectModuleBase {
         for (uint256 collects = 1; collects < 5; collects++) {
             vm.prank(collectPublicationAction);
             IBaseFeeCollectModule(baseFeeCollectModule).processCollect(
-                Types.ProcessCollectParams({
+                ModuleTypes.ProcessCollectParams({
                     publicationCollectedProfileId: profileId,
                     publicationCollectedId: pubId,
                     collectorProfileId: collectorProfileId,
@@ -656,7 +657,7 @@ contract BaseFeeCollectModule_FeeDistribution is BaseFeeCollectModuleBase {
 
         vm.prank(collectPublicationAction);
         IBaseFeeCollectModule(baseFeeCollectModule).processCollect(
-            Types.ProcessCollectParams({
+            ModuleTypes.ProcessCollectParams({
                 publicationCollectedProfileId: profileId,
                 publicationCollectedId: pubId,
                 collectorProfileId: collectorProfileId,

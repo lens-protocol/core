@@ -3,9 +3,10 @@
 pragma solidity ^0.8.18;
 
 import {IPublicationActionModule} from 'contracts/interfaces/IPublicationActionModule.sol';
-import {ICollectModule} from 'contracts/interfaces/ICollectModule.sol';
+import {ICollectModule} from 'contracts/modules/interfaces/ICollectModule.sol';
 import {ICollectNFT} from 'contracts/interfaces/ICollectNFT.sol';
 import {Types} from 'contracts/libraries/constants/Types.sol';
+import {ModuleTypes} from 'contracts/modules/libraries/constants/ModuleTypes.sol';
 import {Clones} from '@openzeppelin/contracts/proxy/Clones.sol';
 import {Errors} from 'contracts/modules/constants/Errors.sol';
 import {HubRestricted} from 'contracts/base/HubRestricted.sol';
@@ -190,7 +191,7 @@ contract CollectPublicationAction is LensModule, HubRestricted, IPublicationActi
     ) private returns (bytes memory) {
         return
             ICollectModule(collectModule).processCollect(
-                Types.ProcessCollectParams({
+                ModuleTypes.ProcessCollectParams({
                     publicationCollectedProfileId: processActionParams.publicationActedProfileId,
                     publicationCollectedId: processActionParams.publicationActedId,
                     collectorProfileId: processActionParams.actorProfileId,

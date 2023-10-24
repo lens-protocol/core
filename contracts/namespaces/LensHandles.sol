@@ -294,7 +294,6 @@ contract LensHandles is ERC721, ERC2981CollectionRoyalties, ImmutableOwnable, IL
 
     function _beforeRoyaltiesSet(uint256 /* royaltiesInBasisPoints */) internal view override {
         if (msg.sender != OWNER) {
-            // TODO: test this - and decide if we want a separate/shared governance here instead
             revert OnlyOwner();
         }
     }

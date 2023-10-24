@@ -4,10 +4,10 @@ pragma solidity ^0.8.10;
 
 import {Errors} from 'contracts/modules/constants/Errors.sol';
 import {FeeModuleBase} from 'contracts/modules/FeeModuleBase.sol';
-import {ICollectModule} from 'contracts/interfaces/ICollectModule.sol';
+import {ICollectModule} from 'contracts/modules/interfaces/ICollectModule.sol';
 import {ActionRestricted} from 'contracts/modules/ActionRestricted.sol';
 
-import {Types} from 'contracts/libraries/constants/Types.sol';
+import {ModuleTypes} from 'contracts/modules/libraries/constants/ModuleTypes.sol';
 
 import {IERC20} from '@openzeppelin/contracts/token/ERC20/IERC20.sol';
 import {IERC721} from '@openzeppelin/contracts/token/ERC721/IERC721.sol';
@@ -49,10 +49,10 @@ abstract contract BaseFeeCollectModule is FeeModuleBase, ActionRestricted, IBase
      *  1. Validating that collect action meets all needed criteria
      *  2. Processing the collect action either with or without referral
      *
-     * @param processCollectParams Collect action parameters (see Types.ProcessCollectParams struct)
+     * @param processCollectParams Collect action parameters (see ModuleTypes.ProcessCollectParams struct)
      */
     function processCollect(
-        Types.ProcessCollectParams calldata processCollectParams
+        ModuleTypes.ProcessCollectParams calldata processCollectParams
     ) external virtual onlyActionModule returns (bytes memory) {
         _validateAndStoreCollect(processCollectParams);
 
@@ -74,7 +74,7 @@ abstract contract BaseFeeCollectModule is FeeModuleBase, ActionRestricted, IBase
 
     /// @inheritdoc IBaseFeeCollectModule
     function calculateFee(
-        Types.ProcessCollectParams calldata processCollectParams
+        ModuleTypes.ProcessCollectParams calldata processCollectParams
     ) public view virtual returns (uint160) {
         return
             _dataByPublicationByProfile[processCollectParams.publicationCollectedProfileId][
@@ -135,7 +135,7 @@ abstract contract BaseFeeCollectModule is FeeModuleBase, ActionRestricted, IBase
      *
      * This should be called during processCollect()
      */
-    function _validateAndStoreCollect(Types.ProcessCollectParams calldata processCollectParams) internal virtual {
+    function _validateAndStoreCollect(ModuleTypes.ProcessCollectParams calldata processCollectParams) internal virtual {
         uint96 collectsAfter = ++_dataByPublicationByProfile[processCollectParams.publicationCollectedProfileId][
             processCollectParams.publicationCollectedId
         ].currentCollects;
@@ -175,7 +175,7 @@ abstract contract BaseFeeCollectModule is FeeModuleBase, ActionRestricted, IBase
      *
      * @param processCollectParams Parameters of the collect
      */
-    function _processCollect(Types.ProcessCollectParams calldata processCollectParams) internal virtual {
+    function _processCollect(ModuleTypes.ProcessCollectParams calldata processCollectParams) internal virtual {
         uint256 amount = calculateFee(processCollectParams);
         address currency = _dataByPublicationByProfile[processCollectParams.publicationCollectedProfileId][
             processCollectParams.publicationCollectedId
@@ -203,7 +203,9 @@ abstract contract BaseFeeCollectModule is FeeModuleBase, ActionRestricted, IBase
      *
      * @param processCollectParams Parameters of the collect
      */
-    function _processCollectWithReferral(Types.ProcessCollectParams calldata processCollectParams) internal virtual {
+    function _processCollectWithReferral(
+        ModuleTypes.ProcessCollectParams calldata processCollectParams
+    ) internal virtual {
         uint256 amount = calculateFee(processCollectParams);
         address currency = _dataByPublicationByProfile[processCollectParams.publicationCollectedProfileId][
             processCollectParams.publicationCollectedId
@@ -233,7 +235,7 @@ abstract contract BaseFeeCollectModule is FeeModuleBase, ActionRestricted, IBase
      * @param amount Amount to transfer to recipient(-s)
      */
     function _transferToRecipients(
-        Types.ProcessCollectParams calldata processCollectParams,
+        ModuleTypes.ProcessCollectParams calldata processCollectParams,
         address currency,
         uint256 amount
     ) internal virtual {
@@ -256,7 +258,7 @@ abstract contract BaseFeeCollectModule is FeeModuleBase, ActionRestricted, IBase
      * @param amount Amount of the fee after subtracting the Treasury part.
      */
     function _transferToReferrals(
-        Types.ProcessCollectParams calldata processCollectParams,
+        ModuleTypes.ProcessCollectParams calldata processCollectParams,
         address currency,
         uint256 amount
     ) internal virtual returns (uint256) {

@@ -2,7 +2,7 @@
 
 pragma solidity >=0.6.0;
 
-import {Types} from 'contracts/libraries/constants/Types.sol';
+import {ModuleTypes} from 'contracts/modules/libraries/constants/ModuleTypes.sol';
 
 /**
  * @title ICollectModule
@@ -44,5 +44,7 @@ interface ICollectModule {
      * @return bytes Any custom ABI-encoded data. This will be a LensHub event params that can be used by
      * indexers or UIs.
      */
-    function processCollect(Types.ProcessCollectParams calldata processCollectParams) external returns (bytes memory);
+    function processCollect(
+        ModuleTypes.ProcessCollectParams calldata processCollectParams
+    ) external returns (bytes memory);
 }

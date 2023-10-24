@@ -351,19 +351,6 @@ library Types {
         bytes actionModuleData;
     }
 
-    // TODO: Shouldn't this be in the modules Types?
-    struct ProcessCollectParams {
-        uint256 publicationCollectedProfileId;
-        uint256 publicationCollectedId;
-        uint256 collectorProfileId;
-        address collectorProfileOwner;
-        address transactionExecutor;
-        uint256[] referrerProfileIds;
-        uint256[] referrerPubIds;
-        Types.PublicationType[] referrerPubTypes;
-        bytes data;
-    }
-
     struct ProcessCommentParams {
         uint256 profileId;
         uint256 pubId;

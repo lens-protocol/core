@@ -478,7 +478,6 @@ contract FollowNFT is HubRestricted, LensBaseERC721, ERC2981CollectionRoyalties,
             return 0; // Already following
         }
 
-        // TODO: try storage and see if it optimizes better (with via-IR probably not)
         Types.TokenData memory tokenData = StorageLib.getTokenData(followTokenId);
 
         address followTokenOwner = tokenData.owner;

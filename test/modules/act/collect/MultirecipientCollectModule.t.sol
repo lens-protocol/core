@@ -8,6 +8,7 @@ import {BaseFeeCollectModule_Initialization, BaseFeeCollectModule_ProcessCollect
 import {BaseFeeCollectModuleBase} from 'test/modules/act/collect/BaseFeeCollectModule.base.t.sol';
 import {Errors as ModuleErrors} from 'contracts/modules/constants/Errors.sol';
 import {Types} from 'contracts/libraries/constants/Types.sol';
+import {ModuleTypes} from 'contracts/modules/libraries/constants/ModuleTypes.sol';
 
 /////////
 // Publication Creation with InheritedFeeCollectModule
@@ -519,7 +520,7 @@ contract MultirecipientCollectModule_FeeDistribution is MultirecipientCollectMod
         balancesBefore.collector = currency.balanceOf(collectorProfileOwner);
         vm.prank(collectPublicationAction);
         IBaseFeeCollectModule(baseFeeCollectModule).processCollect(
-            Types.ProcessCollectParams({
+            ModuleTypes.ProcessCollectParams({
                 publicationCollectedProfileId: 1,
                 publicationCollectedId: 1,
                 collectorProfileId: collectorProfileId,
