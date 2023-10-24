@@ -57,7 +57,9 @@
     }
   },
   "dependencies": {
-    "@openzeppelin/contracts": "4.8.0"
+    "@openzeppelin/contracts": "4.8.0",
+    "@openzeppelin/contracts-upgradeable": "^4.8.0",
+    "hardhat-preprocessor": "^0.1.5"
   },
   "author": "Lens",
   "contributors": [

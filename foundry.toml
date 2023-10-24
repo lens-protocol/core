@@ -5,7 +5,8 @@ libs = ['node_modules', 'lib']
 test = 'test'
 cache_path  = 'forge-cache'
 fs_permissions = [{ access = "read-write", path = "./"}]
-solc_version = '0.8.19'
+solc_version = '0.8.21'
+evm_version = 'paris'
 optimizer = true
 optimizer_runs = 10
 ignored_error_codes = []

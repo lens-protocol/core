@@ -3,6 +3,8 @@ import { accounts } from './helpers/test-wallets';
 import { eEthereumNetwork, eNetwork, ePolygonNetwork, eXDaiNetwork } from './helpers/types';
 import { HARDHATEVM_CHAINID } from './helpers/hardhat-constants';
 import { NETWORKS_RPC_URL } from './helper-hardhat-config';
+import 'hardhat-preprocessor';
+import fs from 'fs';
 import dotenv from 'dotenv';
 import glob from 'glob';
 import path from 'path';
@@ -17,6 +19,14 @@ import 'hardhat-contract-sizer';
 import 'hardhat-log-remover';
 import 'hardhat-spdx-license-identifier';
 import 'hardhat-tracer';
+
+function getRemappings() {
+  return fs
+    .readFileSync('remappings.txt', 'utf8')
+    .split('\n')
+    .filter(Boolean) // remove empty lines
+    .map((line) => line.trim().split('='));
+}
 
 if (!process.env.SKIP_LOAD) {
   glob.sync('./tasks/**/*.ts').forEach(function (file) {
@@ -54,11 +64,13 @@ const config: HardhatUserConfig = {
   solidity: {
     compilers: [
       {
-        version: '0.8.19',
+        version: '0.8.21',
         settings: {
+          evmVersion: 'paris',
+          viaIR: true,
           optimizer: {
             enabled: true,
-            runs: 200,
+            runs: 10,
             details: {
               yul: true,
             },
@@ -95,6 +107,25 @@ const config: HardhatUserConfig = {
   },
   etherscan: {
     apiKey: BLOCK_EXPLORER_KEY,
+  },
+  preprocess: {
+    eachLine: (hre) => ({
+      transform: (line: string) => {
+        if (line.match(/^\s*import /i)) {
+          for (const [from, to] of getRemappings()) {
+            if (line.includes(from)) {
+              line = line.replace(from, to);
+              break;
+            }
+          }
+        }
+        return line;
+      },
+    }),
+  },
+  paths: {
+    sources: './contracts',
+    cache: './cache_hardhat',
   },
 };
 

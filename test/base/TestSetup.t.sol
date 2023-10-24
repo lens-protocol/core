@@ -220,6 +220,10 @@ contract TestSetup is Test, ContractAddressesLoaderDeployer, ArrayHelpers {
             upgradeToV2();
         }
 
+        if (forkVersion == 2) {
+            lensVersion = 2;
+        }
+
         vm.startPrank(deployer);
 
         // Deploy the MockActionModule.
