@@ -42,6 +42,9 @@ import {LensV2Migration} from 'contracts/misc/LensV2Migration.sol';
  * number of NFT contracts and interactions at once. For that reason, we've made two quirky design decisions:
  *      1. Both Follow & Collect NFTs invoke a LensHub callback on transfer with the sole purpose of emitting an event.
  *      2. Almost every event in the protocol emits the current block timestamp, reducing the need to fetch it manually.
+ *
+ * @custom:upgradeable Transparent upgradeable proxy. In this version, without initializer.
+ * See `../misc/LensHubInitializable.sol` for the initializable version.
  */
 contract LensHub is
     LensProfiles,

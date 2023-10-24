@@ -16,6 +16,9 @@ import {StorageLib} from 'contracts/libraries/StorageLib.sol';
 import {FollowTokenURILib} from 'contracts/libraries/token-uris/FollowTokenURILib.sol';
 import {Types} from 'contracts/libraries/constants/Types.sol';
 
+/**
+ * @custom:upgradeable Beacon proxy. The beacon, responsible for returning the implementation address, is the LensHub.
+ */
 contract FollowNFT is HubRestricted, LensBaseERC721, ERC2981CollectionRoyalties, IFollowNFT {
     using Strings for uint256;
 

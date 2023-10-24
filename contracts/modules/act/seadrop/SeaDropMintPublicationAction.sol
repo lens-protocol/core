@@ -19,6 +19,9 @@ import {ILensHub} from 'contracts/interfaces/ILensHub.sol';
 
 import {LensModule} from 'contracts/modules/LensModule.sol';
 
+/**
+ * @custom:upgradeable Transparent upgradeable proxy without initializer.
+ */
 contract SeaDropMintPublicationAction is LensModule, HubRestricted, IPublicationActionModule {
     function supportsInterface(bytes4 interfaceID) public pure override returns (bool) {
         return interfaceID == type(IPublicationActionModule).interfaceId || super.supportsInterface(interfaceID);
