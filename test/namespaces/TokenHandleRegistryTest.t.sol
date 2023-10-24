@@ -20,6 +20,16 @@ contract TokenHandleRegistryTest is BaseTest {
 
         vm.prank(governance);
         handleId = lensHandles.mintHandle(initialHandleHolder, 'handle');
+
+        domainSeparator = keccak256(
+            abi.encode(
+                Typehash.EIP712_DOMAIN,
+                keccak256('TokenHandleRegistry'),
+                keccak256(bytes('1')),
+                block.chainid,
+                address(tokenHandleRegistry)
+            )
+        );
     }
 
     function testCannot_MigrationLink_IfNotHub(address otherAddress) public {
