@@ -39,7 +39,8 @@ contract GovernanceFunctionsTest is BaseTest {
         vm.assume(nonGovernanceOrEmergencyAdmin != address(0));
         vm.assume(!_isLensHubProxyAdmin(nonGovernanceOrEmergencyAdmin));
 
-        state = uint8(bound(state, uint8(Types.ProtocolState.Unpaused), uint8(Types.ProtocolState.Paused)));
+        // TODO: Fix that everywhere
+        state = uint8(bound(state, uint8(0), uint8(type(Types.ProtocolState).max)));
 
         vm.expectRevert(Errors.NotGovernanceOrEmergencyAdmin.selector);
         vm.prank(nonGovernanceOrEmergencyAdmin);
