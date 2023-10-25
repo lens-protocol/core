@@ -278,32 +278,16 @@ contract TokenHandleRegistryTest is BaseTest {
         uint256 holderPk = 0x401DE8;
         address holder = vm.addr(holderPk);
 
-        _effectivelyDisableGuardian(address(lensHandles), initialHandleHolder);
-        vm.prank(initialHandleHolder);
-        lensHandles.transferFrom(initialHandleHolder, holder, handleId);
-
-        _effectivelyDisableProfileGuardian(initialProfileHolder);
-        vm.prank(initialProfileHolder);
-        hub.transferFrom(initialProfileHolder, holder, profileId);
+        _transferHandle(holder, handleId);
+        _transferProfile(holder, profileId);
 
         RegistryTypes.Handle memory handle = RegistryTypes.Handle({collection: address(lensHandles), id: handleId});
         RegistryTypes.Token memory token = RegistryTypes.Token({collection: address(hub), id: profileId});
 
+        Types.EIP712Signature memory sig = _getLinkSigStruct(holderPk, handleId, profileId);
+
         vm.expectEmit(true, true, true, true, address(tokenHandleRegistry));
         emit RegistryEvents.HandleLinked(handle, token, holder, block.timestamp);
-
-        Types.EIP712Signature memory sig = _getSigStruct({
-            signer: holder,
-            pKey: holderPk,
-            digest: _getLinkTypedDataHash({
-                handleId: handleId,
-                profileId: profileId,
-                signer: holder,
-                nonce: hub.nonces(holder),
-                deadline: type(uint256).max
-            }),
-            deadline: type(uint256).max
-        });
 
         vm.prank(holder);
         tokenHandleRegistry.linkWithSig(handleId, profileId, sig);
@@ -520,13 +504,8 @@ contract TokenHandleRegistryTest is BaseTest {
         uint256 holderPk = 0x401DE8;
         address holder = vm.addr(holderPk);
 
-        _effectivelyDisableGuardian(address(lensHandles), initialHandleHolder);
-        vm.prank(initialHandleHolder);
-        lensHandles.transferFrom(initialHandleHolder, holder, handleId);
-
-        _effectivelyDisableProfileGuardian(initialProfileHolder);
-        vm.prank(initialProfileHolder);
-        hub.transferFrom(initialProfileHolder, holder, profileId);
+        _transferHandle(holder, handleId);
+        _transferProfile(holder, profileId);
 
         vm.prank(holder);
         tokenHandleRegistry.link(handleId, profileId);
@@ -537,21 +516,10 @@ contract TokenHandleRegistryTest is BaseTest {
         RegistryTypes.Handle memory handle = RegistryTypes.Handle({collection: address(lensHandles), id: handleId});
         RegistryTypes.Token memory token = RegistryTypes.Token({collection: address(hub), id: profileId});
 
+        Types.EIP712Signature memory sig = _getUnlinkSigStruct(holderPk, handleId, profileId);
+
         vm.expectEmit(true, true, true, true, address(tokenHandleRegistry));
         emit RegistryEvents.HandleUnlinked(handle, token, holder, block.timestamp);
-
-        Types.EIP712Signature memory sig = _getSigStruct({
-            signer: holder,
-            pKey: holderPk,
-            digest: _getUnlinkTypedDataHash({
-                handleId: handleId,
-                profileId: profileId,
-                signer: holder,
-                nonce: hub.nonces(holder),
-                deadline: type(uint256).max
-            }),
-            deadline: type(uint256).max
-        });
 
         vm.prank(holder);
         tokenHandleRegistry.unlinkWithSig(handleId, profileId, sig);

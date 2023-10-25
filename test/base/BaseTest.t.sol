@@ -340,6 +340,46 @@ contract BaseTest is TestSetup {
         return _calculateDigest(structHash);
     }
 
+    function _getLinkSigStruct(
+        uint256 signerPk,
+        uint256 handleId,
+        uint256 profileId
+    ) internal view returns (Types.EIP712Signature memory) {
+        address signer = vm.addr(signerPk);
+        return _getSigStruct({
+            signer: signer,
+            pKey: signerPk,
+            digest: _getLinkTypedDataHash({
+                handleId: handleId,
+                profileId: profileId,
+                signer: signer,
+                nonce: hub.nonces(signer),
+                deadline: type(uint256).max
+            }),
+            deadline: type(uint256).max
+        });
+    }
+
+    function _getUnlinkSigStruct(
+        uint256 signerPk,
+        uint256 handleId,
+        uint256 profileId
+    ) internal view returns (Types.EIP712Signature memory) {
+        address signer = vm.addr(signerPk);
+        return _getSigStruct({
+            signer: signer,
+            pKey: signerPk,
+            digest: _getUnlinkTypedDataHash({
+                handleId: handleId,
+                profileId: profileId,
+                signer: signer,
+                nonce: hub.nonces(signer),
+                deadline: type(uint256).max
+            }),
+            deadline: type(uint256).max
+        });
+    }
+
     function _calculateDigest(bytes32 structHash) internal view returns (bytes32) {
         return keccak256(abi.encodePacked('\x19\x01', domainSeparator, structHash));
     }
@@ -484,5 +524,19 @@ contract BaseTest is TestSetup {
 
     function _encodeUsingEip712Rules(bytes memory bytesValue) internal pure returns (bytes32) {
         return keccak256(bytesValue);
+    }
+
+    function _transferHandle(address to, uint256 handleId) internal {
+        address initialHandleHolder = lensHandles.ownerOf(handleId);
+        _effectivelyDisableGuardian(address(lensHandles), initialHandleHolder);
+        vm.prank(initialHandleHolder);
+        lensHandles.transferFrom(initialHandleHolder, to, handleId);
+    }
+
+    function _transferProfile(address to, uint256 profileId) internal {
+        address initialProfileHolder = hub.ownerOf(profileId);
+        _effectivelyDisableProfileGuardian(initialProfileHolder);
+        vm.prank(initialProfileHolder);
+        hub.transferFrom(initialProfileHolder, to, profileId);
     }
 }
