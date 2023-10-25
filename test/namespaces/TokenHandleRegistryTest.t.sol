@@ -110,9 +110,13 @@ contract TokenHandleRegistryTest is BaseTest {
         tokenHandleRegistry.link(handleId, nonexistingProfileId);
     }
 
-    function testCannot_LinkWithSig_WhenSignatureNonceWasIncremented() public {
+    function testCannot_LinkWithSig_WhenSignatureNonceWasIncremented(address relayer) public {
         uint256 holderPk = 0x401DE8;
         address holder = vm.addr(holderPk);
+
+        vm.assume(relayer != holder);
+        vm.assume(relayer != address(0));
+        vm.assume(!_isLensHubProxyAdmin(relayer));
 
         _transferHandle(holder, handleId);
         _transferProfile(holder, profileId);
@@ -124,7 +128,7 @@ contract TokenHandleRegistryTest is BaseTest {
 
         vm.expectRevert(Errors.SignatureInvalid.selector);
 
-        vm.prank(holder);
+        vm.prank(relayer);
         tokenHandleRegistry.linkWithSig(handleId, profileId, sig);
     }
 
@@ -172,9 +176,13 @@ contract TokenHandleRegistryTest is BaseTest {
         tokenHandleRegistry.unlink(0, 0);
     }
 
-    function testCannot_UnlinkWithSig_WhenSignatureNonceWasIncremented() public {
+    function testCannot_UnlinkWithSig_WhenSignatureNonceWasIncremented(address relayer) public {
         uint256 holderPk = 0x401DE8;
         address holder = vm.addr(holderPk);
+
+        vm.assume(relayer != holder);
+        vm.assume(relayer != address(0));
+        vm.assume(!_isLensHubProxyAdmin(relayer));
 
         _transferHandle(holder, handleId);
         _transferProfile(holder, profileId);
@@ -192,7 +200,7 @@ contract TokenHandleRegistryTest is BaseTest {
 
         vm.expectRevert(Errors.SignatureInvalid.selector);
 
-        vm.prank(holder);
+        vm.prank(relayer);
         tokenHandleRegistry.unlinkWithSig(handleId, profileId, sig);
     }
 
@@ -334,9 +342,13 @@ contract TokenHandleRegistryTest is BaseTest {
         assertEq(tokenHandleRegistry.getDefaultHandle(profileId), handleId);
     }
 
-    function testFreshLinkWithSig() public {
+    function testFreshLinkWithSig(address relayer) public {
         uint256 holderPk = 0x401DE8;
         address holder = vm.addr(holderPk);
+
+        vm.assume(relayer != holder);
+        vm.assume(relayer != address(0));
+        vm.assume(!_isLensHubProxyAdmin(relayer));
 
         _transferHandle(holder, handleId);
         _transferProfile(holder, profileId);
@@ -349,7 +361,7 @@ contract TokenHandleRegistryTest is BaseTest {
         vm.expectEmit(true, true, true, true, address(tokenHandleRegistry));
         emit RegistryEvents.HandleLinked(handle, token, holder, block.timestamp);
 
-        vm.prank(holder);
+        vm.prank(relayer);
         tokenHandleRegistry.linkWithSig(handleId, profileId, sig);
 
         assertEq(tokenHandleRegistry.resolve(handleId), profileId);
@@ -560,9 +572,13 @@ contract TokenHandleRegistryTest is BaseTest {
         assertEq(tokenHandleRegistry.getDefaultHandle(profileId), 0);
     }
 
-    function testUnlinkWithSig() public {
+    function testUnlinkWithSig(address relayer) public {
         uint256 holderPk = 0x401DE8;
         address holder = vm.addr(holderPk);
+
+        vm.assume(relayer != holder);
+        vm.assume(relayer != address(0));
+        vm.assume(!_isLensHubProxyAdmin(relayer));
 
         _transferHandle(holder, handleId);
         _transferProfile(holder, profileId);
@@ -581,7 +597,7 @@ contract TokenHandleRegistryTest is BaseTest {
         vm.expectEmit(true, true, true, true, address(tokenHandleRegistry));
         emit RegistryEvents.HandleUnlinked(handle, token, holder, block.timestamp);
 
-        vm.prank(holder);
+        vm.prank(relayer);
         tokenHandleRegistry.unlinkWithSig(handleId, profileId, sig);
 
         assertEq(tokenHandleRegistry.resolve(handleId), 0);
