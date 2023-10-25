@@ -74,6 +74,24 @@ contract TokenHandleRegistryTest is BaseTest {
         tokenHandleRegistry.link(handleId, profileId);
     }
 
+    function testCannot_Link_IfNotOwnerOrDelegatedExecutor(address otherAddress) public {
+        address holder = makeAddr("holder");
+
+        vm.assume(otherAddress != holder);
+        vm.assume(otherAddress != address(0));
+        vm.assume(!_isLensHubProxyAdmin(otherAddress));
+
+        _transferHandle(holder, handleId);
+        _transferProfile(holder, profileId);
+
+        _effectivelyDisableProfileGuardian(holder);
+
+        vm.expectRevert(RegistryErrors.DoesNotHavePermissions.selector);
+
+        vm.prank(otherAddress);
+        tokenHandleRegistry.link(handleId, profileId);
+    }
+
     function testCannot_Link_IfHandleDoesNotExist(uint256 nonexistingHandleId) public {
         vm.assume(!lensHandles.exists(nonexistingHandleId));
 
