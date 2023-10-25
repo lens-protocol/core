@@ -516,6 +516,50 @@ contract TokenHandleRegistryTest is BaseTest {
         assertEq(tokenHandleRegistry.getDefaultHandle(profileId), 0);
     }
 
+    function testUnlinkWithSig() public {
+        uint256 holderPk = 0x401DE8;
+        address holder = vm.addr(holderPk);
+
+        _effectivelyDisableGuardian(address(lensHandles), initialHandleHolder);
+        vm.prank(initialHandleHolder);
+        lensHandles.transferFrom(initialHandleHolder, holder, handleId);
+
+        _effectivelyDisableProfileGuardian(initialProfileHolder);
+        vm.prank(initialProfileHolder);
+        hub.transferFrom(initialProfileHolder, holder, profileId);
+
+        vm.prank(holder);
+        tokenHandleRegistry.link(handleId, profileId);
+
+        assertEq(tokenHandleRegistry.resolve(handleId), profileId);
+        assertEq(tokenHandleRegistry.getDefaultHandle(profileId), handleId);
+
+        RegistryTypes.Handle memory handle = RegistryTypes.Handle({collection: address(lensHandles), id: handleId});
+        RegistryTypes.Token memory token = RegistryTypes.Token({collection: address(hub), id: profileId});
+
+        vm.expectEmit(true, true, true, true, address(tokenHandleRegistry));
+        emit RegistryEvents.HandleUnlinked(handle, token, holder, block.timestamp);
+
+        Types.EIP712Signature memory sig = _getSigStruct({
+            signer: holder,
+            pKey: holderPk,
+            digest: _getUnlinkTypedDataHash({
+                handleId: handleId,
+                profileId: profileId,
+                signer: holder,
+                nonce: hub.nonces(holder),
+                deadline: type(uint256).max
+            }),
+            deadline: type(uint256).max
+        });
+
+        vm.prank(holder);
+        tokenHandleRegistry.unlinkWithSig(handleId, profileId, sig);
+
+        assertEq(tokenHandleRegistry.resolve(handleId), 0);
+        assertEq(tokenHandleRegistry.getDefaultHandle(profileId), 0);
+    }
+
     function testUnlink_ByProfileOwner_IfHandleWasMoved(address firstHolder, address newHolder) public {
         vm.assume(firstHolder != address(0));
         vm.assume(!_isLensHubProxyAdmin(firstHolder));

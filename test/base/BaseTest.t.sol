@@ -320,6 +320,26 @@ contract BaseTest is TestSetup {
         return _calculateDigest(structHash);
     }
 
+    function _getUnlinkTypedDataHash(
+        uint256 handleId,
+        uint256 profileId,
+        address signer,
+        uint256 nonce,
+        uint256 deadline
+    ) internal view returns (bytes32) {
+        bytes32 structHash = keccak256(
+            abi.encode(
+                NamespacesTypehash.UNLINK,
+                handleId,
+                profileId,
+                signer,
+                nonce,
+                deadline
+            )
+        );
+        return _calculateDigest(structHash);
+    }
+
     function _calculateDigest(bytes32 structHash) internal view returns (bytes32) {
         return keccak256(abi.encodePacked('\x19\x01', domainSeparator, structHash));
     }
