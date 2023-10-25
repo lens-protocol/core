@@ -4,6 +4,7 @@ pragma solidity ^0.8.13;
 import 'test/base/TestSetup.t.sol';
 import 'contracts/libraries/constants/Types.sol';
 import {Typehash} from 'contracts/libraries/constants/Typehash.sol';
+import {Typehash as NamespacesTypehash} from 'contracts/namespaces/constants/Typehash.sol';
 import {Strings} from '@openzeppelin/contracts/utils/Strings.sol';
 import {Address} from '@openzeppelin/contracts/utils/Address.sol';
 
@@ -443,5 +444,19 @@ contract BaseTest is TestSetup {
 
     function _encodeUsingEip712Rules(bytes memory bytesValue) internal pure returns (bytes32) {
         return keccak256(bytesValue);
+    }
+
+    function _transferHandle(address to, uint256 handleId) internal {
+        address initialHandleHolder = lensHandles.ownerOf(handleId);
+        _effectivelyDisableGuardian(address(lensHandles), initialHandleHolder);
+        vm.prank(initialHandleHolder);
+        lensHandles.transferFrom(initialHandleHolder, to, handleId);
+    }
+
+    function _transferProfile(address to, uint256 profileId) internal {
+        address initialProfileHolder = hub.ownerOf(profileId);
+        _effectivelyDisableProfileGuardian(initialProfileHolder);
+        vm.prank(initialProfileHolder);
+        hub.transferFrom(initialProfileHolder, to, profileId);
     }
 }
