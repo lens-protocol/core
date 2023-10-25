@@ -92,6 +92,24 @@ contract TokenHandleRegistryTest is BaseTest {
         tokenHandleRegistry.link(handleId, nonexistingProfileId);
     }
 
+    function testCannot_LinkWithSig_WhenSignatureNonceWasIncremented() public {
+        uint256 holderPk = 0x401DE8;
+        address holder = vm.addr(holderPk);
+
+        _transferHandle(holder, handleId);
+        _transferProfile(holder, profileId);
+
+        Types.EIP712Signature memory sig = _getLinkSigStruct(holderPk, handleId, profileId);
+
+        vm.prank(holder);
+        tokenHandleRegistry.incrementNonce(69);
+
+        vm.expectRevert(Errors.SignatureInvalid.selector);
+
+        vm.prank(holder);
+        tokenHandleRegistry.linkWithSig(handleId, profileId, sig);
+    }
+
     function testCannot_Unlink_IfNotHoldingProfileOrHandle(address otherAddress) public {
         vm.assume(otherAddress != lensHandles.ownerOf(handleId));
         vm.assume(otherAddress != hub.ownerOf(profileId));
@@ -134,6 +152,30 @@ contract TokenHandleRegistryTest is BaseTest {
         vm.expectRevert(RegistryErrors.DoesNotExist.selector);
         vm.prank(otherAddress);
         tokenHandleRegistry.unlink(0, 0);
+    }
+
+    function testCannot_UnlinkWithSig_WhenSignatureNonceWasIncremented() public {
+        uint256 holderPk = 0x401DE8;
+        address holder = vm.addr(holderPk);
+
+        _transferHandle(holder, handleId);
+        _transferProfile(holder, profileId);
+
+        vm.prank(holder);
+        tokenHandleRegistry.link(handleId, profileId);
+
+        assertEq(tokenHandleRegistry.resolve(handleId), profileId);
+        assertEq(tokenHandleRegistry.getDefaultHandle(profileId), handleId);
+
+        Types.EIP712Signature memory sig = _getUnlinkSigStruct(holderPk, handleId, profileId);
+
+        vm.prank(holder);
+        tokenHandleRegistry.incrementNonce(69);
+
+        vm.expectRevert(Errors.SignatureInvalid.selector);
+
+        vm.prank(holder);
+        tokenHandleRegistry.unlinkWithSig(handleId, profileId, sig);
     }
 
     function testResolve() public {
