@@ -20,9 +20,9 @@ import {Types} from 'contracts/libraries/constants/Types.sol';
 import {LibString} from 'solady/utils/LibString.sol';
 import {LegacyCollectNFT} from 'contracts/misc/LegacyCollectNFT.sol';
 
-import {ArrayHelpers} from 'test/helpers/ArrayHelpers.sol';
+import {ArrayHelpers} from 'script/helpers/ArrayHelpers.sol';
 
-contract LensV2UpgradeDeployment is Script, ForkManagement, ArrayHelpers {
+contract A_DeployLensV2Upgrade is Script, ForkManagement, ArrayHelpers {
     // add this to be excluded from coverage report
     function testLensV2UpgradeDeployment() public {}
 
@@ -181,16 +181,6 @@ contract LensV2UpgradeDeployment is Script, ForkManagement, ArrayHelpers {
         console.log('Deployer: %s', _deployer.owner);
 
         console.log('Current block:', block.number);
-    }
-
-    function run(string memory targetEnv_) external {
-        targetEnv = targetEnv_;
-        loadJson();
-        checkNetworkParams();
-        loadPrivateKeys();
-        loadBaseAddresses();
-
-        deploy();
     }
 
     function saveContractAddress(string memory contractName, address deployedAddress) internal {
@@ -409,5 +399,15 @@ contract LensV2UpgradeDeployment is Script, ForkManagement, ArrayHelpers {
             }
         }
         revert('Module not found');
+    }
+
+    function run(string memory targetEnv_) external {
+        targetEnv = targetEnv_;
+        loadJson();
+        checkNetworkParams();
+        loadPrivateKeys();
+        loadBaseAddresses();
+
+        deploy();
     }
 }

@@ -4,10 +4,20 @@ TARGET=$1
 
 echo "Running Full Lens V2 Deployment on $TARGET environment"
 
-bash script/run.sh LensV2UpgradeDeployment $TARGET
+echo "Deploying Lens V2 Implementation and upgrade contracts..."
+bash script/run.sh A_DeployLensV2Upgrade $TARGET
 
-bash script/run.sh LensV1ChangeAdmins $TARGET s
+echo "Deploying Lens V2 Periphery..."
+bash script/run.sh B_DeployLensV2Periphery $TARGET
 
-bash script/run.sh LensV1ToV2Upgrade $TARGET
+echo "Changing Lens V1 Admins..."
+bash script/run.sh C_ChangeLensV1Admins $TARGET s
 
-bash script/run.sh LensV2DeployPeriphery $TARGET
+echo "Performing Lens V2 Upgrade..."
+bash script/run.sh D_PerformV2Upgrade $TARGET
+
+echo "Running Governance Actions (whitelisting profile creator, registering currencies and modules)..."
+bash script/run.sh E_GovernanceActions $TARGET
+
+echo "Interacting with Lens V2..."
+bash script/run.sh F_InteractWithLensV2 $TARGET

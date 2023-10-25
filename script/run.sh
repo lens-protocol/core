@@ -52,8 +52,13 @@ if [[ "$CONFIRMATION" == "y" || "$CONFIRMATION" == "Y" ]]
     then
         echo "Broadcasting on-chain..."
 
-        FORGE_OUTPUT=$(forge script script/$SCRIPT_NAME.s.sol:$SCRIPT_NAME -s $CALLDATA --rpc-url $NETWORK --broadcast --legacy --skip test --ffi --slow -vv)
-        echo "$FORGE_OUTPUT"
+        # If $NETWORK is "mumbai" change it to "maticMumbai" for catapulta
+        if [[ "$NETWORK" == "mumbai" ]]
+            then
+                NETWORK="maticMumbai"
+        fi
+
+        catapulta script script/$SCRIPT_NAME.s.sol --chain $NETWORK -s $CALLDATA --legacy --skip test --ffi --slow --skip-git
     else
         echo "Deployment cancelled. Execution terminated."
         exit 1

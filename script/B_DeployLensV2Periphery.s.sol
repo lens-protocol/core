@@ -33,9 +33,9 @@ import {Governance} from 'contracts/misc/access/Governance.sol';
 import {PublicActProxy} from 'contracts/misc/PublicActProxy.sol';
 import {LitAccessControl} from 'contracts/misc/access/LitAccessControl.sol';
 
-import {ArrayHelpers} from 'test/helpers/ArrayHelpers.sol';
+import {ArrayHelpers} from 'script/helpers/ArrayHelpers.sol';
 
-contract LensV2DeployPeriphery is Script, ForkManagement, ArrayHelpers {
+contract B_DeployLensV2Periphery is Script, ForkManagement, ArrayHelpers {
     // add this to be excluded from coverage report
     function testLensV2DeployPeriphery() public {}
 
@@ -58,7 +58,7 @@ contract LensV2DeployPeriphery is Script, ForkManagement, ArrayHelpers {
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
     address profileCreator;
-    address proxyAdmin;
+    address proxyAdminContractAdmin;
 
     ModuleRegistry moduleRegistryImpl;
     TransparentUpgradeableProxy moduleRegistryProxy;
@@ -173,9 +173,9 @@ contract LensV2DeployPeriphery is Script, ForkManagement, ArrayHelpers {
         vm.label(profileCreator, 'ProfileCreator');
         console.log('ProfileCreator: %s', profileCreator);
 
-        proxyAdmin = json.readAddress(string(abi.encodePacked('.', targetEnv, '.ProxyAdminContractAdmin')));
-        vm.label(proxyAdmin, 'ProxyAdminContractAdmin');
-        console.log('ProxyAdminContractAdmin: %s', proxyAdmin);
+        proxyAdminContractAdmin = json.readAddress(string(abi.encodePacked('.', targetEnv, '.ProxyAdminContractAdmin')));
+        vm.label(proxyAdminContractAdmin, 'ProxyAdminContractAdmin');
+        console.log('ProxyAdminContractAdmin: %s', proxyAdminContractAdmin);
 
         hub = ILensHub(json.readAddress(string(abi.encodePacked('.', targetEnv, '.LensHubProxy'))));
         vm.label(address(hub), 'LensHub');
@@ -260,7 +260,7 @@ contract LensV2DeployPeriphery is Script, ForkManagement, ArrayHelpers {
 
         collectPublicationActionProxy = new TransparentUpgradeableProxy({
             _logic: address(collectPublicationActionImpl),
-            admin_: proxyAdmin,
+            admin_: proxyAdminContractAdmin,
             _data: ''
         });
         console.log('\n+ + + CollectPublicationActionProxy: %s', address(collectPublicationActionProxy));
@@ -352,293 +352,13 @@ contract LensV2DeployPeriphery is Script, ForkManagement, ArrayHelpers {
         saveContractAddress('LitAccessControlImpl', litAccessControlImpl);
 
         litAccessControl = address(
-            new TransparentUpgradeableProxy({_logic: litAccessControlImpl, admin_: proxyAdmin, _data: ''})
+            new TransparentUpgradeableProxy({_logic: litAccessControlImpl, admin_: proxyAdminContractAdmin, _data: ''})
         );
         console.log('\n+ + + LitAccessControl: %s', litAccessControl);
         vm.writeLine(addressesFile, string.concat('LitAccessControl: ', vm.toString(litAccessControl)));
         vm.label(litAccessControl, 'LitAccessControl');
         saveContractAddress('LitAccessControl', litAccessControl);
 
-        vm.stopBroadcast();
-    }
-
-    function _governanceActions() internal {
-        vm.startBroadcast(governance.ownerPk);
-
-        governanceContract.lensHub_whitelistProfileCreator(address(profileCreationProxy), true);
-        console.log('\n* * * Profile creator proxy %s registered as profile creator', address(profileCreationProxy));
-
-        hub.setState(Types.ProtocolState.Unpaused);
-        console.log('\n* * * Protocol unpaused');
-
-        vm.stopBroadcast();
-    }
-
-    function _registerCurrencies() internal {
-        vm.startBroadcast(deployer.ownerPk);
-
-        // TODO: Get the currency addresses from the addresses.json
-        moduleRegistry.registerErc20Currency(address(0x2058A9D7613eEE744279e3856Ef0eAda5FCbaA7e));
-        console.log('\n* * * USDC registered as currency');
-        vm.writeLine(
-            addressesFile,
-            string.concat('USDC: ', vm.toString(address(0x2058A9D7613eEE744279e3856Ef0eAda5FCbaA7e)))
-        );
-
-        moduleRegistry.registerErc20Currency(address(0x001B3B4d0F3714Ca98ba10F6042DaEbF0B1B7b6F));
-        console.log('\n* * * DAI registered as currency');
-        vm.writeLine(
-            addressesFile,
-            string.concat('DAI: ', vm.toString(address(0x001B3B4d0F3714Ca98ba10F6042DaEbF0B1B7b6F)))
-        );
-
-        moduleRegistry.registerErc20Currency(address(0x3C68CE8504087f89c640D02d133646d98e64ddd9));
-        console.log('\n* * * WETH registered as currency');
-        vm.writeLine(
-            addressesFile,
-            string.concat('WETH: ', vm.toString(address(0x3C68CE8504087f89c640D02d133646d98e64ddd9)))
-        );
-
-        moduleRegistry.registerErc20Currency(address(0x9c3C9283D3e44854697Cd22D3Faa240Cfb032889));
-        console.log('\n* * * WMATIC registered as currency');
-        vm.writeLine(
-            addressesFile,
-            string.concat('WMATIC: ', vm.toString(address(0x9c3C9283D3e44854697Cd22D3Faa240Cfb032889)))
-        );
-        vm.stopBroadcast();
-    }
-
-    function _registerModules() internal {
-        vm.startBroadcast(deployer.ownerPk);
-
-        // Follow modules
-        moduleRegistry.registerModule(address(feeFollowModule), uint256(IModuleRegistry.ModuleType.FOLLOW_MODULE));
-        console.log('\n* * * FeeFollowModule registered as follow module');
-
-        moduleRegistry.registerModule(address(revertFollowModule), uint256(IModuleRegistry.ModuleType.FOLLOW_MODULE));
-        console.log('\n* * * RevertFollowModule registered as follow module');
-
-        // Reference modules
-        moduleRegistry.registerModule(
-            address(degreesOfSeparationReferenceModule),
-            uint256(IModuleRegistry.ModuleType.REFERENCE_MODULE)
-        );
-        console.log('\n* * * DegreesOfSeparationReferenceModule registered');
-
-        moduleRegistry.registerModule(
-            address(followerOnlyReferenceModule),
-            uint256(IModuleRegistry.ModuleType.REFERENCE_MODULE)
-        );
-        console.log('\n* * * FollowerOnlyReferenceModule registered');
-
-        // Collect modules
-        moduleRegistry.registerModule(
-            address(collectPublicationAction),
-            uint256(IModuleRegistry.ModuleType.PUBLICATION_ACTION_MODULE)
-        );
-        console.log('\n* * * CollectPublicationAction registered as action module');
-
-        collectPublicationAction.registerCollectModule(address(simpleFeeCollectModule));
-        console.log('\n* * * SimpleFeeCollectModule registered as collect module');
-
-        collectPublicationAction.registerCollectModule(address(multirecipientFeeCollectModule));
-        console.log('\n* * * MultirecipientFeeCollectModule registered as collect module');
-
-        vm.stopBroadcast();
-    }
-
-    function _interact() internal {
-        vm.startBroadcast(deployer.ownerPk);
-        ProfileCreationProxy temporarilyCreationProxy = new ProfileCreationProxy({
-            owner: deployer.owner,
-            hub: address(hub),
-            lensHandles: address(handles),
-            tokenHandleRegistry: address(tokenHandleRegistry)
-        });
-        vm.stopBroadcast();
-
-        vm.startBroadcast(governance.ownerPk);
-        governanceContract.lensHub_whitelistProfileCreator(address(temporarilyCreationProxy), true);
-        vm.stopBroadcast();
-
-        vm.startBroadcast(deployer.ownerPk);
-
-        (uint256 firstProfileId, ) = temporarilyCreationProxy.proxyCreateProfileWithHandle({
-            createProfileParams: Types.CreateProfileParams({
-                to: deployer.owner,
-                followModule: address(0),
-                followModuleInitData: ''
-            }),
-            handle: 'firstprofile'
-        });
-
-        (uint256 secondProfileId, ) = temporarilyCreationProxy.proxyCreateProfileWithHandle({
-            createProfileParams: Types.CreateProfileParams({
-                to: deployer.owner,
-                followModule: address(0),
-                followModuleInitData: ''
-            }),
-            handle: 'secondprofile'
-        });
-
-        (uint256 anonymousProfileId, ) = temporarilyCreationProxy.proxyCreateProfileWithHandle({
-            createProfileParams: Types.CreateProfileParams({
-                to: deployer.owner,
-                followModule: address(0),
-                followModuleInitData: ''
-            }),
-            handle: 'annoymouse'
-        });
-
-        saveValue('AnonymousProfileId', vm.toString(anonymousProfileId));
-
-        // set DE to publicActProxy
-        hub.changeDelegatedExecutorsConfig({
-            delegatorProfileId: anonymousProfileId,
-            delegatedExecutors: _toAddressArray(address(publicActProxy)),
-            approvals: _toBoolArray(true)
-        });
-
-        hub.follow({
-            followerProfileId: firstProfileId,
-            idsOfProfilesToFollow: _toUint256Array(secondProfileId),
-            followTokenIds: _toUint256Array(0),
-            datas: _toBytesArray('')
-        });
-
-        hub.post(
-            Types.PostParams({
-                profileId: firstProfileId,
-                contentURI: 'ipfs://HelloWorld',
-                actionModules: _emptyAddressArray(),
-                actionModulesInitDatas: _emptyBytesArray(),
-                referenceModule: address(0),
-                referenceModuleInitData: ''
-            })
-        );
-
-        // unfollow
-        hub.unfollow({unfollowerProfileId: firstProfileId, idsOfProfilesToUnfollow: _toUint256Array(secondProfileId)});
-
-        FeeConfig memory feeConfig = FeeConfig({
-            currency: 0x2058A9D7613eEE744279e3856Ef0eAda5FCbaA7e,
-            amount: 69000000,
-            recipient: address(0xcB6C7b2E340D50701d45d55507f19A5cE5d72330)
-        });
-
-        // set a follow module
-        hub.setFollowModule({
-            profileId: firstProfileId,
-            followModule: address(feeFollowModule),
-            followModuleInitData: abi.encode(feeConfig)
-        });
-
-        // set metadata
-        hub.setProfileMetadataURI({profileId: firstProfileId, metadataURI: 'ipfs://TestingMetadataURI'});
-
-        BaseFeeCollectModuleInitData memory collectModuleInitData = BaseFeeCollectModuleInitData({
-            amount: 0,
-            collectLimit: 69,
-            currency: address(0),
-            referralFee: 2500,
-            followerOnly: false,
-            endTimestamp: 0,
-            recipient: address(0xcB6C7b2E340D50701d45d55507f19A5cE5d72330)
-        });
-
-        // comment with open action
-        hub.comment(
-            Types.CommentParams({
-                profileId: firstProfileId,
-                contentURI: 'ipfs://testCommentURI',
-                pointedProfileId: firstProfileId,
-                pointedPubId: 1,
-                referrerProfileIds: _emptyUint256Array(),
-                referrerPubIds: _emptyUint256Array(),
-                referenceModuleData: '',
-                actionModules: _toAddressArray(address(collectPublicationAction)),
-                actionModulesInitDatas: _toBytesArray(
-                    abi.encode(simpleFeeCollectModule, abi.encode(collectModuleInitData))
-                ),
-                referenceModule: address(0),
-                referenceModuleInitData: ''
-            })
-        );
-
-        // collect it
-        hub.act(
-            Types.PublicationActionParams({
-                publicationActedProfileId: firstProfileId,
-                publicationActedId: 2,
-                actorProfileId: firstProfileId,
-                referrerProfileIds: _emptyUint256Array(),
-                referrerPubIds: _emptyUint256Array(),
-                actionModuleAddress: address(collectPublicationAction),
-                actionModuleData: abi.encode(
-                    address(0x1A1cDf59C94a682a067fA2D288C2167a8506abd7),
-                    abi.encode(address(0), 0)
-                )
-            })
-        );
-
-        // mirror
-        hub.mirror(
-            Types.MirrorParams({
-                profileId: firstProfileId,
-                metadataURI: 'ipfs://testMirrorURI',
-                pointedProfileId: firstProfileId,
-                pointedPubId: 1,
-                referrerProfileIds: _emptyUint256Array(),
-                referrerPubIds: _emptyUint256Array(),
-                referenceModuleData: ''
-            })
-        );
-
-        // quote (all of the same one)
-        hub.quote(
-            Types.QuoteParams({
-                profileId: firstProfileId,
-                contentURI: 'ipfs://testQuoteURI',
-                pointedProfileId: firstProfileId,
-                pointedPubId: 1,
-                referrerProfileIds: _emptyUint256Array(),
-                referrerPubIds: _emptyUint256Array(),
-                referenceModuleData: '',
-                actionModules: _emptyAddressArray(),
-                actionModulesInitDatas: _emptyBytesArray(),
-                referenceModule: address(0),
-                referenceModuleInitData: ''
-            })
-        );
-
-        // block
-        hub.setBlockStatus({
-            byProfileId: firstProfileId,
-            idsOfProfilesToSetBlockStatus: _toUint256Array(secondProfileId),
-            blockStatus: _toBoolArray(true)
-        });
-
-        // unblock
-        hub.setBlockStatus({
-            byProfileId: firstProfileId,
-            idsOfProfilesToSetBlockStatus: _toUint256Array(secondProfileId),
-            blockStatus: _toBoolArray(false)
-        });
-
-        // set random address for profile manager
-        hub.changeDelegatedExecutorsConfig({
-            delegatorProfileId: firstProfileId,
-            delegatedExecutors: _toAddressArray(address(0x1A1cDf59C94a682a067fA2D288C2167a8506abd7)),
-            approvals: _toBoolArray(true)
-        });
-
-        // unset profile guardian
-        hub.DANGER__disableTokenGuardian();
-
-        vm.stopBroadcast();
-
-        vm.startBroadcast(governance.ownerPk);
-        governanceContract.lensHub_whitelistProfileCreator(address(temporarilyCreationProxy), false);
         vm.stopBroadcast();
     }
 
@@ -699,6 +419,5 @@ contract LensV2DeployPeriphery is Script, ForkManagement, ArrayHelpers {
         loadBaseAddresses();
         deploy();
         _writeBackendEnvFile();
-        _interact();
     }
 }

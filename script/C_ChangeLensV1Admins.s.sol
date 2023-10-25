@@ -9,7 +9,7 @@ import {LensV2UpgradeContract} from 'contracts/misc/LensV2UpgradeContract.sol';
 import {ProxyAdmin} from 'contracts/misc/access/ProxyAdmin.sol';
 import {TransparentUpgradeableProxy} from '@openzeppelin/contracts/proxy/transparent/TransparentUpgradeableProxy.sol';
 
-contract LensV1ChangeAdmins is Script, ForkManagement {
+contract C_ChangeLensV1Admins is Script, ForkManagement {
     // add this to be excluded from coverage report
     function testLensV1ChangeAdmins() public {}
 
