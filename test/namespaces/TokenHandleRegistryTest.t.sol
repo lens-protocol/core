@@ -76,7 +76,7 @@ contract TokenHandleRegistryTest is BaseTest {
     }
 
     function testCannot_Link_IfNotOwnerOrDelegatedExecutor(address otherAddress) public {
-        address holder = makeAddr("holder");
+        address holder = makeAddr('holder');
 
         vm.assume(otherAddress != holder);
         vm.assume(otherAddress != address(0));
@@ -111,13 +111,13 @@ contract TokenHandleRegistryTest is BaseTest {
         tokenHandleRegistry.link(handleId, nonexistingProfileId);
     }
 
-    function testCannot_LinkWithSig_WhenSignatureNonceWasIncremented(address relayer) public {
+    function testCannot_LinkWithSig_WhenSignatureNonceWasIncremented(uint8 increment) public {
+        vm.assume(increment > 0);
+
         uint256 holderPk = 0x401DE8;
         address holder = vm.addr(holderPk);
 
-        vm.assume(relayer != holder);
-        vm.assume(relayer != address(0));
-        vm.assume(!_isLensHubProxyAdmin(relayer));
+        address relayer = makeAddr('relayer');
 
         _transferHandle(holder, handleId);
         _transferProfile(holder, profileId);
@@ -125,7 +125,7 @@ contract TokenHandleRegistryTest is BaseTest {
         Types.EIP712Signature memory sig = _getLinkSigStruct(handleId, profileId, holderPk);
 
         vm.prank(holder);
-        tokenHandleRegistry.incrementNonce(69);
+        tokenHandleRegistry.incrementNonce(increment);
 
         vm.expectRevert(Errors.SignatureInvalid.selector);
 
@@ -133,13 +133,11 @@ contract TokenHandleRegistryTest is BaseTest {
         tokenHandleRegistry.linkWithSig(handleId, profileId, sig);
     }
 
-    function testCannot_LinkWithSig_IfWalletValidationFails(address relayer) public {
+    function testCannot_LinkWithSig_IfWalletValidationFails() public {
         uint256 otherPk = 0x07438;
-        address walletOwner = makeAddr("walletOwner");
+        address walletOwner = makeAddr('walletOwner');
 
-        vm.assume(relayer != walletOwner);
-        vm.assume(relayer != address(0));
-        vm.assume(!_isLensHubProxyAdmin(relayer));
+        address relayer = makeAddr('relayer');
 
         address wallet = address(new ERC1271WalletMock(walletOwner));
 
@@ -154,18 +152,18 @@ contract TokenHandleRegistryTest is BaseTest {
         tokenHandleRegistry.linkWithSig(handleId, profileId, sig);
     }
 
-    function testCannot_LinkWithSig_WhenSignatureExpires(address relayer) public {
+    function testCannot_LinkWithSig_WhenSignatureExpires(uint256 deadline) public {
+        vm.assume(deadline >= block.timestamp);
+        vm.assume(deadline < type(uint256).max);
+
         uint256 holderPk = 0x401DE8;
         address holder = vm.addr(holderPk);
 
-        vm.assume(relayer != holder);
-        vm.assume(relayer != address(0));
-        vm.assume(!_isLensHubProxyAdmin(relayer));
+        address relayer = makeAddr('relayer');
 
         _transferHandle(holder, handleId);
         _transferProfile(holder, profileId);
 
-        uint256 deadline = block.timestamp + 12 hours;
         Types.EIP712Signature memory sig = _getLinkSigStruct(handleId, profileId, holderPk, holder, deadline);
 
         vm.warp(deadline + 1);
@@ -220,13 +218,13 @@ contract TokenHandleRegistryTest is BaseTest {
         tokenHandleRegistry.unlink(0, 0);
     }
 
-    function testCannot_UnlinkWithSig_WhenSignatureNonceWasIncremented(address relayer) public {
+    function testCannot_UnlinkWithSig_WhenSignatureNonceWasIncremented(uint8 increment) public {
+        vm.assume(increment > 0);
+
         uint256 holderPk = 0x401DE8;
         address holder = vm.addr(holderPk);
 
-        vm.assume(relayer != holder);
-        vm.assume(relayer != address(0));
-        vm.assume(!_isLensHubProxyAdmin(relayer));
+        address relayer = makeAddr('relayer');
 
         _transferHandle(holder, handleId);
         _transferProfile(holder, profileId);
@@ -240,7 +238,7 @@ contract TokenHandleRegistryTest is BaseTest {
         Types.EIP712Signature memory sig = _getUnlinkSigStruct(handleId, profileId, holderPk);
 
         vm.prank(holder);
-        tokenHandleRegistry.incrementNonce(69);
+        tokenHandleRegistry.incrementNonce(increment);
 
         vm.expectRevert(Errors.SignatureInvalid.selector);
 
@@ -248,13 +246,11 @@ contract TokenHandleRegistryTest is BaseTest {
         tokenHandleRegistry.unlinkWithSig(handleId, profileId, sig);
     }
 
-    function testCannot_UnlinkWithSig_IfWalletValidationFails(address relayer) public {
+    function testCannot_UnlinkWithSig_IfWalletValidationFails() public {
         uint256 otherPk = 0x07438;
-        address walletOwner = makeAddr("walletOwner");
+        address walletOwner = makeAddr('walletOwner');
 
-        vm.assume(relayer != walletOwner);
-        vm.assume(relayer != address(0));
-        vm.assume(!_isLensHubProxyAdmin(relayer));
+        address relayer = makeAddr('relayer');
 
         address wallet = address(new ERC1271WalletMock(walletOwner));
 
@@ -275,13 +271,14 @@ contract TokenHandleRegistryTest is BaseTest {
         tokenHandleRegistry.unlinkWithSig(handleId, profileId, sig);
     }
 
-    function testCannot_UnlinkWithSig_WhenSignatureExpires(address relayer) public {
+    function testCannot_UnlinkWithSig_WhenSignatureExpires(uint256 deadline) public {
+        vm.assume(deadline >= block.timestamp);
+        vm.assume(deadline < type(uint256).max);
+
         uint256 holderPk = 0x401DE8;
         address holder = vm.addr(holderPk);
 
-        vm.assume(relayer != holder);
-        vm.assume(relayer != address(0));
-        vm.assume(!_isLensHubProxyAdmin(relayer));
+        address relayer = makeAddr('relayer');
 
         _transferHandle(holder, handleId);
         _transferProfile(holder, profileId);
@@ -292,7 +289,6 @@ contract TokenHandleRegistryTest is BaseTest {
         assertEq(tokenHandleRegistry.resolve(handleId), profileId);
         assertEq(tokenHandleRegistry.getDefaultHandle(profileId), handleId);
 
-        uint256 deadline = block.timestamp + 12 hours;
         Types.EIP712Signature memory sig = _getUnlinkSigStruct(handleId, profileId, holderPk, holder, deadline);
 
         vm.warp(deadline + 1);
@@ -467,13 +463,11 @@ contract TokenHandleRegistryTest is BaseTest {
         assertEq(tokenHandleRegistry.getDefaultHandle(profileId), handleId);
     }
 
-    function testFreshLinkWithSig_WithERC1271Wallet(address relayer) public {
+    function testFreshLinkWithSig_WithERC1271Wallet() public {
         uint256 walletOwnerPk = 0x401DE8;
         address walletOwner = vm.addr(walletOwnerPk);
 
-        vm.assume(relayer != walletOwner);
-        vm.assume(relayer != address(0));
-        vm.assume(!_isLensHubProxyAdmin(relayer));
+        address relayer = makeAddr('relayer');
 
         address wallet = address(new ERC1271WalletMock(walletOwner));
 
@@ -731,13 +725,11 @@ contract TokenHandleRegistryTest is BaseTest {
         assertEq(tokenHandleRegistry.getDefaultHandle(profileId), 0);
     }
 
-    function testUnlinkWithSig_WithERC1271Wallet(address relayer) public {
+    function testUnlinkWithSig_WithERC1271Wallet() public {
         uint256 walletOwnerPk = 0x401DE8;
         address walletOwner = vm.addr(walletOwnerPk);
 
-        vm.assume(relayer != walletOwner);
-        vm.assume(relayer != address(0));
-        vm.assume(!_isLensHubProxyAdmin(relayer));
+        address relayer = makeAddr('relayer');
 
         address wallet = address(new ERC1271WalletMock(walletOwner));
 
