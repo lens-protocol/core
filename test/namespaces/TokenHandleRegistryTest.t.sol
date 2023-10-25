@@ -3,6 +3,7 @@ pragma solidity ^0.8.13;
 
 import 'test/base/BaseTest.t.sol';
 import {ERC1271WalletMock} from '@openzeppelin/contracts/mocks/ERC1271WalletMock.sol';
+import {MetaTxNegatives} from 'test/MetaTxNegatives.t.sol';
 import {RegistryErrors} from 'contracts/namespaces/constants/Errors.sol';
 import {RegistryEvents} from 'contracts/namespaces/constants/Events.sol';
 import {RegistryTypes} from 'contracts/namespaces/constants/Types.sol';
@@ -14,23 +15,13 @@ contract TokenHandleRegistryTest is BaseTest {
     address initialProfileHolder = makeAddr('INITIAL_PROFILE_HOLDER');
     address initialHandleHolder = makeAddr('INITIAL_HANDLE_HOLDER');
 
-    function setUp() public override {
+    function setUp() public virtual override {
         super.setUp();
 
         profileId = _createProfile(initialProfileHolder);
 
         vm.prank(governance);
         handleId = lensHandles.mintHandle(initialHandleHolder, 'handle');
-
-        domainSeparator = keccak256(
-            abi.encode(
-                Typehash.EIP712_DOMAIN,
-                keccak256('TokenHandleRegistry'),
-                keccak256(bytes('1')),
-                block.chainid,
-                address(tokenHandleRegistry)
-            )
-        );
     }
 
     function testCannot_MigrationLink_IfNotHub(address otherAddress) public {
@@ -111,69 +102,6 @@ contract TokenHandleRegistryTest is BaseTest {
         tokenHandleRegistry.link(handleId, nonexistingProfileId);
     }
 
-    function testCannot_LinkWithSig_WhenSignatureNonceWasIncremented(uint8 increment) public {
-        vm.assume(increment > 0);
-
-        uint256 holderPk = 0x401DE8;
-        address holder = vm.addr(holderPk);
-
-        address relayer = makeAddr('relayer');
-
-        _transferHandle(holder, handleId);
-        _transferProfile(holder, profileId);
-
-        Types.EIP712Signature memory sig = _getLinkSigStruct(handleId, profileId, holderPk);
-
-        vm.prank(holder);
-        tokenHandleRegistry.incrementNonce(increment);
-
-        vm.expectRevert(Errors.SignatureInvalid.selector);
-
-        vm.prank(relayer);
-        tokenHandleRegistry.linkWithSig(handleId, profileId, sig);
-    }
-
-    function testCannot_LinkWithSig_IfWalletValidationFails() public {
-        uint256 otherPk = 0x07438;
-        address walletOwner = makeAddr('walletOwner');
-
-        address relayer = makeAddr('relayer');
-
-        address wallet = address(new ERC1271WalletMock(walletOwner));
-
-        _transferHandle(wallet, handleId);
-        _transferProfile(wallet, profileId);
-
-        Types.EIP712Signature memory sig = _getLinkSigStruct(handleId, profileId, otherPk, wallet);
-
-        vm.expectRevert(Errors.SignatureInvalid.selector);
-
-        vm.prank(relayer);
-        tokenHandleRegistry.linkWithSig(handleId, profileId, sig);
-    }
-
-    function testCannot_LinkWithSig_WhenSignatureExpires(uint256 deadline) public {
-        vm.assume(deadline >= block.timestamp);
-        vm.assume(deadline < type(uint256).max);
-
-        uint256 holderPk = 0x401DE8;
-        address holder = vm.addr(holderPk);
-
-        address relayer = makeAddr('relayer');
-
-        _transferHandle(holder, handleId);
-        _transferProfile(holder, profileId);
-
-        Types.EIP712Signature memory sig = _getLinkSigStruct(handleId, profileId, holderPk, holder, deadline);
-
-        vm.warp(deadline + 1);
-
-        vm.expectRevert(Errors.SignatureExpired.selector);
-
-        vm.prank(relayer);
-        tokenHandleRegistry.linkWithSig(handleId, profileId, sig);
-    }
-
     function testCannot_Unlink_IfNotHoldingProfileOrHandle(address otherAddress) public {
         vm.assume(otherAddress != lensHandles.ownerOf(handleId));
         vm.assume(otherAddress != hub.ownerOf(profileId));
@@ -216,87 +144,6 @@ contract TokenHandleRegistryTest is BaseTest {
         vm.expectRevert(RegistryErrors.DoesNotExist.selector);
         vm.prank(otherAddress);
         tokenHandleRegistry.unlink(0, 0);
-    }
-
-    function testCannot_UnlinkWithSig_WhenSignatureNonceWasIncremented(uint8 increment) public {
-        vm.assume(increment > 0);
-
-        uint256 holderPk = 0x401DE8;
-        address holder = vm.addr(holderPk);
-
-        address relayer = makeAddr('relayer');
-
-        _transferHandle(holder, handleId);
-        _transferProfile(holder, profileId);
-
-        vm.prank(holder);
-        tokenHandleRegistry.link(handleId, profileId);
-
-        assertEq(tokenHandleRegistry.resolve(handleId), profileId);
-        assertEq(tokenHandleRegistry.getDefaultHandle(profileId), handleId);
-
-        Types.EIP712Signature memory sig = _getUnlinkSigStruct(handleId, profileId, holderPk);
-
-        vm.prank(holder);
-        tokenHandleRegistry.incrementNonce(increment);
-
-        vm.expectRevert(Errors.SignatureInvalid.selector);
-
-        vm.prank(relayer);
-        tokenHandleRegistry.unlinkWithSig(handleId, profileId, sig);
-    }
-
-    function testCannot_UnlinkWithSig_IfWalletValidationFails() public {
-        uint256 otherPk = 0x07438;
-        address walletOwner = makeAddr('walletOwner');
-
-        address relayer = makeAddr('relayer');
-
-        address wallet = address(new ERC1271WalletMock(walletOwner));
-
-        _transferHandle(wallet, handleId);
-        _transferProfile(wallet, profileId);
-
-        vm.prank(wallet);
-        tokenHandleRegistry.link(handleId, profileId);
-
-        assertEq(tokenHandleRegistry.resolve(handleId), profileId);
-        assertEq(tokenHandleRegistry.getDefaultHandle(profileId), handleId);
-
-        Types.EIP712Signature memory sig = _getUnlinkSigStruct(handleId, profileId, otherPk, wallet);
-
-        vm.expectRevert(Errors.SignatureInvalid.selector);
-
-        vm.prank(relayer);
-        tokenHandleRegistry.unlinkWithSig(handleId, profileId, sig);
-    }
-
-    function testCannot_UnlinkWithSig_WhenSignatureExpires(uint256 deadline) public {
-        vm.assume(deadline >= block.timestamp);
-        vm.assume(deadline < type(uint256).max);
-
-        uint256 holderPk = 0x401DE8;
-        address holder = vm.addr(holderPk);
-
-        address relayer = makeAddr('relayer');
-
-        _transferHandle(holder, handleId);
-        _transferProfile(holder, profileId);
-
-        vm.prank(holder);
-        tokenHandleRegistry.link(handleId, profileId);
-
-        assertEq(tokenHandleRegistry.resolve(handleId), profileId);
-        assertEq(tokenHandleRegistry.getDefaultHandle(profileId), handleId);
-
-        Types.EIP712Signature memory sig = _getUnlinkSigStruct(handleId, profileId, holderPk, holder, deadline);
-
-        vm.warp(deadline + 1);
-
-        vm.expectRevert(Errors.SignatureExpired.selector);
-
-        vm.prank(relayer);
-        tokenHandleRegistry.unlinkWithSig(handleId, profileId, sig);
     }
 
     function testResolve() public {
@@ -432,58 +279,6 @@ contract TokenHandleRegistryTest is BaseTest {
 
         vm.prank(holder);
         tokenHandleRegistry.link(handleId, profileId);
-
-        assertEq(tokenHandleRegistry.resolve(handleId), profileId);
-        assertEq(tokenHandleRegistry.getDefaultHandle(profileId), handleId);
-    }
-
-    function testFreshLinkWithSig(address relayer) public {
-        uint256 holderPk = 0x401DE8;
-        address holder = vm.addr(holderPk);
-
-        vm.assume(relayer != holder);
-        vm.assume(relayer != address(0));
-        vm.assume(!_isLensHubProxyAdmin(relayer));
-
-        _transferHandle(holder, handleId);
-        _transferProfile(holder, profileId);
-
-        RegistryTypes.Handle memory handle = RegistryTypes.Handle({collection: address(lensHandles), id: handleId});
-        RegistryTypes.Token memory token = RegistryTypes.Token({collection: address(hub), id: profileId});
-
-        Types.EIP712Signature memory sig = _getLinkSigStruct(handleId, profileId, holderPk);
-
-        vm.expectEmit(true, true, true, true, address(tokenHandleRegistry));
-        emit RegistryEvents.HandleLinked(handle, token, holder, block.timestamp);
-
-        vm.prank(relayer);
-        tokenHandleRegistry.linkWithSig(handleId, profileId, sig);
-
-        assertEq(tokenHandleRegistry.resolve(handleId), profileId);
-        assertEq(tokenHandleRegistry.getDefaultHandle(profileId), handleId);
-    }
-
-    function testFreshLinkWithSig_WithERC1271Wallet() public {
-        uint256 walletOwnerPk = 0x401DE8;
-        address walletOwner = vm.addr(walletOwnerPk);
-
-        address relayer = makeAddr('relayer');
-
-        address wallet = address(new ERC1271WalletMock(walletOwner));
-
-        _transferHandle(wallet, handleId);
-        _transferProfile(wallet, profileId);
-
-        RegistryTypes.Handle memory handle = RegistryTypes.Handle({collection: address(lensHandles), id: handleId});
-        RegistryTypes.Token memory token = RegistryTypes.Token({collection: address(hub), id: profileId});
-
-        Types.EIP712Signature memory sig = _getLinkSigStruct(handleId, profileId, walletOwnerPk, wallet);
-
-        vm.expectEmit(true, true, true, true, address(tokenHandleRegistry));
-        emit RegistryEvents.HandleLinked(handle, token, wallet, block.timestamp);
-
-        vm.prank(address(relayer));
-        tokenHandleRegistry.linkWithSig(handleId, profileId, sig);
 
         assertEq(tokenHandleRegistry.resolve(handleId), profileId);
         assertEq(tokenHandleRegistry.getDefaultHandle(profileId), handleId);
@@ -688,70 +483,6 @@ contract TokenHandleRegistryTest is BaseTest {
 
         vm.prank(holder);
         tokenHandleRegistry.unlink(handleId, profileId);
-
-        assertEq(tokenHandleRegistry.resolve(handleId), 0);
-        assertEq(tokenHandleRegistry.getDefaultHandle(profileId), 0);
-    }
-
-    function testUnlinkWithSig(address relayer) public {
-        uint256 holderPk = 0x401DE8;
-        address holder = vm.addr(holderPk);
-
-        vm.assume(relayer != holder);
-        vm.assume(relayer != address(0));
-        vm.assume(!_isLensHubProxyAdmin(relayer));
-
-        _transferHandle(holder, handleId);
-        _transferProfile(holder, profileId);
-
-        vm.prank(holder);
-        tokenHandleRegistry.link(handleId, profileId);
-
-        assertEq(tokenHandleRegistry.resolve(handleId), profileId);
-        assertEq(tokenHandleRegistry.getDefaultHandle(profileId), handleId);
-
-        RegistryTypes.Handle memory handle = RegistryTypes.Handle({collection: address(lensHandles), id: handleId});
-        RegistryTypes.Token memory token = RegistryTypes.Token({collection: address(hub), id: profileId});
-
-        Types.EIP712Signature memory sig = _getUnlinkSigStruct(handleId, profileId, holderPk);
-
-        vm.expectEmit(true, true, true, true, address(tokenHandleRegistry));
-        emit RegistryEvents.HandleUnlinked(handle, token, holder, block.timestamp);
-
-        vm.prank(relayer);
-        tokenHandleRegistry.unlinkWithSig(handleId, profileId, sig);
-
-        assertEq(tokenHandleRegistry.resolve(handleId), 0);
-        assertEq(tokenHandleRegistry.getDefaultHandle(profileId), 0);
-    }
-
-    function testUnlinkWithSig_WithERC1271Wallet() public {
-        uint256 walletOwnerPk = 0x401DE8;
-        address walletOwner = vm.addr(walletOwnerPk);
-
-        address relayer = makeAddr('relayer');
-
-        address wallet = address(new ERC1271WalletMock(walletOwner));
-
-        _transferHandle(wallet, handleId);
-        _transferProfile(wallet, profileId);
-
-        vm.prank(wallet);
-        tokenHandleRegistry.link(handleId, profileId);
-
-        assertEq(tokenHandleRegistry.resolve(handleId), profileId);
-        assertEq(tokenHandleRegistry.getDefaultHandle(profileId), handleId);
-
-        RegistryTypes.Handle memory handle = RegistryTypes.Handle({collection: address(lensHandles), id: handleId});
-        RegistryTypes.Token memory token = RegistryTypes.Token({collection: address(hub), id: profileId});
-
-        Types.EIP712Signature memory sig = _getUnlinkSigStruct(handleId, profileId, walletOwnerPk, wallet);
-
-        vm.expectEmit(true, true, true, true, address(tokenHandleRegistry));
-        emit RegistryEvents.HandleUnlinked(handle, token, wallet, block.timestamp);
-
-        vm.prank(relayer);
-        tokenHandleRegistry.unlinkWithSig(handleId, profileId, sig);
 
         assertEq(tokenHandleRegistry.resolve(handleId), 0);
         assertEq(tokenHandleRegistry.getDefaultHandle(profileId), 0);
@@ -1079,5 +810,290 @@ contract TokenHandleRegistryTest is BaseTest {
 
         vm.expectRevert(RegistryErrors.DoesNotExist.selector);
         tokenHandleRegistry.getDefaultHandle(profileId);
+    }
+}
+
+abstract contract TokenHandleRegistryMetaTxBaseTest is BaseTest, MetaTxNegatives {
+    uint256 internal constant NO_DEADLINE = type(uint256).max;
+
+    uint256 profileId;
+    uint256 handleId;
+
+    uint256 constant holderPk = 0x401DE8;
+    address holder;
+
+    function setUp() public override (BaseTest, MetaTxNegatives) {
+        BaseTest.setUp();
+        MetaTxNegatives.setUp();
+
+        holder = vm.addr(holderPk);
+        profileId = _createProfile(holder);
+
+        vm.prank(governance);
+        handleId = lensHandles.mintHandle(holder, 'handle');
+
+        domainSeparator = keccak256(
+            abi.encode(
+                Typehash.EIP712_DOMAIN,
+                keccak256('TokenHandleRegistry'),
+                keccak256(bytes('1')),
+                block.chainid,
+                address(tokenHandleRegistry)
+            )
+        );
+
+    }
+
+    function _incrementNonce(uint8 increment) internal override {
+        vm.prank(vm.addr(_getDefaultMetaTxSignerPk()));
+        tokenHandleRegistry.incrementNonce(increment);
+    }
+
+    function _getDefaultMetaTxSignerPk() internal override returns (uint256) {
+        return holderPk;
+    }
+
+    function _getMetaTxNonce(address signer) internal override returns (uint256) {
+        return tokenHandleRegistry.nonces(signer);
+    }
+
+    function _getDomainName() internal override returns (bytes memory) {
+        return bytes('TokenHandleRegistry');
+    }
+
+    function _getRevisionNumber() internal override returns (bytes memory) {
+        return bytes('1');
+    }
+
+    function _getVerifyingContract() internal override returns (address) {
+        return address(tokenHandleRegistry);
+    }
+}
+
+contract TokenHandleRegistryLinkMetaTxTest is TokenHandleRegistryMetaTxBaseTest {
+    function testFreshLinkWithSig(address relayer) public {
+        vm.assume(relayer != holder);
+        vm.assume(relayer != address(0));
+        vm.assume(!_isLensHubProxyAdmin(relayer));
+
+        RegistryTypes.Handle memory handle = RegistryTypes.Handle({collection: address(lensHandles), id: handleId});
+        RegistryTypes.Token memory token = RegistryTypes.Token({collection: address(hub), id: profileId});
+
+        Types.EIP712Signature memory sig = _getLinkSigStruct(holder, holderPk, _getMetaTxNonce(holder), NO_DEADLINE);
+
+        vm.expectEmit(true, true, true, true, address(tokenHandleRegistry));
+        emit RegistryEvents.HandleLinked(handle, token, holder, block.timestamp);
+
+        vm.prank(relayer);
+        tokenHandleRegistry.linkWithSig(handleId, profileId, sig);
+
+        assertEq(tokenHandleRegistry.resolve(handleId), profileId);
+        assertEq(tokenHandleRegistry.getDefaultHandle(profileId), handleId);
+    }
+
+    function testFreshLinkWithSig_WithERC1271Wallet() public {
+        uint256 walletOwnerPk = 0x77a1137077438;
+        address walletOwner = vm.addr(walletOwnerPk);
+
+        address relayer = makeAddr('relayer');
+
+        address wallet = address(new ERC1271WalletMock(walletOwner));
+
+        _transferHandle(wallet, handleId);
+        _transferProfile(wallet, profileId);
+
+        RegistryTypes.Handle memory handle = RegistryTypes.Handle({collection: address(lensHandles), id: handleId});
+        RegistryTypes.Token memory token = RegistryTypes.Token({collection: address(hub), id: profileId});
+
+        Types.EIP712Signature memory sig = _getLinkSigStruct(wallet, walletOwnerPk, _getMetaTxNonce(wallet), NO_DEADLINE);
+
+        vm.expectEmit(true, true, true, true, address(tokenHandleRegistry));
+        emit RegistryEvents.HandleLinked(handle, token, wallet, block.timestamp);
+
+        vm.prank(address(relayer));
+        tokenHandleRegistry.linkWithSig(handleId, profileId, sig);
+
+        assertEq(tokenHandleRegistry.resolve(handleId), profileId);
+        assertEq(tokenHandleRegistry.getDefaultHandle(profileId), handleId);
+    }
+
+    function testCannot_LinkWithSig_IfWalletValidationFails() public {
+        uint256 otherPk = 0x07438;
+        address walletOwner = makeAddr('walletOwner');
+
+        address relayer = makeAddr('relayer');
+
+        address wallet = address(new ERC1271WalletMock(walletOwner));
+
+        _transferHandle(wallet, handleId);
+        _transferProfile(wallet, profileId);
+
+        Types.EIP712Signature memory sig = _getLinkSigStruct(wallet, otherPk, _getMetaTxNonce(wallet), NO_DEADLINE);
+
+        vm.expectRevert(Errors.SignatureInvalid.selector);
+
+        vm.prank(relayer);
+        tokenHandleRegistry.linkWithSig(handleId, profileId, sig);
+    }
+
+    function _executeMetaTx(uint256 pKey, uint256 nonce, uint256 deadline) internal override {
+        tokenHandleRegistry.linkWithSig({
+            handleId: handleId,
+            profileId: profileId,
+            signature: _getLinkSigStruct({
+                signer: vm.addr(_getDefaultMetaTxSignerPk()),
+                pKey: pKey,
+                nonce: nonce,
+                deadline: deadline
+            })
+        });
+    }
+
+    function _getLinkSigStruct(
+        address signer,
+        uint256 pKey,
+        uint256 nonce,
+        uint256 deadline
+    ) internal view returns (Types.EIP712Signature memory) {
+        return _getSigStruct({
+            signer: signer,
+            pKey: pKey,
+            deadline: deadline,
+            digest: _calculateDigest(
+                keccak256(
+                    abi.encode(
+                        NamespacesTypehash.LINK,
+                        handleId,
+                        profileId,
+                        signer,
+                        nonce,
+                        deadline
+                    )
+                )
+            )
+        });
+    }
+}
+
+contract TokenHandleRegistryUnlinkMetaTxTest is TokenHandleRegistryMetaTxBaseTest {
+    function testUnlinkWithSig(address relayer) public {
+        vm.assume(relayer != holder);
+        vm.assume(relayer != address(0));
+        vm.assume(!_isLensHubProxyAdmin(relayer));
+
+        vm.prank(holder);
+        tokenHandleRegistry.link(handleId, profileId);
+
+        assertEq(tokenHandleRegistry.resolve(handleId), profileId);
+        assertEq(tokenHandleRegistry.getDefaultHandle(profileId), handleId);
+
+        RegistryTypes.Handle memory handle = RegistryTypes.Handle({collection: address(lensHandles), id: handleId});
+        RegistryTypes.Token memory token = RegistryTypes.Token({collection: address(hub), id: profileId});
+
+        Types.EIP712Signature memory sig = _getUnlinkSigStruct(holder, holderPk, _getMetaTxNonce(holder), NO_DEADLINE);
+
+        vm.expectEmit(true, true, true, true, address(tokenHandleRegistry));
+        emit RegistryEvents.HandleUnlinked(handle, token, holder, block.timestamp);
+
+        vm.prank(relayer);
+        tokenHandleRegistry.unlinkWithSig(handleId, profileId, sig);
+
+        assertEq(tokenHandleRegistry.resolve(handleId), 0);
+        assertEq(tokenHandleRegistry.getDefaultHandle(profileId), 0);
+    }
+
+    function testUnlinkWithSig_WithERC1271Wallet() public {
+        uint256 walletOwnerPk = 0x77a1137077438;
+        address walletOwner = vm.addr(walletOwnerPk);
+
+        address relayer = makeAddr('relayer');
+
+        address wallet = address(new ERC1271WalletMock(walletOwner));
+
+        _transferHandle(wallet, handleId);
+        _transferProfile(wallet, profileId);
+
+        vm.prank(wallet);
+        tokenHandleRegistry.link(handleId, profileId);
+
+        assertEq(tokenHandleRegistry.resolve(handleId), profileId);
+        assertEq(tokenHandleRegistry.getDefaultHandle(profileId), handleId);
+
+        RegistryTypes.Handle memory handle = RegistryTypes.Handle({collection: address(lensHandles), id: handleId});
+        RegistryTypes.Token memory token = RegistryTypes.Token({collection: address(hub), id: profileId});
+
+        Types.EIP712Signature memory sig = _getUnlinkSigStruct(wallet, walletOwnerPk, _getMetaTxNonce(wallet), NO_DEADLINE);
+
+        vm.expectEmit(true, true, true, true, address(tokenHandleRegistry));
+        emit RegistryEvents.HandleUnlinked(handle, token, wallet, block.timestamp);
+
+        vm.prank(relayer);
+        tokenHandleRegistry.unlinkWithSig(handleId, profileId, sig);
+
+        assertEq(tokenHandleRegistry.resolve(handleId), 0);
+        assertEq(tokenHandleRegistry.getDefaultHandle(profileId), 0);
+    }
+
+    function testCannot_UnlinkWithSig_IfWalletValidationFails() public {
+        uint256 otherPk = 0x07438;
+        address walletOwner = makeAddr('walletOwner');
+
+        address relayer = makeAddr('relayer');
+
+        address wallet = address(new ERC1271WalletMock(walletOwner));
+
+        _transferHandle(wallet, handleId);
+        _transferProfile(wallet, profileId);
+
+        vm.prank(wallet);
+        tokenHandleRegistry.link(handleId, profileId);
+
+        assertEq(tokenHandleRegistry.resolve(handleId), profileId);
+        assertEq(tokenHandleRegistry.getDefaultHandle(profileId), handleId);
+
+        Types.EIP712Signature memory sig = _getUnlinkSigStruct(wallet, otherPk, _getMetaTxNonce(wallet), NO_DEADLINE);
+
+        vm.expectRevert(Errors.SignatureInvalid.selector);
+
+        vm.prank(relayer);
+        tokenHandleRegistry.unlinkWithSig(handleId, profileId, sig);
+    }
+
+    function _executeMetaTx(uint256 signerPk, uint256 nonce, uint256 deadline) internal override {
+        tokenHandleRegistry.unlinkWithSig({
+            handleId: handleId,
+            profileId: profileId,
+            signature: _getUnlinkSigStruct({
+                signer: vm.addr(_getDefaultMetaTxSignerPk()),
+                pKey: signerPk,
+                nonce: nonce,
+                deadline: deadline
+            })
+        });
+    }
+
+    function _getUnlinkSigStruct(
+        address signer,
+        uint256 pKey,
+        uint256 nonce,
+        uint256 deadline
+    ) internal view returns (Types.EIP712Signature memory) {
+        return _getSigStruct({
+            signer: signer,
+            pKey: pKey,
+            deadline: deadline,
+            digest: _calculateDigest(
+                keccak256(
+                    abi.encode(
+                        NamespacesTypehash.UNLINK,
+                        handleId,
+                        profileId,
+                        signer,
+                        nonce,
+                        deadline
+                    )
+                )
+            )
+        });
     }
 }
