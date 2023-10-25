@@ -2,6 +2,7 @@
 pragma solidity ^0.8.13;
 
 import 'test/base/BaseTest.t.sol';
+import {ERC1271WalletMock} from '@openzeppelin/contracts/mocks/ERC1271WalletMock.sol';
 import {RegistryErrors} from 'contracts/namespaces/constants/Errors.sol';
 import {RegistryEvents} from 'contracts/namespaces/constants/Events.sol';
 import {RegistryTypes} from 'contracts/namespaces/constants/Types.sol';
@@ -368,6 +369,34 @@ contract TokenHandleRegistryTest is BaseTest {
         assertEq(tokenHandleRegistry.getDefaultHandle(profileId), handleId);
     }
 
+    function testFreshLinkWithSig_WithERC1271Wallet(address relayer) public {
+        uint256 walletOwnerPk = 0x401DE8;
+        address walletOwner = vm.addr(walletOwnerPk);
+
+        vm.assume(relayer != walletOwner);
+        vm.assume(relayer != address(0));
+        vm.assume(!_isLensHubProxyAdmin(relayer));
+
+        address wallet = address(new ERC1271WalletMock(walletOwner));
+
+        _transferHandle(wallet, handleId);
+        _transferProfile(wallet, profileId);
+
+        RegistryTypes.Handle memory handle = RegistryTypes.Handle({collection: address(lensHandles), id: handleId});
+        RegistryTypes.Token memory token = RegistryTypes.Token({collection: address(hub), id: profileId});
+
+        Types.EIP712Signature memory sig = _getLinkSigStruct(wallet, walletOwnerPk, handleId, profileId);
+
+        vm.expectEmit(true, true, true, true, address(tokenHandleRegistry));
+        emit RegistryEvents.HandleLinked(handle, token, wallet, block.timestamp);
+
+        vm.prank(address(relayer));
+        tokenHandleRegistry.linkWithSig(handleId, profileId, sig);
+
+        assertEq(tokenHandleRegistry.resolve(handleId), profileId);
+        assertEq(tokenHandleRegistry.getDefaultHandle(profileId), handleId);
+    }
+
     function testLink_AfterHandleWasMoved(address firstHolder, address newHolder) public {
         vm.assume(firstHolder != address(0));
         vm.assume(!_isLensHubProxyAdmin(firstHolder));
@@ -596,6 +625,40 @@ contract TokenHandleRegistryTest is BaseTest {
 
         vm.expectEmit(true, true, true, true, address(tokenHandleRegistry));
         emit RegistryEvents.HandleUnlinked(handle, token, holder, block.timestamp);
+
+        vm.prank(relayer);
+        tokenHandleRegistry.unlinkWithSig(handleId, profileId, sig);
+
+        assertEq(tokenHandleRegistry.resolve(handleId), 0);
+        assertEq(tokenHandleRegistry.getDefaultHandle(profileId), 0);
+    }
+
+    function testUnlinkWithSig_WithERC1271Wallet(address relayer) public {
+        uint256 walletOwnerPk = 0x401DE8;
+        address walletOwner = vm.addr(walletOwnerPk);
+
+        vm.assume(relayer != walletOwner);
+        vm.assume(relayer != address(0));
+        vm.assume(!_isLensHubProxyAdmin(relayer));
+
+        address wallet = address(new ERC1271WalletMock(walletOwner));
+
+        _transferHandle(wallet, handleId);
+        _transferProfile(wallet, profileId);
+
+        vm.prank(wallet);
+        tokenHandleRegistry.link(handleId, profileId);
+
+        assertEq(tokenHandleRegistry.resolve(handleId), profileId);
+        assertEq(tokenHandleRegistry.getDefaultHandle(profileId), handleId);
+
+        RegistryTypes.Handle memory handle = RegistryTypes.Handle({collection: address(lensHandles), id: handleId});
+        RegistryTypes.Token memory token = RegistryTypes.Token({collection: address(hub), id: profileId});
+
+        Types.EIP712Signature memory sig = _getUnlinkSigStruct(wallet, walletOwnerPk, handleId, profileId);
+
+        vm.expectEmit(true, true, true, true, address(tokenHandleRegistry));
+        emit RegistryEvents.HandleUnlinked(handle, token, wallet, block.timestamp);
 
         vm.prank(relayer);
         tokenHandleRegistry.unlinkWithSig(handleId, profileId, sig);
