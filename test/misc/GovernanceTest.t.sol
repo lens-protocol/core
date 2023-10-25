@@ -102,12 +102,28 @@ contract GovernanceTest is BaseTest {
         governanceContract.lensHub_whitelistProfileCreator(profileCreator, whitelist);
     }
 
+    function testCannotSetState_ifNotOwnerOrControllerContract(uint8 _newState, address otherAddress)
+        public
+    {
+        _newState = uint8(bound(_newState, uint8(0), uint8(type(Types.ProtocolState).max)));
+        Types.ProtocolState newState = Types.ProtocolState(_newState);
+
+        vm.assume(otherAddress != governanceOwner);
+        vm.assume(otherAddress != controllerContract);
+        vm.assume(otherAddress != address(0));
+
+        vm.expectRevert(Unauthorized.selector);
+
+        vm.prank(otherAddress);
+        governanceContract.lensHub_setState(newState);
+    }
+
     function testCannotExecuteAsGovernance_ifNotOwnerOrControllerContract(
         address target,
         bytes memory data,
         address otherAddress
     ) public {
-        vm.assume(otherAddress != governanceOwner && otherAddress != controllerContract);
+        vm.assume(otherAddress != governanceOwner && otherAddress != controllerContract && otherAddress != address(0));
 
         vm.expectRevert(Unauthorized.selector);
 
@@ -177,6 +193,30 @@ contract GovernanceTest is BaseTest {
         governanceContract.lensHub_whitelistProfileCreator(profileCreator, whitelist);
 
         assertEq(hub.isProfileCreatorWhitelisted(profileCreator), whitelist);
+    }
+
+    function testSetState_ifOwner(uint8 _newState) public {
+        _newState = uint8(bound(_newState, uint8(0), uint8(type(Types.ProtocolState).max)));
+        Types.ProtocolState newState = Types.ProtocolState(_newState);
+
+        vm.expectCall(address(hub), abi.encodeCall(ILensGovernable.setState, (newState)), 1);
+
+        vm.prank(governanceOwner);
+        governanceContract.lensHub_setState(newState);
+
+        assertEq(uint256(hub.getState()), uint256(newState));
+    }
+
+    function testSetState_ifControllerContract(uint8 _newState) public {
+        _newState = uint8(bound(_newState, uint8(0), uint8(type(Types.ProtocolState).max)));
+        Types.ProtocolState newState = Types.ProtocolState(_newState);
+
+        vm.expectCall(address(hub), abi.encodeCall(ILensGovernable.setState, (newState)), 1);
+
+        vm.prank(controllerContract);
+        governanceContract.lensHub_setState(newState);
+
+        assertEq(uint256(hub.getState()), uint256(newState));
     }
 
     function testExecuteAsGovernance_ifOwner(address newGovernance) public {

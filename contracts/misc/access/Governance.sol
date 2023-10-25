@@ -4,6 +4,7 @@ pragma solidity ^0.8.15;
 
 import {ILensHub} from 'contracts/interfaces/ILensHub.sol';
 import {ControllableByContract} from 'contracts/misc/access/ControllableByContract.sol';
+import {Types} from 'contracts/libraries/constants/Types.sol';
 
 contract Governance is ControllableByContract {
     ILensHub public immutable LENS_HUB;
@@ -30,6 +31,10 @@ contract Governance is ControllableByContract {
     ) external onlyOwnerOrControllerContract {
         LENS_HUB.setTreasury(newTreasury);
         LENS_HUB.setTreasuryFee(newTreasuryFee);
+    }
+
+    function lensHub_setState(Types.ProtocolState newState) external onlyOwnerOrControllerContract {
+        LENS_HUB.setState(newState);
     }
 
     ////////////////////////////////////////////////////////
