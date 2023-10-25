@@ -36,6 +36,7 @@ contract LensHandles is ERC721, ERC2981CollectionRoyalties, ImmutableOwnable, IL
     uint256 internal immutable NAMESPACE_LENGTH = bytes(NAMESPACE).length;
     bytes32 public constant NAMESPACE_HASH = keccak256(bytes(NAMESPACE));
     uint256 public immutable TOKEN_GUARDIAN_COOLDOWN;
+    uint256 internal constant GUARDIAN_ENABLED = type(uint256).max;
     mapping(address => uint256) internal _tokenGuardianDisablingTimestamp;
 
     uint256 internal _profileRoyaltiesBps; // Slot 7
@@ -120,7 +121,7 @@ contract LensHandles is ERC721, ERC2981CollectionRoyalties, ImmutableOwnable, IL
     /// ************************************
 
     function DANGER__disableTokenGuardian() external onlyEOA {
-        if (_tokenGuardianDisablingTimestamp[msg.sender] != 0) {
+        if (_tokenGuardianDisablingTimestamp[msg.sender] != GUARDIAN_ENABLED) {
             revert HandlesErrors.DisablingAlreadyTriggered();
         }
         _tokenGuardianDisablingTimestamp[msg.sender] = block.timestamp + TOKEN_GUARDIAN_COOLDOWN;
@@ -133,10 +134,10 @@ contract LensHandles is ERC721, ERC2981CollectionRoyalties, ImmutableOwnable, IL
     }
 
     function enableTokenGuardian() external onlyEOA {
-        if (_tokenGuardianDisablingTimestamp[msg.sender] == 0) {
+        if (_tokenGuardianDisablingTimestamp[msg.sender] == GUARDIAN_ENABLED) {
             revert HandlesErrors.AlreadyEnabled();
         }
-        _tokenGuardianDisablingTimestamp[msg.sender] = 0;
+        _tokenGuardianDisablingTimestamp[msg.sender] = GUARDIAN_ENABLED;
         emit HandlesEvents.TokenGuardianStateChanged({
             wallet: msg.sender,
             enabled: true,
@@ -278,7 +279,7 @@ contract LensHandles is ERC721, ERC2981CollectionRoyalties, ImmutableOwnable, IL
     function _hasTokenGuardianEnabled(address wallet) internal view returns (bool) {
         return
             !wallet.isContract() &&
-            (_tokenGuardianDisablingTimestamp[wallet] == 0 ||
+            (_tokenGuardianDisablingTimestamp[wallet] == GUARDIAN_ENABLED ||
                 block.timestamp < _tokenGuardianDisablingTimestamp[wallet]);
     }
 
