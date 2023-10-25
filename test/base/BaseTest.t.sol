@@ -300,83 +300,77 @@ contract BaseTest is TestSetup {
         return _calculateDigest(structHash);
     }
 
-    function _getLinkTypedDataHash(
-        uint256 handleId,
-        uint256 profileId,
-        address signer,
-        uint256 nonce,
-        uint256 deadline
-    ) internal view returns (bytes32) {
-        bytes32 structHash = keccak256(
-            abi.encode(
-                NamespacesTypehash.LINK,
-                handleId,
-                profileId,
-                signer,
-                nonce,
-                deadline
-            )
-        );
-        return _calculateDigest(structHash);
-    }
-
-    function _getUnlinkTypedDataHash(
-        uint256 handleId,
-        uint256 profileId,
-        address signer,
-        uint256 nonce,
-        uint256 deadline
-    ) internal view returns (bytes32) {
-        bytes32 structHash = keccak256(
-            abi.encode(
-                NamespacesTypehash.UNLINK,
-                handleId,
-                profileId,
-                signer,
-                nonce,
-                deadline
-            )
-        );
-        return _calculateDigest(structHash);
-    }
-
     function _getLinkSigStruct(
-        uint256 signerPk,
+        uint256 pKey,
         uint256 handleId,
         uint256 profileId
     ) internal view returns (Types.EIP712Signature memory) {
-        address signer = vm.addr(signerPk);
+        address signer = vm.addr(pKey);
+        return _getLinkSigStruct(signer, pKey, handleId, profileId);
+    }
+
+    function _getLinkSigStruct(
+        address signer,
+        uint256 pKey,
+        uint256 handleId,
+        uint256 profileId
+    ) internal view returns (Types.EIP712Signature memory) {
+        uint256 deadline = type(uint256).max;
+        bytes32 digest = _calculateDigest(
+            keccak256(
+                abi.encode(
+                    NamespacesTypehash.LINK,
+                    handleId,
+                    profileId,
+                    signer,
+                    hub.nonces(signer),
+                    deadline
+                )
+            )
+        );
+
         return _getSigStruct({
             signer: signer,
-            pKey: signerPk,
-            digest: _getLinkTypedDataHash({
-                handleId: handleId,
-                profileId: profileId,
-                signer: signer,
-                nonce: hub.nonces(signer),
-                deadline: type(uint256).max
-            }),
-            deadline: type(uint256).max
+            pKey: pKey,
+            digest: digest,
+            deadline: deadline
         });
     }
 
     function _getUnlinkSigStruct(
-        uint256 signerPk,
+        uint256 pKey,
         uint256 handleId,
         uint256 profileId
     ) internal view returns (Types.EIP712Signature memory) {
-        address signer = vm.addr(signerPk);
+        address signer = vm.addr(pKey);
+        return _getUnlinkSigStruct(signer, pKey, handleId, profileId);
+    }
+
+    function _getUnlinkSigStruct(
+        address signer,
+        uint256 pKey,
+        uint256 handleId,
+        uint256 profileId
+    ) internal view returns (Types.EIP712Signature memory) {
+        uint256 deadline = type(uint256).max;
+        bytes32 digest = _calculateDigest(
+            keccak256(
+                abi.encode(
+                    NamespacesTypehash.UNLINK,
+                    handleId,
+                    profileId,
+                    signer,
+                    hub.nonces(signer),
+                    deadline
+                )
+            )
+        );
+
         return _getSigStruct({
             signer: signer,
-            pKey: signerPk,
-            digest: _getUnlinkTypedDataHash({
-                handleId: handleId,
-                profileId: profileId,
-                signer: signer,
-                nonce: hub.nonces(signer),
-                deadline: type(uint256).max
-            }),
-            deadline: type(uint256).max
+            pKey: pKey,
+            digest: digest,
+            deadline: deadline
         });
     }
 
