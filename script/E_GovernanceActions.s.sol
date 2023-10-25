@@ -32,10 +32,17 @@ import {BaseFeeCollectModuleInitData} from 'contracts/modules/interfaces/IBaseFe
 import {Governance} from 'contracts/misc/access/Governance.sol';
 import {PublicActProxy} from 'contracts/misc/PublicActProxy.sol';
 import {LitAccessControl} from 'contracts/misc/access/LitAccessControl.sol';
+import {LibString} from 'solady/utils/LibString.sol';
 
 import {ArrayHelpers} from 'script/helpers/ArrayHelpers.sol';
 
 contract E_GovernanceActions is Script, ForkManagement, ArrayHelpers {
+    // TODO: Use from test/ContractAddresses
+    struct Module {
+        address addy;
+        string name;
+    }
+
     // add this to be excluded from coverage report
     function testLensV2DeployPeriphery() public {}
 
@@ -75,20 +82,31 @@ contract E_GovernanceActions is Script, ForkManagement, ArrayHelpers {
     ITokenHandleRegistry tokenHandleRegistry;
     ProfileCreationProxy profileCreationProxy;
     CollectNFT collectNFT;
-    CollectPublicationAction collectPublicationActionImpl;
-    TransparentUpgradeableProxy collectPublicationActionProxy;
-    CollectPublicationAction collectPublicationAction;
-    SimpleFeeCollectModule simpleFeeCollectModule;
-    MultirecipientFeeCollectModule multirecipientFeeCollectModule;
-    FeeFollowModule feeFollowModule;
-    RevertFollowModule revertFollowModule;
-    DegreesOfSeparationReferenceModule degreesOfSeparationReferenceModule;
-    FollowerOnlyReferenceModule followerOnlyReferenceModule;
-    TokenGatedReferenceModule tokenGatedReferenceModule;
+    address collectPublicationAction;
+    address simpleFeeCollectModule;
+    address multirecipientFeeCollectModule;
+    address feeFollowModule;
+    address revertFollowModule;
+    address degreesOfSeparationReferenceModule;
+    address followerOnlyReferenceModule;
+    address tokenGatedReferenceModule;
     PublicActProxy publicActProxy;
     address litAccessControl;
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+    // TODO: Move this to helpers somewhere
+    function findModuleHelper(
+        Module[] memory modules,
+        string memory moduleNameToFind
+    ) internal pure returns (Module memory) {
+        for (uint256 i = 0; i < modules.length; i++) {
+            if (LibString.eq(modules[i].name, moduleNameToFind)) {
+                return modules[i];
+            }
+        }
+        revert('Module not found');
+    }
 
     function saveContractAddress(string memory contractName, address deployedAddress) internal {
         // console.log('Saving %s (%s) into addresses under %s environment', contractName, deployedAddress, targetEnv);
@@ -157,6 +175,55 @@ contract E_GovernanceActions is Script, ForkManagement, ArrayHelpers {
     }
 
     function loadBaseAddresses() internal override {
+        Module[] memory followModules = abi.decode(
+            vm.parseJson(json, string(abi.encodePacked('.', targetEnv, '.Modules.v2.follow'))),
+            (Module[])
+        );
+
+        feeFollowModule = findModuleHelper(followModules, 'FeeFollowModule').addy;
+        vm.label(feeFollowModule, 'FeeFollowModule');
+        console.log('FeeFollowModule: %s', feeFollowModule);
+
+        revertFollowModule = findModuleHelper(followModules, 'RevertFollowModule').addy;
+        vm.label(revertFollowModule, 'RevertFollowModule');
+        console.log('RevertFollowModule: %s', revertFollowModule);
+
+        Module[] memory referenceModules = abi.decode(
+            vm.parseJson(json, string(abi.encodePacked('.', targetEnv, '.Modules.v2.reference'))),
+            (Module[])
+        );
+
+        degreesOfSeparationReferenceModule = findModuleHelper(referenceModules, 'DegreesOfSeparationReferenceModule')
+            .addy;
+        vm.label(degreesOfSeparationReferenceModule, 'DegreesOfSeparationReferenceModule');
+        console.log('DegreesOfSeparationReferenceModule: %s', degreesOfSeparationReferenceModule);
+
+        followerOnlyReferenceModule = findModuleHelper(referenceModules, 'FollowerOnlyReferenceModule').addy;
+        vm.label(followerOnlyReferenceModule, 'FollowerOnlyReferenceModule');
+        console.log('FollowerOnlyReferenceModule: %s', followerOnlyReferenceModule);
+
+        Module[] memory actModules = abi.decode(
+            vm.parseJson(json, string(abi.encodePacked('.', targetEnv, '.Modules.v2.act'))),
+            (Module[])
+        );
+
+        collectPublicationAction = findModuleHelper(actModules, 'CollectPublicationAction').addy;
+        vm.label(collectPublicationAction, 'CollectPublicationAction');
+        console.log('CollectPublicationAction: %s', collectPublicationAction);
+
+        Module[] memory collectModules = abi.decode(
+            vm.parseJson(json, string(abi.encodePacked('.', targetEnv, '.Modules.v2.collect'))),
+            (Module[])
+        );
+
+        simpleFeeCollectModule = findModuleHelper(collectModules, 'SimpleFeeCollectModule').addy;
+        vm.label(simpleFeeCollectModule, 'SimpleFeeCollectModule');
+        console.log('SimpleFeeCollectModule: %s', simpleFeeCollectModule);
+
+        multirecipientFeeCollectModule = findModuleHelper(collectModules, 'MultirecipientFeeCollectModule').addy;
+        vm.label(multirecipientFeeCollectModule, 'MultirecipientFeeCollectModule');
+        console.log('MultirecipientFeeCollectModule: %s', multirecipientFeeCollectModule);
+
         address governanceContractAdmin = json.readAddress(
             string(abi.encodePacked('.', targetEnv, '.GovernanceContractAdmin'))
         );
@@ -200,6 +267,12 @@ contract E_GovernanceActions is Script, ForkManagement, ArrayHelpers {
         );
         vm.label(address(governanceContract), 'GovernanceContract');
         console.log('Governance Contract: %s', address(governanceContract));
+
+        profileCreationProxy = ProfileCreationProxy(
+            json.readAddress(string(abi.encodePacked('.', targetEnv, '.ProfileCreationProxy')))
+        );
+        vm.label(address(profileCreationProxy), 'ProfileCreationProxy');
+        console.log('Profile Creation Proxy: %s', address(profileCreationProxy));
     }
 
     function _governanceActions() internal {
@@ -208,7 +281,7 @@ contract E_GovernanceActions is Script, ForkManagement, ArrayHelpers {
         governanceContract.lensHub_whitelistProfileCreator(address(profileCreationProxy), true);
         console.log('\n* * * Profile creator proxy %s registered as profile creator', address(profileCreationProxy));
 
-        hub.setState(Types.ProtocolState.Unpaused);
+        governanceContract.lensHub_setState(Types.ProtocolState.Unpaused);
         console.log('\n* * * Protocol unpaused');
 
         vm.stopBroadcast();
@@ -278,10 +351,10 @@ contract E_GovernanceActions is Script, ForkManagement, ArrayHelpers {
         );
         console.log('\n* * * CollectPublicationAction registered as action module');
 
-        collectPublicationAction.registerCollectModule(address(simpleFeeCollectModule));
+        CollectPublicationAction(collectPublicationAction).registerCollectModule(address(simpleFeeCollectModule));
         console.log('\n* * * SimpleFeeCollectModule registered as collect module');
 
-        collectPublicationAction.registerCollectModule(address(multirecipientFeeCollectModule));
+        CollectPublicationAction(collectPublicationAction).registerCollectModule(address(multirecipientFeeCollectModule));
         console.log('\n* * * MultirecipientFeeCollectModule registered as collect module');
 
         vm.stopBroadcast();

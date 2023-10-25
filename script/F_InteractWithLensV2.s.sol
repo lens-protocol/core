@@ -32,10 +32,17 @@ import {BaseFeeCollectModuleInitData} from 'contracts/modules/interfaces/IBaseFe
 import {Governance} from 'contracts/misc/access/Governance.sol';
 import {PublicActProxy} from 'contracts/misc/PublicActProxy.sol';
 import {LitAccessControl} from 'contracts/misc/access/LitAccessControl.sol';
+import {LibString} from 'solady/utils/LibString.sol';
 
 import {ArrayHelpers} from 'script/helpers/ArrayHelpers.sol';
 
 contract F_InteractWithLensV2 is Script, ForkManagement, ArrayHelpers {
+        // TODO: Use from test/ContractAddresses
+    struct Module {
+        address addy;
+        string name;
+    }
+
     // add this to be excluded from coverage report
     function testLensV2DeployPeriphery() public {}
 
@@ -89,6 +96,19 @@ contract F_InteractWithLensV2 is Script, ForkManagement, ArrayHelpers {
     address litAccessControl;
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+    // TODO: Move this to helpers somewhere
+    function findModuleHelper(
+        Module[] memory modules,
+        string memory moduleNameToFind
+    ) internal pure returns (Module memory) {
+        for (uint256 i = 0; i < modules.length; i++) {
+            if (LibString.eq(modules[i].name, moduleNameToFind)) {
+                return modules[i];
+            }
+        }
+        revert('Module not found');
+    }
 
     function saveContractAddress(string memory contractName, address deployedAddress) internal {
         // console.log('Saving %s (%s) into addresses under %s environment', contractName, deployedAddress, targetEnv);
@@ -200,6 +220,29 @@ contract F_InteractWithLensV2 is Script, ForkManagement, ArrayHelpers {
         );
         vm.label(address(governanceContract), 'GovernanceContract');
         console.log('Governance Contract: %s', address(governanceContract));
+
+
+        Module[] memory actModules = abi.decode(
+            vm.parseJson(json, string(abi.encodePacked('.', targetEnv, '.Modules.v2.act'))),
+            (Module[])
+        );
+
+        collectPublicationAction = CollectPublicationAction(findModuleHelper(actModules, 'CollectPublicationAction').addy);
+        vm.label(address(collectPublicationAction), 'CollectPublicationAction');
+        console.log('CollectPublicationAction: %s', address(collectPublicationAction));
+
+        Module[] memory collectModules = abi.decode(
+            vm.parseJson(json, string(abi.encodePacked('.', targetEnv, '.Modules.v2.collect'))),
+            (Module[])
+        );
+
+        simpleFeeCollectModule = SimpleFeeCollectModule(findModuleHelper(collectModules, 'SimpleFeeCollectModule').addy);
+        vm.label(address(simpleFeeCollectModule), 'SimpleFeeCollectModule');
+        console.log('SimpleFeeCollectModule: %s', address(simpleFeeCollectModule));
+
+        multirecipientFeeCollectModule = MultirecipientFeeCollectModule(findModuleHelper(collectModules, 'MultirecipientFeeCollectModule').addy);
+        vm.label(address(multirecipientFeeCollectModule), 'MultirecipientFeeCollectModule');
+        console.log('MultirecipientFeeCollectModule: %s', address(multirecipientFeeCollectModule));
     }
 
     function _interact() internal {

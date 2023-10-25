@@ -5,6 +5,7 @@ set -e
 SCRIPT_NAME=$1
 TARGET=$2
 CONFIRMATION_OVERRIDE=$3
+CATAPULTA=$4
 
 if [[ "$TARGET" == "" ]]
     then
@@ -20,6 +21,13 @@ if [[ "$NETWORK" == "" ]]
         exit 1
 fi
 echo "Using network: $NETWORK"
+
+# If $CATAPULTA is defined, but it's not 'catapulta' then we exit with error
+if [[ "$CATAPULTA" != "" && "$CATAPULTA" != "catapulta" ]]
+    then
+        echo "To use catapulta add 'catapulta' to params. Terminating"
+        exit 1
+fi
 
 CALLDATA=$(cast calldata "run(string)" $TARGET)
 
@@ -52,13 +60,24 @@ if [[ "$CONFIRMATION" == "y" || "$CONFIRMATION" == "Y" ]]
     then
         echo "Broadcasting on-chain..."
 
-        # If $NETWORK is "mumbai" change it to "maticMumbai" for catapulta
-        if [[ "$NETWORK" == "mumbai" ]]
+        # If $CATAPULTA is defined, use catapulta instead of forge
+
+        if [[ "$CATAPULTA" == "catapulta" ]]
             then
-                NETWORK="maticMumbai"
+                echo "Using catapulta"
+
+                # If $NETWORK is "mumbai" change it to "maticMumbai" for catapulta
+                if [[ "$NETWORK" == "mumbai" ]]
+                    then
+                        NETWORK="maticMumbai"
+                fi
+
+                catapulta script script/$SCRIPT_NAME.s.sol --chain $NETWORK -s $CALLDATA --legacy --skip test --ffi --slow --skip-git
+                exit 0
+            else
+                forge script script/$SCRIPT_NAME.s.sol:$SCRIPT_NAME -s $CALLDATA --rpc-url $NETWORK -vv --legacy --skip test --ffi --slow --broadcast
         fi
 
-        catapulta script script/$SCRIPT_NAME.s.sol --chain $NETWORK -s $CALLDATA --legacy --skip test --ffi --slow --skip-git
     else
         echo "Deployment cancelled. Execution terminated."
         exit 1
