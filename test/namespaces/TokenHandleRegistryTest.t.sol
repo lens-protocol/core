@@ -133,6 +133,27 @@ contract TokenHandleRegistryTest is BaseTest {
         tokenHandleRegistry.linkWithSig(handleId, profileId, sig);
     }
 
+    function testCannot_LinkWithSig_IfWalletValidationFails(address relayer) public {
+        uint256 otherPk = 0x07438;
+        address walletOwner = makeAddr("walletOwner");
+
+        vm.assume(relayer != walletOwner);
+        vm.assume(relayer != address(0));
+        vm.assume(!_isLensHubProxyAdmin(relayer));
+
+        address wallet = address(new ERC1271WalletMock(walletOwner));
+
+        _transferHandle(wallet, handleId);
+        _transferProfile(wallet, profileId);
+
+        Types.EIP712Signature memory sig = _getLinkSigStruct(wallet, otherPk, handleId, profileId);
+
+        vm.expectRevert(Errors.SignatureInvalid.selector);
+
+        vm.prank(relayer);
+        tokenHandleRegistry.linkWithSig(handleId, profileId, sig);
+    }
+
     function testCannot_Unlink_IfNotHoldingProfileOrHandle(address otherAddress) public {
         vm.assume(otherAddress != lensHandles.ownerOf(handleId));
         vm.assume(otherAddress != hub.ownerOf(profileId));
@@ -198,6 +219,33 @@ contract TokenHandleRegistryTest is BaseTest {
 
         vm.prank(holder);
         tokenHandleRegistry.incrementNonce(69);
+
+        vm.expectRevert(Errors.SignatureInvalid.selector);
+
+        vm.prank(relayer);
+        tokenHandleRegistry.unlinkWithSig(handleId, profileId, sig);
+    }
+
+    function testCannot_UnlinkWithSig_IfWalletValidationFails(address relayer) public {
+        uint256 otherPk = 0x07438;
+        address walletOwner = makeAddr("walletOwner");
+
+        vm.assume(relayer != walletOwner);
+        vm.assume(relayer != address(0));
+        vm.assume(!_isLensHubProxyAdmin(relayer));
+
+        address wallet = address(new ERC1271WalletMock(walletOwner));
+
+        _transferHandle(wallet, handleId);
+        _transferProfile(wallet, profileId);
+
+        vm.prank(wallet);
+        tokenHandleRegistry.link(handleId, profileId);
+
+        assertEq(tokenHandleRegistry.resolve(handleId), profileId);
+        assertEq(tokenHandleRegistry.getDefaultHandle(profileId), handleId);
+
+        Types.EIP712Signature memory sig = _getUnlinkSigStruct(wallet, otherPk, handleId, profileId);
 
         vm.expectRevert(Errors.SignatureInvalid.selector);
 
