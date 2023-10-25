@@ -154,6 +154,28 @@ contract TokenHandleRegistryTest is BaseTest {
         tokenHandleRegistry.linkWithSig(handleId, profileId, sig);
     }
 
+    function testCannot_LinkWithSig_WhenSignatureExpires(address relayer) public {
+        uint256 holderPk = 0x401DE8;
+        address holder = vm.addr(holderPk);
+
+        vm.assume(relayer != holder);
+        vm.assume(relayer != address(0));
+        vm.assume(!_isLensHubProxyAdmin(relayer));
+
+        _transferHandle(holder, handleId);
+        _transferProfile(holder, profileId);
+
+        uint256 deadline = block.timestamp + 12 hours;
+        Types.EIP712Signature memory sig = _getLinkSigStruct(holder, holderPk, handleId, profileId, deadline);
+
+        vm.warp(deadline + 1);
+
+        vm.expectRevert(Errors.SignatureExpired.selector);
+
+        vm.prank(relayer);
+        tokenHandleRegistry.linkWithSig(handleId, profileId, sig);
+    }
+
     function testCannot_Unlink_IfNotHoldingProfileOrHandle(address otherAddress) public {
         vm.assume(otherAddress != lensHandles.ownerOf(handleId));
         vm.assume(otherAddress != hub.ownerOf(profileId));
