@@ -122,7 +122,7 @@ contract TokenHandleRegistryTest is BaseTest {
         _transferHandle(holder, handleId);
         _transferProfile(holder, profileId);
 
-        Types.EIP712Signature memory sig = _getLinkSigStruct(holderPk, handleId, profileId);
+        Types.EIP712Signature memory sig = _getLinkSigStruct(handleId, profileId, holderPk);
 
         vm.prank(holder);
         tokenHandleRegistry.incrementNonce(69);
@@ -146,7 +146,7 @@ contract TokenHandleRegistryTest is BaseTest {
         _transferHandle(wallet, handleId);
         _transferProfile(wallet, profileId);
 
-        Types.EIP712Signature memory sig = _getLinkSigStruct(wallet, otherPk, handleId, profileId);
+        Types.EIP712Signature memory sig = _getLinkSigStruct(handleId, profileId, otherPk, wallet);
 
         vm.expectRevert(Errors.SignatureInvalid.selector);
 
@@ -166,7 +166,7 @@ contract TokenHandleRegistryTest is BaseTest {
         _transferProfile(holder, profileId);
 
         uint256 deadline = block.timestamp + 12 hours;
-        Types.EIP712Signature memory sig = _getLinkSigStruct(holder, holderPk, handleId, profileId, deadline);
+        Types.EIP712Signature memory sig = _getLinkSigStruct(handleId, profileId, holderPk, holder, deadline);
 
         vm.warp(deadline + 1);
 
@@ -237,7 +237,7 @@ contract TokenHandleRegistryTest is BaseTest {
         assertEq(tokenHandleRegistry.resolve(handleId), profileId);
         assertEq(tokenHandleRegistry.getDefaultHandle(profileId), handleId);
 
-        Types.EIP712Signature memory sig = _getUnlinkSigStruct(holderPk, handleId, profileId);
+        Types.EIP712Signature memory sig = _getUnlinkSigStruct(handleId, profileId, holderPk);
 
         vm.prank(holder);
         tokenHandleRegistry.incrementNonce(69);
@@ -267,7 +267,7 @@ contract TokenHandleRegistryTest is BaseTest {
         assertEq(tokenHandleRegistry.resolve(handleId), profileId);
         assertEq(tokenHandleRegistry.getDefaultHandle(profileId), handleId);
 
-        Types.EIP712Signature memory sig = _getUnlinkSigStruct(wallet, otherPk, handleId, profileId);
+        Types.EIP712Signature memory sig = _getUnlinkSigStruct(handleId, profileId, otherPk, wallet);
 
         vm.expectRevert(Errors.SignatureInvalid.selector);
 
@@ -427,7 +427,7 @@ contract TokenHandleRegistryTest is BaseTest {
         RegistryTypes.Handle memory handle = RegistryTypes.Handle({collection: address(lensHandles), id: handleId});
         RegistryTypes.Token memory token = RegistryTypes.Token({collection: address(hub), id: profileId});
 
-        Types.EIP712Signature memory sig = _getLinkSigStruct(holderPk, handleId, profileId);
+        Types.EIP712Signature memory sig = _getLinkSigStruct(handleId, profileId, holderPk);
 
         vm.expectEmit(true, true, true, true, address(tokenHandleRegistry));
         emit RegistryEvents.HandleLinked(handle, token, holder, block.timestamp);
@@ -455,7 +455,7 @@ contract TokenHandleRegistryTest is BaseTest {
         RegistryTypes.Handle memory handle = RegistryTypes.Handle({collection: address(lensHandles), id: handleId});
         RegistryTypes.Token memory token = RegistryTypes.Token({collection: address(hub), id: profileId});
 
-        Types.EIP712Signature memory sig = _getLinkSigStruct(wallet, walletOwnerPk, handleId, profileId);
+        Types.EIP712Signature memory sig = _getLinkSigStruct(handleId, profileId, walletOwnerPk, wallet);
 
         vm.expectEmit(true, true, true, true, address(tokenHandleRegistry));
         emit RegistryEvents.HandleLinked(handle, token, wallet, block.timestamp);
@@ -691,7 +691,7 @@ contract TokenHandleRegistryTest is BaseTest {
         RegistryTypes.Handle memory handle = RegistryTypes.Handle({collection: address(lensHandles), id: handleId});
         RegistryTypes.Token memory token = RegistryTypes.Token({collection: address(hub), id: profileId});
 
-        Types.EIP712Signature memory sig = _getUnlinkSigStruct(holderPk, handleId, profileId);
+        Types.EIP712Signature memory sig = _getUnlinkSigStruct(handleId, profileId, holderPk);
 
         vm.expectEmit(true, true, true, true, address(tokenHandleRegistry));
         emit RegistryEvents.HandleUnlinked(handle, token, holder, block.timestamp);
@@ -725,7 +725,7 @@ contract TokenHandleRegistryTest is BaseTest {
         RegistryTypes.Handle memory handle = RegistryTypes.Handle({collection: address(lensHandles), id: handleId});
         RegistryTypes.Token memory token = RegistryTypes.Token({collection: address(hub), id: profileId});
 
-        Types.EIP712Signature memory sig = _getUnlinkSigStruct(wallet, walletOwnerPk, handleId, profileId);
+        Types.EIP712Signature memory sig = _getUnlinkSigStruct(handleId, profileId, walletOwnerPk, wallet);
 
         vm.expectEmit(true, true, true, true, address(tokenHandleRegistry));
         emit RegistryEvents.HandleUnlinked(handle, token, wallet, block.timestamp);

@@ -301,29 +301,29 @@ contract BaseTest is TestSetup {
     }
 
     function _getLinkSigStruct(
-        uint256 pKey,
-        uint256 handleId,
-        uint256 profileId
-    ) internal view returns (Types.EIP712Signature memory) {
-        address signer = vm.addr(pKey);
-        return _getLinkSigStruct(signer, pKey, handleId, profileId);
-    }
-
-    function _getLinkSigStruct(
-        address signer,
-        uint256 pKey,
-        uint256 handleId,
-        uint256 profileId
-    ) internal view returns (Types.EIP712Signature memory) {
-        uint256 deadline = type(uint256).max;
-        return _getLinkSigStruct(signer, pKey, handleId, profileId, deadline);
-    }
-
-    function _getLinkSigStruct(
-        address signer,
-        uint256 pKey,
         uint256 handleId,
         uint256 profileId,
+        uint256 pKey
+    ) internal view returns (Types.EIP712Signature memory) {
+        address signer = vm.addr(pKey);
+        return _getLinkSigStruct(handleId, profileId, pKey, signer);
+    }
+
+    function _getLinkSigStruct(
+        uint256 handleId,
+        uint256 profileId,
+        uint256 pKey,
+        address signer
+    ) internal view returns (Types.EIP712Signature memory) {
+        uint256 deadline = type(uint256).max;
+        return _getLinkSigStruct(handleId, profileId, pKey, signer, deadline);
+    }
+
+    function _getLinkSigStruct(
+        uint256 handleId,
+        uint256 profileId,
+        uint256 pKey,
+        address signer,
         uint256 deadline
     ) internal view returns (Types.EIP712Signature memory) {
         bytes32 digest = _calculateDigest(
@@ -348,19 +348,19 @@ contract BaseTest is TestSetup {
     }
 
     function _getUnlinkSigStruct(
-        uint256 pKey,
         uint256 handleId,
-        uint256 profileId
+        uint256 profileId,
+        uint256 pKey
     ) internal view returns (Types.EIP712Signature memory) {
         address signer = vm.addr(pKey);
-        return _getUnlinkSigStruct(signer, pKey, handleId, profileId);
+        return _getUnlinkSigStruct(handleId, profileId, pKey, signer);
     }
 
     function _getUnlinkSigStruct(
-        address signer,
-        uint256 pKey,
         uint256 handleId,
-        uint256 profileId
+        uint256 profileId,
+        uint256 pKey,
+        address signer
     ) internal view returns (Types.EIP712Signature memory) {
         uint256 deadline = type(uint256).max;
         bytes32 digest = _calculateDigest(
