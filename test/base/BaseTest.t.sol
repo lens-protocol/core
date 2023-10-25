@@ -363,6 +363,16 @@ contract BaseTest is TestSetup {
         address signer
     ) internal view returns (Types.EIP712Signature memory) {
         uint256 deadline = type(uint256).max;
+        return _getUnlinkSigStruct(handleId, profileId, pKey, signer, deadline);
+    }
+
+    function _getUnlinkSigStruct(
+        uint256 handleId,
+        uint256 profileId,
+        uint256 pKey,
+        address signer,
+        uint256 deadline
+    ) internal view returns (Types.EIP712Signature memory) {
         bytes32 digest = _calculateDigest(
             keccak256(
                 abi.encode(
