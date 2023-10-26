@@ -103,6 +103,39 @@ contract GovernanceTest is BaseTest {
         governanceContract.lensHub_whitelistProfileCreator(profileCreator, whitelist);
     }
 
+    function testCannotSetTreasuryParams_ifNotOwnerOrControllerContract(address newTreasury) public {
+        uint16 newTreasuryFee = 100;
+
+        vm.assume(newTreasury != governanceOwner);
+        vm.assume(newTreasury != controllerContract);
+        vm.assume(newTreasury != address(0));
+
+        vm.expectRevert(Unauthorized.selector);
+
+        vm.prank(newTreasury);
+        governanceContract.lensHub_setTreasuryParams(newTreasury, newTreasuryFee);
+    }
+
+    function testCannotSetTreasuryParams_IfTreasuryFeeIsGreaterThanMax(uint16 newTreasuryFee) public {
+        address newTreasury = makeAddr('newTreasury');
+        newTreasuryFee = uint16(bound(newTreasuryFee, _maxTreasuryFee() + 1, type(uint16).max));
+
+        vm.expectRevert(Errors.InitParamsInvalid.selector);
+
+        vm.prank(governanceOwner);
+        governanceContract.lensHub_setTreasuryParams(newTreasury, newTreasuryFee);
+    }
+
+    function testCannotSetTreasuryParams_IfTreasuryIsZero() public {
+        address newTreasury = address(0);
+        uint16 newTreasuryFee = 100;
+
+        vm.expectRevert(Errors.InitParamsInvalid.selector);
+
+        vm.prank(governanceOwner);
+        governanceContract.lensHub_setTreasuryParams(newTreasury, newTreasuryFee);
+    }
+
     function testCannotSetState_ifNotOwnerOrControllerContract(uint8 _newState, address otherAddress)
         public
     {
