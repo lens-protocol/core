@@ -120,7 +120,7 @@ contract LensHandles is ERC721, ERC2981CollectionRoyalties, ImmutableOwnable, IL
     /// ****  TOKEN GUARDIAN FUNCTIONS  ****
     /// ************************************
 
-    function DANGER__disableTokenGuardian() external onlyEOA {
+    function DANGER__disableTokenGuardian() external override onlyEOA {
         if (_tokenGuardianDisablingTimestamp[msg.sender] != GUARDIAN_ENABLED) {
             revert HandlesErrors.DisablingAlreadyTriggered();
         }
@@ -133,7 +133,7 @@ contract LensHandles is ERC721, ERC2981CollectionRoyalties, ImmutableOwnable, IL
         });
     }
 
-    function enableTokenGuardian() external onlyEOA {
+    function enableTokenGuardian() external override onlyEOA {
         if (_tokenGuardianDisablingTimestamp[msg.sender] == GUARDIAN_ENABLED) {
             revert HandlesErrors.AlreadyEnabled();
         }
@@ -191,7 +191,7 @@ contract LensHandles is ERC721, ERC2981CollectionRoyalties, ImmutableOwnable, IL
         return uint256(keccak256(bytes(localName)));
     }
 
-    function getTokenGuardianDisablingTimestamp(address wallet) external view returns (uint256) {
+    function getTokenGuardianDisablingTimestamp(address wallet) external view override returns (uint256) {
         return _tokenGuardianDisablingTimestamp[wallet];
     }
 

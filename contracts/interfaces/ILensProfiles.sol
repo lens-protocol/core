@@ -8,7 +8,7 @@ interface ILensProfiles is ILensERC721 {
     /**
      * @notice DANGER: Triggers disabling the profile protection mechanism for the msg.sender, which will allow
      * transfers or approvals over profiles held by it.
-     * Disabling the mechanism will have a 7-day timelock before it becomes effective, allowing the owner to re-enable
+     * Disabling the mechanism will have a timelock before it becomes effective, allowing the owner to re-enable
      * the protection back in case of being under attack.
      * The protection layer only applies to EOA wallets.
      */
