@@ -136,9 +136,7 @@ contract GovernanceTest is BaseTest {
         governanceContract.lensHub_setTreasuryParams(newTreasury, newTreasuryFee);
     }
 
-    function testCannotSetState_ifNotOwnerOrControllerContract(uint8 _newState, address otherAddress)
-        public
-    {
+    function testCannotSetState_ifNotOwnerOrControllerContract(uint8 _newState, address otherAddress) public {
         _newState = uint8(bound(_newState, uint8(0), uint8(type(Types.ProtocolState).max)));
         Types.ProtocolState newState = Types.ProtocolState(_newState);
 
