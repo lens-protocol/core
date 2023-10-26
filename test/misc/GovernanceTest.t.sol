@@ -3,6 +3,7 @@ pragma solidity ^0.8.13;
 
 import 'test/base/BaseTest.t.sol';
 import {ILensGovernable} from 'contracts/interfaces/ILensGovernable.sol';
+import {Errors} from 'contracts/libraries/constants/Errors.sol';
 import {Governance} from 'contracts/misc/access/Governance.sol';
 import {StorageLib} from 'contracts/libraries/StorageLib.sol';
 
@@ -195,6 +196,52 @@ contract GovernanceTest is BaseTest {
         assertEq(hub.isProfileCreatorWhitelisted(profileCreator), whitelist);
     }
 
+    function testSetTreasuryParams_ifOwner(address newTreasury, uint16 newTreasuryFee) public {
+        vm.assume(newTreasury != governanceOwner);
+        vm.assume(newTreasury != controllerContract);
+        vm.assume(newTreasury != address(0));
+
+        newTreasuryFee = uint16(bound(newTreasuryFee, 0, _maxTreasuryFee()));
+
+        vm.expectCall(address(hub), abi.encodeCall(ILensGovernable.setTreasury, (newTreasury)), 1);
+        vm.expectCall(address(hub), abi.encodeCall(ILensGovernable.setTreasuryFee, (newTreasuryFee)), 1);
+
+        vm.prank(governanceOwner);
+        governanceContract.lensHub_setTreasuryParams(newTreasury, newTreasuryFee);
+
+        assertEq(hub.getTreasury(), newTreasury);
+        assertEq(hub.getTreasuryFee(), newTreasuryFee);
+    }
+
+    function testSetTreasuryParams_ifControllerContract(address newTreasury, uint16 newTreasuryFee) public {
+        vm.assume(newTreasury != governanceOwner);
+        vm.assume(newTreasury != controllerContract);
+        vm.assume(newTreasury != address(0));
+
+        newTreasuryFee = uint16(bound(newTreasuryFee, 0, _maxTreasuryFee()));
+
+        vm.expectCall(address(hub), abi.encodeCall(ILensGovernable.setTreasury, (newTreasury)), 1);
+        vm.expectCall(address(hub), abi.encodeCall(ILensGovernable.setTreasuryFee, (newTreasuryFee)), 1);
+
+        vm.prank(controllerContract);
+        governanceContract.lensHub_setTreasuryParams(newTreasury, newTreasuryFee);
+
+        assertEq(hub.getTreasury(), newTreasury);
+        assertEq(hub.getTreasuryFee(), newTreasuryFee);
+    }
+
+    function testSetTreasuryParams_ifTreasuryFeeIsZero() public {
+        address newTreasury = makeAddr('newTreasury');
+        uint16 newTreasuryFee = 0;
+
+        vm.expectCall(address(hub), abi.encodeCall(ILensGovernable.setTreasuryFee, (0)), 1);
+
+        vm.prank(governanceOwner);
+        governanceContract.lensHub_setTreasuryParams(newTreasury, newTreasuryFee);
+
+        assertEq(hub.getTreasuryFee(), 0);
+    }
+
     function testSetState_ifOwner(uint8 _newState) public {
         _newState = uint8(bound(_newState, uint8(0), uint8(type(Types.ProtocolState).max)));
         Types.ProtocolState newState = Types.ProtocolState(_newState);
@@ -317,5 +364,10 @@ contract GovernanceTest is BaseTest {
             address(mockNonLensHubGoverned),
             abi.encodeCall(MockNonLensHubGoverned.failWithNoErrorData, ())
         );
+    }
+
+    function _maxTreasuryFee() internal returns (uint16) {
+        uint16 BPS_MAX = 10000;
+        return BPS_MAX / 2 - 1;
     }
 }
