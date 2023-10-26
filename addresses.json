@@ -2,6 +2,8 @@
   "mainnet": {
     "chainId": 137,
     "network": "polygon",
+    "LensProfilesGuardianTimelock": 604800,
+    "LensHandlesGuardianTimelock": 86400,
     "LensHubProxy": "0xDb46d1Dc155634FbC732f92E853b10B288AD5a1d",
     "LensHubImplementation": "0xBA97fc9137b7cbBBC7fcB70a87DA645d917C902F",
     "ModuleGlobals": "0x3Df697FF746a60CBe9ee8D47555c88CB66f03BB9",
@@ -57,6 +59,8 @@
   "testnet": {
     "chainId": 80001,
     "network": "mumbai",
+    "LensProfilesGuardianTimelock": 300,
+    "LensHandlesGuardianTimelock": 300,
     "LensHubProxy": "0x60Ae865ee4C725cd04353b5AAb364553f56ceF82",
     "ModuleGlobals": "0x1353aAdfE5FeD85382826757A95DE908bd21C4f9",
     "ProfileCreator": "0x6C1e1bC39b13f9E0Af9424D76De899203F47755F",
@@ -143,6 +147,8 @@
   "sandbox": {
     "chainId": 80001,
     "network": "mumbai",
+    "LensProfilesGuardianTimelock": 300,
+    "LensHandlesGuardianTimelock": 300,
     "LensHubProxy": "0x7582177F9E536aB0b6c721e11f383C326F2Ad1D5",
     "LensHubImplementation": "0x7836c7cb79b7f3d53e92c95bf43798ada212fe4e",
     "ModuleGlobals": "0xcbCC5b9611d22d11403373432642Df9Ef7Dd81AD",
@@ -157,6 +163,8 @@
   "devnet": {
     "chainId": 80001,
     "network": "mumbai",
+    "LensProfilesGuardianTimelock": 300,
+    "LensHandlesGuardianTimelock": 300,
     "LensHubProxy": "0xE444E6C7Fa6d21637E2ee724276Ef0b2E9250B1e",
     "LensHubImplementation": "0x82eA94D35C8589357222FE39d22076700a86a576",
     "ModuleGlobals": "0x2D61Efe6e7c7F696D5e0A6aac43Bd5035F0302B3",
