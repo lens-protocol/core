@@ -66,6 +66,98 @@ contract LensHandlesTest is TokenGuardianTest {
         lensHandles.burn(handleId);
     }
 
+    function testCannot_MigrateHandle_IfNotHub(address otherAddress) public {
+        vm.assume(otherAddress != address(0));
+        vm.assume(otherAddress != address(hub));
+
+        string memory handle = 'handle';
+
+        vm.expectRevert(HandlesErrors.NotHub.selector);
+
+        vm.prank(otherAddress);
+        lensHandles.migrateHandle(otherAddress, handle);
+    }
+
+    function testCannot_MigrateHandle_WithZeroLength() public {
+        vm.prank(address(hub));
+
+        vm.expectRevert(HandlesErrors.HandleLengthInvalid.selector);
+        lensHandles.migrateHandle(address(this), '');
+    }
+
+    function testCannot_MigrateHandle_WithNonUniqueLocalName() public {
+        vm.prank(lensHandles.OWNER());
+        lensHandles.mintHandle(address(this), 'handle');
+
+        vm.prank(address(hub));
+
+        vm.expectRevert('ERC721: token already minted');
+        lensHandles.migrateHandle(makeAddr('ANOTHER_ADDRESS'), 'handle');
+    }
+
+    function testCannot_MigrateHandle_WithLengthMoreThanMax(uint256 randomFuzz) public {
+        string memory randomHandle = _randomAlphanumericStringForMigrate(MAX_LOCAL_NAME_LENGTH + 1, randomFuzz);
+
+        vm.prank(address(hub));
+
+        vm.expectRevert(HandlesErrors.HandleLengthInvalid.selector);
+        lensHandles.migrateHandle(address(this), randomHandle);
+    }
+
+    function testCannot_MigrateHandle_WithInvalidFirstChar(uint256 length, uint256 randomFuzz) public {
+        length = bound(length, 0, MAX_LOCAL_NAME_LENGTH - 1); // we will add 1 char at the start, so length is shorter by 1
+
+        string memory randomHandle = _randomAlphanumericStringForMigrate(length, randomFuzz);
+
+        // handle starting with "_"
+        string memory invalidUnderscoreHandle = string.concat('_', randomHandle);
+        vm.prank(address(hub));
+        vm.expectRevert(HandlesErrors.HandleFirstCharInvalid.selector);
+        lensHandles.migrateHandle(address(this), invalidUnderscoreHandle);
+
+        // handle starting with "-"
+        string memory invalidDashHandle = string.concat('-', randomHandle);
+        vm.prank(address(hub));
+        vm.expectRevert(HandlesErrors.HandleFirstCharInvalid.selector);
+        lensHandles.migrateHandle(address(this), invalidDashHandle);
+    }
+
+    function testCannot_MigrateHandle_WithInvalidChar(
+        uint256 length,
+        uint256 insertionPosition,
+        uint256 randomFuzz,
+        uint256 invalidCharCode
+    ) public {
+        length = bound(length, 1, MAX_LOCAL_NAME_LENGTH);
+        insertionPosition = bound(insertionPosition, 0, length - 1);
+
+        invalidCharCode = bound(invalidCharCode, 0x00, 0xFF);
+        vm.assume(invalidCharCode != 95); // '_'
+        vm.assume(invalidCharCode != 45); // '-'
+        vm.assume(
+            (invalidCharCode < 48 || // '0'
+                invalidCharCode > 122 || // 'z'
+                (invalidCharCode > 57 && invalidCharCode < 97)) // '9' and 'a'
+        );
+
+        string memory randomHandle = _randomAlphanumericStringForMigrate(length, randomFuzz);
+
+        console.log('randomHandle:', randomHandle);
+        console.log('insert position:', insertionPosition);
+        console.log('invalid char code:', invalidCharCode);
+
+        bytes memory randomHandleBytes = bytes(randomHandle);
+        randomHandleBytes[insertionPosition] = bytes1(uint8(invalidCharCode));
+
+        // string memory invalidHandle = string(randomHandleBytes);
+
+        // console.log('invalidHandle', invalidHandle);
+
+        // vm.prank(address(hub));
+        // vm.expectRevert(HandlesErrors.HandleContainsInvalidCharacters.selector);
+        // lensHandles.migrateHandle(address(this), invalidHandle);
+    }
+
     function testCannot_MintHandle_IfNotOwnerOrHubOrWhitelistedProfileCreator(address otherAddress) public {
         vm.assume(otherAddress != address(0));
         vm.assume(otherAddress != address(hub));
@@ -305,6 +397,35 @@ contract LensHandlesTest is TokenGuardianTest {
         lensHandles.getLocalName(handleId);
     }
 
+    function testMigrateHandle(address to, uint256 length, uint256 randomFuzz) public {
+        _migrateHandle(to, length, randomFuzz);
+    }
+
+    function _migrateHandle(address to, uint256 length, uint256 randomFuzz) internal {
+        vm.assume(to != address(0));
+        length = bound(length, 1, MAX_LOCAL_NAME_LENGTH);
+
+        string memory randomHandle = _randomAlphanumericStringForMigrate(length, randomFuzz);
+        uint256 expectedHandleId = lensHandles.getTokenId(randomHandle);
+
+        vm.expectEmit(true, true, true, true, address(lensHandles));
+        emit HandlesEvents.HandleMinted(
+            randomHandle,
+            lensHandles.getNamespace(),
+            expectedHandleId,
+            to,
+            block.timestamp
+        );
+
+        vm.prank(address(hub));
+        uint256 handleId = lensHandles.migrateHandle(to, randomHandle);
+        assertEq(handleId, expectedHandleId);
+        assertEq(lensHandles.ownerOf(handleId), to);
+
+        string memory localName = lensHandles.getLocalName(handleId);
+        assertEq(localName, randomHandle);
+    }
+
     function testMintHandle_IfOwner(address to, uint256 length, uint256 randomFuzz) public {
         _mintHandle(lensHandles.OWNER(), to, length, randomFuzz);
     }
@@ -350,14 +471,29 @@ contract LensHandlesTest is TokenGuardianTest {
         assertEq(localName, randomHandle);
     }
 
+    function _randomAlphanumericStringForMigrate(
+        uint256 length,
+        uint256 randomFuzz
+    ) internal view returns (string memory) {
+        bytes memory allowedChars = '0123456789abcdefghijklmnopqrstuvwxyz_-';
+        return _randomAlphanumericString(length, randomFuzz, allowedChars);
+    }
+
     function _randomAlphanumericString(uint256 length, uint256 randomFuzz) internal view returns (string memory) {
         bytes memory allowedChars = '0123456789abcdefghijklmnopqrstuvwxyz_';
+        return _randomAlphanumericString(length, randomFuzz, allowedChars);
+    }
 
+    function _randomAlphanumericString(
+        uint256 length,
+        uint256 randomFuzz,
+        bytes memory allowedChars
+    ) internal view returns (string memory) {
         string memory str = '';
         for (uint256 i = 0; i < length; i++) {
             uint8 charCode = uint8((randomFuzz >> (i * 8)) & 0xff);
             charCode = uint8(bound(charCode, 0, allowedChars.length - 1));
-            if (i == 0 && (allowedChars[charCode] == '_')) {
+            if (i == 0 && (allowedChars[charCode] == '_' || allowedChars[charCode] == '-')) {
                 charCode /= 2;
             }
             string memory char = string(abi.encodePacked(allowedChars[charCode]));
