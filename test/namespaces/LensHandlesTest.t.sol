@@ -149,13 +149,13 @@ contract LensHandlesTest is TokenGuardianTest {
         bytes memory randomHandleBytes = bytes(randomHandle);
         randomHandleBytes[insertionPosition] = bytes1(uint8(invalidCharCode));
 
-        // string memory invalidHandle = string(randomHandleBytes);
+        string memory invalidHandle = string(randomHandleBytes);
 
-        // console.log('invalidHandle', invalidHandle);
+        console.log('invalidHandle', invalidHandle);
 
-        // vm.prank(address(hub));
-        // vm.expectRevert(HandlesErrors.HandleContainsInvalidCharacters.selector);
-        // lensHandles.migrateHandle(address(this), invalidHandle);
+        vm.prank(address(hub));
+        vm.expectRevert(HandlesErrors.HandleContainsInvalidCharacters.selector);
+        lensHandles.migrateHandle(address(this), invalidHandle);
     }
 
     function testCannot_MintHandle_IfNotOwnerOrHubOrWhitelistedProfileCreator(address otherAddress) public {
