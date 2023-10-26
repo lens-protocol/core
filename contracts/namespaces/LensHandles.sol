@@ -141,7 +141,7 @@ contract LensHandles is ERC721, ERC2981CollectionRoyalties, ImmutableOwnable, IL
         emit HandlesEvents.TokenGuardianStateChanged({
             wallet: msg.sender,
             enabled: true,
-            tokenGuardianDisablingTimestamp: 0,
+            tokenGuardianDisablingTimestamp: GUARDIAN_ENABLED,
             timestamp: block.timestamp
         });
     }
