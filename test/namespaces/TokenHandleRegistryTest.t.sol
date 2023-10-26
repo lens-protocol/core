@@ -40,7 +40,6 @@ contract TokenHandleRegistryTest is BaseTest {
         vm.assume(otherAddress != address(0));
         vm.assume(!_isLensHubProxyAdmin(otherAddress));
 
-        _effectivelyDisableGuardian(address(lensHandles), initialHandleHolder);
         vm.prank(initialHandleHolder);
         lensHandles.transferFrom(initialHandleHolder, otherAddress, handleId);
 
@@ -162,8 +161,6 @@ contract TokenHandleRegistryTest is BaseTest {
         vm.prank(initialProfileHolder);
         hub.transferFrom(initialProfileHolder, newProfileHolder, profileId);
 
-        _effectivelyDisableGuardian(address(lensHandles), initialHandleHolder);
-
         vm.prank(initialHandleHolder);
         lensHandles.transferFrom(initialHandleHolder, newHandleHolder, handleId);
 
@@ -191,8 +188,6 @@ contract TokenHandleRegistryTest is BaseTest {
 
         vm.prank(initialProfileHolder);
         hub.transferFrom(initialProfileHolder, newProfileHolder, profileId);
-
-        _effectivelyDisableGuardian(address(lensHandles), initialHandleHolder);
 
         vm.prank(initialHandleHolder);
         lensHandles.transferFrom(initialHandleHolder, newHandleHolder, handleId);
@@ -244,8 +239,6 @@ contract TokenHandleRegistryTest is BaseTest {
 
         assertEq(tokenHandleRegistry.getDefaultHandle(profileId), handleId);
 
-        _effectivelyDisableGuardian(address(lensHandles), initialHandleHolder);
-
         vm.prank(initialHandleHolder);
         lensHandles.burn(handleId);
 
@@ -263,7 +256,6 @@ contract TokenHandleRegistryTest is BaseTest {
         vm.assume(holder != address(0));
         vm.assume(!_isLensHubProxyAdmin(holder));
 
-        _effectivelyDisableGuardian(address(lensHandles), initialHandleHolder);
         vm.prank(initialHandleHolder);
         lensHandles.transferFrom(initialHandleHolder, holder, handleId);
 
@@ -297,7 +289,6 @@ contract TokenHandleRegistryTest is BaseTest {
 
         vm.assume(newHolder != firstHolder);
 
-        _effectivelyDisableGuardian(address(lensHandles), initialHandleHolder);
         vm.prank(initialHandleHolder);
         lensHandles.transferFrom(initialHandleHolder, firstHolder, handleId);
 
@@ -308,7 +299,6 @@ contract TokenHandleRegistryTest is BaseTest {
         vm.prank(firstHolder);
         tokenHandleRegistry.link(handleId, profileId);
 
-        _effectivelyDisableGuardian(address(lensHandles), firstHolder);
         vm.prank(firstHolder);
         lensHandles.transferFrom(firstHolder, newHolder, handleId);
 
@@ -346,7 +336,6 @@ contract TokenHandleRegistryTest is BaseTest {
 
         vm.assume(newHolder != firstHolder);
 
-        _effectivelyDisableGuardian(address(lensHandles), initialHandleHolder);
         vm.prank(initialHandleHolder);
         lensHandles.transferFrom(initialHandleHolder, firstHolder, handleId);
 
@@ -402,7 +391,6 @@ contract TokenHandleRegistryTest is BaseTest {
         vm.assume(newHolder != firstHolder);
         vm.assume(newHolder != thirdHolder);
 
-        _effectivelyDisableGuardian(address(lensHandles), initialHandleHolder);
         vm.prank(initialHandleHolder);
         lensHandles.transferFrom(initialHandleHolder, firstHolder, handleId);
 
@@ -423,7 +411,6 @@ contract TokenHandleRegistryTest is BaseTest {
         vm.prank(thirdHolder);
         tokenHandleRegistry.link(newHandleId, newProfileId);
 
-        _effectivelyDisableGuardian(address(lensHandles), thirdHolder);
         vm.prank(thirdHolder);
         lensHandles.transferFrom(thirdHolder, newHolder, newHandleId);
 
@@ -461,7 +448,6 @@ contract TokenHandleRegistryTest is BaseTest {
         vm.assume(holder != initialProfileHolder);
         vm.assume(holder != initialHandleHolder);
 
-        _effectivelyDisableGuardian(address(lensHandles), initialHandleHolder);
         vm.prank(initialHandleHolder);
         lensHandles.transferFrom(initialHandleHolder, holder, handleId);
 
@@ -501,7 +487,6 @@ contract TokenHandleRegistryTest is BaseTest {
 
         vm.assume(newHolder != firstHolder);
 
-        _effectivelyDisableGuardian(address(lensHandles), initialHandleHolder);
         vm.prank(initialHandleHolder);
         lensHandles.transferFrom(initialHandleHolder, firstHolder, handleId);
 
@@ -512,7 +497,6 @@ contract TokenHandleRegistryTest is BaseTest {
         vm.prank(firstHolder);
         tokenHandleRegistry.link(handleId, profileId);
 
-        _effectivelyDisableGuardian(address(lensHandles), firstHolder);
         vm.prank(firstHolder);
         lensHandles.transferFrom(firstHolder, newHolder, handleId);
 
@@ -542,7 +526,6 @@ contract TokenHandleRegistryTest is BaseTest {
 
         vm.assume(newHolder != firstHolder);
 
-        _effectivelyDisableGuardian(address(lensHandles), initialHandleHolder);
         vm.prank(initialHandleHolder);
         lensHandles.transferFrom(initialHandleHolder, firstHolder, handleId);
 
@@ -553,7 +536,6 @@ contract TokenHandleRegistryTest is BaseTest {
         vm.prank(firstHolder);
         tokenHandleRegistry.link(handleId, profileId);
 
-        _effectivelyDisableGuardian(address(lensHandles), firstHolder);
         vm.prank(firstHolder);
         lensHandles.transferFrom(firstHolder, newHolder, handleId);
 
@@ -583,7 +565,6 @@ contract TokenHandleRegistryTest is BaseTest {
 
         vm.assume(newHolder != firstHolder);
 
-        _effectivelyDisableGuardian(address(lensHandles), initialHandleHolder);
         vm.prank(initialHandleHolder);
         lensHandles.transferFrom(initialHandleHolder, firstHolder, handleId);
 
@@ -624,7 +605,6 @@ contract TokenHandleRegistryTest is BaseTest {
 
         vm.assume(newHolder != firstHolder);
 
-        _effectivelyDisableGuardian(address(lensHandles), initialHandleHolder);
         vm.prank(initialHandleHolder);
         lensHandles.transferFrom(initialHandleHolder, firstHolder, handleId);
 
@@ -658,7 +638,6 @@ contract TokenHandleRegistryTest is BaseTest {
         vm.assume(holder != initialProfileHolder);
         vm.assume(holder != initialHandleHolder);
 
-        _effectivelyDisableGuardian(address(lensHandles), initialHandleHolder);
         vm.prank(initialHandleHolder);
         lensHandles.transferFrom(initialHandleHolder, holder, handleId);
 
@@ -672,7 +651,6 @@ contract TokenHandleRegistryTest is BaseTest {
         assertEq(tokenHandleRegistry.resolve(handleId), profileId);
         assertEq(tokenHandleRegistry.getDefaultHandle(profileId), handleId);
 
-        _effectivelyDisableGuardian(address(lensHandles), holder);
         vm.prank(holder);
         lensHandles.burn(handleId);
 
@@ -697,7 +675,6 @@ contract TokenHandleRegistryTest is BaseTest {
         vm.assume(holder != initialProfileHolder);
         vm.assume(holder != initialHandleHolder);
 
-        _effectivelyDisableGuardian(address(lensHandles), initialHandleHolder);
         vm.prank(initialHandleHolder);
         lensHandles.transferFrom(initialHandleHolder, holder, handleId);
 
@@ -736,7 +713,6 @@ contract TokenHandleRegistryTest is BaseTest {
         vm.assume(holder != initialProfileHolder);
         vm.assume(holder != initialHandleHolder);
 
-        _effectivelyDisableGuardian(address(lensHandles), initialHandleHolder);
         vm.prank(initialHandleHolder);
         lensHandles.transferFrom(initialHandleHolder, holder, handleId);
 
@@ -750,7 +726,6 @@ contract TokenHandleRegistryTest is BaseTest {
         assertEq(tokenHandleRegistry.resolve(handleId), profileId);
         assertEq(tokenHandleRegistry.getDefaultHandle(profileId), handleId);
 
-        _effectivelyDisableGuardian(address(lensHandles), holder);
         vm.prank(holder);
         lensHandles.burn(handleId);
 
@@ -777,7 +752,6 @@ contract TokenHandleRegistryTest is BaseTest {
         vm.assume(holder != initialProfileHolder);
         vm.assume(holder != initialHandleHolder);
 
-        _effectivelyDisableGuardian(address(lensHandles), initialHandleHolder);
         vm.prank(initialHandleHolder);
         lensHandles.transferFrom(initialHandleHolder, holder, handleId);
 
@@ -822,7 +796,7 @@ abstract contract TokenHandleRegistryMetaTxBaseTest is BaseTest, MetaTxNegatives
     uint256 constant holderPk = 0x401DE8;
     address holder;
 
-    function setUp() public override (BaseTest, MetaTxNegatives) {
+    function setUp() public override(BaseTest, MetaTxNegatives) {
         BaseTest.setUp();
         MetaTxNegatives.setUp();
 
@@ -841,7 +815,6 @@ abstract contract TokenHandleRegistryMetaTxBaseTest is BaseTest, MetaTxNegatives
                 address(tokenHandleRegistry)
             )
         );
-
     }
 
     function _incrementNonce(uint8 increment) internal override {
@@ -905,7 +878,12 @@ contract TokenHandleRegistryLinkMetaTxTest is TokenHandleRegistryMetaTxBaseTest 
         RegistryTypes.Handle memory handle = RegistryTypes.Handle({collection: address(lensHandles), id: handleId});
         RegistryTypes.Token memory token = RegistryTypes.Token({collection: address(hub), id: profileId});
 
-        Types.EIP712Signature memory sig = _getLinkSigStruct(wallet, walletOwnerPk, _getMetaTxNonce(wallet), NO_DEADLINE);
+        Types.EIP712Signature memory sig = _getLinkSigStruct(
+            wallet,
+            walletOwnerPk,
+            _getMetaTxNonce(wallet),
+            NO_DEADLINE
+        );
 
         vm.expectEmit(true, true, true, true, address(tokenHandleRegistry));
         emit RegistryEvents.HandleLinked(handle, token, wallet, block.timestamp);
@@ -955,23 +933,15 @@ contract TokenHandleRegistryLinkMetaTxTest is TokenHandleRegistryMetaTxBaseTest 
         uint256 nonce,
         uint256 deadline
     ) internal view returns (Types.EIP712Signature memory) {
-        return _getSigStruct({
-            signer: signer,
-            pKey: pKey,
-            deadline: deadline,
-            digest: _calculateDigest(
-                keccak256(
-                    abi.encode(
-                        NamespacesTypehash.LINK,
-                        handleId,
-                        profileId,
-                        signer,
-                        nonce,
-                        deadline
-                    )
+        return
+            _getSigStruct({
+                signer: signer,
+                pKey: pKey,
+                deadline: deadline,
+                digest: _calculateDigest(
+                    keccak256(abi.encode(NamespacesTypehash.LINK, handleId, profileId, signer, nonce, deadline))
                 )
-            )
-        });
+            });
     }
 }
 
@@ -1022,7 +992,12 @@ contract TokenHandleRegistryUnlinkMetaTxTest is TokenHandleRegistryMetaTxBaseTes
         RegistryTypes.Handle memory handle = RegistryTypes.Handle({collection: address(lensHandles), id: handleId});
         RegistryTypes.Token memory token = RegistryTypes.Token({collection: address(hub), id: profileId});
 
-        Types.EIP712Signature memory sig = _getUnlinkSigStruct(wallet, walletOwnerPk, _getMetaTxNonce(wallet), NO_DEADLINE);
+        Types.EIP712Signature memory sig = _getUnlinkSigStruct(
+            wallet,
+            walletOwnerPk,
+            _getMetaTxNonce(wallet),
+            NO_DEADLINE
+        );
 
         vm.expectEmit(true, true, true, true, address(tokenHandleRegistry));
         emit RegistryEvents.HandleUnlinked(handle, token, wallet, block.timestamp);
@@ -1078,22 +1053,14 @@ contract TokenHandleRegistryUnlinkMetaTxTest is TokenHandleRegistryMetaTxBaseTes
         uint256 nonce,
         uint256 deadline
     ) internal view returns (Types.EIP712Signature memory) {
-        return _getSigStruct({
-            signer: signer,
-            pKey: pKey,
-            deadline: deadline,
-            digest: _calculateDigest(
-                keccak256(
-                    abi.encode(
-                        NamespacesTypehash.UNLINK,
-                        handleId,
-                        profileId,
-                        signer,
-                        nonce,
-                        deadline
-                    )
+        return
+            _getSigStruct({
+                signer: signer,
+                pKey: pKey,
+                deadline: deadline,
+                digest: _calculateDigest(
+                    keccak256(abi.encode(NamespacesTypehash.UNLINK, handleId, profileId, signer, nonce, deadline))
                 )
-            )
-        });
+            });
     }
 }
