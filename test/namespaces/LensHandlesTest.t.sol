@@ -6,9 +6,9 @@ import {LibString} from 'solady/utils/LibString.sol';
 import {Base64} from 'solady/utils/Base64.sol';
 import {HandlesErrors} from 'contracts/namespaces/constants/Errors.sol';
 import {HandlesEvents} from 'contracts/namespaces/constants/Events.sol';
-import {TokenGuardianTest, IGuardedToken} from 'test/TokenGuardian.t.sol';
+import {TokenGuardianTest_Default_Off, IGuardedToken} from 'test/TokenGuardian.t.sol';
 
-contract LensHandlesTest is TokenGuardianTest {
+contract LensHandlesTest is TokenGuardianTest_Default_Off {
     using stdJson for string;
 
     uint256 constant MAX_LOCAL_NAME_LENGTH = 26;
@@ -294,8 +294,6 @@ contract LensHandlesTest is TokenGuardianTest {
         assertTrue(lensHandles.exists(handleId));
         assertEq(lensHandles.ownerOf(handleId), owner);
 
-        _effectivelyDisableGuardian(address(lensHandles), owner);
-
         vm.prank(owner);
         lensHandles.burn(handleId);
 
@@ -407,8 +405,6 @@ contract LensHandlesTest is TokenGuardianTest {
         uint256 tokenId = _mintERC721(to);
         uint256 totalSupplyAfterMint = lensHandles.totalSupply();
         assertEq(totalSupplyAfterMint, currentTotalSupply + 1);
-
-        _effectivelyDisableGuardian(address(lensHandles), to);
 
         vm.prank(to);
         lensHandles.burn(tokenId);

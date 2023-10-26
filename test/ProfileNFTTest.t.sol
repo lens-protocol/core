@@ -6,7 +6,7 @@ import 'test/LensBaseERC721Test.t.sol';
 import {Base64} from 'solady/utils/Base64.sol';
 import {LibString} from 'solady/utils/LibString.sol';
 import {ProfileTokenURILib} from 'contracts/libraries/token-uris/ProfileTokenURILib.sol';
-import {TokenGuardianTest, IGuardedToken} from 'test/TokenGuardian.t.sol';
+import {TokenGuardianTest_Default_On, IGuardedToken} from 'test/TokenGuardian.t.sol';
 
 contract ProfileTokenURILibMock {
     function testProfileTokenURILibMock() public {
@@ -18,7 +18,7 @@ contract ProfileTokenURILibMock {
     }
 }
 
-contract ProfileNFTTest is LensBaseERC721Test, TokenGuardianTest {
+contract ProfileNFTTest is LensBaseERC721Test, TokenGuardianTest_Default_On {
     using stdJson for string;
     using Strings for uint256;
 
@@ -26,9 +26,9 @@ contract ProfileNFTTest is LensBaseERC721Test, TokenGuardianTest {
         return fork ? hub.TOKEN_GUARDIAN_COOLDOWN() : PROFILE_GUARDIAN_COOLDOWN;
     }
 
-    function setUp() public override(BaseTest, TokenGuardianTest) {
+    function setUp() public override(BaseTest, TokenGuardianTest_Default_On) {
         BaseTest.setUp();
-        TokenGuardianTest.setUp();
+        TokenGuardianTest_Default_On.setUp();
     }
 
     function _disableGuardian(address wallet) internal override {

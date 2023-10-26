@@ -448,7 +448,6 @@ contract BaseTest is TestSetup {
 
     function _transferHandle(address to, uint256 handleId) internal {
         address initialHandleHolder = lensHandles.ownerOf(handleId);
-        _effectivelyDisableGuardian(address(lensHandles), initialHandleHolder);
         vm.prank(initialHandleHolder);
         lensHandles.transferFrom(initialHandleHolder, to, handleId);
     }
