@@ -457,6 +457,16 @@ contract MigrationsTestNonFork is BaseTest {
         hub.batchMigrateFollowers(followerProfileIds, idOfProfileFollowed, followTokenIds);
     }
 
+    function testCannotFollowMigration_IfArraysDontMatch_byPublic() public notFork {
+        uint256[] memory idsOfProfileFollowed = _toUint256Array(idOfProfileFollowed);
+        uint256[] memory followTokenIds = _toUint256Array(followTokenId, 0x123); // array length mismatch
+
+        vm.expectRevert(Errors.ArrayMismatch.selector);
+
+        vm.prank(followerProfileOwner);
+        hub.batchMigrateFollows(followerProfileId, idsOfProfileFollowed, followTokenIds);
+    }
+
     function testCannotFollowMigration_IfArraysDontMatch_byAdmin() public notFork {
         uint256[] memory followerProfileIds = _toUint256Array(followerProfileId);
         uint256[] memory followTokenIds = _toUint256Array(followTokenId, 0x123); // array length mismatch
@@ -465,6 +475,23 @@ contract MigrationsTestNonFork is BaseTest {
 
         vm.prank(migrationAdmin);
         hub.batchMigrateFollowers(followerProfileIds, idOfProfileFollowed, followTokenIds);
+    }
+
+    function testCannotFollowMigration_IfSelfFollow_byPublic() public notFork {
+        uint256[] memory idsOfProfileFollowed = _toUint256Array(followerProfileId); // self follow
+        uint256[] memory followTokenIds = _toUint256Array(followTokenId);
+
+        _mockProfileFollowNFT(idsOfProfileFollowed[0], address(mockFollowNFT));
+
+        bytes memory data = abi.encodeCall(
+            mockFollowNFT.tryMigrate,
+            (followerProfileId, followerProfileOwner, followTokenIds[0])
+        );
+        bytes memory retdata = abi.encode(uint48(112233));
+        vm.expectCall(address(mockFollowNFT), 0, data, 0);
+
+        vm.prank(followerProfileOwner);
+        hub.batchMigrateFollows(followerProfileId, idsOfProfileFollowed, followTokenIds);
     }
 
     function testCannotFollowMigration_IfSelfFollow_byAdmin() public notFork {
@@ -482,6 +509,26 @@ contract MigrationsTestNonFork is BaseTest {
 
         vm.prank(migrationAdmin);
         hub.batchMigrateFollowers(followerProfileIds, idOfProfileFollowed, followTokenIds);
+    }
+
+    function testCannotFollowMigration_IfBlocked_byPublic() public notFork {
+        vm.prank(ownerOfProfileFollowed);
+        hub.setBlockStatus(idOfProfileFollowed, _toUint256Array(followerProfileId), _toBoolArray(true));
+
+        uint256[] memory idsOfProfileFollowed = _toUint256Array(idOfProfileFollowed);
+        uint256[] memory followTokenIds = _toUint256Array(followTokenId);
+
+        _mockProfileFollowNFT(idsOfProfileFollowed[0], address(mockFollowNFT));
+
+        bytes memory data = abi.encodeCall(
+            mockFollowNFT.tryMigrate,
+            (followerProfileId, followerProfileOwner, followTokenIds[0])
+        );
+        bytes memory retdata = abi.encode(uint48(112233));
+        vm.expectCall(address(mockFollowNFT), 0, data, 0);
+
+        vm.prank(followerProfileOwner);
+        hub.batchMigrateFollows(followerProfileId, idsOfProfileFollowed, followTokenIds);
     }
 
     function testCannotFollowMigration_IfBlocked_byAdmin() public notFork {
@@ -541,6 +588,26 @@ contract MigrationsTestNonFork is BaseTest {
         for (uint256 i = 0; i < 5; i++) {
             assertEq(profileOwners[i], lensHandles.ownerOf(expectedHandleIds[i]));
         }
+    }
+
+    function testFollowMigration_WithMockTryMigrate_byPublic() public notFork {
+        uint256[] memory idsOfProfileFollowed = _toUint256Array(idOfProfileFollowed);
+        uint256[] memory followTokenIds = _toUint256Array(followTokenId);
+
+        _mockProfileFollowNFT(idsOfProfileFollowed[0], address(mockFollowNFT));
+
+        bytes memory data = abi.encodeCall(
+            mockFollowNFT.tryMigrate,
+            (followerProfileId, followerProfileOwner, followTokenIds[0])
+        );
+        bytes memory retdata = abi.encode(uint48(112233));
+        vm.mockCall(address(mockFollowNFT), 0, data, retdata);
+
+        vm.expectEmit(true, false, false, true, address(hub));
+        emit Events.Followed(followerProfileId, idsOfProfileFollowed[0], followTokenIds[0], '', '', address(0), 112233);
+
+        vm.prank(followerProfileOwner);
+        hub.batchMigrateFollows(followerProfileId, idsOfProfileFollowed, followTokenIds);
     }
 
     function testFollowMigration_WithMockTryMigrate_byAdmin() public notFork {
