@@ -419,4 +419,19 @@ contract MigrationsTestNonFork is BaseTest {
         hub.setMigrationAdmins(_toAddressArray(migrationAdmin), true);
     }
 
+    function testCannotSetMigrationAdmins_IfNotGovernance() public notFork {
+        address otherAddress = makeAddr('otherAddress');
+
+        vm.expectRevert(Errors.NotGovernance.selector);
+
+        vm.prank(otherAddress);
+        hub.setMigrationAdmins(_toAddressArray(otherAddress), true);
+    }
+
+    function testSetMigrationAdmins() public notFork {
+        address newAdmin = makeAddr('newAdmin');
+        vm.prank(governance);
+        hub.setMigrationAdmins(_toAddressArray(newAdmin), true);
+    }
+
 }
