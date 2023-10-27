@@ -25,22 +25,26 @@ library LegacyCollectLib {
      *
      * @param publicationCollectedProfileId The profile ID of the publication being collected.
      * @param publicationCollectedId The publication ID of the publication being collected.
+     * @param collectorProfileId The profile ID of the profile that collected the publication.
      * @param transactionExecutor The address of the account that executed the collect transaction.
      * @param referrerProfileId The profile ID of the referrer, if any. Zero if no referrer.
      * @param referrerPubId The publication ID of the referrer, if any. Zero if no referrer.
+     * @param collectModule The address of the collect module that was used to collect the publication.
      * @param collectModuleData The data passed to the collect module's collect action. This is ABI-encoded and depends
      * on the collect module chosen.
+     * @param tokenId The token ID of the collect NFT that was minted as a collect of the publication.
      * @param timestamp The current block timestamp.
      */
     event CollectedLegacy(
         uint256 indexed publicationCollectedProfileId,
         uint256 indexed publicationCollectedId,
+        uint256 indexed collectorProfileId,
         address transactionExecutor,
         uint256 referrerProfileId,
         uint256 referrerPubId,
+        address collectModule,
         bytes collectModuleData,
         uint256 tokenId,
-        address nftRecipient,
         uint256 timestamp
     );
 
@@ -104,12 +108,13 @@ library LegacyCollectLib {
         emit CollectedLegacy({
             publicationCollectedProfileId: collectParams.publicationCollectedProfileId,
             publicationCollectedId: collectParams.publicationCollectedId,
+            collectorProfileId: collectParams.collectorProfileId,
             transactionExecutor: transactionExecutor,
             referrerProfileId: collectParams.referrerProfileId,
             referrerPubId: collectParams.referrerPubId,
+            collectModule: collectModule,
             collectModuleData: collectParams.collectModuleData,
             tokenId: tokenId,
-            nftRecipient: collectorProfileOwner,
             timestamp: block.timestamp
         });
 

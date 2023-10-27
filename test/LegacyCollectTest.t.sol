@@ -257,12 +257,13 @@ contract LegacyCollectTest is BaseTest, ReferralSystemTest {
         emit LegacyCollectLib.CollectedLegacy({
             publicationCollectedProfileId: defaultCollectParams.publicationCollectedProfileId,
             publicationCollectedId: defaultCollectParams.publicationCollectedId,
+            collectorProfileId: defaultCollectParams.collectorProfileId,
             transactionExecutor: defaultAccount.owner,
             referrerProfileId: defaultCollectParams.referrerProfileId,
             referrerPubId: defaultCollectParams.referrerPubId,
+            collectModule: address(mockDeprecatedCollectModule),
             collectModuleData: defaultCollectParams.collectModuleData,
             tokenId: expectedTokenId,
-            nftRecipient: hub.ownerOf(defaultCollectParams.collectorProfileId),
             timestamp: block.timestamp
         });
 
@@ -297,12 +298,13 @@ contract LegacyCollectTest is BaseTest, ReferralSystemTest {
         emit LegacyCollectLib.CollectedLegacy({
             publicationCollectedProfileId: defaultCollectParams.publicationCollectedProfileId,
             publicationCollectedId: defaultCollectParams.publicationCollectedId,
+            collectorProfileId: defaultCollectParams.collectorProfileId,
             transactionExecutor: defaultAccount.owner,
             referrerProfileId: defaultCollectParams.referrerProfileId,
             referrerPubId: defaultCollectParams.referrerPubId,
+            collectModule: address(mockDeprecatedCollectModule),
             collectModuleData: defaultCollectParams.collectModuleData,
             tokenId: collectTokenId + 1,
-            nftRecipient: hub.ownerOf(defaultCollectParams.collectorProfileId),
             timestamp: block.timestamp
         });
 
