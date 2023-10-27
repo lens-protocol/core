@@ -447,6 +447,63 @@ contract MigrationsTestNonFork is BaseTest {
         hub.batchMigrateProfiles(profileIds);
     }
 
+    function testCannotFollowMigration_IfNotAdmin_byAdmin() public notFork {
+        uint256[] memory followerProfileIds = _toUint256Array(followerProfileId);
+        uint256[] memory followTokenIds = _toUint256Array(followTokenId);
+
+        vm.expectRevert(Errors.NotMigrationAdmin.selector);
+
+        vm.prank(followerProfileOwner);
+        hub.batchMigrateFollowers(followerProfileIds, idOfProfileFollowed, followTokenIds);
+    }
+
+    function testCannotFollowMigration_IfArraysDontMatch_byAdmin() public notFork {
+        uint256[] memory followerProfileIds = _toUint256Array(followerProfileId);
+        uint256[] memory followTokenIds = _toUint256Array(followTokenId, 0x123); // array length mismatch
+
+        vm.expectRevert(Errors.ArrayMismatch.selector);
+
+        vm.prank(migrationAdmin);
+        hub.batchMigrateFollowers(followerProfileIds, idOfProfileFollowed, followTokenIds);
+    }
+
+    function testCannotFollowMigration_IfSelfFollow_byAdmin() public notFork {
+        uint256[] memory followerProfileIds = _toUint256Array(idOfProfileFollowed); // self follow
+        uint256[] memory followTokenIds = _toUint256Array(followTokenId);
+
+        _mockProfileFollowNFT(idOfProfileFollowed, address(mockFollowNFT));
+
+        bytes memory data = abi.encodeCall(
+            mockFollowNFT.tryMigrate,
+            (followerProfileId, followerProfileOwner, followTokenIds[0])
+        );
+        bytes memory retdata = abi.encode(uint48(112233));
+        vm.expectCall(address(mockFollowNFT), 0, data, 0);
+
+        vm.prank(migrationAdmin);
+        hub.batchMigrateFollowers(followerProfileIds, idOfProfileFollowed, followTokenIds);
+    }
+
+    function testCannotFollowMigration_IfBlocked_byAdmin() public notFork {
+        vm.prank(ownerOfProfileFollowed);
+        hub.setBlockStatus(idOfProfileFollowed, _toUint256Array(followerProfileId), _toBoolArray(true));
+
+        uint256[] memory followerProfileIds = _toUint256Array(followerProfileId);
+        uint256[] memory followTokenIds = _toUint256Array(followTokenId);
+
+        _mockProfileFollowNFT(idOfProfileFollowed, address(mockFollowNFT));
+
+        bytes memory data = abi.encodeCall(
+            mockFollowNFT.tryMigrate,
+            (followerProfileId, followerProfileOwner, followTokenIds[0])
+        );
+        bytes memory retdata = abi.encode(uint48(112233));
+        vm.expectCall(address(mockFollowNFT), 0, data, 0);
+
+        vm.prank(migrationAdmin);
+        hub.batchMigrateFollowers(followerProfileIds, idOfProfileFollowed, followTokenIds);
+    }
+
     function testSetMigrationAdmins() public notFork {
         address newAdmin = makeAddr('newAdmin');
         vm.prank(governance);
@@ -484,6 +541,26 @@ contract MigrationsTestNonFork is BaseTest {
         for (uint256 i = 0; i < 5; i++) {
             assertEq(profileOwners[i], lensHandles.ownerOf(expectedHandleIds[i]));
         }
+    }
+
+    function testFollowMigration_WithMockTryMigrate_byAdmin() public notFork {
+        uint256[] memory followerProfileIds = _toUint256Array(followerProfileId);
+        uint256[] memory followTokenIds = _toUint256Array(followTokenId);
+
+        _mockProfileFollowNFT(idOfProfileFollowed, address(mockFollowNFT));
+
+        bytes memory data = abi.encodeCall(
+            mockFollowNFT.tryMigrate,
+            (followerProfileId, followerProfileOwner, followTokenIds[0])
+        );
+        bytes memory retdata = abi.encode(uint48(112233));
+        vm.mockCall(address(mockFollowNFT), 0, data, retdata);
+
+        vm.expectEmit(true, false, false, true, address(hub));
+        emit Events.Followed(followerProfileId, idOfProfileFollowed, followTokenIds[0], '', '', address(0), 112233);
+
+        vm.prank(migrationAdmin);
+        hub.batchMigrateFollowers(followerProfileIds, idOfProfileFollowed, followTokenIds);
     }
 
     function _mockTokenOwner(uint256 profileId, address owner) internal {
