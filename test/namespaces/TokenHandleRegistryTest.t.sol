@@ -939,7 +939,7 @@ contract TokenHandleRegistryLinkMetaTxTest is TokenHandleRegistryMetaTxBaseTest 
                 pKey: pKey,
                 deadline: deadline,
                 digest: _calculateDigest(
-                    keccak256(abi.encode(NamespacesTypehash.LINK, handleId, profileId, signer, nonce, deadline))
+                    keccak256(abi.encode(NamespacesTypehash.LINK, handleId, profileId, nonce, deadline))
                 )
             });
     }
@@ -1059,7 +1059,7 @@ contract TokenHandleRegistryUnlinkMetaTxTest is TokenHandleRegistryMetaTxBaseTes
                 pKey: pKey,
                 deadline: deadline,
                 digest: _calculateDigest(
-                    keccak256(abi.encode(NamespacesTypehash.UNLINK, handleId, profileId, signer, nonce, deadline))
+                    keccak256(abi.encode(NamespacesTypehash.UNLINK, handleId, profileId, nonce, deadline))
                 )
             });
     }
