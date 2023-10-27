@@ -47,8 +47,11 @@ str.write(`LENS_PUBLIC_ACT_PROXY=${addresses['PublicActProxy']}\n`);
 str.write(`\n# Profile creation proxy\n`);
 str.write(`PROFILE_CREATION_PROXY=${addresses['ProfileCreationProxy']}\n`);
 
-str.write(`\n# ModuleRegistry\n`);
-str.write(`GLOBAL_MODULE_REGISTRY=${addresses['ModuleGlobals']}\n`);
+str.write(`\n# Legacy ModuleGlobals for V1 (deprecated and removed in v2)\n`);
+str.write(`LEGACY_MODULE_GLOBALS=${addresses['ModuleGlobals']}\n`);
+
+str.write(`\n# ModuleRegistry (for V2)\n`);
+str.write(`GLOBAL_MODULE_REGISTRY=${addresses['ModuleRegistry']}\n`);
 
 // LEGACY COLLECT MODULES
 

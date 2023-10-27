@@ -26,7 +26,7 @@ library MigrationLib {
 
     // Profiles Handles Migration:
 
-    event ProfileMigrated(uint256 profileId);
+    event ProfileMigrated(uint256 indexed profileId);
 
     /**
      * @notice Migrates an array of profiles from V1 to V2. This function can be callable by anyone.

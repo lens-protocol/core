@@ -31,8 +31,8 @@ contract A_DeployLensV2Upgrade is Script, ForkManagement, ArrayHelpers {
     bytes32 constant PROXY_IMPLEMENTATION_STORAGE_SLOT =
         bytes32(uint256(keccak256('eip1967.proxy.implementation')) - 1);
 
-    uint256 constant PROFILE_GUARDIAN_COOLDOWN = 7 days;
-    uint256 constant HANDLE_GUARDIAN_COOLDOWN = 5 minutes;
+    uint256 internal PROFILE_GUARDIAN_COOLDOWN;
+    uint256 internal HANDLE_GUARDIAN_COOLDOWN;
 
     string mnemonic;
 
@@ -152,6 +152,12 @@ contract A_DeployLensV2Upgrade is Script, ForkManagement, ArrayHelpers {
 
         saveContractAddress('Treasury', treasury);
         saveValue('TreasuryFee', vm.toString(treasuryFee));
+
+        PROFILE_GUARDIAN_COOLDOWN = json.readUint256(string(abi.encodePacked('.', targetEnv, '.LensProfilesGuardianTimelock')));
+        console.log('PROFILE_GUARDIAN_COOLDOWN: %s', PROFILE_GUARDIAN_COOLDOWN);
+
+        HANDLE_GUARDIAN_COOLDOWN = json.readUint256(string(abi.encodePacked('.', targetEnv, '.LensHandlesGuardianTimelock')));
+        console.log('HANDLE_GUARDIAN_COOLDOWN: %s', HANDLE_GUARDIAN_COOLDOWN);
 
         migrationAdmin = proxyAdmin;
         // TODO: change this to the real migration admin
