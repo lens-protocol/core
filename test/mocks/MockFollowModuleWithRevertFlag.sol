@@ -3,12 +3,12 @@
 pragma solidity ^0.8.15;
 
 import {IFollowModule} from 'contracts/interfaces/IFollowModule.sol';
-import {LensModule} from 'contracts/modules/LensModule.sol';
+import {LensModuleMetadata} from 'contracts/modules/LensModuleMetadata.sol';
 
 /**
  * @dev This is a simple mock follow module to be used for testing revert cases on processFollow.
  */
-contract MockFollowModuleWithRevertFlag is LensModule, IFollowModule {
+contract MockFollowModuleWithRevertFlag is LensModuleMetadata, IFollowModule {
     function supportsInterface(bytes4 interfaceID) public pure override returns (bool) {
         return interfaceID == type(IFollowModule).interfaceId || super.supportsInterface(interfaceID);
     }
@@ -38,9 +38,5 @@ contract MockFollowModuleWithRevertFlag is LensModule, IFollowModule {
             revert MockFollowModuleReverted();
         }
         return '';
-    }
-
-    function getModuleMetadataURI() external pure override returns (string memory) {
-        return 'https://docs.lens.xyz/';
     }
 }

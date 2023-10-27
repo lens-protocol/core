@@ -8,7 +8,7 @@ import {Errors} from 'contracts/modules/constants/Errors.sol';
 import {IERC721} from '@openzeppelin/contracts/token/ERC721/IERC721.sol';
 import {Types} from 'contracts/libraries/constants/Types.sol';
 
-import {LensModule} from 'contracts/modules/LensModule.sol';
+import {LensModuleMetadata} from 'contracts/modules/LensModuleMetadata.sol';
 
 interface IToken {
     /**
@@ -34,7 +34,7 @@ struct GateParams {
  *
  * @notice A reference module that validates that the user who tries to reference has a required minimum balance of ERC20/ERC721 token.
  */
-contract TokenGatedReferenceModule is LensModule, HubRestricted, IReferenceModule {
+contract TokenGatedReferenceModule is LensModuleMetadata, HubRestricted, IReferenceModule {
     function supportsInterface(bytes4 interfaceID) public pure override returns (bool) {
         return interfaceID == type(IReferenceModule).interfaceId || super.supportsInterface(interfaceID);
     }
@@ -159,9 +159,5 @@ contract TokenGatedReferenceModule is LensModule, HubRestricted, IReferenceModul
             revert NotEnoughBalance();
         }
         return balance;
-    }
-
-    function getModuleMetadataURI() external pure returns (string memory) {
-        return 'https://docs.lens.xyz/'; // TODO: Return a proper data URI here
     }
 }

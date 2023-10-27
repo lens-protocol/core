@@ -10,7 +10,7 @@ import {IReferenceModule} from 'contracts/interfaces/IReferenceModule.sol';
 import {HubRestricted} from 'contracts/base/HubRestricted.sol';
 import {FollowValidationLib} from 'contracts/modules/libraries/FollowValidationLib.sol';
 
-import {LensModule} from 'contracts/modules/LensModule.sol';
+import {LensModuleMetadata} from 'contracts/modules/LensModuleMetadata.sol';
 
 /**
  * @notice Struct representing the module configuration for certain publication.
@@ -42,7 +42,7 @@ struct ModuleConfig {
  * only to profiles that are at most at `n` degrees of separation from the source profile, which is expected to be set
  * as the author of the root publication.
  */
-contract DegreesOfSeparationReferenceModule is LensModule, HubRestricted, IReferenceModule {
+contract DegreesOfSeparationReferenceModule is LensModuleMetadata, HubRestricted, IReferenceModule {
     function supportsInterface(bytes4 interfaceID) public pure override returns (bool) {
         return interfaceID == type(IReferenceModule).interfaceId || super.supportsInterface(interfaceID);
     }
@@ -306,9 +306,5 @@ contract DegreesOfSeparationReferenceModule is LensModule, HubRestricted, IRefer
         ) {
             revert NotInheritingPointedPubConfig();
         }
-    }
-
-    function getModuleMetadataURI() external pure returns (string memory) {
-        return 'https://docs.lens.xyz/'; // TODO: Return a proper data URI here
     }
 }

@@ -5,7 +5,7 @@ pragma solidity ^0.8.10;
 import {Errors} from 'contracts/modules/constants/Errors.sol';
 import {IFollowModule} from 'contracts/interfaces/IFollowModule.sol';
 
-import {LensModule} from 'contracts/modules/LensModule.sol';
+import {LensModuleMetadata} from 'contracts/modules/LensModuleMetadata.sol';
 
 /**
  * @title RevertFollowModule
@@ -13,7 +13,7 @@ import {LensModule} from 'contracts/modules/LensModule.sol';
  *
  * @notice This follow module rejects all follow attempts.
  */
-contract RevertFollowModule is LensModule, IFollowModule {
+contract RevertFollowModule is LensModuleMetadata, IFollowModule {
     function supportsInterface(bytes4 interfaceID) public pure override returns (bool) {
         return interfaceID == type(IFollowModule).interfaceId || super.supportsInterface(interfaceID);
     }
@@ -39,9 +39,5 @@ contract RevertFollowModule is LensModule, IFollowModule {
         bytes calldata /* data */
     ) external pure override returns (bytes memory) {
         revert Errors.FollowInvalid();
-    }
-
-    function getModuleMetadataURI() external pure returns (string memory) {
-        return 'https://docs.lens.xyz/'; // TODO: Return a proper data URI here
     }
 }

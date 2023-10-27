@@ -17,12 +17,12 @@ import {PublicDrop} from '@seadrop/lib/SeaDropStructs.sol';
 import {LensSeaDropCollection} from 'contracts/modules/act/seadrop/LensSeaDropCollection.sol';
 import {ILensHub} from 'contracts/interfaces/ILensHub.sol';
 
-import {LensModule} from 'contracts/modules/LensModule.sol';
+import {LensModuleMetadata} from 'contracts/modules/LensModuleMetadata.sol';
 
 /**
  * @custom:upgradeable Transparent upgradeable proxy without initializer.
  */
-contract SeaDropMintPublicationAction is LensModule, HubRestricted, IPublicationActionModule {
+contract SeaDropMintPublicationAction is LensModuleMetadata, HubRestricted, IPublicationActionModule {
     function supportsInterface(bytes4 interfaceID) public pure override returns (bool) {
         return interfaceID == type(IPublicationActionModule).interfaceId || super.supportsInterface(interfaceID);
     }
@@ -282,9 +282,5 @@ contract SeaDropMintPublicationAction is LensModule, HubRestricted, IPublication
         if (publicDrop.mintPrice > 0 && publicDrop.feeBps != lensTreasuryFeeBps + referrersFeeBps) {
             _rescaleFees(profileId, pubId, lensTreasuryFeeBps, publicDrop);
         }
-    }
-
-    function getModuleMetadataURI() external pure returns (string memory) {
-        return 'https://docs.lens.xyz/'; // TODO: Return a proper data URI here
     }
 }

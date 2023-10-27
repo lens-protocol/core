@@ -13,6 +13,7 @@ import {IERC20} from '@openzeppelin/contracts/token/ERC20/IERC20.sol';
 import {IERC721} from '@openzeppelin/contracts/token/ERC721/IERC721.sol';
 import {SafeERC20} from '@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol';
 import {FollowValidationLib} from 'contracts/modules/libraries/FollowValidationLib.sol';
+import {LensModuleMetadata} from 'contracts/modules/LensModuleMetadata.sol';
 
 import {BaseFeeCollectModuleInitData, BaseProfilePublicationData, IBaseFeeCollectModule} from 'contracts/modules/interfaces/IBaseFeeCollectModule.sol';
 
@@ -28,7 +29,7 @@ import {BaseFeeCollectModuleInitData, BaseProfilePublicationData, IBaseFeeCollec
  * This contract is marked "abstract" as it requires you to implement initializePublicationCollectModule and
  * getPublicationData functions when you inherit from it. See SimpleFeeCollectModule as an example implementation.
  */
-abstract contract BaseFeeCollectModule is FeeModuleBase, ActionRestricted, IBaseFeeCollectModule {
+abstract contract BaseFeeCollectModule is LensModuleMetadata, FeeModuleBase, ActionRestricted, IBaseFeeCollectModule {
     using SafeERC20 for IERC20;
 
     address immutable HUB;
@@ -290,9 +291,5 @@ abstract contract BaseFeeCollectModule is FeeModuleBase, ActionRestricted, IBase
             }
         }
         return amount - totalReferralsAmount;
-    }
-
-    function getModuleMetadataURI() external pure returns (string memory) {
-        return 'https://docs.lens.xyz/'; // TODO: Return a proper data URI here
     }
 }
