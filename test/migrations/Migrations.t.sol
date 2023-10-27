@@ -12,6 +12,10 @@ import {TokenHandleRegistry} from 'contracts/namespaces/TokenHandleRegistry.sol'
 import {IERC721} from '@openzeppelin/contracts/token/ERC721/IERC721.sol';
 import {IERC721Enumerable} from '@openzeppelin/contracts/token/ERC721/extensions/IERC721Enumerable.sol';
 import {LensHubInitializable} from 'contracts/misc/LensHubInitializable.sol';
+import {MigrationLib} from 'contracts/libraries/MigrationLib.sol';
+import {Events} from 'contracts/libraries/constants/Events.sol';
+import {Types} from 'contracts/libraries/constants/Types.sol';
+import {StorageLib} from 'contracts/libraries/StorageLib.sol';
 import 'test/base/BaseTest.t.sol';
 
 contract MigrationsTest is BaseTest {
@@ -385,4 +389,34 @@ contract MigrationsTestHardcoded is BaseTest {
         vm.prank(hub.ownerOf(followerProfileId));
         FollowNFT(targetFollowNFT).unwrap(followTokenIds[0]);
     }
+}
+
+contract MigrationsTestNonFork is BaseTest {
+    address followerProfileOwner;
+    uint256 followerProfileId;
+
+    address ownerOfProfileFollowed;
+    uint256 idOfProfileFollowed;
+
+    uint256 followTokenId;
+
+    FollowNFT mockFollowNFT;
+
+    function setUp() public override {
+        super.setUp();
+
+        followerProfileOwner = makeAddr('followerProfileOwner');
+        followerProfileId = _createProfile(followerProfileOwner);
+
+        ownerOfProfileFollowed = makeAddr('ownerOfProfileFollowed');
+        idOfProfileFollowed = _createProfile(ownerOfProfileFollowed);
+
+        followTokenId = 69;
+
+        mockFollowNFT = FollowNFT(makeAddr('mockFollowNFT'));
+
+        vm.prank(governance);
+        hub.setMigrationAdmins(_toAddressArray(migrationAdmin), true);
+    }
+
 }
