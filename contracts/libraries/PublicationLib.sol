@@ -344,7 +344,6 @@ library PublicationLib {
             .getPublication(commentParams.pointedProfileId, commentParams.pointedPubId)
             .referenceModule;
         if (refModule != address(0)) {
-            // TODO: Test this on a fork if old modules are still supported
             try
                 IReferenceModule(refModule).processComment(
                     Types.ProcessCommentParams({
