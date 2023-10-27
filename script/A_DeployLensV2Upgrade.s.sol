@@ -153,10 +153,14 @@ contract A_DeployLensV2Upgrade is Script, ForkManagement, ArrayHelpers {
         saveContractAddress('Treasury', treasury);
         saveValue('TreasuryFee', vm.toString(treasuryFee));
 
-        PROFILE_GUARDIAN_COOLDOWN = json.readUint256(string(abi.encodePacked('.', targetEnv, '.LensProfilesGuardianTimelock')));
+        PROFILE_GUARDIAN_COOLDOWN = json.readUint(
+            string(abi.encodePacked('.', targetEnv, '.LensProfilesGuardianTimelock'))
+        );
         console.log('PROFILE_GUARDIAN_COOLDOWN: %s', PROFILE_GUARDIAN_COOLDOWN);
 
-        HANDLE_GUARDIAN_COOLDOWN = json.readUint256(string(abi.encodePacked('.', targetEnv, '.LensHandlesGuardianTimelock')));
+        HANDLE_GUARDIAN_COOLDOWN = json.readUint(
+            string(abi.encodePacked('.', targetEnv, '.LensHandlesGuardianTimelock'))
+        );
         console.log('HANDLE_GUARDIAN_COOLDOWN: %s', HANDLE_GUARDIAN_COOLDOWN);
 
         migrationAdmin = proxyAdmin;
