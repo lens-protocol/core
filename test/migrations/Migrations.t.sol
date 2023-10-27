@@ -434,4 +434,33 @@ contract MigrationsTestNonFork is BaseTest {
         hub.setMigrationAdmins(_toAddressArray(newAdmin), true);
     }
 
+    function _mockTokenOwner(uint256 profileId, address owner) internal {
+        bytes32 profileOwnerSlot = keccak256(abi.encode(profileId, StorageLib.TOKEN_DATA_MAPPING_SLOT));
+        vm.store(address(hub), profileOwnerSlot, bytes32(uint256(uint160(owner))));
+    }
+
+    function _mockProfileDeprecatedHandle(uint256 profileId, string memory handle) internal {
+        bytes32 profileSlot = keccak256(abi.encode(profileId, StorageLib.PROFILES_MAPPING_SLOT));
+
+        uint256 handleOffset = 3;
+        bytes32 handleSlot = bytes32(uint256(profileSlot) + handleOffset);
+        bytes32 bytes32Handle = _shortStringToBytes32Storage(handle);
+
+        vm.store(address(hub), handleSlot, bytes32Handle);
+    }
+
+    function _mockProfileFollowNFT(uint256 profileId, address followNFTAddress) internal {
+        bytes32 profileSlot = keccak256(abi.encode(profileId, StorageLib.PROFILES_MAPPING_SLOT));
+
+        uint256 followNFTOffset = 2;
+        bytes32 followNFTSlot = bytes32(uint256(profileSlot) + followNFTOffset);
+
+        vm.store(address(hub), followNFTSlot, bytes32(uint256(uint160(followNFTAddress))));
+    }
+
+    function _shortStringToBytes32Storage(string memory str) internal returns (bytes32) {
+        uint256 length = bytes(str).length;
+        require(length < 32, 'Storing storage strings supported up to 31 bytes');
+        return bytes32(abi.encodePacked(str)) | bytes32(length * 2);
+    }
 }
