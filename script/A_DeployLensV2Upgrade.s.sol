@@ -3,8 +3,7 @@ pragma solidity ^0.8.13;
 
 import {ForkManagement} from 'script/helpers/ForkManagement.sol';
 import 'forge-std/Script.sol';
-import {LensHub as LegacyLensHub} from '@lens-v1/contracts/core/LensHub.sol';
-import {ModuleGlobals} from '@lens-v1/contracts/core/modules/ModuleGlobals.sol';
+import {ILensGovernable} from 'contracts/interfaces/ILensGovernable.sol';
 import {LensHubInitializable} from 'contracts/misc/LensHubInitializable.sol';
 import {LensV2UpgradeContract} from 'contracts/misc/LensV2UpgradeContract.sol';
 import {FollowNFT} from 'contracts/FollowNFT.sol';
@@ -45,11 +44,11 @@ contract A_DeployLensV2Upgrade is Script, ForkManagement, ArrayHelpers {
     }
 
     address lensHub;
-    LegacyLensHub legacyLensHub;
+    ILensGovernable legacyLensHub; // We just need the `getGovernance` function
     address legacyLensHubImpl;
     address lensHubV2Impl;
 
-    ModuleGlobals moduleGlobals;
+    ILensGovernable moduleGlobals; // We use `getTreasury` and `getTreasuryFee` functions
 
     address followNFTImpl;
     address legacyCollectNFTImpl;
@@ -80,7 +79,7 @@ contract A_DeployLensV2Upgrade is Script, ForkManagement, ArrayHelpers {
 
     function loadBaseAddresses() internal override {
         lensHub = json.readAddress(string(abi.encodePacked('.', targetEnv, '.LensHubProxy')));
-        legacyLensHub = LegacyLensHub(lensHub);
+        legacyLensHub = ILensGovernable(lensHub);
         vm.label(lensHub, 'LensHub');
         console.log('Lens Hub Proxy: %s', address(legacyLensHub));
 
@@ -88,7 +87,7 @@ contract A_DeployLensV2Upgrade is Script, ForkManagement, ArrayHelpers {
         vm.label(legacyLensHubImpl, 'LensHubImplementation');
         console.log('Legacy Lens Hub Impl: %s', address(legacyLensHubImpl));
 
-        moduleGlobals = ModuleGlobals(json.readAddress(string(abi.encodePacked('.', targetEnv, '.ModuleGlobals'))));
+        moduleGlobals = ILensGovernable(json.readAddress(string(abi.encodePacked('.', targetEnv, '.ModuleGlobals'))));
         vm.label(address(moduleGlobals), 'ModuleGlobals');
         console.log('ModuleGlobals: %s', address(moduleGlobals));
 

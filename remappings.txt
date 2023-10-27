@@ -14,4 +14,3 @@ utility-contracts/=lib/seadrop/lib/utility-contracts/src/
 create2-scripts/=lib/seadrop/lib/create2-helpers/script/
 
 solady/=lib/solady/src/
-@lens-v1/=lib/core-private/

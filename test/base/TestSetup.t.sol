@@ -25,7 +25,7 @@ import {TokenHandleRegistry} from 'contracts/namespaces/TokenHandleRegistry.sol'
 import {MockActionModule} from 'test/mocks/MockActionModule.sol';
 import {MockReferenceModule} from 'test/mocks/MockReferenceModule.sol';
 import {ModuleRegistry} from 'contracts/misc/ModuleRegistry.sol';
-import {ModuleGlobals} from '@lens-v1/contracts/core/modules/ModuleGlobals.sol';
+import {ILensGovernable} from 'contracts/interfaces/ILensGovernable.sol';
 
 // TODO: Move these to Interface file in test folder.
 struct OldCreateProfileParams {
@@ -146,7 +146,7 @@ contract TestSetup is Test, ContractAddressesLoaderDeployer, ArrayHelpers {
 
             TREASURY_FEE_BPS = hub.getTreasuryFee();
         } else {
-            ModuleGlobals moduleGlobals = ModuleGlobals(
+            ILensGovernable moduleGlobals = ILensGovernable(
                 json.readAddress(string(abi.encodePacked('.', targetEnv, '.ModuleGlobals')))
             );
             vm.label(address(moduleGlobals), 'ModuleGlobals');

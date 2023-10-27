@@ -3,7 +3,7 @@ pragma solidity ^0.8.13;
 
 import {ForkManagement} from 'script/helpers/ForkManagement.sol';
 import 'forge-std/Script.sol';
-import {LensHub as LegacyLensHub} from '@lens-v1/contracts/core/LensHub.sol';
+import {ILensGovernable} from 'contracts/interfaces/ILensGovernable.sol';
 import {Governance} from 'contracts/misc/access/Governance.sol';
 import {LensV2UpgradeContract} from 'contracts/misc/LensV2UpgradeContract.sol';
 import {ProxyAdmin} from 'contracts/misc/access/ProxyAdmin.sol';
@@ -17,7 +17,7 @@ contract C_ChangeLensV1Admins is Script, ForkManagement {
 
     bytes32 constant ADMIN_SLOT = bytes32(uint256(keccak256('eip1967.proxy.admin')) - 1);
 
-    LegacyLensHub legacyLensHub;
+    ILensGovernable legacyLensHub; // We just need the `getGovernance` function
     TransparentUpgradeableProxy lensHubAsProxy;
     Governance governanceContract;
     address proxyAdmin;
@@ -26,7 +26,7 @@ contract C_ChangeLensV1Admins is Script, ForkManagement {
 
     function loadBaseAddresses() internal override {
         address lensHubProxyAddress = json.readAddress(string(abi.encodePacked('.', targetEnv, '.LensHubProxy')));
-        legacyLensHub = LegacyLensHub(lensHubProxyAddress);
+        legacyLensHub = ILensGovernable(lensHubProxyAddress);
         vm.label(lensHubProxyAddress, 'LensHub');
         console.log('Legacy Lens Hub: %s', address(legacyLensHub));
         lensHubAsProxy = TransparentUpgradeableProxy(payable(lensHubProxyAddress));
