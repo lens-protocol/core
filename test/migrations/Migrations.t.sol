@@ -428,10 +428,62 @@ contract MigrationsTestNonFork is BaseTest {
         hub.setMigrationAdmins(_toAddressArray(otherAddress), true);
     }
 
+    function testCannotMigrateProfile_Twice() public notFork {
+        uint256 profileId = 2;
+        address profileOwner = makeAddr('profileOwner');
+
+        _mockProfileDeprecatedHandle(profileId, 'profile.lens');
+        _mockTokenOwner(profileId, profileOwner);
+
+        uint256[] memory profileIds = _toUint256Array(profileId);
+
+        vm.expectEmit(false, false, false, true, address(hub));
+        emit MigrationLib.ProfileMigrated(profileId);
+        hub.batchMigrateProfiles(profileIds);
+
+        bytes memory data = abi.encodeCall(LensHandles.migrateHandle, (profileOwner, 'profile'));
+
+        vm.expectCall(address(lensHandles), 0, data, 0);
+        hub.batchMigrateProfiles(profileIds);
+    }
+
     function testSetMigrationAdmins() public notFork {
         address newAdmin = makeAddr('newAdmin');
         vm.prank(governance);
         hub.setMigrationAdmins(_toAddressArray(newAdmin), true);
+    }
+
+    function testProfileMigration() public notFork {
+        _mockProfileDeprecatedHandle(1, 'lensprotocol');
+        _mockProfileDeprecatedHandle(2, 'profile.lens');
+        _mockProfileDeprecatedHandle(3, 'with-dash.lens');
+        _mockProfileDeprecatedHandle(4, 'with_underscore.lens');
+        _mockProfileDeprecatedHandle(5, 'l0ng3r_pr0fil3_with_numb3r.lens');
+
+        uint256[] memory profileIds = new uint256[](5);
+        address[] memory profileOwners = new address[](5);
+
+        for (uint256 i = 0; i < 5; i++) {
+            profileIds[i] = i + 1;
+            profileOwners[i] = makeAddr(string(abi.encodePacked(0x077438 + i + 1)));
+            _mockTokenOwner(profileIds[i], profileOwners[i]);
+
+            vm.expectEmit(false, false, false, true, address(hub));
+            emit MigrationLib.ProfileMigrated(profileIds[i]);
+        }
+
+        hub.batchMigrateProfiles(profileIds);
+
+        uint256[] memory expectedHandleIds = new uint256[](5);
+        expectedHandleIds[0] = uint256(keccak256(bytes('lensprotocol')));
+        expectedHandleIds[1] = uint256(keccak256(bytes('profile')));
+        expectedHandleIds[2] = uint256(keccak256(bytes('with-dash')));
+        expectedHandleIds[3] = uint256(keccak256(bytes('with_underscore')));
+        expectedHandleIds[4] = uint256(keccak256(bytes('l0ng3r_pr0fil3_with_numb3r')));
+
+        for (uint256 i = 0; i < 5; i++) {
+            assertEq(profileOwners[i], lensHandles.ownerOf(expectedHandleIds[i]));
+        }
     }
 
     function _mockTokenOwner(uint256 profileId, address owner) internal {
