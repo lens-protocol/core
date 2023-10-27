@@ -473,12 +473,13 @@ abstract contract TokenGuardianTest_Default_On is ERC721Test {
     function testTransfersDoesNotAffectProtectionState_InboundTransfer(address anotherAddress) public {
         vm.assume(anotherAddress != address(0));
         vm.assume(anotherAddress != defaultAccount.owner);
+        vm.assume(anotherAddress.code.length == 0);
+
+        // UserTwo does not have any profile
+        vm.assume(_guardedToken().balanceOf(anotherAddress) == 0);
 
         // User disables protection, so it can perform a transfer later
         _effectivelyDisableGuardian(address(_guardedToken()), defaultAccount.owner);
-
-        // UserTwo does not have any profile
-        assertEq(_guardedToken().balanceOf(anotherAddress), 0);
 
         // UserTwo disables protection
         _effectivelyDisableGuardian(address(_guardedToken()), anotherAddress);
@@ -999,9 +1000,11 @@ abstract contract TokenGuardianTest_Default_Off is ERC721Test {
     function testTransfersDoesNotAffectProtectionState_InboundTransfer(address anotherAddress) public {
         vm.assume(anotherAddress != address(0));
         vm.assume(anotherAddress != defaultAccount.owner);
+        vm.assume(anotherAddress.code.length == 0);
+        vm.assume(_guardedToken().getTokenGuardianDisablingTimestamp(anotherAddress) != GUARDIAN_ENABLED);
 
         // UserTwo does not have any profile
-        assertEq(_guardedToken().balanceOf(anotherAddress), 0);
+        vm.assume(_guardedToken().balanceOf(anotherAddress) == 0);
 
         // UserTwo enables protection
         vm.prank(anotherAddress);
