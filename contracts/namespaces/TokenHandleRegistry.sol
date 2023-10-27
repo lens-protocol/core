@@ -103,7 +103,6 @@ contract TokenHandleRegistry is ITokenHandleRegistry {
                         Typehash.LINK,
                         handleId,
                         profileId,
-                        signature.signer,
                         _getNonceIncrementAndEmitEvent(signature.signer),
                         signature.deadline
                     )
@@ -125,7 +124,6 @@ contract TokenHandleRegistry is ITokenHandleRegistry {
                         Typehash.UNLINK,
                         handleId,
                         profileId,
-                        signature.signer,
                         _getNonceIncrementAndEmitEvent(signature.signer),
                         signature.deadline
                     )

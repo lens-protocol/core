@@ -131,7 +131,6 @@ contract QuoteMetaTxTest is QuoteTest, MetaTxNegatives {
                     pKey: signerPk,
                     digest: _getQuoteTypedDataHash({
                         quoteParams: quoteParams,
-                        signer: signer,
                         nonce: cachedNonceByAddress[signer],
                         deadline: type(uint256).max
                     }),
@@ -147,7 +146,7 @@ contract QuoteMetaTxTest is QuoteTest, MetaTxNegatives {
             _getSigStruct({
                 signer: vm.addr(_getDefaultMetaTxSignerPk()),
                 pKey: signerPk,
-                digest: _getQuoteTypedDataHash(quoteParams, vm.addr(_getDefaultMetaTxSignerPk()), nonce, deadline),
+                digest: _getQuoteTypedDataHash(quoteParams, nonce, deadline),
                 deadline: deadline
             })
         );

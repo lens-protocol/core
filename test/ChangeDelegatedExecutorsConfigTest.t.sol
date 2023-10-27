@@ -543,7 +543,6 @@ contract ChangeDelegatedExecutorsConfigTest_MetaTx is ChangeDelegatedExecutorsCo
             approvals,
             configNumber,
             switchToGivenConfig,
-            signerAddress,
             cachedNonceByAddress[signerAddress],
             type(uint256).max
         );
@@ -563,7 +562,6 @@ contract ChangeDelegatedExecutorsConfigTest_MetaTx is ChangeDelegatedExecutorsCo
         bool[] memory approvals,
         uint64 configNumber,
         bool switchToGivenConfig,
-        address signer,
         uint256 nonce,
         uint256 deadline
     ) private view returns (bytes32) {
@@ -577,7 +575,6 @@ contract ChangeDelegatedExecutorsConfigTest_MetaTx is ChangeDelegatedExecutorsCo
                         _encodeUsingEip712Rules(approvals),
                         configNumber,
                         switchToGivenConfig,
-                        signer,
                         nonce,
                         deadline
                     )
@@ -592,7 +589,6 @@ contract ChangeDelegatedExecutorsConfigTest_MetaTx is ChangeDelegatedExecutorsCo
             _toBoolArray(true),
             0,
             false,
-            vm.addr(_getDefaultMetaTxSignerPk()),
             nonce,
             deadline
         );

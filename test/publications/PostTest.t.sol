@@ -4,9 +4,6 @@ pragma solidity ^0.8.13;
 import {Types} from 'contracts/libraries/constants/Types.sol';
 import {PublicationTest, ActionablePublicationTest} from 'test/publications/PublicationTest.t.sol';
 import {MetaTxNegatives} from 'test/MetaTxNegatives.t.sol';
-import {Errors} from 'contracts/libraries/constants/Errors.sol';
-
-import {ERC1271WalletMock} from '@openzeppelin/contracts/mocks/ERC1271WalletMock.sol';
 
 contract PostTest is ActionablePublicationTest {
     Types.PostParams postParams;
@@ -67,7 +64,6 @@ contract PostMetaTxTest is PostTest, MetaTxNegatives {
                     pKey: signerPk,
                     digest: _getPostTypedDataHash({
                         postParams: postParams,
-                        signer: signer,
                         nonce: cachedNonceByAddress[signer],
                         deadline: type(uint256).max
                     }),
@@ -83,7 +79,7 @@ contract PostMetaTxTest is PostTest, MetaTxNegatives {
             _getSigStruct({
                 signer: vm.addr(_getDefaultMetaTxSignerPk()),
                 pKey: signerPk,
-                digest: _getPostTypedDataHash(postParams, vm.addr(_getDefaultMetaTxSignerPk()), nonce, deadline),
+                digest: _getPostTypedDataHash(postParams, nonce, deadline),
                 deadline: deadline
             })
         );
@@ -97,45 +93,5 @@ contract PostMetaTxTest is PostTest, MetaTxNegatives {
 
     function _getDefaultMetaTxSignerPk() internal virtual override returns (uint256) {
         return publisher.ownerPk;
-    }
-
-    function testCannotReplayERC1271TransactionFromEOASignature() public {
-        uint256 signerProfileOwnerPk = 0x513733088734;
-        address signerProfileOwner = vm.addr(signerProfileOwnerPk);
-        uint256 signerProfileId = _createProfile(signerProfileOwner);
-        postParams.profileId = signerProfileId;
-
-        address smartWallet = address(new ERC1271WalletMock(signerProfileOwner));
-
-        vm.prank(signerProfileOwner);
-        hub.changeDelegatedExecutorsConfig(signerProfileId, _toAddressArray(smartWallet), _toBoolArray(true));
-
-        // We need to make sure nonces of smartWallet and _defaultMetaTxSigner match to run this test
-        assertTrue(
-            hub.nonces(smartWallet) == hub.nonces(signerProfileOwner),
-            'smartWallet and EOA Nonces do not match - cannot perform a replay attack'
-        );
-
-        Types.EIP712Signature memory sig = _getSigStruct({
-            signer: signerProfileOwner, // << this is who will be a msg.sender of the signed transaction
-            pKey: signerProfileOwnerPk,
-            digest: _getPostTypedDataHash({
-                postParams: postParams,
-                signer: signerProfileOwner,
-                nonce: hub.nonces(signerProfileOwner),
-                deadline: type(uint256).max
-            }),
-            deadline: type(uint256).max
-        });
-
-        // Execute with the EOA
-        hub.postWithSig(postParams, sig);
-
-        // Execute with the smartWallet using the signature of EOA with a modified 'signer' field
-        Types.EIP712Signature memory sig2 = sig;
-        sig2.signer = address(smartWallet);
-
-        vm.expectRevert(Errors.SignatureInvalid.selector);
-        hub.postWithSig(postParams, sig2);
     }
 }

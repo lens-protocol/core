@@ -193,12 +193,7 @@ contract PublicActProxyTest is BaseTest {
             publicationActionParams: collectActionParams,
             signature: _getSigStruct({
                 pKey: payerPk,
-                digest: _getActTypedDataHash(
-                    collectActionParams,
-                    payer,
-                    publicActProxy.nonces(payer),
-                    type(uint256).max
-                ),
+                digest: _getActTypedDataHash(collectActionParams, publicActProxy.nonces(payer), type(uint256).max),
                 deadline: type(uint256).max
             })
         });

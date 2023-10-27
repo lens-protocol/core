@@ -124,7 +124,6 @@ contract MirrorMetaTxTest is MirrorTest, MetaTxNegatives {
                     pKey: signerPk,
                     digest: _getMirrorTypedDataHash({
                         mirrorParams: mirrorParams,
-                        signer: signer,
                         nonce: cachedNonceByAddress[signer],
                         deadline: type(uint256).max
                     }),
@@ -140,7 +139,7 @@ contract MirrorMetaTxTest is MirrorTest, MetaTxNegatives {
             _getSigStruct({
                 signer: vm.addr(_getDefaultMetaTxSignerPk()),
                 pKey: signerPk,
-                digest: _getMirrorTypedDataHash(mirrorParams, vm.addr(_getDefaultMetaTxSignerPk()), nonce, deadline),
+                digest: _getMirrorTypedDataHash(mirrorParams, nonce, deadline),
                 deadline: deadline
             })
         );

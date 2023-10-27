@@ -239,7 +239,6 @@ contract UnfollowMetaTxTest is UnfollowTest, MetaTxNegatives {
                 digest: _calculateUnfollowWithSigDigest(
                     unfollowerProfileId,
                     idsOfProfilesToUnfollow,
-                    signer,
                     nonce,
                     type(uint256).max
                 ),
@@ -258,7 +257,6 @@ contract UnfollowMetaTxTest is UnfollowTest, MetaTxNegatives {
                 digest: _calculateUnfollowWithSigDigest(
                     testUnfollowerProfileId,
                     _toUint256Array(targetProfileId),
-                    vm.addr(_getDefaultMetaTxSignerPk()),
                     nonce,
                     deadline
                 ),
@@ -280,7 +278,6 @@ contract UnfollowMetaTxTest is UnfollowTest, MetaTxNegatives {
     function _calculateUnfollowWithSigDigest(
         uint256 unfollowerProfileId,
         uint256[] memory idsOfProfilesToUnfollow,
-        address signer,
         uint256 nonce,
         uint256 deadline
     ) internal view returns (bytes32) {
@@ -291,7 +288,6 @@ contract UnfollowMetaTxTest is UnfollowTest, MetaTxNegatives {
                         Typehash.UNFOLLOW,
                         unfollowerProfileId,
                         keccak256(abi.encodePacked(idsOfProfilesToUnfollow)),
-                        signer,
                         nonce,
                         deadline
                     )

@@ -436,7 +436,6 @@ contract LegacyCollectMetaTxTest is LegacyCollectTest, MetaTxNegatives {
                     pKey: pk,
                     digest: _calculateCollectWithSigDigest({
                         collectParams: collectParams,
-                        signer: signer,
                         nonce: cachedNonceByAddress[signer],
                         deadline: type(uint256).max
                     }),
@@ -453,7 +452,6 @@ contract LegacyCollectMetaTxTest is LegacyCollectTest, MetaTxNegatives {
                 pKey: signerPk,
                 digest: _calculateCollectWithSigDigest({
                     collectParams: defaultCollectParams,
-                    signer: vm.addr(_getDefaultMetaTxSignerPk()),
                     nonce: nonce,
                     deadline: deadline
                 }),
@@ -474,7 +472,6 @@ contract LegacyCollectMetaTxTest is LegacyCollectTest, MetaTxNegatives {
 
     function _calculateCollectWithSigDigest(
         Types.LegacyCollectParams memory collectParams,
-        address signer,
         uint256 nonce,
         uint256 deadline
     ) internal view returns (bytes32) {
@@ -489,7 +486,6 @@ contract LegacyCollectMetaTxTest is LegacyCollectTest, MetaTxNegatives {
                         collectParams.referrerProfileId,
                         collectParams.referrerPubId,
                         keccak256(collectParams.collectModuleData),
-                        signer,
                         nonce,
                         deadline
                     )

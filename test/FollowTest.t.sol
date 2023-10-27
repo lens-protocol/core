@@ -417,7 +417,6 @@ contract FollowMetaTxTest is FollowTest, MetaTxNegatives {
         bytes[] memory datas
     ) internal override returns (uint256[] memory) {
         address signer = vm.addr(pk);
-        uint256 nonce = cachedNonceByAddress[signer];
         return
             hub.followWithSig({
                 followerProfileId: followerProfileId,
@@ -431,8 +430,7 @@ contract FollowMetaTxTest is FollowTest, MetaTxNegatives {
                         idsOfProfilesToFollow,
                         followTokenIds,
                         datas,
-                        signer,
-                        nonce,
+                        cachedNonceByAddress[signer],
                         type(uint256).max
                     ),
                     deadline: type(uint256).max
@@ -441,15 +439,6 @@ contract FollowMetaTxTest is FollowTest, MetaTxNegatives {
     }
 
     function _executeMetaTx(uint256 signerPk, uint256 nonce, uint256 deadline) internal virtual override {
-        bytes32 digest = _calculateFollowWithSigDigest(
-            testFollowerProfileId,
-            _toUint256Array(targetProfileId),
-            _toUint256Array(MINT_NEW_TOKEN),
-            _toBytesArray(''),
-            vm.addr(_getDefaultMetaTxSignerPk()),
-            nonce,
-            deadline
-        );
         hub.followWithSig({
             followerProfileId: testFollowerProfileId,
             idsOfProfilesToFollow: _toUint256Array(targetProfileId),
@@ -458,7 +447,14 @@ contract FollowMetaTxTest is FollowTest, MetaTxNegatives {
             signature: _getSigStruct({
                 signer: vm.addr(_getDefaultMetaTxSignerPk()),
                 pKey: signerPk,
-                digest: digest,
+                digest: _calculateFollowWithSigDigest(
+                    testFollowerProfileId,
+                    _toUint256Array(targetProfileId),
+                    _toUint256Array(MINT_NEW_TOKEN),
+                    _toBytesArray(''),
+                    nonce,
+                    deadline
+                ),
                 deadline: deadline
             })
         });
@@ -473,7 +469,6 @@ contract FollowMetaTxTest is FollowTest, MetaTxNegatives {
         uint256[] memory idsOfProfilesToFollow,
         uint256[] memory followTokenIds,
         bytes[] memory datas,
-        address signer,
         uint256 nonce,
         uint256 deadline
     ) internal view returns (bytes32) {
@@ -493,7 +488,6 @@ contract FollowMetaTxTest is FollowTest, MetaTxNegatives {
                         keccak256(abi.encodePacked(idsOfProfilesToFollow)),
                         keccak256(abi.encodePacked(followTokenIds)),
                         keccak256(abi.encodePacked(dataHashes)),
-                        signer,
                         nonce,
                         deadline
                     )
