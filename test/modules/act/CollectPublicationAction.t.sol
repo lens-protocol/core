@@ -7,6 +7,7 @@ import {CollectPublicationAction} from 'contracts/modules/act/collect/CollectPub
 import {CollectNFT} from 'contracts/modules/act/collect/CollectNFT.sol';
 import {MockCollectModule} from 'test/mocks/MockCollectModule.sol';
 import {Strings} from '@openzeppelin/contracts/utils/Strings.sol';
+import {LensModuleMetadata} from 'contracts/modules/LensModuleMetadata.sol';
 
 contract CollectPublicationActionTest is BaseTest {
     using stdJson for string;
@@ -16,7 +17,7 @@ contract CollectPublicationActionTest is BaseTest {
     address collectNFTImpl;
     address mockCollectModule;
 
-    event CollectModuleRegistered(address collectModule, uint256 timestamp);
+    event CollectModuleRegistered(address collectModule, string metadata, uint256 timestamp);
     event Transfer(address indexed from, address indexed to, uint256 indexed tokenId);
     event CollectNFTDeployed(
         uint256 indexed profileId,
@@ -140,12 +141,18 @@ contract CollectPublicationActionTest is BaseTest {
     }
 
     // Scenarios
-    function testRegisterCollectModule(address collectModule) public {
-        vm.assume(collectModule != address(0));
-        vm.assume(!collectPublicationAction.isCollectModuleRegistered(collectModule));
+    function testRegisterCollectModule() public {
+        address collectModule = address(new MockCollectModule());
+        assertFalse(
+            collectPublicationAction.isCollectModuleRegistered(collectModule),
+            'Collect module was already registered'
+        );
+
+        string memory metadata = vm.toString(collectModule);
+        LensModuleMetadata(collectModule).setModuleMetadataURI(metadata);
 
         vm.expectEmit(true, true, true, true, address(collectPublicationAction));
-        emit CollectModuleRegistered(collectModule, block.timestamp);
+        emit CollectModuleRegistered(collectModule, metadata, block.timestamp);
         collectPublicationAction.registerCollectModule(collectModule);
 
         assertTrue(

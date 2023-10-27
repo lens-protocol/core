@@ -19,6 +19,10 @@ contract MockCollectModule is MockModule, ICollectModule {
         // Prevents being counted in Foundry Coverage
     }
 
+    function supportsInterface(bytes4 interfaceID) public pure override returns (bool) {
+        return interfaceID == type(ICollectModule).interfaceId;
+    }
+
     /**
      * @dev There is nothing needed at initialization.
      */

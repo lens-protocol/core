@@ -44,6 +44,10 @@ abstract contract BaseFeeCollectModule is LensModuleMetadata, FeeModuleBase, Act
         HUB = hub;
     }
 
+    function supportsInterface(bytes4 interfaceID) public pure override returns (bool) {
+        return interfaceID == type(ICollectModule).interfaceId;
+    }
+
     /**
      * @inheritdoc ICollectModule
      * @notice Processes a collect by:

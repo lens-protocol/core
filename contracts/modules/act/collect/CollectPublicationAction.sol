@@ -10,6 +10,7 @@ import {ModuleTypes} from 'contracts/modules/libraries/constants/ModuleTypes.sol
 import {Clones} from '@openzeppelin/contracts/proxy/Clones.sol';
 import {Errors} from 'contracts/modules/constants/Errors.sol';
 import {HubRestricted} from 'contracts/base/HubRestricted.sol';
+import {ILensModule} from 'contracts/modules/interfaces/ILensModule.sol';
 
 import {LensModuleMetadata} from 'contracts/modules/LensModuleMetadata.sol';
 
@@ -29,7 +30,7 @@ contract CollectPublicationAction is LensModuleMetadata, HubRestricted, IPublica
         address collectNFT;
     }
 
-    event CollectModuleRegistered(address collectModule, uint256 timestamp);
+    event CollectModuleRegistered(address collectModule, string metadata, uint256 timestamp);
 
     /**
      * @dev Emitted when a collectNFT clone is deployed using a lazy deployment pattern.
@@ -74,6 +75,8 @@ contract CollectPublicationAction is LensModuleMetadata, HubRestricted, IPublica
         uint256 timestamp
     );
 
+    error NotCollectModule();
+
     address public immutable COLLECT_NFT_IMPL;
 
     mapping(address collectModule => bool isWhitelisted) internal _collectModuleRegistered;
@@ -83,11 +86,21 @@ contract CollectPublicationAction is LensModuleMetadata, HubRestricted, IPublica
         COLLECT_NFT_IMPL = collectNFTImpl;
     }
 
+    function verifyCollectModule(address collectModule) public returns (bool) {
+        registerCollectModule(collectModule);
+        return true;
+    }
+
     function registerCollectModule(address collectModule) public returns (bool) {
         if (_collectModuleRegistered[collectModule]) {
             return false;
         } else {
-            emit CollectModuleRegistered(collectModule, block.timestamp);
+            if (!ILensModule(collectModule).supportsInterface(type(ICollectModule).interfaceId)) {
+                revert NotCollectModule();
+            }
+
+            string memory metadata = ILensModule(collectModule).getModuleMetadataURI();
+            emit CollectModuleRegistered(collectModule, metadata, block.timestamp);
             _collectModuleRegistered[collectModule] = true;
             return true;
         }
@@ -103,7 +116,7 @@ contract CollectPublicationAction is LensModuleMetadata, HubRestricted, IPublica
         if (_collectDataByPub[profileId][pubId].collectModule != address(0)) {
             revert Errors.AlreadyInitialized();
         }
-        registerCollectModule(collectModule);
+        verifyCollectModule(collectModule);
         _collectDataByPub[profileId][pubId].collectModule = collectModule;
         ICollectModule(collectModule).initializePublicationCollectModule(
             profileId,
