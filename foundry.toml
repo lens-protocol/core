@@ -10,7 +10,7 @@ evm_version = 'paris'
 optimizer = true
 optimizer_runs = 10
 ignored_error_codes = []
-via_ir = true
+# via_ir = true
 
 [rpc_endpoints]
 polygon = "${POLYGON_RPC_URL}"
