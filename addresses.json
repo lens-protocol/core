@@ -150,15 +150,89 @@
     "LensProfilesGuardianTimelock": 300,
     "LensHandlesGuardianTimelock": 300,
     "LensHubProxy": "0x7582177F9E536aB0b6c721e11f383C326F2Ad1D5",
-    "LensHubImplementation": "0x7836c7cb79b7f3d53e92c95bf43798ada212fe4e",
+    "ProfileCreator": "0x6C1e1bC39b13f9E0Af9424D76De899203F47755F",
     "ModuleGlobals": "0xcbCC5b9611d22d11403373432642Df9Ef7Dd81AD",
     "PoolAddressesProvider": "0x5343b5bA672Ae99d627A1C87866b8E53F47Db2E6",
-    "MultirecipientFeeCollectModule": "0x1cff6c45b0de2fff70670ef4dc67a92a1ccfe0bb",
-    "StepwiseCollectModule": "0x6928d6127dfa0da401737e6ff421fcf62d5617a3",
-    "ERC4626FeeCollectModule": "0x31126c602cf88193825a99dcd1d17bf1124b1b4f",
-    "AaveFeeCollectModule": "0x666e06215747879ee68b3e5a317dcd8411de1897",
-    "TokenGatedReferenceModule": "0x86d35562ceb9f10d7c2c23c098dfeacb02f53853",
-    "MockSandboxGovernance": "0x1677d9cC4861f1C85ac7009d5F06f49c928CA2AD"
+    "MockSandboxGovernance": "0x1677d9cC4861f1C85ac7009d5F06f49c928CA2AD",
+    "Modules": {
+      "v1": {
+        "collect": [
+          {
+            "name": "FreeCollectModule",
+            "addy": "0x11C45Cbc6fDa2dbe435C0079a2ccF9c4c7051595"
+          },
+          {
+            "name": "FeeCollectModule",
+            "addy": "0xE98a40DB1170B3A46ffa7bA84335A0A0e9A65C2d"
+          },
+          {
+            "name": "LimitedFeeCollectModule",
+            "addy": "0x27742f7e82356e1c1e4177C11f627B5Dc18E4686"
+          },
+          {
+            "name": "TimedFeeCollectModule",
+            "addy": "0x6Bf382f52398DAdD3969Fb9C1AB3a1Bab8268F4E"
+          },
+          {
+            "name": "LimitedTimedFeeCollectModule",
+            "addy": "0x75Df383C587B0de2EB00FeA95B9b8e3AF35EbCe6"
+          },
+          {
+            "name": "RevertCollectModule",
+            "addy": "0x75fe7513709E6Ca573d017cE979F7d35192CE0d5"
+          },
+          {
+            "name": "SimpleFeeCollectModule",
+            "addy": "0xb4a9874adc790eec88fd086e43d329bbc9520efd"
+          },
+          {
+            "name": "MultirecipientFeeCollectModule",
+            "addy": "0x99d6c3eabf05435e851c067d2c3222716f7fcfe5"
+          },
+          {
+            "name": "StepwiseCollectModule",
+            "addy": "0x7a7b8e7699e0492da1d3c7eab7e2f3bf1065aa40"
+          },
+          {
+            "name": "ERC4626FeeCollectModule",
+            "addy": "0x79697402bd2caa19a53d615fb1a30a98e35b84d5"
+          },
+          {
+            "name": "AaveFeeCollectModule",
+            "addy": "0x912860ed4ed6160c48a52d52fcab5c059d34fe5a"
+          }
+        ],
+        "follow": [
+          {
+            "name": "FeeFollowModule",
+            "addy": "0xE98a40DB1170B3A46ffa7bA84335A0A0e9A65C2d"
+          },
+          {
+            "name": "ProfileFollowModule",
+            "addy": "0x62D0EcAB45428087d91a94EE33E141B7496Ad7c3"
+          },
+          {
+            "name": "RevertFollowModule",
+            "addy": "0x65004331Ae1c3D35DF81aEC6E8C259167Bbe64E2"
+          }
+        ],
+        "reference": [
+          {
+            "name": "TokenGatedReferenceModule",
+            "addy": "0xb4ba8dccd35bd3dcc5d58dbb9c7dff9c9268add9"
+          },
+          {
+            "name": "FollowerOnlyReferenceModule",
+            "addy": "0xB080AAc00E53FBeb04917F22096721d602c70759"
+          },
+          {
+            "name": "DegreesOfSeparationReferenceModule",
+            "addy": "0xe20D64D25779D2Ae0d76711e5Aca23EE633f2E1E"
+          }
+        ]
+      },
+      "v2": {}
+    }
   },
   "devnet": {
     "chainId": 80001,
