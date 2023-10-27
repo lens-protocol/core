@@ -367,7 +367,7 @@ contract LensHandlesTest is TokenGuardianTest_Default_Off {
             );
 
             assertEq(decodedTokenURI.readString('.name'), string.concat('@', handle));
-            assertEq(decodedTokenURI.readString('.description'), string.concat('Lens Protocol - @', handle));
+            assertEq(decodedTokenURI.readString('.description'), string.concat('Lens Protocol - Handle @', handle));
             assertEq(decodedTokenURI.readUint('.attributes[0].value'), handleId);
             assertEq(decodedTokenURI.readString('.attributes[1].value'), lensHandles.symbol());
             assertEq(decodedTokenURI.readUint('.attributes[2].value'), bytes(handle).length);
