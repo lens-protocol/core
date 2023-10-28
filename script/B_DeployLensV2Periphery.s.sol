@@ -8,7 +8,6 @@ import {FollowNFT} from 'contracts/FollowNFT.sol';
 import {LensHandles} from 'contracts/namespaces/LensHandles.sol';
 import {TokenHandleRegistry} from 'contracts/namespaces/TokenHandleRegistry.sol';
 import {TransparentUpgradeableProxy} from '@openzeppelin/contracts/proxy/transparent/TransparentUpgradeableProxy.sol';
-import {FeeConfig, FeeFollowModule} from 'contracts/modules/follow/FeeFollowModule.sol';
 import {Governance} from 'contracts/misc/access/Governance.sol';
 import {LensV2UpgradeContract} from 'contracts/misc/LensV2UpgradeContract.sol';
 import {ProxyAdmin} from 'contracts/misc/access/ProxyAdmin.sol';
@@ -81,7 +80,6 @@ contract B_DeployLensV2Periphery is Script, ForkManagement, ArrayHelpers {
     CollectPublicationAction collectPublicationAction;
     SimpleFeeCollectModule simpleFeeCollectModule;
     MultirecipientFeeCollectModule multirecipientFeeCollectModule;
-    FeeFollowModule feeFollowModule;
     RevertFollowModule revertFollowModule;
     DegreesOfSeparationReferenceModule degreesOfSeparationReferenceModule;
     FollowerOnlyReferenceModule followerOnlyReferenceModule;
@@ -308,12 +306,6 @@ contract B_DeployLensV2Periphery is Script, ForkManagement, ArrayHelpers {
         );
         vm.label(address(multirecipientFeeCollectModule), 'MultirecipientFeeCollectModule');
         saveModule('MultirecipientFeeCollectModule', address(multirecipientFeeCollectModule), 'v2', 'collect');
-
-        feeFollowModule = new FeeFollowModule({hub: address(hub), moduleRegistry: address(moduleRegistry)});
-        console.log('\n+ + + FeeFollowModule: %s', address(feeFollowModule));
-        vm.writeLine(addressesFile, string.concat('FeeFollowModule: ', vm.toString(address(feeFollowModule))));
-        vm.label(address(feeFollowModule), 'FeeFollowModule');
-        saveModule('FeeFollowModule', address(feeFollowModule), 'v2', 'follow');
 
         revertFollowModule = new RevertFollowModule();
         console.log('\n+ + + RevertFollowModule: %s', address(revertFollowModule));

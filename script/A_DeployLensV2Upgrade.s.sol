@@ -278,7 +278,7 @@ contract A_DeployLensV2Upgrade is Script, ForkManagement, ArrayHelpers {
         // Deploy new FeeFollowModule(hub, moduleRegistry)
         feeFollowModule = address(new FeeFollowModule(lensHub, moduleRegistry));
         vm.writeLine(addressesFile, string.concat('FeeFollowModule: ', vm.toString(feeFollowModule)));
-        saveContractAddress('FeeFollowModule', feeFollowModule);
+        saveModule('FeeFollowModule', address(feeFollowModule), 'v2', 'follow');
         console.log('FeeFollowModule: %s', feeFollowModule);
 
         saveContractAddress('migrationAdmin', migrationAdmin);
