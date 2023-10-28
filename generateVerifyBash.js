@@ -18,7 +18,7 @@ async function findDeploymentDirectory(basePath, prefix, chainId) {
     for (const dir of filtered) {
       console.error(dir);
     }
-    throw new Error(`Expected to find one directory, but found the above ${filtered.length} dirs.`);
+    throw new Error(`Expected to find one directory, but found ${filtered.length} dirs.`);
   }
 
   if (chainId) {

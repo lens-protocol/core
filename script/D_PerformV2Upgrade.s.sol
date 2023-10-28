@@ -8,6 +8,7 @@ import {Governance} from 'contracts/misc/access/Governance.sol';
 import {LensV2UpgradeContract} from 'contracts/misc/LensV2UpgradeContract.sol';
 import {ProxyAdmin} from 'contracts/misc/access/ProxyAdmin.sol';
 import {TransparentUpgradeableProxy} from '@openzeppelin/contracts/proxy/transparent/TransparentUpgradeableProxy.sol';
+import {LibString} from 'solady/utils/LibString.sol';
 
 contract D_PerformV2Upgrade is Script, ForkManagement {
     // add this to be excluded from coverage report
@@ -115,38 +116,56 @@ contract D_PerformV2Upgrade is Script, ForkManagement {
         // console.log('Changed the proxy admin from %s to %s', address(_deployer.owner), address(proxyAdminContract));
 
         console.log('proxyAdminContract owner(): %s', proxyAdminContract.owner());
-
-        vm.broadcast(_proxyAdmin.ownerPk);
-        proxyAdminContract.setControllerContract(address(lensV2UpgradeContract));
-        console.log(
-            'Changed the proxyAdminContract controller contract from %s to %s',
-            address(0),
-            address(lensV2UpgradeContract)
-        );
-
         console.log('governanceContract owner(): %s', governanceContract.owner());
 
-        vm.broadcast(_governance.ownerPk);
-        governanceContract.setControllerContract(address(lensV2UpgradeContract));
-        console.log(
-            'Changed the governanceContract controller contract from %s to %s',
-            address(0),
-            address(lensV2UpgradeContract)
-        );
+        if (isEnvSet('DEPLOYMENT_ENVIRONMENT')) {
+            if (LibString.eq(vm.envString('DEPLOYMENT_ENVIRONMENT'), 'production')) {
+                console.log('proxyAdminContract controllerContract(): %s', proxyAdminContract.controllerContract());
+                console.log('governanceContract controllerContract(): %s', governanceContract.controllerContract());
+                console.log('LensV2 Upgrade Contract PROXY_ADMIN: %s', address(lensV2UpgradeContract.PROXY_ADMIN()));
+                console.log('LensV2 Upgrade Contract GOVERNANCE: %s', address(lensV2UpgradeContract.GOVERNANCE()));
+                console.log('New Implementation: %s', lensV2UpgradeContract.newImplementation());
 
-        console.log('New Implementation: %s', lensV2UpgradeContract.newImplementation());
+                console.log('This script is not allowed to run on production');
+                revert();
+            } else {
+                console.log('DEPLOYMENT_ENVIRONMENT is not production');
+                revert();
+            }
+        } else {
+            vm.broadcast(_proxyAdmin.ownerPk);
+            proxyAdminContract.setControllerContract(address(lensV2UpgradeContract));
+            console.log(
+                'Changed the proxyAdminContract controller contract from %s to %s',
+                address(0),
+                address(lensV2UpgradeContract)
+            );
 
-        console.log('LensV2 Upgrade Contract PROXY_ADMIN: %s', address(lensV2UpgradeContract.PROXY_ADMIN()));
-        console.log('LensV2 Upgrade Contract GOVERNANCE: %s', address(lensV2UpgradeContract.GOVERNANCE()));
+            vm.broadcast(_governance.ownerPk);
+            governanceContract.setControllerContract(address(lensV2UpgradeContract));
+            console.log(
+                'Changed the governanceContract controller contract from %s to %s',
+                address(0),
+                address(lensV2UpgradeContract)
+            );
 
-        vm.broadcast(_governance.ownerPk);
-        lensV2UpgradeContract.executeLensV2Upgrade();
-        console.log('Upgrade complete!');
+            console.log('proxyAdminContract controllerContract(): %s', proxyAdminContract.controllerContract());
+            console.log('governanceContract controllerContract(): %s', governanceContract.controllerContract());
 
-        bytes32 PROXY_IMPLEMENTATION_STORAGE_SLOT = bytes32(uint256(keccak256('eip1967.proxy.implementation')) - 1);
-        address hubImplAddr = address(
-            uint160(uint256(vm.load(address(legacyLensHub), PROXY_IMPLEMENTATION_STORAGE_SLOT)))
-        );
-        console.log('New implementation:', hubImplAddr);
+            console.log('New Implementation: %s', lensV2UpgradeContract.newImplementation());
+
+            console.log('LensV2 Upgrade Contract PROXY_ADMIN: %s', address(lensV2UpgradeContract.PROXY_ADMIN()));
+            console.log('LensV2 Upgrade Contract GOVERNANCE: %s', address(lensV2UpgradeContract.GOVERNANCE()));
+
+            vm.broadcast(_governance.ownerPk);
+            lensV2UpgradeContract.executeLensV2Upgrade();
+            console.log('Upgrade complete!');
+
+            bytes32 PROXY_IMPLEMENTATION_STORAGE_SLOT = bytes32(uint256(keccak256('eip1967.proxy.implementation')) - 1);
+            address hubImplAddr = address(
+                uint160(uint256(vm.load(address(legacyLensHub), PROXY_IMPLEMENTATION_STORAGE_SLOT)))
+            );
+            console.log('New implementation:', hubImplAddr);
+        }
     }
 }

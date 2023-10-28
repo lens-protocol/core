@@ -32,6 +32,7 @@ import {BaseFeeCollectModuleInitData} from 'contracts/modules/interfaces/IBaseFe
 import {Governance} from 'contracts/misc/access/Governance.sol';
 import {PublicActProxy} from 'contracts/misc/PublicActProxy.sol';
 import {LitAccessControl} from 'contracts/misc/access/LitAccessControl.sol';
+import {LibString} from 'solady/utils/LibString.sol';
 
 import {ArrayHelpers} from 'script/helpers/ArrayHelpers.sol';
 
@@ -157,23 +158,32 @@ contract B_DeployLensV2Periphery is Script, ForkManagement, ArrayHelpers {
     }
 
     function loadBaseAddresses() internal override {
-        address governanceContractAdmin = json.readAddress(
-            string(abi.encodePacked('.', targetEnv, '.GovernanceContractAdmin'))
-        );
-        if (governance.owner != governanceContractAdmin) {
-            console.log(
-                'Mock Governance %s != Governance contract admin %s',
-                governance.owner,
-                governanceContractAdmin
+        if (isEnvSet('DEPLOYMENT_ENVIRONMENT')) {
+            if (LibString.eq(vm.envString('DEPLOYMENT_ENVIRONMENT'), 'production')) {} else {
+                console.log('DEPLOYMENT_ENVIRONMENT is not production');
+                revert();
+            }
+        } else {
+            address governanceContractAdmin = json.readAddress(
+                string(abi.encodePacked('.', targetEnv, '.GovernanceContractAdmin'))
             );
-            revert();
+            if (governance.owner != governanceContractAdmin) {
+                console.log(
+                    'Mock Governance %s != Governance contract admin %s',
+                    governance.owner,
+                    governanceContractAdmin
+                );
+                revert();
+            }
         }
 
         profileCreator = json.readAddress(string(abi.encodePacked('.', targetEnv, '.ProfileCreator')));
         vm.label(profileCreator, 'ProfileCreator');
         console.log('ProfileCreator: %s', profileCreator);
 
-        proxyAdminContractAdmin = json.readAddress(string(abi.encodePacked('.', targetEnv, '.ProxyAdminContractAdmin')));
+        proxyAdminContractAdmin = json.readAddress(
+            string(abi.encodePacked('.', targetEnv, '.ProxyAdminContractAdmin'))
+        );
         vm.label(proxyAdminContractAdmin, 'ProxyAdminContractAdmin');
         console.log('ProxyAdminContractAdmin: %s', proxyAdminContractAdmin);
 

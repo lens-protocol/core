@@ -117,13 +117,13 @@ contract A_DeployLensV2Upgrade is Script, ForkManagement, ArrayHelpers {
             console.log('\tReal Governance: %s', governance);
 
             proxyAdmin = address(uint160(uint256(vm.load(lensHub, ADMIN_SLOT))));
-            console.log('Real ProxyAdmin: %s', proxyAdmin);
+            console.log('\tReal ProxyAdmin: %s', proxyAdmin);
 
             treasury = moduleGlobals.getTreasury();
-            console.log('Real Treasury: %s', treasury);
+            console.log('\tReal Treasury: %s', treasury);
 
             treasuryFee = moduleGlobals.getTreasuryFee();
-            console.log('Real Treasury Fee: %s', treasuryFee);
+            console.log('\tReal Treasury Fee: %s', treasuryFee);
         } else {
             console.log('Using governance and proxy admin from test mnemonic:');
 

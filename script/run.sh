@@ -29,6 +29,11 @@ if [[ "$CATAPULTA" != "" && "$CATAPULTA" != "catapulta" ]]
         exit 1
 fi
 
+if [[ "$CATAPULTA" == "catapulta" ]]
+    then
+        echo "Using catapulta"
+fi
+
 CALLDATA=$(cast calldata "run(string)" $TARGET)
 
 echo "Interactions calldata:"

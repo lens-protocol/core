@@ -227,20 +227,30 @@ contract E_GovernanceActions is Script, ForkManagement, ArrayHelpers {
         address governanceContractAdmin = json.readAddress(
             string(abi.encodePacked('.', targetEnv, '.GovernanceContractAdmin'))
         );
-        if (governance.owner != governanceContractAdmin) {
-            console.log(
-                'Mock Governance %s != Governance contract admin %s',
-                governance.owner,
-                governanceContractAdmin
-            );
-            revert();
+
+        if (isEnvSet('DEPLOYMENT_ENVIRONMENT')) {
+            if (LibString.eq(vm.envString('DEPLOYMENT_ENVIRONMENT'), 'production')) {} else {
+                console.log('DEPLOYMENT_ENVIRONMENT is not production');
+                revert();
+            }
+        } else {
+            if (governance.owner != governanceContractAdmin) {
+                console.log(
+                    'Mock Governance %s != Governance contract admin %s',
+                    governance.owner,
+                    governanceContractAdmin
+                );
+                revert();
+            }
         }
 
         profileCreator = json.readAddress(string(abi.encodePacked('.', targetEnv, '.ProfileCreator')));
         vm.label(profileCreator, 'ProfileCreator');
         console.log('ProfileCreator: %s', profileCreator);
 
-        proxyAdminContractAdmin = json.readAddress(string(abi.encodePacked('.', targetEnv, '.ProxyAdminContractAdmin')));
+        proxyAdminContractAdmin = json.readAddress(
+            string(abi.encodePacked('.', targetEnv, '.ProxyAdminContractAdmin'))
+        );
         vm.label(proxyAdminContractAdmin, 'ProxyAdminContractAdmin');
         console.log('ProxyAdminContractAdmin: %s', proxyAdminContractAdmin);
 
@@ -276,15 +286,25 @@ contract E_GovernanceActions is Script, ForkManagement, ArrayHelpers {
     }
 
     function _governanceActions() internal {
-        vm.startBroadcast(governance.ownerPk);
+        if (isEnvSet('DEPLOYMENT_ENVIRONMENT')) {
+            if (LibString.eq(vm.envString('DEPLOYMENT_ENVIRONMENT'), 'production')) {} else {
+                console.log('DEPLOYMENT_ENVIRONMENT is not production');
+                revert();
+            }
+        } else {
+            vm.startBroadcast(governance.ownerPk);
 
-        governanceContract.lensHub_whitelistProfileCreator(address(profileCreationProxy), true);
-        console.log('\n* * * Profile creator proxy %s registered as profile creator', address(profileCreationProxy));
+            governanceContract.lensHub_whitelistProfileCreator(address(profileCreationProxy), true);
+            console.log(
+                '\n* * * Profile creator proxy %s registered as profile creator',
+                address(profileCreationProxy)
+            );
 
-        governanceContract.lensHub_setState(Types.ProtocolState.Unpaused);
-        console.log('\n* * * Protocol unpaused');
+            governanceContract.lensHub_setState(Types.ProtocolState.Unpaused);
+            console.log('\n* * * Protocol unpaused');
 
-        vm.stopBroadcast();
+            vm.stopBroadcast();
+        }
     }
 
     function _registerCurrencies() internal {
@@ -354,12 +374,13 @@ contract E_GovernanceActions is Script, ForkManagement, ArrayHelpers {
         CollectPublicationAction(collectPublicationAction).registerCollectModule(address(simpleFeeCollectModule));
         console.log('\n* * * SimpleFeeCollectModule registered as collect module');
 
-        CollectPublicationAction(collectPublicationAction).registerCollectModule(address(multirecipientFeeCollectModule));
+        CollectPublicationAction(collectPublicationAction).registerCollectModule(
+            address(multirecipientFeeCollectModule)
+        );
         console.log('\n* * * MultirecipientFeeCollectModule registered as collect module');
 
         vm.stopBroadcast();
     }
-
 
     function run(string memory targetEnv_) external {
         targetEnv = targetEnv_;
