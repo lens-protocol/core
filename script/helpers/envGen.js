@@ -53,6 +53,9 @@ str.write(`LEGACY_MODULE_GLOBALS=${addresses['ModuleGlobals']}\n`);
 str.write(`\n# ModuleRegistry (for V2)\n`);
 str.write(`GLOBAL_MODULE_REGISTRY=${addresses['ModuleRegistry']}\n`);
 
+str.write(`\n# Legacy metadata updates\n`);
+str.write(`LEGACY_PERIPHERY_DATA_PROVIDER=${addresses['LensPeriphery']}\n`);
+
 // LEGACY COLLECT MODULES
 
 str.write(`\n# legacy modules\n`);
