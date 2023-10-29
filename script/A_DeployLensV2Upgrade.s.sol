@@ -229,6 +229,7 @@ contract A_DeployLensV2Upgrade is Script, ForkManagement, ArrayHelpers {
         // Deploy LegacyCollectNFTImpl
         legacyCollectNFTImpl = address(new LegacyCollectNFT(lensHub));
         vm.label(legacyCollectNFTImpl, 'LegacyCollectNFTImpl');
+        saveContractAddress('LegacyCollectNFTImpl', legacyCollectNFTImpl);
         console.log('Legacy CollectNFTImpl: %s', legacyCollectNFTImpl);
 
         // Deploy FollowNFTImpl(hub)
@@ -408,6 +409,27 @@ contract A_DeployLensV2Upgrade is Script, ForkManagement, ArrayHelpers {
             }
         }
         revert('Module not found');
+    }
+
+    function saveModule(
+        string memory moduleName,
+        address moduleAddress,
+        string memory lensVersion,
+        string memory moduleType
+    ) internal {
+        // console.log('Saving %s (%s) into addresses under %s environment', moduleName, moduleAddress, targetEnv);
+        string[] memory inputs = new string[](7);
+        inputs[0] = 'node';
+        inputs[1] = 'script/helpers/saveAddress.js';
+        inputs[2] = targetEnv;
+        inputs[3] = moduleName;
+        inputs[4] = vm.toString(moduleAddress);
+        inputs[5] = lensVersion;
+        inputs[6] = moduleType;
+        // bytes memory res =
+        vm.ffi(inputs);
+        // string memory output = abi.decode(res, (string));
+        // console.log(output);
     }
 
     function run(string memory targetEnv_) external {

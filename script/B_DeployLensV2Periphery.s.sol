@@ -397,7 +397,6 @@ contract B_DeployLensV2Periphery is Script, ForkManagement, ArrayHelpers {
             string.concat('SIMPLE_COLLECT_OPEN_ACTION_MODULE=', vm.toString(address(simpleFeeCollectModule)))
         );
         vm.writeLine(backendEnv, '### follow modules');
-        vm.writeLine(backendEnv, string.concat('FEE_FOLLOW_MODULE=', vm.toString(address(feeFollowModule))));
         vm.writeLine(backendEnv, string.concat('REVERT_FOLLOW_MODULE=', vm.toString(address(revertFollowModule))));
         vm.writeLine(backendEnv, '## REFERENCE MODULES');
         vm.writeLine(
