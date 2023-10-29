@@ -8,6 +8,7 @@
     "LensHubImplementation": "0xBA97fc9137b7cbBBC7fcB70a87DA645d917C902F",
     "ModuleGlobals": "0x3Df697FF746a60CBe9ee8D47555c88CB66f03BB9",
     "PoolAddressesProvider": "0xa97684ead0e402dC232d5A977953DF7ECBaB3CDb",
+    "LensPeriphery": "0xeff187b4190E551FC25a7fA4dFC6cf7fDeF7194f",
     "Modules": {
       "v1": {
         "collect": [
@@ -64,6 +65,7 @@
     "LensHubProxy": "0x60Ae865ee4C725cd04353b5AAb364553f56ceF82",
     "ModuleGlobals": "0x1353aAdfE5FeD85382826757A95DE908bd21C4f9",
     "ProfileCreator": "0x6C1e1bC39b13f9E0Af9424D76De899203F47755F",
+    "LensPeriphery": "0xD5037d72877808cdE7F669563e9389930AF404E8",
     "Modules": {
       "v1": {
         "collect": [
@@ -151,6 +153,7 @@
     "LensHandlesGuardianTimelock": 300,
     "LensHubProxy": "0x7582177F9E536aB0b6c721e11f383C326F2Ad1D5",
     "ProfileCreator": "0x6C1e1bC39b13f9E0Af9424D76De899203F47755F",
+    "LensPeriphery": "0xa6bcF4398824A199965f89094796DFCcEa81b1a6",
     "ModuleGlobals": "0xcbCC5b9611d22d11403373432642Df9Ef7Dd81AD",
     "PoolAddressesProvider": "0x5343b5bA672Ae99d627A1C87866b8E53F47Db2E6",
     "MockSandboxGovernance": "0x1677d9cC4861f1C85ac7009d5F06f49c928CA2AD",
