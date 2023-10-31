@@ -487,7 +487,6 @@ contract MigrationsTestNonFork is BaseTest {
             mockFollowNFT.tryMigrate,
             (followerProfileId, followerProfileOwner, followTokenIds[0])
         );
-        bytes memory retdata = abi.encode(uint48(112233));
         vm.expectCall(address(mockFollowNFT), 0, data, 0);
 
         vm.prank(followerProfileOwner);
@@ -504,7 +503,6 @@ contract MigrationsTestNonFork is BaseTest {
             mockFollowNFT.tryMigrate,
             (followerProfileId, followerProfileOwner, followTokenIds[0])
         );
-        bytes memory retdata = abi.encode(uint48(112233));
         vm.expectCall(address(mockFollowNFT), 0, data, 0);
 
         vm.prank(migrationAdmin);
@@ -524,7 +522,6 @@ contract MigrationsTestNonFork is BaseTest {
             mockFollowNFT.tryMigrate,
             (followerProfileId, followerProfileOwner, followTokenIds[0])
         );
-        bytes memory retdata = abi.encode(uint48(112233));
         vm.expectCall(address(mockFollowNFT), 0, data, 0);
 
         vm.prank(followerProfileOwner);
@@ -544,7 +541,6 @@ contract MigrationsTestNonFork is BaseTest {
             mockFollowNFT.tryMigrate,
             (followerProfileId, followerProfileOwner, followTokenIds[0])
         );
-        bytes memory retdata = abi.encode(uint48(112233));
         vm.expectCall(address(mockFollowNFT), 0, data, 0);
 
         vm.prank(migrationAdmin);
