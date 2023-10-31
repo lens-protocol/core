@@ -4,10 +4,9 @@
     "network": "polygon",
     "LensProfilesGuardianTimelock": 604800,
     "LensHandlesGuardianTimelock": 86400,
-    "LensHubProxy": "0xDb46d1Dc155634FbC732f92E853b10B288AD5a1d",
-    "LensHubImplementation": "0xBA97fc9137b7cbBBC7fcB70a87DA645d917C902F",
+    "LensHubProxy": "0xdb46d1dc155634fbc732f92e853b10b288ad5a1d",
     "ModuleGlobals": "0x3Df697FF746a60CBe9ee8D47555c88CB66f03BB9",
-    "PoolAddressesProvider": "0xa97684ead0e402dC232d5A977953DF7ECBaB3CDb",
+    "ProfileCreator": "0xe7Af8325aA443F7678B651d4f0De23663E818691",
     "LensPeriphery": "0xeff187b4190E551FC25a7fA4dFC6cf7fDeF7194f",
     "Modules": {
       "v1": {
@@ -15,6 +14,30 @@
           {
             "name": "FreeCollectModule",
             "addy": "0x23b9467334bEb345aAa6fd1545538F3d54436e96"
+          },
+          {
+            "name": "FeeCollectModule",
+            "addy": "0x1292E6dF9a4697DAAfDDBD61D5a7545A634af33d"
+          },
+          {
+            "name": "LimitedFeeCollectModule",
+            "addy": "0xEF13EFa565FB29Cd55ECf3De2beb6c69bD988212"
+          },
+          {
+            "name": "TimedFeeCollectModule",
+            "addy": "0xbf4E6C28d7f37C867CE62cf6ccb9efa4C7676F7F"
+          },
+          {
+            "name": "LimitedTimedFeeCollectModule",
+            "addy": "0x7B94f57652cC1e5631532904A4A038435694636b"
+          },
+          {
+            "name": "RevertCollectModule",
+            "addy": "0xa31FF85E840ED117E172BC9Ad89E55128A999205"
+          },
+          {
+            "name": "SimpleFeeCollectModule",
+            "addy": "0x54325d507ed1b3776c146700eff61a98b45aec76"
           },
           {
             "name": "MultirecipientFeeCollectModule",
@@ -51,6 +74,14 @@
           {
             "name": "TokenGatedReferenceModule",
             "addy": "0x3d7f4f71a90fe5a9d13fab2716080f2917cf88f3"
+          },
+          {
+            "name": "FollowerOnlyReferenceModule",
+            "addy": "0x17317F96f0C7a845FFe78c60B10aB15789b57Aaa"
+          },
+          {
+            "name": "DegreesOfSeparationReferenceModule",
+            "addy": "0x081a84abf515302a276d98dc551e69f3cc33a833"
           }
         ]
       },
