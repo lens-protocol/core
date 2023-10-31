@@ -58,6 +58,7 @@ contract B_DeployLensV2Periphery is Script, ForkManagement, ArrayHelpers {
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
     address profileCreator;
+    address governanceContractAdmin;
     address proxyAdminContractAdmin;
 
     ModuleRegistry moduleRegistryImpl;
@@ -156,15 +157,16 @@ contract B_DeployLensV2Periphery is Script, ForkManagement, ArrayHelpers {
     }
 
     function loadBaseAddresses() internal override {
+        governanceContractAdmin = json.readAddress(
+            string(abi.encodePacked('.', targetEnv, '.GovernanceContractAdmin'))
+        );
+
         if (isEnvSet('DEPLOYMENT_ENVIRONMENT')) {
             if (LibString.eq(vm.envString('DEPLOYMENT_ENVIRONMENT'), 'production')) {} else {
                 console.log('DEPLOYMENT_ENVIRONMENT is not production');
                 revert();
             }
         } else {
-            address governanceContractAdmin = json.readAddress(
-                string(abi.encodePacked('.', targetEnv, '.GovernanceContractAdmin'))
-            );
             if (governance.owner != governanceContractAdmin) {
                 console.log(
                     'Mock Governance %s != Governance contract admin %s',
@@ -213,6 +215,11 @@ contract B_DeployLensV2Periphery is Script, ForkManagement, ArrayHelpers {
     function deploy() internal {
         vm.startBroadcast(deployer.ownerPk);
 
+        if (governanceContractAdmin != address(0)) {
+            console.log('GovernanceContractAdmin is set');
+            revert('GovernanceContractAdmin is not set');
+        }
+
         profileCreationProxy = new ProfileCreationProxy({
             owner: profileCreator,
             hub: address(hub),
@@ -256,7 +263,8 @@ contract B_DeployLensV2Periphery is Script, ForkManagement, ArrayHelpers {
 
         collectPublicationActionImpl = new CollectPublicationAction({
             hub: address(hub),
-            collectNFTImpl: address(collectNFT)
+            collectNFTImpl: address(collectNFT),
+            moduleOwner: governanceContractAdmin
         });
         console.log('\n+ + + CollectPublicationActionImpl: %s', address(collectPublicationActionImpl));
         vm.writeLine(
@@ -269,8 +277,14 @@ contract B_DeployLensV2Periphery is Script, ForkManagement, ArrayHelpers {
         collectPublicationActionProxy = new TransparentUpgradeableProxy({
             _logic: address(collectPublicationActionImpl),
             admin_: proxyAdminContractAdmin,
-            _data: ''
+            _data: abi.encodeWithSelector(collectPublicationActionImpl.initialize.selector, governanceContractAdmin)
         });
+
+        if (CollectPublicationAction(address(collectPublicationActionProxy)).owner() != governanceContractAdmin) {
+            console.log('ModuleOwner is not initialized for CollectPublicationAction');
+            revert('ModuleOwner is not initialized for CollectPublicationAction');
+        }
+
         console.log('\n+ + + CollectPublicationActionProxy: %s', address(collectPublicationActionProxy));
         vm.writeLine(
             addressesFile,
@@ -284,7 +298,8 @@ contract B_DeployLensV2Periphery is Script, ForkManagement, ArrayHelpers {
         simpleFeeCollectModule = new SimpleFeeCollectModule({
             hub: address(hub),
             actionModule: address(collectPublicationActionProxy),
-            moduleRegistry: address(moduleRegistry)
+            moduleRegistry: address(moduleRegistry),
+            moduleOwner: governanceContractAdmin
         });
         console.log('\n+ + + SimpleFeeCollectModule: %s', address(simpleFeeCollectModule));
         vm.writeLine(
@@ -297,7 +312,8 @@ contract B_DeployLensV2Periphery is Script, ForkManagement, ArrayHelpers {
         multirecipientFeeCollectModule = new MultirecipientFeeCollectModule({
             hub: address(hub),
             actionModule: address(collectPublicationActionProxy),
-            moduleRegistry: address(moduleRegistry)
+            moduleRegistry: address(moduleRegistry),
+            moduleOwner: governanceContractAdmin
         });
         console.log('\n+ + + MultirecipientFeeCollectModule: %s', address(multirecipientFeeCollectModule));
         vm.writeLine(
@@ -307,13 +323,16 @@ contract B_DeployLensV2Periphery is Script, ForkManagement, ArrayHelpers {
         vm.label(address(multirecipientFeeCollectModule), 'MultirecipientFeeCollectModule');
         saveModule('MultirecipientFeeCollectModule', address(multirecipientFeeCollectModule), 'v2', 'collect');
 
-        revertFollowModule = new RevertFollowModule();
+        revertFollowModule = new RevertFollowModule(governanceContractAdmin);
         console.log('\n+ + + RevertFollowModule: %s', address(revertFollowModule));
         vm.writeLine(addressesFile, string.concat('RevertFollowModule: ', vm.toString(address(revertFollowModule))));
         vm.label(address(revertFollowModule), 'RevertFollowModule');
         saveModule('RevertFollowModule', address(revertFollowModule), 'v2', 'follow');
 
-        degreesOfSeparationReferenceModule = new DegreesOfSeparationReferenceModule({hub: address(hub)});
+        degreesOfSeparationReferenceModule = new DegreesOfSeparationReferenceModule({
+            hub: address(hub),
+            moduleOwner: governanceContractAdmin
+        });
         console.log('\n+ + + DegreesOfSeparationReferenceModule: %s', address(degreesOfSeparationReferenceModule));
         vm.writeLine(
             addressesFile,
@@ -330,7 +349,10 @@ contract B_DeployLensV2Periphery is Script, ForkManagement, ArrayHelpers {
             'reference'
         );
 
-        followerOnlyReferenceModule = new FollowerOnlyReferenceModule({hub: address(hub)});
+        followerOnlyReferenceModule = new FollowerOnlyReferenceModule({
+            hub: address(hub),
+            moduleOwner: governanceContractAdmin
+        });
         console.log('\n+ + + FollowerOnlyReferenceModule: %s', address(followerOnlyReferenceModule));
         vm.writeLine(
             addressesFile,

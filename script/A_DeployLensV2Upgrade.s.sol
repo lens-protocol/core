@@ -164,12 +164,10 @@ contract A_DeployLensV2Upgrade is Script, ForkManagement, ArrayHelpers {
         console.log('HANDLE_GUARDIAN_COOLDOWN: %s', HANDLE_GUARDIAN_COOLDOWN);
 
         migrationAdmin = proxyAdmin;
-        // TODO: change this to the real migration admin
-        // json.readAddress(string(abi.encodePacked('.', targetEnv, '.MigrationAdmin')));
+        // TODO: We are not using `migration admin` anymore, but we keep it to not modify current bytecode.
         vm.label(migrationAdmin, 'MigrationAdmin');
         console.log('Migration Admin: %s', migrationAdmin);
 
-        // TODO: Who should be the owner of LensHandles? Setting it for LensHub governance
         lensHandlesOwner = legacyLensHub.getGovernance();
         vm.label(lensHandlesOwner, 'LensHandlesOwner');
         console.log('LensHandlesOwner: %s', lensHandlesOwner);
@@ -276,8 +274,13 @@ contract A_DeployLensV2Upgrade is Script, ForkManagement, ArrayHelpers {
 
         console.log('PROFILE_GUARDIAN_COOLDOWN: %s', PROFILE_GUARDIAN_COOLDOWN);
 
+        if (governance != address(0)) {
+            console.log('Governance is set');
+            revert('Governance is not set');
+        }
+
         // Deploy new FeeFollowModule(hub, moduleRegistry)
-        feeFollowModule = address(new FeeFollowModule(lensHub, moduleRegistry));
+        feeFollowModule = address(new FeeFollowModule(lensHub, moduleRegistry, governance));
         vm.writeLine(addressesFile, string.concat('FeeFollowModule: ', vm.toString(feeFollowModule)));
         saveModule('FeeFollowModule', address(feeFollowModule), 'v2', 'follow');
         console.log('FeeFollowModule: %s', feeFollowModule);
