@@ -21,8 +21,7 @@ contract TestTest is BaseTest {
                     tokenHandleRegistryAddress: address(0),
                     legacyFeeFollowModule: address(0),
                     legacyProfileFollowModule: address(0),
-                    newFeeFollowModule: address(0),
-                    migrationAdmin: address(0)
+                    newFeeFollowModule: address(0)
                 })
             })
         );

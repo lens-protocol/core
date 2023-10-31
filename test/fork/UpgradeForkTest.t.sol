@@ -367,8 +367,7 @@ contract UpgradeForkTest is BaseTest {
                 tokenHandleRegistryAddress: address(tokenHandleRegistry),
                 legacyFeeFollowModule: address(0), // TODO: Fill this in
                 legacyProfileFollowModule: address(0), // TODO: Fill this in
-                newFeeFollowModule: address(0), // TODO: Fill this in
-                migrationAdmin: migrationAdmin
+                newFeeFollowModule: address(0) // TODO: Fill this in
             })
         });
         followNFT = new FollowNFT(hubProxyAddr);

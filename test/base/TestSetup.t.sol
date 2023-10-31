@@ -260,8 +260,7 @@ contract TestSetup is Test, ContractAddressesLoaderDeployer, ArrayHelpers {
                 tokenHandleRegistryAddress: address(tokenHandleRegistry),
                 legacyFeeFollowModule: address(0), // TODO: Fill this in
                 legacyProfileFollowModule: address(0), // TODO: Fill this in
-                newFeeFollowModule: address(0), // TODO: Fill this in
-                migrationAdmin: migrationAdmin
+                newFeeFollowModule: address(0) // TODO: Fill this in
             })
         });
         followNFT = new FollowNFT(hubProxyAddr);
@@ -321,8 +320,7 @@ contract TestSetup is Test, ContractAddressesLoaderDeployer, ArrayHelpers {
                 tokenHandleRegistryAddress: tokenHandleRegistryProxyAddr,
                 legacyFeeFollowModule: address(0),
                 legacyProfileFollowModule: address(0),
-                newFeeFollowModule: address(0),
-                migrationAdmin: migrationAdmin
+                newFeeFollowModule: address(0)
             })
         });
         followNFT = new FollowNFT(hubProxyAddr);
