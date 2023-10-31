@@ -36,7 +36,12 @@ contract BaseFeeCollectModuleBase is BaseTest {
         } else {
             vm.prank(deployer);
             baseFeeCollectModule = address(
-                new SimpleFeeCollectModule(address(hub), collectPublicationAction, address(moduleRegistry))
+                new SimpleFeeCollectModule(
+                    address(hub),
+                    collectPublicationAction,
+                    address(moduleRegistry),
+                    address(this)
+                )
             );
         }
         currency = new MockCurrency();

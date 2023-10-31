@@ -89,7 +89,7 @@ contract LensHubTest is BaseTest {
     function testCreateProfile_WithFollowModule(address to) public {
         vm.assume(to != address(0));
 
-        address followModule = address(new MockFollowModuleWithRevertFlag());
+        address followModule = address(new MockFollowModuleWithRevertFlag(address(this)));
 
         bytes memory followModuleInitData = abi.encode(false);
 

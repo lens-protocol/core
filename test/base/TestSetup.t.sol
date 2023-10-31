@@ -227,11 +227,11 @@ contract TestSetup is Test, ContractAddressesLoaderDeployer, ArrayHelpers {
         vm.startPrank(deployer);
 
         // Deploy the MockActionModule.
-        mockActionModule = new MockActionModule();
+        mockActionModule = new MockActionModule(address(this));
         vm.label(address(mockActionModule), 'MOCK_ACTION_MODULE');
 
         // Deploy the MockReferenceModule.
-        mockReferenceModule = new MockReferenceModule();
+        mockReferenceModule = new MockReferenceModule(address(this));
         vm.label(address(mockReferenceModule), 'MOCK_REFERENCE_MODULE');
 
         vm.stopPrank();
@@ -368,11 +368,11 @@ contract TestSetup is Test, ContractAddressesLoaderDeployer, ArrayHelpers {
         vm.label(proxyAdmin, 'HUB_PROXY_ADMIN');
 
         // Deploy the MockActionModule.
-        mockActionModule = new MockActionModule();
+        mockActionModule = new MockActionModule(address(this));
         vm.label(address(mockActionModule), 'MOCK_ACTION_MODULE');
 
         // Deploy the MockReferenceModule.
-        mockReferenceModule = new MockReferenceModule();
+        mockReferenceModule = new MockReferenceModule(address(this));
         vm.label(address(mockReferenceModule), 'MOCK_REFERENCE_MODULE');
 
         vm.stopPrank();

@@ -57,7 +57,7 @@ contract FollowTest is BaseTest {
         targetFollowNFTAddress = hub.getProfile(targetProfileId).followNFT;
         followNFT = FollowNFT(targetFollowNFTAddress);
 
-        followModuleWithRevertFlag = address(new MockFollowModuleWithRevertFlag());
+        followModuleWithRevertFlag = address(new MockFollowModuleWithRevertFlag(address(this)));
     }
 
     // Negatives

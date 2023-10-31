@@ -24,7 +24,7 @@ contract LegacyCollectNFTTest is BaseTest, LensBaseERC721Test {
     function setUp() public override {
         super.setUp();
 
-        mockDeprecatedCollectModule = address(new MockDeprecatedCollectModule());
+        mockDeprecatedCollectModule = address(new MockDeprecatedCollectModule(address(this)));
 
         // Create a V1 pub
         vm.prank(defaultAccount.owner);

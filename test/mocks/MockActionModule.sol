@@ -10,15 +10,13 @@ import {MockModule} from 'test/mocks/MockModule.sol';
  * @dev This is a simple mock Action module to be used for testing revert cases on processAction.
  */
 contract MockActionModule is MockModule, IPublicationActionModule {
-    function supportsInterface(bytes4 interfaceID) public pure override returns (bool) {
-        return interfaceID == type(IPublicationActionModule).interfaceId || super.supportsInterface(interfaceID);
+    function testMockActionModule() public {
+        // Prevents being counted in Foundry Coverage
     }
 
     error MockActionModuleReverted();
 
-    function testMockActionModule() public {
-        // Prevents being counted in Foundry Coverage
-    }
+    constructor(address moduleOwner) MockModule(moduleOwner) {}
 
     // Reverts if `data` does not decode as `true`.
     function initializePublicationAction(
@@ -35,5 +33,9 @@ contract MockActionModule is MockModule, IPublicationActionModule {
         Types.ProcessActionParams calldata processActionParams
     ) external pure override returns (bytes memory) {
         return _decodeFlagAndRevertIfFalse(processActionParams.actionModuleData);
+    }
+
+    function supportsInterface(bytes4 interfaceID) public pure override returns (bool) {
+        return interfaceID == type(IPublicationActionModule).interfaceId || super.supportsInterface(interfaceID);
     }
 }
