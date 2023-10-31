@@ -62,7 +62,7 @@ contract DegreesOfSeparationReferenceModule is LensModuleMetadata, HubRestricted
 
     mapping(uint256 profileId => mapping(uint256 pubId => ModuleConfig config)) internal _moduleConfig;
 
-    constructor(address hub) HubRestricted(hub) {}
+    constructor(address hub, address moduleOwner) HubRestricted(hub) LensModuleMetadata(moduleOwner) {}
 
     /**
      * @inheritdoc IReferenceModule

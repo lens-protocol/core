@@ -19,8 +19,9 @@ contract SimpleFeeCollectModule is BaseFeeCollectModule {
     constructor(
         address hub,
         address actionModule,
-        address moduleRegistry
-    ) BaseFeeCollectModule(hub, actionModule, moduleRegistry) {}
+        address moduleRegistry,
+        address moduleOwner
+    ) BaseFeeCollectModule(hub, actionModule, moduleRegistry, moduleOwner) {}
 
     /**
      * @inheritdoc ICollectModule

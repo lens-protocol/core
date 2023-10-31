@@ -39,8 +39,9 @@ abstract contract BaseFeeCollectModule is LensModuleMetadata, FeeModuleBase, Act
     constructor(
         address hub,
         address actionModule,
-        address moduleRegistry
-    ) ActionRestricted(actionModule) FeeModuleBase(hub, moduleRegistry) {
+        address moduleRegistry,
+        address moduleOwner
+    ) ActionRestricted(actionModule) FeeModuleBase(hub, moduleRegistry) LensModuleMetadata(moduleOwner) {
         HUB = hub;
     }
 
