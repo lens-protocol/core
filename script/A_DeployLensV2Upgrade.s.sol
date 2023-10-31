@@ -70,7 +70,6 @@ contract A_DeployLensV2Upgrade is Script, ForkManagement, ArrayHelpers {
     address treasury;
     address governance;
     address proxyAdmin;
-    address migrationAdmin;
     address lensHandlesOwner;
 
     uint16 treasuryFee;
@@ -162,11 +161,6 @@ contract A_DeployLensV2Upgrade is Script, ForkManagement, ArrayHelpers {
             string(abi.encodePacked('.', targetEnv, '.LensHandlesGuardianTimelock'))
         );
         console.log('HANDLE_GUARDIAN_COOLDOWN: %s', HANDLE_GUARDIAN_COOLDOWN);
-
-        migrationAdmin = proxyAdmin;
-        // TODO: We are not using `migration admin` anymore, but we keep it to not modify current bytecode.
-        vm.label(migrationAdmin, 'MigrationAdmin');
-        console.log('Migration Admin: %s', migrationAdmin);
 
         lensHandlesOwner = legacyLensHub.getGovernance();
         vm.label(lensHandlesOwner, 'LensHandlesOwner');
@@ -285,8 +279,6 @@ contract A_DeployLensV2Upgrade is Script, ForkManagement, ArrayHelpers {
         saveModule('FeeFollowModule', address(feeFollowModule), 'v2', 'follow');
         console.log('FeeFollowModule: %s', feeFollowModule);
 
-        saveContractAddress('migrationAdmin', migrationAdmin);
-
         // Pass all the fucking shit and deploy LensHub V2 Impl with:
         lensHubV2Impl = address(
             new LensHubInitializable(
@@ -299,8 +291,7 @@ contract A_DeployLensV2Upgrade is Script, ForkManagement, ArrayHelpers {
                     tokenHandleRegistryAddress: tokenHandleRegistry,
                     legacyFeeFollowModule: legacyFeeFollowModule,
                     legacyProfileFollowModule: legacyProfileFollowModule,
-                    newFeeFollowModule: feeFollowModule,
-                    migrationAdmin: migrationAdmin
+                    newFeeFollowModule: feeFollowModule
                 })
             )
         );
@@ -330,8 +321,6 @@ contract A_DeployLensV2Upgrade is Script, ForkManagement, ArrayHelpers {
                 vm.toString(legacyProfileFollowModule),
                 ', ',
                 vm.toString(feeFollowModule),
-                ', ',
-                vm.toString(migrationAdmin),
                 ')'
             )
         );
