@@ -354,7 +354,7 @@ contract A_DeployLensV2Upgrade is Script, ForkManagement, ArrayHelpers {
             new LensV2UpgradeContract({
                 proxyAdminAddress: address(proxyAdminContract),
                 governanceAddress: address(governanceContract),
-                owner: governance,
+                owner: proxyAdmin,
                 lensHub: address(legacyLensHub),
                 newImplementationAddress: lensHubV2Impl,
                 treasury: treasury,
