@@ -311,32 +311,32 @@ contract E_GovernanceActions is Script, ForkManagement, ArrayHelpers {
         vm.startBroadcast(deployer.ownerPk);
 
         // TODO: Get the currency addresses from the addresses.json
-        moduleRegistry.registerErc20Currency(address(0x2791bca1f2de4661ed88a30c99a7a9449aa84174));
+        moduleRegistry.registerErc20Currency(address(0x2791Bca1f2de4661ED88A30C99A7a9449Aa84174));
         console.log('\n* * * USDC registered as currency');
         vm.writeLine(
             addressesFile,
-            string.concat('USDC: ', vm.toString(address(0x2791bca1f2de4661ed88a30c99a7a9449aa84174)))
+            string.concat('USDC: ', vm.toString(address(0x2791Bca1f2de4661ED88A30C99A7a9449Aa84174)))
         );
 
-        moduleRegistry.registerErc20Currency(address(0x8f3cf7ad23cd3cadbd9735aff958023239c6a063));
+        moduleRegistry.registerErc20Currency(address(0x8f3Cf7ad23Cd3CaDbD9735AFf958023239c6A063));
         console.log('\n* * * DAI registered as currency');
         vm.writeLine(
             addressesFile,
-            string.concat('DAI: ', vm.toString(address(0x8f3cf7ad23cd3cadbd9735aff958023239c6a063)))
+            string.concat('DAI: ', vm.toString(address(0x8f3Cf7ad23Cd3CaDbD9735AFf958023239c6A063)))
         );
 
-        moduleRegistry.registerErc20Currency(address(0x7ceb23fd6bc0add59e62ac25578270cff1b9f619));
+        moduleRegistry.registerErc20Currency(address(0x7ceB23fD6bC0adD59E62ac25578270cFf1b9f619));
         console.log('\n* * * WETH registered as currency');
         vm.writeLine(
             addressesFile,
-            string.concat('WETH: ', vm.toString(address(0x7ceb23fd6bc0add59e62ac25578270cff1b9f619)))
+            string.concat('WETH: ', vm.toString(address(0x7ceB23fD6bC0adD59E62ac25578270cFf1b9f619)))
         );
 
-        moduleRegistry.registerErc20Currency(address(0x0d500b1d8e8ef31e21c99d1db9a6444d3adf1270));
+        moduleRegistry.registerErc20Currency(address(0x0d500B1d8E8eF31E21C99d1Db9A6444d3ADf1270));
         console.log('\n* * * WMATIC registered as currency');
         vm.writeLine(
             addressesFile,
-            string.concat('WMATIC: ', vm.toString(address(0x0d500b1d8e8ef31e21c99d1db9a6444d3adf1270)))
+            string.concat('WMATIC: ', vm.toString(address(0x0d500B1d8E8eF31E21C99d1Db9A6444d3ADf1270)))
         );
         vm.stopBroadcast();
     }
