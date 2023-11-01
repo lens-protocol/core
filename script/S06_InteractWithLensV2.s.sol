@@ -11,7 +11,6 @@ import {TransparentUpgradeableProxy} from '@openzeppelin/contracts/proxy/transpa
 import {FeeConfig, FeeFollowModule} from 'contracts/modules/follow/FeeFollowModule.sol';
 import {Governance} from 'contracts/misc/access/Governance.sol';
 import {LensV2UpgradeContract} from 'contracts/misc/LensV2UpgradeContract.sol';
-import {ProxyAdmin} from 'contracts/misc/access/ProxyAdmin.sol';
 import {LensHubInitializable} from 'contracts/misc/LensHubInitializable.sol';
 import {ILensHub} from 'contracts/interfaces/ILensHub.sol';
 import {ILensHandles} from 'contracts/interfaces/ILensHandles.sol';
@@ -27,7 +26,6 @@ import {FollowerOnlyReferenceModule} from 'contracts/modules/reference/FollowerO
 import {TokenGatedReferenceModule} from 'contracts/modules/reference/TokenGatedReferenceModule.sol';
 import {Types} from 'contracts/libraries/constants/Types.sol';
 import {ModuleRegistry} from 'contracts/misc/ModuleRegistry.sol';
-import {IModuleRegistry} from 'contracts/interfaces/IModuleRegistry.sol';
 import {BaseFeeCollectModuleInitData} from 'contracts/modules/interfaces/IBaseFeeCollectModule.sol';
 import {Governance} from 'contracts/misc/access/Governance.sol';
 import {PublicActProxy} from 'contracts/misc/PublicActProxy.sol';
@@ -36,8 +34,8 @@ import {LibString} from 'solady/utils/LibString.sol';
 
 import {ArrayHelpers} from 'script/helpers/ArrayHelpers.sol';
 
-contract F_InteractWithLensV2 is Script, ForkManagement, ArrayHelpers {
-        // TODO: Use from test/ContractAddresses
+contract S06_InteractWithLensV2 is Script, ForkManagement, ArrayHelpers {
+    // TODO: Use from test/ContractAddresses
     struct Module {
         address addy;
         string name;
@@ -193,7 +191,9 @@ contract F_InteractWithLensV2 is Script, ForkManagement, ArrayHelpers {
         vm.label(profileCreator, 'ProfileCreator');
         console.log('ProfileCreator: %s', profileCreator);
 
-        proxyAdminContractAdmin = json.readAddress(string(abi.encodePacked('.', targetEnv, '.ProxyAdminContractAdmin')));
+        proxyAdminContractAdmin = json.readAddress(
+            string(abi.encodePacked('.', targetEnv, '.ProxyAdminContractAdmin'))
+        );
         vm.label(proxyAdminContractAdmin, 'ProxyAdminContractAdmin');
         console.log('ProxyAdminContractAdmin: %s', proxyAdminContractAdmin);
 
@@ -221,13 +221,14 @@ contract F_InteractWithLensV2 is Script, ForkManagement, ArrayHelpers {
         vm.label(address(governanceContract), 'GovernanceContract');
         console.log('Governance Contract: %s', address(governanceContract));
 
-
         Module[] memory actModules = abi.decode(
             vm.parseJson(json, string(abi.encodePacked('.', targetEnv, '.Modules.v2.act'))),
             (Module[])
         );
 
-        collectPublicationAction = CollectPublicationAction(findModuleHelper(actModules, 'CollectPublicationAction').addy);
+        collectPublicationAction = CollectPublicationAction(
+            findModuleHelper(actModules, 'CollectPublicationAction').addy
+        );
         vm.label(address(collectPublicationAction), 'CollectPublicationAction');
         console.log('CollectPublicationAction: %s', address(collectPublicationAction));
 
@@ -236,11 +237,15 @@ contract F_InteractWithLensV2 is Script, ForkManagement, ArrayHelpers {
             (Module[])
         );
 
-        simpleFeeCollectModule = SimpleFeeCollectModule(findModuleHelper(collectModules, 'SimpleFeeCollectModule').addy);
+        simpleFeeCollectModule = SimpleFeeCollectModule(
+            findModuleHelper(collectModules, 'SimpleFeeCollectModule').addy
+        );
         vm.label(address(simpleFeeCollectModule), 'SimpleFeeCollectModule');
         console.log('SimpleFeeCollectModule: %s', address(simpleFeeCollectModule));
 
-        multirecipientFeeCollectModule = MultirecipientFeeCollectModule(findModuleHelper(collectModules, 'MultirecipientFeeCollectModule').addy);
+        multirecipientFeeCollectModule = MultirecipientFeeCollectModule(
+            findModuleHelper(collectModules, 'MultirecipientFeeCollectModule').addy
+        );
         vm.label(address(multirecipientFeeCollectModule), 'MultirecipientFeeCollectModule');
         console.log('MultirecipientFeeCollectModule: %s', address(multirecipientFeeCollectModule));
     }

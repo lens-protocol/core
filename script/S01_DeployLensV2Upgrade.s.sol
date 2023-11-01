@@ -21,7 +21,7 @@ import {LegacyCollectNFT} from 'contracts/misc/LegacyCollectNFT.sol';
 
 import {ArrayHelpers} from 'script/helpers/ArrayHelpers.sol';
 
-contract A_DeployLensV2Upgrade is Script, ForkManagement, ArrayHelpers {
+contract S01_DeployLensV2Upgrade is Script, ForkManagement, ArrayHelpers {
     // add this to be excluded from coverage report
     function testLensV2UpgradeDeployment() public {}
 

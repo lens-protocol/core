@@ -8,10 +8,8 @@ import {FollowNFT} from 'contracts/FollowNFT.sol';
 import {LensHandles} from 'contracts/namespaces/LensHandles.sol';
 import {TokenHandleRegistry} from 'contracts/namespaces/TokenHandleRegistry.sol';
 import {TransparentUpgradeableProxy} from '@openzeppelin/contracts/proxy/transparent/TransparentUpgradeableProxy.sol';
-import {FeeConfig, FeeFollowModule} from 'contracts/modules/follow/FeeFollowModule.sol';
 import {Governance} from 'contracts/misc/access/Governance.sol';
 import {LensV2UpgradeContract} from 'contracts/misc/LensV2UpgradeContract.sol';
-import {ProxyAdmin} from 'contracts/misc/access/ProxyAdmin.sol';
 import {LensHubInitializable} from 'contracts/misc/LensHubInitializable.sol';
 import {ILensHub} from 'contracts/interfaces/ILensHub.sol';
 import {ILensHandles} from 'contracts/interfaces/ILensHandles.sol';
@@ -28,7 +26,6 @@ import {TokenGatedReferenceModule} from 'contracts/modules/reference/TokenGatedR
 import {Types} from 'contracts/libraries/constants/Types.sol';
 import {ModuleRegistry} from 'contracts/misc/ModuleRegistry.sol';
 import {IModuleRegistry} from 'contracts/interfaces/IModuleRegistry.sol';
-import {BaseFeeCollectModuleInitData} from 'contracts/modules/interfaces/IBaseFeeCollectModule.sol';
 import {Governance} from 'contracts/misc/access/Governance.sol';
 import {PublicActProxy} from 'contracts/misc/PublicActProxy.sol';
 import {LitAccessControl} from 'contracts/misc/access/LitAccessControl.sol';
@@ -36,7 +33,7 @@ import {LibString} from 'solady/utils/LibString.sol';
 
 import {ArrayHelpers} from 'script/helpers/ArrayHelpers.sol';
 
-contract E_GovernanceActions is Script, ForkManagement, ArrayHelpers {
+contract S05_GovernanceActions is Script, ForkManagement, ArrayHelpers {
     // TODO: Use from test/ContractAddresses
     struct Module {
         address addy;
