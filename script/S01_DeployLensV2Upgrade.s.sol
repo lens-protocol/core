@@ -360,7 +360,7 @@ contract S01_DeployLensV2Upgrade is Script, ForkManagement, ArrayHelpers {
         console.log('"arguments": [');
         console.log('\t"%s"', address(proxyAdminContract));
         console.log('\t"%s"', address(governanceContract));
-        console.log('\t"%s"', governance);
+        console.log('\t"%s"', proxyAdmin);
         console.log('\t"%s"', address(legacyLensHub));
         console.log('\t"%s"', lensHubV2Impl);
         console.log('\t"%s"', treasury);

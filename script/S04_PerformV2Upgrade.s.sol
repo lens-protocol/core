@@ -10,7 +10,7 @@ import {ProxyAdmin} from 'contracts/misc/access/ProxyAdmin.sol';
 import {TransparentUpgradeableProxy} from '@openzeppelin/contracts/proxy/transparent/TransparentUpgradeableProxy.sol';
 import {LibString} from 'solady/utils/LibString.sol';
 
-contract D_PerformV2Upgrade is Script, ForkManagement {
+contract S04_PerformV2Upgrade is Script, ForkManagement {
     // add this to be excluded from coverage report
     function testLensV1ToV2Upgrade() public {}
 
