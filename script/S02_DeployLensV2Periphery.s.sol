@@ -211,8 +211,8 @@ contract B_DeployLensV2Periphery is Script, ForkManagement, ArrayHelpers {
     function deploy() internal {
         vm.startBroadcast(deployer.ownerPk);
 
-        if (governanceContractAdmin != address(0)) {
-            console.log('GovernanceContractAdmin is set');
+        if (governanceContractAdmin == address(0)) {
+            console.log('GovernanceContractAdmin is not set');
             revert('GovernanceContractAdmin is not set');
         }
 

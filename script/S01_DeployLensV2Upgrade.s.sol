@@ -268,8 +268,8 @@ contract S01_DeployLensV2Upgrade is Script, ForkManagement, ArrayHelpers {
 
         console.log('PROFILE_GUARDIAN_COOLDOWN: %s', PROFILE_GUARDIAN_COOLDOWN);
 
-        if (governance != address(0)) {
-            console.log('Governance is set');
+        if (governance == address(0)) {
+            console.log('Governance is not set');
             revert('Governance is not set');
         }
 
