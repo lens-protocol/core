@@ -11,6 +11,8 @@ abstract contract MockModule is LensModuleMetadata {
         // Prevents being counted in Foundry Coverage
     }
 
+    constructor(address moduleOwner) LensModuleMetadata(moduleOwner) {}
+
     // Reverts if the flag decoded from the data is not `true`.
     function _decodeFlagAndRevertIfFalse(bytes memory data) internal pure returns (bytes memory) {
         bool shouldItSucceed = abi.decode(data, (bool));

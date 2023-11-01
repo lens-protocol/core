@@ -52,7 +52,7 @@ contract TokenGatedReferenceModule is LensModuleMetadata, HubRestricted, IRefere
 
     mapping(uint256 pointedProfileId => mapping(uint256 pointedPubId => GateParams gateParams)) internal _gateParams;
 
-    constructor(address hub) HubRestricted(hub) {}
+    constructor(address hub, address moduleOwner) HubRestricted(hub) LensModuleMetadata(moduleOwner) {}
 
     /**
      * @inheritdoc IReferenceModule

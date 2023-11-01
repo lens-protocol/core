@@ -39,7 +39,11 @@ contract FeeFollowModule is LensModuleMetadata, FeeModuleBase, HubRestricted, IF
 
     mapping(uint256 profileId => FeeConfig config) internal _feeConfig;
 
-    constructor(address hub, address moduleRegistry) FeeModuleBase(hub, moduleRegistry) HubRestricted(hub) {}
+    constructor(
+        address hub,
+        address moduleRegistry,
+        address moduleOwner
+    ) FeeModuleBase(hub, moduleRegistry) HubRestricted(hub) LensModuleMetadata(moduleOwner) {}
 
     /**
      * @inheritdoc IFollowModule

@@ -127,6 +127,8 @@ contract BaseFeeCollectModule_Initialization is BaseFeeCollectModuleBase {
                 (amount == 0 && whitelistedCurrency == address(0))
         );
 
+        vm.assume(whitelistedCurrency != address(baseFeeCollectModule));
+
         if (whitelistedCurrency != address(0)) {
             vm.etch(whitelistedCurrency, address(new MockCurrency()).code);
         }

@@ -9,15 +9,13 @@ import {LensModuleMetadata} from 'contracts/modules/LensModuleMetadata.sol';
  * @dev This is a simple mock follow module to be used for testing revert cases on processFollow.
  */
 contract MockFollowModuleWithRevertFlag is LensModuleMetadata, IFollowModule {
-    function supportsInterface(bytes4 interfaceID) public pure override returns (bool) {
-        return interfaceID == type(IFollowModule).interfaceId || super.supportsInterface(interfaceID);
+    function testMockFollowModuleWithRevertFlag() public {
+        // Prevents being counted in Foundry Coverage
     }
 
     error MockFollowModuleReverted();
 
-    function testMockFollowModuleWithRevertFlag() public {
-        // Prevents being counted in Foundry Coverage
-    }
+    constructor(address moduleOwner) LensModuleMetadata(moduleOwner) {}
 
     function initializeFollowModule(
         uint256 /* profileId */,
@@ -38,5 +36,9 @@ contract MockFollowModuleWithRevertFlag is LensModuleMetadata, IFollowModule {
             revert MockFollowModuleReverted();
         }
         return '';
+    }
+
+    function supportsInterface(bytes4 interfaceID) public pure override returns (bool) {
+        return interfaceID == type(IFollowModule).interfaceId || super.supportsInterface(interfaceID);
     }
 }

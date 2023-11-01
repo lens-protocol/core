@@ -8,10 +8,8 @@ import {FollowNFT} from 'contracts/FollowNFT.sol';
 import {LensHandles} from 'contracts/namespaces/LensHandles.sol';
 import {TokenHandleRegistry} from 'contracts/namespaces/TokenHandleRegistry.sol';
 import {TransparentUpgradeableProxy} from '@openzeppelin/contracts/proxy/transparent/TransparentUpgradeableProxy.sol';
-import {FeeConfig, FeeFollowModule} from 'contracts/modules/follow/FeeFollowModule.sol';
 import {Governance} from 'contracts/misc/access/Governance.sol';
 import {LensV2UpgradeContract} from 'contracts/misc/LensV2UpgradeContract.sol';
-import {ProxyAdmin} from 'contracts/misc/access/ProxyAdmin.sol';
 import {LensHubInitializable} from 'contracts/misc/LensHubInitializable.sol';
 import {ILensHub} from 'contracts/interfaces/ILensHub.sol';
 import {ILensHandles} from 'contracts/interfaces/ILensHandles.sol';
@@ -28,7 +26,6 @@ import {TokenGatedReferenceModule} from 'contracts/modules/reference/TokenGatedR
 import {Types} from 'contracts/libraries/constants/Types.sol';
 import {ModuleRegistry} from 'contracts/misc/ModuleRegistry.sol';
 import {IModuleRegistry} from 'contracts/interfaces/IModuleRegistry.sol';
-import {BaseFeeCollectModuleInitData} from 'contracts/modules/interfaces/IBaseFeeCollectModule.sol';
 import {Governance} from 'contracts/misc/access/Governance.sol';
 import {PublicActProxy} from 'contracts/misc/PublicActProxy.sol';
 import {LitAccessControl} from 'contracts/misc/access/LitAccessControl.sol';
@@ -36,7 +33,7 @@ import {LibString} from 'solady/utils/LibString.sol';
 
 import {ArrayHelpers} from 'script/helpers/ArrayHelpers.sol';
 
-contract E_GovernanceActions is Script, ForkManagement, ArrayHelpers {
+contract S05_GovernanceActions is Script, ForkManagement, ArrayHelpers {
     // TODO: Use from test/ContractAddresses
     struct Module {
         address addy;
@@ -311,32 +308,32 @@ contract E_GovernanceActions is Script, ForkManagement, ArrayHelpers {
         vm.startBroadcast(deployer.ownerPk);
 
         // TODO: Get the currency addresses from the addresses.json
-        moduleRegistry.registerErc20Currency(address(0x2058A9D7613eEE744279e3856Ef0eAda5FCbaA7e));
+        moduleRegistry.registerErc20Currency(address(0x2791Bca1f2de4661ED88A30C99A7a9449Aa84174));
         console.log('\n* * * USDC registered as currency');
         vm.writeLine(
             addressesFile,
-            string.concat('USDC: ', vm.toString(address(0x2058A9D7613eEE744279e3856Ef0eAda5FCbaA7e)))
+            string.concat('USDC: ', vm.toString(address(0x2791Bca1f2de4661ED88A30C99A7a9449Aa84174)))
         );
 
-        moduleRegistry.registerErc20Currency(address(0x001B3B4d0F3714Ca98ba10F6042DaEbF0B1B7b6F));
+        moduleRegistry.registerErc20Currency(address(0x8f3Cf7ad23Cd3CaDbD9735AFf958023239c6A063));
         console.log('\n* * * DAI registered as currency');
         vm.writeLine(
             addressesFile,
-            string.concat('DAI: ', vm.toString(address(0x001B3B4d0F3714Ca98ba10F6042DaEbF0B1B7b6F)))
+            string.concat('DAI: ', vm.toString(address(0x8f3Cf7ad23Cd3CaDbD9735AFf958023239c6A063)))
         );
 
-        moduleRegistry.registerErc20Currency(address(0x3C68CE8504087f89c640D02d133646d98e64ddd9));
+        moduleRegistry.registerErc20Currency(address(0x7ceB23fD6bC0adD59E62ac25578270cFf1b9f619));
         console.log('\n* * * WETH registered as currency');
         vm.writeLine(
             addressesFile,
-            string.concat('WETH: ', vm.toString(address(0x3C68CE8504087f89c640D02d133646d98e64ddd9)))
+            string.concat('WETH: ', vm.toString(address(0x7ceB23fD6bC0adD59E62ac25578270cFf1b9f619)))
         );
 
-        moduleRegistry.registerErc20Currency(address(0x9c3C9283D3e44854697Cd22D3Faa240Cfb032889));
+        moduleRegistry.registerErc20Currency(address(0x0d500B1d8E8eF31E21C99d1Db9A6444d3ADf1270));
         console.log('\n* * * WMATIC registered as currency');
         vm.writeLine(
             addressesFile,
-            string.concat('WMATIC: ', vm.toString(address(0x9c3C9283D3e44854697Cd22D3Faa240Cfb032889)))
+            string.concat('WMATIC: ', vm.toString(address(0x0d500B1d8E8eF31E21C99d1Db9A6444d3ADf1270)))
         );
         vm.stopBroadcast();
     }

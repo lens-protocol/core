@@ -55,7 +55,7 @@ contract CollectNFTTest is BaseTest, LensBaseERC721Test {
         address predictedCollectNFTImpl = computeCreateAddress(deployer, deployerNonce + 1);
 
         vm.startPrank(deployer);
-        collectPublicationAction = new CollectPublicationAction(address(hub), predictedCollectNFTImpl);
+        collectPublicationAction = new CollectPublicationAction(address(hub), predictedCollectNFTImpl, address(this));
         collectNFTImpl = address(new CollectNFT(address(hub), address(collectPublicationAction)));
         vm.stopPrank();
 
@@ -70,7 +70,7 @@ contract CollectNFTTest is BaseTest, LensBaseERC721Test {
         vm.label(collectNFTImpl, 'CollectNFTImpl');
 
         // Deploy & Whitelist MockCollectModule
-        mockCollectModule = address(new MockCollectModule());
+        mockCollectModule = address(new MockCollectModule(address(this)));
         collectPublicationAction.registerCollectModule(mockCollectModule);
 
         Types.PostParams memory postParams = _getDefaultPostParams();

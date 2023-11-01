@@ -23,6 +23,8 @@ contract MockCollectModule is MockModule, ICollectModule {
         return interfaceID == type(ICollectModule).interfaceId;
     }
 
+    constructor(address moduleOwner) MockModule(moduleOwner) {}
+
     /**
      * @dev There is nothing needed at initialization.
      */

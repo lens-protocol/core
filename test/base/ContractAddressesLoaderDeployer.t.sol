@@ -115,7 +115,7 @@ contract ContractAddressesLoaderDeployer is Test, ForkManagement {
         address predictedCollectNFTImpl = computeCreateAddress(deployer, deployerNonce + 1);
 
         vm.startPrank(deployer);
-        collectPublicationAction = new CollectPublicationAction(address(hub), predictedCollectNFTImpl);
+        collectPublicationAction = new CollectPublicationAction(address(hub), predictedCollectNFTImpl, address(this));
         collectNFTImpl = address(new CollectNFT(address(hub), address(collectPublicationAction)));
         vm.stopPrank();
 
@@ -141,7 +141,7 @@ contract ContractAddressesLoaderDeployer is Test, ForkManagement {
             console.log('Testing against already deployed module at:', feeFollowModule);
         } else {
             vm.prank(deployer);
-            feeFollowModule = address(new FeeFollowModule(address(hub), address(moduleRegistry)));
+            feeFollowModule = address(new FeeFollowModule(address(hub), address(moduleRegistry), address(this)));
         }
         return feeFollowModule;
     }
@@ -153,7 +153,7 @@ contract ContractAddressesLoaderDeployer is Test, ForkManagement {
             console.log('Testing against already deployed module at:', revertFollowModule);
         } else {
             vm.prank(deployer);
-            revertFollowModule = address(new RevertFollowModule());
+            revertFollowModule = address(new RevertFollowModule(address(this)));
         }
         return revertFollowModule;
     }
@@ -167,7 +167,9 @@ contract ContractAddressesLoaderDeployer is Test, ForkManagement {
             console.log('Testing against already deployed module at:', degreesOfSeparationReferenceModule);
         } else {
             vm.prank(deployer);
-            degreesOfSeparationReferenceModule = address(new DegreesOfSeparationReferenceModule(hubProxyAddr));
+            degreesOfSeparationReferenceModule = address(
+                new DegreesOfSeparationReferenceModule(hubProxyAddr, address(this))
+            );
         }
         return degreesOfSeparationReferenceModule;
     }
@@ -181,7 +183,7 @@ contract ContractAddressesLoaderDeployer is Test, ForkManagement {
             console.log('Testing against already deployed module at:', followerOnlyReferenceModule);
         } else {
             vm.prank(deployer);
-            followerOnlyReferenceModule = address(new FollowerOnlyReferenceModule(hubProxyAddr));
+            followerOnlyReferenceModule = address(new FollowerOnlyReferenceModule(hubProxyAddr, address(this)));
         }
         return followerOnlyReferenceModule;
     }
@@ -195,7 +197,7 @@ contract ContractAddressesLoaderDeployer is Test, ForkManagement {
             console.log('Testing against already deployed module at:', tokenGatedReferenceModule);
         } else {
             vm.prank(deployer);
-            tokenGatedReferenceModule = address(new TokenGatedReferenceModule(hubProxyAddr));
+            tokenGatedReferenceModule = address(new TokenGatedReferenceModule(hubProxyAddr, address(this)));
         }
         return tokenGatedReferenceModule;
     }

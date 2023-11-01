@@ -21,7 +21,7 @@ contract FollowerOnlyReferenceModule is LensModuleMetadata, HubRestricted, IRefe
         return interfaceID == type(IReferenceModule).interfaceId || super.supportsInterface(interfaceID);
     }
 
-    constructor(address hub) HubRestricted(hub) {}
+    constructor(address hub, address moduleOwner) HubRestricted(hub) LensModuleMetadata(moduleOwner) {}
 
     /**
      * @inheritdoc IReferenceModule

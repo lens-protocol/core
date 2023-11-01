@@ -46,7 +46,7 @@ contract CollectPublicationActionTest is BaseTest {
         collectPublicationAction = CollectPublicationAction(collectPublicationActionAddr);
 
         // Deploy & Whitelist MockCollectModule
-        mockCollectModule = address(new MockCollectModule());
+        mockCollectModule = address(new MockCollectModule(address(this)));
         collectPublicationAction.registerCollectModule(mockCollectModule);
     }
 
@@ -142,7 +142,7 @@ contract CollectPublicationActionTest is BaseTest {
 
     // Scenarios
     function testRegisterCollectModule() public {
-        address collectModule = address(new MockCollectModule());
+        address collectModule = address(new MockCollectModule(address(this)));
         assertFalse(
             collectPublicationAction.isCollectModuleRegistered(collectModule),
             'Collect module was already registered'

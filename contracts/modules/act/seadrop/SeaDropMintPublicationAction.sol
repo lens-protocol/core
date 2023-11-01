@@ -17,12 +17,12 @@ import {PublicDrop} from '@seadrop/lib/SeaDropStructs.sol';
 import {LensSeaDropCollection} from 'contracts/modules/act/seadrop/LensSeaDropCollection.sol';
 import {ILensHub} from 'contracts/interfaces/ILensHub.sol';
 
-import {LensModuleMetadata} from 'contracts/modules/LensModuleMetadata.sol';
+import {LensModuleMetadataInitializable} from 'contracts/modules/LensModuleMetadataInitializable.sol';
 
 /**
  * @custom:upgradeable Transparent upgradeable proxy without initializer.
  */
-contract SeaDropMintPublicationAction is LensModuleMetadata, HubRestricted, IPublicationActionModule {
+contract SeaDropMintPublicationAction is LensModuleMetadataInitializable, HubRestricted, IPublicationActionModule {
     function supportsInterface(bytes4 interfaceID) public pure override returns (bool) {
         return interfaceID == type(IPublicationActionModule).interfaceId || super.supportsInterface(interfaceID);
     }
@@ -60,7 +60,13 @@ contract SeaDropMintPublicationAction is LensModuleMetadata, HubRestricted, IPub
 
     address public lensSeaDropCollectionImpl;
 
-    constructor(address hub, address moduleRegistry, address seaDrop, address wmatic) HubRestricted(hub) {
+    constructor(
+        address hub,
+        address moduleRegistry,
+        address seaDrop,
+        address wmatic,
+        address moduleOwner
+    ) HubRestricted(hub) LensModuleMetadataInitializable(moduleOwner) {
         MODULE_REGISTRY = IModuleRegistry(moduleRegistry);
         MODULE_REGISTRY.registerErc20Currency(wmatic);
         WMATIC = IWMATIC(wmatic);

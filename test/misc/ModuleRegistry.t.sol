@@ -16,6 +16,11 @@ contract ModuleRegistryTest is BaseTest {
     bytes4 constant FOLLOW_MODULE_INTERFACE_ID = type(IFollowModule).interfaceId;
     bytes4 constant REFERENCE_MODULE_INTERFACE_ID = type(IReferenceModule).interfaceId;
 
+    function setUp() public override {
+        super.setUp();
+        moduleRegistry = new ModuleRegistry();
+    }
+
     function testCannotRegisterModule_IfDoesNotSupportLensModuleInterface() public {
         address module = makeAddr('module');
         uint256 moduleType = uint256(IModuleRegistry.ModuleType.PUBLICATION_ACTION_MODULE);
@@ -93,6 +98,8 @@ contract ModuleRegistryTest is BaseTest {
 
     function testRegisterModule_IfSupportsPublicationActionModule(address module) public {
         vm.assume(module != address(0));
+        vm.assume(!moduleRegistry.isModuleRegistered(module));
+
         uint256 moduleType = uint256(IModuleRegistry.ModuleType.PUBLICATION_ACTION_MODULE);
 
         _mockSupportsInterface(module, LENS_MODULE_INTERFACE_ID, true);

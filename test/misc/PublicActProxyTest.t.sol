@@ -56,7 +56,7 @@ contract PublicActProxyTest is BaseTest {
     }
 
     function testCanPublicFreeAct() public {
-        address mockCollectModule = address(new MockCollectModule());
+        address mockCollectModule = address(new MockCollectModule(address(this)));
         collectPublicationAction.registerCollectModule(mockCollectModule);
 
         Types.PostParams memory postParams = _getDefaultPostParams();
@@ -91,7 +91,12 @@ contract PublicActProxyTest is BaseTest {
     function testCanPublicCollect() public {
         vm.prank(deployer);
         address simpleFeeCollectModule = address(
-            new SimpleFeeCollectModule(address(hub), address(collectPublicationAction), address(moduleRegistry))
+            new SimpleFeeCollectModule(
+                address(hub),
+                address(collectPublicationAction),
+                address(moduleRegistry),
+                address(this)
+            )
         );
 
         collectPublicationAction.registerCollectModule(simpleFeeCollectModule);
@@ -142,7 +147,12 @@ contract PublicActProxyTest is BaseTest {
     function testCanPublicCollectWithSig() public {
         vm.prank(deployer);
         address simpleFeeCollectModule = address(
-            new SimpleFeeCollectModule(address(hub), address(collectPublicationAction), address(moduleRegistry))
+            new SimpleFeeCollectModule(
+                address(hub),
+                address(collectPublicationAction),
+                address(moduleRegistry),
+                address(this)
+            )
         );
 
         collectPublicationAction.registerCollectModule(simpleFeeCollectModule);

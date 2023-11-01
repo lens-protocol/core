@@ -18,6 +18,8 @@ contract MockDeprecatedCollectModule is MockModule, ILegacyCollectModule {
         // Prevents being counted in Foundry Coverage
     }
 
+    constructor(address moduleOwner) MockModule(moduleOwner) {}
+
     /**
      * @dev There is nothing needed at initialization.
      */

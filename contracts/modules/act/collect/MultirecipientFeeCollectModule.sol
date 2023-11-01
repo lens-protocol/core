@@ -9,6 +9,8 @@ import {IERC20} from '@openzeppelin/contracts/token/ERC20/IERC20.sol';
 import {SafeERC20} from '@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol';
 import {ICollectModule} from 'contracts/modules/interfaces/ICollectModule.sol';
 import {ModuleTypes} from 'contracts/modules/libraries/constants/ModuleTypes.sol';
+import {LensModuleMetadata} from 'contracts/modules/LensModuleMetadata.sol';
+import {LensModule} from 'contracts/modules/LensModule.sol';
 
 struct RecipientData {
     address recipient;
@@ -71,7 +73,7 @@ error RecipientSplitCannotBeZero();
  * splitting collect fee across multiple recipients, and whether only followers can collect.
  * It is charging a fee for collect and distributing it among (one or up to five) Receivers, Referral, Treasury.
  */
-contract MultirecipientFeeCollectModule is BaseFeeCollectModule {
+contract MultirecipientFeeCollectModule is BaseFeeCollectModule, LensModuleMetadata {
     using SafeERC20 for IERC20;
 
     mapping(uint256 => mapping(uint256 => RecipientData[])) internal _recipientsByPublicationByProfile;
@@ -79,8 +81,9 @@ contract MultirecipientFeeCollectModule is BaseFeeCollectModule {
     constructor(
         address hub,
         address actionModule,
-        address moduleRegistry
-    ) BaseFeeCollectModule(hub, actionModule, moduleRegistry) {}
+        address moduleRegistry,
+        address moduleOwner
+    ) BaseFeeCollectModule(hub, actionModule, moduleRegistry) LensModuleMetadata(moduleOwner) {}
 
     /**
      * @inheritdoc ICollectModule
@@ -208,5 +211,11 @@ contract MultirecipientFeeCollectModule is BaseFeeCollectModule {
                 endTimestamp: baseData.endTimestamp,
                 recipients: recipients
             });
+    }
+
+    function supportsInterface(
+        bytes4 interfaceID
+    ) public pure override(BaseFeeCollectModule, LensModule) returns (bool) {
+        return BaseFeeCollectModule.supportsInterface(interfaceID) || LensModule.supportsInterface(interfaceID);
     }
 }
