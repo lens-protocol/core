@@ -4,6 +4,8 @@ pragma solidity ^0.8.10;
 import {BaseFeeCollectModule} from 'contracts/modules/act/collect/base/BaseFeeCollectModule.sol';
 import {BaseFeeCollectModuleInitData, BaseProfilePublicationData} from 'contracts/modules/interfaces/IBaseFeeCollectModule.sol';
 import {ICollectModule} from 'contracts/modules/interfaces/ICollectModule.sol';
+import {LensModuleMetadata} from 'contracts/modules/LensModuleMetadata.sol';
+import {LensModule} from 'contracts/modules/LensModule.sol';
 
 /**
  * @title SimpleFeeCollectModule
@@ -15,13 +17,13 @@ import {ICollectModule} from 'contracts/modules/interfaces/ICollectModule.sol';
  * You can build your own collect modules by inheriting from BaseFeeCollectModule and adding your
  * functionality along with getPublicationData function.
  */
-contract SimpleFeeCollectModule is BaseFeeCollectModule {
+contract SimpleFeeCollectModule is BaseFeeCollectModule, LensModuleMetadata {
     constructor(
         address hub,
         address actionModule,
         address moduleRegistry,
         address moduleOwner
-    ) BaseFeeCollectModule(hub, actionModule, moduleRegistry, moduleOwner) {}
+    ) BaseFeeCollectModule(hub, actionModule, moduleRegistry) LensModuleMetadata(moduleOwner) {}
 
     /**
      * @inheritdoc ICollectModule
@@ -63,5 +65,11 @@ contract SimpleFeeCollectModule is BaseFeeCollectModule {
         uint256 pubId
     ) external view virtual returns (BaseProfilePublicationData memory) {
         return getBasePublicationData(profileId, pubId);
+    }
+
+    function supportsInterface(
+        bytes4 interfaceID
+    ) public pure override(BaseFeeCollectModule, LensModule) returns (bool) {
+        return BaseFeeCollectModule.supportsInterface(interfaceID) || LensModule.supportsInterface(interfaceID);
     }
 }
