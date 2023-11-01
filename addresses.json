@@ -85,8 +85,67 @@
           }
         ]
       },
-      "v2": {}
-    }
+      "v2": {
+        "follow": [
+          {
+            "name": "FeeFollowModule",
+            "addy": "0xa8f6ba162dB789039D07A4f0ce90b1aE1f46FE8E"
+          },
+          {
+            "name": "RevertFollowModule",
+            "addy": "0x4E2D0157464501C98E781491a9dbC99c2F3fD90f"
+          }
+        ],
+        "act": [
+          {
+            "name": "CollectPublicationAction",
+            "addy": "0x0D90C58cBe787CD70B5Effe94Ce58185D72143fB"
+          }
+        ],
+        "collect": [
+          {
+            "name": "SimpleFeeCollectModule",
+            "addy": "0x060f5448ae8aCF0Bc06D040400c6A89F45b488bb"
+          },
+          {
+            "name": "MultirecipientFeeCollectModule",
+            "addy": "0x50f1D8779078c790b82dE5Aa8d72A841e1CBBbE1"
+          }
+        ],
+        "reference": [
+          {
+            "name": "DegreesOfSeparationReferenceModule",
+            "addy": "0xBe69302b0E3bAc1018B2772A7B26EB2325b3F9C8"
+          },
+          {
+            "name": "FollowerOnlyReferenceModule",
+            "addy": "0x19F8980aF29207bbd7A6D0aD0858d59bd11d4647"
+          }
+        ]
+      }
+    },
+    "Treasury": "0x6b5d40412956b8546bA2210810C100219f7011B6",
+    "TreasuryFee": "0",
+    "LegacyCollectNFTImpl": "0x5886B1Db98a3f5AaFBDeE2DEC4783C6927655B7e",
+    "FollowNFTImpl": "0x01d27aB196e10469203B556e244100f6DCe3bAd6",
+    "LensHandlesImpl": "0xE2bee3d39BD1a4B19736265df6da8502fF936dCE",
+    "LensHandles": "0xe7E7EaD361f3AaCD73A61A9bD6C10cA17F38E945",
+    "TokenHandleRegistryImpl": "0x52fa68D73C83df39B9a637F82361d9b70aAb74F4",
+    "TokenHandleRegistry": "0xD4F2F33680FCCb36748FA9831851643781608844",
+    "ModuleRegistryImpl": "0xeD935AcE8f82FcAB4cae41F240c3a4aE51931313",
+    "ModuleRegistry": "0x1eD5983F0c883B96f7C35528a1e22EEA67DE3Ff9",
+    "LensHubV2Impl": "0xc37554Aa89B2A4Bbcdb8AD9b5528BddaD9DF4341",
+    "GovernanceContract": "0xB03B8801cF9D074Ea468aAA8eBd9B5EeD67Ac5B6",
+    "GovernanceContractAdmin": "0xf94b90BbEee30996019bABD12cEcdDCcf68331DE",
+    "ProxyAdminContract": "0x573FDF61727436a38ec6C5f6408B1F50cd69e015",
+    "ProxyAdminContractAdmin": "0xB7589cBf00623b09160aD5F6CA9536C66E0C2ebc",
+    "LensV2UpgradeContract": "0xd38c614AD4c09877F3a95Fef2FBf2781b4e9736D",
+    "ProfileCreationProxy": "0xdCB72aaB62d52aBC2E6be99BEEe535C2D1361fc0",
+    "PublicActProxy": "0x2390A8bd4a8B7599Fb5Fb4C7CF097c22a03BD33d",
+    "CollectNFT": "0x0c2a7761E2971D906338F5da1ecF0027E4247fd7",
+    "CollectPublicationActionImpl": "0xcA64D330019416aCdD3DC6C1d9d0019FEf6611E5",
+    "LitAccessControlImpl": "0x79dcA158B2A019EA2377f5989066a1ac0aC20e10",
+    "LitAccessControl": "0x98a6C31E43b158198da95Ef1242faCA868424187"
   },
   "testnet": {
     "chainId": 80001,
