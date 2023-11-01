@@ -89,7 +89,7 @@ abstract contract ReferralSystemTest is BaseTest {
     function setUp() public virtual override {
         super.setUp();
         mockDeprecatedReferenceModule = address(new MockDeprecatedReferenceModule());
-        mockDeprecatedCollectModule = address(new MockDeprecatedCollectModule());
+        mockDeprecatedCollectModule = address(new MockDeprecatedCollectModule(address(this)));
     }
 
     struct Tree {

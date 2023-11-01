@@ -26,7 +26,7 @@ contract LensHubEventHooksTest is BaseTest {
         assertTrue(hub.isFollowing(follower.profileId, defaultAccount.profileId));
 
         /// Collect preparation:
-        MockDeprecatedCollectModule mockDeprecatedCollectModule = new MockDeprecatedCollectModule();
+        MockDeprecatedCollectModule mockDeprecatedCollectModule = new MockDeprecatedCollectModule(address(this));
 
         // Create a V1 pub
         vm.prank(defaultAccount.owner);

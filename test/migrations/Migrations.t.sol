@@ -638,8 +638,7 @@ contract MigrationsTestNonFork is BaseTest {
             tokenHandleRegistryAddress: makeAddr('tokenHandleRegistryAddress'),
             legacyFeeFollowModule: legacyFeeFollowModule,
             legacyProfileFollowModule: makeAddr('legacyProfileFollowModule'),
-            newFeeFollowModule: newFeeFollowModule,
-            migrationAdmin: makeAddr('migrationAdmin')
+            newFeeFollowModule: newFeeFollowModule
         });
         LensV2Migration migration = new LensV2Migration(migrationParams);
 
@@ -676,8 +675,7 @@ contract MigrationsTestNonFork is BaseTest {
             tokenHandleRegistryAddress: makeAddr('tokenHandleRegistryAddress'),
             legacyFeeFollowModule: makeAddr('legacyFeeFollowModule'),
             legacyProfileFollowModule: legacyProfileFollowModule,
-            newFeeFollowModule: makeAddr('newFeeFollowModule'),
-            migrationAdmin: makeAddr('migrationAdmin')
+            newFeeFollowModule: makeAddr('newFeeFollowModule')
         });
         LensV2Migration migration = new LensV2Migration(migrationParams);
 

@@ -10,13 +10,11 @@ import {MockModule} from 'test/mocks/MockModule.sol';
  * @dev This is a simple mock follow module to be used for testing.
  */
 contract MockReferenceModule is MockModule, IReferenceModule {
-    function supportsInterface(bytes4 interfaceID) public pure override returns (bool) {
-        return interfaceID == type(IReferenceModule).interfaceId || super.supportsInterface(interfaceID);
-    }
-
     function testMockReferenceModule() public {
         // Prevents being counted in Foundry Coverage
     }
+
+    constructor(address moduleOwner) MockModule(moduleOwner) {}
 
     function initializeReferenceModule(
         uint256,
@@ -43,5 +41,9 @@ contract MockReferenceModule is MockModule, IReferenceModule {
         Types.ProcessMirrorParams calldata processMirrorParams
     ) external pure override returns (bytes memory) {
         return _decodeFlagAndRevertIfFalse(processMirrorParams.data);
+    }
+
+    function supportsInterface(bytes4 interfaceID) public pure override returns (bool) {
+        return interfaceID == type(IReferenceModule).interfaceId || super.supportsInterface(interfaceID);
     }
 }

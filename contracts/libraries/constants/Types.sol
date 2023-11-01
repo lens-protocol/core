@@ -411,6 +411,5 @@ library Types {
         address legacyFeeFollowModule;
         address legacyProfileFollowModule;
         address newFeeFollowModule;
-        address migrationAdmin;
     }
 }

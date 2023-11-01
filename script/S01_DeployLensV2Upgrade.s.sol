@@ -21,7 +21,7 @@ import {LegacyCollectNFT} from 'contracts/misc/LegacyCollectNFT.sol';
 
 import {ArrayHelpers} from 'script/helpers/ArrayHelpers.sol';
 
-contract A_DeployLensV2Upgrade is Script, ForkManagement, ArrayHelpers {
+contract S01_DeployLensV2Upgrade is Script, ForkManagement, ArrayHelpers {
     // add this to be excluded from coverage report
     function testLensV2UpgradeDeployment() public {}
 
@@ -70,7 +70,6 @@ contract A_DeployLensV2Upgrade is Script, ForkManagement, ArrayHelpers {
     address treasury;
     address governance;
     address proxyAdmin;
-    address migrationAdmin;
     address lensHandlesOwner;
 
     uint16 treasuryFee;
@@ -163,13 +162,6 @@ contract A_DeployLensV2Upgrade is Script, ForkManagement, ArrayHelpers {
         );
         console.log('HANDLE_GUARDIAN_COOLDOWN: %s', HANDLE_GUARDIAN_COOLDOWN);
 
-        migrationAdmin = proxyAdmin;
-        // TODO: change this to the real migration admin
-        // json.readAddress(string(abi.encodePacked('.', targetEnv, '.MigrationAdmin')));
-        vm.label(migrationAdmin, 'MigrationAdmin');
-        console.log('Migration Admin: %s', migrationAdmin);
-
-        // TODO: Who should be the owner of LensHandles? Setting it for LensHub governance
         lensHandlesOwner = legacyLensHub.getGovernance();
         vm.label(lensHandlesOwner, 'LensHandlesOwner');
         console.log('LensHandlesOwner: %s', lensHandlesOwner);
@@ -276,13 +268,16 @@ contract A_DeployLensV2Upgrade is Script, ForkManagement, ArrayHelpers {
 
         console.log('PROFILE_GUARDIAN_COOLDOWN: %s', PROFILE_GUARDIAN_COOLDOWN);
 
+        if (governance != address(0)) {
+            console.log('Governance is set');
+            revert('Governance is not set');
+        }
+
         // Deploy new FeeFollowModule(hub, moduleRegistry)
-        feeFollowModule = address(new FeeFollowModule(lensHub, moduleRegistry));
+        feeFollowModule = address(new FeeFollowModule(lensHub, moduleRegistry, governance));
         vm.writeLine(addressesFile, string.concat('FeeFollowModule: ', vm.toString(feeFollowModule)));
         saveModule('FeeFollowModule', address(feeFollowModule), 'v2', 'follow');
         console.log('FeeFollowModule: %s', feeFollowModule);
-
-        saveContractAddress('migrationAdmin', migrationAdmin);
 
         // Pass all the fucking shit and deploy LensHub V2 Impl with:
         lensHubV2Impl = address(
@@ -296,8 +291,7 @@ contract A_DeployLensV2Upgrade is Script, ForkManagement, ArrayHelpers {
                     tokenHandleRegistryAddress: tokenHandleRegistry,
                     legacyFeeFollowModule: legacyFeeFollowModule,
                     legacyProfileFollowModule: legacyProfileFollowModule,
-                    newFeeFollowModule: feeFollowModule,
-                    migrationAdmin: migrationAdmin
+                    newFeeFollowModule: feeFollowModule
                 })
             )
         );
@@ -327,8 +321,6 @@ contract A_DeployLensV2Upgrade is Script, ForkManagement, ArrayHelpers {
                 vm.toString(legacyProfileFollowModule),
                 ', ',
                 vm.toString(feeFollowModule),
-                ', ',
-                vm.toString(migrationAdmin),
                 ')'
             )
         );

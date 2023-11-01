@@ -10,7 +10,7 @@ contract SetFollowModuleTest is BaseTest {
 
     function setUp() public virtual override(BaseTest) {
         BaseTest.setUp();
-        mockFollowModule = address(new MockFollowModule());
+        mockFollowModule = address(new MockFollowModule(address(this)));
     }
 
     // Negatives
@@ -94,7 +94,7 @@ contract SetFollowModuleTest is BaseTest {
             approvals: _toBoolArray(true)
         });
 
-        mockFollowModule = address(new MockFollowModule());
+        mockFollowModule = address(new MockFollowModule(address(this)));
 
         _setFollowModule({
             pk: delegatedExecutorPk,

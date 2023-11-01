@@ -14,6 +14,8 @@ import {LensModuleMetadata} from 'contracts/modules/LensModuleMetadata.sol';
  * @notice This follow module rejects all follow attempts.
  */
 contract RevertFollowModule is LensModuleMetadata, IFollowModule {
+    constructor(address moduleOwner) LensModuleMetadata(moduleOwner) {}
+
     function supportsInterface(bytes4 interfaceID) public pure override returns (bool) {
         return interfaceID == type(IFollowModule).interfaceId || super.supportsInterface(interfaceID);
     }

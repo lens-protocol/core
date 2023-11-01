@@ -31,7 +31,8 @@ contract MultirecipientCollectModuleBase is BaseFeeCollectModuleBase {
             multirecipientFeeCollectModule = new MultirecipientFeeCollectModule(
                 hubProxyAddr,
                 collectPublicationAction,
-                address(moduleRegistry)
+                address(moduleRegistry),
+                address(this)
             );
         }
         baseFeeCollectModule = address(multirecipientFeeCollectModule);

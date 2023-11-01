@@ -12,7 +12,7 @@ import {Errors} from 'contracts/modules/constants/Errors.sol';
 import {HubRestricted} from 'contracts/base/HubRestricted.sol';
 import {ILensModule} from 'contracts/modules/interfaces/ILensModule.sol';
 
-import {LensModuleMetadata} from 'contracts/modules/LensModuleMetadata.sol';
+import {LensModuleMetadataInitializable} from 'contracts/modules/LensModuleMetadataInitializable.sol';
 
 /**
  * @title CollectPublicationAction
@@ -20,7 +20,7 @@ import {LensModuleMetadata} from 'contracts/modules/LensModuleMetadata.sol';
  * @notice An Publication Action module that allows users to collect publications.
  * @custom:upgradeable Transparent upgradeable proxy without initializer.
  */
-contract CollectPublicationAction is LensModuleMetadata, HubRestricted, IPublicationActionModule {
+contract CollectPublicationAction is LensModuleMetadataInitializable, HubRestricted, IPublicationActionModule {
     function supportsInterface(bytes4 interfaceID) public pure override returns (bool) {
         return interfaceID == type(IPublicationActionModule).interfaceId || super.supportsInterface(interfaceID);
     }
@@ -82,7 +82,11 @@ contract CollectPublicationAction is LensModuleMetadata, HubRestricted, IPublica
     mapping(address collectModule => bool isWhitelisted) internal _collectModuleRegistered;
     mapping(uint256 profileId => mapping(uint256 pubId => CollectData collectData)) internal _collectDataByPub;
 
-    constructor(address hub, address collectNFTImpl) HubRestricted(hub) {
+    constructor(
+        address hub,
+        address collectNFTImpl,
+        address moduleOwner
+    ) HubRestricted(hub) LensModuleMetadataInitializable(moduleOwner) {
         COLLECT_NFT_IMPL = collectNFTImpl;
     }
 
