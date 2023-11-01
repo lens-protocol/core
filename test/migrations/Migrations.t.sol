@@ -394,6 +394,8 @@ contract MigrationsTestHardcoded is BaseTest {
 }
 
 contract MigrationsTestNonFork is BaseTest {
+    using stdStorage for StdStorage;
+
     address followerProfileOwner;
     uint256 followerProfileId;
 
@@ -549,6 +551,49 @@ contract MigrationsTestNonFork is BaseTest {
         hub.batchMigrateFollowers(followerProfileIds, idOfProfileFollowed, followTokenIds);
     }
 
+    function testCannotTryMigrate_IfAlreadyMigrated() public notFork {
+        uint96 originalMintTimestamp = 420;
+        _mockTokenData(followTokenId, originalMintTimestamp, followerProfileOwner, address(followNFT));
+
+        vm.prank(address(hub));
+        uint48 mintTimestamp = followNFT.tryMigrate(followerProfileId, followerProfileOwner, followTokenId);
+        assertEq(mintTimestamp, uint48(originalMintTimestamp));
+
+        vm.prank(address(hub));
+        mintTimestamp = followNFT.tryMigrate(followerProfileId, followerProfileOwner, followTokenId);
+        assertEq(mintTimestamp, uint48(0));
+    }
+
+    function testCannotTryMigrate_IfAlreadyFollowing() public notFork {
+        stdstore.target(address(followNFT)).sig('getFollowTokenId(uint256)').with_key(followerProfileId).checked_write(
+            followTokenId
+        );
+
+        vm.prank(address(hub));
+        uint48 mintTimestamp = followNFT.tryMigrate(followerProfileId, followerProfileOwner, followTokenId);
+        assertEq(mintTimestamp, uint48(0));
+    }
+
+    function testCannotTryMigrate_IfFollowTokenIdDoesNotExist() public notFork {
+        uint256 fakeFollowTokenId = 666;
+
+        vm.prank(address(hub));
+        uint48 mintTimestamp = followNFT.tryMigrate(followerProfileId, followerProfileOwner, fakeFollowTokenId);
+        assertEq(mintTimestamp, uint48(0));
+    }
+
+    function testCannotTryMigrate_IfNotHoldingProfileNFT() public notFork {
+        address otherOwner = makeAddr('otherOwner');
+
+        uint96 originalMintTimestamp = 420;
+        _mockTokenData(followTokenId, originalMintTimestamp, followerProfileOwner, address(followNFT));
+
+        vm.prank(address(hub));
+        uint48 mintTimestamp = followNFT.tryMigrate(followerProfileId, otherOwner, followTokenId);
+
+        assertEq(mintTimestamp, uint48(0));
+    }
+
     function testSetMigrationAdmins() public notFork {
         address newAdmin = makeAddr('newAdmin');
         vm.prank(governance);
@@ -690,9 +735,30 @@ contract MigrationsTestNonFork is BaseTest {
         assertEq(updatedFollowModule, address(0));
     }
 
-    function _mockTokenOwner(uint256 profileId, address owner) internal {
-        bytes32 profileOwnerSlot = keccak256(abi.encode(profileId, StorageLib.TOKEN_DATA_MAPPING_SLOT));
-        vm.store(address(hub), profileOwnerSlot, bytes32(uint256(uint160(owner))));
+    function testTryMigrate_FollowNFT() public notFork {
+        uint96 originalMintTimestamp = 420;
+        _mockTokenData(followTokenId, originalMintTimestamp, followerProfileOwner, address(followNFT));
+
+        vm.prank(address(hub));
+        uint48 mintTimestamp = followNFT.tryMigrate(followerProfileId, followerProfileOwner, followTokenId);
+
+        assertEq(mintTimestamp, uint48(originalMintTimestamp));
+        assertTrue(followNFT.isFollowing(followerProfileId));
+    }
+
+    function _mockTokenOwner(uint256 tokenId, address owner) internal {
+        _mockTokenOwner(tokenId, owner, address(hub));
+    }
+
+    function _mockTokenOwner(uint256 tokenId, address owner, address storageContract) internal {
+        bytes32 ownerSlot = keccak256(abi.encode(tokenId, StorageLib.TOKEN_DATA_MAPPING_SLOT));
+        vm.store(storageContract, ownerSlot, bytes32(uint256(uint160(owner))));
+    }
+
+    function _mockTokenData(uint256 tokenId, uint96 mintTimestamp, address owner, address storageContract) internal {
+        bytes memory data = abi.encodePacked(mintTimestamp, owner);
+        bytes32 ownerSlot = keccak256(abi.encode(tokenId, StorageLib.TOKEN_DATA_MAPPING_SLOT));
+        vm.store(storageContract, ownerSlot, bytes32(data));
     }
 
     function _mockProfileDeprecatedHandle(uint256 profileId, string memory handle) internal {
