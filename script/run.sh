@@ -77,6 +77,12 @@ if [[ "$CONFIRMATION" == "y" || "$CONFIRMATION" == "Y" ]]
                         NETWORK="maticMumbai"
                 fi
 
+                # If $NETWORK is "polygon" change it to "matic" for catapulta
+                if [[ "$NETWORK" == "polygon" ]]
+                    then
+                        NETWORK="matic"
+                fi
+
                 catapulta script script/$SCRIPT_NAME.s.sol --chain $NETWORK -s $CALLDATA --legacy --skip test --ffi --slow --skip-git
                 exit 0
             else

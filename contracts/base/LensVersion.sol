@@ -9,7 +9,7 @@ import {TransparentUpgradeableProxy} from '@openzeppelin/contracts/proxy/transpa
 contract LensVersion is ILensVersion {
     string internal constant version = '2.0.0';
 
-    bytes20 internal constant gitCommit = hex'03c5a06d284470dd897bd8e83eb87404224cce03';
+    bytes20 internal constant gitCommit = hex'cec4cfdb37282c0c0aba7fce36e167b836fe357d';
 
     event LensUpgradeVersion(address implementation, string version, bytes20 gitCommit, uint256 timestamp);
 

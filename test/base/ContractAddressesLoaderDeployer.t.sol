@@ -14,9 +14,23 @@ import {TokenGatedReferenceModule} from 'contracts/modules/reference/TokenGatedR
 import {Governance} from 'contracts/misc/access/Governance.sol';
 import {ProxyAdmin} from 'contracts/misc/access/ProxyAdmin.sol';
 import {ModuleRegistry} from 'contracts/misc/ModuleRegistry.sol';
+import {LibString} from 'solady/utils/LibString.sol';
 
 contract ContractAddressesLoaderDeployer is Test, ForkManagement {
     using stdJson for string;
+
+    // TODO: Move this to helpers somewhere
+    function findModuleHelper(
+        Module[] memory modules,
+        string memory moduleNameToFind
+    ) internal pure returns (Module memory) {
+        for (uint256 i = 0; i < modules.length; i++) {
+            if (LibString.eq(modules[i].name, moduleNameToFind)) {
+                return modules[i];
+            }
+        }
+        revert('Module not found');
+    }
 
     // add this to be excluded from coverage report
     function testContractAddressesLoaderDeployer() public {}
@@ -89,22 +103,28 @@ contract ContractAddressesLoaderDeployer is Test, ForkManagement {
         CollectPublicationAction collectPublicationAction;
 
         // Deploy CollectPublicationAction
-        if (fork && keyExists(json, string(abi.encodePacked('.', forkEnv, '.CollectNFTImpl')))) {
-            collectNFTImpl = json.readAddress(string(abi.encodePacked('.', forkEnv, '.CollectNFTImpl')));
-            console.log('Found CollectNFTImpl deployed at:', address(collectNFTImpl));
+        if (fork && keyExists(json, string(abi.encodePacked('.', forkEnv, '.CollectNFT')))) {
+            collectNFTImpl = json.readAddress(string(abi.encodePacked('.', forkEnv, '.CollectNFT')));
+            console.log('Found CollectNFT deployed at:', address(collectNFTImpl));
         }
 
-        if (fork && keyExists(json, string(abi.encodePacked('.', forkEnv, '.CollectPublicationAction')))) {
-            collectPublicationAction = CollectPublicationAction(
-                json.readAddress(string(abi.encodePacked('.', forkEnv, '.CollectPublicationAction')))
+        if (fork) {
+            Module[] memory actModules = abi.decode(
+                vm.parseJson(json, string(abi.encodePacked('.', forkEnv, '.Modules.v2.act'))),
+                (Module[])
             );
-            console.log('Found collectPublicationAction deployed at:', address(collectPublicationAction));
+            if (actModules.length != 0) {
+                collectPublicationAction = CollectPublicationAction(
+                    findModuleHelper(actModules, 'CollectPublicationAction').addy
+                );
+                console.log('Found collectPublicationAction deployed at:', address(collectPublicationAction));
+            }
         }
 
         // Both deployed - need to verify if they are linked
         if (collectNFTImpl != address(0) && address(collectPublicationAction) != address(0)) {
             if (CollectNFT(collectNFTImpl).ACTION_MODULE() == address(collectPublicationAction)) {
-                console.log('CollectNFTImpl and CollectPublicationAction already deployed and linked');
+                console.log('CollectNFT and CollectPublicationAction already deployed and linked');
                 return (collectNFTImpl, address(collectPublicationAction));
             }
         }

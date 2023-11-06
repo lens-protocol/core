@@ -31,7 +31,7 @@ import {LibString} from 'solady/utils/LibString.sol';
 
 import {ArrayHelpers} from 'script/helpers/ArrayHelpers.sol';
 
-contract B_DeployLensV2Periphery is Script, ForkManagement, ArrayHelpers {
+contract S02_DeployLensV2Periphery is Script, ForkManagement, ArrayHelpers {
     // add this to be excluded from coverage report
     function testLensV2DeployPeriphery() public {}
 

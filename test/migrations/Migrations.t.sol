@@ -771,12 +771,12 @@ contract MigrationsTestNonFork is BaseTest {
         vm.store(address(hub), handleSlot, bytes32Handle);
     }
 
-    function _getFollowModule(uint256 profileId, address storageContract) internal returns (address) {
+    function _getFollowModule(uint256 profileId, address storageContract) internal view returns (address) {
         bytes32 followModuleSlot = _getFollowModuleSlot(profileId);
         return address(uint160(uint256(vm.load(address(storageContract), followModuleSlot))));
     }
 
-    function _getFollowModuleSlot(uint256 profileId) internal returns (bytes32) {
+    function _getFollowModuleSlot(uint256 profileId) internal pure returns (bytes32) {
         bytes32 profileSlot = keccak256(abi.encode(profileId, StorageLib.PROFILES_MAPPING_SLOT));
 
         uint256 followModuleOffset = 1;
@@ -801,7 +801,7 @@ contract MigrationsTestNonFork is BaseTest {
         vm.store(address(hub), followNFTSlot, bytes32(uint256(uint160(followNFTAddress))));
     }
 
-    function _shortStringToBytes32Storage(string memory str) internal returns (bytes32) {
+    function _shortStringToBytes32Storage(string memory str) internal pure returns (bytes32) {
         uint256 length = bytes(str).length;
         require(length < 32, 'Storing storage strings supported up to 31 bytes');
         return bytes32(abi.encodePacked(str)) | bytes32(length * 2);

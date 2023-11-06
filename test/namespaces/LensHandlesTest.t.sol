@@ -568,7 +568,7 @@ contract LensHandlesTest is TokenGuardianTest_Default_Off {
         uint256 basisPoints = 10000;
         vm.assume(royaltiesInBasisPoints > basisPoints);
 
-        vm.prank(governance);
+        vm.prank(lensHandles.OWNER());
         vm.expectRevert(Errors.InvalidParameter.selector);
         lensHandles.setRoyalty(royaltiesInBasisPoints);
     }

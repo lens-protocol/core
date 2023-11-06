@@ -178,13 +178,21 @@ contract S06_InteractWithLensV2 is Script, ForkManagement, ArrayHelpers {
         address governanceContractAdmin = json.readAddress(
             string(abi.encodePacked('.', targetEnv, '.GovernanceContractAdmin'))
         );
-        if (governance.owner != governanceContractAdmin) {
-            console.log(
-                'Mock Governance %s != Governance contract admin %s',
-                governance.owner,
-                governanceContractAdmin
-            );
-            revert();
+
+        if (isEnvSet('DEPLOYMENT_ENVIRONMENT')) {
+            if (!LibString.eq(vm.envString('DEPLOYMENT_ENVIRONMENT'), 'production')) {
+                console.log('DEPLOYMENT_ENVIRONMENT is not production');
+                revert();
+            }
+        } else {
+            if (governance.owner != governanceContractAdmin) {
+                console.log(
+                    'Mock Governance %s != Governance contract admin %s',
+                    governance.owner,
+                    governanceContractAdmin
+                );
+                revert();
+            }
         }
 
         profileCreator = json.readAddress(string(abi.encodePacked('.', targetEnv, '.ProfileCreator')));
@@ -260,6 +268,7 @@ contract S06_InteractWithLensV2 is Script, ForkManagement, ArrayHelpers {
         });
         vm.stopBroadcast();
 
+        // TODO: Replace this with a true governance for a fork from production
         vm.startBroadcast(governance.ownerPk);
         governanceContract.lensHub_whitelistProfileCreator(address(temporarilyCreationProxy), true);
         vm.stopBroadcast();
@@ -440,6 +449,7 @@ contract S06_InteractWithLensV2 is Script, ForkManagement, ArrayHelpers {
 
         vm.stopBroadcast();
 
+        // TODO: Replace this with a true governance for a fork from production
         vm.startBroadcast(governance.ownerPk);
         governanceContract.lensHub_whitelistProfileCreator(address(temporarilyCreationProxy), false);
         vm.stopBroadcast();

@@ -20,7 +20,7 @@ contract TokenHandleRegistryTest is BaseTest {
 
         profileId = _createProfile(initialProfileHolder);
 
-        vm.prank(governance);
+        vm.prank(lensHandles.OWNER());
         handleId = lensHandles.mintHandle(initialHandleHolder, 'handle');
     }
 
@@ -803,7 +803,7 @@ abstract contract TokenHandleRegistryMetaTxBaseTest is BaseTest, MetaTxNegatives
         holder = vm.addr(holderPk);
         profileId = _createProfile(holder);
 
-        vm.prank(governance);
+        vm.prank(lensHandles.OWNER());
         handleId = lensHandles.mintHandle(holder, 'handle');
 
         domainSeparator = keccak256(
@@ -822,23 +822,23 @@ abstract contract TokenHandleRegistryMetaTxBaseTest is BaseTest, MetaTxNegatives
         tokenHandleRegistry.incrementNonce(increment);
     }
 
-    function _getDefaultMetaTxSignerPk() internal override returns (uint256) {
+    function _getDefaultMetaTxSignerPk() internal pure override returns (uint256) {
         return holderPk;
     }
 
-    function _getMetaTxNonce(address signer) internal override returns (uint256) {
+    function _getMetaTxNonce(address signer) internal view override returns (uint256) {
         return tokenHandleRegistry.nonces(signer);
     }
 
-    function _getDomainName() internal override returns (bytes memory) {
+    function _getDomainName() internal pure override returns (bytes memory) {
         return bytes('TokenHandleRegistry');
     }
 
-    function _getRevisionNumber() internal override returns (bytes memory) {
+    function _getRevisionNumber() internal pure override returns (bytes memory) {
         return bytes('1');
     }
 
-    function _getVerifyingContract() internal override returns (address) {
+    function _getVerifyingContract() internal view override returns (address) {
         return address(tokenHandleRegistry);
     }
 }

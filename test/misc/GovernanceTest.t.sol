@@ -397,7 +397,7 @@ contract GovernanceTest is BaseTest {
         );
     }
 
-    function _maxTreasuryFee() internal returns (uint16) {
+    function _maxTreasuryFee() internal pure returns (uint16) {
         uint16 BPS_MAX = 10000;
         return BPS_MAX / 2 - 1;
     }

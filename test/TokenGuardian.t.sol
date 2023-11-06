@@ -607,7 +607,7 @@ abstract contract TokenGuardianTest_Default_Off is ERC721Test {
 
     ////////////////// Negatives
 
-    function testCannot_DisableGuardian_MultipleTimes(uint256 elapsedTimeAfterDisabling) public {
+    function testCannot_DisableGuardian_MultipleTimes() public {
         vm.expectRevert(Errors.DisablingAlreadyTriggered.selector);
         vm.prank(defaultAccount.owner);
         _guardedToken().DANGER__disableTokenGuardian();

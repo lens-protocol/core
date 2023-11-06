@@ -17,8 +17,8 @@ import {MetaTxLib} from 'contracts/libraries/MetaTxLib.sol';
 contract PublicActProxy {
     using SafeERC20 for IERC20;
 
-    ILensHub immutable HUB;
-    CollectPublicationAction immutable COLLECT_PUBLICATION_ACTION;
+    ILensHub public immutable HUB;
+    CollectPublicationAction public immutable COLLECT_PUBLICATION_ACTION;
 
     uint[9] private __gap;
     mapping(address => uint256) private _nonces; // Slot 10 - to match with MetaTxLib/StorageLib
