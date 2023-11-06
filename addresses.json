@@ -141,9 +141,9 @@
     "ProxyAdminContractAdmin": "0xB7589cBf00623b09160aD5F6CA9536C66E0C2ebc",
     "LensV2UpgradeContract": "0xd38c614AD4c09877F3a95Fef2FBf2781b4e9736D",
     "ProfileCreationProxy": "0xdCB72aaB62d52aBC2E6be99BEEe535C2D1361fc0",
-    "PublicActProxy": "0x2390A8bd4a8B7599Fb5Fb4C7CF097c22a03BD33d",
+    "PublicActProxy": "0x53582b1b7BE71622E7386D736b6baf87749B7a2B",
     "CollectNFT": "0x0c2a7761E2971D906338F5da1ecF0027E4247fd7",
-    "CollectPublicationActionImpl": "0xcA64D330019416aCdD3DC6C1d9d0019FEf6611E5",
+    "CollectPublicationActionImpl": "0xcc3f120f3d3bf860b910b228d2114f474b382c1d",
     "LitAccessControlImpl": "0x79dcA158B2A019EA2377f5989066a1ac0aC20e10",
     "LitAccessControl": "0x98a6C31E43b158198da95Ef1242faCA868424187"
   },
