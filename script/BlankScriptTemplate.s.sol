@@ -4,7 +4,7 @@ pragma solidity ^0.8.13;
 import {ForkManagement} from 'script/helpers/ForkManagement.sol';
 import 'forge-std/Script.sol';
 
-contract RedeployCollectActionModule is Script, ForkManagement {
+contract BlankScriptTemplate is Script, ForkManagement {
     using stdJson for string;
 
     struct LensAccount {
