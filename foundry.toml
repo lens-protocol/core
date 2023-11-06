@@ -37,9 +37,12 @@ max_test_rejects = 200000
 
 [profile.cibuild]
 via_ir = true
+libraries = []
 
 [profile.citest]
 via_ir = false
 ignored_error_codes = ["license", "code-size"]
+libraries = []
+
 [profile.citest.fuzz]
 runs = 100
