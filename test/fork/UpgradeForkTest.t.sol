@@ -85,18 +85,6 @@ contract UpgradeForkTest is BaseTest {
         freeCollectModule = findModuleHelper(collectModules, 'FreeCollectModule').addy;
     }
 
-    function findModuleHelper(
-        Module[] memory modules,
-        string memory moduleNameToFind
-    ) internal pure returns (Module memory) {
-        for (uint256 i = 0; i < modules.length; i++) {
-            if (LibString.eq(modules[i].name, moduleNameToFind)) {
-                return modules[i];
-            }
-        }
-        revert('Module not found');
-    }
-
     function upgradeToV2() internal override {
         // We override the upgrade function to upgrade manually within the test
     }

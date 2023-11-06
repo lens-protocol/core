@@ -20,7 +20,7 @@ contract TokenHandleRegistryTest is BaseTest {
 
         profileId = _createProfile(initialProfileHolder);
 
-        vm.prank(governance);
+        vm.prank(lensHandles.OWNER());
         handleId = lensHandles.mintHandle(initialHandleHolder, 'handle');
     }
 
@@ -803,7 +803,7 @@ abstract contract TokenHandleRegistryMetaTxBaseTest is BaseTest, MetaTxNegatives
         holder = vm.addr(holderPk);
         profileId = _createProfile(holder);
 
-        vm.prank(governance);
+        vm.prank(lensHandles.OWNER());
         handleId = lensHandles.mintHandle(holder, 'handle');
 
         domainSeparator = keccak256(
