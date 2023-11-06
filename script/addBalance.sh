@@ -4,3 +4,5 @@
 ADDRESS=$1
 
 cast rpc --rpc-url mumbai tenderly_addBalance "[[\"$ADDRESS\"], \"0x8AC7230489E80000\"]" --raw
+
+# cast rpc --rpc-url polygon anvil_autoImpersonateAccount "[true]" --raw
