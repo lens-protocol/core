@@ -249,12 +249,12 @@ contract LensHandlesTest is TokenGuardianTest_Default_Off {
 
     function testName() public {
         string memory name = lensHandles.name();
-        assertEq(name, 'lens Handles');
+        assertEq(name, 'Lens Handles');
     }
 
     function testSymbol() public {
         string memory symbol = lensHandles.symbol();
-        assertEq(symbol, 'lens');
+        assertEq(symbol, 'LH');
     }
 
     function testExists(uint256 number) public {
@@ -369,7 +369,7 @@ contract LensHandlesTest is TokenGuardianTest_Default_Off {
             assertEq(decodedTokenURI.readString('.name'), string.concat('@', handle));
             assertEq(decodedTokenURI.readString('.description'), string.concat('Lens Protocol - Handle @', handle));
             assertEq(decodedTokenURI.readUint('.attributes[0].value'), handleId);
-            assertEq(decodedTokenURI.readString('.attributes[1].value'), lensHandles.symbol());
+            assertEq(decodedTokenURI.readString('.attributes[1].value'), lensHandles.getNamespace());
             assertEq(decodedTokenURI.readUint('.attributes[2].value'), bytes(handle).length);
         }
     }
