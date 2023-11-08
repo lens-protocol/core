@@ -74,11 +74,11 @@ contract LensHandles is ERC721, ERC2981CollectionRoyalties, ImmutableOwnable, IL
     }
 
     function name() public pure override returns (string memory) {
-        return string.concat(symbol(), ' Handles');
+        return 'Lens Handles';
     }
 
     function symbol() public pure override returns (string memory) {
-        return string.concat(NAMESPACE);
+        return 'LH';
     }
 
     function totalSupply() external view virtual override returns (uint256) {
