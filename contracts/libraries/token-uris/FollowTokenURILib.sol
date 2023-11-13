@@ -4,7 +4,7 @@ pragma solidity ^0.8.15;
 
 import {Base64} from '@openzeppelin/contracts/utils/Base64.sol';
 import {Strings} from '@openzeppelin/contracts/utils/Strings.sol';
-import {ImageTokenURILib} from 'contracts/libraries/token-uris/ImageTokenURILib.sol';
+import {FollowSVG} from 'contracts/libraries/token-uris/images/Follow/FollowSVG.sol';
 
 library FollowTokenURILib {
     using Strings for uint96;
@@ -30,7 +30,7 @@ library FollowTokenURILib {
                             ' of Profile #',
                             followedProfileIdAsString,
                             '","image":"data:image/svg+xml;base64,',
-                            ImageTokenURILib.getSVGImageBase64Encoded(),
+                            Base64.encode(bytes(FollowSVG.getFollowSVG(followTokenId))),
                             '","attributes":[{"display_type": "number", "trait_type":"ID","value":"',
                             followTokenIdAsString,
                             '"},{"trait_type":"DIGITS","value":"',

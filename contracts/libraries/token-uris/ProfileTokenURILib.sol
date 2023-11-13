@@ -4,8 +4,8 @@ pragma solidity ^0.8.15;
 
 import {Base64} from '@openzeppelin/contracts/utils/Base64.sol';
 import {Strings} from '@openzeppelin/contracts/utils/Strings.sol';
-import {ImageTokenURILib} from 'contracts/libraries/token-uris/ImageTokenURILib.sol';
 import {StorageLib} from 'contracts/libraries/StorageLib.sol';
+import {ProfileSVG} from 'contracts/libraries/token-uris/images/Profile/ProfileSVG.sol';
 
 library ProfileTokenURILib {
     using Strings for uint96;
@@ -24,7 +24,7 @@ library ProfileTokenURILib {
                             '","description":"Lens Protocol - Profile #',
                             profileIdAsString,
                             '","image":"data:image/svg+xml;base64,',
-                            ImageTokenURILib.getSVGImageBase64Encoded(),
+                            Base64.encode(bytes(ProfileSVG.getProfileSVG(profileId))),
                             '","attributes":[{"display_type": "number", "trait_type":"ID","value":"',
                             profileIdAsString,
                             '"},{"trait_type":"HEX ID","value":"',
