@@ -32,11 +32,11 @@ contract FollowTokenURI is IFollowTokenURI {
                             followedProfileIdAsString,
                             '","image":"data:image/svg+xml;base64,',
                             Base64.encode(bytes(FollowSVG.getFollowSVG(followTokenId))),
-                            '","attributes":[{"display_type": "number", "trait_type":"ID","value":"',
+                            '","attributes":[{"display_type":"number","trait_type":"ID","value":"',
                             followTokenIdAsString,
                             '"},{"trait_type":"DIGITS","value":"',
                             bytes(followTokenIdAsString).length.toString(),
-                            '"},{"trait_type":"MINTED AT","value":"',
+                            '"},{"display_type":"date","trait_type":"MINTED AT","value":"',
                             originalFollowTimestamp.toString(),
                             '"}]}'
                         )

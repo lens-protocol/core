@@ -25,13 +25,13 @@ contract ProfileTokenURI is IProfileTokenURI {
                             profileIdAsString,
                             '","image":"data:image/svg+xml;base64,',
                             Base64.encode(bytes(ProfileSVG.getProfileSVG(profileId))),
-                            '","attributes":[{"display_type": "number", "trait_type":"ID","value":"',
+                            '","attributes":[{"display_type":"number","trait_type":"ID","value":"',
                             profileIdAsString,
                             '"},{"trait_type":"HEX ID","value":"',
                             profileId.toHexString(),
                             '"},{"trait_type":"DIGITS","value":"',
                             bytes(profileIdAsString).length.toString(),
-                            '"},{"trait_type":"MINTED AT","value":"',
+                            '"},{"display_type":"date","trait_type":"MINTED AT","value":"',
                             mintTimestamp.toString(),
                             '"}]}'
                         )

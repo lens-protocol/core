@@ -27,7 +27,7 @@ contract HandleTokenURI is IHandleTokenURI {
                             localName,
                             '","image":"data:image/svg+xml;base64,',
                             Base64.encode(bytes(HandleSVG.getHandleSVG(localName))),
-                            '","attributes":[{"display_type": "number", "trait_type":"ID","value":"',
+                            '","attributes":[{"display_type":"number","trait_type":"ID","value":"',
                             tokenId.toString(),
                             '"},{"trait_type":"NAMESPACE","value":"',
                             namespace,
