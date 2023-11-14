@@ -60,4 +60,8 @@ abstract contract LensHubStorage {
     mapping(address migrationAdmin => bool allowed) internal _migrationAdminWhitelisted; // Slot 29
 
     Types.TreasuryData internal _treasuryData; // Slot 30
+
+    address internal _profileTokenURIContract; // Slot 31
+
+    address internal _followTokenURIContract; // Slot 32
 }

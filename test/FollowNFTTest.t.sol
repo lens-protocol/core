@@ -9,21 +9,8 @@ import {FollowNFT} from 'contracts/FollowNFT.sol';
 import {Types} from 'contracts/libraries/constants/Types.sol';
 import {Base64} from 'solady/utils/Base64.sol';
 import {LibString} from 'solady/utils/LibString.sol';
-import {FollowTokenURILib} from 'contracts/libraries/token-uris/FollowTokenURILib.sol';
-
-contract FollowTokenURILibMock {
-    function testFollowTokenURILibMock() public {
-        // Prevents being counted in Foundry Coverage
-    }
-
-    function getTokenURI(
-        uint256 followTokenId,
-        uint256 followedProfileId,
-        uint256 originalFollowTimestamp
-    ) external pure returns (string memory) {
-        return FollowTokenURILib.getTokenURI(followTokenId, followedProfileId, originalFollowTimestamp);
-    }
-}
+import {FollowTokenURI} from 'contracts/misc/token-uris/FollowTokenURI.sol';
+import {IFollowTokenURI} from 'contracts/interfaces/IFollowTokenURI.sol';
 
 contract FollowNFTTest is BaseTest, LensBaseERC721Test {
     using stdJson for string;
@@ -244,7 +231,7 @@ contract FollowNFTTest is BaseTest, LensBaseERC721Test {
     }
 
     function testGetTokenURI_Fuzz() public {
-        FollowTokenURILibMock followTokenURILib = new FollowTokenURILibMock();
+        IFollowTokenURI followTokenURIContract = new FollowTokenURI();
         for (uint256 tokenId = type(uint256).max; tokenId > 0; tokenId >>= 16) {
             for (
                 uint256 originalFollowTimestamp = type(uint48).max;
@@ -252,7 +239,7 @@ contract FollowNFTTest is BaseTest, LensBaseERC721Test {
                 originalFollowTimestamp >>= 8
             ) {
                 uint256 followedProfileId = type(uint256).max - tokenId;
-                string memory tokenURI = followTokenURILib.getTokenURI(
+                string memory tokenURI = followTokenURIContract.getTokenURI(
                     tokenId,
                     followedProfileId,
                     originalFollowTimestamp

@@ -43,6 +43,8 @@ library StorageLib {
     uint256 constant PROFILE_ROYALTIES_BPS_SLOT = 28;
     uint256 constant MIGRATION_ADMINS_WHITELISTED_MAPPING_SLOT = 29;
     uint256 constant TREASURY_DATA_SLOT = 30;
+    uint256 constant PROFILE_TOKEN_URI_CONTRACT_SLOT = 31;
+    uint256 constant FOLLOW_TOKEN_URI_CONTRACT_SLOT = 32;
 
     function getPublication(
         uint256 profileId,
@@ -209,6 +211,30 @@ library StorageLib {
     function getTreasuryData() internal pure returns (Types.TreasuryData storage _treasuryData) {
         assembly {
             _treasuryData.slot := TREASURY_DATA_SLOT
+        }
+    }
+
+    function setProfileTokenURIContract(address profileTokenURIContract) internal {
+        assembly {
+            sstore(PROFILE_TOKEN_URI_CONTRACT_SLOT, profileTokenURIContract)
+        }
+    }
+
+    function setFollowTokenURIContract(address followTokenURIContract) internal {
+        assembly {
+            sstore(FOLLOW_TOKEN_URI_CONTRACT_SLOT, followTokenURIContract)
+        }
+    }
+
+    function getProfileTokenURIContract() internal view returns (address _profileTokenURIContract) {
+        assembly {
+            _profileTokenURIContract := sload(PROFILE_TOKEN_URI_CONTRACT_SLOT)
+        }
+    }
+
+    function getFollowTokenURIContract() internal view returns (address _followTokenURIContract) {
+        assembly {
+            _followTokenURIContract := sload(FOLLOW_TOKEN_URI_CONTRACT_SLOT)
         }
     }
 }

@@ -13,6 +13,9 @@ import {TokenHandleRegistry} from 'contracts/namespaces/TokenHandleRegistry.sol'
 import {Governance} from 'contracts/misc/access/Governance.sol';
 import {ProxyAdmin} from 'contracts/misc/access/ProxyAdmin.sol';
 import {ModuleRegistry} from 'contracts/misc/ModuleRegistry.sol';
+import {ProfileTokenURI} from 'contracts/misc/token-uris/ProfileTokenURI.sol';
+import {FollowTokenURI} from 'contracts/misc/token-uris/FollowTokenURI.sol';
+import {HandleTokenURI} from 'contracts/misc/token-uris/HandleTokenURI.sol';
 
 contract ContractAddresses {
     ////////////////////////////////// Types
@@ -73,4 +76,8 @@ contract ContractAddresses {
     Governance governanceContract;
     ProxyAdmin proxyAdminContract;
     address migrationAdmin;
+
+    ProfileTokenURI profileTokenURIContract;
+    FollowTokenURI followTokenURIContract;
+    HandleTokenURI handleTokenURIContract;
 }

@@ -64,6 +64,21 @@ interface ILensHandles is IERC721 {
     function totalSupply() external view returns (uint256);
 
     /**
+     * @notice Returns the HandleTokenURI contract address.
+     *
+     * @return address The HandleTokenURI contract address.
+     */
+    function getHandleTokenURIContract() external view returns (address);
+
+    /**
+     * @notice Sets the HandleTokenURI contract address.
+     * @custom:permissions Only LensHandles contract's owner
+     *
+     * @param handleTokenURIContract The HandleTokenURI contract address to set.
+     */
+    function setHandleTokenURIContract(address handleTokenURIContract) external;
+
+    /**
      * @notice DANGER: Triggers disabling the profile protection mechanism for the msg.sender, which will allow
      * transfers or approvals over profiles held by it.
      * Disabling the mechanism will have a timelock before it becomes effective, allowing the owner to re-enable

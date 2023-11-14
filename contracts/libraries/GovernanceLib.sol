@@ -100,4 +100,12 @@ library GovernanceLib {
 
         emit Events.TreasuryFeeSet(prevTreasuryFee, newTreasuryFee, block.timestamp);
     }
+
+    function setProfileTokenURIContract(address profileTokenURIContract) external {
+        StorageLib.setProfileTokenURIContract(profileTokenURIContract);
+    }
+
+    function setFollowTokenURIContract(address followTokenURIContract) external {
+        StorageLib.setFollowTokenURIContract(followTokenURIContract);
+    }
 }

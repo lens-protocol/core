@@ -11,8 +11,8 @@ import {IERC721Burnable} from 'contracts/interfaces/IERC721Burnable.sol';
 import {LensBaseERC721} from 'contracts/base/LensBaseERC721.sol';
 import {ProfileLib} from 'contracts/libraries/ProfileLib.sol';
 import {StorageLib} from 'contracts/libraries/StorageLib.sol';
-import {ProfileTokenURILib} from 'contracts/libraries/token-uris/ProfileTokenURILib.sol';
 import {ValidationLib} from 'contracts/libraries/ValidationLib.sol';
+import {IProfileTokenURI} from 'contracts/interfaces/IProfileTokenURI.sol';
 
 import {ERC2981CollectionRoyalties} from 'contracts/base/ERC2981CollectionRoyalties.sol';
 
@@ -99,7 +99,8 @@ abstract contract LensProfiles is LensBaseERC721, ERC2981CollectionRoyalties, IL
         if (!_exists(tokenId)) {
             revert Errors.TokenDoesNotExist();
         }
-        return ProfileTokenURILib.getTokenURI(tokenId);
+        uint256 mintTimestamp = StorageLib.getTokenData(tokenId).mintTimestamp;
+        return IProfileTokenURI(StorageLib.getProfileTokenURIContract()).getTokenURI(tokenId, mintTimestamp);
     }
 
     function approve(address to, uint256 tokenId) public override(LensBaseERC721, IERC721) {

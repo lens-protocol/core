@@ -4,9 +4,10 @@ pragma solidity ^0.8.15;
 
 import {Base64} from '@openzeppelin/contracts/utils/Base64.sol';
 import {Strings} from '@openzeppelin/contracts/utils/Strings.sol';
-import {ImageTokenURILib} from 'contracts/libraries/token-uris/ImageTokenURILib.sol';
+import {FollowSVG} from 'contracts/libraries/svgs/Follow/FollowSVG.sol';
+import {IFollowTokenURI} from 'contracts/interfaces/IFollowTokenURI.sol';
 
-library FollowTokenURILib {
+contract FollowTokenURI is IFollowTokenURI {
     using Strings for uint96;
     using Strings for uint256;
 
@@ -14,7 +15,7 @@ library FollowTokenURILib {
         uint256 followTokenId,
         uint256 followedProfileId,
         uint256 originalFollowTimestamp
-    ) external pure returns (string memory) {
+    ) external pure override returns (string memory) {
         string memory followTokenIdAsString = followTokenId.toString();
         string memory followedProfileIdAsString = followedProfileId.toString();
         return
@@ -30,12 +31,12 @@ library FollowTokenURILib {
                             ' of Profile #',
                             followedProfileIdAsString,
                             '","image":"data:image/svg+xml;base64,',
-                            ImageTokenURILib.getSVGImageBase64Encoded(),
-                            '","attributes":[{"display_type": "number", "trait_type":"ID","value":"',
+                            Base64.encode(bytes(FollowSVG.getFollowSVG(followTokenId))),
+                            '","attributes":[{"display_type":"number","trait_type":"ID","value":"',
                             followTokenIdAsString,
                             '"},{"trait_type":"DIGITS","value":"',
                             bytes(followTokenIdAsString).length.toString(),
-                            '"},{"trait_type":"MINTED AT","value":"',
+                            '"},{"display_type":"date","trait_type":"MINTED AT","value":"',
                             originalFollowTimestamp.toString(),
                             '"}]}'
                         )

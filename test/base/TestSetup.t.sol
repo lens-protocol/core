@@ -27,6 +27,10 @@ import {MockReferenceModule} from 'test/mocks/MockReferenceModule.sol';
 import {ModuleRegistry} from 'contracts/misc/ModuleRegistry.sol';
 import {ILensGovernable} from 'contracts/interfaces/ILensGovernable.sol';
 
+import {ProfileTokenURI} from 'contracts/misc/token-uris/ProfileTokenURI.sol';
+import {FollowTokenURI} from 'contracts/misc/token-uris/FollowTokenURI.sol';
+import {HandleTokenURI} from 'contracts/misc/token-uris/HandleTokenURI.sol';
+
 // TODO: Move these to Interface file in test folder.
 struct OldCreateProfileParams {
     address to;
@@ -213,6 +217,10 @@ contract TestSetup is Test, ContractAddressesLoaderDeployer, ArrayHelpers {
 
         loadOrDeploy_ModuleRegistryContract();
 
+        loadOrDeploy_ProfileTokenURIContract();
+        loadOrDeploy_FollowTokenURIContract();
+        loadOrDeploy_HandleTokenURIContract();
+
         if (lensVersion == 1) {
             vm.prank(governance);
             hub.whitelistProfileCreator(address(this), true);
@@ -275,6 +283,12 @@ contract TestSetup is Test, ContractAddressesLoaderDeployer, ArrayHelpers {
         vm.startPrank(governance);
         hub.setTreasury(treasury);
         hub.setTreasuryFee(TREASURY_FEE_BPS);
+        hub.setProfileTokenURIContract(address(profileTokenURIContract));
+        hub.setFollowTokenURIContract(address(followTokenURIContract));
+        vm.stopPrank();
+
+        vm.startPrank(lensHandles.OWNER());
+        lensHandles.setHandleTokenURIContract(address(handleTokenURIContract));
         vm.stopPrank();
 
         lensVersion = 2;
@@ -373,12 +387,27 @@ contract TestSetup is Test, ContractAddressesLoaderDeployer, ArrayHelpers {
         mockReferenceModule = new MockReferenceModule(address(this));
         vm.label(address(mockReferenceModule), 'MOCK_REFERENCE_MODULE');
 
+        profileTokenURIContract = new ProfileTokenURI();
+        vm.label(address(profileTokenURIContract), 'PROFILE_TOKEN_URI');
+
+        followTokenURIContract = new FollowTokenURI();
+        vm.label(address(followTokenURIContract), 'FOLLOW_TOKEN_URI');
+
+        handleTokenURIContract = new HandleTokenURI();
+        vm.label(address(handleTokenURIContract), 'HANDLE_TOKEN_URI');
+
         vm.stopPrank();
         ///////////////////////////////////////// End deployments.
 
         vm.startPrank(governance);
         hub.setTreasury(treasury);
         hub.setTreasuryFee(TREASURY_FEE_BPS);
+        hub.setProfileTokenURIContract(address(profileTokenURIContract));
+        hub.setFollowTokenURIContract(address(followTokenURIContract));
+        vm.stopPrank();
+
+        vm.startPrank(lensHandles.OWNER());
+        lensHandles.setHandleTokenURIContract(address(handleTokenURIContract));
         vm.stopPrank();
 
         lensVersion = 2;

@@ -52,6 +52,14 @@ abstract contract LensGovernable is ILensGovernable {
         GovernanceLib.whitelistProfileCreator(profileCreator, whitelist);
     }
 
+    function setProfileTokenURIContract(address profileTokenURIContract) external override onlyGov {
+        GovernanceLib.setProfileTokenURIContract(profileTokenURIContract);
+    }
+
+    function setFollowTokenURIContract(address followTokenURIContract) external override onlyGov {
+        GovernanceLib.setFollowTokenURIContract(followTokenURIContract);
+    }
+
     ///////////////////////////////////////////
     ///        EXTERNAL VIEW FUNCTIONS      ///
     ///////////////////////////////////////////
@@ -59,6 +67,14 @@ abstract contract LensGovernable is ILensGovernable {
     /// @inheritdoc ILensGovernable
     function getGovernance() external view override returns (address) {
         return StorageLib.getGovernance();
+    }
+
+    function getProfileTokenURIContract() external view override returns (address) {
+        return StorageLib.getProfileTokenURIContract();
+    }
+
+    function getFollowTokenURIContract() external view override returns (address) {
+        return StorageLib.getFollowTokenURIContract();
     }
 
     /**

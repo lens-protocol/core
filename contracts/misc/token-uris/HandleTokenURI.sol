@@ -4,16 +4,17 @@ pragma solidity ^0.8.15;
 
 import {Base64} from '@openzeppelin/contracts/utils/Base64.sol';
 import {Strings} from '@openzeppelin/contracts/utils/Strings.sol';
-import {ImageTokenURILib} from 'contracts/libraries/token-uris/ImageTokenURILib.sol';
+import {HandleSVG} from 'contracts/libraries/svgs/Handle/HandleSVG.sol';
+import {IHandleTokenURI} from 'contracts/interfaces/IHandleTokenURI.sol';
 
-library HandleTokenURILib {
+contract HandleTokenURI is IHandleTokenURI {
     using Strings for uint256;
 
     function getTokenURI(
         uint256 tokenId,
         string memory localName,
         string memory namespace
-    ) external pure returns (string memory) {
+    ) external pure override returns (string memory) {
         return
             string.concat(
                 'data:application/json;base64,',
@@ -25,8 +26,8 @@ library HandleTokenURILib {
                             '","description":"Lens Protocol - Handle @',
                             localName,
                             '","image":"data:image/svg+xml;base64,',
-                            ImageTokenURILib.getSVGImageBase64Encoded(),
-                            '","attributes":[{"display_type": "number", "trait_type":"ID","value":"',
+                            Base64.encode(bytes(HandleSVG.getHandleSVG(localName))),
+                            '","attributes":[{"display_type":"number","trait_type":"ID","value":"',
                             tokenId.toString(),
                             '"},{"trait_type":"NAMESPACE","value":"',
                             namespace,
