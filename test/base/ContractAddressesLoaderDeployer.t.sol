@@ -16,6 +16,10 @@ import {ProxyAdmin} from 'contracts/misc/access/ProxyAdmin.sol';
 import {ModuleRegistry} from 'contracts/misc/ModuleRegistry.sol';
 import {LibString} from 'solady/utils/LibString.sol';
 
+import {ProfileTokenURI} from 'contracts/misc/token-uris/ProfileTokenURI.sol';
+import {FollowTokenURI} from 'contracts/misc/token-uris/FollowTokenURI.sol';
+import {HandleTokenURI} from 'contracts/misc/token-uris/HandleTokenURI.sol';
+
 contract ContractAddressesLoaderDeployer is Test, ForkManagement {
     using stdJson for string;
 
@@ -220,5 +224,49 @@ contract ContractAddressesLoaderDeployer is Test, ForkManagement {
             tokenGatedReferenceModule = address(new TokenGatedReferenceModule(hubProxyAddr, address(this)));
         }
         return tokenGatedReferenceModule;
+    }
+
+    function loadOrDeploy_ProfileTokenURIContract() internal returns (address) {
+        address profileTokenURIContractAddress;
+        if (fork && keyExists(json, string(abi.encodePacked('.', forkEnv, '.ProfileTokenURI')))) {
+            profileTokenURIContractAddress = json.readAddress(
+                string(abi.encodePacked('.', forkEnv, '.ProfileTokenURI'))
+            );
+            console.log(
+                'Testing against already deployed ProfileTokenURI contract at:',
+                profileTokenURIContractAddress
+            );
+        } else {
+            vm.prank(deployer);
+            profileTokenURIContractAddress = address(new ProfileTokenURI());
+        }
+        profileTokenURIContract = ProfileTokenURI(profileTokenURIContractAddress);
+        return profileTokenURIContractAddress;
+    }
+
+    function loadOrDeploy_FollowTokenURIContract() internal returns (address) {
+        address followTokenURIContractAddress;
+        if (fork && keyExists(json, string(abi.encodePacked('.', forkEnv, '.FollowTokenURI')))) {
+            followTokenURIContractAddress = json.readAddress(string(abi.encodePacked('.', forkEnv, '.FollowTokenURI')));
+            console.log('Testing against already deployed FollowTokenURI contract at:', followTokenURIContractAddress);
+        } else {
+            vm.prank(deployer);
+            followTokenURIContractAddress = address(new FollowTokenURI());
+        }
+        followTokenURIContract = FollowTokenURI(followTokenURIContractAddress);
+        return followTokenURIContractAddress;
+    }
+
+    function loadOrDeploy_HandleTokenURIContract() internal returns (address) {
+        address handleTokenURIContractAddress;
+        if (fork && keyExists(json, string(abi.encodePacked('.', forkEnv, '.HandleTokenURI')))) {
+            handleTokenURIContractAddress = json.readAddress(string(abi.encodePacked('.', forkEnv, '.HandleTokenURI')));
+            console.log('Testing against already deployed HandleTokenURI contract at:', handleTokenURIContractAddress);
+        } else {
+            vm.prank(deployer);
+            handleTokenURIContractAddress = address(new HandleTokenURI());
+        }
+        handleTokenURIContract = HandleTokenURI(handleTokenURIContractAddress);
+        return handleTokenURIContractAddress;
     }
 }

@@ -5,18 +5,9 @@ import 'test/base/BaseTest.t.sol';
 import 'test/LensBaseERC721Test.t.sol';
 import {Base64} from 'solady/utils/Base64.sol';
 import {LibString} from 'solady/utils/LibString.sol';
-import {ProfileTokenURILib} from 'contracts/libraries/token-uris/ProfileTokenURILib.sol';
+import {ProfileTokenURI} from 'contracts/misc/token-uris/ProfileTokenURI.sol';
+import {IProfileTokenURI} from 'contracts/interfaces/IProfileTokenURI.sol';
 import {TokenGuardianTest_Default_On, IGuardedToken} from 'test/TokenGuardian.t.sol';
-
-contract ProfileTokenURILibMock {
-    function testProfileTokenURILibMock() public {
-        // Prevents being counted in Foundry Coverage
-    }
-
-    function getTokenURI(uint256 profileId) external view returns (string memory) {
-        return ProfileTokenURILib.getTokenURI(profileId);
-    }
-}
 
 contract ProfileNFTTest is LensBaseERC721Test, TokenGuardianTest_Default_On {
     using stdJson for string;
@@ -40,12 +31,13 @@ contract ProfileNFTTest is LensBaseERC721Test, TokenGuardianTest_Default_On {
     }
 
     function testGetTokenURI_Fuzz() public {
-        ProfileTokenURILibMock profileTokenURILib = new ProfileTokenURILibMock();
+        IProfileTokenURI profileTokenURIContract = new ProfileTokenURI();
 
         for (uint256 profileId = type(uint256).max; profileId > 0; profileId >>= 2) {
             string memory profileIdAsString = vm.toString(profileId);
             console.log(profileIdAsString);
-            string memory tokenURI = profileTokenURILib.getTokenURI(profileId);
+            uint256 randomTimestamp = uint256(keccak256(abi.encode(profileId))) % 2000000000;
+            string memory tokenURI = profileTokenURIContract.getTokenURI(profileId, randomTimestamp);
             string memory base64prefix = 'data:application/json;base64,';
             string memory decodedTokenURI = string(
                 Base64.decode(LibString.slice(tokenURI, bytes(base64prefix).length))
@@ -55,9 +47,52 @@ contract ProfileNFTTest is LensBaseERC721Test, TokenGuardianTest_Default_On {
                 decodedTokenURI.readString('.description'),
                 string.concat('Lens Protocol - Profile #', profileIdAsString)
             );
-            assertEq(decodedTokenURI.readUint('.attributes[0].value'), profileId);
-            assertEq(decodedTokenURI.readString('.attributes[1].value'), profileId.toHexString());
-            assertEq(decodedTokenURI.readUint('.attributes[2].value'), bytes(profileIdAsString).length);
+            assertEq(decodedTokenURI.readUint('.attributes[0].value'), profileId, "Profile ID doesn't match");
+            assertEq(
+                decodedTokenURI.readString('.attributes[0].display_type'),
+                'number',
+                "Profile ID display type doesn't match"
+            );
+            assertEq(
+                decodedTokenURI.readString('.attributes[0].trait_type'),
+                'ID',
+                "Profile ID trait type doesn't match"
+            );
+            assertEq(
+                decodedTokenURI.readString('.attributes[1].value'),
+                profileId.toHexString(),
+                "Profile HEX ID doesn't match"
+            );
+            assertEq(
+                decodedTokenURI.readString('.attributes[1].trait_type'),
+                'HEX ID',
+                "Profile HEX ID trait type doesn't match"
+            );
+            assertEq(
+                decodedTokenURI.readUint('.attributes[2].value'),
+                bytes(profileIdAsString).length,
+                "Profile DIGITS doesn't match"
+            );
+            assertEq(
+                decodedTokenURI.readString('.attributes[2].trait_type'),
+                'DIGITS',
+                "Profile DIGITS trait type doesn't match"
+            );
+            assertEq(
+                decodedTokenURI.readUint('.attributes[3].value'),
+                randomTimestamp,
+                "Profile Minted At doesn't match"
+            );
+            assertEq(
+                decodedTokenURI.readString('.attributes[3].display_type'),
+                'date',
+                "Profile MINTED AT display type doesn't match"
+            );
+            assertEq(
+                decodedTokenURI.readString('.attributes[3].trait_type'),
+                'MINTED AT',
+                "Profile MINTED AT doesn't match"
+            );
         }
     }
 
