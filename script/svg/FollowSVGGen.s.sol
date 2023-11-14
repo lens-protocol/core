@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.13;
 
-import 'forge-std/Test.sol';
+import 'forge-std/Script.sol';
 
 import {FollowSVG} from 'contracts/libraries/svgs/Follow/FollowSVG.sol';
 
@@ -11,7 +11,7 @@ contract FollowNFT {
     }
 }
 
-contract FollowSVGTest is Test {
+contract FollowSVGGen is Script {
     FollowNFT followNFT;
     string constant dir = 'svgs/';
 
@@ -19,7 +19,7 @@ contract FollowSVGTest is Test {
         followNFT = new FollowNFT();
     }
 
-    function testTest() public {
+    function run() external {
         vm.writeFile(string.concat(dir, 'follows/follow_1_gold.svg'), followNFT.tryWithTokenId(1));
         vm.writeFile(string.concat(dir, 'follows/follow_11_normal.svg'), followNFT.tryWithTokenId(11));
     }

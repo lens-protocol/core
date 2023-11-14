@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.13;
 
-import 'forge-std/Test.sol';
+import 'forge-std/Script.sol';
 
 import {HandleSVG} from 'contracts/libraries/svgs/Handle/HandleSVG.sol';
 
@@ -11,7 +11,7 @@ contract HandleNFT {
     }
 }
 
-contract HandleSVGTest is Test {
+contract HandleSVGGen is Script {
     HandleNFT handleNFT;
     string constant dir = 'svgs/';
 
@@ -65,5 +65,10 @@ contract HandleSVGTest is Test {
                 handleNFT.tryWithName(name)
             );
         }
+    }
+
+    function run() external {
+        testHandles();
+        testWWW();
     }
 }

@@ -31,6 +31,5 @@ jobs:
       - name: Run Tests
         run: |
           cp .env.example .env
-          bash initSvgDirs.sh
           source .env
           FOUNDRY_PROFILE=citest forge test -vvv

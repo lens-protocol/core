@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.13;
 
-import 'forge-std/Test.sol';
+import 'forge-std/Script.sol';
 import {Skin, Background, Helpers} from 'contracts/libraries/svgs/Profile/Helpers.sol';
 import {Face} from 'contracts/libraries/svgs/Profile/Face.sol';
 import {Legs} from 'contracts/libraries/svgs/Profile/Legs.sol';
@@ -23,7 +23,7 @@ contract ProfileNFT {
     }
 }
 
-contract ProfileSVGTest is Test {
+contract ProfileSVGGen is Script {
     ProfileNFT profileNFT;
     string constant dir = 'svgs/';
 
@@ -189,15 +189,7 @@ contract ProfileSVGTest is Test {
 
     function testGoldProfiles1() public {
         uint256 i;
-        for (i = 1; i < 500; i++) {
-            string memory result = profileNFT.tryProfile(i);
-            vm.writeFile(string.concat(dir, 'profiles_gold/profile_', vm.toString(i), '.svg'), result);
-        }
-    }
-
-    function testGoldProfiles2() public {
-        uint256 i;
-        for (i = 500; i <= 1000; i++) {
+        for (i = 1; i < 10; i++) {
             string memory result = profileNFT.tryProfile(i);
             vm.writeFile(string.concat(dir, 'profiles_gold/profile_', vm.toString(i), '.svg'), result);
         }
@@ -221,14 +213,14 @@ contract ProfileSVGTest is Test {
         string memory result = profileNFT.tryProfile(i);
         vm.writeFile(string.concat(dir, 'profiles/profile_', vm.toString(i), '.svg'), result);
 
-        for (i = 35000; i < 35500; i++) {
+        for (i = 35000; i < 35010; i++) {
             result = profileNFT.tryProfile(i);
             vm.writeFile(string.concat(dir, 'profiles/profile_', vm.toString(i), '.svg'), result);
         }
     }
 
     function testFuzzProfiles() public {
-        for (uint256 i = 1; i < 1000; i++) {
+        for (uint256 i = 1; i < 10; i++) {
             uint256 profileId = uint256(keccak256(abi.encode(i))) % 10000000;
             string memory result = profileNFT.tryProfile(profileId);
             vm.writeFile(string.concat(dir, 'profiles_fuzz/profile_', vm.toString(profileId), '.svg'), result);
@@ -243,5 +235,19 @@ contract ProfileSVGTest is Test {
     // We take colors from the left bytes of the seed
     function setColor(uint256 newByte, Helpers.ComponentBytes componentByte) internal pure returns (uint256) {
         return newByte << ((31 - uint8(componentByte)) * 8);
+    }
+
+    function run() external {
+        testBackgrounds();
+        testSkins();
+        testLegs();
+        testShoes();
+        testFaces();
+        testHandsAndBody();
+        testLogoWithBody();
+        testHeadwear();
+        testGoldProfiles1();
+        testProfiles();
+        testFuzzProfiles();
     }
 }
