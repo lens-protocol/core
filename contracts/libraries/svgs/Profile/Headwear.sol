@@ -47,32 +47,41 @@ library Headwear {
             return '';
         } else if (variant == HeadwearVariants.BEANIE) {
             HeadwearBeanie.BeanieColors beanieColor = HeadwearBeanie.BeanieColors(
-                Helpers.getColor(seed, Helpers.ComponentBytes.HEADWEAR) %
-                    (uint8(type(HeadwearBeanie.BeanieColors).max) + (isGold ? 1 : 0))
+                isGold
+                    ? HeadwearBeanie.BeanieColors.GOLD
+                    : Helpers.getColor(seed, Helpers.ComponentBytes.HEADWEAR) %
+                        uint8(type(HeadwearBeanie.BeanieColors).max)
             );
             return HeadwearBeanie.getBeanie(beanieColor);
         } else if (variant == HeadwearVariants.HAT) {
             HeadwearHat.HatColors hatColor = HeadwearHat.HatColors(
-                Helpers.getColor(seed, Helpers.ComponentBytes.HEADWEAR) %
-                    (uint8(type(HeadwearHat.HatColors).max) + (isGold ? 1 : 0))
+                isGold
+                    ? HeadwearHat.HatColors.GOLD
+                    : Helpers.getColor(seed, Helpers.ComponentBytes.HEADWEAR) % uint8(type(HeadwearHat.HatColors).max)
             );
             return HeadwearHat.getHat(hatColor);
         } else if (variant == HeadwearVariants.ICECREAM) {
             HeadwearIcecream.IcecreamColors icecreamColor = HeadwearIcecream.IcecreamColors(
-                Helpers.getColor(seed, Helpers.ComponentBytes.HEADWEAR) %
-                    (uint8(type(HeadwearIcecream.IcecreamColors).max) + (isGold ? 1 : 0))
+                isGold
+                    ? HeadwearIcecream.IcecreamColors.GOLD
+                    : Helpers.getColor(seed, Helpers.ComponentBytes.HEADWEAR) %
+                        uint8(type(HeadwearIcecream.IcecreamColors).max)
             );
             return HeadwearIcecream.getIcecream(icecreamColor);
         } else if (variant == HeadwearVariants.LEAFS) {
             HeadwearLeafs.LeafsColors leafsColor = HeadwearLeafs.LeafsColors(
-                Helpers.getColor(seed, Helpers.ComponentBytes.HEADWEAR) %
-                    (uint8(type(HeadwearLeafs.LeafsColors).max) + (isGold ? 1 : 0))
+                isGold
+                    ? HeadwearLeafs.LeafsColors.GOLD
+                    : Helpers.getColor(seed, Helpers.ComponentBytes.HEADWEAR) %
+                        uint8(type(HeadwearLeafs.LeafsColors).max)
             );
             return HeadwearLeafs.getLeafs(leafsColor);
         } else if (variant == HeadwearVariants.PLANTS) {
             HeadwearPlants.PlantsColors plantsColor = HeadwearPlants.PlantsColors(
-                Helpers.getColor(seed, Helpers.ComponentBytes.HEADWEAR) %
-                    (uint8(type(HeadwearPlants.PlantsColors).max) + (isGold ? 1 : 0))
+                isGold
+                    ? HeadwearPlants.PlantsColors.GOLD
+                    : Helpers.getColor(seed, Helpers.ComponentBytes.HEADWEAR) %
+                        uint8(type(HeadwearPlants.PlantsColors).max)
             );
             return HeadwearPlants.getPlants(plantsColor);
         } else if (variant == HeadwearVariants.SPARKLES) {
@@ -82,38 +91,50 @@ library Headwear {
                 );
         } else if (variant == HeadwearVariants.CROWN) {
             HeadwearCrown.CrownColors crownColor = HeadwearCrown.CrownColors(
-                Helpers.getColor(seed, Helpers.ComponentBytes.HEADWEAR) %
-                    (uint8(type(HeadwearCrown.CrownColors).max) + (isGold ? 1 : 0))
+                isGold
+                    ? HeadwearCrown.CrownColors.GOLD
+                    : Helpers.getColor(seed, Helpers.ComponentBytes.HEADWEAR) %
+                        uint8(type(HeadwearCrown.CrownColors).max)
             );
             return HeadwearCrown.getCrown(crownColor);
         } else if (variant == HeadwearVariants.FLORAL) {
             HeadwearFloral.FloralColors floralColor = HeadwearFloral.FloralColors(
-                Helpers.getColor(seed, Helpers.ComponentBytes.HEADWEAR) %
-                    (uint8(type(HeadwearFloral.FloralColors).max) + (isGold ? 1 : 0))
+                isGole
+                    ? HeadwearFloral.FloralColors.GOLD
+                    : Helpers.getColor(seed, Helpers.ComponentBytes.HEADWEAR) %
+                        uint8(type(HeadwearFloral.FloralColors).max)
             );
             return HeadwearFloral.getFloral(floralColor);
         } else if (variant == HeadwearVariants.GLASSES) {
             HeadwearGlasses.GlassesColors glassesColor = HeadwearGlasses.GlassesColors(
-                Helpers.getColor(seed, Helpers.ComponentBytes.HEADWEAR) %
-                    (uint8(type(HeadwearGlasses.GlassesColors).max) + (isGold ? 1 : 0))
+                isGold
+                    ? HeadwearGlasses.GlassesColors.GOLD
+                    : Helpers.getColor(seed, Helpers.ComponentBytes.HEADWEAR) %
+                        uint8(type(HeadwearGlasses.GlassesColors).max)
             );
             return HeadwearGlasses.getGlasses(glassesColor);
         } else if (variant == HeadwearVariants.MUSHROOM) {
             HeadwearMushroom.MushroomColors mushroomColor = HeadwearMushroom.MushroomColors(
-                Helpers.getColor(seed, Helpers.ComponentBytes.HEADWEAR) %
-                    (uint8(type(HeadwearMushroom.MushroomColors).max) + (isGold ? 1 : 0))
+                isGold
+                    ? HeadwearMushroom.MushroomColors.GOLD
+                    : Helpers.getColor(seed, Helpers.ComponentBytes.HEADWEAR) %
+                        uint8(type(HeadwearMushroom.MushroomColors).max)
             );
             return HeadwearMushroom.getMushroom(mushroomColor);
         } else if (variant == HeadwearVariants.NIGHTCAP) {
             HeadwearNightcap.NightcapColors nightcapColor = HeadwearNightcap.NightcapColors(
-                Helpers.getColor(seed, Helpers.ComponentBytes.HEADWEAR) %
-                    (uint8(type(HeadwearNightcap.NightcapColors).max) + (isGold ? 1 : 0))
+                isGold
+                    ? HeadwearNightcap.NightcapColors.GOLD
+                    : Helpers.getColor(seed, Helpers.ComponentBytes.HEADWEAR) %
+                        uint8(type(HeadwearNightcap.NightcapColors).max)
             );
             return HeadwearNightcap.getNightcap(nightcapColor);
         } else if (variant == HeadwearVariants.PARTYHAT) {
             HeadwearPartyhat.PartyhatColors partyhatColor = HeadwearPartyhat.PartyhatColors(
-                Helpers.getColor(seed, Helpers.ComponentBytes.HEADWEAR) %
-                    (uint8(type(HeadwearPartyhat.PartyhatColors).max) + (isGold ? 1 : 0))
+                isGold
+                    ? HeadwearPartyhat.PartyhatColors.GOLD
+                    : Helpers.getColor(seed, Helpers.ComponentBytes.HEADWEAR) %
+                        uint8(type(HeadwearPartyhat.PartyhatColors).max)
             );
             return HeadwearPartyhat.getPartyhat(partyhatColor);
         } else {
