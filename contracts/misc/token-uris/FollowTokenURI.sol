@@ -4,9 +4,10 @@ pragma solidity ^0.8.15;
 
 import {Base64} from '@openzeppelin/contracts/utils/Base64.sol';
 import {Strings} from '@openzeppelin/contracts/utils/Strings.sol';
-import {FollowSVG} from 'contracts/libraries/token-uris/images/Follow/FollowSVG.sol';
+import {FollowSVG} from 'contracts/libraries/svgs/Follow/FollowSVG.sol';
+import {IFollowTokenURI} from 'contracts/interfaces/IFollowTokenURI.sol';
 
-library FollowTokenURILib {
+contract FollowTokenURI is IFollowTokenURI {
     using Strings for uint96;
     using Strings for uint256;
 
@@ -14,7 +15,7 @@ library FollowTokenURILib {
         uint256 followTokenId,
         uint256 followedProfileId,
         uint256 originalFollowTimestamp
-    ) external pure returns (string memory) {
+    ) external pure override returns (string memory) {
         string memory followTokenIdAsString = followTokenId.toString();
         string memory followedProfileIdAsString = followedProfileId.toString();
         return

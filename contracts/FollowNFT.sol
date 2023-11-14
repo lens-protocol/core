@@ -13,8 +13,8 @@ import {ILensHub} from 'contracts/interfaces/ILensHub.sol';
 import {LensBaseERC721} from 'contracts/base/LensBaseERC721.sol';
 import {Strings} from '@openzeppelin/contracts/utils/Strings.sol';
 import {StorageLib} from 'contracts/libraries/StorageLib.sol';
-import {FollowTokenURILib} from 'contracts/libraries/token-uris/FollowTokenURILib.sol';
 import {Types} from 'contracts/libraries/constants/Types.sol';
+import {IFollowTokenURI} from 'contracts/interfaces/IFollowTokenURI.sol';
 
 /**
  * @custom:upgradeable Beacon proxy. The beacon, responsible for returning the implementation address, is the LensHub.
@@ -282,7 +282,7 @@ contract FollowNFT is HubRestricted, LensBaseERC721, ERC2981CollectionRoyalties,
             revert Errors.TokenDoesNotExist();
         }
         return
-            FollowTokenURILib.getTokenURI(
+            IFollowTokenURI(ILensHub(HUB).getFollowTokenURIContract()).getTokenURI(
                 followTokenId,
                 _followedProfileId,
                 _followDataByFollowTokenId[followTokenId].originalFollowTimestamp

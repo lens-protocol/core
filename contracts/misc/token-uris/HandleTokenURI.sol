@@ -4,16 +4,17 @@ pragma solidity ^0.8.15;
 
 import {Base64} from '@openzeppelin/contracts/utils/Base64.sol';
 import {Strings} from '@openzeppelin/contracts/utils/Strings.sol';
-import {HandleSVG} from 'contracts/libraries/token-uris/images/Handle/HandleSVG.sol';
+import {HandleSVG} from 'contracts/libraries/svgs/Handle/HandleSVG.sol';
+import {IHandleTokenURI} from 'contracts/interfaces/IHandleTokenURI.sol';
 
-library HandleTokenURILib {
+contract HandleTokenURI is IHandleTokenURI {
     using Strings for uint256;
 
     function getTokenURI(
         uint256 tokenId,
         string memory localName,
         string memory namespace
-    ) external pure returns (string memory) {
+    ) external pure override returns (string memory) {
         return
             string.concat(
                 'data:application/json;base64,',

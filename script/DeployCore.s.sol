@@ -10,7 +10,7 @@ import {Types} from 'contracts/libraries/constants/Types.sol';
 import {Governance} from 'contracts/misc/access/Governance.sol';
 import {LensHandles} from 'contracts/namespaces/LensHandles.sol';
 
-contract DeploySVG is Script, ForkManagement {
+contract DeployCore is Script, ForkManagement {
     using stdJson for string;
 
     struct LensAccount {

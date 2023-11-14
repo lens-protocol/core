@@ -48,6 +48,22 @@ interface ILensGovernable {
     function whitelistProfileCreator(address profileCreator, bool whitelist) external;
 
     /**
+     * @notice Sets the profile token URI contract.
+     * @custom:permissions Governance.
+     *
+     * @param profileTokenURIContract The profile token URI contract to set.
+     */
+    function setProfileTokenURIContract(address profileTokenURIContract) external;
+
+    /**
+     * @notice Sets the follow token URI contract.
+     * @custom:permissions Governance.
+     *
+     * @param followTokenURIContract The follow token URI contract to set.
+     */
+    function setFollowTokenURIContract(address followTokenURIContract) external;
+
+    /**
      * @notice Sets the treasury address.
      * @custom:permissions Governance
      *
@@ -108,4 +124,18 @@ interface ILensGovernable {
      * @return tuple First, the treasury address, second, the treasury fee.
      */
     function getTreasuryData() external view returns (address, uint16);
+
+    /**
+     * @notice Gets the profile token URI contract.
+     *
+     * @return address The profile token URI contract.
+     */
+    function getProfileTokenURIContract() external view returns (address);
+
+    /**
+     * @notice Gets the follow token URI contract.
+     *
+     * @return address The follow token URI contract.
+     */
+    function getFollowTokenURIContract() external view returns (address);
 }

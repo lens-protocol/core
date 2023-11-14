@@ -4,14 +4,14 @@ pragma solidity ^0.8.15;
 
 import {Base64} from '@openzeppelin/contracts/utils/Base64.sol';
 import {Strings} from '@openzeppelin/contracts/utils/Strings.sol';
-import {StorageLib} from 'contracts/libraries/StorageLib.sol';
-import {ProfileSVG} from 'contracts/libraries/token-uris/images/Profile/ProfileSVG.sol';
+import {ProfileSVG} from 'contracts/libraries/svgs/Profile/ProfileSVG.sol';
+import {IProfileTokenURI} from 'contracts/interfaces/IProfileTokenURI.sol';
 
-library ProfileTokenURILib {
+contract ProfileTokenURI is IProfileTokenURI {
     using Strings for uint96;
     using Strings for uint256;
 
-    function getTokenURI(uint256 profileId) external view returns (string memory) {
+    function getTokenURI(uint256 profileId, uint256 mintTimestamp) external pure override returns (string memory) {
         string memory profileIdAsString = profileId.toString();
         return
             string(
@@ -32,7 +32,7 @@ library ProfileTokenURILib {
                             '"},{"trait_type":"DIGITS","value":"',
                             bytes(profileIdAsString).length.toString(),
                             '"},{"trait_type":"MINTED AT","value":"',
-                            StorageLib.getTokenData(profileId).mintTimestamp.toString(),
+                            mintTimestamp.toString(),
                             '"}]}'
                         )
                     )

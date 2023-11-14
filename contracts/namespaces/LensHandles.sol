@@ -7,7 +7,7 @@ import {ImmutableOwnable} from 'contracts/misc/ImmutableOwnable.sol';
 import {ILensHandles} from 'contracts/interfaces/ILensHandles.sol';
 import {HandlesEvents} from 'contracts/namespaces/constants/Events.sol';
 import {HandlesErrors} from 'contracts/namespaces/constants/Errors.sol';
-import {HandleTokenURILib} from 'contracts/libraries/token-uris/HandleTokenURILib.sol';
+import {IHandleTokenURI} from 'contracts/interfaces/IHandleTokenURI.sol';
 import {ILensHub} from 'contracts/interfaces/ILensHub.sol';
 import {Address} from '@openzeppelin/contracts/utils/Address.sol';
 import {IERC721} from '@openzeppelin/contracts/token/ERC721/IERC721.sol';
@@ -43,6 +43,8 @@ contract LensHandles is ERC721, ERC2981CollectionRoyalties, ImmutableOwnable, IL
     uint256 private _totalSupply;
 
     mapping(uint256 tokenId => string localName) internal _localNames;
+
+    address internal _handleTokenURIContract;
 
     modifier onlyOwnerOrWhitelistedProfileCreator() {
         if (msg.sender != OWNER && !ILensHub(LENS_HUB).isProfileCreatorWhitelisted(msg.sender)) {
@@ -85,12 +87,20 @@ contract LensHandles is ERC721, ERC2981CollectionRoyalties, ImmutableOwnable, IL
         return _totalSupply;
     }
 
+    function setHandleTokenURIContract(address handleTokenURIContract) external override onlyOwner {
+        _handleTokenURIContract = handleTokenURIContract;
+    }
+
+    function getHandleTokenURIContract() external view override returns (address) {
+        return _handleTokenURIContract;
+    }
+
     /**
      * @dev See {IERC721Metadata-tokenURI}.
      */
     function tokenURI(uint256 tokenId) public view override returns (string memory) {
         _requireMinted(tokenId);
-        return HandleTokenURILib.getTokenURI(tokenId, _localNames[tokenId], NAMESPACE);
+        return IHandleTokenURI(_handleTokenURIContract).getTokenURI(tokenId, _localNames[tokenId], NAMESPACE);
     }
 
     /// @inheritdoc ILensHandles
