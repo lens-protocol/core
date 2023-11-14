@@ -130,14 +130,16 @@ library Face {
                     faceSvgStart,
                     '<path class="faceFillColor" fill-opacity=".12" d="M74.7 154.2a1.5 1.5 0 1 1-2.5-1.5 1.5 1.5 0 0 1 2.5 1.5Zm5.1 3a1.5 1.5 0 1 1-2.5-1.5 1.5 1.5 0 0 1 2.5 1.4Zm-4.5 1.9a1.5 1.5 0 1 1-2.5-1.5 1.5 1.5 0 0 1 2.5 1.5Zm55.4-3.4a1.5 1.5 0 1 1-2.5 1.4 1.5 1.5 0 0 1 2.5-1.4Zm5.1-3a1.5 1.5 0 1 1-2.5 1.5 1.5 1.5 0 0 1 2.5-1.5Zm-.6 4.9a1.5 1.5 0 1 1-2.5 1.5 1.5 1.5 0 0 1 2.5-1.5Z"/><ellipse class="faceFillColor" cx="86.825" cy="140.298" rx="9.825" ry="11.298"/><path fill="#fff" fill-rule="evenodd" d="M88.9 133.3a.6.6 0 0 1 1.1 0l1.2 2.7a.6.6 0 0 0 .3.4l1.4.6a.6.6 0 0 1 0 1.2l-1.4.7a.6.6 0 0 0-.3.3L90 142a.6.6 0 0 1-1.1 0l-1.2-2.7a.6.6 0 0 0-.3-.3l-1.4-.7a.6.6 0 0 1 0-1.2l1.4-.6a.6.6 0 0 0 .3-.4l1.2-2.7ZM84 141a.4.4 0 0 1 .7 0l.7 1.8a.4.4 0 0 0 .2.2l1 .4c.3.2.3.6 0 .8l-1 .4a.4.4 0 0 0-.2.2l-.7 1.8a.4.4 0 0 1-.7 0l-.8-1.8a.4.4 0 0 0-.2-.2l-1-.4a.4.4 0 0 1 0-.8l1-.4a.4.4 0 0 0 .2-.2l.8-1.8Zm-3.3-4.8a.4.4 0 0 1 .8 0l.2.6.2.3h.2a.4.4 0 0 1 0 .8H82a.4.4 0 0 0-.2.3l-.2.6a.4.4 0 0 1-.8 0l-.2-.6a.4.4 0 0 0-.2-.2l-.2-.1a.4.4 0 0 1 0-.8h.2a.4.4 0 0 0 .2-.3l.2-.6Z" clip-rule="evenodd"/><ellipse class="faceFillColor" cx="9.825" cy="11.298" rx="9.825" ry="11.298" transform="matrix(-1 0 0 1 133 129)"/><path fill="#fff" fill-rule="evenodd" d="M121.1 133.3a.6.6 0 0 0-1.1 0l-1.2 2.7a.6.6 0 0 1-.3.4l-1.4.6a.6.6 0 0 0 0 1.2l1.4.7a.6.6 0 0 1 .3.3l1.2 2.7a.6.6 0 0 0 1.1 0l1.2-2.7a.6.6 0 0 1 .3-.3l1.4-.7a.6.6 0 0 0 0-1.2l-1.4-.6a.6.6 0 0 1-.3-.4l-1.2-2.7Zm4.8 7.6a.4.4 0 0 0-.7 0l-.7 1.8a.4.4 0 0 1-.2.2l-1 .4a.4.4 0 0 0 0 .8l1 .4a.4.4 0 0 1 .2.2l.7 1.8c.1.3.6.3.7 0l.8-1.8a.4.4 0 0 1 .2-.2l1-.4a.4.4 0 0 0 0-.8l-1-.4a.4.4 0 0 1-.2-.2l-.8-1.8Zm3.3-4.8a.4.4 0 0 0-.8 0l-.2.6a.4.4 0 0 1-.2.3h-.2a.4.4 0 0 0 0 .8h.2a.4.4 0 0 1 .2.3l.2.6c.2.3.6.3.8 0l.2-.6a.4.4 0 0 1 .2-.2l.2-.1a.4.4 0 0 0 0-.8h-.2a.4.4 0 0 1-.2-.3l-.2-.6Z" clip-rule="evenodd"/><path class="faceFillColor" d="M114 160c0 3-4 4.2-9 4.2s-9-1.2-9-4.1c0-3 4-6.5 9-6.5s9 3.6 9 6.5Z"/><path fill="#fff" d="M98 154.6h14v1.9c0 1.2-1 2.1-2.1 2.1H100a2.1 2.1 0 0 1-2.1-2.1v-1.9Z"/><path class="faceStrokeColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="3.176" d="M114 160c0 3-4 4.2-9 4.2s-9-1.2-9-4.1c0-3 4-6.5 9-6.5s9 3.6 9 6.5Z"/></svg>'
                 );
+        } else {
+            revert(); // Avoid warnings.
         }
     }
 
     function _getStyleTag(FaceColors faceColor) internal pure returns (string memory) {
         if (faceColor == FaceColors.GOLD) {
-            return "<style>.faceStrokeColor{stroke: #B96326} .faceFillColor{fill: #B96326}</style>";
+            return '<style>.faceStrokeColor{stroke: #B96326} .faceFillColor{fill: #B96326}</style>';
         } else {
-            return "<style>.faceStrokeColor{stroke: #000} .faceFillColor{fill: #000}</style>";
+            return '<style>.faceStrokeColor{stroke: #000} .faceFillColor{fill: #000}</style>';
         }
     }
 }

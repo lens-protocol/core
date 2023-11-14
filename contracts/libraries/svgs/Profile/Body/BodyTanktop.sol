@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
 
-import {Hands} from "../Hands.sol";
+import {Hands} from '../Hands.sol';
 
 library BodyTanktop {
     function getBody(Hands.HandsVariants handsVariant) public pure returns (string memory) {
@@ -14,6 +14,8 @@ library BodyTanktop {
         } else if (handsVariant == Hands.HandsVariants.PEACESINGLE) {
             return
                 '<path class="handsColor" d="m34.6 245.7 1.5-13.4 10.4-6.8 13.2-25 7.2-9.8 3.6 6.7 2 9-7.6 27.3 2 12-3 5.8-8.4 1.4H44l-9.5-7.2Z"/><path class="bodyColor1" d="M73.4 186.1s18.8-4.1 31.2-4.1c12.5 0 31.3 4.1 31.3 4.1l7.1 5.1-2.3 17 3.6 34.6-8.4 8.7-15.4 4.8-15.9 1.4-15.9-1.4-15.3-4.8-8.5-8.7 4.6-38-2-13.6 5.9-5Z"/><path class="handsColor" d="M126.5 189.8c-2.2 7.5-10.3 14-21 14-10.6 0-22-6.2-22-14 0-2.3-2.2-5.7-2.2-5.7S98 182 105.5 182c8.8 0 23 2.8 23 2.8s-.8 3.5-2 5Z"/><path class="bStr1" stroke-width="4" d="M55.5 251.7a13.7 13.7 0 0 1-13.3 1.2 13.6 13.6 0 0 1-7.4-14 15 15 0 0 1 7-10.2 16 16 0 0 0 6-5.8c2.5-4.8 5-9 7.7-13.5 3.4-5.8 4.4-13.2 11.9-19"/><path class="bStr1" stroke-width="2" d="M57.5 247.6a11.2 11.2 0 0 1-5 4.8"/><path class="bStr1" stroke-width="4" d="M55.6 251.7a8 8 0 0 0 7.9 0 7.1 7.1 0 0 0 3.7-6.5"/><path class="bStr1" stroke-width="3" d="M67.4 245.3a55.3 55.3 0 0 0 36.7 12.4m38.5-12.4a55.3 55.3 0 0 1-36.7 12.4"/><path class="bStr1" stroke-width="4" d="m80.1 183.5 25-.5 24.8.5"/><path class="bStr2" stroke-width="4" d="M80 183.6s-2.4-.3-6.8 1.9c-4.3 2.1-6.2 4.8-6.2 4.8s2 9.5 2.4 15.6c1 13.6-5.8 28-4 34.7 2.6 9.3 22.2 17.1 40 17.1m24.5-74.1s2.4-.3 6.8 1.9c4.4 2.1 6.2 4.8 6.2 4.8s-2 9.5-2.4 15.6c-1 13.6 5.8 28 4 34.7-2.6 9.3-22.2 17.1-40 17.1"/><path class="bStr2" stroke-width="3" d="M80 183.6s4 7.6 6.4 10.8c5 7 11.4 8.9 18.6 8.9a21 21 0 0 0 18.5-8.9 143 143 0 0 0 6.4-10.8"/></svg>';
+        } else {
+            revert(); // Avoid warnings.
         }
     }
 }

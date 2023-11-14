@@ -22,23 +22,25 @@ library HeadwearGlasses {
         (string memory primaryColor, string memory secondaryColor) = _getGlassesColor(glassesColor);
         return
             string.concat(
-                "<style>.glassesColor1 { fill:",
+                '<style>.glassesColor1 { fill:',
                 primaryColor,
-                "}.glassesColor2 { fill:",
+                '}.glassesColor2 { fill:',
                 secondaryColor,
-                "}</style>"
+                '}</style>'
             );
     }
 
     function _getGlassesColor(GlassesColors glassesColor) internal pure returns (string memory, string memory) {
         if (glassesColor == GlassesColors.GREEN) {
-            return ("#F4FFDC", "#A0D170");
+            return ('#F4FFDC', '#A0D170');
         } else if (glassesColor == GlassesColors.PURPLE) {
-            return ("#F9F4FF", "#EAD7FF");
+            return ('#F9F4FF', '#EAD7FF');
         } else if (glassesColor == GlassesColors.BLUE) {
-            return ("#F4F6FF", "#D9E0FF");
+            return ('#F4F6FF', '#D9E0FF');
         } else if (glassesColor == GlassesColors.GOLD) {
-            return ("#FFEE93", "#FFCD3D");
+            return ('#FFEE93', '#FFCD3D');
+        } else {
+            revert(); // Avoid warnings.
         }
     }
 }

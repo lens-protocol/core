@@ -20,13 +20,15 @@ library HeadwearIcecream {
 
     function _getIcecreamColor(IcecreamColors icecreamColor) internal pure returns (string memory) {
         if (icecreamColor == IcecreamColors.GREEN) {
-            return "#A0D170";
+            return '#A0D170';
         } else if (icecreamColor == IcecreamColors.PURPLE) {
-            return "#EAD7FF";
+            return '#EAD7FF';
         } else if (icecreamColor == IcecreamColors.BLUE) {
-            return "#D9E0FF";
+            return '#D9E0FF';
         } else if (icecreamColor == IcecreamColors.GOLD) {
-            return "#FFCD3D";
+            return '#FFCD3D';
+        } else {
+            revert(); // Avoid warnings.
         }
     }
 }

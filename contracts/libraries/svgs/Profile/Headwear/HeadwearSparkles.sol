@@ -20,17 +20,19 @@ library HeadwearSparkles {
     function _getSparklesStyle(SparklesColors sparklesColor) internal pure returns (string memory) {
         return
             string.concat(
-                "<style>.hwcolor{fill:#fff; stroke:",
+                '<style>.hwcolor{fill:#fff; stroke:',
                 _getSparklesColor(sparklesColor),
-                "; stroke-width: 3; stroke-linecap: square; stroke-linejoin: round}</style>"
+                '; stroke-width: 3; stroke-linecap: square; stroke-linejoin: round}</style>'
             );
     }
 
     function _getSparklesColor(SparklesColors sparklesColor) internal pure returns (string memory) {
         if (sparklesColor == SparklesColors.WHITE) {
-            return "#000";
+            return '#000';
         } else if (sparklesColor == SparklesColors.GOLD) {
-            return "#B96326";
+            return '#B96326';
+        } else {
+            revert(); // Avoid warnings.
         }
     }
 }

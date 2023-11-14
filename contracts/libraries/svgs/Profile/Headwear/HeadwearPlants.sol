@@ -26,23 +26,25 @@ library HeadwearPlants {
 
         return
             string.concat(
-                "<style>.color1 { fill: ",
+                '<style>.color1 { fill: ',
                 leafsColor1,
-                " }.color2 { fill: ",
+                ' }.color2 { fill: ',
                 leafsColor2,
-                " }.hwline3 {stroke: black; stroke-linecap: round; stroke-linejoin: round; stroke-width: 3}.hwline4 {stroke: black; stroke-linecap: round; stroke-linejoin: round; stroke-width: 4}</style>"
+                ' }.hwline3 {stroke: black; stroke-linecap: round; stroke-linejoin: round; stroke-width: 3}.hwline4 {stroke: black; stroke-linecap: round; stroke-linejoin: round; stroke-width: 4}</style>'
             );
     }
 
     function _getPlantsColor(PlantsColors plantsColor) internal pure returns (string memory, string memory) {
         if (plantsColor == PlantsColors.GREEN) {
-            return ("#A0D170", "#FFF");
+            return ('#A0D170', '#FFF');
         } else if (plantsColor == PlantsColors.PURPLE) {
-            return ("#EAD7FF", "#FFF");
+            return ('#EAD7FF', '#FFF');
         } else if (plantsColor == PlantsColors.BLUE) {
-            return ("#D9E0FF", "#FFF");
+            return ('#D9E0FF', '#FFF');
         } else if (plantsColor == PlantsColors.GOLD) {
-            return ("#FFCD3D", "#FFF");
+            return ('#FFCD3D', '#FFF');
+        } else {
+            revert(); // Avoid warnings.
         }
     }
 }

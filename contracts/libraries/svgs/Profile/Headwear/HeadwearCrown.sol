@@ -22,23 +22,25 @@ library HeadwearCrown {
         (string memory primaryColor, string memory secondaryColor) = _getCrownColor(crownColor);
         return
             string.concat(
-                "<style>.crownColor1 { fill:",
+                '<style>.crownColor1 { fill:',
                 primaryColor,
-                "}.crownColor2 { fill:",
+                '}.crownColor2 { fill:',
                 secondaryColor,
-                "}</style>"
+                '}</style>'
             );
     }
 
     function _getCrownColor(CrownColors crownColor) internal pure returns (string memory, string memory) {
         if (crownColor == CrownColors.GREEN) {
-            return ("#F4FFDC", "#A0D170");
+            return ('#F4FFDC', '#A0D170');
         } else if (crownColor == CrownColors.PURPLE) {
-            return ("#F9F4FF", "#EAD7FF");
+            return ('#F9F4FF', '#EAD7FF');
         } else if (crownColor == CrownColors.BLUE) {
-            return ("#F4F6FF", "#D9E0FF");
+            return ('#F4F6FF', '#D9E0FF');
         } else if (crownColor == CrownColors.GOLD) {
-            return ("#FFEE93", "#FFCD3D");
+            return ('#FFEE93', '#FFCD3D');
+        } else {
+            revert(); // Avoid warnings.
         }
     }
 }

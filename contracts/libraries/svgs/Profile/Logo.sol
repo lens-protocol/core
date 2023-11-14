@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
 
-import {Body} from "./Body.sol";
+import {Body} from './Body.sol';
 
 library Logo {
     enum LogoVariants {
@@ -42,6 +42,8 @@ library Logo {
             return getLogoTshirtTanktop(logoVariant, logoColor);
         } else if (bodyVariant == Body.BodyVariants.JACKET) {
             return getLogoJacket(logoVariant, logoColor);
+        } else {
+            revert(); // Avoid warnings.
         }
     }
 
@@ -74,6 +76,8 @@ library Logo {
                     _getLogoColor(logoColor),
                     '" stroke="#000" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.752"/><path stroke="#000" stroke-width="1.5" d="M105 204.2v12m0-4.9-4.5 2.6m4.5-2.6 4.5 2.6"/></svg>'
                 );
+        } else {
+            revert(); // Avoid warnings.
         }
     }
 
@@ -106,6 +110,8 @@ library Logo {
                     _getLogoColor(logoColor),
                     '" stroke="#000" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.752"/><path stroke="#000" stroke-width="1.5" d="M105 219.2v16m0-6.5-6 3.5m6-3.5 6 3.5"/></svg>'
                 );
+        } else {
+            revert(); // Avoid warnings.
         }
     }
 
@@ -138,20 +144,24 @@ library Logo {
                     _getLogoColor(logoColor),
                     '" stroke="#000" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.752"/><path fill="#000" fill-rule="evenodd" d="M127.5 212.2v-5.7h1v5.7l3.5 2-.5.8-3-1.8v3.3h-1v-3.3l-3 1.8-.5-.8 3.5-2Z" clip-rule="evenodd"/></svg>'
                 );
+        } else {
+            revert(); // Avoid warnings.
         }
     }
 
     function _getLogoColor(LogoColors logoColor) internal pure returns (string memory) {
         if (logoColor == LogoColors.GREEN) {
-            return "#A0D170";
+            return '#A0D170';
         } else if (logoColor == LogoColors.PURPLE) {
-            return "#EAD7FF";
+            return '#EAD7FF';
         } else if (logoColor == LogoColors.BLUE) {
-            return "#D9E0FF";
+            return '#D9E0FF';
         } else if (logoColor == LogoColors.LIGHT) {
-            return "#EAEAEA";
+            return '#EAEAEA';
         } else if (logoColor == LogoColors.DARK) {
-            return "#DBDBDB";
+            return '#DBDBDB';
+        } else {
+            revert(); // Avoid warnings.
         }
     }
 }

@@ -133,6 +133,8 @@ library HandleSVG {
             return '#EAD7FF';
         } else if (faceColor == FaceColors.BLUE) {
             return '#D9E0FF';
+        } else {
+            revert(); // Avoid warnings.
         }
     }
 
@@ -192,6 +194,7 @@ library HandleSVG {
                 return chars[i].width;
             }
         }
+        revert(); // Avoid warnings.
     }
 
     function getTextWidth(string memory text) internal pure returns (uint256) {

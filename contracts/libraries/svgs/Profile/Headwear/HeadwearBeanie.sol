@@ -24,23 +24,25 @@ library HeadwearBeanie {
     function _getBeanieStyle(BeanieColors beanieColor) internal pure returns (string memory) {
         return
             string.concat(
-                "<style>.beanieColor { fill: ",
+                '<style>.beanieColor { fill: ',
                 _getBeanieColor(beanieColor),
-                " }.hwline3 {stroke: black; stroke-linecap: round; stroke-linejoin: round; stroke-width: 3}.hwline4 {stroke: black; stroke-linecap: round; stroke-linejoin: round; stroke-width: 4}</style>"
+                ' }.hwline3 {stroke: black; stroke-linecap: round; stroke-linejoin: round; stroke-width: 3}.hwline4 {stroke: black; stroke-linecap: round; stroke-linejoin: round; stroke-width: 4}</style>'
             );
     }
 
     function _getBeanieColor(BeanieColors beanieColor) internal pure returns (string memory) {
         if (beanieColor == BeanieColors.GREEN) {
-            return "#F4FFDC";
+            return '#F4FFDC';
         } else if (beanieColor == BeanieColors.LIGHT) {
-            return "#FFFFFF";
+            return '#FFFFFF';
         } else if (beanieColor == BeanieColors.DARK) {
-            return "#575757";
+            return '#575757';
         } else if (beanieColor == BeanieColors.PURPLE) {
-            return "#F3EAFF";
+            return '#F3EAFF';
         } else if (beanieColor == BeanieColors.GOLD) {
-            return "#FFEE93";
+            return '#FFEE93';
+        } else {
+            revert(); // Avoid warnings.
         }
     }
 }

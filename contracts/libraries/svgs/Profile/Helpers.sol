@@ -39,13 +39,15 @@ library Background {
 
     function getBackgroundColor(BackgroundColors backgroundColor) internal pure returns (string memory) {
         if (backgroundColor == BackgroundColors.GREEN) {
-            return "#green";
+            return '#green';
         } else if (backgroundColor == BackgroundColors.PURPLE) {
-            return "#purple";
+            return '#purple';
         } else if (backgroundColor == BackgroundColors.BLUE) {
-            return "#blue";
+            return '#blue';
         } else if (backgroundColor == BackgroundColors.GOLD) {
-            return "#yellow";
+            return '#yellow';
+        } else {
+            revert(); // Avoid warnings.
         }
     }
 }
@@ -60,13 +62,15 @@ library Skin {
 
     function getSkinColor(SkinColors skinColor) internal pure returns (string memory) {
         if (skinColor == SkinColors.GREEN) {
-            return "#A0D170";
+            return '#A0D170';
         } else if (skinColor == SkinColors.PURPLE) {
-            return "#EAD7FF";
+            return '#EAD7FF';
         } else if (skinColor == SkinColors.BLUE) {
-            return "#D9E0FF";
+            return '#D9E0FF';
         } else if (skinColor == SkinColors.GOLD) {
-            return "#F8C944";
+            return '#F8C944';
+        } else {
+            revert(); // Avoid warnings.
         }
     }
 }

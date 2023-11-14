@@ -22,23 +22,25 @@ library HeadwearMushroom {
         (string memory primaryColor, string memory secondaryColor) = _getMushroomColor(mushroomColor);
         return
             string.concat(
-                "<style>.mushroomColor1 { fill:",
+                '<style>.mushroomColor1 { fill:',
                 primaryColor,
-                "}.mushroomColor2 { fill:",
+                '}.mushroomColor2 { fill:',
                 secondaryColor,
-                "}</style>"
+                '}</style>'
             );
     }
 
     function _getMushroomColor(MushroomColors mushroomColor) internal pure returns (string memory, string memory) {
         if (mushroomColor == MushroomColors.GREEN) {
-            return ("#F4FFDC", "#A0D170");
+            return ('#F4FFDC', '#A0D170');
         } else if (mushroomColor == MushroomColors.PURPLE) {
-            return ("#F9F4FF", "#EAD7FF");
+            return ('#F9F4FF', '#EAD7FF');
         } else if (mushroomColor == MushroomColors.BLUE) {
-            return ("#F4F6FF", "#D9E0FF");
+            return ('#F4F6FF', '#D9E0FF');
         } else if (mushroomColor == MushroomColors.GOLD) {
-            return ("#FFEE93", "#FFCD3D");
+            return ('#FFEE93', '#FFCD3D');
+        } else {
+            revert(); // Avoid warnings.
         }
     }
 }

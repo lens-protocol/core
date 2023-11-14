@@ -24,21 +24,23 @@ library HeadwearLeafs {
     function _getLeafsStyle(LeafsColors leafsColor) internal pure returns (string memory) {
         return
             string.concat(
-                "<style>.hwcolor { fill: ",
+                '<style>.hwcolor { fill: ',
                 _getLeafsColor(leafsColor),
-                " }.hwline25 {stroke: black; stroke-linecap: round; stroke-linejoin: round; stroke-width: 2.5}.hwline3 {stroke: black; stroke-linecap: round; stroke-linejoin: round; stroke-width: 3}.hwline35 {stroke: black; stroke-linecap: round; stroke-linejoin: round; stroke-width: 3.5}</style>"
+                ' }.hwline25 {stroke: black; stroke-linecap: round; stroke-linejoin: round; stroke-width: 2.5}.hwline3 {stroke: black; stroke-linecap: round; stroke-linejoin: round; stroke-width: 3}.hwline35 {stroke: black; stroke-linecap: round; stroke-linejoin: round; stroke-width: 3.5}</style>'
             );
     }
 
     function _getLeafsColor(LeafsColors leafsColor) internal pure returns (string memory) {
         if (leafsColor == LeafsColors.GREEN) {
-            return "#A0D170";
+            return '#A0D170';
         } else if (leafsColor == LeafsColors.PURPLE) {
-            return "#EAD7FF";
+            return '#EAD7FF';
         } else if (leafsColor == LeafsColors.BLUE) {
-            return "#D9E0FF";
+            return '#D9E0FF';
         } else if (leafsColor == LeafsColors.GOLD) {
-            return "#FBD159";
+            return '#FBD159';
+        } else {
+            revert(); // Avoid warnings.
         }
     }
 }

@@ -22,23 +22,25 @@ library HeadwearFloral {
         (string memory primaryColor, string memory secondaryColor) = _getFloralColor(floralColor);
         return
             string.concat(
-                "<style>.floralColor1 { fill:",
+                '<style>.floralColor1 { fill:',
                 primaryColor,
-                "}.floralColor2 { fill:",
+                '}.floralColor2 { fill:',
                 secondaryColor,
-                "}</style>"
+                '}</style>'
             );
     }
 
     function _getFloralColor(FloralColors floralColor) internal pure returns (string memory, string memory) {
         if (floralColor == FloralColors.GREEN) {
-            return ("#F4FFDC", "#A0D170");
+            return ('#F4FFDC', '#A0D170');
         } else if (floralColor == FloralColors.PURPLE) {
-            return ("#F9F4FF", "#EAD7FF");
+            return ('#F9F4FF', '#EAD7FF');
         } else if (floralColor == FloralColors.BLUE) {
-            return ("#F4F6FF", "#D9E0FF");
+            return ('#F4F6FF', '#D9E0FF');
         } else if (floralColor == FloralColors.GOLD) {
-            return ("#FFEE93", "#FFCD3D");
+            return ('#FFEE93', '#FFCD3D');
+        } else {
+            revert(); // Avoid warnings.
         }
     }
 }

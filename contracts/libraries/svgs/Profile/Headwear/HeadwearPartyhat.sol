@@ -22,23 +22,25 @@ library HeadwearPartyhat {
         (string memory primaryColor, string memory secondaryColor) = _getPartyhatColor(partyhatColor);
         return
             string.concat(
-                "<style>.partyhatColor1 { fill:",
+                '<style>.partyhatColor1 { fill:',
                 primaryColor,
-                "}.partyhatColor2 { fill:",
+                '}.partyhatColor2 { fill:',
                 secondaryColor,
-                "}</style>"
+                '}</style>'
             );
     }
 
     function _getPartyhatColor(PartyhatColors partyhatColor) internal pure returns (string memory, string memory) {
         if (partyhatColor == PartyhatColors.GREEN) {
-            return ("#F4FFDC", "#A0D170");
+            return ('#F4FFDC', '#A0D170');
         } else if (partyhatColor == PartyhatColors.PURPLE) {
-            return ("#F9F4FF", "#EAD7FF");
+            return ('#F9F4FF', '#EAD7FF');
         } else if (partyhatColor == PartyhatColors.BLUE) {
-            return ("#F4F6FF", "#D9E0FF");
+            return ('#F4F6FF', '#D9E0FF');
         } else if (partyhatColor == PartyhatColors.GOLD) {
-            return ("#FFEE93", "#FFCD3D");
+            return ('#FFEE93', '#FFCD3D');
+        } else {
+            revert(); // Avoid warnings.
         }
     }
 }

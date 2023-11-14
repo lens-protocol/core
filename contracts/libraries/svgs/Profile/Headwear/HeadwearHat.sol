@@ -26,27 +26,29 @@ library HeadwearHat {
         (string memory hatColor1, string memory hatColor2) = _getHatColor(hatColor);
         return
             string.concat(
-                "<style>.hatColor1 { fill: ",
+                '<style>.hatColor1 { fill: ',
                 hatColor1,
-                " }.hatColor2 { fill: ",
+                ' }.hatColor2 { fill: ',
                 hatColor2,
-                " }.hatLine {stroke: black; stroke-linecap: round; stroke-linejoin: round}</style>"
+                ' }.hatLine {stroke: black; stroke-linecap: round; stroke-linejoin: round}</style>'
             );
     }
 
     function _getHatColor(HatColors hatColor) internal pure returns (string memory, string memory) {
         if (hatColor == HatColors.GREEN) {
-            return ("#A0B884", "#F4FFDC");
+            return ('#A0B884', '#F4FFDC');
         } else if (hatColor == HatColors.LIGHT) {
-            return ("#EAEAEA", "#FFFFFF");
+            return ('#EAEAEA', '#FFFFFF');
         } else if (hatColor == HatColors.DARK) {
-            return ("#DBDBDB", "#575757");
+            return ('#DBDBDB', '#575757');
         } else if (hatColor == HatColors.BLUE) {
-            return ("#F3EAFF", "#EAD7FF");
+            return ('#F3EAFF', '#EAD7FF');
         } else if (hatColor == HatColors.PURPLE) {
-            return ("#ECF0FF", "#D9E0FF");
+            return ('#ECF0FF', '#D9E0FF');
         } else if (hatColor == HatColors.GOLD) {
-            return ("#FFCF3D", "#FFEE93");
+            return ('#FFCF3D', '#FFEE93');
+        } else {
+            revert(); // Avoid warnings.
         }
     }
 }

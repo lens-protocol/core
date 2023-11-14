@@ -1,19 +1,19 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
 
-import {Helpers} from "./Helpers.sol";
-import {HeadwearBeanie} from "./Headwear/HeadwearBeanie.sol";
-import {HeadwearHat} from "./Headwear/HeadwearHat.sol";
-import {HeadwearIcecream} from "./Headwear/HeadwearIcecream.sol";
-import {HeadwearLeafs} from "./Headwear/HeadwearLeafs.sol";
-import {HeadwearPlants} from "./Headwear/HeadwearPlants.sol";
-import {HeadwearSparkles} from "./Headwear/HeadwearSparkles.sol";
-import {HeadwearCrown} from "./Headwear/HeadwearCrown.sol";
-import {HeadwearFloral} from "./Headwear/HeadwearFloral.sol";
-import {HeadwearGlasses} from "./Headwear/HeadwearGlasses.sol";
-import {HeadwearMushroom} from "./Headwear/HeadwearMushroom.sol";
-import {HeadwearNightcap} from "./Headwear/HeadwearNightcap.sol";
-import {HeadwearPartyhat} from "./Headwear/HeadwearPartyhat.sol";
+import {Helpers} from './Helpers.sol';
+import {HeadwearBeanie} from './Headwear/HeadwearBeanie.sol';
+import {HeadwearHat} from './Headwear/HeadwearHat.sol';
+import {HeadwearIcecream} from './Headwear/HeadwearIcecream.sol';
+import {HeadwearLeafs} from './Headwear/HeadwearLeafs.sol';
+import {HeadwearPlants} from './Headwear/HeadwearPlants.sol';
+import {HeadwearSparkles} from './Headwear/HeadwearSparkles.sol';
+import {HeadwearCrown} from './Headwear/HeadwearCrown.sol';
+import {HeadwearFloral} from './Headwear/HeadwearFloral.sol';
+import {HeadwearGlasses} from './Headwear/HeadwearGlasses.sol';
+import {HeadwearMushroom} from './Headwear/HeadwearMushroom.sol';
+import {HeadwearNightcap} from './Headwear/HeadwearNightcap.sol';
+import {HeadwearPartyhat} from './Headwear/HeadwearPartyhat.sol';
 
 library Headwear {
     enum HeadwearVariants {
@@ -44,7 +44,7 @@ library Headwear {
         }
 
         if (variant == HeadwearVariants.NONE) {
-            return "";
+            return '';
         } else if (variant == HeadwearVariants.BEANIE) {
             HeadwearBeanie.BeanieColors beanieColor = HeadwearBeanie.BeanieColors(
                 Helpers.getColor(seed, Helpers.ComponentBytes.HEADWEAR) %
@@ -116,6 +116,8 @@ library Headwear {
                     (uint8(type(HeadwearPartyhat.PartyhatColors).max) + (isGold ? 1 : 0))
             );
             return HeadwearPartyhat.getPartyhat(partyhatColor);
+        } else {
+            revert(); // Avoid warnings.
         }
     }
 }

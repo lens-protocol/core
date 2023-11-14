@@ -1,8 +1,8 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
 
-import {Body} from "./Body.sol";
-import {Skin} from "./Helpers.sol";
+import {Body} from './Body.sol';
+import {Skin} from './Helpers.sol';
 
 library Hands {
     enum HandsVariants {
@@ -25,14 +25,14 @@ library Hands {
         Body.BodyColors bodyColor
     ) public pure returns (string memory) {
         if (handsVariant == HandsVariants.HANDSDOWN) {
-            return "";
+            return '';
         }
         return
             string.concat(
                 '<svg xmlns="http://www.w3.org/2000/svg" width="210" height="335" fill="none">',
                 _getHandsStyle(handsColor, bodyVariant, bodyColor),
                 _getHandsElement(handsVariant, bodyVariant),
-                "</svg>"
+                '</svg>'
             );
     }
 
@@ -45,6 +45,8 @@ library Hands {
             return rightHand;
         } else if (handsVariant == HandsVariants.PEACEDOUBLE) {
             return string.concat(rightHand, _getLeftHand(bodyVariant));
+        } else {
+            revert(); // Avoid warnings.
         }
     }
 
@@ -61,6 +63,8 @@ library Hands {
         } else if (bodyVariant == Body.BodyVariants.TSHIRT) {
             return
                 '<path class="handsColor" d="M181.2 202.7c0 .3-.6 3.6-2.3 7a16 16 0 0 1-4.9 5.5c-5.5 3.6-10 3.5-16.9 1.8a25 25 0 0 1-12-6.6 17.5 17.5 0 0 1-3.5-6c-.7-1.6.3-3.8-.6-5.3-1.8-3.2.6-7 .6-7l2-4.5 3.4-3.6c0-3 .4-5.3 0-11.7-.5-7.2-1-10 0-12.5 3-7.7 12.8-6.6 15.6 0 .8 1.9.6 7.8.6 7.8v15a6798.2 6798.2 0 0 1 4-15s1.8-7 3-8.6a7.8 7.8 0 0 1 14.3 4.3c.2 2.5-.7 4.6-3 11.6l-3.2 9.3c5 2.4 8.4 10.8 3.5 17.6l-.6.9Z"/><path class="handsColor" d="M164.7 220c-1.1 1.8-2 5.2-3.5 6.9-4.3 5-14.5 1.5-14.5 1.5l-3.2-4.2-.8-2.7-1.5-6 5.5-2.1s2.6 1.4 8 2.6c6.1 1.5 10 1.6 15-1.7 1.8-1.2 3.2-3.1 4.2-5s-5 4.7-7.9 8.4c-1 1.2 1.1 1.2-1.3 2.3Z"/><path class="hLine3" d="M150 203c.3 0 .5.1.8 0 1.6 0 3.4-.3 5.3-1 5.2-2 10.1-6.7 6.3-12.8a7 7 0 0 0-6.2-3.3c-3.3.3-4.6 2.4-7.9 2.8m-1.2-4.7c0-3-.1-5.2-.5-11.6-.5-7.2-1-10.1 0-12.5 3-7.7 12.6-7 15.5-.3.8 1.8.9 8.3.9 8.3v15m15.3 1.3 3.2-9.3c2.3-7 3.2-9.1 3-11.6-.9-8.2-10.4-9.6-14.7-3.9a41 41 0 0 0-2.9 8.4l-3.9 15"/><path class="hLine3" d="m181.2 202.7.6-.9c4.9-6.8 1.6-15.2-3.5-17.7m2.9 18.6c0 .3-.6 3.6-2.3 7a16 16 0 0 1-4.9 5.5c-5.5 3.6-14.6 3.2-22.6 0"/><path class="hLine4" d="M166 218.4c-3.1 11-17.8 12.9-23.8 7.4"/><path class="hLine3" d="M147 184c-2.8.6-6.8 7.7-6 15 1.5 13.9 10.7 17 15.9 18m8.5-15.6c2.1 3.3 11.5 7 17-.5"/><path stroke="#000" stroke-linecap="round" stroke-miterlimit="10" stroke-width="3" d="M140.4 215.4s.8-1.2 2.5-2c3-1.5 4.7-.5 4.7-.5"/>';
+        } else {
+            revert(); // Avoid warnings.
         }
     }
 
@@ -77,6 +81,8 @@ library Hands {
         } else if (bodyVariant == Body.BodyVariants.TSHIRT) {
             return
                 '<path class="handsColor" d="M28.8 202.7c0 .3.6 3.6 2.3 7a16 16 0 0 0 4.9 5.5c5.5 3.6 10 3.5 16.9 1.8a25 25 0 0 0 12-6.6c1.7-1.8 2.6-4 3.5-6 .7-1.6-.3-3.8.6-5.3 1.8-3.2-.6-7-.6-7l-2-4.5L63 184c0-3-.4-5.3 0-11.7.5-7.2 1-10 0-12.5-3-7.7-12.8-6.6-15.6 0-.8 1.9-.6 7.8-.6 7.8v15l-4-15s-1.8-7-3-8.6a7.8 7.8 0 0 0-14.3 4.3c-.2 2.5.7 4.6 3 11.6l3.2 9.3c-5 2.4-8.4 10.8-3.5 17.6l.6.9Z"/><path class="handsColor" d="M45.3 220c1.1 1.8 2 5.2 3.5 6.9 4.3 5 14.5 1.5 14.5 1.5l3.2-4.2.8-2.7 1.5-6-5.5-2.1s-2.6 1.4-8 2.6c-6.1 1.5-10 1.6-15-1.7a13.5 13.5 0 0 1-4.2-5s5 4.7 7.9 8.4c1 1.2-1.1 1.2 1.3 2.3Z"/><path class="hLine3" d="M60 203c-.3 0-.5.1-.8 0-1.6 0-3.4-.3-5.3-1-5.2-2-10.1-6.7-6.3-12.8a7 7 0 0 1 6.2-3.3c3.3.3 4.6 2.4 7.9 2.8m1.2-4.7c0-3 .1-5.2.5-11.6.5-7.2 1-10.1 0-12.5-3-7.7-12.6-7-15.5-.3-.8 1.8-.9 8.3-.9 8.3v15m-15.3 1.3-3.2-9.3c-2.3-7-3.2-9.1-3-11.6.9-8.2 10.4-9.6 14.7-3.9a42 42 0 0 1 2.9 8.4l3.9 15"/><path class="hLine3" d="M28.8 202.7a12 12 0 0 1-.6-.9c-4.9-6.8-1.6-15.2 3.5-17.7m-2.9 18.6c0 .3.6 3.6 2.3 7a16 16 0 0 0 4.9 5.5c5.5 3.6 14.6 3.2 22.6 0"/><path class="hLine4" d="M44 218.4c3.1 11 17.8 12.9 23.8 7.4"/><path class="hLine3" d="M63 184c2.8.6 6.8 7.7 6 15-1.5 13.9-10.7 17-15.9 18m-8.5-15.6c-2.1 3.3-11.5 7-17-.5"/><path stroke="#000" stroke-linecap="round" stroke-miterlimit="10" stroke-width="3" d="M69.6 215.4s-.8-1.2-2.5-2c-3-1.5-4.7-.5-4.7-.5"/>';
+        } else {
+            revert(); // Avoid warnings.
         }
     }
 
@@ -87,11 +93,11 @@ library Hands {
     ) internal pure returns (string memory) {
         return
             string.concat(
-                "<style>.handsColor {fill: ",
+                '<style>.handsColor {fill: ',
                 Skin.getSkinColor(Skin.SkinColors(uint8(handsColor))),
-                "}.armColor {fill: ",
+                '}.armColor {fill: ',
                 _getArmColor(handsColor, bodyVariant, bodyColor),
-                "}.hLine3 {stroke: #000;stroke-linecap: round;stroke-linejoin: round;stroke-width: 3;}.hLine4 {stroke: #000;stroke-linecap: round;stroke-linejoin: round;stroke-width: 4;}</style>"
+                '}.hLine3 {stroke: #000;stroke-linecap: round;stroke-linejoin: round;stroke-width: 3;}.hLine4 {stroke: #000;stroke-linecap: round;stroke-linejoin: round;stroke-width: 4;}</style>'
             );
     }
 
@@ -108,6 +114,8 @@ library Hands {
             return Skin.getSkinColor(Skin.SkinColors(uint8(handsColor)));
         } else if (bodyVariant == Body.BodyVariants.JACKET) {
             return Body.getSecondaryBodyColor(bodyColor);
+        } else {
+            revert(); // Avoid warnings.
         }
     }
 }

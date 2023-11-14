@@ -22,23 +22,25 @@ library HeadwearNightcap {
         (string memory primaryColor, string memory secondaryColor) = _getNightcapColor(nightcapColor);
         return
             string.concat(
-                "<style>.nightcapColor1 { fill:",
+                '<style>.nightcapColor1 { fill:',
                 primaryColor,
-                "}.nightcapColor2 { fill:",
+                '}.nightcapColor2 { fill:',
                 secondaryColor,
-                "}</style>"
+                '}</style>'
             );
     }
 
     function _getNightcapColor(NightcapColors nightcapColor) internal pure returns (string memory, string memory) {
         if (nightcapColor == NightcapColors.GREEN) {
-            return ("#F4FFDC", "#A0D170");
+            return ('#F4FFDC', '#A0D170');
         } else if (nightcapColor == NightcapColors.PURPLE) {
-            return ("#F9F4FF", "#EAD7FF");
+            return ('#F9F4FF', '#EAD7FF');
         } else if (nightcapColor == NightcapColors.BLUE) {
-            return ("#F4F6FF", "#D9E0FF");
+            return ('#F4F6FF', '#D9E0FF');
         } else if (nightcapColor == NightcapColors.GOLD) {
-            return ("#FFEE93", "#FFCD3D");
+            return ('#FFEE93', '#FFCD3D');
+        } else {
+            revert(); // Avoid warnings.
         }
     }
 }
