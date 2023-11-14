@@ -31,7 +31,7 @@ contract ProfileSVGGen is Script {
         profileNFT = new ProfileNFT();
     }
 
-    function _testElement(uint256 maxColors, Helpers.ComponentBytes componentByte, string memory elementName) internal {
+    function _tryElement(uint256 maxColors, Helpers.ComponentBytes componentByte, string memory elementName) internal {
         for (uint8 i = 0; i <= maxColors + 1; i++) {
             uint256 seed = setColor(i, componentByte);
             console.logBytes32(bytes32(seed));
@@ -51,23 +51,23 @@ contract ProfileSVGGen is Script {
         }
     }
 
-    function testBackgrounds() public {
-        _testElement(uint256(type(Background.BackgroundColors).max), Helpers.ComponentBytes.BACKGROUND, 'background');
+    function tryBackgrounds() public {
+        _tryElement(uint256(type(Background.BackgroundColors).max), Helpers.ComponentBytes.BACKGROUND, 'background');
     }
 
-    function testSkins() public {
-        _testElement(uint256(type(Skin.SkinColors).max), Helpers.ComponentBytes.SKIN, 'skin');
+    function trySkins() public {
+        _tryElement(uint256(type(Skin.SkinColors).max), Helpers.ComponentBytes.SKIN, 'skin');
     }
 
-    function testLegs() public {
-        _testElement(uint256(type(Legs.LegColors).max), Helpers.ComponentBytes.LEGS, 'legs');
+    function tryLegs() public {
+        _tryElement(uint256(type(Legs.LegColors).max), Helpers.ComponentBytes.LEGS, 'legs');
     }
 
-    function testShoes() public {
-        _testElement(uint256(type(Shoes.ShoeColors).max), Helpers.ComponentBytes.SHOES, 'shoes');
+    function tryShoes() public {
+        _tryElement(uint256(type(Shoes.ShoeColors).max), Helpers.ComponentBytes.SHOES, 'shoes');
     }
 
-    function testFaces() public {
+    function tryFaces() public {
         for (uint8 v = 0; v <= uint8(type(Face.FaceVariants).max); v++) {
             for (uint8 c = 0; c <= uint8(type(Face.FaceColors).max) + 1; c++) {
                 uint256 seed = setVariant(v, Helpers.ComponentBytes.FACE) + setColor(c, Helpers.ComponentBytes.FACE);
@@ -87,7 +87,7 @@ contract ProfileSVGGen is Script {
         }
     }
 
-    function testHandsAndBody() public {
+    function tryHandsAndBody() public {
         for (uint8 v = 0; v <= uint8(type(Body.BodyVariants).max); v++) {
             for (uint8 c = 0; c <= uint8(type(Body.BodyColors).max); c++) {
                 for (uint8 h = 0; h <= uint8(type(Hands.HandsVariants).max); h++) {
@@ -118,7 +118,7 @@ contract ProfileSVGGen is Script {
         }
     }
 
-    function testLogoWithBody() public {
+    function tryLogoWithBody() public {
         for (uint8 b = 0; b <= uint8(type(Body.BodyVariants).max); b++) {
             for (uint8 bc = 0; bc <= uint8(type(Body.BodyColors).max); bc++) {
                 for (uint8 l = 0; l <= uint8(type(Logo.LogoVariants).max); l++) {
@@ -149,7 +149,7 @@ contract ProfileSVGGen is Script {
         }
     }
 
-    function testHeadwear() public {
+    function tryHeadwear() public {
         for (uint8 v = 0; v <= uint8(type(Headwear.HeadwearVariants).max); v++) {
             for (uint8 c = 0; c <= 7; c++) {
                 uint256 seed = setVariant(v, Helpers.ComponentBytes.HEADWEAR) +
@@ -187,7 +187,7 @@ contract ProfileSVGGen is Script {
         }
     }
 
-    function testGoldProfiles1() public {
+    function tryGoldProfiles1() public {
         uint256 i;
         for (i = 1; i < 10; i++) {
             string memory result = profileNFT.tryProfile(i);
@@ -195,7 +195,7 @@ contract ProfileSVGGen is Script {
         }
     }
 
-    function testHowManyHaveIcecream() public view {
+    function tryHowManyHaveIcecream() public view {
         console.log('How many have icecream?');
         uint256 count;
         for (uint256 i = 1; i < 130000; i++) {
@@ -208,7 +208,7 @@ contract ProfileSVGGen is Script {
         console.log('Total: ', count);
     }
 
-    function testProfiles() public {
+    function tryProfiles() public {
         uint i = 1001;
         string memory result = profileNFT.tryProfile(i);
         vm.writeFile(string.concat(dir, 'profiles/profile_', vm.toString(i), '.svg'), result);
@@ -219,7 +219,7 @@ contract ProfileSVGGen is Script {
         }
     }
 
-    function testFuzzProfiles() public {
+    function tryFuzzProfiles() public {
         for (uint256 i = 1; i < 10; i++) {
             uint256 profileId = uint256(keccak256(abi.encode(i))) % 10000000;
             string memory result = profileNFT.tryProfile(profileId);
@@ -238,16 +238,16 @@ contract ProfileSVGGen is Script {
     }
 
     function run() external {
-        testBackgrounds();
-        testSkins();
-        testLegs();
-        testShoes();
-        testFaces();
-        testHandsAndBody();
-        testLogoWithBody();
-        testHeadwear();
-        testGoldProfiles1();
-        testProfiles();
-        testFuzzProfiles();
+        tryBackgrounds();
+        trySkins();
+        tryLegs();
+        tryShoes();
+        tryFaces();
+        tryHandsAndBody();
+        tryLogoWithBody();
+        tryHeadwear();
+        tryGoldProfiles1();
+        tryProfiles();
+        tryFuzzProfiles();
     }
 }

@@ -19,7 +19,7 @@ contract HandleSVGGen is Script {
         handleNFT = new HandleNFT();
     }
 
-    function testHandles() public {
+    function tryHandles() public {
         vm.writeFile(string.concat(dir, 'handles/handle_1_black.svg'), handleNFT.tryWithName('x'));
         vm.writeFile(string.concat(dir, 'handles/handle_2_gold.svg'), handleNFT.tryWithName('gm'));
         vm.writeFile(string.concat(dir, 'handles/handle_3_blue.svg'), handleNFT.tryWithName('eth'));
@@ -54,7 +54,7 @@ contract HandleSVGGen is Script {
         );
     }
 
-    function testWWW() public {
+    function tryWWW() public {
         for (uint256 i = 1; i <= 26; i++) {
             string memory name = '';
             for (uint256 j = 0; j < i; j++) {
@@ -68,7 +68,7 @@ contract HandleSVGGen is Script {
     }
 
     function run() external {
-        testHandles();
-        testWWW();
+        tryHandles();
+        tryWWW();
     }
 }
