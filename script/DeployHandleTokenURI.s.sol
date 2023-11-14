@@ -3,11 +3,9 @@ pragma solidity ^0.8.13;
 
 import {ForkManagement} from 'script/helpers/ForkManagement.sol';
 import 'forge-std/Script.sol';
-import {ProfileTokenURI} from 'contracts/misc/token-uris/ProfileTokenURI.sol';
 import {HandleTokenURI} from 'contracts/misc/token-uris/HandleTokenURI.sol';
-import {FollowTokenURI} from 'contracts/misc/token-uris/FollowTokenURI.sol';
 
-contract DeployTokenURIs is Script, ForkManagement {
+contract DeployHandleTokenURI is Script, ForkManagement {
     using stdJson for string;
 
     struct LensAccount {
@@ -55,18 +53,12 @@ contract DeployTokenURIs is Script, ForkManagement {
 
     function deploy() internal {
         vm.startBroadcast(_deployer.ownerPk);
-        address profileTokenURI = address(new ProfileTokenURI());
         address handleTokenURI = address(new HandleTokenURI());
-        address followTokenURI = address(new FollowTokenURI());
         vm.stopBroadcast();
 
         console.log('\n');
-        console.log('ProfileTokenURI address: %s', address(profileTokenURI));
-        saveContractAddress('ProfileTokenURI', profileTokenURI);
         console.log('HandleTokenURI address: %s', address(handleTokenURI));
         saveContractAddress('HandleTokenURI', handleTokenURI);
-        console.log('FollowTokenURI address: %s', address(followTokenURI));
-        saveContractAddress('FollowTokenURI', followTokenURI);
         console.log('\n');
     }
 
