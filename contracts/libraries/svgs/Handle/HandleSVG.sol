@@ -2,9 +2,11 @@
 pragma solidity ^0.8.0;
 
 import {GintoNordFontSVG} from './GintoNordFontSVG.sol';
+import {Strings} from '@openzeppelin/contracts/utils/Strings.sol';
 
 library HandleSVG {
-    uint256 constant MAX_WIDTH = 245;
+    using Strings for uint256;
+    uint256 constant MAX_WIDTH = 275;
 
     enum FaceColors {
         GREEN,
@@ -102,26 +104,24 @@ library HandleSVG {
     }
 
     function getTextElement(string memory localName) internal pure returns (string memory) {
-        // 21px is the @ width
-        if (getTextWidth(localName) <= MAX_WIDTH - 21) {
-            return
-                string.concat(
-                    '<text fill="black" xml:space="preserve" style="white-space: pre" x="50%" y="60" text-anchor="middle" font-family="Ginto Nord Medium" font-size="20" font-weight="500" letter-spacing="-0.7px">@',
-                    localName,
-                    '</text>'
-                );
-        } else {
-            (string memory line1, string memory line2) = splitTextToFit(localName);
-            return
-                string.concat(
-                    '<text fill="black" xml:space="preserve" style="white-space: pre" x="50%" y="50" text-anchor="middle" font-family="Ginto Nord Medium" font-size="20" font-weight="500" letter-spacing="-0.7px">',
-                    line1,
-                    '</text>',
-                    '<text fill="black" xml:space="preserve" style="white-space: pre" x="50%" y="70" text-anchor="middle" font-family="Ginto Nord Medium" font-size="20" font-weight="500" letter-spacing="-0.7px">',
-                    line2,
-                    '</text>'
-                );
+        uint256 textWidth = getTextWidth(string.concat('@', localName));
+        string memory fontSize = '20';
+
+        if (textWidth > MAX_WIDTH) {
+            uint256 sampleTextWidthAt20 = getWidthFromFontsize(20);
+            uint256 scalingFactor = (textWidth * 1000) / sampleTextWidthAt20;
+            uint256 equivalentSampleTextWidth = (((MAX_WIDTH * 10000) / scalingFactor) + 5) / 10;
+            uint256 fontSize10x = getFontsizeFromWidth10x(equivalentSampleTextWidth);
+            fontSize = string.concat((fontSize10x / 10).toString(), '.', (fontSize10x % 10).toString());
         }
+        return
+            string.concat(
+                '<text fill="black" xml:space="preserve" style="white-space: pre" x="50%" y="60" text-anchor="middle" font-family="Ginto Nord Medium" font-size="',
+                fontSize,
+                '" font-weight="500" letter-spacing="-0.7px">@',
+                localName,
+                '</text>'
+            );
     }
 
     function getBaseFaceColor(FaceColors faceColor) internal pure returns (string memory) {
@@ -195,6 +195,14 @@ library HandleSVG {
             }
         }
         revert(); // Avoid warnings.
+    }
+
+    function getWidthFromFontsize(uint256 fontSize) internal pure returns (uint256) {
+        return (((fontSize * 1244242 - 1075758 + 50000) / 10000) + 5) / 10;
+    }
+
+    function getFontsizeFromWidth10x(uint256 width) internal pure returns (uint256) {
+        return (((width * 10000000 + 107575800) / 1244242) + 5) / 10;
     }
 
     function getTextWidth(string memory text) internal pure returns (uint256) {
