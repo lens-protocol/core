@@ -13,6 +13,7 @@ contract ProfileTokenURI is IProfileTokenURI {
 
     function getTokenURI(uint256 profileId, uint256 mintTimestamp) external pure override returns (string memory) {
         string memory profileIdAsString = profileId.toString();
+        (string memory profileSvg, string memory traits) = ProfileSVG.getProfileSVG(profileId);
         return
             string(
                 abi.encodePacked(
@@ -24,7 +25,7 @@ contract ProfileTokenURI is IProfileTokenURI {
                             '","description":"Lens Protocol - Profile #',
                             profileIdAsString,
                             '","image":"data:image/svg+xml;base64,',
-                            Base64.encode(bytes(ProfileSVG.getProfileSVG(profileId))),
+                            Base64.encode(bytes(profileSvg)),
                             '","attributes":[{"display_type":"number","trait_type":"ID","value":"',
                             profileIdAsString,
                             '"},{"trait_type":"HEX ID","value":"',

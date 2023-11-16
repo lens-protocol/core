@@ -15,11 +15,17 @@ import {ProfileSVG} from 'contracts/libraries/svgs/Profile/ProfileSVG.sol';
 
 contract ProfileNFT {
     function tryProfile(uint256 profileId) external pure returns (string memory) {
-        return ProfileSVG.getProfileSVG(profileId);
+        (string memory profileSvg, ) = ProfileSVG.getProfileSVG(profileId);
+        return profileSvg;
     }
 
     function tryWithSeed(uint256 seed, bool isGold) external pure returns (string memory) {
-        return ProfileSVG._getSVG(seed, isGold);
+        (ProfileSVG.ChosenElements memory chosenElements, string memory headwearSvg) = ProfileSVG._chooseElements(
+            seed,
+            isGold
+        );
+
+        return ProfileSVG._getSVG(chosenElements, headwearSvg);
     }
 }
 
