@@ -31,8 +31,8 @@ library ProfileSVG {
                 '<svg xmlns="http://www.w3.org/2000/svg" width="275" height="275" fill="none"><g>',
                 '<path fill="url(',
                 Background.getBackgroundColor(backgroundColor),
-                ')" d="M0 0h275v275H0z"/></g>',
-                '<svg xmlns="http://www.w3.org/2000/svg" width="210" height="335" fill="none" id="container" x="30" y="0">',
+                ')" d="M0 0h275v415H0z"/></g>',
+                '<svg xmlns="http://www.w3.org/2000/svg" width="210" height="335" fill="none" id="container" x="52" viewBox="0 0 260 415" >',
                 _getElements(seed, isGold),
                 '</svg><defs><radialGradient id="green" cx="0" cy="0" r="1" gradientTransform="matrix(275 -275 362 362 0 275)" gradientUnits="userSpaceOnUse"><stop stop-color="#DFFFBF"/><stop offset="1" stop-color="#EFD"/></radialGradient><radialGradient id="purple" cx="0" cy="0" r="1" gradientTransform="matrix(275 -275 362 362 0 275)" gradientUnits="userSpaceOnUse"><stop stop-color="#F1E4FF"/><stop offset="1" stop-color="#F8F1FF"/></radialGradient><radialGradient id="blue" cx="0" cy="0" r="1" gradientTransform="matrix(275 -275 362 362 0 275)" gradientUnits="userSpaceOnUse"><stop stop-color="#E6EAFF"/><stop offset="1" stop-color="#EFF2FF"/></radialGradient><radialGradient id="yellow" cx="0" cy="0" r="1" gradientTransform="matrix(275 -275 362 362 0 275)" gradientUnits="userSpaceOnUse"><stop stop-color="#FFE7A5"/><stop offset="1" stop-color="#FFF2CE"/></radialGradient></defs></svg>'
             );
