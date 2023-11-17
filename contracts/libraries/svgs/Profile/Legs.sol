@@ -4,8 +4,8 @@ pragma solidity ^0.8.0;
 library Legs {
     enum LegColors {
         GREEN,
-        PURPLE,
-        BLUE
+        DARK,
+        LIGHT
     }
 
     // // we take the 6th byte from the left for leg color
@@ -26,9 +26,9 @@ library Legs {
     function _getLegColorHex(LegColors legColor) internal pure returns (string memory, string memory) {
         if (legColor == LegColors.GREEN) {
             return ('#93A97D', '#F4FFDC');
-        } else if (legColor == LegColors.PURPLE) {
+        } else if (legColor == LegColors.DARK) {
             return ('#575757', '#DBDBDB');
-        } else if (legColor == LegColors.BLUE) {
+        } else if (legColor == LegColors.LIGHT) {
             return ('#EAEAEA', '#FFFFFF');
         } else {
             revert(); // Avoid warnings.

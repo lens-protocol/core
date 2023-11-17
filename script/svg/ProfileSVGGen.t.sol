@@ -12,10 +12,11 @@ import {Logo} from 'contracts/libraries/svgs/Profile/Logo.sol';
 import {Headwear} from 'contracts/libraries/svgs/Profile/Headwear.sol';
 
 import {ProfileSVG} from 'contracts/libraries/svgs/Profile/ProfileSVG.sol';
+import {ProfileTokenURI} from 'contracts/misc/token-uris/ProfileTokenURI.sol';
 
 contract ProfileNFT {
-    function tryProfile(uint256 profileId) external pure returns (string memory) {
-        (string memory profileSvg, ) = ProfileSVG.getProfileSVG(profileId);
+    function tryProfile(uint256 profileId) external view returns (string memory) {
+        (string memory profileSvg, ) = ProfileSVG.getProfileSVG(profileId, blockhash(block.number - 1));
         return profileSvg;
     }
 
@@ -31,10 +32,12 @@ contract ProfileNFT {
 
 contract ProfileSVGGen is Test {
     ProfileNFT profileNFT;
+    ProfileTokenURI profileTokenURI;
     string constant dir = 'svgs/';
 
     function setUp() public {
         profileNFT = new ProfileNFT();
+        profileTokenURI = new ProfileTokenURI();
     }
 
     function _testElement(uint256 maxColors, Helpers.ComponentBytes componentByte, string memory elementName) internal {
@@ -209,6 +212,22 @@ contract ProfileSVGGen is Test {
         }
     }
 
+    function testGoldProfilesJson1() public {
+        uint256 i;
+        for (i = 1; i < 500; i++) {
+            string memory result = profileTokenURI.getTokenURI(i, i);
+            vm.writeFile(string.concat(dir, 'profiles_fuzz_json/profile_', vm.toString(i), '.json'), result);
+        }
+    }
+
+    function testGoldProfilesJson2() public {
+        uint256 i;
+        for (i = 500; i <= 1000; i++) {
+            string memory result = profileTokenURI.getTokenURI(i, i);
+            vm.writeFile(string.concat(dir, 'profiles_fuzz_json/profile_', vm.toString(i), '.json'), result);
+        }
+    }
+
     function testHowManyHaveIcecream() public view {
         console.log('How many have icecream?');
         uint256 count;
@@ -238,6 +257,14 @@ contract ProfileSVGGen is Test {
             uint256 profileId = uint256(keccak256(abi.encode(i))) % 130000;
             string memory result = profileNFT.tryProfile(profileId);
             vm.writeFile(string.concat(dir, 'profiles_fuzz/profile_', vm.toString(profileId), '.svg'), result);
+        }
+    }
+
+    function testFuzzProfilesJson() public {
+        for (uint256 i = 1; i < 500; i++) {
+            uint256 profileId = uint256(keccak256(abi.encode(i))) % 130000;
+            string memory result = profileTokenURI.getTokenURI(profileId, i);
+            vm.writeFile(string.concat(dir, 'profiles_fuzz_json/profile_', vm.toString(profileId), '.json'), result);
         }
     }
 

@@ -4,8 +4,8 @@ pragma solidity ^0.8.0;
 library Shoes {
     enum ShoeColors {
         GREEN,
-        PURPLE,
-        BLUE
+        DARK,
+        LIGHT
     }
 
     // // we take the 7th byte from the left for shoes color
@@ -26,9 +26,9 @@ library Shoes {
     function _getShoeColorHex(ShoeColors shoeColor) internal pure returns (string memory, string memory) {
         if (shoeColor == ShoeColors.GREEN) {
             return ('#93A97D', '#F4FFDC');
-        } else if (shoeColor == ShoeColors.PURPLE) {
+        } else if (shoeColor == ShoeColors.DARK) {
             return ('#575757', '#DBDBDB');
-        } else if (shoeColor == ShoeColors.BLUE) {
+        } else if (shoeColor == ShoeColors.LIGHT) {
             return ('#EAEAEA', '#FFFFFF');
         } else {
             revert(); // Avoid warnings.

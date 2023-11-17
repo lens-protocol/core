@@ -12,6 +12,7 @@ mkdir headwear
 mkdir profiles_gold
 mkdir profiles
 mkdir profiles_fuzz
+mkdir profiles_fuzz_json
 mkdir follows
 mkdir handles
 cd ..
