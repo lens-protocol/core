@@ -11,6 +11,8 @@ evm_version = 'paris'
 optimizer = true
 optimizer_runs = 10
 ignored_error_codes = []
+no_match_path = "script/svg/*"
+
 # via_ir = true
 
 # libraries = [

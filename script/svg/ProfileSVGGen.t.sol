@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.13;
 
-import 'forge-std/Script.sol';
+import 'forge-std/Test.sol';
 import {Skin, Background, Helpers} from 'contracts/libraries/svgs/Profile/Helpers.sol';
 import {Face} from 'contracts/libraries/svgs/Profile/Face.sol';
 import {Legs} from 'contracts/libraries/svgs/Profile/Legs.sol';
@@ -12,26 +12,35 @@ import {Logo} from 'contracts/libraries/svgs/Profile/Logo.sol';
 import {Headwear} from 'contracts/libraries/svgs/Profile/Headwear.sol';
 
 import {ProfileSVG} from 'contracts/libraries/svgs/Profile/ProfileSVG.sol';
+import {ProfileTokenURI} from 'contracts/misc/token-uris/ProfileTokenURI.sol';
 
 contract ProfileNFT {
-    function tryProfile(uint256 profileId) external pure returns (string memory) {
-        return ProfileSVG.getProfileSVG(profileId);
+    function tryProfile(uint256 profileId) external view returns (string memory) {
+        (string memory profileSvg, ) = ProfileSVG.getProfileSVG(profileId, blockhash(block.number - 1));
+        return profileSvg;
     }
 
     function tryWithSeed(uint256 seed, bool isGold) external pure returns (string memory) {
-        return ProfileSVG._getSVG(seed, isGold);
+        (ProfileSVG.ChosenElements memory chosenElements, string memory headwearSvg) = ProfileSVG._chooseElements(
+            seed,
+            isGold
+        );
+
+        return ProfileSVG._getSVG(chosenElements, headwearSvg);
     }
 }
 
-contract ProfileSVGGen is Script {
+contract ProfileSVGGen is Test {
     ProfileNFT profileNFT;
+    ProfileTokenURI profileTokenURI;
     string constant dir = 'svgs/';
 
     function setUp() public {
         profileNFT = new ProfileNFT();
+        profileTokenURI = new ProfileTokenURI();
     }
 
-    function _tryElement(uint256 maxColors, Helpers.ComponentBytes componentByte, string memory elementName) internal {
+    function _testElement(uint256 maxColors, Helpers.ComponentBytes componentByte, string memory elementName) internal {
         for (uint8 i = 0; i <= maxColors + 1; i++) {
             uint256 seed = setColor(i, componentByte);
             console.logBytes32(bytes32(seed));
@@ -51,23 +60,23 @@ contract ProfileSVGGen is Script {
         }
     }
 
-    function tryBackgrounds() public {
-        _tryElement(uint256(type(Background.BackgroundColors).max), Helpers.ComponentBytes.BACKGROUND, 'background');
+    function testBackgrounds() public {
+        _testElement(uint256(type(Background.BackgroundColors).max), Helpers.ComponentBytes.BACKGROUND, 'background');
     }
 
-    function trySkins() public {
-        _tryElement(uint256(type(Skin.SkinColors).max), Helpers.ComponentBytes.SKIN, 'skin');
+    function testSkins() public {
+        _testElement(uint256(type(Skin.SkinColors).max), Helpers.ComponentBytes.SKIN, 'skin');
     }
 
-    function tryLegs() public {
-        _tryElement(uint256(type(Legs.LegColors).max), Helpers.ComponentBytes.LEGS, 'legs');
+    function testLegs() public {
+        _testElement(uint256(type(Legs.LegColors).max), Helpers.ComponentBytes.LEGS, 'legs');
     }
 
-    function tryShoes() public {
-        _tryElement(uint256(type(Shoes.ShoeColors).max), Helpers.ComponentBytes.SHOES, 'shoes');
+    function testShoes() public {
+        _testElement(uint256(type(Shoes.ShoeColors).max), Helpers.ComponentBytes.SHOES, 'shoes');
     }
 
-    function tryFaces() public {
+    function testFaces() public {
         for (uint8 v = 0; v <= uint8(type(Face.FaceVariants).max); v++) {
             for (uint8 c = 0; c <= uint8(type(Face.FaceColors).max) + 1; c++) {
                 uint256 seed = setVariant(v, Helpers.ComponentBytes.FACE) + setColor(c, Helpers.ComponentBytes.FACE);
@@ -87,7 +96,7 @@ contract ProfileSVGGen is Script {
         }
     }
 
-    function tryHandsAndBody() public {
+    function testHandsAndBody() public {
         for (uint8 v = 0; v <= uint8(type(Body.BodyVariants).max); v++) {
             for (uint8 c = 0; c <= uint8(type(Body.BodyColors).max); c++) {
                 for (uint8 h = 0; h <= uint8(type(Hands.HandsVariants).max); h++) {
@@ -118,7 +127,7 @@ contract ProfileSVGGen is Script {
         }
     }
 
-    function tryLogoWithBody() public {
+    function testLogoWithBody() public {
         for (uint8 b = 0; b <= uint8(type(Body.BodyVariants).max); b++) {
             for (uint8 bc = 0; bc <= uint8(type(Body.BodyColors).max); bc++) {
                 for (uint8 l = 0; l <= uint8(type(Logo.LogoVariants).max); l++) {
@@ -149,7 +158,7 @@ contract ProfileSVGGen is Script {
         }
     }
 
-    function tryHeadwear() public {
+    function testHeadwear() public {
         for (uint8 v = 0; v <= uint8(type(Headwear.HeadwearVariants).max); v++) {
             for (uint8 c = 0; c <= 7; c++) {
                 uint256 seed = setVariant(v, Helpers.ComponentBytes.HEADWEAR) +
@@ -187,15 +196,39 @@ contract ProfileSVGGen is Script {
         }
     }
 
-    function tryGoldProfiles1() public {
+    function testGoldProfiles1() public {
         uint256 i;
-        for (i = 1; i < 10; i++) {
+        for (i = 1; i < 500; i++) {
             string memory result = profileNFT.tryProfile(i);
             vm.writeFile(string.concat(dir, 'profiles_gold/profile_', vm.toString(i), '.svg'), result);
         }
     }
 
-    function tryHowManyHaveIcecream() public view {
+    function testGoldProfiles2() public {
+        uint256 i;
+        for (i = 500; i <= 1000; i++) {
+            string memory result = profileNFT.tryProfile(i);
+            vm.writeFile(string.concat(dir, 'profiles_gold/profile_', vm.toString(i), '.svg'), result);
+        }
+    }
+
+    function testGoldProfilesJson1() public {
+        uint256 i;
+        for (i = 1; i < 500; i++) {
+            string memory result = profileTokenURI.getTokenURI(i, i);
+            vm.writeFile(string.concat(dir, 'profiles_fuzz_json/profile_', vm.toString(i), '.json'), result);
+        }
+    }
+
+    function testGoldProfilesJson2() public {
+        uint256 i;
+        for (i = 500; i <= 1000; i++) {
+            string memory result = profileTokenURI.getTokenURI(i, i);
+            vm.writeFile(string.concat(dir, 'profiles_fuzz_json/profile_', vm.toString(i), '.json'), result);
+        }
+    }
+
+    function testHowManyHaveIcecream() public view {
         console.log('How many have icecream?');
         uint256 count;
         for (uint256 i = 1; i < 130000; i++) {
@@ -208,22 +241,30 @@ contract ProfileSVGGen is Script {
         console.log('Total: ', count);
     }
 
-    function tryProfiles() public {
+    function testProfiles() public {
         uint i = 1001;
         string memory result = profileNFT.tryProfile(i);
         vm.writeFile(string.concat(dir, 'profiles/profile_', vm.toString(i), '.svg'), result);
 
-        for (i = 35000; i < 35010; i++) {
+        for (i = 35000; i < 35500; i++) {
             result = profileNFT.tryProfile(i);
             vm.writeFile(string.concat(dir, 'profiles/profile_', vm.toString(i), '.svg'), result);
         }
     }
 
-    function tryFuzzProfiles() public {
-        for (uint256 i = 1; i < 10; i++) {
-            uint256 profileId = uint256(keccak256(abi.encode(i))) % 10000000;
+    function testFuzzProfiles() public {
+        for (uint256 i = 1; i < 500; i++) {
+            uint256 profileId = uint256(keccak256(abi.encode(i))) % 130000;
             string memory result = profileNFT.tryProfile(profileId);
             vm.writeFile(string.concat(dir, 'profiles_fuzz/profile_', vm.toString(profileId), '.svg'), result);
+        }
+    }
+
+    function testFuzzProfilesJson() public {
+        for (uint256 i = 1; i < 500; i++) {
+            uint256 profileId = uint256(keccak256(abi.encode(i))) % 130000;
+            string memory result = profileTokenURI.getTokenURI(profileId, i);
+            vm.writeFile(string.concat(dir, 'profiles_fuzz_json/profile_', vm.toString(profileId), '.json'), result);
         }
     }
 
@@ -235,19 +276,5 @@ contract ProfileSVGGen is Script {
     // We take colors from the left bytes of the seed
     function setColor(uint256 newByte, Helpers.ComponentBytes componentByte) internal pure returns (uint256) {
         return newByte << ((31 - uint8(componentByte)) * 8);
-    }
-
-    function run() external {
-        tryBackgrounds();
-        trySkins();
-        tryLegs();
-        tryShoes();
-        tryFaces();
-        tryHandsAndBody();
-        tryLogoWithBody();
-        tryHeadwear();
-        tryGoldProfiles1();
-        tryProfiles();
-        tryFuzzProfiles();
     }
 }

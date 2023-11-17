@@ -12,10 +12,11 @@ mkdir headwear
 mkdir profiles_gold
 mkdir profiles
 mkdir profiles_fuzz
+mkdir profiles_fuzz_json
 mkdir follows
 mkdir handles
 cd ..
 
-forge script script/svg/FollowSVGGen.s.sol:FollowSVGGen
-forge script script/svg/HandleSVGGen.s.sol:HandleSVGGen
-forge script script/svg/ProfileSVGGen.s.sol:ProfileSVGGen
+forge test --match-path "script/svg/FollowSVGGen.t.sol" --no-match-path ""
+forge test --match-path "script/svg/HandleSVGGen.t.sol" --no-match-path ""
+forge test --match-path "script/svg/ProfileSVGGen.t.sol" --no-match-path ""

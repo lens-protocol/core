@@ -32,7 +32,20 @@ library Headwear {
         ICECREAM
     }
 
-    function getHeadwear(uint256 seed, bool isGold) public pure returns (string memory) {
+    enum HeadwearColors {
+        NONE,
+        GREEN,
+        LIGHT,
+        DARK,
+        PURPLE,
+        BLUE,
+        GOLD
+    }
+
+    function getHeadwear(
+        uint256 seed,
+        bool isGold
+    ) public pure returns (string memory, HeadwearVariants, HeadwearColors) {
         // We don't do +1 here to make icecream rare
         HeadwearVariants variant = HeadwearVariants(
             Helpers.getVariant(seed, Helpers.ComponentBytes.HEADWEAR) % (uint8(type(HeadwearVariants).max))
@@ -44,7 +57,7 @@ library Headwear {
         }
 
         if (variant == HeadwearVariants.NONE) {
-            return '';
+            return ('', HeadwearVariants.NONE, HeadwearColors.NONE);
         } else if (variant == HeadwearVariants.BEANIE) {
             HeadwearBeanie.BeanieColors beanieColor = isGold
                 ? HeadwearBeanie.BeanieColors.GOLD
@@ -86,7 +99,7 @@ library Headwear {
         } else if (variant == HeadwearVariants.SPARKLES) {
             return
                 HeadwearSparkles.getSparkles(
-                    isGold ? HeadwearSparkles.SparklesColors.GOLD : HeadwearSparkles.SparklesColors.WHITE
+                    isGold ? HeadwearSparkles.SparklesColors.GOLD : HeadwearSparkles.SparklesColors.LIGHT
                 );
         } else if (variant == HeadwearVariants.CROWN) {
             HeadwearCrown.CrownColors crownColor = isGold

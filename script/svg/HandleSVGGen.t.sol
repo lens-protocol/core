@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.13;
 
-import 'forge-std/Script.sol';
+import 'forge-std/Test.sol';
 
 import {HandleSVG} from 'contracts/libraries/svgs/Handle/HandleSVG.sol';
 
@@ -11,7 +11,7 @@ contract HandleNFT {
     }
 }
 
-contract HandleSVGGen is Script {
+contract HandleSVGGen is Test {
     HandleNFT handleNFT;
     string constant dir = 'svgs/';
 
@@ -19,7 +19,7 @@ contract HandleSVGGen is Script {
         handleNFT = new HandleNFT();
     }
 
-    function tryHandles() public {
+    function testHandles() public {
         vm.writeFile(string.concat(dir, 'handles/handle_1_black.svg'), handleNFT.tryWithName('x'));
         vm.writeFile(string.concat(dir, 'handles/handle_2_gold.svg'), handleNFT.tryWithName('gm'));
         vm.writeFile(string.concat(dir, 'handles/handle_3_blue.svg'), handleNFT.tryWithName('eth'));
@@ -54,7 +54,24 @@ contract HandleSVGGen is Script {
         );
     }
 
-    function tryWWW() public {
+    function testRealHandles() public {
+        vm.writeFile(string.concat(dir, 'handles/handle_real_01.svg'), handleNFT.tryWithName('bradorbradley'));
+        vm.writeFile(string.concat(dir, 'handles/handle_real_02.svg'), handleNFT.tryWithName('creatorfundincubator'));
+        vm.writeFile(string.concat(dir, 'handles/handle_real_03.svg'), handleNFT.tryWithName('ameerna17958863'));
+        vm.writeFile(string.concat(dir, 'handles/handle_real_04.svg'), handleNFT.tryWithName('lensprotocol'));
+        vm.writeFile(string.concat(dir, 'handles/handle_real_05.svg'), handleNFT.tryWithName('mariariivari'));
+        vm.writeFile(string.concat(dir, 'handles/handle_real_06.svg'), handleNFT.tryWithName('thesmurfssociety'));
+        vm.writeFile(string.concat(dir, 'handles/handle_real_07.svg'), handleNFT.tryWithName('donosonaumczuk'));
+        vm.writeFile(string.concat(dir, 'handles/handle_real_08.svg'), handleNFT.tryWithName('timeswap_labs'));
+        vm.writeFile(string.concat(dir, 'handles/handle_real_09.svg'), handleNFT.tryWithName('millionrecords'));
+        vm.writeFile(string.concat(dir, 'handles/handle_real_10.svg'), handleNFT.tryWithName('cointelegraph'));
+        vm.writeFile(string.concat(dir, 'handles/handle_real_11.svg'), handleNFT.tryWithName('christian_ronaldo'));
+        vm.writeFile(string.concat(dir, 'handles/handle_real_12.svg'), handleNFT.tryWithName('zombieshepherd'));
+        vm.writeFile(string.concat(dir, 'handles/handle_real_13.svg'), handleNFT.tryWithName('beautifuldestinations'));
+        vm.writeFile(string.concat(dir, 'handles/handle_real_14.svg'), handleNFT.tryWithName('shellprotocol_touchan'));
+    }
+
+    function testWWW() public {
         for (uint256 i = 1; i <= 26; i++) {
             string memory name = '';
             for (uint256 j = 0; j < i; j++) {
@@ -65,10 +82,5 @@ contract HandleSVGGen is Script {
                 handleNFT.tryWithName(name)
             );
         }
-    }
-
-    function run() external {
-        tryHandles();
-        tryWWW();
     }
 }
