@@ -585,9 +585,12 @@ contract LensHub is
         if (__DEPRECATED__collectModuleWhitelisted[msg.sender]) {
             // This state was pre-filled at LegacyCollectLib and it is a hack to make legacy collect work when
             // configured for followers only.
-            return _legacyCollectFollowValidationHelper[followerAddress] == followedProfileId;
+            return
+                _legacyCollectFollowValidationHelper[followerAddress] == followedProfileId ||
+                ProfileLib.isExecutorApproved(followedProfileId, followerAddress) ||
+                ProfileLib.ownerOf(followedProfileId) == followerAddress;
         } else {
-            revert(Errors.ExecutorInvalid());
+            revert Errors.ExecutorInvalid();
         }
     }
 }
