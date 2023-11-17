@@ -64,4 +64,6 @@ abstract contract LensHubStorage {
     address internal _profileTokenURIContract; // Slot 31
 
     address internal _followTokenURIContract; // Slot 32
+
+    mapping(address => uint256) internal _legacyCollectFollowValidationHelper; // Slot 33
 }

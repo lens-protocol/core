@@ -3,7 +3,6 @@
 pragma solidity ^0.8.15;
 
 import {Types} from 'contracts/libraries/constants/Types.sol';
-import {Errors} from 'contracts/libraries/constants/Errors.sol';
 
 library StorageLib {
     // uint256 constant NAME_SLOT = 0;
@@ -45,6 +44,7 @@ library StorageLib {
     uint256 constant TREASURY_DATA_SLOT = 30;
     uint256 constant PROFILE_TOKEN_URI_CONTRACT_SLOT = 31;
     uint256 constant FOLLOW_TOKEN_URI_CONTRACT_SLOT = 32;
+    uint256 constant LEGACY_COLLECT_FOLLOW_VALIDATION_HELPER_MAPPING_SLOT = 33;
 
     function getPublication(
         uint256 profileId,
@@ -157,6 +157,16 @@ library StorageLib {
     {
         assembly {
             _migrationAdminWhitelisted.slot := MIGRATION_ADMINS_WHITELISTED_MAPPING_SLOT
+        }
+    }
+
+    function legacyCollectFollowValidationHelper()
+        internal
+        pure
+        returns (mapping(address => uint256) storage _legacyCollectFollowValidationHelper)
+    {
+        assembly {
+            _legacyCollectFollowValidationHelper.slot := LEGACY_COLLECT_FOLLOW_VALIDATION_HELPER_MAPPING_SLOT
         }
     }
 

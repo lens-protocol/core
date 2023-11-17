@@ -82,6 +82,11 @@ library FollowLib {
         }
     }
 
+    function isFollowing(uint256 followerProfileId, uint256 followedProfileId) internal view returns (bool) {
+        address followNFT = StorageLib.getProfile(followedProfileId).followNFT;
+        return followNFT != address(0) && IFollowNFT(followNFT).isFollowing(followerProfileId);
+    }
+
     /**
      * @notice Deploys the given profile's Follow NFT contract.
      *
