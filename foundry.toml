@@ -13,20 +13,8 @@ optimizer_runs = 10
 ignored_error_codes = []
 no_match_path = "script/svg/*"
 
-via_ir = true
-libraries = [
-  "contracts/libraries/ActionLib.sol:ActionLib:0x7990dac84e3241fe314b980bba1466ac08715c4f",
-  "contracts/libraries/FollowLib.sol:FollowLib:0xe280cb21fb36b6b2d584428b809a6b822a5c2260",
-  "contracts/libraries/GovernanceLib.sol:GovernanceLib:0x8a83227dbf5c80b1f693de63babe168c59fefd6b",
-  "contracts/libraries/LegacyCollectLib.sol:LegacyCollectLib:0x5f0f24377c00f1517b4de496cf49eec8beb4ecb4",
-  "contracts/libraries/MetaTxLib.sol:MetaTxLib:0xf191c489e4ba0f448ea08a5fd27e9c928643f5c7",
-  "contracts/libraries/MigrationLib.sol:MigrationLib:0x0deced9ac3833b687d69d4eac6655f0f1279acee",
-  "contracts/libraries/ProfileLib.sol:ProfileLib:0x3fce2475a92c185f9634f5638f6b33306d77bb10",
-  "contracts/libraries/PublicationLib.sol:PublicationLib:0x90654f24a2c164a4da8f763ac8bc032d3d083a1b",
-  "contracts/libraries/ValidationLib.sol:ValidationLib:0x9cafd24d2851d9eb56e5a8fd394ab2ac0ef99849",
-]
+# via_ir = true
 
-# # ProfileSVG:
 # libraries = [
 #   'contracts/libraries/ActionLib.sol:ActionLib:0x7990dac84e3241fe314b980bba1466ac08715c4f',
 #   'contracts/libraries/FollowLib.sol:FollowLib:0xe280cb21fb36b6b2d584428b809a6b822a5c2260',
