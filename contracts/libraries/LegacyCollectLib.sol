@@ -167,8 +167,8 @@ library LegacyCollectLib {
     ) private {
         // It's important to set it as zero if not following, as the storage could be dirty from a previous transaction.
         StorageLib.legacyCollectFollowValidationHelper()[collector] = FollowLib.isFollowing({
-            followerProfileId: profileId,
-            followedProfileId: collectorProfileId
+            followerProfileId: collectorProfileId,
+            followedProfileId: profileId
         })
             ? profileId
             : 0;
