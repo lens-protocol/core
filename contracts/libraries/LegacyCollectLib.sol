@@ -11,6 +11,7 @@ import {ILegacyCollectModule} from 'contracts/interfaces/ILegacyCollectModule.so
 import {Clones} from '@openzeppelin/contracts/proxy/Clones.sol';
 import {Strings} from '@openzeppelin/contracts/utils/Strings.sol';
 import {StorageLib} from 'contracts/libraries/StorageLib.sol';
+import {FollowLib} from 'contracts/libraries/FollowLib.sol';
 
 /**
  * @title LegacyCollectLib
@@ -92,6 +93,12 @@ library LegacyCollectLib {
             tokenId = ICollectNFT(collectNFT).mint(collectorProfileOwner);
         }
 
+        _prefillLegacyCollectFollowValidationHelper({
+            profileId: collectParams.publicationCollectedProfileId,
+            collectorProfileId: collectParams.collectorProfileId,
+            collector: transactionExecutor
+        });
+
         ILegacyCollectModule(collectModule).processCollect({
             // Legacy collect modules expect referrer profile ID to match the collected pub's author if no referrer set.
             referrerProfileId: collectParams.referrerProfileId == 0
@@ -151,5 +158,19 @@ library LegacyCollectLib {
         emit Events.LegacyCollectNFTDeployed(profileId, pubId, collectNFT, block.timestamp);
 
         return collectNFT;
+    }
+
+    function _prefillLegacyCollectFollowValidationHelper(
+        uint256 profileId,
+        uint256 collectorProfileId,
+        address collector
+    ) private {
+        // It's important to set it as zero if not following, as the storage could be dirty from a previous transaction.
+        StorageLib.legacyCollectFollowValidationHelper()[collector] = FollowLib.isFollowing({
+            followerProfileId: collectorProfileId,
+            followedProfileId: profileId
+        })
+            ? profileId
+            : 0;
     }
 }

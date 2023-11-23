@@ -566,4 +566,31 @@ contract LensHub is
     ) external view override returns (Types.PublicationType) {
         return PublicationLib.getPublicationType(profileId, pubId);
     }
+
+    function getFollowModule(uint256 profileId) external view returns (address) {
+        if (__DEPRECATED__collectModuleWhitelisted[msg.sender]) {
+            // Injecting LensHub as follow module when a Lens V1 collect module is performing the call.
+            // This is a hack to make legacy collect work when configured for followers only.
+            return address(this);
+        } else {
+            return StorageLib.getProfile(profileId).followModule;
+        }
+    }
+
+    function isFollowing(
+        uint256 followedProfileId,
+        address followerAddress,
+        uint256 /* tokenId */
+    ) external view returns (bool) {
+        if (__DEPRECATED__collectModuleWhitelisted[msg.sender]) {
+            // This state was pre-filled at LegacyCollectLib and it is a hack to make legacy collect work when
+            // configured for followers only.
+            return
+                _legacyCollectFollowValidationHelper[followerAddress] == followedProfileId ||
+                ProfileLib.isExecutorApproved(followedProfileId, followerAddress) ||
+                ProfileLib.ownerOf(followedProfileId) == followerAddress;
+        } else {
+            revert Errors.ExecutorInvalid();
+        }
+    }
 }

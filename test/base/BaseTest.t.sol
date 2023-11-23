@@ -392,6 +392,22 @@ contract BaseTest is TestSetup {
         }
     }
 
+    function _setCollectModuleAsIfItWasWhitelistedInLensV1(address collectModule) internal {
+        _setCollectModuleWhitelistedInLensV1Storage(collectModule, true);
+    }
+
+    function _setCollectModuleWhitelistedInLensV1Storage(address collectModule, bool whitelisted) internal {
+        uint256 COLLECT_MODULE_WHITELISTED_MAPPING_SLOT = 15;
+        uint256 collectModuleWhitelistSlot;
+        assembly {
+            mstore(0, collectModule)
+            mstore(32, COLLECT_MODULE_WHITELISTED_MAPPING_SLOT)
+            collectModuleWhitelistSlot := keccak256(0, 64)
+        }
+        bytes32 whitelistedAsBytes32 = bytes32(uint256(whitelisted ? 1 : 0));
+        vm.store({target: address(hub), slot: bytes32(collectModuleWhitelistSlot), value: whitelistedAsBytes32});
+    }
+
     function _setActionModuleInPublicationStorage(
         uint256 actionModuleMappingSlot,
         address module,
