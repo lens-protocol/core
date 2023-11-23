@@ -537,13 +537,13 @@ contract LegacyCollectTest is BaseTest, ReferralSystemTest {
         assertFalse(hub.isFollowing(defaultAccount.profileId, address(this), 0));
     }
 
-    function testCannotCollect_WhenModuleHasFollowerOnlyEnabled_IfCollectorMatchesPubAuthor() public {
+    function testCollect_WhenModuleHasFollowerOnlyEnabled_IfCollectorMatchesPubAuthor() public {
         _setCollectModuleAsIfItWasWhitelistedInLensV1(address(mockDeprecatedCollectModuleFollowerOnly));
         _toLegacyV1Pub(defaultAccount.profileId, pubId, address(0), address(mockDeprecatedCollectModuleFollowerOnly));
         _collect(defaultAccount.ownerPk, defaultCollectParams);
     }
 
-    function testCannotCollect_WhenModuleHasFollowerOnlyEnabled_IfCollectorIsDelegatedExecutorOfPubAuthor(
+    function testCollect_WhenModuleHasFollowerOnlyEnabled_IfCollectorIsDelegatedExecutorOfPubAuthor(
         uint256 approvedDelegatedExecutorPk
     ) public {
         approvedDelegatedExecutorPk = _boundPk(approvedDelegatedExecutorPk);
