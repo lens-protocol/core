@@ -89,6 +89,7 @@ contract LensHandles is ERC721, ERC2981CollectionRoyalties, ImmutableOwnable, IL
 
     function setHandleTokenURIContract(address handleTokenURIContract) external override onlyOwner {
         _handleTokenURIContract = handleTokenURIContract;
+        emit HandlesEvents.BatchMetadataUpdate({fromTokenId: 0, toTokenId: type(uint256).max});
     }
 
     function getHandleTokenURIContract() external view override returns (address) {

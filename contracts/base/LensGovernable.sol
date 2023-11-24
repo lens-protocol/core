@@ -7,6 +7,7 @@ import {GovernanceLib} from 'contracts/libraries/GovernanceLib.sol';
 import {ValidationLib} from 'contracts/libraries/ValidationLib.sol';
 import {StorageLib} from 'contracts/libraries/StorageLib.sol';
 import {Types} from 'contracts/libraries/constants/Types.sol';
+import {Events} from 'contracts/libraries/constants/Events.sol';
 
 abstract contract LensGovernable is ILensGovernable {
     /**
@@ -54,6 +55,7 @@ abstract contract LensGovernable is ILensGovernable {
 
     function setProfileTokenURIContract(address profileTokenURIContract) external override onlyGov {
         GovernanceLib.setProfileTokenURIContract(profileTokenURIContract);
+        emit Events.BatchMetadataUpdate({fromTokenId: 0, toTokenId: type(uint256).max});
     }
 
     function setFollowTokenURIContract(address followTokenURIContract) external override onlyGov {
