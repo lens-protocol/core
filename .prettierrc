@@ -12,6 +12,14 @@
         "printWidth": 120,
         "tabWidth": 4
       }
+    },
+    {
+      "files": "*.svg",
+      "options": {
+        "bracketSameLine": true,
+        "parser": "html",
+        "printWidth": 10000
+      }
     }
   ]
 }

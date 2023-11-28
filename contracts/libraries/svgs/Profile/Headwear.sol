@@ -39,6 +39,7 @@ library Headwear {
         DARK,
         PURPLE,
         BLUE,
+        PINK,
         GOLD
     }
 
