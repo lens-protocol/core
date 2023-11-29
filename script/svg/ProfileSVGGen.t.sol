@@ -182,13 +182,13 @@ contract ProfileSVGGen is Test {
             }
         }
         // Icecream
-        for (uint8 c = 0; c <= 4; c++) {
+        for (uint8 c = 0; c <= 7; c++) {
             uint256 seed = setVariant(69, Helpers.ComponentBytes.HEADWEAR) +
                 setColor(c, Helpers.ComponentBytes.HEADWEAR);
             string memory result = profileNFT.tryWithSeed(seed, false);
             vm.writeFile(string.concat(dir, 'headwear/headwear_v69', '_c', vm.toString(c), '.svg'), result);
         }
-        for (uint8 c = 0; c <= 4; c++) {
+        for (uint8 c = 0; c <= 7; c++) {
             uint256 seed = setVariant(69, Helpers.ComponentBytes.HEADWEAR) +
                 setColor(c, Helpers.ComponentBytes.HEADWEAR);
             string memory result = profileNFT.tryWithSeed(seed, true);

@@ -5,7 +5,6 @@ import {Helpers} from './Helpers.sol';
 import {HeadwearBeanie} from './Headwear/HeadwearBeanie.sol';
 import {HeadwearHat} from './Headwear/HeadwearHat.sol';
 import {HeadwearIcecream} from './Headwear/HeadwearIcecream.sol';
-import {HeadwearLeafs} from './Headwear/HeadwearLeafs.sol';
 import {HeadwearPlants} from './Headwear/HeadwearPlants.sol';
 import {HeadwearSparkles} from './Headwear/HeadwearSparkles.sol';
 import {HeadwearCrown} from './Headwear/HeadwearCrown.sol';
@@ -20,7 +19,6 @@ library Headwear {
         NONE,
         BEANIE,
         HAT,
-        LEAFS,
         PLANTS,
         SPARKLES,
         CROWN,
@@ -82,13 +80,6 @@ library Headwear {
                         uint8(type(HeadwearIcecream.IcecreamColors).max)
                 );
             return HeadwearIcecream.getIcecream(icecreamColor);
-        } else if (variant == HeadwearVariants.LEAFS) {
-            HeadwearLeafs.LeafsColors leafsColor = isGold
-                ? HeadwearLeafs.LeafsColors.GOLD
-                : HeadwearLeafs.LeafsColors(
-                    Helpers.getColor(seed, Helpers.ComponentBytes.HEADWEAR) % uint8(type(HeadwearLeafs.LeafsColors).max)
-                );
-            return HeadwearLeafs.getLeafs(leafsColor);
         } else if (variant == HeadwearVariants.PLANTS) {
             HeadwearPlants.PlantsColors plantsColor = isGold
                 ? HeadwearPlants.PlantsColors.GOLD

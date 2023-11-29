@@ -1,6 +1,8 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
 
+import {LensColors} from './LensColors.sol';
+
 library Helpers {
     enum ComponentBytes {
         BACKGROUND,
@@ -32,6 +34,7 @@ library Helpers {
 library Background {
     enum BackgroundColors {
         GREEN,
+        PINK,
         PURPLE,
         BLUE,
         GOLD
@@ -40,6 +43,8 @@ library Background {
     function getBackgroundColor(BackgroundColors backgroundColor) internal pure returns (string memory) {
         if (backgroundColor == BackgroundColors.GREEN) {
             return '#green';
+        } else if (backgroundColor == BackgroundColors.PINK) {
+            return '#pink';
         } else if (backgroundColor == BackgroundColors.PURPLE) {
             return '#purple';
         } else if (backgroundColor == BackgroundColors.BLUE) {
@@ -55,6 +60,7 @@ library Background {
 library Skin {
     enum SkinColors {
         GREEN,
+        PINK,
         PURPLE,
         BLUE,
         GOLD
@@ -62,13 +68,15 @@ library Skin {
 
     function getSkinColor(SkinColors skinColor) internal pure returns (string memory) {
         if (skinColor == SkinColors.GREEN) {
-            return '#A0D170';
+            return LensColors.baseGreen;
+        } else if (skinColor == SkinColors.PINK) {
+            return LensColors.basePink;
         } else if (skinColor == SkinColors.PURPLE) {
-            return '#EAD7FF';
+            return LensColors.basePurple;
         } else if (skinColor == SkinColors.BLUE) {
-            return '#D9E0FF';
+            return LensColors.baseBlue;
         } else if (skinColor == SkinColors.GOLD) {
-            return '#F8C944';
+            return LensColors.baseGold;
         } else {
             revert(); // Avoid warnings.
         }

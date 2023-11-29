@@ -13,6 +13,7 @@ library Hands {
 
     enum HandsColors {
         GREEN,
+        PINK,
         PURPLE,
         BLUE,
         GOLD

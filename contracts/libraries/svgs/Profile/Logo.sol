@@ -3,6 +3,8 @@ pragma solidity ^0.8.0;
 
 import {Body} from './Body.sol';
 
+import {LensColors} from './LensColors.sol';
+
 library Logo {
     enum LogoVariants {
         HAPPY,
@@ -13,6 +15,7 @@ library Logo {
 
     enum LogoColors {
         GREEN,
+        PINK,
         PURPLE,
         BLUE,
         LIGHT,
@@ -151,15 +154,17 @@ library Logo {
 
     function _getLogoColor(LogoColors logoColor) internal pure returns (string memory) {
         if (logoColor == LogoColors.GREEN) {
-            return '#A0D170';
+            return LensColors.baseGreen;
+        } else if (logoColor == LogoColors.PINK) {
+            return LensColors.basePink;
         } else if (logoColor == LogoColors.PURPLE) {
-            return '#EAD7FF';
+            return LensColors.basePurple;
         } else if (logoColor == LogoColors.BLUE) {
-            return '#D9E0FF';
+            return LensColors.baseBlue;
         } else if (logoColor == LogoColors.LIGHT) {
-            return '#EAEAEA';
+            return LensColors.lightGray;
         } else if (logoColor == LogoColors.DARK) {
-            return '#DBDBDB';
+            return LensColors.gray;
         } else {
             revert(); // Avoid warnings.
         }

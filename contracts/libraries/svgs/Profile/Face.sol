@@ -1,6 +1,8 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
 
+import {LensColors} from './LensColors.sol';
+
 library Face {
     enum FaceVariants {
         BUBBLEGUM,
@@ -137,9 +139,23 @@ library Face {
 
     function _getStyleTag(FaceColors faceColor) internal pure returns (string memory) {
         if (faceColor == FaceColors.GOLD) {
-            return '<style>.faceStrokeColor{stroke: #B96326} .faceFillColor{fill: #B96326}</style>';
+            return
+                string.concat(
+                    '<style>.faceStrokeColor{stroke:',
+                    LensColors.darkGold,
+                    '} .faceFillColor{fill:',
+                    LensColors.darkGold,
+                    '}</style>'
+                );
         } else {
-            return '<style>.faceStrokeColor{stroke: #000} .faceFillColor{fill: #000}</style>';
+            return
+                string.concat(
+                    '<style>.faceStrokeColor{stroke:',
+                    LensColors.black,
+                    '} .faceFillColor{fill:',
+                    LensColors.black,
+                    '}</style>'
+                );
         }
     }
 }

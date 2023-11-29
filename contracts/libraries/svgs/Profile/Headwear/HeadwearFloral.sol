@@ -2,12 +2,16 @@
 pragma solidity ^0.8.0;
 
 import {Headwear} from 'contracts/libraries/svgs/Profile/Headwear.sol';
+import {LensColors} from 'contracts/libraries/svgs/Profile/LensColors.sol';
 
 library HeadwearFloral {
     enum FloralColors {
         GREEN,
+        PINK,
         PURPLE,
         BLUE,
+        LIGHT,
+        DARK,
         GOLD
     }
 
@@ -39,13 +43,19 @@ library HeadwearFloral {
 
     function _getFloralColor(FloralColors floralColor) internal pure returns (string memory, string memory) {
         if (floralColor == FloralColors.GREEN) {
-            return ('#F4FFDC', '#A0D170');
+            return (LensColors.lightGreen, LensColors.baseGreen);
         } else if (floralColor == FloralColors.PURPLE) {
-            return ('#F9F4FF', '#EAD7FF');
+            return (LensColors.lightPurple, LensColors.basePurple);
         } else if (floralColor == FloralColors.BLUE) {
-            return ('#F4F6FF', '#D9E0FF');
+            return (LensColors.lightBlue, LensColors.baseBlue);
+        } else if (floralColor == FloralColors.PINK) {
+            return (LensColors.lightPink, LensColors.basePink);
+        } else if (floralColor == FloralColors.LIGHT) {
+            return (LensColors.white, LensColors.lightGray);
+        } else if (floralColor == FloralColors.DARK) {
+            return (LensColors.gray, LensColors.gray);
         } else if (floralColor == FloralColors.GOLD) {
-            return ('#FFEE93', '#FFCD3D');
+            return (LensColors.lightGold, LensColors.baseGold);
         } else {
             revert(); // Avoid warnings.
         }
@@ -58,6 +68,12 @@ library HeadwearFloral {
             return Headwear.HeadwearColors.PURPLE;
         } else if (floralColor == FloralColors.BLUE) {
             return Headwear.HeadwearColors.BLUE;
+        } else if (floralColor == FloralColors.PINK) {
+            return Headwear.HeadwearColors.PINK;
+        } else if (floralColor == FloralColors.LIGHT) {
+            return Headwear.HeadwearColors.LIGHT;
+        } else if (floralColor == FloralColors.DARK) {
+            return Headwear.HeadwearColors.DARK;
         } else if (floralColor == FloralColors.GOLD) {
             return Headwear.HeadwearColors.GOLD;
         } else {

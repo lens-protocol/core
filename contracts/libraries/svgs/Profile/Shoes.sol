@@ -1,9 +1,14 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
 
+import {LensColors} from './LensColors.sol';
+
 library Shoes {
     enum ShoeColors {
         GREEN,
+        PINK,
+        PURPLE,
+        BLUE,
         DARK,
         LIGHT
     }
@@ -25,11 +30,17 @@ library Shoes {
 
     function _getShoeColorHex(ShoeColors shoeColor) internal pure returns (string memory, string memory) {
         if (shoeColor == ShoeColors.GREEN) {
-            return ('#93A97D', '#F4FFDC');
+            return (LensColors.darkGreen, LensColors.lightGreen);
+        } else if (shoeColor == ShoeColors.PURPLE) {
+            return (LensColors.darkPurple, LensColors.lightPurple);
+        } else if (shoeColor == ShoeColors.BLUE) {
+            return (LensColors.darkBlue, LensColors.lightBlue);
+        } else if (shoeColor == ShoeColors.PINK) {
+            return (LensColors.darkPink, LensColors.lightPink);
         } else if (shoeColor == ShoeColors.DARK) {
-            return ('#575757', '#DBDBDB');
+            return (LensColors.dark, LensColors.gray);
         } else if (shoeColor == ShoeColors.LIGHT) {
-            return ('#EAEAEA', '#FFFFFF');
+            return (LensColors.lightGray, LensColors.white);
         } else {
             revert(); // Avoid warnings.
         }

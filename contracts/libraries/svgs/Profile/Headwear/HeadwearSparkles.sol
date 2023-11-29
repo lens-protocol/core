@@ -2,6 +2,7 @@
 pragma solidity ^0.8.0;
 
 import {Headwear} from 'contracts/libraries/svgs/Profile/Headwear.sol';
+import {LensColors} from 'contracts/libraries/svgs/Profile/LensColors.sol';
 
 library HeadwearSparkles {
     enum SparklesColors {
@@ -35,9 +36,9 @@ library HeadwearSparkles {
 
     function _getSparklesColor(SparklesColors sparklesColor) internal pure returns (string memory) {
         if (sparklesColor == SparklesColors.LIGHT) {
-            return '#000';
+            return LensColors.black;
         } else if (sparklesColor == SparklesColors.GOLD) {
-            return '#B96326';
+            return LensColors.darkGold;
         } else {
             revert(); // Avoid warnings.
         }

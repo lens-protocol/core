@@ -2,12 +2,16 @@
 pragma solidity ^0.8.0;
 
 import {Headwear} from 'contracts/libraries/svgs/Profile/Headwear.sol';
+import {LensColors} from 'contracts/libraries/svgs/Profile/LensColors.sol';
 
 library HeadwearGlasses {
     enum GlassesColors {
         GREEN,
+        PINK,
         PURPLE,
         BLUE,
+        LIGHT,
+        DARK,
         GOLD
     }
 
@@ -26,26 +30,24 @@ library HeadwearGlasses {
     }
 
     function _getGlassesStyle(GlassesColors glassesColor) internal pure returns (string memory) {
-        (string memory primaryColor, string memory secondaryColor) = _getGlassesColor(glassesColor);
-        return
-            string.concat(
-                '<style>.glassesColor1 { fill:',
-                primaryColor,
-                '}.glassesColor2 { fill:',
-                secondaryColor,
-                '}</style>'
-            );
+        return string.concat('<style>.glassesColor1 { fill:', _getGlassesColor(glassesColor), '}</style>');
     }
 
-    function _getGlassesColor(GlassesColors glassesColor) internal pure returns (string memory, string memory) {
+    function _getGlassesColor(GlassesColors glassesColor) internal pure returns (string memory) {
         if (glassesColor == GlassesColors.GREEN) {
-            return ('#F4FFDC', '#A0D170');
+            return LensColors.lightGreen;
         } else if (glassesColor == GlassesColors.PURPLE) {
-            return ('#F9F4FF', '#EAD7FF');
+            return LensColors.lightPurple;
         } else if (glassesColor == GlassesColors.BLUE) {
-            return ('#F4F6FF', '#D9E0FF');
+            return LensColors.lightBlue;
+        } else if (glassesColor == GlassesColors.PINK) {
+            return LensColors.lightPink;
+        } else if (glassesColor == GlassesColors.LIGHT) {
+            return LensColors.white;
+        } else if (glassesColor == GlassesColors.DARK) {
+            return LensColors.dark;
         } else if (glassesColor == GlassesColors.GOLD) {
-            return ('#FFEE93', '#FFCD3D');
+            return LensColors.lightGold;
         } else {
             revert(); // Avoid warnings.
         }
@@ -58,6 +60,12 @@ library HeadwearGlasses {
             return Headwear.HeadwearColors.PURPLE;
         } else if (glassesColor == GlassesColors.BLUE) {
             return Headwear.HeadwearColors.BLUE;
+        } else if (glassesColor == GlassesColors.PINK) {
+            return Headwear.HeadwearColors.PINK;
+        } else if (glassesColor == GlassesColors.LIGHT) {
+            return Headwear.HeadwearColors.LIGHT;
+        } else if (glassesColor == GlassesColors.DARK) {
+            return Headwear.HeadwearColors.DARK;
         } else if (glassesColor == GlassesColors.GOLD) {
             return Headwear.HeadwearColors.GOLD;
         } else {

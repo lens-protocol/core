@@ -8,6 +8,8 @@ import {BodyHoodie} from './Body/BodyHoodie.sol';
 import {BodyTanktop} from './Body/BodyTanktop.sol';
 import {BodyTShirt} from './Body/BodyTShirt.sol';
 
+import {LensColors} from './LensColors.sol';
+
 library Body {
     enum BodyVariants {
         HOODIE,
@@ -21,7 +23,8 @@ library Body {
         LIGHT,
         DARK,
         PURPLE,
-        BLUE
+        BLUE,
+        PINK
     }
 
     function getBody(
@@ -74,27 +77,21 @@ library Body {
 
     function getPrimaryBodyColor(BodyVariants bodyVariant, BodyColors bodyColor) public pure returns (string memory) {
         if (bodyColor == BodyColors.GREEN) {
-            return '#F4FFDC';
+            return LensColors.lightGreen;
         } else if (bodyColor == BodyColors.LIGHT) {
-            return '#FFFFFF';
+            return LensColors.white;
         } else if (bodyColor == BodyColors.DARK) {
             if (bodyVariant == BodyVariants.JACKET) {
-                return '#EAEAEA';
+                return LensColors.lightGray;
             } else {
-                return '#575757';
+                return LensColors.dark;
             }
         } else if (bodyColor == BodyColors.PURPLE) {
-            if (bodyVariant == BodyVariants.HOODIE) {
-                return '#EAD7FF';
-            } else {
-                return '#F3EAFF';
-            }
+            return LensColors.lightPurple;
         } else if (bodyColor == BodyColors.BLUE) {
-            if (bodyVariant == BodyVariants.HOODIE) {
-                return '#D9E0FF';
-            } else {
-                return '#ECF0FF';
-            }
+            return LensColors.lightBlue;
+        } else if (bodyColor == BodyColors.PINK) {
+            return LensColors.lightPink;
         } else {
             revert(); // Avoid warnings.
         }
@@ -103,15 +100,17 @@ library Body {
     // We don't need variant because this is only used in Jacket
     function getSecondaryBodyColor(BodyColors bodyColor) public pure returns (string memory) {
         if (bodyColor == BodyColors.GREEN) {
-            return '#93A97D';
+            return LensColors.darkGreen;
         } else if (bodyColor == BodyColors.LIGHT) {
-            return '#EAEAEA';
+            return LensColors.lightGray;
         } else if (bodyColor == BodyColors.DARK) {
-            return '#575757';
+            return LensColors.dark;
+        } else if (bodyColor == BodyColors.PINK) {
+            return LensColors.darkPink;
         } else if (bodyColor == BodyColors.PURPLE) {
-            return '#EAD7FF';
+            return LensColors.darkPurple;
         } else if (bodyColor == BodyColors.BLUE) {
-            return '#D9E0FF';
+            return LensColors.darkBlue;
         } else {
             revert(); // Avoid warnings.
         }

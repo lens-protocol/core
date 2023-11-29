@@ -2,13 +2,16 @@
 pragma solidity ^0.8.0;
 
 import {Headwear} from 'contracts/libraries/svgs/Profile/Headwear.sol';
+import {LensColors} from 'contracts/libraries/svgs/Profile/LensColors.sol';
 
 library HeadwearBeanie {
     enum BeanieColors {
         GREEN,
+        PINK,
+        PURPLE,
+        BLUE,
         LIGHT,
         DARK,
-        PURPLE,
         GOLD
     }
 
@@ -39,15 +42,19 @@ library HeadwearBeanie {
 
     function _getBeanieColor(BeanieColors beanieColor) internal pure returns (string memory) {
         if (beanieColor == BeanieColors.GREEN) {
-            return '#F4FFDC';
-        } else if (beanieColor == BeanieColors.LIGHT) {
-            return '#FFFFFF';
-        } else if (beanieColor == BeanieColors.DARK) {
-            return '#575757';
+            return LensColors.lightGreen;
+        } else if (beanieColor == BeanieColors.PINK) {
+            return LensColors.lightPink;
+        } else if (beanieColor == BeanieColors.BLUE) {
+            return LensColors.lightBlue;
         } else if (beanieColor == BeanieColors.PURPLE) {
-            return '#F3EAFF';
+            return LensColors.lightPurple;
+        } else if (beanieColor == BeanieColors.LIGHT) {
+            return LensColors.white;
+        } else if (beanieColor == BeanieColors.DARK) {
+            return LensColors.dark;
         } else if (beanieColor == BeanieColors.GOLD) {
-            return '#FFEE93';
+            return LensColors.lightGold;
         } else {
             revert(); // Avoid warnings.
         }
@@ -56,6 +63,10 @@ library HeadwearBeanie {
     function _getHeadwearColor(BeanieColors beanieColor) internal pure returns (Headwear.HeadwearColors) {
         if (beanieColor == BeanieColors.GREEN) {
             return Headwear.HeadwearColors.GREEN;
+        } else if (beanieColor == BeanieColors.PINK) {
+            return Headwear.HeadwearColors.PINK;
+        } else if (beanieColor == BeanieColors.BLUE) {
+            return Headwear.HeadwearColors.BLUE;
         } else if (beanieColor == BeanieColors.LIGHT) {
             return Headwear.HeadwearColors.LIGHT;
         } else if (beanieColor == BeanieColors.DARK) {

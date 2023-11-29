@@ -2,12 +2,16 @@
 pragma solidity ^0.8.0;
 
 import {Headwear} from 'contracts/libraries/svgs/Profile/Headwear.sol';
+import {LensColors} from 'contracts/libraries/svgs/Profile/LensColors.sol';
 
 library HeadwearIcecream {
     enum IcecreamColors {
         GREEN,
+        PINK,
         BLUE,
         PURPLE,
+        LIGHT,
+        DARK,
         GOLD
     }
 
@@ -27,13 +31,19 @@ library HeadwearIcecream {
 
     function _getIcecreamColor(IcecreamColors icecreamColor) internal pure returns (string memory) {
         if (icecreamColor == IcecreamColors.GREEN) {
-            return '#A0D170';
+            return LensColors.baseGreen;
+        } else if (icecreamColor == IcecreamColors.PINK) {
+            return LensColors.basePink;
         } else if (icecreamColor == IcecreamColors.PURPLE) {
-            return '#EAD7FF';
+            return LensColors.basePurple;
         } else if (icecreamColor == IcecreamColors.BLUE) {
-            return '#D9E0FF';
+            return LensColors.baseBlue;
+        } else if (icecreamColor == IcecreamColors.LIGHT) {
+            return LensColors.lightGray;
+        } else if (icecreamColor == IcecreamColors.DARK) {
+            return LensColors.gray;
         } else if (icecreamColor == IcecreamColors.GOLD) {
-            return '#FFCD3D';
+            return LensColors.baseGold;
         } else {
             revert(); // Avoid warnings.
         }
@@ -42,10 +52,16 @@ library HeadwearIcecream {
     function _getHeadwearColor(IcecreamColors icecreamColor) internal pure returns (Headwear.HeadwearColors) {
         if (icecreamColor == IcecreamColors.GREEN) {
             return Headwear.HeadwearColors.GREEN;
+        } else if (icecreamColor == IcecreamColors.PINK) {
+            return Headwear.HeadwearColors.PINK;
         } else if (icecreamColor == IcecreamColors.PURPLE) {
             return Headwear.HeadwearColors.PURPLE;
         } else if (icecreamColor == IcecreamColors.BLUE) {
             return Headwear.HeadwearColors.BLUE;
+        } else if (icecreamColor == IcecreamColors.LIGHT) {
+            return Headwear.HeadwearColors.LIGHT;
+        } else if (icecreamColor == IcecreamColors.DARK) {
+            return Headwear.HeadwearColors.DARK;
         } else if (icecreamColor == IcecreamColors.GOLD) {
             return Headwear.HeadwearColors.GOLD;
         } else {
