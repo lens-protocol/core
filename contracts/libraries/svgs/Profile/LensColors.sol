@@ -15,7 +15,7 @@ library LensColors {
     string constant lightGold = '#FFEE93';
 
     string constant darkGreen = '#93A97D';
-    string constant darkPink = '#C69DAE';
+    string constant darkPink = '#EAAEC7';
     string constant darkPurple = '#C3B3D5';
     string constant darkBlue = '#ACB5DD';
     string constant darkGold = '#B96326';
