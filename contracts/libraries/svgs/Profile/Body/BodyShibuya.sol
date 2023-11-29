@@ -3,7 +3,7 @@ pragma solidity ^0.8.0;
 
 import {Hands} from '../Hands.sol';
 
-library BodyShibyua {
+library BodyShibuya {
     function getBody(Hands.HandsVariants handsVariant) public pure returns (string memory) {
         if (handsVariant == Hands.HandsVariants.HANDSDOWN) {
             return

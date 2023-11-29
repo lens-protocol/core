@@ -52,7 +52,7 @@ library Hands {
     }
 
     function _getRightHand(Body.BodyVariants bodyVariant) internal pure returns (string memory) {
-        if (bodyVariant == Body.BodyVariants.HOODIE || bodyVariant == Body.BodyVariants.SHIBYUA) {
+        if (bodyVariant == Body.BodyVariants.HOODIE || bodyVariant == Body.BodyVariants.SHIBUYA) {
             return
                 '<path class="handsColor" d="M180.8 202.2c.1.4-.5 3.7-2.3 7-1.1 2-2.7 4.2-4.8 5.5-5.6 3.6-10 3.5-17 1.9a25 25 0 0 1-11.9-6.7 17.5 17.5 0 0 1-3.6-6c-.6-1.6.3-3.8-.5-5.3-1.9-3.2.5-6.9.5-6.9l2-4.6 3.4-3.5c0-3 .4-5.4 0-11.7-.4-7.3-1-10.1 0-12.5 3.1-7.7 12.8-6.6 15.7 0 .8 1.9.6 7.8.6 7.8v15l4-15s1.7-7 3-8.6a7.8 7.8 0 0 1 14.2 4.2c.3 2.5-.7 4.7-3 11.6l-3.2 9.3c5.1 2.4 8.4 10.9 3.6 17.7l-.7.8Z"/><path class="armColor" d="M164.4 219.5c-1.2 1.8-2.1 5.2-3.6 7-4.3 4.9-14.5 1.4-14.5 1.4l-.2-4.5-1.5-2.5v-3.5l1.7-4.5s2.6 1.4 8.1 2.6c6 1.6 16.7 1 16.7 1s-2.5-3-5.4.7c-1 1.3 1 1.2-1.3 2.3Z"/><path class="hLine3" d="M149.6 202.6h.8c1.6 0 3.5-.4 5.3-1 5.3-2.1 10.2-6.8 6.3-12.9a7 7 0 0 0-6.1-3.2c-3.3.3-4.6 2.3-8 2.8m-1.2-4.7c0-3 0-5.3-.5-11.6-.5-7.3-1-10.2 0-12.5 3-7.7 12.7-7 15.5-.4.8 1.9 1 8.4 1 8.4v14.9m15.2 1.3 3.3-9.3c2.2-7 3.2-9 2.9-11.6-.9-8.2-10.4-9.6-14.7-3.8a40 40 0 0 0-2.8 8.3l-4 15m18.2 20 .7-1c4.8-6.7 1.5-15.2-3.6-17.6"/><path class="hLine3" d="M180.8 202.2c.1.4-.5 3.7-2.3 7-1.1 2-2.7 4.2-4.8 5.5-5.6 3.6-14.7 3.2-22.7 0"/><path class="hLine4" d="M165.6 218c-3 11-16.3 13-22.3 7.4"/><path class="hLine3" d="M146.6 183.6c-2.7.6-6.7 7.7-6 15 1.6 13.8 10.8 16.9 16 17.9m8.5-15.6c2 3.4 11.5 7 17-.5"/>';
         } else if (bodyVariant == Body.BodyVariants.JACKET) {
@@ -70,7 +70,7 @@ library Hands {
     }
 
     function _getLeftHand(Body.BodyVariants bodyVariant) internal pure returns (string memory) {
-        if (bodyVariant == Body.BodyVariants.HOODIE || bodyVariant == Body.BodyVariants.SHIBYUA) {
+        if (bodyVariant == Body.BodyVariants.HOODIE || bodyVariant == Body.BodyVariants.SHIBUYA) {
             return
                 '<path class="handsColor" d="M28.3 202.2c0 .4.5 3.7 2.3 7 1.2 2 2.7 4.2 4.9 5.5 5.5 3.6 10 3.5 16.9 1.9a25 25 0 0 0 11.9-6.7c1.8-1.8 2.7-3.9 3.6-6 .7-1.6-.3-3.8.6-5.3 1.8-3.2-.6-6.9-.6-6.9l-2-4.6-3.4-3.5c0-3-.4-5.4 0-11.7.5-7.3 1-10.1 0-12.5-3-7.7-12.8-6.6-15.7 0-.7 1.9-.5 7.8-.5 7.8v15l-4-15s-1.8-7-3-8.6a7.8 7.8 0 0 0-14.3 4.2c-.2 2.5.7 4.7 3 11.6l3.2 9.3c-5 2.4-8.4 10.9-3.5 17.7l.6.8Z"/><path class="armColor" d="M44.8 219.5c1 1.8 2 5.2 3.5 7 4.3 4.9 14.5 1.4 14.5 1.4l.3-4.5 1.5-2.5v-3.5l-1.8-4.5s-2.6 1.4-8.1 2.6c-6 1.6-16.6 1-16.6 1s2.4-3 5.4.7c1 1.3-1.1 1.2 1.3 2.3Z"/><path class="hLine3" d="M59.5 202.6a15.7 15.7 0 0 1-6-1c-5.4-2.1-10.3-6.8-6.4-12.9a7 7 0 0 1 6.1-3.2c3.4.3 4.7 2.3 8 2.8m1.2-4.7c0-3 .1-5.3.5-11.6.5-7.3 1-10.2 0-12.5-3-7.7-12.7-7-15.5-.4a39 39 0 0 0-.9 8.4v14.9m-15.3 1.3-3.2-9.3c-2.3-7-3.2-9-3-11.6.9-8.2 10.4-9.6 14.7-3.8 1.2 1.6 2.9 8.3 2.9 8.3l3.9 15m-18.2 20a12 12 0 0 1-.6-1c-5-6.7-1.6-15.2 3.5-17.6"/><path class="hLine3" d="M28.3 202.2c0 .4.5 3.7 2.3 7 1.2 2 2.7 4.2 4.9 5.5 5.5 3.6 14.6 3.2 22.6 0"/><path class="hLine4" d="M43.6 218c3 11 16.9 13 22.9 7.4"/><path class="hLine3" d="M62.5 183.6c2.8.6 6.7 7.7 6 15-1.5 13.8-10.8 16.9-16 17.9m-8.4-15.6c-2.1 3.4-11.5 7-17-.5"/>';
         } else if (bodyVariant == Body.BodyVariants.JACKET) {
@@ -116,7 +116,7 @@ library Hands {
             return Skin.getSkinColor(Skin.SkinColors(uint8(handsColor)));
         } else if (bodyVariant == Body.BodyVariants.JACKET) {
             return Body.getSecondaryBodyColor(bodyVariant, bodyColor);
-        } else if (bodyVariant == Body.BodyVariants.SHIBYUA) {
+        } else if (bodyVariant == Body.BodyVariants.SHIBUYA) {
             return Body.getSecondaryBodyColor(bodyVariant, bodyColor);
         } else {
             revert(); // Avoid warnings.

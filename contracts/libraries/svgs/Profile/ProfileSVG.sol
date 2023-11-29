@@ -177,8 +177,8 @@ library ProfileSVG {
             stringBodyVariant = 'Tanktop';
         } else if (bodyVariant == Body.BodyVariants.TSHIRT) {
             stringBodyVariant = 'Tshirt';
-        } else if (bodyVariant == Body.BodyVariants.SHIBYUA) {
-            stringBodyVariant = 'Shibyua';
+        } else if (bodyVariant == Body.BodyVariants.SHIBUYA) {
+            stringBodyVariant = 'Shibuya';
         } else {
             revert();
         }

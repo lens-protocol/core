@@ -7,7 +7,7 @@ import {BodyJacket} from './Body/BodyJacket.sol';
 import {BodyHoodie} from './Body/BodyHoodie.sol';
 import {BodyTanktop} from './Body/BodyTanktop.sol';
 import {BodyTShirt} from './Body/BodyTShirt.sol';
-import {BodyShibyua} from './Body/BodyShibyua.sol';
+import {BodyShibuya} from './Body/BodyShibuya.sol';
 
 import {LensColors} from './LensColors.sol';
 
@@ -17,7 +17,7 @@ library Body {
         JACKET,
         TANKTOP,
         TSHIRT,
-        SHIBYUA
+        SHIBUYA
     }
 
     enum BodyColors {
@@ -55,8 +55,8 @@ library Body {
             return BodyTanktop.getBody(handsVariant);
         } else if (bodyVariant == BodyVariants.TSHIRT) {
             return BodyTShirt.getBody(handsVariant);
-        } else if (bodyVariant == BodyVariants.SHIBYUA) {
-            return BodyShibyua.getBody(handsVariant);
+        } else if (bodyVariant == BodyVariants.SHIBUYA) {
+            return BodyShibuya.getBody(handsVariant);
         } else {
             revert(); // Avoid warnings.
         }
@@ -87,7 +87,7 @@ library Body {
         } else if (bodyColor == BodyColors.DARK) {
             if (bodyVariant == BodyVariants.JACKET) {
                 return LensColors.lightGray;
-            } else if (bodyVariant == BodyVariants.SHIBYUA) {
+            } else if (bodyVariant == BodyVariants.SHIBUYA) {
                 return LensColors.gray;
             } else {
                 return LensColors.dark;
@@ -108,7 +108,7 @@ library Body {
         if (bodyColor == BodyColors.GREEN) {
             return LensColors.darkGreen;
         } else if (bodyColor == BodyColors.LIGHT) {
-            if (bodyVariant == BodyVariants.SHIBYUA) {
+            if (bodyVariant == BodyVariants.SHIBUYA) {
                 return LensColors.gray;
             } else {
                 return LensColors.lightGray;
