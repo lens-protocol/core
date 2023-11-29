@@ -45,6 +45,8 @@ library Logo {
             return getLogoTshirtTanktop(logoVariant, logoColor);
         } else if (bodyVariant == Body.BodyVariants.JACKET) {
             return getLogoJacket(logoVariant, logoColor);
+        } else if (bodyVariant == Body.BodyVariants.SHIBYUA) {
+            return ''; // No logo for Shibyua
         } else {
             revert(); // Avoid warnings.
         }

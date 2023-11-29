@@ -81,12 +81,16 @@ library ProfileSVG {
         string memory stringBackgroundColor;
         if (backgroundColor == Background.BackgroundColors.GREEN) {
             stringBackgroundColor = 'Green';
+        } else if (backgroundColor == Background.BackgroundColors.PINK) {
+            stringBackgroundColor = 'Pink';
         } else if (backgroundColor == Background.BackgroundColors.PURPLE) {
             stringBackgroundColor = 'Purple';
         } else if (backgroundColor == Background.BackgroundColors.BLUE) {
             stringBackgroundColor = 'Blue';
         } else if (backgroundColor == Background.BackgroundColors.GOLD) {
             stringBackgroundColor = 'Gold';
+        } else {
+            revert();
         }
         return string.concat('{"trait_type":"Background","value":"', stringBackgroundColor, '"},');
     }
@@ -95,12 +99,16 @@ library ProfileSVG {
         string memory stringSkinColor;
         if (skinColor == Skin.SkinColors.GREEN) {
             stringSkinColor = 'Green';
+        } else if (skinColor == Skin.SkinColors.PINK) {
+            stringSkinColor = 'Pink';
         } else if (skinColor == Skin.SkinColors.PURPLE) {
             stringSkinColor = 'Purple';
         } else if (skinColor == Skin.SkinColors.BLUE) {
             stringSkinColor = 'Blue';
         } else if (skinColor == Skin.SkinColors.GOLD) {
             stringSkinColor = 'Gold';
+        } else {
+            revert();
         }
         return string.concat('{"trait_type":"Skin","value":"', stringSkinColor, '"},');
     }
@@ -113,6 +121,14 @@ library ProfileSVG {
             stringLegColor = 'Dark';
         } else if (legColor == Legs.LegColors.LIGHT) {
             stringLegColor = 'Light';
+        } else if (legColor == Legs.LegColors.PURPLE) {
+            stringLegColor = 'Purple';
+        } else if (legColor == Legs.LegColors.BLUE) {
+            stringLegColor = 'Blue';
+        } else if (legColor == Legs.LegColors.PINK) {
+            stringLegColor = 'Pink';
+        } else {
+            revert();
         }
         return string.concat('{"trait_type":"Legs","value":"', stringLegColor, '"},');
     }
@@ -125,6 +141,14 @@ library ProfileSVG {
             stringShoeColor = 'Dark';
         } else if (shoeColor == Shoes.ShoeColors.LIGHT) {
             stringShoeColor = 'Light';
+        } else if (shoeColor == Shoes.ShoeColors.PURPLE) {
+            stringShoeColor = 'Purple';
+        } else if (shoeColor == Shoes.ShoeColors.BLUE) {
+            stringShoeColor = 'Blue';
+        } else if (shoeColor == Shoes.ShoeColors.PINK) {
+            stringShoeColor = 'Pink';
+        } else {
+            revert();
         }
         return string.concat('{"trait_type":"Shoes","value":"', stringShoeColor, '"},');
     }
@@ -137,6 +161,8 @@ library ProfileSVG {
             stringHandsVariant = 'Double Peace';
         } else if (handsVariant == Hands.HandsVariants.PEACESINGLE) {
             stringHandsVariant = 'Peace';
+        } else {
+            revert();
         }
         return string.concat('{"trait_type":"Hands","value":"', stringHandsVariant, '"},');
     }
@@ -151,6 +177,10 @@ library ProfileSVG {
             stringBodyVariant = 'Tanktop';
         } else if (bodyVariant == Body.BodyVariants.TSHIRT) {
             stringBodyVariant = 'Tshirt';
+        } else if (bodyVariant == Body.BodyVariants.SHIBYUA) {
+            stringBodyVariant = 'Shibyua';
+        } else {
+            revert();
         }
         return string.concat('{"trait_type":"Body","value":"', stringBodyVariant, '"},');
     }
@@ -167,6 +197,10 @@ library ProfileSVG {
             stringBodyColor = 'Purple';
         } else if (bodyColor == Body.BodyColors.BLUE) {
             stringBodyColor = 'Blue';
+        } else if (bodyColor == Body.BodyColors.PINK) {
+            stringBodyColor = 'Pink';
+        } else {
+            revert();
         }
         return string.concat('{"trait_type":"Body Color","value":"', stringBodyColor, '"},');
     }
@@ -181,6 +215,8 @@ library ProfileSVG {
             stringLogoVariant = 'Lens';
         } else if (logoVariant == Logo.LogoVariants.PEACE) {
             stringLogoVariant = 'Peace';
+        } else {
+            revert();
         }
         return string.concat('{"trait_type":"Logo","value":"', stringLogoVariant, '"},');
     }
@@ -189,6 +225,8 @@ library ProfileSVG {
         string memory stringLogoColor;
         if (logoColor == Logo.LogoColors.GREEN) {
             stringLogoColor = 'Green';
+        } else if (logoColor == Logo.LogoColors.PINK) {
+            stringLogoColor = 'Pink';
         } else if (logoColor == Logo.LogoColors.PURPLE) {
             stringLogoColor = 'Purple';
         } else if (logoColor == Logo.LogoColors.BLUE) {
@@ -197,6 +235,8 @@ library ProfileSVG {
             stringLogoColor = 'Light';
         } else if (logoColor == Logo.LogoColors.DARK) {
             stringLogoColor = 'Dark';
+        } else {
+            revert();
         }
         return string.concat('{"trait_type":"Logo Color","value":"', stringLogoColor, '"},');
     }
@@ -231,6 +271,8 @@ library ProfileSVG {
             stringFaceVariant = 'Wow Tongue';
         } else if (faceVariant == Face.FaceVariants.WOW) {
             stringFaceVariant = 'Wow';
+        } else {
+            revert();
         }
         return string.concat('{"trait_type":"Face","value":"', stringFaceVariant, '"}');
     }
@@ -261,6 +303,8 @@ library ProfileSVG {
             stringHeadwearVariant = 'Partyhat';
         } else if (headwearVariant == Headwear.HeadwearVariants.ICECREAM) {
             stringHeadwearVariant = 'Icecream';
+        } else {
+            revert();
         }
         return string.concat(',{"trait_type":"Headwear","value":"', stringHeadwearVariant, '"}');
     }
@@ -279,8 +323,12 @@ library ProfileSVG {
             stringHeadwearColor = 'Purple';
         } else if (headwearColor == Headwear.HeadwearColors.BLUE) {
             stringHeadwearColor = 'Blue';
+        } else if (headwearColor == Headwear.HeadwearColors.PINK) {
+            stringHeadwearColor = 'Pink';
         } else if (headwearColor == Headwear.HeadwearColors.GOLD) {
             stringHeadwearColor = 'Gold';
+        } else {
+            revert();
         }
         return string.concat(',{"trait_type":"Headwear Color","value":"', stringHeadwearColor, '"}');
     }

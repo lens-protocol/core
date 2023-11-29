@@ -7,6 +7,7 @@ import {BodyJacket} from './Body/BodyJacket.sol';
 import {BodyHoodie} from './Body/BodyHoodie.sol';
 import {BodyTanktop} from './Body/BodyTanktop.sol';
 import {BodyTShirt} from './Body/BodyTShirt.sol';
+import {BodyShibyua} from './Body/BodyShibyua.sol';
 
 import {LensColors} from './LensColors.sol';
 
@@ -15,7 +16,8 @@ library Body {
         HOODIE,
         JACKET,
         TANKTOP,
-        TSHIRT
+        TSHIRT,
+        SHIBYUA
     }
 
     enum BodyColors {
@@ -53,6 +55,8 @@ library Body {
             return BodyTanktop.getBody(handsVariant);
         } else if (bodyVariant == BodyVariants.TSHIRT) {
             return BodyTShirt.getBody(handsVariant);
+        } else if (bodyVariant == BodyVariants.SHIBYUA) {
+            return BodyShibyua.getBody(handsVariant);
         } else {
             revert(); // Avoid warnings.
         }
@@ -68,7 +72,7 @@ library Body {
                 '<style>.bodyColor1 {fill: ',
                 getPrimaryBodyColor(bodyVariant, bodyColor),
                 '}.bodyColor2 {fill: ',
-                getSecondaryBodyColor(bodyColor),
+                getSecondaryBodyColor(bodyVariant, bodyColor),
                 '}.handsColor {fill: ',
                 Skin.getSkinColor(Skin.SkinColors(uint8(handsColor))),
                 '}.bStr1 {stroke: #000;stroke-linecap: round;stroke-miterlimit: 10;}.bStr2 {stroke: #000;stroke-linecap: round;stroke-linejoin: round;}.bStr3 {stroke: #000;stroke-linecap: round;stroke-opacity: .1;stroke-width: 2;}</style>'
@@ -83,6 +87,8 @@ library Body {
         } else if (bodyColor == BodyColors.DARK) {
             if (bodyVariant == BodyVariants.JACKET) {
                 return LensColors.lightGray;
+            } else if (bodyVariant == BodyVariants.SHIBYUA) {
+                return LensColors.gray;
             } else {
                 return LensColors.dark;
             }
@@ -98,11 +104,15 @@ library Body {
     }
 
     // We don't need variant because this is only used in Jacket
-    function getSecondaryBodyColor(BodyColors bodyColor) public pure returns (string memory) {
+    function getSecondaryBodyColor(BodyVariants bodyVariant, BodyColors bodyColor) public pure returns (string memory) {
         if (bodyColor == BodyColors.GREEN) {
             return LensColors.darkGreen;
         } else if (bodyColor == BodyColors.LIGHT) {
-            return LensColors.lightGray;
+            if (bodyVariant == BodyVariants.SHIBYUA) {
+                return LensColors.gray;
+            } else {
+                return LensColors.lightGray;
+            }
         } else if (bodyColor == BodyColors.DARK) {
             return LensColors.dark;
         } else if (bodyColor == BodyColors.PINK) {
