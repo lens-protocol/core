@@ -416,7 +416,8 @@ library ProfileSVG {
                 headwearSvg,
                 Face.getFace(
                     chosenElements.faceVariant,
-                    chosenElements.isGold ? Face.FaceColors.GOLD : Face.FaceColors.NORMAL
+                    chosenElements.isGold ? Face.FaceColors.GOLD : Face.FaceColors.NORMAL,
+                    chosenElements.skinColor
                 ),
                 Hands.getHands(
                     chosenElements.handsVariant,

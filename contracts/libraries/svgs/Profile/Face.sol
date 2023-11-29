@@ -3,6 +3,7 @@ pragma solidity ^0.8.0;
 
 import {LensColors} from './LensColors.sol';
 import {Face2} from './Face2.sol';
+import {Skin} from './Helpers.sol';
 
 library Face {
     enum FaceVariants {
@@ -50,10 +51,14 @@ library Face {
         GOLD
     }
 
-    function getFace(FaceVariants faceVariant, FaceColors faceColor) external pure returns (string memory) {
+    function getFace(
+        FaceVariants faceVariant,
+        FaceColors faceColor,
+        Skin.SkinColors skinColor
+    ) external pure returns (string memory) {
         string memory faceSvgStart = string.concat(
             '<svg xmlns="http://www.w3.org/2000/svg" width="210" height="335" fill="none">',
-            _getStyleTag(faceColor)
+            _getStyleTag(faceColor, skinColor)
         );
 
         if (uint8(faceVariant) <= uint8(type(FaceVariants1).max)) {
@@ -125,25 +130,68 @@ library Face {
         }
     }
 
-    function _getStyleTag(FaceColors faceColor) internal pure returns (string memory) {
-        if (faceColor == FaceColors.GOLD) {
-            return
-                string.concat(
-                    '<style>.faceStrokeColor{stroke:',
-                    LensColors.darkGold,
-                    '} .faceFillColor{fill:',
-                    LensColors.darkGold,
-                    '}</style>'
-                );
+    function _getStyleTag(FaceColors faceColor, Skin.SkinColors skinColor) internal pure returns (string memory) {
+        return
+            string.concat(
+                '<style>.faceStrokeColor{stroke:',
+                faceColor == FaceColors.GOLD ? LensColors.darkGold : LensColors.black,
+                '} .faceFillColor{fill:',
+                faceColor == FaceColors.GOLD ? LensColors.darkGold : LensColors.black,
+                '} .skinColorBase{fill:',
+                _getBaseColor(skinColor),
+                '} .skinColorLight{fill:',
+                _getLightColor(skinColor),
+                '} .skinColorDark{fill:',
+                _getDarkColor(skinColor),
+                '}</style>'
+            );
+    }
+
+    function _getBaseColor(Skin.SkinColors color) internal pure returns (string memory) {
+        if (color == Skin.SkinColors.GREEN) {
+            return LensColors.baseGreen;
+        } else if (color == Skin.SkinColors.PINK) {
+            return LensColors.basePink;
+        } else if (color == Skin.SkinColors.PURPLE) {
+            return LensColors.basePurple;
+        } else if (color == Skin.SkinColors.BLUE) {
+            return LensColors.baseBlue;
+        } else if (color == Skin.SkinColors.GOLD) {
+            return LensColors.baseGold;
         } else {
-            return
-                string.concat(
-                    '<style>.faceStrokeColor{stroke:',
-                    LensColors.black,
-                    '} .faceFillColor{fill:',
-                    LensColors.black,
-                    '}</style>'
-                );
+            revert(); // Avoid warnings.
+        }
+    }
+
+    function _getLightColor(Skin.SkinColors color) internal pure returns (string memory) {
+        if (color == Skin.SkinColors.GREEN) {
+            return LensColors.lightGreen;
+        } else if (color == Skin.SkinColors.PINK) {
+            return LensColors.lightPink;
+        } else if (color == Skin.SkinColors.PURPLE) {
+            return LensColors.lightPurple;
+        } else if (color == Skin.SkinColors.BLUE) {
+            return LensColors.lightBlue;
+        } else if (color == Skin.SkinColors.GOLD) {
+            return LensColors.lightGold;
+        } else {
+            revert(); // Avoid warnings.
+        }
+    }
+
+    function _getDarkColor(Skin.SkinColors color) internal pure returns (string memory) {
+        if (color == Skin.SkinColors.GREEN) {
+            return LensColors.darkGreen;
+        } else if (color == Skin.SkinColors.PINK) {
+            return LensColors.darkPink;
+        } else if (color == Skin.SkinColors.PURPLE) {
+            return LensColors.darkPurple;
+        } else if (color == Skin.SkinColors.BLUE) {
+            return LensColors.darkBlue;
+        } else if (color == Skin.SkinColors.GOLD) {
+            return LensColors.darkGold;
+        } else {
+            revert(); // Avoid warnings.
         }
     }
 }
