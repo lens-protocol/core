@@ -6,7 +6,7 @@ import {LensColors} from 'contracts/libraries/svgs/Profile/LensColors.sol';
 
 library HeadwearSparkles {
     enum SparklesColors {
-        LIGHT,
+        NONE,
         GOLD
     }
 
@@ -35,7 +35,7 @@ library HeadwearSparkles {
     }
 
     function _getSparklesColor(SparklesColors sparklesColor) internal pure returns (string memory) {
-        if (sparklesColor == SparklesColors.LIGHT) {
+        if (sparklesColor == SparklesColors.NONE) {
             return LensColors.black;
         } else if (sparklesColor == SparklesColors.GOLD) {
             return LensColors.darkGold;
@@ -45,8 +45,8 @@ library HeadwearSparkles {
     }
 
     function _getHeadwearColor(SparklesColors sparklesColor) internal pure returns (Headwear.HeadwearColors) {
-        if (sparklesColor == SparklesColors.LIGHT) {
-            return Headwear.HeadwearColors.LIGHT;
+        if (sparklesColor == SparklesColors.NONE) {
+            return Headwear.HeadwearColors.NONE;
         } else if (sparklesColor == SparklesColors.GOLD) {
             return Headwear.HeadwearColors.GOLD;
         } else {

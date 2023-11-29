@@ -10,14 +10,12 @@ library HeadwearNightcap {
         PINK,
         PURPLE,
         BLUE,
-        LIGHT,
-        DARK,
         GOLD
     }
 
     function getNightcap(
         NightcapColors nightcapColor
-    ) internal pure returns (string memory, Headwear.HeadwearVariants, Headwear.HeadwearColors) {
+    ) external pure returns (string memory, Headwear.HeadwearVariants, Headwear.HeadwearColors) {
         return (
             string.concat(
                 '<svg xmlns="http://www.w3.org/2000/svg" width="210" height="335" fill="none">',
@@ -42,10 +40,6 @@ library HeadwearNightcap {
             return LensColors.lightPurple;
         } else if (nightcapColor == NightcapColors.BLUE) {
             return LensColors.lightBlue;
-        } else if (nightcapColor == NightcapColors.LIGHT) {
-            return LensColors.white;
-        } else if (nightcapColor == NightcapColors.DARK) {
-            return LensColors.gray;
         } else if (nightcapColor == NightcapColors.GOLD) {
             return LensColors.lightGold;
         } else {
@@ -62,10 +56,6 @@ library HeadwearNightcap {
             return Headwear.HeadwearColors.PURPLE;
         } else if (nightcapColor == NightcapColors.BLUE) {
             return Headwear.HeadwearColors.BLUE;
-        } else if (nightcapColor == NightcapColors.LIGHT) {
-            return Headwear.HeadwearColors.LIGHT;
-        } else if (nightcapColor == NightcapColors.DARK) {
-            return Headwear.HeadwearColors.DARK;
         } else if (nightcapColor == NightcapColors.GOLD) {
             return Headwear.HeadwearColors.GOLD;
         } else {

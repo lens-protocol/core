@@ -8,8 +8,6 @@ library HeadwearHat {
     enum HatColors {
         GREEN,
         PINK,
-        LIGHT,
-        DARK,
         BLUE,
         PURPLE,
         GOLD
@@ -19,7 +17,7 @@ library HeadwearHat {
     // uint8 color = uint8((seed >> 152) & 0xFF) % 5;
     function getHat(
         HatColors hatColor
-    ) internal pure returns (string memory, Headwear.HeadwearVariants, Headwear.HeadwearColors) {
+    ) external pure returns (string memory, Headwear.HeadwearVariants, Headwear.HeadwearColors) {
         return (
             string.concat(
                 '<svg xmlns="http://www.w3.org/2000/svg" width="210" height="335" fill="none">',
@@ -48,10 +46,6 @@ library HeadwearHat {
             return (LensColors.darkGreen, LensColors.lightGreen);
         } else if (hatColor == HatColors.PINK) {
             return (LensColors.darkPink, LensColors.lightPink);
-        } else if (hatColor == HatColors.LIGHT) {
-            return (LensColors.lightGray, LensColors.white);
-        } else if (hatColor == HatColors.DARK) {
-            return (LensColors.gray, LensColors.dark);
         } else if (hatColor == HatColors.BLUE) {
             return (LensColors.darkBlue, LensColors.lightBlue);
         } else if (hatColor == HatColors.PURPLE) {
@@ -68,10 +62,6 @@ library HeadwearHat {
             return Headwear.HeadwearColors.GREEN;
         } else if (hatColor == HatColors.PINK) {
             return Headwear.HeadwearColors.PINK;
-        } else if (hatColor == HatColors.LIGHT) {
-            return Headwear.HeadwearColors.LIGHT;
-        } else if (hatColor == HatColors.DARK) {
-            return Headwear.HeadwearColors.DARK;
         } else if (hatColor == HatColors.BLUE) {
             return Headwear.HeadwearColors.BLUE;
         } else if (hatColor == HatColors.PURPLE) {

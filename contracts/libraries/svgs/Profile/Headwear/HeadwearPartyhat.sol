@@ -10,14 +10,12 @@ library HeadwearPartyhat {
         PURPLE,
         BLUE,
         PINK,
-        LIGHT,
-        DARK,
         GOLD
     }
 
     function getPartyhat(
         PartyhatColors partyhatColor
-    ) internal pure returns (string memory, Headwear.HeadwearVariants, Headwear.HeadwearColors) {
+    ) external pure returns (string memory, Headwear.HeadwearVariants, Headwear.HeadwearColors) {
         return (
             string.concat(
                 '<svg xmlns="http://www.w3.org/2000/svg" width="211" height="335" fill="none">',
@@ -52,10 +50,6 @@ library HeadwearPartyhat {
             return (LensColors.lightBlue, LensColors.baseBlue);
         } else if (partyhatColor == PartyhatColors.PINK) {
             return (LensColors.lightPink, LensColors.basePink);
-        } else if (partyhatColor == PartyhatColors.LIGHT) {
-            return (LensColors.gray, LensColors.white);
-        } else if (partyhatColor == PartyhatColors.DARK) {
-            return (LensColors.gray, LensColors.dark);
         } else if (partyhatColor == PartyhatColors.GOLD) {
             return (LensColors.lightGold, LensColors.baseGold);
         } else {
@@ -72,10 +66,6 @@ library HeadwearPartyhat {
             return Headwear.HeadwearColors.BLUE;
         } else if (partyhatColor == PartyhatColors.PINK) {
             return Headwear.HeadwearColors.PINK;
-        } else if (partyhatColor == PartyhatColors.LIGHT) {
-            return Headwear.HeadwearColors.LIGHT;
-        } else if (partyhatColor == PartyhatColors.DARK) {
-            return Headwear.HeadwearColors.DARK;
         } else if (partyhatColor == PartyhatColors.GOLD) {
             return Headwear.HeadwearColors.GOLD;
         } else {

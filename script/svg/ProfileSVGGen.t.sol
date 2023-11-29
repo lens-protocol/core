@@ -94,6 +94,20 @@ contract ProfileSVGGen is Test {
                 );
             }
         }
+
+        for (uint8 c = 0; c <= uint8(type(Skin.SkinColors).max) + 1; c++) {
+            uint256 seed = setVariant(uint8(Face.FaceVariants.BABY), Helpers.ComponentBytes.FACE) +
+                setColor(c, Helpers.ComponentBytes.SKIN);
+            string memory result = profileNFT.tryWithSeed(seed, c == uint8(Skin.SkinColors.GOLD));
+            vm.writeFile(string.concat(dir, 'faces/face_baby_', vm.toString(c), '.svg'), result);
+        }
+
+        for (uint8 c = 0; c <= uint8(type(Skin.SkinColors).max) + 1; c++) {
+            uint256 seed = setVariant(uint8(Face.FaceVariants.VAMP), Helpers.ComponentBytes.FACE) +
+                setColor(c, Helpers.ComponentBytes.SKIN);
+            string memory result = profileNFT.tryWithSeed(seed, c == uint8(Skin.SkinColors.GOLD));
+            vm.writeFile(string.concat(dir, 'faces/face_vamp_', vm.toString(c), '.svg'), result);
+        }
     }
 
     function testHandsAndBody() public {

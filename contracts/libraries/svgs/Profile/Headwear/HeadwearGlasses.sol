@@ -10,14 +10,12 @@ library HeadwearGlasses {
         PINK,
         PURPLE,
         BLUE,
-        LIGHT,
-        DARK,
         GOLD
     }
 
     function getGlasses(
         GlassesColors glassesColor
-    ) internal pure returns (string memory, Headwear.HeadwearVariants, Headwear.HeadwearColors) {
+    ) external pure returns (string memory, Headwear.HeadwearVariants, Headwear.HeadwearColors) {
         return (
             string.concat(
                 '<svg xmlns="http://www.w3.org/2000/svg" width="210" height="335" fill="none">',
@@ -42,10 +40,6 @@ library HeadwearGlasses {
             return LensColors.lightBlue;
         } else if (glassesColor == GlassesColors.PINK) {
             return LensColors.lightPink;
-        } else if (glassesColor == GlassesColors.LIGHT) {
-            return LensColors.white;
-        } else if (glassesColor == GlassesColors.DARK) {
-            return LensColors.dark;
         } else if (glassesColor == GlassesColors.GOLD) {
             return LensColors.lightGold;
         } else {
@@ -62,10 +56,6 @@ library HeadwearGlasses {
             return Headwear.HeadwearColors.BLUE;
         } else if (glassesColor == GlassesColors.PINK) {
             return Headwear.HeadwearColors.PINK;
-        } else if (glassesColor == GlassesColors.LIGHT) {
-            return Headwear.HeadwearColors.LIGHT;
-        } else if (glassesColor == GlassesColors.DARK) {
-            return Headwear.HeadwearColors.DARK;
         } else if (glassesColor == GlassesColors.GOLD) {
             return Headwear.HeadwearColors.GOLD;
         } else {

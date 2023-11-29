@@ -10,8 +10,6 @@ library HeadwearBeanie {
         PINK,
         PURPLE,
         BLUE,
-        LIGHT,
-        DARK,
         GOLD
     }
 
@@ -49,10 +47,6 @@ library HeadwearBeanie {
             return LensColors.lightBlue;
         } else if (beanieColor == BeanieColors.PURPLE) {
             return LensColors.lightPurple;
-        } else if (beanieColor == BeanieColors.LIGHT) {
-            return LensColors.white;
-        } else if (beanieColor == BeanieColors.DARK) {
-            return LensColors.dark;
         } else if (beanieColor == BeanieColors.GOLD) {
             return LensColors.lightGold;
         } else {
@@ -67,10 +61,6 @@ library HeadwearBeanie {
             return Headwear.HeadwearColors.PINK;
         } else if (beanieColor == BeanieColors.BLUE) {
             return Headwear.HeadwearColors.BLUE;
-        } else if (beanieColor == BeanieColors.LIGHT) {
-            return Headwear.HeadwearColors.LIGHT;
-        } else if (beanieColor == BeanieColors.DARK) {
-            return Headwear.HeadwearColors.DARK;
         } else if (beanieColor == BeanieColors.PURPLE) {
             return Headwear.HeadwearColors.PURPLE;
         } else if (beanieColor == BeanieColors.GOLD) {

@@ -271,6 +271,16 @@ library ProfileSVG {
             stringFaceVariant = 'Wow Tongue';
         } else if (faceVariant == Face.FaceVariants.WOW) {
             stringFaceVariant = 'Wow';
+        } else if (faceVariant == Face.FaceVariants.BABY) {
+            stringFaceVariant = 'Baby';
+        } else if (faceVariant == Face.FaceVariants.KAWAII) {
+            stringFaceVariant = 'Kawaii';
+        } else if (faceVariant == Face.FaceVariants.PIXIE) {
+            stringFaceVariant = 'Pixie';
+        } else if (faceVariant == Face.FaceVariants.TODDLER) {
+            stringFaceVariant = 'Toddler';
+        } else if (faceVariant == Face.FaceVariants.VAMP) {
+            stringFaceVariant = 'Vamp';
         } else {
             revert();
         }
@@ -303,6 +313,26 @@ library ProfileSVG {
             stringHeadwearVariant = 'Partyhat';
         } else if (headwearVariant == Headwear.HeadwearVariants.ICECREAM) {
             stringHeadwearVariant = 'Icecream';
+        } else if (headwearVariant == Headwear.HeadwearVariants.BEAR) {
+            stringHeadwearVariant = 'Bear';
+        } else if (headwearVariant == Headwear.HeadwearVariants.BEE) {
+            stringHeadwearVariant = 'Bee';
+        } else if (headwearVariant == Headwear.HeadwearVariants.BIRDIE) {
+            stringHeadwearVariant = 'Birdie';
+        } else if (headwearVariant == Headwear.HeadwearVariants.BRAINS) {
+            stringHeadwearVariant = 'Brains';
+        } else if (headwearVariant == Headwear.HeadwearVariants.BULL) {
+            stringHeadwearVariant = 'Bull';
+        } else if (headwearVariant == Headwear.HeadwearVariants.EARRINGS) {
+            stringHeadwearVariant = 'Earrings';
+        } else if (headwearVariant == Headwear.HeadwearVariants.LOTUS) {
+            stringHeadwearVariant = 'Lotus';
+        } else if (headwearVariant == Headwear.HeadwearVariants.MAJOR) {
+            stringHeadwearVariant = 'Major';
+        } else if (headwearVariant == Headwear.HeadwearVariants.SCOUT) {
+            stringHeadwearVariant = 'Scout';
+        } else if (headwearVariant == Headwear.HeadwearVariants.SHAMAN) {
+            stringHeadwearVariant = 'Shaman';
         } else {
             revert();
         }
@@ -315,10 +345,6 @@ library ProfileSVG {
             return '';
         } else if (headwearColor == Headwear.HeadwearColors.GREEN) {
             stringHeadwearColor = 'Green';
-        } else if (headwearColor == Headwear.HeadwearColors.LIGHT) {
-            stringHeadwearColor = 'Light';
-        } else if (headwearColor == Headwear.HeadwearColors.DARK) {
-            stringHeadwearColor = 'Dark';
         } else if (headwearColor == Headwear.HeadwearColors.PURPLE) {
             stringHeadwearColor = 'Purple';
         } else if (headwearColor == Headwear.HeadwearColors.BLUE) {

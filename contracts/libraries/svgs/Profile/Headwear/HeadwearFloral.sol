@@ -10,14 +10,12 @@ library HeadwearFloral {
         PINK,
         PURPLE,
         BLUE,
-        LIGHT,
-        DARK,
         GOLD
     }
 
     function getFloral(
         FloralColors floralColor
-    ) internal pure returns (string memory, Headwear.HeadwearVariants, Headwear.HeadwearColors) {
+    ) external pure returns (string memory, Headwear.HeadwearVariants, Headwear.HeadwearColors) {
         return (
             string.concat(
                 '<svg xmlns="http://www.w3.org/2000/svg" width="210" height="335" fill="none">',
@@ -50,10 +48,6 @@ library HeadwearFloral {
             return (LensColors.lightBlue, LensColors.baseBlue);
         } else if (floralColor == FloralColors.PINK) {
             return (LensColors.lightPink, LensColors.basePink);
-        } else if (floralColor == FloralColors.LIGHT) {
-            return (LensColors.white, LensColors.lightGray);
-        } else if (floralColor == FloralColors.DARK) {
-            return (LensColors.gray, LensColors.gray);
         } else if (floralColor == FloralColors.GOLD) {
             return (LensColors.lightGold, LensColors.baseGold);
         } else {
@@ -70,10 +64,6 @@ library HeadwearFloral {
             return Headwear.HeadwearColors.BLUE;
         } else if (floralColor == FloralColors.PINK) {
             return Headwear.HeadwearColors.PINK;
-        } else if (floralColor == FloralColors.LIGHT) {
-            return Headwear.HeadwearColors.LIGHT;
-        } else if (floralColor == FloralColors.DARK) {
-            return Headwear.HeadwearColors.DARK;
         } else if (floralColor == FloralColors.GOLD) {
             return Headwear.HeadwearColors.GOLD;
         } else {

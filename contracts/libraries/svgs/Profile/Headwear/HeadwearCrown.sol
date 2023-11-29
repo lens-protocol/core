@@ -10,8 +10,6 @@ library HeadwearCrown {
         PURPLE,
         BLUE,
         PINK,
-        LIGHT,
-        DARK,
         GOLD
     }
 
@@ -50,10 +48,6 @@ library HeadwearCrown {
             return (LensColors.lightBlue, LensColors.baseBlue);
         } else if (crownColor == CrownColors.PINK) {
             return (LensColors.lightPink, LensColors.basePink);
-        } else if (crownColor == CrownColors.LIGHT) {
-            return (LensColors.white, LensColors.lightGray);
-        } else if (crownColor == CrownColors.DARK) {
-            return (LensColors.gray, LensColors.gray);
         } else if (crownColor == CrownColors.GOLD) {
             return (LensColors.lightGold, LensColors.baseGold);
         } else {
@@ -70,10 +64,6 @@ library HeadwearCrown {
             return Headwear.HeadwearColors.BLUE;
         } else if (crownColor == CrownColors.PINK) {
             return Headwear.HeadwearColors.PINK;
-        } else if (crownColor == CrownColors.LIGHT) {
-            return Headwear.HeadwearColors.LIGHT;
-        } else if (crownColor == CrownColors.DARK) {
-            return Headwear.HeadwearColors.DARK;
         } else if (crownColor == CrownColors.GOLD) {
             return Headwear.HeadwearColors.GOLD;
         } else {
