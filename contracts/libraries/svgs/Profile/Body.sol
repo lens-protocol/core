@@ -26,7 +26,8 @@ library Body {
         DARK,
         PURPLE,
         BLUE,
-        PINK
+        PINK,
+        GOLD
     }
 
     function getBody(
@@ -75,6 +76,8 @@ library Body {
                 getSecondaryBodyColor(bodyVariant, bodyColor),
                 '}.handsColor {fill: ',
                 Skin.getSkinColor(Skin.SkinColors(uint8(handsColor))),
+                '}.jacketShirt {fill: ',
+                bodyColor == BodyColors.GOLD ? LensColors.lightGold : LensColors.white,
                 '}.bStr1 {stroke: #000;stroke-linecap: round;stroke-miterlimit: 10;}.bStr2 {stroke: #000;stroke-linecap: round;stroke-linejoin: round;}.bStr3 {stroke: #000;stroke-linecap: round;stroke-opacity: .1;stroke-width: 2;}</style>'
             );
     }
@@ -98,6 +101,8 @@ library Body {
             return LensColors.lightBlue;
         } else if (bodyColor == BodyColors.PINK) {
             return LensColors.lightPink;
+        } else if (bodyColor == BodyColors.GOLD) {
+            return LensColors.lightGold;
         } else {
             revert(); // Avoid warnings.
         }
@@ -121,6 +126,8 @@ library Body {
             return LensColors.darkPurple;
         } else if (bodyColor == BodyColors.BLUE) {
             return LensColors.darkBlue;
+        } else if (bodyColor == BodyColors.GOLD) {
+            return LensColors.baseGold;
         } else {
             revert(); // Avoid warnings.
         }

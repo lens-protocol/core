@@ -105,6 +105,8 @@ library ProfileSVG {
             stringLegColor = 'Blue';
         } else if (legColor == Legs.LegColors.PINK) {
             stringLegColor = 'Pink';
+        } else if (legColor == Legs.LegColors.GOLD) {
+            stringLegColor = 'Gold';
         } else {
             revert();
         }
@@ -125,6 +127,8 @@ library ProfileSVG {
             stringShoeColor = 'Blue';
         } else if (shoeColor == Shoes.ShoeColors.PINK) {
             stringShoeColor = 'Pink';
+        } else if (shoeColor == Shoes.ShoeColors.GOLD) {
+            stringShoeColor = 'Gold';
         } else {
             revert();
         }
@@ -294,13 +298,17 @@ library ProfileSVG {
                 uint8(Helpers.getColor(seed, Helpers.ComponentBytes.SKIN)) % uint8(type(Skin.SkinColors).max)
             );
 
-        chosenElements.legColor = Legs.LegColors(
-            uint8(Helpers.getColor(seed, Helpers.ComponentBytes.LEGS)) % (uint8(type(Legs.LegColors).max) + 1)
-        );
+        chosenElements.legColor = isGold
+            ? Legs.LegColors.GOLD
+            : Legs.LegColors(
+                uint8(Helpers.getColor(seed, Helpers.ComponentBytes.LEGS)) % uint8(type(Legs.LegColors).max)
+            );
 
-        chosenElements.shoeColor = Shoes.ShoeColors(
-            uint8(Helpers.getColor(seed, Helpers.ComponentBytes.SHOES)) % (uint8(type(Shoes.ShoeColors).max) + 1)
-        );
+        chosenElements.shoeColor = isGold
+            ? Shoes.ShoeColors.GOLD
+            : Shoes.ShoeColors(
+                uint8(Helpers.getColor(seed, Helpers.ComponentBytes.SHOES)) % uint8(type(Shoes.ShoeColors).max)
+            );
 
         chosenElements.handsVariant = Hands.HandsVariants(
             uint8(Helpers.getVariant(seed, Helpers.ComponentBytes.HANDS)) % (uint8(type(Hands.HandsVariants).max) + 1)
@@ -310,17 +318,21 @@ library ProfileSVG {
             uint8(Helpers.getVariant(seed, Helpers.ComponentBytes.BODY)) % (uint8(type(Body.BodyVariants).max) + 1)
         );
 
-        chosenElements.bodyColor = Body.BodyColors(
-            uint8(Helpers.getColor(seed, Helpers.ComponentBytes.BODY)) % (uint8(type(Body.BodyColors).max) + 1)
-        );
+        chosenElements.bodyColor = isGold
+            ? Body.BodyColors.GOLD
+            : Body.BodyColors(
+                uint8(Helpers.getColor(seed, Helpers.ComponentBytes.BODY)) % uint8(type(Body.BodyColors).max)
+            );
 
         chosenElements.logoVariant = Logo.LogoVariants(
             uint8(Helpers.getVariant(seed, Helpers.ComponentBytes.LOGO)) % (uint8(type(Logo.LogoVariants).max) + 1)
         );
 
-        chosenElements.logoColor = Logo.LogoColors(
-            uint8(Helpers.getColor(seed, Helpers.ComponentBytes.LOGO)) % (uint8(type(Logo.LogoColors).max) + 1)
-        );
+        chosenElements.logoColor = isGold
+            ? Logo.LogoColors.GOLD
+            : Logo.LogoColors(
+                uint8(Helpers.getColor(seed, Helpers.ComponentBytes.LOGO)) % uint8(type(Logo.LogoColors).max)
+            );
 
         chosenElements.faceVariant = Face.FaceVariants(
             uint8(Helpers.getVariant(seed, Helpers.ComponentBytes.FACE)) % (uint8(type(Face.FaceVariants).max) + 1)

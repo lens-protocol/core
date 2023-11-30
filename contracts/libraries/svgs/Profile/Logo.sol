@@ -19,7 +19,7 @@ library Logo {
         PURPLE,
         BLUE,
         LIGHT,
-        DARK
+        GOLD
     }
 
     function getLogo(
@@ -32,8 +32,6 @@ library Logo {
         if (bodyColor != Body.BodyColors.LIGHT && bodyColor != Body.BodyColors.DARK) {
             if (logoColor == LogoColors.LIGHT) {
                 logoColor = LogoColors.BLUE;
-            } else if (logoColor == LogoColors.DARK) {
-                logoColor = LogoColors.PURPLE;
             }
         }
 
@@ -165,8 +163,8 @@ library Logo {
             return LensColors.baseBlue;
         } else if (logoColor == LogoColors.LIGHT) {
             return LensColors.lightGray;
-        } else if (logoColor == LogoColors.DARK) {
-            return LensColors.gray;
+        } else if (logoColor == LogoColors.GOLD) {
+            return LensColors.baseGold;
         } else {
             revert(); // Avoid warnings.
         }

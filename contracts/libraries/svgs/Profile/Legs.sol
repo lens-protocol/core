@@ -10,7 +10,8 @@ library Legs {
         PURPLE,
         BLUE,
         DARK,
-        LIGHT
+        LIGHT,
+        GOLD
     }
 
     // // we take the 6th byte from the left for leg color
@@ -41,6 +42,8 @@ library Legs {
             return (LensColors.dark, LensColors.gray);
         } else if (legColor == LegColors.LIGHT) {
             return (LensColors.lightGray, LensColors.white);
+        } else if (legColor == LegColors.GOLD) {
+            return (LensColors.baseGold, LensColors.lightGold);
         } else {
             revert(); // Avoid warnings.
         }
