@@ -37,7 +37,6 @@ library Headwear {
         MUSHROOM,
         NIGHTCAP,
         PARTYHAT,
-        ICECREAM,
         BEAR,
         BEE,
         BIRDIE,
@@ -47,7 +46,8 @@ library Headwear {
         LOTUS,
         MAJOR,
         SCOUT,
-        SHAMAN
+        SHAMAN,
+        ICECREAM
     }
 
     enum HeadwearColors {
