@@ -7,11 +7,11 @@ import {LensColors} from './LensColors.sol';
 
 library Logo {
     enum LogoVariants {
+        NONE,
         HAPPY,
         HEART,
         LENS,
-        PEACE,
-        NONE
+        PEACE
     }
 
     enum LogoColors {

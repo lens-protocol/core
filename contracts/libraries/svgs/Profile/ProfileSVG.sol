@@ -69,9 +69,9 @@ library ProfileSVG {
         return
             string.concat(
                 traits,
-                _getTrait(chosenElements.logoVariant), // Clothing Logo
-                _getTrait(chosenElements.logoColor), // Clothing Logo Color
                 _getTrait(chosenElements.faceVariant), // Mood - Doesn't have an ending comma
+                _getTrait(chosenElements.logoVariant), // Clothing Logo - Has comma at the beginning
+                _getTrait(chosenElements.logoColor), // Clothing Logo Color - Has comma at the beginning
                 _getTrait(chosenElements.headwearVariant), // Headwear - Has comma at the beginning
                 _getTrait(chosenElements.headwearColor) // Headwear Color - Has comma at the beginning
             );
@@ -226,7 +226,7 @@ library ProfileSVG {
         } else {
             revert();
         }
-        return string.concat('{"trait_type":"Clothing Logo","value":"', stringLogoVariant, '"},');
+        return string.concat(',{"trait_type":"Clothing Logo","value":"', stringLogoVariant, '"}');
     }
 
     function _getTrait(Logo.LogoColors logoColor) internal pure returns (string memory) {
@@ -244,11 +244,11 @@ library ProfileSVG {
         } else if (logoColor == Logo.LogoColors.GOLD) {
             stringLogoColor = 'gold';
         } else if (logoColor == Logo.LogoColors.NONE) {
-            stringLogoColor = 'none';
+            return '';
         } else {
             revert();
         }
-        return string.concat('{"trait_type":"Clothing Logo Color","value":"', stringLogoColor, '"},');
+        return string.concat(',{"trait_type":"Clothing Logo Color","value":"', stringLogoColor, '"}');
     }
 
     function _getTrait(Face.FaceVariants faceVariant) internal pure returns (string memory) {
@@ -352,7 +352,7 @@ library ProfileSVG {
     function _getTrait(Headwear.HeadwearColors headwearColor) internal pure returns (string memory) {
         string memory stringHeadwearColor;
         if (headwearColor == Headwear.HeadwearColors.NONE) {
-            stringHeadwearColor = 'none';
+            return '';
         } else if (headwearColor == Headwear.HeadwearColors.GREEN) {
             stringHeadwearColor = 'green';
         } else if (headwearColor == Headwear.HeadwearColors.PURPLE) {
@@ -415,7 +415,7 @@ library ProfileSVG {
         chosenElements.logoVariant = chosenElements.bodyVariant == Body.BodyVariants.SHIBUYA
             ? Logo.LogoVariants.NONE
             : Logo.LogoVariants(
-                uint8(Helpers.getVariant(seed, Helpers.ComponentBytes.LOGO)) % (uint8(type(Logo.LogoVariants).max))
+                uint8(Helpers.getVariant(seed, Helpers.ComponentBytes.LOGO)) % (uint8(type(Logo.LogoVariants).max) + 1)
             );
 
         if (chosenElements.logoVariant == Logo.LogoVariants.NONE) {
