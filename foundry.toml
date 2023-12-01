@@ -67,6 +67,17 @@ no_match_path = "script/svg/*"
 #     'contracts/libraries/svgs/Profile/Shoes.sol:Shoes:0x7289854ff2e55c43afcb895ec8cae798811fcc2d'
 #   ]
 
+# HandleSVG
+# libraries = [
+#   'contracts/libraries/svgs/Handle/GintoNordFontSVG.sol:GintoNordFontSVG:0x68b2751c4113bbacca7c024a030355fe3989bda7',
+#   'contracts/libraries/svgs/Handle/HandleSVG.sol:HandleSVG:0xa2574d9ddb6a325ad2be838bd854228b80215148'
+# ]
+
+# FollowSVG
+# libraries = [
+#   'contracts/libraries/svgs/Follow/FollowSVG.sol:FollowSVG:0x37cbd2c689a8eb10459d974a824adef74124dc7e'
+# ]
+
 [rpc_endpoints]
 polygon = "${POLYGON_RPC_URL}"
 mumbai = "${MUMBAI_RPC_URL}"
