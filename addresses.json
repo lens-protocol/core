@@ -146,7 +146,7 @@
     "CollectPublicationActionImpl": "0xcc3f120f3d3bf860b910b228d2114f474b382c1d",
     "LitAccessControlImpl": "0x79dcA158B2A019EA2377f5989066a1ac0aC20e10",
     "LitAccessControl": "0x98a6C31E43b158198da95Ef1242faCA868424187",
-    "ProfileTokenURI": "0xE01e1017Eb1D49Aa7034628cd2e3021536cdeBE5",
+    "ProfileTokenURI": "0xCCF77B802160326282F260bb6e275333fEA9E76C",
     "HandleTokenURI": "0x9632dC8eb31CEC8fcd166a99C1Da179716aE2E48",
     "FollowTokenURI": "0x07D8a9FEdef6DC7004b9ae0935eA178bFa8bBdF1"
   },
@@ -237,7 +237,8 @@
         ]
       },
       "v2": {}
-    }
+    },
+    "ProfileTokenURI": "0x19787A2E8b396077B99F381c39B2DB5781FF6D38"
   },
   "sandbox": {
     "chainId": 80001,
