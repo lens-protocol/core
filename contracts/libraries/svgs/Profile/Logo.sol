@@ -10,7 +10,8 @@ library Logo {
         HAPPY,
         HEART,
         LENS,
-        PEACE
+        PEACE,
+        NONE
     }
 
     enum LogoColors {
@@ -19,7 +20,8 @@ library Logo {
         PURPLE,
         BLUE,
         LIGHT,
-        GOLD
+        GOLD,
+        NONE
     }
 
     function getLogo(
@@ -28,6 +30,10 @@ library Logo {
         Body.BodyVariants bodyVariant,
         Body.BodyColors bodyColor
     ) public pure returns (string memory) {
+        if (logoVariant == LogoVariants.NONE) {
+            return '';
+        }
+
         // Don't display Light & Dark Logos on non-Light & non-Dark bodies
         if (bodyColor != Body.BodyColors.LIGHT && bodyColor != Body.BodyColors.DARK) {
             if (logoColor == LogoColors.LIGHT) {
