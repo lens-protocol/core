@@ -128,7 +128,7 @@ library HandleSVG {
         if (faceColor == FaceColors.GREEN) {
             return '#A0D170';
         } else if (faceColor == FaceColors.PEACH) {
-            return '#FFD5D2';
+            return '#FFD2DD';
         } else if (faceColor == FaceColors.PURPLE) {
             return '#EAD7FF';
         } else if (faceColor == FaceColors.BLUE) {
@@ -140,7 +140,7 @@ library HandleSVG {
 
     function getBaseGradients() internal pure returns (string memory) {
         return
-            '<radialGradient id="green" cx="0" cy="0" r="1" gradientTransform="matrix(275 -275 362 362 0 275)" gradientUnits="userSpaceOnUse"><stop stop-color="#DFFFBF"/><stop offset="1" stop-color="#EFD"/></radialGradient><radialGradient id="peach" cx="0" cy="0" r="1" gradientTransform="matrix(275 -275 362 362 0 275)" gradientUnits="userSpaceOnUse"><stop stop-color="#FFDFDD"/><stop offset="1" stop-color="#FFF0EF"/></radialGradient><radialGradient id="purple" cx="0" cy="0" r="1" gradientTransform="matrix(275 -275 362 362 0 275)" gradientUnits="userSpaceOnUse"><stop stop-color="#F1E4FF"/><stop offset="1" stop-color="#F8F1FF"/></radialGradient><radialGradient id="blue" cx="0" cy="0" r="1" gradientTransform="matrix(275 -275 362 362 0 275)" gradientUnits="userSpaceOnUse"><stop stop-color="#E6EAFF"/><stop offset="1" stop-color="#EFF2FF"/></radialGradient>';
+            '<radialGradient id="green" cx="0" cy="0" r="1" gradientTransform="matrix(275 -275 362 362 0 275)" gradientUnits="userSpaceOnUse"><stop stop-color="#DFFFBF" /><stop offset="1" stop-color="#EFD" /></radialGradient><radialGradient id="peach" cx="0" cy="0" r="1" gradientTransform="matrix(275 -275 362 362 0 275)" gradientUnits="userSpaceOnUse"><stop stop-color="#FFE7F0" /><stop offset="1" stop-color="#FFF3F8" /></radialGradient><radialGradient id="purple" cx="0" cy="0" r="1" gradientTransform="matrix(275 -275 362 362 0 275)" gradientUnits="userSpaceOnUse"><stop stop-color="#F1E4FF" /><stop offset="1" stop-color="#F8F1FF" /></radialGradient><radialGradient id="blue" cx="0" cy="0" r="1" gradientTransform="matrix(275 -275 362 362 0 275)" gradientUnits="userSpaceOnUse"><stop stop-color="#E6EAFF" /><stop offset="1" stop-color="#EFF2FF" /></radialGradient>';
     }
 
     struct CharWidth {
