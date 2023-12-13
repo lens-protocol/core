@@ -34,12 +34,15 @@ contract ModuleRegistry is IModuleRegistry {
         uint256 timestamp
     );
 
+    event ModuleMetadataRefreshed(address indexed moduleAddress, string metadata, uint256 timestamp);
+
     error NotLensModule();
     error ModuleDoesNotSupportType(uint256 moduleType);
+    error ModuleNotRegistered();
 
-    mapping(address moduleAddress => uint256 moduleTypesBitmap) internal registeredModules;
+    mapping(address moduleAddress => uint256 moduleTypesBitmap) internal _registeredModules;
 
-    mapping(address erc20CurrencyAddress => bool) internal registeredErc20Currencies;
+    mapping(address erc20CurrencyAddress => bool) internal _registeredErc20Currencies;
 
     // Modules
 
@@ -55,7 +58,7 @@ contract ModuleRegistry is IModuleRegistry {
             'Module Type out of bounds'
         );
 
-        bool isAlreadyRegisteredAsThatType = registeredModules[moduleAddress] & (1 << moduleType) != 0;
+        bool isAlreadyRegisteredAsThatType = _registeredModules[moduleAddress] & (1 << moduleType) != 0;
         if (isAlreadyRegisteredAsThatType) {
             return false;
         } else {
@@ -67,7 +70,7 @@ contract ModuleRegistry is IModuleRegistry {
 
             string memory metadata = ILensModule(moduleAddress).getModuleMetadataURI();
             emit ModuleRegistered(moduleAddress, moduleType, metadata, block.timestamp);
-            registeredModules[moduleAddress] |= (1 << moduleType);
+            _registeredModules[moduleAddress] |= (1 << moduleType);
             return true;
         }
     }
@@ -90,16 +93,16 @@ contract ModuleRegistry is IModuleRegistry {
     }
 
     function getModuleTypes(address moduleAddress) public view returns (uint256) {
-        return registeredModules[moduleAddress];
+        return _registeredModules[moduleAddress];
     }
 
     function isModuleRegistered(address moduleAddress) external view returns (bool) {
-        return registeredModules[moduleAddress] != 0;
+        return _registeredModules[moduleAddress] != 0;
     }
 
     function isModuleRegisteredAs(address moduleAddress, uint256 moduleType) public view returns (bool) {
         require(moduleType <= type(uint8).max);
-        return registeredModules[moduleAddress] & (1 << moduleType) != 0;
+        return _registeredModules[moduleAddress] & (1 << moduleType) != 0;
     }
 
     // Currencies
@@ -110,7 +113,7 @@ contract ModuleRegistry is IModuleRegistry {
     }
 
     function registerErc20Currency(address currencyAddress) public returns (bool registrationWasPerformed) {
-        bool isAlreadyRegistered = registeredErc20Currencies[currencyAddress];
+        bool isAlreadyRegistered = _registeredErc20Currencies[currencyAddress];
         if (isAlreadyRegistered) {
             return false;
         } else {
@@ -119,12 +122,19 @@ contract ModuleRegistry is IModuleRegistry {
             string memory symbol = IERC20Metadata(currencyAddress).symbol();
 
             emit erc20CurrencyRegistered(currencyAddress, name, symbol, decimals, block.timestamp);
-            registeredErc20Currencies[currencyAddress] = true;
+            _registeredErc20Currencies[currencyAddress] = true;
             return true;
         }
     }
 
     function isErc20CurrencyRegistered(address currencyAddress) external view returns (bool) {
-        return registeredErc20Currencies[currencyAddress];
+        return _registeredErc20Currencies[currencyAddress];
+    }
+
+    function emitModuleMetadataRefresh(address moduleAddress) external {
+        if (_registeredModules[moduleAddress] == 0) {
+            revert ModuleNotRegistered();
+        }
+        emit ModuleMetadataRefreshed(moduleAddress, ILensModule(moduleAddress).getModuleMetadataURI(), block.timestamp);
     }
 }
