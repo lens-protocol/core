@@ -195,13 +195,13 @@ contract PermissonlessCreator is Ownable {
         return (_profileId, _handleId);
     }
 
-    function _validateHandleAvailable(string calldata handle) private {
+    function _validateHandleAvailable(string calldata handle) private view {
         if (LENS_HANDLES.exists(uint256(keccak256(bytes(handle))))) {
             revert HandleAlreadyExists();
         }
     }
 
-    function _checkAndRedeemCredit(address from) private {
+    function _checkAndRedeemCredit(address from) private view {
         if (credits[from] < 1) {
             revert InsufficientCredits();
         }
