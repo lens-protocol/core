@@ -12,7 +12,7 @@ import {ITokenHandleRegistry} from 'contracts/interfaces/ITokenHandleRegistry.so
 /**
  * @title PermissonlessCreator
  * @author Lens Protocol
- * @notice This is an ownable public proxy contract that enforces ".lens" handle suffixes at profile creation but is open for all.
+ * @notice This is an ownable public proxy contract which is open for all.
  */
 contract PermissonlessCreator is Ownable {
     ILensHandles public immutable LENS_HANDLES;
@@ -120,7 +120,6 @@ contract PermissonlessCreator is Ownable {
             uint256 _handleId = LENS_HANDLES.mintHandle(address(this), handle);
 
             TOKEN_HANDLE_REGISTRY.link({handleId: _handleId, profileId: linkToProfileId});
-            // Transfer the handle & profile to the destination
             LENS_HANDLES.transferFrom(address(this), to, _handleId);
 
             return _handleId;
