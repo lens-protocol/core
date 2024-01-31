@@ -44,6 +44,11 @@ contract PermissonlessCreator is Ownable {
     error ProfileAlreadyLinked();
     error NotAllowedToLinkHandleToProfile();
 
+    event HandleCreationPriceChanged(uint256 newPrice);
+    event ProfileWithHandleCreationPriceChanged(uint256 newPrice);
+    event CreditRedeemed(address indexed from, uint256 remainingCredits);
+    event CreditBalanceChanged(address indexed creditAddress, uint256 remainingCredits);
+
     constructor(address owner, address hub, address lensHandles, address tokenHandleRegistry) {
         _transferOwnership(owner);
         LENS_HUB = hub;
@@ -54,7 +59,7 @@ contract PermissonlessCreator is Ownable {
     function createProfileOnly(
         Types.CreateProfileParams calldata createProfileParams
     ) external onlyCredit returns (uint256 profileId) {
-        _checkAndApplyCredit(msg.sender);
+        _checkAndRedeemCredit(msg.sender);
 
         uint256 _profileId = ILensHub(LENS_HUB).createProfile(createProfileParams);
 
@@ -77,7 +82,7 @@ contract PermissonlessCreator is Ownable {
         Types.CreateProfileParams calldata createProfileParams,
         string calldata handle
     ) external onlyCredit returns (uint256 profileId, uint256 handleId) {
-        _checkAndApplyCredit(msg.sender);
+        _checkAndRedeemCredit(msg.sender);
         return _createProfileWithHandle(createProfileParams, handle);
     }
 
@@ -97,7 +102,7 @@ contract PermissonlessCreator is Ownable {
         string calldata handle,
         uint256 linkToProfileId
     ) external onlyCredit returns (uint256 handleId) {
-        _checkAndApplyCredit(msg.sender);
+        _checkAndRedeemCredit(msg.sender);
         _validateHandleAvailable(handle);
 
         if (linkToProfileId != 0) {
@@ -126,11 +131,13 @@ contract PermissonlessCreator is Ownable {
 
     function increaseCredits(address to, uint256 amount) external onlyCreditor {
         credits[to] += amount;
+        emit CreditBalanceChanged(to, credits[to]);
     }
 
     function decreaseCredits(address to, uint256 amount) external onlyCreditor {
         require(credits[to] >= amount, 'PublicProfileCreator: Insufficient Credits to Decrease');
         credits[to] -= amount;
+        emit CreditBalanceChanged(to, credits[to]);
     }
 
     function addCreditor(address creditor) external onlyOwner {
@@ -143,10 +150,12 @@ contract PermissonlessCreator is Ownable {
 
     function changeProfileWithHandleCreationPrice(uint256 newPrice) external onlyOwner {
         profileWithHandleCreationCost = newPrice;
+        emit ProfileWithHandleCreationPriceChanged(newPrice);
     }
 
     function changeHandleCreationPrice(uint256 newPrice) external onlyOwner {
         handleCreationCost = newPrice;
+        emit HandleCreationPriceChanged(newPrice);
     }
 
     function getPriceForProfileWithHandleCreation() external view returns (uint256) {
@@ -192,10 +201,11 @@ contract PermissonlessCreator is Ownable {
         }
     }
 
-    function _checkAndApplyCredit(address from) private {
+    function _checkAndRedeemCredit(address from) private {
         if (credits[from] < 1) {
             revert InsufficientCredits();
         }
         credits[from] -= 1;
+        emit CreditRedeemed(from, credits[from]);
     }
 }
