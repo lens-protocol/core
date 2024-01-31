@@ -3,9 +3,8 @@
 pragma solidity ^0.8.15;
 
 import {ILensHub} from 'contracts/interfaces/ILensHub.sol';
-import {LensV2Migration} from 'contracts/misc/LensV2Migration.sol';
 import {Types} from 'contracts/libraries/constants/Types.sol';
-import {ImmutableOwnable} from 'contracts/misc/ImmutableOwnable.sol';
+import {Ownable} from '@openzeppelin/contracts/access/Ownable.sol';
 
 import {ILensHandles} from 'contracts/interfaces/ILensHandles.sol';
 import {ITokenHandleRegistry} from 'contracts/interfaces/ITokenHandleRegistry.sol';
@@ -15,9 +14,10 @@ import {ITokenHandleRegistry} from 'contracts/interfaces/ITokenHandleRegistry.so
  * @author Lens Protocol
  * @notice This is an ownable public proxy contract that enforces ".lens" handle suffixes at profile creation but is open for all.
  */
-contract PermissonlessCreator is ImmutableOwnable {
+contract PermissonlessCreator is Ownable {
     ILensHandles public immutable LENS_HANDLES;
     ITokenHandleRegistry public immutable TOKEN_HANDLE_REGISTRY;
+    address immutable LENS_HUB;
 
     uint256 public profileWithHandleCreationCost = 5 ether;
     uint256 public handleCreationCost = 5 ether;
@@ -38,18 +38,15 @@ contract PermissonlessCreator is ImmutableOwnable {
         _;
     }
 
-    error ProfileAlreadyExists();
+    error HandleAlreadyExists();
     error InvalidFunds();
     error InsufficientCredits();
     error ProfileAlreadyLinked();
     error NotAllowedToLinkHandleToProfile();
 
-    constructor(
-        address owner_,
-        address hub,
-        address lensHandles,
-        address tokenHandleRegistry
-    ) ImmutableOwnable(owner_, hub) {
+    constructor(address owner, address hub, address lensHandles, address tokenHandleRegistry) {
+        _transferOwnership(owner);
+        LENS_HUB = hub;
         LENS_HANDLES = ILensHandles(lensHandles);
         TOKEN_HANDLE_REGISTRY = ITokenHandleRegistry(tokenHandleRegistry);
     }
@@ -88,6 +85,8 @@ contract PermissonlessCreator is ImmutableOwnable {
         if (msg.value != handleCreationCost) {
             revert InvalidFunds();
         }
+        _validateHandleAvailable(handle);
+
         return LENS_HANDLES.mintHandle(to, handle);
     }
 
@@ -99,6 +98,7 @@ contract PermissonlessCreator is ImmutableOwnable {
         uint256 linkToProfileId
     ) external onlyCredit returns (uint256 handleId) {
         _checkAndApplyCredit(msg.sender);
+        _validateHandleAvailable(handle);
 
         if (linkToProfileId != 0) {
             // only credit address which pre-minted the profiles can mint a handle
@@ -161,10 +161,7 @@ contract PermissonlessCreator is ImmutableOwnable {
         Types.CreateProfileParams calldata createProfileParamsCalldata,
         string calldata handle
     ) private returns (uint256 profileId, uint256 handleId) {
-        bytes32 handleHash = keccak256(abi.encodePacked(handle, '.lens'));
-        if (LensV2Migration(LENS_HUB).getProfileIdByHandleHash(handleHash) != 0) {
-            revert ProfileAlreadyExists();
-        }
+        _validateHandleAvailable(handle);
 
         // Copy the struct from calldata to memory to make it mutable
         Types.CreateProfileParams memory createProfileParams = createProfileParamsCalldata;
@@ -187,6 +184,12 @@ contract PermissonlessCreator is ImmutableOwnable {
         ILensHub(LENS_HUB).transferFrom(address(this), destination, profileId);
 
         return (_profileId, _handleId);
+    }
+
+    function _validateHandleAvailable(string calldata handle) private {
+        if (LENS_HANDLES.exists(uint256(keccak256(bytes(handle))))) {
+            revert HandleAlreadyExists();
+        }
     }
 
     function _checkAndApplyCredit(address from) private {
