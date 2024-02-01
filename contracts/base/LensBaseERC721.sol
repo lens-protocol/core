@@ -215,11 +215,7 @@ abstract contract LensBaseERC721 is ERC165, ILensERC721 {
     /**
      * @dev See {IERC721-transferFrom}.
      */
-    function transferFrom(
-        address from,
-        address to,
-        uint256 tokenId
-    ) public virtual override {
+    function transferFrom(address from, address to, uint256 tokenId) public virtual override {
         //solhint-disable-next-line max-line-length
         if (!_isApprovedOrOwner(msg.sender, tokenId)) {
             revert Errors.NotOwnerOrApproved();
@@ -228,26 +224,31 @@ abstract contract LensBaseERC721 is ERC165, ILensERC721 {
         _transfer(from, to, tokenId);
     }
 
+    function transferFromWithData(
+        address from,
+        address to,
+        uint256 tokenId,
+        bytes memory data
+    ) public virtual override {
+        //solhint-disable-next-line max-line-length
+        if (!_isApprovedOrOwner(msg.sender, tokenId)) {
+            revert Errors.NotOwnerOrApproved();
+        }
+
+        _transferWithData(from, to, tokenId, data);
+    }
+
     /**
      * @dev See {IERC721-safeTransferFrom}.
      */
-    function safeTransferFrom(
-        address from,
-        address to,
-        uint256 tokenId
-    ) public virtual override {
+    function safeTransferFrom(address from, address to, uint256 tokenId) public virtual override {
         safeTransferFrom(from, to, tokenId, '');
     }
 
     /**
      * @dev See {IERC721-safeTransferFrom}.
      */
-    function safeTransferFrom(
-        address from,
-        address to,
-        uint256 tokenId,
-        bytes memory _data
-    ) public virtual override {
+    function safeTransferFrom(address from, address to, uint256 tokenId, bytes memory _data) public virtual override {
         if (!_isApprovedOrOwner(msg.sender, tokenId)) {
             revert Errors.NotOwnerOrApproved();
         }
@@ -299,12 +300,7 @@ abstract contract LensBaseERC721 is ERC165, ILensERC721 {
      *
      * Emits a {Transfer} event.
      */
-    function _safeTransfer(
-        address from,
-        address to,
-        uint256 tokenId,
-        bytes memory _data
-    ) internal virtual {
+    function _safeTransfer(address from, address to, uint256 tokenId, bytes memory _data) internal virtual {
         _transfer(from, to, tokenId);
         if (!_checkOnERC721Received(from, to, tokenId, _data)) {
             revert Errors.NonERC721ReceiverImplementer();
@@ -403,11 +399,7 @@ abstract contract LensBaseERC721 is ERC165, ILensERC721 {
      *
      * Emits a {Transfer} event.
      */
-    function _transfer(
-        address from,
-        address to,
-        uint256 tokenId
-    ) internal virtual {
+    function _transfer(address from, address to, uint256 tokenId) internal virtual {
         if (ownerOf(tokenId) != from) {
             revert Errors.InvalidOwner();
         }
@@ -416,6 +408,28 @@ abstract contract LensBaseERC721 is ERC165, ILensERC721 {
         }
 
         _beforeTokenTransfer(from, to, tokenId);
+
+        // Clear approvals from the previous owner
+        _approve(address(0), tokenId);
+
+        unchecked {
+            --_balances[from];
+            ++_balances[to];
+        }
+        _tokenData[tokenId].owner = to;
+
+        emit Transfer(from, to, tokenId);
+    }
+
+    function _transferWithData(address from, address to, uint256 tokenId, bytes memory data) internal virtual {
+        if (ownerOf(tokenId) != from) {
+            revert Errors.InvalidOwner();
+        }
+        if (to == address(0)) {
+            revert Errors.InvalidParameter();
+        }
+
+        _beforeTokenTransferWithData(from, to, tokenId, data);
 
         // Clear approvals from the previous owner
         _approve(address(0), tokenId);
@@ -445,11 +459,7 @@ abstract contract LensBaseERC721 is ERC165, ILensERC721 {
      *
      * Emits a {ApprovalForAll} event.
      */
-    function _setOperatorApproval(
-        address owner,
-        address operator,
-        bool approved
-    ) internal virtual {
+    function _setOperatorApproval(address owner, address operator, bool approved) internal virtual {
         _operatorApprovals[owner][operator] = approved;
         emit ApprovalForAll(owner, operator, approved);
     }
@@ -501,9 +511,12 @@ abstract contract LensBaseERC721 is ERC165, ILensERC721 {
      *
      * To learn more about hooks, head to xref:ROOT:extending-contracts.adoc#using-hooks[Using Hooks].
      */
-    function _beforeTokenTransfer(
+    function _beforeTokenTransfer(address from, address to, uint256 tokenId) internal virtual {}
+
+    function _beforeTokenTransferWithData(
         address from,
         address to,
-        uint256 tokenId
+        uint256 tokenId,
+        bytes memory data
     ) internal virtual {}
 }
