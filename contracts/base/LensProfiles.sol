@@ -129,6 +129,13 @@ abstract contract LensProfiles is LensBaseERC721, ERC2981CollectionRoyalties, IL
             LensBaseERC721.supportsInterface(interfaceId) || ERC2981CollectionRoyalties.supportsInterface(interfaceId);
     }
 
+    /**
+     * @dev See {ILensERC721-transferFromWithData}.
+     */
+    function transferFromKeepingDelegates(address from, address to, uint256 tokenId) external {
+        transferFromWithData(from, to, tokenId, abi.encode(true));
+    }
+
     function _hasTokenGuardianEnabled(address wallet) internal view returns (bool) {
         return
             !wallet.isContract() &&
@@ -148,15 +155,35 @@ abstract contract LensProfiles is LensBaseERC721, ERC2981CollectionRoyalties, IL
         ValidationLib.validateCallerIsGovernance();
     }
 
-    function _beforeTokenTransfer(address from, address to, uint256 tokenId) internal override whenNotPaused {
+    function _beforeTokenTransferProfile(
+        address from,
+        address to,
+        uint256 tokenId,
+        bool keepProfileDelegates
+    ) internal whenNotPaused {
         if (from != address(0) && _hasTokenGuardianEnabled(from)) {
             // Cannot transfer profile if the guardian is enabled, except at minting time.
             revert Errors.GuardianEnabled();
         }
         // Switches to new fresh delegated executors configuration (except on minting, as it already has a fresh setup).
-        if (from != address(0)) {
+        if (from != address(0) && !keepProfileDelegates) {
             ProfileLib.switchToNewFreshDelegatedExecutorsConfig(tokenId);
         }
         super._beforeTokenTransfer(from, to, tokenId);
+    }
+
+    function _beforeTokenTransfer(address from, address to, uint256 tokenId) internal override whenNotPaused {
+        _beforeTokenTransferProfile(from, to, tokenId, false);
+    }
+
+    function _beforeTokenTransferWithData(
+        address from,
+        address to,
+        uint256 tokenId,
+        bytes memory data
+    ) internal override whenNotPaused {
+        bool keepProfileDelegates = abi.decode(data, (bool));
+
+        _beforeTokenTransferProfile(from, to, tokenId, keepProfileDelegates);
     }
 }
