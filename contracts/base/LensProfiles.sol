@@ -155,6 +155,21 @@ abstract contract LensProfiles is LensBaseERC721, ERC2981CollectionRoyalties, IL
         ValidationLib.validateCallerIsGovernance();
     }
 
+    function _beforeTokenTransfer(address from, address to, uint256 tokenId) internal override whenNotPaused {
+        _beforeTokenTransferProfile(from, to, tokenId, false);
+    }
+
+    function _beforeTokenTransferWithData(
+        address from,
+        address to,
+        uint256 tokenId,
+        bytes memory data
+    ) internal override whenNotPaused {
+        bool keepProfileDelegates = abi.decode(data, (bool));
+
+        _beforeTokenTransferProfile(from, to, tokenId, keepProfileDelegates);
+    }
+
     function _beforeTokenTransferProfile(
         address from,
         address to,
@@ -170,20 +185,5 @@ abstract contract LensProfiles is LensBaseERC721, ERC2981CollectionRoyalties, IL
             ProfileLib.switchToNewFreshDelegatedExecutorsConfig(tokenId);
         }
         super._beforeTokenTransfer(from, to, tokenId);
-    }
-
-    function _beforeTokenTransfer(address from, address to, uint256 tokenId) internal override whenNotPaused {
-        _beforeTokenTransferProfile(from, to, tokenId, false);
-    }
-
-    function _beforeTokenTransferWithData(
-        address from,
-        address to,
-        uint256 tokenId,
-        bytes memory data
-    ) internal override whenNotPaused {
-        bool keepProfileDelegates = abi.decode(data, (bool));
-
-        _beforeTokenTransferProfile(from, to, tokenId, keepProfileDelegates);
     }
 }
