@@ -29,12 +29,12 @@ contract PermissonlessCreator is Ownable {
     mapping(uint256 => address) profileCreatedOnlyByCredit;
 
     modifier onlyCredit() {
-        require(credits[msg.sender] > 0, 'PublicProfileCreator: Insufficient Credits');
+        require(credits[msg.sender] > 0, 'PermissonlessCreator: Insufficient Credits');
         _;
     }
 
     modifier onlyCreditor() {
-        require(creditors[msg.sender], 'PublicProfileCreator: Not a Creditor');
+        require(creditors[msg.sender], 'PermissonlessCreator: Not a Creditor');
         _;
     }
 
@@ -147,7 +147,7 @@ contract PermissonlessCreator is Ownable {
     }
 
     function decreaseCredits(address to, uint256 amount) external onlyCreditor {
-        require(credits[to] >= amount, 'PublicProfileCreator: Insufficient Credits to Decrease');
+        require(credits[to] >= amount, 'PermissonlessCreator: Insufficient Credits to Decrease');
         credits[to] -= amount;
         emit CreditBalanceChanged(to, credits[to]);
     }
