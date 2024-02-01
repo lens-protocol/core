@@ -99,7 +99,7 @@ contract PermissonlessCreator is Ownable {
         return _createProfileWithHandle(createProfileParams, handle, delegatedExecutors);
     }
 
-    function createHandle(address to, string calldata handle) external payable returns (uint256 handleId) {
+    function createHandle(address to, string calldata handle) external payable returns (uint256) {
         if (msg.value != handleCreationCost) {
             revert InvalidFunds();
         }
@@ -114,7 +114,7 @@ contract PermissonlessCreator is Ownable {
         address to,
         string calldata handle,
         uint256 linkToProfileId
-    ) external onlyCredit returns (uint256 handleId) {
+    ) external onlyCredit returns (uint256) {
         _checkAndRedeemCredit(msg.sender);
         _validateHandleAvailable(handle);
 
