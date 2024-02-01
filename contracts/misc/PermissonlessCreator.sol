@@ -19,7 +19,7 @@ contract PermissonlessCreator is Ownable {
     ITokenHandleRegistry public immutable TOKEN_HANDLE_REGISTRY;
     address immutable LENS_HUB;
 
-    uint256 public profileWithHandleCreationCost = 5 ether;
+    uint256 public profileCreationCost = 5 ether;
     uint256 public handleCreationCost = 5 ether;
 
     mapping(address => uint256) public credits;
@@ -56,27 +56,26 @@ contract PermissonlessCreator is Ownable {
         TOKEN_HANDLE_REGISTRY = ITokenHandleRegistry(tokenHandleRegistry);
     }
 
-    function createProfileOnly(
+    // Payable functions for public
+
+    function createProfile(
         Types.CreateProfileParams calldata createProfileParams,
         address[] calldata delegatedExecutors
-    ) external onlyCredit returns (uint256) {
-        _checkAndRedeemCredit(msg.sender);
+    ) external payable returns (uint256 profileId, uint256 handleId) {
+        if (msg.value != profileCreationCost) {
+            revert InvalidFunds();
+        }
+        return _createProfile(createProfileParams, delegatedExecutors);
+    }
 
-        // We mint the profile to this contract first, then apply delegates if defined
-        // This will not allow to initialize follow modules that require funds from the msg.sender,
-        // but we assume only simple follow modules should be set during profile creation.
-        // Complex ones can be set after the profile is created.
-        address destination = createProfileParams.to;
-
-        uint256 profileId = _createProfile(createProfileParams);
-        profileCreatedOnlyByCredit[profileId] = msg.sender;
-
-        _addDelegatesToProfile(profileId, delegatedExecutors);
-
-        // keep the config if its been set
-        ILensHub(LENS_HUB).transferFromKeepingDelegates(address(this), destination, profileId);
-
-        return profileId;
+    function createHandle(address to, string calldata handle) external payable returns (uint256) {
+        if (msg.value != handleCreationCost) {
+            revert InvalidFunds();
+        }
+        if (handle.length < 5) {
+            revert();
+        }
+        return LENS_HANDLES.mintHandle(to, handle);
     }
 
     function createProfileWithHandle(
@@ -90,6 +89,18 @@ contract PermissonlessCreator is Ownable {
         return _createProfileWithHandle(createProfileParams, handle, delegatedExecutors);
     }
 
+    // Credit functions for apps
+
+    function createProfile_withCredit(
+        Types.CreateProfileParams calldata createProfileParams,
+        address[] calldata delegatedExecutors
+    ) external onlyCredit returns (uint256) {
+        _checkAndRedeemCredit(msg.sender);
+        uint256 profileId = _createProfile(createProfileParams, delegatedExecutors);
+        profileCreatedOnlyByCredit[profileId] = msg.sender;
+        return profileId;
+    }
+
     function createProfileWithHandleCredits(
         Types.CreateProfileParams calldata createProfileParams,
         string calldata handle,
@@ -97,15 +108,6 @@ contract PermissonlessCreator is Ownable {
     ) external onlyCredit returns (uint256 profileId, uint256 handleId) {
         _checkAndRedeemCredit(msg.sender);
         return _createProfileWithHandle(createProfileParams, handle, delegatedExecutors);
-    }
-
-    function createHandle(address to, string calldata handle) external payable returns (uint256) {
-        if (msg.value != handleCreationCost) {
-            revert InvalidFunds();
-        }
-        _validateHandleAvailable(handle);
-
-        return LENS_HANDLES.mintHandle(to, handle);
     }
 
     // some credit addresses will be minting profiles before they have a handle so minting x amount of profiles.
@@ -178,25 +180,53 @@ contract PermissonlessCreator is Ownable {
         return handleCreationCost;
     }
 
+    function _createProfile(
+        Types.CreateProfileParams calldata createProfileParams,
+        address[] calldata delegatedExecutors
+    ) internal returns (uint256) {
+        uint256 profileId;
+        if (delegatedExecutors.length == 0) {
+            profileId = ILensHub(LENS_HUB).createProfile(createProfileParams);
+        } else {
+            // We mint the profile to this contract first, then apply delegates if defined
+            // This will not allow to initialize follow modules that require funds from the msg.sender,
+            // but we assume only simple follow modules should be set during profile creation.
+            // Complex ones can be set after the profile is created.
+            address destination = createProfileParams.to;
+
+            // Copy the struct from calldata to memory to make it mutable
+            Types.CreateProfileParams memory createProfileParamsMemory = createProfileParams;
+            createProfileParamsMemory.to = address(this);
+
+            profileId = ILensHub(LENS_HUB).createProfile(createProfileParamsMemory);
+
+            _addDelegatesToProfile(profileId, delegatedExecutors);
+
+            // keep the config if its been set
+            ILensHub(LENS_HUB).transferFromKeepingDelegates(address(this), destination, profileId);
+        }
+        return profileId;
+    }
+
     function _createProfileWithHandle(
-        Types.CreateProfileParams calldata createProfileParamsCalldata,
+        Types.CreateProfileParams calldata createProfileParams,
         string calldata handle,
         address[] calldata delegatedExecutors
     ) private returns (uint256 profileId, uint256 handleId) {
         _validateHandleAvailable(handle);
 
         // Copy the struct from calldata to memory to make it mutable
-        Types.CreateProfileParams memory createProfileParams = createProfileParamsCalldata;
+        Types.CreateProfileParams memory createProfileParamsMemory = createProfileParams;
 
         // We mint the handle & profile to this contract first, then link it to the profile and delegates if defined
         // This will not allow to initialize follow modules that require funds from the msg.sender,
         // but we assume only simple follow modules should be set during profile creation.
         // Complex ones can be set after the profile is created.
-        address destination = createProfileParams.to;
+        address destination = createProfileParamsMemory.to;
 
-        createProfileParams.to = address(this);
+        createProfileParamsMemory.to = address(this);
 
-        uint256 _profileId = ILensHub(LENS_HUB).createProfile(createProfileParams);
+        uint256 _profileId = ILensHub(LENS_HUB).createProfile(createProfileParamsMemory);
         uint256 _handleId = LENS_HANDLES.mintHandle(address(this), handle);
 
         TOKEN_HANDLE_REGISTRY.link({handleId: _handleId, profileId: _profileId});
@@ -211,15 +241,6 @@ contract PermissonlessCreator is Ownable {
         return (_profileId, _handleId);
     }
 
-    function _createProfile(Types.CreateProfileParams calldata createProfileParamsCalldata) private returns (uint256) {
-        // Copy the struct from calldata to memory to make it mutable
-        Types.CreateProfileParams memory createProfileParams = createProfileParamsCalldata;
-
-        createProfileParams.to = address(this);
-
-        return ILensHub(LENS_HUB).createProfile(createProfileParams);
-    }
-
     function _addDelegatesToProfile(uint256 profileId, address[] calldata delegatedExecutors) private {
         // set delegates if any
         if (delegatedExecutors.length > 0) {
@@ -232,12 +253,6 @@ contract PermissonlessCreator is Ownable {
             }
 
             ILensHub(LENS_HUB).changeDelegatedExecutorsConfig(profileId, delegatedExecutors, executorEnabled);
-        }
-    }
-
-    function _validateHandleAvailable(string calldata handle) private view {
-        if (LENS_HANDLES.exists(uint256(keccak256(bytes(handle))))) {
-            revert HandleAlreadyExists();
         }
     }
 

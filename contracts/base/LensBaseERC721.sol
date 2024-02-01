@@ -228,20 +228,6 @@ abstract contract LensBaseERC721 is ERC165, ILensERC721 {
         _transfer(from, to, tokenId);
     }
 
-    function transferFromWithData(
-        address from,
-        address to,
-        uint256 tokenId,
-        bytes memory data
-    ) public virtual override {
-        //solhint-disable-next-line max-line-length
-        if (!_isApprovedOrOwner(msg.sender, tokenId)) {
-            revert Errors.NotOwnerOrApproved();
-        }
-
-        _transferWithData(from, to, tokenId, data);
-    }
-
     /**
      * @dev See {IERC721-safeTransferFrom}.
      */
@@ -443,28 +429,6 @@ abstract contract LensBaseERC721 is ERC165, ILensERC721 {
         emit Transfer(from, to, tokenId);
     }
 
-    function _transferWithData(address from, address to, uint256 tokenId, bytes memory data) internal virtual {
-        if (ownerOf(tokenId) != from) {
-            revert Errors.InvalidOwner();
-        }
-        if (to == address(0)) {
-            revert Errors.InvalidParameter();
-        }
-
-        _beforeTokenTransferWithData(from, to, tokenId, data);
-
-        // Clear approvals from the previous owner
-        _approve(address(0), tokenId);
-
-        unchecked {
-            --_balances[from];
-            ++_balances[to];
-        }
-        _tokenData[tokenId].owner = to;
-
-        emit Transfer(from, to, tokenId);
-    }
-
     /**
      * @dev Approve `to` to operate on `tokenId`
      *
@@ -541,12 +505,5 @@ abstract contract LensBaseERC721 is ERC165, ILensERC721 {
         address from,
         address to,
         uint256 tokenId
-    ) internal virtual {}
-
-    function _beforeTokenTransferWithData(
-        address from,
-        address to,
-        uint256 tokenId,
-        bytes memory data
     ) internal virtual {}
 }

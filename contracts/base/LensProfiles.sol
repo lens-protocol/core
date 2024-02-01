@@ -133,7 +133,35 @@ abstract contract LensProfiles is LensBaseERC721, ERC2981CollectionRoyalties, IL
      * @dev See {ILensERC721-transferFromWithData}.
      */
     function transferFromKeepingDelegates(address from, address to, uint256 tokenId) external {
-        transferFromWithData(from, to, tokenId, abi.encode(true));
+        //solhint-disable-next-line max-line-length
+        if (!_isApprovedOrOwner(msg.sender, tokenId)) {
+            revert Errors.NotOwnerOrApproved();
+        }
+
+        if (!StorageLib.profileCreatorWhitelisted()[from]) {
+            // Delegates can be maintained on transfer only during mint tx (block) for onboarding UX purposes.
+            revert Errors.NotAllowed();
+        }
+
+        if (ownerOf(tokenId) != from) {
+            revert Errors.InvalidOwner();
+        }
+        if (to == address(0)) {
+            revert Errors.InvalidParameter();
+        }
+
+        _beforeTokenTransferWithoutClearingDelegates(from, to, tokenId);
+
+        // Clear approvals from the previous owner
+        _approve(address(0), tokenId);
+
+        unchecked {
+            --_balances[from];
+            ++_balances[to];
+        }
+        _tokenData[tokenId].owner = to;
+
+        emit Transfer(from, to, tokenId);
     }
 
     function _hasTokenGuardianEnabled(address wallet) internal view returns (bool) {
@@ -156,33 +184,25 @@ abstract contract LensProfiles is LensBaseERC721, ERC2981CollectionRoyalties, IL
     }
 
     function _beforeTokenTransfer(address from, address to, uint256 tokenId) internal override whenNotPaused {
-        _beforeTokenTransferProfile(from, to, tokenId, false);
-    }
-
-    function _beforeTokenTransferWithData(
-        address from,
-        address to,
-        uint256 tokenId,
-        bytes memory data
-    ) internal override whenNotPaused {
-        bool keepProfileDelegates = abi.decode(data, (bool));
-
-        _beforeTokenTransferProfile(from, to, tokenId, keepProfileDelegates);
-    }
-
-    function _beforeTokenTransferProfile(
-        address from,
-        address to,
-        uint256 tokenId,
-        bool keepProfileDelegates
-    ) internal whenNotPaused {
         if (from != address(0) && _hasTokenGuardianEnabled(from)) {
             // Cannot transfer profile if the guardian is enabled, except at minting time.
             revert Errors.GuardianEnabled();
         }
         // Switches to new fresh delegated executors configuration (except on minting, as it already has a fresh setup).
-        if (from != address(0) && !keepProfileDelegates) {
+        if (from != address(0)) {
             ProfileLib.switchToNewFreshDelegatedExecutorsConfig(tokenId);
+        }
+        super._beforeTokenTransfer(from, to, tokenId);
+    }
+
+    function _beforeTokenTransferWithoutClearingDelegates(
+        address from,
+        address to,
+        uint256 tokenId
+    ) internal override whenNotPaused {
+        if (from != address(0) && _hasTokenGuardianEnabled(from)) {
+            // Cannot transfer profile if the guardian is enabled, except at minting time.
+            revert Errors.GuardianEnabled();
         }
         super._beforeTokenTransfer(from, to, tokenId);
     }
