@@ -19,22 +19,22 @@ contract PermissonlessCreator is Ownable {
     ITokenHandleRegistry public immutable TOKEN_HANDLE_REGISTRY;
     address immutable LENS_HUB;
 
-    uint256 private constant profileCreationCost = 5 ether;
-    uint256 private constant handleCreationCost = 5 ether;
+    uint128 private _profileCreationCost = 5 ether; // TODO: Make it constant, remove setter and set through upgrade?
+    uint128 private _handleCreationCost = 5 ether; // TODO: Make it constant, remove setter and set through upgrade?
 
-    mapping(address => uint256) public credits;
-    mapping(address => bool) public creditors;
+    mapping(address => uint256) public _credits;
+    mapping(address => bool) public _creditors;
 
     // mapping(profileId, creditAddress)
-    mapping(uint256 => address) profileCreatedOnlyByCredit;
+    mapping(uint256 => address) _profileCreatedOnlyByCredit;
 
     modifier onlyCredit() {
-        require(credits[msg.sender] > 0, 'PermissonlessCreator: Insufficient Credits');
+        require(_credits[msg.sender] > 0, 'PermissonlessCreator: Insufficient Credits');
         _;
     }
 
     modifier onlyCreditor() {
-        require(creditors[msg.sender], 'PermissonlessCreator: Not a Creditor');
+        require(_creditors[msg.sender], 'PermissonlessCreator: Not a Creditor');
         _;
     }
 
@@ -61,18 +61,18 @@ contract PermissonlessCreator is Ownable {
     function createProfile(
         Types.CreateProfileParams calldata createProfileParams,
         address[] calldata delegatedExecutors
-    ) external payable returns (uint256 profileId, uint256 handleId) {
-        if (msg.value != profileCreationCost) {
+    ) external payable returns (uint256 profileId) {
+        if (msg.value != _profileCreationCost) {
             revert InvalidFunds();
         }
         return _createProfile(createProfileParams, delegatedExecutors);
     }
 
     function createHandle(address to, string calldata handle) external payable returns (uint256) {
-        if (msg.value != handleCreationCost) {
+        if (msg.value != _handleCreationCost) {
             revert InvalidFunds();
         }
-        if (handle.length < 5) {
+        if (bytes(handle).length < 5) {
             revert();
         }
         return LENS_HANDLES.mintHandle(to, handle);
@@ -83,7 +83,7 @@ contract PermissonlessCreator is Ownable {
         string calldata handle,
         address[] calldata delegatedExecutors
     ) external payable returns (uint256 profileId, uint256 handleId) {
-        if (msg.value != profileCreationCost + handleCreationCost) {
+        if (msg.value != _profileCreationCost + _handleCreationCost) {
             revert InvalidFunds();
         }
         return _createProfileWithHandle(createProfileParams, handle, delegatedExecutors);
@@ -97,7 +97,7 @@ contract PermissonlessCreator is Ownable {
     ) external onlyCredit returns (uint256) {
         _checkAndRedeemCredit(msg.sender);
         uint256 profileId = _createProfile(createProfileParams, delegatedExecutors);
-        profileCreatedOnlyByCredit[profileId] = msg.sender;
+        _profileCreatedOnlyByCredit[profileId] = msg.sender;
         return profileId;
     }
 
@@ -122,7 +122,7 @@ contract PermissonlessCreator is Ownable {
         if (linkToProfileId != 0) {
             // only credit address which pre-minted the profiles can mint a handle
             // and apply it to the profile
-            if (profileCreatedOnlyByCredit[linkToProfileId] != msg.sender) {
+            if (_profileCreatedOnlyByCredit[linkToProfileId] != msg.sender) {
                 revert NotAllowedToLinkHandleToProfile();
             }
 
@@ -143,44 +143,44 @@ contract PermissonlessCreator is Ownable {
     }
 
     function increaseCredits(address to, uint256 amount) external onlyCreditor {
-        credits[to] += amount;
-        emit CreditBalanceChanged(to, credits[to]);
+        _credits[to] += amount;
+        emit CreditBalanceChanged(to, _credits[to]);
     }
 
     function decreaseCredits(address to, uint256 amount) external onlyCreditor {
-        require(credits[to] >= amount, 'PermissonlessCreator: Insufficient Credits to Decrease');
-        credits[to] -= amount;
-        emit CreditBalanceChanged(to, credits[to]);
+        require(_credits[to] >= amount, 'PermissonlessCreator: Insufficient Credits to Decrease');
+        _credits[to] -= amount;
+        emit CreditBalanceChanged(to, _credits[to]);
     }
 
     function addCreditor(address creditor) external onlyOwner {
-        creditors[creditor] = true;
+        _creditors[creditor] = true;
     }
 
     function removeCreditor(address creditor) external onlyOwner {
-        creditors[creditor] = false;
+        _creditors[creditor] = false;
     }
 
-    function changeHandleCreationPrice(uint256 newPrice) external onlyOwner {
-        handleCreationCost = newPrice;
+    function changeHandleCreationPrice(uint128 newPrice) external onlyOwner {
+        _handleCreationCost = newPrice;
         emit HandleCreationPriceChanged(newPrice);
     }
 
-    function changeProfileCreationPrice(uint256 newPrice) external onlyOwner {
-        profileCreationCost = newPrice;
+    function changeProfileCreationPrice(uint128 newPrice) external onlyOwner {
+        _profileCreationCost = newPrice;
         emit ProfileCreationPriceChanged(newPrice);
     }
 
     function getPriceForProfileWithHandleCreation() external view returns (uint256) {
-        return profileCreationCost + handleCreationCost;
+        return _profileCreationCost + _handleCreationCost;
     }
 
     function getPriceForProfileCreation() external view returns (uint256) {
-        return profileCreationCost;
+        return _profileCreationCost;
     }
 
     function getPriceForHandleCreation() external view returns (uint256) {
-        return handleCreationCost;
+        return _handleCreationCost;
     }
 
     function _createProfile(
@@ -258,10 +258,10 @@ contract PermissonlessCreator is Ownable {
     }
 
     function _checkAndRedeemCredit(address from) private {
-        if (credits[from] < 1) {
+        if (_credits[from] < 1) {
             revert InsufficientCredits();
         }
-        credits[from] -= 1;
-        emit CreditRedeemed(from, credits[from]);
+        _credits[from] -= 1;
+        emit CreditRedeemed(from, _credits[from]);
     }
 }
