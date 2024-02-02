@@ -22,32 +22,32 @@ contract PermissonlessCreator is Ownable {
     uint128 private _profileCreationCost = 5 ether; // TODO: Make it constant, remove setter and set through upgrade?
     uint128 private _handleCreationCost = 5 ether; // TODO: Make it constant, remove setter and set through upgrade?
 
-    mapping(address => uint256) public _credits;
-    mapping(address => bool) public _creditors;
+    mapping(address => uint256) internal _credits;
+    mapping(address => bool) internal _isCreditProvider;
+    mapping(address => bool) internal _isUntrusted;
+    mapping(uint256 => address) internal _profileCreatorUsingCredits;
 
-    // mapping(profileId, creditAddress)
-    mapping(uint256 => address) _profileCreatedOnlyByCredit;
-
-    modifier onlyCredit() {
-        require(_credits[msg.sender] > 0, 'PermissonlessCreator: Insufficient Credits');
+    modifier onlyCreditProviders() {
+        if (!_isCreditProvider[msg.sender]) {
+            revert OnlyCreditProviders();
+        }
         _;
     }
 
-    modifier onlyCreditor() {
-        require(_creditors[msg.sender], 'PermissonlessCreator: Not a Creditor');
-        _;
-    }
-
+    error OnlyCreditProviders();
     error HandleAlreadyExists();
     error InvalidFunds();
     error InsufficientCredits();
     error ProfileAlreadyLinked();
     error NotAllowedToLinkHandleToProfile();
+    error HandleLengthNotAllowed();
+    error NotAllowed();
 
     event HandleCreationPriceChanged(uint256 newPrice);
     event ProfileCreationPriceChanged(uint256 newPrice);
-    event CreditRedeemed(address indexed from, uint256 remainingCredits);
+    event CreditSpent(address indexed from, uint256 remainingCredits);
     event CreditBalanceChanged(address indexed creditAddress, uint256 remainingCredits);
+    event UntrustnessToggled(address indexed targetAddress);
 
     constructor(address owner, address hub, address lensHandles, address tokenHandleRegistry) {
         _transferOwnership(owner);
@@ -56,24 +56,20 @@ contract PermissonlessCreator is Ownable {
         TOKEN_HANDLE_REGISTRY = ITokenHandleRegistry(tokenHandleRegistry);
     }
 
-    // Payable functions for public
+    /////////////////////////// Permissionless payable creation functions //////////////////////////////////////////////
 
     function createProfile(
         Types.CreateProfileParams calldata createProfileParams,
         address[] calldata delegatedExecutors
     ) external payable returns (uint256 profileId) {
-        if (msg.value != _profileCreationCost) {
-            revert InvalidFunds();
-        }
+        _validatePayment(_profileCreationCost);
         return _createProfile(createProfileParams, delegatedExecutors);
     }
 
     function createHandle(address to, string calldata handle) external payable returns (uint256) {
-        if (msg.value != _handleCreationCost) {
-            revert InvalidFunds();
-        }
+        _validatePayment(_handleCreationCost);
         if (bytes(handle).length < 5) {
-            revert();
+            revert HandleLengthNotAllowed();
         }
         return LENS_HANDLES.mintHandle(to, handle);
     }
@@ -83,46 +79,44 @@ contract PermissonlessCreator is Ownable {
         string calldata handle,
         address[] calldata delegatedExecutors
     ) external payable returns (uint256 profileId, uint256 handleId) {
-        if (msg.value != _profileCreationCost + _handleCreationCost) {
-            revert InvalidFunds();
-        }
+        _validatePayment(_profileCreationCost + _handleCreationCost);
         return _createProfileWithHandle(createProfileParams, handle, delegatedExecutors);
     }
 
-    // Credit functions for apps
+    ////////////////////////////// Credit based creation functions /////////////////////////////////////////////////////
 
-    function createProfile_withCredit(
+    function createProfileUsingCredits(
         Types.CreateProfileParams calldata createProfileParams,
         address[] calldata delegatedExecutors
-    ) external onlyCredit returns (uint256) {
-        _checkAndRedeemCredit(msg.sender);
+    ) external returns (uint256) {
+        _spendCredit(msg.sender);
         uint256 profileId = _createProfile(createProfileParams, delegatedExecutors);
-        _profileCreatedOnlyByCredit[profileId] = msg.sender;
+        _profileCreatorUsingCredits[profileId] = msg.sender;
         return profileId;
     }
 
-    function createProfileWithHandleCredits(
+    function createProfileWithHandleUsingCredits(
         Types.CreateProfileParams calldata createProfileParams,
         string calldata handle,
         address[] calldata delegatedExecutors
-    ) external onlyCredit returns (uint256 profileId, uint256 handleId) {
-        _checkAndRedeemCredit(msg.sender);
+    ) external returns (uint256 profileId, uint256 handleId) {
+        _spendCredit(msg.sender);
         return _createProfileWithHandle(createProfileParams, handle, delegatedExecutors);
     }
 
     // some credit addresses will be minting profiles before they have a handle so minting x amount of profiles.
     // This means onboarding they can mint the handle only and apply it to the profile to avoid the slow onboarding process
-    function createHandleWithCredits(
+    function createHandleUsingCredits(
         address to,
         string calldata handle,
         uint256 linkToProfileId
-    ) external onlyCredit returns (uint256) {
-        _checkAndRedeemCredit(msg.sender);
+    ) external returns (uint256) {
+        _spendCredit(msg.sender);
 
         if (linkToProfileId != 0) {
             // only credit address which pre-minted the profiles can mint a handle
             // and apply it to the profile
-            if (_profileCreatedOnlyByCredit[linkToProfileId] != msg.sender) {
+            if (_profileCreatorUsingCredits[linkToProfileId] != msg.sender) {
                 revert NotAllowedToLinkHandleToProfile();
             }
 
@@ -140,47 +134,6 @@ contract PermissonlessCreator is Ownable {
         } else {
             return LENS_HANDLES.mintHandle(to, handle);
         }
-    }
-
-    function increaseCredits(address to, uint256 amount) external onlyCreditor {
-        _credits[to] += amount;
-        emit CreditBalanceChanged(to, _credits[to]);
-    }
-
-    function decreaseCredits(address to, uint256 amount) external onlyCreditor {
-        require(_credits[to] >= amount, 'PermissonlessCreator: Insufficient Credits to Decrease');
-        _credits[to] -= amount;
-        emit CreditBalanceChanged(to, _credits[to]);
-    }
-
-    function addCreditor(address creditor) external onlyOwner {
-        _creditors[creditor] = true;
-    }
-
-    function removeCreditor(address creditor) external onlyOwner {
-        _creditors[creditor] = false;
-    }
-
-    function changeHandleCreationPrice(uint128 newPrice) external onlyOwner {
-        _handleCreationCost = newPrice;
-        emit HandleCreationPriceChanged(newPrice);
-    }
-
-    function changeProfileCreationPrice(uint128 newPrice) external onlyOwner {
-        _profileCreationCost = newPrice;
-        emit ProfileCreationPriceChanged(newPrice);
-    }
-
-    function getPriceForProfileWithHandleCreation() external view returns (uint256) {
-        return _profileCreationCost + _handleCreationCost;
-    }
-
-    function getPriceForProfileCreation() external view returns (uint256) {
-        return _profileCreationCost;
-    }
-
-    function getPriceForHandleCreation() external view returns (uint256) {
-        return _handleCreationCost;
     }
 
     function _createProfile(
@@ -257,11 +210,91 @@ contract PermissonlessCreator is Ownable {
         }
     }
 
-    function _checkAndRedeemCredit(address from) private {
-        if (_credits[from] < 1) {
-            revert InsufficientCredits();
+    /// @dev Requires the sender, a trusted credit-based creator, to approve the profile with this contract as spender.
+    function transferFromKeepingDelegates(address from, address to, uint256 tokenId) external {
+        if (_isUntrusted[msg.sender] || _profileCreatorUsingCredits[tokenId] != msg.sender) {
+            // If is untrusted or not the original creator of the profile through credits, then fail.
+            revert NotAllowed();
         }
+        ILensHub(LENS_HUB).transferFromKeepingDelegates(from, to, tokenId);
+    }
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+    function _validatePayment(uint256 amount) private view {
+        if (msg.value < amount) {
+            revert InvalidFunds();
+        }
+    }
+
+    function _spendCredit(address from) private {
         _credits[from] -= 1;
-        emit CreditRedeemed(from, _credits[from]);
+        emit CreditSpent(from, _credits[from]);
+    }
+
+    function increaseCredits(address to, uint256 amount) external onlyCreditProviders {
+        _credits[to] += amount;
+        emit CreditBalanceChanged(to, _credits[to]);
+    }
+
+    function decreaseCredits(address to, uint256 amount) external onlyCreditProviders {
+        _credits[to] -= amount;
+        emit CreditBalanceChanged(to, _credits[to]);
+    }
+
+    function addCreditor(address creditor) external onlyOwner {
+        _isCreditProvider[creditor] = true;
+    }
+
+    function removeCreditor(address creditor) external onlyOwner {
+        _isCreditProvider[creditor] = false;
+    }
+
+    function changeHandleCreationPrice(uint128 newPrice) external onlyOwner {
+        _handleCreationCost = newPrice;
+        emit HandleCreationPriceChanged(newPrice);
+    }
+
+    function changeProfileCreationPrice(uint128 newPrice) external onlyOwner {
+        _profileCreationCost = newPrice;
+        emit ProfileCreationPriceChanged(newPrice);
+    }
+
+    function getPriceForProfileWithHandleCreation() external view returns (uint256) {
+        return _profileCreationCost + _handleCreationCost;
+    }
+
+    function getPriceForProfileCreation() external view returns (uint256) {
+        return _profileCreationCost;
+    }
+
+    function getPriceForHandleCreation() external view returns (uint256) {
+        return _handleCreationCost;
+    }
+
+    function toggleTrustness(address targetAddress) external onlyOwner {
+        bool isUntrusted = _isUntrusted[targetAddress];
+        if (!isUntrusted) {
+            // If it is becoming untrusted, current credits should be revoked.
+            uint256 targetAddressCredits = _credits[targetAddress];
+            if (targetAddressCredits > 0) {
+                _credits[targetAddress] = 0;
+                emit CreditBalanceChanged(targetAddress, targetAddressCredits);
+            }
+        }
+        _isUntrusted[targetAddress] = !isUntrusted;
+        emit UntrustnessToggled(targetAddress);
+    }
+
+    function isTrusted(address targetAddress) external view returns (bool) {
+        return !_isUntrusted[targetAddress];
+    }
+
+    function isCreditProvider(address targetAddress) external view returns (bool) {
+        return _isCreditProvider[targetAddress];
+    }
+
+    function getCreditBalance(address targetAddress) external view returns (uint256) {
+        return _credits[targetAddress];
     }
 }
