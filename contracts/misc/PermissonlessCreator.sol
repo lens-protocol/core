@@ -118,7 +118,6 @@ contract PermissonlessCreator is Ownable {
         uint256 linkToProfileId
     ) external onlyCredit returns (uint256) {
         _checkAndRedeemCredit(msg.sender);
-        _validateHandleAvailable(handle);
 
         if (linkToProfileId != 0) {
             // only credit address which pre-minted the profiles can mint a handle
@@ -217,8 +216,6 @@ contract PermissonlessCreator is Ownable {
         string calldata handle,
         address[] calldata delegatedExecutors
     ) private returns (uint256 profileId, uint256 handleId) {
-        _validateHandleAvailable(handle);
-
         // Copy the struct from calldata to memory to make it mutable
         Types.CreateProfileParams memory createProfileParamsMemory = createProfileParams;
 
