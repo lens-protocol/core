@@ -56,7 +56,10 @@ contract PermissonlessCreator is Ownable {
         TOKEN_HANDLE_REGISTRY = ITokenHandleRegistry(tokenHandleRegistry);
     }
 
-    // TODO: Function onlyOwner to transfer all funds from paid creations - otherwise funds are locked here.
+    // Function onlyOwner to transfer all funds from paid creations - otherwise funds are locked here.
+    function withdrawFunds() external onlyOwner {
+        payable(owner()).transfer(address(this).balance);
+    }
 
     /////////////////////////// Permissionless payable creation functions //////////////////////////////////////////////
 
