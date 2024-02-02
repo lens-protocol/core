@@ -129,23 +129,22 @@ abstract contract LensProfiles is LensBaseERC721, ERC2981CollectionRoyalties, IL
             LensBaseERC721.supportsInterface(interfaceId) || ERC2981CollectionRoyalties.supportsInterface(interfaceId);
     }
 
-    /**
-     * @dev See {ILensERC721-transferFromWithData}.
-     */
     function transferFromKeepingDelegates(address from, address to, uint256 tokenId) external {
         //solhint-disable-next-line max-line-length
         if (!_isApprovedOrOwner(msg.sender, tokenId)) {
             revert Errors.NotOwnerOrApproved();
         }
 
-        if (!StorageLib.profileCreatorWhitelisted()[from]) {
-            // Delegates can be maintained on transfer only during mint tx (block) for onboarding UX purposes.
+        if (!StorageLib.profileCreatorWhitelisted()[msg.sender]) {
+            // Delegates can be maintained on transfers only when executed by whitelisted profile creators, which are
+            // trusted entities, for the sake of a better onboarding UX.
             revert Errors.NotAllowed();
         }
 
         if (ownerOf(tokenId) != from) {
             revert Errors.InvalidOwner();
         }
+
         if (to == address(0)) {
             revert Errors.InvalidParameter();
         }
@@ -156,10 +155,11 @@ abstract contract LensProfiles is LensBaseERC721, ERC2981CollectionRoyalties, IL
         _approve(address(0), tokenId);
 
         unchecked {
-            --_balances[from];
-            ++_balances[to];
+            --StorageLib.balances()[from];
+            ++StorageLib.balances()[to];
         }
-        _tokenData[tokenId].owner = to;
+
+        StorageLib.getTokenData(tokenId).owner = to;
 
         emit Transfer(from, to, tokenId);
     }
