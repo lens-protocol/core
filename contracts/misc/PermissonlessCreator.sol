@@ -56,13 +56,15 @@ contract PermissonlessCreator is Ownable {
         TOKEN_HANDLE_REGISTRY = ITokenHandleRegistry(tokenHandleRegistry);
     }
 
+    // TODO: Function onlyOwner to transfer all funds from paid creations - otherwise funds are locked here.
+
     /////////////////////////// Permissionless payable creation functions //////////////////////////////////////////////
 
     function createProfile(
-        Types.CreateProfileParams calldata createProfileParams,
-        address[] calldata delegatedExecutors
+        Types.CreateProfileParams calldata createProfileParams
     ) external payable returns (uint256 profileId) {
         _validatePayment(_profileCreationCost);
+        address[] memory delegatedExecutors; // Empty array, only trusted credit-based creators can keep delegates
         return _createProfile(createProfileParams, delegatedExecutors);
     }
 
@@ -76,10 +78,10 @@ contract PermissonlessCreator is Ownable {
 
     function createProfileWithHandle(
         Types.CreateProfileParams calldata createProfileParams,
-        string calldata handle,
-        address[] calldata delegatedExecutors
+        string calldata handle
     ) external payable returns (uint256 profileId, uint256 handleId) {
         _validatePayment(_profileCreationCost + _handleCreationCost);
+        address[] memory delegatedExecutors; // Empty array, only trusted credit-based creators can keep delegates
         return _createProfileWithHandle(createProfileParams, handle, delegatedExecutors);
     }
 
@@ -99,46 +101,27 @@ contract PermissonlessCreator is Ownable {
         Types.CreateProfileParams calldata createProfileParams,
         string calldata handle,
         address[] calldata delegatedExecutors
-    ) external returns (uint256 profileId, uint256 handleId) {
+    ) external returns (uint256, uint256) {
         _spendCredit(msg.sender);
-        return _createProfileWithHandle(createProfileParams, handle, delegatedExecutors);
+        (uint256 profileId, uint256 handleId) = _createProfileWithHandle(
+            createProfileParams,
+            handle,
+            delegatedExecutors
+        );
+        _profileCreatorUsingCredits[profileId] = msg.sender;
+        return (profileId, handleId);
     }
 
-    // some credit addresses will be minting profiles before they have a handle so minting x amount of profiles.
-    // This means onboarding they can mint the handle only and apply it to the profile to avoid the slow onboarding process
-    function createHandleUsingCredits(
-        address to,
-        string calldata handle,
-        uint256 linkToProfileId
-    ) external returns (uint256) {
+    function createHandleUsingCredits(address to, string calldata handle) external returns (uint256) {
         _spendCredit(msg.sender);
-
-        if (linkToProfileId != 0) {
-            // only credit address which pre-minted the profiles can mint a handle
-            // and apply it to the profile
-            if (_profileCreatorUsingCredits[linkToProfileId] != msg.sender) {
-                revert NotAllowedToLinkHandleToProfile();
-            }
-
-            // if profile already has a handle linked to it, revert to avoid mistake from credit
-            if (TOKEN_HANDLE_REGISTRY.getDefaultHandle(linkToProfileId) != 0) {
-                revert ProfileAlreadyLinked();
-            }
-
-            uint256 _handleId = LENS_HANDLES.mintHandle(address(this), handle);
-
-            TOKEN_HANDLE_REGISTRY.link({handleId: _handleId, profileId: linkToProfileId});
-            LENS_HANDLES.transferFrom(address(this), to, _handleId);
-
-            return _handleId;
-        } else {
-            return LENS_HANDLES.mintHandle(to, handle);
-        }
+        return LENS_HANDLES.mintHandle(to, handle);
     }
+
+    ////////////////////////////////////////// Base functions //////////////////////////////////////////////////////////
 
     function _createProfile(
         Types.CreateProfileParams calldata createProfileParams,
-        address[] calldata delegatedExecutors
+        address[] memory delegatedExecutors
     ) internal returns (uint256) {
         uint256 profileId;
         if (delegatedExecutors.length == 0) {
@@ -167,7 +150,7 @@ contract PermissonlessCreator is Ownable {
     function _createProfileWithHandle(
         Types.CreateProfileParams calldata createProfileParams,
         string calldata handle,
-        address[] calldata delegatedExecutors
+        address[] memory delegatedExecutors
     ) private returns (uint256 profileId, uint256 handleId) {
         // Copy the struct from calldata to memory to make it mutable
         Types.CreateProfileParams memory createProfileParamsMemory = createProfileParams;
@@ -195,7 +178,7 @@ contract PermissonlessCreator is Ownable {
         return (_profileId, _handleId);
     }
 
-    function _addDelegatesToProfile(uint256 profileId, address[] calldata delegatedExecutors) private {
+    function _addDelegatesToProfile(uint256 profileId, address[] memory delegatedExecutors) private {
         // set delegates if any
         if (delegatedExecutors.length > 0) {
             // Initialize an array of bools with the same length as delegatedExecutors
