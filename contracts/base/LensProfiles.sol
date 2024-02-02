@@ -199,7 +199,7 @@ abstract contract LensProfiles is LensBaseERC721, ERC2981CollectionRoyalties, IL
         address from,
         address to,
         uint256 tokenId
-    ) internal override whenNotPaused {
+    ) internal whenNotPaused {
         if (from != address(0) && _hasTokenGuardianEnabled(from)) {
             // Cannot transfer profile if the guardian is enabled, except at minting time.
             revert Errors.GuardianEnabled();
