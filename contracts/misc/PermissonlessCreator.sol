@@ -19,8 +19,8 @@ contract PermissonlessCreator is Ownable {
     ITokenHandleRegistry public immutable TOKEN_HANDLE_REGISTRY;
     address immutable LENS_HUB;
 
-    uint256 public profileCreationCost = 5 ether;
-    uint256 public handleCreationCost = 5 ether;
+    uint256 private constant profileCreationCost = 5 ether;
+    uint256 private constant handleCreationCost = 5 ether;
 
     mapping(address => uint256) public credits;
     mapping(address => bool) public creditors;
@@ -45,7 +45,7 @@ contract PermissonlessCreator is Ownable {
     error NotAllowedToLinkHandleToProfile();
 
     event HandleCreationPriceChanged(uint256 newPrice);
-    event ProfileWithHandleCreationPriceChanged(uint256 newPrice);
+    event ProfileCreationPriceChanged(uint256 newPrice);
     event CreditRedeemed(address indexed from, uint256 remainingCredits);
     event CreditBalanceChanged(address indexed creditAddress, uint256 remainingCredits);
 
@@ -83,7 +83,7 @@ contract PermissonlessCreator is Ownable {
         string calldata handle,
         address[] calldata delegatedExecutors
     ) external payable returns (uint256 profileId, uint256 handleId) {
-        if (msg.value != profileWithHandleCreationCost) {
+        if (msg.value != profileCreationCost + handleCreationCost) {
             revert InvalidFunds();
         }
         return _createProfileWithHandle(createProfileParams, handle, delegatedExecutors);
@@ -162,18 +162,22 @@ contract PermissonlessCreator is Ownable {
         creditors[creditor] = false;
     }
 
-    function changeProfileWithHandleCreationPrice(uint256 newPrice) external onlyOwner {
-        profileWithHandleCreationCost = newPrice;
-        emit ProfileWithHandleCreationPriceChanged(newPrice);
-    }
-
     function changeHandleCreationPrice(uint256 newPrice) external onlyOwner {
         handleCreationCost = newPrice;
         emit HandleCreationPriceChanged(newPrice);
     }
 
+    function changeProfileCreationPrice(uint256 newPrice) external onlyOwner {
+        profileCreationCost = newPrice;
+        emit ProfileCreationPriceChanged(newPrice);
+    }
+
     function getPriceForProfileWithHandleCreation() external view returns (uint256) {
-        return profileWithHandleCreationCost;
+        return profileCreationCost + handleCreationCost;
+    }
+
+    function getPriceForProfileCreation() external view returns (uint256) {
+        return profileCreationCost;
     }
 
     function getPriceForHandleCreation() external view returns (uint256) {
