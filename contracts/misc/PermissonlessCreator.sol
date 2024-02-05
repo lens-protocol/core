@@ -23,8 +23,8 @@ contract PermissonlessCreator is Ownable {
     uint128 private _handleCreationCost = 5 ether; // TODO: Make it constant, remove setter and set through upgrade?
 
     mapping(address => uint256) internal _credits;
-    mapping(address => bool) internal _isCreditProvider;
-    mapping(address => bool) internal _isUntrusted;
+    mapping(address => bool) internal _isCreditProvider; // Credit providers can increase/decrease credits of users
+    mapping(address => bool) internal _trustRevoked;
     mapping(uint256 => address) internal _profileCreatorUsingCredits;
 
     modifier onlyCreditProviders() {
@@ -39,15 +39,13 @@ contract PermissonlessCreator is Ownable {
     error InvalidFunds();
     error InsufficientCredits();
     error ProfileAlreadyLinked();
-    error NotAllowedToLinkHandleToProfile();
     error HandleLengthNotAllowed();
     error NotAllowed();
 
     event HandleCreationPriceChanged(uint256 newPrice);
     event ProfileCreationPriceChanged(uint256 newPrice);
-    event CreditSpent(address indexed from, uint256 remainingCredits);
     event CreditBalanceChanged(address indexed creditAddress, uint256 remainingCredits);
-    event UntrustnessToggled(address indexed targetAddress);
+    event TrustStatusChanged(address indexed targetAddress, bool trustRevoked);
 
     constructor(address owner, address hub, address lensHandles, address tokenHandleRegistry) {
         _transferOwnership(owner);
@@ -64,10 +62,14 @@ contract PermissonlessCreator is Ownable {
     /////////////////////////// Permissionless payable creation functions //////////////////////////////////////////////
 
     function createProfile(
-        Types.CreateProfileParams calldata createProfileParams
+        Types.CreateProfileParams calldata createProfileParams,
+        address[] calldata delegatedExecutors
     ) external payable returns (uint256 profileId) {
         _validatePayment(_profileCreationCost);
-        address[] memory delegatedExecutors; // Empty array, only trusted credit-based creators can keep delegates
+        // delegatedExecutors are only allowed if to == msg.sender
+        if (delegatedExecutors.length > 0 && createProfileParams.to != msg.sender) {
+            revert NotAllowed();
+        }
         return _createProfile(createProfileParams, delegatedExecutors);
     }
 
@@ -81,10 +83,17 @@ contract PermissonlessCreator is Ownable {
 
     function createProfileWithHandle(
         Types.CreateProfileParams calldata createProfileParams,
-        string calldata handle
+        string calldata handle,
+        address[] calldata delegatedExecutors
     ) external payable returns (uint256 profileId, uint256 handleId) {
         _validatePayment(_profileCreationCost + _handleCreationCost);
-        address[] memory delegatedExecutors; // Empty array, only trusted credit-based creators can keep delegates
+        if (bytes(handle).length < 5) {
+            revert HandleLengthNotAllowed();
+        }
+        // delegatedExecutors are only allowed if to == msg.sender
+        if (delegatedExecutors.length > 0 && createProfileParams.to != msg.sender) {
+            revert NotAllowed();
+        }
         return _createProfileWithHandle(createProfileParams, handle, delegatedExecutors);
     }
 
@@ -94,7 +103,7 @@ contract PermissonlessCreator is Ownable {
         Types.CreateProfileParams calldata createProfileParams,
         address[] calldata delegatedExecutors
     ) external returns (uint256) {
-        _spendCredit(msg.sender);
+        _spendCredit(msg.sender, 1);
         uint256 profileId = _createProfile(createProfileParams, delegatedExecutors);
         _profileCreatorUsingCredits[profileId] = msg.sender;
         return profileId;
@@ -105,7 +114,10 @@ contract PermissonlessCreator is Ownable {
         string calldata handle,
         address[] calldata delegatedExecutors
     ) external returns (uint256, uint256) {
-        _spendCredit(msg.sender);
+        _spendCredit(msg.sender, 2);
+        if (bytes(handle).length < 5) {
+            revert HandleLengthNotAllowed();
+        }
         (uint256 profileId, uint256 handleId) = _createProfileWithHandle(
             createProfileParams,
             handle,
@@ -116,7 +128,10 @@ contract PermissonlessCreator is Ownable {
     }
 
     function createHandleUsingCredits(address to, string calldata handle) external returns (uint256) {
-        _spendCredit(msg.sender);
+        _spendCredit(msg.sender, 1);
+        if (bytes(handle).length < 5) {
+            revert HandleLengthNotAllowed();
+        }
         return LENS_HANDLES.mintHandle(to, handle);
     }
 
@@ -196,44 +211,52 @@ contract PermissonlessCreator is Ownable {
         }
     }
 
-    /// @dev Requires the sender, a trusted credit-based creator, to approve the profile with this contract as spender.
-    function transferFromKeepingDelegates(address from, address to, uint256 tokenId) external {
-        if (_isUntrusted[msg.sender] || _profileCreatorUsingCredits[tokenId] != msg.sender) {
-            // If is untrusted or not the original creator of the profile through credits, then fail.
-            revert NotAllowed();
-        }
-        ILensHub(LENS_HUB).transferFromKeepingDelegates(from, to, tokenId);
-    }
-
-    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
     function _validatePayment(uint256 amount) private view {
         if (msg.value < amount) {
             revert InvalidFunds();
         }
     }
 
-    function _spendCredit(address from) private {
-        _credits[from] -= 1;
-        emit CreditSpent(from, _credits[from]);
+    function _spendCredit(address account, uint256 amount) private {
+        _credits[account] -= amount;
+        emit CreditBalanceChanged(account, _credits[account]);
     }
 
-    function increaseCredits(address to, uint256 amount) external onlyCreditProviders {
-        _credits[to] += amount;
-        emit CreditBalanceChanged(to, _credits[to]);
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+    /// @notice Special function allowing to transfer a profile from one address to another, keeping the delegates.
+    /// @dev Requires the sender, a trusted credit-based creator, to approve the profile with this contract as spender.
+    function transferFromKeepingDelegates(address from, address to, uint256 tokenId) external {
+        if (_trustRevoked[msg.sender] || _profileCreatorUsingCredits[tokenId] != msg.sender) {
+            // If msg.sender trust was revoked or is not the original creator of the profile through credits, then fail.
+            revert NotAllowed();
+        }
+
+        // Reset the creator of the profile using credits to address(0) so it can't be used again for this profile.
+        _profileCreatorUsingCredits[tokenId] = address(0);
+        ILensHub(LENS_HUB).transferFromKeepingDelegates(from, to, tokenId);
     }
 
-    function decreaseCredits(address to, uint256 amount) external onlyCreditProviders {
-        _credits[to] -= amount;
-        emit CreditBalanceChanged(to, _credits[to]);
+    // Credit Provider functions
+
+    function increaseCredits(address account, uint256 amount) external onlyCreditProviders {
+        _credits[account] += amount;
+        emit CreditBalanceChanged(account, _credits[account]);
     }
 
-    function addCreditor(address creditor) external onlyOwner {
-        _isCreditProvider[creditor] = true;
+    function decreaseCredits(address account, uint256 amount) external onlyCreditProviders {
+        _credits[account] -= amount;
+        emit CreditBalanceChanged(account, _credits[account]);
     }
 
-    function removeCreditor(address creditor) external onlyOwner {
-        _isCreditProvider[creditor] = false;
+    // Owner functions
+
+    function addCreditProvider(address creditProvider) external onlyOwner {
+        _isCreditProvider[creditProvider] = true;
+    }
+
+    function removeCreditProvider(address creditProvider) external onlyOwner {
+        _isCreditProvider[creditProvider] = false;
     }
 
     function changeHandleCreationPrice(uint128 newPrice) external onlyOwner {
@@ -245,6 +268,18 @@ contract PermissonlessCreator is Ownable {
         _profileCreationCost = newPrice;
         emit ProfileCreationPriceChanged(newPrice);
     }
+
+    function setTrustRevoked(address targetAddress, bool trustRevoked) external onlyOwner {
+        if (trustRevoked) {
+            // If trust is revoked, current credits should be removed.
+            _credits[targetAddress] = 0;
+            emit CreditBalanceChanged(targetAddress, 0);
+        }
+        _trustRevoked[targetAddress] = trustRevoked;
+        emit TrustStatusChanged(targetAddress, trustRevoked);
+    }
+
+    // View functions
 
     function getPriceForProfileWithHandleCreation() external view returns (uint256) {
         return _profileCreationCost + _handleCreationCost;
@@ -258,22 +293,8 @@ contract PermissonlessCreator is Ownable {
         return _handleCreationCost;
     }
 
-    function toggleTrustness(address targetAddress) external onlyOwner {
-        bool isUntrusted = _isUntrusted[targetAddress];
-        if (!isUntrusted) {
-            // If it is becoming untrusted, current credits should be revoked.
-            uint256 targetAddressCredits = _credits[targetAddress];
-            if (targetAddressCredits > 0) {
-                _credits[targetAddress] = 0;
-                emit CreditBalanceChanged(targetAddress, targetAddressCredits);
-            }
-        }
-        _isUntrusted[targetAddress] = !isUntrusted;
-        emit UntrustnessToggled(targetAddress);
-    }
-
-    function isTrusted(address targetAddress) external view returns (bool) {
-        return !_isUntrusted[targetAddress];
+    function isTrustRevoked(address targetAddress) external view returns (bool) {
+        return _trustRevoked[targetAddress];
     }
 
     function isCreditProvider(address targetAddress) external view returns (bool) {
