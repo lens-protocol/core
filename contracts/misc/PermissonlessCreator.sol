@@ -19,8 +19,9 @@ contract PermissonlessCreator is Ownable {
     ITokenHandleRegistry public immutable TOKEN_HANDLE_REGISTRY;
     address immutable LENS_HUB;
 
-    uint128 private _profileCreationCost = 5 ether; // TODO: Make it constant, remove setter and set through upgrade?
-    uint128 private _handleCreationCost = 5 ether; // TODO: Make it constant, remove setter and set through upgrade?
+    uint128 private _profileCreationCost = 5 ether; // TODO: GAS: Make it constant, remove setter and set through upgrade?
+    uint128 private _handleCreationCost = 5 ether; // TODO: GAS: Make it constant, remove setter and set through upgrade?
+    uint8 private _handleLengthMin = 5; // TODO: GAS: Make it constant, remove setter and set through upgrade?
 
     mapping(address => uint256) internal _credits;
     mapping(address => bool) internal _isCreditProvider; // Credit providers can increase/decrease credits of users
@@ -54,11 +55,6 @@ contract PermissonlessCreator is Ownable {
         TOKEN_HANDLE_REGISTRY = ITokenHandleRegistry(tokenHandleRegistry);
     }
 
-    // Function onlyOwner to transfer all funds from paid creations - otherwise funds are locked here.
-    function withdrawFunds() external onlyOwner {
-        payable(owner()).transfer(address(this).balance);
-    }
-
     /////////////////////////// Permissionless payable creation functions //////////////////////////////////////////////
 
     function createProfile(
@@ -75,7 +71,7 @@ contract PermissonlessCreator is Ownable {
 
     function createHandle(address to, string calldata handle) external payable returns (uint256) {
         _validatePayment(_handleCreationCost);
-        if (bytes(handle).length < 5) {
+        if (bytes(handle).length < _handleLengthMin) {
             revert HandleLengthNotAllowed();
         }
         return LENS_HANDLES.mintHandle(to, handle);
@@ -87,7 +83,7 @@ contract PermissonlessCreator is Ownable {
         address[] calldata delegatedExecutors
     ) external payable returns (uint256 profileId, uint256 handleId) {
         _validatePayment(_profileCreationCost + _handleCreationCost);
-        if (bytes(handle).length < 5) {
+        if (bytes(handle).length < _handleLengthMin) {
             revert HandleLengthNotAllowed();
         }
         // delegatedExecutors are only allowed if to == msg.sender
@@ -103,7 +99,7 @@ contract PermissonlessCreator is Ownable {
         Types.CreateProfileParams calldata createProfileParams,
         address[] calldata delegatedExecutors
     ) external returns (uint256) {
-        _spendCredit(msg.sender, 1);
+        _spendCredit(msg.sender);
         uint256 profileId = _createProfile(createProfileParams, delegatedExecutors);
         _profileCreatorUsingCredits[profileId] = msg.sender;
         return profileId;
@@ -114,8 +110,8 @@ contract PermissonlessCreator is Ownable {
         string calldata handle,
         address[] calldata delegatedExecutors
     ) external returns (uint256, uint256) {
-        _spendCredit(msg.sender, 2);
-        if (bytes(handle).length < 5) {
+        _spendCredit(msg.sender);
+        if (bytes(handle).length < _handleLengthMin) {
             revert HandleLengthNotAllowed();
         }
         (uint256 profileId, uint256 handleId) = _createProfileWithHandle(
@@ -128,8 +124,8 @@ contract PermissonlessCreator is Ownable {
     }
 
     function createHandleUsingCredits(address to, string calldata handle) external returns (uint256) {
-        _spendCredit(msg.sender, 1);
-        if (bytes(handle).length < 5) {
+        _spendCredit(msg.sender);
+        if (bytes(handle).length < _handleLengthMin) {
             revert HandleLengthNotAllowed();
         }
         return LENS_HANDLES.mintHandle(to, handle);
@@ -217,8 +213,8 @@ contract PermissonlessCreator is Ownable {
         }
     }
 
-    function _spendCredit(address account, uint256 amount) private {
-        _credits[account] -= amount;
+    function _spendCredit(address account) private {
+        _credits[account] -= 1;
         emit CreditBalanceChanged(account, _credits[account]);
     }
 
@@ -232,14 +228,16 @@ contract PermissonlessCreator is Ownable {
             revert NotAllowed();
         }
 
-        // Reset the creator of the profile using credits to address(0) so it can't be used again for this profile.
-        _profileCreatorUsingCredits[tokenId] = address(0);
         ILensHub(LENS_HUB).transferFromKeepingDelegates(from, to, tokenId);
     }
 
     // Credit Provider functions
 
     function increaseCredits(address account, uint256 amount) external onlyCreditProviders {
+        if (_trustRevoked[account]) {
+            // Cannot increase credits for an account with revoked trust.
+            revert NotAllowed();
+        }
         _credits[account] += amount;
         emit CreditBalanceChanged(account, _credits[account]);
     }
@@ -251,6 +249,10 @@ contract PermissonlessCreator is Ownable {
 
     // Owner functions
 
+    function withdrawFunds() external onlyOwner {
+        payable(owner()).transfer(address(this).balance);
+    }
+
     function addCreditProvider(address creditProvider) external onlyOwner {
         _isCreditProvider[creditProvider] = true;
     }
@@ -259,14 +261,18 @@ contract PermissonlessCreator is Ownable {
         _isCreditProvider[creditProvider] = false;
     }
 
-    function changeHandleCreationPrice(uint128 newPrice) external onlyOwner {
+    function setProfileCreationPrice(uint128 newPrice) external onlyOwner {
+        _profileCreationCost = newPrice;
+        emit ProfileCreationPriceChanged(newPrice);
+    }
+
+    function setHandleCreationPrice(uint128 newPrice) external onlyOwner {
         _handleCreationCost = newPrice;
         emit HandleCreationPriceChanged(newPrice);
     }
 
-    function changeProfileCreationPrice(uint128 newPrice) external onlyOwner {
-        _profileCreationCost = newPrice;
-        emit ProfileCreationPriceChanged(newPrice);
+    function setHandleLengthMin(uint8 newMinLength) external onlyOwner {
+        _handleLengthMin = newMinLength;
     }
 
     function setTrustRevoked(address targetAddress, bool trustRevoked) external onlyOwner {
@@ -281,16 +287,20 @@ contract PermissonlessCreator is Ownable {
 
     // View functions
 
-    function getPriceForProfileWithHandleCreation() external view returns (uint256) {
+    function getProfileWithHandleCreationPrice() external view returns (uint256) {
         return _profileCreationCost + _handleCreationCost;
     }
 
-    function getPriceForProfileCreation() external view returns (uint256) {
+    function getProfileCreationPrice() external view returns (uint256) {
         return _profileCreationCost;
     }
 
-    function getPriceForHandleCreation() external view returns (uint256) {
+    function getHandleCreationPrice() external view returns (uint256) {
         return _handleCreationCost;
+    }
+
+    function getHandleLengthMin() external view returns (uint8) {
+        return _handleLengthMin;
     }
 
     function isTrustRevoked(address targetAddress) external view returns (bool) {
