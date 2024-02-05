@@ -14,7 +14,7 @@ import {ITokenHandleRegistry} from 'contracts/interfaces/ITokenHandleRegistry.so
  * @author Lens Protocol
  * @notice This is an ownable public proxy contract which is open for all.
  */
-contract PermissonlessCreator is Ownable {
+contract PermissionlessCreator is Ownable {
     ILensHandles public immutable LENS_HANDLES;
     ITokenHandleRegistry public immutable TOKEN_HANDLE_REGISTRY;
     address immutable LENS_HUB;
@@ -45,14 +45,22 @@ contract PermissonlessCreator is Ownable {
 
     event HandleCreationPriceChanged(uint256 newPrice);
     event ProfileCreationPriceChanged(uint256 newPrice);
+    event HandleLengthMinChanged(uint8 newMinLength);
     event CreditBalanceChanged(address indexed creditAddress, uint256 remainingCredits);
     event TrustStatusChanged(address indexed targetAddress, bool trustRevoked);
+    event CreditProviderStatusChanged(address indexed creditProvider, bool isCreditProvider);
+
+    event ProfileCreatedUsingCredits(uint256 indexed profileId, address indexed creator);
+    event HandleCreatedUsingCredits(uint256 indexed handleId, string indexed handle, address indexed creator);
 
     constructor(address owner, address hub, address lensHandles, address tokenHandleRegistry) {
         _transferOwnership(owner);
         LENS_HUB = hub;
         LENS_HANDLES = ILensHandles(lensHandles);
         TOKEN_HANDLE_REGISTRY = ITokenHandleRegistry(tokenHandleRegistry);
+        emit ProfileCreationPriceChanged(_profileCreationCost);
+        emit HandleCreationPriceChanged(_handleCreationCost);
+        emit HandleLengthMinChanged(_handleLengthMin);
     }
 
     /////////////////////////// Permissionless payable creation functions //////////////////////////////////////////////
@@ -60,7 +68,7 @@ contract PermissonlessCreator is Ownable {
     function createProfile(
         Types.CreateProfileParams calldata createProfileParams,
         address[] calldata delegatedExecutors
-    ) external payable returns (uint256 profileId) {
+    ) external payable returns (uint256) {
         _validatePayment(_profileCreationCost);
         // delegatedExecutors are only allowed if to == msg.sender
         if (delegatedExecutors.length > 0 && createProfileParams.to != msg.sender) {
@@ -81,7 +89,7 @@ contract PermissonlessCreator is Ownable {
         Types.CreateProfileParams calldata createProfileParams,
         string calldata handle,
         address[] calldata delegatedExecutors
-    ) external payable returns (uint256 profileId, uint256 handleId) {
+    ) external payable returns (uint256, uint256) {
         _validatePayment(_profileCreationCost + _handleCreationCost);
         if (bytes(handle).length < _handleLengthMin) {
             revert HandleLengthNotAllowed();
@@ -102,6 +110,7 @@ contract PermissonlessCreator is Ownable {
         _spendCredit(msg.sender);
         uint256 profileId = _createProfile(createProfileParams, delegatedExecutors);
         _profileCreatorUsingCredits[profileId] = msg.sender;
+        emit ProfileCreatedUsingCredits(profileId, msg.sender);
         return profileId;
     }
 
@@ -120,6 +129,8 @@ contract PermissonlessCreator is Ownable {
             delegatedExecutors
         );
         _profileCreatorUsingCredits[profileId] = msg.sender;
+        emit ProfileCreatedUsingCredits(profileId, msg.sender);
+        emit HandleCreatedUsingCredits(handleId, handle, msg.sender);
         return (profileId, handleId);
     }
 
@@ -128,7 +139,9 @@ contract PermissonlessCreator is Ownable {
         if (bytes(handle).length < _handleLengthMin) {
             revert HandleLengthNotAllowed();
         }
-        return LENS_HANDLES.mintHandle(to, handle);
+        uint256 handleId = LENS_HANDLES.mintHandle(to, handle);
+        emit HandleCreatedUsingCredits(handleId, handle, msg.sender);
+        return handleId;
     }
 
     ////////////////////////////////////////// Base functions //////////////////////////////////////////////////////////
@@ -165,7 +178,7 @@ contract PermissonlessCreator is Ownable {
         Types.CreateProfileParams calldata createProfileParams,
         string calldata handle,
         address[] memory delegatedExecutors
-    ) private returns (uint256 profileId, uint256 handleId) {
+    ) private returns (uint256, uint256) {
         // Copy the struct from calldata to memory to make it mutable
         Types.CreateProfileParams memory createProfileParamsMemory = createProfileParams;
 
@@ -187,7 +200,7 @@ contract PermissonlessCreator is Ownable {
         // Transfer the handle & profile to the destination
         LENS_HANDLES.transferFrom(address(this), destination, _handleId);
         // keep the config if its been set
-        ILensHub(LENS_HUB).transferFromKeepingDelegates(address(this), destination, profileId);
+        ILensHub(LENS_HUB).transferFromKeepingDelegates(address(this), destination, _profileId);
 
         return (_profileId, _handleId);
     }
@@ -255,10 +268,12 @@ contract PermissonlessCreator is Ownable {
 
     function addCreditProvider(address creditProvider) external onlyOwner {
         _isCreditProvider[creditProvider] = true;
+        emit CreditProviderStatusChanged(creditProvider, true);
     }
 
     function removeCreditProvider(address creditProvider) external onlyOwner {
         _isCreditProvider[creditProvider] = false;
+        emit CreditProviderStatusChanged(creditProvider, false);
     }
 
     function setProfileCreationPrice(uint128 newPrice) external onlyOwner {
@@ -273,6 +288,7 @@ contract PermissonlessCreator is Ownable {
 
     function setHandleLengthMin(uint8 newMinLength) external onlyOwner {
         _handleLengthMin = newMinLength;
+        emit HandleLengthMinChanged(newMinLength);
     }
 
     function setTrustRevoked(address targetAddress, bool trustRevoked) external onlyOwner {
@@ -313,5 +329,9 @@ contract PermissonlessCreator is Ownable {
 
     function getCreditBalance(address targetAddress) external view returns (uint256) {
         return _credits[targetAddress];
+    }
+
+    function getProfileCreatorUsingCredits(uint256 profileId) external view returns (address) {
+        return _profileCreatorUsingCredits[profileId];
     }
 }
