@@ -39,7 +39,7 @@ CALLDATA=$(cast calldata "run(string)" $TARGET)
 echo "Interactions calldata:"
 echo "$CALLDATA"
 
-forge script script/$SCRIPT_NAME.s.sol:$SCRIPT_NAME -s $CALLDATA --rpc-url $NETWORK -vv --legacy --skip test --ffi
+forge script script/$SCRIPT_NAME.s.sol:$SCRIPT_NAME --sig $CALLDATA --rpc-url $NETWORK -vv --legacy --skip test --ffi
 
 # If the confirmation override is set to s or S - then we skip the rest of the script and exit with success
 if [[ "$CONFIRMATION_OVERRIDE" == "s" || "$CONFIRMATION_OVERRIDE" == "S" ]]
@@ -83,10 +83,10 @@ if [[ "$CONFIRMATION" == "y" || "$CONFIRMATION" == "Y" ]]
                         NETWORK="matic"
                 fi
 
-                catapulta script script/$SCRIPT_NAME.s.sol --chain $NETWORK -s $CALLDATA --legacy --skip test --ffi --slow --skip-git
+                catapulta script script/$SCRIPT_NAME.s.sol --chain $NETWORK --sig $CALLDATA --legacy --skip test --ffi --slow --skip-git
                 exit 0
             else
-                forge script script/$SCRIPT_NAME.s.sol:$SCRIPT_NAME -s $CALLDATA --rpc-url $NETWORK -vv --legacy --skip test --ffi --slow --broadcast
+                forge script script/$SCRIPT_NAME.s.sol:$SCRIPT_NAME --sig $CALLDATA --rpc-url $NETWORK -vv --legacy --skip test --ffi --slow --broadcast
         fi
 
     else
