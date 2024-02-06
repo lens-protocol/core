@@ -44,7 +44,7 @@ contract ProfileCreationProxy is ImmutableOwnable {
         string calldata handle
     ) external onlyOwner returns (uint256, uint256) {
         // Check if LensHubV1 already has a profile with this handle that was not migrated yet:
-        bytes32 handleHash = keccak256(bytes(string.concat(handle, '.lens')));
+        bytes32 handleHash = keccak256(bytes(string.concat(handle, '.test')));
         if (LensV2Migration(LENS_HUB).getProfileIdByHandleHash(handleHash) != 0) {
             revert ProfileAlreadyExists();
         }

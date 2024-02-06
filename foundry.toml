@@ -13,7 +13,7 @@ optimizer_runs = 10
 ignored_error_codes = []
 no_match_path = "script/svg/*"
 
-# via_ir = true
+via_ir = true
 
 # libraries = [
 #   'contracts/libraries/ActionLib.sol:ActionLib:0x7990dac84e3241fe314b980bba1466ac08715c4f',
