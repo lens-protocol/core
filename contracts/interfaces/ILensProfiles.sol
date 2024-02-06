@@ -29,4 +29,9 @@ interface ILensProfiles is ILensERC721 {
      * @return uint256 The timestamp at which the Token Guardian will become effectively disabled. Zero if enabled.
      */
     function getTokenGuardianDisablingTimestamp(address wallet) external view returns (uint256);
+
+    /**
+     * @notice allows transferring of profile but keeping the delegate settings
+     */
+    function transferFromKeepingDelegates(address from, address to, uint256 tokenId) external;
 }
