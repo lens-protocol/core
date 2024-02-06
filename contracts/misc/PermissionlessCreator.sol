@@ -4,20 +4,19 @@ pragma solidity ^0.8.15;
 
 import {ILensHub} from 'contracts/interfaces/ILensHub.sol';
 import {Types} from 'contracts/libraries/constants/Types.sol';
-import {Ownable} from '@openzeppelin/contracts/access/Ownable.sol';
 
 import {ILensHandles} from 'contracts/interfaces/ILensHandles.sol';
 import {ITokenHandleRegistry} from 'contracts/interfaces/ITokenHandleRegistry.sol';
+import {ImmutableOwnable} from 'contracts/misc/ImmutableOwnable.sol';
 
 /**
  * @title PermissonlessCreator
  * @author Lens Protocol
  * @notice This is an ownable public proxy contract which is open for all.
  */
-contract PermissionlessCreator is Ownable {
+contract PermissionlessCreator is ImmutableOwnable {
     ILensHandles public immutable LENS_HANDLES;
     ITokenHandleRegistry public immutable TOKEN_HANDLE_REGISTRY;
-    address immutable LENS_HUB;
 
     uint128 private _profileCreationCost = 5 ether; // TODO: GAS: Make it constant, remove setter and set through upgrade?
     uint128 private _handleCreationCost = 5 ether; // TODO: GAS: Make it constant, remove setter and set through upgrade?
@@ -53,14 +52,14 @@ contract PermissionlessCreator is Ownable {
     event ProfileCreatedUsingCredits(uint256 indexed profileId, address indexed creator);
     event HandleCreatedUsingCredits(uint256 indexed handleId, string indexed handle, address indexed creator);
 
-    constructor(address owner, address hub, address lensHandles, address tokenHandleRegistry) {
-        _transferOwnership(owner);
-        LENS_HUB = hub;
+    constructor(
+        address owner,
+        address lensHub,
+        address lensHandles,
+        address tokenHandleRegistry
+    ) ImmutableOwnable(owner, lensHub) {
         LENS_HANDLES = ILensHandles(lensHandles);
         TOKEN_HANDLE_REGISTRY = ITokenHandleRegistry(tokenHandleRegistry);
-        emit ProfileCreationPriceChanged(_profileCreationCost);
-        emit HandleCreationPriceChanged(_handleCreationCost);
-        emit HandleLengthMinChanged(_handleLengthMin);
     }
 
     /////////////////////////// Permissionless payable creation functions //////////////////////////////////////////////
@@ -263,7 +262,7 @@ contract PermissionlessCreator is Ownable {
     // Owner functions
 
     function withdrawFunds() external onlyOwner {
-        payable(owner()).transfer(address(this).balance);
+        payable(OWNER).transfer(address(this).balance);
     }
 
     function addCreditProvider(address creditProvider) external onlyOwner {

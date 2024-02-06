@@ -6,6 +6,8 @@ import {PermissionlessCreator} from 'contracts/misc/PermissionlessCreator.sol';
 import {Types} from 'contracts/libraries/constants/Types.sol';
 
 abstract contract PermissionlessCreatorTestBase is BaseTest {
+    error OnlyOwner();
+
     using stdJson for string;
 
     PermissionlessCreator permissionlessCreator;
@@ -19,7 +21,7 @@ abstract contract PermissionlessCreatorTestBase is BaseTest {
                 permissionlessCreator = PermissionlessCreator(
                     json.readAddress(string(abi.encodePacked('.', forkEnv, '.PermissionlessCreator')))
                 );
-                permissionlessCreatorOwner = permissionlessCreator.owner();
+                permissionlessCreatorOwner = permissionlessCreator.OWNER();
             } else {
                 console.log('PermissionlessCreator key does not exist');
                 if (forkVersion == 1) {
@@ -797,7 +799,7 @@ contract PermissionlessCreatorTest_Credits is PermissionlessCreatorTestBase {
         vm.assume(notOwner != permissionlessCreatorOwner);
         vm.assume(notOwner != address(0));
 
-        vm.expectRevert('Ownable: caller is not the owner');
+        vm.expectRevert(OnlyOwner.selector);
         vm.prank(notOwner);
         permissionlessCreator.withdrawFunds();
     }
@@ -807,7 +809,7 @@ contract PermissionlessCreatorTest_Credits is PermissionlessCreatorTestBase {
         vm.assume(notOwner != address(0));
         vm.assume(newCreditProvider != address(0));
 
-        vm.expectRevert('Ownable: caller is not the owner');
+        vm.expectRevert(OnlyOwner.selector);
         vm.prank(notOwner);
         permissionlessCreator.addCreditProvider(newCreditProvider);
     }
@@ -820,7 +822,7 @@ contract PermissionlessCreatorTest_Credits is PermissionlessCreatorTestBase {
         vm.prank(permissionlessCreatorOwner);
         permissionlessCreator.addCreditProvider(existingCreditProvider);
 
-        vm.expectRevert('Ownable: caller is not the owner');
+        vm.expectRevert(OnlyOwner.selector);
         vm.prank(notOwner);
         permissionlessCreator.removeCreditProvider(existingCreditProvider);
 
@@ -831,7 +833,7 @@ contract PermissionlessCreatorTest_Credits is PermissionlessCreatorTestBase {
         vm.assume(notOwner != permissionlessCreatorOwner);
         vm.assume(notOwner != address(0));
 
-        vm.expectRevert('Ownable: caller is not the owner');
+        vm.expectRevert(OnlyOwner.selector);
         vm.prank(notOwner);
         permissionlessCreator.setProfileCreationPrice(newPrice);
     }
@@ -840,7 +842,7 @@ contract PermissionlessCreatorTest_Credits is PermissionlessCreatorTestBase {
         vm.assume(notOwner != permissionlessCreatorOwner);
         vm.assume(notOwner != address(0));
 
-        vm.expectRevert('Ownable: caller is not the owner');
+        vm.expectRevert(OnlyOwner.selector);
         vm.prank(notOwner);
         permissionlessCreator.setHandleCreationPrice(newPrice);
     }
@@ -849,7 +851,7 @@ contract PermissionlessCreatorTest_Credits is PermissionlessCreatorTestBase {
         vm.assume(notOwner != permissionlessCreatorOwner);
         vm.assume(notOwner != address(0));
 
-        vm.expectRevert('Ownable: caller is not the owner');
+        vm.expectRevert(OnlyOwner.selector);
         vm.prank(notOwner);
         permissionlessCreator.setHandleLengthMin(newMinLength);
     }
@@ -859,7 +861,7 @@ contract PermissionlessCreatorTest_Credits is PermissionlessCreatorTestBase {
         vm.assume(notOwner != address(0));
         vm.assume(targetAddress != address(0));
 
-        vm.expectRevert('Ownable: caller is not the owner');
+        vm.expectRevert(OnlyOwner.selector);
         vm.prank(notOwner);
         permissionlessCreator.setTrustRevoked(targetAddress, newStatus);
     }
