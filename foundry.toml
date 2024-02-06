@@ -15,6 +15,7 @@ no_match_path = "script/svg/*"
 
 via_ir = true
 
+# Mainnet libraries:
 # libraries = [
 #   'contracts/libraries/ActionLib.sol:ActionLib:0x7990dac84e3241fe314b980bba1466ac08715c4f',
 #   'contracts/libraries/FollowLib.sol:FollowLib:0xe280cb21fb36b6b2d584428b809a6b822a5c2260',
@@ -25,6 +26,19 @@ via_ir = true
 #   'contracts/libraries/ProfileLib.sol:ProfileLib:0x3fce2475a92c185f9634f5638f6b33306d77bb10',
 #   'contracts/libraries/PublicationLib.sol:PublicationLib:0x90654f24a2c164a4da8f763ac8bc032d3d083a1b',
 #   'contracts/libraries/ValidationLib.sol:ValidationLib:0x9cafd24d2851d9eb56e5a8fd394ab2ac0ef99849',
+# ]
+
+# Testnet libraries:
+# libraries = [
+#   'contracts/libraries/ActionLib.sol:ActionLib:0xf76565aee4bf3641bf10090561ff0143628fde99',
+#   'contracts/libraries/FollowLib.sol:FollowLib:0xd33423b0ae94717274ef83431950a858b274c3f9',
+#   'contracts/libraries/GovernanceLib.sol:GovernanceLib:0x06df1ff944ed3f3f140fb0afae5f27429f93eba1',
+#   'contracts/libraries/LegacyCollectLib.sol:LegacyCollectLib:0xe6b308313eff636b82e7ced21cdc05ea7107504a',
+#   'contracts/libraries/MetaTxLib.sol:MetaTxLib:0xf4a73d59b5c3eeb02d007e4f82c7952cc659c06f',
+#   'contracts/libraries/MigrationLib.sol:MigrationLib:0x38fd9d33e9cdd1e99b4f9d983db64ed035ead9d4',
+#   'contracts/libraries/ProfileLib.sol:ProfileLib:0xdf4bdf058490383c9f12a25c2f28679c8154aa8b',
+#   'contracts/libraries/PublicationLib.sol:PublicationLib:0x70d2a21726bcc835e56680b173b31c38b6c33c64',
+#   'contracts/libraries/ValidationLib.sol:ValidationLib:0xef1c3a9c87177217574afd66956d203ba8f0ee6c',
 # ]
 
 [rpc_endpoints]

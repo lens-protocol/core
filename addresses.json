@@ -267,7 +267,7 @@
     "TokenHandleRegistry": "0x66cA05cAc4e8D543028192dD28C0570a0b6e3413",
     "ModuleRegistryImpl": "0xBa7b1C57e6168b2B910b24F26FEbe41B4552A47e",
     "ModuleRegistry": "0x4BeB63842BB800A1Da77a62F2c74dE3CA39AF7C0",
-    "LensHubV2Impl": "0x60109E1790b2D0A8eD382a540451fd391e22c2cC",
+    "LensHubV2Impl": "0xb4A26f55Cc2d1473b8A7649d90d34ba52A480391",
     "GovernanceContract": "0x6D90D6c3F66784f5b5AFEb68f856592e4ad158c3",
     "GovernanceContractAdmin": "0x1A1cDf59C94a682a067fA2D288C2167a8506abd7",
     "ProxyAdminContract": "0xfbAddb4efA038325800846238e928529b7DD4a67",
@@ -281,7 +281,9 @@
     "LitAccessControlImpl": "0x6F0512aC88DDEB0A4bE8EeCC716daC0793EeCff2",
     "LitAccessControl": "0xc4F726a10fDEb0E98e16Fa658b606192d57FC71c",
     "AnonymousProfileId": "3",
-    "FollowTokenURI": "0xB9136f393861822cF2CAEa7E7062f6c71354d46f"
+    "FollowTokenURI": "0xB9136f393861822cF2CAEa7E7062f6c71354d46f",
+    "PermissionlessCreatorImpl": "0xEAeb43221f8e7F5F576EaF193a02f26aA6b0bdc2",
+    "PermissionlessCreator": "0x42b302BBB4fA27c21d32EdF602E4e2aA65746999"
   },
   "sandbox": {
     "chainId": 80001,
