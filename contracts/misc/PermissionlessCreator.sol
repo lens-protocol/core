@@ -50,7 +50,7 @@ contract PermissionlessCreator is ImmutableOwnable {
     event CreditProviderStatusChanged(address indexed creditProvider, bool isCreditProvider);
 
     event ProfileCreatedUsingCredits(uint256 indexed profileId, address indexed creator);
-    event HandleCreatedUsingCredits(uint256 indexed handleId, string indexed handle, address indexed creator);
+    event HandleCreatedUsingCredits(uint256 indexed handleId, string handle, address indexed creator);
 
     constructor(
         address owner,
