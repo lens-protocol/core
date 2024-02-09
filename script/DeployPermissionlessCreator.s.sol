@@ -86,7 +86,7 @@ contract DeployPermissionlessCreator is Script, ForkManagement {
         console.log('\n');
 
         (_deployer.owner, _deployer.ownerPk) = deriveRememberKey(mnemonic, 0);
-        console.logBytes32(bytes32(_deployer.ownerPk));
+        // console.logBytes32(bytes32(_deployer.ownerPk));
         console.log('Deployer address: %s', address(_deployer.owner));
 
         console.log('\n');
@@ -139,14 +139,13 @@ contract DeployPermissionlessCreator is Script, ForkManagement {
             revert('tokenHandleRegistryAddress not set');
         }
 
-        // Pass all the fucking shit and deploy LensHub V2 Impl with:
         vm.startBroadcast(_deployer.ownerPk);
 
         permissionlessCreatorImpl = address(
             new PermissionlessCreator(governanceAdmin, lensHub, lensHandlesAddress, tokenHandleRegistryAddress)
         );
 
-        // Make LensHandles a transparentUpgradeableProxy
+        // Make PermissionlessCreator a transparentUpgradeableProxy
         permissionlessCreator = address(
             new TransparentUpgradeableProxy(permissionlessCreatorImpl, proxyAdminContractAdmin, '')
         );
