@@ -42,15 +42,20 @@ contract PermissionlessCreator is ImmutableOwnable {
     error HandleLengthNotAllowed();
     error NotAllowed();
 
-    event HandleCreationPriceChanged(uint256 newPrice);
-    event ProfileCreationPriceChanged(uint256 newPrice);
-    event HandleLengthMinChanged(uint8 newMinLength);
-    event CreditBalanceChanged(address indexed creditAddress, uint256 remainingCredits);
-    event TrustStatusChanged(address indexed targetAddress, bool trustRevoked);
-    event CreditProviderStatusChanged(address indexed creditProvider, bool isCreditProvider);
+    event HandleCreationPriceChanged(uint256 newPrice, uint256 timestamp);
+    event ProfileCreationPriceChanged(uint256 newPrice, uint256 timestamp);
+    event HandleLengthMinChanged(uint8 newMinLength, uint256 timestamp);
+    event CreditBalanceChanged(address indexed creditAddress, uint256 remainingCredits, uint256 timestamp);
+    event TrustStatusChanged(address indexed targetAddress, bool trustRevoked, uint256 timestamp);
+    event CreditProviderStatusChanged(address indexed creditProvider, bool isCreditProvider, uint256 timestamp);
 
-    event ProfileCreatedUsingCredits(uint256 indexed profileId, address indexed creator);
-    event HandleCreatedUsingCredits(uint256 indexed handleId, string handle, address indexed creator);
+    event ProfileCreatedUsingCredits(uint256 indexed profileId, address indexed creator, uint256 timestamp);
+    event HandleCreatedUsingCredits(
+        uint256 indexed handleId,
+        string handle,
+        address indexed creator,
+        uint256 timestamp
+    );
 
     constructor(
         address owner,
@@ -109,7 +114,7 @@ contract PermissionlessCreator is ImmutableOwnable {
         _spendCredit(msg.sender);
         uint256 profileId = _createProfile(createProfileParams, delegatedExecutors);
         _profileCreatorUsingCredits[profileId] = msg.sender;
-        emit ProfileCreatedUsingCredits(profileId, msg.sender);
+        emit ProfileCreatedUsingCredits(profileId, msg.sender, block.timestamp);
         return profileId;
     }
 
@@ -128,8 +133,8 @@ contract PermissionlessCreator is ImmutableOwnable {
             delegatedExecutors
         );
         _profileCreatorUsingCredits[profileId] = msg.sender;
-        emit ProfileCreatedUsingCredits(profileId, msg.sender);
-        emit HandleCreatedUsingCredits(handleId, handle, msg.sender);
+        emit ProfileCreatedUsingCredits(profileId, msg.sender, block.timestamp);
+        emit HandleCreatedUsingCredits(handleId, handle, msg.sender, block.timestamp);
         return (profileId, handleId);
     }
 
@@ -139,7 +144,7 @@ contract PermissionlessCreator is ImmutableOwnable {
             revert HandleLengthNotAllowed();
         }
         uint256 handleId = LENS_HANDLES.mintHandle(to, handle);
-        emit HandleCreatedUsingCredits(handleId, handle, msg.sender);
+        emit HandleCreatedUsingCredits(handleId, handle, msg.sender, block.timestamp);
         return handleId;
     }
 
@@ -227,7 +232,7 @@ contract PermissionlessCreator is ImmutableOwnable {
 
     function _spendCredit(address account) private {
         _credits[account] -= 1;
-        emit CreditBalanceChanged(account, _credits[account]);
+        emit CreditBalanceChanged(account, _credits[account], block.timestamp);
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -251,12 +256,12 @@ contract PermissionlessCreator is ImmutableOwnable {
             revert NotAllowed();
         }
         _credits[account] += amount;
-        emit CreditBalanceChanged(account, _credits[account]);
+        emit CreditBalanceChanged(account, _credits[account], block.timestamp);
     }
 
     function decreaseCredits(address account, uint256 amount) external onlyCreditProviders {
         _credits[account] -= amount;
-        emit CreditBalanceChanged(account, _credits[account]);
+        emit CreditBalanceChanged(account, _credits[account], block.timestamp);
     }
 
     // Owner functions
@@ -267,37 +272,37 @@ contract PermissionlessCreator is ImmutableOwnable {
 
     function addCreditProvider(address creditProvider) external onlyOwner {
         _isCreditProvider[creditProvider] = true;
-        emit CreditProviderStatusChanged(creditProvider, true);
+        emit CreditProviderStatusChanged(creditProvider, true, block.timestamp);
     }
 
     function removeCreditProvider(address creditProvider) external onlyOwner {
         _isCreditProvider[creditProvider] = false;
-        emit CreditProviderStatusChanged(creditProvider, false);
+        emit CreditProviderStatusChanged(creditProvider, false, block.timestamp);
     }
 
     function setProfileCreationPrice(uint128 newPrice) external onlyOwner {
         _profileCreationCost = newPrice;
-        emit ProfileCreationPriceChanged(newPrice);
+        emit ProfileCreationPriceChanged(newPrice, block.timestamp);
     }
 
     function setHandleCreationPrice(uint128 newPrice) external onlyOwner {
         _handleCreationCost = newPrice;
-        emit HandleCreationPriceChanged(newPrice);
+        emit HandleCreationPriceChanged(newPrice, block.timestamp);
     }
 
     function setHandleLengthMin(uint8 newMinLength) external onlyOwner {
         _handleLengthMin = newMinLength;
-        emit HandleLengthMinChanged(newMinLength);
+        emit HandleLengthMinChanged(newMinLength, block.timestamp);
     }
 
     function setTrustRevoked(address targetAddress, bool trustRevoked) external onlyOwner {
         if (trustRevoked) {
             // If trust is revoked, current credits should be removed.
             _credits[targetAddress] = 0;
-            emit CreditBalanceChanged(targetAddress, 0);
+            emit CreditBalanceChanged(targetAddress, 0, block.timestamp);
         }
         _trustRevoked[targetAddress] = trustRevoked;
-        emit TrustStatusChanged(targetAddress, trustRevoked);
+        emit TrustStatusChanged(targetAddress, trustRevoked, block.timestamp);
     }
 
     // View functions
