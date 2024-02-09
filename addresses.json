@@ -282,8 +282,8 @@
     "LitAccessControl": "0xc4F726a10fDEb0E98e16Fa658b606192d57FC71c",
     "AnonymousProfileId": "3",
     "FollowTokenURI": "0xB9136f393861822cF2CAEa7E7062f6c71354d46f",
-    "PermissionlessCreatorImpl": "0xD27EE5A41FA29D59C1d371a61227B448F2D875FE",
-    "PermissionlessCreator": "0x1F31b40cc73bE8364E9AB7Bbd7728621265FBB16"
+    "PermissionlessCreatorImpl": "0x6BA67861b93B3edE29DC1dC76593D1448325398A",
+    "PermissionlessCreator": "0xCb4FB63c3f13CB83cCD6F10E9e5F29eC250329Cc"
   },
   "sandbox": {
     "chainId": 80001,
