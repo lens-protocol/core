@@ -44,6 +44,11 @@ abstract contract PermissionlessCreatorTestBase is BaseTest {
                 address(lensHandles),
                 address(tokenHandleRegistry)
             );
+            vm.startPrank(permissionlessCreatorOwner);
+            permissionlessCreator.setHandleCreationPrice(5 ether);
+            permissionlessCreator.setProfileCreationPrice(5 ether);
+            permissionlessCreator.setHandleLengthMin(5);
+            vm.stopPrank();
         }
 
         vm.prank(governance);
@@ -524,9 +529,9 @@ contract PermissionlessCreatorTest_Credits is PermissionlessCreatorTestBase {
         assertEq(permissionlessCreator.getProfileCreatorUsingCredits(profileId), approvedProfileCreator);
 
         vm.prank(permissionlessCreatorOwner);
-        permissionlessCreator.setTrustRevoked(approvedProfileCreator, true);
+        permissionlessCreator.setTrustStatus(approvedProfileCreator, true);
 
-        assertEq(permissionlessCreator.isTrustRevoked(approvedProfileCreator), true);
+        assertEq(permissionlessCreator.isUntrusted(approvedProfileCreator), true);
         assertEq(permissionlessCreator.getCreditBalance(approvedProfileCreator), 0);
 
         vm.expectRevert(stdError.arithmeticError);
@@ -553,9 +558,9 @@ contract PermissionlessCreatorTest_Credits is PermissionlessCreatorTestBase {
         assertEq(lensHandles.ownerOf(handleId), to);
 
         vm.prank(permissionlessCreatorOwner);
-        permissionlessCreator.setTrustRevoked(approvedProfileCreator, true);
+        permissionlessCreator.setTrustStatus(approvedProfileCreator, true);
 
-        assertEq(permissionlessCreator.isTrustRevoked(approvedProfileCreator), true);
+        assertEq(permissionlessCreator.isUntrusted(approvedProfileCreator), true);
         assertEq(permissionlessCreator.getCreditBalance(approvedProfileCreator), 0);
 
         vm.expectRevert(stdError.arithmeticError);
@@ -597,9 +602,9 @@ contract PermissionlessCreatorTest_Credits is PermissionlessCreatorTestBase {
         assertEq(lensHandles.ownerOf(handleId), to);
 
         vm.prank(permissionlessCreatorOwner);
-        permissionlessCreator.setTrustRevoked(approvedProfileCreator, true);
+        permissionlessCreator.setTrustStatus(approvedProfileCreator, true);
 
-        assertEq(permissionlessCreator.isTrustRevoked(approvedProfileCreator), true);
+        assertEq(permissionlessCreator.isUntrusted(approvedProfileCreator), true);
         assertEq(permissionlessCreator.getCreditBalance(approvedProfileCreator), 0);
 
         vm.expectRevert(stdError.arithmeticError);
@@ -631,7 +636,7 @@ contract PermissionlessCreatorTest_Credits is PermissionlessCreatorTestBase {
         assertEq(permissionlessCreator.getProfileCreatorUsingCredits(profileId), approvedProfileCreator);
 
         vm.prank(permissionlessCreatorOwner);
-        permissionlessCreator.setTrustRevoked(approvedProfileCreator, true);
+        permissionlessCreator.setTrustStatus(approvedProfileCreator, true);
 
         vm.startPrank(approvedProfileCreator);
         hub.approve(address(permissionlessCreator), profileId);
@@ -753,7 +758,7 @@ contract PermissionlessCreatorTest_Credits is PermissionlessCreatorTestBase {
 
     function testCannot_IncreaseCredit_IfTrustRevoked() public {
         vm.prank(permissionlessCreatorOwner);
-        permissionlessCreator.setTrustRevoked(approvedProfileCreator, true);
+        permissionlessCreator.setTrustStatus(approvedProfileCreator, true);
 
         vm.expectRevert(PermissionlessCreator.NotAllowed.selector);
         vm.prank(creditProvider);
@@ -856,14 +861,14 @@ contract PermissionlessCreatorTest_Credits is PermissionlessCreatorTestBase {
         permissionlessCreator.setHandleLengthMin(newMinLength);
     }
 
-    function testCannot_SetTrustRevoked_IfNotOwner(address notOwner, address targetAddress, bool newStatus) public {
+    function testCannot_SetTrustStatus_IfNotOwner(address notOwner, address targetAddress, bool newStatus) public {
         vm.assume(notOwner != permissionlessCreatorOwner);
         vm.assume(notOwner != address(0));
         vm.assume(targetAddress != address(0));
 
         vm.expectRevert(OnlyOwner.selector);
         vm.prank(notOwner);
-        permissionlessCreator.setTrustRevoked(targetAddress, newStatus);
+        permissionlessCreator.setTrustStatus(targetAddress, newStatus);
     }
 
     // Scenarios
@@ -929,11 +934,11 @@ contract PermissionlessCreatorTest_Credits is PermissionlessCreatorTestBase {
         assertEq(permissionlessCreator.getHandleLengthMin(), newMinLength);
     }
 
-    function testSetTrustRevoked(address targetAddress, bool newStatus) public {
+    function testSetTrustStatus(address targetAddress, bool newStatus) public {
         vm.prank(permissionlessCreatorOwner);
-        permissionlessCreator.setTrustRevoked(targetAddress, newStatus);
+        permissionlessCreator.setTrustStatus(targetAddress, newStatus);
 
-        assertEq(permissionlessCreator.isTrustRevoked(targetAddress), newStatus);
+        assertEq(permissionlessCreator.isUntrusted(targetAddress), newStatus);
     }
 
     // Getters
@@ -976,11 +981,11 @@ contract PermissionlessCreatorTest_Credits is PermissionlessCreatorTestBase {
         assertEq(permissionlessCreator.getHandleLengthMin(), newMinLength);
     }
 
-    function testIsTrustRevoked(address targetAddress, bool newStatus) public {
+    function testisUntrusted(address targetAddress, bool newStatus) public {
         vm.prank(permissionlessCreatorOwner);
-        permissionlessCreator.setTrustRevoked(targetAddress, newStatus);
+        permissionlessCreator.setTrustStatus(targetAddress, newStatus);
 
-        assertEq(permissionlessCreator.isTrustRevoked(targetAddress), newStatus);
+        assertEq(permissionlessCreator.isUntrusted(targetAddress), newStatus);
     }
 
     function testIsCreditProvider(address targetAddress) public {

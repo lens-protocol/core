@@ -18,14 +18,15 @@ contract PermissionlessCreator is ImmutableOwnable {
     ILensHandles public immutable LENS_HANDLES;
     ITokenHandleRegistry public immutable TOKEN_HANDLE_REGISTRY;
 
-    uint128 private _profileCreationCost = 5 ether; // TODO: GAS: Make it constant, remove setter and set through upgrade?
-    uint128 private _handleCreationCost = 5 ether; // TODO: GAS: Make it constant, remove setter and set through upgrade?
-    uint8 private _handleLengthMin = 5; // TODO: GAS: Make it constant, remove setter and set through upgrade?
+    // These should be configured through setters before being whitelisted in the LensHub.
+    uint128 private _profileCreationCost;
+    uint128 private _handleCreationCost;
+    uint8 private _handleLengthMin;
 
     mapping(address => uint256) internal _credits;
     mapping(address => bool) internal _isCreditProvider; // Credit providers can increase/decrease credits of users
-    mapping(address => bool) internal _trustRevoked;
-    mapping(uint256 => address) internal _profileCreatorUsingCredits;
+    mapping(address => bool) internal _isUntrusted;
+    mapping(uint256 => address) internal _profileCreatorUsingCredits; // The address that created the profile spending credits
 
     modifier onlyCreditProviders() {
         if (!_isCreditProvider[msg.sender]) {
@@ -46,7 +47,7 @@ contract PermissionlessCreator is ImmutableOwnable {
     event ProfileCreationPriceChanged(uint256 newPrice, uint256 timestamp);
     event HandleLengthMinChanged(uint8 newMinLength, uint256 timestamp);
     event CreditBalanceChanged(address indexed creditAddress, uint256 remainingCredits, uint256 timestamp);
-    event TrustStatusChanged(address indexed targetAddress, bool trustRevoked, uint256 timestamp);
+    event TrustStatusChanged(address indexed targetAddress, bool isUntrusted, uint256 timestamp);
     event CreditProviderStatusChanged(address indexed creditProvider, bool isCreditProvider, uint256 timestamp);
 
     event ProfileCreatedUsingCredits(uint256 indexed profileId, address indexed creator, uint256 timestamp);
@@ -83,9 +84,7 @@ contract PermissionlessCreator is ImmutableOwnable {
 
     function createHandle(address to, string calldata handle) external payable returns (uint256) {
         _validatePayment(_handleCreationCost);
-        if (bytes(handle).length < _handleLengthMin) {
-            revert HandleLengthNotAllowed();
-        }
+        _validateHandleLength(handle);
         return LENS_HANDLES.mintHandle(to, handle);
     }
 
@@ -95,9 +94,7 @@ contract PermissionlessCreator is ImmutableOwnable {
         address[] calldata delegatedExecutors
     ) external payable returns (uint256, uint256) {
         _validatePayment(_profileCreationCost + _handleCreationCost);
-        if (bytes(handle).length < _handleLengthMin) {
-            revert HandleLengthNotAllowed();
-        }
+        _validateHandleLength(handle);
         // delegatedExecutors are only allowed if to == msg.sender
         if (delegatedExecutors.length > 0 && createProfileParams.to != msg.sender) {
             revert NotAllowed();
@@ -124,9 +121,7 @@ contract PermissionlessCreator is ImmutableOwnable {
         address[] calldata delegatedExecutors
     ) external returns (uint256, uint256) {
         _spendCredit(msg.sender);
-        if (bytes(handle).length < _handleLengthMin) {
-            revert HandleLengthNotAllowed();
-        }
+        _validateHandleLength(handle);
         (uint256 profileId, uint256 handleId) = _createProfileWithHandle(
             createProfileParams,
             handle,
@@ -140,9 +135,7 @@ contract PermissionlessCreator is ImmutableOwnable {
 
     function createHandleUsingCredits(address to, string calldata handle) external returns (uint256) {
         _spendCredit(msg.sender);
-        if (bytes(handle).length < _handleLengthMin) {
-            revert HandleLengthNotAllowed();
-        }
+        _validateHandleLength(handle);
         uint256 handleId = LENS_HANDLES.mintHandle(to, handle);
         emit HandleCreatedUsingCredits(handleId, handle, msg.sender, block.timestamp);
         return handleId;
@@ -194,19 +187,19 @@ contract PermissionlessCreator is ImmutableOwnable {
 
         createProfileParamsMemory.to = address(this);
 
-        uint256 _profileId = ILensHub(LENS_HUB).createProfile(createProfileParamsMemory);
-        uint256 _handleId = LENS_HANDLES.mintHandle(address(this), handle);
+        uint256 profileId = ILensHub(LENS_HUB).createProfile(createProfileParamsMemory);
+        uint256 handleId = LENS_HANDLES.mintHandle(address(this), handle);
 
-        TOKEN_HANDLE_REGISTRY.link({handleId: _handleId, profileId: _profileId});
+        TOKEN_HANDLE_REGISTRY.link(handleId, profileId);
 
-        _addDelegatesToProfile(_profileId, delegatedExecutors);
+        _addDelegatesToProfile(profileId, delegatedExecutors);
 
         // Transfer the handle & profile to the destination
-        LENS_HANDLES.transferFrom(address(this), destination, _handleId);
+        LENS_HANDLES.transferFrom(address(this), destination, handleId);
         // keep the config if its been set
-        ILensHub(LENS_HUB).transferFromKeepingDelegates(address(this), destination, _profileId);
+        ILensHub(LENS_HUB).transferFromKeepingDelegates(address(this), destination, profileId);
 
-        return (_profileId, _handleId);
+        return (profileId, handleId);
     }
 
     function _addDelegatesToProfile(uint256 profileId, address[] memory delegatedExecutors) private {
@@ -221,6 +214,12 @@ contract PermissionlessCreator is ImmutableOwnable {
             }
 
             ILensHub(LENS_HUB).changeDelegatedExecutorsConfig(profileId, delegatedExecutors, executorEnabled);
+        }
+    }
+
+    function _validateHandleLength(string calldata handle) private view {
+        if (bytes(handle).length < _handleLengthMin) {
+            revert HandleLengthNotAllowed();
         }
     }
 
@@ -240,7 +239,7 @@ contract PermissionlessCreator is ImmutableOwnable {
     /// @notice Special function allowing to transfer a profile from one address to another, keeping the delegates.
     /// @dev Requires the sender, a trusted credit-based creator, to approve the profile with this contract as spender.
     function transferFromKeepingDelegates(address from, address to, uint256 tokenId) external {
-        if (_trustRevoked[msg.sender] || _profileCreatorUsingCredits[tokenId] != msg.sender) {
+        if (_isUntrusted[msg.sender] || _profileCreatorUsingCredits[tokenId] != msg.sender) {
             // If msg.sender trust was revoked or is not the original creator of the profile through credits, then fail.
             revert NotAllowed();
         }
@@ -251,7 +250,7 @@ contract PermissionlessCreator is ImmutableOwnable {
     // Credit Provider functions
 
     function increaseCredits(address account, uint256 amount) external onlyCreditProviders {
-        if (_trustRevoked[account]) {
+        if (_isUntrusted[account]) {
             // Cannot increase credits for an account with revoked trust.
             revert NotAllowed();
         }
@@ -295,14 +294,18 @@ contract PermissionlessCreator is ImmutableOwnable {
         emit HandleLengthMinChanged(newMinLength, block.timestamp);
     }
 
-    function setTrustRevoked(address targetAddress, bool trustRevoked) external onlyOwner {
-        if (trustRevoked) {
-            // If trust is revoked, current credits should be removed.
+    function setTrustStatus(address targetAddress, bool setAsUntrusted) external onlyOwner {
+        if (setAsUntrusted == _isUntrusted[targetAddress]) {
+            // No change in trust status.
+            return;
+        }
+        if (setAsUntrusted && _credits[targetAddress] > 0) {
+            // If it is becoming unstrusted, current credits should be removed.
             _credits[targetAddress] = 0;
             emit CreditBalanceChanged(targetAddress, 0, block.timestamp);
         }
-        _trustRevoked[targetAddress] = trustRevoked;
-        emit TrustStatusChanged(targetAddress, trustRevoked, block.timestamp);
+        _isUntrusted[targetAddress] = setAsUntrusted;
+        emit TrustStatusChanged(targetAddress, setAsUntrusted, block.timestamp);
     }
 
     // View functions
@@ -323,8 +326,8 @@ contract PermissionlessCreator is ImmutableOwnable {
         return _handleLengthMin;
     }
 
-    function isTrustRevoked(address targetAddress) external view returns (bool) {
-        return _trustRevoked[targetAddress];
+    function isUntrusted(address targetAddress) external view returns (bool) {
+        return _isUntrusted[targetAddress];
     }
 
     function isCreditProvider(address targetAddress) external view returns (bool) {
