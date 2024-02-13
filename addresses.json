@@ -148,7 +148,9 @@
     "LitAccessControl": "0x98a6C31E43b158198da95Ef1242faCA868424187",
     "ProfileTokenURI": "0xE01e1017Eb1D49Aa7034628cd2e3021536cdeBE5",
     "HandleTokenURI": "0x9632dC8eb31CEC8fcd166a99C1Da179716aE2E48",
-    "FollowTokenURI": "0x07D8a9FEdef6DC7004b9ae0935eA178bFa8bBdF1"
+    "FollowTokenURI": "0x07D8a9FEdef6DC7004b9ae0935eA178bFa8bBdF1",
+    "PermissionlessCreatorImpl": "0xCBC26052907AEC42878870B330cA141264E56205",
+    "PermissionlessCreator": "0x0b5e6100243f793e480DE6088dE6bA70aA9f3872"
   },
   "testnet": {
     "chainId": 80001,
