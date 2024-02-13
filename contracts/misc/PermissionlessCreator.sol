@@ -266,7 +266,9 @@ contract PermissionlessCreator is ImmutableOwnable {
     // Owner functions
 
     function withdrawFunds() external onlyOwner {
-        payable(OWNER).transfer(address(this).balance);
+        // Use call instead of transfer to provide more gas (otherwise it doesn't work with SAFE):
+        // https://diligence.consensys.net/blog/2019/09/stop-using-soliditys-transfer-now/
+        (bool success, ) = OWNER.call{value: address(this).balance}('');
     }
 
     function addCreditProvider(address creditProvider) external onlyOwner {
