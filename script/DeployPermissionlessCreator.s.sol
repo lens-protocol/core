@@ -146,17 +146,29 @@ contract DeployPermissionlessCreator is Script, ForkManagement {
         );
 
         // Make PermissionlessCreator a transparentUpgradeableProxy
-        permissionlessCreator = address(
-            new TransparentUpgradeableProxy(permissionlessCreatorImpl, proxyAdminContractAdmin, '')
-        );
+        // permissionlessCreator = address(
+        //     new TransparentUpgradeableProxy(permissionlessCreatorImpl, proxyAdminContractAdmin, '')
+        // );
         vm.stopBroadcast();
+
+        console.log('\n\n---------------------------------------------------');
+        console.log('PermissionlessCreator params:');
+        console.log('\towner: %s', governanceAdmin);
+        console.log('\tlensHub: %s', lensHub);
+        console.log('\tlensHandlesAddress: %s', lensHandlesAddress);
+        console.log('\ttokenHandleRegistryAddress: %s', tokenHandleRegistryAddress);
+
+        console.log('\n\n---------------------------------------------------');
+        console.log('PermissionlessCreator TransparentProxy params:');
+        console.log('\timplementation: %s', permissionlessCreatorImpl);
+        console.log('\tadmin: %s', proxyAdminContractAdmin);
 
         vm.writeLine(
             addressesFile,
             string.concat('PermissionlessCreatorImpl: ', vm.toString(permissionlessCreatorImpl))
         );
         saveContractAddress('PermissionlessCreatorImpl', permissionlessCreatorImpl);
-        console.log('PermissionlessCreatorImpl: %s', permissionlessCreatorImpl);
+        console.log('\n\nPermissionlessCreatorImpl: %s', permissionlessCreatorImpl);
 
         vm.writeLine(addressesFile, string.concat('PermissionlessCreator: ', vm.toString(permissionlessCreator)));
         saveContractAddress('PermissionlessCreator', permissionlessCreator);
