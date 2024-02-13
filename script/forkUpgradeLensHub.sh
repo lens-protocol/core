@@ -68,6 +68,8 @@ if [[ "$NEW_IMPLEMENTATION" == "$LENSHUB_NEW_IMPL" ]]
         exit 1
 fi
 
+# cast send 0x0b5e6100243f793e480DE6088dE6bA70aA9f3872 "upgradeTo(address)" "0x9f077d03DBf4aB8c68e181baA3308F3B12C52Ae8" --unlocked --from $PROXY_CONTRACT_OWNER --legacy
+
 cast rpc anvil_stopImpersonatingAccount $PROXY_CONTRACT_OWNER
 
 cast rpc anvil_impersonateAccount $GOVERNANCE_CONTRACT_OWNER
