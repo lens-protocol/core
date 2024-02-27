@@ -285,7 +285,8 @@
     "AnonymousProfileId": "3",
     "FollowTokenURI": "0xB9136f393861822cF2CAEa7E7062f6c71354d46f",
     "PermissionlessCreatorImpl": "0xBb841c444655558176aBf97993b7f653A2B24994",
-    "PermissionlessCreator": "0xCb4FB63c3f13CB83cCD6F10E9e5F29eC250329Cc"
+    "PermissionlessCreator": "0xCb4FB63c3f13CB83cCD6F10E9e5F29eC250329Cc",
+    "FreeCreditsProvider": "0xC3161EeE3A055860125eE0b70412e4e4081852dD"
   },
   "sandbox": {
     "chainId": 80001,
