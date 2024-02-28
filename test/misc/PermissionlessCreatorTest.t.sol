@@ -1011,3 +1011,71 @@ contract PermissionlessCreatorTest_Credits is PermissionlessCreatorTestBase {
         assertEq(permissionlessCreator.getCreditBalance(targetAddress), balanceBefore + addBalance - subBalance);
     }
 }
+
+contract PermissionlessCreatorTest_CreditProviders is PermissionlessCreatorTestBase {
+    address creditProvider = makeAddr('CREDIT_PROVIDER');
+
+    function setUp() public override {
+        super.setUp();
+
+        vm.prank(permissionlessCreatorOwner);
+        permissionlessCreator.addCreditProvider(creditProvider);
+    }
+
+    // Scenarios
+
+    function testCreateProfile_byCreditProvider(address to) public {
+        vm.assume(to != address(0));
+
+        Types.CreateProfileParams memory createProfileParams = Types.CreateProfileParams({
+            to: to,
+            followModule: address(0),
+            followModuleInitData: ''
+        });
+
+        address[] memory delegates = new address[](1);
+        delegates[0] = makeAddr('DE0');
+
+        vm.prank(creditProvider);
+        uint256 profileId = permissionlessCreator.createProfileUsingCredits(createProfileParams, delegates);
+
+        assertEq(hub.ownerOf(profileId), to);
+        assertTrue(hub.isDelegatedExecutorApproved(profileId, delegates[0]));
+    }
+
+    function testCreateHandle_byCreditProvider(address to) public {
+        vm.assume(to != address(0));
+
+        string memory handle = 'q4w';
+
+        vm.prank(creditProvider);
+        uint256 handleId = permissionlessCreator.createHandleUsingCredits(to, handle);
+
+        assertEq(lensHandles.ownerOf(handleId), to);
+    }
+
+    function testCreateProfileWithHandle_byCreditProvider(address to) public {
+        vm.assume(to != address(0));
+
+        Types.CreateProfileParams memory createProfileParams = Types.CreateProfileParams({
+            to: to,
+            followModule: address(0),
+            followModuleInitData: ''
+        });
+
+        string memory handle = 'q4w';
+        address[] memory delegates = new address[](1);
+        delegates[0] = makeAddr('DE0');
+
+        vm.prank(creditProvider);
+        (uint256 profileId, uint256 handleId) = permissionlessCreator.createProfileWithHandleUsingCredits(
+            createProfileParams,
+            handle,
+            delegates
+        );
+
+        assertEq(hub.ownerOf(profileId), to);
+        assertTrue(hub.isDelegatedExecutorApproved(profileId, delegates[0]));
+        assertEq(lensHandles.ownerOf(handleId), to);
+    }
+}

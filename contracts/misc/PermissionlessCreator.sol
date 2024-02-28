@@ -218,7 +218,7 @@ contract PermissionlessCreator is ImmutableOwnable {
     }
 
     function _validateHandleLength(string calldata handle) private view {
-        if (bytes(handle).length < _handleLengthMin) {
+        if (!_isCreditProvider[msg.sender] && bytes(handle).length < _handleLengthMin) {
             revert HandleLengthNotAllowed();
         }
     }
@@ -230,6 +230,10 @@ contract PermissionlessCreator is ImmutableOwnable {
     }
 
     function _spendCredit(address account) private {
+        if (_isCreditProvider[msg.sender]) {
+            // Credit providers do not need credits.
+            return;
+        }
         _credits[account] -= 1;
         emit CreditBalanceChanged(account, _credits[account], block.timestamp);
     }
