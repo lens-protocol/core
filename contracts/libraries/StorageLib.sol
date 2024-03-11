@@ -2,7 +2,7 @@
 
 pragma solidity ^0.8.15;
 
-import {Types} from 'contracts/libraries/constants/Types.sol';
+import {Types} from './constants/Types.sol';
 
 library StorageLib {
     // uint256 constant NAME_SLOT = 0;

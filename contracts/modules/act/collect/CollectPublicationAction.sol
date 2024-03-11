@@ -2,17 +2,17 @@
 
 pragma solidity ^0.8.18;
 
-import {IPublicationActionModule} from 'contracts/interfaces/IPublicationActionModule.sol';
-import {ICollectModule} from 'contracts/modules/interfaces/ICollectModule.sol';
-import {ICollectNFT} from 'contracts/interfaces/ICollectNFT.sol';
-import {Types} from 'contracts/libraries/constants/Types.sol';
-import {ModuleTypes} from 'contracts/modules/libraries/constants/ModuleTypes.sol';
+import {IPublicationActionModule} from '../../../interfaces/IPublicationActionModule.sol';
+import {ICollectModule} from '../../interfaces/ICollectModule.sol';
+import {ICollectNFT} from '../../../interfaces/ICollectNFT.sol';
+import {Types} from '../../../libraries/constants/Types.sol';
+import {ModuleTypes} from '../../libraries/constants/ModuleTypes.sol';
 import {Clones} from '@openzeppelin/contracts/proxy/Clones.sol';
-import {Errors} from 'contracts/modules/constants/Errors.sol';
-import {HubRestricted} from 'contracts/base/HubRestricted.sol';
-import {ILensModule} from 'contracts/modules/interfaces/ILensModule.sol';
+import {Errors} from '../../constants/Errors.sol';
+import {HubRestricted} from '../../../base/HubRestricted.sol';
+import {ILensModule} from '../../interfaces/ILensModule.sol';
 
-import {LensModuleMetadataInitializable} from 'contracts/modules/LensModuleMetadataInitializable.sol';
+import {LensModuleMetadataInitializable} from '../../LensModuleMetadataInitializable.sol';
 
 /**
  * @title CollectPublicationAction

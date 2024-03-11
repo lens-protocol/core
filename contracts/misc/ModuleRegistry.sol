@@ -2,13 +2,13 @@
 
 pragma solidity ^0.8.15;
 
-import {IModuleRegistry} from 'contracts/interfaces/IModuleRegistry.sol';
+import {IModuleRegistry} from '../interfaces/IModuleRegistry.sol';
 import {IERC20Metadata} from '@openzeppelin/contracts/token/ERC20/extensions/IERC20Metadata.sol';
-import {ILensModule} from 'contracts/modules/interfaces/ILensModule.sol';
+import {ILensModule} from '../modules/interfaces/ILensModule.sol';
 
-import {IPublicationActionModule} from 'contracts/interfaces/IPublicationActionModule.sol';
-import {IFollowModule} from 'contracts/interfaces/IFollowModule.sol';
-import {IReferenceModule} from 'contracts/interfaces/IReferenceModule.sol';
+import {IPublicationActionModule} from '../interfaces/IPublicationActionModule.sol';
+import {IFollowModule} from '../interfaces/IFollowModule.sol';
+import {IReferenceModule} from '../interfaces/IReferenceModule.sol';
 
 /**
  * @title ModuleRegistry

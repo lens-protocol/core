@@ -2,8 +2,8 @@
 
 pragma solidity ^0.8.15;
 
-import {ILensVersion} from 'contracts/interfaces/ILensVersion.sol';
-import {Errors} from 'contracts/libraries/constants/Errors.sol';
+import {ILensVersion} from '../interfaces/ILensVersion.sol';
+import {Errors} from '../libraries/constants/Errors.sol';
 import {TransparentUpgradeableProxy} from '@openzeppelin/contracts/proxy/transparent/TransparentUpgradeableProxy.sol';
 
 contract LensVersion is ILensVersion {

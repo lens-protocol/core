@@ -4,7 +4,7 @@ pragma solidity ^0.8.19;
 import {ERC721SeaDropCloneable} from '@seadrop/clones/ERC721SeaDropCloneable.sol';
 import {ISeaDrop} from '@seadrop/interfaces/ISeaDrop.sol';
 import {PublicDrop} from '@seadrop/lib/SeaDropStructs.sol';
-import {ILensHub} from 'contracts/interfaces/ILensHub.sol';
+import {ILensHub} from '../../../interfaces/ILensHub.sol';
 
 contract LensSeaDropCollection is ERC721SeaDropCloneable {
     error OnlySeaDropActionModule();

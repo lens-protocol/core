@@ -2,7 +2,7 @@
 
 pragma solidity >=0.6.0;
 
-import {ILensERC721} from 'contracts/interfaces/ILensERC721.sol';
+import {ILensERC721} from './ILensERC721.sol';
 
 interface ILensProfiles is ILensERC721 {
     /**

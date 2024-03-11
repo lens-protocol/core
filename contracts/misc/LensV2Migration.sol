@@ -2,15 +2,15 @@
 
 pragma solidity ^0.8.15;
 
-import {Types} from 'contracts/libraries/constants/Types.sol';
-import {MigrationLib} from 'contracts/libraries/MigrationLib.sol';
-import {StorageLib} from 'contracts/libraries/StorageLib.sol';
-import {ValidationLib} from 'contracts/libraries/ValidationLib.sol';
-import {Errors} from 'contracts/libraries/constants/Errors.sol';
+import {Types} from '../libraries/constants/Types.sol';
+import {MigrationLib} from '../libraries/MigrationLib.sol';
+import {StorageLib} from '../libraries/StorageLib.sol';
+import {ValidationLib} from '../libraries/ValidationLib.sol';
+import {Errors} from '../libraries/constants/Errors.sol';
 
 // Handles
-import {LensHandles} from 'contracts/namespaces/LensHandles.sol';
-import {TokenHandleRegistry} from 'contracts/namespaces/TokenHandleRegistry.sol';
+import {LensHandles} from '../namespaces/LensHandles.sol';
+import {TokenHandleRegistry} from '../namespaces/TokenHandleRegistry.sol';
 
 contract LensV2Migration {
     address internal immutable FEE_FOLLOW_MODULE;

@@ -2,13 +2,13 @@
 
 pragma solidity ^0.8.10;
 
-import {IReferenceModule} from 'contracts/interfaces/IReferenceModule.sol';
-import {HubRestricted} from 'contracts/base/HubRestricted.sol';
-import {Errors} from 'contracts/modules/constants/Errors.sol';
+import {IReferenceModule} from '../../interfaces/IReferenceModule.sol';
+import {HubRestricted} from '../../base/HubRestricted.sol';
+import {Errors} from '../constants/Errors.sol';
 import {IERC721} from '@openzeppelin/contracts/token/ERC721/IERC721.sol';
-import {Types} from 'contracts/libraries/constants/Types.sol';
+import {Types} from '../../libraries/constants/Types.sol';
 
-import {LensModuleMetadata} from 'contracts/modules/LensModuleMetadata.sol';
+import {LensModuleMetadata} from '../LensModuleMetadata.sol';
 
 interface IToken {
     /**

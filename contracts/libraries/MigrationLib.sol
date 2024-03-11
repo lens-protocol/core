@@ -2,13 +2,13 @@
 
 pragma solidity ^0.8.19;
 
-import {Events} from 'contracts/libraries/constants/Events.sol';
-import {Errors} from 'contracts/libraries/constants/Errors.sol';
-import {StorageLib} from 'contracts/libraries/StorageLib.sol';
-import {FollowNFT} from 'contracts/FollowNFT.sol';
-import {LensHandles} from 'contracts/namespaces/LensHandles.sol';
-import {TokenHandleRegistry} from 'contracts/namespaces/TokenHandleRegistry.sol';
-import {IFollowModule} from 'contracts/interfaces/IFollowModule.sol';
+import {Events} from './constants/Events.sol';
+import {Errors} from './constants/Errors.sol';
+import {StorageLib} from './StorageLib.sol';
+import {FollowNFT} from '../FollowNFT.sol';
+import {LensHandles} from '../namespaces/LensHandles.sol';
+import {TokenHandleRegistry} from '../namespaces/TokenHandleRegistry.sol';
+import {IFollowModule} from '../interfaces/IFollowModule.sol';
 
 interface ILegacyFeeFollowModule {
     struct ProfileData {

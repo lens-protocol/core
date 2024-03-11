@@ -2,9 +2,9 @@
 
 pragma solidity ^0.8.10;
 
-import {Errors} from 'contracts/modules/constants/Errors.sol';
-import {ILensHub} from 'contracts/interfaces/ILensHub.sol';
-import {IModuleRegistry} from 'contracts/interfaces/IModuleRegistry.sol';
+import {Errors} from './constants/Errors.sol';
+import {ILensHub} from '../interfaces/ILensHub.sol';
+import {IModuleRegistry} from '../interfaces/IModuleRegistry.sol';
 
 /**
  * @title FeeModuleBase

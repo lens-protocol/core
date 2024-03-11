@@ -2,12 +2,12 @@
 
 pragma solidity ^0.8.10;
 
-import {IReferenceModule} from 'contracts/interfaces/IReferenceModule.sol';
-import {HubRestricted} from 'contracts/base/HubRestricted.sol';
-import {Types} from 'contracts/libraries/constants/Types.sol';
-import {FollowValidationLib} from 'contracts/modules/libraries/FollowValidationLib.sol';
+import {IReferenceModule} from '../../interfaces/IReferenceModule.sol';
+import {HubRestricted} from '../../base/HubRestricted.sol';
+import {Types} from '../../libraries/constants/Types.sol';
+import {FollowValidationLib} from '../libraries/FollowValidationLib.sol';
 
-import {LensModuleMetadata} from 'contracts/modules/LensModuleMetadata.sol';
+import {LensModuleMetadata} from '../LensModuleMetadata.sol';
 
 /**
  * @title FollowerOnlyReferenceModule

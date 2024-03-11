@@ -2,16 +2,16 @@
 
 pragma solidity ^0.8.15;
 
-import {ValidationLib} from 'contracts/libraries/ValidationLib.sol';
-import {Types} from 'contracts/libraries/constants/Types.sol';
-import {Events} from 'contracts/libraries/constants/Events.sol';
-import {Errors} from 'contracts/libraries/constants/Errors.sol';
-import {IReferenceModule} from 'contracts/interfaces/IReferenceModule.sol';
-import {ILegacyReferenceModule} from 'contracts/interfaces/ILegacyReferenceModule.sol';
-import {StorageLib} from 'contracts/libraries/StorageLib.sol';
-import {IPublicationActionModule} from 'contracts/interfaces/IPublicationActionModule.sol';
-import {IModuleRegistry} from 'contracts/interfaces/IModuleRegistry.sol';
-import {ILensHub} from 'contracts/interfaces/ILensHub.sol';
+import {ValidationLib} from './ValidationLib.sol';
+import {Types} from './constants/Types.sol';
+import {Events} from './constants/Events.sol';
+import {Errors} from './constants/Errors.sol';
+import {IReferenceModule} from '../interfaces/IReferenceModule.sol';
+import {ILegacyReferenceModule} from '../interfaces/ILegacyReferenceModule.sol';
+import {StorageLib} from './StorageLib.sol';
+import {IPublicationActionModule} from '../interfaces/IPublicationActionModule.sol';
+import {IModuleRegistry} from '../interfaces/IModuleRegistry.sol';
+import {ILensHub} from '../interfaces/ILensHub.sol';
 
 library PublicationLib {
     function MODULE_REGISTRY() internal view returns (IModuleRegistry) {

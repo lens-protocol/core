@@ -2,9 +2,9 @@
 
 pragma solidity ^0.8.18;
 
-import {ILensHub} from 'contracts/interfaces/ILensHub.sol';
+import {ILensHub} from '../../interfaces/ILensHub.sol';
 import {IERC721} from '@openzeppelin/contracts/token/ERC721/IERC721.sol';
-import {CollectPublicationAction} from 'contracts/modules/act/collect/CollectPublicationAction.sol';
+import {CollectPublicationAction} from '../../modules/act/collect/CollectPublicationAction.sol';
 
 /**
  * @title LitAccessControl

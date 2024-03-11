@@ -2,7 +2,7 @@
 
 pragma solidity ^0.8.15;
 
-import {ILensImplGetters} from 'contracts/interfaces/ILensImplGetters.sol';
+import {ILensImplGetters} from '../interfaces/ILensImplGetters.sol';
 
 contract LensImplGetters is ILensImplGetters {
     address internal immutable FOLLOW_NFT_IMPL;

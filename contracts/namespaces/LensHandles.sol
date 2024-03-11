@@ -3,15 +3,15 @@
 pragma solidity ^0.8.18;
 
 import {ERC721} from '@openzeppelin/contracts/token/ERC721/ERC721.sol';
-import {ImmutableOwnable} from 'contracts/misc/ImmutableOwnable.sol';
-import {ILensHandles} from 'contracts/interfaces/ILensHandles.sol';
-import {HandlesEvents} from 'contracts/namespaces/constants/Events.sol';
-import {HandlesErrors} from 'contracts/namespaces/constants/Errors.sol';
-import {IHandleTokenURI} from 'contracts/interfaces/IHandleTokenURI.sol';
-import {ILensHub} from 'contracts/interfaces/ILensHub.sol';
+import {ImmutableOwnable} from '../misc/ImmutableOwnable.sol';
+import {ILensHandles} from '../interfaces/ILensHandles.sol';
+import {HandlesEvents} from './constants/Events.sol';
+import {HandlesErrors} from './constants/Errors.sol';
+import {IHandleTokenURI} from '../interfaces/IHandleTokenURI.sol';
+import {ILensHub} from '../interfaces/ILensHub.sol';
 import {Address} from '@openzeppelin/contracts/utils/Address.sol';
 import {IERC721} from '@openzeppelin/contracts/token/ERC721/IERC721.sol';
-import {ERC2981CollectionRoyalties} from 'contracts/base/ERC2981CollectionRoyalties.sol';
+import {ERC2981CollectionRoyalties} from '../base/ERC2981CollectionRoyalties.sol';
 import {IERC165} from '@openzeppelin/contracts/utils/introspection/IERC165.sol';
 
 /**

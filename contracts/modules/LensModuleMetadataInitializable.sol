@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.18;
 
-import {LensModuleMetadata} from 'contracts/modules/LensModuleMetadata.sol';
+import {LensModuleMetadata} from './LensModuleMetadata.sol';
 
 contract LensModuleMetadataInitializable is LensModuleMetadata {
     constructor(address owner_) LensModuleMetadata(owner_) {}

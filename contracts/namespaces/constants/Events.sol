@@ -2,7 +2,7 @@
 
 pragma solidity >=0.6.0;
 
-import {RegistryTypes} from 'contracts/namespaces/constants/Types.sol';
+import {RegistryTypes} from './Types.sol';
 
 library HandlesEvents {
     event HandleMinted(string handle, string namespace, uint256 handleId, address to, uint256 timestamp);

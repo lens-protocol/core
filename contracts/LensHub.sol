@@ -3,33 +3,33 @@
 pragma solidity ^0.8.15;
 
 // Interfaces
-import {ILensProtocol} from 'contracts/interfaces/ILensProtocol.sol';
-import {IFollowNFT} from 'contracts/interfaces/IFollowNFT.sol';
+import {ILensProtocol} from './interfaces/ILensProtocol.sol';
+import {IFollowNFT} from './interfaces/IFollowNFT.sol';
 
 // Constants
-import {Types} from 'contracts/libraries/constants/Types.sol';
-import {Errors} from 'contracts/libraries/constants/Errors.sol';
+import {Types} from './libraries/constants/Types.sol';
+import {Errors} from './libraries/constants/Errors.sol';
 
 // Lens Hub Components
-import {LensHubStorage} from 'contracts/base/LensHubStorage.sol';
-import {LensImplGetters} from 'contracts/base/LensImplGetters.sol';
-import {LensGovernable} from 'contracts/base/LensGovernable.sol';
-import {LensProfiles} from 'contracts/base/LensProfiles.sol';
-import {LensHubEventHooks} from 'contracts/base/LensHubEventHooks.sol';
-import {LensVersion} from 'contracts/base/LensVersion.sol';
+import {LensHubStorage} from './base/LensHubStorage.sol';
+import {LensImplGetters} from './base/LensImplGetters.sol';
+import {LensGovernable} from './base/LensGovernable.sol';
+import {LensProfiles} from './base/LensProfiles.sol';
+import {LensHubEventHooks} from './base/LensHubEventHooks.sol';
+import {LensVersion} from './base/LensVersion.sol';
 
 // Libraries
-import {ActionLib} from 'contracts/libraries/ActionLib.sol';
-import {LegacyCollectLib} from 'contracts/libraries/LegacyCollectLib.sol';
-import {FollowLib} from 'contracts/libraries/FollowLib.sol';
-import {MetaTxLib} from 'contracts/libraries/MetaTxLib.sol';
-import {ProfileLib} from 'contracts/libraries/ProfileLib.sol';
-import {PublicationLib} from 'contracts/libraries/PublicationLib.sol';
-import {StorageLib} from 'contracts/libraries/StorageLib.sol';
-import {ValidationLib} from 'contracts/libraries/ValidationLib.sol';
+import {ActionLib} from './libraries/ActionLib.sol';
+import {LegacyCollectLib} from './libraries/LegacyCollectLib.sol';
+import {FollowLib} from './libraries/FollowLib.sol';
+import {MetaTxLib} from './libraries/MetaTxLib.sol';
+import {ProfileLib} from './libraries/ProfileLib.sol';
+import {PublicationLib} from './libraries/PublicationLib.sol';
+import {StorageLib} from './libraries/StorageLib.sol';
+import {ValidationLib} from './libraries/ValidationLib.sol';
 
 // Lens Migrations V1 to V2
-import {LensV2Migration} from 'contracts/misc/LensV2Migration.sol';
+import {LensV2Migration} from './misc/LensV2Migration.sol';
 
 /**
  * @title LensHub

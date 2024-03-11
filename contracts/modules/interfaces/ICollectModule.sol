@@ -2,7 +2,7 @@
 
 pragma solidity >=0.6.0;
 
-import {ModuleTypes} from 'contracts/modules/libraries/constants/ModuleTypes.sol';
+import {ModuleTypes} from '../libraries/constants/ModuleTypes.sol';
 
 /**
  * @title ICollectModule

@@ -2,19 +2,19 @@
 
 pragma solidity ^0.8.10;
 
-import {Errors} from 'contracts/modules/constants/Errors.sol';
-import {FeeModuleBase} from 'contracts/modules/FeeModuleBase.sol';
-import {ICollectModule} from 'contracts/modules/interfaces/ICollectModule.sol';
-import {ActionRestricted} from 'contracts/modules/ActionRestricted.sol';
+import {Errors} from '../../../constants/Errors.sol';
+import {FeeModuleBase} from '../../../FeeModuleBase.sol';
+import {ICollectModule} from '../../../interfaces/ICollectModule.sol';
+import {ActionRestricted} from '../../../ActionRestricted.sol';
 
-import {ModuleTypes} from 'contracts/modules/libraries/constants/ModuleTypes.sol';
+import {ModuleTypes} from '../../../libraries/constants/ModuleTypes.sol';
 
 import {IERC20} from '@openzeppelin/contracts/token/ERC20/IERC20.sol';
 import {IERC721} from '@openzeppelin/contracts/token/ERC721/IERC721.sol';
 import {SafeERC20} from '@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol';
-import {FollowValidationLib} from 'contracts/modules/libraries/FollowValidationLib.sol';
+import {FollowValidationLib} from '../../../libraries/FollowValidationLib.sol';
 
-import {BaseFeeCollectModuleInitData, BaseProfilePublicationData, IBaseFeeCollectModule} from 'contracts/modules/interfaces/IBaseFeeCollectModule.sol';
+import {BaseFeeCollectModuleInitData, BaseProfilePublicationData, IBaseFeeCollectModule} from '../../../interfaces/IBaseFeeCollectModule.sol';
 
 /**
  * @title BaseFeeCollectModule

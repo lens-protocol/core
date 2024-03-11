@@ -2,7 +2,7 @@
 
 pragma solidity ^0.8.0;
 
-import {Errors} from 'contracts/libraries/constants/Errors.sol';
+import {Errors} from '../libraries/constants/Errors.sol';
 import {IERC165} from '@openzeppelin/contracts/utils/introspection/IERC165.sol';
 import {IERC2981} from '@openzeppelin/contracts/interfaces/IERC2981.sol';
 

@@ -2,16 +2,16 @@
 
 pragma solidity ^0.8.15;
 
-import {ValidationLib} from 'contracts/libraries/ValidationLib.sol';
-import {Types} from 'contracts/libraries/constants/Types.sol';
-import {Errors} from 'contracts/libraries/constants/Errors.sol';
-import {Events} from 'contracts/libraries/constants/Events.sol';
-import {ICollectNFT} from 'contracts/interfaces/ICollectNFT.sol';
-import {ILegacyCollectModule} from 'contracts/interfaces/ILegacyCollectModule.sol';
+import {ValidationLib} from './ValidationLib.sol';
+import {Types} from './constants/Types.sol';
+import {Errors} from './constants/Errors.sol';
+import {Events} from './constants/Events.sol';
+import {ICollectNFT} from '../interfaces/ICollectNFT.sol';
+import {ILegacyCollectModule} from '../interfaces/ILegacyCollectModule.sol';
 import {Clones} from '@openzeppelin/contracts/proxy/Clones.sol';
 import {Strings} from '@openzeppelin/contracts/utils/Strings.sol';
-import {StorageLib} from 'contracts/libraries/StorageLib.sol';
-import {FollowLib} from 'contracts/libraries/FollowLib.sol';
+import {StorageLib} from './StorageLib.sol';
+import {FollowLib} from './FollowLib.sol';
 
 /**
  * @title LegacyCollectLib

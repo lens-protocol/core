@@ -2,7 +2,7 @@
 
 pragma solidity >=0.6.0;
 
-import {Types} from 'contracts/libraries/constants/Types.sol';
+import {Types} from '../libraries/constants/Types.sol';
 
 /**
  * @title IPublicationAction

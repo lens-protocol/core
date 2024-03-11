@@ -2,10 +2,10 @@
 
 pragma solidity ^0.8.15;
 
-import {ILensHubEventHooks} from 'contracts/interfaces/ILensHubEventHooks.sol';
-import {Errors} from 'contracts/libraries/constants/Errors.sol';
-import {StorageLib} from 'contracts/libraries/StorageLib.sol';
-import {Events} from 'contracts/libraries/constants/Events.sol';
+import {ILensHubEventHooks} from '../interfaces/ILensHubEventHooks.sol';
+import {Errors} from '../libraries/constants/Errors.sol';
+import {StorageLib} from '../libraries/StorageLib.sol';
+import {Events} from '../libraries/constants/Events.sol';
 
 abstract contract LensHubEventHooks is ILensHubEventHooks {
     /// @inheritdoc ILensHubEventHooks

@@ -1,8 +1,8 @@
 // SPDX-License-Identifier: MIT
 pragma solidity >=0.6.0;
 
-import {ICollectModule} from 'contracts/modules/interfaces/ICollectModule.sol';
-import {ModuleTypes} from 'contracts/modules/libraries/constants/ModuleTypes.sol';
+import {ICollectModule} from './ICollectModule.sol';
+import {ModuleTypes} from '../libraries/constants/ModuleTypes.sol';
 
 /**
  * @notice A struct containing the necessary data to execute collect actions on a publication.

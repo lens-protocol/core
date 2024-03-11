@@ -2,7 +2,7 @@
 pragma solidity ^0.8.18;
 
 import {Ownable} from '@openzeppelin/contracts/access/Ownable.sol';
-import {LensModule} from 'contracts/modules/LensModule.sol';
+import {LensModule} from './LensModule.sol';
 
 contract LensModuleMetadata is LensModule, Ownable {
     string public metadataURI;

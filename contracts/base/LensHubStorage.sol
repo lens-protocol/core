@@ -2,7 +2,7 @@
 
 pragma solidity ^0.8.18;
 
-import {Types} from 'contracts/libraries/constants/Types.sol';
+import {Types} from '../libraries/constants/Types.sol';
 
 /**
  * @title LensHubStorage

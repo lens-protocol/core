@@ -4,8 +4,8 @@ pragma solidity ^0.8.15;
 
 import {Base64} from '@openzeppelin/contracts/utils/Base64.sol';
 import {Strings} from '@openzeppelin/contracts/utils/Strings.sol';
-import {ProfileSVG} from 'contracts/libraries/svgs/Profile/ProfileSVG.sol';
-import {IProfileTokenURI} from 'contracts/interfaces/IProfileTokenURI.sol';
+import {ProfileSVG} from '../../libraries/svgs/Profile/ProfileSVG.sol';
+import {IProfileTokenURI} from '../../interfaces/IProfileTokenURI.sol';
 
 contract ProfileTokenURI is IProfileTokenURI {
     using Strings for uint96;

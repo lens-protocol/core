@@ -2,11 +2,11 @@
 
 pragma solidity ^0.8.15;
 
-import {LensHub} from 'contracts/LensHub.sol';
-import {Types} from 'contracts/libraries/constants/Types.sol';
-import {GovernanceLib} from 'contracts/libraries/GovernanceLib.sol';
-import {ILensHubInitializable} from 'contracts/interfaces/ILensHubInitializable.sol';
-import {VersionedInitializable} from 'contracts/base/upgradeability/VersionedInitializable.sol';
+import {LensHub} from '../LensHub.sol';
+import {Types} from '../libraries/constants/Types.sol';
+import {GovernanceLib} from '../libraries/GovernanceLib.sol';
+import {ILensHubInitializable} from '../interfaces/ILensHubInitializable.sol';
+import {VersionedInitializable} from '../base/upgradeability/VersionedInitializable.sol';
 
 /**
  * @title LensHubInitializable

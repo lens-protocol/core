@@ -2,12 +2,12 @@
 pragma solidity ^0.8.15;
 
 import {IERC1271} from '@openzeppelin/contracts/interfaces/IERC1271.sol';
-import {ILensERC721} from 'contracts/interfaces/ILensERC721.sol';
-import {Types} from 'contracts/libraries/constants/Types.sol';
-import {Errors} from 'contracts/libraries/constants/Errors.sol';
-import {Typehash} from 'contracts/libraries/constants/Typehash.sol';
-import {StorageLib} from 'contracts/libraries/StorageLib.sol';
-import {Events} from 'contracts/libraries/constants/Events.sol';
+import {ILensERC721} from '../interfaces/ILensERC721.sol';
+import {Types} from './constants/Types.sol';
+import {Errors} from './constants/Errors.sol';
+import {Typehash} from './constants/Typehash.sol';
+import {StorageLib} from './StorageLib.sol';
+import {Events} from './constants/Events.sol';
 
 /**
  * @title MetaTxLib

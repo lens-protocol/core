@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
 
-import {Headwear} from 'contracts/libraries/svgs/Profile/Headwear.sol';
+import {Headwear} from '../Headwear.sol';
 
 library HeadwearIcecream {
     enum IcecreamColors {

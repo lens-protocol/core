@@ -5,20 +5,20 @@ pragma solidity ^0.8.15;
 import {IERC721} from '@openzeppelin/contracts/token/ERC721/IERC721.sol';
 import {IERC721Metadata} from '@openzeppelin/contracts/token/ERC721/extensions/IERC721Metadata.sol';
 import {IERC165} from '@openzeppelin/contracts/utils/introspection/IERC165.sol';
-import {ILensProfiles} from 'contracts/interfaces/ILensProfiles.sol';
-import {IERC721Burnable} from 'contracts/interfaces/IERC721Burnable.sol';
+import {ILensProfiles} from '../interfaces/ILensProfiles.sol';
+import {IERC721Burnable} from '../interfaces/IERC721Burnable.sol';
 
-import {LensBaseERC721} from 'contracts/base/LensBaseERC721.sol';
-import {ProfileLib} from 'contracts/libraries/ProfileLib.sol';
-import {StorageLib} from 'contracts/libraries/StorageLib.sol';
-import {ValidationLib} from 'contracts/libraries/ValidationLib.sol';
-import {IProfileTokenURI} from 'contracts/interfaces/IProfileTokenURI.sol';
+import {LensBaseERC721} from './LensBaseERC721.sol';
+import {ProfileLib} from '../libraries/ProfileLib.sol';
+import {StorageLib} from '../libraries/StorageLib.sol';
+import {ValidationLib} from '../libraries/ValidationLib.sol';
+import {IProfileTokenURI} from '../interfaces/IProfileTokenURI.sol';
 
-import {ERC2981CollectionRoyalties} from 'contracts/base/ERC2981CollectionRoyalties.sol';
+import {ERC2981CollectionRoyalties} from './ERC2981CollectionRoyalties.sol';
 
-import {Errors} from 'contracts/libraries/constants/Errors.sol';
-import {Types} from 'contracts/libraries/constants/Types.sol';
-import {Events} from 'contracts/libraries/constants/Events.sol';
+import {Errors} from '../libraries/constants/Errors.sol';
+import {Types} from '../libraries/constants/Types.sol';
+import {Events} from '../libraries/constants/Events.sol';
 
 import {Address} from '@openzeppelin/contracts/utils/Address.sol';
 

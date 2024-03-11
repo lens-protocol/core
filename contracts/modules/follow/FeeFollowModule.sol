@@ -2,14 +2,14 @@
 
 pragma solidity ^0.8.10;
 
-import {IFollowModule} from 'contracts/interfaces/IFollowModule.sol';
-import {Errors} from 'contracts/modules/constants/Errors.sol';
-import {FeeModuleBase} from 'contracts/modules/FeeModuleBase.sol';
+import {IFollowModule} from '../../interfaces/IFollowModule.sol';
+import {Errors} from '../constants/Errors.sol';
+import {FeeModuleBase} from '../FeeModuleBase.sol';
 import {IERC20} from '@openzeppelin/contracts/token/ERC20/IERC20.sol';
 import {SafeERC20} from '@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol';
-import {HubRestricted} from 'contracts/base/HubRestricted.sol';
+import {HubRestricted} from '../../base/HubRestricted.sol';
 
-import {LensModuleMetadata} from 'contracts/modules/LensModuleMetadata.sol';
+import {LensModuleMetadata} from '../LensModuleMetadata.sol';
 
 /**
  * @notice A struct containing the necessary data to execute follow actions on a given profile.

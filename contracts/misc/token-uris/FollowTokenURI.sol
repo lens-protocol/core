@@ -4,8 +4,8 @@ pragma solidity ^0.8.15;
 
 import {Base64} from '@openzeppelin/contracts/utils/Base64.sol';
 import {Strings} from '@openzeppelin/contracts/utils/Strings.sol';
-import {FollowSVG} from 'contracts/libraries/svgs/Follow/FollowSVG.sol';
-import {IFollowTokenURI} from 'contracts/interfaces/IFollowTokenURI.sol';
+import {FollowSVG} from '../../libraries/svgs/Follow/FollowSVG.sol';
+import {IFollowTokenURI} from '../../interfaces/IFollowTokenURI.sol';
 
 contract FollowTokenURI is IFollowTokenURI {
     using Strings for uint96;

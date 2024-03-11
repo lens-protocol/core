@@ -2,9 +2,9 @@
 
 pragma solidity ^0.8.15;
 
-import {ILensHub} from 'contracts/interfaces/ILensHub.sol';
-import {ControllableByContract} from 'contracts/misc/access/ControllableByContract.sol';
-import {Types} from 'contracts/libraries/constants/Types.sol';
+import {ILensHub} from '../../interfaces/ILensHub.sol';
+import {ControllableByContract} from './ControllableByContract.sol';
+import {Types} from '../../libraries/constants/Types.sol';
 
 contract Governance is ControllableByContract {
     ILensHub public immutable LENS_HUB;

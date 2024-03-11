@@ -2,10 +2,10 @@
 
 pragma solidity ^0.8.10;
 
-import {Errors} from 'contracts/modules/constants/Errors.sol';
-import {IFollowModule} from 'contracts/interfaces/IFollowModule.sol';
+import {Errors} from '../constants/Errors.sol';
+import {IFollowModule} from '../../interfaces/IFollowModule.sol';
 
-import {LensModuleMetadata} from 'contracts/modules/LensModuleMetadata.sol';
+import {LensModuleMetadata} from '../LensModuleMetadata.sol';
 
 /**
  * @title RevertFollowModule

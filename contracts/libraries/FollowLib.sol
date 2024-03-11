@@ -2,14 +2,14 @@
 
 pragma solidity ^0.8.15;
 
-import {IFollowModule} from 'contracts/interfaces/IFollowModule.sol';
-import {ValidationLib} from 'contracts/libraries/ValidationLib.sol';
-import {Types} from 'contracts/libraries/constants/Types.sol';
-import {Errors} from 'contracts/libraries/constants/Errors.sol';
-import {Events} from 'contracts/libraries/constants/Events.sol';
-import {StorageLib} from 'contracts/libraries/StorageLib.sol';
-import {IFollowNFT} from 'contracts/interfaces/IFollowNFT.sol';
-import {FollowNFTProxy} from 'contracts/base/upgradeability/FollowNFTProxy.sol';
+import {IFollowModule} from '../interfaces/IFollowModule.sol';
+import {ValidationLib} from './ValidationLib.sol';
+import {Types} from './constants/Types.sol';
+import {Errors} from './constants/Errors.sol';
+import {Events} from './constants/Events.sol';
+import {StorageLib} from './StorageLib.sol';
+import {IFollowNFT} from '../interfaces/IFollowNFT.sol';
+import {FollowNFTProxy} from '../base/upgradeability/FollowNFTProxy.sol';
 
 library FollowLib {
     function follow(

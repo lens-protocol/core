@@ -2,13 +2,13 @@
 
 pragma solidity ^0.8.19;
 
-import {ILensHub} from 'contracts/interfaces/ILensHub.sol';
-import {Types} from 'contracts/libraries/constants/Types.sol';
+import {ILensHub} from '../interfaces/ILensHub.sol';
+import {Types} from '../libraries/constants/Types.sol';
 import {IERC20} from '@openzeppelin/contracts/token/ERC20/IERC20.sol';
 import {SafeERC20} from '@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol';
-import {CollectPublicationAction} from 'contracts/modules/act/collect/CollectPublicationAction.sol';
-import {BaseProfilePublicationData, IBaseFeeCollectModule} from 'contracts/modules/interfaces/IBaseFeeCollectModule.sol';
-import {MetaTxLib} from 'contracts/libraries/MetaTxLib.sol';
+import {CollectPublicationAction} from '../modules/act/collect/CollectPublicationAction.sol';
+import {BaseProfilePublicationData, IBaseFeeCollectModule} from '../modules/interfaces/IBaseFeeCollectModule.sol';
+import {MetaTxLib} from '../libraries/MetaTxLib.sol';
 
 /// @title PublicActProxy
 /// @author LensProtocol

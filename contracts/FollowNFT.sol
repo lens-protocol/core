@@ -2,19 +2,19 @@
 
 pragma solidity ^0.8.15;
 
-import {Types} from 'contracts/libraries/constants/Types.sol';
-import {ERC2981CollectionRoyalties} from 'contracts/base/ERC2981CollectionRoyalties.sol';
-import {Errors} from 'contracts/libraries/constants/Errors.sol';
-import {HubRestricted} from 'contracts/base/HubRestricted.sol';
+import {Types} from './libraries/constants/Types.sol';
+import {ERC2981CollectionRoyalties} from './base/ERC2981CollectionRoyalties.sol';
+import {Errors} from './libraries/constants/Errors.sol';
+import {HubRestricted} from './base/HubRestricted.sol';
 import {IERC721} from '@openzeppelin/contracts/token/ERC721/IERC721.sol';
-import {IERC721Timestamped} from 'contracts/interfaces/IERC721Timestamped.sol';
-import {IFollowNFT} from 'contracts/interfaces/IFollowNFT.sol';
-import {ILensHub} from 'contracts/interfaces/ILensHub.sol';
-import {LensBaseERC721} from 'contracts/base/LensBaseERC721.sol';
+import {IERC721Timestamped} from './interfaces/IERC721Timestamped.sol';
+import {IFollowNFT} from './interfaces/IFollowNFT.sol';
+import {ILensHub} from './interfaces/ILensHub.sol';
+import {LensBaseERC721} from './base/LensBaseERC721.sol';
 import {Strings} from '@openzeppelin/contracts/utils/Strings.sol';
-import {StorageLib} from 'contracts/libraries/StorageLib.sol';
-import {Types} from 'contracts/libraries/constants/Types.sol';
-import {IFollowTokenURI} from 'contracts/interfaces/IFollowTokenURI.sol';
+import {StorageLib} from './libraries/StorageLib.sol';
+import {Types} from './libraries/constants/Types.sol';
+import {IFollowTokenURI} from './interfaces/IFollowTokenURI.sol';
 
 /**
  * @custom:upgradeable Beacon proxy. The beacon, responsible for returning the implementation address, is the LensHub.

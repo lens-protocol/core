@@ -2,15 +2,15 @@
 
 pragma solidity ^0.8.19;
 
-import {Types} from 'contracts/libraries/constants/Types.sol';
-import {Errors} from 'contracts/libraries/constants/Errors.sol';
-import {ILensHub} from 'contracts/interfaces/ILensHub.sol';
-import {IERC721Timestamped} from 'contracts/interfaces/IERC721Timestamped.sol';
-import {IReferenceModule} from 'contracts/interfaces/IReferenceModule.sol';
-import {HubRestricted} from 'contracts/base/HubRestricted.sol';
-import {FollowValidationLib} from 'contracts/modules/libraries/FollowValidationLib.sol';
+import {Types} from '../../libraries/constants/Types.sol';
+import {Errors} from '../../libraries/constants/Errors.sol';
+import {ILensHub} from '../../interfaces/ILensHub.sol';
+import {IERC721Timestamped} from '../../interfaces/IERC721Timestamped.sol';
+import {IReferenceModule} from '../../interfaces/IReferenceModule.sol';
+import {HubRestricted} from '../../base/HubRestricted.sol';
+import {FollowValidationLib} from '../libraries/FollowValidationLib.sol';
 
-import {LensModuleMetadata} from 'contracts/modules/LensModuleMetadata.sol';
+import {LensModuleMetadata} from '../LensModuleMetadata.sol';
 
 /**
  * @notice Struct representing the module configuration for certain publication.

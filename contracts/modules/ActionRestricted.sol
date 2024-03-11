@@ -2,7 +2,7 @@
 
 pragma solidity ^0.8.15;
 
-import {Errors} from 'contracts/modules/constants/Errors.sol';
+import {Errors} from './constants/Errors.sol';
 
 /**
  * @title ActionRestricted

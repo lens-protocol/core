@@ -2,12 +2,12 @@
 
 pragma solidity ^0.8.15;
 
-import {ERC2981CollectionRoyalties} from 'contracts/base/ERC2981CollectionRoyalties.sol';
-import {Errors} from 'contracts/libraries/constants/Errors.sol';
-import {ICollectNFT} from 'contracts/interfaces/ICollectNFT.sol';
+import {ERC2981CollectionRoyalties} from '../base/ERC2981CollectionRoyalties.sol';
+import {Errors} from '../libraries/constants/Errors.sol';
+import {ICollectNFT} from '../interfaces/ICollectNFT.sol';
 import {IERC721} from '@openzeppelin/contracts/token/ERC721/IERC721.sol';
-import {ILensHub} from 'contracts/interfaces/ILensHub.sol';
-import {LensBaseERC721} from 'contracts/base/LensBaseERC721.sol';
+import {ILensHub} from '../interfaces/ILensHub.sol';
+import {LensBaseERC721} from '../base/LensBaseERC721.sol';
 import {Strings} from '@openzeppelin/contracts/utils/Strings.sol';
 
 /**

@@ -2,22 +2,22 @@
 
 pragma solidity ^0.8.19;
 
-import {IPublicationActionModule} from 'contracts/interfaces/IPublicationActionModule.sol';
-import {IModuleRegistry} from 'contracts/interfaces/IModuleRegistry.sol';
-import {HubRestricted} from 'contracts/base/HubRestricted.sol';
-import {Errors} from 'contracts/libraries/constants/Errors.sol';
-import {Types} from 'contracts/libraries/constants/Types.sol';
+import {IPublicationActionModule} from '../../../interfaces/IPublicationActionModule.sol';
+import {IModuleRegistry} from '../../../interfaces/IModuleRegistry.sol';
+import {HubRestricted} from '../../../base/HubRestricted.sol';
+import {Errors} from '../../../libraries/constants/Errors.sol';
+import {Types} from '../../../libraries/constants/Types.sol';
 import {IERC20} from '@openzeppelin/contracts/token/ERC20/IERC20.sol';
-import {IWMATIC} from 'contracts/modules/interfaces/IWMATIC.sol';
+import {IWMATIC} from '../../interfaces/IWMATIC.sol';
 import {IERC721} from '@openzeppelin/contracts/token/ERC721/IERC721.sol';
 import {ERC721SeaDropStructsErrorsAndEvents} from '@seadrop/lib/ERC721SeaDropStructsErrorsAndEvents.sol';
 import {ISeaDrop} from '@seadrop/interfaces/ISeaDrop.sol';
 import {Clones} from 'openzeppelin-contracts/proxy/Clones.sol';
 import {PublicDrop} from '@seadrop/lib/SeaDropStructs.sol';
-import {LensSeaDropCollection} from 'contracts/modules/act/seadrop/LensSeaDropCollection.sol';
-import {ILensHub} from 'contracts/interfaces/ILensHub.sol';
+import {LensSeaDropCollection} from './LensSeaDropCollection.sol';
+import {ILensHub} from '../../../interfaces/ILensHub.sol';
 
-import {LensModuleMetadataInitializable} from 'contracts/modules/LensModuleMetadataInitializable.sol';
+import {LensModuleMetadataInitializable} from '../../LensModuleMetadataInitializable.sol';
 
 /**
  * @custom:upgradeable Transparent upgradeable proxy without initializer.

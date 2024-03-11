@@ -3,15 +3,15 @@
 pragma solidity ^0.8.18;
 
 import {IERC1271} from '@openzeppelin/contracts/interfaces/IERC1271.sol';
-import {ITokenHandleRegistry} from 'contracts/interfaces/ITokenHandleRegistry.sol';
-import {RegistryTypes} from 'contracts/namespaces/constants/Types.sol';
-import {Types} from 'contracts/libraries/constants/Types.sol';
-import {Errors} from 'contracts/libraries/constants/Errors.sol';
-import {RegistryErrors} from 'contracts/namespaces/constants/Errors.sol';
-import {RegistryEvents} from 'contracts/namespaces/constants/Events.sol';
-import {ILensHub} from 'contracts/interfaces/ILensHub.sol';
-import {ILensHandles} from 'contracts/interfaces/ILensHandles.sol';
-import {Typehash} from 'contracts/namespaces/constants/Typehash.sol';
+import {ITokenHandleRegistry} from '../interfaces/ITokenHandleRegistry.sol';
+import {RegistryTypes} from './constants/Types.sol';
+import {Types} from '../libraries/constants/Types.sol';
+import {Errors} from '../libraries/constants/Errors.sol';
+import {RegistryErrors} from './constants/Errors.sol';
+import {RegistryEvents} from './constants/Events.sol';
+import {ILensHub} from '../interfaces/ILensHub.sol';
+import {ILensHandles} from '../interfaces/ILensHandles.sol';
+import {Typehash} from './constants/Typehash.sol';
 
 /**
  * @title TokenHandleRegistry

@@ -1,8 +1,8 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.15;
 
-import {Errors} from 'contracts/libraries/constants/Errors.sol';
-import {StorageLib} from 'contracts/libraries/StorageLib.sol';
+import {Errors} from '../../libraries/constants/Errors.sol';
+import {StorageLib} from '../../libraries/StorageLib.sol';
 
 /**
  * @title VersionedInitializable

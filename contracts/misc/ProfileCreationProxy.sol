@@ -2,13 +2,13 @@
 
 pragma solidity ^0.8.15;
 
-import {ILensHub} from 'contracts/interfaces/ILensHub.sol';
-import {LensV2Migration} from 'contracts/misc/LensV2Migration.sol';
-import {Types} from 'contracts/libraries/constants/Types.sol';
-import {ImmutableOwnable} from 'contracts/misc/ImmutableOwnable.sol';
+import {ILensHub} from '../interfaces/ILensHub.sol';
+import {LensV2Migration} from './LensV2Migration.sol';
+import {Types} from '../libraries/constants/Types.sol';
+import {ImmutableOwnable} from './ImmutableOwnable.sol';
 
-import {ILensHandles} from 'contracts/interfaces/ILensHandles.sol';
-import {ITokenHandleRegistry} from 'contracts/interfaces/ITokenHandleRegistry.sol';
+import {ILensHandles} from '../interfaces/ILensHandles.sol';
+import {ITokenHandleRegistry} from '../interfaces/ITokenHandleRegistry.sol';
 
 /**
  * @title ProfileCreationProxy

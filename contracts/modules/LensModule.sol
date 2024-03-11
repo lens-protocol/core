@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.18;
 
-import {ILensModule} from 'contracts/modules/interfaces/ILensModule.sol';
+import {ILensModule} from './interfaces/ILensModule.sol';
 
 abstract contract LensModule is ILensModule {
     /// @inheritdoc ILensModule

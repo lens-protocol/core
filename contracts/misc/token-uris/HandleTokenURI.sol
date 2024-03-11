@@ -4,8 +4,8 @@ pragma solidity ^0.8.15;
 
 import {Base64} from '@openzeppelin/contracts/utils/Base64.sol';
 import {Strings} from '@openzeppelin/contracts/utils/Strings.sol';
-import {HandleSVG} from 'contracts/libraries/svgs/Handle/HandleSVG.sol';
-import {IHandleTokenURI} from 'contracts/interfaces/IHandleTokenURI.sol';
+import {HandleSVG} from '../../libraries/svgs/Handle/HandleSVG.sol';
+import {IHandleTokenURI} from '../../interfaces/IHandleTokenURI.sol';
 
 contract HandleTokenURI is IHandleTokenURI {
     using Strings for uint256;

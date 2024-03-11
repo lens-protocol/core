@@ -2,13 +2,13 @@
 
 pragma solidity ^0.8.0;
 
-import {Errors} from 'contracts/libraries/constants/Errors.sol';
-import {Types} from 'contracts/libraries/constants/Types.sol';
-import {MetaTxLib} from 'contracts/libraries/MetaTxLib.sol';
-import {ILensERC721} from 'contracts/interfaces/ILensERC721.sol';
-import {IERC721Timestamped} from 'contracts/interfaces/IERC721Timestamped.sol';
-import {IERC721Burnable} from 'contracts/interfaces/IERC721Burnable.sol';
-import {IERC721MetaTx} from 'contracts/interfaces/IERC721MetaTx.sol';
+import {Errors} from '../libraries/constants/Errors.sol';
+import {Types} from '../libraries/constants/Types.sol';
+import {MetaTxLib} from '../libraries/MetaTxLib.sol';
+import {ILensERC721} from '../interfaces/ILensERC721.sol';
+import {IERC721Timestamped} from '../interfaces/IERC721Timestamped.sol';
+import {IERC721Burnable} from '../interfaces/IERC721Burnable.sol';
+import {IERC721MetaTx} from '../interfaces/IERC721MetaTx.sol';
 import {IERC721Receiver} from '@openzeppelin/contracts/token/ERC721/IERC721Receiver.sol';
 import {IERC721Metadata} from '@openzeppelin/contracts/token/ERC721/extensions/IERC721Metadata.sol';
 import {Address} from '@openzeppelin/contracts/utils/Address.sol';

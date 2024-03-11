@@ -2,12 +2,12 @@
 
 pragma solidity ^0.8.15;
 
-import {ILensGovernable} from 'contracts/interfaces/ILensGovernable.sol';
-import {GovernanceLib} from 'contracts/libraries/GovernanceLib.sol';
-import {ValidationLib} from 'contracts/libraries/ValidationLib.sol';
-import {StorageLib} from 'contracts/libraries/StorageLib.sol';
-import {Types} from 'contracts/libraries/constants/Types.sol';
-import {Events} from 'contracts/libraries/constants/Events.sol';
+import {ILensGovernable} from '../interfaces/ILensGovernable.sol';
+import {GovernanceLib} from '../libraries/GovernanceLib.sol';
+import {ValidationLib} from '../libraries/ValidationLib.sol';
+import {StorageLib} from '../libraries/StorageLib.sol';
+import {Types} from '../libraries/constants/Types.sol';
+import {Events} from '../libraries/constants/Events.sol';
 
 abstract contract LensGovernable is ILensGovernable {
     /**
