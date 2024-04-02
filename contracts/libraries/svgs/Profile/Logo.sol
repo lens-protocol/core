@@ -3,8 +3,11 @@ pragma solidity ^0.8.0;
 
 import {Body} from './Body.sol';
 
+import {LensColors} from './LensColors.sol';
+
 library Logo {
     enum LogoVariants {
+        NONE,
         HAPPY,
         HEART,
         LENS,
@@ -13,10 +16,12 @@ library Logo {
 
     enum LogoColors {
         GREEN,
+        PINK,
         PURPLE,
         BLUE,
         LIGHT,
-        DARK
+        GOLD,
+        NONE
     }
 
     function getLogo(
@@ -25,12 +30,14 @@ library Logo {
         Body.BodyVariants bodyVariant,
         Body.BodyColors bodyColor
     ) public pure returns (string memory) {
+        if (logoVariant == LogoVariants.NONE) {
+            return '';
+        }
+
         // Don't display Light & Dark Logos on non-Light & non-Dark bodies
         if (bodyColor != Body.BodyColors.LIGHT && bodyColor != Body.BodyColors.DARK) {
             if (logoColor == LogoColors.LIGHT) {
                 logoColor = LogoColors.BLUE;
-            } else if (logoColor == LogoColors.DARK) {
-                logoColor = LogoColors.PURPLE;
             }
         }
 
@@ -42,6 +49,8 @@ library Logo {
             return getLogoTshirtTanktop(logoVariant, logoColor);
         } else if (bodyVariant == Body.BodyVariants.JACKET) {
             return getLogoJacket(logoVariant, logoColor);
+        } else if (bodyVariant == Body.BodyVariants.SHIBUYA) {
+            return ''; // No logo for Shibuya
         } else {
             revert(); // Avoid warnings.
         }
@@ -151,15 +160,17 @@ library Logo {
 
     function _getLogoColor(LogoColors logoColor) internal pure returns (string memory) {
         if (logoColor == LogoColors.GREEN) {
-            return '#A0D170';
+            return LensColors.baseGreen;
+        } else if (logoColor == LogoColors.PINK) {
+            return LensColors.basePink;
         } else if (logoColor == LogoColors.PURPLE) {
-            return '#EAD7FF';
+            return LensColors.basePurple;
         } else if (logoColor == LogoColors.BLUE) {
-            return '#D9E0FF';
+            return LensColors.baseBlue;
         } else if (logoColor == LogoColors.LIGHT) {
-            return '#EAEAEA';
-        } else if (logoColor == LogoColors.DARK) {
-            return '#DBDBDB';
+            return LensColors.lightGray;
+        } else if (logoColor == LogoColors.GOLD) {
+            return LensColors.baseGold;
         } else {
             revert(); // Avoid warnings.
         }

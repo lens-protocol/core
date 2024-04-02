@@ -132,7 +132,7 @@
     "LensHandles": "0xe7E7EaD361f3AaCD73A61A9bD6C10cA17F38E945",
     "TokenHandleRegistryImpl": "0x52fa68D73C83df39B9a637F82361d9b70aAb74F4",
     "TokenHandleRegistry": "0xD4F2F33680FCCb36748FA9831851643781608844",
-    "ModuleRegistryImpl": "0xeD935AcE8f82FcAB4cae41F240c3a4aE51931313",
+    "ModuleRegistryImpl": "0xf6fDD7932219D64f267E4BfaF8d19774526d31D9",
     "ModuleRegistry": "0x1eD5983F0c883B96f7C35528a1e22EEA67DE3Ff9",
     "LensHubV2Impl": "0x176c2a1c54E8b028eeEC14bF0a059E354408FF47",
     "GovernanceContract": "0xB03B8801cF9D074Ea468aAA8eBd9B5EeD67Ac5B6",
@@ -146,9 +146,9 @@
     "CollectPublicationActionImpl": "0xcc3f120f3d3bf860b910b228d2114f474b382c1d",
     "LitAccessControlImpl": "0x79dcA158B2A019EA2377f5989066a1ac0aC20e10",
     "LitAccessControl": "0x98a6C31E43b158198da95Ef1242faCA868424187",
-    "ProfileTokenURI": "0xE01e1017Eb1D49Aa7034628cd2e3021536cdeBE5",
-    "HandleTokenURI": "0x9632dC8eb31CEC8fcd166a99C1Da179716aE2E48",
-    "FollowTokenURI": "0x07D8a9FEdef6DC7004b9ae0935eA178bFa8bBdF1",
+    "ProfileTokenURI": "0xCCF77B802160326282F260bb6e275333fEA9E76C",
+    "HandleTokenURI": "0x33b7C0692DD8267f936936C0A0f7079144d78B92",
+    "FollowTokenURI": "0x1a4D3f97770925A14997B351C5cC3Cd47192a5B8"
     "PermissionlessCreatorImpl": "0x80a4D78179Cf8C1B0a0621Ba5b33A55Fba469688",
     "PermissionlessCreator": "0x0b5e6100243f793e480DE6088dE6bA70aA9f3872"
   },
@@ -285,7 +285,9 @@
     "AnonymousProfileId": "3",
     "FollowTokenURI": "0xB9136f393861822cF2CAEa7E7062f6c71354d46f",
     "PermissionlessCreatorImpl": "0xBb841c444655558176aBf97993b7f653A2B24994",
-    "PermissionlessCreator": "0xCb4FB63c3f13CB83cCD6F10E9e5F29eC250329Cc"
+    "PermissionlessCreator": "0xCb4FB63c3f13CB83cCD6F10E9e5F29eC250329Cc",
+    "FreeCreditsProvider": "0xC3161EeE3A055860125eE0b70412e4e4081852dD",
+    "ProfileTokenURI": "0x19787A2E8b396077B99F381c39B2DB5781FF6D38"
   },
   "sandbox": {
     "chainId": 80001,

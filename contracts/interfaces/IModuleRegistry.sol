@@ -22,6 +22,8 @@ interface IModuleRegistry {
 
     function isModuleRegisteredAs(address moduleAddress, uint256 moduleType) external view returns (bool);
 
+    function emitModuleMetadataRefresh(address moduleAddress) external;
+
     // Currencies functions
 
     function verifyErc20Currency(address currencyAddress) external returns (bool);

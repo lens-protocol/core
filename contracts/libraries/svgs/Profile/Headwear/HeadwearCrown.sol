@@ -2,12 +2,14 @@
 pragma solidity ^0.8.0;
 
 import {Headwear} from 'contracts/libraries/svgs/Profile/Headwear.sol';
+import {LensColors} from 'contracts/libraries/svgs/Profile/LensColors.sol';
 
 library HeadwearCrown {
     enum CrownColors {
         GREEN,
         PURPLE,
         BLUE,
+        PINK,
         GOLD
     }
 
@@ -39,13 +41,15 @@ library HeadwearCrown {
 
     function _getCrownColor(CrownColors crownColor) internal pure returns (string memory, string memory) {
         if (crownColor == CrownColors.GREEN) {
-            return ('#F4FFDC', '#A0D170');
+            return (LensColors.lightGreen, LensColors.baseGreen);
         } else if (crownColor == CrownColors.PURPLE) {
-            return ('#F9F4FF', '#EAD7FF');
+            return (LensColors.lightPurple, LensColors.basePurple);
         } else if (crownColor == CrownColors.BLUE) {
-            return ('#F4F6FF', '#D9E0FF');
+            return (LensColors.lightBlue, LensColors.baseBlue);
+        } else if (crownColor == CrownColors.PINK) {
+            return (LensColors.lightPink, LensColors.basePink);
         } else if (crownColor == CrownColors.GOLD) {
-            return ('#FFEE93', '#FFCD3D');
+            return (LensColors.lightGold, LensColors.baseGold);
         } else {
             revert(); // Avoid warnings.
         }
@@ -58,6 +62,8 @@ library HeadwearCrown {
             return Headwear.HeadwearColors.PURPLE;
         } else if (crownColor == CrownColors.BLUE) {
             return Headwear.HeadwearColors.BLUE;
+        } else if (crownColor == CrownColors.PINK) {
+            return Headwear.HeadwearColors.PINK;
         } else if (crownColor == CrownColors.GOLD) {
             return Headwear.HeadwearColors.GOLD;
         } else {
