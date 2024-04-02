@@ -47,9 +47,9 @@ library ProfileSVG {
                 '<path fill="url(',
                 Background.getBackgroundColor(chosenElements.backgroundColor),
                 ')" d="M0 0h275v415H0z"/></g>',
-                '<svg xmlns="http://www.w3.org/2000/svg" width="210" height="335" fill="none" id="container" x="52" viewBox="0 0 260 415" >',
+                '<svg xmlns="http://www.w3.org/2000/svg" width="250" height="335" fill="none" id="container" x="32" viewBox="0 0 260 415" >',
                 _generateSvgElements(chosenElements, headwearSvg),
-                '</svg><defs><radialGradient id="green" cx="0" cy="0" r="1" gradientTransform="matrix(275 -275 362 362 0 275)" gradientUnits="userSpaceOnUse"><stop stop-color="#DFFFBF"/><stop offset="1" stop-color="#EFD"/></radialGradient><radialGradient id="purple" cx="0" cy="0" r="1" gradientTransform="matrix(275 -275 362 362 0 275)" gradientUnits="userSpaceOnUse"><stop stop-color="#F1E4FF"/><stop offset="1" stop-color="#F8F1FF"/></radialGradient><radialGradient id="blue" cx="0" cy="0" r="1" gradientTransform="matrix(275 -275 362 362 0 275)" gradientUnits="userSpaceOnUse"><stop stop-color="#E6EAFF"/><stop offset="1" stop-color="#EFF2FF"/></radialGradient><radialGradient id="yellow" cx="0" cy="0" r="1" gradientTransform="matrix(275 -275 362 362 0 275)" gradientUnits="userSpaceOnUse"><stop stop-color="#FFE7A5"/><stop offset="1" stop-color="#FFF2CE"/></radialGradient></defs></svg>'
+                '</svg><defs><radialGradient id="green" cx="0" cy="0" r="1" gradientTransform="matrix(275 -275 362 362 0 275)" gradientUnits="userSpaceOnUse"><stop stop-color="#DFFFBF"/><stop offset="1" stop-color="#EFD"/></radialGradient><radialGradient id="pink" cx="0" cy="0" r="1" gradientTransform="matrix(275 -275 362 362 0 275)" gradientUnits="userSpaceOnUse"><stop stop-color="#FFE7F0"/><stop offset="1" stop-color="#FFF3F8"/></radialGradient><radialGradient id="purple" cx="0" cy="0" r="1" gradientTransform="matrix(275 -275 362 362 0 275)" gradientUnits="userSpaceOnUse"><stop stop-color="#F1E4FF"/><stop offset="1" stop-color="#F8F1FF"/></radialGradient><radialGradient id="blue" cx="0" cy="0" r="1" gradientTransform="matrix(275 -275 362 362 0 275)" gradientUnits="userSpaceOnUse"><stop stop-color="#E6EAFF"/><stop offset="1" stop-color="#EFF2FF"/></radialGradient><radialGradient id="yellow" cx="0" cy="0" r="1" gradientTransform="matrix(275 -275 362 362 0 275)" gradientUnits="userSpaceOnUse"><stop stop-color="#FFE7A5"/><stop offset="1" stop-color="#FFF2CE"/></radialGradient></defs></svg>'
             );
     }
 
@@ -57,36 +57,40 @@ library ProfileSVG {
         string memory traits;
         {
             traits = string.concat(
-                _getTrait(chosenElements.backgroundColor),
-                _getTrait(chosenElements.skinColor),
-                _getTrait(chosenElements.legColor),
-                _getTrait(chosenElements.shoeColor),
-                _getTrait(chosenElements.handsVariant),
-                _getTrait(chosenElements.bodyVariant),
-                _getTrait(chosenElements.bodyColor)
+                _getTrait(chosenElements.backgroundColor), // Background
+                _getTrait(chosenElements.skinColor), // Color
+                _getTrait(chosenElements.legColor), // Pants
+                _getTrait(chosenElements.shoeColor), // Sneakers
+                _getTrait(chosenElements.handsVariant), // Hands
+                _getTrait(chosenElements.bodyVariant), // Clothing
+                _getTrait(chosenElements.bodyColor) // Clothing Color
             );
         }
         return
             string.concat(
                 traits,
-                _getTrait(chosenElements.logoVariant),
-                _getTrait(chosenElements.logoColor),
-                _getTrait(chosenElements.faceVariant), // Doesn't have an ending comma
-                _getTrait(chosenElements.headwearVariant), // The rest has comma in the beginning
-                _getTrait(chosenElements.headwearColor)
+                _getTrait(chosenElements.faceVariant), // Mood - Doesn't have an ending comma
+                _getTrait(chosenElements.logoVariant), // Clothing Logo - Has comma at the beginning
+                _getTrait(chosenElements.logoColor), // Clothing Logo Color - Has comma at the beginning
+                _getTrait(chosenElements.headwearVariant), // Headwear - Has comma at the beginning
+                _getTrait(chosenElements.headwearColor) // Headwear Color - Has comma at the beginning
             );
     }
 
     function _getTrait(Background.BackgroundColors backgroundColor) internal pure returns (string memory) {
         string memory stringBackgroundColor;
         if (backgroundColor == Background.BackgroundColors.GREEN) {
-            stringBackgroundColor = 'Green';
+            stringBackgroundColor = 'green';
+        } else if (backgroundColor == Background.BackgroundColors.PINK) {
+            stringBackgroundColor = 'pink';
         } else if (backgroundColor == Background.BackgroundColors.PURPLE) {
-            stringBackgroundColor = 'Purple';
+            stringBackgroundColor = 'purple';
         } else if (backgroundColor == Background.BackgroundColors.BLUE) {
-            stringBackgroundColor = 'Blue';
+            stringBackgroundColor = 'blue';
         } else if (backgroundColor == Background.BackgroundColors.GOLD) {
-            stringBackgroundColor = 'Gold';
+            stringBackgroundColor = 'gold';
+        } else {
+            revert();
         }
         return string.concat('{"trait_type":"Background","value":"', stringBackgroundColor, '"},');
     }
@@ -94,49 +98,75 @@ library ProfileSVG {
     function _getTrait(Skin.SkinColors skinColor) internal pure returns (string memory) {
         string memory stringSkinColor;
         if (skinColor == Skin.SkinColors.GREEN) {
-            stringSkinColor = 'Green';
+            stringSkinColor = 'forest';
+        } else if (skinColor == Skin.SkinColors.PINK) {
+            stringSkinColor = 'blush';
         } else if (skinColor == Skin.SkinColors.PURPLE) {
-            stringSkinColor = 'Purple';
+            stringSkinColor = 'berry';
         } else if (skinColor == Skin.SkinColors.BLUE) {
-            stringSkinColor = 'Blue';
+            stringSkinColor = 'ice';
         } else if (skinColor == Skin.SkinColors.GOLD) {
-            stringSkinColor = 'Gold';
+            stringSkinColor = 'gold';
+        } else {
+            revert();
         }
-        return string.concat('{"trait_type":"Skin","value":"', stringSkinColor, '"},');
+        return string.concat('{"trait_type":"Color","value":"', stringSkinColor, '"},');
     }
 
     function _getTrait(Legs.LegColors legColor) internal pure returns (string memory) {
         string memory stringLegColor;
         if (legColor == Legs.LegColors.GREEN) {
-            stringLegColor = 'Green';
+            stringLegColor = 'green';
         } else if (legColor == Legs.LegColors.DARK) {
-            stringLegColor = 'Dark';
+            stringLegColor = 'dark';
         } else if (legColor == Legs.LegColors.LIGHT) {
-            stringLegColor = 'Light';
+            stringLegColor = 'light';
+        } else if (legColor == Legs.LegColors.PURPLE) {
+            stringLegColor = 'purple';
+        } else if (legColor == Legs.LegColors.BLUE) {
+            stringLegColor = 'blue';
+        } else if (legColor == Legs.LegColors.PINK) {
+            stringLegColor = 'pink';
+        } else if (legColor == Legs.LegColors.GOLD) {
+            stringLegColor = 'gold';
+        } else {
+            revert();
         }
-        return string.concat('{"trait_type":"Legs","value":"', stringLegColor, '"},');
+        return string.concat('{"trait_type":"Pants","value":"', stringLegColor, '"},');
     }
 
     function _getTrait(Shoes.ShoeColors shoeColor) internal pure returns (string memory) {
         string memory stringShoeColor;
         if (shoeColor == Shoes.ShoeColors.GREEN) {
-            stringShoeColor = 'Green';
+            stringShoeColor = 'green';
         } else if (shoeColor == Shoes.ShoeColors.DARK) {
-            stringShoeColor = 'Dark';
+            stringShoeColor = 'dark';
         } else if (shoeColor == Shoes.ShoeColors.LIGHT) {
-            stringShoeColor = 'Light';
+            stringShoeColor = 'light';
+        } else if (shoeColor == Shoes.ShoeColors.PURPLE) {
+            stringShoeColor = 'purple';
+        } else if (shoeColor == Shoes.ShoeColors.BLUE) {
+            stringShoeColor = 'blue';
+        } else if (shoeColor == Shoes.ShoeColors.PINK) {
+            stringShoeColor = 'pink';
+        } else if (shoeColor == Shoes.ShoeColors.GOLD) {
+            stringShoeColor = 'gold';
+        } else {
+            revert();
         }
-        return string.concat('{"trait_type":"Shoes","value":"', stringShoeColor, '"},');
+        return string.concat('{"trait_type":"Sneakers","value":"', stringShoeColor, '"},');
     }
 
     function _getTrait(Hands.HandsVariants handsVariant) internal pure returns (string memory) {
         string memory stringHandsVariant;
         if (handsVariant == Hands.HandsVariants.HANDSDOWN) {
-            return '';
+            stringHandsVariant = 'chilling';
         } else if (handsVariant == Hands.HandsVariants.PEACEDOUBLE) {
-            stringHandsVariant = 'Double Peace';
+            stringHandsVariant = 'double peace';
         } else if (handsVariant == Hands.HandsVariants.PEACESINGLE) {
-            stringHandsVariant = 'Peace';
+            stringHandsVariant = 'peace';
+        } else {
+            revert();
         }
         return string.concat('{"trait_type":"Hands","value":"', stringHandsVariant, '"},');
     }
@@ -144,125 +174,177 @@ library ProfileSVG {
     function _getTrait(Body.BodyVariants bodyVariant) internal pure returns (string memory) {
         string memory stringBodyVariant;
         if (bodyVariant == Body.BodyVariants.HOODIE) {
-            stringBodyVariant = 'Hoodie';
+            stringBodyVariant = 'hoodie';
         } else if (bodyVariant == Body.BodyVariants.JACKET) {
-            stringBodyVariant = 'Jacket';
+            stringBodyVariant = 'varsity';
         } else if (bodyVariant == Body.BodyVariants.TANKTOP) {
-            stringBodyVariant = 'Tanktop';
+            stringBodyVariant = 'tank';
         } else if (bodyVariant == Body.BodyVariants.TSHIRT) {
-            stringBodyVariant = 'Tshirt';
+            stringBodyVariant = 'tee';
+        } else if (bodyVariant == Body.BodyVariants.SHIBUYA) {
+            stringBodyVariant = 'shibuya';
+        } else {
+            revert();
         }
-        return string.concat('{"trait_type":"Body","value":"', stringBodyVariant, '"},');
+        return string.concat('{"trait_type":"Clothing","value":"', stringBodyVariant, '"},');
     }
 
     function _getTrait(Body.BodyColors bodyColor) internal pure returns (string memory) {
         string memory stringBodyColor;
         if (bodyColor == Body.BodyColors.GREEN) {
-            stringBodyColor = 'Green';
+            stringBodyColor = 'green';
         } else if (bodyColor == Body.BodyColors.LIGHT) {
-            stringBodyColor = 'Light';
+            stringBodyColor = 'light';
         } else if (bodyColor == Body.BodyColors.DARK) {
-            stringBodyColor = 'Dark';
+            stringBodyColor = 'dark';
         } else if (bodyColor == Body.BodyColors.PURPLE) {
-            stringBodyColor = 'Purple';
+            stringBodyColor = 'purple';
         } else if (bodyColor == Body.BodyColors.BLUE) {
-            stringBodyColor = 'Blue';
+            stringBodyColor = 'blue';
+        } else if (bodyColor == Body.BodyColors.PINK) {
+            stringBodyColor = 'pink';
+        } else if (bodyColor == Body.BodyColors.GOLD) {
+            stringBodyColor = 'gold';
+        } else {
+            revert();
         }
-        return string.concat('{"trait_type":"Body Color","value":"', stringBodyColor, '"},');
+        return string.concat('{"trait_type":"Clothing Color","value":"', stringBodyColor, '"},');
     }
 
     function _getTrait(Logo.LogoVariants logoVariant) internal pure returns (string memory) {
         string memory stringLogoVariant;
         if (logoVariant == Logo.LogoVariants.HAPPY) {
-            stringLogoVariant = 'Happy';
+            stringLogoVariant = 'happy';
         } else if (logoVariant == Logo.LogoVariants.HEART) {
-            stringLogoVariant = 'Heart';
+            stringLogoVariant = 'heart';
         } else if (logoVariant == Logo.LogoVariants.LENS) {
-            stringLogoVariant = 'Lens';
+            stringLogoVariant = 'lens';
         } else if (logoVariant == Logo.LogoVariants.PEACE) {
-            stringLogoVariant = 'Peace';
+            stringLogoVariant = 'peace';
+        } else if (logoVariant == Logo.LogoVariants.NONE) {
+            stringLogoVariant = 'none';
+        } else {
+            revert();
         }
-        return string.concat('{"trait_type":"Logo","value":"', stringLogoVariant, '"},');
+        return string.concat(',{"trait_type":"Clothing Logo","value":"', stringLogoVariant, '"}');
     }
 
     function _getTrait(Logo.LogoColors logoColor) internal pure returns (string memory) {
         string memory stringLogoColor;
         if (logoColor == Logo.LogoColors.GREEN) {
-            stringLogoColor = 'Green';
+            stringLogoColor = 'green';
+        } else if (logoColor == Logo.LogoColors.PINK) {
+            stringLogoColor = 'pink';
         } else if (logoColor == Logo.LogoColors.PURPLE) {
-            stringLogoColor = 'Purple';
+            stringLogoColor = 'purple';
         } else if (logoColor == Logo.LogoColors.BLUE) {
-            stringLogoColor = 'Blue';
+            stringLogoColor = 'blue';
         } else if (logoColor == Logo.LogoColors.LIGHT) {
-            stringLogoColor = 'Light';
-        } else if (logoColor == Logo.LogoColors.DARK) {
-            stringLogoColor = 'Dark';
+            stringLogoColor = 'light';
+        } else if (logoColor == Logo.LogoColors.GOLD) {
+            stringLogoColor = 'gold';
+        } else if (logoColor == Logo.LogoColors.NONE) {
+            return '';
+        } else {
+            revert();
         }
-        return string.concat('{"trait_type":"Logo Color","value":"', stringLogoColor, '"},');
+        return string.concat(',{"trait_type":"Clothing Logo Color","value":"', stringLogoColor, '"}');
     }
 
     function _getTrait(Face.FaceVariants faceVariant) internal pure returns (string memory) {
         string memory stringFaceVariant;
         if (faceVariant == Face.FaceVariants.BUBBLEGUM) {
-            stringFaceVariant = 'Bubblegum';
+            stringFaceVariant = 'bubble gum';
         } else if (faceVariant == Face.FaceVariants.GRIN_TONGUE) {
-            stringFaceVariant = 'Grin Tongue';
+            stringFaceVariant = 'silly';
         } else if (faceVariant == Face.FaceVariants.GRIN) {
-            stringFaceVariant = 'Grin';
+            stringFaceVariant = 'happy';
         } else if (faceVariant == Face.FaceVariants.LAUGH) {
-            stringFaceVariant = 'Laugh';
+            stringFaceVariant = 'lol';
         } else if (faceVariant == Face.FaceVariants.LOVE) {
-            stringFaceVariant = 'Love';
+            stringFaceVariant = 'in love';
         } else if (faceVariant == Face.FaceVariants.OOPS) {
-            stringFaceVariant = 'Oops';
+            stringFaceVariant = 'oops';
         } else if (faceVariant == Face.FaceVariants.SLEEPY) {
-            stringFaceVariant = 'Sleepy';
+            stringFaceVariant = 'zzz';
         } else if (faceVariant == Face.FaceVariants.SMILE_TEETH) {
-            stringFaceVariant = 'Smile Teeth';
+            stringFaceVariant = 'cheesin';
         } else if (faceVariant == Face.FaceVariants.SMILE) {
-            stringFaceVariant = 'Smile';
+            stringFaceVariant = 'OG';
         } else if (faceVariant == Face.FaceVariants.SMIRK) {
-            stringFaceVariant = 'Smirk';
+            stringFaceVariant = 'slick';
         } else if (faceVariant == Face.FaceVariants.TONGUE) {
-            stringFaceVariant = 'Tongue';
+            stringFaceVariant = 'playful';
         } else if (faceVariant == Face.FaceVariants.WINK) {
-            stringFaceVariant = 'Wink';
+            stringFaceVariant = 'wink';
         } else if (faceVariant == Face.FaceVariants.WOW_TONGUE) {
-            stringFaceVariant = 'Wow Tongue';
+            stringFaceVariant = 'excited';
         } else if (faceVariant == Face.FaceVariants.WOW) {
-            stringFaceVariant = 'Wow';
+            stringFaceVariant = 'lucy';
+        } else if (faceVariant == Face.FaceVariants.BABY) {
+            stringFaceVariant = 'baby';
+        } else if (faceVariant == Face.FaceVariants.KAWAII) {
+            stringFaceVariant = 'kawaii';
+        } else if (faceVariant == Face.FaceVariants.PIXIE) {
+            stringFaceVariant = 'pixie';
+        } else if (faceVariant == Face.FaceVariants.TODDLER) {
+            stringFaceVariant = 'toddler';
+        } else if (faceVariant == Face.FaceVariants.VAMP) {
+            stringFaceVariant = 'vamp';
+        } else {
+            revert();
         }
-        return string.concat('{"trait_type":"Face","value":"', stringFaceVariant, '"}');
+        return string.concat('{"trait_type":"Mood","value":"', stringFaceVariant, '"}');
     }
 
     function _getTrait(Headwear.HeadwearVariants headwearVariant) internal pure returns (string memory) {
         string memory stringHeadwearVariant;
         if (headwearVariant == Headwear.HeadwearVariants.NONE) {
-            return '';
+            stringHeadwearVariant = 'none';
         } else if (headwearVariant == Headwear.HeadwearVariants.BEANIE) {
-            stringHeadwearVariant = 'Beanie';
+            stringHeadwearVariant = 'brrr';
         } else if (headwearVariant == Headwear.HeadwearVariants.HAT) {
-            stringHeadwearVariant = 'Hat';
-        } else if (headwearVariant == Headwear.HeadwearVariants.LEAFS) {
-            stringHeadwearVariant = 'Leafs';
+            stringHeadwearVariant = 'cap';
         } else if (headwearVariant == Headwear.HeadwearVariants.PLANTS) {
-            stringHeadwearVariant = 'Plants';
+            stringHeadwearVariant = 'lily';
         } else if (headwearVariant == Headwear.HeadwearVariants.SPARKLES) {
-            stringHeadwearVariant = 'Sparkles';
+            stringHeadwearVariant = 'sparkle';
         } else if (headwearVariant == Headwear.HeadwearVariants.CROWN) {
-            stringHeadwearVariant = 'Crown';
+            stringHeadwearVariant = 'king';
         } else if (headwearVariant == Headwear.HeadwearVariants.FLORAL) {
-            stringHeadwearVariant = 'Floral';
+            stringHeadwearVariant = 'queen';
         } else if (headwearVariant == Headwear.HeadwearVariants.GLASSES) {
-            stringHeadwearVariant = 'Glasses';
+            stringHeadwearVariant = 'shady';
         } else if (headwearVariant == Headwear.HeadwearVariants.MUSHROOM) {
-            stringHeadwearVariant = 'Mushroom';
+            stringHeadwearVariant = 'mushie';
         } else if (headwearVariant == Headwear.HeadwearVariants.NIGHTCAP) {
-            stringHeadwearVariant = 'Nightcap';
+            stringHeadwearVariant = 'gn';
         } else if (headwearVariant == Headwear.HeadwearVariants.PARTYHAT) {
-            stringHeadwearVariant = 'Partyhat';
+            stringHeadwearVariant = 'birthday';
         } else if (headwearVariant == Headwear.HeadwearVariants.ICECREAM) {
-            stringHeadwearVariant = 'Icecream';
+            stringHeadwearVariant = 'sweet';
+        } else if (headwearVariant == Headwear.HeadwearVariants.BEAR) {
+            stringHeadwearVariant = 'bear';
+        } else if (headwearVariant == Headwear.HeadwearVariants.BEE) {
+            stringHeadwearVariant = 'bee';
+        } else if (headwearVariant == Headwear.HeadwearVariants.BIRDIE) {
+            stringHeadwearVariant = 'birdie';
+        } else if (headwearVariant == Headwear.HeadwearVariants.BRAINS) {
+            stringHeadwearVariant = 'brains';
+        } else if (headwearVariant == Headwear.HeadwearVariants.BULL) {
+            stringHeadwearVariant = 'bull';
+        } else if (headwearVariant == Headwear.HeadwearVariants.EARRINGS) {
+            stringHeadwearVariant = 'earrings';
+        } else if (headwearVariant == Headwear.HeadwearVariants.LOTUS) {
+            stringHeadwearVariant = 'lotus';
+        } else if (headwearVariant == Headwear.HeadwearVariants.MAJOR) {
+            stringHeadwearVariant = 'major lenny';
+        } else if (headwearVariant == Headwear.HeadwearVariants.SCOUT) {
+            stringHeadwearVariant = 'scout';
+        } else if (headwearVariant == Headwear.HeadwearVariants.SHAMAN) {
+            stringHeadwearVariant = 'shaman';
+        } else {
+            revert();
         }
         return string.concat(',{"trait_type":"Headwear","value":"', stringHeadwearVariant, '"}');
     }
@@ -272,17 +354,17 @@ library ProfileSVG {
         if (headwearColor == Headwear.HeadwearColors.NONE) {
             return '';
         } else if (headwearColor == Headwear.HeadwearColors.GREEN) {
-            stringHeadwearColor = 'Green';
-        } else if (headwearColor == Headwear.HeadwearColors.LIGHT) {
-            stringHeadwearColor = 'Light';
-        } else if (headwearColor == Headwear.HeadwearColors.DARK) {
-            stringHeadwearColor = 'Dark';
+            stringHeadwearColor = 'green';
         } else if (headwearColor == Headwear.HeadwearColors.PURPLE) {
-            stringHeadwearColor = 'Purple';
+            stringHeadwearColor = 'purple';
         } else if (headwearColor == Headwear.HeadwearColors.BLUE) {
-            stringHeadwearColor = 'Blue';
+            stringHeadwearColor = 'blue';
+        } else if (headwearColor == Headwear.HeadwearColors.PINK) {
+            stringHeadwearColor = 'pink';
         } else if (headwearColor == Headwear.HeadwearColors.GOLD) {
-            stringHeadwearColor = 'Gold';
+            stringHeadwearColor = 'gold';
+        } else {
+            revert();
         }
         return string.concat(',{"trait_type":"Headwear Color","value":"', stringHeadwearColor, '"}');
     }
@@ -304,13 +386,17 @@ library ProfileSVG {
                 uint8(Helpers.getColor(seed, Helpers.ComponentBytes.SKIN)) % uint8(type(Skin.SkinColors).max)
             );
 
-        chosenElements.legColor = Legs.LegColors(
-            uint8(Helpers.getColor(seed, Helpers.ComponentBytes.LEGS)) % (uint8(type(Legs.LegColors).max) + 1)
-        );
+        chosenElements.legColor = isGold
+            ? Legs.LegColors.GOLD
+            : Legs.LegColors(
+                uint8(Helpers.getColor(seed, Helpers.ComponentBytes.LEGS)) % uint8(type(Legs.LegColors).max)
+            );
 
-        chosenElements.shoeColor = Shoes.ShoeColors(
-            uint8(Helpers.getColor(seed, Helpers.ComponentBytes.SHOES)) % (uint8(type(Shoes.ShoeColors).max) + 1)
-        );
+        chosenElements.shoeColor = isGold
+            ? Shoes.ShoeColors.GOLD
+            : Shoes.ShoeColors(
+                uint8(Helpers.getColor(seed, Helpers.ComponentBytes.SHOES)) % uint8(type(Shoes.ShoeColors).max)
+            );
 
         chosenElements.handsVariant = Hands.HandsVariants(
             uint8(Helpers.getVariant(seed, Helpers.ComponentBytes.HANDS)) % (uint8(type(Hands.HandsVariants).max) + 1)
@@ -320,17 +406,27 @@ library ProfileSVG {
             uint8(Helpers.getVariant(seed, Helpers.ComponentBytes.BODY)) % (uint8(type(Body.BodyVariants).max) + 1)
         );
 
-        chosenElements.bodyColor = Body.BodyColors(
-            uint8(Helpers.getColor(seed, Helpers.ComponentBytes.BODY)) % (uint8(type(Body.BodyColors).max) + 1)
-        );
+        chosenElements.bodyColor = isGold
+            ? Body.BodyColors.GOLD
+            : Body.BodyColors(
+                uint8(Helpers.getColor(seed, Helpers.ComponentBytes.BODY)) % uint8(type(Body.BodyColors).max)
+            );
 
-        chosenElements.logoVariant = Logo.LogoVariants(
-            uint8(Helpers.getVariant(seed, Helpers.ComponentBytes.LOGO)) % (uint8(type(Logo.LogoVariants).max) + 1)
-        );
+        chosenElements.logoVariant = chosenElements.bodyVariant == Body.BodyVariants.SHIBUYA
+            ? Logo.LogoVariants.NONE
+            : Logo.LogoVariants(
+                uint8(Helpers.getVariant(seed, Helpers.ComponentBytes.LOGO)) % (uint8(type(Logo.LogoVariants).max) + 1)
+            );
 
-        chosenElements.logoColor = Logo.LogoColors(
-            uint8(Helpers.getColor(seed, Helpers.ComponentBytes.LOGO)) % (uint8(type(Logo.LogoColors).max) + 1)
-        );
+        if (chosenElements.logoVariant == Logo.LogoVariants.NONE) {
+            chosenElements.logoColor = Logo.LogoColors.NONE;
+        } else {
+            chosenElements.logoColor = isGold
+                ? Logo.LogoColors.GOLD
+                : Logo.LogoColors(
+                    uint8(Helpers.getColor(seed, Helpers.ComponentBytes.LOGO)) % uint8(Logo.LogoColors.GOLD)
+                );
+        }
 
         chosenElements.faceVariant = Face.FaceVariants(
             uint8(Helpers.getVariant(seed, Helpers.ComponentBytes.FACE)) % (uint8(type(Face.FaceVariants).max) + 1)
@@ -367,11 +463,12 @@ library ProfileSVG {
                     chosenElements.bodyColor
                 ),
                 Head.getHead(Head.HeadColors(uint8(chosenElements.skinColor))),
-                headwearSvg,
                 Face.getFace(
                     chosenElements.faceVariant,
-                    chosenElements.isGold ? Face.FaceColors.GOLD : Face.FaceColors.NORMAL
+                    chosenElements.isGold ? Face.FaceColors.GOLD : Face.FaceColors.NORMAL,
+                    chosenElements.skinColor
                 ),
+                headwearSvg,
                 Hands.getHands(
                     chosenElements.handsVariant,
                     Hands.HandsColors(uint8(chosenElements.skinColor)),
