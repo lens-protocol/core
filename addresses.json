@@ -149,7 +149,7 @@
     "ProfileTokenURI": "0xCCF77B802160326282F260bb6e275333fEA9E76C",
     "HandleTokenURI": "0x33b7C0692DD8267f936936C0A0f7079144d78B92",
     "FollowTokenURI": "0x1a4D3f97770925A14997B351C5cC3Cd47192a5B8"
-    "PermissionlessCreatorImpl": "0x9f077d03DBf4aB8c68e181baA3308F3B12C52Ae8",
+    "PermissionlessCreatorImpl": "0x80a4D78179Cf8C1B0a0621Ba5b33A55Fba469688",
     "PermissionlessCreator": "0x0b5e6100243f793e480DE6088dE6bA70aA9f3872"
   },
   "testnet": {
