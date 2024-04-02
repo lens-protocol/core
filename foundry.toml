@@ -13,8 +13,9 @@ optimizer_runs = 10
 ignored_error_codes = []
 no_match_path = "script/svg/*"
 
-# via_ir = true
+via_ir = true
 
+# Mainnet libraries:
 # libraries = [
 #   'contracts/libraries/ActionLib.sol:ActionLib:0x7990dac84e3241fe314b980bba1466ac08715c4f',
 #   'contracts/libraries/FollowLib.sol:FollowLib:0xe280cb21fb36b6b2d584428b809a6b822a5c2260',
@@ -27,55 +28,17 @@ no_match_path = "script/svg/*"
 #   'contracts/libraries/ValidationLib.sol:ValidationLib:0x9cafd24d2851d9eb56e5a8fd394ab2ac0ef99849',
 # ]
 
-# ProfileSVG
+# Testnet libraries:
 # libraries = [
-#     'contracts/libraries/svgs/Profile/Body/BodyHoodie.sol:BodyHoodie:0x7bc391b78f1ed3a2341faf915fb3edd3b5767e83',
-#     'contracts/libraries/svgs/Profile/Body/BodyJacket.sol:BodyJacket:0xc6c1142fdd3f538c9435aff13d60e2339ba10160',
-#     'contracts/libraries/svgs/Profile/Body/BodyShibuya.sol:BodyShibuya:0x9701be89b6ade39ae77ffbf03356eb137a31da7f',
-#     'contracts/libraries/svgs/Profile/Body/BodyTShirt.sol:BodyTShirt:0xf02231c0319a004fcec98196ee42450a54521d7a',
-#     'contracts/libraries/svgs/Profile/Body/BodyTanktop.sol:BodyTanktop:0xee94f5418c760f6306f1e8a461df1236074ab811',
-#     'contracts/libraries/svgs/Profile/Body.sol:Body:0x1fd46ec18608ce20958b8513c305477b60d573d3',
-#     'contracts/libraries/svgs/Profile/Face.sol:Face:0x0d8e2dbf398638ec60d90e9f120c9a0c2debf6f3',
-#     'contracts/libraries/svgs/Profile/Face.sol:Face2:0xd418e23eb9333c76113028ccd6c840b4d6f287e7',
-#     'contracts/libraries/svgs/Profile/Hands.sol:Hands:0xff7e415dd484b80df69ed32da055de9e95185605',
-#     'contracts/libraries/svgs/Profile/Head.sol:Head:0xd53523fdb369aa75b34452e3f762471527225281',
-#     'contracts/libraries/svgs/Profile/Headwear/HeadwearBeanie.sol:HeadwearBeanie:0xebc5e2516050c0bbd44c83ebbcc074ddb1bab936',
-#     'contracts/libraries/svgs/Profile/Headwear/HeadwearBear.sol:HeadwearBear:0xc3c97e8ae72fecd1f2c1351196cb8124648151d5',
-#     'contracts/libraries/svgs/Profile/Headwear/HeadwearBee.sol:HeadwearBee:0xc6f26ae509e39657e408c8ced9b31f324506a3bb',
-#     'contracts/libraries/svgs/Profile/Headwear/HeadwearBirdie.sol:HeadwearBirdie:0xb3fa351ac9cd4c1d8e5723f8e061f56b61abf59a',
-#     'contracts/libraries/svgs/Profile/Headwear/HeadwearBrains.sol:HeadwearBrains:0x99a2505a8884cac0ab04e1726838bec65cf62ec6',
-#     'contracts/libraries/svgs/Profile/Headwear/HeadwearBull.sol:HeadwearBull:0x8ef9b3be203c677d0e5bfbc5db11400d3afea821',
-#     'contracts/libraries/svgs/Profile/Headwear/HeadwearCrown.sol:HeadwearCrown:0x6bbd83ca2ec3dbdcf96bd3d01262fb433f8f477b',
-#     'contracts/libraries/svgs/Profile/Headwear/HeadwearEarrings.sol:HeadwearEarrings:0x4a92d520f527ead8f6f538ca0cbf9409d6a78f74',
-#     'contracts/libraries/svgs/Profile/Headwear/HeadwearFloral.sol:HeadwearFloral:0x0c715cbfcc827d3861818f431a5c2299cf26b3eb',
-#     'contracts/libraries/svgs/Profile/Headwear/HeadwearGlasses.sol:HeadwearGlasses:0xb3475daa34935b309a49741242bb2b4095204557',
-#     'contracts/libraries/svgs/Profile/Headwear/HeadwearHat.sol:HeadwearHat:0x60f002d200b9fc5061b6c32682dced413113e65e',
-#     'contracts/libraries/svgs/Profile/Headwear/HeadwearIcecream.sol:HeadwearIcecream:0x57d0e1f5ee84fcbf1d4adfb97e5c9a6b6f90b75a',
-#     'contracts/libraries/svgs/Profile/Headwear/HeadwearLotus.sol:HeadwearLotus:0xb1b59c3eacedd5a648646825b1aba83f1fa44b7f',
-#     'contracts/libraries/svgs/Profile/Headwear/HeadwearMajor.sol:HeadwearMajor:0x734e08dcc4dfdbefd1fe39eea94821ca0da1944f',
-#     'contracts/libraries/svgs/Profile/Headwear/HeadwearMushroom.sol:HeadwearMushroom:0xe0be70c71f3d753119bfa686624c7fa3e4c94d1d',
-#     'contracts/libraries/svgs/Profile/Headwear/HeadwearNightcap.sol:HeadwearNightcap:0x0e93c0412c55db27d4eb0d6cb9187c8de20bd33b',
-#     'contracts/libraries/svgs/Profile/Headwear/HeadwearPartyhat.sol:HeadwearPartyhat:0x98a5505d61a2680220a6e9ae22c366a06ff1f2e5',
-#     'contracts/libraries/svgs/Profile/Headwear/HeadwearPlants.sol:HeadwearPlants:0xa0c7ff9758e2a9518e39c09c19851e5e1fce669c',
-#     'contracts/libraries/svgs/Profile/Headwear/HeadwearScout.sol:HeadwearScout:0xff286a64d376ba77fbe667fb88395c2818cbca74',
-#     'contracts/libraries/svgs/Profile/Headwear/HeadwearShaman.sol:HeadwearShaman:0x6252c630824e4c4383f4675233e2fd62f1b224ed',
-#     'contracts/libraries/svgs/Profile/Headwear/HeadwearSparkles.sol:HeadwearSparkles:0xae96209a41caa3042a979b61fe58c7030b06c826',
-#     'contracts/libraries/svgs/Profile/Headwear.sol:Headwear:0x6f33a4a06ff39342fbd4a737fd3f53db92ffd038',
-#     'contracts/libraries/svgs/Profile/Legs.sol:Legs:0x3c6a16c4f5aa3a06e7de06b590d69db5fc1b7a69',
-#     'contracts/libraries/svgs/Profile/Logo.sol:Logo:0x6099032c8d4b93d25a50a8f0a6e2cc66259103bc',
-#     'contracts/libraries/svgs/Profile/ProfileSVG.sol:ProfileSVG:0xf32f16af9e44cb92311de854d138547bc1f91dc7',
-#     'contracts/libraries/svgs/Profile/Shoes.sol:Shoes:0x7289854ff2e55c43afcb895ec8cae798811fcc2d'
-#   ]
-
-# HandleSVG
-# libraries = [
-#   'contracts/libraries/svgs/Handle/GintoNordFontSVG.sol:GintoNordFontSVG:0x68b2751c4113bbacca7c024a030355fe3989bda7',
-#   'contracts/libraries/svgs/Handle/HandleSVG.sol:HandleSVG:0xa2574d9ddb6a325ad2be838bd854228b80215148'
-# ]
-
-# FollowSVG
-# libraries = [
-#   'contracts/libraries/svgs/Follow/FollowSVG.sol:FollowSVG:0x37cbd2c689a8eb10459d974a824adef74124dc7e'
+#   'contracts/libraries/ActionLib.sol:ActionLib:0xf76565aee4bf3641bf10090561ff0143628fde99',
+#   'contracts/libraries/FollowLib.sol:FollowLib:0xd33423b0ae94717274ef83431950a858b274c3f9',
+#   'contracts/libraries/GovernanceLib.sol:GovernanceLib:0x06df1ff944ed3f3f140fb0afae5f27429f93eba1',
+#   'contracts/libraries/LegacyCollectLib.sol:LegacyCollectLib:0xe6b308313eff636b82e7ced21cdc05ea7107504a',
+#   'contracts/libraries/MetaTxLib.sol:MetaTxLib:0xf4a73d59b5c3eeb02d007e4f82c7952cc659c06f',
+#   'contracts/libraries/MigrationLib.sol:MigrationLib:0x38fd9d33e9cdd1e99b4f9d983db64ed035ead9d4',
+#   'contracts/libraries/ProfileLib.sol:ProfileLib:0xdf4bdf058490383c9f12a25c2f28679c8154aa8b',
+#   'contracts/libraries/PublicationLib.sol:PublicationLib:0x70d2a21726bcc835e56680b173b31c38b6c33c64',
+#   'contracts/libraries/ValidationLib.sol:ValidationLib:0xef1c3a9c87177217574afd66956d203ba8f0ee6c',
 # ]
 
 [rpc_endpoints]

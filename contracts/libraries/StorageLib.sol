@@ -8,7 +8,7 @@ library StorageLib {
     // uint256 constant NAME_SLOT = 0;
     // uint256 constant SYMBOL_SLOT = 1;
     uint256 constant TOKEN_DATA_MAPPING_SLOT = 2;
-    // uint256 constant BALANCES_SLOT = 3;
+    uint256 constant BALANCES_SLOT = 3;
     // uint256 constant TOKEN_APPROVAL_MAPPING_SLOT = 4;
     // uint256 constant OPERATOR_APPROVAL_MAPPING_SLOT = 5;
     // Slot 6 is deprecated in Lens V2. In V1 it was used for ERC-721 Enumerable's `ownedTokens`.
@@ -111,6 +111,12 @@ library StorageLib {
             mstore(0, tokenId)
             mstore(32, TOKEN_DATA_MAPPING_SLOT)
             _tokenData.slot := keccak256(0, 64)
+        }
+    }
+
+    function balances() internal pure returns (mapping(address => uint256) storage _balances) {
+        assembly {
+            _balances.slot := BALANCES_SLOT
         }
     }
 

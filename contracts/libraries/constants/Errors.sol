@@ -49,4 +49,6 @@ library Errors {
 
     // Migration Errors
     error NotMigrationAdmin();
+
+    error NotAllowed();
 }

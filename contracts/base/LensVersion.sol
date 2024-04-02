@@ -7,9 +7,9 @@ import {Errors} from 'contracts/libraries/constants/Errors.sol';
 import {TransparentUpgradeableProxy} from '@openzeppelin/contracts/proxy/transparent/TransparentUpgradeableProxy.sol';
 
 contract LensVersion is ILensVersion {
-    string internal constant version = '2.0.3';
+    string internal constant version = '2.0.4';
 
-    bytes20 internal constant gitCommit = hex'3bb1438b28b69f584ab9a290f261e3452fd34ad0';
+    bytes20 internal constant gitCommit = hex'91fb968ff155ed065dad4146f65a1a8c45b8f922';
 
     event LensUpgradeVersion(address implementation, string version, bytes20 gitCommit, uint256 timestamp);
 

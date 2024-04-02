@@ -7,6 +7,8 @@
 # (It is normal for the numbers in end of type names to be different)
 source .env
 
+set -e
+
 if [[ $(colordiff --help 2>/dev/null) ]]
 then
     shopt -s expand_aliases
@@ -65,10 +67,10 @@ if [[ $NETWORK == "" ]]
         exit 1
 fi
 
-if [[ $NETWORK == "mumbai" ]]
-    then
-        NETWORK="polygon-mumbai"
-fi
+# if [[ $NETWORK == "mumbai" ]]
+#     then
+#         NETWORK="polygon-mumbai"
+# fi
 
 PROXY_ADDRESS=$(node script/helpers/readAddress.js $TARGET ${PROXY_NAME})
 NEW_IMPLEMENTATION_ADDRESS=$(node script/helpers/readAddress.js $TARGET ${NEW_IMPL_NAME})
