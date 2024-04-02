@@ -1,11 +1,12 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
 
-import {Skin} from "./Helpers.sol";
+import {Skin} from './Helpers.sol';
 
 library Head {
     enum HeadColors {
         GREEN,
+        PINK,
         PURPLE,
         BLUE,
         GOLD

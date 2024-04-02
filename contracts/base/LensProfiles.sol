@@ -129,6 +129,41 @@ abstract contract LensProfiles is LensBaseERC721, ERC2981CollectionRoyalties, IL
             LensBaseERC721.supportsInterface(interfaceId) || ERC2981CollectionRoyalties.supportsInterface(interfaceId);
     }
 
+    function transferFromKeepingDelegates(address from, address to, uint256 tokenId) external {
+        //solhint-disable-next-line max-line-length
+        if (!_isApprovedOrOwner(msg.sender, tokenId)) {
+            revert Errors.NotOwnerOrApproved();
+        }
+
+        if (!StorageLib.profileCreatorWhitelisted()[msg.sender]) {
+            // Delegates can be maintained on transfers only when executed by whitelisted profile creators, which are
+            // trusted entities, for the sake of a better onboarding UX.
+            revert Errors.NotAllowed();
+        }
+
+        if (ownerOf(tokenId) != from) {
+            revert Errors.InvalidOwner();
+        }
+
+        if (to == address(0)) {
+            revert Errors.InvalidParameter();
+        }
+
+        _beforeTokenTransferWithoutClearingDelegates(from, to, tokenId);
+
+        // Clear approvals from the previous owner
+        _approve(address(0), tokenId);
+
+        unchecked {
+            --StorageLib.balances()[from];
+            ++StorageLib.balances()[to];
+        }
+
+        StorageLib.getTokenData(tokenId).owner = to;
+
+        emit Transfer(from, to, tokenId);
+    }
+
     function _hasTokenGuardianEnabled(address wallet) internal view returns (bool) {
         return
             !wallet.isContract() &&
@@ -156,6 +191,18 @@ abstract contract LensProfiles is LensBaseERC721, ERC2981CollectionRoyalties, IL
         // Switches to new fresh delegated executors configuration (except on minting, as it already has a fresh setup).
         if (from != address(0)) {
             ProfileLib.switchToNewFreshDelegatedExecutorsConfig(tokenId);
+        }
+        super._beforeTokenTransfer(from, to, tokenId);
+    }
+
+    function _beforeTokenTransferWithoutClearingDelegates(
+        address from,
+        address to,
+        uint256 tokenId
+    ) internal whenNotPaused {
+        if (from != address(0) && _hasTokenGuardianEnabled(from)) {
+            // Cannot transfer profile if the guardian is enabled, except at minting time.
+            revert Errors.GuardianEnabled();
         }
         super._beforeTokenTransfer(from, to, tokenId);
     }

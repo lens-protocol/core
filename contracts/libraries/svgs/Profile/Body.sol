@@ -7,13 +7,17 @@ import {BodyJacket} from './Body/BodyJacket.sol';
 import {BodyHoodie} from './Body/BodyHoodie.sol';
 import {BodyTanktop} from './Body/BodyTanktop.sol';
 import {BodyTShirt} from './Body/BodyTShirt.sol';
+import {BodyShibuya} from './Body/BodyShibuya.sol';
+
+import {LensColors} from './LensColors.sol';
 
 library Body {
     enum BodyVariants {
         HOODIE,
         JACKET,
         TANKTOP,
-        TSHIRT
+        TSHIRT,
+        SHIBUYA
     }
 
     enum BodyColors {
@@ -21,7 +25,9 @@ library Body {
         LIGHT,
         DARK,
         PURPLE,
-        BLUE
+        BLUE,
+        PINK,
+        GOLD
     }
 
     function getBody(
@@ -50,6 +56,8 @@ library Body {
             return BodyTanktop.getBody(handsVariant);
         } else if (bodyVariant == BodyVariants.TSHIRT) {
             return BodyTShirt.getBody(handsVariant);
+        } else if (bodyVariant == BodyVariants.SHIBUYA) {
+            return BodyShibuya.getBody(handsVariant);
         } else {
             revert(); // Avoid warnings.
         }
@@ -65,53 +73,61 @@ library Body {
                 '<style>.bodyColor1 {fill: ',
                 getPrimaryBodyColor(bodyVariant, bodyColor),
                 '}.bodyColor2 {fill: ',
-                getSecondaryBodyColor(bodyColor),
+                getSecondaryBodyColor(bodyVariant, bodyColor),
                 '}.handsColor {fill: ',
                 Skin.getSkinColor(Skin.SkinColors(uint8(handsColor))),
+                '}.jacketShirt {fill: ',
+                bodyColor == BodyColors.GOLD ? LensColors.lightGold : LensColors.white,
                 '}.bStr1 {stroke: #000;stroke-linecap: round;stroke-miterlimit: 10;}.bStr2 {stroke: #000;stroke-linecap: round;stroke-linejoin: round;}.bStr3 {stroke: #000;stroke-linecap: round;stroke-opacity: .1;stroke-width: 2;}</style>'
             );
     }
 
     function getPrimaryBodyColor(BodyVariants bodyVariant, BodyColors bodyColor) public pure returns (string memory) {
         if (bodyColor == BodyColors.GREEN) {
-            return '#F4FFDC';
+            return LensColors.lightGreen;
         } else if (bodyColor == BodyColors.LIGHT) {
-            return '#FFFFFF';
+            return LensColors.white;
         } else if (bodyColor == BodyColors.DARK) {
             if (bodyVariant == BodyVariants.JACKET) {
-                return '#EAEAEA';
+                return LensColors.lightGray;
+            } else if (bodyVariant == BodyVariants.SHIBUYA) {
+                return LensColors.gray;
             } else {
-                return '#575757';
+                return LensColors.dark;
             }
         } else if (bodyColor == BodyColors.PURPLE) {
-            if (bodyVariant == BodyVariants.HOODIE) {
-                return '#EAD7FF';
-            } else {
-                return '#F3EAFF';
-            }
+            return LensColors.lightPurple;
         } else if (bodyColor == BodyColors.BLUE) {
-            if (bodyVariant == BodyVariants.HOODIE) {
-                return '#D9E0FF';
-            } else {
-                return '#ECF0FF';
-            }
+            return LensColors.lightBlue;
+        } else if (bodyColor == BodyColors.PINK) {
+            return LensColors.lightPink;
+        } else if (bodyColor == BodyColors.GOLD) {
+            return LensColors.lightGold;
         } else {
             revert(); // Avoid warnings.
         }
     }
 
     // We don't need variant because this is only used in Jacket
-    function getSecondaryBodyColor(BodyColors bodyColor) public pure returns (string memory) {
+    function getSecondaryBodyColor(BodyVariants bodyVariant, BodyColors bodyColor) public pure returns (string memory) {
         if (bodyColor == BodyColors.GREEN) {
-            return '#93A97D';
+            return LensColors.darkGreen;
         } else if (bodyColor == BodyColors.LIGHT) {
-            return '#EAEAEA';
+            if (bodyVariant == BodyVariants.SHIBUYA) {
+                return LensColors.gray;
+            } else {
+                return LensColors.lightGray;
+            }
         } else if (bodyColor == BodyColors.DARK) {
-            return '#575757';
+            return LensColors.dark;
+        } else if (bodyColor == BodyColors.PINK) {
+            return LensColors.darkPink;
         } else if (bodyColor == BodyColors.PURPLE) {
-            return '#EAD7FF';
+            return LensColors.darkPurple;
         } else if (bodyColor == BodyColors.BLUE) {
-            return '#D9E0FF';
+            return LensColors.darkBlue;
+        } else if (bodyColor == BodyColors.GOLD) {
+            return LensColors.baseGold;
         } else {
             revert(); // Avoid warnings.
         }

@@ -2,6 +2,7 @@
 pragma solidity ^0.8.0;
 
 import {Headwear} from 'contracts/libraries/svgs/Profile/Headwear.sol';
+import {LensColors} from 'contracts/libraries/svgs/Profile/LensColors.sol';
 
 library HeadwearMushroom {
     enum MushroomColors {
@@ -47,24 +48,23 @@ library HeadwearMushroom {
         MushroomColors mushroomColor
     ) internal pure returns (string memory, string memory) {
         if (mushroomColor == MushroomColors.GOLD) {
-            return ('#fff', '#B96326');
+            return (LensColors.white, LensColors.darkGold);
         } else {
-            (string memory primaryColor, ) = _getMushroomColor(mushroomColor);
-            return (primaryColor, '#000');
+            return (LensColors.white, LensColors.black);
         }
     }
 
     function _getMushroomColor(MushroomColors mushroomColor) internal pure returns (string memory, string memory) {
         if (mushroomColor == MushroomColors.GREEN) {
-            return ('#F4FFDC', '#A0D170');
+            return (LensColors.lightGreen, LensColors.baseGreen);
         } else if (mushroomColor == MushroomColors.PURPLE) {
-            return ('#F3EAFF', '#EAD7FF');
+            return (LensColors.lightPurple, LensColors.basePurple);
         } else if (mushroomColor == MushroomColors.BLUE) {
-            return ('#ECF0FF', '#D9E0FF');
+            return (LensColors.lightBlue, LensColors.baseBlue);
         } else if (mushroomColor == MushroomColors.PINK) {
-            return ('#FFE7F0', '#FFD2DD');
+            return (LensColors.lightPink, LensColors.basePink);
         } else if (mushroomColor == MushroomColors.GOLD) {
-            return ('#FFEE93', '#F8C944');
+            return (LensColors.lightGold, LensColors.baseGold);
         } else {
             revert(); // Avoid warnings.
         }

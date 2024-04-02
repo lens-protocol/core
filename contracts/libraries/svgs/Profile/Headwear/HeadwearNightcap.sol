@@ -2,10 +2,12 @@
 pragma solidity ^0.8.0;
 
 import {Headwear} from 'contracts/libraries/svgs/Profile/Headwear.sol';
+import {LensColors} from 'contracts/libraries/svgs/Profile/LensColors.sol';
 
 library HeadwearNightcap {
     enum NightcapColors {
         GREEN,
+        PINK,
         PURPLE,
         BLUE,
         GOLD
@@ -13,7 +15,7 @@ library HeadwearNightcap {
 
     function getNightcap(
         NightcapColors nightcapColor
-    ) internal pure returns (string memory, Headwear.HeadwearVariants, Headwear.HeadwearColors) {
+    ) external pure returns (string memory, Headwear.HeadwearVariants, Headwear.HeadwearColors) {
         return (
             string.concat(
                 '<svg xmlns="http://www.w3.org/2000/svg" width="210" height="335" fill="none">',
@@ -26,26 +28,20 @@ library HeadwearNightcap {
     }
 
     function _getNightcapStyle(NightcapColors nightcapColor) internal pure returns (string memory) {
-        (string memory primaryColor, string memory secondaryColor) = _getNightcapColor(nightcapColor);
-        return
-            string.concat(
-                '<style>.nightcapColor1 { fill:',
-                primaryColor,
-                '}.nightcapColor2 { fill:',
-                secondaryColor,
-                '}</style>'
-            );
+        return string.concat('<style>.nightcapColor1 { fill:', _getNightcapColor(nightcapColor), '}</style>');
     }
 
-    function _getNightcapColor(NightcapColors nightcapColor) internal pure returns (string memory, string memory) {
+    function _getNightcapColor(NightcapColors nightcapColor) internal pure returns (string memory) {
         if (nightcapColor == NightcapColors.GREEN) {
-            return ('#F4FFDC', '#A0D170');
+            return LensColors.lightGreen;
+        } else if (nightcapColor == NightcapColors.PINK) {
+            return LensColors.lightPink;
         } else if (nightcapColor == NightcapColors.PURPLE) {
-            return ('#F9F4FF', '#EAD7FF');
+            return LensColors.lightPurple;
         } else if (nightcapColor == NightcapColors.BLUE) {
-            return ('#F4F6FF', '#D9E0FF');
+            return LensColors.lightBlue;
         } else if (nightcapColor == NightcapColors.GOLD) {
-            return ('#FFEE93', '#FFCD3D');
+            return LensColors.lightGold;
         } else {
             revert(); // Avoid warnings.
         }
@@ -54,6 +50,8 @@ library HeadwearNightcap {
     function _getHeadwearColor(NightcapColors nightcapColor) internal pure returns (Headwear.HeadwearColors) {
         if (nightcapColor == NightcapColors.GREEN) {
             return Headwear.HeadwearColors.GREEN;
+        } else if (nightcapColor == NightcapColors.PINK) {
+            return Headwear.HeadwearColors.PINK;
         } else if (nightcapColor == NightcapColors.PURPLE) {
             return Headwear.HeadwearColors.PURPLE;
         } else if (nightcapColor == NightcapColors.BLUE) {
