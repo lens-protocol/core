@@ -2,10 +2,12 @@
 pragma solidity ^0.8.0;
 
 import {Headwear} from 'contracts/libraries/svgs/Profile/Headwear.sol';
+import {LensColors} from 'contracts/libraries/svgs/Profile/LensColors.sol';
 
 library HeadwearPlants {
     enum PlantsColors {
         GREEN,
+        PINK,
         BLUE,
         PURPLE,
         GOLD
@@ -29,27 +31,25 @@ library HeadwearPlants {
     }
 
     function _getPlantsStyle(PlantsColors plantsColor) internal pure returns (string memory) {
-        (string memory leafsColor1, string memory leafsColor2) = _getPlantsColor(plantsColor);
-
         return
             string.concat(
                 '<style>.color1 { fill: ',
-                leafsColor1,
-                ' }.color2 { fill: ',
-                leafsColor2,
-                ' }.hwline3 {stroke: black; stroke-linecap: round; stroke-linejoin: round; stroke-width: 3}.hwline4 {stroke: black; stroke-linecap: round; stroke-linejoin: round; stroke-width: 4}</style>'
+                _getPlantsColor(plantsColor),
+                '}.color2{fill:#fff}.hwline3 {stroke: black; stroke-linecap: round; stroke-linejoin: round; stroke-width: 3}.hwline4 {stroke: black; stroke-linecap: round; stroke-linejoin: round; stroke-width: 4}</style>'
             );
     }
 
-    function _getPlantsColor(PlantsColors plantsColor) internal pure returns (string memory, string memory) {
+    function _getPlantsColor(PlantsColors plantsColor) internal pure returns (string memory) {
         if (plantsColor == PlantsColors.GREEN) {
-            return ('#A0D170', '#FFF');
+            return LensColors.baseGreen;
+        } else if (plantsColor == PlantsColors.PINK) {
+            return LensColors.basePink;
         } else if (plantsColor == PlantsColors.PURPLE) {
-            return ('#EAD7FF', '#FFF');
+            return LensColors.basePurple;
         } else if (plantsColor == PlantsColors.BLUE) {
-            return ('#D9E0FF', '#FFF');
+            return LensColors.baseBlue;
         } else if (plantsColor == PlantsColors.GOLD) {
-            return ('#FFCD3D', '#FFF');
+            return LensColors.baseGold;
         } else {
             revert(); // Avoid warnings.
         }
@@ -58,6 +58,8 @@ library HeadwearPlants {
     function _getHeadwearColor(PlantsColors plantsColor) internal pure returns (Headwear.HeadwearColors) {
         if (plantsColor == PlantsColors.GREEN) {
             return Headwear.HeadwearColors.GREEN;
+        } else if (plantsColor == PlantsColors.PINK) {
+            return Headwear.HeadwearColors.PINK;
         } else if (plantsColor == PlantsColors.PURPLE) {
             return Headwear.HeadwearColors.PURPLE;
         } else if (plantsColor == PlantsColors.BLUE) {

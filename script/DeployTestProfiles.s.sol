@@ -11,8 +11,10 @@ contract NFTMinter is ProfileTokenURI, ERC721 {
     constructor() ERC721('Test Protocol', 'TEST') {}
 
     function mintMany(uint256 tokenIdFrom, uint256 tokenIdTo) external {
-        for (uint256 i = tokenIdFrom; i < tokenIdTo; i++) {
-            _mint(msg.sender, i);
+        for (uint256 tokenId = tokenIdFrom; tokenId <= tokenIdTo; tokenId++) {
+            if (!_exists(tokenId)) {
+                _mint(msg.sender, tokenId);
+            }
         }
     }
 
@@ -75,18 +77,18 @@ contract DeployTestProfiles is Script, ForkManagement {
     }
 
     function interact() internal {
-        nftMinter = NFTMinter(0x9358Fe2E2Ec00bd24eeee491DFd3d57333A88FBB);
         vm.startBroadcast(_deployer.ownerPk);
-        nftMinter.mintMany(100, 101);
-        nftMinter.mintMany(200, 201);
-        nftMinter.mintMany(300, 301);
-        nftMinter.mintMany(400, 401);
-        nftMinter.mintMany(500, 501);
-        nftMinter.mintMany(600, 601);
-        nftMinter.mintMany(700, 701);
-        nftMinter.mintMany(800, 801);
-        nftMinter.mintMany(900, 901);
-        nftMinter.mintMany(1001, 1010);
+        nftMinter.mintMany(1, 100);
+        nftMinter.mintMany(101, 200);
+        nftMinter.mintMany(201, 300);
+        nftMinter.mintMany(301, 400);
+        nftMinter.mintMany(401, 500);
+        nftMinter.mintMany(501, 600);
+        nftMinter.mintMany(601, 700);
+        nftMinter.mintMany(701, 800);
+        nftMinter.mintMany(801, 900);
+        nftMinter.mintMany(901, 1000);
+        nftMinter.mintMany(1001, 1100);
 
         // nftMinter.mintMany(1, 100);
         // nftMinter.mintMany(101, 200);
@@ -117,7 +119,7 @@ contract DeployTestProfiles is Script, ForkManagement {
         checkNetworkParams();
         loadBaseAddresses();
         loadPrivateKeys();
-        // deploy();
+        deploy();
         interact();
     }
 }

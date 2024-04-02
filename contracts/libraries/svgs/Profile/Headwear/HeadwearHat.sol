@@ -2,12 +2,12 @@
 pragma solidity ^0.8.0;
 
 import {Headwear} from 'contracts/libraries/svgs/Profile/Headwear.sol';
+import {LensColors} from 'contracts/libraries/svgs/Profile/LensColors.sol';
 
 library HeadwearHat {
     enum HatColors {
         GREEN,
-        LIGHT,
-        DARK,
+        PINK,
         BLUE,
         PURPLE,
         GOLD
@@ -17,7 +17,7 @@ library HeadwearHat {
     // uint8 color = uint8((seed >> 152) & 0xFF) % 5;
     function getHat(
         HatColors hatColor
-    ) internal pure returns (string memory, Headwear.HeadwearVariants, Headwear.HeadwearColors) {
+    ) external pure returns (string memory, Headwear.HeadwearVariants, Headwear.HeadwearColors) {
         return (
             string.concat(
                 '<svg xmlns="http://www.w3.org/2000/svg" width="210" height="335" fill="none">',
@@ -43,17 +43,15 @@ library HeadwearHat {
 
     function _getHatColor(HatColors hatColor) internal pure returns (string memory, string memory) {
         if (hatColor == HatColors.GREEN) {
-            return ('#A0B884', '#F4FFDC');
-        } else if (hatColor == HatColors.LIGHT) {
-            return ('#EAEAEA', '#FFFFFF');
-        } else if (hatColor == HatColors.DARK) {
-            return ('#DBDBDB', '#575757');
+            return (LensColors.darkGreen, LensColors.lightGreen);
+        } else if (hatColor == HatColors.PINK) {
+            return (LensColors.darkPink, LensColors.lightPink);
         } else if (hatColor == HatColors.BLUE) {
-            return ('#F3EAFF', '#EAD7FF');
+            return (LensColors.darkBlue, LensColors.lightBlue);
         } else if (hatColor == HatColors.PURPLE) {
-            return ('#ECF0FF', '#D9E0FF');
+            return (LensColors.darkPurple, LensColors.lightPurple);
         } else if (hatColor == HatColors.GOLD) {
-            return ('#FFCF3D', '#FFEE93');
+            return (LensColors.baseGold, LensColors.lightGold);
         } else {
             revert(); // Avoid warnings.
         }
@@ -62,10 +60,8 @@ library HeadwearHat {
     function _getHeadwearColor(HatColors hatColor) internal pure returns (Headwear.HeadwearColors) {
         if (hatColor == HatColors.GREEN) {
             return Headwear.HeadwearColors.GREEN;
-        } else if (hatColor == HatColors.LIGHT) {
-            return Headwear.HeadwearColors.LIGHT;
-        } else if (hatColor == HatColors.DARK) {
-            return Headwear.HeadwearColors.DARK;
+        } else if (hatColor == HatColors.PINK) {
+            return Headwear.HeadwearColors.PINK;
         } else if (hatColor == HatColors.BLUE) {
             return Headwear.HeadwearColors.BLUE;
         } else if (hatColor == HatColors.PURPLE) {

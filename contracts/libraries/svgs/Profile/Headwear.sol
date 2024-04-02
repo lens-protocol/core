@@ -5,7 +5,6 @@ import {Helpers} from './Helpers.sol';
 import {HeadwearBeanie} from './Headwear/HeadwearBeanie.sol';
 import {HeadwearHat} from './Headwear/HeadwearHat.sol';
 import {HeadwearIcecream} from './Headwear/HeadwearIcecream.sol';
-import {HeadwearLeafs} from './Headwear/HeadwearLeafs.sol';
 import {HeadwearPlants} from './Headwear/HeadwearPlants.sol';
 import {HeadwearSparkles} from './Headwear/HeadwearSparkles.sol';
 import {HeadwearCrown} from './Headwear/HeadwearCrown.sol';
@@ -14,13 +13,22 @@ import {HeadwearGlasses} from './Headwear/HeadwearGlasses.sol';
 import {HeadwearMushroom} from './Headwear/HeadwearMushroom.sol';
 import {HeadwearNightcap} from './Headwear/HeadwearNightcap.sol';
 import {HeadwearPartyhat} from './Headwear/HeadwearPartyhat.sol';
+import {HeadwearBear} from './Headwear/HeadwearBear.sol';
+import {HeadwearBee} from './Headwear/HeadwearBee.sol';
+import {HeadwearBirdie} from './Headwear/HeadwearBirdie.sol';
+import {HeadwearBrains} from './Headwear/HeadwearBrains.sol';
+import {HeadwearBull} from './Headwear/HeadwearBull.sol';
+import {HeadwearEarrings} from './Headwear/HeadwearEarrings.sol';
+import {HeadwearLotus} from './Headwear/HeadwearLotus.sol';
+import {HeadwearMajor} from './Headwear/HeadwearMajor.sol';
+import {HeadwearScout} from './Headwear/HeadwearScout.sol';
+import {HeadwearShaman} from './Headwear/HeadwearShaman.sol';
 
 library Headwear {
     enum HeadwearVariants {
         NONE,
         BEANIE,
         HAT,
-        LEAFS,
         PLANTS,
         SPARKLES,
         CROWN,
@@ -29,14 +37,22 @@ library Headwear {
         MUSHROOM,
         NIGHTCAP,
         PARTYHAT,
+        BEAR,
+        BEE,
+        BIRDIE,
+        BRAINS,
+        BULL,
+        EARRINGS,
+        LOTUS,
+        MAJOR,
+        SCOUT,
+        SHAMAN,
         ICECREAM
     }
 
     enum HeadwearColors {
         NONE,
         GREEN,
-        LIGHT,
-        DARK,
         PURPLE,
         BLUE,
         PINK,
@@ -82,13 +98,6 @@ library Headwear {
                         uint8(type(HeadwearIcecream.IcecreamColors).max)
                 );
             return HeadwearIcecream.getIcecream(icecreamColor);
-        } else if (variant == HeadwearVariants.LEAFS) {
-            HeadwearLeafs.LeafsColors leafsColor = isGold
-                ? HeadwearLeafs.LeafsColors.GOLD
-                : HeadwearLeafs.LeafsColors(
-                    Helpers.getColor(seed, Helpers.ComponentBytes.HEADWEAR) % uint8(type(HeadwearLeafs.LeafsColors).max)
-                );
-            return HeadwearLeafs.getLeafs(leafsColor);
         } else if (variant == HeadwearVariants.PLANTS) {
             HeadwearPlants.PlantsColors plantsColor = isGold
                 ? HeadwearPlants.PlantsColors.GOLD
@@ -100,7 +109,7 @@ library Headwear {
         } else if (variant == HeadwearVariants.SPARKLES) {
             return
                 HeadwearSparkles.getSparkles(
-                    isGold ? HeadwearSparkles.SparklesColors.GOLD : HeadwearSparkles.SparklesColors.LIGHT
+                    isGold ? HeadwearSparkles.SparklesColors.GOLD : HeadwearSparkles.SparklesColors.NONE
                 );
         } else if (variant == HeadwearVariants.CROWN) {
             HeadwearCrown.CrownColors crownColor = isGold
@@ -149,6 +158,80 @@ library Headwear {
                         uint8(type(HeadwearPartyhat.PartyhatColors).max)
                 );
             return HeadwearPartyhat.getPartyhat(partyhatColor);
+        } else if (variant == HeadwearVariants.BEAR) {
+            HeadwearBear.BearColors bearColor = isGold
+                ? HeadwearBear.BearColors.GOLD
+                : HeadwearBear.BearColors(
+                    Helpers.getColor(seed, Helpers.ComponentBytes.HEADWEAR) % uint8(type(HeadwearBear.BearColors).max)
+                );
+            return HeadwearBear.getBear(bearColor);
+        } else if (variant == HeadwearVariants.BEE) {
+            HeadwearBee.BeeColors beeColor = isGold
+                ? HeadwearBee.BeeColors.GOLD
+                : HeadwearBee.BeeColors(
+                    Helpers.getColor(seed, Helpers.ComponentBytes.HEADWEAR) % uint8(type(HeadwearBee.BeeColors).max)
+                );
+            return HeadwearBee.getBee(beeColor);
+        } else if (variant == HeadwearVariants.BIRDIE) {
+            HeadwearBirdie.BirdieColors birdieColor = isGold
+                ? HeadwearBirdie.BirdieColors.GOLD
+                : HeadwearBirdie.BirdieColors(
+                    Helpers.getColor(seed, Helpers.ComponentBytes.HEADWEAR) %
+                        uint8(type(HeadwearBirdie.BirdieColors).max)
+                );
+            return HeadwearBirdie.getBirdie(birdieColor);
+        } else if (variant == HeadwearVariants.BRAINS) {
+            HeadwearBrains.BrainsColors brainsColor = isGold
+                ? HeadwearBrains.BrainsColors.GOLD
+                : HeadwearBrains.BrainsColors(
+                    Helpers.getColor(seed, Helpers.ComponentBytes.HEADWEAR) %
+                        uint8(type(HeadwearBrains.BrainsColors).max)
+                );
+            return HeadwearBrains.getBrains(brainsColor);
+        } else if (variant == HeadwearVariants.BULL) {
+            HeadwearBull.BullColors bullColor = isGold
+                ? HeadwearBull.BullColors.GOLD
+                : HeadwearBull.BullColors(
+                    Helpers.getColor(seed, Helpers.ComponentBytes.HEADWEAR) % uint8(type(HeadwearBull.BullColors).max)
+                );
+            return HeadwearBull.getBull(bullColor);
+        } else if (variant == HeadwearVariants.EARRINGS) {
+            HeadwearEarrings.EarringsColors earringsColor = isGold
+                ? HeadwearEarrings.EarringsColors.GOLD
+                : HeadwearEarrings.EarringsColors(
+                    Helpers.getColor(seed, Helpers.ComponentBytes.HEADWEAR) %
+                        uint8(type(HeadwearEarrings.EarringsColors).max)
+                );
+            return HeadwearEarrings.getEarrings(earringsColor);
+        } else if (variant == HeadwearVariants.LOTUS) {
+            HeadwearLotus.LotusColors lotusColor = isGold
+                ? HeadwearLotus.LotusColors.GOLD
+                : HeadwearLotus.LotusColors(
+                    Helpers.getColor(seed, Helpers.ComponentBytes.HEADWEAR) % uint8(type(HeadwearLotus.LotusColors).max)
+                );
+            return HeadwearLotus.getLotus(lotusColor);
+        } else if (variant == HeadwearVariants.MAJOR) {
+            HeadwearMajor.MajorColors majorColor = isGold
+                ? HeadwearMajor.MajorColors.GOLD
+                : HeadwearMajor.MajorColors(
+                    Helpers.getColor(seed, Helpers.ComponentBytes.HEADWEAR) % uint8(type(HeadwearMajor.MajorColors).max)
+                );
+            return HeadwearMajor.getMajor(majorColor);
+        } else if (variant == HeadwearVariants.SCOUT) {
+            HeadwearScout.ScoutColors scoutColor = isGold
+                ? HeadwearScout.ScoutColors.GOLD
+                : HeadwearScout.ScoutColors(
+                    Helpers.getColor(seed, Helpers.ComponentBytes.HEADWEAR) % uint8(type(HeadwearScout.ScoutColors).max)
+                );
+            return HeadwearScout.getScout(scoutColor);
+        } else if (variant == HeadwearVariants.SHAMAN) {
+            HeadwearShaman.ShamanColors shamanColor = isGold
+                ? HeadwearShaman.ShamanColors.GOLD
+                : HeadwearShaman.ShamanColors(
+                    Helpers.getColor(seed, Helpers.ComponentBytes.HEADWEAR) %
+                        uint8(type(HeadwearShaman.ShamanColors).max)
+                );
+            return HeadwearShaman.getShaman(shamanColor);
         } else {
             revert(); // Avoid warnings.
         }

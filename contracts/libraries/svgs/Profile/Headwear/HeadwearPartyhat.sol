@@ -2,6 +2,7 @@
 pragma solidity ^0.8.0;
 
 import {Headwear} from 'contracts/libraries/svgs/Profile/Headwear.sol';
+import {LensColors} from 'contracts/libraries/svgs/Profile/LensColors.sol';
 
 library HeadwearPartyhat {
     enum PartyhatColors {
@@ -14,7 +15,7 @@ library HeadwearPartyhat {
 
     function getPartyhat(
         PartyhatColors partyhatColor
-    ) internal pure returns (string memory, Headwear.HeadwearVariants, Headwear.HeadwearColors) {
+    ) external pure returns (string memory, Headwear.HeadwearVariants, Headwear.HeadwearColors) {
         return (
             string.concat(
                 '<svg xmlns="http://www.w3.org/2000/svg" width="211" height="335" fill="none">',
@@ -35,22 +36,22 @@ library HeadwearPartyhat {
                 '}.partyhatColor2 { fill:',
                 secondaryColor,
                 '}.partyhatSparkles { stroke:',
-                partyhatColor == PartyhatColors.GOLD ? '#B96326' : '#000',
+                partyhatColor == PartyhatColors.GOLD ? LensColors.darkGold : LensColors.black,
                 ';stroke-linecap: round;stroke-linejoin: round;stroke-width: 4}</style>'
             );
     }
 
     function _getPartyhatColor(PartyhatColors partyhatColor) internal pure returns (string memory, string memory) {
         if (partyhatColor == PartyhatColors.GREEN) {
-            return ('#F4FFDC', '#A0D170');
+            return (LensColors.lightGreen, LensColors.baseGreen);
         } else if (partyhatColor == PartyhatColors.PURPLE) {
-            return ('#F3EAFF', '#EAD7FF');
+            return (LensColors.lightPurple, LensColors.basePurple);
         } else if (partyhatColor == PartyhatColors.BLUE) {
-            return ('#ECF0FF', '#D9E0FF');
+            return (LensColors.lightBlue, LensColors.baseBlue);
         } else if (partyhatColor == PartyhatColors.PINK) {
-            return ('#FFE7F0', '#FFD2DD');
+            return (LensColors.lightPink, LensColors.basePink);
         } else if (partyhatColor == PartyhatColors.GOLD) {
-            return ('#FFEE93', '#F8C944');
+            return (LensColors.lightGold, LensColors.baseGold);
         } else {
             revert(); // Avoid warnings.
         }
