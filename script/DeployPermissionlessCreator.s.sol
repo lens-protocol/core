@@ -146,9 +146,9 @@ contract DeployPermissionlessCreator is Script, ForkManagement {
         );
 
         // Make PermissionlessCreator a transparentUpgradeableProxy
-        // permissionlessCreator = address(
-        //     new TransparentUpgradeableProxy(permissionlessCreatorImpl, proxyAdminContractAdmin, '')
-        // );
+        permissionlessCreator = address(
+            new TransparentUpgradeableProxy(permissionlessCreatorImpl, proxyAdminContractAdmin, '')
+        );
         vm.stopBroadcast();
 
         console.log('\n\n---------------------------------------------------');
