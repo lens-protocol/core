@@ -7,10 +7,14 @@ const findModule = (moduleType, moduleName, version) => {
     (module) => module.name === moduleName
   );
   if (!module) {
-    return 'undefined';
+    return '0x0000000000000000000000000000000000000000';
   } else {
     return module.addy;
   }
+};
+
+const addressOrZero = (addressKey) => {
+  return addresses[addressKey] || '0x0000000000000000000000000000000000000000'
 };
 
 const addressesPath = '../../addresses.json';
@@ -32,6 +36,8 @@ fs.writeFileSync(`./backendEnv_${targetEnv}.txt`, '');
 // And then write to backendEnv.txt line by line
 const str = fs.createWriteStream(`./backendEnv_${targetEnv}.txt`, { flags: 'a' });
 
+
+
 str.write(`# Hub\n`);
 str.write(`LENS_HUB_PROXY=${addresses['LensHubProxy']}\n`);
 
@@ -45,16 +51,22 @@ str.write(`\n# Public Act Proxy\n`);
 str.write(`LENS_PUBLIC_ACT_PROXY=${addresses['PublicActProxy']}\n`);
 
 str.write(`\n# Profile creation proxy\n`);
-str.write(`PROFILE_CREATION_PROXY=${addresses['ProfileCreationProxy']}\n`);
+str.write(`PROFILE_CREATION_PROXY=${addressOrZero('ProfileCreationProxy')}\n`);
+
+str.write(`\n# Permissionless creator\n`);
+str.write(`PERMISSONLESS_CREATOR=${addresses['PermissionlessCreator']}\n`);
+
+str.write(`\n# Credits faucet\n`);
+str.write(`CREDITS_FAUCET=${addressOrZero('CreditsFaucet')}\n`);
 
 str.write(`\n# Legacy ModuleGlobals for V1 (deprecated and removed in v2)\n`);
-str.write(`LEGACY_MODULE_GLOBALS=${addresses['ModuleGlobals']}\n`);
+str.write(`LEGACY_MODULE_GLOBALS=${addressOrZero('ModuleGlobals')}\n`);
 
 str.write(`\n# ModuleRegistry (for V2)\n`);
 str.write(`GLOBAL_MODULE_REGISTRY=${addresses['ModuleRegistry']}\n`);
 
 str.write(`\n# Legacy metadata updates\n`);
-str.write(`LEGACY_PERIPHERY_DATA_PROVIDER=${addresses['LensPeriphery']}\n`);
+str.write(`LEGACY_PERIPHERY_DATA_PROVIDER=${addressOrZero('LensPeriphery')}\n`);
 
 // LEGACY COLLECT MODULES
 
