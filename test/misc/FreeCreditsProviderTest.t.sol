@@ -3,10 +3,9 @@ pragma solidity ^0.8.13;
 
 import 'test/base/BaseTest.t.sol';
 import {PermissionlessCreator} from 'contracts/misc/PermissionlessCreator.sol';
-import {FreeCreditsProvider} from 'contracts/misc/FreeCreditsProvider.sol';
-import {Types} from 'contracts/libraries/constants/Types.sol';
+import {CreditsFaucet} from 'contracts/misc/CreditsFaucet.sol';
 
-contract FreeCreditsProviderTest is BaseTest {
+contract CreditsFaucetTest is BaseTest {
     error OnlyOwner();
 
     using stdJson for string;
@@ -14,7 +13,7 @@ contract FreeCreditsProviderTest is BaseTest {
     PermissionlessCreator permissionlessCreator;
     address permissionlessCreatorOwner = makeAddr('PERMISSIONLESS_CREATOR_OWNER');
 
-    FreeCreditsProvider freeCreditsProvider;
+    CreditsFaucet creditsFaucet;
 
     function setUp() public virtual override {
         super.setUp();
@@ -57,25 +56,25 @@ contract FreeCreditsProviderTest is BaseTest {
         vm.prank(governance);
         hub.whitelistProfileCreator(address(permissionlessCreator), true);
 
-        freeCreditsProvider = new FreeCreditsProvider(address(permissionlessCreator));
+        creditsFaucet = new CreditsFaucet(address(permissionlessCreator));
 
         vm.prank(permissionlessCreatorOwner);
-        permissionlessCreator.addCreditProvider(address(freeCreditsProvider));
+        permissionlessCreator.addCreditProvider(address(creditsFaucet));
     }
 
     // Scenarios
     function testIncreaseCredit(address profileCreator, address txSender) public {
         vm.assume(profileCreator != address(0));
         vm.assume(profileCreator != address(permissionlessCreator));
-        vm.assume(profileCreator != address(freeCreditsProvider));
+        vm.assume(profileCreator != address(creditsFaucet));
         vm.assume(txSender != address(0));
         vm.assume(txSender != address(permissionlessCreator));
-        vm.assume(txSender != address(freeCreditsProvider));
+        vm.assume(txSender != address(creditsFaucet));
 
         uint256 creditsBefore = permissionlessCreator.getCreditBalance(profileCreator);
 
         vm.prank(txSender);
-        freeCreditsProvider.getFreeCredit(profileCreator, 123);
+        creditsFaucet.getCredits(profileCreator, 123);
 
         uint256 creditsAfter = permissionlessCreator.getCreditBalance(profileCreator);
 
@@ -85,14 +84,14 @@ contract FreeCreditsProviderTest is BaseTest {
     function testDecreaseCredit(address profileCreator) public {
         vm.assume(profileCreator != address(0));
         vm.assume(profileCreator != address(permissionlessCreator));
-        vm.assume(profileCreator != address(freeCreditsProvider));
+        vm.assume(profileCreator != address(creditsFaucet));
 
-        freeCreditsProvider.getFreeCredit(profileCreator, 123456);
+        creditsFaucet.getCredits(profileCreator, 123456);
 
         uint256 creditsBefore = permissionlessCreator.getCreditBalance(profileCreator);
 
         vm.prank(profileCreator);
-        freeCreditsProvider.burnCredits(123);
+        creditsFaucet.burnCredits(123);
 
         uint256 creditsAfter = permissionlessCreator.getCreditBalance(profileCreator);
 
