@@ -6,7 +6,7 @@ test = 'test'
 cache_path  = 'forge-cache'
 fs_permissions = [{ access = "read-write", path = "./"},{ access = "write", path = "./svgs"}]
 
-solc_version = '0.8.21'
+solc_version = '0.8.24'
 evm_version = 'paris'
 optimizer = true
 optimizer_runs = 10

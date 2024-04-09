@@ -122,6 +122,54 @@ contract DeployFreshLensV2 is Script, ForkManagement, ArrayHelpers {
         console.log('\n- - - PROFILE CREATOR: %s', profileCreator.owner);
     }
 
+    function saveContractAddress(string memory contractName, address deployedAddress) internal {
+        // console.log('Saving %s (%s) into addresses under %s environment', contractName, deployedAddress, targetEnv);
+        string[] memory inputs = new string[](5);
+        inputs[0] = 'node';
+        inputs[1] = 'script/helpers/saveAddress.js';
+        inputs[2] = targetEnv;
+        inputs[3] = contractName;
+        inputs[4] = vm.toString(deployedAddress);
+        // bytes memory res =
+        vm.ffi(inputs);
+        // string memory output = abi.decode(res, (string));
+        // console.log(output);
+    }
+
+    function saveModule(
+        string memory moduleName,
+        address moduleAddress,
+        string memory lensVersion,
+        string memory moduleType
+    ) internal {
+        // console.log('Saving %s (%s) into addresses under %s environment', moduleName, moduleAddress, targetEnv);
+        string[] memory inputs = new string[](7);
+        inputs[0] = 'node';
+        inputs[1] = 'script/helpers/saveAddress.js';
+        inputs[2] = targetEnv;
+        inputs[3] = moduleName;
+        inputs[4] = vm.toString(moduleAddress);
+        inputs[5] = lensVersion;
+        inputs[6] = moduleType;
+        // bytes memory res =
+        vm.ffi(inputs);
+        // string memory output = abi.decode(res, (string));
+        // console.log(output);
+    }
+
+    function _logDeployedAddress(address deployedAddress, string memory addressLabel) internal {
+        console.log('\n+ + + ', addressLabel, ': ', deployedAddress);
+        vm.writeLine(addressesFile, string.concat(addressLabel, string.concat(': ', vm.toString(deployedAddress))));
+        saveContractAddress(addressLabel, deployedAddress);
+    }
+
+    function _logDeployedModule(address deployedAddress, string memory moduleName, string memory moduleType) internal {
+        string memory lensVersion = 'v2';
+        console.log('\n+ + + ', moduleName, ': ', deployedAddress);
+        vm.writeLine(addressesFile, string.concat(moduleName, string.concat(': ', vm.toString(deployedAddress))));
+        saveModule(moduleName, deployedAddress, lensVersion, moduleType);
+    }
+
     function loadDeployParams() internal {
         HANDLE_GUARDIAN_COOLDOWN = json.readUint(
             string(abi.encodePacked('.', targetEnv, '.LensHandlesGuardianTimelock'))
@@ -150,8 +198,8 @@ contract DeployFreshLensV2 is Script, ForkManagement, ArrayHelpers {
             admin_: proxyAdmin.owner,
             _data: ''
         });
-        _logDeployedAddress(address(moduleRegistryProxy), 'ModuleRegistryProxy');
         moduleRegistry = ModuleRegistry(address(moduleRegistryProxy));
+        _logDeployedAddress(address(moduleRegistry), 'ModuleRegistry');
 
         uint256 currentDeployerNonce = vm.getNonce(deployer.owner);
         /**
@@ -259,15 +307,14 @@ contract DeployFreshLensV2 is Script, ForkManagement, ArrayHelpers {
             collectNFTImpl: address(collectNFT),
             moduleOwner: governance.owner
         });
-        _logDeployedAddress(address(collectPublicationActionImpl), 'CollectPublicationActionImpl');
 
         collectPublicationActionProxy = new TransparentUpgradeableProxy({
             _logic: address(collectPublicationActionImpl),
             admin_: proxyAdmin.owner,
             _data: ''
         });
-        _logDeployedAddress(address(collectPublicationActionProxy), 'CollectPublicationActionProxy');
         collectPublicationAction = CollectPublicationAction(address(collectPublicationActionProxy));
+        _logDeployedModule(address(collectPublicationAction), 'CollectPublicationAction', 'act');
     }
 
     function _deployFollowModules() internal {
@@ -276,28 +323,28 @@ contract DeployFreshLensV2 is Script, ForkManagement, ArrayHelpers {
             moduleRegistry: address(moduleRegistry),
             moduleOwner: governance.owner
         });
-        _logDeployedAddress(address(feeFollowModule), 'FeeFollowModule');
+        _logDeployedModule(address(feeFollowModule), 'FeeFollowModule', 'follow');
 
         revertFollowModule = new RevertFollowModule({moduleOwner: governance.owner});
-        _logDeployedAddress(address(revertFollowModule), 'RevertFollowModule');
+        _logDeployedModule(address(revertFollowModule), 'RevertFollowModule', 'follow');
     }
 
     function _deployCollectModules() internal {
         simpleFeeCollectModule = new SimpleFeeCollectModule({
             hub: address(hub),
-            actionModule: address(collectPublicationActionProxy),
+            actionModule: address(collectPublicationAction),
             moduleRegistry: address(moduleRegistry),
             moduleOwner: governance.owner
         });
-        _logDeployedAddress(address(simpleFeeCollectModule), 'SimpleFeeCollectModule');
+        _logDeployedModule(address(simpleFeeCollectModule), 'SimpleFeeCollectModule', 'collect');
 
         multirecipientFeeCollectModule = new MultirecipientFeeCollectModule({
             hub: address(hub),
-            actionModule: address(collectPublicationActionProxy),
+            actionModule: address(collectPublicationAction),
             moduleRegistry: address(moduleRegistry),
             moduleOwner: governance.owner
         });
-        _logDeployedAddress(address(multirecipientFeeCollectModule), 'MultirecipientFeeCollectModule');
+        _logDeployedModule(address(multirecipientFeeCollectModule), 'MultirecipientFeeCollectModule', 'collect');
     }
 
     function _deployReferenceModules() internal {
@@ -305,17 +352,23 @@ contract DeployFreshLensV2 is Script, ForkManagement, ArrayHelpers {
             hub: address(hub),
             moduleOwner: governance.owner
         });
-        _logDeployedAddress(address(degreesOfSeparationReferenceModule), 'DegreesOfSeparationReferenceModule');
+        _logDeployedModule(
+            address(degreesOfSeparationReferenceModule),
+            'DegreesOfSeparationReferenceModule',
+            'reference'
+        );
 
         followerOnlyReferenceModule = new FollowerOnlyReferenceModule({
             hub: address(hub),
             moduleOwner: governance.owner
         });
-        _logDeployedAddress(address(followerOnlyReferenceModule), 'FollowerOnlyReferenceModule');
+        _logDeployedModule(address(followerOnlyReferenceModule), 'FollowerOnlyReferenceModule', 'reference');
     }
 
     function _deployPeripherialContracts() internal {
         litAccessControlImpl = new LitAccessControl(address(hub), address(collectPublicationAction));
+        _logDeployedAddress(address(litAccessControlImpl), 'LitAccessControlImpl');
+
         litAccessControlProxy = new TransparentUpgradeableProxy({
             _logic: address(litAccessControlImpl),
             admin_: proxyAdmin.owner,
@@ -390,11 +443,6 @@ contract DeployFreshLensV2 is Script, ForkManagement, ArrayHelpers {
         console.log('\n* * * MultirecipientFeeCollectModule registered as collect module');
     }
 
-    function _logDeployedAddress(address deployedAddress, string memory addressLabel) internal {
-        console.log('\n+ + + ', addressLabel, ': ', deployedAddress);
-        vm.writeLine(addressesFile, string.concat(addressLabel, string.concat(': ', vm.toString(deployedAddress))));
-    }
-
     function deploy() internal {
         loadDeployParams();
 
@@ -429,13 +477,16 @@ contract DeployFreshLensV2 is Script, ForkManagement, ArrayHelpers {
             hub.setState(Types.ProtocolState.Unpaused);
             console.log('\n* * * Protocol unpaused');
 
-            hub.setTreasury(address(treasury.owner));
+            hub.setTreasury(treasury.owner);
+            console.log('\n* * * Treasury set to: ', treasury.owner);
+            saveContractAddress('Treasury', treasury.owner);
 
             uint256 treasuryFee = json.readUint(string(abi.encodePacked('.', targetEnv, '.TreasuryFee')));
             if (treasuryFee > 10_000) {
                 revert('Treasury fee exceeding max BPS');
             }
             hub.setTreasuryFee(uint16(treasuryFee));
+            console.log('\n* * * Treasury fee set to: ', treasuryFee);
 
             uint256 profileRoyaltyFee = json.readUint(string(abi.encodePacked('.', targetEnv, '.ProfileRoyaltyFee')));
             ERC2981CollectionRoyalties(address(hub)).setRoyalty(profileRoyaltyFee);
@@ -461,9 +512,11 @@ contract DeployFreshLensV2 is Script, ForkManagement, ArrayHelpers {
             // Deploy governance and proxy-admin controllable-by-contract contracts, and transfer ownership.
             governanceContract = new Governance(address(hub), governance.owner);
             _logDeployedAddress(address(governanceContract), 'GovernanceContract');
+            _logDeployedAddress(governance.owner, 'GovernanceContractAdmin');
 
             proxyAdminContract = new ProxyAdmin(address(hub), address(0), proxyAdmin.owner);
             _logDeployedAddress(address(proxyAdminContract), 'ProxyAdminContract');
+            _logDeployedAddress(proxyAdmin.owner, 'ProxyAdminContractAdmin');
         }
         vm.stopBroadcast();
 
