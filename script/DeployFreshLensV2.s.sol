@@ -157,6 +157,20 @@ contract DeployFreshLensV2 is Script, ForkManagement, ArrayHelpers {
         // console.log(output);
     }
 
+    function saveValue(string memory contractName, string memory str) internal {
+        // console.log('Saving %s (%s) into addresses under %s environment', contractName, deployedAddress, targetEnv);
+        string[] memory inputs = new string[](5);
+        inputs[0] = 'node';
+        inputs[1] = 'script/helpers/saveAddress.js';
+        inputs[2] = targetEnv;
+        inputs[3] = contractName;
+        inputs[4] = str;
+        // bytes memory res =
+        vm.ffi(inputs);
+        // string memory output = abi.decode(res, (string));
+        // console.log(output);
+    }
+
     function _logDeployedAddress(address deployedAddress, string memory addressLabel) internal {
         console.log('\n+ + + ', addressLabel, ': ', deployedAddress);
         vm.writeLine(addressesFile, string.concat(addressLabel, string.concat(': ', vm.toString(deployedAddress))));
@@ -504,6 +518,8 @@ contract DeployFreshLensV2 is Script, ForkManagement, ArrayHelpers {
             });
 
             vm.writeLine(addressesFile, string.concat('AnonymousProfileId :', vm.toString(anonymousProfileId)));
+            console.log('\n* * * Anonymous profile created with id: ', anonymousProfileId);
+            saveValue('AnonymousProfileId', vm.toString(anonymousProfileId));
         }
         vm.stopBroadcast();
 
