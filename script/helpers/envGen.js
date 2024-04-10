@@ -14,7 +14,7 @@ const findModule = (moduleType, moduleName, version) => {
 };
 
 const addressOrZero = (addressKey) => {
-  return addresses[addressKey] || '0x0000000000000000000000000000000000000000'
+  return addresses[addressKey] || '0x0000000000000000000000000000000000000000';
 };
 
 const addressesPath = '../../addresses.json';
@@ -35,8 +35,6 @@ fs.writeFileSync(`./backendEnv_${targetEnv}.txt`, '');
 
 // And then write to backendEnv.txt line by line
 const str = fs.createWriteStream(`./backendEnv_${targetEnv}.txt`, { flags: 'a' });
-
-
 
 str.write(`# Hub\n`);
 str.write(`LENS_HUB_PROXY=${addresses['LensHubProxy']}\n`);
@@ -171,7 +169,7 @@ str.write(
 
 // PublicActProxy ProfileId
 str.write(`\n# PublicActProxy ProfileId\n`);
-str.write(`PUBLIC_ACT_PROXY_PROFILE_ID=${addresses['AnonymousProfileId']}\n`);
+str.write(`LENS_PUBLIC_ACT_PROXY_PROFILE_ID=${addresses['AnonymousProfileId']}\n`);
 
 // LitAccessControl
 str.write(`\n# LitAccessControl\n`);
