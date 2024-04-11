@@ -29,7 +29,17 @@ via_ir = true
 # ]
 
 # Testnet libraries:
-
+# libraries = [
+# 	"contracts/libraries/ActionLib.sol:ActionLib:0x6099032c8d4b93d25A50a8F0A6E2cc66259103bc",
+# 	"contracts/libraries/FollowLib.sol:FollowLib:0x7289854FF2e55c43AFCB895EC8cAE798811fcc2D",
+# 	"contracts/libraries/GovernanceLib.sol:GovernanceLib:0xf32f16af9e44cB92311DE854D138547BC1F91DC7",
+# 	"contracts/libraries/LegacyCollectLib.sol:LegacyCollectLib:0xCCF77B802160326282F260bb6e275333fEA9E76C",
+# 	"contracts/libraries/MetaTxLib.sol:MetaTxLib:0x7Afc131Fc22A703e39694c11003E55b9301BaBd7",
+# 	"contracts/libraries/MigrationLib.sol:MigrationLib:0xA4ad0E98a19581C8aB0426478d3aBcE83476554d",
+# 	"contracts/libraries/ProfileLib.sol:ProfileLib:0x653FB436CE5523d9607339C90d2D361396d699DA",
+# 	"contracts/libraries/PublicationLib.sol:PublicationLib:0x37CBD2C689A8eb10459D974A824ADEF74124DC7e",
+# 	"contracts/libraries/ValidationLib.sol:ValidationLib:0x1a4D3f97770925A14997B351C5cC3Cd47192a5B8",
+# ]
 
 [rpc_endpoints]
 polygon = "${POLYGON_RPC_URL}"
