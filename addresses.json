@@ -237,7 +237,7 @@
     "GovernanceContractAdmin": "0x532BbA5445e306cB83cF26Ef89842d4701330A45",
     "ProxyAdminContract": "0xF71926E6487D465A307Bc0AcB5da50Ab7A15DA27",
     "ProxyAdminContractAdmin": "0xFBD6b26d7d6FaF3e3AccC77Aa645AeaB6c024d23",
-    "ProfileCreationProxy": "0x28597cc9991b189913cCA30560228a3Bd51FA235",
+    "ProfileCreationProxy": "0x8de25afc4B37e0AdBb58caf3dF06fAf419455404",
     "Treasury": "0x648Ddb72d51B5f1849586f6Fd2a95E70754A126A"
   },
   "example": {
