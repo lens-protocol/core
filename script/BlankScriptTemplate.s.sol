@@ -13,7 +13,9 @@ contract BlankScriptTemplate is Script, ForkManagement {
         uint256 profileId;
     }
 
-    LensAccount _deployer;
+    LensAccount deployer;
+    LensAccount governance;
+    LensAccount proxyAdmin;
 
     string mnemonic;
 
@@ -28,8 +30,12 @@ contract BlankScriptTemplate is Script, ForkManagement {
 
         console.log('\n');
 
-        (_deployer.owner, _deployer.ownerPk) = deriveRememberKey(mnemonic, 0);
-        console.log('Deployer address: %s', address(_deployer.owner));
+        (deployer.owner, deployer.ownerPk) = deriveRememberKey(mnemonic, 0);
+        console.log('\n- - - DEPLOYER: %s', deployer.owner);
+        (governance.owner, governance.ownerPk) = deriveRememberKey(mnemonic, 1);
+        console.log('\n- - - GOVERNANCE: %s', governance.owner);
+        (proxyAdmin.owner, proxyAdmin.ownerPk) = deriveRememberKey(mnemonic, 2);
+        console.log('\n- - - PROXYADMIN: %s', proxyAdmin.owner);
 
         console.log('\n');
 
