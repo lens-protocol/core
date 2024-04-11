@@ -15,6 +15,7 @@ import {LensHubInitializable} from 'contracts/misc/LensHubInitializable.sol';
 import {ILensHub} from 'contracts/interfaces/ILensHub.sol';
 import {ILensHandles} from 'contracts/interfaces/ILensHandles.sol';
 import {ITokenHandleRegistry} from 'contracts/interfaces/ITokenHandleRegistry.sol';
+import {ProfileCreationProxy} from 'contracts/misc/ProfileCreationProxy.sol';
 import {PermissionlessCreator} from 'contracts/misc/PermissionlessCreator.sol';
 import {CreditsFaucet} from 'contracts/misc/CreditsFaucet.sol';
 import {CollectNFT} from 'contracts/modules/act/collect/CollectNFT.sol';
@@ -79,6 +80,7 @@ contract DeployFreshLensV2 is Script, ForkManagement, ArrayHelpers {
     TransparentUpgradeableProxy permissionlessCreatorProxy;
     PermissionlessCreator permissionlessCreator;
     CreditsFaucet creditsFaucet;
+    ProfileCreationProxy profileCreationProxy;
     CollectNFT collectNFT;
     CollectPublicationAction collectPublicationActionImpl;
     TransparentUpgradeableProxy collectPublicationActionProxy;
@@ -296,9 +298,17 @@ contract DeployFreshLensV2 is Script, ForkManagement, ArrayHelpers {
         _logDeployedAddress(address(permissionlessCreator), 'PermissionlessCreator');
 
         if (isTestnet) {
+            // Credit faucet is added as provider in the permissionless creator later in this script.
             creditsFaucet = new CreditsFaucet(address(permissionlessCreatorProxy));
             _logDeployedAddress(address(creditsFaucet), 'CreditsFaucet');
-            // Credit faucet is added as provider in the permissionless creator later in this script.
+
+            profileCreationProxy = new ProfileCreationProxy(
+                governance.owner,
+                address(hub),
+                address(handles),
+                address(tokenHandleRegistry)
+            );
+            _logDeployedAddress(address(profileCreationProxy), 'ProfileCreationProxy');
         }
 
         currentDeployerNonce = vm.getNonce(deployer.owner);
@@ -479,6 +489,9 @@ contract DeployFreshLensV2 is Script, ForkManagement, ArrayHelpers {
             if (isTestnet) {
                 console.log('\n[Adding Credits Faucet as Credit Provider]');
                 permissionlessCreator.addCreditProvider(address(creditsFaucet));
+
+                hub.whitelistProfileCreator(address(profileCreationProxy), true);
+                console.log('\n* * * Profile creation proxy contract registered as profile creator');
             }
 
             _registerCurrencies();
