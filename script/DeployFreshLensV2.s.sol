@@ -255,7 +255,7 @@ contract DeployFreshLensV2 is Script, ForkManagement, ArrayHelpers {
             )
         });
         hub = ILensHub(address(hubProxy));
-        _logDeployedAddress(address(hub), 'LensHubProxy');
+        _logDeployedAddress(address(hub), 'LensHub');
 
         handlesImpl = new LensHandles({
             owner: governance.owner,

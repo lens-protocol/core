@@ -37,7 +37,7 @@ fs.writeFileSync(`./backendEnv_${targetEnv}.txt`, '');
 const str = fs.createWriteStream(`./backendEnv_${targetEnv}.txt`, { flags: 'a' });
 
 str.write(`# Hub\n`);
-str.write(`LENS_HUB_PROXY=${addresses['LensHubProxy']}\n`);
+str.write(`LENS_HUB_PROXY=${addresses['LensHub']}\n`);
 
 str.write(`\n# LensHandles\n`);
 str.write(`LENS_HANDLE_PROXY=${addresses['LensHandles']}\n`);

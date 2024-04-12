@@ -99,7 +99,7 @@ contract DeployLensHub is Script, ForkManagement {
     }
 
     function loadBaseAddresses() internal override {
-        lensHub = json.readAddress(string(abi.encodePacked('.', targetEnv, '.LensHubProxy')));
+        lensHub = json.readAddress(string(abi.encodePacked('.', targetEnv, '.LensHub')));
         vm.label(lensHub, 'LensHub');
         console.log('Lens Hub Proxy: %s', lensHub);
 
