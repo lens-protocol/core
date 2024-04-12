@@ -2,13 +2,17 @@
 
 pragma solidity ^0.8.15;
 
-import {PermissionlessCreator} from 'contracts/misc/PermissionlessCreator.sol';
+interface IPermissionlessCreator {
+    function increaseCredits(address account, uint256 amount) external;
+
+    function decreaseCredits(address account, uint256 amount) external;
+}
 
 contract CreditsFaucet {
-    PermissionlessCreator permissionlessCreator;
+    IPermissionlessCreator permissionlessCreator;
 
     constructor(address permissionlessCreator_) {
-        permissionlessCreator = PermissionlessCreator(permissionlessCreator_);
+        permissionlessCreator = IPermissionlessCreator(permissionlessCreator_);
     }
 
     function getCredits(address account, uint256 amount) external {
