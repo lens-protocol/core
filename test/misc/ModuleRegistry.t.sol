@@ -98,6 +98,7 @@ contract ModuleRegistryTest is BaseTest {
 
     function testRegisterModule_IfSupportsPublicationActionModule(address module) public {
         vm.assume(module != address(0));
+        vm.assume(module != 0x000000000000000000636F6e736F6c652e6c6f67);
         vm.assume(!moduleRegistry.isModuleRegistered(module));
 
         uint256 moduleType = uint256(IModuleRegistry.ModuleType.PUBLICATION_ACTION_MODULE);
@@ -116,6 +117,7 @@ contract ModuleRegistryTest is BaseTest {
 
     function testRegisterModule_IfSupportsFollowModule(address module) public {
         vm.assume(module != address(0));
+        vm.assume(module != 0x000000000000000000636F6e736F6c652e6c6f67);
         uint256 moduleType = uint256(IModuleRegistry.ModuleType.FOLLOW_MODULE);
 
         _mockSupportsInterface(module, LENS_MODULE_INTERFACE_ID, true);
@@ -132,6 +134,7 @@ contract ModuleRegistryTest is BaseTest {
 
     function testRegisterModule_IfSupportsReferenceModule(address module) public {
         vm.assume(module != address(0));
+        vm.assume(module != 0x000000000000000000636F6e736F6c652e6c6f67);
         uint256 moduleType = uint256(IModuleRegistry.ModuleType.REFERENCE_MODULE);
 
         _mockSupportsInterface(module, LENS_MODULE_INTERFACE_ID, true);
