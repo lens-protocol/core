@@ -245,7 +245,7 @@ contract BaseFeeCollectModule_ProcessCollect is BaseFeeCollectModuleBase {
                 referrerProfileIds: _emptyUint256Array(),
                 referrerPubIds: _emptyUint256Array(),
                 referrerPubTypes: _emptyPubTypesArray(),
-                data: abi.encode(currency, passedAmount)
+                data: _getCollectParamsData(address(currency), passedAmount)
             })
         );
     }
@@ -291,7 +291,7 @@ contract BaseFeeCollectModule_ProcessCollect is BaseFeeCollectModuleBase {
                 referrerProfileIds: _emptyUint256Array(),
                 referrerPubIds: _emptyUint256Array(),
                 referrerPubTypes: _emptyPubTypesArray(),
-                data: abi.encode(passedCurrency, amount)
+                data: _getCollectParamsData(passedCurrency, exampleInitData.amount)
             })
         );
     }
@@ -334,7 +334,7 @@ contract BaseFeeCollectModule_ProcessCollect is BaseFeeCollectModuleBase {
                 referrerProfileIds: _emptyUint256Array(),
                 referrerPubIds: _emptyUint256Array(),
                 referrerPubTypes: _emptyPubTypesArray(),
-                data: abi.encode(currency, exampleInitData.amount)
+                data: _getCollectParamsData(address(currency), exampleInitData.amount)
             })
         );
     }
@@ -378,7 +378,7 @@ contract BaseFeeCollectModule_ProcessCollect is BaseFeeCollectModuleBase {
                 referrerProfileIds: _emptyUint256Array(),
                 referrerPubIds: _emptyUint256Array(),
                 referrerPubTypes: _emptyPubTypesArray(),
-                data: abi.encode(currency, exampleInitData.amount)
+                data: _getCollectParamsData(address(currency), exampleInitData.amount)
             })
         );
     }
@@ -422,7 +422,7 @@ contract BaseFeeCollectModule_ProcessCollect is BaseFeeCollectModuleBase {
                     referrerProfileIds: _emptyUint256Array(),
                     referrerPubIds: _emptyUint256Array(),
                     referrerPubTypes: _emptyPubTypesArray(),
-                    data: abi.encode(currency, exampleInitData.amount)
+                    data: _getCollectParamsData(address(currency), exampleInitData.amount)
                 })
             );
         }
@@ -439,7 +439,7 @@ contract BaseFeeCollectModule_ProcessCollect is BaseFeeCollectModuleBase {
                 referrerProfileIds: _emptyUint256Array(),
                 referrerPubIds: _emptyUint256Array(),
                 referrerPubTypes: _emptyPubTypesArray(),
-                data: abi.encode(currency, exampleInitData.amount)
+                data: _getCollectParamsData(address(currency), exampleInitData.amount)
             })
         );
     }
@@ -517,7 +517,7 @@ contract BaseFeeCollectModule_ProcessCollect is BaseFeeCollectModuleBase {
                 referrerProfileIds: _emptyUint256Array(),
                 referrerPubIds: _emptyUint256Array(),
                 referrerPubTypes: _emptyPubTypesArray(),
-                data: abi.encode(currency, amount)
+                data: _getCollectParamsData(address(currency), amount)
             })
         );
     }
@@ -563,13 +563,17 @@ contract BaseFeeCollectModule_ProcessCollect is BaseFeeCollectModuleBase {
                     referrerProfileIds: _emptyUint256Array(),
                     referrerPubIds: _emptyUint256Array(),
                     referrerPubTypes: _emptyPubTypesArray(),
-                    data: abi.encode(currency, exampleInitData.amount)
+                    data: _getCollectParamsData(address(currency), exampleInitData.amount)
                 })
             );
 
             fetchedData = IBaseFeeCollectModule(baseFeeCollectModule).getBasePublicationData(profileId, pubId);
             assertEq(fetchedData.currentCollects, collects);
         }
+    }
+
+    function _getCollectParamsData(address currency, uint160 amount) internal virtual returns (bytes memory) {
+        return abi.encode(currency, amount);
     }
 }
 
