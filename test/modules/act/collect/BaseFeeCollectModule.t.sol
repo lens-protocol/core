@@ -121,6 +121,7 @@ contract BaseFeeCollectModule_Initialization is BaseFeeCollectModuleBase {
         vm.assume(profileId != 0);
         vm.assume(pubId != 0);
         vm.assume(transactionExecutor != address(0));
+        vm.assume(whitelistedCurrency != 0x000000000000000000636F6e736F6c652e6c6f67);
 
         vm.assume(
             (amount != 0 && whitelistedCurrency != address(0) && uint160(whitelistedCurrency) > 10) ||
