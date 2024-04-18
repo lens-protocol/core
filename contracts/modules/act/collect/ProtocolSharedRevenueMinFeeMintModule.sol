@@ -4,9 +4,8 @@ pragma solidity ^0.8.10;
 import {BaseFeeCollectModule} from 'contracts/modules/act/collect/base/BaseFeeCollectModule.sol';
 import {BaseFeeCollectModuleInitData, BaseProfilePublicationData} from 'contracts/modules/interfaces/IBaseFeeCollectModule.sol';
 import {ICollectModule} from 'contracts/modules/interfaces/ICollectModule.sol';
-import {LensModuleMetadata} from 'contracts/modules/LensModuleMetadata.sol';
+import {LensModuleMetadataInitializable} from 'contracts/modules/LensModuleMetadataInitializable.sol';
 import {LensModule} from 'contracts/modules/LensModule.sol';
-import {ImmutableOwnable} from 'contracts/misc/ImmutableOwnable.sol';
 import {ModuleTypes} from 'contracts/modules/libraries/constants/ModuleTypes.sol';
 import {ILensHub} from 'contracts/interfaces/ILensHub.sol';
 import {IERC20} from '@openzeppelin/contracts/token/ERC20/IERC20.sol';
@@ -22,7 +21,7 @@ struct ProtocolSharedRevenueMinFeeMintModuleInitData {
     uint16 referralFee;
     bool followerOnly;
     uint72 endTimestamp;
-    address creatorFrontend;
+    address creatorClient;
 }
 
 struct ProtocolSharedRevenueMinFeeMintModulePublicationData {
@@ -34,15 +33,15 @@ struct ProtocolSharedRevenueMinFeeMintModulePublicationData {
     uint16 referralFee;
     bool followerOnly;
     uint72 endTimestamp;
-    address creatorFrontend;
+    address creatorClient;
 }
 
 // Splits (in BPS)
 struct ProtocolSharedRevenueDistribution {
     uint16 creatorSplit;
     uint16 protocolSplit;
-    uint16 creatorFrontendSplit;
-    uint16 executorFrontendSplit;
+    uint16 creatorClientSplit;
+    uint16 executorClientSplit;
 }
 
 /**
@@ -55,22 +54,22 @@ struct ProtocolSharedRevenueDistribution {
  * You can build your own collect modules by inheriting from BaseFeeCollectModule and adding your
  * functionality along with getPublicationData function.
  */
-contract ProtocolSharedRevenueMinFeeMintModule is BaseFeeCollectModule, LensModuleMetadata {
+contract ProtocolSharedRevenueMinFeeMintModule is BaseFeeCollectModule, LensModuleMetadataInitializable {
     using SafeERC20 for IERC20;
 
     address mintFeeToken;
     uint256 mintFeeAmount;
     ProtocolSharedRevenueDistribution protocolSharedRevenueDistribution;
 
-    mapping(uint256 profileId => mapping(uint256 pubId => address creatorFrontend))
-        internal _creatorFrontendByPublicationByProfile;
+    mapping(uint256 profileId => mapping(uint256 pubId => address creatorClient))
+        internal _creatorClientByPublicationByProfile;
 
     constructor(
         address hub,
         address actionModule,
         address moduleRegistry,
         address moduleOwner
-    ) BaseFeeCollectModule(hub, actionModule, moduleRegistry) LensModuleMetadata(moduleOwner) {}
+    ) BaseFeeCollectModule(hub, actionModule, moduleRegistry) LensModuleMetadataInitializable(moduleOwner) {}
 
     /**
      * @inheritdoc ICollectModule
@@ -107,8 +106,8 @@ contract ProtocolSharedRevenueMinFeeMintModule is BaseFeeCollectModule, LensModu
             recipient: initData.recipient
         });
 
-        if (initData.creatorFrontend != address(0)) {
-            _creatorFrontendByPublicationByProfile[profileId][pubId] = initData.creatorFrontend;
+        if (initData.creatorClient != address(0)) {
+            _creatorClientByPublicationByProfile[profileId][pubId] = initData.creatorClient;
         }
 
         _validateBaseInitData(baseInitData);
@@ -151,36 +150,34 @@ contract ProtocolSharedRevenueMinFeeMintModule is BaseFeeCollectModule, LensModu
         address protocol = ILensHub(HUB).getTreasury();
         uint256 protocolAmount = (mintFeeAmount * protocolSharedRevenueDistribution.protocolSplit) / 10000;
 
-        address creatorFrontend = _creatorFrontendByPublicationByProfile[
+        address creatorClient = _creatorClientByPublicationByProfile[
             processCollectParams.publicationCollectedProfileId
         ][processCollectParams.publicationCollectedId];
-        uint256 creatorFrontendAmount = (mintFeeAmount * protocolSharedRevenueDistribution.creatorFrontendSplit) /
-            10000;
+        uint256 creatorClientAmount = (mintFeeAmount * protocolSharedRevenueDistribution.creatorClientSplit) / 10000;
 
-        if (creatorFrontend != address(0)) {
+        if (creatorClient != address(0)) {
             IERC20(mintFeeToken).safeTransferFrom(
                 processCollectParams.transactionExecutor,
-                creatorFrontend,
-                creatorFrontendAmount
+                creatorClient,
+                creatorClientAmount
             );
         } else {
-            // If there's no creatorFrontend specified - we give that amount to the publication creator
-            creatorAmount += creatorFrontendAmount;
+            // If there's no creatorClient specified - we give that amount to the publication creator
+            creatorAmount += creatorClientAmount;
         }
 
-        (, , address executorFrontend) = abi.decode(processCollectParams.data, (address, uint256, address));
-        uint256 executorFrontendAmount = (mintFeeAmount * protocolSharedRevenueDistribution.executorFrontendSplit) /
-            10000;
+        (, , address executorClient) = abi.decode(processCollectParams.data, (address, uint256, address));
+        uint256 executorClientAmount = (mintFeeAmount * protocolSharedRevenueDistribution.executorClientSplit) / 10000;
 
-        if (executorFrontend != address(0)) {
+        if (executorClient != address(0)) {
             IERC20(mintFeeToken).safeTransferFrom(
                 processCollectParams.transactionExecutor,
-                executorFrontend,
-                executorFrontendAmount
+                executorClient,
+                executorClientAmount
             );
         } else {
-            // If there's no creatorFrontend specified - we give that amount to the publication creator
-            creatorAmount += executorFrontendAmount;
+            // If there's no creatorClient specified - we give that amount to the publication creator
+            creatorAmount += executorClientAmount;
         }
 
         IERC20(mintFeeToken).safeTransferFrom(processCollectParams.transactionExecutor, creator, creatorAmount);
@@ -210,8 +207,8 @@ contract ProtocolSharedRevenueMinFeeMintModule is BaseFeeCollectModule, LensModu
         if (
             distribution.creatorSplit +
                 distribution.protocolSplit +
-                distribution.creatorFrontendSplit +
-                distribution.executorFrontendSplit !=
+                distribution.creatorClientSplit +
+                distribution.executorClientSplit !=
             BPS_MAX
         ) {
             revert Errors.InvalidParams();
@@ -243,7 +240,7 @@ contract ProtocolSharedRevenueMinFeeMintModule is BaseFeeCollectModule, LensModu
         uint256 pubId
     ) external view returns (ProtocolSharedRevenueMinFeeMintModulePublicationData memory) {
         BaseProfilePublicationData memory baseData = getBasePublicationData(profileId, pubId);
-        address creatorFrontend = _creatorFrontendByPublicationByProfile[profileId][pubId];
+        address creatorClient = _creatorClientByPublicationByProfile[profileId][pubId];
         return
             ProtocolSharedRevenueMinFeeMintModulePublicationData({
                 amount: baseData.amount,
@@ -254,7 +251,7 @@ contract ProtocolSharedRevenueMinFeeMintModule is BaseFeeCollectModule, LensModu
                 referralFee: baseData.referralFee,
                 followerOnly: baseData.followerOnly,
                 endTimestamp: baseData.endTimestamp,
-                creatorFrontend: creatorFrontend
+                creatorClient: creatorClient
             });
     }
 

@@ -82,7 +82,7 @@ contract ProtocolSharedRevenueMinFeeMintModule_Initialization is
         uint72 currentTimestamp,
         uint72 endTimestamp,
         address recipient,
-        address creatorFrontend
+        address creatorClient
     ) public {
         vm.assume(profileId != 0);
         vm.assume(pubId != 0);
@@ -102,7 +102,7 @@ contract ProtocolSharedRevenueMinFeeMintModule_Initialization is
         mintFeeModuleExampleInitData.followerOnly = followerOnly;
         mintFeeModuleExampleInitData.endTimestamp = endTimestamp;
         mintFeeModuleExampleInitData.recipient = recipient;
-        mintFeeModuleExampleInitData.creatorFrontend = creatorFrontend;
+        mintFeeModuleExampleInitData.creatorClient = creatorClient;
 
         vm.prank(collectPublicationAction);
         IBaseFeeCollectModule(baseFeeCollectModule).initializePublicationCollectModule(
@@ -138,9 +138,9 @@ contract ProtocolSharedRevenueMinFeeMintModule_Initialization is
             'Collect limit initialization mismatch'
         );
         assertEq(
-            fetchedData.creatorFrontend,
-            mintFeeModuleExampleInitData.creatorFrontend,
-            'CreatorFrontend initialization mismatch'
+            fetchedData.creatorClient,
+            mintFeeModuleExampleInitData.creatorClient,
+            'CreatorClient initialization mismatch'
         );
     }
 }
@@ -156,7 +156,7 @@ contract ProtocolSharedRevenueMinFeeMintModule_ProcessCollect is
         // Prevents being counted in Foundry Coverage
     }
 
-    address exampleExecutorFrontend = executorFrontendAddress;
+    address exampleExecutorClient = executorClientAddress;
 
     function setUp() public override(ProtocolSharedRevenueMinFeeMintModuleBase, BaseFeeCollectModuleBase) {
         ProtocolSharedRevenueMinFeeMintModuleBase.setUp();
@@ -171,7 +171,7 @@ contract ProtocolSharedRevenueMinFeeMintModule_ProcessCollect is
     }
 
     function _getCollectParamsData(address currency, uint160 amount) internal override returns (bytes memory) {
-        return abi.encode(currency, amount, exampleExecutorFrontend);
+        return abi.encode(currency, amount, exampleExecutorClient);
     }
 
     // Scenarios
@@ -201,8 +201,8 @@ contract ProtocolSharedRevenueMinFeeMintModule_ProcessCollect is
         address recipient
     ) public {
         address collectorProfileOwner = makeAddr('COLLECTOR_PROFILE_OWNER');
-        address executorFrontend = makeAddr('EXECUTOR_FRONTEND');
-        exampleExecutorFrontend = executorFrontend;
+        address executorClient = makeAddr('EXECUTOR_CLIENT');
+        exampleExecutorClient = executorClient;
 
         bonsai.mint(collectorProfileOwner, 10 ether);
 
@@ -226,8 +226,8 @@ contract ProtocolSharedRevenueMinFeeMintModule_ProcessCollect is
     struct Balances {
         uint256 creator;
         uint256 protocol;
-        uint256 creatorFrontend;
-        uint256 executorFrontend;
+        uint256 creatorClient;
+        uint256 executorClient;
         uint256 collector;
     }
 
@@ -246,7 +246,7 @@ contract ProtocolSharedRevenueMinFeeMintModule_ProcessCollect is
         address recipient
     ) public {
         address collectorProfileOwner = makeAddr('COLLECTOR_PROFILE_OWNER');
-        address executorFrontend = makeAddr('EXECUTOR_FRONTEND');
+        address executorClient = makeAddr('EXECUTOR_CLIENT');
 
         bonsai.mint(collectorProfileOwner, 10 ether);
 
@@ -256,12 +256,12 @@ contract ProtocolSharedRevenueMinFeeMintModule_ProcessCollect is
         balancesBefore = Balances({
             creator: bonsai.balanceOf(defaultAccount.owner),
             protocol: bonsai.balanceOf(hub.getTreasury()),
-            creatorFrontend: bonsai.balanceOf(creatorFrontendAddress),
-            executorFrontend: bonsai.balanceOf(executorFrontend),
+            creatorClient: bonsai.balanceOf(creatorClientAddress),
+            executorClient: bonsai.balanceOf(executorClient),
             collector: bonsai.balanceOf(collectorProfileOwner)
         });
 
-        exampleExecutorFrontend = executorFrontend;
+        exampleExecutorClient = executorClient;
         super.testCanCollectIfAllConditionsAreMet(
             pubId,
             transactionExecutor,
@@ -278,16 +278,16 @@ contract ProtocolSharedRevenueMinFeeMintModule_ProcessCollect is
         balancesAfter = Balances({
             creator: bonsai.balanceOf(defaultAccount.owner),
             protocol: bonsai.balanceOf(hub.getTreasury()),
-            creatorFrontend: bonsai.balanceOf(creatorFrontendAddress),
-            executorFrontend: bonsai.balanceOf(executorFrontend),
+            creatorClient: bonsai.balanceOf(creatorClientAddress),
+            executorClient: bonsai.balanceOf(executorClient),
             collector: bonsai.balanceOf(collectorProfileOwner)
         });
 
         balancesChange = Balances({
             creator: balancesAfter.creator - balancesBefore.creator,
             protocol: balancesAfter.protocol - balancesBefore.protocol,
-            creatorFrontend: balancesAfter.creatorFrontend - balancesBefore.creatorFrontend,
-            executorFrontend: balancesAfter.executorFrontend - balancesBefore.executorFrontend,
+            creatorClient: balancesAfter.creatorClient - balancesBefore.creatorClient,
+            executorClient: balancesAfter.executorClient - balancesBefore.executorClient,
             collector: balancesBefore.collector - balancesAfter.collector
         });
 
@@ -295,19 +295,19 @@ contract ProtocolSharedRevenueMinFeeMintModule_ProcessCollect is
             BPS_MAX;
         uint256 expectedProtocolFee = (mintFee * mintFeeModule.getProtocolSharedRevenueDistribution().protocolSplit) /
             BPS_MAX;
-        uint256 expectedCreatorFrontendFee = (mintFee *
-            mintFeeModule.getProtocolSharedRevenueDistribution().creatorFrontendSplit) / BPS_MAX;
-        uint256 expectedExecutorFrontendFee = (mintFee *
-            mintFeeModule.getProtocolSharedRevenueDistribution().executorFrontendSplit) / BPS_MAX;
+        uint256 expectedCreatorClientFee = (mintFee *
+            mintFeeModule.getProtocolSharedRevenueDistribution().creatorClientSplit) / BPS_MAX;
+        uint256 expectedExecutorClientFee = (mintFee *
+            mintFeeModule.getProtocolSharedRevenueDistribution().executorClientSplit) / BPS_MAX;
 
         assertEq(balancesChange.creator, expectedCreatorFee, 'Creator balance change wrong');
         assertEq(balancesChange.protocol, expectedProtocolFee, 'Protocol balance change wrong');
-        assertEq(balancesChange.creatorFrontend, expectedCreatorFrontendFee, 'CreatorFrontend balance change wrong');
-        assertEq(balancesChange.executorFrontend, expectedExecutorFrontendFee, 'ExecutorFrontend balance change wrong');
+        assertEq(balancesChange.creatorClient, expectedCreatorClientFee, 'CreatorClient balance change wrong');
+        assertEq(balancesChange.executorClient, expectedExecutorClientFee, 'ExecutorClient balance change wrong');
         assertEq(balancesChange.collector, mintFee, 'Collector balance change wrong');
     }
 
-    function testMintFeeDistribution_FreePost_WithoutFrontends(
+    function testMintFeeDistribution_FreePost_WithoutClients(
         uint256 pubId,
         address transactionExecutor,
         uint96 collectLimit,
@@ -319,8 +319,8 @@ contract ProtocolSharedRevenueMinFeeMintModule_ProcessCollect is
     ) public {
         address collectorProfileOwner = makeAddr('COLLECTOR_PROFILE_OWNER');
 
-        address executorFrontend = address(0);
-        creatorFrontendAddress = address(0);
+        address executorClient = address(0);
+        creatorClientAddress = address(0);
 
         bonsai.mint(collectorProfileOwner, 10 ether);
 
@@ -330,14 +330,14 @@ contract ProtocolSharedRevenueMinFeeMintModule_ProcessCollect is
         balancesBefore = Balances({
             creator: bonsai.balanceOf(defaultAccount.owner),
             protocol: bonsai.balanceOf(hub.getTreasury()),
-            creatorFrontend: bonsai.balanceOf(creatorFrontendAddress),
-            executorFrontend: bonsai.balanceOf(executorFrontend),
+            creatorClient: bonsai.balanceOf(creatorClientAddress),
+            executorClient: bonsai.balanceOf(executorClient),
             collector: bonsai.balanceOf(collectorProfileOwner)
         });
 
-        console.log('creatorFrontend balance before: %s', balancesBefore.creatorFrontend);
+        console.log('creatorClient balance before: %s', balancesBefore.creatorClient);
 
-        exampleExecutorFrontend = executorFrontend;
+        exampleExecutorClient = executorClient;
         super.testCanCollectIfAllConditionsAreMet(
             pubId,
             transactionExecutor,
@@ -354,16 +354,16 @@ contract ProtocolSharedRevenueMinFeeMintModule_ProcessCollect is
         balancesAfter = Balances({
             creator: bonsai.balanceOf(defaultAccount.owner),
             protocol: bonsai.balanceOf(hub.getTreasury()),
-            creatorFrontend: bonsai.balanceOf(creatorFrontendAddress),
-            executorFrontend: bonsai.balanceOf(executorFrontend),
+            creatorClient: bonsai.balanceOf(creatorClientAddress),
+            executorClient: bonsai.balanceOf(executorClient),
             collector: bonsai.balanceOf(collectorProfileOwner)
         });
 
         balancesChange = Balances({
             creator: balancesAfter.creator - balancesBefore.creator,
             protocol: balancesAfter.protocol - balancesBefore.protocol,
-            creatorFrontend: balancesAfter.creatorFrontend - balancesBefore.creatorFrontend,
-            executorFrontend: balancesAfter.executorFrontend - balancesBefore.executorFrontend,
+            creatorClient: balancesAfter.creatorClient - balancesBefore.creatorClient,
+            executorClient: balancesAfter.executorClient - balancesBefore.executorClient,
             collector: balancesBefore.collector - balancesAfter.collector
         });
 
@@ -371,19 +371,19 @@ contract ProtocolSharedRevenueMinFeeMintModule_ProcessCollect is
             BPS_MAX;
         uint256 expectedProtocolFee = (mintFee * mintFeeModule.getProtocolSharedRevenueDistribution().protocolSplit) /
             BPS_MAX;
-        uint256 expectedCreatorFrontendFee = (mintFee *
-            mintFeeModule.getProtocolSharedRevenueDistribution().creatorFrontendSplit) / BPS_MAX;
-        uint256 expectedExecutorFrontendFee = (mintFee *
-            mintFeeModule.getProtocolSharedRevenueDistribution().executorFrontendSplit) / BPS_MAX;
+        uint256 expectedCreatorClientFee = (mintFee *
+            mintFeeModule.getProtocolSharedRevenueDistribution().creatorClientSplit) / BPS_MAX;
+        uint256 expectedExecutorClientFee = (mintFee *
+            mintFeeModule.getProtocolSharedRevenueDistribution().executorClientSplit) / BPS_MAX;
 
         assertEq(
             balancesChange.creator,
-            expectedCreatorFee + expectedCreatorFrontendFee + expectedExecutorFrontendFee,
+            expectedCreatorFee + expectedCreatorClientFee + expectedExecutorClientFee,
             'Creator balance change wrong'
         );
         assertEq(balancesChange.protocol, expectedProtocolFee, 'Protocol balance change wrong');
-        assertEq(balancesChange.creatorFrontend, 0, 'CreatorFrontend balance change wrong');
-        assertEq(balancesChange.executorFrontend, 0, 'ExecutorFrontend balance change wrong');
+        assertEq(balancesChange.creatorClient, 0, 'CreatorClient balance change wrong');
+        assertEq(balancesChange.executorClient, 0, 'ExecutorClient balance change wrong');
         assertEq(balancesChange.collector, mintFee, 'Collector balance change wrong');
     }
 
@@ -400,17 +400,17 @@ contract ProtocolSharedRevenueMinFeeMintModule_ProcessCollect is
     ) public {
         vm.assume(amount > 0);
         address collectorProfileOwner = makeAddr('COLLECTOR_PROFILE_OWNER');
-        address executorFrontend = makeAddr('EXECUTOR_FRONTEND');
+        address executorClient = makeAddr('EXECUTOR_CLIENT');
 
         balancesBefore = Balances({
             creator: bonsai.balanceOf(defaultAccount.owner),
             protocol: bonsai.balanceOf(hub.getTreasury()),
-            creatorFrontend: bonsai.balanceOf(creatorFrontendAddress),
-            executorFrontend: bonsai.balanceOf(executorFrontend),
+            creatorClient: bonsai.balanceOf(creatorClientAddress),
+            executorClient: bonsai.balanceOf(executorClient),
             collector: bonsai.balanceOf(collectorProfileOwner)
         });
 
-        exampleExecutorFrontend = executorFrontend;
+        exampleExecutorClient = executorClient;
         super.testCanCollectIfAllConditionsAreMet(
             pubId,
             transactionExecutor,
@@ -427,23 +427,23 @@ contract ProtocolSharedRevenueMinFeeMintModule_ProcessCollect is
         balancesAfter = Balances({
             creator: bonsai.balanceOf(defaultAccount.owner),
             protocol: bonsai.balanceOf(hub.getTreasury()),
-            creatorFrontend: bonsai.balanceOf(creatorFrontendAddress),
-            executorFrontend: bonsai.balanceOf(executorFrontend),
+            creatorClient: bonsai.balanceOf(creatorClientAddress),
+            executorClient: bonsai.balanceOf(executorClient),
             collector: bonsai.balanceOf(collectorProfileOwner)
         });
 
         balancesChange = Balances({
             creator: balancesAfter.creator - balancesBefore.creator,
             protocol: balancesAfter.protocol - balancesBefore.protocol,
-            creatorFrontend: balancesAfter.creatorFrontend - balancesBefore.creatorFrontend,
-            executorFrontend: balancesAfter.executorFrontend - balancesBefore.executorFrontend,
+            creatorClient: balancesAfter.creatorClient - balancesBefore.creatorClient,
+            executorClient: balancesAfter.executorClient - balancesBefore.executorClient,
             collector: balancesBefore.collector - balancesAfter.collector
         });
 
         assertEq(balancesChange.creator, 0, 'Creator balance change wrong');
         assertEq(balancesChange.protocol, 0, 'Protocol balance change wrong');
-        assertEq(balancesChange.creatorFrontend, 0, 'CreatorFrontend balance change wrong');
-        assertEq(balancesChange.executorFrontend, 0, 'ExecutorFrontend balance change wrong');
+        assertEq(balancesChange.creatorClient, 0, 'CreatorClient balance change wrong');
+        assertEq(balancesChange.executorClient, 0, 'ExecutorClient balance change wrong');
         assertEq(balancesChange.collector, 0, 'Collector balance change wrong');
     }
 }
@@ -486,14 +486,14 @@ contract ProtocolSharedRevenueMinFeeMintModule_OwnerMethods is ProtocolSharedRev
     function testCannotSetProtocolSharedRevenueDistribution_ifNotOwner(
         uint16 creatorSplit,
         uint16 protocolSplit,
-        uint16 creatorFrontendSplit,
+        uint16 creatorClientSplit,
         address notOwner
     ) public {
         vm.assume(notOwner != mintFeeModule.owner());
         creatorSplit = uint16(bound(uint256(creatorSplit), 0, BPS_MAX));
         protocolSplit = uint16(bound(uint256(protocolSplit), 0, BPS_MAX - creatorSplit));
-        creatorFrontendSplit = uint16(bound(uint256(creatorFrontendSplit), 0, BPS_MAX - creatorSplit - protocolSplit));
-        uint16 executorFrontendSplit = BPS_MAX - creatorSplit - protocolSplit - creatorFrontendSplit;
+        creatorClientSplit = uint16(bound(uint256(creatorClientSplit), 0, BPS_MAX - creatorSplit - protocolSplit));
+        uint16 executorClientSplit = BPS_MAX - creatorSplit - protocolSplit - creatorClientSplit;
 
         vm.expectRevert('Ownable: caller is not the owner');
 
@@ -502,8 +502,8 @@ contract ProtocolSharedRevenueMinFeeMintModule_OwnerMethods is ProtocolSharedRev
             ProtocolSharedRevenueDistribution({
                 creatorSplit: creatorSplit,
                 protocolSplit: protocolSplit,
-                creatorFrontendSplit: creatorFrontendSplit,
-                executorFrontendSplit: executorFrontendSplit
+                creatorClientSplit: creatorClientSplit,
+                executorClientSplit: executorClientSplit
             })
         );
     }
@@ -519,14 +519,14 @@ contract ProtocolSharedRevenueMinFeeMintModule_OwnerMethods is ProtocolSharedRev
     function testCannotSetProtocolSharedRevenueDistribution_ifSplitsDontAddUpToBPS_MAX(
         uint16 creatorSplit,
         uint16 protocolSplit,
-        uint16 creatorFrontendSplit,
-        uint16 executorFrontendSplit
+        uint16 creatorClientSplit,
+        uint16 executorClientSplit
     ) public {
         vm.assume(
             uint256(creatorSplit) +
                 uint256(protocolSplit) +
-                uint256(creatorFrontendSplit) +
-                uint256(executorFrontendSplit) !=
+                uint256(creatorClientSplit) +
+                uint256(executorClientSplit) !=
                 BPS_MAX
         );
 
@@ -534,8 +534,8 @@ contract ProtocolSharedRevenueMinFeeMintModule_OwnerMethods is ProtocolSharedRev
         if (
             uint256(creatorSplit) +
                 uint256(protocolSplit) +
-                uint256(creatorFrontendSplit) +
-                uint256(executorFrontendSplit) >
+                uint256(creatorClientSplit) +
+                uint256(executorClientSplit) >
             type(uint16).max
         ) {
             vm.expectRevert(stdError.arithmeticError);
@@ -547,8 +547,8 @@ contract ProtocolSharedRevenueMinFeeMintModule_OwnerMethods is ProtocolSharedRev
             ProtocolSharedRevenueDistribution({
                 creatorSplit: creatorSplit,
                 protocolSplit: protocolSplit,
-                creatorFrontendSplit: creatorFrontendSplit,
-                executorFrontendSplit: executorFrontendSplit
+                creatorClientSplit: creatorClientSplit,
+                executorClientSplit: executorClientSplit
             })
         );
         vm.stopPrank();
@@ -575,19 +575,18 @@ contract ProtocolSharedRevenueMinFeeMintModule_OwnerMethods is ProtocolSharedRev
     function testSetProtocolSharedRevenueDistribution(
         uint16 creatorSplit,
         uint16 protocolSplit,
-        uint16 creatorFrontendSplit,
-        uint16 executorFrontendSplit
+        uint16 creatorClientSplit
     ) public {
         creatorSplit = uint16(bound(uint256(creatorSplit), 0, BPS_MAX));
         protocolSplit = uint16(bound(uint256(protocolSplit), 0, BPS_MAX - creatorSplit));
-        creatorFrontendSplit = uint16(bound(uint256(creatorFrontendSplit), 0, BPS_MAX - creatorSplit - protocolSplit));
-        uint16 executorFrontendSplit = BPS_MAX - creatorSplit - protocolSplit - creatorFrontendSplit;
+        creatorClientSplit = uint16(bound(uint256(creatorClientSplit), 0, BPS_MAX - creatorSplit - protocolSplit));
+        uint16 executorClientSplit = BPS_MAX - creatorSplit - protocolSplit - creatorClientSplit;
 
         ProtocolSharedRevenueDistribution memory expectedDistribution = ProtocolSharedRevenueDistribution({
             creatorSplit: creatorSplit,
             protocolSplit: protocolSplit,
-            creatorFrontendSplit: creatorFrontendSplit,
-            executorFrontendSplit: executorFrontendSplit
+            creatorClientSplit: creatorClientSplit,
+            executorClientSplit: executorClientSplit
         });
 
         vm.prank(mintFeeModule.owner());
@@ -599,14 +598,14 @@ contract ProtocolSharedRevenueMinFeeMintModule_OwnerMethods is ProtocolSharedRev
         assertEq(actualDistribution.creatorSplit, expectedDistribution.creatorSplit, 'Creator split mismatch');
         assertEq(actualDistribution.protocolSplit, expectedDistribution.protocolSplit, 'Protocol split mismatch');
         assertEq(
-            actualDistribution.creatorFrontendSplit,
-            expectedDistribution.creatorFrontendSplit,
-            'CreatorFrontend split mismatch'
+            actualDistribution.creatorClientSplit,
+            expectedDistribution.creatorClientSplit,
+            'CreatorClient split mismatch'
         );
         assertEq(
-            actualDistribution.executorFrontendSplit,
-            expectedDistribution.executorFrontendSplit,
-            'ExecutorFrontend split mismatch'
+            actualDistribution.executorClientSplit,
+            expectedDistribution.executorClientSplit,
+            'ExecutorClient split mismatch'
         );
     }
 }

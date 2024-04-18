@@ -15,8 +15,8 @@ contract ProtocolSharedRevenueMinFeeMintModuleBase is BaseFeeCollectModuleBase {
 
     uint16 constant BPS_MAX = 10000;
 
-    address creatorFrontendAddress = makeAddr('CREATOR_FRONTEND');
-    address executorFrontendAddress = makeAddr('EXECUTOR_FRONTEND');
+    address creatorClientAddress = makeAddr('CREATOR_CLIENT');
+    address executorClientAddress = makeAddr('EXECUTOR_CLIENT');
 
     MockCurrency bonsai;
     uint256 mintFee = 10 ether;
@@ -55,8 +55,8 @@ contract ProtocolSharedRevenueMinFeeMintModuleBase is BaseFeeCollectModuleBase {
             ProtocolSharedRevenueDistribution({
                 creatorSplit: 5000,
                 protocolSplit: 2000,
-                creatorFrontendSplit: 1500,
-                executorFrontendSplit: 1500
+                creatorClientSplit: 1500,
+                executorClientSplit: 1500
             })
         );
         vm.stopPrank();
@@ -70,7 +70,7 @@ contract ProtocolSharedRevenueMinFeeMintModuleBase is BaseFeeCollectModuleBase {
         mintFeeModuleExampleInitData.followerOnly = exampleInitData.followerOnly;
         mintFeeModuleExampleInitData.endTimestamp = exampleInitData.endTimestamp;
         mintFeeModuleExampleInitData.recipient = exampleInitData.recipient;
-        mintFeeModuleExampleInitData.creatorFrontend = creatorFrontendAddress;
+        mintFeeModuleExampleInitData.creatorClient = creatorClientAddress;
 
         return abi.encode(mintFeeModuleExampleInitData);
     }
