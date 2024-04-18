@@ -171,6 +171,10 @@
       {
         "symbol": "USDC",
         "addy": "0x41E94Eb019C0762f9Bfcf9Fb1E58725BfB0e7582"
+      },
+      {
+        "symbol": "BONSAI",
+        "addy": "0x9f98f838e3db42830ef488a92c8ed9671268000e"
       }
     ],
     "Modules": {
@@ -204,6 +208,10 @@
           {
             "name": "MultirecipientFeeCollectModule",
             "addy": "0xC13ACcCe5cDb32bED1Af0B11cdb637E3966BCB45"
+          },
+          {
+            "name": "ProtocolSharedRevenueMinFeeMintModule",
+            "addy": "0x6d3671d37252d27f03efb01C1995A73162473571"
           }
         ],
         "reference": [
