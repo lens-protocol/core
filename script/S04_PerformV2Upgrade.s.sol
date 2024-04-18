@@ -38,7 +38,7 @@ contract S04_PerformV2Upgrade is Script, ForkManagement {
     ProxyAdmin proxyAdminContract;
 
     function loadBaseAddresses() internal override {
-        address lensHubProxyAddress = json.readAddress(string(abi.encodePacked('.', targetEnv, '.LensHubProxy')));
+        address lensHubProxyAddress = json.readAddress(string(abi.encodePacked('.', targetEnv, '.LensHub')));
         legacyLensHub = ILensGovernable(lensHubProxyAddress);
         vm.label(lensHubProxyAddress, 'LensHub');
         console.log('Lens Hub Proxy: %s', address(legacyLensHub));

@@ -14,6 +14,7 @@ contract ForkManagement is Script {
     string network;
     string json;
     uint256 forkBlockNumber;
+    bool isTestnet;
 
     // TODO: Replace with forge-std/StdJson.sol::keyExists(...) when/if this PR is approved:
     //       https://github.com/foundry-rs/forge-std/pull/226
@@ -65,11 +66,13 @@ contract ForkManagement is Script {
     function checkNetworkParams() internal {
         network = json.readString(string(abi.encodePacked('.', targetEnv, '.network')));
         uint256 chainId = json.readUint(string(abi.encodePacked('.', targetEnv, '.chainId')));
+        isTestnet = json.readBool(string.concat('.', targetEnv, '.testnet'));
 
         console.log('\nTarget environment:', targetEnv);
         console.log('Network:', network);
         if (block.chainid != chainId) revert('Wrong chainId');
         console.log('ChainId:', chainId);
+        console.log('\n\n Testnet: ', isTestnet ? 'true' : 'false');
     }
 
     function getNetwork() internal returns (string memory) {
