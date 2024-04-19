@@ -170,7 +170,7 @@ contract ProtocolSharedRevenueMinFeeMintModule_ProcessCollect is
         return ProtocolSharedRevenueMinFeeMintModuleBase.getEncodedInitData();
     }
 
-    function _getCollectParamsData(address currency, uint160 amount) internal override returns (bytes memory) {
+    function _getCollectParamsData(address currency, uint160 amount) internal view override returns (bytes memory) {
         return abi.encode(currency, amount, exampleExecutorClient);
     }
 
