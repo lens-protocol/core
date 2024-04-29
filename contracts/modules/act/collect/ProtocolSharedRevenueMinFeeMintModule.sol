@@ -16,7 +16,6 @@ struct ProtocolSharedRevenueMinFeeMintModuleInitData {
     uint160 amount;
     uint96 collectLimit;
     address currency;
-    uint96 currentCollects;
     address recipient;
     uint16 referralFee;
     bool followerOnly;
