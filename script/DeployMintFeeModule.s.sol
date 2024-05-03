@@ -20,6 +20,7 @@ contract DeployMintFeeModule is Script, ForkManagement {
 
     LensAccount _deployer;
     LensAccount governance;
+    LensAccount proxyAdmin;
 
     string mnemonic;
 
@@ -31,6 +32,8 @@ contract DeployMintFeeModule is Script, ForkManagement {
     address bonsai;
 
     ProtocolSharedRevenueMinFeeMintModule mintFeeModule;
+    address mintFeeModuleImpl;
+    address payable mintFeeModuleProxyAddr;
 
     function loadPrivateKeys() internal {
         if (isEnvSet('MNEMONIC')) {
@@ -48,6 +51,9 @@ contract DeployMintFeeModule is Script, ForkManagement {
 
         (governance.owner, governance.ownerPk) = deriveRememberKey(mnemonic, 1);
         console.log('\n- - - GOVERNANCE: %s', governance.owner);
+
+        (proxyAdmin.owner, proxyAdmin.ownerPk) = deriveRememberKey(mnemonic, 2);
+        console.log('\n- - - PROXY ADMIN: %s', proxyAdmin.owner);
 
         console.log('\n');
 
@@ -76,6 +82,18 @@ contract DeployMintFeeModule is Script, ForkManagement {
             }
         }
         revert('Module not found');
+    }
+
+    function findModuleHelper_noFail(
+        Module[] memory modules,
+        string memory moduleNameToFind
+    ) internal pure returns (Module memory) {
+        for (uint256 i = 0; i < modules.length; i++) {
+            if (LibString.eq(modules[i].name, moduleNameToFind)) {
+                return modules[i];
+            }
+        }
+        return Module(address(0), '');
     }
 
     function saveModule(
@@ -117,6 +135,14 @@ contract DeployMintFeeModule is Script, ForkManagement {
         collectPublicationAction = findModuleHelper(actModules, 'CollectPublicationAction').addy;
         vm.label(collectPublicationAction, 'CollectPublicationAction');
         console.log('CollectPublicationAction: %s', collectPublicationAction);
+
+        Module[] memory collectModules = abi.decode(
+            vm.parseJson(json, string(abi.encodePacked('.', targetEnv, '.Modules.v2.collect'))),
+            (Module[])
+        );
+        mintFeeModuleProxyAddr = payable(
+            findModuleHelper_noFail(collectModules, 'ProtocolSharedRevenueMinFeeMintModule').addy
+        );
 
         moduleRegistry = json.readAddress(string(abi.encodePacked('.', targetEnv, '.ModuleRegistry')));
         vm.label(moduleRegistry, 'ModuleRegistry');
@@ -160,7 +186,7 @@ contract DeployMintFeeModule is Script, ForkManagement {
     function deploy() internal {
         vm.startBroadcast(_deployer.ownerPk);
         {
-            address mintFeeModuleImpl = address(
+            mintFeeModuleImpl = address(
                 new ProtocolSharedRevenueMinFeeMintModule({
                     hub: lensHub,
                     actionModule: collectPublicationAction,
@@ -177,20 +203,38 @@ contract DeployMintFeeModule is Script, ForkManagement {
             console.log('\tAction Module: ', collectPublicationAction);
             console.log('\tModule Registry: ', moduleRegistry);
             console.log('\tModule Owner: ', governanceOwner);
-
-            mintFeeModule = ProtocolSharedRevenueMinFeeMintModule(
-                address(
-                    new TransparentUpgradeableProxy(
-                        mintFeeModuleImpl,
-                        proxyAdminContractAdmin,
-                        abi.encodeCall(mintFeeModule.initialize, (governanceOwner))
-                    )
-                )
-            );
-
-            _logDeployedModule(address(mintFeeModule), 'ProtocolSharedRevenueMinFeeMintModule', 'collect');
         }
         vm.stopBroadcast();
+
+        if (mintFeeModuleProxyAddr == address(0)) {
+            console.log('\n* * * MintFeeModule proxy not found - deploying from scratch...');
+            vm.startBroadcast(_deployer.ownerPk);
+            {
+                mintFeeModule = ProtocolSharedRevenueMinFeeMintModule(
+                    address(
+                        new TransparentUpgradeableProxy(
+                            mintFeeModuleImpl,
+                            proxyAdminContractAdmin,
+                            abi.encodeCall(mintFeeModule.initialize, (governanceOwner))
+                        )
+                    )
+                );
+            }
+            vm.stopBroadcast();
+
+            _logDeployedModule(address(mintFeeModule), 'ProtocolSharedRevenueMinFeeMintModule', 'collect');
+        } else {
+            console.log('\n* * * MintFeeModule proxy found - upgrading...');
+            console.log('\tProxyAdminContractAdmin: ', proxyAdminContractAdmin);
+            console.log('\tproxyAdmin.owner: ', proxyAdmin.owner);
+            vm.startBroadcast(proxyAdmin.ownerPk);
+            {
+                TransparentUpgradeableProxy(mintFeeModuleProxyAddr).upgradeTo(mintFeeModuleImpl);
+            }
+            vm.stopBroadcast();
+            mintFeeModule = ProtocolSharedRevenueMinFeeMintModule(mintFeeModuleProxyAddr);
+            console.log('\n* * * MintFeeModule upgraded to new implementation: ', mintFeeModuleImpl);
+        }
     }
 
     function moduleRegistryActions() internal {
@@ -204,7 +248,7 @@ contract DeployMintFeeModule is Script, ForkManagement {
     }
 
     function governanceActions() internal {
-        console.log('Owner of mintFeeModule:', mintFeeModule.owner());
+        console.log('\n* * * Owner of mintFeeModule:', mintFeeModule.owner());
         vm.startBroadcast(governance.ownerPk);
         {
             mintFeeModule.setMintFeeParams(bonsai, 10 ether);

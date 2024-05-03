@@ -105,7 +105,7 @@ contract ProtocolSharedRevenueMinFeeMintModule_Initialization is
         mintFeeModuleExampleInitData.creatorClient = creatorClient;
 
         vm.prank(collectPublicationAction);
-        IBaseFeeCollectModule(baseFeeCollectModule).initializePublicationCollectModule(
+        bytes memory returnedData = IBaseFeeCollectModule(baseFeeCollectModule).initializePublicationCollectModule(
             profileId,
             pubId,
             transactionExecutor,
@@ -142,6 +142,7 @@ contract ProtocolSharedRevenueMinFeeMintModule_Initialization is
             mintFeeModuleExampleInitData.creatorClient,
             'CreatorClient initialization mismatch'
         );
+        assertEq(keccak256(returnedData), keccak256(getEncodedInitData()), 'Returned data mismatch');
     }
 }
 
@@ -469,6 +470,9 @@ contract ProtocolSharedRevenueMinFeeMintModule_OwnerMethods is ProtocolSharedRev
         ProtocolSharedRevenueMinFeeMintModuleBase.setUp();
     }
 
+    event MintFeeParamsSet(address token, uint256 amount, uint256 timestamp);
+    event ProtocolSharedRevenueDistributionSet(ProtocolSharedRevenueDistribution distribution, uint256 timestamp);
+
     // Negatives
 
     function testCannotSetMintFeeParams_ifNotOwner(address currency, uint256 mintFee, address notOwner) public {
@@ -563,6 +567,9 @@ contract ProtocolSharedRevenueMinFeeMintModule_OwnerMethods is ProtocolSharedRev
             currency = address(0);
         }
 
+        vm.expectEmit(true, true, true, true, address(mintFeeModule));
+        emit MintFeeParamsSet(currency, mintFee, block.timestamp);
+
         vm.prank(mintFeeModule.owner());
         mintFeeModule.setMintFeeParams(currency, mintFee);
 
@@ -588,6 +595,9 @@ contract ProtocolSharedRevenueMinFeeMintModule_OwnerMethods is ProtocolSharedRev
             creatorClientSplit: creatorClientSplit,
             executorClientSplit: executorClientSplit
         });
+
+        vm.expectEmit(true, true, true, true, address(mintFeeModule));
+        emit ProtocolSharedRevenueDistributionSet(expectedDistribution, block.timestamp);
 
         vm.prank(mintFeeModule.owner());
         mintFeeModule.setProtocolSharedRevenueDistribution(expectedDistribution);

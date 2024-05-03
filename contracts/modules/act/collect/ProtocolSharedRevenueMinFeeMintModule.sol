@@ -60,6 +60,9 @@ contract ProtocolSharedRevenueMinFeeMintModule is BaseFeeCollectModule, LensModu
     uint256 mintFeeAmount;
     ProtocolSharedRevenueDistribution protocolSharedRevenueDistribution;
 
+    event MintFeeParamsSet(address token, uint256 amount, uint256 timestamp);
+    event ProtocolSharedRevenueDistributionSet(ProtocolSharedRevenueDistribution distribution, uint256 timestamp);
+
     mapping(uint256 profileId => mapping(uint256 pubId => address creatorClient))
         internal _creatorClientByPublicationByProfile;
 
@@ -111,7 +114,7 @@ contract ProtocolSharedRevenueMinFeeMintModule is BaseFeeCollectModule, LensModu
 
         _validateBaseInitData(baseInitData);
         _storeBasePublicationCollectParameters(profileId, pubId, baseInitData);
-        return '';
+        return data;
     }
 
     function processCollect(
@@ -175,7 +178,7 @@ contract ProtocolSharedRevenueMinFeeMintModule is BaseFeeCollectModule, LensModu
                 executorClientAmount
             );
         } else {
-            // If there's no creatorClient specified - we give that amount to the publication creator
+            // If there's no executorClient specified - we give that amount to the publication creator
             creatorAmount += executorClientAmount;
         }
 
@@ -198,6 +201,8 @@ contract ProtocolSharedRevenueMinFeeMintModule is BaseFeeCollectModule, LensModu
         }
         mintFeeToken = token;
         mintFeeAmount = amount;
+
+        emit MintFeeParamsSet(token, amount, block.timestamp);
     }
 
     function setProtocolSharedRevenueDistribution(
@@ -213,6 +218,8 @@ contract ProtocolSharedRevenueMinFeeMintModule is BaseFeeCollectModule, LensModu
             revert Errors.InvalidParams();
         }
         protocolSharedRevenueDistribution = distribution;
+
+        emit ProtocolSharedRevenueDistributionSet(distribution, block.timestamp);
     }
 
     // Getters
