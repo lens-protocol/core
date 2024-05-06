@@ -10,6 +10,7 @@ import {CollectNFT} from 'contracts/modules/act/collect/CollectNFT.sol';
 import {SimpleFeeCollectModule} from 'contracts/modules/act/collect/SimpleFeeCollectModule.sol';
 import {BaseFeeCollectModuleInitData} from 'contracts/modules/interfaces/IBaseFeeCollectModule.sol';
 import {MockCurrency} from 'test/mocks/MockCurrency.sol';
+import {ProtocolSharedRevenueDistribution, ProtocolSharedRevenueMinFeeMintModuleInitData, ProtocolSharedRevenueMinFeeMintModule} from 'contracts/modules/act/collect/ProtocolSharedRevenueMinFeeMintModule.sol';
 
 contract PublicActProxyTest is BaseTest {
     using stdJson for string;
@@ -215,5 +216,322 @@ contract PublicActProxyTest is BaseTest {
         );
 
         assertTrue(collectNFT.balanceOf(nftRecipient) > 0, 'NFT recipient balance is 0');
+    }
+
+    function testCanPublicSharedRevenueCollectPaid() public {
+        vm.prank(deployer);
+        address revenueShareModule = address(
+            new ProtocolSharedRevenueMinFeeMintModule(
+                address(hub),
+                address(collectPublicationAction),
+                address(moduleRegistry),
+                address(this)
+            )
+        );
+
+        collectPublicationAction.registerCollectModule(revenueShareModule);
+
+        MockCurrency currency = new MockCurrency();
+        currency.mint(payer, 10 ether);
+
+        ProtocolSharedRevenueMinFeeMintModuleInitData memory exampleInitData;
+        exampleInitData.amount = 1 ether;
+        exampleInitData.collectLimit = 0;
+        exampleInitData.currency = address(currency);
+        exampleInitData.referralFee = 0;
+        exampleInitData.followerOnly = false;
+        exampleInitData.endTimestamp = 0;
+        exampleInitData.recipient = defaultAccount.owner;
+        exampleInitData.creatorClient = address(0);
+
+        Types.PostParams memory postParams = _getDefaultPostParams();
+        postParams.actionModules[0] = address(collectPublicationAction);
+        postParams.actionModulesInitDatas[0] = abi.encode(revenueShareModule, abi.encode(exampleInitData));
+
+        vm.prank(defaultAccount.owner);
+        defaultPubId = hub.post(postParams);
+
+        collectActionParams = Types.PublicationActionParams({
+            publicationActedProfileId: defaultAccount.profileId,
+            publicationActedId: defaultPubId,
+            actorProfileId: publicProfile.profileId,
+            referrerProfileIds: _emptyUint256Array(),
+            referrerPubIds: _emptyUint256Array(),
+            actionModuleAddress: address(collectPublicationAction),
+            actionModuleData: abi.encode(nftRecipient, abi.encode(currency, exampleInitData.amount, address(0)))
+        });
+
+        vm.startPrank(payer);
+        currency.approve(address(publicActProxy), exampleInitData.amount);
+        publicActProxy.publicSharedRevenueCollect(collectActionParams);
+        vm.stopPrank();
+
+        CollectNFT collectNFT = CollectNFT(
+            CollectPublicationAction(collectPublicationAction)
+                .getCollectData(defaultAccount.profileId, defaultPubId)
+                .collectNFT
+        );
+
+        assertTrue(collectNFT.balanceOf(nftRecipient) > 0, 'NFT recipient balance is 0');
+    }
+
+    function testCanPublicSharedRevenueCollectPaidWithSig() public {
+        vm.prank(deployer);
+        address revenueShareModule = address(
+            new ProtocolSharedRevenueMinFeeMintModule(
+                address(hub),
+                address(collectPublicationAction),
+                address(moduleRegistry),
+                address(this)
+            )
+        );
+
+        collectPublicationAction.registerCollectModule(revenueShareModule);
+
+        MockCurrency currency = new MockCurrency();
+        currency.mint(payer, 10 ether);
+
+        ProtocolSharedRevenueMinFeeMintModuleInitData memory exampleInitData;
+        exampleInitData.amount = 1 ether;
+        exampleInitData.collectLimit = 0;
+        exampleInitData.currency = address(currency);
+        exampleInitData.referralFee = 0;
+        exampleInitData.followerOnly = false;
+        exampleInitData.endTimestamp = 0;
+        exampleInitData.recipient = defaultAccount.owner;
+        exampleInitData.creatorClient = address(0);
+
+        Types.PostParams memory postParams = _getDefaultPostParams();
+        postParams.actionModules[0] = address(collectPublicationAction);
+        postParams.actionModulesInitDatas[0] = abi.encode(revenueShareModule, abi.encode(exampleInitData));
+
+        vm.prank(defaultAccount.owner);
+        defaultPubId = hub.post(postParams);
+
+        collectActionParams = Types.PublicationActionParams({
+            publicationActedProfileId: defaultAccount.profileId,
+            publicationActedId: defaultPubId,
+            actorProfileId: publicProfile.profileId,
+            referrerProfileIds: _emptyUint256Array(),
+            referrerPubIds: _emptyUint256Array(),
+            actionModuleAddress: address(collectPublicationAction),
+            actionModuleData: abi.encode(nftRecipient, abi.encode(currency, exampleInitData.amount, address(0)))
+        });
+
+        vm.prank(payer);
+        currency.approve(address(publicActProxy), exampleInitData.amount);
+
+        domainSeparator = keccak256(
+            abi.encode(
+                Typehash.EIP712_DOMAIN,
+                keccak256('PublicActProxy'),
+                MetaTxLib.EIP712_DOMAIN_VERSION_HASH,
+                block.chainid,
+                address(publicActProxy)
+            )
+        );
+
+        publicActProxy.publicSharedRevenueCollectWithSig({
+            publicationActionParams: collectActionParams,
+            signature: _getSigStruct({
+                pKey: payerPk,
+                digest: _getActTypedDataHash(collectActionParams, publicActProxy.nonces(payer), type(uint256).max),
+                deadline: type(uint256).max
+            })
+        });
+
+        CollectNFT collectNFT = CollectNFT(
+            CollectPublicationAction(collectPublicationAction)
+                .getCollectData(defaultAccount.profileId, defaultPubId)
+                .collectNFT
+        );
+
+        assertTrue(collectNFT.balanceOf(nftRecipient) > 0, 'NFT recipient balance is 0');
+    }
+
+    function testCanPublicSharedRevenueCollectFree() public {
+        address creatorClient = makeAddr('CREATOR_CLIENT');
+        address executorClient = makeAddr('EXECUTOR_CLIENT');
+
+        uint256 mintFee = 10 ether;
+
+        vm.prank(deployer);
+        address revenueShareModule = address(
+            new ProtocolSharedRevenueMinFeeMintModule(
+                address(hub),
+                address(collectPublicationAction),
+                address(moduleRegistry),
+                address(this)
+            )
+        );
+
+        collectPublicationAction.registerCollectModule(revenueShareModule);
+
+        MockCurrency currency = new MockCurrency();
+        currency.mint(payer, mintFee);
+
+        ProtocolSharedRevenueMinFeeMintModule(revenueShareModule).setMintFeeParams(address(currency), mintFee);
+        ProtocolSharedRevenueMinFeeMintModule(revenueShareModule).setProtocolSharedRevenueDistribution(
+            ProtocolSharedRevenueDistribution({
+                creatorSplit: 5000,
+                protocolSplit: 2000,
+                creatorClientSplit: 1500,
+                executorClientSplit: 1500
+            })
+        );
+
+        ProtocolSharedRevenueMinFeeMintModuleInitData memory exampleInitData;
+        exampleInitData.amount = 0 ether;
+        exampleInitData.collectLimit = 0;
+        exampleInitData.currency = address(0);
+        exampleInitData.referralFee = 0;
+        exampleInitData.followerOnly = false;
+        exampleInitData.endTimestamp = 0;
+        exampleInitData.recipient = defaultAccount.owner;
+        exampleInitData.creatorClient = creatorClient;
+
+        Types.PostParams memory postParams = _getDefaultPostParams();
+        postParams.actionModules[0] = address(collectPublicationAction);
+        postParams.actionModulesInitDatas[0] = abi.encode(revenueShareModule, abi.encode(exampleInitData));
+
+        vm.prank(defaultAccount.owner);
+        defaultPubId = hub.post(postParams);
+
+        collectActionParams = Types.PublicationActionParams({
+            publicationActedProfileId: defaultAccount.profileId,
+            publicationActedId: defaultPubId,
+            actorProfileId: publicProfile.profileId,
+            referrerProfileIds: _emptyUint256Array(),
+            referrerPubIds: _emptyUint256Array(),
+            actionModuleAddress: address(collectPublicationAction),
+            actionModuleData: abi.encode(
+                nftRecipient,
+                abi.encode(exampleInitData.currency, exampleInitData.amount, executorClient)
+            )
+        });
+
+        vm.startPrank(payer);
+        currency.approve(address(publicActProxy), mintFee);
+        publicActProxy.publicSharedRevenueCollect(collectActionParams);
+        vm.stopPrank();
+
+        CollectNFT collectNFT = CollectNFT(
+            CollectPublicationAction(collectPublicationAction)
+                .getCollectData(defaultAccount.profileId, defaultPubId)
+                .collectNFT
+        );
+
+        assertTrue(collectNFT.balanceOf(nftRecipient) > 0, 'NFT recipient balance is 0');
+
+        assertEq(currency.balanceOf(defaultAccount.owner), (mintFee * 5000) / 10000, 'Creator balance is incorrect');
+        assertEq(
+            currency.balanceOf(hub.getTreasury()),
+            (mintFee * 2000) / 10000,
+            'Protocol treasury client balance is incorrect'
+        );
+        assertEq(currency.balanceOf(creatorClient), (mintFee * 1500) / 10000, 'Creator client balance is incorrect');
+        assertEq(currency.balanceOf(executorClient), (mintFee * 1500) / 10000, 'Executor client balance is incorrect');
+    }
+
+    function testCanPublicSharedRevenueCollectFreeWithSig() public {
+        address creatorClient = makeAddr('CREATOR_CLIENT');
+        address executorClient = makeAddr('EXECUTOR_CLIENT');
+
+        uint256 mintFee = 10 ether;
+
+        vm.prank(deployer);
+        address revenueShareModule = address(
+            new ProtocolSharedRevenueMinFeeMintModule(
+                address(hub),
+                address(collectPublicationAction),
+                address(moduleRegistry),
+                address(this)
+            )
+        );
+
+        collectPublicationAction.registerCollectModule(revenueShareModule);
+
+        MockCurrency currency = new MockCurrency();
+        currency.mint(payer, mintFee);
+
+        ProtocolSharedRevenueMinFeeMintModule(revenueShareModule).setMintFeeParams(address(currency), mintFee);
+        ProtocolSharedRevenueMinFeeMintModule(revenueShareModule).setProtocolSharedRevenueDistribution(
+            ProtocolSharedRevenueDistribution({
+                creatorSplit: 5000,
+                protocolSplit: 2000,
+                creatorClientSplit: 1500,
+                executorClientSplit: 1500
+            })
+        );
+
+        ProtocolSharedRevenueMinFeeMintModuleInitData memory exampleInitData;
+        exampleInitData.amount = 0 ether;
+        exampleInitData.collectLimit = 0;
+        exampleInitData.currency = address(0);
+        exampleInitData.referralFee = 0;
+        exampleInitData.followerOnly = false;
+        exampleInitData.endTimestamp = 0;
+        exampleInitData.recipient = defaultAccount.owner;
+        exampleInitData.creatorClient = creatorClient;
+
+        Types.PostParams memory postParams = _getDefaultPostParams();
+        postParams.actionModules[0] = address(collectPublicationAction);
+        postParams.actionModulesInitDatas[0] = abi.encode(revenueShareModule, abi.encode(exampleInitData));
+
+        vm.prank(defaultAccount.owner);
+        defaultPubId = hub.post(postParams);
+
+        collectActionParams = Types.PublicationActionParams({
+            publicationActedProfileId: defaultAccount.profileId,
+            publicationActedId: defaultPubId,
+            actorProfileId: publicProfile.profileId,
+            referrerProfileIds: _emptyUint256Array(),
+            referrerPubIds: _emptyUint256Array(),
+            actionModuleAddress: address(collectPublicationAction),
+            actionModuleData: abi.encode(
+                nftRecipient,
+                abi.encode(exampleInitData.currency, exampleInitData.amount, executorClient)
+            )
+        });
+
+        vm.startPrank(payer);
+        currency.approve(address(publicActProxy), mintFee);
+        vm.stopPrank();
+
+        domainSeparator = keccak256(
+            abi.encode(
+                Typehash.EIP712_DOMAIN,
+                keccak256('PublicActProxy'),
+                MetaTxLib.EIP712_DOMAIN_VERSION_HASH,
+                block.chainid,
+                address(publicActProxy)
+            )
+        );
+
+        publicActProxy.publicSharedRevenueCollectWithSig({
+            publicationActionParams: collectActionParams,
+            signature: _getSigStruct({
+                pKey: payerPk,
+                digest: _getActTypedDataHash(collectActionParams, publicActProxy.nonces(payer), type(uint256).max),
+                deadline: type(uint256).max
+            })
+        });
+
+        CollectNFT collectNFT = CollectNFT(
+            CollectPublicationAction(collectPublicationAction)
+                .getCollectData(defaultAccount.profileId, defaultPubId)
+                .collectNFT
+        );
+
+        assertTrue(collectNFT.balanceOf(nftRecipient) > 0, 'NFT recipient balance is 0');
+
+        assertEq(currency.balanceOf(defaultAccount.owner), (mintFee * 5000) / 10000, 'Creator balance is incorrect');
+        assertEq(
+            currency.balanceOf(hub.getTreasury()),
+            (mintFee * 2000) / 10000,
+            'Protocol treasury client balance is incorrect'
+        );
+        assertEq(currency.balanceOf(creatorClient), (mintFee * 1500) / 10000, 'Creator client balance is incorrect');
+        assertEq(currency.balanceOf(executorClient), (mintFee * 1500) / 10000, 'Executor client balance is incorrect');
     }
 }
