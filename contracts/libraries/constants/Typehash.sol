@@ -29,4 +29,6 @@ library Typehash {
     bytes32 constant SET_PROFILE_METADATA_URI = keccak256('SetProfileMetadataURI(uint256 profileId,string metadataURI,uint256 nonce,uint256 deadline)');
 
     bytes32 constant UNFOLLOW = keccak256('Unfollow(uint256 unfollowerProfileId,uint256[] idsOfProfilesToUnfollow,uint256 nonce,uint256 deadline)');
+
+    bytes32 constant PUBLIC_PAID_ACT = keccak256('PublicPaidAct(uint256 publicationActedProfileId,uint256 publicationActedId,uint256 actorProfileId,uint256[] referrerProfileIds,uint256[] referrerPubIds,address actionModuleAddress,bytes actionModuleData,address currency,uint256 amount,address approveTo,uint256 nonce,uint256 deadline)');
 }
