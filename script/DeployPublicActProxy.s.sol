@@ -105,16 +105,6 @@ contract DeployPublicActProxy is Script, ForkManagement, ArrayHelpers {
         console.log('CollectPublicationAction: %s', collectPublicationAction);
     }
 
-    function run(string memory targetEnv_) external {
-        targetEnv = targetEnv_;
-        loadJson();
-        checkNetworkParams();
-        loadBaseAddresses();
-        loadPrivateKeys();
-        deploy();
-        governanceActions();
-    }
-
     function deploy() internal {
         vm.startBroadcast(deployer.ownerPk);
         {
@@ -139,5 +129,15 @@ contract DeployPublicActProxy is Script, ForkManagement, ArrayHelpers {
         }
         vm.stopBroadcast();
         console.log('PublicActProxy added as DelegatedExecutor of AnonymousProfileId: %s', publicActProxy);
+    }
+
+    function run(string memory targetEnv_) external {
+        targetEnv = targetEnv_;
+        loadJson();
+        checkNetworkParams();
+        loadBaseAddresses();
+        loadPrivateKeys();
+        deploy();
+        governanceActions();
     }
 }
