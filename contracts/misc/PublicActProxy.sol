@@ -61,11 +61,17 @@ contract PublicActProxy {
     // This contract should be set as publicationActionParams.transactionExecutor
     // Correct collectNftRecipient should be passed in the publicationActionParams.actionModuleData
 
-    // This is pretty simple, but should follow the rules above:
+    // The free act is pretty simple, but should follow the rules above:
+    /// @notice For actions not involving any ERC20 transfers or approvals from the actor
+    /// @dev This is used in the same way as the general .act() function, while following the rules above.
     function publicFreeAct(Types.PublicationActionParams calldata publicationActionParams) external {
         HUB.act(publicationActionParams);
     }
 
+    /// @notice For actions involving ERC20 transfers or approvals from the actor
+    /// @dev You need to provide the currency that will be taken from the actor, the amount, and the address to approve
+    /// to (usually it's the address of the CollectModule, or any other contract that performs the .transferFrom).
+    /// You need to set an approval to publicActProxy, cause the amount will be taken from you by this proxy first.
     function publicPaidAct(
         Types.PublicationActionParams calldata publicationActionParams,
         address currency,
@@ -75,6 +81,8 @@ contract PublicActProxy {
         _publicAct(publicationActionParams, currency, amount, approveTo, msg.sender);
     }
 
+    /// @notice For actions involving ERC20 transfers or approvals from the actor (with signature)
+    /// @dev See publicPaidAct() - same, but with a signature. The signer has to give their approval in this case.
     function publicPaidActWithSig(
         Types.PublicationActionParams calldata publicationActionParams,
         address currency,
@@ -212,12 +220,12 @@ contract PublicActProxy {
     // Collector should set enough allowance to this contract to pay for collect NFT
     // Funds will be taken from msg.sender
     // Funds will be approved from this contract to collectModule found in publication storage
-    // DEPRECATED:
+    // DEPRECATED. Use publicPaidAct() function instead.
     function publicCollect(Types.PublicationActionParams calldata publicationActionParams) external {
         _publicCollect(publicationActionParams, msg.sender);
     }
 
-    // DEPRECATED:
+    // DEPRECATED. Use publicPaidActWithSig() function instead.
     function publicCollectWithSig(
         Types.PublicationActionParams calldata publicationActionParams,
         Types.EIP712Signature calldata signature
