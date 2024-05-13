@@ -218,321 +218,373 @@ contract PublicActProxyTest is BaseTest {
         assertTrue(collectNFT.balanceOf(nftRecipient) > 0, 'NFT recipient balance is 0');
     }
 
-    // TODO: Move these to the PublicSharedRevenue module tests and add the PublicPaidAct tests
-    // function testCanPublicSharedRevenueCollectPaid() public {
-    //     vm.prank(deployer);
-    //     address revenueShareModule = addreeeess(
-    //         new ProtocolSharedRevenueMinFeeMintModule(
-    //             address(hub),
-    //             address(collectPublicationAction),
-    //             address(moduleRegistry),
-    //             address(this)
-    //         )
-    //     );
+    function testCanPublicPaidAct_SharedRevenuePaidCollect() public {
+        vm.prank(deployer);
+        address revenueShareModule = address(
+            new ProtocolSharedRevenueMinFeeMintModule(
+                address(hub),
+                address(collectPublicationAction),
+                address(moduleRegistry),
+                address(this)
+            )
+        );
 
-    //     collectPublicationAction.registerCollectModule(revenueShareModule);
+        collectPublicationAction.registerCollectModule(revenueShareModule);
 
-    //     MockCurrency currency = new MockCurrency();
-    //     currency.mint(payer, 10 ether);
+        MockCurrency currency = new MockCurrency();
+        currency.mint(payer, 10 ether);
 
-    //     ProtocolSharedRevenueMinFeeMintModuleInitData memory exampleInitData;
-    //     exampleInitData.amount = 1 ether;
-    //     exampleInitData.collectLimit = 0;
-    //     exampleInitData.currency = address(currency);
-    //     exampleInitData.referralFee = 0;
-    //     exampleInitData.followerOnly = false;
-    //     exampleInitData.endTimestamp = 0;
-    //     exampleInitData.recipient = defaultAccount.owner;
-    //     exampleInitData.creatorClient = address(0);
+        ProtocolSharedRevenueMinFeeMintModuleInitData memory exampleInitData;
+        exampleInitData.amount = 1 ether;
+        exampleInitData.collectLimit = 0;
+        exampleInitData.currency = address(currency);
+        exampleInitData.referralFee = 0;
+        exampleInitData.followerOnly = false;
+        exampleInitData.endTimestamp = 0;
+        exampleInitData.recipient = defaultAccount.owner;
+        exampleInitData.creatorClient = address(0);
 
-    //     Types.PostParams memory postParams = _getDefaultPostParams();
-    //     postParams.actionModules[0] = address(collectPublicationAction);
-    //     postParams.actionModulesInitDatas[0] = abi.encode(revenueShareModule, abi.encode(exampleInitData));
+        Types.PostParams memory postParams = _getDefaultPostParams();
+        postParams.actionModules[0] = address(collectPublicationAction);
+        postParams.actionModulesInitDatas[0] = abi.encode(revenueShareModule, abi.encode(exampleInitData));
 
-    //     vm.prank(defaultAccount.owner);
-    //     defaultPubId = hub.post(postParams);
+        vm.prank(defaultAccount.owner);
+        defaultPubId = hub.post(postParams);
 
-    //     collectActionParams = Types.PublicationActionParams({
-    //         publicationActedProfileId: defaultAccount.profileId,
-    //         publicationActedId: defaultPubId,
-    //         actorProfileId: publicProfile.profileId,
-    //         referrerProfileIds: _emptyUint256Array(),
-    //         referrerPubIds: _emptyUint256Array(),
-    //         actionModuleAddress: address(collectPublicationAction),
-    //         actionModuleData: abi.encode(nftRecipient, abi.encode(currency, exampleInitData.amount, address(0)))
-    //     });
+        collectActionParams = Types.PublicationActionParams({
+            publicationActedProfileId: defaultAccount.profileId,
+            publicationActedId: defaultPubId,
+            actorProfileId: publicProfile.profileId,
+            referrerProfileIds: _emptyUint256Array(),
+            referrerPubIds: _emptyUint256Array(),
+            actionModuleAddress: address(collectPublicationAction),
+            actionModuleData: abi.encode(nftRecipient, abi.encode(currency, exampleInitData.amount, address(0)))
+        });
 
-    //     vm.startPrank(payer);
-    //     currency.approve(address(publicActProxy), exampleInitData.amount);
-    //     publicActProxy.publicSharedRevenueCollect(collectActionParams);
-    //     vm.stopPrank();
+        vm.startPrank(payer);
+        currency.approve(address(publicActProxy), exampleInitData.amount);
+        publicActProxy.publicPaidAct(
+            collectActionParams,
+            exampleInitData.currency,
+            exampleInitData.amount,
+            revenueShareModule
+        );
+        vm.stopPrank();
 
-    //     CollectNFT collectNFT = CollectNFT(
-    //         CollectPublicationAction(collectPublicationAction)
-    //             .getCollectData(defaultAccount.profileId, defaultPubId)
-    //             .collectNFT
-    //     );
+        CollectNFT collectNFT = CollectNFT(
+            CollectPublicationAction(collectPublicationAction)
+                .getCollectData(defaultAccount.profileId, defaultPubId)
+                .collectNFT
+        );
 
-    //     assertTrue(collectNFT.balanceOf(nftRecipient) > 0, 'NFT recipient balance is 0');
-    // }
+        assertTrue(collectNFT.balanceOf(nftRecipient) > 0, 'NFT recipient balance is 0');
+    }
 
-    // function testCanPublicSharedRevenueCollectPaidWithSig() public {
-    //     vm.prank(deployer);
-    //     address revenueShareModule = address(
-    //         new ProtocolSharedRevenueMinFeeMintModule(
-    //             address(hub),
-    //             address(collectPublicationAction),
-    //             address(moduleRegistry),
-    //             address(this)
-    //         )
-    //     );
+    function _getPublicPaidActTypedDataHash(
+        Types.PublicationActionParams memory publicationActionParams,
+        address currency,
+        uint256 amount,
+        address approveTo,
+        uint256 nonce,
+        uint256 deadline
+    ) internal view returns (bytes32) {
+        bytes32 structHash = keccak256(
+            abi.encode(
+                Typehash.PUBLIC_PAID_ACT,
+                publicationActionParams.publicationActedProfileId,
+                publicationActionParams.publicationActedId,
+                publicationActionParams.actorProfileId,
+                _encodeUsingEip712Rules(publicationActionParams.referrerProfileIds),
+                _encodeUsingEip712Rules(publicationActionParams.referrerPubIds),
+                publicationActionParams.actionModuleAddress,
+                _encodeUsingEip712Rules(publicationActionParams.actionModuleData),
+                currency,
+                amount,
+                approveTo,
+                nonce,
+                deadline
+            )
+        );
+        return _calculateDigest(structHash);
+    }
 
-    //     collectPublicationAction.registerCollectModule(revenueShareModule);
+    function testCanPublicPaidActWithSig_SharedRevenuePaidCollect() public {
+        vm.prank(deployer);
+        address revenueShareModule = address(
+            new ProtocolSharedRevenueMinFeeMintModule(
+                address(hub),
+                address(collectPublicationAction),
+                address(moduleRegistry),
+                address(this)
+            )
+        );
 
-    //     MockCurrency currency = new MockCurrency();
-    //     currency.mint(payer, 10 ether);
+        collectPublicationAction.registerCollectModule(revenueShareModule);
 
-    //     ProtocolSharedRevenueMinFeeMintModuleInitData memory exampleInitData;
-    //     exampleInitData.amount = 1 ether;
-    //     exampleInitData.collectLimit = 0;
-    //     exampleInitData.currency = address(currency);
-    //     exampleInitData.referralFee = 0;
-    //     exampleInitData.followerOnly = false;
-    //     exampleInitData.endTimestamp = 0;
-    //     exampleInitData.recipient = defaultAccount.owner;
-    //     exampleInitData.creatorClient = address(0);
+        MockCurrency currency = new MockCurrency();
+        currency.mint(payer, 10 ether);
 
-    //     Types.PostParams memory postParams = _getDefaultPostParams();
-    //     postParams.actionModules[0] = address(collectPublicationAction);
-    //     postParams.actionModulesInitDatas[0] = abi.encode(revenueShareModule, abi.encode(exampleInitData));
+        ProtocolSharedRevenueMinFeeMintModuleInitData memory exampleInitData;
+        exampleInitData.amount = 1 ether;
+        exampleInitData.collectLimit = 0;
+        exampleInitData.currency = address(currency);
+        exampleInitData.referralFee = 0;
+        exampleInitData.followerOnly = false;
+        exampleInitData.endTimestamp = 0;
+        exampleInitData.recipient = defaultAccount.owner;
+        exampleInitData.creatorClient = address(0);
 
-    //     vm.prank(defaultAccount.owner);
-    //     defaultPubId = hub.post(postParams);
+        Types.PostParams memory postParams = _getDefaultPostParams();
+        postParams.actionModules[0] = address(collectPublicationAction);
+        postParams.actionModulesInitDatas[0] = abi.encode(revenueShareModule, abi.encode(exampleInitData));
 
-    //     collectActionParams = Types.PublicationActionParams({
-    //         publicationActedProfileId: defaultAccount.profileId,
-    //         publicationActedId: defaultPubId,
-    //         actorProfileId: publicProfile.profileId,
-    //         referrerProfileIds: _emptyUint256Array(),
-    //         referrerPubIds: _emptyUint256Array(),
-    //         actionModuleAddress: address(collectPublicationAction),
-    //         actionModuleData: abi.encode(nftRecipient, abi.encode(currency, exampleInitData.amount, address(0)))
-    //     });
+        vm.prank(defaultAccount.owner);
+        defaultPubId = hub.post(postParams);
 
-    //     vm.prank(payer);
-    //     currency.approve(address(publicActProxy), exampleInitData.amount);
+        collectActionParams = Types.PublicationActionParams({
+            publicationActedProfileId: defaultAccount.profileId,
+            publicationActedId: defaultPubId,
+            actorProfileId: publicProfile.profileId,
+            referrerProfileIds: _emptyUint256Array(),
+            referrerPubIds: _emptyUint256Array(),
+            actionModuleAddress: address(collectPublicationAction),
+            actionModuleData: abi.encode(nftRecipient, abi.encode(currency, exampleInitData.amount, address(0)))
+        });
 
-    //     domainSeparator = keccak256(
-    //         abi.encode(
-    //             Typehash.EIP712_DOMAIN,
-    //             keccak256('PublicActProxy'),
-    //             MetaTxLib.EIP712_DOMAIN_VERSION_HASH,
-    //             block.chainid,
-    //             address(publicActProxy)
-    //         )
-    //     );
+        vm.prank(payer);
+        currency.approve(address(publicActProxy), exampleInitData.amount);
 
-    //     publicActProxy.publicSharedRevenueCollectWithSig({
-    //         publicationActionParams: collectActionParams,
-    //         signature: _getSigStruct({
-    //             pKey: payerPk,
-    //             digest: _getActTypedDataHash(collectActionParams, publicActProxy.nonces(payer), type(uint256).max),
-    //             deadline: type(uint256).max
-    //         })
-    //     });
+        domainSeparator = keccak256(
+            abi.encode(
+                Typehash.EIP712_DOMAIN,
+                keccak256('PublicActProxy'),
+                MetaTxLib.EIP712_DOMAIN_VERSION_HASH,
+                block.chainid,
+                address(publicActProxy)
+            )
+        );
 
-    //     CollectNFT collectNFT = CollectNFT(
-    //         CollectPublicationAction(collectPublicationAction)
-    //             .getCollectData(defaultAccount.profileId, defaultPubId)
-    //             .collectNFT
-    //     );
+        publicActProxy.publicPaidActWithSig({
+            publicationActionParams: collectActionParams,
+            currency: exampleInitData.currency,
+            amount: exampleInitData.amount,
+            approveTo: revenueShareModule,
+            signature: _getSigStruct({
+                pKey: payerPk,
+                digest: _getPublicPaidActTypedDataHash(
+                    collectActionParams,
+                    exampleInitData.currency,
+                    exampleInitData.amount,
+                    revenueShareModule,
+                    publicActProxy.nonces(payer),
+                    type(uint256).max
+                ),
+                deadline: type(uint256).max
+            })
+        });
 
-    //     assertTrue(collectNFT.balanceOf(nftRecipient) > 0, 'NFT recipient balance is 0');
-    // }
+        CollectNFT collectNFT = CollectNFT(
+            CollectPublicationAction(collectPublicationAction)
+                .getCollectData(defaultAccount.profileId, defaultPubId)
+                .collectNFT
+        );
 
-    // function testCanPublicSharedRevenueCollectFree() public {
-    //     address creatorClient = makeAddr('CREATOR_CLIENT');
-    //     address executorClient = makeAddr('EXECUTOR_CLIENT');
+        assertTrue(collectNFT.balanceOf(nftRecipient) > 0, 'NFT recipient balance is 0');
+    }
 
-    //     uint256 mintFee = 10 ether;
+    function testCanPublicPaidAct_SharedRevenueFreeCollect() public {
+        address creatorClient = makeAddr('CREATOR_CLIENT');
+        address executorClient = makeAddr('EXECUTOR_CLIENT');
 
-    //     vm.prank(deployer);
-    //     address revenueShareModule = address(
-    //         new ProtocolSharedRevenueMinFeeMintModule(
-    //             address(hub),
-    //             address(collectPublicationAction),
-    //             address(moduleRegistry),
-    //             address(this)
-    //         )
-    //     );
+        uint256 mintFee = 10 ether;
 
-    //     collectPublicationAction.registerCollectModule(revenueShareModule);
+        vm.prank(deployer);
+        address revenueShareModule = address(
+            new ProtocolSharedRevenueMinFeeMintModule(
+                address(hub),
+                address(collectPublicationAction),
+                address(moduleRegistry),
+                address(this)
+            )
+        );
 
-    //     MockCurrency currency = new MockCurrency();
-    //     currency.mint(payer, mintFee);
+        collectPublicationAction.registerCollectModule(revenueShareModule);
 
-    //     ProtocolSharedRevenueMinFeeMintModule(revenueShareModule).setMintFeeParams(address(currency), mintFee);
-    //     ProtocolSharedRevenueMinFeeMintModule(revenueShareModule).setProtocolSharedRevenueDistribution(
-    //         ProtocolSharedRevenueDistribution({
-    //             creatorSplit: 5000,
-    //             protocolSplit: 2000,
-    //             creatorClientSplit: 1500,
-    //             executorClientSplit: 1500
-    //         })
-    //     );
+        MockCurrency currency = new MockCurrency();
+        currency.mint(payer, mintFee);
 
-    //     ProtocolSharedRevenueMinFeeMintModuleInitData memory exampleInitData;
-    //     exampleInitData.amount = 0 ether;
-    //     exampleInitData.collectLimit = 0;
-    //     exampleInitData.currency = address(0);
-    //     exampleInitData.referralFee = 0;
-    //     exampleInitData.followerOnly = false;
-    //     exampleInitData.endTimestamp = 0;
-    //     exampleInitData.recipient = defaultAccount.owner;
-    //     exampleInitData.creatorClient = creatorClient;
+        ProtocolSharedRevenueMinFeeMintModule(revenueShareModule).setMintFeeParams(address(currency), mintFee);
+        ProtocolSharedRevenueMinFeeMintModule(revenueShareModule).setProtocolSharedRevenueDistribution(
+            ProtocolSharedRevenueDistribution({
+                creatorSplit: 5000,
+                protocolSplit: 2000,
+                creatorClientSplit: 1500,
+                executorClientSplit: 1500
+            })
+        );
 
-    //     Types.PostParams memory postParams = _getDefaultPostParams();
-    //     postParams.actionModules[0] = address(collectPublicationAction);
-    //     postParams.actionModulesInitDatas[0] = abi.encode(revenueShareModule, abi.encode(exampleInitData));
+        ProtocolSharedRevenueMinFeeMintModuleInitData memory exampleInitData;
+        exampleInitData.amount = 0 ether;
+        exampleInitData.collectLimit = 0;
+        exampleInitData.currency = address(0);
+        exampleInitData.referralFee = 0;
+        exampleInitData.followerOnly = false;
+        exampleInitData.endTimestamp = 0;
+        exampleInitData.recipient = defaultAccount.owner;
+        exampleInitData.creatorClient = creatorClient;
 
-    //     vm.prank(defaultAccount.owner);
-    //     defaultPubId = hub.post(postParams);
+        Types.PostParams memory postParams = _getDefaultPostParams();
+        postParams.actionModules[0] = address(collectPublicationAction);
+        postParams.actionModulesInitDatas[0] = abi.encode(revenueShareModule, abi.encode(exampleInitData));
 
-    //     collectActionParams = Types.PublicationActionParams({
-    //         publicationActedProfileId: defaultAccount.profileId,
-    //         publicationActedId: defaultPubId,
-    //         actorProfileId: publicProfile.profileId,
-    //         referrerProfileIds: _emptyUint256Array(),
-    //         referrerPubIds: _emptyUint256Array(),
-    //         actionModuleAddress: address(collectPublicationAction),
-    //         actionModuleData: abi.encode(
-    //             nftRecipient,
-    //             abi.encode(exampleInitData.currency, exampleInitData.amount, executorClient)
-    //         )
-    //     });
+        vm.prank(defaultAccount.owner);
+        defaultPubId = hub.post(postParams);
 
-    //     vm.startPrank(payer);
-    //     currency.approve(address(publicActProxy), mintFee);
-    //     publicActProxy.publicSharedRevenueCollect(collectActionParams);
-    //     vm.stopPrank();
+        collectActionParams = Types.PublicationActionParams({
+            publicationActedProfileId: defaultAccount.profileId,
+            publicationActedId: defaultPubId,
+            actorProfileId: publicProfile.profileId,
+            referrerProfileIds: _emptyUint256Array(),
+            referrerPubIds: _emptyUint256Array(),
+            actionModuleAddress: address(collectPublicationAction),
+            actionModuleData: abi.encode(
+                nftRecipient,
+                abi.encode(exampleInitData.currency, exampleInitData.amount, executorClient)
+            )
+        });
 
-    //     CollectNFT collectNFT = CollectNFT(
-    //         CollectPublicationAction(collectPublicationAction)
-    //             .getCollectData(defaultAccount.profileId, defaultPubId)
-    //             .collectNFT
-    //     );
+        vm.startPrank(payer);
+        currency.approve(address(publicActProxy), mintFee);
+        publicActProxy.publicPaidAct(collectActionParams, address(currency), mintFee, revenueShareModule);
+        vm.stopPrank();
 
-    //     assertTrue(collectNFT.balanceOf(nftRecipient) > 0, 'NFT recipient balance is 0');
+        CollectNFT collectNFT = CollectNFT(
+            CollectPublicationAction(collectPublicationAction)
+                .getCollectData(defaultAccount.profileId, defaultPubId)
+                .collectNFT
+        );
 
-    //     assertEq(currency.balanceOf(defaultAccount.owner), (mintFee * 5000) / 10000, 'Creator balance is incorrect');
-    //     assertEq(
-    //         currency.balanceOf(hub.getTreasury()),
-    //         (mintFee * 2000) / 10000,
-    //         'Protocol treasury client balance is incorrect'
-    //     );
-    //     assertEq(currency.balanceOf(creatorClient), (mintFee * 1500) / 10000, 'Creator client balance is incorrect');
-    //     assertEq(currency.balanceOf(executorClient), (mintFee * 1500) / 10000, 'Executor client balance is incorrect');
-    // }
+        assertTrue(collectNFT.balanceOf(nftRecipient) > 0, 'NFT recipient balance is 0');
 
-    // function testCanPublicSharedRevenueCollectFreeWithSig() public {
-    //     address creatorClient = makeAddr('CREATOR_CLIENT');
-    //     address executorClient = makeAddr('EXECUTOR_CLIENT');
+        assertEq(currency.balanceOf(defaultAccount.owner), (mintFee * 5000) / 10000, 'Creator balance is incorrect');
+        assertEq(
+            currency.balanceOf(hub.getTreasury()),
+            (mintFee * 2000) / 10000,
+            'Protocol treasury client balance is incorrect'
+        );
+        assertEq(currency.balanceOf(creatorClient), (mintFee * 1500) / 10000, 'Creator client balance is incorrect');
+        assertEq(currency.balanceOf(executorClient), (mintFee * 1500) / 10000, 'Executor client balance is incorrect');
+    }
 
-    //     uint256 mintFee = 10 ether;
+    function testCanPublicPaidActWithSig_SharedRevenueFreeCollect() public {
+        address creatorClient = makeAddr('CREATOR_CLIENT');
+        address executorClient = makeAddr('EXECUTOR_CLIENT');
 
-    //     vm.prank(deployer);
-    //     address revenueShareModule = address(
-    //         new ProtocolSharedRevenueMinFeeMintModule(
-    //             address(hub),
-    //             address(collectPublicationAction),
-    //             address(moduleRegistry),
-    //             address(this)
-    //         )
-    //     );
+        uint256 mintFee = 10 ether;
 
-    //     collectPublicationAction.registerCollectModule(revenueShareModule);
+        vm.prank(deployer);
+        address revenueShareModule = address(
+            new ProtocolSharedRevenueMinFeeMintModule(
+                address(hub),
+                address(collectPublicationAction),
+                address(moduleRegistry),
+                address(this)
+            )
+        );
 
-    //     MockCurrency currency = new MockCurrency();
-    //     currency.mint(payer, mintFee);
+        collectPublicationAction.registerCollectModule(revenueShareModule);
 
-    //     ProtocolSharedRevenueMinFeeMintModule(revenueShareModule).setMintFeeParams(address(currency), mintFee);
-    //     ProtocolSharedRevenueMinFeeMintModule(revenueShareModule).setProtocolSharedRevenueDistribution(
-    //         ProtocolSharedRevenueDistribution({
-    //             creatorSplit: 5000,
-    //             protocolSplit: 2000,
-    //             creatorClientSplit: 1500,
-    //             executorClientSplit: 1500
-    //         })
-    //     );
+        MockCurrency currency = new MockCurrency();
+        currency.mint(payer, mintFee);
 
-    //     ProtocolSharedRevenueMinFeeMintModuleInitData memory exampleInitData;
-    //     exampleInitData.amount = 0 ether;
-    //     exampleInitData.collectLimit = 0;
-    //     exampleInitData.currency = address(0);
-    //     exampleInitData.referralFee = 0;
-    //     exampleInitData.followerOnly = false;
-    //     exampleInitData.endTimestamp = 0;
-    //     exampleInitData.recipient = defaultAccount.owner;
-    //     exampleInitData.creatorClient = creatorClient;
+        ProtocolSharedRevenueMinFeeMintModule(revenueShareModule).setMintFeeParams(address(currency), mintFee);
+        ProtocolSharedRevenueMinFeeMintModule(revenueShareModule).setProtocolSharedRevenueDistribution(
+            ProtocolSharedRevenueDistribution({
+                creatorSplit: 5000,
+                protocolSplit: 2000,
+                creatorClientSplit: 1500,
+                executorClientSplit: 1500
+            })
+        );
 
-    //     Types.PostParams memory postParams = _getDefaultPostParams();
-    //     postParams.actionModules[0] = address(collectPublicationAction);
-    //     postParams.actionModulesInitDatas[0] = abi.encode(revenueShareModule, abi.encode(exampleInitData));
+        ProtocolSharedRevenueMinFeeMintModuleInitData memory exampleInitData;
+        exampleInitData.amount = 0 ether;
+        exampleInitData.collectLimit = 0;
+        exampleInitData.currency = address(0);
+        exampleInitData.referralFee = 0;
+        exampleInitData.followerOnly = false;
+        exampleInitData.endTimestamp = 0;
+        exampleInitData.recipient = defaultAccount.owner;
+        exampleInitData.creatorClient = creatorClient;
 
-    //     vm.prank(defaultAccount.owner);
-    //     defaultPubId = hub.post(postParams);
+        Types.PostParams memory postParams = _getDefaultPostParams();
+        postParams.actionModules[0] = address(collectPublicationAction);
+        postParams.actionModulesInitDatas[0] = abi.encode(revenueShareModule, abi.encode(exampleInitData));
 
-    //     collectActionParams = Types.PublicationActionParams({
-    //         publicationActedProfileId: defaultAccount.profileId,
-    //         publicationActedId: defaultPubId,
-    //         actorProfileId: publicProfile.profileId,
-    //         referrerProfileIds: _emptyUint256Array(),
-    //         referrerPubIds: _emptyUint256Array(),
-    //         actionModuleAddress: address(collectPublicationAction),
-    //         actionModuleData: abi.encode(
-    //             nftRecipient,
-    //             abi.encode(exampleInitData.currency, exampleInitData.amount, executorClient)
-    //         )
-    //     });
+        vm.prank(defaultAccount.owner);
+        defaultPubId = hub.post(postParams);
 
-    //     vm.startPrank(payer);
-    //     currency.approve(address(publicActProxy), mintFee);
-    //     vm.stopPrank();
+        collectActionParams = Types.PublicationActionParams({
+            publicationActedProfileId: defaultAccount.profileId,
+            publicationActedId: defaultPubId,
+            actorProfileId: publicProfile.profileId,
+            referrerProfileIds: _emptyUint256Array(),
+            referrerPubIds: _emptyUint256Array(),
+            actionModuleAddress: address(collectPublicationAction),
+            actionModuleData: abi.encode(
+                nftRecipient,
+                abi.encode(exampleInitData.currency, exampleInitData.amount, executorClient)
+            )
+        });
 
-    //     domainSeparator = keccak256(
-    //         abi.encode(
-    //             Typehash.EIP712_DOMAIN,
-    //             keccak256('PublicActProxy'),
-    //             MetaTxLib.EIP712_DOMAIN_VERSION_HASH,
-    //             block.chainid,
-    //             address(publicActProxy)
-    //         )
-    //     );
+        vm.startPrank(payer);
+        currency.approve(address(publicActProxy), mintFee);
+        vm.stopPrank();
 
-    //     publicActProxy.publicSharedRevenueCollectWithSig({
-    //         publicationActionParams: collectActionParams,
-    //         signature: _getSigStruct({
-    //             pKey: payerPk,
-    //             digest: _getActTypedDataHash(collectActionParams, publicActProxy.nonces(payer), type(uint256).max),
-    //             deadline: type(uint256).max
-    //         })
-    //     });
+        domainSeparator = keccak256(
+            abi.encode(
+                Typehash.EIP712_DOMAIN,
+                keccak256('PublicActProxy'),
+                MetaTxLib.EIP712_DOMAIN_VERSION_HASH,
+                block.chainid,
+                address(publicActProxy)
+            )
+        );
 
-    //     CollectNFT collectNFT = CollectNFT(
-    //         CollectPublicationAction(collectPublicationAction)
-    //             .getCollectData(defaultAccount.profileId, defaultPubId)
-    //             .collectNFT
-    //     );
+        publicActProxy.publicPaidActWithSig({
+            publicationActionParams: collectActionParams,
+            currency: address(currency),
+            amount: mintFee,
+            approveTo: revenueShareModule,
+            signature: _getSigStruct({
+                pKey: payerPk,
+                digest: _getPublicPaidActTypedDataHash(
+                    collectActionParams,
+                    address(currency),
+                    mintFee,
+                    revenueShareModule,
+                    publicActProxy.nonces(payer),
+                    type(uint256).max
+                ),
+                deadline: type(uint256).max
+            })
+        });
 
-    //     assertTrue(collectNFT.balanceOf(nftRecipient) > 0, 'NFT recipient balance is 0');
+        CollectNFT collectNFT = CollectNFT(
+            CollectPublicationAction(collectPublicationAction)
+                .getCollectData(defaultAccount.profileId, defaultPubId)
+                .collectNFT
+        );
 
-    //     assertEq(currency.balanceOf(defaultAccount.owner), (mintFee * 5000) / 10000, 'Creator balance is incorrect');
-    //     assertEq(
-    //         currency.balanceOf(hub.getTreasury()),
-    //         (mintFee * 2000) / 10000,
-    //         'Protocol treasury client balance is incorrect'
-    //     );
-    //     assertEq(currency.balanceOf(creatorClient), (mintFee * 1500) / 10000, 'Creator client balance is incorrect');
-    //     assertEq(currency.balanceOf(executorClient), (mintFee * 1500) / 10000, 'Executor client balance is incorrect');
-    // }
+        assertTrue(collectNFT.balanceOf(nftRecipient) > 0, 'NFT recipient balance is 0');
+
+        assertEq(currency.balanceOf(defaultAccount.owner), (mintFee * 5000) / 10000, 'Creator balance is incorrect');
+        assertEq(
+            currency.balanceOf(hub.getTreasury()),
+            (mintFee * 2000) / 10000,
+            'Protocol treasury client balance is incorrect'
+        );
+        assertEq(currency.balanceOf(creatorClient), (mintFee * 1500) / 10000, 'Creator client balance is incorrect');
+        assertEq(currency.balanceOf(executorClient), (mintFee * 1500) / 10000, 'Executor client balance is incorrect');
+    }
 }
