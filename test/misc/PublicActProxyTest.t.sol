@@ -43,7 +43,7 @@ contract PublicActProxyTest is BaseTest {
             );
         } else {
             console.log('PublicActProxy key does not exist');
-            publicActProxy = new PublicActProxy(address(hub), address(collectPublicationAction));
+            publicActProxy = new PublicActProxy(address(hub));
         }
 
         publicProfile = _loadAccountAs('PUBLIC_PROFILE');

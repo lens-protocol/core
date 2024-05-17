@@ -401,10 +401,7 @@ contract DeployFreshLensV2 is Script, ForkManagement, ArrayHelpers {
         litAccessControl = LitAccessControl(address(litAccessControlProxy));
         _logDeployedAddress(address(litAccessControl), 'LitAccessControl');
 
-        publicActProxy = new PublicActProxy({
-            lensHub: address(hub),
-            collectPublicationAction: address(collectPublicationAction)
-        });
+        publicActProxy = new PublicActProxy({lensHub: address(hub)});
         _logDeployedAddress(address(publicActProxy), 'PublicActProxy');
     }
 

@@ -41,11 +41,9 @@ contract PublicActProxy is PublicActProxy_MetaTx {
     using SafeERC20 for IERC20;
 
     ILensHub public immutable HUB;
-    CollectPublicationAction public immutable COLLECT_PUBLICATION_ACTION;
 
-    constructor(address lensHub, address collectPublicationAction) {
+    constructor(address lensHub) {
         HUB = ILensHub(lensHub);
-        COLLECT_PUBLICATION_ACTION = CollectPublicationAction(collectPublicationAction);
     }
 
     // The free act is pretty simple, but should follow the rules above:

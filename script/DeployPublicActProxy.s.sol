@@ -32,7 +32,6 @@ contract DeployPublicActProxy is Script, ForkManagement, ArrayHelpers {
     string mnemonic;
 
     address lensHub;
-    address collectPublicationAction;
 
     address publicActProxy;
 
@@ -95,22 +94,12 @@ contract DeployPublicActProxy is Script, ForkManagement, ArrayHelpers {
         lensHub = json.readAddress(string(abi.encodePacked('.', targetEnv, '.LensHub')));
         vm.label(lensHub, 'LensHub');
         console.log('Lens Hub Proxy: %s', lensHub);
-
-        Module[] memory actModules = abi.decode(
-            vm.parseJson(json, string(abi.encodePacked('.', targetEnv, '.Modules.v2.act'))),
-            (Module[])
-        );
-        collectPublicationAction = findModuleHelper(actModules, 'CollectPublicationAction').addy;
-        vm.label(collectPublicationAction, 'CollectPublicationAction');
-        console.log('CollectPublicationAction: %s', collectPublicationAction);
     }
 
     function deploy() internal {
         vm.startBroadcast(deployer.ownerPk);
         {
-            publicActProxy = address(
-                new PublicActProxy({lensHub: lensHub, collectPublicationAction: collectPublicationAction})
-            );
+            publicActProxy = address(new PublicActProxy({lensHub: lensHub}));
             _logDeployedAddress(publicActProxy, 'PublicActProxy');
         }
         vm.stopBroadcast();
