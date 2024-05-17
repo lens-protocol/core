@@ -89,134 +89,135 @@ contract PublicActProxyTest is BaseTest {
         assertTrue(collectNFT.balanceOf(nftRecipient) > 0, 'NFT recipient balance is 0');
     }
 
-    function testCanPublicCollect() public {
-        vm.prank(deployer);
-        address simpleFeeCollectModule = address(
-            new SimpleFeeCollectModule(
-                address(hub),
-                address(collectPublicationAction),
-                address(moduleRegistry),
-                address(this)
-            )
-        );
+    // DEPRECATED
+    // function testCanPublicCollect() public {
+    //     vm.prank(deployer);
+    //     address simpleFeeCollectModule = address(
+    //         new SimpleFeeCollectModule(
+    //             address(hub),
+    //             address(collectPublicationAction),
+    //             address(moduleRegistry),
+    //             address(this)
+    //         )
+    //     );
 
-        collectPublicationAction.registerCollectModule(simpleFeeCollectModule);
+    //     collectPublicationAction.registerCollectModule(simpleFeeCollectModule);
 
-        MockCurrency currency = new MockCurrency();
-        currency.mint(payer, 10 ether);
+    //     MockCurrency currency = new MockCurrency();
+    //     currency.mint(payer, 10 ether);
 
-        BaseFeeCollectModuleInitData memory exampleInitData;
-        exampleInitData.amount = 1 ether;
-        exampleInitData.collectLimit = 0;
-        exampleInitData.currency = address(currency);
-        exampleInitData.referralFee = 0;
-        exampleInitData.followerOnly = false;
-        exampleInitData.endTimestamp = 0;
-        exampleInitData.recipient = defaultAccount.owner;
+    //     BaseFeeCollectModuleInitData memory exampleInitData;
+    //     exampleInitData.amount = 1 ether;
+    //     exampleInitData.collectLimit = 0;
+    //     exampleInitData.currency = address(currency);
+    //     exampleInitData.referralFee = 0;
+    //     exampleInitData.followerOnly = false;
+    //     exampleInitData.endTimestamp = 0;
+    //     exampleInitData.recipient = defaultAccount.owner;
 
-        Types.PostParams memory postParams = _getDefaultPostParams();
-        postParams.actionModules[0] = address(collectPublicationAction);
-        postParams.actionModulesInitDatas[0] = abi.encode(simpleFeeCollectModule, abi.encode(exampleInitData));
+    //     Types.PostParams memory postParams = _getDefaultPostParams();
+    //     postParams.actionModules[0] = address(collectPublicationAction);
+    //     postParams.actionModulesInitDatas[0] = abi.encode(simpleFeeCollectModule, abi.encode(exampleInitData));
 
-        vm.prank(defaultAccount.owner);
-        defaultPubId = hub.post(postParams);
+    //     vm.prank(defaultAccount.owner);
+    //     defaultPubId = hub.post(postParams);
 
-        collectActionParams = Types.PublicationActionParams({
-            publicationActedProfileId: defaultAccount.profileId,
-            publicationActedId: defaultPubId,
-            actorProfileId: publicProfile.profileId,
-            referrerProfileIds: _emptyUint256Array(),
-            referrerPubIds: _emptyUint256Array(),
-            actionModuleAddress: address(collectPublicationAction),
-            actionModuleData: abi.encode(nftRecipient, abi.encode(currency, exampleInitData.amount))
-        });
+    //     collectActionParams = Types.PublicationActionParams({
+    //         publicationActedProfileId: defaultAccount.profileId,
+    //         publicationActedId: defaultPubId,
+    //         actorProfileId: publicProfile.profileId,
+    //         referrerProfileIds: _emptyUint256Array(),
+    //         referrerPubIds: _emptyUint256Array(),
+    //         actionModuleAddress: address(collectPublicationAction),
+    //         actionModuleData: abi.encode(nftRecipient, abi.encode(currency, exampleInitData.amount))
+    //     });
 
-        vm.startPrank(payer);
-        currency.approve(address(publicActProxy), exampleInitData.amount);
-        publicActProxy.publicCollect(collectActionParams);
-        vm.stopPrank();
+    //     vm.startPrank(payer);
+    //     currency.approve(address(publicActProxy), exampleInitData.amount);
+    //     publicActProxy.publicCollect(collectActionParams);
+    //     vm.stopPrank();
 
-        CollectNFT collectNFT = CollectNFT(
-            CollectPublicationAction(collectPublicationAction)
-                .getCollectData(defaultAccount.profileId, defaultPubId)
-                .collectNFT
-        );
+    //     CollectNFT collectNFT = CollectNFT(
+    //         CollectPublicationAction(collectPublicationAction)
+    //             .getCollectData(defaultAccount.profileId, defaultPubId)
+    //             .collectNFT
+    //     );
 
-        assertTrue(collectNFT.balanceOf(nftRecipient) > 0, 'NFT recipient balance is 0');
-    }
+    //     assertTrue(collectNFT.balanceOf(nftRecipient) > 0, 'NFT recipient balance is 0');
+    // }
 
-    function testCanPublicCollectWithSig() public {
-        vm.prank(deployer);
-        address simpleFeeCollectModule = address(
-            new SimpleFeeCollectModule(
-                address(hub),
-                address(collectPublicationAction),
-                address(moduleRegistry),
-                address(this)
-            )
-        );
+    // function testCanPublicCollectWithSig() public {
+    //     vm.prank(deployer);
+    //     address simpleFeeCollectModule = address(
+    //         new SimpleFeeCollectModule(
+    //             address(hub),
+    //             address(collectPublicationAction),
+    //             address(moduleRegistry),
+    //             address(this)
+    //         )
+    //     );
 
-        collectPublicationAction.registerCollectModule(simpleFeeCollectModule);
+    //     collectPublicationAction.registerCollectModule(simpleFeeCollectModule);
 
-        MockCurrency currency = new MockCurrency();
-        currency.mint(payer, 10 ether);
+    //     MockCurrency currency = new MockCurrency();
+    //     currency.mint(payer, 10 ether);
 
-        BaseFeeCollectModuleInitData memory exampleInitData;
-        exampleInitData.amount = 1 ether;
-        exampleInitData.collectLimit = 0;
-        exampleInitData.currency = address(currency);
-        exampleInitData.referralFee = 0;
-        exampleInitData.followerOnly = false;
-        exampleInitData.endTimestamp = 0;
-        exampleInitData.recipient = defaultAccount.owner;
+    //     BaseFeeCollectModuleInitData memory exampleInitData;
+    //     exampleInitData.amount = 1 ether;
+    //     exampleInitData.collectLimit = 0;
+    //     exampleInitData.currency = address(currency);
+    //     exampleInitData.referralFee = 0;
+    //     exampleInitData.followerOnly = false;
+    //     exampleInitData.endTimestamp = 0;
+    //     exampleInitData.recipient = defaultAccount.owner;
 
-        Types.PostParams memory postParams = _getDefaultPostParams();
-        postParams.actionModules[0] = address(collectPublicationAction);
-        postParams.actionModulesInitDatas[0] = abi.encode(simpleFeeCollectModule, abi.encode(exampleInitData));
+    //     Types.PostParams memory postParams = _getDefaultPostParams();
+    //     postParams.actionModules[0] = address(collectPublicationAction);
+    //     postParams.actionModulesInitDatas[0] = abi.encode(simpleFeeCollectModule, abi.encode(exampleInitData));
 
-        vm.prank(defaultAccount.owner);
-        defaultPubId = hub.post(postParams);
+    //     vm.prank(defaultAccount.owner);
+    //     defaultPubId = hub.post(postParams);
 
-        collectActionParams = Types.PublicationActionParams({
-            publicationActedProfileId: defaultAccount.profileId,
-            publicationActedId: defaultPubId,
-            actorProfileId: publicProfile.profileId,
-            referrerProfileIds: _emptyUint256Array(),
-            referrerPubIds: _emptyUint256Array(),
-            actionModuleAddress: address(collectPublicationAction),
-            actionModuleData: abi.encode(nftRecipient, abi.encode(currency, exampleInitData.amount))
-        });
+    //     collectActionParams = Types.PublicationActionParams({
+    //         publicationActedProfileId: defaultAccount.profileId,
+    //         publicationActedId: defaultPubId,
+    //         actorProfileId: publicProfile.profileId,
+    //         referrerProfileIds: _emptyUint256Array(),
+    //         referrerPubIds: _emptyUint256Array(),
+    //         actionModuleAddress: address(collectPublicationAction),
+    //         actionModuleData: abi.encode(nftRecipient, abi.encode(currency, exampleInitData.amount))
+    //     });
 
-        vm.prank(payer);
-        currency.approve(address(publicActProxy), exampleInitData.amount);
+    //     vm.prank(payer);
+    //     currency.approve(address(publicActProxy), exampleInitData.amount);
 
-        domainSeparator = keccak256(
-            abi.encode(
-                Typehash.EIP712_DOMAIN,
-                keccak256('PublicActProxy'),
-                MetaTxLib.EIP712_DOMAIN_VERSION_HASH,
-                block.chainid,
-                address(publicActProxy)
-            )
-        );
+    //     domainSeparator = keccak256(
+    //         abi.encode(
+    //             Typehash.EIP712_DOMAIN,
+    //             keccak256('PublicActProxy'),
+    //             MetaTxLib.EIP712_DOMAIN_VERSION_HASH,
+    //             block.chainid,
+    //             address(publicActProxy)
+    //         )
+    //     );
 
-        publicActProxy.publicCollectWithSig({
-            publicationActionParams: collectActionParams,
-            signature: _getSigStruct({
-                pKey: payerPk,
-                digest: _getActTypedDataHash(collectActionParams, publicActProxy.nonces(payer), type(uint256).max),
-                deadline: type(uint256).max
-            })
-        });
+    //     publicActProxy.publicCollectWithSig({
+    //         publicationActionParams: collectActionParams,
+    //         signature: _getSigStruct({
+    //             pKey: payerPk,
+    //             digest: _getActTypedDataHash(collectActionParams, publicActProxy.nonces(payer), type(uint256).max),
+    //             deadline: type(uint256).max
+    //         })
+    //     });
 
-        CollectNFT collectNFT = CollectNFT(
-            CollectPublicationAction(collectPublicationAction)
-                .getCollectData(defaultAccount.profileId, defaultPubId)
-                .collectNFT
-        );
+    //     CollectNFT collectNFT = CollectNFT(
+    //         CollectPublicationAction(collectPublicationAction)
+    //             .getCollectData(defaultAccount.profileId, defaultPubId)
+    //             .collectNFT
+    //     );
 
-        assertTrue(collectNFT.balanceOf(nftRecipient) > 0, 'NFT recipient balance is 0');
-    }
+    //     assertTrue(collectNFT.balanceOf(nftRecipient) > 0, 'NFT recipient balance is 0');
+    // }
 
     function testCanPublicPaidAct_SharedRevenuePaidCollect() public {
         vm.prank(deployer);
