@@ -29,6 +29,7 @@ contract MultirecipientCollectModule_Initialization is
         return MultirecipientCollectModuleBase.getEncodedInitData();
     }
 
+    // TODO: WTF?
     function testCannotInitializeWithNonWhitelistedCurrency(
         uint256 profileId,
         uint256 pubId,

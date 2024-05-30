@@ -10,6 +10,10 @@ import {CollectPublicationAction} from 'contracts/modules/act/collect/CollectPub
 import {BaseProfilePublicationData, IBaseFeeCollectModule} from 'contracts/modules/interfaces/IBaseFeeCollectModule.sol';
 import {MetaTxLib} from 'contracts/libraries/MetaTxLib.sol';
 
+interface IProtocolSharedRevenueMinFeeMintModule {
+    function getMintFeeParams() external view returns (address, uint256);
+}
+
 /// @title PublicActProxy
 /// @author LensProtocol
 /// @notice This contract allows anyone to Act on a publication without holding a profile
@@ -71,6 +75,18 @@ contract PublicActProxy {
         _publicCollect(publicationActionParams, signature.signer);
     }
 
+    function publicSharedRevenueCollect(Types.PublicationActionParams calldata publicationActionParams) external {
+        _publicSharedRevenueCollect(publicationActionParams, msg.sender);
+    }
+
+    function publicSharedRevenueCollectWithSig(
+        Types.PublicationActionParams calldata publicationActionParams,
+        Types.EIP712Signature calldata signature
+    ) external {
+        MetaTxLib.validateActSignature(signature, publicationActionParams);
+        _publicSharedRevenueCollect(publicationActionParams, signature.signer);
+    }
+
     function nonces(address signer) public view returns (uint256) {
         return _nonces[signer];
     }
@@ -98,6 +114,35 @@ contract PublicActProxy {
         if (collectData.amount > 0) {
             IERC20(collectData.currency).safeTransferFrom(transactionExecutor, address(this), collectData.amount);
             IERC20(collectData.currency).safeIncreaseAllowance(collectModule, collectData.amount);
+        }
+
+        HUB.act(publicationActionParams);
+    }
+
+    function _publicSharedRevenueCollect(
+        Types.PublicationActionParams calldata publicationActionParams,
+        address transactionExecutor
+    ) internal {
+        address collectModule = COLLECT_PUBLICATION_ACTION
+            .getCollectData(
+                publicationActionParams.publicationActedProfileId,
+                publicationActionParams.publicationActedId
+            )
+            .collectModule;
+
+        BaseProfilePublicationData memory collectData = IBaseFeeCollectModule(collectModule).getBasePublicationData(
+            publicationActionParams.publicationActedProfileId,
+            publicationActionParams.publicationActedId
+        );
+
+        if (collectData.amount > 0) {
+            IERC20(collectData.currency).safeTransferFrom(transactionExecutor, address(this), collectData.amount);
+            IERC20(collectData.currency).safeIncreaseAllowance(collectModule, collectData.amount);
+        } else {
+            (address currency, uint256 amount) = IProtocolSharedRevenueMinFeeMintModule(collectModule)
+                .getMintFeeParams();
+            IERC20(currency).safeTransferFrom(transactionExecutor, address(this), amount);
+            IERC20(currency).safeIncreaseAllowance(collectModule, amount);
         }
 
         HUB.act(publicationActionParams);

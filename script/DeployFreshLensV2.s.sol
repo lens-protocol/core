@@ -533,6 +533,8 @@ contract DeployFreshLensV2 is Script, ForkManagement, ArrayHelpers {
             vm.writeLine(addressesFile, string.concat('AnonymousProfileId :', vm.toString(anonymousProfileId)));
             console.log('\n* * * Anonymous profile created with id: ', anonymousProfileId);
             saveValue('AnonymousProfileId', vm.toString(anonymousProfileId));
+
+            // TODO: Add PublicActProxy as a delegatedExecutor of anonymousProfileId
         }
         vm.stopBroadcast();
 
