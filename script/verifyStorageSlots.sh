@@ -26,11 +26,11 @@ if [[ $1 == "" ]]
         echo "  verifyStorageSlots.sh [targetDeployment] [contractName] [proxyNameInAddresses] [newImplNameInAddresses]"
         echo "    e.g. target (required): mainnet/testnet/sandbox"
         echo "    e.g. contractName (optional): LensHubInitializable (default)"
-        echo "    e.g. proxyNameInAddresses (optional): LensHubProxy (default)"
+        echo "    e.g. proxyNameInAddresses (optional): LensHub (default)"
         echo "    e.g. newImplNameInAddresses (optional): LensHubV2Impl (default)"
         echo ""
         echo "Example:"
-        echo "    verifyStorageSlots.sh mainnet LensHub LensHubProxy LensHubV2Impl"
+        echo "    verifyStorageSlots.sh mainnet LensHubInitializable LensHub LensHubV2Impl"
         exit 1
 fi
 
@@ -48,7 +48,7 @@ fi
 
 if [[ $3 == "" ]]
     then
-        PROXY_NAME="LensHubProxy"
+        PROXY_NAME="LensHub"
     else
         PROXY_NAME=$3
 fi

@@ -77,7 +77,7 @@ contract S01_DeployLensV2Upgrade is Script, ForkManagement, ArrayHelpers {
     ProxyAdmin proxyAdminContract;
 
     function loadBaseAddresses() internal override {
-        lensHub = json.readAddress(string(abi.encodePacked('.', targetEnv, '.LensHubProxy')));
+        lensHub = json.readAddress(string(abi.encodePacked('.', targetEnv, '.LensHub')));
         legacyLensHub = ILensGovernable(lensHub);
         vm.label(lensHub, 'LensHub');
         console.log('Lens Hub Proxy: %s', address(legacyLensHub));

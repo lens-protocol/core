@@ -30,20 +30,21 @@ via_ir = true
 
 # Testnet libraries:
 # libraries = [
-#   'contracts/libraries/ActionLib.sol:ActionLib:0xf76565aee4bf3641bf10090561ff0143628fde99',
-#   'contracts/libraries/FollowLib.sol:FollowLib:0xd33423b0ae94717274ef83431950a858b274c3f9',
-#   'contracts/libraries/GovernanceLib.sol:GovernanceLib:0x06df1ff944ed3f3f140fb0afae5f27429f93eba1',
-#   'contracts/libraries/LegacyCollectLib.sol:LegacyCollectLib:0xe6b308313eff636b82e7ced21cdc05ea7107504a',
-#   'contracts/libraries/MetaTxLib.sol:MetaTxLib:0xf4a73d59b5c3eeb02d007e4f82c7952cc659c06f',
-#   'contracts/libraries/MigrationLib.sol:MigrationLib:0x38fd9d33e9cdd1e99b4f9d983db64ed035ead9d4',
-#   'contracts/libraries/ProfileLib.sol:ProfileLib:0xdf4bdf058490383c9f12a25c2f28679c8154aa8b',
-#   'contracts/libraries/PublicationLib.sol:PublicationLib:0x70d2a21726bcc835e56680b173b31c38b6c33c64',
-#   'contracts/libraries/ValidationLib.sol:ValidationLib:0xef1c3a9c87177217574afd66956d203ba8f0ee6c',
+# 	"contracts/libraries/ActionLib.sol:ActionLib:0x6099032c8d4b93d25A50a8F0A6E2cc66259103bc",
+# 	"contracts/libraries/FollowLib.sol:FollowLib:0x7289854FF2e55c43AFCB895EC8cAE798811fcc2D",
+# 	"contracts/libraries/GovernanceLib.sol:GovernanceLib:0xf32f16af9e44cB92311DE854D138547BC1F91DC7",
+# 	"contracts/libraries/LegacyCollectLib.sol:LegacyCollectLib:0xCCF77B802160326282F260bb6e275333fEA9E76C",
+# 	"contracts/libraries/MetaTxLib.sol:MetaTxLib:0x7Afc131Fc22A703e39694c11003E55b9301BaBd7",
+# 	"contracts/libraries/MigrationLib.sol:MigrationLib:0xA4ad0E98a19581C8aB0426478d3aBcE83476554d",
+# 	"contracts/libraries/ProfileLib.sol:ProfileLib:0x653FB436CE5523d9607339C90d2D361396d699DA",
+# 	"contracts/libraries/PublicationLib.sol:PublicationLib:0x37CBD2C689A8eb10459D974A824ADEF74124DC7e",
+# 	"contracts/libraries/ValidationLib.sol:ValidationLib:0x1a4D3f97770925A14997B351C5cC3Cd47192a5B8",
 # ]
 
 [rpc_endpoints]
 polygon = "${POLYGON_RPC_URL}"
 mumbai = "${MUMBAI_RPC_URL}"
+amoy = "${AMOY_RPC_URL}"
 
 [fuzz]
 runs = 50

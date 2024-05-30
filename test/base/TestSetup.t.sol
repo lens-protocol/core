@@ -110,7 +110,7 @@ contract TestSetup is Test, ContractAddressesLoaderDeployer, ArrayHelpers {
 
         lensVersion = forkVersion;
 
-        hubProxyAddr = json.readAddress(string(abi.encodePacked('.', targetEnv, '.LensHubProxy')));
+        hubProxyAddr = json.readAddress(string(abi.encodePacked('.', targetEnv, '.LensHub')));
         vm.label(hubProxyAddr, 'LENS_HUB');
         console.log('hubProxyAddr:', hubProxyAddr);
 

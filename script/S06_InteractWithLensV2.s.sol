@@ -205,7 +205,7 @@ contract S06_InteractWithLensV2 is Script, ForkManagement, ArrayHelpers {
         vm.label(proxyAdminContractAdmin, 'ProxyAdminContractAdmin');
         console.log('ProxyAdminContractAdmin: %s', proxyAdminContractAdmin);
 
-        hub = ILensHub(json.readAddress(string(abi.encodePacked('.', targetEnv, '.LensHubProxy'))));
+        hub = ILensHub(json.readAddress(string(abi.encodePacked('.', targetEnv, '.LensHub'))));
         vm.label(address(hub), 'LensHub');
         console.log('Lens Hub Proxy: %s', address(hub));
 
