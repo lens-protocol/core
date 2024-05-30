@@ -98,6 +98,7 @@ contract DeployFreshLensV2 is Script, ForkManagement, ArrayHelpers {
     PublicActProxy publicActProxy;
     Governance governanceContract;
     ProxyAdmin proxyAdminContract;
+    uint256 anonymousProfileId;
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -401,11 +402,21 @@ contract DeployFreshLensV2 is Script, ForkManagement, ArrayHelpers {
         litAccessControl = LitAccessControl(address(litAccessControlProxy));
         _logDeployedAddress(address(litAccessControl), 'LitAccessControl');
 
-        publicActProxy = new PublicActProxy({
-            lensHub: address(hub),
-            collectPublicationAction: address(collectPublicationAction)
-        });
+        publicActProxy = new PublicActProxy({lensHub: address(hub)});
         _logDeployedAddress(address(publicActProxy), 'PublicActProxy');
+
+        if (isTestnet) {
+            // Add PublicActProxy as a delegatedExecutor of anonymousProfileId
+            hub.changeDelegatedExecutorsConfig(
+                anonymousProfileId,
+                _toAddressArray(address(publicActProxy)),
+                _toBoolArray(true)
+            );
+            console.log('PublicActProxy added as DelegatedExecutor of AnonymousProfileId: %s', address(publicActProxy));
+        } else {
+            console.log('Skipping governance actions for mainnet');
+            console.log('Add PublicActProxy as DelegatedExecutor of AnonymousProfileId manually!');
+        }
     }
 
     // TODO: Use from test/ContractAddresses?
@@ -521,7 +532,7 @@ contract DeployFreshLensV2 is Script, ForkManagement, ArrayHelpers {
             uint256 handleRoyaltyFee = json.readUint(string(abi.encodePacked('.', targetEnv, '.HandleRoyaltyFee')));
             ERC2981CollectionRoyalties(address(handles)).setRoyalty(handleRoyaltyFee);
 
-            uint256 anonymousProfileId = permissionlessCreator.createProfile({
+            anonymousProfileId = permissionlessCreator.createProfile({
                 createProfileParams: Types.CreateProfileParams({
                     to: deployer.owner,
                     followModule: address(0),
@@ -533,8 +544,6 @@ contract DeployFreshLensV2 is Script, ForkManagement, ArrayHelpers {
             vm.writeLine(addressesFile, string.concat('AnonymousProfileId :', vm.toString(anonymousProfileId)));
             console.log('\n* * * Anonymous profile created with id: ', anonymousProfileId);
             saveValue('AnonymousProfileId', vm.toString(anonymousProfileId));
-
-            // TODO: Add PublicActProxy as a delegatedExecutor of anonymousProfileId
         }
         vm.stopBroadcast();
 

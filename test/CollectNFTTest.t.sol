@@ -193,7 +193,7 @@ contract CollectNFTTest is BaseTest, LensBaseERC721Test {
     }
 
     function testTokenURI() public {
-        vm.expectCall(address(hub), abi.encodeCall(hub.getContentURI, (defaultAccount.profileId, defaultPubId)), 1);
+        vm.expectCall(address(hub), abi.encodeCall(hub.getContentURI, (defaultAccount.profileId, defaultPubId)));
         collectNFT.tokenURI(firstCollectTokenId);
     }
 

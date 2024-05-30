@@ -32,7 +32,6 @@ contract DeployPublicActProxy is Script, ForkManagement, ArrayHelpers {
     string mnemonic;
 
     address lensHub;
-    address collectPublicationAction;
 
     address publicActProxy;
 
@@ -95,14 +94,35 @@ contract DeployPublicActProxy is Script, ForkManagement, ArrayHelpers {
         lensHub = json.readAddress(string(abi.encodePacked('.', targetEnv, '.LensHub')));
         vm.label(lensHub, 'LensHub');
         console.log('Lens Hub Proxy: %s', lensHub);
+    }
 
-        Module[] memory actModules = abi.decode(
-            vm.parseJson(json, string(abi.encodePacked('.', targetEnv, '.Modules.v2.act'))),
-            (Module[])
-        );
-        collectPublicationAction = findModuleHelper(actModules, 'CollectPublicationAction').addy;
-        vm.label(collectPublicationAction, 'CollectPublicationAction');
-        console.log('CollectPublicationAction: %s', collectPublicationAction);
+    function deploy() internal {
+        vm.startBroadcast(deployer.ownerPk);
+        {
+            publicActProxy = address(new PublicActProxy({lensHub: lensHub}));
+            _logDeployedAddress(publicActProxy, 'PublicActProxy');
+        }
+        vm.stopBroadcast();
+    }
+
+    function governanceActions() internal {
+        if (LibString.eq(targetEnv, 'mainnet')) {
+            console.log('Skipping governance actions for mainnet');
+            console.log('Add PublicActProxy as DelegatedExecutor of AnonymousProfileId manually!');
+        } else {
+            uint256 anonymousProfileId = json.readUint(string(abi.encodePacked('.', targetEnv, '.AnonymousProfileId')));
+            console.log('Anonymous Profile Id: %s', anonymousProfileId);
+            vm.startBroadcast(deployer.ownerPk);
+            {
+                ILensHub(lensHub).changeDelegatedExecutorsConfig(
+                    anonymousProfileId,
+                    _toAddressArray(publicActProxy),
+                    _toBoolArray(true)
+                );
+            }
+            vm.stopBroadcast();
+            console.log('PublicActProxy added as DelegatedExecutor of AnonymousProfileId: %s', publicActProxy);
+        }
     }
 
     function run(string memory targetEnv_) external {
@@ -113,31 +133,5 @@ contract DeployPublicActProxy is Script, ForkManagement, ArrayHelpers {
         loadPrivateKeys();
         deploy();
         governanceActions();
-    }
-
-    function deploy() internal {
-        vm.startBroadcast(deployer.ownerPk);
-        {
-            publicActProxy = address(
-                new PublicActProxy({lensHub: lensHub, collectPublicationAction: collectPublicationAction})
-            );
-            _logDeployedAddress(publicActProxy, 'PublicActProxy');
-        }
-        vm.stopBroadcast();
-    }
-
-    function governanceActions() internal {
-        uint256 anonymousProfileId = json.readUint(string(abi.encodePacked('.', targetEnv, '.AnonymousProfileId')));
-        console.log('Anonymous Profile Id: %s', anonymousProfileId);
-        vm.startBroadcast(deployer.ownerPk);
-        {
-            ILensHub(lensHub).changeDelegatedExecutorsConfig(
-                anonymousProfileId,
-                _toAddressArray(publicActProxy),
-                _toBoolArray(true)
-            );
-        }
-        vm.stopBroadcast();
-        console.log('PublicActProxy added as DelegatedExecutor of AnonymousProfileId: %s', publicActProxy);
     }
 }

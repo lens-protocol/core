@@ -230,10 +230,7 @@ contract S02_DeployLensV2Periphery is Script, ForkManagement, ArrayHelpers {
         vm.label(address(profileCreationProxy), 'ProfileCreationProxy');
         saveContractAddress('ProfileCreationProxy', address(profileCreationProxy));
 
-        publicActProxy = new PublicActProxy({
-            lensHub: address(hub),
-            collectPublicationAction: address(collectPublicationAction)
-        });
+        publicActProxy = new PublicActProxy({lensHub: address(hub)});
         console.log('\n+ + + PublicActProxy: %s', address(publicActProxy));
         vm.writeLine(addressesFile, string.concat('PublicActProxy: ', vm.toString(address(publicActProxy))));
         vm.label(address(publicActProxy), 'PublicActProxy');

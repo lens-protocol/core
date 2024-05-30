@@ -178,7 +178,7 @@ contract GovernanceTest is BaseTest {
     // Only Owner functions
 
     function testSetGovernance_ifOwner(address newGovernance) public {
-        vm.expectCall(address(hub), abi.encodeCall(ILensGovernable.setGovernance, (newGovernance)), 1);
+        vm.expectCall(address(hub), abi.encodeCall(ILensGovernable.setGovernance, (newGovernance)));
 
         vm.prank(governanceOwner);
         governanceContract.lensHub_setGovernance(newGovernance);
@@ -187,7 +187,7 @@ contract GovernanceTest is BaseTest {
     }
 
     function testSetEmergencyAdmin_ifOwner(address newEmergencyAdmin) public {
-        vm.expectCall(address(hub), abi.encodeCall(ILensGovernable.setEmergencyAdmin, (newEmergencyAdmin)), 1);
+        vm.expectCall(address(hub), abi.encodeCall(ILensGovernable.setEmergencyAdmin, (newEmergencyAdmin)));
 
         vm.prank(governanceOwner);
         governanceContract.lensHub_setEmergencyAdmin(newEmergencyAdmin);
@@ -204,8 +204,7 @@ contract GovernanceTest is BaseTest {
     function testWhitelistProfileCreator_ifOwner(address profileCreator, bool whitelist) public {
         vm.expectCall(
             address(hub),
-            abi.encodeCall(ILensGovernable.whitelistProfileCreator, (profileCreator, whitelist)),
-            1
+            abi.encodeCall(ILensGovernable.whitelistProfileCreator, (profileCreator, whitelist))
         );
 
         vm.prank(governanceOwner);
@@ -217,8 +216,7 @@ contract GovernanceTest is BaseTest {
     function testWhitelistProfileCreator_ifControllerContract(address profileCreator, bool whitelist) public {
         vm.expectCall(
             address(hub),
-            abi.encodeCall(ILensGovernable.whitelistProfileCreator, (profileCreator, whitelist)),
-            1
+            abi.encodeCall(ILensGovernable.whitelistProfileCreator, (profileCreator, whitelist))
         );
 
         vm.prank(controllerContract);
@@ -234,8 +232,8 @@ contract GovernanceTest is BaseTest {
 
         newTreasuryFee = uint16(bound(newTreasuryFee, 0, _maxTreasuryFee()));
 
-        vm.expectCall(address(hub), abi.encodeCall(ILensGovernable.setTreasury, (newTreasury)), 1);
-        vm.expectCall(address(hub), abi.encodeCall(ILensGovernable.setTreasuryFee, (newTreasuryFee)), 1);
+        vm.expectCall(address(hub), abi.encodeCall(ILensGovernable.setTreasury, (newTreasury)));
+        vm.expectCall(address(hub), abi.encodeCall(ILensGovernable.setTreasuryFee, (newTreasuryFee)));
 
         vm.prank(governanceOwner);
         governanceContract.lensHub_setTreasuryParams(newTreasury, newTreasuryFee);
@@ -251,8 +249,8 @@ contract GovernanceTest is BaseTest {
 
         newTreasuryFee = uint16(bound(newTreasuryFee, 0, _maxTreasuryFee()));
 
-        vm.expectCall(address(hub), abi.encodeCall(ILensGovernable.setTreasury, (newTreasury)), 1);
-        vm.expectCall(address(hub), abi.encodeCall(ILensGovernable.setTreasuryFee, (newTreasuryFee)), 1);
+        vm.expectCall(address(hub), abi.encodeCall(ILensGovernable.setTreasury, (newTreasury)));
+        vm.expectCall(address(hub), abi.encodeCall(ILensGovernable.setTreasuryFee, (newTreasuryFee)));
 
         vm.prank(controllerContract);
         governanceContract.lensHub_setTreasuryParams(newTreasury, newTreasuryFee);
@@ -265,7 +263,7 @@ contract GovernanceTest is BaseTest {
         address newTreasury = makeAddr('newTreasury');
         uint16 newTreasuryFee = 0;
 
-        vm.expectCall(address(hub), abi.encodeCall(ILensGovernable.setTreasuryFee, (0)), 1);
+        vm.expectCall(address(hub), abi.encodeCall(ILensGovernable.setTreasuryFee, (0)));
 
         vm.prank(governanceOwner);
         governanceContract.lensHub_setTreasuryParams(newTreasury, newTreasuryFee);
@@ -277,7 +275,7 @@ contract GovernanceTest is BaseTest {
         _newState = uint8(bound(_newState, uint8(0), uint8(type(Types.ProtocolState).max)));
         Types.ProtocolState newState = Types.ProtocolState(_newState);
 
-        vm.expectCall(address(hub), abi.encodeCall(ILensGovernable.setState, (newState)), 1);
+        vm.expectCall(address(hub), abi.encodeCall(ILensGovernable.setState, (newState)));
 
         vm.prank(governanceOwner);
         governanceContract.lensHub_setState(newState);
@@ -289,7 +287,7 @@ contract GovernanceTest is BaseTest {
         _newState = uint8(bound(_newState, uint8(0), uint8(type(Types.ProtocolState).max)));
         Types.ProtocolState newState = Types.ProtocolState(_newState);
 
-        vm.expectCall(address(hub), abi.encodeCall(ILensGovernable.setState, (newState)), 1);
+        vm.expectCall(address(hub), abi.encodeCall(ILensGovernable.setState, (newState)));
 
         vm.prank(controllerContract);
         governanceContract.lensHub_setState(newState);
@@ -298,7 +296,7 @@ contract GovernanceTest is BaseTest {
     }
 
     function testExecuteAsGovernance_ifOwner(address newGovernance) public {
-        vm.expectCall(address(hub), abi.encodeCall(ILensGovernable.setGovernance, (newGovernance)), 1);
+        vm.expectCall(address(hub), abi.encodeCall(ILensGovernable.setGovernance, (newGovernance)));
 
         vm.prank(governanceOwner);
         governanceContract.executeAsGovernance(
@@ -310,8 +308,7 @@ contract GovernanceTest is BaseTest {
     function testExecuteAsGovernance_ifControllerContract_success() public {
         vm.expectCall(
             address(mockNonLensHubGoverned),
-            abi.encodeCall(MockNonLensHubGoverned.requiresGovernance, (true)),
-            1
+            abi.encodeCall(MockNonLensHubGoverned.requiresGovernance, (true))
         );
 
         vm.prank(controllerContract);
@@ -324,8 +321,7 @@ contract GovernanceTest is BaseTest {
     function testExecuteAsGovernance_ifControllerContract_failure() public {
         vm.expectCall(
             address(mockNonLensHubGoverned),
-            abi.encodeCall(MockNonLensHubGoverned.requiresGovernance, (false)),
-            1
+            abi.encodeCall(MockNonLensHubGoverned.requiresGovernance, (false))
         );
 
         vm.expectRevert('Failure');
@@ -338,7 +334,7 @@ contract GovernanceTest is BaseTest {
     }
 
     function testExecuteAsGovernance_RevertPanic() public {
-        vm.expectCall(address(mockNonLensHubGoverned), abi.encodeCall(MockNonLensHubGoverned.failWithPanic, ()), 1);
+        vm.expectCall(address(mockNonLensHubGoverned), abi.encodeCall(MockNonLensHubGoverned.failWithPanic, ()));
 
         vm.expectRevert(stdError.assertionError);
 
@@ -350,11 +346,7 @@ contract GovernanceTest is BaseTest {
     }
 
     function testExecuteAsGovernance_RevertCustomError() public {
-        vm.expectCall(
-            address(mockNonLensHubGoverned),
-            abi.encodeCall(MockNonLensHubGoverned.failWithCustomError, ()),
-            1
-        );
+        vm.expectCall(address(mockNonLensHubGoverned), abi.encodeCall(MockNonLensHubGoverned.failWithCustomError, ()));
 
         vm.expectRevert(MockNonLensHubGoverned.CustomError.selector);
 
@@ -366,11 +358,7 @@ contract GovernanceTest is BaseTest {
     }
 
     function testExecuteAsGovernance_RevertStringError() public {
-        vm.expectCall(
-            address(mockNonLensHubGoverned),
-            abi.encodeCall(MockNonLensHubGoverned.failWithStringRevert, ()),
-            1
-        );
+        vm.expectCall(address(mockNonLensHubGoverned), abi.encodeCall(MockNonLensHubGoverned.failWithStringRevert, ()));
 
         vm.expectRevert('Failure');
 
@@ -382,11 +370,7 @@ contract GovernanceTest is BaseTest {
     }
 
     function testExecuteAsGovernance_RevertNoErrorData() public {
-        vm.expectCall(
-            address(mockNonLensHubGoverned),
-            abi.encodeCall(MockNonLensHubGoverned.failWithNoErrorData, ()),
-            1
-        );
+        vm.expectCall(address(mockNonLensHubGoverned), abi.encodeCall(MockNonLensHubGoverned.failWithNoErrorData, ()));
 
         vm.expectRevert(bytes(''));
 

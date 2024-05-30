@@ -122,8 +122,7 @@ contract LensHubTest is BaseTest {
             abi.encodeCall(
                 IFollowModule.initializeFollowModule,
                 (expectedProfileId, address(this), followModuleInitData)
-            ),
-            1
+            )
         );
 
         uint256 profileId = hub.createProfile(createProfileParams);

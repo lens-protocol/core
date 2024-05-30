@@ -176,7 +176,8 @@ contract ProxyAdminTest is BaseTest {
         bytes memory data = abi.encodeCall(MockContract.initialize, (address(0xdeadbeef)));
 
         vm.expectCall(address(hubAsProxy), abi.encodeCall(hubAsProxy.upgradeToAndCall, (hubImplV2, data)));
-        vm.expectCall(address(hubImplV2), data);
+        // TODO: CI fix: Uncomment when the bug in Foundry is fixed: https://github.com/foundry-rs/foundry/issues/8015
+        // vm.expectCall(address(hubImplV2), data);
         vm.prank(proxyAdminContractOwner);
         proxyAdminContract.proxy_upgradeAndCall(hubImplV2, data);
 
@@ -196,7 +197,8 @@ contract ProxyAdminTest is BaseTest {
         bytes memory data = abi.encodeCall(MockContract.initialize, (address(0xdeadbeef)));
 
         vm.expectCall(address(hubAsProxy), abi.encodeCall(hubAsProxy.upgradeToAndCall, (hubImplV2, data)));
-        vm.expectCall(address(hubImplV2), data);
+        // TODO: CI fix: Uncomment when the bug in Foundry is fixed: https://github.com/foundry-rs/foundry/issues/8015
+        // vm.expectCall(address(hubImplV2), data);
         vm.prank(controllerContract);
         proxyAdminContract.proxy_upgradeAndCall(hubImplV2, data);
 
