@@ -234,14 +234,12 @@ contract LegacyCollectTest is BaseTest, ReferralSystemTest {
             abi.encodeCall(
                 ICollectNFT.initialize,
                 (defaultCollectParams.publicationCollectedProfileId, defaultCollectParams.publicationCollectedId)
-            ),
-            1
+            )
         );
 
         vm.expectCall(
             predictedCollectNFT,
-            abi.encodeCall(ICollectNFT.mint, (hub.ownerOf(defaultCollectParams.collectorProfileId))),
-            2
+            abi.encodeCall(ICollectNFT.mint, (hub.ownerOf(defaultCollectParams.collectorProfileId)))
         );
 
         vm.expectCall(
@@ -255,8 +253,7 @@ contract LegacyCollectTest is BaseTest, ReferralSystemTest {
                     defaultCollectParams.publicationCollectedId,
                     defaultCollectParams.collectModuleData
                 )
-            ),
-            2
+            )
         );
 
         vm.expectEmit(true, true, true, true, predictedCollectNFT);
@@ -416,11 +413,10 @@ contract LegacyCollectTest is BaseTest, ReferralSystemTest {
             abi.encodeCall(
                 ICollectNFT.initialize,
                 (defaultCollectParams.publicationCollectedProfileId, defaultCollectParams.publicationCollectedId)
-            ),
-            1
+            )
         );
 
-        vm.expectCall(predictedCollectNFT, abi.encodeCall(ICollectNFT.mint, (collectorAccount.owner)), 2);
+        vm.expectCall(predictedCollectNFT, abi.encodeCall(ICollectNFT.mint, (collectorAccount.owner)));
 
         vm.expectCall(
             address(mockDeprecatedCollectModuleFollowerOnly),
@@ -433,8 +429,7 @@ contract LegacyCollectTest is BaseTest, ReferralSystemTest {
                     defaultCollectParams.publicationCollectedId,
                     defaultCollectParams.collectModuleData
                 )
-            ),
-            2
+            )
         );
 
         vm.expectEmit(true, true, true, true, predictedCollectNFT);

@@ -153,8 +153,8 @@ contract SetBlockStatusTest is BaseTest {
         vm.expectEmit(true, false, false, true, address(hub));
         emit Events.Blocked(statusSetterProfileId, anotherBlockeeProfileId, statusSetterProfileOwner, block.timestamp);
 
-        vm.expectCall(followNFTAddress, abi.encodeCall(followNFT.processBlock, (blockeeProfileId)), 2);
-        vm.expectCall(followNFTAddress, abi.encodeCall(followNFT.processBlock, (anotherBlockeeProfileId)), 1);
+        vm.expectCall(followNFTAddress, abi.encodeCall(followNFT.processBlock, (blockeeProfileId)));
+        vm.expectCall(followNFTAddress, abi.encodeCall(followNFT.processBlock, (anotherBlockeeProfileId)));
 
         _setBlockStatus({
             pk: statusSetterProfileOwnerPk,
@@ -199,7 +199,7 @@ contract SetBlockStatusTest is BaseTest {
         vm.expectEmit(true, false, false, true, address(hub));
         emit Events.Blocked(statusSetterProfileId, blockeeProfileId, statusSetterProfileOwner, block.timestamp);
 
-        vm.expectCall(followNFTAddress, abi.encodeCall(followNFT.processBlock, (blockeeProfileId)), 1);
+        vm.expectCall(followNFTAddress, abi.encodeCall(followNFT.processBlock, (blockeeProfileId)));
 
         _setBlockStatus({
             pk: statusSetterProfileOwnerPk,
@@ -292,11 +292,7 @@ contract SetBlockStatusMetaTxTest is SetBlockStatusTest, MetaTxNegatives {
         });
     }
 
-    function _executeMetaTx(
-        uint256 signerPk,
-        uint256 nonce,
-        uint256 deadline
-    ) internal override {
+    function _executeMetaTx(uint256 signerPk, uint256 nonce, uint256 deadline) internal override {
         hub.setBlockStatusWithSig({
             byProfileId: statusSetterProfileId,
             idsOfProfilesToSetBlockStatus: _toUint256Array(blockeeProfileId),

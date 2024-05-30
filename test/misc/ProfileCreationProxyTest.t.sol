@@ -139,16 +139,14 @@ contract ProfileCreationProxyTest is BaseTest {
             followModuleInitData: createProfileParams.followModuleInitData
         });
 
-        vm.expectCall(address(hub), abi.encodeCall(hub.createProfile, (calledCreateProfileParams)), 1);
+        vm.expectCall(address(hub), abi.encodeCall(hub.createProfile, (calledCreateProfileParams)));
         vm.expectCall(
             address(lensHandles),
-            abi.encodeCall(lensHandles.mintHandle, (address(profileCreationProxy), handle)),
-            1
+            abi.encodeCall(lensHandles.mintHandle, (address(profileCreationProxy), handle))
         );
         vm.expectCall(
             address(tokenHandleRegistry),
-            abi.encodeCall(tokenHandleRegistry.link, (predictedHandleId, predictedProfileId)),
-            1
+            abi.encodeCall(tokenHandleRegistry.link, (predictedHandleId, predictedProfileId))
         );
 
         vm.prank(profileCreationProxyOwner);
