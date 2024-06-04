@@ -86,7 +86,9 @@ if [[ "$CONFIRMATION" == "y" || "$CONFIRMATION" == "Y" ]]
                 catapulta script script/$SCRIPT_NAME.s.sol --chain $NETWORK --sig $CALLDATA --legacy --skip test --ffi --slow --skip-git
                 exit 0
             else
-                forge script script/$SCRIPT_NAME.s.sol:$SCRIPT_NAME --sig $CALLDATA --rpc-url $NETWORK -vv --skip test --ffi --slow --broadcast --verify
+                forge script script/$SCRIPT_NAME.s.sol:$SCRIPT_NAME --sig $CALLDATA --rpc-url $NETWORK -vv --skip test --ffi --slow --broadcast
+                # `--verify` temporarily removed because of Foundry issues. You can add it back or verify manually later.
+                # forge script script/$SCRIPT_NAME.s.sol:$SCRIPT_NAME --sig $CALLDATA --rpc-url $NETWORK -vv --skip test --ffi --slow --broadcast --verify
         fi
 
     else

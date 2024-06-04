@@ -404,19 +404,6 @@ contract DeployFreshLensV2 is Script, ForkManagement, ArrayHelpers {
 
         publicActProxy = new PublicActProxy({lensHub: address(hub)});
         _logDeployedAddress(address(publicActProxy), 'PublicActProxy');
-
-        if (isTestnet) {
-            // Add PublicActProxy as a delegatedExecutor of anonymousProfileId
-            hub.changeDelegatedExecutorsConfig(
-                anonymousProfileId,
-                _toAddressArray(address(publicActProxy)),
-                _toBoolArray(true)
-            );
-            console.log('PublicActProxy added as DelegatedExecutor of AnonymousProfileId: %s', address(publicActProxy));
-        } else {
-            console.log('Skipping governance actions for mainnet');
-            console.log('Add PublicActProxy as DelegatedExecutor of AnonymousProfileId manually!');
-        }
     }
 
     // TODO: Use from test/ContractAddresses?
@@ -549,6 +536,22 @@ contract DeployFreshLensV2 is Script, ForkManagement, ArrayHelpers {
 
         vm.startBroadcast(deployer.ownerPk);
         {
+            if (isTestnet) {
+                // Add PublicActProxy as a delegatedExecutor of anonymousProfileId
+                hub.changeDelegatedExecutorsConfig(
+                    anonymousProfileId,
+                    _toAddressArray(address(publicActProxy)),
+                    _toBoolArray(true)
+                );
+                console.log(
+                    'PublicActProxy added as DelegatedExecutor of AnonymousProfileId: %s',
+                    address(publicActProxy)
+                );
+            } else {
+                console.log('Skipping governance actions for mainnet');
+                console.log('Add PublicActProxy as DelegatedExecutor of AnonymousProfileId manually!');
+            }
+
             // Deploy governance and proxy-admin controllable-by-contract contracts, and transfer ownership.
             governanceContract = new Governance(address(hub), governance.owner);
             _logDeployedAddress(address(governanceContract), 'GovernanceContract');

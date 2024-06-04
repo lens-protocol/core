@@ -45,6 +45,7 @@ via_ir = true
 polygon = "${POLYGON_RPC_URL}"
 mumbai = "${MUMBAI_RPC_URL}"
 amoy = "${AMOY_RPC_URL}"
+local = "${LOCAL_RPC_URL}"
 
 [fuzz]
 runs = 50
