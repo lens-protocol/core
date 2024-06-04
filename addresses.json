@@ -248,6 +248,30 @@
     "ProfileCreationProxy": "0x8de25afc4B37e0AdBb58caf3dF06fAf419455404",
     "Treasury": "0x648Ddb72d51B5f1849586f6Fd2a95E70754A126A"
   },
+  "local": {
+    "testnet": true,
+    "chainId": 31337,
+    "network": "local",
+    "LensProfilesGuardianTimelock": 300,
+    "LensHandlesGuardianTimelock": 300,
+    "Currencies": [],
+    "Modules": {
+      "v1": {
+        "collect": [],
+        "follow": [],
+        "reference": []
+      },
+      "v2": {
+        "follow": [],
+        "act": [],
+        "collect": [],
+        "reference": []
+      }
+    },
+    "TreasuryFee": 500,
+    "ProfileRoyaltyFee": 500,
+    "HandleRoyaltyFee": 500
+  },
   "example": {
     "testnet": true,
     "chainId": 69,
