@@ -428,7 +428,7 @@ library PublicationLib {
                     // Deprecated reference modules don't support referrers.
                     revert Errors.InvalidReferrer();
                 }
-                ILegacyReferenceModule(refModule).processComment(
+                ILegacyReferenceModule(refModule).processQuote(
                     quoteParams.profileId,
                     quoteParams.pointedProfileId,
                     quoteParams.pointedPubId,
