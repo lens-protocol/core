@@ -2,80 +2,81 @@
 
 pragma solidity ^0.8.15;
 
-import {ValidationLib} from 'contracts/libraries/ValidationLib.sol';
-import {Types} from 'contracts/libraries/constants/Types.sol';
-import {Events} from 'contracts/libraries/constants/Events.sol';
-import {Errors} from 'contracts/libraries/constants/Errors.sol';
-import {IReferenceModule} from 'contracts/interfaces/IReferenceModule.sol';
-import {ILegacyReferenceModule} from 'contracts/interfaces/ILegacyReferenceModule.sol';
-import {StorageLib} from 'contracts/libraries/StorageLib.sol';
-import {IPublicationActionModule} from 'contracts/interfaces/IPublicationActionModule.sol';
-import {IModuleRegistry} from 'contracts/interfaces/IModuleRegistry.sol';
-import {ILensHub} from 'contracts/interfaces/ILensHub.sol';
+import {ValidationLib} from "./libraries/ValidationLib.sol";
+import {Types} from "./libraries/constants/Types.sol";
+import {Events} from "./libraries/constants/Events.sol";
+import {Errors} from "./libraries/constants/Errors.sol";
+import {IReferenceModule} from "./interfaces/IReferenceModule.sol";
+import {ILegacyReferenceModule} from "./interfaces/ILegacyReferenceModule.sol";
+import {StorageLib} from "./libraries/StorageLib.sol";
+import {IPublicationActionModule} from "./interfaces/IPublicationActionModule.sol";
+import {IModuleRegistry} from "./interfaces/IModuleRegistry.sol";
+import {ILensHub} from "./interfaces/ILensHub.sol";
 
 library PublicationLib {
-    function MODULE_REGISTRY() internal view returns (IModuleRegistry) {
+    function _getModuleRegistry() private view returns (IModuleRegistry) {
         return IModuleRegistry(ILensHub(address(this)).getModuleRegistry());
     }
 
-    /**
-     * @notice Publishes a post to a given profile.
-     *
-     * @param postParams The PostParams struct.
-     *
-     * @return uint256 The created publication's pubId.
-     */
     function post(Types.PostParams calldata postParams, address transactionExecutor) external returns (uint256) {
-        uint256 pubIdAssigned = ++StorageLib.getProfile(postParams.profileId).pubCount;
-
-        Types.Publication storage _post = StorageLib.getPublication(postParams.profileId, pubIdAssigned);
+        uint256 pubId = ++StorageLib.getProfile(postParams.profileId).pubCount;
+        Types.Publication storage _post = StorageLib.getPublication(postParams.profileId, pubId);
         _post.contentURI = postParams.contentURI;
         _post.pubType = Types.PublicationType.Post;
 
-        bytes memory referenceModuleReturnData = _initPubReferenceModule(
-            InitReferenceModuleParams(
-                postParams.profileId,
-                transactionExecutor,
-                pubIdAssigned,
-                postParams.referenceModule,
-                postParams.referenceModuleInitData
-            )
+        bytes memory referenceData = _initPubReferenceModule(
+            postParams.profileId, transactionExecutor, pubId, postParams.referenceModule, postParams.referenceModuleInitData
         );
 
-        bytes[] memory actionModulesReturnDatas = _initPubActionModules(
-            InitActionModuleParams(
-                postParams.profileId,
-                transactionExecutor,
-                pubIdAssigned,
-                postParams.actionModules,
-                postParams.actionModulesInitDatas
-            )
+        bytes[] memory actionData = _initPubActionModules(
+            postParams.profileId, transactionExecutor, pubId, postParams.actionModules, postParams.actionModulesInitDatas
         );
 
-        emit Events.PostCreated(
-            postParams,
-            pubIdAssigned,
-            actionModulesReturnDatas,
-            referenceModuleReturnData,
-            transactionExecutor,
-            block.timestamp
-        );
-
-        return pubIdAssigned;
+        emit Events.PostCreated(postParams, pubId, actionData, referenceData, transactionExecutor, block.timestamp);
+        return pubId;
     }
 
-    /**
-     * @notice Publishes a comment to a given profile via signature.
-     *
-     * @param commentParams the CommentParams struct.
-     *
-     * @return uint256 The created publication's pubId.
-     */
-    function comment(
-        Types.CommentParams calldata commentParams,
-        address transactionExecutor
-    ) external returns (uint256) {
-        (
+    function comment(Types.CommentParams calldata commentParams, address transactionExecutor) external returns (uint256) {
+        (uint256 pubId, bytes[] memory actionData, bytes memory referenceInitData, Types.PublicationType[] memory refTypes) =
+            _createReferencePublication(commentParams, transactionExecutor, Types.PublicationType.Comment);
+
+        bytes memory referenceData = _processCommentIfNeeded(commentParams, pubId, transactionExecutor, refTypes);
+
+        emit Events.CommentCreated(commentParams, pubId, referenceData, actionData, referenceInitData, transactionExecutor, block.timestamp);
+        return pubId;
+    }
+
+    function _initPubActionModules(
+        uint256 profileId,
+        address transactionExecutor,
+        uint256 pubId,
+        address[] memory actionModules,
+        bytes[] memory actionModulesInitDatas
+    ) private returns (bytes[] memory results) {
+        require(actionModules.length == actionModulesInitDatas.length, "Array length mismatch");
+
+        results = new bytes[](actionModules.length);
+        for (uint256 i = 0; i < actionModules.length; i++) {
+            _getModuleRegistry().verifyModule(actionModules[i], uint256(IModuleRegistry.ModuleType.PUBLICATION_ACTION_MODULE));
+            StorageLib.getPublication(profileId, pubId).actionModuleEnabled[actionModules[i]] = true;
+            results[i] = IPublicationActionModule(actionModules[i]).initializePublicationAction(profileId, pubId, transactionExecutor, actionModulesInitDatas[i]);
+        }
+    }
+
+    function _initPubReferenceModule(
+        uint256 profileId,
+        address transactionExecutor,
+        uint256 pubId,
+        address referenceModule,
+        bytes memory referenceModuleInitData
+    ) private returns (bytes memory) {
+        if (referenceModule == address(0)) return new bytes(0);
+        _getModuleRegistry().verifyModule(referenceModule, uint256(IModuleRegistry.ModuleType.REFERENCE_MODULE));
+        StorageLib.getPublication(profileId, pubId).referenceModule = referenceModule;
+        return IReferenceModule(referenceModule).initializeReferenceModule(profileId, pubId, transactionExecutor, referenceModuleInitData);
+    }
+}
+
             uint256 pubIdAssigned,
             bytes[] memory actionModulesInitReturnDatas,
             bytes memory referenceModuleInitReturnData,
