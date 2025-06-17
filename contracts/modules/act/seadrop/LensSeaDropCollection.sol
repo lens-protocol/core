@@ -5,9 +5,9 @@ import {ERC721SeaDropCloneable} from '@seadrop/clones/ERC721SeaDropCloneable.sol
 import {ISeaDrop} from '@seadrop/interfaces/ISeaDrop.sol';
 import {PublicDrop} from '@seadrop/lib/SeaDropStructs.sol';
 import {ILensHub} from 'contracts/interfaces/ILensHub.sol';
+import {ActionRestricted} from 'contracts/modules/ActionRestricted.sol';
 
-contract LensSeaDropCollection is ERC721SeaDropCloneable {
-    error OnlySeaDropActionModule();
+contract LensSeaDropCollection is ERC721SeaDropCloneable, ActionRestricted {
     error FeesDoNotCoverLensTreasury();
     error InvalidParams();
 
@@ -15,21 +15,10 @@ contract LensSeaDropCollection is ERC721SeaDropCloneable {
 
     address immutable HUB;
 
-    address immutable SEADROP_ACTION_MODULE;
-
     address immutable DEFAULT_SEADROP;
 
-    // TODO: Might use the ActionRestricted inheritance instead.
-    modifier onlySeaDropActionModule() {
-        if (msg.sender != SEADROP_ACTION_MODULE) {
-            revert OnlySeaDropActionModule();
-        }
-        _;
-    }
-
-    constructor(address lensHub, address seaDropActionModule, address defaultSeaDrop) {
+    constructor(address lensHub, address seaDropActionModule, address defaultSeaDrop) ActionRestricted(seaDropActionModule) {
         HUB = lensHub;
-        SEADROP_ACTION_MODULE = seaDropActionModule;
         DEFAULT_SEADROP = defaultSeaDrop;
     }
 
@@ -39,7 +28,7 @@ contract LensSeaDropCollection is ERC721SeaDropCloneable {
         string calldata symbol,
         address[] calldata allowedSeaDrops,
         MultiConfigureStruct calldata config
-    ) external onlySeaDropActionModule {
+    ) external onlyActionModule {
         _validateInitializationData(allowedSeaDrops, config);
         super.initialize({
             __name: name,
@@ -61,11 +50,11 @@ contract LensSeaDropCollection is ERC721SeaDropCloneable {
             revert InvalidParams();
         }
         // Makes sure that the SeaDropMintPublicationAction is allowed as a fee recipient.
-        if (config.allowedFeeRecipients.length == 0 || config.allowedFeeRecipients[0] != SEADROP_ACTION_MODULE) {
+        if (config.allowedFeeRecipients.length == 0 || config.allowedFeeRecipients[0] != ACTION_MODULE) {
             revert InvalidParams();
         }
         // Makes sure that the SeaDropMintPublicationAction is allowed as a payer.
-        if (config.allowedPayers.length == 0 || config.allowedPayers[0] != SEADROP_ACTION_MODULE) {
+        if (config.allowedPayers.length == 0 || config.allowedPayers[0] != ACTION_MODULE) {
             revert InvalidParams();
         }
         // NOTE: Validations of fee BPS, disallowed fee recipients or payers are done in the respective overridden
@@ -124,7 +113,7 @@ contract LensSeaDropCollection is ERC721SeaDropCloneable {
         bool allowed
     ) external virtual override {
         // We only enforce the SeaDropMintPublicationAction to be used as a fee recipient when using the default SeaDrop.
-        if (seaDropImpl == DEFAULT_SEADROP && !allowed && feeRecipient == SEADROP_ACTION_MODULE) {
+        if (seaDropImpl == DEFAULT_SEADROP && !allowed && feeRecipient == ACTION_MODULE) {
             revert InvalidParams();
         }
         // Ensure the sender is only the owner or this contract itself.
@@ -147,7 +136,7 @@ contract LensSeaDropCollection is ERC721SeaDropCloneable {
      */
     function updatePayer(address seaDropImpl, address payer, bool allowed) external virtual override {
         // We only enforce the SeaDropMintPublicationAction to be enabled as a payer when using the default SeaDrop.
-        if (seaDropImpl == DEFAULT_SEADROP && !allowed && payer == SEADROP_ACTION_MODULE) {
+        if (seaDropImpl == DEFAULT_SEADROP && !allowed && payer == ACTION_MODULE) {
             revert InvalidParams();
         }
         // Ensure the sender is only the owner or this contract itself.
