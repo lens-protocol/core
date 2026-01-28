@@ -69,15 +69,20 @@ git submodule update --init --recursive
 Copy the `.env.example` file into `.env` and fill the necessary fields:
 
 ```
+# Wallet mnemonic (seed phrase) for deployment/testing
 MNEMONIC=
+
+# RPC Endpoints (Get these from providers like Alchemy, Infura, or QuickNode)
 POLYGON_RPC_URL=
 MUMBAI_RPC_URL=
 KOVAN_RPC_URL=
 ROPSTEN_RPC_URL=
 MAINNET_RPC_URL=
-BLOCK_EXPLORER_KEY=
-TENDERLY_PROJECT=
-TENDERLY_USERNAME=
+
+# Verification & Debugging
+BLOCK_EXPLORER_KEY= # API Key from PolygonScan or Etherscan
+TENDERLY_PROJECT=   # Your project slug from https://dashboard.tenderly.co/
+TENDERLY_USERNAME=  # Your Tenderly username
 TENDERLY_FORK_ID=
 TENDERLY_HEAD_ID=
 
