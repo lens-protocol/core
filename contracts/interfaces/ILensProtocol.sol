@@ -246,8 +246,8 @@ interface ILensProtocol {
     ) external;
 
     /**
-     * @notice Sets the block status for the given profiles. Changing a profile's block status to `true` (i.e. blocked),
-     * when will also force them to unfollow.
+     * @notice Sets the block status for the given profiles. Changing a profile's block status to `true` (i.e. blocked)
+     * will also force them to unfollow.
      * Blocked profiles cannot perform any actions with the profile that blocked them: they cannot comment or mirror
      * their publications, they cannot follow them, they cannot collect, tip them, etc.
      * @custom:permissions Profile Owner or Delegated Executor.
