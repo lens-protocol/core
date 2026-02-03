@@ -25,7 +25,7 @@ interface ICollectModule {
      * @param transactionExecutor The owner or an approved delegated executor.
      * @param data Arbitrary data __passed from the user!__ to be decoded.
      *
-     * @return bytes Any custom ABI-encoded data. This will be a LensHub event params that can be used by
+     * @return bytes Any custom ABI-encoded data. This will be a LensHub event param that can be used by
      * indexers or UIs.
      */
     function initializePublicationCollectModule(
@@ -41,7 +41,7 @@ interface ICollectModule {
      *
      * @param processCollectParams The parameters for the collect action.
      *
-     * @return bytes Any custom ABI-encoded data. This will be a LensHub event params that can be used by
+     * @return bytes Any custom ABI-encoded data. This will be a LensHub event param that can be used by
      * indexers or UIs.
      */
     function processCollect(

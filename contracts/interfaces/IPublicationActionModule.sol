@@ -27,7 +27,7 @@ interface IPublicationActionModule {
      * @param transactionExecutor The address of the transaction executor (e.g. for any funds to transferFrom).
      * @param data Arbitrary data passed from the user to be decoded by the Action Module during initialization.
      *
-     * @return bytes Any custom ABI-encoded data. This will be a LensHub event params that can be used by
+     * @return bytes Any custom ABI-encoded data. This will be a LensHub event param that can be used by
      * indexers or UIs.
      */
     function initializePublicationAction(
@@ -44,7 +44,7 @@ interface IPublicationActionModule {
      *
      * @param processActionParams The parameters needed to execute the publication action.
      *
-     * @return bytes Any custom ABI-encoded data. This will be a LensHub event params that can be used by
+     * @return bytes Any custom ABI-encoded data. This will be a LensHub event param that can be used by
      * indexers or UIs.
      */
     function processPublicationAction(Types.ProcessActionParams calldata processActionParams)

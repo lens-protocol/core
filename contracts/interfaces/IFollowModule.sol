@@ -42,7 +42,7 @@ interface IFollowModule {
      * @param targetProfileId The token ID of the profile being followed.
      * @param data Arbitrary data passed by the follower.
      *
-     * @return bytes Any custom ABI-encoded data. This will be a LensHub event params that can be used by
+     * @return bytes Any custom ABI-encoded data. This will be a LensHub event param that can be used by
      * indexers or UIs.
      */
     function processFollow(
