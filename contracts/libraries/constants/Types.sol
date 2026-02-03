@@ -89,7 +89,7 @@ library Types {
      * @notice A struct containing profile data.
      *
      * @param pubCount The number of publications made to this profile.
-     * @param followModule The address of the current follow module in use by this profile, can be address(0) in none.
+     * @param followModule The address of the current follow module in use by this profile, can be address(0) if none.
      * @param followNFT The address of the followNFT associated with this profile. It can be address(0) if the
      * profile has not been followed yet, as the collection is lazy-deployed upon the first follow.
      * @param __DEPRECATED__handle DEPRECATED in V2: handle slot, was replaced with LensHandles.
