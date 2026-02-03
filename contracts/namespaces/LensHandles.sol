@@ -20,7 +20,7 @@ import {IERC165} from '@openzeppelin/contracts/utils/introspection/IERC165.sol';
  *
  *      handle = namespace /@ localName
  *
- * Handle and local name can be used interchangeably once you are in a context of a namespace, as it became redundant.
+ * Handle and local name can be used interchangeably once you are in a context of a namespace, as it becomes redundant.
  *
  *      handle === ${localName} ; inside some namespace.
  *
