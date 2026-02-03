@@ -60,7 +60,7 @@ interface IFollowNFT {
     /**
      * @notice Removes the follower from the given follow NFT.
      * @custom:permissions Follow token owner or approved-for-all.
-
+     *
      * @dev Only on wrapped token.
      *
      * @param followTokenId The ID of the follow token to remove the follower from.
