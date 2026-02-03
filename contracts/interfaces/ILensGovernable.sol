@@ -33,7 +33,7 @@ interface ILensGovernable {
      *
      * @param newState The state to set. It can be one of the following:
      *  - Unpaused: The protocol is fully operational.
-     *  - PublishingPaused: The protocol is paused for publishing, but it is still operational for others operations.
+     *  - PublishingPaused: The protocol is paused for publishing, but it is still operational for other operations.
      *  - Paused: The protocol is paused for all operations.
      */
     function setState(Types.ProtocolState newState) external;
