@@ -31,7 +31,7 @@ interface ILensProfiles is ILensERC721 {
     function getTokenGuardianDisablingTimestamp(address wallet) external view returns (uint256);
 
     /**
-     * @notice allows transferring of profile but keeping the delegate settings
+     * @notice Allows transferring a profile while keeping the delegate settings.
      */
     function transferFromKeepingDelegates(address from, address to, uint256 tokenId) external;
 }
